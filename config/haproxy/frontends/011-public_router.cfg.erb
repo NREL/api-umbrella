@@ -1,0 +1,9 @@
+  # Match
+  acl host_match_nmuerdter_public hdr_beg(host) -i nmuerdter.devdev.nrel.gov
+
+  # Requests starting with /api get authenticated.
+  acl url_match_nmuerdter_api path_beg /api/
+  use_backend nmuerdter_auth_farm if host_match_nmuerdter_public url_match_nmuerdter_api
+
+  # All other requests go to our main site.
+  use_backend nmuerdter_apache_farm if host_match_nmuerdter_public

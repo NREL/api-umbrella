@@ -1,0 +1,9 @@
+# Public Site Backend
+#
+# The public site that provides the frontend for API registration and
+# documentation.
+backend <%= subdomain_prefix %>public_site_farm
+  balance roundrobin
+  <% server_registory[:public_site].each_with_index do |server, i| -%>
+  server <%= subdomain_prefix %>public_site<%= i %> <%= server[:host] %>:<%= server[:port] %>
+  <% end -%>

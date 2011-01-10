@@ -1,0 +1,14 @@
+  # Main Site Services: Sort of a special case. This isn't one of our normal
+  # API backends, but instead our documentation and account signup application.
+  # However, this application also exposes a small bit of account signup
+  # functionality as a service, so accounts can be created remotely.
+  acl url_match_api_public_site path_beg -i -f <%= File.join(latest_release, "config", "haproxy", "api_router", "api_public_site.lst") %>
+  use_backend nmuerdter_public_site_farm if url_match_api_public_site
+
+  # Sustainable Fuels & Vehicles Services
+  acl url_match_api_sfv path_beg -i -f <%= File.join(latest_release, "config", "haproxy", "api_router", "api_sfv.lst") %>
+  use_backend nmuerdter_api_sfv_farm if url_match_api_sfv
+
+  # georeserv Services
+  acl url_match_api_georeserv path_beg -i -f <%= File.join(latest_release, "config", "haproxy", "api_router", "api_georeserv.lst") %>
+  use_backend nmuerdter_api_georeserv_farm if url_match_api_georeserv
