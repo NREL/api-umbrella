@@ -23,9 +23,15 @@ set(:server_registry) do
       { :host => "127.0.0.1", :port => free_server_port },
     ],
 
-    # API backends.
-    :api_sfv => [
+    # The public site.
+    :public_site => [
       { :host => "127.0.0.1", :port => 50100 },
+    ],
+
+    # API backends.
+    # For local services, start assigning ports in the 50500+ range.
+    :api_sfv => [
+      { :host => "127.0.0.1", :port => 50500 },
     ],
     :api_georeserv => [
       { :host => "rosselli.nrel.gov", :port => 8010 },
