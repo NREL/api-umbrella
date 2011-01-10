@@ -1,0 +1,79 @@
+--- 
+dependencies: 
+  bson_ext: 
+    group: 
+    - :default
+    version: = 1.0.4
+  mongo_mapper: 
+    group: 
+    - :default
+    version: = 0.8.3
+  mongo_ext: 
+    group: 
+    - :default
+    version: = 0.19.3
+  rack-throttle: 
+    group: 
+    - :default
+    version: = 0.3.0
+  rack: 
+    group: 
+    - :default
+    version: = 1.2.1
+  thin: 
+    group: 
+    - :default
+    version: = 1.2.7
+  bundler: 
+    group: 
+    - :default
+    version: ">= 0"
+  yajl-ruby: 
+    group: 
+    - :default
+    version: = 0.7.7
+  redis: 
+    group: 
+    - :default
+    version: = 2.0.3
+  activesupport: 
+    group: 
+    - :default
+    version: = 2.3.8
+specs: 
+- activesupport: 
+    version: 2.3.8
+- bson: 
+    version: 1.0.4
+- bson_ext: 
+    version: 1.0.4
+- bundler: 
+    version: 0.9.26
+- daemons: 
+    version: 1.1.0
+- eventmachine: 
+    version: 0.12.10
+- jnunemaker-validatable: 
+    version: 1.8.4
+- mongo: 
+    version: 1.0.7
+- mongo_ext: 
+    version: 0.19.3
+- plucky: 
+    version: 0.3.4
+- mongo_mapper: 
+    version: 0.8.3
+- rack: 
+    version: 1.2.1
+- rack-throttle: 
+    version: 0.3.0
+- redis: 
+    version: 2.0.3
+- thin: 
+    version: 1.2.7
+- yajl-ruby: 
+    version: 0.7.7
+hash: 42d5d55f12ae3d333df92f1f49efc243c34bcf20
+sources: 
+- Rubygems: 
+    uri: http://gemcutter.org

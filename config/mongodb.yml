@@ -1,0 +1,1 @@
+<%= IO.read(File.join(AUTH_PROXY_ROOT, "config", "shared_config", "mongodb.yml")) %>
