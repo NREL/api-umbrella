@@ -1,8 +1,0 @@
-# Authentication Backend
-#
-# These backend proxy servers authenticate all the /api requests.
-backend <%= subdomain_prefix %>auth_farm
-  balance roundrobin
-  <% server_registory[:auth_proxy].each_with_index do |server, i| -%>
-  server <%= subdomain_prefix %>auth_proxy_<%= i %> <%= server[:host] %>:<%= server[:port] %>
-  <% end -%>
