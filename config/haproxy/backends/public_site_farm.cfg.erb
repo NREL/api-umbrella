@@ -2,8 +2,6 @@
 #
 # The public site that provides the frontend for API registration and
 # documentation.
-backend public_site_farm-<%= deploy_name %>
+backend public_site_farm
   balance roundrobin
-  <% server_registry[:public_site].each_with_index do |server, i| %>
-  <%= "server public_site#{i}-#{deploy_name} #{server[:host]}:#{server[:port]}" %>
-  <% end %>
+  server public_site1 127.0.0.1:50100

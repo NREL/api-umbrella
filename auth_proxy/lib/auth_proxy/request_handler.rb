@@ -19,9 +19,9 @@ module AuthProxy
     # @return [String] The raw HTTP headers in string format.
     attr_reader :headers
 
-    # The path to the server_process_registry YAML config file for this sandbox
-    # or site.
-    SERVER_PROCESS_REGISTRY_CONF_PATH = File.join(ENV["SITE_ROOT"], "config", "server_process_registry.yml")
+    API_ROUTER_SERVERS = [
+      { :host => "127.0.0.1", :port => 50000 }
+    ]
 
     # Create a new class for determing our ProxyMachine server's response,
     # based on the HTTP headers available.
@@ -65,44 +65,21 @@ module AuthProxy
       status, headers, body = AuthProxy::RackApp.instance.call(self.request_env)
 
       if(status == 200)
-        { :remote => self.class.random_routing_server }
+        { :remote => self.class.random_api_router_server }
       else
         response = AuthProxy::HttpResponse.new(status, headers, body)
         { :close => response.to_s }
       end
     end
 
-    # Reads the server process registry to fetch all of the details for our
-    # routing servers. The routing servers are the HAProxy servers that route
-    # API requests after we've finished authenticating them here. They
-    # determine which URLs get mapped to which backend web service application.
-    #
-    # @return [Array] The configuration details for all of the possible routing
-    # servers.
-    def self.routing_servers
-      if(!class_variable_defined?(:@@routing_servers))
-        @@routing_servers = []
-
-        registry = YAML.load_file(SERVER_PROCESS_REGISTRY_CONF_PATH)
-        if(registry)
-          server_registry = registry.values.first
-          if(server_registry && server_registry[:routing])
-            @@routing_servers = server_registry[:routing]
-          end
-        end
-      end
-
-      @@routing_servers
-    end
-
-    # Pick a random routing server out of a possible cluster of routing
+    # Pick a random API Router server out of a possible cluster of router
     # servers. This is the server that ProxyMachine passes the request onto
     # assuming the request has been authenticated.
     #
-    # @see routing_servers
+    # @see API_ROUTER_SERVERS
     # @return [String] The host and port of a routing server to connect to.
-    def self.random_routing_server
-      server_config = self.routing_servers[Kernel.rand(self.routing_servers.length)]
+    def self.random_api_router_server
+      server_config = API_ROUTER_SERVERS[Kernel.rand(API_ROUTER_SERVERS.length)]
       "#{server_config[:host]}:#{server_config[:port]}"
     end
   end

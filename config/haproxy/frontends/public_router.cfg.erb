@@ -14,5 +14,13 @@ defaults
   # HAProxy's backend processing rules get skipped on subsequent requests.
   option http-server-close
 
-frontend public_router cttsdev-svc.nrel.gov:80
+frontend public_router <%= domain %>:80
   option forwardfor
+
+  # Requests starting with /api get sent to the auth proxy for authentication
+  # and rate limiting.
+  acl url_match_api path_beg /api/
+  use_backend auth_proxy_farm if url_match_api
+
+  # All other requests go to our main site.
+  use_backend public_site_farm

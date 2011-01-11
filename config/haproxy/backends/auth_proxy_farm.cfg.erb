@@ -1,8 +1,8 @@
 # Authentication Backend
 #
 # These backend proxy servers authenticate all the /api requests.
-backend auth_proxy_farm-<%= deploy_name %>
+backend auth_proxy_farm
   balance roundrobin
-  <% server_registry[:auth_proxy].each_with_index do |server, i| %>
-  <%= "server auth_proxy#{i}-#{deploy_name} #{server[:host]}:#{server[:port]}" %>
-  <% end %>
+  server auth_proxy1 127.0.0.1:50200
+  server auth_proxy2 127.0.0.1:50201
+  server auth_proxy3 127.0.0.1:50202
