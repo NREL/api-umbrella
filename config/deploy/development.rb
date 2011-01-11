@@ -1,5 +1,3 @@
-require "capistrano_nrel_ext/recipes/sandboxes"
-
 # Set the servers for this stage.
 role :app, "devdev.nrel.gov"
 role :web, "devdev.nrel.gov"
