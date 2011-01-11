@@ -15,7 +15,7 @@ set(:server_registry) do
       { :host => domain, :port => 80 },
     ],
     :api_router => [
-      { :host => "127.0.0.1", :port => 50001 },
+      { :host => "127.0.0.1", :port => 50000 },
     ],
 
     # The authentication proxymachine server.
