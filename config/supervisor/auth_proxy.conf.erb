@@ -1,4 +1,4 @@
-[program:<%= deploy_name %>_auth_proxy]
+[program:<%= deploy_name %>-auth_proxy]
 ; Run 4 auth_proxy instances.
 numprocs=4
 
@@ -23,4 +23,4 @@ stdout_logfile=<%= current_path %>/log/%(program_name)s_50%(process_num)03d.log
 
 ; Define a group so everything in this deployment can be controlled together.
 [group:<%= deploy_name %>]
-programs=<%= deploy_name %>_auth_proxy
+programs=<%= deploy_name %>-auth_proxy
