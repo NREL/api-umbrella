@@ -1,0 +1,5 @@
+[include]
+files = <%= current_path %>/config/supervisor/auth_proxy.conf
+
+[group:<%= deploy_name %>]
+programs=<%= deploy_name %>_auth_proxy

@@ -3,6 +3,6 @@
 # These backend proxy servers authenticate all the /api requests.
 backend auth_proxy_farm
   balance roundrobin
-  server auth_proxy1 127.0.0.1:50200
-  server auth_proxy2 127.0.0.1:50201
-  server auth_proxy3 127.0.0.1:50202
+  server auth_proxy1 127.0.0.1:50000
+  server auth_proxy2 127.0.0.1:50001
+  server auth_proxy3 127.0.0.1:50002

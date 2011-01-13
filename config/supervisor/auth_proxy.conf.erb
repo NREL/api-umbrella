@@ -1,0 +1,22 @@
+[program:<%= deploy_name %>_auth_proxy]
+; Run 4 auth_proxy instances.
+numprocs=4
+
+; Start each proxymachine instance with ports starting at 50000.
+command=proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 50%(process_num)03d
+
+; Name each process by the port number, eg "auth_proxy_50000",
+; "auth_proxy_50001"
+process_name=%(program_name)s_50%(process_num)02d
+
+; Always keep running.
+autostart=true
+autorestart=true
+
+; Run as the web user.
+user=www-data
+
+; Log both stdout and stderr to the same log file. One log file per
+; proxymachine instance running on each port.
+redirect_stderr=true
+stdout_logfile=<%= current_path %>/log/%(program_name)s_50%(process_num)03d.log
