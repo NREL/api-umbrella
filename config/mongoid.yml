@@ -1,0 +1,25 @@
+defaults: &defaults
+  host: localhost
+  # slaves:
+  #   - host: slave1.local
+  #     port: 27018
+  #   - host: slave2.local
+  #     port: 27019
+
+development:
+  <<: *defaults
+  database: web_service_framework_development_rails3
+
+test:
+  <<: *defaults
+  database: web_service_framework_test_rails3
+
+# set these environment variables on your prod server
+production:
+  <<: *defaults
+  database: web_service_framework_production_rails3
+  #host: <%= ENV['MONGOID_HOST'] %>
+  #port: <%= ENV['MONGOID_PORT'] %>
+  #username: <%= ENV['MONGOID_USERNAME'] %>
+  #password: <%= ENV['MONGOID_PASSWORD'] %>
+  #database: <%= ENV['MONGOID_DATABASE'] %>

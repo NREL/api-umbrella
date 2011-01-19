@@ -18,12 +18,17 @@ ENV["RAILS_ENV"] ||= "development"
 
 # Load the base configuration for MongoMapper, so those models can connect to
 # MongoDB.
-require "mongo_mapper"
+require "mongoid"
 require "erb"
-config_file = ::File.join(AUTH_PROXY_ROOT, "config", "mongodb.yml")
-config = YAML::load(ERB.new(IO.read(config_file)).result)
-config[ENV["RAILS_ENV"]] ||= {}
-MongoMapper.setup(config, ENV["RAILS_ENV"], :logger => LOGGER)
+mongoid_settings_file = ::File.join(AUTH_PROXY_ROOT, "config", "mongoid.yml")
+mongoid_settings = YAML::load(ERB.new(IO.read(mongoid_settings_file)).result)
+puts "MONGOID SETTINGS: #{mongoid_settings.inspect}"
+mongoid_settings[ENV["RAILS_ENV"]] ||= {}
+puts "MONGOID SETTINGS: #{mongoid_settings.inspect}"
+Mongoid.configure do |config|
+puts "MONGOID SETTINGS: #{mongoid_settings[ENV["RAILS_ENV"]].inspect}"
+  config.from_hash(mongoid_settings[ENV["RAILS_ENV"]])
+end
 
 # Define a ProxyMachine proxy server with our logic stored in the
 # {#AuthProxy::Proxy} class.
