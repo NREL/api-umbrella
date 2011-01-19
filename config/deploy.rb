@@ -2,6 +2,7 @@
 require "capistrano/ext/multistage"
 
 require "capistrano_nrel_ext/recipes/defaults"
+require "capistrano_nrel_ext/recipes/gem_bundler"
 require "capistrano_nrel_ext/recipes/haproxy"
 require "capistrano_nrel_ext/recipes/supervisor"
 
