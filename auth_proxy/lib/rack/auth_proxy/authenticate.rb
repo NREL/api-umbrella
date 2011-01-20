@@ -41,7 +41,7 @@ module Rack
 
         # Authenticate the API key against the database.
         if(env["rack.api_key"] && !env["rack.api_key"].empty?)
-          user = ApiUser.find_by_api_key(env["rack.api_key"])
+          user = ApiUser.first(:conditions => { :api_key => env["rack.api_key"] })
           if(user)
             # Pass the user object along, so further Rack middleware can access
             # it.
