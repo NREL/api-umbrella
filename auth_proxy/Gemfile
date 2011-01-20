@@ -22,3 +22,9 @@ gem "thin", "1.2.7"
 
 # Yajl for JSON encoding.
 gem "yajl-ruby", "0.7.9"
+
+group :development do
+  # Yard and markdown dependencies
+  gem "yard", "0.6.4"
+  gem "kramdown", "0.12.0"
+end

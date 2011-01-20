@@ -1,12 +1,14 @@
-require "rake"
+require "bundler/setup"
 
-require "yard"
-YARD::Rake::YardocTask.new do |t|
-  t.files = ["lib/**/*.rb"]
-  t.options = [
-    "--protected",
-    "--private",
-    "--output-dir", "/srv/developer/cttsdev-svc/docs_server/current/public/developer-auth_proxy",
-    "--debug",
-  ]
+begin
+  require "yard"
+  YARD::Rake::YardocTask.new do |t|
+    # Delete the .svn folders that lead to permission problems when re-generating
+    # existing documentation.
+    t.before = lambda { `rm -rf /srv/developer/devdev/docs/**/.svn` }
+    t.after = lambda { `rm -rf /srv/developer/devdev/docs/**/.svn` }
+  end
+rescue LoadError
+  desc "You need the `yard` gem to generate documentation"
+  task :yard
 end
