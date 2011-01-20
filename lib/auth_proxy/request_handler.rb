@@ -20,7 +20,7 @@ module AuthProxy
     attr_reader :headers
 
     API_ROUTER_SERVERS = [
-      { :host => "127.0.0.1", :port => 50000 }
+      { :host => "127.0.0.1", :port => 50100 }
     ]
 
     # Create a new class for determing our ProxyMachine server's response,
