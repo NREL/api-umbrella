@@ -5,17 +5,17 @@ frontend api_router 127.0.0.1:50100
   # API backends, but instead our documentation and account signup application.
   # However, this application also exposes a small bit of account signup
   # functionality as a service, so accounts can be created remotely.
-  acl url_match_api_public_site path_beg -i -f <%= File.join(latest_release, "config", "haproxy", "api_router_matches", "api_public_site.lst") %>
+  acl url_match_api_public_site path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_public_site.lst") %>
   use_backend public_site_farm if url_match_api_public_site
 
   # Sustainable Fuels & Vehicles Services
-  acl url_match_api_sfv path_beg -i -f <%= File.join(latest_release, "config", "haproxy", "api_router_matches", "api_sfv.lst") %>
+  acl url_match_api_sfv path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_sfv.lst") %>
   use_backend api_sfv_farm if url_match_api_sfv
 
   # georeserv Services
-  acl url_match_api_georeserv path_beg -i -f <%= File.join(latest_release, "config", "haproxy", "api_router_matches", "api_georeserv.lst") %>
+  acl url_match_api_georeserv path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_georeserv.lst") %>
   use_backend api_georeserv_farm if url_match_api_georeserv
 
   # FleetAtlas Services
-  acl url_match_api_fleet_atlas path_beg -i -f <%= File.join(latest_release, "config", "haproxy", "api_router_matches", "api_fleet_atlas.lst") %>
+  acl url_match_api_fleet_atlas path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_fleet_atlas.lst") %>
   use_backend api_fleet_atlas_farm if url_match_api_fleet_atlas
