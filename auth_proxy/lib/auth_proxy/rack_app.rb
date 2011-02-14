@@ -25,6 +25,10 @@ module AuthProxy
           :max => 2000,
           :code => 503
 
+        # Return a 200 OK status if all the middlewares pass through
+        # successfully. This indicates to the calling AuthProxy::RequestHandler
+        # that no errors have occurred processing the headers, and the
+        # application can continue with a instruction to proxymachine.
         run lambda { |env| [200, {}, "OK"] }
       end
     end

@@ -1,15 +1,13 @@
 ENV["RAILS_ENV"] = "test"
 require File.expand_path("../../config/environment", __FILE__)
 
-require "minitest/spec"
-require "minitest/autorun"
-
 require "database_cleaner"
-require "rack/test"
 require "factory_girl"
 require "nokogiri"
-require "yajl"
+require "rack/test"
 require "timecop"
+require "yajl"
+
 Factory.find_definitions
 
 RSpec.configure do |config|

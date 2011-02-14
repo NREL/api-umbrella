@@ -29,12 +29,22 @@ group :development do
   gem "kramdown", "0.13.1"
 end
 
+# Gems for testing
 group :test, :development do
-  gem "database_cleaner", "0.6.3"
-  gem "factory_girl", "1.3.3"
   gem "rspec", "2.5.0"
+
+  # For building objects.
+  gem "factory_girl", "1.3.3"
+
+  # For clearing the database between tests.
+  gem "database_cleaner", "0.6.3"
+
+  # For simulating calls to our Rack middleware.
   gem "rack-test", "0.5.7"
-  gem "minitest", "2.0.2"
-  gem "nokogiri", "1.4.4"
+
+  # For validating Time.now usage inside Rack::AuthProxy::Log
   gem "timecop", "0.3.5"
+
+  # For validating XML.
+  gem "nokogiri", "1.4.4"
 end
