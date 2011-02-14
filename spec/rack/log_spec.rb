@@ -35,6 +35,20 @@ describe Rack::AuthProxy::Log do
     end
   end
 
+  it "should log the details for unauthenticated requests" do
+    Timecop.freeze do
+      get "/api/unauth.xml?foo=bar"
+
+      log = ApiRequestLog.where(:path => "/api/unauth.xml").first
+
+      log.api_key.should == nil
+      log.ip_address.should == "127.0.0.1"
+      log.requested_at.should == Time.now.utc
+      log.response_status.should == @target_app_status
+      log.response_error.should == nil
+    end
+  end
+
   it "should serialize and log the rack environment" do
     post "/api/bar.xml?api_key=#{@api_key}&foo=bar", {}, "rack.api_key" => @api_key
 
@@ -81,4 +95,3 @@ describe Rack::AuthProxy::Log do
     end
   end
 end
-

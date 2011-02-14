@@ -32,6 +32,20 @@ describe Rack::AuthProxy::Authenticate do
     end
   end
 
+  describe "empty api_key supplied" do
+    it "should not call the target app" do
+      get "/test.xml?api_key="
+      @target_app_called.should == false
+    end
+
+    it "should return a forbidden message" do
+      get "/test.xml?api_key="
+
+      last_response.status.should == 403
+      last_response.body.should include("<error>No api_key was supplied.")
+    end
+  end
+
   describe "invalid api_key supplied" do
     it "should not call the target app" do
       get "/test.xml?api_key=INVALID_KEY"
