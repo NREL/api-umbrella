@@ -2,24 +2,21 @@ require "active_support"
 
 module Rack
   module AuthProxy
-    class FormattedErrorResponse
-      def initialize(app, options = {})
-        @app = app
-        @options = options
-      end
-
-      def call(env)
-        status, headers, body = @app.call(env)
-
+    class FormattedError
+      def self.response(env, status, headers, body)
         if(status != 200)
           request = Rack::Request.new(env)
 
           format_extension = ::File.extname(request.path).to_s.downcase
+          if(format_extension.empty? && !request.GET["format"].blank?)
+            format_extension = ".#{request.GET["format"].to_s.downcase}"
+          end
+
           if(format_extension.empty?)
             format_extension = ".xml"
           end
 
-          headers["Content-Type"] = Rack::Mime.mime_type(format_extension)
+          headers["Content-Type"] = Rack::Mime.mime_type(format_extension, "text/plain")
 
           body = self.error_body(format_extension, body.to_s.strip)
         end
@@ -27,10 +24,10 @@ module Rack
         [status, headers, body]
       end
 
-      def error_body(format_extension, message)
+      def self.error_body(format_extension, message)
         case(format_extension)
         when ".json"
-          { :errors => message }.to_json
+          { :errors => [message] }.to_json
         when ".xml"
           { :error => message }.to_xml(:root => "errors")
         when ".csv"

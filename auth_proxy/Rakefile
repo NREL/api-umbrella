@@ -1,5 +1,16 @@
 require "bundler/setup"
 
+require "rake/testtask"
+Rake::TestTask.new do |t|
+  t.libs += ["models", "spec"]
+  t.pattern = "spec/**/*_spec.rb"
+end
+
+require "rspec/core/rake_task"
+RSpec::Core::RakeTask.new(:spec) do |t|
+  t.rspec_opts = ["-I models", "-f documentation", "--color"]
+end
+
 begin
   require "yard"
   YARD::Rake::YardocTask.new do |t|
