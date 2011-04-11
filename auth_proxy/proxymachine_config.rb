@@ -1,4 +1,4 @@
-require "config/environment"
+require File.expand_path("../config/environment", __FILE__)
 
 # Define a ProxyMachine proxy server with our logic stored in the
 # {#AuthProxy::Proxy} class.
