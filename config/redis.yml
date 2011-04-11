@@ -1,0 +1,12 @@
+development:
+  host: devdev-db.nrel.gov
+
+test:
+  host: devdev-db.nrel.gov
+  port: 6380
+
+staging:
+  host: dev-stage-db.nrel.gov
+
+production:
+  database: developerdb.nrel.gov
