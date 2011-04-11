@@ -8,6 +8,7 @@ defaults: &defaults
 
 development:
   <<: *defaults
+  host: devdev-db.nrel.gov
   database: web_service_framework_development_rails3
 
 test:
