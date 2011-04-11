@@ -14,9 +14,11 @@ gem "mongo_ext", "0.19.3"
 # Rack for contructing our proxy using modularized middlewares.
 gem "rack", "1.2.2"
 
-# rack-throttle and redis for rate limiting.
+# rack-throttle and redis for rate limiting. Use hiredis for better
+# performance.
 gem "rack-throttle", "0.3.0"
-gem "redis", "2.2.0"
+gem "hiredis", "0.3.1"
+gem "redis", "2.2.0", :require => ["redis/connection/hiredis", "redis"]
 
 platforms :ruby_18 do
   # Redis recommends SystemTimer over the default Timeout class.
