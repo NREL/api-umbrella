@@ -6,3 +6,8 @@ backend auth_proxy_farm
   server auth_proxy1 127.0.0.1:50000
   server auth_proxy2 127.0.0.1:50001
   server auth_proxy3 127.0.0.1:50002
+  server auth_proxy3 127.0.0.1:50003
+
+  # Retry connections 30 times (so 30 seconds). This lets the the proxymachine
+  # servers restart without dropping any connection.
+  retries 30
