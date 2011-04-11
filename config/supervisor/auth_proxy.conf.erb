@@ -3,8 +3,9 @@
 numprocs=4
 
 ; Start each proxymachine instance with ports starting at 50000.
+; Execute proxymachine via RVM and Bundler. 
 directory=<%=current_path %>/auth_proxy
-command=bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 50%(process_num)03d
+command=rvm exec bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 50%(process_num)03d
 
 ; Name each process by the port number, eg "auth_proxy_50000",
 ; "auth_proxy_50001"
