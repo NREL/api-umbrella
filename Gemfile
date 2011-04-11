@@ -1,5 +1,9 @@
 source :rubygems
 
+# Run everything through the ProxyMachine server.
+gem "proxymachine", "1.2.4"
+
+# For some of activesupport's niceties, like blank?
 gem "activesupport", "3.0.6"
 
 # MongoDB
