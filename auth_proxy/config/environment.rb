@@ -12,21 +12,23 @@ AUTH_PROXY_ROOT = File.expand_path("../../", __FILE__)
 $LOAD_PATH.unshift(File.join(AUTH_PROXY_ROOT, "lib"))
 $LOAD_PATH.unshift(File.join(AUTH_PROXY_ROOT, "models"))
 
-# Define the default Rails environment for when we need to interact with Rails
-# models.
-ENV["RAILS_ENV"] ||= "development"
+# Define the default Rack environment for when we need to interact with models.
+ENV["RACK_ENV"] ||= "development"
 
-# Load the base configuration for MongoMapper, so those models can connect to
-# MongoDB.
+# Load Mongoid's configuration for this specific environment.
 require "mongoid"
-require "erb"
-mongoid_settings_file = ::File.join(AUTH_PROXY_ROOT, "config", "mongoid.yml")
-mongoid_settings = YAML::load(ERB.new(IO.read(mongoid_settings_file)).result)
-puts "MONGOID SETTINGS: #{mongoid_settings.inspect}"
-mongoid_settings[ENV["RAILS_ENV"]] ||= {}
-puts "MONGOID SETTINGS: #{mongoid_settings.inspect}"
-Mongoid.configure do |config|
-puts "MONGOID SETTINGS: #{mongoid_settings[ENV["RAILS_ENV"]].inspect}"
-  config.from_hash(mongoid_settings[ENV["RAILS_ENV"]])
-  config.logger = nil
+
+# FIXME: Disable MongoDB logging for performance. Currently a simple monkey
+# patch.
+#
+# Mongoid.logger = nil currently doesn't work, but should be fixed in next
+# release. https://github.com/mongoid/mongoid/issues/734
+#
+# Mongoid.logger = nil
+module Mongoid
+  def self.logger
+    nil
+  end
 end
+
+Mongoid.load!(::File.join(AUTH_PROXY_ROOT, "config", "mongoid.yml"))

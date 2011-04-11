@@ -8,7 +8,19 @@ require "redis"
 module AuthProxy
   class RackApp
     def self.redis_cache
-      @@redis_cache ||= Redis.new
+      @@redis_cache ||= Redis.new(self.redis_config)
+    end
+
+    @@redis_config = nil
+    def self.redis_config
+      unless @@redis_config
+        config_path = ::File.join(AUTH_PROXY_ROOT, "config", "redis.yml")
+        @@redis_config = YAML.load(ERB.new(File.read(config_path)).result)[ENV["RACK_ENV"]] 
+        @@redis_config ||= {}
+        @@redis_config.symbolize_keys!
+      end
+
+      @@redis_config
     end
 
     def self.instance
