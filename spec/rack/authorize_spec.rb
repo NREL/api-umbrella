@@ -12,7 +12,7 @@ describe Rack::AuthProxy::Authorize do
 
     lambda { |env|
       @target_app_called = true
-      [@target_app_status, @target_app_headers, @target_app_content]
+      [@target_app_status, @target_app_headers, [@target_app_content]]
     }
   end
 

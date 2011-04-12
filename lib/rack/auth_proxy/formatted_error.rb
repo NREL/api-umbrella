@@ -3,7 +3,7 @@ require "active_support"
 module Rack
   module AuthProxy
     class FormattedError
-      def self.response(env, status, headers, body)
+      def self.response(env, status, headers, message)
         if(status != 200)
           request = Rack::Request.new(env)
 
@@ -18,10 +18,10 @@ module Rack
 
           headers["Content-Type"] = Rack::Mime.mime_type(format_extension, "text/plain")
 
-          body = self.error_body(format_extension, body.to_s.strip)
+          response = [self.error_body(format_extension, message.to_s.strip)]
         end
 
-        [status, headers, body]
+        [status, headers, response]
       end
 
       def self.error_body(format_extension, message)

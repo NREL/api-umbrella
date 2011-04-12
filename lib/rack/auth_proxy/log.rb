@@ -24,9 +24,15 @@ module Rack
         serialized_env = Yajl::Encoder.encode(env)
 
         # Call the rest of the Rack middlewares.
-        status, headers, body = @app.call(env)
+        status, headers, response = @app.call(env)
 
         request = Rack::Request.new(env)
+
+        response_error = nil
+        if(status != 200)
+          response_error = ""
+          response.each { |s| response_error << s.to_s }
+        end
 
         # Create a new log entry for this request.
         log = ApiRequestLog.new({
@@ -35,7 +41,7 @@ module Rack
           :ip_address => request.ip,
           :requested_at => Time.now.utc,
           :response_status => status,
-          :response_error => if(status != 200) then body end,
+          :response_error => response_error,
           :env => serialized_env,
         })
 
@@ -44,7 +50,7 @@ module Rack
         # just to be clear, I've specified it here).
         log.save(:validate => false, :safe => false)
 
-        [status, headers, body]
+        [status, headers, response]
       end
     end
   end
