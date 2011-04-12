@@ -23,14 +23,10 @@ describe Rack::AuthProxy::Log do
 
   it "should log the details for a request" do
     Timecop.freeze do
-puts "API KEY: #{@api_key.inspect}"
       get "/api/foo.xml?api_key=#{@api_key}&foo=bar", {}, "rack.api_key" => @api_key
 
-puts "API KEY: #{@api_key.inspect}"
       log = ApiRequestLog.where(:path => "/api/foo.xml").last
 
-puts "API KEY: #{@api_key.inspect}"
-puts "LOG.API KEY: #{log.api_key.inspect}"
       log.api_key.should == @api_key
       log.ip_address.should == "127.0.0.1"
       log.requested_at.should == Time.now.utc

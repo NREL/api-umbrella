@@ -1,6 +1,7 @@
 require "rack"
 require "rack/auth_proxy/authenticate"
 require "rack/auth_proxy/authorize"
+require "rack/auth_proxy/formatted_error_response"
 require "rack/auth_proxy/log"
 require "rack/auth_proxy/throttle"
 require "redis"
@@ -26,6 +27,7 @@ module AuthProxy
     def self.instance
       @@instance ||= Rack::Builder.app do
         use Rack::AuthProxy::Log
+        use Rack::AuthProxy::FormattedErrorResponse
         use Rack::AuthProxy::Authenticate
         use Rack::AuthProxy::Authorize
         use Rack::AuthProxy::Throttle::Daily,
