@@ -10,7 +10,7 @@ describe Rack::AuthProxy::Authenticate do
 
     lambda { |env|
       @target_app_called = true
-      [200, {}, @target_app_content]
+      [200, {}, [@target_app_content]]
     }
   end
 

@@ -41,7 +41,7 @@ module AuthProxy
         # successfully. This indicates to the calling AuthProxy::RequestHandler
         # that no errors have occurred processing the headers, and the
         # application can continue with a instruction to proxymachine.
-        run lambda { |env| [200, {}, "OK"] }
+        run lambda { |env| [200, {}, ["OK"]] }
       end
     end
   end
