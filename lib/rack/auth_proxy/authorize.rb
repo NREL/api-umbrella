@@ -1,5 +1,3 @@
-require "rack/auth_proxy/formatted_error"
-
 module Rack
   module AuthProxy
     class Authorize
@@ -30,13 +28,14 @@ module Rack
           end
         end
 
+        rack_response = []
         if(authorized)
-          response = @app.call(env)
+          rack_response = @app.call(env)
         else
-          response = Rack::AuthProxy::FormattedError.response(env, 403, {}, "The api_key supplied is not authorized to access the given service. Contact us at http://developer.nrel.gov/contact for assistance.")
+          rack_response = [403, {}, ["The api_key supplied is not authorized to access the given service. Contact us at http://developer.nrel.gov/contact for assistance."]]
         end
 
-        response
+        rack_response
       end
     end
   end
