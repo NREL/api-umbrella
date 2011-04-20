@@ -3,7 +3,7 @@ development:
 
 test:
   host: devdev-db.nrel.gov
-  port: 6380
+  port: 6379
 
 staging:
   host: dev-stage-db.nrel.gov
