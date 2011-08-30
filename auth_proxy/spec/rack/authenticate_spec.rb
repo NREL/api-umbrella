@@ -10,7 +10,7 @@ describe Rack::AuthProxy::Authenticate do
 
     lambda { |env|
       @target_app_called = true
-      [200, {}, @target_app_content]
+      [200, {}, [@target_app_content]]
     }
   end
 
@@ -28,7 +28,7 @@ describe Rack::AuthProxy::Authenticate do
       get "/test.xml"
 
       last_response.status.should == 403
-      last_response.body.should include("<error>No api_key was supplied.")
+      last_response.body.should include("No api_key was supplied.")
     end
   end
 
@@ -42,7 +42,7 @@ describe Rack::AuthProxy::Authenticate do
       get "/test.xml?api_key="
 
       last_response.status.should == 403
-      last_response.body.should include("<error>No api_key was supplied.")
+      last_response.body.should include("No api_key was supplied.")
     end
   end
 
@@ -56,7 +56,7 @@ describe Rack::AuthProxy::Authenticate do
       get "/test.json?api_key=INVALID_KEY"
 
       last_response.status.should == 403
-      last_response.body.should include('"errors":["An invalid api_key was supplied.')
+      last_response.body.should include("An invalid api_key was supplied.")
     end
   end
 
@@ -74,7 +74,7 @@ describe Rack::AuthProxy::Authenticate do
       get "/test.xml?api_key=#{@api_user.api_key}"
 
       last_response.status.should == 403
-      last_response.body.should include("<error>The api_key supplied has been disabled.")
+      last_response.body.should include("The api_key supplied has been disabled.")
     end
   end
 

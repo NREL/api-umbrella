@@ -5,32 +5,32 @@ describe AuthProxy::HttpResponse do
   before(:each) do
     @status = 200
     @headers = { "Content-Type" => "text/plain" }
-    @body = "Body message"
+    @response = ["Body message"]
 
-    @response = AuthProxy::HttpResponse.new(@status, @headers, @body)
+    @http_response = AuthProxy::HttpResponse.new(@status, @headers, @response)
   end
 
   it "should accept parameters during initialization" do
-    @response.status.should == 200
-    @response.headers_output.should include("Content-Type: text/plain")
-    @response.body.should == "Body message"
+    @http_response.status.should == 200
+    @http_response.headers_output.should include("Content-Type: text/plain")
+    @http_response.body.should == ["Body message"]
   end
 
   describe "#headers_output" do
     it "doesn't return 'Thin' as the server" do
-      @response.headers_output.should_not include("Server: Thin")
+      @http_response.headers_output.should_not include("Server: Thin")
     end
 
     it "still returns custom server headers" do
-      @response.headers["Server"] = "AuthProxy"
+      @http_response.headers["Server"] = "AuthProxy"
 
-      @response.headers_output.should include("Server: AuthProxy")
+      @http_response.headers_output.should include("Server: AuthProxy")
     end
   end
 
   describe "#to_s" do
     it "outputs the entire response as a string" do
-      @response.to_s.should == "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nBody message"
+      @http_response.to_s.should == "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nBody message"
     end
   end
 end

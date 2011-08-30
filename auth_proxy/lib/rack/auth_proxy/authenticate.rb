@@ -1,5 +1,3 @@
-require "rack/auth_proxy/formatted_error"
-
 require "api_user"
 
 module Rack
@@ -38,6 +36,8 @@ module Rack
           end
         end
 
+        rack_response = []
+
         # Authenticate the API key against the database.
         if(env["rack.api_key"] && !env["rack.api_key"].empty?)
           user = ApiUser.first(:conditions => { :api_key => env["rack.api_key"] })
@@ -47,18 +47,18 @@ module Rack
             env["rack.api_user"] = user
 
             if(!user.disabled_at)
-              response = @app.call(env)
+              rack_response = @app.call(env)
             else
-              response = Rack::AuthProxy::FormattedError.response(env, 403, {}, "The api_key supplied has been disabled. Contact us at http://developer.nrel.gov/contact for assistance.")
+              rack_response = [403, {}, ["The api_key supplied has been disabled. Contact us at http://developer.nrel.gov/contact for assistance."]]
             end
           else
-            response = Rack::AuthProxy::FormattedError.response(env, 403, {}, "An invalid api_key was supplied. Get one at http://developer.nrel.gov/")
+            rack_response = [403, {}, ["An invalid api_key was supplied. Get one at http://developer.nrel.gov/"]]
           end
         else
-          response = Rack::AuthProxy::FormattedError.response(env, 403, {}, "No api_key was supplied. Get one at http://developer.nrel.gov/")
+          rack_response = [403, {}, ["No api_key was supplied. Get one at http://developer.nrel.gov/"]]
         end
 
-        response
+        rack_response
       end
     end
   end

@@ -62,13 +62,13 @@ module AuthProxy
     #
     # @return [Hash] A ProxyMachine response instruction.
     def proxy_instruction
-      status, headers, body = AuthProxy::RackApp.instance.call(self.request_env)
+      status, headers, response = AuthProxy::RackApp.instance.call(self.request_env)
 
       if(status == 200)
         { :remote => self.class.random_api_router_server }
       else
-        response = AuthProxy::HttpResponse.new(status, headers, body)
-        { :close => response.to_s }
+        error_response = AuthProxy::HttpResponse.new(status, headers, response)
+        { :close => error_response.to_s }
       end
     end
 

@@ -1,74 +1,75 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    SystemTimer (1.2.2)
-    activemodel (3.0.4)
-      activesupport (= 3.0.4)
+    SystemTimer (1.2.3)
+    activemodel (3.0.10)
+      activesupport (= 3.0.10)
       builder (~> 2.1.2)
-      i18n (~> 0.4)
-    activesupport (3.0.4)
-    bson (1.2.1)
-    bson_ext (1.2.1)
+      i18n (~> 0.5.0)
+    activesupport (3.0.10)
+    bson (1.3.1)
+    bson_ext (1.3.1)
     builder (2.1.2)
-    daemons (1.1.0)
-    database_cleaner (0.6.3)
-    diff-lcs (1.1.2)
+    daemons (1.1.4)
+    database_cleaner (0.6.7)
+    diff-lcs (1.1.3)
     eventmachine (0.12.10)
-    factory_girl (1.3.3)
+    factory_girl (2.0.5)
+    hiredis (0.3.2)
     i18n (0.5.0)
-    kramdown (0.13.1)
-    mongo (1.2.1)
-      bson (>= 1.2.1)
-    mongo_ext (0.19.3)
-    mongoid (2.0.0.rc.6)
+    kramdown (0.13.3)
+    mongo (1.3.1)
+      bson (>= 1.3.1)
+    mongoid (2.2.0)
       activemodel (~> 3.0)
-      mongo (~> 1.2)
+      mongo (~> 1.3)
       tzinfo (~> 0.3.22)
-      will_paginate (~> 3.0.pre)
-    nokogiri (1.4.4)
-    rack (1.2.1)
-    rack-test (0.5.7)
+    nokogiri (1.5.0)
+    proxymachine (1.2.4)
+      eventmachine (>= 0.12.10)
+    rack (1.3.2)
+    rack-test (0.6.1)
       rack (>= 1.0)
     rack-throttle (0.3.0)
       rack (>= 1.0.0)
-    redis (2.1.1)
-    rspec (2.5.0)
-      rspec-core (~> 2.5.0)
-      rspec-expectations (~> 2.5.0)
-      rspec-mocks (~> 2.5.0)
-    rspec-core (2.5.1)
-    rspec-expectations (2.5.0)
+    redis (2.2.2)
+    rspec (2.6.0)
+      rspec-core (~> 2.6.0)
+      rspec-expectations (~> 2.6.0)
+      rspec-mocks (~> 2.6.0)
+    rspec-core (2.6.4)
+    rspec-expectations (2.6.0)
       diff-lcs (~> 1.1.2)
-    rspec-mocks (2.5.0)
-    thin (1.2.7)
+    rspec-mocks (2.6.0)
+    thin (1.2.11)
       daemons (>= 1.0.9)
       eventmachine (>= 0.12.6)
       rack (>= 1.0.0)
     timecop (0.3.5)
-    tzinfo (0.3.24)
-    will_paginate (3.0.pre2)
-    yajl-ruby (0.8.1)
-    yard (0.6.4)
+    tzinfo (0.3.29)
+    yajl-ruby (0.8.3)
+    yard (0.7.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  SystemTimer (= 1.2.2)
-  activesupport (= 3.0.4)
-  bson_ext (= 1.2.1)
-  database_cleaner (= 0.6.3)
-  factory_girl (= 1.3.3)
-  kramdown (= 0.13.1)
-  mongo_ext (= 0.19.3)
-  mongoid (= 2.0.0.rc.6)
-  nokogiri (= 1.4.4)
-  rack (= 1.2.1)
-  rack-test (= 0.5.7)
-  rack-throttle (= 0.3.0)
-  redis (= 2.1.1)
-  rspec (= 2.5.0)
-  thin (= 1.2.7)
-  timecop (= 0.3.5)
-  yajl-ruby (= 0.8.1)
-  yard (= 0.6.4)
+  SystemTimer (= 1.2.3)
+  activesupport
+  bson_ext
+  database_cleaner
+  factory_girl
+  hiredis
+  kramdown
+  mongoid
+  nokogiri
+  proxymachine
+  rack
+  rack-test
+  rack-throttle
+  redis
+  rspec
+  thin
+  timecop
+  yajl-ruby
+  yard

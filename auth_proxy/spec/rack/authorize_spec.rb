@@ -12,7 +12,7 @@ describe Rack::AuthProxy::Authorize do
 
     lambda { |env|
       @target_app_called = true
-      [@target_app_status, @target_app_headers, @target_app_content]
+      [@target_app_status, @target_app_headers, [@target_app_content]]
     }
   end
 
@@ -36,7 +36,7 @@ describe Rack::AuthProxy::Authorize do
 
       @target_app_called.should == false
       last_response.status.should == 403
-      last_response.body.should include("<error>The api_key supplied is not authorized to access the given service.")
+      last_response.body.should include("The api_key supplied is not authorized to access the given service.")
     end
 
     it "should grant access to users with the 'vibe' role" do
@@ -56,7 +56,7 @@ describe Rack::AuthProxy::Authorize do
 
       @target_app_called.should == false
       last_response.status.should == 403
-      last_response.body.should include('"errors":["The api_key supplied is not authorized to access the given service.')
+      last_response.body.should include("The api_key supplied is not authorized to access the given service.")
     end
 
     it "should deny access to users with non-authorized roles" do
@@ -65,7 +65,7 @@ describe Rack::AuthProxy::Authorize do
 
       @target_app_called.should == false
       last_response.status.should == 403
-      last_response.body.should include("<error>The api_key supplied is not authorized to access the given service.")
+      last_response.body.should include("The api_key supplied is not authorized to access the given service.")
     end
 
     it "should grant access to users with the 'geocode' role" do
@@ -85,7 +85,7 @@ describe Rack::AuthProxy::Authorize do
 
       @target_app_called.should == false
       last_response.status.should == 403
-      last_response.body.should include("<error>The api_key supplied is not authorized to access the given service.")
+      last_response.body.should include("The api_key supplied is not authorized to access the given service.")
     end
 
     it "should grant access to users with the 'vin' role" do
@@ -105,7 +105,7 @@ describe Rack::AuthProxy::Authorize do
 
       @target_app_called.should == false
       last_response.status.should == 403
-      last_response.body.should include("<error>The api_key supplied is not authorized to access the given service.")
+      last_response.body.should include("The api_key supplied is not authorized to access the given service.")
     end
 
     it "should grant access to users with the 'vin' role" do

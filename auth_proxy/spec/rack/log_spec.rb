@@ -7,10 +7,10 @@ describe Rack::AuthProxy::Log do
 
   def target_app
     @target_app_status = 200
-    @target_app_headers = {}
+    @target_app_headers = { "Content-Type"=>"text/plain", "Content-Length"=>"16" }
     @target_app_content = "Response content"
 
-    lambda { |env| [@target_app_status, @target_app_headers, @target_app_content] }
+    lambda { |env| [@target_app_status, @target_app_headers, [@target_app_content]] }
   end
 
   def app
@@ -25,7 +25,7 @@ describe Rack::AuthProxy::Log do
     Timecop.freeze do
       get "/api/foo.xml?api_key=#{@api_key}&foo=bar", {}, "rack.api_key" => @api_key
 
-      log = ApiRequestLog.where(:path => "/api/foo.xml").first
+      log = ApiRequestLog.where(:path => "/api/foo.xml").last
 
       log.api_key.should == @api_key
       log.ip_address.should == "127.0.0.1"
@@ -39,7 +39,7 @@ describe Rack::AuthProxy::Log do
     Timecop.freeze do
       get "/api/unauth.xml?foo=bar"
 
-      log = ApiRequestLog.where(:path => "/api/unauth.xml").first
+      log = ApiRequestLog.where(:path => "/api/unauth.xml").last
 
       log.api_key.should == nil
       log.ip_address.should == "127.0.0.1"
@@ -52,7 +52,7 @@ describe Rack::AuthProxy::Log do
   it "should serialize and log the rack environment" do
     post "/api/bar.xml?api_key=#{@api_key}&foo=bar", {}, "rack.api_key" => @api_key
 
-    log = ApiRequestLog.where(:path => "/api/bar.xml").first
+    log = ApiRequestLog.where(:path => "/api/bar.xml").last
 
     env = Yajl::Parser.parse(log.env)
     request = Rack::Request.new(env)
@@ -77,7 +77,7 @@ describe Rack::AuthProxy::Log do
       @target_error_app_headers = {}
       @target_error_app_content = "Error message"
 
-      lambda { |env| [@target_error_app_status, @target_error_app_headers, @target_error_app_content] }
+      lambda { |env| [@target_error_app_status, @target_error_app_headers, [@target_error_app_content]] }
     end
 
     def app
@@ -87,7 +87,7 @@ describe Rack::AuthProxy::Log do
     it "should log the response body for errors" do
       get "/api/moo.xml?api_key=#{@api_key}", {}, "rack.api_key" => @api_key
 
-      log = ApiRequestLog.where(:path => "/api/moo.xml").first
+      log = ApiRequestLog.where(:path => "/api/moo.xml").last
 
       log.api_key.should == @api_key
       log.response_status.should == @target_error_app_status
