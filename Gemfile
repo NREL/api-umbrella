@@ -1,24 +1,23 @@
 source :rubygems
 
 # Run everything through the ProxyMachine server.
-gem "proxymachine", "1.2.4"
+gem "proxymachine"
 
 # For some of activesupport's niceties, like blank?
-gem "activesupport", "3.0.6"
+gem "activesupport"
 
 # MongoDB
-gem "mongoid", "2.0.1"
-gem "bson_ext", "1.3.0"
-gem "mongo_ext", "0.19.3"
+gem "mongoid"
+gem "bson_ext"
 
 # Rack for contructing our proxy using modularized middlewares.
-gem "rack", "1.2.2"
+gem "rack"
 
 # rack-throttle and redis for rate limiting. Use hiredis for better
 # performance.
-gem "rack-throttle", "0.3.0"
-gem "hiredis", "0.3.1"
-gem "redis", "2.2.0", :require => ["redis/connection/hiredis", "redis"]
+gem "rack-throttle"
+gem "hiredis"
+gem "redis", :require => ["redis", "redis/connection/hiredis"]
 
 platforms :ruby_18 do
   # Redis recommends SystemTimer over the default Timeout class.
@@ -26,33 +25,33 @@ platforms :ruby_18 do
 end
 
 # Use thin for parsing the raw HTTP requests.
-gem "thin", "1.2.11"
+gem "thin"
 
 # Yajl for JSON encoding.
-gem "yajl-ruby", "0.8.2"
+gem "yajl-ruby"
 
 group :development do
   # Yard and markdown dependencies
-  gem "yard", "0.6.7"
-  gem "kramdown", "0.13.2"
+  gem "yard"
+  gem "kramdown"
 end
 
 # Gems for testing
 group :test, :development do
-  gem "rspec", "2.5.0"
+  gem "rspec"
 
   # For building objects.
-  gem "factory_girl", "1.3.3"
+  gem "factory_girl"
 
   # For clearing the database between tests.
-  gem "database_cleaner", "0.6.6"
+  gem "database_cleaner"
 
   # For simulating calls to our Rack middleware.
-  gem "rack-test", "0.5.7"
+  gem "rack-test"
 
   # For validating Time.now usage inside Rack::AuthProxy::Log
-  gem "timecop", "0.3.5"
+  gem "timecop"
 
   # For validating XML.
-  gem "nokogiri", "1.4.4"
+  gem "nokogiri"
 end
