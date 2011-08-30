@@ -1,5 +1,3 @@
-require "capistrano_nrel_ext/recipes/branches"
-
 # Set the servers for this stage.
 role :app, "devstage-int.nrel.gov"
 role :web, "devstage-int.nrel.gov"
