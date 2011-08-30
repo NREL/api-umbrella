@@ -24,18 +24,4 @@ ENV["RACK_ENV"] ||= "development"
 
 # Load Mongoid's configuration for this specific environment.
 require "mongoid"
-
-# FIXME: Disable MongoDB logging for performance. Currently a simple monkey
-# patch.
-#
-# Mongoid.logger = nil currently doesn't work, but should be fixed in next
-# release. https://github.com/mongoid/mongoid/issues/734
-#
-# Mongoid.logger = nil
-module Mongoid
-  def self.logger
-    nil
-  end
-end
-
 Mongoid.load!(::File.join(AUTH_PROXY_ROOT, "config", "mongoid.yml"))
