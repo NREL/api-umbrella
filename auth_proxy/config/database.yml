@@ -1,12 +1,12 @@
 # Use ERB to include the contents of our shared YAML database config file.
-<%= IO.read(File.join(AUTH_PROXY_ROOT, "config", "shared_config", "database.yml")) %>
+<%= IO.read("/etc/db_config/database.yml") %>
 
 # Define the default connections we want to use.
 development:
-  <<: *web_service_framework_api_development
+  <<: *developer_api_development
 
 staging:
-  <<: *web_service_framework_api_staging
+  <<: *developer_api_staging
 
 production:
-  <<: *web_service_framework_api_production
+  <<: *developer_api_production
