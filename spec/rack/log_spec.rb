@@ -7,7 +7,7 @@ describe Rack::AuthProxy::Log do
 
   def target_app
     @target_app_status = 200
-    @target_app_headers = {}
+    @target_app_headers = { "Content-Type"=>"text/plain", "Content-Length"=>"16" }
     @target_app_content = "Response content"
 
     lambda { |env| [@target_app_status, @target_app_headers, [@target_app_content]] }
