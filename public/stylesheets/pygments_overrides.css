@@ -1,0 +1,25 @@
+.highlighttable {
+  border: 1px solid #eeeeff;
+  width: 100%;
+}
+
+.highlighttable th,
+.highlighttable td {
+  border-style: none;
+}
+
+.highlighttable .linenos {
+  width: 8px;
+  background-color: #def;
+  color: gray;
+  text-align: right;
+}
+
+.highlighttable .code {
+  background-color: #f5f9ff;
+
+}
+
+.highlighttable pre {
+  margin: 0px;
+}

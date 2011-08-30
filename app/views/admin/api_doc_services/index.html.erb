@@ -1,0 +1,25 @@
+<h1><%= crumbs.last.first %></h1>
+
+<div class="button-actions">
+  <%= link_to '<span class="icon-plus">Add New Service</span>'.html_safe, new_admin_api_doc_service_path, :class => "blue-pill" %>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th scope="col">Web Service</th>
+      <th scope="col">Summary</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @services.each do |service| %>
+      <tr>
+        <td><%= link_to service.title, edit_admin_api_doc_service_path(service) %></td>
+        <td><%= service.summary %></td>
+        <td><%= link_to("Delete", admin_api_doc_service_path(service), :class => "icon icon-trash", :method => :delete, :confirm => "Are you sure you want to delete this web service?") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<%= paginate @services %>

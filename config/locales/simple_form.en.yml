@@ -1,0 +1,42 @@
+en:
+  simple_form:
+    "yes": 'Yes'
+    "no": 'No'
+    required:
+      text: 'required'
+      mark: '*'
+      # You can uncomment the line below if you need to overwrite the whole required html.
+      # When using html, text and mark won't be used.
+      html: '<abbr title="Required" class="required"><span class="abbr-required">*</span></abbr>'
+    error_notification:
+      default_message: "Some errors were found, please take a look:"
+    # Labels and hints examples
+    # labels:
+    #   password: 'Password'
+    #   user:
+    #     new:
+    #       email: 'E-mail para efetuar o sign in.'
+    #     edit:
+    #       email: 'E-mail.'
+    labels:
+      api_user:
+        first_name: "First Name"
+        last_name: "Last Name"
+        website: "Web Site"
+        use_description: "How will you use NREL APIs?<br />(optional)"
+      api_doc_service:
+        http_method: "HTTP Method"
+        api_doc_collection_id: "Documentation Collection Page"
+    placeholders:
+      api_user:
+        website: "http://"
+      api_doc_service:
+        path: "/api/example/service"
+    hints:
+      api_doc_service:
+        path: "The base path to the web service endpoint."
+        summary: "A short description of this service (1-2 sentences)."
+  helpers:
+    submit:
+      api_user:
+        create: "Sign Up"

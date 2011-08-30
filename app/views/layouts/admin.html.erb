@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>NREL Developer Network</title>
+    <%= include_stylesheets :admin %>
+    <%= include_javascripts :admin %>
+    <%= csrf_meta_tag %>
+  </head>
+  <body>
+    <aside id="sidebar" class="column">
+      <header>
+        <%= link_to("Developer Admin") %>
+      </header>
+
+      <h3><%= link_to("Dashboard", admin_api_doc_collections_path) %></h3>
+
+      <h3>Statistics</h3>
+      <ul>
+        <li><%= link_to("By Service", admin_api_doc_services_path, :class => "icon-chart") %></li>
+        <li><%= link_to("By User", admin_api_doc_services_path, :class => "icon-chart") %></li>
+      </ul>
+
+      <h3>API Documentation</h3>
+      <ul>
+        <li><%= link_to("Collections", admin_api_doc_collections_path, :class => "icon-nested") %></li>
+        <li><%= link_to("Web Services", admin_api_doc_services_path, :class => "icon-categories") %></li>
+      </ul>
+
+      <h3>Users</h3>
+      <ul>
+        <li><%= link_to("API Users", admin_admins_path, :class => "icon-view_users") %></li>
+        <li><%= link_to("Admin Accounts", admin_admins_path, :class => "icon-view_users") %></li>
+      </ul>
+
+      <hr />
+      <p><%= current_admin.email %>&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp;<%= link_to("Logout", admin_logout_path) %></p>
+    </aside><!-- end of sidebar -->
+
+    <div class="container_12">
+      <% if crumbs.length > 1 %>
+        <div class="grid_12 crumbs">
+          <%= render_crumbs %>
+        </div>
+      <% end %>
+
+      <div class="grid_12">
+        <%= yield %>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+/* Links */
+a:link {color:#004f99;}
+a:visited, a:hover {color:#C60;}
+
+/* Footer */
+footer {clear: both; padding-top:55px;}
+footer p {font-size:85%;color:#6D6D6D;margin:3px;padding-top:4px;text-align:center;}
+footer p.date {color:#9a9a9a;}
+footer p.poweredby {font-size:77%;}

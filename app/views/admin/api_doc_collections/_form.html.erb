@@ -1,0 +1,42 @@
+<% simple_form_for [:admin, @collection] do |f| %>
+  <%= f.input :parent_id,
+    :collection => ApiDocCollection.flattened_tree,
+    :as => :select,
+    :wrapper_html => { :class => "grid_12 alpha omega" } %>
+
+  <%= f.input :title,
+    :wrapper_html => { :class => "grid_6 alpha" },
+    :input_html => { :class => "fill" } %>
+
+  <%= f.input :slug,
+    :wrapper_html => { :class => "grid_6 omega" },
+    :input_html => { :class => "fill", :disabled => !@collection.new_record? } %>
+
+  <div class="grid_6 prefix_6 alpha omega">
+    <%= doc_url(:trailing_slash => true) %><span id="api_doc_collection_url_slug"><%= @collection.slug %></span>
+  </div>
+
+  <%= f.input :summary,
+    :as => :text,
+    :wrapper_html => { :class => "grid_12 alpha omega" },
+    :input_html => { :rows => 2, :class => "fill" } %>
+
+  <%= f.association :api_doc_services,
+    :collection => ApiDocService.all,
+    :as => :check_boxes,
+    :wrapper_html => { :class => "grid_12 alpha omega" } %>
+
+  <%= f.button :submit %>
+<% end %>
+
+<% javascript_tag do %>
+  $("#api_doc_collection_slug").slugify("#api_doc_collection_title");
+
+  function updateUrl() {
+    var slug = $("#api_doc_collection_slug").val();
+    $("#api_doc_collection_url_slug").text(slug);
+  }
+
+  $("#api_doc_collection_slug").keyup(updateUrl).change(updateUrl);
+  $("#api_doc_collection_title").keyup(updateUrl).change(updateUrl);
+<% end %>

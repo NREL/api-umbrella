@@ -1,0 +1,24 @@
+<h1>Contact Us</h1>
+<p>Feel free to contact us with questions, comments, or to report any problems.</p>
+
+<p class="required-fields"><%= t("simple_form.required.html") %> Required fields</p>
+
+<%= simple_form_for(@contact, :url => contact_path, :validate => true, :html => { :class => "col-2" }) do |f| %>
+  <%= f.input(:name,
+    :wrapper_html => { :class => "grid_12" },
+    :label_html => { :class => "grid_3 alpha" },
+    :input_html => { :class => "grid_3 omega" }) %>
+  <%= f.input(:email,
+    :wrapper_html => { :class => "grid_12" },
+    :label_html => { :class => "grid_3 alpha" },
+    :input_html => { :class => "grid_3 omega" }) %>
+  <%= f.input(:message,
+    :as => :text,
+    :wrapper_html => { :class => "grid_12" },
+    :label_html => { :class => "grid_3 alpha" },
+    :input_html => { :class => "grid_5 omega", :rows => 6 }) %>
+
+  <div class="grid_9 prefix_3">
+    <button type="submit" class="submit">Send</button>
+  </div>
+<% end %>

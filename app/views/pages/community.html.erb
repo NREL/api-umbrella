@@ -1,0 +1,45 @@
+<div class="grid_8">
+  <h1>Community</h1>
+  <p>The National Renewable Energy Laboratory's developer network allows developers to access and use energy data, including renewable energy and alternative fuel data, via a web service through an API.</p>
+
+
+  <h2>Developer Group</h2>
+  <p>Join our developer group where users can ask for help, share ideas, and discuss the NREL APIs.</p>
+
+  <h2>Announcements</h2>
+  <p>Join a group to receive alerts when we make changes to our APIs.</p>
+</div>
+
+<div class="grid_4">
+  <script src="http://widgets.twimg.com/j/2/widget.js"></script>
+  <script>
+  new TWTR.Widget({
+    version: 2,
+    type: 'profile',
+    rpp: 4,
+    interval: 6000,
+    width: 'auto',
+    height: 300,
+    theme: {
+      shell: {
+        background: '#1875be',
+        color: '#fff'
+      },
+      tweets: {
+        background: '#ffffff',
+        color: '#444444',
+        links: '#004f99'
+      }
+    },
+    features: {
+      scrollbar: false,
+      loop: false,
+      live: false,
+      hashtags: true,
+      timestamp: true,
+      avatars: false,
+      behavior: 'all'
+    }
+  }).render().setUser('twitterapi').start();
+  </script>
+</div>

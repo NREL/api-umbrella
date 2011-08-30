@@ -1,0 +1,10 @@
+<div class="grid_12">
+  <h1>Documentation</h1>
+
+  <div class="doc-service-list">
+    <% @collections.each do |collection| %>
+      <%= link_to(collection.title, collection.url_path)  %>
+      <%= simple_format(collection.summary) %>
+    <% end %>
+  </div>
+</div>

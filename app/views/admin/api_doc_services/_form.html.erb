@@ -1,0 +1,26 @@
+<% simple_form_for [:admin, @service] do |f| %>
+  <%= f.input :http_method,
+    :collection => ApiDocService::HTTP_METHODS,
+    :wrapper_html => { :class => "grid_3 alpha" } %>
+
+  <%= f.input :path,
+    :wrapper_html => { :class => "grid_9 omega" },
+    :input_html => { :class => "fill" } %>
+
+  <%= f.input :summary,
+    :as => :text,
+    :wrapper_html => { :class => "grid_12 alpha omega" },
+    :input_html => { :rows => 2, :class => "fill" } %>
+
+  <%= f.input :body,
+    :as => :text,
+    :wrapper_html => { :class => "grid_12 alpha omega" },
+    :input_html => { :class => "editor" } %>
+
+  <%= f.input :api_doc_collection_id,
+    :collection => ApiDocCollection.flattened_tree,
+    :wrapper_html => { :class => "fill" } %>
+
+
+  <%= f.button :submit %>
+<% end %>

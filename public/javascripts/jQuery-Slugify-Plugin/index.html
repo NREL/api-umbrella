@@ -1,0 +1,117 @@
+<!DOCTYPE HTML	>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>
+			Slugify jQuery Plugin
+		</title>
+		<meta name="author" content="Patrick McElhaney">
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript"></script>
+		<script src="jquery.slugify.js" type="text/javascript"></script>
+		<script type="text/javascript" charset="utf-8">
+			$().ready(function () {
+				$('.slug').slugify('#title');
+			
+				var pigLatin = function(str) {
+					return str.replace(/(\w*)([aeiou]\w*)/g, "$2$1ay");
+				}
+			
+				$('#pig_latin').slugify('#title', {
+						slugFunc: function(str, originalFunc) { return pigLatin(originalFunc(str)); } 
+					}
+				);
+			
+			}); 
+		</script>
+
+		<style type="text/css">
+			body {
+				margin-top: 1.0em;
+				background-color: #ffffff;
+				font-family: Helvetica , Arial, Sans-Serif;
+				color: #000000;
+			}
+			#container {
+				margin: 0 auto;
+				width: 700px;
+			}
+			h1 { font-size: 3.8em;  margin-bottom: 3px; }
+			h2 { font-size: 1.5em; }
+			h3 { text-align: center; }
+			.description { 
+				font-size: 1.2em; 
+				margin-top: 30px; 
+				font-style: italic;
+			}
+			.download { float: right; }
+			pre { background: #000; color: #fff; padding: 15px;}
+			hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}     
+		</style>
+	</head>           
+	
+	<body>                         
+		
+	 <div><a href="http://github.com/pmcelhaney/jQuery-Slugify-Plugin"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a></div>
+		
+		<div id="container">
+			<form>
+				<h1>
+					Slugify()
+				</h1>
+				<p>
+					A jQuery plugin that automatically creates slugs as you type. Try it:
+				</p>
+
+				<div>
+					<label for="title">Title</label> <input type="text" name="title" value="" id="title" size="60">
+				</div>
+				<div>
+					<label for="slug_input">Slug</label> <input type="text" name="slug" id="slug_input" value="" class="slug" size="60">
+				</div>
+				<p>
+					Your URL is http://geocities.com/awesometown/<span class="slug"></span>.
+				</p>                  
+
+				<pre>$('.slug').slugify('#title');</pre>				
+				                                                                                                                        
+				
+				<hr>
+				
+				<p>
+				 The plugin takes one option, <var>slugFunc</var>, a callback function
+         that lets you customize how slugs are created. <var>slugFunc()</var>
+         takes two arguments. The first is the value ofthe input field to be
+         translated to a slug. The second, optional argument is the original
+         slugFunc(), which you can use as a base.
+				</p>
+				
+				<div>
+					<label for="pig_latin">http://geocities.com/piglatin/</label>
+					<input type="text" name="pig_latin" value="" id="pig_latin" size="60">
+        </div>
+<pre>
+var pigLatin = function(str) {
+  return replace(/(\w*)([aeiou]\w*)/g, "$2$1ay");
+}
+
+$('#pig_latin').slugify('#title', {
+    slugFunc: function(str, originalFunc) { return pigLatin(originalFunc(str)); } 
+  }
+); 
+</pre>				
+			</form>                  
+			
+			
+			<h2>About</h2>
+
+				<p>This plugin was created by <a href="http://patrickmcelhaney.com">Patrick McElhaney</a> (pmcelhaney@gmail.com).
+
+		      You can download this project in either
+		      <a href="http://github.com/pmcelhaney/jQuery-Slugify-Plugin/zipball/master">zip</a> or
+		      <a href="http://github.com/pmcelhaney/jQuery-Slugify-Plugin/tarball/master">tar</a> formats.
+		    	You can also clone the project with <a href="http://git-scm.com">Git</a>
+		      by running:
+		      <pre>$ git clone git://github.com/pmcelhaney/jQuery-Slugify-Plugin</pre>
+		</div>
+	</body>
+</html>

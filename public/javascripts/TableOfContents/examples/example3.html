@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>Table of Contents jQuery Plugin: Example 3</title>
+	<link rel="stylesheet" href="../css/layout.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js" type="text/javascript"></script>
+	<script src="../js/jquery.tableofcontents.min.js" type="text/javascript" charset="utf-8"></script>
+	
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready(function(){ 
+			$("#toc").tableOfContents(
+				null,                          // Default scoping
+				{
+					startLevel:           1,   // H1
+					depth:                4,   // H1 through H4
+					proportionateSpacing: true // Spacing On
+				}
+			); 
+		});
+	</script>
+	<style type="text/css" media="screen">
+	body {
+		width: auto;
+		margin: auto;
+		padding: 20px 340px 20px 10px;
+	}
+		
+		#toc {
+			position: fixed;
+			top: 20px;
+			background: none;
+			border: none;
+			right: 20px;
+			border-left: solid 5px #ddd;
+			width: 300px;
+			bottom: 20px;
+			height: 100%;
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+		}
+		
+		.toc-depth-1 { font-size: 12pt;}
+		.toc-depth-2 { font-size: 11pt;}
+		.toc-depth-3 { font-size: 10pt;}
+		.toc-depth-4 { font-size: 9pt;}
+	</style>
+	<!--[if IE]>
+	<style type="text/css" media="screen">
+		body {padding-right: 360px}
+	</style>
+	<![endif]-->
+</head>
+
+<body>
+	<div id="content-wrapper">
+		
+			<div id="header">
+				<p>Example 3 for <a href="../index.html">Table of Contents jQuery Plugin</a><br />
+				<small>Proportionate Spacing, H1 through H4</small></p>
+<pre>
+&lt;script src=&quot;http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;jquery.tableofcontents.min.js&quot; type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;&lt;/script&gt;
+
+&lt;script type=&quot;text/javascript&quot; charset=&quot;utf-8&quot;&gt;
+$(document).ready(function(){ 
+  $(&quot;#toc&quot;).tableOfContents(
+    null,                        // Default scoping
+    {
+      startLevel:           1,   // H1
+      depth:                4,   // H1 through H4
+      proportionateSpacing: true // Spacing On
+    }
+  ); 
+});
+&lt;/script&gt;</pre>
+			</div>
+			<div id="wrapper">
+				<div id="toc"></div>
+				<h1>Sample Content Article Header</h1>
+				<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris malesuada aliquam aliquam. Nullam ac tincidunt lectus. Donec tortor enim, dictum nec fringilla et, sodales vel ligula. Fusce ac lacus tortor. Aenean varius, purus eu convallis tristique, tortor ante condimentum nisl, nec vestibulum tortor purus facilisis nisl. Nullam mollis blandit orci, sed dictum risus dignissim et.</p>
+
+				<h2>Pages Should Use Table of Contents for Easy Navigation</h2>
+				<p>Etiam sed nisi nec mauris molestie blandit feugiat nec ipsum. Suspendisse quis luctus odio. Nullam malesuada semper quam in gravida. Aliquam erat volutpat. Fusce pellentesque enim sed risus volutpat lacinia porttitor elit sollicitudin. Etiam et dolor nisi, sit amet molestie metus. Sed erat orci, aliquet sed bibendum sit amet, varius at est. Morbi in ante vel tortor viverra mollis. Donec aliquam elit dignissim mi laoreet sollicitudin. In tempus orci nec massa convallis sed blandit massa imperdiet. Donec eget nunc dolor, id sodales urna. Praesent luctus felis sed lorem ultricies porttitor viverra enim elementum. In vel turpis orci.</p>
+
+				<h3>Even Third Level Titles Are Important</h3>
+				<p>Sed quis libero iaculis nisl molestie mattis vitae non magna. Nam bibendum massa vitae felis semper rutrum. Nullam faucibus, elit vel volutpat aliquet, metus massa interdum velit, a pretium nunc odio nec enim. Nulla ac tellus convallis tortor egestas lobortis. In vel massa elit, ut auctor est. Quisque scelerisque nibh ac felis ultrices sit amet sodales magna faucibus. Fusce felis eros, placerat consectetur cursus id, blandit id nunc. Donec quis convallis metus. Pellentesque mi nisi, facilisis ac pharetra posuere, lacinia sit amet justo. Cras sit amet enim elit. Morbi posuere lacus ac nibh suscipit pulvinar. Cras sit amet ultricies tellus. Vivamus posuere, nisl vel feugiat congue, magna nisi adipiscing orci, nec vulputate purus metus et risus. In hac habitasse platea dictumst. Nullam a neque eu enim lobortis consectetur sit amet in libero. Proin fermentum orci massa, ut congue dolor. Duis tincidunt, sapien id congue adipiscing, quam nulla ullamcorper ipsum, non posuere nisl tellus ac risus. Pellentesque vel tortor sed orci dignissim iaculis eu in nisi. Integer pretium metus quis lorem lobortis vel sagittis felis ultricies. Phasellus ut tellus risus.</p>
+
+				<h3>Semantic Markup Goes a Long Way in Page Structure</h3>
+				<p>Praesent laoreet mollis odio ac aliquam. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec at lacus nec urna porta scelerisque. Duis a urna leo. Maecenas hendrerit tincidunt aliquet. Duis id arcu eu dolor tincidunt sodales et sit amet est. Pellentesque libero sapien, malesuada in hendrerit id, lacinia in diam. Nam iaculis nisl sed mi consequat.</p>
+				<p>Praesent laoreet mollis odio ac aliquam. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec at lacus nec urna porta scelerisque. Duis a urna leo. Maecenas hendrerit tincidunt aliquet. Duis id arcu eu dolor tincidunt sodales et sit amet est. Pellentesque libero sapien, malesuada in hendrerit id, lacinia in diam. Nam iaculis nisl sed mi consequat.</p>
+				<p>Praesent laoreet mollis odio ac aliquam. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec at lacus nec urna porta scelerisque. Duis a urna leo. Maecenas hendrerit tincidunt aliquet. Duis id arcu eu dolor tincidunt sodales et sit amet est. Pellentesque libero sapien, malesuada in hendrerit id, lacinia in diam. Nam iaculis nisl sed mi consequat.</p>
+
+				<h2>Additional Page Headings Help</h2>
+				<p>Fusce consequat semper mi a lobortis. Morbi dui nibh, euismod vitae hendrerit ut, hendrerit sit amet orci. Sed tincidunt quam vel nunc tristique tincidunt. Vestibulum fringilla ultricies diam at accumsan. Suspendisse at risus dui. Donec nec nisl vel orci convallis ullamcorper. Maecenas eget nisi id mi pulvinar congue ut nec erat. Curabitur auctor libero et turpis consectetur suscipit. Quisque mattis malesuada purus, et tincidunt lacus tempus quis. Donec at posuere enim. Quisque vel euismod nibh. Proin scelerisque cursus laoreet. Suspendisse elementum, magna et venenatis vestibulum, sapien augue ornare ipsum, ut feugiat nibh purus non enim. Aenean rutrum metus ut magna viverra tristique congue purus ultrices. Vestibulum pretium accumsan lectus, eget fringilla leo venenatis scelerisque. Quisque ullamcorper malesuada metus non porttitor. Donec at mauris tortor, at pulvinar orci. Sed ullamcorper augue vel odio eleifend non consequat augue adipiscing.</p>
+
+				<h3>By Providing A Structure</h3>
+				<p>Nulla mollis adipiscing libero hendrerit feugiat. Aliquam eleifend est ut purus varius condimentum. Maecenas tincidunt accumsan massa vel volutpat. Maecenas facilisis faucibus blandit. Phasellus blandit porttitor metus in convallis. Sed in nulla velit, in ullamcorper nisi. Maecenas at dui neque, id dapibus ipsum. Cras egestas, leo convallis rutrum scelerisque, tortor arcu cursus risus, et dapibus orci leo eu neque. Mauris gravida viverra scelerisque. Nunc dignissim porta arcu. Sed imperdiet lacus eget felis vehicula volutpat. Etiam ut lacus non tortor facilisis eleifend.</p>
+
+				<h3>And Breaking Up The Article Into Sections</h3>
+				<p>Vestibulum vitae risus erat. Nullam nulla elit, molestie non varius id, tristique sit amet dolor. Curabitur facilisis ullamcorper eros, quis adipiscing nulla convallis id. Donec vestibulum tempor arcu, et auctor libero bibendum vitae. Aenean nisi nisl, tristique quis</p>
+
+				<h4>HTML Supports Up to Six Levels Deep</h4>
+				<p>Nullam semper elementum est id rutrum. Vivamus sit amet nisi et urna feugiat dictum. Aliquam sit amet nibh elit, sit amet scelerisque est.</p>
+
+				<h4>And In Certain Cases That Might Be Appropriate</h4>
+				<p>Nullam sodales volutpat ipsum convallis gravida. Mauris vel massa at tortor egestas sagittis vel sit amet nibh. Cras posuere, nulla non egestas accumsan, enim ipsum tincidunt massa, vel consequat ipsum nisl ut quam. Nunc nisi felis, fermentum at tempus dapibus, suscipit sit amet neque.</p>
+
+				<h5>College Articles</h5>
+
+				<p>Ut interdum varius blandit. Integer pretium, lacus eu ultrices scelerisque, ipsum enim sagittis nunc, in semper nisl nisl eget velit.</p>
+
+				<h5>Detailed Whitepapers</h5>
+
+				<p>Ut interdum varius blandit. Integer pretium, lacus eu ultrices scelerisque, ipsum enim sagittis nunc, in semper nisl nisl eget velit.</p>
+
+				<h5>Example Documents for the TOC Plugin</h5>
+
+				<p>Ut interdum varius blandit. Integer pretium, lacus eu ultrices scelerisque, ipsum enim sagittis nunc, in semper nisl nisl eget velit.</p>
+
+
+				<h2>Sections Make Reading Easier</h2>
+				<p>Sed auctor nisl tellus, sed laoreet arcu. Phasellus gravida, massa ac dapibus sollicitudin, nisi augue ultrices est, eu adipiscing dolor turpis et lacus. Curabitur eu lectus felis, non tincidunt libero. Nunc in lacus risus. Proin venenatis sollicitudin rutrum. Nullam est orci, porta eu volutpat nec, ornare non elit. Praesent mauris odio, auctor quis consectetur sed, aliquam ut ligula. Mauris facilisis auctor elit fermentum imperdiet. Donec porta dictum elit, fermentum congue sapien rutrum quis. Aliquam aliquet lectus ut mi blandit nec consequat massa sollicitudin. Curabitur id imperdiet diam. Morbi consequat interdum rhoncus. Suspendisse potenti. Pellentesque ac convallis odio. Mauris at lectus sit amet erat adipiscing aliquet. Cras metus lectus, lobortis sit amet consectetur id, tincidunt quis magna.</p>
+
+				<h3>You Can Scan the Document Easier</h3>
+				<p>Quisque arcu sem, iaculis eget pulvinar ut, auctor ut tellus. Suspendisse potenti. In pellentesque sem non massa tempor dictum. Nulla facilisi. Donec in aliquam enim. Aliquam sem orci, vehicula et vehicula vel, aliquet ut augue. Suspendisse vitae placerat urna. Ut accumsan nibh at risus ullamcorper sit amet blandit nulla egestas. Vestibulum ut tortor est. Fusce sed viverra massa. Nullam ullamcorper nisi laoreet augue laoreet fermentum. Aenean laoreet posuere nisl quis pharetra. Aenean nulla sapien, semper ac dictum non, dapibus sit amet odio. Ut est nulla, pulvinar id condimentum tincidunt, luctus sit amet sapien. Donec elementum tellus eget nisl molestie lacinia. Nam fringilla convallis nisl et sagittis. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;</p>
+
+				<h3>You Can Understand The Structure Faster</h3>
+				<p>In hac habitasse platea dictumst. Quisque tellus nibh, semper et eleifend sed, scelerisque in dolor. Praesent accumsan pulvinar pharetra. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nullam ac arcu metus. Donec tristique elit at purus scelerisque feugiat. Sed ac tellus mauris, eget condimentum elit. Nam gravida molestie tempor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Nullam justo lacus, lacinia sit amet pharetra ut, eleifend iaculis ligula. Proin id arcu odio, sed convallis ipsum. Etiam egestas luctus risus eu varius. Nam non quam non ligula malesuada congue faucibus in nulla. Cras posuere libero eu erat pharetra sed congue neque varius. Nulla viverra massa vitae nisl lobortis sit amet cursus velit feugiat.</p>
+			</div>
+			<div id="footer">
+				&copy; 2009 by <a href="http://pixelgraphics.us">Doug Neiner</a>. Open sourced under the MIT license.
+			</div>
+	</div>
+</body>
+</html>

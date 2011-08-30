@@ -1,0 +1,46 @@
+
+
+
+body {
+	font-family: helvetica, arial, sans-serif;
+	width: 960px;
+	margin: 0 auto;
+	padding: 20px 0;
+}
+
+body p {
+	font-size: 11pt;
+	line-height: 14.4pt;
+}
+
+#header p {
+	font-size: 20pt;
+	line-height: 24pt;
+	font-weight: bold;
+}
+
+pre {
+	padding: 5px;
+	border: dotted 1px #aaa;
+	background: #e8e8e8;
+	font-family: monospace;
+	white-space: pre-wrap;
+	white-space: -moz-pre-wrap !important;
+	word-wrap: break-word;
+}
+
+#toc {
+	float: right;
+	font-size: 10pt;
+	width: 200px;
+	padding: 10px 10px 10px 20px;
+	background: #efffb1;
+	border: solid 1px #ccd136;
+	margin: 0 0 10px 15px;
+}
+
+#footer {
+	border-top: solid 5px #ddd;
+	margin: 10px 0 0 0;
+	padding: 10px 0 20px 0;
+}

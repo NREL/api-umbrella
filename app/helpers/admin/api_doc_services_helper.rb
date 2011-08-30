@@ -1,0 +1,2 @@
+module Admin::ApiDocServicesHelper
+end

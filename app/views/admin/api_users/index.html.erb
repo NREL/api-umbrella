@@ -1,0 +1,21 @@
+<h1>Listing admin_api_users</h1>
+
+<table>
+  <tr>
+    <th>Api key</th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @admin_api_users.each do |admin_api_user| %>
+  <tr>
+    <td><%= admin_api_user.api_key %></td>
+    <td><%= link_to 'Edit', edit_admin_api_user_path(admin_api_user) %></td>
+    <td><%= link_to 'Destroy', admin_api_user, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Api user', new_admin_api_user_path %>

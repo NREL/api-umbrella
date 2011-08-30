@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>Table of Contents jQuery Plugin</title>
+	<link rel="stylesheet" href="css/layout.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	
+</head>
+
+<body>
+
+
+	<h1>Table of Contents jQuery Plugin</h1>
+
+
+		<p><strong>Version</strong> 0.8<br /><strong>Written by</strong> <a href="http://pixelgraphics.us">Doug Neiner</a> <br />
+	<strong>Open Sourced under the <span class="caps">MIT</span> License</strong></p>
+
+
+		<p><em>Based on code and concept by Janko Jovanovic in his article: <a href="http://www.jankoatwarpspeed.com/post/2009/08/20/Table-of-contents-using-jQuery.aspx">Automatically generate table of contents using jQuery</a> .</em></p>
+
+
+		<p>This plugin creates a table of contents based on the <code>&lt;h1&gt;</code> through <code>&lt;h6&gt;</code> tags of a webpage, or subset of a webpage. It auto generates slug-like id&#8217;s for linking if they are not present already, can optionally add &#8220;Top&#8221; links to each heading, offers the choice of nested <code>&lt;ol&gt;</code> or <code>&lt;li&gt;</code> lists or straight <code>&lt;a&gt;</code> links, and can optionally create a proportionate display based on the positioning of the headings.</p>
+
+
+		<h2>Examples</h2>
+
+
+		<ul>
+		<li><a href="examples/example1.html">Example 1: Standard <span class="caps">TOC</span>, Default Options, Bulleted List</a></li>
+			<li><a href="examples/example2.html">Example 2: H2 through H4, With Top Links, Scoped to div#wrapper, Ordered List</a></li>
+			<li><a href="examples/example3.html">Example 3: Proportionate Spacing, H1 through H4</a></li>
+		</ul>
+
+
+		<h2>Features</h2>
+
+
+		<ul>
+		<li>Can be scoped to any area of the page</li>
+			<li>Automatically determines list type based on the container <span class="caps">DOM</span> element for the Table of Contents</li>
+			<li>Supports nested ordered and unordered lists, as well as a straight listing of links</li>
+			<li>Auto-creates slug-like anchors for each heading (on headings that do not already have an id)</li>
+			<li>Supports a proportionateSpacing formatting option to create visual <span class="caps">TOC</span> that represent actual amounts of content</li>
+			<li>Is fully customizable. No <span class="caps">CSS</span> classes or ID&#8217;s hard-coded into the plugin.</li>
+			<li>Supports multiple instances on one page.</li>
+		</ul>
+
+
+		<h2>Future Feature Ideas</h2>
+
+
+		<ul>
+		<li>A popup preview that shows the first few lines of the content following the heading you hover over.</li>
+			<li>Built-in support for the jQuery smooth scrolling anchor plugin (This plugin does nothing to hinder a smooth scrolling anchor plugin&#8217;s use, it simply does not offer the functionality out of the box).</li>
+		</ul>
+
+
+		<h2>Basic Usage</h2>
+
+
+		<p>Include the jQuery library and the Table of Contents Plugin</p>
+
+
+	<pre>
+	&lt;script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js" type="text/javascript"&gt;&lt;/script&gt;
+	&lt;script src="jquery.tableofcontents.min.js" type="text/javascript" charset="utf-8"&gt;&lt;/script&gt;</pre>
+
+		<p>And call the plugin on an empty container element:</p>
+
+
+	<pre>
+	&lt;script type="text/javascript" charset="utf-8"&gt;
+	    $(document).ready(function(){
+	        $("div#toc").tableOfContents();
+	    })
+	&lt;/script&gt;</pre>
+
+		<p>The container element determines the type of list that is displayed. A <code>&lt;ol&gt;</code> container will produce a nested ordered list. A <code>&lt;ul&gt;</code> container will produce a nested bulleted list. Any other container will produce a straight list of links, no nesting.</p>
+
+
+		<p><em>You cannot use <code>ul</code> or <code>&lt;ol&gt;</code> containers in combination with the <code>proportionateSpacing</code> option.</em></p>
+
+
+		<h2>Advanced Usage Options</h2>
+
+
+		<p>The <code>tableOfContents</code> method takes two parameters:</p>
+
+
+	<pre>$("#table-of-contents-container").tableOfContents(scope, options)</pre>
+
+		<h3><strong><code>scope</code> (default: <code>document.body</code>)</strong></h3>
+
+
+		<p>If provided, the scope must be a valid jQuery selector (as a string), jQuery collection object, or null. If scope isn&#8217;t <code>null</code> or <code>undefined</code>, it will limit the searching of the plugin to only that object and its children. If scope is <code>null</code> or <code>undefined</code>, then it defaults to <code>document.body</code>.</p>
+
+
+		<h3><strong><code>options</code> (<code>name</code>: <code>default</code>)</strong></h3>
+
+
+		<p>The following are the options that can accompany the function call:</p>
+
+
+	<pre>$("#toc").tableOfContents(null, { optionName: "optionValue" } );</pre>
+
+		<p>or can be set ahead of time by changing the defaultOptions object:</p>
+
+
+	<pre>$.TableOfContents.defaultOptions.optionName = "optionValue";</pre>
+
+		<ul>
+		<li><code>startLevel</code>: <code>1</code></li>
+			<li><code>depth</code>: <code>3</code><br /><code>startLevel</code> and <code>depth</code> work together to create a range for the Table of Contents. <code>startLevel</code> sets the lowest H tag that should be included. If you wanted your root elements to be all the <code>&lt;h2&gt;</code> tags, you would set this option to <code>2</code>. <code>depth</code> sets how deep you want your Table of Contents to be, including the <code>startLevel</code>. If you wanted to have your root elements be the <code>&lt;h2&gt;</code> tags, and wanted to also show <code>&lt;h3&gt;</code>, <code>&lt;h4&gt;</code> and <code>&lt;h5&gt;</code> tags, you would set <code>startLevel</code> to <code>2</code> and <code>depth</code> to <code>4</code>.</li>
+			<li><code>levelClass</code>: <code>"toc-depth-%"</code><br />If your Table of Contents container is not a <code>&lt;ol&gt;</code> or a <code>&lt;ul&gt;</code>, then a special class is applied to each link, specifying its depth in relation to the <code>startLevel</code>. First level = 1, second level = 2, etc. You can change this setting, but be sure to include the % sign as it is replaced with the actual depth before being applied to the link.</li>
+			<li><code>levelText</code>: <code>"%"</code><br />Use this setting to add extra text or <span class="caps">HTML</span> elements inside each link in the <span class="caps">TOC</span>. Be sure to include the % as it will be replaced with the text of the H tag it links to.</li>
+			<li><code>topLinks</code>: <code>false</code><br />This plugin can place &#8220;Top&#8221; links inside each H tag within its scope by setting this option to <code>true</code> or to the text/html you want it to display. If set to <code>true</code> it defaults to using the word &#8220;Top&#8221; as the text for the link.</li>
+			<li><code>topLinkClass</code>: <code>toc-top-link</code><br />If topLinks is enabled, this is the class that will be applied to each top link added to the page.</li>
+			<li><code>topBodyId</code>: <code>toc-top</code><br />If topLinks is enabled, each top link will try to link to the id of the <code>body</code> element. If no id is present, this id will be applied to the <code>body</code> element.</li>
+			<li><code>proportionateSpacing</code>: <code>false</code><br />This is a very special feature, directly inspired by Janko&#8217;s article and code examples. If you want there to be a certain amount of spacing between each <span class="caps">TOC</span> link in direct proportion to the amount of vertical space between each real heading, then set this option to <code>true</code>. <strong>If you set this to true you cannot use <code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code> as your container.</strong> Your container cannot have the <span class="caps">CSS</span> <code>position</code> of <code>static</code>. It must &#8220;haveLayout&#8221; by using the <code>position</code> value of <code>fixed</code>, <code>absolute</code> or <code>relative</code>. Finally, your container must have a fixed height.</li>
+		</ul>
+
+	</body>
+	</html>

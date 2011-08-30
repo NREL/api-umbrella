@@ -1,0 +1,30 @@
+<div class="grid_12 intro-text">
+  <p>The National Renewable Energy Laboratory's developer network allows developers to access and use energy data, including renwable energy and alternative fuel data, via web service APIs.</p>
+</div>
+
+<div class="grid_4 intro-box intro-box-doc">
+  <h2>Web Service Documentation</h2>
+  <p>Explore our available web services.</p>
+  <ul>
+    <% @collections.each do |collection| %>
+      <li><%= link_to(collection.title, collection.url_path) %></li>
+    <% end %>
+  </ul>
+</div>
+
+<div class="grid_4 intro-box intro-box-key">
+  <h2>API Key</h2>
+  <p>You'll need a key to use our APIs.</p>
+  <ul>
+    <li><%= link_to("Get an API Key", signup_path) %></li>
+  </ul>
+
+</div>
+
+<div class="grid_4 intro-box intro-box-community">
+<h2>Community</h2>
+  <p>Join the discussion and stay updated.</p>
+  <ul>
+    <li><%= link_to("Follow Us on Twitter") %></li>
+  </ul>
+</div>
