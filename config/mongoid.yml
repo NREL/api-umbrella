@@ -1,15 +1,17 @@
+# Use ERB to include the contents of our shared YAML database config file.
+<%= IO.read("/etc/db_config/database.yml") %>
+
 development:
-  host: devdev-db.nrel.gov
-  database: web_service_framework_development_rails3
+  <<: *developer_mongodb_development
 
 test:
-  host: devdev-db.nrel.gov
-  database: web_service_framework_test_rails3
+  <<: *developer_mongodb_test
+
+staging_int:
+  <<: *developer_mongodb_staging_int
 
 staging:
-  host: dev-stage-db.nrel.gov
-  database: web_service_framework_staging_rails3
+  <<: *developer_mongodb_staging
 
 production:
-  host: developerdb.nrel.gov
-  database: web_service_framework_production_rails3
+  <<: *developer_mongodb_production
