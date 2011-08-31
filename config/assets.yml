@@ -30,7 +30,5 @@ javascripts:
     - public/javascripts/jquery-1.6.2.js
     - public/javascripts/jquery_ujs.js
     - public/javascripts/rails.validations.js
-    - public/javascripts/ckeditor/ckeditor.js
-    - public/javascripts/ckeditor/adapters/jquery.js
     - public/javascripts/jQuery-Slugify-Plugin/jquery.slugify.js
     - public/javascripts/application.js
