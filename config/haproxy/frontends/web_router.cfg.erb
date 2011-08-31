@@ -1,0 +1,22 @@
+frontend web_router *:80
+  option forwardfor
+
+  <% if(rails_env == "development") %>
+  # chef.devdev-new.nrel.gov
+  acl host_match_chef hdr_beg(host) -i chef.
+  use_backend devdev_chef_farm if host_match_chef
+  <% end %>
+
+  <% if(rails_env == "development") %>
+  # docs.devdev-new.nrel.gov
+  acl host_match_docs hdr_beg(host) -i docs.
+  use_backend devdev_docs_farm if host_match_docs
+  <% end %>
+
+  # Requests starting with /api get sent to the auth proxy for authentication
+  # and rate limiting.
+  acl url_match_api path_beg /api/
+  use_backend auth_proxy_farm if url_match_api
+
+  # All other requests go to our main site.
+  default_backend developer_site_farm

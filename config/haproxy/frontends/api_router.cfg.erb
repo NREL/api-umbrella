@@ -1,12 +1,14 @@
 frontend api_router 127.0.0.1:50100
   option forwardfor
 
-  # Main Site Services: Sort of a special case. This isn't one of our normal
-  # API backends, but instead our documentation and account signup application.
-  # However, this application also exposes a small bit of account signup
-  # functionality as a service, so accounts can be created remotely.
-  acl url_match_api_public_site path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_public_site.lst") %>
-  use_backend public_site_farm if url_match_api_public_site
+  # developer.nrel.gov - The public facing developer.nrel.gov site has services
+  # of its own for things like account signup.
+  acl url_match_api_developer_site path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_developer_site.lst") %>
+  use_backend developer_site_farm if url_match_api_developer_site
+
+  # Technology Deployment Tools Group Services
+  acl url_match_api_tdt path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_tdt.lst") %>
+  use_backend api_tdt_farm if url_match_api_tdt
 
   # Sustainable Fuels & Vehicles Services
   acl url_match_api_sfv path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_sfv.lst") %>
