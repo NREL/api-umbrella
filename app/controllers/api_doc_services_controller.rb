@@ -1,6 +1,6 @@
 class ApiDocServicesController < ApplicationController
   set_tab :documentation
-  add_crumb "API Documentation"
+  add_crumb "Documentation", :doc_path
 
   def show
     @service = ApiDocService.where(:url_path => request.path).first
