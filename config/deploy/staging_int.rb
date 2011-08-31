@@ -21,4 +21,4 @@ set :base_domain, "devstage-int.nrel.gov"
 set :keep_releases, 2
 
 # Set the Rails environment.
-set :rails_env, "development"
+set :rails_env, "staging_int"
