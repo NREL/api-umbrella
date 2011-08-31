@@ -1,9 +1,16 @@
 frontend web_router *:80
+  # Ensure connections are closed for forwardfor compatability.
   option http-server-close
-  option forwardfor
 
-  reqadd X-Forwarded-Proto:\ http
-  reqadd X-Forwarded-Port:\ 80
+  # Add X-Forwarded-* headers unless we've already passed through the SSL
+  # proxy.
+  option forwardfor except 127.0.0.1
+
+  acl has_forwarded_proto hdr_cnt(X-Forwarded-Proto) gt 0
+  reqadd X-Forwarded-Proto:\ http unless has_forwarded_proto
+
+  acl has_forwarded_port hdr_cnt(X-Forwarded-Port) gt 0
+  reqadd X-Forwarded-Port:\ 80 unless has_forwarded_port
 
   <% if(rails_env == "development") %>
   # chef.devdev-new.nrel.gov

@@ -1,7 +1,4 @@
 frontend api_router 127.0.0.1:50100
-  option http-server-close
-  option forwardfor
-
   # developer.nrel.gov - The public facing developer.nrel.gov site has services
   # of its own for things like account signup.
   acl url_match_api_developer_site path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_developer_site.lst") %>
