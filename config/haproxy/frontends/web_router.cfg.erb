@@ -1,6 +1,9 @@
 frontend web_router *:80
   option forwardfor
 
+  reqadd X-Forwarded-Proto:\ http
+  reqadd X-Forwarded-Port:\ 80
+
   <% if(rails_env == "development") %>
   # chef.devdev-new.nrel.gov
   acl host_match_chef hdr_beg(host) -i chef.
