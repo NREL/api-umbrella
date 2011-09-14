@@ -24,10 +24,14 @@ frontend web_router *:80
   use_backend devdev_docs_farm if host_match_docs
   <% end %>
 
-  # Requests starting with /api get sent to the auth proxy for authentication
+  # Requests starting with /api/ get sent to the auth proxy for authentication
   # and rate limiting.
   acl url_match_api path_beg /api/
   use_backend auth_proxy_farm if url_match_api
+
+  # Requests starting with /auth get sent to Tomcat for our CAS servlet.
+  acl url_match_auth path_beg /auth
+  use_backend tomcat_farm if url_match_auth
 
   # All other requests go to our main site.
   default_backend developer_site_farm
