@@ -1,4 +1,7 @@
-frontend web_router *:80
+frontend web_router
+  bind *:80 # Public HTTP traffic
+  bind *:81 # HTTPS traffic tunneled through nginx
+
   # Ensure connections are closed for forwardfor compatability.
   option http-server-close
 
@@ -11,6 +14,9 @@ frontend web_router *:80
 
   acl has_forwarded_port hdr_cnt(X-Forwarded-Port) gt 0
   reqadd X-Forwarded-Port:\ 80 unless has_forwarded_port
+
+  # ACL rule if the request was HTTPS tunneled through nginx.
+  acl via_https dst_port eq 81
 
   <% if(rails_env == "development") %>
   # chef.devdev-new.nrel.gov
@@ -30,9 +36,8 @@ frontend web_router *:80
   use_backend auth_proxy_farm if url_match_api
 
   # Requests starting with /auth get sent to Tomcat for our CAS servlet.
-  acl is_https dst_port eq 443
   acl url_match_auth path_beg /auth
-  use_backend tomcat_farm if is_https url_match_auth
+  use_backend tomcat_farm if via_https url_match_auth
 
   # All other requests go to our main site.
   default_backend developer_site_farm
