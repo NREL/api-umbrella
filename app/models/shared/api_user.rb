@@ -48,7 +48,7 @@ class ApiUser
     :message => "Check the box to agree to the terms and conditions."
 
   # Callbacks
-  before_validation_on_create :generate_api_key
+  before_validation :generate_api_key, :on => :create
 
   attr_accessor :terms_and_conditions, :no_domain_signup
 
