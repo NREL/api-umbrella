@@ -15,7 +15,7 @@
       </map>
       <%= image_tag("header.png", :alt => "NREL Developer Network", :usemap => "#header_map") %>
       <nav>
-        <% tabs_tag(:link_current => true) do |tab| %>
+        <%= tabs_tag(:link_current => true) do |tab| %>
           <%= tab.home "Home", root_path, :class => "nav-home" %>
           <%= tab.documentation "Documentation", doc_path, :class => "nav-documentation" %>
           <%= tab.community "Community", community_path, :class => "nav-community" %>
