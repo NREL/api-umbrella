@@ -4,12 +4,15 @@ body {
 
 header {
   margin-bottom: 8px;
+  float: left;
 }
 
 nav {
   text-indent: -9999px;
   overflow: hidden;
   height: 21px;
+  float: left;
+  width: 100%;
 }
 
 nav ul {
@@ -99,6 +102,8 @@ nav li a {
 
 footer {
   clear: both;
+  float: left;
+  width: 100%;
 }
 
 input.string,
@@ -154,7 +159,7 @@ label abbr.required, label .abbr-required {
   margin-left: 4px;
 
   display: inline-block;
-  max-width: 290px;
+  max-width: 300px;
 
   font-weight: bold;
   font-size: 93%;
