@@ -1349,6 +1349,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 							type : 'text',
 							id : 'txtdlgGenStyle',
 							label : editor.lang.common.cssStyle,
+							validate : CKEDITOR.dialog.validate.inlineStyle( editor.lang.common.invalidInlineStyle ),
 							'default' : '',
 							setup : function( type, element )
 							{

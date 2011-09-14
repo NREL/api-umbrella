@@ -14,7 +14,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
 /**
- * Constains the dictionary of language entries.
+ * Contains the dictionary of language entries.
  * @namespace
  */
 CKEDITOR.lang['ko'] =
@@ -123,6 +123,8 @@ CKEDITOR.lang['ko'] =
 		invalidWidth	: 'Width must be a number.', // MISSING
 		invalidCssLength	: 'Value specified for the "%1" field must be a positive number with or without a valid CSS measurement unit (px, %, in, cm, mm, em, ex, pt, or pc).', // MISSING
 		invalidHtmlLength	: 'Value specified for the "%1" field must be a positive number with or without a valid HTML measurement unit (px or %).', // MISSING
+		invalidInlineStyle	: 'Value specified for the inline style must consist of one or more tuples with the format of "name : value", separated by semi-colons.', // MISSING
+		cssLengthTooltip	: 'Enter a number for a value in pixels or a number with a valid CSS unit (px, %, in, cm, mm, em, ex, pt, or pc).', // MISSING
 
 		// Put the voice-only part of the label in the span.
 		unavailable		: '%1<span class="cke_accessibility">, unavailable</span>' // MISSING
@@ -240,6 +242,7 @@ CKEDITOR.lang['ko'] =
 		findWhat			: '찾을 문자열:',
 		replaceWith			: '바꿀 문자열:',
 		notFoundMsg			: '문자열을 찾을 수 없습니다.',
+		findOptions			: 'Find Options', // MISSING
 		matchCase			: '대소문자 구분',
 		matchWord			: '온전한 단어',
 		matchCyclic			: 'Match cyclic', // MISSING

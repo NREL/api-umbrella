@@ -49,6 +49,13 @@ CKEDITOR.htmlParser.fragment = function()
 	// Dtd of the fragment element, basically it accept anything except for intermediate structure, e.g. orphan <li>.
 	var rootDtd = CKEDITOR.tools.extend( {}, { html: 1 }, CKEDITOR.dtd.html, CKEDITOR.dtd.body, CKEDITOR.dtd.head, { style:1,script:1 } );
 
+	function isRemoveEmpty( node )
+	{
+		// Empty link is to be removed when empty but not anchor. (#7894)
+		return node.name == 'a' && node.attributes.href
+			|| CKEDITOR.dtd.$removeEmpty[ node.name ];
+	}
+
 	/**
 	 * Creates a {@link CKEDITOR.htmlParser.fragment} from an HTML string.
 	 * @param {String} fragmentHtml The HTML to be parsed, filling the fragment.
@@ -67,6 +74,8 @@ CKEDITOR.htmlParser.fragment = function()
 			pendingInline = [],
 			pendingBRs = [],
 			currentNode = fragment,
+		    // Indicate we're inside a <textarea> element, spaces should be touched differently.
+			inTextarea = false,
 		    // Indicate we're inside a <pre> element, spaces should be touched differently.
 			inPre = false;
 
@@ -103,6 +112,13 @@ CKEDITOR.htmlParser.fragment = function()
 						// to properly process the next entry).
 						pendingInline.splice( i, 1 );
 						i--;
+					}
+					else
+					{
+						// Some element of the same type cannot be nested, flat them,
+						// e.g. <a href="#">foo<a href="#">bar</a></a>. (#7894)
+						if ( pendingName == currentNode.name )
+							addElement( currentNode, currentNode.parent, 1 ), i--;
 					}
 				}
 			}
@@ -161,7 +177,7 @@ CKEDITOR.htmlParser.fragment = function()
 
 			// Rtrim empty spaces on block end boundary. (#3585)
 			if ( element._.isBlockLike
-				 && element.name != 'pre' )
+				 && element.name != 'pre' && element.name != 'textarea' )
 			{
 
 				var length = element.children.length,
@@ -200,7 +216,7 @@ CKEDITOR.htmlParser.fragment = function()
 			element.isOptionalClose = tagName in optionalCloseTags || optionalClose;
 
 			// This is a tag to be removed if empty, so do not add it immediately.
-			if ( CKEDITOR.dtd.$removeEmpty[ tagName ] )
+			if ( isRemoveEmpty( element ) )
 			{
 				pendingInline.push( element );
 				return;
@@ -212,6 +228,8 @@ CKEDITOR.htmlParser.fragment = function()
 				currentNode.add( new CKEDITOR.htmlParser.text( '\n' ) );
 				return;
 			}
+			else if ( tagName == 'textarea' )
+				inTextarea = true;
 
 			if ( tagName == 'br' )
 			{
@@ -345,6 +363,9 @@ CKEDITOR.htmlParser.fragment = function()
 				if ( currentNode.name == 'pre' )
 					inPre = false;
 
+				if ( currentNode.name == 'textarea' )
+					inTextarea = false;
+
 				if ( candidate._.isBlockLike )
 					sendPendingBRs();
 
@@ -364,8 +385,8 @@ CKEDITOR.htmlParser.fragment = function()
 
 		parser.onText = function( text )
 		{
-			// Trim empty spaces at beginning of text contents except <pre>.
-			if ( ( !currentNode._.hasInlineStarted || pendingBRs.length ) && !inPre )
+			// Trim empty spaces at beginning of text contents except <pre> and <textarea>.
+			if ( ( !currentNode._.hasInlineStarted || pendingBRs.length ) && !inPre && !inTextarea )
 			{
 				text = CKEDITOR.tools.ltrim( text );
 
@@ -385,7 +406,7 @@ CKEDITOR.htmlParser.fragment = function()
 
 			// Shrinking consequential spaces into one single for all elements
 			// text contents.
-			if ( !inPre )
+			if ( !inPre && !inTextarea )
 				text = text.replace( /[\t\r\n ]{2,}|[\t\r\n]/g, ' ' );
 
 			currentNode.add( new CKEDITOR.htmlParser.text( text ) );

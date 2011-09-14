@@ -4,7 +4,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
 /**
- * @fileOverview Defines the {@link CKEDITOR.lang} object, for the
+ * @fileOverview Defines the {@link CKEDITOR.lang} object for the
  * Polish language.
  */
 
@@ -14,7 +14,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
 /**
- * Constains the dictionary of language entries.
+ * Contains the dictionary of language entries.
  * @namespace
  */
 CKEDITOR.lang['pl'] =
@@ -123,6 +123,8 @@ CKEDITOR.lang['pl'] =
 		invalidWidth	: 'Szerokość musi być liczbą.',
 		invalidCssLength	: 'Wartość podana dla pola "%1" musi być liczbą dodatnią bez jednostki lub z poprawną jednostką długości zgodną z CSS (px, %, in, cm, mm, em, ex, pt lub pc).',
 		invalidHtmlLength	: 'Wartość podana dla pola "%1" musi być liczbą dodatnią bez jednostki lub z poprawną jednostką długości zgodną z HTML (px lub %).',
+		invalidInlineStyle	: 'Wartość podana dla stylu musi składać się z jednej lub większej liczby krotek w formacie "nazwa : wartość", rozdzielonych średnikami.',
+		cssLengthTooltip	: 'Wpisz liczbę dla wartości w pikselach lub liczbę wraz z jednostką długości zgodną z CSS (px, %, in, cm, mm, em, ex, pt lub pc).',
 
 		// Put the voice-only part of the label in the span.
 		unavailable		: '%1<span class="cke_accessibility">, niedostępne</span>'
@@ -240,6 +242,7 @@ CKEDITOR.lang['pl'] =
 		findWhat			: 'Znajdź:',
 		replaceWith			: 'Zastąp przez:',
 		notFoundMsg			: 'Nie znaleziono szukanego hasła.',
+		findOptions			: 'Opcje wyszukiwania',
 		matchCase			: 'Uwzględnij wielkość liter',
 		matchWord			: 'Całe słowa',
 		matchCyclic			: 'Cykliczne dopasowanie',

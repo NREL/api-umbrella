@@ -14,7 +14,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
 /**
- * Constains the dictionary of language entries.
+ * Contains the dictionary of language entries.
  * @namespace
  */
 CKEDITOR.lang['hr'] =
@@ -123,6 +123,8 @@ CKEDITOR.lang['hr'] =
 		invalidWidth	: 'Širina mora biti broj.',
 		invalidCssLength	: 'Value specified for the "%1" field must be a positive number with or without a valid CSS measurement unit (px, %, in, cm, mm, em, ex, pt, or pc).', // MISSING
 		invalidHtmlLength	: 'Value specified for the "%1" field must be a positive number with or without a valid HTML measurement unit (px or %).', // MISSING
+		invalidInlineStyle	: 'Value specified for the inline style must consist of one or more tuples with the format of "name : value", separated by semi-colons.', // MISSING
+		cssLengthTooltip	: 'Enter a number for a value in pixels or a number with a valid CSS unit (px, %, in, cm, mm, em, ex, pt, or pc).', // MISSING
 
 		// Put the voice-only part of the label in the span.
 		unavailable		: '%1<span class="cke_accessibility">, nedostupno</span>'
@@ -240,6 +242,7 @@ CKEDITOR.lang['hr'] =
 		findWhat			: 'Pronađi:',
 		replaceWith			: 'Zamijeni s:',
 		notFoundMsg			: 'Traženi tekst nije pronađen.',
+		findOptions			: 'Find Options', // MISSING
 		matchCase			: 'Usporedi mala/velika slova',
 		matchWord			: 'Usporedi cijele riječi',
 		matchCyclic			: 'Usporedi kružno',

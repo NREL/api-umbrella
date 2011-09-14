@@ -654,42 +654,43 @@ CKEDITOR.tools.extend( CKEDITOR.dom.node.prototype,
 		},
 
 		/**
-		 * Checks if this node is read-only (should not be changed). Additionally
-		 * it returns the element that defines the read-only state of this node
-		 * (if present). It may be the node itself or any of its parent
-		 * nodes.
-		 * @returns {CKEDITOR.dom.element|Boolean} An element containing
-		 *		read-only attributes or "false" if none is found.
+		 * Checks if this node is read-only (should not be changed).
+		 * @returns {Boolean}
 		 * @since 3.5
 		 * @example
 		 * // For the following HTML:
 		 * // &lt;div contenteditable="false"&gt;Some &lt;b&gt;text&lt;/b&gt;&lt;/div&gt;
 		 *
 		 * // If "ele" is the above &lt;div&gt;
-		 * ele.isReadOnly();  // the &lt;div&gt; element
-		 *
-		 * // If "ele" is the above &lt;b&gt;
-		 * ele.isReadOnly();  // the &lt;div&gt; element
+		 * ele.isReadOnly();  // true
 		 */
 		isReadOnly : function()
 		{
-			var current = this;
-			while( current )
+			var element = this;
+			if ( this.type != CKEDITOR.NODE_ELEMENT )
+				element = this.getParent();
+
+			if ( element && typeof element.$.isContentEditable != 'undefined' )
+				return ! ( element.$.isContentEditable || element.data( 'cke-editable' ) );
+			else
 			{
-				if ( current.type == CKEDITOR.NODE_ELEMENT )
+				// Degrade for old browsers which don't support "isContentEditable", e.g. FF3
+				var current = element;
+				while( current )
 				{
 					if ( current.is( 'body' ) || !!current.data( 'cke-editable' ) )
 						break;
 
 					if ( current.getAttribute( 'contentEditable' ) == 'false' )
-						return current;
+						return true;
 					else if ( current.getAttribute( 'contentEditable' ) == 'true' )
 						break;
-				}
-				current = current.getParent();
-			}
 
-			return false;
+					current = current.getParent();
+				}
+
+				return false;
+			}
 		}
 	}
 );

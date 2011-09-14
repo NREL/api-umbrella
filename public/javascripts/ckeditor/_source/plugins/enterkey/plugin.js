@@ -48,12 +48,29 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 				path = new CKEDITOR.dom.elementPath( range.startContainer ),
 				block = path.block;
 
-			// Exit the list when we're inside an empty list item block. (#5376)
 			if ( atBlockStart && atBlockEnd )
 			{
+				// Exit the list when we're inside an empty list item block. (#5376)
 				if ( block && ( block.is( 'li' ) || block.getParent().is( 'li' ) ) )
 				{
 					editor.execCommand( 'outdent' );
+					return;
+				}
+
+				if ( block && block.getParent().is( 'blockquote' ) )
+				{
+					block.breakParent( block.getParent() );
+
+					// If we were at the start of <blockquote>, there will be an empty element before it now.
+					if ( !block.getPrevious().getFirst( CKEDITOR.dom.walker.invisible(1) ) )
+						block.getPrevious().remove();
+
+					// If we were at the end of <blockquote>, there will be an empty element after it now.
+					if ( !block.getNext().getFirst( CKEDITOR.dom.walker.invisible(1) ) )
+						block.getNext().remove();
+
+					range.moveToElementEditStart( block );
+					range.select();
 					return;
 				}
 			}
@@ -386,10 +403,13 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 		setTimeout( function()
 			{
 				editor.fire( 'saveSnapshot' );	// Save undo step.
+
 				if ( mode == CKEDITOR.ENTER_BR )
 					enterBr( editor, mode, null, forceMode );
 				else
 					enterBlock( editor, mode, null, forceMode );
+
+				editor.fire( 'saveSnapshot' );
 
 			}, 0 );
 

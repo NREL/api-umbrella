@@ -14,7 +14,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
 /**
- * Constains the dictionary of language entries.
+ * Contains the dictionary of language entries.
  * @namespace
  */
 CKEDITOR.lang['cy'] =
@@ -123,6 +123,8 @@ CKEDITOR.lang['cy'] =
 		invalidWidth	: 'Rhaid i\'r Lled fod yn rhif.',
 		invalidCssLength	: 'Mae\'n rhaid i\'r gwerth ar gyfer maes "%1" fod yn rhif positif gyda neu heb uned fesuriad CSS dilys (px, %, in, cm, mm, em, ex, pt, neu pc).',
 		invalidHtmlLength	: 'Mae\'n rhaid i\'r gwerth ar gyfer maes "%1" fod yn rhif positif gyda neu heb uned fesuriad HTML dilys (px neu %).',
+		invalidInlineStyle	: 'Value specified for the inline style must consist of one or more tuples with the format of "name : value", separated by semi-colons.', // MISSING
+		cssLengthTooltip	: 'Enter a number for a value in pixels or a number with a valid CSS unit (px, %, in, cm, mm, em, ex, pt, or pc).', // MISSING
 
 		// Put the voice-only part of the label in the span.
 		unavailable		: '%1<span class="cke_accessibility">, ddim ar gael</span>'
@@ -240,6 +242,7 @@ CKEDITOR.lang['cy'] =
 		findWhat			: 'Chwilio\'r term:',
 		replaceWith			: 'Amnewid gyda:',
 		notFoundMsg			: 'Nid oedd y testun wedi\'i ddarganfod.',
+		findOptions			: 'Find Options', // MISSING
 		matchCase			: 'Cyfateb i\'r cas',
 		matchWord			: 'Cyfateb gair cyfan',
 		matchCyclic			: 'Cyfateb cylchol',

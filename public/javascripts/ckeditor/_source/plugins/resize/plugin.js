@@ -110,8 +110,8 @@ CKEDITOR.plugins.add( 'resize',
 } );
 
 /**
- * The minimum editor width, in pixels, when resizing it with the resize handle.
- * Note: It fallbacks to editor's actual width if that's smaller than the default value.
+ * The minimum editor width, in pixels, when resizing the editor interface by using the resize handle.
+ * Note: It falls back to editor's actual width if it is smaller than the default value.
  * @name CKEDITOR.config.resize_minWidth
  * @type Number
  * @default 750
@@ -120,8 +120,8 @@ CKEDITOR.plugins.add( 'resize',
  */
 
 /**
- * The minimum editor height, in pixels, when resizing it with the resize handle.
- * Note: It fallbacks to editor's actual height if that's smaller than the default value.
+ * The minimum editor height, in pixels, when resizing the editor interface by using the resize handle.
+ * Note: It falls back to editor's actual height if it is smaller than the default value.
  * @name CKEDITOR.config.resize_minHeight
  * @type Number
  * @default 250
@@ -130,7 +130,7 @@ CKEDITOR.plugins.add( 'resize',
  */
 
 /**
- * The maximum editor width, in pixels, when resizing it with the resize handle.
+ * The maximum editor width, in pixels, when resizing the editor interface by using the resize handle.
  * @name CKEDITOR.config.resize_maxWidth
  * @type Number
  * @default 3000
@@ -139,7 +139,7 @@ CKEDITOR.plugins.add( 'resize',
  */
 
 /**
- * The maximum editor height, in pixels, when resizing it with the resize handle.
+ * The maximum editor height, in pixels, when resizing the editor interface by using the resize handle.
  * @name CKEDITOR.config.resize_maxHeight
  * @type Number
  * @default 3000
@@ -148,7 +148,7 @@ CKEDITOR.plugins.add( 'resize',
  */
 
 /**
- * Whether to enable the resizing feature. If disabled the resize handler will not be visible.
+ * Whether to enable the resizing feature. If this feature is disabled, the resize handle will not be visible.
  * @name CKEDITOR.config.resize_enabled
  * @type Boolean
  * @default true
@@ -157,8 +157,8 @@ CKEDITOR.plugins.add( 'resize',
  */
 
 /**
- * The directions to which the editor resizing is enabled. Possible values
- * are "both", "vertical" and "horizontal".
+ * The dimensions for which the editor resizing is enabled. Possible values
+ * are <code>both</code>, <code>vertical</code>, and <code>horizontal</code>.
  * @name CKEDITOR.config.resize_dir
  * @type String
  * @default 'both'

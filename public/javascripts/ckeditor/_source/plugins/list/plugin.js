@@ -16,6 +16,20 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 		bookmarks = CKEDITOR.dom.walker.bookmark(),
 		nonEmpty = function( node ){ return !( whitespaces( node ) || bookmarks( node ) ); };
 
+	function cleanUpDirection( element )
+	{
+		var dir, parent, parentDir;
+		if ( ( dir = element.getDirection() ) )
+		{
+			parent = element.getParent();
+			while ( parent && !( parentDir = parent.getDirection() ) )
+				parent = parent.getParent();
+
+			if ( dir == parentDir )
+				element.removeAttribute( 'dir' );
+		}
+	}
+
 	CKEDITOR.plugins.list = {
 		/*
 		 * Convert a DOM list tree into a data structure that is easier to
@@ -107,8 +121,6 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 
 					if ( orgDir != rootNode.getDirection( 1 ) )
 						currentListItem.setAttribute( 'dir', orgDir );
-					else
-						currentListItem.removeAttribute( 'dir' );
 
 					for ( var i = 0 ; i < item.contents.length ; i++ )
 						currentListItem.append( item.contents[i].clone( 1, 1 ) );
@@ -155,8 +167,6 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 					{
 						if ( item.grandparent.getDirection( 1 ) != orgDir )
 							currentListItem.setAttribute( 'dir', orgDir );
-						else
-							currentListItem.removeAttribute( 'dir' );
 					}
 
 					for ( i = 0 ; i < item.contents.length ; i++ )
@@ -208,14 +218,23 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 					break;
 			}
 
-			// Clear marker attributes for the new list tree made of cloned nodes, if any.
 			if ( database )
 			{
-				var currentNode = retval.getFirst();
+				var currentNode = retval.getFirst(),
+					listRoot = listArray[ 0 ].parent;
+
 				while ( currentNode )
 				{
 					if ( currentNode.type == CKEDITOR.NODE_ELEMENT )
+					{
+						// Clear marker attributes for the new list tree made of cloned nodes, if any.
 						CKEDITOR.dom.element.clearMarkers( database, currentNode );
+
+						// Clear redundant direction attribute specified on list items.
+						if ( currentNode.getName() in CKEDITOR.dtd.$listItem )
+							cleanUpDirection( currentNode );
+					}
+
 					currentNode = currentNode.getNextSourceNode();
 				}
 			}
@@ -464,6 +483,22 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 		this.type = type;
 	}
 
+	// Move direction attribute from root to list items.
+	function dirToListItems( list )
+	{
+		var dir = list.getDirection();
+		if ( dir )
+		{
+			for ( var i = 0, children = list.getChildren(), child; child = children.getItem( i ), i < children.count(); i++ )
+			{
+				if ( child.type == CKEDITOR.NODE_ELEMENT && child.is( 'li' ) && !child.getDirection() )
+					child.setAttribute( 'dir', dir );
+			}
+
+			list.removeAttribute( 'dir' );
+		}
+	}
+
 	listCommand.prototype = {
 		exec : function( editor )
 		{
@@ -617,6 +652,11 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 					if ( sibling && sibling.getName &&
 						 sibling.getName() == listCommand.type )
 					{
+
+						// In case to be merged lists have difference directions. (#7448)
+						if ( sibling.getDirection( 1 ) != listNode.getDirection( 1 ) )
+							dirToListItems( listNode.getDirection() ? listNode : sibling );
+
 						sibling.remove();
 						// Move children order by merge direction.(#3820)
 						sibling.moveChildren( listNode, rtl );

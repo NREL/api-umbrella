@@ -132,6 +132,7 @@ CKEDITOR.plugins.add( 'dialogadvtab',
 						label : lang.styles,
 						'default' : '',
 
+						validate : CKEDITOR.dialog.validate.inlineStyle( lang.invalidInlineStyle ),
 						onChange : function(){},
 
 						getStyle : function( name, defaultValue )

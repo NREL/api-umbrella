@@ -137,6 +137,13 @@ CKEDITOR.ui.panel.prototype =
 					langCode = parentDiv.getParent().getAttribute( 'lang' ),
 					doc = iframe.getFrameDocument();
 
+				// Make it scrollable on iOS. (#8308)
+				CKEDITOR.env.iOS && parentDiv.setStyles(
+					{
+						'overflow' : 'scroll',
+						'-webkit-overflow-scrolling' : 'touch'
+					});
+
 				var onLoad = CKEDITOR.tools.addFunction( CKEDITOR.tools.bind( function( ev )
 					{
 						this.isLoaded = true;
@@ -244,16 +251,6 @@ CKEDITOR.ui.panel.prototype =
 		block._.focusIndex = -1;
 
 		this._.onKeyDown = block.onKeyDown && CKEDITOR.tools.bind( block.onKeyDown, block );
-
-		block.onMark = function( item )
-		{
-			holder.setAttribute( 'aria-activedescendant', item.getId() + '_option' );
-		};
-
-		block.onUnmark = function()
-		{
-			holder.removeAttribute( 'aria-activedescendant' );
-		};
 
 		block.show();
 

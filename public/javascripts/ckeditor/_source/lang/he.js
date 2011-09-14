@@ -14,7 +14,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
 /**
- * Constains the dictionary of language entries.
+ * Contains the dictionary of language entries.
  * @namespace
  */
 CKEDITOR.lang['he'] =
@@ -123,6 +123,8 @@ CKEDITOR.lang['he'] =
 		invalidWidth	: 'הרוחב חייב להיות מספר.',
 		invalidCssLength	: 'הערך שצוין לשדה "%1" חייב להיות מספר חיובי עם או ללא יחידת מידה חוקית של CSS (px, %, in, cm, mm, em, ex, pt, או pc).',
 		invalidHtmlLength	: 'הערך שצוין לשדה "%1" חייב להיות מספר חיובי עם או ללא יחידת מידה חוקית של HTML (px או %).',
+		invalidInlineStyle	: 'הערך שצויין לשדה הסגנון חייב להכיל זוג ערכים אחד או יותר בפורמט "שם : ערך", מופרדים על ידי נקודה-פסיק.',
+		cssLengthTooltip	: 'יש להכניס מספר המייצג פיקסלים או מספר עם יחידת גליונות סגנון תקינה (px, %, in, cm, mm, em, ex, pt, or pc).',
 
 		// Put the voice-only part of the label in the span.
 		unavailable		: '%1<span class="cke_accessibility">, לא זמין</span>'
@@ -240,6 +242,7 @@ CKEDITOR.lang['he'] =
 		findWhat			: 'חיפוש מחרוזת:',
 		replaceWith			: 'החלפה במחרוזת:',
 		notFoundMsg			: 'הטקסט המבוקש לא נמצא.',
+		findOptions			: 'אפשרויות חיפוש',
 		matchCase			: 'הבחנה בין אותיות רשיות לקטנות (Case)',
 		matchWord			: 'התאמה למילה המלאה',
 		matchCyclic			: 'התאמה מחזורית',

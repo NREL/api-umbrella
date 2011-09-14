@@ -242,6 +242,20 @@ CKEDITOR.themes.add( 'default', (function()
 				title = body.getChild( 0 ),
 				close = body.getChild( 1 );
 
+			// IFrame shim for dialog that masks activeX in IE. (#7619)
+			if ( CKEDITOR.env.ie && !CKEDITOR.env.ie6Compat )
+			{
+				var isCustomDomain = CKEDITOR.env.isCustomDomain(),
+					src = 'javascript:void(function(){' + encodeURIComponent( 'document.open();' + ( isCustomDomain ? ( 'document.domain="' + document.domain + '";' ) : '' ) + 'document.close();' ) + '}())',
+					iframe = CKEDITOR.dom.element.createFromHtml( '<iframe' +
+  							' frameBorder="0"' +
+							' class="cke_iframe_shim"' +
+  							' src="' + src + '"' +
+							' tabIndex="-1"' +
+  							'></iframe>' );
+				iframe.appendTo( body.getParent() );
+			}
+
 			// Make the Title and Close Button unselectable.
 			title.unselectable();
 			close.unselectable();
@@ -325,24 +339,22 @@ CKEDITOR.editor.prototype.resize = function( width, height, isContentHeight, res
 {
 	var container = this.container,
 		contents = CKEDITOR.document.getById( 'cke_contents_' + this.name ),
+		contentsFrame = CKEDITOR.env.webkit && this.document && this.document.getWindow().$.frameElement,
 		outer = resizeInner ? container.getChild( 1 ) : container;
 
-	// Resize the width first.
-	// WEBKIT BUG: Webkit requires that we put the editor off from display when we
-	// resize it. If we don't, the browser crashes!
-	CKEDITOR.env.webkit && outer.setStyle( 'display', 'none' );
 	// Set as border box width. (#5353)
 	outer.setSize( 'width',  width, true );
-	if ( CKEDITOR.env.webkit )
-	{
-		outer.$.offsetWidth;
-		outer.setStyle( 'display', '' );
-	}
+
+	// WebKit needs to refresh the iframe size to avoid rendering issues. (1/2) (#8348)
+	contentsFrame && ( contentsFrame.style.width = '1%' );
 
 	// Get the height delta between the outer table and the content area.
 	// If we're setting the content area's height, then we don't need the delta.
 	var delta = isContentHeight ? 0 : ( outer.$.offsetHeight || 0 ) - ( contents.$.clientHeight || 0 );
 	contents.setStyle( 'height', Math.max( height - delta, 0 ) + 'px' );
+
+	// WebKit needs to refresh the iframe size to avoid rendering issues. (2/2) (#8348)
+	contentsFrame && ( contentsFrame.style.width = '100%' );
 
 	// Emit a resize event.
 	this.fire( 'resize' );

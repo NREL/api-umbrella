@@ -15,6 +15,24 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 		data.info[id] = this.getValue();
 	};
 
+	function tableColumns( table )
+	{
+		var cols = 0, maxCols = 0;
+		for ( var i = 0, row, rows = table.$.rows.length; i < rows; i++ )
+		{
+			row = table.$.rows[ i ], cols = 0;
+			for ( var j = 0, cell, cells = row.cells.length; j < cells; j++ )
+			{
+				cell = row.cells[ j ];
+				cols += cell.colSpan;
+			}
+
+			cols > maxCols && ( maxCols = cols );
+		}
+
+		return maxCols;
+	}
+
 	function tableDialog( editor, command )
 	{
 		var makeElement = function( name )
@@ -304,7 +322,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 											},
 											setup : function( selectedTable )
 											{
-												this.setValue( selectedTable.$.rows[0].cells.length);
+												this.setValue( tableColumns( selectedTable ) );
 											},
 											commit : commitValue
 										},
@@ -334,7 +352,8 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 												for ( var row = 0 ; row < selectedTable.$.rows.length ; row++ )
 												{
 													// If just one cell isn't a TH then it isn't a header column
-													if ( selectedTable.$.rows[row].cells[0].nodeName.toLowerCase() != 'th' )
+													var headCell = selectedTable.$.rows[row].cells[0];
+													if ( headCell && headCell.nodeName.toLowerCase() != 'th' )
 													{
 														dialog.hasColumnHeaders = false;
 														break;
@@ -409,6 +428,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 													id : 'txtWidth',
 													controlStyle : 'width:5em',
 													label : editor.lang.common.width,
+													title : editor.lang.common.cssLengthTooltip,
 													'default' : 500,
 													getValue : defaultToPixel,
 													validate : CKEDITOR.dialog.validate.cssLength( editor.lang.common.invalidCssLength.replace( '%1', editor.lang.common.width ) ),
@@ -436,6 +456,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 													id : 'txtHeight',
 													controlStyle : 'width:5em',
 													label : editor.lang.common.height,
+													title : editor.lang.common.cssLengthTooltip,
 													'default' : '',
 													getValue : defaultToPixel,
 													validate : CKEDITOR.dialog.validate.cssLength( editor.lang.common.invalidCssLength.replace( '%1', editor.lang.common.height ) ),

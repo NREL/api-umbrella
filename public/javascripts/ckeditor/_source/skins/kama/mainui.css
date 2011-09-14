@@ -28,6 +28,7 @@ span.cke_skin_kama
 {
 	-moz-border-radius: 5px;
 	-webkit-border-radius: 5px;
+	-webkit-touch-callout: none;
 	border-radius: 5px;
 	background-color: #d3d3d3;
 	background-image: url(images/sprites.png);
@@ -57,9 +58,11 @@ span.cke_skin_kama
 	display: inline-table;
 	width: 100%;
 }
+
+.cke_skin_kama .cke_browser_ie .cke_editor,
 .cke_skin_kama .cke_browser_webkit .cke_editor
 {
-	display: table;	/* #6684 */
+	display: table;	/* #6684, #8342 */
 }
 
 .cke_skin_kama .ltr .cke_browser_ie iframe

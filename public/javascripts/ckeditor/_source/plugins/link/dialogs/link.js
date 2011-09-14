@@ -1159,6 +1159,7 @@ CKEDITOR.dialog.add( 'link', function( editor )
 										label : linkLang.styles,
 										'default' : '',
 										id : 'advStyles',
+										validate : CKEDITOR.dialog.validate.inlineStyle( editor.lang.common.invalidInlineStyle ),
 										setup : setupAdvParams,
 										commit : commitAdvParams
 									}

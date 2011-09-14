@@ -86,6 +86,15 @@ if ( !CKEDITOR.env )
 			mobile : ( agent.indexOf( 'mobile' ) > -1 ),
 
 			/**
+			 * Indicates that CKEditor is running on Apple iPhone/iPad/iPod devices.
+			 * @type Boolean
+			 * @example
+			 * if ( CKEDITOR.env.iOS )
+			 *     alert( "I like little apples!" );
+			 */
+			iOS : /(ipad|iphone|ipod)/.test(agent),
+
+			/**
 			 * Indicates that the browser has a custom domain enabled. This has
 			 * been set with "document.domain".
 			 * @returns {Boolean} "true" if a custom domain is enabled.
@@ -239,7 +248,12 @@ if ( !CKEDITOR.env )
 		 *     alert( "Your browser is pretty cool!" );
 		 */
 		env.isCompatible =
+
+			// White list of mobile devices that supports.
+			env.iOS && version >= 534 ||
+
 			!env.mobile && (
+
 			( env.ie && version >= 6 ) ||
 			( env.gecko && version >= 10801 ) ||
 			( env.opera && version >= 9.5 ) ||
