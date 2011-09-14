@@ -30,8 +30,9 @@ frontend web_router *:80
   use_backend auth_proxy_farm if url_match_api
 
   # Requests starting with /auth get sent to Tomcat for our CAS servlet.
+  acl is_https dst_port eq 443
   acl url_match_auth path_beg /auth
-  use_backend tomcat_farm if url_match_auth
+  use_backend tomcat_farm if is_https url_match_auth
 
   # All other requests go to our main site.
   default_backend developer_site_farm
