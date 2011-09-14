@@ -3,6 +3,9 @@
   <head>
     <meta charset="utf-8">
     <title>NREL Developer Network &raquo; <%= render_crumbs(:links => false) %></title>
+    <!--[if lt IE 9]>
+      <%= javascript_include_tag "html5.js" %>
+    <![endif]-->
     <%= include_stylesheets :public %>
     <%= include_javascripts :public %>
     <%= csrf_meta_tag %>
