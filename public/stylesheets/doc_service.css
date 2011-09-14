@@ -71,12 +71,6 @@ h3 {
   vertical-align: top;
 }
 
-.doc-parameters tbody tr:hover th,
-.doc-parameters tbody tr:hover td {
-  background-color: #f7f7f7;
-}
-
-
 .doc-parameters thead th {
   border-style: none;
   padding-top: 4px;

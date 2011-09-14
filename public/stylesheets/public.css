@@ -214,3 +214,8 @@ p, li {
   color: #a50000;
   border-color: #d6b2b2;
 }
+
+.doc-parameters tbody tr:hover th,
+.doc-parameters tbody tr:hover td {
+  background-color: #f7f7f7;
+}
