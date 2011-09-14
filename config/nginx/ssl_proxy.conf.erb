@@ -1,0 +1,20 @@
+server {
+  listen 443 ssl;
+  server_name <%= domain %>;
+
+  ssl_certificate /etc/ssl/certs/devdev_nrel_gov.crt;
+  ssl_certificate_key /etc/ssl/certs/devdev_nrel_gov.key;
+
+  access_log <%= shared_path %>/log/ssl_proxy-access.log combined;
+  error_log <%= shared_path %>/log/ssl_proxy-error.log;
+
+  location / {
+    proxy_pass http://127.0.0.1;
+
+    proxy_redirect off;
+
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-Port $proxy_port;
+  }
+}
