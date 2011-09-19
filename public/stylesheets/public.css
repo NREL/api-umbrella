@@ -1,5 +1,5 @@
-body {
-  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+p {
+  text-align: inherit;
 }
 
 header {
@@ -72,7 +72,7 @@ nav li a {
 
 .intro-text p {
   font-size: 123.1%;
-  margin: 32px 120px 40px 120px;
+  margin: 32px 0px 40px 0px;
   font-weight: 200;
 }
 
@@ -95,8 +95,6 @@ nav li a {
 }
 
 .intro-box h2 {
-  color: #c60;
-  font-size: 116%;
   margin: 0px;
 }
 
@@ -156,14 +154,22 @@ label abbr.required, label .abbr-required {
   background-position: left center;
   color: #fff;
   padding: 5px 8px 5px 12px;
-  margin-left: 4px;
+  margin: 2px 0px 0px 4px;
 
   display: inline-block;
-  max-width: 300px;
+  max-width: 180px;
 
   font-weight: bold;
-  font-size: 93%;
+  font-size: 77%;
   line-height: 100%;
+}
+
+.user-terms-and-conditions label {
+  font-size: 93% !important;
+
+  /* Taller so the two-line error box the right doesn't shift the layout
+   * around. */
+  line-height: 46px;
 }
 
 .required-fields {

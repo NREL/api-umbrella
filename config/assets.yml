@@ -3,8 +3,8 @@ stylesheets:
     - public/stylesheets/yui/reset.css
     - public/stylesheets/yui/base.css
     - public/stylesheets/yui/fonts.css
-    - public/stylesheets/grid.css
     - public/stylesheets/nrel.css
+    - public/stylesheets/grid.css
     - public/stylesheets/pygments.css
     - public/stylesheets/pygments_overrides.css
     - public/stylesheets/doc_service.css
