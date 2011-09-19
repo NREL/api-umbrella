@@ -4,7 +4,7 @@ source :rubygems
 gem "proxymachine"
 
 # For some of activesupport's niceties, like blank?
-gem "activesupport"
+gem "activesupport", "~> 3.0.10"
 
 # MongoDB
 gem "mongoid"
