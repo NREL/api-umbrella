@@ -197,6 +197,8 @@ Devise.setup do |config|
     "https://devdev-new.nrel.gov/auth"
   when "staging_int"
     "https://devstage-int.nrel.gov/auth"
+  when "production"
+    "https://devprod-int.nrel.gov/auth"
   else
     "https://developer.nrel.gov/auth"
   end
