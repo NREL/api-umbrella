@@ -10,8 +10,5 @@ test:
 staging_int:
   <<: *developer_mongodb_staging_int
 
-staging:
-  <<: *developer_mongodb_staging
-
 production:
   <<: *developer_mongodb_production

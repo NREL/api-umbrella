@@ -10,8 +10,5 @@ test:
 staging_int:
   <<: *developer_redis_staging_int
 
-staging:
-  <<: *developer_redis_staging
-
 production:
   <<: *developer_redis_production
