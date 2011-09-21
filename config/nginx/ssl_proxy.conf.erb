@@ -9,6 +9,9 @@ server {
   <% when "staging_int" %>
   ssl_certificate /etc/ssl/certs/devstage-int_nrel_gov.crt;
   ssl_certificate_key /etc/ssl/certs/devstage-int_nrel_gov.key;
+  <% when "production" %>
+  ssl_certificate /etc/ssl/certs/devprod-int_nrel_gov.crt;
+  ssl_certificate_key /etc/ssl/certs/devprod-int_nrel_gov.key;
   <% end %>
 
   access_log <%= shared_path %>/log/ssl_proxy-access.log combined;
