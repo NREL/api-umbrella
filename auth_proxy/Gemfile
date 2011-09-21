@@ -8,7 +8,10 @@ gem "activesupport", "~> 3.0.10"
 
 # MongoDB
 gem "mongoid"
-gem "bson_ext"
+
+# Lock the BSON version dependency, since the 1.3 branch didn't do this.
+gem "bson", "~> 1.3.1"
+gem "bson_ext", "~> 1.3.1"
 
 # Rack for contructing our proxy using modularized middlewares.
 gem "rack"
