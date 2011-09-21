@@ -12,7 +12,7 @@ role :db, "devprod-int.nrel.gov", :primary => true
 role :db, "devprod-int-db.nrel.gov", :no_release => true
 
 # Set the base path for deployment.
-set :deploy_to_base, "/srv/developer/devprod-int"
+set :deploy_to_base, "/srv/data/devprod-int"
 
 # Set the accessible web domain for this site.
 set :base_domain, "devprod-int.nrel.gov"
