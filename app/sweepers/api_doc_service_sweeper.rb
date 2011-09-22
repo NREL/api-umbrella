@@ -2,7 +2,6 @@ class ApiDocServiceSweeper < ActionController::Caching::Sweeper
   observe ApiDocService
 
   def after_create(service)
-    expire_cache_for(service)
   end
  
   def after_update(service)
