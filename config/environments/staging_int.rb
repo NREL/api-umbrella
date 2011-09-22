@@ -24,8 +24,8 @@ Developer::Application.configure do
   # Use a different logger for distributed setups
   # config.logger = SyslogLogger.new
 
-  # Use a different cache store in production
-  # config.cache_store = :mem_cache_store
+  # Use a file-based cache store
+  config.cache_store = :file_store, "#{Rails.root}/tmp/cache"
 
   # Disable Rails's static asset server
   # In production, Apache or nginx will already do this

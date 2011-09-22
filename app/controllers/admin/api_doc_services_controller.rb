@@ -1,4 +1,6 @@
 class Admin::ApiDocServicesController < Admin::BaseController
+  cache_sweeper :api_doc_service_sweeper, :only => [:create, :update, :destroy]
+
   add_crumb("API Documentation") { }
 
   def index
