@@ -11,7 +11,7 @@
 
   <%= render_service_body(@service) %>
 
-  <% javascript_tag do %>
+  <%= javascript_tag do %>
     $('#toc').tableOfContents(document.body, {
       startLevel: 2,
       depth: 2
