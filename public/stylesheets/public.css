@@ -54,10 +54,6 @@ nav li a {
   font-weight: bold;
 }
 
-.doc-service-list p {
-  font-size: 108%;
-}
-
 .crumbs {
   font-size: 85%;
   color: #3c4349;
@@ -190,11 +186,6 @@ pre.key {
   border: 1px solid #eeeeff;
   padding: 3px 5px;
   margin-bottom: 32px;
-}
-
-
-p, li {
-  font-size: 108%;
 }
 
 .flash-message {
