@@ -1,4 +1,4 @@
-<% simple_form_for [:admin, @service] do |f| %>
+<%= simple_form_for [:admin, @service] do |f| %>
   <%= f.input :http_method,
     :collection => ApiDocService::HTTP_METHODS,
     :wrapper_html => { :class => "grid_3 alpha" } %>

@@ -1,4 +1,4 @@
-<% simple_form_for [:admin, @collection] do |f| %>
+<%= simple_form_for [:admin, @collection] do |f| %>
   <%= f.input :parent_id,
     :collection => ApiDocCollection.flattened_tree,
     :as => :select,
