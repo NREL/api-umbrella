@@ -13,7 +13,9 @@
   <body class="container">
     <header>
       <map name="header_map">
-        <area shape="rect" coords="0,0,840,58" href="<%= root_path %>" alt="Developer Network" />
+        <% if(current_tab != :home) %>
+          <area shape="rect" coords="0,0,840,58" href="<%= root_path %>" alt="Developer Network" />
+        <% end %>
         <area shape="rect" coords="840,0,1000,58" href="http://www.nrel.gov/" alt="NREL" />
       </map>
       <%= image_tag("header.png", :alt => "NREL Developer Network", :usemap => "#header_map", :width => 1000, :height => 58) %>
