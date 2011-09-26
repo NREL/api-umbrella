@@ -1,23 +1,11 @@
-.doc-summary {
-  font-size: 108%;
-}
-
 .doc-comments {
   border-top: 2px solid #ddd;
   padding-top: 40px;
   margin-bottom: -36px;
 }
 
-h1 {
-  margin: 0px 0px 2px 0px;
-}
-
-h2 {
-  margin: 32px 0px 3px 0px;
-}
-
-h3 {
-  margin: 12px 0px 0px 0px;
+h2, h3 {
+  margin-top: 12px;
 }
 
 .doc-service-url {

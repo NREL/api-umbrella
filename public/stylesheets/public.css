@@ -32,7 +32,6 @@ nav li a {
 }
 
 .toc {
-  font-size: 108%;
   border: 1px solid #e2e2e2;
   background-color: #f7f7f7;
   color: #999;
@@ -67,7 +66,6 @@ nav li a {
 }
 
 .intro-text p {
-  font-size: 123.1%;
   margin: 32px 0px 40px 0px;
   font-weight: 200;
 }
