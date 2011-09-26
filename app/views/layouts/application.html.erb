@@ -10,13 +10,13 @@
     <%= include_javascripts :public %>
     <%= csrf_meta_tag %>
   </head>
-  <body class="container_12">
+  <body class="container">
     <header>
       <map name="header_map">
-        <area shape="rect" coords="0,0,810,58" href="<%= root_path %>" alt="Developer Network" />
-        <area shape="rect" coords="810,0,960,58" href="http://www.nrel.gov/" alt="NREL" />
+        <area shape="rect" coords="0,0,840,58" href="<%= root_path %>" alt="Developer Network" />
+        <area shape="rect" coords="840,0,1000,58" href="http://www.nrel.gov/" alt="NREL" />
       </map>
-      <%= image_tag("header.png", :alt => "NREL Developer Network", :usemap => "#header_map") %>
+      <%= image_tag("header.png", :alt => "NREL Developer Network", :usemap => "#header_map", :width => 1000, :height => 58) %>
       <nav>
         <%= tabs_tag(:link_current => true) do |tab| %>
           <%= tab.home "Home", root_path, :class => "nav-home" %>

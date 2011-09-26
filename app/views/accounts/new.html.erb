@@ -3,34 +3,34 @@
 
 <%= simple_form_for(@user, :url => account_path, :validate => true, :html => { :class => "col-2" }) do |f| %>
   <%= f.input(:first_name,
-    :wrapper_html => { :class => "grid_12" },
-    :label_html => { :class => "grid_4 alpha" },
-    :input_html => { :class => "grid_4 omega" }) %>
+    :wrapper_html => { :class => "column span-12" },
+    :label_html => { :class => "column span-4 alpha" },
+    :input_html => { :class => "column span-4 omega" }) %>
   <%= f.input(:last_name,
-    :wrapper_html => { :class => "grid_12" },
-    :label_html => { :class => "grid_4 alpha" },
-    :input_html => { :class => "grid_4 omega" }) %>
+    :wrapper_html => { :class => "column span-12" },
+    :label_html => { :class => "column span-4 alpha" },
+    :input_html => { :class => "column span-4 omega" }) %>
   <%= f.input(:email,
-    :wrapper_html => { :class => "grid_12" },
-    :label_html => { :class => "grid_4 alpha" },
-    :input_html => { :class => "grid_4 omega" }) %>
+    :wrapper_html => { :class => "column span-12" },
+    :label_html => { :class => "column span-4 alpha" },
+    :input_html => { :class => "column span-4 omega" }) %>
   <%= f.input(:website,
     :required => true,
-    :wrapper_html => { :class => "grid_12" },
-    :label_html => { :class => "grid_4 alpha" },
-    :input_html => { :class => "grid_5 omega", :validate => true }) %>
+    :wrapper_html => { :class => "column span-12" },
+    :label_html => { :class => "column span-4 alpha" },
+    :input_html => { :class => "column span-5 omega", :validate => true }) %>
   <%= f.input(:use_description,
     :as => :text,
-    :wrapper_html => { :class => "grid_12" },
-    :label_html => { :class => "grid_4 alpha" },
-    :input_html => { :class => "grid_5 omega", :rows => 3 }) %>
+    :wrapper_html => { :class => "column span-12" },
+    :label_html => { :class => "column span-4 alpha" },
+    :input_html => { :class => "column span-5 omega", :rows => 3 }) %>
   <%= f.input(:terms_and_conditions,
     :as => :boolean,
     :required => false,
     :label => "I have read and agree to the #{link_to("terms and conditions", terms_account_path, :title => "Opens new window to terms and conditions", :onclick => "window.open(this.href, 'api_download_popup', 'height=500,width=750,menubar=no,toolbar=no,location=no,personalbar=no,status=no,resizable=yes,scrollbars=yes'); return false;")}.",
-    :wrapper_html => { :class => "grid_8 prefix_4 user-terms-and-conditions" }) %>
+    :wrapper_html => { :class => "column span-8 prepend-4 user-terms-and-conditions" }) %>
 
-  <div class="grid_8 prefix_4">
+  <div class="column span-8 prepend-4">
     <button type="submit" class="submit">Sign Up</button>
   </div>
 <% end %>

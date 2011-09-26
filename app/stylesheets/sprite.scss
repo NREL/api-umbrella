@@ -34,13 +34,13 @@ $boxes-spacing: 500px;
 @import "boxes/*.png";
 
 .intro-box-doc {
-  @include boxes-sprite(doc, false, 190px, 120px);
+  @include boxes-sprite(doc, false, 210px, 120px);
 }
 
 .intro-box-key {
-  @include boxes-sprite(key, false, 190px, 120px);
+  @include boxes-sprite(key, false, 210px, 120px);
 }
 
 .intro-box-community {
-  @include boxes-sprite(community, false, 190px, 120px);
+  @include boxes-sprite(community, false, 210px, 120px);
 }

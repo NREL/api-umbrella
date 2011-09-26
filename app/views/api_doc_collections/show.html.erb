@@ -1,18 +1,16 @@
-<div class="grid_12">
-  <h1><%= @collection.title %></h1>
-  <%= simple_format(@collection.summary) %>
+<h1><%= @collection.title %></h1>
+<%= simple_format(@collection.summary) %>
 
-  <div class="doc-service-list">
-    <% @child_collections.each do |collection| %>
-      <%= link_to(collection.title, collection.url_path)  %>
-      <%= simple_format(collection.summary) %>
-    <% end %>
-  </div>
+<div class="doc-service-list">
+  <% @child_collections.each do |collection| %>
+    <%= link_to(collection.title, collection.url_path)  %>
+    <%= simple_format(collection.summary) %>
+  <% end %>
+</div>
 
-  <div class="doc-service-list">
-    <% @child_services.each do |service| %>
-      <%= link_to(service.title, service.url_path) %>
-      <%= simple_format(service.summary) %>
-    <% end %>
-  </div>
+<div class="doc-service-list">
+  <% @child_services.each do |service| %>
+    <%= link_to(service.title, service.url_path) %>
+    <%= simple_format(service.summary) %>
+  <% end %>
 </div>

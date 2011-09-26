@@ -2,6 +2,10 @@ p {
   text-align: inherit;
 }
 
+.required {
+  color: inherit;
+}
+
 header {
   margin-bottom: 8px;
   float: left;
@@ -156,6 +160,11 @@ label abbr.required, label .abbr-required {
   font-weight: bold;
   font-size: 77%;
   line-height: 100%;
+}
+
+form.col-2 .string .error,
+form.col-2 .text .error {
+  margin-left: -16px;
 }
 
 .user-terms-and-conditions label {

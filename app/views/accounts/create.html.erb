@@ -1,16 +1,14 @@
-<div class="grid_12">
-  <h1>API Key Sign Up</h1>
+<h1>API Key Sign Up</h1>
 
-  <p>Your API key for <strong><%= @user.website %></strong> is:</p>
-  <pre class="key"><%= @user.api_key %></pre>
+<p>Your API key for <strong><%= @user.website %></strong> is:</p>
+<pre class="key"><%= @user.api_key %></pre>
 
-  <p>You can start using this key to make web service requests. Simply pass your key in the URL when making a web request. Here's an example:</p>
-  <pre class="doc-example-url"><%= link_to("http://developer.nrel.gov/api/alt-fuel-stations/v1/nearest.json?<strong>api_key=#{@user.api_key}</strong><br />&location=1617+Cole+Blvd+80401".html_safe, "http://developer.nrel.gov/api/alt-fuel-stations/v1/nearest.json?api_key=#{@user.api_key}&location=1617+Cole+Blvd+80401") %></pre>
+<p>You can start using this key to make web service requests. Simply pass your key in the URL when making a web request. Here's an example:</p>
+<pre class="doc-example-url"><%= link_to("http://developer.nrel.gov/api/alt-fuel-stations/v1/nearest.json?<strong>api_key=#{@user.api_key}</strong><br />&location=1617+Cole+Blvd+80401".html_safe, "http://developer.nrel.gov/api/alt-fuel-stations/v1/nearest.json?api_key=#{@user.api_key}&location=1617+Cole+Blvd+80401") %></pre>
 
-  <h2>What Next?</h2>
-  <ul>
-    <li>Explore our <%= link_to("available web services", doc_path) %>: </li>
-    <li>Join the <%= link_to("community", community_path) %>: </li>
-    <li>Need more help? View our <%= link_to("FAQ") %> or <%= link_to("contact us", contact_path) %>.</li>
-  </ul>
-</div>
+<h2>What Next?</h2>
+<ul>
+  <li>Explore our <%= link_to("available web services", doc_path) %>: </li>
+  <li>Join the <%= link_to("community", community_path) %>: </li>
+  <li>Need more help? View our <%= link_to("FAQ") %> or <%= link_to("contact us", contact_path) %>.</li>
+</ul>
