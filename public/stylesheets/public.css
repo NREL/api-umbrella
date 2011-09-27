@@ -223,3 +223,14 @@ pre.key {
 .doc-parameters tbody tr:hover td {
   background-color: #f7f7f7;
 }
+
+.intro-box .coming-soon {
+  text-align: center;
+  font-size: 93%;
+  font-style: italic;
+}
+
+.doc-service-list .coming-soon {
+  margin-top: 2em;
+  font-style: italic;
+}
