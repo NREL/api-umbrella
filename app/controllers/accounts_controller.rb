@@ -24,5 +24,6 @@ class AccountsController < ApplicationController
   end
 
   def terms
+    render(:layout => "popup")
   end
 end

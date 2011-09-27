@@ -42,19 +42,6 @@
 
     <%= yield %>
 
-    <footer id="footer">
-      <div align="center"><img src="/images/foot_nrelis.gif" alt="NREL is a national laboratory of the U.S. Department of Energy, Office of Energy Efficiency and Renewable Energy, operated by the Alliance for Sustainable Energy, LLC." usemap="#footer_map" /></div>
-
-      <map name="footer_map" id="footer_map">
-        <area shape="rect" coords="27,7,61,20" href="http://www.nrel.gov/" alt="NREL" />
-        <area shape="rect" coords="238,7,399,19" href="http://www.energy.gov/" alt="U.S. Department of Energy" />
-        <area shape="rect" coords="405,7,697,21" href="http://www.eere.energy.gov/" alt="Office of Energy Efficiency and Renewable Energy" />
-        <area shape="rect" coords="307,21,524,35" href="http://www.allianceforsustainableenergy.org/" alt="Alliance for Sustainable Energy, LLC" />
-      </map>
-
-      <p><%= link_to("Need Help?", contact_path) %>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="http://www.nrel.gov/security.html">Security &amp; Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="http://www.nrel.gov/disclaimer.html">Disclaimer</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a href="http://www.nrel.gov/">NREL Home</a></p>
-
-      <p class="poweredby">This Web site is <a href="http://www.nrel.gov/poweredbyrenewables.html">powered by renewable energy</a>.</p>
-    </footer>
+    <%= render("layouts/footer") %>
   </body>
 </html>

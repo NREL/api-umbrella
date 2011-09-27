@@ -234,3 +234,8 @@ pre.key {
   margin-top: 2em;
   font-style: italic;
 }
+
+body.popup {
+  min-width: inherit;
+  padding: 10px 20px;
+}
