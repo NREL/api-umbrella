@@ -2,7 +2,7 @@
 
 <div class="doc-service-list">
   <% @collections.each do |collection| %>
-    <%= link_to(collection.title, collection.url_path)  %>
+    <h2><%= link_to(collection.title, collection.url_path)  %></h2>
     <%= simple_format(collection.summary) %>
   <% end %>
 </div>

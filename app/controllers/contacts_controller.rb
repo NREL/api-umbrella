@@ -1,4 +1,6 @@
 class ContactsController < ApplicationController
+  add_crumb "Contact Us", ""
+
   def new
     @contact = Contact.new
   end

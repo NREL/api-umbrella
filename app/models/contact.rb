@@ -10,11 +10,11 @@ class Contact
   validates_presence_of :name,
     :message => "Provide your first name."
   validates_presence_of :email,
-    :message => "Provide your e-mail address."
+    :message => "Provide your email address."
   validates_format_of :email,
     :with => /.+@.+\..+/,
     :allow_blank => true,
-    :message => "Provide a valid e-mail address."
+    :message => "Provide a valid email address."
   validates_presence_of :message,
     :message => "Provide a message."
 

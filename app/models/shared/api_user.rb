@@ -32,18 +32,18 @@ class ApiUser
   validates_presence_of :last_name,
     :message => "Provide your last name."
   validates_presence_of :email,
-    :message => "Provide your e-mail address."
+    :message => "Provide your email address."
   validates_format_of :email,
     :with => /.+@.+\..+/,
     :allow_blank => true,
-    :message => "Provide a valid e-mail address."
+    :message => "Provide a valid email address."
   validates_presence_of :website,
-    :message => "Provide your web site URL.",
+    :message => "Provide your website URL.",
     :unless => lambda { |user| user.no_domain_signup }
   validates_format_of :website,
     :with => /\w+\.\w+/,
     :unless => lambda { |user| user.no_domain_signup },
-    :message => "Your web site must be a valid URL in the form of http://nrel.gov"
+    :message => "Your website must be a valid URL in the form of http://nrel.gov"
   validates_acceptance_of :terms_and_conditions,
     :message => "Check the box to agree to the terms and conditions."
 
@@ -69,7 +69,7 @@ class ApiUser
   def self.human_attribute_name(attribute)
     case(attribute.to_sym)
     when :email
-      "E-mail"
+      "Email"
     when :terms_and_conditions
       "Terms and conditions"
     when :website

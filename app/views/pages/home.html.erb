@@ -1,9 +1,9 @@
 <div class="column span-12 intro-text">
-  <p>The National Renewable Energy Laboratory's developer network allows developers to access and use energy data, including renwable energy and alternative fuel data, via web service APIs.</p>
+  <p>The National Renewable Energy Laboratory's developer network helps developers access and use energy data via Web services, including renewable energy and alternative fuel data.</p>
 </div>
 
 <div class="column span-4 intro-box intro-box-doc">
-  <h2>Web Service Documentation</h2>
+  <h2><%= link_to("Web Service Documentation", doc_path) %></h2>
   <p>Explore our available web services.</p>
   <ul>
     <% @collections.each do |collection| %>
@@ -13,7 +13,7 @@
 </div>
 
 <div class="column span-4 intro-box intro-box-key">
-  <h2>API Key</h2>
+  <h2><%= link_to("API Key", signup_path) %></h2>
   <p>You'll need a key to use our APIs.</p>
   <ul>
     <li><%= link_to("Get an API Key", signup_path) %></li>
@@ -22,9 +22,9 @@
 </div>
 
 <div class="column span-4 last intro-box intro-box-community">
-<h2>Community</h2>
+  <h2><%= link_to("Community", community_path) %></h2>
   <p>Join the discussion and stay updated.</p>
   <ul>
-    <li><%= link_to("Follow Us on Twitter") %></li>
+    <li><%= link_to("Follow Us on Twitter", "http://twitter.com/NRELdev") %></li>
   </ul>
 </div>

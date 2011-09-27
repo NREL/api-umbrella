@@ -1,4 +1,6 @@
-<h1>API Key Sign Up</h1>
+<h1>API Key Signup</h1>
+<p>Sign up for an application programming interface (API) key to access and use NREL's energy data.</p>
+
 <p class="required-fields"><%= t("simple_form.required.html") %> Required fields</p>
 
 <%= simple_form_for(@user, :url => account_path, :validate => true, :html => { :class => "col-2" }) do |f| %>
@@ -31,7 +33,7 @@
     :wrapper_html => { :class => "column span-8 prepend-4 user-terms-and-conditions" }) %>
 
   <div class="column span-8 prepend-4">
-    <button type="submit" class="submit">Sign Up</button>
+    <button type="submit" class="submit">Signup</button>
   </div>
 <% end %>
 

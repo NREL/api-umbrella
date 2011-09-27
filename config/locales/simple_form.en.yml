@@ -22,7 +22,7 @@ en:
       api_user:
         first_name: "First Name"
         last_name: "Last Name"
-        website: "Web Site"
+        website: "Website"
         use_description: "How will you use NREL APIs?<br />(optional)"
       api_doc_service:
         http_method: "HTTP Method"

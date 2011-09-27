@@ -3,14 +3,14 @@
 
 <div class="doc-service-list">
   <% @child_collections.each do |collection| %>
-    <%= link_to(collection.title, collection.url_path)  %>
+    <h2><%= link_to(collection.title, collection.url_path)  %></h2>
     <%= simple_format(collection.summary) %>
   <% end %>
 </div>
 
 <div class="doc-service-list">
   <% @child_services.each do |service| %>
-    <%= link_to(service.title, service.url_path) %>
+    <h2><%= link_to(service.title, service.url_path) %></h2>
     <%= simple_format(service.summary) %>
   <% end %>
 </div>

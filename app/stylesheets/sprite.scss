@@ -44,3 +44,24 @@ $boxes-spacing: 500px;
 .intro-box-community {
   @include boxes-sprite(community, false, 210px, 120px);
 }
+
+/**
+ * Icons
+ */
+$icon-sprite-dimensions: true;
+$icon-spacing: 64px;
+$icon-arrow-orange-position: 100%;
+@import "icon/*.png";
+$icon-arrow-orange-position: 100%;
+
+@include all-icon-sprites;
+$icon-arrow-orange-position: 100%;
+
+h2 a {
+  padding-right: 10px;
+  @include icon-sprite(arrow-orange, false, 100%, 5px);
+}
+
+h2 a:hover {
+  @include icon-sprite(arrow-blue, false, 100%, 5px);
+}

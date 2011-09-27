@@ -1,6 +1,8 @@
 class AccountsController < ApplicationController
   respond_to :html
 
+  add_crumb "Signup"
+
   def new
     @user = ApiUser.new
   end

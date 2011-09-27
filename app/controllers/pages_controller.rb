@@ -6,5 +6,7 @@ class PagesController < ApplicationController
   end
 
   def community
+    set_tab :community
+    add_crumb "Community"
   end
 end
