@@ -1,10 +1,9 @@
 <h1>Documentation</h1>
+<p>Use this Web service documentation to access and use energy data via application programming interfaces (APIs) in these renewable energy categories. You'll need a key to use these APIs. <%= link_to("Sign up for an API key", signup_path) %>.</p>
 
 <div class="doc-service-list">
   <% @collections.each do |collection| %>
     <h2><%= link_to(collection.title, collection.url_path)  %></h2>
     <%= simple_format(collection.summary) %>
   <% end %>
-
-  <p class="coming-soon">More web services coming soon...</p>
 </div>

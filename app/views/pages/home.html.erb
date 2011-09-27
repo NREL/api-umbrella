@@ -4,19 +4,19 @@
 
 <div class="column span-4 intro-box intro-box-doc">
   <h2><%= link_to("Web Service Documentation", doc_path) %></h2>
-  <p>Explore our available web services.</p>
+  <p>Explore our available Web services.</p>
   <ul>
     <% @collections.each do |collection| %>
       <li><%= link_to(collection.title, collection.url_path) %></li>
     <% end %>
   </ul>
 
-  <p class="coming-soon">More web services coming soon...</p>
+  <p class="coming-soon">Watch for more Web services coming soon.</p>
 </div>
 
 <div class="column span-4 intro-box intro-box-key">
   <h2><%= link_to("API Key", signup_path) %></h2>
-  <p>You'll need a key to use our APIs.</p>
+  <p>Sign up to use our APIs.</p>
   <ul>
     <li><%= link_to("Get an API Key", signup_path) %></li>
   </ul>
