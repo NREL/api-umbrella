@@ -9,8 +9,8 @@ frontend api_router 127.0.0.1:50100
   use_backend api_tdt_farm if url_match_api_tdt
 
   # Sustainable Fuels & Vehicles Services
-  acl url_match_api_sfv path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_sfv.lst") %>
-  use_backend api_sfv_farm if url_match_api_sfv
+  acl url_match_api_tdt_legacy path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_tdt_legacy.lst") %>
+  use_backend api_tdt_legacy_farm if url_match_api_tdt_legacy
 
   # georeserv Services
   acl url_match_api_georeserv path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_georeserv.lst") %>
