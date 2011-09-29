@@ -1,12 +1,19 @@
 <h1>Web Service Rate Limits</h1>
-<p>Limits are placed on the number of Web service requests you may make against NREL Web services.</p>
+<p>Limits are placed on the number of NREL Web service requests you may make using your API key.</p>
 
 <ul>
-  <li><strong>Hourly Limit:</strong> 1,000</li>
-  <li><strong>Daily Limit:</strong> 10,000</li>
+  <li><strong>Hourly Limit:</strong> 1,000 requests per hour</li>
+  <li><strong>Daily Limit:</strong> 10,000 requests per calendar day</li>
 </ul>
 
-<p>These limits are applied across all NREL Web services requests. Exceeding these limits will lead to your API key being temporarily blocked from making further requests. Depending on the limit exceeded, the block will be lifted automatically by waiting until the next hour or calendar day.</p>
+<p>For each API key, these limits are applied across all NREL Web services requests. Exceeding these limits will lead to your API key being temporarily blocked from making further requests. Depending on the limit exceeded, the block will be lifted automatically by waiting until the next hour or calendar day.</p>
+
+<h2>Understanding Rate Limit Time Periods</h2>
+<h3>Hourly Limit</h3>
+<p>The hourly counters for your API key reset at the beginning of every hour. This means that if you exceed your hourly limit at 10:40AM, the temporary block for your API key will be lifted at 11:00AM (assuming you haven't also exceeded your daily limit).</p>
+
+<h3>Daily Limit</h3>
+<p>The daily counters for your API key reset at midnight <%= link_to("UTC", "http://en.wikipedia.org/wiki/Coordinated_Universal_Time") %>. This means that if you exceed your daily limit at 4PM UTC, the temporary block for your API key will be lifted at 00:00:00 UTC of the following day.</p>
 
 <h2>Rate Limit Error Response</h2>
 <p>If your API key exceeds the rate limits, you will receive a response with an HTTP status code of 503, Service Unavailable. The response body will contain an error message reading "503 Service Unavailable (Rate Limit Exceeded)." For example, a JSON request that has exceed the rate limits would respond with:</p>
