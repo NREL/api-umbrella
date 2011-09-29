@@ -1,6 +1,7 @@
 module ApiDocServicesHelper
   PYGMENTS_LANGUAGE_MAP = {
-    "jscript" => "javascript"
+    "jscript" => "javascript",
+    "plain" => "text",
   }
 
   def render_service_body(service)
