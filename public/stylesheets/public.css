@@ -201,6 +201,7 @@ pre.key {
   margin: 16px 120px;
   padding: 0px 8px;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+  clear: both;
 }
 
 .flash-message p {
