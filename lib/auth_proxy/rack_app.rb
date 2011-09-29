@@ -32,11 +32,11 @@ module AuthProxy
         use Rack::AuthProxy::Authorize
         use Rack::AuthProxy::Throttle::Daily,
           :cache => AuthProxy::RackApp.redis_cache,
-          :max => 30000,
+          :max => 10000,
           :code => 503
         use Rack::AuthProxy::Throttle::Hourly,
           :cache => AuthProxy::RackApp.redis_cache,
-          :max => 2000,
+          :max => 1000,
           :code => 503
 
         # Return a 200 OK status if all the middlewares pass through
