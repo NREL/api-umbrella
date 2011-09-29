@@ -120,9 +120,12 @@ h2, h3 {
   font-family: "Courier New", "Courier", "Terminal", monospace;
   background-color: #f5f9ff;
   border: 1px solid #eeeeff;
-  margin: 5px 0px;
   padding: 2px 5px;
   word-wrap: break-word;
+}
+
+div.doc-example-url {
+  margin: 5px 0px;
 }
 
 #disqus_thread {

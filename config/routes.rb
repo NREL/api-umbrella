@@ -1,6 +1,10 @@
 Developer::Application.routes.draw do
   namespace :admin do resources :api_users end
 
+  get "/doc/api-key" => "pages#api_key", :as => :doc_api_key
+  get "/doc/errors" => "pages#errors"
+  get "/doc/rate-limits" => "pages#rate_limits", :as => :doc_rate_limits
+
   get "/doc" => "api_doc_collections#index"
   get "/doc/api/:path" => "api_doc_services#show", :as => :api_doc_service, :constraints => {:path => /.*/}
   get "/doc/:slug" => "api_doc_collections#show", :as => :api_doc_collection

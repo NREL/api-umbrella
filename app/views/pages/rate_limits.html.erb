@@ -1,0 +1,19 @@
+<h1>Web Service Rate Limits</h1>
+<p>Limits are placed on the number of Web service requests you may make against NREL Web services.</p>
+
+<ul>
+  <li><strong>Hourly Limit:</strong> 1,000</li>
+  <li><strong>Daily Limit:</strong> 10,000</li>
+</ul>
+
+<p>These limits are applied across all NREL Web services requests. Exceeding these limits will lead to your API key being temporarily blocked from making further requests. Depending on the limit exceeded, the block will be lifted automatically by waiting until the next hour or calendar day.</p>
+
+<h2>Rate Limit Error Response</h2>
+<p>If your API key exceeds the rate limits, you will receive a response with an HTTP status code of 503, Service Unavailable. The response body will contain an error message reading "503 Service Unavailable (Rate Limit Exceeded)." For example, a JSON request that has exceed the rate limits would respond with:</p>
+
+<%= highlight_code(:js, File.read("#{Rails.root}/app/views/pages/rate_limits_example_error.json")) %>
+
+<p>For more details on how errors are returned, see the <%= link_to("general Web service errors", doc_errors_path) %>.</p>
+
+<h2>Need Higher Limits?</h2>
+<p>If you're building an application that needs higher rate limits, we'd be happy to work with you. <%= link_to("Contact us", contact_path) %> for more details.</p>

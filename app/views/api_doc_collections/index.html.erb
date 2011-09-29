@@ -7,3 +7,10 @@
     <%= simple_format(collection.summary) %>
   <% end %>
 </div>
+
+<h4>General Information</h4>
+<ul>
+  <li><%= link_to("API Key Usage", doc_api_key_path) %> - How to use your API key after signing up.</li>
+  <li><%= link_to("Web Service Rate Limits", doc_api_key_path) %> - Daily and hourly rate limits on accessing NREL's Web services.</li>
+  <li><%= link_to("General Web Service Errors", doc_api_key_path) %> - General error codes that can be returned by any NREL Web service.</li>
+</ul>
