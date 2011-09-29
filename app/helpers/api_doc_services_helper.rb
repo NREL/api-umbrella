@@ -19,7 +19,7 @@ module ApiDocServicesHelper
           language = PYGMENTS_LANGUAGE_MAP[language]
         end
 
-        highlighted = Albino.new(pre.content, language).colorize(:O => "linenos=True")
+        highlighted = highlight_code(language, pre.content)
         pre.replace(highlighted)
       end
     end

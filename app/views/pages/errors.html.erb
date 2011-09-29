@@ -31,13 +31,13 @@
 <p>Depending on the requested format, the error message response may be returned in JSON, XML, CSV, or plain text. Unknown request formats will return errors in plain text format.</p>
 
 <h4>JSON Example</h4>
-<%= highlight_code(:js, File.read("#{Rails.root}/app/views/pages/errors_example_response.json")) %>
+<%= cached_highlight_code(:js, File.read("#{Rails.root}/app/views/pages/errors_example_response.json")) %>
 
 <h4>XML Example</h4>
-<%= highlight_code(:xml, File.read("#{Rails.root}/app/views/pages/errors_example_response.xml")) %>
+<%= cached_highlight_code(:xml, File.read("#{Rails.root}/app/views/pages/errors_example_response.xml")) %>
 
 <h4>CSV Example</h4>
-<%= highlight_code(:text, File.read("#{Rails.root}/app/views/pages/errors_example_response.csv")) %>
+<%= cached_highlight_code(:text, File.read("#{Rails.root}/app/views/pages/errors_example_response.csv")) %>
 
 <h4>Plain Text Example</h4>
-<%= highlight_code(:text, File.read("#{Rails.root}/app/views/pages/errors_example_response.txt")) %>
+<%= cached_highlight_code(:text, File.read("#{Rails.root}/app/views/pages/errors_example_response.txt")) %>

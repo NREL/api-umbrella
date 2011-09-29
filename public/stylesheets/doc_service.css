@@ -130,3 +130,38 @@ div.doc-example-url {
 
 #disqus_thread {
 }
+
+.highlight-code {
+  overflow:auto;
+  margin-bottom: 1em;
+}
+
+.highlight-code table {
+  margin-bottom: 0px;
+}
+
+.highlight-code::-webkit-scrollbar{
+  height: 8px;
+  width: 8px;
+}
+
+.highlight-code::-webkit-scrollbar-track-piece {
+  margin-bottom:10px;
+  background-color:#e5e5e5;
+  border-bottom-left-radius:4px 4px;
+  border-bottom-right-radius:4px 4px;
+  border-top-left-radius:4px 4px;
+  border-top-right-radius:4px 4px;
+}
+.highlight-code::-webkit-scrollbar-thumb:vertical {
+  height:25px;
+  background-color:#ccc;
+  -webkit-border-radius:4px;
+  -webkit-box-shadow:0 1px 1px rgba(255,255,255,1);
+}
+
+.highlight-code::-webkit-scrollbar-thumb:horizontal {
+  width:25px;
+  background-color:#ccc;
+  -webkit-border-radius:4px;
+}
