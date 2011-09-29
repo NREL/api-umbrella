@@ -77,12 +77,8 @@ nav li a {
   -moz-border-radius: 6px;
   border-radius: 6px;
 
-  -ms-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-
   padding: 6px 8px;
+  width: 302px;
 
   height: 210px;
 }

@@ -132,7 +132,8 @@ div.doc-example-url {
 }
 
 .highlight-code {
-  overflow:auto;
+  overflow: auto;
+  width: 100%;
   margin-bottom: 1em;
 }
 
