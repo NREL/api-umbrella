@@ -41,3 +41,10 @@ frontend web_router
 
   # All other requests go to our main site.
   default_backend developer_site_farm
+
+  # Remove server versioning headers per Cyber.
+  #
+  # Phusion Passenger seems to kill the ability for nginx to remove this
+  # itself: http://code.google.com/p/phusion-passenger/issues/detail?id=289
+  rspidel ^Server:.*
+  rspidel ^X-Powered-By:.*
