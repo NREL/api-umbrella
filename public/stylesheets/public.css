@@ -6,6 +6,10 @@ p {
   color: inherit;
 }
 
+h3 {
+  font-size: 100%;
+}
+
 header {
   margin-bottom: 8px;
   float: left;
