@@ -17,13 +17,12 @@ describe Rack::AuthProxy::FormattedErrorResponse do
       Rack::AuthProxy::FormattedErrorResponse.new(target_app)
     end
 
-    it "should default to XML errors" do
+    it "should default to plain text errors" do
       get "/test"
 
       last_response.status.should == @target_app_status
-      last_response.headers["Content-Type"].should == "application/xml"
-      xml = Nokogiri::XML.parse(last_response.body)
-      xml.xpath("/errors/error").first.content.should == @target_app_content
+      last_response.headers["Content-Type"].should == "text/plain"
+      last_response.body.should == "Error: #{@target_app_content}"
     end
 
     it "should use the path extension to detect and return XML errors" do

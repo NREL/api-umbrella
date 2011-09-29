@@ -35,10 +35,6 @@ module Rack
             format_extension = ".#{request.GET["format"].to_s.downcase}"
           end
 
-          if(format_extension.empty?)
-            format_extension = ".xml"
-          end
-
           headers["Content-Type"] = Rack::Mime.mime_type(format_extension, "text/plain")
 
           # The rack response should be an array (or something that responds to
