@@ -19,7 +19,3 @@ frontend api_router 127.0.0.1:50100
   # FleetAtlas Services
   acl url_match_api_fleet_atlas path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_fleet_atlas.lst") %>
   use_backend api_fleet_atlas_farm if url_match_api_fleet_atlas
-
-  # Transportation Services
-  acl url_match_api_transportation path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_transportation.lst") %>
-  use_backend api_transportation_farm if url_match_api_transportation
