@@ -66,7 +66,7 @@ class ApiUser
     end
   end
 
-  def self.human_attribute_name(attribute)
+  def self.human_attribute_name(attribute, options = {})
     case(attribute.to_sym)
     when :email
       "Email"
@@ -79,8 +79,8 @@ class ApiUser
     end
   end
 
-  def as_json(options = {})
-    hash = super(options)
+  def as_json(*args)
+    hash = super(*args)
 
     if(!self.valid?)
       hash.merge!(:errors => self.errors.full_messages)

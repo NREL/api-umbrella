@@ -22,6 +22,10 @@ Developer::Application.routes.draw do
 
   root :to => "pages#home"
 
+  namespace :api do
+    resources :api_users, :path => "api-users", :only => [:create]
+  end
+
   devise_for :admins, :controllers => { :omniauth_callbacks => "admin/admins/omniauth_callbacks" } do
     resources :admin_sessions
     get "/admin/login" => "admin_sessions#new"
