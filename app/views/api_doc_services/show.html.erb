@@ -22,7 +22,9 @@
 <script type="text/javascript">
   /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
   var disqus_shortname = "devdev-nrel";
+  <% if(Rails.env != "production") %>
   var disqus_developer = 1;
+  <% end %>
   var disqus_identifier = "<%= @service.url_path %>";
   var disqus_url = "http://developer.nrel.gov<%= @service.url_path %>";
 
