@@ -10,10 +10,12 @@
 
 <h2>Understanding Rate Limit Time Periods</h2>
 <h3>Hourly Limit</h3>
-<p>The hourly counters for your API key reset at the beginning of every hour. This means that if you exceed your hourly limit at 10:40AM, the temporary block for your API key will be lifted at 11:00AM (assuming you haven't also exceeded your daily limit).</p>
+<p>The hourly counters for your API key reset at the beginning of every hour.</p>
+<p><em>Example:</em> If you started making requests at 10:00AM and made your 1,000th request of the hour at 10:40AM, your API key would become temporarily blocked. This temporary block of your API key would be lifted at 11:00AM, at which point you could make more web service requests (assuming you hadn't also exceeded your daily limit).</p>
 
 <h3>Daily Limit</h3>
-<p>The daily counters for your API key reset at midnight <%= link_to("UTC", "http://en.wikipedia.org/wiki/Coordinated_Universal_Time") %>. This means that if you exceed your daily limit at 4PM UTC, the temporary block for your API key will be lifted at 00:00:00 UTC of the following day.</p>
+<p>The daily counters for your API key reset at midnight <%= link_to("UTC", "http://en.wikipedia.org/wiki/Coordinated_Universal_Time") %>.</p>
+<p><em>Example:</em> If you started making requests at 00:00:00 UTC and made your 10,000th request of the day at 16:00:00 UTC, your API key would become temporarily blocked. This temporary block of your API key would be lifted at 00:00:00 UTC of the following day, at which point you could make more web service requests.</p>
 
 <h2>Rate Limit Error Response</h2>
 <p>If your API key exceeds the rate limits, you will receive a response with an HTTP status code of 503, Service Unavailable. The response body will contain an error message reading "503 Service Unavailable (Rate Limit Exceeded)." For example, a JSON request that has exceed the rate limits would respond with:</p>
