@@ -17,8 +17,10 @@ module Rack
           required_roles << "geocode"
         when %r[^/api/vin]
           required_roles << "vin"
-        when %r[^/api/api_user]
+        when %r[^/api/api-user]
           required_roles << "api_user_creation"
+        when %r[^/api/fleet_atlas]
+          required_roles << "fleet_atlas"
         end
 
         authorized = true
