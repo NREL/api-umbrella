@@ -44,5 +44,9 @@ Developer::Application.routes.draw do
     resources :api_doc_collections do
       get "page/:page", :action => :index, :on => :collection
     end
+
+    resources :api_users do
+      get "page/:page", :action => :index, :on => :collection
+    end
   end
 end
