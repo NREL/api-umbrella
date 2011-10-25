@@ -12,6 +12,14 @@
     <%= include_stylesheets :public %>
     <%= include_javascripts :public %>
     <%= csrf_meta_tag %>
+
+    <script type="text/javascript">
+      (function() {
+        var so = document.createElement('script'); so.type = 'text/javascript'; so.async = true;
+        so.src = '//www.nrel.gov/includes/ga/nrel.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(so, s);
+      })();
+    </script>
   </head>
   <body class="container">
     <header>
