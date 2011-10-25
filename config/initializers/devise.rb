@@ -194,7 +194,7 @@ Devise.setup do |config|
 
   cas_server = case Rails.env
   when "development"
-    "https://devdev-new.nrel.gov/auth"
+    "https://devdev.nrel.gov/auth"
   when "staging_int"
     "https://devstage-int.nrel.gov/auth"
   when "production"
