@@ -19,13 +19,19 @@ frontend web_router
   acl via_https dst_port eq 81
 
   <% if(rails_env == "development") %>
-  # chef.devdev-new.nrel.gov
+  # chef.devdev.nrel.gov
   acl host_match_chef hdr_beg(host) -i chef.
   use_backend devdev_chef_farm if host_match_chef
-  <% end %>
 
-  <% if(rails_env == "development") %>
-  # docs.devdev-new.nrel.gov
+  # chefweb.devdev.nrel.gov
+  acl host_match_chefweb hdr_beg(host) -i chefweb.
+  use_backend devdev_chefweb_farm if host_match_chefweb
+
+  # opsview.devdev.nrel.gov
+  acl host_match_opsview hdr_beg(host) -i opsview.
+  use_backend devdev_opsview if host_match_opsview
+
+  # docs.devdev.nrel.gov
   acl host_match_docs hdr_beg(host) -i docs.
   use_backend devdev_docs_farm if host_match_docs
   <% end %>
