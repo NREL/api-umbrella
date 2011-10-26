@@ -1,0 +1,9 @@
+--protected
+--private
+--debug
+--output-dir /srv/developer/devdev/docs
+--markup markdown
+--markup-provider redcarpet
+--files doc/*.md
+app/**/*.rb
+lib/**/*.rb
