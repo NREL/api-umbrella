@@ -6,13 +6,14 @@
 
 ## Architecture
 
-* {file:docs/Architecture.md Architecture Overview}
+* {file:docs/ArchitectureServers.md Network & Servers Architecture}
+* {file:docs/ArchitectureSoftware.md Software Architecture}
 
 ### Component Documentation
 
-* [Main Site Documentation](/developer-main_site)
-* [auth_proxy Documentation](/developer-auth_proxy)
+* [Public Site Documentation](/public_site/)
+* [auth_proxy Documentation](/router/auth_proxy/)
 
 ### API Applications Documentation
 
-* [Sustainable Fuels & Vehicles API Documentation](/apis/sfv)
+* [Sustainable Fuels & Vehicles API Documentation](/apis/sfv/)
