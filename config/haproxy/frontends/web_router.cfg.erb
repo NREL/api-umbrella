@@ -29,7 +29,7 @@ frontend web_router
 
   # opsview.devdev.nrel.gov
   acl host_match_opsview hdr_beg(host) -i opsview.
-  use_backend devdev_opsview_farm if host_match_opsview
+  use_backend devdev_apache_farm if host_match_opsview
 
   # docs.devdev.nrel.gov
   acl host_match_docs hdr_beg(host) -i docs.
