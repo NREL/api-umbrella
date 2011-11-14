@@ -15,6 +15,8 @@ module Rack
           required_roles << "vibe"
         when %r[^/api/geocode]
           required_roles << "geocode"
+        when %r[^/api/highcharts]
+          required_roles << "highcharts"
         when %r[^/api/vin]
           required_roles << "vin"
         when %r[^/api/api-user]
