@@ -72,6 +72,7 @@ GEM
       thor (~> 0.14)
     kaminari (0.12.4)
       rails (>= 3.0.0)
+    kramdown (0.13.3)
     log4r (1.1.9)
     macaddr (1.4.0)
       systemu (~> 2.2.0)
@@ -129,7 +130,6 @@ GEM
       thor (~> 0.14.4)
     rake (0.9.2)
     rdoc (3.9.4)
-    redcarpet (1.17.2)
     rspec (2.6.0)
       rspec-core (~> 2.6.0)
       rspec-expectations (~> 2.6.0)
@@ -162,6 +162,7 @@ GEM
       macaddr (~> 1.0)
     warden (1.0.5)
       rack (>= 1.0)
+    yajl-ruby (1.0.0)
     yard (0.7.3)
     yui-compressor (0.9.6)
       POpen4 (>= 0.1.4)
@@ -182,15 +183,16 @@ DEPENDENCIES
   jammit
   jquery-rails
   kaminari
+  kramdown
   mongoid
   mongoid-tree
   nokogiri
   oa-enterprise (>= 0.2.6)
   oily_png
   rails (= 3.0.10)
-  redcarpet
   rspec-rails
   seed-fu
   simple_form
   tabs_on_rails
+  yajl-ruby
   yard

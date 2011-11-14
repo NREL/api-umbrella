@@ -14,7 +14,7 @@ The application server houses our router and the individual web service applicat
 
 The database server houses our various databases that get used by the router and web services applications.
 
-For more details on how the router works, and the underlying technology, see the documentation on {file:docs/ArchitectureSoftware.md software architecture}.
+For more details on how the router works, and the underlying technology, see the documentation on {file:doc/ArchitectureSoftware.md software architecture}.
 
 ## Flexibility
 

@@ -1,8 +1,8 @@
 # How-to: Add a new web service application backend
 
-In the {file:docs/ArchitectureSoftware.md software architecture}, the web services are implemented inside any number of independent application backends. These backend applications can be written in any programming language and can be configured to respond to any number of arbitrary incoming URLs. When an entirely new backend application is being added to the developer.nrel.gov system, it must first be configured within the system so requests can be routed to it.
+In the {file:doc/ArchitectureSoftware.md software architecture}, the web services are implemented inside any number of independent application backends. These backend applications can be written in any programming language and can be configured to respond to any number of arbitrary incoming URLs. When an entirely new backend application is being added to the developer.nrel.gov system, it must first be configured within the system so requests can be routed to it.
 
-*Note:* If a backend application has already been configured (that is, any http://developer.nrel.gov/api requests are already being routed to it), then theses steps have already been followed. In that case, you're probably interested in {file:docs/HowToConfigureUrlEndpoints.md adding additional URL endpoints to an existing web service application backend}.
+*Note:* If a backend application has already been configured (that is, any http://developer.nrel.gov/api requests are already being routed to it), then theses steps have already been followed. In that case, you're probably interested in {file:doc/HowToConfigureUrlEndpoints.md adding additional URL endpoints to an existing web service application backend}.
 
 From the overall architecture diagram, we're only configuring the bottom of the stack:
 
@@ -34,6 +34,7 @@ While hosting locally with other developer.nrel.gov services takes a little leg
     * **nginx**
 
       Inside the `developer_apps` project, create a new templated nginx configuration file for your application inside `config/nginx/apis`. All nginx configuration files inside `config/nginx/apis` will automatically get included by nginx.
+
 
       For example, here's the configuration for a rails-based project in `config/nginx/apis/sfv.conf.erb`:
 
@@ -118,33 +119,59 @@ In the copy of the `developer_router` project on devdev.nrel.gov (`/srv/develope
 
 1. **Add a new backend configuration for your application**
 
-    Create a new HAProxy backend configuration file at `config/backends/api_APPLICATION_NAME_farm.cfg.erb` to define your application's backend servers. For example, here's `config/backends/api_sfv_farm.cfg:
+    Create a new HAProxy backend configuration file at `config/backends/api_APPLICATION_NAME_farm.cfg.erb` to define your application's backend servers. The most basic configuration should look something like (replacing the APPLICATION placeholders appropriately):
 
-       # Sustainable Fuels & Vehicles API Services Backend
-       backend api_sfv_farm
+       # APPLICATION NAME Services Backend
+       backend api_APPLICATION_NAME_farm
+         balance roundrobin
+         server api_APPLICATION_NAME_farm1 APPLICATION_HOST:APPLICATION_PORT
+
+    A common need might be to rewrite the public developer.nrel.gov URL for your backend web server. All developer.nrel.gov API URLs must begin with `/url`, but your backend application may not respond to that URL. To strip the `/api` from the URL before sending the request to your backend, you can add a configuration line like:
+
+         reqirep ^([^\ ]*)\ /api(/.*) \1\ \2
+
+    Other types of URL manipulation can also be performed in a similar fashion. For more details on the `reqirep` syntax or other HAProxy configuration options see [HAProxy's documentation](http://haproxy.1wt.eu/download/1.4/doc/configuration.txt).
+
+    To add load balancing, add additional `server` configuration lines. For example, to load balance between three servers:
+
+       # APPLICATION NAME Services Backend
+       backend api_APPLICATION_NAME_farm
+         balance roundrobin
+         server api_APPLICATION_NAME_farm1 APPLICATION_HOST:APPLICATION_PORT
+         server api_APPLICATION_NAME_farm2 ALTERNATIVE_HOST:PORT
+         server api_APPLICATION_NAME_farm3 OTHER_HOST:PORT
+    
+    Here's a complete example for an existing web services application also being hosted from the developer.nrel.gov server:
+
+       # Technology Deployment Tools Group API Services Backend
+       backend api_tdt_farm
          # Strip /api from the beginning of the request URL before the receiving
          # backend application sees the request.
          #
-         # Turns a request from "GET /api/fuel_stations" to "GET /fuel_stations"
+         # Turns a request from "GET /api/alt-fuel-stations" to "GET /alt-fuel-stations"
          reqirep ^([^\ ]*)\ /api(/.*) \1\ \2
 
          balance roundrobin
-         server api_sfv1 127.0.0.1:51100
-
-    To add load balancing, it's just a matter of listing any additional servers to load balance to in this configuration file.
+         server api_tdt1 127.0.0.1:51100
 
 2. **Create a new router matches file**
 
-    Create a new file to determine which URL endpoints get routed to your application at `config/haproxy/api_router_matches/api_APPLICATION_NAME.lst` This file's contents should list the relative URL paths that should be routed to your application. For example, `config/haproxy/api_router_matches/api_sfv.lst` might list:
+    Create a new file to determine which URL endpoints get routed to your application at `config/haproxy/api_router_matches/api_APPLICATION_NAME.lst`
     
-       /api/fuel_stations
-       /api/transportation_laws
+    This file's contents should list the relative URL prefixes that should be routed to your application. Separate URL prefixes go on separate lines. Matching is done by prefixes so listing `/api/alt-fuel-stations` would automatically route `/api/alt-fuel-stations/something` as well as `/api/alt-fuel-stations/completely/different` to your application.
 
-    That would direct any requests beginning with `/api/fuel_stations` and `/api/transportation_laws` to the SFV application. For more details see the page on {file:HowToConfigureUrlEndpoints.md configuring URL endpoints}.
+    When creating this file, be careful not to reuse an existing URL prefix that an existing application is has already claimed. If you feel your URL prefix might be generic, look at the other router matches files in `config/haproxy/api_router_matches` to ensure you're not duplicating anything.
+    
+    An example matches file might look like:
+    
+       /api/alt-fuel-stations
+       /api/geocode
+
+    That would direct any requests beginning with `/api/alt-fuel-stations` and `/api/geocode` to our application. For more details see the page on {file:HowToConfigureUrlEndpoints.md configuring URL endpoints}.
 
 3. **Configure the API Router for your application**
 
-    Next, you need to update API Router's configuration to route any requests matching URLs in the new `config/haproxy/api_router_matches/api_APPLICATION_NAME.lst` file to your application.
+    With the backend and the routing matches file in place, the next step it to configure the API router to use both of these files. This will route any requests matching URL prefixes given in the matches file to the backend you've created for your application.
 
     Add the following lines for your application to the `config/haproxy/frontends/api_router.cfg.erb` to configure the API Router to use the new .lst file to route tor your backend:
 

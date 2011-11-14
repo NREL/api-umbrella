@@ -58,6 +58,8 @@ group :development, :test do
 end
 
 group :development do
+  gem "yajl-ruby", :require => false
+
   gem "yard", :require => false
-  gem "redcarpet", :require => false
+  gem "kramdown", :require => false
 end
