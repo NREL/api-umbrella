@@ -24,6 +24,9 @@ user=nginx
 redirect_stderr=true
 stdout_logfile=<%= current_path %>/log/%(program_name)s_50%(process_num)03d.log
 
+; Don't rotate based on file size. We'll rotate externally using logrotate.
+logfile_maxbytes=0
+
 ; Define a group so everything in this deployment can be controlled together.
 [group:<%= deploy_name %>]
 programs=<%= deploy_name %>-auth_proxy
