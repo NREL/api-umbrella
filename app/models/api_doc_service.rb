@@ -102,7 +102,6 @@ class ApiDocService
         </table>
       </td>
     </tr>
-
   </tbody>
 </table>
 
@@ -120,7 +119,7 @@ class ApiDocService
       <th scope="row" class="doc-parameter-name">field_name</th>
       <td class="doc-parameter-value">
         <div class="doc-parameter-value-field"><strong>Type:</strong> string/integer/decimal/boolean/date/time</div>
-        <div class="doc-parameter-value-field"><strong>Range:</strong> 1 to 100</div>
+        <div class="doc-parameter-value-field"><strong>Range:</strong> <em>1</em> to <em>100</em></div>
       </td>
       <td class="doc-parameter-description">
         <p>Field description...</p>
@@ -167,6 +166,26 @@ class ApiDocService
   &lt;/record&gt;
 &lt;/records&gt;
 </pre>
+
+<h2 id="rate-limits">Rate Limits</h2>
+<p><a href="/doc/rate-limits">Standard rate limits</a> apply. No more than 1,000 requests may be made in any hour. No more than 10,000 requests may be made in any day.</p>
+
+<h2 id="errors">Errors</h2>
+<p><a href="/doc/errors">Standard errors</a> may be returned. In addition, the following service-specific errors may be returned:</p>
+<table border="0" cellpadding="0" cellspacing="0" class="doc-parameters">
+  <thead>
+    <tr>
+      <th class="doc-parameters-name" scope="col" style="width: 100px;">HTTP Status Code</th>
+      <th class="doc-parameters-required" scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th class="doc-parameter-name" scope="row">422</th>
+      <td class="doc-parameter-description">Unprocessable Entity - Error description...</td>
+    </tr>
+  </tbody>
+</table>
 EOS
   end
 end
