@@ -16,6 +16,18 @@ process_name=%(program_name)s_50%(process_num)02d
 autostart=true
 autorestart=true
 
+; It can take longer for the the proxy to fully startup, so set a longer
+; startup time.
+startsecs=10
+
+; Graceful shutdown, remaining open `stopwaitsecs` seconds for open connections
+; to disconnect.
+stopsignal=QUIT
+
+; Eventually we have to kill off any open connections so we can restart, but
+; we'll give them quite a while.
+stopwaitsecs=90
+
 ; Run as the web user.
 user=nginx
 
