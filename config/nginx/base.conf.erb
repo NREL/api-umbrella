@@ -17,6 +17,9 @@ server {
 
   # Set the current environment.
   rails_env <%= rails_env %>;
+
+  # Allow for larger request bodies to allow for huge documentation pages.
+  client_max_body_size 10m;
 }
 
 <% if(rails_env == "production") %>
