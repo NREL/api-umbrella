@@ -16,7 +16,7 @@
     <% @services.each do |service| %>
       <tr>
         <td><%= link_to service.title, edit_admin_api_doc_service_path(service) %></td>
-        <td><%= service.summary %></td>
+        <td><%= service.summary_intro.html_safe %></td>
         <td><%= link_to("Delete", admin_api_doc_service_path(service), :class => "icon icon-trash", :method => :delete, :confirm => "Are you sure you want to delete this web service?") %></td>
       </tr>
     <% end %>

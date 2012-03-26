@@ -11,6 +11,6 @@
 <div class="doc-service-list">
   <% @child_services.each do |service| %>
     <h2><%= link_to(service.title, service.url_path) %></h2>
-    <%= simple_format(service.summary) %>
+    <%= simple_format(service.summary_intro) %>
   <% end %>
 </div>

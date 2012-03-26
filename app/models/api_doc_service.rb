@@ -26,6 +26,11 @@ class ApiDocService
     @title ||= "#{http_method} #{path}"
   end
 
+  # @return [String] The first paragraph of the summary.
+  def summary_intro
+    @summary_intro ||= self.summary.to_s.split(/[\r\n]/).first
+  end
+
   private
 
   def generate_url_path
