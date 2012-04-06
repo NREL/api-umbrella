@@ -36,7 +36,7 @@ class ApiDocService
   def generate_url_path
     self.url_path = File.join("/doc", self.path)
     if(self.http_method != "GET")
-      self.url_path << self.http_method.downcase
+      self.url_path = File.join(self.url_path, self.http_method.downcase)
     end
   end
 
