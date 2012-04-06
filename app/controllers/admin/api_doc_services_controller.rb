@@ -4,7 +4,7 @@ class Admin::ApiDocServicesController < Admin::BaseController
   add_crumb("API Documentation") { }
 
   def index
-    @services = ApiDocService.page(params[:page])
+    @services = ApiDocService.asc(:url_path).page(params[:page])
 
     add_crumb "Web Services"
   end
