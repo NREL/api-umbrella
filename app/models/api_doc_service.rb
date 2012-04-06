@@ -76,7 +76,7 @@ class ApiDocService
         <div class="doc-parameter-value-field"><strong>Default:</strong> None</div>
       </td>
       <td class="doc-parameter-description">
-        <p>Your developer API key. See <a href="/docs/faq#api_keys">API keys</a> for more information.</p>
+        <p>Your developer API key. See <a href="/doc/api-key">API keys</a> for more information.</p>
       </td>
     </tr>
     <tr>
