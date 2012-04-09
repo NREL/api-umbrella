@@ -23,6 +23,8 @@ module Rack
           required_roles << "api_user_creation"
         when %r[^/api/fleet_atlas]
           required_roles << "fleet_atlas"
+        when %r[^/api/env_tests]
+          required_roles << "env_tests"
         end
 
         authorized = true
