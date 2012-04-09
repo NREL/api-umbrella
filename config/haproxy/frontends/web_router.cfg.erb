@@ -5,9 +5,8 @@ frontend web_router
   # Ensure connections are closed for forwardfor compatability.
   option http-server-close
 
-  # Add X-Forwarded-* headers unless we've already passed through the SSL
-  # proxy.
-  option forwardfor except 127.0.0.1
+  # Add X-Forwarded-* headers unless we've already passed through WAF.
+  option forwardfor except 192.174.58.16/31
 
   acl has_forwarded_proto hdr_cnt(X-Forwarded-Proto) gt 0
   reqadd X-Forwarded-Proto:\ http unless has_forwarded_proto
