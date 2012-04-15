@@ -1,6 +1,6 @@
 <h1><%= @collection.title %></h1>
 <%= simple_format(@collection.summary) %>
-<% if @collection.body %>
+<% if @collection.body.present? %>
   <%= simple_format(@collection.body) %>
 <% end %>
 
