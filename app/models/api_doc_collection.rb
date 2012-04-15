@@ -7,6 +7,7 @@ class ApiDocCollection
   field :slug, :type => String
   field :url_path, :type => String
   field :summary, :type => String
+  field :body, :type => String
 
   default_scope asc(:title)
 

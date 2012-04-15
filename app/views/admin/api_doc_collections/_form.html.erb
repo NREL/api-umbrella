@@ -21,6 +21,11 @@
     :wrapper_html => { :class => "grid_12 alpha omega" },
     :input_html => { :rows => 2, :class => "fill" } %>
 
+  <%= f.input :body,
+    :as => :text,
+    :wrapper_html => { :class => "grid_12 alpha omega" },
+    :input_html => { :rows => 5, :class => "fill" } %>
+
   <%= f.association :api_doc_services,
     :collection => ApiDocService.all,
     :as => :check_boxes,
