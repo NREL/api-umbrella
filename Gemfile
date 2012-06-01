@@ -1,7 +1,7 @@
 source "http://gems.cttsdev.nrel.gov"
 source :rubygems
 
-gem "rails", "3.0.10"
+gem "rails", "~> 3.0.10"
 
 # MongoDB
 gem "mongoid"
