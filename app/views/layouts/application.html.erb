@@ -9,8 +9,8 @@
     <!--[if lt IE 9]>
       <%= javascript_include_tag "html5.js" %>
     <![endif]-->
-    <%= include_stylesheets :public %>
-    <%= include_javascripts :public %>
+    <%= stylesheet_link_tag "public" %>
+    <%= javascript_include_tag "public" %>
     <%= csrf_meta_tag %>
 
     <script type="text/javascript">
@@ -23,7 +23,7 @@
   </head>
   <body class="container">
     <header style="width: 100%">
-      <%= image_tag("http://www.data.gov/images/logo.png", :alt => "Data.gov") %>
+      <%= image_tag("gsa_logo.png", :alt => "Data.gov") %>
       <nav>
         <%= tabs_tag(:link_current => true) do |tab| %>
           <%= tab.home "Home", root_path, :class => "nav-home" %>

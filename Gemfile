@@ -1,7 +1,7 @@
 source "http://gems.cttsdev.nrel.gov"
 source :rubygems
 
-gem "rails", "~> 3.0.10"
+gem "rails", "~> 3.2.6"
 
 # MongoDB
 gem "mongoid"
@@ -18,7 +18,7 @@ gem "seed-fu"
 
 # CAS-based authentication
 gem "devise"
-gem "oa-enterprise", ">= 0.2.6"
+gem "omniauth-cas"
 
 # Form layout and display
 gem "simple_form"
@@ -30,24 +30,48 @@ gem "kaminari"
 gem "tabs_on_rails"
 
 # Sass stylesheets and automatic image spirtes
-gem "compass"
+gem "compass-rails"
 
 # Improve PNG speed for image sprite generation
 gem "oily_png"
-
-# Asset packaging and compression
-gem "jammit"
 
 # Unobtrusive javascript for Rails helpers (things like delete links).
 gem "jquery-rails"
 
 gem "crummy"
 
-gem "client_side_validations"
+gem "client_side_validations", "~> 3.2.0.beta"
+gem "client_side_validations-simple_form", "~> 1.5.0.beta"
+#gem "client_side_validations", :git => "http://github.com/bcardarella/client_side_validations.git"
 
 gem "nokogiri"
 gem "babosa"
 gem "albino"
+
+# Gems used only for assets and not required
+# in production environments by default.
+group :assets do
+  gem 'sass-rails',   '~> 3.2.3'
+  gem 'coffee-rails', '~> 3.2.1'
+
+  # Sass utilities and automatic image spirtes
+  gem "compass-rails"
+
+  # See https://github.com/sstephenson/execjs#readme for more supported runtimes
+  gem 'therubyracer', :platforms => :ruby
+
+  # JavaScript compression
+  gem 'uglifier'
+
+  # CSS compression
+  gem "yui-compressor"
+
+  # Smarter handling of compiled CSS with relative paths (like Jammit)
+  gem "sprockets-urlrewriter"
+
+  # Improve PNG speed for image sprite generation
+  gem "oily_png"
+end
 
 # Bundle gems for the local environment. Make sure to
 # put test-only gems in this group so their generators

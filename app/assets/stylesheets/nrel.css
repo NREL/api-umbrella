@@ -21,11 +21,11 @@ body {background-color:#fff;font-family:Verdana, Arial, Helvetica, sans-serif;fo
 #column-center-noright {float:right;margin:0;padding:20px 0 0 4px;display:inline;width:738px;}
 
 /* regular/2nd level pages w/ left nav - 2 columns */
-#content {float:left;margin:0;margin-right:50px;padding:0;display:inline;background-image:url(/images1/ln_spacer_gray.gif);background-repeat:repeat-y;height:100%;width:949px;}
+#content {float:left;margin:0;margin-right:50px;padding:0;display:inline;background-image:url(../images1/ln_spacer_gray.gif);background-repeat:repeat-y;height:100%;width:949px;}
 #column-center {float:right;margin:0;padding:0;padding-left:4px;display:inline;width:738px;}
 
 /* centersite/2nd level pages w/ left nav - 2 columns */
-#content-centersite {float:left;margin:0;padding:0;display:inline;background-image:url(/images1/ln_spacer_gray.gif);background-repeat:repeat-y;height:100%;width:1000px;}
+#content-centersite {float:left;margin:0;padding:0;display:inline;background-image:url(../images1/ln_spacer_gray.gif);background-repeat:repeat-y;height:100%;width:1000px;}
 #column-centersite {float:right;margin:0;margin-right:4px;padding:0;padding-left:4px;display:inline;width:788px;}
 
 /* left column is the same for both 2 & 3 column pages */
@@ -83,19 +83,19 @@ body {background-color:#fff;font-family:Verdana, Arial, Helvetica, sans-serif;fo
 #navcontainer ul ul li a {display:block;background-color:#eee;width:170px;padding:3px 10px 5px 20px;text-decoration:none;font-weight:normal;border:0;margin:0;}
 #navcontainer ul ul li a:hover {background-color:#ccc;}
 /* 3rd levels */
-#navcontainer ul ul ul li a {width:161px;background-image:url(/images/ln_dash_3rdlevel.gif);background-repeat:no-repeat;padding-left:2.70em;text-indent:-.3em;}
+#navcontainer ul ul ul li a {width:161px;background-image:url(../images/ln_dash_3rdlevel.gif);background-repeat:no-repeat;padding-left:2.70em;text-indent:-.3em;}
 /* selected states */
 #navcontainer ul li a#current {background-color:#ccc;color:#004f99;}	
 /* home link */
-#navcontainer ul li #home {width:171px;font-weight:normal;background-image:url(/images/ln_arrow_2ndlevel.gif);background-repeat:no-repeat;padding-left:1.75em;text-indent:-.4em;}
+#navcontainer ul li #home {width:171px;font-weight:normal;background-image:url(../images/ln_arrow_2ndlevel.gif);background-repeat:no-repeat;padding-left:1.75em;text-indent:-.4em;}
 /* last nav item
 #navcontainer .last{display:block;width:200px;padding:0;margin:0;border-top:1px solid #fff;} */
 
 /* Extranet Home Link */
-#home-extranet {font-size:80%;background-image:url(/images/ln_arrow_2ndlevel_nonav.gif);background-repeat:no-repeat;padding-left:1.1em;text-indent:-.4em;}
+#home-extranet {font-size:80%;background-image:url(../images/ln_arrow_2ndlevel_nonav.gif);background-repeat:no-repeat;padding-left:1.1em;text-indent:-.4em;}
 
 /* Document DB Home & Doc Links */
-#home-docdb {font-size:80%;background-image:url(/images/ln_arrow_2ndlevel_nonav.gif);background-repeat:no-repeat;padding-left:1.1em;text-indent:-.4em; margin:0;}
+#home-docdb {font-size:80%;background-image:url(../images/ln_arrow_2ndlevel_nonav.gif);background-repeat:no-repeat;padding-left:1.1em;text-indent:-.4em; margin:0;}
 #nav-docdb {font-size:80%;text-align:right;}
 
 /* BOXES */
@@ -196,7 +196,7 @@ dd {margin-bottom:12px;}
 ul.menu {list-style-type:none;}
 
 /* classes for lists to use an arrow as the bullet */
-ul.arrowlist {list-style-image:url(/images/arrow_gray_r4x7.gif);}
+ul.arrowlist {list-style-image:url(../images/arrow_gray_r4x7.gif);}
 .arrowlist li {padding-bottom:5px;margin-left:-24px;}
 
 /* Alpha Anchor Links */
@@ -234,14 +234,14 @@ h2.app {color:#666;margin-bottom:10px;}
 h2 a:link, h2 a:visited {text-decoration:none;color:#C60;}
 h2 a:hover {text-decoration:none;color:#004f99;}
 /* Make the arrows after H2 links change color  */
-h2 a img {background:url(/images/arrow_orange_blue_r10x9.gif) 0 0 no-repeat;}
+h2 a img {background:url(../images/arrow_orange_blue_r10x9.gif) 0 0 no-repeat;}
 h2 a:hover  img {background-position:-5px 0;}
 h2 a:active img {background-position:0 0;}
 
 h3 a:link, h3 a:visited {text-decoration:none;color:#000;}
 h3 a:hover {text-decoration:none;color:#004f99;}
 /* Make the arrows after H3 links change color  */
-h3 a img {background:url(/images/arrow_black_blue_r8x7.gif) 0 0 no-repeat;}
+h3 a img {background:url(../images/arrow_black_blue_r8x7.gif) 0 0 no-repeat;}
 h3 a:hover  img {background-position:-4px 0;}
 h3 a:active img {background-position:0 0;}
 
