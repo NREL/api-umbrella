@@ -31,6 +31,10 @@ class ApiDocService
     @summary_intro ||= self.summary.to_s.split(/[\r\n]/).first
   end
 
+  def url_path
+    @url_path ||= File.join(ActionController::Base.config.relative_url_root, self[:url_path])
+  end
+
   private
 
   def generate_url_path

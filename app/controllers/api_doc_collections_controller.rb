@@ -7,7 +7,7 @@ class ApiDocCollectionsController < ApplicationController
   end
 
   def show
-    @collection = ApiDocCollection.where(:url_path => request.path).first
+    @collection = ApiDocCollection.where(:url_path => request.path.gsub(/^#{ActionController::Base.config.relative_url_root}\/?/, "/")).first
     @child_collections = @collection.children
     @child_services = @collection.api_doc_services.asc(:http_method, :path)
     raise Mongoid::Errors::DocumentNotFound.new(ApiDocCollection, request.path) unless(@collection)

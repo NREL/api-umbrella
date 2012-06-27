@@ -5,7 +5,7 @@
     <title>NREL Developer Network</title>
     <%= stylesheet_link_tag "admin" %>
     <%= javascript_include_tag "admin" %>
-    <%= javascript_include_tag("/javascripts/ckeditor/ckeditor.js", "/javascripts/ckeditor/adapters/jquery.js") %>
+    <%= javascript_include_tag("ckeditor/ckeditor.js", "ckeditor/adapters/jquery.js") %>
     <%= csrf_meta_tag %>
   </head>
   <body>
@@ -41,7 +41,7 @@
     <div class="container_12">
       <% if crumbs.length > 1 %>
         <div class="grid_12 crumbs">
-          <%= render_crumbs %>
+          <%= render_crumbs.html_safe %>
         </div>
       <% end %>
 

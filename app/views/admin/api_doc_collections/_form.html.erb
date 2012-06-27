@@ -34,7 +34,7 @@
   <%= f.button :submit %>
 <% end %>
 
-<% javascript_tag do %>
+<%= javascript_tag do %>
   $("#api_doc_collection_slug").slugify("#api_doc_collection_title");
 
   function updateUrl() {

@@ -93,7 +93,6 @@ class ApiUser
 
   def generate_api_key
     unless self.api_key
-      require "active_support/secure_random"
       self.api_key = SecureRandom.hex(20) # This actually generates a random key 40, not 20, characters long.
     end
   end

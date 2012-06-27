@@ -1,6 +1,4 @@
 class AccountsController < ApplicationController
-  respond_to :html
-
   add_crumb "Signup"
 
   def new
@@ -13,13 +11,13 @@ class AccountsController < ApplicationController
 
     # Safe safely to be absolutely positive the save succeeded.
     if @user.safely.save
-      respond_with @user do |format|
-        format.html do
-          render
-        end
+      respond_to do |format|
+        format.html
       end
     else
-      respond_with @user
+      respond_to do |format|
+        format.html { render :new }
+      end
     end
   end
 

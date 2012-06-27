@@ -47,6 +47,10 @@ class ApiDocCollection
     ApiDocService.where(:_id.in => new_ids).update_all(:api_doc_collection_id => self.id)
   end
 
+  def url_path
+    @url_path ||= File.join(ActionController::Base.config.relative_url_root, self[:url_path])
+  end
+
   def generate_url_path
     self.url_path = File.join("/doc", self.slug)
   end
