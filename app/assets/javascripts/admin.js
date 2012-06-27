@@ -3,3 +3,5 @@
 //= require rails.validations
 //= require jQuery-Slugify-Plugin/jquery.slugify
 //= require application
+//= require ckeditor/ckeditor
+//= require ckeditor/adapters/jquery

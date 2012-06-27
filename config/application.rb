@@ -72,6 +72,14 @@ module Developer
     config.assets.js_compressor  = :uglifier
     config.assets.css_compressor = :yui
 
+    # Precompile additional assets (application.js, application.css, and all non-JS/CSS are already added)
+    config.assets.precompile += %w( 
+      admin.css
+      admin.js
+      public.css
+      public.js
+    )
+
     # Use a file-based cache store
     config.cache_store = :file_store, "#{Rails.root}/tmp/cache"
   end
