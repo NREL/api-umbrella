@@ -33,6 +33,10 @@ frontend web_router
   # docs.devdev.nrel.gov
   acl host_match_docs hdr_beg(host) -i docs.
   use_backend devdev_docs_farm if host_match_docs
+
+  # vagrant.devdev.nrel.gov
+  acl host_match_vagrant hdr_beg(host) -i vagrant.
+  use_backend devdev_docs_farm if host_match_vagrant
   <% end %>
 
   # Requests starting with /api/ get sent to the auth proxy for authentication
@@ -48,6 +52,11 @@ frontend web_router
   # Requests starting with /auth get sent to Tomcat for our CAS servlet.
   acl url_match_auth path_beg /auth
   use_backend tomcat_farm if via_https url_match_auth
+
+  # FIXME: GSA TEMPORARY DEMO: Requests starting with /gsa/ get sent to the
+  # separate developer site.
+  acl url_match_gsa path_beg /gsa/
+  use_backend gsa_developer_site_farm if url_match_gsa
 
   # All other requests go to our main site.
   default_backend developer_site_farm
