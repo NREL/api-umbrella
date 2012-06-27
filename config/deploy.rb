@@ -2,8 +2,8 @@
 require "capistrano/ext/multistage"
 
 require "capistrano_nrel_ext/recipes/defaults"
+require "capistrano_nrel_ext/recipes/asset_pipeline"
 require "capistrano_nrel_ext/recipes/gem_bundler"
-require "capistrano_nrel_ext/recipes/jammit"
 require "capistrano_nrel_ext/recipes/nginx"
 require "capistrano_nrel_ext/recipes/rails"
 require "capistrano_nrel_ext/recipes/redhat"
@@ -12,6 +12,6 @@ require "capistrano_nrel_ext/recipes/redhat"
 set :application, "developer"
 
 # Define the rails-based applications.
-set :rails_applications, [
-  ".",
-]
+set :rails_app_paths, {
+  "." => "/",
+}

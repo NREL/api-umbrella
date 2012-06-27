@@ -82,6 +82,10 @@ group :development, :test do
 end
 
 group :development do
+  # Deployment
+  gem "capistrano-ext"
+  gem "capistrano_nrel_ext"
+
   gem "yajl-ruby", :require => false
 
   gem "yard", :require => false
