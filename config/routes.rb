@@ -26,10 +26,11 @@ Developer::Application.routes.draw do
     resources :api_users, :path => "api-users", :only => [:create]
   end
 
-  devise_for :admins, :controllers => { :omniauth_callbacks => "admin/admins/omniauth_callbacks" } do
-    resources :admin_sessions
-    get "/admin/login" => "admin_sessions#new"
-    get "/admin/logout" => "admin_sessions#destroy"
+  devise_for :admins, :controllers => { :omniauth_callbacks => "admin/admins/omniauth_callbacks" }
+
+  devise_scope :admin do
+    get "/admin/login" => "admin_sessions#new", :as => :new_admin_session
+    get "/admin/logout" => "admin_sessions#destroy", :as => :destroy_admin_session
   end
 
   namespace :admin do

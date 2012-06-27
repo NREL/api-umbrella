@@ -218,7 +218,13 @@ Devise.setup do |config|
     "developer.nrel.gov"
   end
 
-  config.omniauth :cas, :host => cas_host, :login_url => "/auth", :ssl => true
+  config.omniauth :cas,
+    :host => cas_host,
+    :login_url => "/auth/login",
+    :service_validate_url => "/auth/serviceValidate",
+    :logout_url => "/auth/logout",
+    :ssl => true,
+    :disable_ssl_verification => true
 
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or
