@@ -4,11 +4,20 @@
 development:
   <<: *developer_redis_development
 
+gsa_development:
+  <<: *developer_redis_development
+
 test:
   <<: *developer_redis_test
 
 staging_int:
   <<: *developer_redis_staging_int
 
+gsa_staging_int:
+  <<: *developer_redis_staging_int
+
 production:
+  <<: *developer_redis_production
+
+gsa_production:
   <<: *developer_redis_production

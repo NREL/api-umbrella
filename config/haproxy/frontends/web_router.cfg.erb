@@ -55,6 +55,9 @@ frontend web_router
 
   # FIXME: GSA TEMPORARY DEMO: Requests starting with /gsa/ get sent to the
   # separate developer site.
+  acl url_match_gsa_api path_beg /gsa/api/
+  use_backend gsa_auth_proxy_farm_public_apis if url_match_gsa_api
+
   acl url_match_gsa path_beg /gsa/
   use_backend gsa_developer_site_farm if url_match_gsa
 

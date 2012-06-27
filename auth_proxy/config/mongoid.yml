@@ -4,11 +4,20 @@
 development:
   <<: *developer_mongodb_development
 
+gsa_development:
+  <<: *gsa_developer_mongodb_development
+
 test:
   <<: *developer_mongodb_test
 
 staging_int:
   <<: *developer_mongodb_staging_int
 
+gsa_staging_int:
+  <<: *gsa_developer_mongodb_staging_int
+
 production:
   <<: *developer_mongodb_production
+
+gsa_production:
+  <<: *gsa_developer_mongodb_production
