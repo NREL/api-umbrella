@@ -11,7 +11,7 @@ server {
 
   location /gsa {
     # Let items in the Rails "public" directory be read directly by nginx.
-    root <%= current_path %>/public;
+    alias <%= current_path %>/public;
 
     # Serve this rails site with Passenger.
     passenger_enabled on;
