@@ -5,6 +5,8 @@
     <title>NREL Developer Network</title>
     <%= stylesheet_link_tag "admin" %>
     <%= javascript_include_tag "admin" %>
+    <%= javascript_include_tag(asset_paths.compute_public_path("ckeditor/ckeditor.js", "javascripts")) %>
+    <%= javascript_include_tag(asset_paths.compute_public_path("ckeditor/adapters/jquery.js", "javascripts")) %>
     <%= csrf_meta_tag %>
   </head>
   <body>
