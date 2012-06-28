@@ -1,3 +1,5 @@
+var CKEDITOR_BASEPATH = "/gsa/assets/ckeditor/";
+
 $(document).ready(function() {
   $("textarea.editor").ckeditor({
     extraPlugins: "syntaxhighlight",
