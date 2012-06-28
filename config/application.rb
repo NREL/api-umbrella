@@ -76,6 +76,7 @@ module Developer
     config.assets.precompile += %w( 
       admin.css
       admin.js
+      ckeditor/*
       ie_lte_8.js
       public.css
       public.js
