@@ -12,6 +12,6 @@ require "capistrano_nrel_ext/recipes/redhat"
 set :application, "developer"
 
 # Define the rails-based applications.
-set :rails_applications, [
-  ".",
-]
+set :rails_app_paths,  {
+  "." => "/",
+}
