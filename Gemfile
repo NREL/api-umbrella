@@ -3,6 +3,10 @@ source :rubygems
 
 gem "rails", "~> 3.0.10"
 
+# Deployment
+gem "capistrano-ext"
+gem "capistrano_nrel_ext", "~> 0.2.10"
+
 # MongoDB
 gem "mongoid"
 
