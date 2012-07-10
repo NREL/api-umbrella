@@ -1,0 +1,40 @@
+GEM
+  remote: http://gems.cttsdev.nrel.gov/
+  remote: http://rubygems.org/
+  specs:
+    capistrano (2.12.0)
+      highline
+      net-scp (>= 1.0.0)
+      net-sftp (>= 2.0.0)
+      net-ssh (>= 2.0.14)
+      net-ssh-gateway (>= 1.1.0)
+    capistrano-ext (1.2.1)
+      capistrano (>= 1.0.0)
+    capistrano_nrel_ext (0.2.17)
+      capistrano
+      chronic (>= 0.6.0)
+      diffy
+      erubis (>= 2.6.0)
+      net-ssh (~> 2.4.0)
+      tzinfo (>= 0.3.0)
+    chronic (0.6.7)
+    diffy (2.0.8)
+    erubis (2.7.0)
+    highline (1.6.13)
+    jruby-pageant (1.1.1)
+    net-scp (1.0.4)
+      net-ssh (>= 1.99.1)
+    net-sftp (2.0.5)
+      net-ssh (>= 2.0.9)
+    net-ssh (2.4.0)
+      jruby-pageant (>= 1.0.2)
+    net-ssh-gateway (1.1.0)
+      net-ssh (>= 1.99.1)
+    tzinfo (0.3.33)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  capistrano-ext
+  capistrano_nrel_ext (~> 0.2.10)
