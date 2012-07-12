@@ -17,7 +17,7 @@ role :db, "devstage-int-db.nrel.gov", :no_release => true
 set :deploy_to_base, "/srv/developer/devstage-int"
 
 # Set the accessible web domain for this site.
-set :base_domain, "api.data.gov"
+set :base_domain, "stage.api.data.gov"
 
 # Set the Rails environment.
 set :rails_env, "staging_int"
