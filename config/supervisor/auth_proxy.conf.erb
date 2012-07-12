@@ -55,8 +55,8 @@ numprocs=2
 directory=<%=current_path %>/auth_proxy
 ; FIXME: Remove logic once everything's on the new setup using rbenv.
 <% if(rails_env == "production") %>
-environment=RACK_ENV=<%= rails_env %>
-command=/usr/local/rvm/wrappers/default/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 50%(process_num)03d
+environment=RACK_ENV=gsa_<%= rails_env %>
+command=/usr/local/rvm/wrappers/default/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 56%(process_num)03d
 <% else %>
 environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,RACK_ENV=gsa_<%= rails_env %>
 command=/opt/rbenv/shims/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 56%(process_num)03d
