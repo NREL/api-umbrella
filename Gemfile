@@ -3,10 +3,6 @@ source :rubygems
 
 gem "rails", "~> 3.2.6"
 
-# Deployment
-gem "capistrano-ext"
-gem "capistrano_nrel_ext", "~> 0.2.10"
-
 # MongoDB
 gem "mongoid"
 
@@ -88,7 +84,7 @@ end
 group :development do
   # Deployment
   gem "capistrano-ext"
-  gem "capistrano_nrel_ext"
+  gem "capistrano_nrel_ext", "~> 0.2.10"
 
   gem "yajl-ruby", :require => false
 
