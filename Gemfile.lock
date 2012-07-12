@@ -56,7 +56,7 @@ GEM
       net-ssh-gateway (>= 1.1.0)
     capistrano-ext (1.2.1)
       capistrano (>= 1.0.0)
-    capistrano_nrel_ext (0.2.17)
+    capistrano_nrel_ext (0.2.18)
       capistrano
       chronic (>= 0.6.0)
       diffy
