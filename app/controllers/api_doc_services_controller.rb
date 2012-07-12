@@ -5,7 +5,7 @@ class ApiDocServicesController < ApplicationController
   caches_action :show
 
   def show
-    @service = ApiDocService.where(:url_path => request.path.gsub(/^#{ActionController::Base.config.relative_url_root}\/?/, "/")).first
+    @service = ApiDocService.where(:url_path => request.path.gsub(/^#{ActionController::Base.config.relative_url_root.to_s}\/?/, "/")).first
     raise Mongoid::Errors::DocumentNotFound.new(ApiDocService, request.path) unless(@service)
 
     if @service.api_doc_collection

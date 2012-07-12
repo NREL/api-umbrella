@@ -48,7 +48,7 @@ class ApiDocCollection
   end
 
   def url_path
-    @url_path ||= File.join(ActionController::Base.config.relative_url_root, self[:url_path])
+    @url_path ||= File.join(ActionController::Base.config.relative_url_root.to_s, self[:url_path])
   end
 
   def generate_url_path
