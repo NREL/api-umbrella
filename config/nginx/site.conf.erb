@@ -9,13 +9,10 @@ server {
   access_log <%= shared_path %>/log/access.log combined;
   error_log <%= shared_path %>/log/error.log;
 
-  location / {
-    # Let items in the Rails "public" directory be read directly by nginx.
-    alias <%= current_path %>/public;
+  root <%= current_path %>/public;
 
-    # Serve this rails site with Passenger.
-    passenger_enabled on;
-  }
+  # Serve this rails site with Passenger.
+  passenger_enabled on;
 
   # Set the current environment.
   rails_env <%= rails_env %>;
