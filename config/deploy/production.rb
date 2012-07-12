@@ -17,7 +17,7 @@ role :db, "devprod-int-db.nrel.gov", :no_release => true
 set :deploy_to_base, "/srv/data/devprod-int"
 
 # Set the accessible web domain for this site.
-set :base_domain, "developer.nrel.gov"
+set :base_domain, "api.data.gov"
 
 # Set the Rails environment.
 set :rails_env, "production"

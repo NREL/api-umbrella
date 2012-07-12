@@ -15,7 +15,7 @@ role :db, "devdev-db.nrel.gov", :no_release => true
 set :deploy_to_base, "/srv/developer/devdev"
 
 # Set the accessible web domain for this site.
-set :base_domain, "devdev.nrel.gov"
+set :base_domain, "api.data.gov"
 
 # Reduce the number of copies kept since this is the development environment.
 set :keep_releases, 2

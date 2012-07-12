@@ -9,7 +9,7 @@ server {
   access_log <%= shared_path %>/log/access.log combined;
   error_log <%= shared_path %>/log/error.log;
 
-  location /gsa {
+  location / {
     # Let items in the Rails "public" directory be read directly by nginx.
     alias <%= current_path %>/public;
 
@@ -26,5 +26,5 @@ server {
 
 <% if(rails_env == "production") %>
 # Pre-start the rails app.
-passenger_pre_start http://<%= domain %>:51099/gsa;
+passenger_pre_start http://<%= domain %>:51099/;
 <% end %>
