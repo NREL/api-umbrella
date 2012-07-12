@@ -5,8 +5,14 @@ numprocs=4
 ; Start each proxymachine instance with ports starting at 50000.
 ; Execute proxymachine via RVM and Bundler. 
 directory=<%=current_path %>/auth_proxy
+; FIXME: Remove logic once everything's on the new setup using rbenv.
+<% if(rails_env == "production") %>
+environment=RACK_ENV=<%= rails_env %>
+command=/usr/local/rvm/wrappers/default/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 50%(process_num)03d
+<% else %>
 environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,RACK_ENV=<%= rails_env %>
 command=/opt/rbenv/shims/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 50%(process_num)03d
+<% end %>
 
 ; Name each process by the port number, eg "auth_proxy_50000",
 ; "auth_proxy_50001"
@@ -39,7 +45,7 @@ stdout_logfile=<%= current_path %>/log/%(program_name)s_50%(process_num)03d.log
 ; Don't rotate based on file size. We'll rotate externally using logrotate.
 logfile_maxbytes=0
 
-# FIXME: GSA TEMPORARY DEMO: Separate auth proxy for GSA.
+; FIXME: GSA TEMPORARY DEMO: Separate auth proxy for GSA.
 [program:<%= deploy_name %>-gsa_auth_proxy]
 ; Run 2 auth_proxy instances.
 numprocs=2
@@ -47,8 +53,14 @@ numprocs=2
 ; Start each proxymachine instance with ports starting at 56000.
 ; Execute proxymachine via RVM and Bundler. 
 directory=<%=current_path %>/auth_proxy
+; FIXME: Remove logic once everything's on the new setup using rbenv.
+<% if(rails_env == "production") %>
+environment=RACK_ENV=<%= rails_env %>
+command=/usr/local/rvm/wrappers/default/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 50%(process_num)03d
+<% else %>
 environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,RACK_ENV=gsa_<%= rails_env %>
 command=/opt/rbenv/shims/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 56%(process_num)03d
+<% end %>
 
 ; Name each process by the port number, eg "auth_proxy_56000",
 ; "auth_proxy_56001"
