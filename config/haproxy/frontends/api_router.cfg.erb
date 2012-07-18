@@ -16,6 +16,10 @@ frontend api_router 127.0.0.1:50100
   acl url_match_api_georeserv path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_georeserv.lst") %>
   use_backend api_georeserv_farm if url_match_api_georeserv
 
+  # Solar Metrics Services
+  acl url_match_api_solarmetrics path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_solarmetrics.lst") %>
+  use_backend api_solarmetrics_farm if url_match_api_solarmetrics
+
   # FleetAtlas Services
   acl url_match_api_fleet_atlas path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_fleet_atlas.lst") %>
   use_backend api_fleet_atlas_farm if url_match_api_fleet_atlas
