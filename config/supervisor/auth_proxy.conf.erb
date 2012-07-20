@@ -5,14 +5,8 @@ numprocs=4
 ; Start each proxymachine instance with ports starting at 50000.
 ; Execute proxymachine via RVM and Bundler. 
 directory=<%=current_path %>/auth_proxy
-; FIXME: Remove logic once everything's on the new setup using rbenv.
-<% if(rails_env == "production") %>
-environment=RACK_ENV=<%= rails_env %>
-command=/usr/local/rvm/wrappers/default/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 50%(process_num)03d
-<% else %>
 environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,RACK_ENV=<%= rails_env %>
 command=/opt/rbenv/shims/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 50%(process_num)03d
-<% end %>
 
 ; Name each process by the port number, eg "auth_proxy_50000",
 ; "auth_proxy_50001"
