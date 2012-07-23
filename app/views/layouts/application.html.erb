@@ -1,49 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <title><%= html_title %></title>
-    <!--[if lte IE 8]>
-      <%= javascript_include_tag "ie_lte_8.js" %>
-    <![endif]-->
+    <title>Data.gov - NREL Developer Network</title>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta content="en" name="language">
+    <meta content="width=1015,maximum-scale=1.0" name="viewport">
+
     <%= stylesheet_link_tag "public" %>
+    <!--[if IE]
+     script type="text/javascript" src="http://html5shiv.googlecode.com/svn/trunk/html5.js"-->
     <%= javascript_include_tag "public" %>
     <%= csrf_meta_tag %>
-
-    <script type="text/javascript">
-      (function() {
-        var so = document.createElement('script'); so.type = 'text/javascript'; so.async = true;
-        so.src = '//www.nrel.gov/includes/ga/nrel.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(so, s);
-      })();
-    </script>
   </head>
-  <body class="container">
-    <header style="width: 100%">
-      <%= image_tag("gsa_logo.png", :alt => "Data.gov") %>
-      <nav>
+  <body>
+    <!-- PreHeader Section -->
+    <div id="preheader">
+      <div id="preheader-inner" class="container_12">
+        <div id="whitehouse"><p><%= image_tag("gsa/usaflag.gif", :alt => "USA Flag") %> <em>An Official Website of the United States Government</em></p></div>
+      </div>
+    </div>
+    <div id="main" class="container_12">
+      <!-- Header Section -->
+      <div id="header" class="grid_12">
+        <div id="logo"><a class="logo" href="#" title="Home">Data.gov</a></div>
+      </div>
+      <div class="clear"></div>
+
+      <!-- Navigation Section -->
+      <div id="navigation" class="grid_12">
         <%= tabs_tag(:link_current => true) do |tab| %>
           <%= tab.home "Home", root_path, :class => "nav-home" %>
           <%= tab.documentation "Documentation", doc_path, :class => "nav-documentation" %>
           <%= tab.community "Community", community_path, :class => "nav-community" %>
         <% end %>
-      </nav>
-    </header>
-
-    <% if crumbs.length > 1 %>
-      <div class="crumbs">
-        <%= render_crumbs %>
       </div>
-    <% end %>
+      <div class="clear"></div>
 
-    <% flash.each do |flash_type, message| %>
-      <div class="flash-message flash-<%= flash_type %>">
-        <%= simple_format(message) %>
+      <!-- Content Section -->
+      <%= yield %>
+
+      <div class="clear"></div>
+    </div>
+
+    <!-- Footer Section -->
+    <div id="footer">
+      <div id="footer-inner" class="container_12">
+        <div id="footer-menu">
+          <ul class="menu">
+            <li class="first"><a href="#" title="Footer Menu Item">Footer Menu Item</a></li>
+            <li><a href="#" title="Footer Menu Item 2">Footer Menu Item 2</a></li>
+            <li class="last"><a href="#" title="Footer Menu Item 3">Footer Menu Item 3</a></li>
+          </ul>
+        </div>
+        <div id="footer-logo"><%= image_tag("gsa/datagov-footer-logo.png", :alt => "Data.gov") %></div>
       </div>
-    <% end %>
-
-    <%= yield %>
-
-    <%= render("layouts/footer") %>
+    </div>
   </body>
 </html>

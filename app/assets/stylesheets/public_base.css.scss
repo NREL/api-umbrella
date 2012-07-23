@@ -23,18 +23,18 @@ nav {
   width: 100%;
 }
 
-nav ul {
+#navigation ul {
   padding: 0px;
   margin: 0px;
 }
 
-nav li {
+#navigation li {
   list-style-type: none;
   float: left;
   border-right: 1px solid #91b6e2;
 }
 
-nav li a {
+#navigation li a {
   display: block;
   height: 21px;
 }
@@ -159,7 +159,7 @@ label abbr.required, label .abbr-required {
 
 form.col-2 .string .error,
 form.col-2 .text .error {
-  margin-left: -16px;
+  /* margin-left: -16px; */
 }
 
 .user-terms-and-conditions label {
@@ -239,4 +239,8 @@ pre.key {
 body.popup {
   min-width: inherit;
   padding: 10px 20px;
+}
+
+ol, ul, dl {
+  margin-left: 2em;
 }
