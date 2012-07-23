@@ -37,6 +37,12 @@
       <div class="clear"></div>
 
       <!-- Content Section -->
+      <% if crumbs.length > 1 %>
+        <div class="crumbs grid_12">
+          <%= render_crumbs %>
+        </div>
+      <% end %>
+
       <%= yield %>
 
       <div class="clear"></div>

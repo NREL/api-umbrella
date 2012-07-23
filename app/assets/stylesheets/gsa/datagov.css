@@ -355,7 +355,8 @@ div.crumbs {
 	padding:0 0 0 5px;
 	font-size: 80%;
 	color: #036;
-	margin-bottom:20px;
+  margin-top: 15px;
+	margin-bottom:5px;
 }
 #breadcrumb a{
 	font-weight: normal;
