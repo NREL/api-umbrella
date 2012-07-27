@@ -207,22 +207,11 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', :scope => 'user,public_repo'
 
-  cas_host = case Rails.env
-  when "development"
-    "devdev.nrel.gov"
-  when "staging_int"
-    "devstage-int.nrel.gov"
-  when "production"
-    "devprod-int.nrel.gov"
-  else
-    "developer.nrel.gov"
-  end
-
   config.omniauth :cas,
-    :host => cas_host,
-    :login_url => "/auth/login",
-    :service_validate_url => "/auth/serviceValidate",
-    :logout_url => "/auth/logout",
+    :host => "login.max.gov",
+    :login_url => "/cas/login",
+    :service_validate_url => "/cas/serviceValidate",
+    :logout_url => "/cas/logout",
     :ssl => true,
     :disable_ssl_verification => true
 
