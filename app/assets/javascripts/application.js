@@ -3,11 +3,8 @@ $(document).ready(function() {
     extraPlugins: "syntaxhighlight",
     height: 500,
     contentsCss: [
-      "/stylesheets/yui/reset.css",
-      "/stylesheets/yui/base.css",
-      "/stylesheets/yui/fonts.css",
-      "/stylesheets/doc_service.css",
-      "/stylesheets/editor.css",
+      "/assets/public.css",
+      "/assets/ckeditor.css",
     ],
     stylesSet: [
       {
