@@ -33,6 +33,8 @@ Developer::Application.routes.draw do
     get "/admin/logout" => "admin_sessions#destroy", :as => :destroy_admin_session
   end
 
+  match "/admin" => redirect("/admin/api_doc_collections")
+
   namespace :admin do
     resources :admins do
       get "page/:page", :action => :index, :on => :collection
