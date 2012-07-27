@@ -17,7 +17,7 @@ a:hover {
 header {
   height: 55px;
   width: 100%;
-  background: #222222 url(/images/admin/header_bg.png) repeat-x;
+  background: #222222 url(/assets/admin/header_bg.png) repeat-x;
   text-align: center;
   line-height: 55px;
 }
