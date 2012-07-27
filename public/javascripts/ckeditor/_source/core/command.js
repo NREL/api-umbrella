@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -49,7 +49,23 @@ CKEDITOR.command = function( editor, commandDefinition )
 		if ( this.editorFocus )     // Give editor focus if necessary (#4355).
 			editor.focus();
 
+		if ( this.fire( 'exec' ) === true )
+			return true;
+
 		return ( commandDefinition.exec.call( this, editor, data ) !== false );
+	};
+
+	/**
+	 * Explicitly update the status of the command, by firing the {@link CKEDITOR.command#event:refresh} event,
+	 * as well as invoke the {@link CKEDITOR.commandDefinition.prototype.refresh} method if defined, this method
+	 * is to allow different parts of the editor code to contribute in command status resolution.
+	 */
+	this.refresh = function()
+	{
+		if ( this.fire( 'refresh' ) === true )
+			return true;
+
+		return ( commandDefinition.refresh && commandDefinition.refresh.apply( this, arguments ) !== false );
 	};
 
 	CKEDITOR.tools.extend( this, commandDefinition,

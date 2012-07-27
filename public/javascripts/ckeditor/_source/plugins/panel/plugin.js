@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -156,13 +156,10 @@ CKEDITOR.ui.panel.prototype =
 					'<html dir="' + dir + '" class="' + className + '_container" lang="' + langCode + '">' +
 						'<head>' +
 							'<style>.' + className + '_container{visibility:hidden}</style>' +
+							CKEDITOR.tools.buildStyleHtml( this.css ) +
 						'</head>' +
 						'<body class="cke_' + dir + ' cke_panel_frame ' + CKEDITOR.env.cssClass + '" style="margin:0;padding:0"' +
 						' onload="( window.CKEDITOR || window.parent.CKEDITOR ).tools.callFunction(' + onLoad + ');"></body>' +
-						// It looks strange, but for FF2, the styles must go
-						// after <body>, so it (body) becames immediatelly
-						// available. (#3031)
-						CKEDITOR.tools.buildStyleHtml( this.css ) +
 					'<\/html>';
 
 				doc.write( data );
@@ -227,13 +224,12 @@ CKEDITOR.ui.panel.prototype =
 	{
 		var blocks = this._.blocks,
 			block = blocks[ name ],
-			current = this._.currentBlock,
-			holder = this.forceIFrame ?
-				this.document.getById( this.id + '_frame' )
-				: this._.holder;
+			current = this._.currentBlock;
 
-		// Disable context menu for block panel.
-		holder.getParent().getParent().disableContextMenu();
+		// ARIA role works better in IE on the body element, while on the iframe
+		// for FF. (#8864)
+		var holder = !this.forceIFrame || CKEDITOR.env.ie ?
+				 this._.holder : this.document.getById( this.id + '_frame' );
 
 		if ( current )
 		{

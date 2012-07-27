@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -27,7 +27,6 @@ body .cke_dialog
 
 	/* 'cke_dialog' element has been fixed positioned in all but IE6, while we
 		need it to be positioned to hold e.g. close button. */
-	position: relative;
 	_position: static;
 }
 
@@ -212,14 +211,6 @@ body .cke_dialog
 	margin-top: 10px;
 }
 
-/* IE7 + IE quirks */
-.cke_skin_kama .cke_browser_ie7.cke_single_page .cke_dialog_contents
-{
-	margin-top: 0px;
-	position: relative;
-	margin-bottom: -22px;
-}
-
 .cke_skin_kama .cke_dialog_ui_vbox table,
 .cke_skin_kama .cke_dialog_ui_hbox table
 {
@@ -249,6 +240,19 @@ body .cke_dialog
 	padding: 1px 0px;
 	/* IE6/Quirks - make sure the content does not overflow (#7321) */
 	_width: 99.9%;
+}
+
+/* The absolute position is required for IE7 on text inputs not to stretch dialog horizontally. (#8971)*/
+.cke_skin_kama .cke_browser_ie7 input.cke_dialog_ui_input_text,
+.cke_skin_kama .cke_browser_ie7 input.cke_dialog_ui_input_password
+{
+	position: absolute;
+}
+.cke_skin_kama .cke_browser_ie7 div.cke_dialog_ui_input_text,
+.cke_skin_kama .cke_browser_ie7 div.cke_dialog_ui_input_password
+{
+	height:14px;
+	position: relative;
 }
 
 /* Opera/IE doesn't leave enough padding in text input for cursor to blink in RTL. (#6087) */
@@ -496,7 +500,7 @@ body .cke_dialog
 .cke_skin_kama a:focus.cke_dialog_ui_button,
 .cke_skin_kama a:active.cke_dialog_ui_button
 {
-	background-position: 0 -1179px;
+	background-position: 0 -1180px;
 }
 
 .cke_skin_kama .cke_hc a:hover.cke_dialog_ui_button,
@@ -986,4 +990,11 @@ body .cke_dialog
 	filter:alpha(opacity=0);
 	width:100%;
 	height:100%;
+}
+
+.cke_dialog label
+{
+	display: inline;
+	margin-bottom: auto;
+	cursor: default;
 }

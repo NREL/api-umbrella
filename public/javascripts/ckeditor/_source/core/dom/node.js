@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -23,21 +23,13 @@ CKEDITOR.dom.node = function( domNode )
 {
 	if ( domNode )
 	{
-		switch ( domNode.nodeType )
-		{
-			// Safari don't consider document as element node type. (#3389)
-			case CKEDITOR.NODE_DOCUMENT :
-				return new CKEDITOR.dom.document( domNode );
+		var type = domNode.nodeType == CKEDITOR.NODE_DOCUMENT ? 'document'
+			: domNode.nodeType == CKEDITOR.NODE_ELEMENT ? 'element'
+			: domNode.nodeType == CKEDITOR.NODE_TEXT ? 'text'
+			: domNode.nodeType == CKEDITOR.NODE_COMMENT ? 'comment'
+			: 'domObject';  // Call the base constructor otherwise.
 
-			case CKEDITOR.NODE_ELEMENT :
-				return new CKEDITOR.dom.element( domNode );
-
-			case CKEDITOR.NODE_TEXT :
-				return new CKEDITOR.dom.text( domNode );
-		}
-
-		// Call the base constructor.
-		CKEDITOR.dom.domObject.call( this, domNode );
+		return new CKEDITOR.dom[ type ]( domNode );
 	}
 
 	return this;
@@ -352,7 +344,10 @@ CKEDITOR.tools.extend( CKEDITOR.dom.node.prototype,
 			do
 			{
 				previous = previous.previousSibling;
-				retval = previous && new CKEDITOR.dom.node( previous );
+
+				// Avoid returning the doc type node.
+				// http://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-412266927
+				retval = previous && previous.nodeType != 10 && new CKEDITOR.dom.node( previous );
 			}
 			while ( retval && evaluator && !evaluator( retval ) )
 			return retval;

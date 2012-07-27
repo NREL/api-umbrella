@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -266,7 +266,6 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 			btnLockSizesId = numbering( 'btnLockSizes' ),
 			btnResetSizeId = numbering( 'btnResetSize' ),
 			imagePreviewLoaderId = numbering( 'ImagePreviewLoader' ),
-			imagePreviewBoxId = numbering( 'ImagePreviewBox' ),
 			previewLinkId = numbering( 'previewLink' ),
 			previewImageId = numbering( 'previewImage' );
 
@@ -290,8 +289,8 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 				this.addLink = false;
 
 				var editor = this.getParentEditor(),
-					sel = this.getParentEditor().getSelection(),
-					element = sel.getSelectedElement(),
+					sel = editor.getSelection(),
+					element = sel && sel.getSelectedElement(),
 					link = element && element.getAscendant( 'a' );
 
 				//Hide loader.
@@ -1077,7 +1076,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 											style : 'width:95%;',
 											html : '<div>' + CKEDITOR.tools.htmlEncode( editor.lang.common.preview ) +'<br>'+
 											'<div id="' + imagePreviewLoaderId + '" class="ImagePreviewLoader" style="display:none"><div class="loading">&nbsp;</div></div>'+
-											'<div id="' + imagePreviewBoxId + '" class="ImagePreviewBox"><table><tr><td>'+
+											'<div class="ImagePreviewBox"><table><tr><td>'+
 											'<a href="javascript:void(0)" target="_blank" onclick="return false;" id="' + previewLinkId + '">'+
 											'<img id="' + previewImageId + '" alt="" /></a>' +
 											( editor.config.image_previewText ||

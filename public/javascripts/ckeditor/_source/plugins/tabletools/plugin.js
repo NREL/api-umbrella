@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -9,10 +9,6 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 
 	function getSelectedCells( selection )
 	{
-		// Walker will try to split text nodes, which will make the current selection
-		// invalid. So save bookmarks before doing anything.
-		var bookmarks = selection.createBookmarks();
-
 		var ranges = selection.getRanges();
 		var retval = [];
 		var database = {};
@@ -71,9 +67,6 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 		}
 
 		CKEDITOR.dom.element.clearAllMarkers( database );
-
-		// Restore selection position.
-		selection.selectBookmarks( bookmarks );
 
 		return retval;
 	}
@@ -490,21 +483,19 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 		return cell.is ? -1 : null;
 	}
 
-	function cellInCol( tableMap, colIndex, cell )
+	function cellInCol( tableMap, colIndex )
 	{
 		var oCol = [];
 		for ( var r = 0; r < tableMap.length; r++ )
 		{
 			var row = tableMap[ r ];
-			if ( typeof cell == 'undefined' )
-				oCol.push( row[ colIndex ] );
-			else if ( cell.is && row[ colIndex ] == cell.$ )
-				return r;
-			else if ( r == cell )
-				return new CKEDITOR.dom.element( row[ colIndex ] );
-		}
+			oCol.push( row[ colIndex ] );
 
-		return ( typeof cell == 'undefined' )? oCol : cell.is ? -1 :  null;
+			// Avoid adding duplicate cells.
+			if ( row[ colIndex ].rowSpan > 1 )
+				r += row[ colIndex ].rowSpan - 1;
+		}
+		return oCol;
 	}
 
 	function mergeCells( selection, mergeDirection, isDetect )
@@ -780,6 +771,8 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 
 	CKEDITOR.plugins.tabletools =
 	{
+		requires : [ 'table', 'dialog', 'contextmenu' ],
+
 		init : function( editor )
 		{
 			var lang = editor.lang.table;

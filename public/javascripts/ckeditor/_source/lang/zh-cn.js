@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -31,7 +31,8 @@ CKEDITOR.lang['zh-cn'] =
 	 * Screenreader titles. Please note that screenreaders are not always capable
 	 * of reading non-English words. So be careful while translating it.
 	 */
-	editorTitle : '所见即所得编辑器, %1, 按 ALT+0 查看帮助。',
+	editorTitle : '富文本编辑器，%1',
+	editorHelp : '按 ALT+0 获得帮助',
 
 	// ARIA descriptions.
 	toolbars	: '工具栏',
@@ -607,8 +608,8 @@ CKEDITOR.lang['zh-cn'] =
 
 	iframe :
 	{
-		title		: 'iFrame属性',
-		toolbar		: 'iFrame',
+		title		: 'IFrame 属性',
+		toolbar		: 'IFrame',
 		noUrl		: '请输入框架的 URL',
 		scrolling	: '允许滚动条',
 		border		: '显示框架边框'
@@ -810,6 +811,6 @@ CKEDITOR.lang['zh-cn'] =
 		metaDescription : '页面说明',
 		metaAuthor : '作者',
 		metaCopyright : '版权',
-		previewHtml : '<p>This is some <strong>sample text</strong>. You are using <a href="javascript:void(0)">CKEditor</a>.</p>'
+		previewHtml : '<p>这是一些<strong>演示用文字</strong>。你当前正在使用<a href="javascript:void(0)">CKEditor</a>。</p>'
 	}
 };

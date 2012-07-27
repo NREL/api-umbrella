@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -155,7 +155,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 						if ( this._.matchWord && !currentTextNode
 							 || this._.walker._.end )
 							break;
-					}
+						}
 					// Found a fresh text node.
 					this.textNode = currentTextNode;
 					if ( currentTextNode )
@@ -495,8 +495,15 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 								tail = cursors[ cursors.length - 1 ],
 								head = cursors[ 0 ];
 
-							var headWalker = new characterWalker( getRangeBeforeCursor( head ), true ),
-								tailWalker = new characterWalker( getRangeAfterCursor( tail ), true );
+							var rangeBefore = getRangeBeforeCursor( head ),
+								rangeAfter = getRangeAfterCursor( tail );
+
+							// The word boundary checks requires to trim the text nodes. (#9036)
+							rangeBefore.trim();
+							rangeAfter.trim();
+
+							var headWalker = new characterWalker( rangeBefore, true ),
+								tailWalker = new characterWalker( rangeAfter, true );
 
 							if ( ! ( isWordSeparator( headWalker.back().character )
 										&& isWordSeparator( tailWalker.next().character ) ) )

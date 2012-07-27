@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -31,10 +31,11 @@ CKEDITOR.lang['uk'] =
 	 * Screenreader titles. Please note that screenreaders are not always capable
 	 * of reading non-English words. So be careful while translating it.
 	 */
-	editorTitle : 'Текстовий редактор, %1, натисніть ALT 0 для довідки.',
+	editorTitle : 'Rich text editor, %1', // MISSING
+	editorHelp : 'Press ALT 0 for help', // MISSING
 
 	// ARIA descriptions.
-	toolbars	: 'Editor toolbars', // MISSING
+	toolbars	: 'Панель інструментів редактора',
 	editor		: 'Текстовий редактор',
 
 	// Toolbar buttons without dialogs.
@@ -56,7 +57,7 @@ CKEDITOR.lang['uk'] =
 	superscript		: 'Верхній індекс',
 	horizontalrule	: 'Горизонтальна лінія',
 	pagebreak		: 'Вставити розрив сторінки',
-	pagebreakAlt		: 'Page Break', // MISSING
+	pagebreakAlt		: 'Розрив Сторінки',
 	unlink			: 'Видалити посилання',
 	undo			: 'Повернути',
 	redo			: 'Повторити',
@@ -121,10 +122,10 @@ CKEDITOR.lang['uk'] =
 		alignBottom		: 'По нижньому краю',
 		invalidHeight	: 'Висота повинна бути цілим числом.',
 		invalidWidth	: 'Ширина повинна бути цілим числом.',
-		invalidCssLength	: 'Value specified for the "%1" field must be a positive number with or without a valid CSS measurement unit (px, %, in, cm, mm, em, ex, pt, or pc).', // MISSING
-		invalidHtmlLength	: 'Value specified for the "%1" field must be a positive number with or without a valid HTML measurement unit (px or %).', // MISSING
-		invalidInlineStyle	: 'Value specified for the inline style must consist of one or more tuples with the format of "name : value", separated by semi-colons.', // MISSING
-		cssLengthTooltip	: 'Enter a number for a value in pixels or a number with a valid CSS unit (px, %, in, cm, mm, em, ex, pt, or pc).', // MISSING
+		invalidCssLength	: 'Значення, вказане для "%1" в полі повинно бути позитивним числом або без дійсного виміру CSS блоку (px, %, in, cm, mm, em, ex, pt, or pc).',
+		invalidHtmlLength	: 'Значення, вказане для "%1" в полі повинно бути позитивним числом або без дійсного виміру HTML блоку (px or %).',
+		invalidInlineStyle	: 'Значення, вказане для вбудованого стилю повинне складатися з одного чи кількох кортежів у форматі "ім\'я : значення", розділених крапкою з комою.',
+		cssLengthTooltip	: 'Введіть номер значення в пікселях або число з дійсною одиниці CSS (px, %, in, cm, mm, em, ex, pt, or pc).',
 
 		// Put the voice-only part of the label in the span.
 		unavailable		: '%1<span class="cke_accessibility">, не доступне</span>'
@@ -186,7 +187,7 @@ CKEDITOR.lang['uk'] =
 		cssClasses		: 'Клас CSS',
 		charset			: 'Кодування',
 		styles			: 'Стиль CSS',
-		rel			: 'Relationship', // MISSING
+		rel			: 'Зв\'язок',
 		selectAnchor		: 'Оберіть якір',
 		anchorName		: 'За ім\'ям елементу',
 		anchorId			: 'За ідентифікатором елементу',
@@ -206,14 +207,14 @@ CKEDITOR.lang['uk'] =
 		title		: 'Властивості якоря',
 		name		: 'Ім\'я якоря',
 		errorName	: 'Будь ласка, вкажіть ім\'я якоря',
-		remove		: 'Remove Anchor' // MISSING
+		remove		: 'Прибрати якір'
 	},
 
 	// List style dialog
 	list:
 	{
 		numberedTitle		: 'Опції нумерованого списку',
-		bulletedTitle		: 'Опції маркірованого списку',
+		bulletedTitle		: 'Опції маркованого списку',
 		type				: 'Тип',
 		start				: 'Почати з...',
 		validateStartNumber				:'Початковий номер списку повинен бути цілим числом.',
@@ -242,7 +243,7 @@ CKEDITOR.lang['uk'] =
 		findWhat			: 'Шукати:',
 		replaceWith			: 'Замінити на:',
 		notFoundMsg			: 'Вказаний текст не знайдено.',
-		findOptions			: 'Find Options', // MISSING
+		findOptions			: 'Параметри Пошуку',
 		matchCase			: 'Враховувати регістр',
 		matchWord			: 'Збіг цілих слів',
 		matchCyclic			: 'Циклічна заміна',
@@ -574,7 +575,7 @@ CKEDITOR.lang['uk'] =
 	format :
 	{
 		label		: 'Форматування',
-		panelTitle	: 'Форматування',
+		panelTitle	: 'Форматування параграфа',
 
 		tag_p		: 'Нормальний',
 		tag_pre		: 'Форматований',
@@ -607,11 +608,11 @@ CKEDITOR.lang['uk'] =
 
 	iframe :
 	{
-		title		: 'IFrame Properties', // MISSING
-		toolbar		: 'IFrame', // MISSING
-		noUrl		: 'Please type the iframe URL', // MISSING
-		scrolling	: 'Enable scrollbars', // MISSING
-		border		: 'Show frame border' // MISSING
+		title		: 'Налаштування для IFrame',
+		toolbar		: 'IFrame',
+		noUrl		: 'Будь ласка введіть посилання для IFrame',
+		scrolling	: 'Увімкнути прокрутку',
+		border		: 'Показати рамки фрейму'
 	},
 
 	font :
@@ -720,8 +721,8 @@ CKEDITOR.lang['uk'] =
 	{
 		title		: 'Про CKEditor',
 		dlgTitle	: 'Про CKEditor',
-		help	: 'Check $1 for help.', // MISSING
-		userGuide : 'CKEditor User\'s Guide', // MISSING
+		help	: 'Перевірте $1 для допомоги.',
+		userGuide : 'Інструкція Користувача для CKEditor',
 		moreInfo	: 'Щодо інформації з ліцензування завітайте на наш сайт:',
 		copy		: 'Copyright &copy; $1. Всі права застережено.'
 	},
@@ -733,8 +734,8 @@ CKEDITOR.lang['uk'] =
 	{
 		anchor		: 'Якір',
 		flash		: 'Flash-анімація',
-		iframe		: 'IFrame', // MISSING
-		hiddenfield	: 'Hidden Field', // MISSING
+		iframe		: 'IFrame',
+		hiddenfield	: 'Приховані Поля',
 		unknown		: 'Невідомий об\'єкт'
 	},
 
@@ -754,17 +755,17 @@ CKEDITOR.lang['uk'] =
 
 	toolbarGroups :
 	{
-		document : 'Document', // MISSING
-		clipboard : 'Clipboard/Undo', // MISSING
-		editing : 'Editing', // MISSING
-		forms : 'Forms', // MISSING
-		basicstyles : 'Basic Styles', // MISSING
-		paragraph : 'Paragraph', // MISSING
-		links : 'Links', // MISSING
-		insert : 'Insert', // MISSING
-		styles : 'Styles', // MISSING
-		colors : 'Colors', // MISSING
-		tools : 'Tools' // MISSING
+		document : 'Документ',
+		clipboard : 'Буфер обміну / Скасувати',
+		editing : 'Редагування',
+		forms : 'Форми',
+		basicstyles : 'Основний Стиль',
+		paragraph : 'Параграф',
+		links : 'Посилання',
+		insert : 'Вставити',
+		styles : 'Стилі',
+		colors : 'Кольори',
+		tools : 'Інструменти'
 	},
 
 	bidi :
@@ -777,14 +778,14 @@ CKEDITOR.lang['uk'] =
 	{
 		label : 'Властивості документа',
 		title : 'Властивості документа',
-		design : 'Design', // MISSING
+		design : 'Дизайн',
 		meta : 'Мета дані',
 		chooseColor : 'Обрати',
 		other : '<інший>',
 		docTitle :	'Заголовок сторінки',
 		charset : 	'Кодування набору символів',
 		charsetOther : 'Інше кодування набору символів',
-		charsetASCII : 'ASCII', // MISSING
+		charsetASCII : 'ASCII',
 		charsetCE : 'Центрально-європейська',
 		charsetCT : 'Китайська традиційна (Big5)',
 		charsetCR : 'Кирилиця',
@@ -810,6 +811,6 @@ CKEDITOR.lang['uk'] =
 		metaDescription : 'Опис документа',
 		metaAuthor : 'Автор',
 		metaCopyright : 'Авторські права',
-		previewHtml : '<p>This is some <strong>sample text</strong>. You are using <a href="javascript:void(0)">CKEditor</a>.</p>' // MISSING
+		previewHtml : '<p>Це приклад<strong>тексту</strong>. Ви використовуєте<a href="javascript:void(0)"> CKEditor </a>.</p>'
 	}
 };

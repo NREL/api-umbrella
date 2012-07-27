@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -256,15 +256,18 @@ CKEDITOR.config =
 	fullPage : false,
 
 	/**
-	 * The height of the editing area (that includes the editor content),
-	 * in relative or absolute units, e.g. <code>30px</code>, <code>5em</code>.
-	 * <strong>Note:</strong> Percentage units, like <code>30%</code>, are not supported yet.
+	 * The height of the editing area (that includes the editor content). This
+	 * can be an integer, for pixel sizes, or any CSS-defined length unit.<br>
+	 * <br>
+	 * <strong>Note:</strong> Percent units (%) are not supported.
 	 * @type Number|String
-	 * @default <code>'200'</code>
+	 * @default <code>200</code>
 	 * @example
-	 * config.height = 500;
-	 * config.height = '25em';
-	 * config.height = '300px';
+	 * config.height = 500; // 500 pixels.
+	 * @example
+	 * config.height = '25em'; // CSS length.
+	 * @example
+	 * config.height = '300px'; // CSS length.
 	 */
 	height : 200,
 
@@ -320,20 +323,20 @@ CKEDITOR.config =
 		'resize,' +
 		'save,' +
 		'scayt,' +
-		'smiley,' +
 		'showblocks,' +
 		'showborders,' +
+		'smiley,' +
 		'sourcearea,' +
+		'specialchar,' +
 		'stylescombo,' +
+		'tab,' +
 		'table,' +
 		'tabletools,' +
-		'specialchar,' +
-		'tab,' +
 		'templates,' +
 		'toolbar,' +
 		'undo,' +
-		'wysiwygarea,' +
-		'wsc',
+		'wsc,' +
+		'wysiwygarea',
 
 	/**
 	 * A list of additional plugins to be loaded. This setting makes it easier
@@ -400,13 +403,18 @@ CKEDITOR.config =
 	skin : 'kama',
 
 	/**
-	 * The editor width in CSS-defined units or an integer denoting a value in pixels.
+	 * The editor UI outer width. This can be an integer, for pixel sizes, or
+	 * any CSS-defined unit.<br>
+	 * <br>
+	 * Unlike the <code>{@link CKEDITOR.config.height}</code> setting, this
+	 * one will set the outer width of the entire editor UI, not for the
+	 * editing area only.
 	 * @type String|Number
 	 * @default <code>''</code> (empty)
 	 * @example
-	 * config.width = 850;
+	 * config.width = 850; // 850 pixels wide.
 	 * @example
-	 * config.width = '75%';
+	 * config.width = '75%'; // CSS unit.
 	 */
 	width : '',
 

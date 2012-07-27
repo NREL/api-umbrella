@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -246,7 +246,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 		{
 			element = elements[ i ];
 
-			if ( element.type == 'hbox' || element.type == 'vbox' )
+			if ( element.type == 'hbox' || element.type == 'vbox' || element.type == 'fieldset' )
 				attachFileBrowser( editor, dialogName, definition, element.children );
 
 			if ( !element.filebrowser )
@@ -321,7 +321,6 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 	{
 		var dialog = sourceElement.getDialog();
 		var targetElement = sourceElement.filebrowser.target || null;
-		url = url.replace( /#/g, '%23' );
 
 		// If there is a reference to targetElement, update it.
 		if ( targetElement )

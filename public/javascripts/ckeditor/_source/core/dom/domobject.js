@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -84,10 +84,10 @@ CKEDITOR.dom.domObject.prototype = (function()
 			{
 				var listener = nativeListeners[ eventName ] = getNativeListener( this, eventName );
 
-				if ( this.$.attachEvent )
-					this.$.attachEvent( 'on' + eventName, listener );
-				else if ( this.$.addEventListener )
+				if ( this.$.addEventListener )
 					this.$.addEventListener( eventName, listener, !!CKEDITOR.event.useCapture );
+				else if ( this.$.attachEvent )
+					this.$.attachEvent( 'on' + eventName, listener );
 			}
 
 			// Call the original implementation.
@@ -107,10 +107,10 @@ CKEDITOR.dom.domObject.prototype = (function()
 				var listener = nativeListeners && nativeListeners[ eventName ];
 				if ( listener )
 				{
-					if ( this.$.detachEvent )
-						this.$.detachEvent( 'on' + eventName, listener );
-					else if ( this.$.removeEventListener )
+					if ( this.$.removeEventListener )
 						this.$.removeEventListener( eventName, listener, false );
+					else if ( this.$.detachEvent )
+						this.$.detachEvent( 'on' + eventName, listener );
 
 					delete nativeListeners[ eventName ];
 				}

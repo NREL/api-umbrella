@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -31,7 +31,8 @@ CKEDITOR.lang['de'] =
 	 * Screenreader titles. Please note that screenreaders are not always capable
 	 * of reading non-English words. So be careful while translating it.
 	 */
-	editorTitle : 'WYSIWYG-Editor, %1, drücken Sie ALT 0 für Hilfe.',
+	editorTitle : 'Rich text editor, %1', // MISSING
+	editorHelp : 'Press ALT 0 for help', // MISSING
 
 	// ARIA descriptions.
 	toolbars	: 'Editor Symbolleisten',
@@ -190,7 +191,7 @@ CKEDITOR.lang['de'] =
 		selectAnchor		: 'Anker auswählen',
 		anchorName		: 'nach Anker Name',
 		anchorId			: 'nach Element Id',
-		emailAddress		: 'E-Mail Addresse',
+		emailAddress		: 'E-Mail Adresse',
 		emailSubject		: 'Betreffzeile',
 		emailBody		: 'Nachrichtentext',
 		noAnchors		: '(keine Anker im Dokument vorhanden)',

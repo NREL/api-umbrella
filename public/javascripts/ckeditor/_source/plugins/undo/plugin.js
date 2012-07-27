@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -260,7 +260,8 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 
 			if ( startedTyping || modifierSnapshot )
 			{
-				var beforeTypeImage = new Image( this.editor );
+				var beforeTypeImage = new Image( this.editor ),
+					beforeTypeCount = this.snapshots.length;
 
 				// Use setTimeout, so we give the necessary time to the
 				// browser to insert the character into the DOM.
@@ -272,7 +273,10 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 						if ( CKEDITOR.env.ie )
 							currentSnapshot = currentSnapshot.replace( /\s+data-cke-expando=".*?"/g, '' );
 
-						if ( beforeTypeImage.contents != currentSnapshot )
+						// If changes have taken place, while not been captured yet (#8459),
+						// compensate the snapshot.
+						if ( beforeTypeImage.contents != currentSnapshot &&
+							 beforeTypeCount == this.snapshots.length )
 						{
 							// It's safe to now indicate typing state.
 							this.typing = true;
@@ -410,10 +414,21 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 
 		restoreImage : function( image )
 		{
+			// Bring editor focused to restore selection.
+			var editor = this.editor,
+				sel;
+
+			if ( image.bookmarks )
+			{
+				editor.focus();
+				// Retrieve the selection beforehand. (#8324)
+				sel = editor.getSelection();
+			}
+
 			this.editor.loadSnapshot( image.contents );
 
 			if ( image.bookmarks )
-				this.editor.getSelection().selectBookmarks( image.bookmarks );
+				sel.selectBookmarks( image.bookmarks );
 			else if ( CKEDITOR.env.ie )
 			{
 				// IE BUG: If I don't set the selection to *somewhere* after setting

@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -31,11 +31,12 @@ CKEDITOR.lang['hi'] =
 	 * Screenreader titles. Please note that screenreaders are not always capable
 	 * of reading non-English words. So be careful while translating it.
 	 */
-	editorTitle : 'Rich text editor, %1, press ALT 0 for help.', // MISSING
+	editorTitle : 'Rich text editor, %1', // MISSING
+	editorHelp : 'Press ALT 0 for help', // MISSING
 
 	// ARIA descriptions.
-	toolbars	: 'Editor toolbars', // MISSING
-	editor		: 'Rich Text Editor', // MISSING
+	toolbars	: 'एडिटर टूलबार',
+	editor		: 'रिच टेक्स्ट एडिटर',
 
 	// Toolbar buttons without dialogs.
 	source			: 'सोर्स',
@@ -56,7 +57,7 @@ CKEDITOR.lang['hi'] =
 	superscript		: 'अभिलेख',
 	horizontalrule	: 'हॉरिज़ॉन्टल रेखा इन्सर्ट करें',
 	pagebreak		: 'पेज ब्रेक इन्सर्ट् करें',
-	pagebreakAlt		: 'Page Break', // MISSING
+	pagebreakAlt		: 'पेज ब्रेक',
 	unlink			: 'लिंक हटायें',
 	undo			: 'अन्डू',
 	redo			: 'रीडू',
@@ -726,8 +727,8 @@ CKEDITOR.lang['hi'] =
 		copy		: 'Copyright &copy; $1. All rights reserved.' // MISSING
 	},
 
-	maximize : 'Maximize', // MISSING
-	minimize : 'Minimize', // MISSING
+	maximize : 'मेक्सिमाईज़',
+	minimize : 'मिनिमाईज़',
 
 	fakeobjects :
 	{

@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -8,19 +8,32 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
  *		a DOM comment node.
  */
 
-CKEDITOR.dom.comment = CKEDITOR.tools.createClass(
+/**
+ * Represents a DOM comment node.
+ * @constructor
+ * @augments CKEDITOR.dom.node
+ * @param {Object|String} comment A native DOM comment node or a string containing
+ *		the text to use to create a new comment node.
+ * @param {CKEDITOR.dom.document} [ownerDocument] The document that will contain
+ *		the node in case of new node creation. Defaults to the current document.
+ * @example
+ * var nativeNode = document.createComment( 'Example' );
+ * var comment = CKEDITOR.dom.comment( nativeNode );
+ * @example
+ * var comment = CKEDITOR.dom.comment( 'Example' );
+ */
+CKEDITOR.dom.comment = function( comment, ownerDocument )
 {
-	base : CKEDITOR.dom.node,
+	if ( typeof comment == 'string' )
+		comment = ( ownerDocument ? ownerDocument.$ : document ).createComment( comment );
 
-	$ : function( text, ownerDocument )
-	{
-		if ( typeof text == 'string' )
-			text = ( ownerDocument ? ownerDocument.$ : document ).createComment( text );
+	CKEDITOR.dom.domObject.call( this, comment );
+};
 
-		this.base( text );
-	},
+CKEDITOR.dom.comment.prototype = new CKEDITOR.dom.node();
 
-	proto :
+CKEDITOR.tools.extend( CKEDITOR.dom.comment.prototype,
+	/** @lends CKEDITOR.dom.comment.prototype */
 	{
 		type : CKEDITOR.NODE_COMMENT,
 
@@ -28,5 +41,4 @@ CKEDITOR.dom.comment = CKEDITOR.tools.createClass(
 		{
 			return '<!--' + this.$.nodeValue + '-->';
 		}
-	}
-});
+	});

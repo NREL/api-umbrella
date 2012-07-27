@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -62,10 +62,12 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 				shy		: '\u00AD',		// IE
 				gt		: '\u003E',		// IE | FF |   --   | Opera
 				lt		: '\u003C',		// IE | FF | Safari | Opera
-				amp : '\u0026'		// ALL
+				amp 	: '\u0026',		// ALL
+				apos 	: '\u0027',		// IE
+				quot 	: '\u0022'		// IE
 			};
 
-		entities = entities.replace( /\b(nbsp|shy|gt|lt|amp)(?:,|$)/g, function( match, entity )
+		entities = entities.replace( /\b(nbsp|shy|gt|lt|amp|apos|quot)(?:,|$)/g, function( match, entity )
 			{
 				var org = reverse ? '&' + entity + ';' : specialTable[ entity ],
 					result = reverse ? specialTable[ entity ] : '&' + entity + ';';
@@ -114,25 +116,27 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 			if ( htmlFilter )
 			{
 				// Mandatory HTML base entities.
-				var selectedEntities = '';
+				var selectedEntities = [];
 
 				if ( config.basicEntities !== false )
-					selectedEntities += htmlbase;
+					selectedEntities.push( htmlbase );
 
 				if ( config.entities )
 				{
-					selectedEntities += ',' + entities;
+					if ( selectedEntities.length )
+						selectedEntities.push( entities );
+
 					if ( config.entities_latin )
-						selectedEntities += ',' + latin;
+						selectedEntities.push( latin );
 
 					if ( config.entities_greek )
-						selectedEntities += ',' + greek;
+						selectedEntities.push( greek );
 
 					if ( config.entities_additional )
-						selectedEntities += ',' + config.entities_additional;
+						selectedEntities.push( config.entities_additional );
 				}
 
-				var entitiesTable = buildTable( selectedEntities );
+				var entitiesTable = buildTable( selectedEntities.join( ',' ) );
 
 				// Create the Regex used to find entities in the text, leave it matches nothing if entities are empty.
 				var entitiesRegex = entitiesTable.regex ? '[' + entitiesTable.regex + ']' : 'a^';

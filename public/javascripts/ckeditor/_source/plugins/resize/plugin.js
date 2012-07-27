@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -44,7 +44,8 @@ CKEDITOR.plugins.add( 'resize',
 				if ( resizeVertical )
 					height =  Math.max( config.resize_minHeight, Math.min( internalHeight, config.resize_maxHeight ) );
 
-				editor.resize( width, height );
+				// DO NOT impose fixed size with single direction resize. (#6308)
+				editor.resize( resizeHorizontal ? width : null, height );
 			}
 
 			function dragEndHandler ( evt )

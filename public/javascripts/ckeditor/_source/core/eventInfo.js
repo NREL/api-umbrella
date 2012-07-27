@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -117,4 +117,16 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
  *         // This one will not be called.
  *     });
  * alert( someObject.fire( 'someEvent' ) );  // "true"
+ */
+
+/**
+ * Removes the current listener.
+ * @name CKEDITOR.eventInfo.prototype.removeListener
+ * @function
+ * @example
+ * someObject.on( 'someEvent', function( event )
+ *     {
+ *         <b>event.removeListener()</b>;
+ *			// Now this function won't be called again by 'someEvent'
+ *     });
  */

@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -93,8 +93,7 @@ CKEDITOR.plugins.add( 'colorbutton',
 		function renderColors( panel, type, colorBoxId )
 		{
 			var output = [],
-				colors = config.colorButton_colors.split( ',' ),
-				total = colors.length + ( config.colorButton_enableMore ? 2 : 1 );
+				colors = config.colorButton_colors.split( ',' );
 
 			var clickFn = CKEDITOR.tools.addFunction( function( color, type )
 				{
@@ -157,7 +156,7 @@ CKEDITOR.plugins.add( 'colorbutton',
 					' title="', lang.auto, '"' +
 					' onclick="CKEDITOR.tools.callFunction(', clickFn, ',null,\'', type, '\');return false;"' +
 					' href="javascript:void(\'', lang.auto, '\')"' +
-					' role="option" aria-posinset="1" aria-setsize="', total, '">' +
+					' role="option">' +
 					'<table role="presentation" cellspacing=0 cellpadding=0 width="100%">' +
 						'<tr>' +
 							'<td>' +
@@ -194,7 +193,7 @@ CKEDITOR.plugins.add( 'colorbutton',
 							' title="', colorLabel, '"' +
 							' onclick="CKEDITOR.tools.callFunction(', clickFn, ',\'', colorName, '\',\'', type, '\'); return false;"' +
 							' href="javascript:void(\'', colorLabel, '\')"' +
-							' role="option" aria-posinset="', ( i + 2 ), '" aria-setsize="', total, '">' +
+							' role="option">' +
 							'<span class="cke_colorbox" style="background-color:#', colorCode, '"></span>' +
 						'</a>' +
 					'</td>' );
@@ -211,7 +210,7 @@ CKEDITOR.plugins.add( 'colorbutton',
 								' title="', lang.more, '"' +
 								' onclick="CKEDITOR.tools.callFunction(', clickFn, ',\'?\',\'', type, '\');return false;"' +
 								' href="javascript:void(\'', lang.more, '\')"',
-								' role="option" aria-posinset="', total, '" aria-setsize="', total, '">',
+								' role="option">',
 								lang.more,
 							'</a>' +
 						'</td>' );	// tr is later in the code.

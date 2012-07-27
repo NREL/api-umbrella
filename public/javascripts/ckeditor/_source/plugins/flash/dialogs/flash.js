@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -31,7 +31,6 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 		src : [ { type : ATTRTYPE_PARAM, name : 'movie' }, { type : ATTRTYPE_EMBED, name : 'src' }, { type : ATTRTYPE_OBJECT, name :  'data' } ],
 		name : [ { type : ATTRTYPE_EMBED, name : 'name' } ],
 		align : [ { type : ATTRTYPE_OBJECT, name : 'align' } ],
-		title : [ { type : ATTRTYPE_OBJECT, name : 'title' }, { type : ATTRTYPE_EMBED, name : 'title' } ],
 		'class' : [ { type : ATTRTYPE_OBJECT, name : 'class' }, { type : ATTRTYPE_EMBED, name : 'class'} ],
 		width : [ { type : ATTRTYPE_OBJECT, name : 'width' }, { type : ATTRTYPE_EMBED, name : 'width' } ],
 		height : [ { type : ATTRTYPE_OBJECT, name : 'height' }, { type : ATTRTYPE_EMBED, name : 'height' } ],
@@ -618,20 +617,12 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 					[
 						{
 							type : 'hbox',
-							widths : [ '45%', '55%' ],
 							children :
 							[
 								{
 									type : 'text',
 									id : 'id',
 									label : editor.lang.common.id,
-									setup : loadValue,
-									commit : commitValue
-								},
-								{
-									type : 'text',
-									id : 'title',
-									label : editor.lang.common.advisoryTitle,
 									setup : loadValue,
 									commit : commitValue
 								}

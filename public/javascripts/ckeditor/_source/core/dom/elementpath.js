@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -46,8 +46,6 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 					this.lastElement = e;
 
 				var elementName = e.getName();
-				if ( CKEDITOR.env.ie && e.$.scopeName != 'HTML' )
-					elementName = e.$.scopeName.toLowerCase() + ':' + elementName;
 
 				if ( !blockLimit )
 				{

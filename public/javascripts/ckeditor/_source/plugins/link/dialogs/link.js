@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -245,7 +245,7 @@ CKEDITOR.dialog.add( 'link', function( editor )
 
 		// Find out whether we have any anchors in the editor.
 		var anchors = retval.anchors = [],
-			item;
+			i, count, item;
 
 		// For some browsers we set contenteditable="false" on anchors, making document.anchors not to include them, so we must traverse the links manually (#7893).
 		if ( CKEDITOR.plugins.link.emptyAnchorFix )
@@ -261,7 +261,7 @@ CKEDITOR.dialog.add( 'link', function( editor )
 		else
 		{
 			var anchorList = new CKEDITOR.dom.nodeList( editor.document.$.anchors );
-			for ( var i = 0, count = anchorList.count(); i < count; i++ )
+			for ( i = 0, count = anchorList.count(); i < count; i++ )
 			{
 				item = anchorList.getItem( i );
 				anchors[ i ] = { name : item.getAttribute( 'name' ), id : item.getAttribute( 'id' ) };
@@ -653,7 +653,7 @@ CKEDITOR.dialog.add( 'link', function( editor )
 								type : 'html',
 								id : 'noAnchors',
 								style : 'text-align: center;',
-								html : '<div role="label" tabIndex="-1">' + CKEDITOR.tools.htmlEncode( linkLang.noAnchors ) + '</div>',
+								html : '<div role="note" tabIndex="-1">' + CKEDITOR.tools.htmlEncode( linkLang.noAnchors ) + '</div>',
 								// Focus the first element defined in above html.
 								focus : true,
 								setup : function( data )
@@ -1328,14 +1328,15 @@ CKEDITOR.dialog.add( 'link', function( editor )
 			}
 
 
+			var selection = editor.getSelection();
+
 			// Browser need the "href" fro copy/paste link to work. (#6641)
 			attributes.href = attributes[ 'data-cke-saved-href' ];
 
 			if ( !this._.selectedElement )
 			{
 				// Create element if current selection is collapsed.
-				var selection = editor.getSelection(),
-					ranges = selection.getRanges( true );
+				var ranges = selection.getRanges( true );
 				if ( ranges.length == 1 && ranges[0].collapsed )
 				{
 					// Short mailto link text view (#5736).
@@ -1372,6 +1373,7 @@ CKEDITOR.dialog.add( 'link', function( editor )
 						data.email.address : attributes[ 'data-cke-saved-href' ] );
 				}
 
+				selection.selectElement( element );
 				delete this._.selectedElement;
 			}
 		},

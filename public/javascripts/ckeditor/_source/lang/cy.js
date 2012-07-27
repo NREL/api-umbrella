@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -31,14 +31,15 @@ CKEDITOR.lang['cy'] =
 	 * Screenreader titles. Please note that screenreaders are not always capable
 	 * of reading non-English words. So be careful while translating it.
 	 */
-	editorTitle : 'Golygydd testun cyfoethog, %1, gwasgwch ALT 0 am gymorth.',
+	editorTitle : 'Rich text editor, %1', // MISSING
+	editorHelp : 'Press ALT 0 for help', // MISSING
 
 	// ARIA descriptions.
 	toolbars	: 'Bariau offer golygydd',
 	editor		: 'Golygydd Testun Cyfoethog',
 
 	// Toolbar buttons without dialogs.
-	source			: 'Tarddle',
+	source			: 'HTML',
 	newPage			: 'Tudalen newydd',
 	save			: 'Cadw',
 	preview			: 'Rhagolwg',
@@ -123,8 +124,8 @@ CKEDITOR.lang['cy'] =
 		invalidWidth	: 'Rhaid i\'r Lled fod yn rhif.',
 		invalidCssLength	: 'Mae\'n rhaid i\'r gwerth ar gyfer maes "%1" fod yn rhif positif gyda neu heb uned fesuriad CSS dilys (px, %, in, cm, mm, em, ex, pt, neu pc).',
 		invalidHtmlLength	: 'Mae\'n rhaid i\'r gwerth ar gyfer maes "%1" fod yn rhif positif gyda neu heb uned fesuriad HTML dilys (px neu %).',
-		invalidInlineStyle	: 'Value specified for the inline style must consist of one or more tuples with the format of "name : value", separated by semi-colons.', // MISSING
-		cssLengthTooltip	: 'Enter a number for a value in pixels or a number with a valid CSS unit (px, %, in, cm, mm, em, ex, pt, or pc).', // MISSING
+		invalidInlineStyle	: 'Mae\'n rhaid i\'r gwerth ar gyfer arddull mewn-llinell gynnwys un set neu fwy ar y fformat "enw:gwerth", wedi\'u gwahanu gyda hanner colon.',
+		cssLengthTooltip	: 'Rhowch rif ar gyfer gwerth mewn picsel neu rhif gydag uned CSS dilys (px, %, in, cm, mm, em, pt neu pc).',
 
 		// Put the voice-only part of the label in the span.
 		unavailable		: '%1<span class="cke_accessibility">, ddim ar gael</span>'
@@ -242,7 +243,7 @@ CKEDITOR.lang['cy'] =
 		findWhat			: 'Chwilio\'r term:',
 		replaceWith			: 'Amnewid gyda:',
 		notFoundMsg			: 'Nid oedd y testun wedi\'i ddarganfod.',
-		findOptions			: 'Find Options', // MISSING
+		findOptions			: 'Chwilio Opsiynau',
 		matchCase			: 'Cyfateb i\'r cas',
 		matchWord			: 'Cyfateb gair cyfan',
 		matchCyclic			: 'Cyfateb cylchol',
@@ -427,7 +428,7 @@ CKEDITOR.lang['cy'] =
 		linkTab		: 'Dolen',
 		button2Img	: 'Ydych am drawsffurfio\'r botwm ddelwedd hwn ar ddelwedd syml?',
 		img2Button	: 'Ydych am drawsffurfio\'r ddelwedd hon ar fotwm delwedd?',
-		urlMissing	: 'URL tarddle\'r ddelwedd ar goll.',
+		urlMissing	: 'URL gwreiddiol y ddelwedd ar goll.',
 		validateBorder	: 'Rhaid i\'r ymyl fod yn gyfanrif.',
 		validateHSpace	: 'Rhaid i\'r HSpace fod yn gyfanrif.',
 		validateVSpace	: 'Rhaid i\'r VSpace fod yn gyfanrif.'

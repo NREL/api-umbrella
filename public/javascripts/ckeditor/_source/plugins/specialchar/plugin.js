@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -9,8 +9,10 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 
 CKEDITOR.plugins.add( 'specialchar',
 {
+	requires : [ 'dialog' ],
+
 	// List of available localizations.
-	availableLangs : { en:1 },
+	availableLangs : { cs:1, cy:1, de:1, el:1, en:1, eo:1, et:1, fa:1, fi:1, fr:1, he:1, hr:1, it:1, nb:1, nl:1, no:1, 'pt-br':1, tr:1, ug:1, 'zh-cn':1 },
 
 	init : function( editor )
 	{

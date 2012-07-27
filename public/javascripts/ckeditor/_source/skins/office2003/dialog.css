@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -25,7 +25,6 @@ body .cke_dialog
 
 	/* 'cke_dialog' element has been fixed positioned in all but IE6, while we
 		need it to be positioned to hold e.g. close button. */
-	position: relative;
 	_position: static;
 }
 
@@ -43,7 +42,7 @@ body .cke_dialog
 	/* IE6 does not support full color transparent PNG. */
 	_background-image: url(images/sprites_ie6.png);
 	/* Dialog corner parts require a negative z-index to avoid covering dialog body. (#4954) */
-	_z-index: -1;
+	z-index: -1;
 }
 
 .cke_skin_office2003 .cke_dialog_tl
@@ -338,6 +337,19 @@ body .cke_dialog
 	_width: 99.9%;
 }
 
+/* The absolute position is required for IE7 on text inputs not to stretch dialog horizontally. (#8971)*/
+.cke_skin_office2003 .cke_browser_ie7 input.cke_dialog_ui_input_text,
+.cke_skin_office2003 .cke_browser_ie7 input.cke_dialog_ui_input_password
+{
+	position: absolute;
+}
+.cke_skin_office2003 .cke_browser_ie7 div.cke_dialog_ui_input_text,
+.cke_skin_office2003 .cke_browser_ie7 div.cke_dialog_ui_input_password
+{
+	height:14px;
+	position: relative;
+}
+
 /* Opera/IE doesn't leave enough padding in text input for cursor to blink in RTL. (#6087) */
 .cke_skin_office2003 .cke_browser_ie.cke_rtl input.cke_dialog_ui_input_text,
 .cke_skin_office2003 .cke_browser_opera.cke_rtl input.cke_dialog_ui_input_text,
@@ -549,15 +561,13 @@ body .cke_dialog
 
 .cke_skin_office2003 .cke_ltr a.cke_dialog_close_button
 {
-	right: 10px;
-	_right: 22px;
+	right: 22px;
 }
 
 .cke_skin_office2003 .cke_rtl a.cke_dialog_close_button,
 .cke_skin_office2003 .cke_rtl a:hover.cke_dialog_close_button
 {
-	left: 10px;
-	_left: 16px;
+	left: 16px;
 	_top: 6px;
 }
 
@@ -888,4 +898,11 @@ body .cke_dialog
 	filter:alpha(opacity=0);
 	width:100%;
 	height:100%;
+}
+
+.cke_dialog label
+{
+	display: inline;
+	margin-bottom: auto;
+	cursor: default;
 }

@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -308,7 +308,7 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 				// Avoid corrupting the inline event attributes (#7243).
 				// We should not rewrite the existed protected attributes, e.g. clipboard content from editor. (#5218)
 				if ( !( /^on/ ).test( attrName ) && attributes.indexOf( 'data-cke-saved-' + attrName ) == -1 )
-					return ' data-cke-saved-' + fullAttr + ' ' + fullAttr;
+					return ' data-cke-saved-' + fullAttr + ' data-cke-' + CKEDITOR.rnd + '-' + fullAttr;
 
 				return fullAttr;
 			}) + '>';
@@ -516,9 +516,13 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 			// Call the browser to help us fixing a possibly invalid HTML
 			// structure.
 			var div = new CKEDITOR.dom.element( 'div' );
+
 			// Add fake character to workaround IE comments bug. (#3801)
 			div.setHtml( 'a' + data );
 			data = div.getHtml().substr( 1 );
+
+			// Restore shortly protected attribute names.
+			data = data.replace( new RegExp( ' data-cke-' + CKEDITOR.rnd + '-', 'ig' ), ' ' );
 
 			// Unprotect "some" of the protected elements at this point.
 			data = unprotectElementNames( data );

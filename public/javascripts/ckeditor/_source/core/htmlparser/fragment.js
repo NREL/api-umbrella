@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -127,7 +127,7 @@ CKEDITOR.htmlParser.fragment = function()
 		function sendPendingBRs()
 		{
 			while ( pendingBRs.length )
-				currentNode.add( pendingBRs.shift() );
+				addElement( pendingBRs.shift(), currentNode );
 		}
 
 		/*
@@ -193,6 +193,13 @@ CKEDITOR.htmlParser.fragment = function()
 			}
 
 			target.add( element );
+
+			if ( element.name == 'pre' )
+				inPre = false;
+
+			if ( element.name == 'textarea' )
+				inTextarea = false;
+
 
 			if ( element.returnPoint )
 			{
@@ -360,12 +367,6 @@ CKEDITOR.htmlParser.fragment = function()
 
 				currentNode = candidate;
 
-				if ( currentNode.name == 'pre' )
-					inPre = false;
-
-				if ( currentNode.name == 'textarea' )
-					inTextarea = false;
-
 				if ( candidate._.isBlockLike )
 					sendPendingBRs();
 
@@ -392,6 +393,24 @@ CKEDITOR.htmlParser.fragment = function()
 
 				if ( text.length === 0 )
 					return;
+			}
+
+			var currentName = currentNode.name,
+			currentDtd = currentName ? ( CKEDITOR.dtd[ currentName ]
+							|| ( currentNode._.isBlockLike ?
+								 CKEDITOR.dtd.div : CKEDITOR.dtd.span ) ) : rootDtd;
+
+			// Fix orphan text in list/table. (#8540) (#8870)
+			if ( !inTextarea &&
+				 !currentDtd [ '#' ] &&
+				 currentName in nonBreakingBlocks )
+			{
+				parser.onTagOpen( currentName in listBlocks ? 'li' :
+								  currentName == 'dl' ? 'dd' :
+								  currentName == 'table' ? 'tr' :
+								  currentName == 'tr' ? 'td' : '' );
+				parser.onText( text );
+				return;
 			}
 
 			sendPendingBRs();

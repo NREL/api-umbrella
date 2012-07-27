@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -39,9 +39,9 @@ CKEDITOR.plugins.setLang( 'a11yhelp', 'en',
 								legend :
 									'Press ${contextMenu} or APPLICATION KEY to open context-menu. ' +
 									'Then move to next menu option with TAB or DOWN ARROW. ' +
-									'Move to previous option with  SHIFT+TAB or UP ARROW. ' +
+									'Move to previous option with SHIFT+TAB or UP ARROW. ' +
 									'Press SPACE or ENTER to select the menu option. ' +
-									'Open sub-menu of current option wtih SPACE or ENTER or RIGHT ARROW. ' +
+									'Open sub-menu of current option with SPACE or ENTER or RIGHT ARROW. ' +
 									'Go back to parent menu item with ESC or LEFT ARROW. ' +
 									'Close context menu with ESC.'
 							},

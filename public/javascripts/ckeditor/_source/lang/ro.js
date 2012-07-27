@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -31,11 +31,12 @@ CKEDITOR.lang['ro'] =
 	 * Screenreader titles. Please note that screenreaders are not always capable
 	 * of reading non-English words. So be careful while translating it.
 	 */
-	editorTitle : 'Rich text editor, %1, press ALT 0 for help.', // MISSING
+	editorTitle : 'Rich text editor, %1', // MISSING
+	editorHelp : 'Press ALT 0 for help', // MISSING
 
 	// ARIA descriptions.
-	toolbars	: 'Editor toolbars', // MISSING
-	editor		: 'Rich Text Editor', // MISSING
+	toolbars	: 'Editează bara de unelte',
+	editor		: 'Rich Text Editor',
 
 	// Toolbar buttons without dialogs.
 	source			: 'Sursa',
@@ -54,9 +55,9 @@ CKEDITOR.lang['ro'] =
 	strike			: 'Tăiat (strike through)',
 	subscript		: 'Indice (subscript)',
 	superscript		: 'Putere (superscript)',
-	horizontalrule	: 'Inserează linie orizontă',
+	horizontalrule	: 'Inserează linie orizontală',
 	pagebreak		: 'Inserează separator de pagină (Page Break)',
-	pagebreakAlt		: 'Page Break', // MISSING
+	pagebreakAlt		: 'Page Break',
 	unlink			: 'Înlătură link (legătură web)',
 	undo			: 'Starea anterioară (undo)',
 	redo			: 'Starea ulterioară (redo)',
@@ -91,36 +92,36 @@ CKEDITOR.lang['ro'] =
 		cssClass		: 'Clasele cu stilul paginii (CSS)',
 		advisoryTitle	: 'Titlul consultativ',
 		cssStyle		: 'Stil',
-		ok				: 'Bine',
+		ok				: 'OK',
 		cancel			: 'Anulare',
-		close			: 'Close', // MISSING
-		preview			: 'Preview', // MISSING
-		generalTab		: 'General', // MISSING
+		close			: 'Închide',
+		preview			: 'Previzualizare',
+		generalTab		: 'General',
 		advancedTab		: 'Avansat',
-		validateNumberFailed : 'This value is not a number.', // MISSING
-		confirmNewPage	: 'Any unsaved changes to this content will be lost. Are you sure you want to load new page?', // MISSING
-		confirmCancel	: 'Some of the options have been changed. Are you sure to close the dialog?', // MISSING
-		options			: 'Options', // MISSING
-		target			: 'Target', // MISSING
-		targetNew		: 'New Window (_blank)', // MISSING
-		targetTop		: 'Topmost Window (_top)', // MISSING
-		targetSelf		: 'Same Window (_self)', // MISSING
-		targetParent	: 'Parent Window (_parent)', // MISSING
-		langDirLTR		: 'Left to Right (LTR)', // MISSING
-		langDirRTL		: 'Right to Left (RTL)', // MISSING
-		styles			: 'Style', // MISSING
-		cssClasses		: 'Stylesheet Classes', // MISSING
+		validateNumberFailed : 'Această valoare nu este un număr.',
+		confirmNewPage	: 'Orice modificări nesalvate ale acestui conținut, vor fi pierdute. Sigur doriți încărcarea unei noi pagini?',
+		confirmCancel	: 'Câteva opțiuni au fost schimbate. Sigur doriți să închideți dialogul?',
+		options			: 'Opțiuni',
+		target			: 'Țintă',
+		targetNew		: 'Fereastră nouă (_blank)',
+		targetTop		: 'Topmost Window (_top)',
+		targetSelf		: 'În aceeași fereastră (_self)',
+		targetParent	: 'Parent Window (_parent)',
+		langDirLTR		: 'Stânga spre Dreapta (LTR)',
+		langDirRTL		: 'Dreapta spre Stânga (RTL)',
+		styles			: 'Stil',
+		cssClasses		: 'Stylesheet Classes',
 		width			: 'Lăţime',
 		height			: 'Înălţime',
 		align			: 'Aliniere',
-		alignLeft		: 'Stânga',
+		alignLeft		: 'Mărește Bara',
 		alignRight		: 'Dreapta',
 		alignCenter		: 'Centru',
 		alignTop		: 'Sus',
 		alignMiddle		: 'Mijloc',
 		alignBottom		: 'Jos',
-		invalidHeight	: 'Height must be a number.', // MISSING
-		invalidWidth	: 'Width must be a number.', // MISSING
+		invalidHeight	: 'Înălțimea trebuie să fie un număr.',
+		invalidWidth	: 'Lățimea trebuie să fie un număr.',
 		invalidCssLength	: 'Value specified for the "%1" field must be a positive number with or without a valid CSS measurement unit (px, %, in, cm, mm, em, ex, pt, or pc).', // MISSING
 		invalidHtmlLength	: 'Value specified for the "%1" field must be a positive number with or without a valid HTML measurement unit (px or %).', // MISSING
 		invalidInlineStyle	: 'Value specified for the inline style must consist of one or more tuples with the format of "name : value", separated by semi-colons.', // MISSING
@@ -132,7 +133,7 @@ CKEDITOR.lang['ro'] =
 
 	contextmenu :
 	{
-		options : 'Context Menu Options' // MISSING
+		options : 'Opțiuni Meniu Contextual'
 	},
 
 	// Special char dialog.
@@ -140,7 +141,7 @@ CKEDITOR.lang['ro'] =
 	{
 		toolbar		: 'Inserează caracter special',
 		title		: 'Selectează caracter special',
-		options : 'Special Character Options' // MISSING
+		options : 'Opțiuni caractere speciale'
 	},
 
 	// Link dialog.
@@ -155,25 +156,25 @@ CKEDITOR.lang['ro'] =
 		upload		: 'Încarcă',
 		advanced	: 'Avansat',
 		type		: 'Tipul link-ului (al legăturii web)',
-		toUrl		: 'URL', // MISSING
+		toUrl		: 'URL',
 		toAnchor	: 'Ancoră în această pagină',
 		toEmail		: 'E-Mail',
 		targetFrame		: '<frame>',
 		targetPopup		: '<fereastra popup>',
-		targetFrameName	: 'Numele frame-ului ţintă',
+		targetFrameName	: 'Numele frameului ţintă',
 		targetPopupName	: 'Numele ferestrei popup',
 		popupFeatures	: 'Proprietăţile ferestrei popup',
-		popupResizable	: 'Resizable', // MISSING
+		popupResizable	: 'Redimensionabil',
 		popupStatusBar	: 'Bara de status',
 		popupLocationBar: 'Bara de locaţie',
 		popupToolbar	: 'Bara de opţiuni',
 		popupMenuBar	: 'Bara de meniu',
 		popupFullScreen	: 'Tot ecranul (Full Screen)(IE)',
-		popupScrollBars	: 'Scroll Bars',
+		popupScrollBars	: 'Bare de derulare',
 		popupDependent	: 'Dependent (Netscape)',
 		popupLeft		: 'Poziţia la stânga',
 		popupTop		: 'Poziţia la dreapta',
-		id				: 'Id', // MISSING
+		id				: 'Id',
 		langDir			: 'Direcţia cuvintelor',
 		langDirLTR		: 'stânga-dreapta (LTR)',
 		langDirRTL		: 'dreapta-stânga (RTL)',
@@ -186,13 +187,13 @@ CKEDITOR.lang['ro'] =
 		cssClasses		: 'Clasele cu stilul paginii (CSS)',
 		charset			: 'Setul de caractere al resursei legate',
 		styles			: 'Stil',
-		rel			: 'Relationship', // MISSING
+		rel			: 'Relație',
 		selectAnchor		: 'Selectaţi o ancoră',
 		anchorName		: 'după numele ancorei',
 		anchorId			: 'după Id-ul elementului',
 		emailAddress		: 'Adresă de e-mail',
 		emailSubject		: 'Subiectul mesajului',
-		emailBody		: 'Conţinutul mesajului',
+		emailBody		: 'Opțiuni Meniu Contextual',
 		noAnchors		: '(Nicio ancoră disponibilă în document)',
 		noUrl			: 'Vă rugăm să scrieţi URL-ul',
 		noEmail			: 'Vă rugăm să scrieţi adresa de e-mail'
@@ -206,31 +207,31 @@ CKEDITOR.lang['ro'] =
 		title		: 'Proprietăţi ancoră',
 		name		: 'Numele ancorei',
 		errorName	: 'Vă rugăm scrieţi numele ancorei',
-		remove		: 'Remove Anchor' // MISSING
+		remove		: 'Elimină ancora'
 	},
 
 	// List style dialog
 	list:
 	{
-		numberedTitle		: 'Numbered List Properties', // MISSING
-		bulletedTitle		: 'Bulleted List Properties', // MISSING
-		type				: 'Type', // MISSING
-		start				: 'Start', // MISSING
-		validateStartNumber				:'List start number must be a whole number.', // MISSING
-		circle				: 'Circle', // MISSING
-		disc				: 'Disc', // MISSING
-		square				: 'Square', // MISSING
-		none				: 'None', // MISSING
-		notset				: '<not set>', // MISSING
-		armenian			: 'Armenian numbering', // MISSING
-		georgian			: 'Georgian numbering (an, ban, gan, etc.)', // MISSING
-		lowerRoman			: 'Lower Roman (i, ii, iii, iv, v, etc.)', // MISSING
-		upperRoman			: 'Upper Roman (I, II, III, IV, V, etc.)', // MISSING
-		lowerAlpha			: 'Lower Alpha (a, b, c, d, e, etc.)', // MISSING
-		upperAlpha			: 'Upper Alpha (A, B, C, D, E, etc.)', // MISSING
-		lowerGreek			: 'Lower Greek (alpha, beta, gamma, etc.)', // MISSING
-		decimal				: 'Decimal (1, 2, 3, etc.)', // MISSING
-		decimalLeadingZero	: 'Decimal leading zero (01, 02, 03, etc.)' // MISSING
+		numberedTitle		: 'Proprietățile listei numerotate',
+		bulletedTitle		: 'Proprietățile listei cu simboluri',
+		type				: 'Tip',
+		start				: 'Start',
+		validateStartNumber				:'Începutul listei trebuie să fie un număr întreg.',
+		circle				: 'Cerc',
+		disc				: 'Disc',
+		square				: 'Pătrat',
+		none				: 'Nimic',
+		notset				: '<nesetat>',
+		armenian			: 'Numerotare armeniană',
+		georgian			: 'Numerotare georgiană (an, ban, gan, etc.)',
+		lowerRoman			: 'Cifre romane mici (i, ii, iii, iv, v, etc.)',
+		upperRoman			: 'Cifre romane mari (I, II, III, IV, V, etc.)',
+		lowerAlpha			: 'Litere mici (a, b, c, d, e, etc.)',
+		upperAlpha			: 'Litere mari (A, B, C, D, E, etc.)',
+		lowerGreek			: 'Litere grecești mici (alpha, beta, gamma, etc.)',
+		decimal				: 'Decimale (1, 2, 3, etc.)',
+		decimalLeadingZero	: 'Decimale cu zero în față (01, 02, 03, etc.)'
 	},
 
 	// Find And Replace Dialog
@@ -245,9 +246,9 @@ CKEDITOR.lang['ro'] =
 		findOptions			: 'Find Options', // MISSING
 		matchCase			: 'Deosebeşte majuscule de minuscule (Match case)',
 		matchWord			: 'Doar cuvintele întregi',
-		matchCyclic			: 'Match cyclic', // MISSING
+		matchCyclic			: 'Potrivește ciclic',
 		replaceAll			: 'Înlocuieşte tot',
-		replaceSuccessMsg	: '%1 occurrence(s) replaced.' // MISSING
+		replaceSuccessMsg	: '%1 căutări înlocuite.'
 	},
 
 	// Table Dialog
@@ -257,27 +258,27 @@ CKEDITOR.lang['ro'] =
 		title		: 'Proprietăţile tabelului',
 		menu		: 'Proprietăţile tabelului',
 		deleteTable	: 'Şterge tabel',
-		rows		: 'Linii',
+		rows		: 'Rânduri',
 		columns		: 'Coloane',
 		border		: 'Mărimea marginii',
 		widthPx		: 'pixeli',
 		widthPc		: 'procente',
-		widthUnit	: 'width unit', // MISSING
+		widthUnit	: 'unitate lățime',
 		cellSpace	: 'Spaţiu între celule',
 		cellPad		: 'Spaţiu în cadrul celulei',
 		caption		: 'Titlu (Caption)',
 		summary		: 'Rezumat',
-		headers		: 'Headers', // MISSING
-		headersNone		: 'None', // MISSING
-		headersColumn	: 'First column', // MISSING
-		headersRow		: 'First Row', // MISSING
-		headersBoth		: 'Both', // MISSING
-		invalidRows		: 'Number of rows must be a number greater than 0.', // MISSING
-		invalidCols		: 'Number of columns must be a number greater than 0.', // MISSING
-		invalidBorder	: 'Border size must be a number.', // MISSING
-		invalidWidth	: 'Table width must be a number.', // MISSING
+		headers		: 'Antente',
+		headersNone		: 'Nimic',
+		headersColumn	: 'Prima coloană',
+		headersRow		: 'Primul rând',
+		headersBoth		: 'Ambele',
+		invalidRows		: 'Numărul rândurilor trebuie să fie mai mare decât 0.',
+		invalidCols		: 'Numărul coloanelor trebuie să fie mai mare decât 0.',
+		invalidBorder	: 'Dimensiunea bordurii trebuie să aibe un număr.',
+		invalidWidth	: 'Lățimea tabelului trebuie să fie un număr.',
 		invalidHeight	: 'Table height must be a number.', // MISSING
-		invalidCellSpacing	: 'Cell spacing must be a positive number.', // MISSING
+		invalidCellSpacing	: 'Spațierea celului trebuie să fie un număr pozitiv.',
 		invalidCellPadding	: 'Cell padding must be a positive number.', // MISSING
 
 		cell :
@@ -291,33 +292,33 @@ CKEDITOR.lang['ro'] =
 			mergeDown		: 'Uneşte jos',
 			splitHorizontal	: 'Împarte celula pe orizontală',
 			splitVertical	: 'Împarte celula pe verticală',
-			title			: 'Cell Properties', // MISSING
-			cellType		: 'Cell Type', // MISSING
+			title			: 'Proprietăți celulă',
+			cellType		: 'Tipul celulei',
 			rowSpan			: 'Rows Span', // MISSING
 			colSpan			: 'Columns Span', // MISSING
 			wordWrap		: 'Word Wrap', // MISSING
-			hAlign			: 'Horizontal Alignment', // MISSING
-			vAlign			: 'Vertical Alignment', // MISSING
+			hAlign			: 'Aliniament orizontal',
+			vAlign			: 'Aliniament vertical',
 			alignBaseline	: 'Baseline', // MISSING
-			bgColor			: 'Background Color', // MISSING
-			borderColor		: 'Border Color', // MISSING
-			data			: 'Data', // MISSING
-			header			: 'Header', // MISSING
-			yes				: 'Yes', // MISSING
-			no				: 'No', // MISSING
-			invalidWidth	: 'Cell width must be a number.', // MISSING
-			invalidHeight	: 'Cell height must be a number.', // MISSING
+			bgColor			: 'Culoare fundal',
+			borderColor		: 'Culoare bordură',
+			data			: 'Data',
+			header			: 'Antet',
+			yes				: 'Da',
+			no				: 'Nu',
+			invalidWidth	: 'Lățimea celulei trebuie să fie un număr.',
+			invalidHeight	: 'Înălțimea celulei trebuie să fie un număr.',
 			invalidRowSpan	: 'Rows span must be a whole number.', // MISSING
 			invalidColSpan	: 'Columns span must be a whole number.', // MISSING
-			chooseColor		: 'Choose' // MISSING
+			chooseColor		: 'Alege'
 		},
 
 		row :
 		{
-			menu			: 'Linie',
-			insertBefore	: 'Inserează linie înainte',
-			insertAfter		: 'Inserează linie după',
-			deleteRow		: 'Şterge linii'
+			menu			: 'Rând',
+			insertBefore	: 'Inserează rând înainte',
+			insertAfter		: 'Inserează rând după',
+			deleteRow		: 'Şterge rânduri'
 		},
 
 		column :
@@ -335,8 +336,8 @@ CKEDITOR.lang['ro'] =
 		title		: 'Proprietăţi buton',
 		text		: 'Text (Valoare)',
 		type		: 'Tip',
-		typeBtn		: 'Button',
-		typeSbm		: 'Submit',
+		typeBtn		: 'Buton',
+		typeSbm		: 'Trimite',
 		typeRst		: 'Reset'
 	},
 
@@ -356,7 +357,7 @@ CKEDITOR.lang['ro'] =
 		menu		: 'Proprietăţi formular (Form)',
 		action		: 'Acţiune',
 		method		: 'Metodă',
-		encoding	: 'Encoding' // MISSING
+		encoding	: 'Encodare'
 	},
 
 	// Select Field Dialog.
@@ -427,61 +428,61 @@ CKEDITOR.lang['ro'] =
 		linkTab		: 'Link (Legătură web)',
 		button2Img	: 'Do you want to transform the selected image button on a simple image?', // MISSING
 		img2Button	: 'Do you want to transform the selected image on a image button?', // MISSING
-		urlMissing	: 'Image source URL is missing.', // MISSING
-		validateBorder	: 'Border must be a whole number.', // MISSING
-		validateHSpace	: 'HSpace must be a whole number.', // MISSING
-		validateVSpace	: 'VSpace must be a whole number.' // MISSING
+		urlMissing	: 'Sursa URL a imaginii lipsește.',
+		validateBorder	: 'Bordura trebuie să fie un număr întreg.',
+		validateHSpace	: 'Hspace trebuie să fie un număr întreg.',
+		validateVSpace	: 'Vspace trebuie să fie un număr întreg.'
 	},
 
 	// Flash Dialog
 	flash :
 	{
-		properties		: 'Proprietăţile flash-ului',
-		propertiesTab	: 'Properties', // MISSING
-		title			: 'Proprietăţile flash-ului',
+		properties		: 'Proprietăţile flashului',
+		propertiesTab	: 'Proprietăți',
+		title			: 'Proprietăţile flashului',
 		chkPlay			: 'Rulează automat',
 		chkLoop			: 'Repetă (Loop)',
 		chkMenu			: 'Activează meniul flash',
-		chkFull			: 'Allow Fullscreen', // MISSING
+		chkFull			: 'Permite pe tot ecranul',
  		scale			: 'Scală',
 		scaleAll		: 'Arată tot',
-		scaleNoBorder	: 'Fără margini (No border)',
+		scaleNoBorder	: 'Fără bordură (No border)',
 		scaleFit		: 'Potriveşte',
-		access			: 'Script Access', // MISSING
-		accessAlways	: 'Always', // MISSING
-		accessSameDomain: 'Same domain', // MISSING
-		accessNever		: 'Never', // MISSING
+		access			: 'Acces script',
+		accessAlways	: 'Întotdeauna',
+		accessSameDomain: 'Același domeniu',
+		accessNever		: 'Niciodată',
 		alignAbsBottom	: 'Jos absolut (Abs Bottom)',
 		alignAbsMiddle	: 'Mijloc absolut (Abs Middle)',
 		alignBaseline	: 'Linia de jos (Baseline)',
 		alignTextTop	: 'Text sus',
-		quality			: 'Quality', // MISSING
-		qualityBest		: 'Best', // MISSING
-		qualityHigh		: 'High', // MISSING
-		qualityAutoHigh	: 'Auto High', // MISSING
-		qualityMedium	: 'Medium', // MISSING
-		qualityAutoLow	: 'Auto Low', // MISSING
-		qualityLow		: 'Low', // MISSING
-		windowModeWindow: 'Window', // MISSING
-		windowModeOpaque: 'Opaque', // MISSING
-		windowModeTransparent : 'Transparent', // MISSING
-		windowMode		: 'Window mode', // MISSING
-		flashvars		: 'Variables for Flash', // MISSING
+		quality			: 'Calitate',
+		qualityBest		: 'Cea mai bună',
+		qualityHigh		: 'Înaltă',
+		qualityAutoHigh	: 'Auto înaltă',
+		qualityMedium	: 'Medie',
+		qualityAutoLow	: 'Auto Joasă',
+		qualityLow		: 'Joasă',
+		windowModeWindow: 'Fereastră',
+		windowModeOpaque: 'Opacă',
+		windowModeTransparent : 'Transparentă',
+		windowMode		: 'Mod fereastră',
+		flashvars		: 'Variabile pentru flash',
 		bgcolor			: 'Coloarea fundalului',
 		hSpace			: 'HSpace',
 		vSpace			: 'VSpace',
 		validateSrc		: 'Vă rugăm să scrieţi URL-ul',
-		validateHSpace	: 'HSpace must be a number.', // MISSING
-		validateVSpace	: 'VSpace must be a number.' // MISSING
+		validateHSpace	: 'Hspace trebuie să fie un număr.',
+		validateVSpace	: 'VSpace trebuie să fie un număr'
 	},
 
 	// Speller Pages Dialog
 	spellCheck :
 	{
-		toolbar			: 'Verifică text',
+		toolbar			: 'Verifică scrierea textului',
 		title			: 'Spell Check', // MISSING
-		notAvailable	: 'Sorry, but service is unavailable now.', // MISSING
-		errorLoading	: 'Error loading application service host: %s.', // MISSING
+		notAvailable	: 'Scuzați, dar serviciul nu este disponibil momentan.',
+		errorLoading	: 'Eroare în lansarea aplicației service host %s.',
 		notInDic		: 'Nu e în dicţionar',
 		changeTo		: 'Schimbă în',
 		btnIgnore		: 'Ignoră',
@@ -502,17 +503,17 @@ CKEDITOR.lang['ro'] =
 	{
 		toolbar	: 'Figură expresivă (Emoticon)',
 		title	: 'Inserează o figură expresivă (Emoticon)',
-		options : 'Smiley Options' // MISSING
+		options : 'Opțiuni figuri expresive'
 	},
 
 	elementsPath :
 	{
-		eleLabel : 'Elements path', // MISSING
+		eleLabel : 'Calea elementelor',
 		eleTitle : '%1 element' // MISSING
 	},
 
-	numberedlist	: 'Listă numerotată',
-	bulletedlist	: 'Listă cu puncte',
+	numberedlist	: 'Inserează / Elimină Listă numerotată',
+	bulletedlist	: 'Inserează / Elimină Listă cu puncte',
 	indent			: 'Creşte indentarea',
 	outdent			: 'Scade indentarea',
 
@@ -531,17 +532,17 @@ CKEDITOR.lang['ro'] =
 		title		: 'Adaugă',
 		cutError	: 'Setările de securitate ale navigatorului (browser) pe care îl folosiţi nu permit editorului să execute automat operaţiunea de tăiere. Vă rugăm folosiţi tastatura (Ctrl/Cmd+X).',
 		copyError	: 'Setările de securitate ale navigatorului (browser) pe care îl folosiţi nu permit editorului să execute automat operaţiunea de copiere. Vă rugăm folosiţi tastatura (Ctrl/Cmd+C).',
-		pasteMsg	: 'Vă rugăm adăugaţi în căsuţa următoare folosind tastatura (<STRONG>Ctrl/Cmd+V</STRONG>) şi apăsaţi <STRONG>OK</STRONG>.',
+		pasteMsg	: 'Vă rugăm adăugaţi în căsuţa următoare folosind tastatura (<strong>Ctrl/Cmd+V</strong>) şi apăsaţi OK',
 		securityMsg	: 'Din cauza setărilor de securitate ale programului dvs. cu care navigaţi pe internet (browser), editorul nu poate accesa direct datele din clipboard. Va trebui să adăugaţi din nou datele în această fereastră.',
-		pasteArea	: 'Paste Area' // MISSING
+		pasteArea	: 'Suprafața de adăugare'
 	},
 
 	pastefromword :
 	{
-		confirmCleanup	: 'The text you want to paste seems to be copied from Word. Do you want to clean it before pasting?', // MISSING
+		confirmCleanup	: 'Textul pe care doriți să-l lipiți este din Word. Doriți curățarea textului înante de a-l adăuga?',
 		toolbar			: 'Adaugă din Word',
 		title			: 'Adaugă din Word',
-		error			: 'It was not possible to clean up the pasted data due to an internal error' // MISSING
+		error			: 'Nu a fost posibilă curățarea datelor adăugate datorită unei erori interne'
 	},
 
 	pasteText :
@@ -554,7 +555,7 @@ CKEDITOR.lang['ro'] =
 	{
 		button			: 'Template-uri (şabloane)',
 		title			: 'Template-uri (şabloane) de conţinut',
-		options : 'Template Options', // MISSING
+		options : 'Opțiuni șabloane',
 		insertOption	: 'Înlocuieşte cuprinsul actual',
 		selectPromptMsg	: 'Vă rugăm selectaţi template-ul (şablonul) ce se va deschide în editor<br>(conţinutul actual va fi pierdut):',
 		emptyListMsg	: '(Niciun template (şablon) definit)'
@@ -565,7 +566,7 @@ CKEDITOR.lang['ro'] =
 	stylesCombo :
 	{
 		label		: 'Stil',
-		panelTitle	: 'Formatting Styles', // MISSING
+		panelTitle	: 'Formatarea stilurilor',
 		panelTitle1	: 'Block Styles', // MISSING
 		panelTitle2	: 'Inline Styles', // MISSING
 		panelTitle3	: 'Object Styles' // MISSING
@@ -577,8 +578,8 @@ CKEDITOR.lang['ro'] =
 		panelTitle	: 'Formatare',
 
 		tag_p		: 'Normal',
-		tag_pre		: 'Formatted',
-		tag_address	: 'Address',
+		tag_pre		: 'Formatat',
+		tag_address	: 'Adresă',
 		tag_h1		: 'Heading 1',
 		tag_h2		: 'Heading 2',
 		tag_h3		: 'Heading 3',
@@ -593,9 +594,9 @@ CKEDITOR.lang['ro'] =
 		title				: 'Create Div Container', // MISSING
 		toolbar				: 'Create Div Container', // MISSING
 		cssClassInputLabel	: 'Stylesheet Classes', // MISSING
-		styleSelectLabel	: 'Style', // MISSING
-		IdInputLabel		: 'Id', // MISSING
-		languageCodeInputLabel	: ' Language Code', // MISSING
+		styleSelectLabel	: 'Stil',
+		IdInputLabel		: 'Id',
+		languageCodeInputLabel	: 'Codul limbii',
 		inlineStyleInputLabel	: 'Inline Style', // MISSING
 		advisoryTitleInputLabel	: 'Advisory Title', // MISSING
 		langDirLabel		: 'Language Direction', // MISSING
@@ -726,8 +727,8 @@ CKEDITOR.lang['ro'] =
 		copy		: 'Copyright &copy; $1. All rights reserved.' // MISSING
 	},
 
-	maximize : 'Maximize', // MISSING
-	minimize : 'Minimize', // MISSING
+	maximize : 'Mărește',
+	minimize : 'Micșorează',
 
 	fakeobjects :
 	{
@@ -738,7 +739,7 @@ CKEDITOR.lang['ro'] =
 		unknown		: 'Unknown Object' // MISSING
 	},
 
-	resize : 'Drag to resize', // MISSING
+	resize : 'Trage pentru a redimensiona',
 
 	colordialog :
 	{
@@ -749,8 +750,8 @@ CKEDITOR.lang['ro'] =
 		clear		: 'Clear' // MISSING
 	},
 
-	toolbarCollapse	: 'Collapse Toolbar', // MISSING
-	toolbarExpand	: 'Expand Toolbar', // MISSING
+	toolbarCollapse	: 'Micșorează Bara',
+	toolbarExpand	: 'Mărește Bara',
 
 	toolbarGroups :
 	{

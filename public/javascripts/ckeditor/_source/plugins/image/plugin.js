@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -7,8 +7,13 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
  * @file Image plugin
  */
 
+(function()
+{
+
 CKEDITOR.plugins.add( 'image',
 {
+	requires: [ 'dialog' ],
+
 	init : function( editor )
 	{
 		var pluginName = 'image';
@@ -53,14 +58,94 @@ CKEDITOR.plugins.add( 'image',
 		{
 			editor.contextMenu.addListener( function( element, selection )
 				{
-					if ( !element || !element.is( 'img' ) || element.data( 'cke-realelement' ) || element.isReadOnly() )
-						return null;
-
-					return { image : CKEDITOR.TRISTATE_OFF };
+					if ( getSelectedImage( editor, element ) )
+						return { image : CKEDITOR.TRISTATE_OFF };
 				});
 		}
+	},
+	afterInit : function( editor )
+	{
+		// Customize the behavior of the alignment commands. (#7430)
+		setupAlignCommand( 'left' );
+		setupAlignCommand( 'right' );
+		setupAlignCommand( 'center' );
+		setupAlignCommand( 'block' );
+
+		function setupAlignCommand( value )
+		{
+			var command = editor.getCommand( 'justify' + value );
+			if ( command )
+			{
+				if ( value == 'left' || value == 'right' )
+				{
+					command.on( 'exec', function( evt )
+						{
+							var img = getSelectedImage( editor ), align;
+							if ( img )
+							{
+								align = getImageAlignment( img );
+								if ( align == value )
+								{
+									img.removeStyle( 'float' );
+
+									// Remove "align" attribute when necessary.
+									if ( value == getImageAlignment( img ) )
+										img.removeAttribute( 'align' );
+								}
+								else
+									img.setStyle( 'float', value );
+
+								evt.cancel();
+							}
+						});
+				}
+
+				command.on( 'refresh', function( evt )
+					{
+						var img = getSelectedImage( editor ), align;
+						if ( img )
+						{
+							align = getImageAlignment( img );
+
+							this.setState(
+								( align == value ) ? CKEDITOR.TRISTATE_ON :
+								( value == 'right' || value == 'left' ) ? CKEDITOR.TRISTATE_OFF :
+								CKEDITOR.TRISTATE_DISABLED );
+
+							evt.cancel();
+						}
+					});
+			}
+		}
 	}
-} );
+});
+
+function getSelectedImage( editor, element )
+{
+	if ( !element )
+	{
+		var sel = editor.getSelection();
+		element = ( sel.getType() == CKEDITOR.SELECTION_ELEMENT ) && sel.getSelectedElement();
+	}
+
+	if ( element && element.is( 'img' ) && !element.data( 'cke-realelement' ) && !element.isReadOnly() )
+		return element;
+}
+
+function getImageAlignment( element )
+{
+	var align = element.getStyle( 'float' );
+
+	if ( align == 'inherit' || align == 'none' )
+		align = 0;
+
+	if ( !align )
+		align = element.getAttribute( 'align' );
+
+	return align;
+}
+
+})();
 
 /**
  * Whether to remove links when emptying the link URL field in the image dialog.

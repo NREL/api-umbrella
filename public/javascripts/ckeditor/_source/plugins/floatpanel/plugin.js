@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2003-2011, CKSource - Frederico Knabben. All rights reserved.
+Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
 For licensing, see LICENSE.html or http://ckeditor.com/license
 */
 
@@ -46,6 +46,9 @@ CKEDITOR.plugins.add( 'floatpanel',
 				panel = getPanel( editor, doc, parentElement, definition, level || 0 ),
 				element = panel.element,
 				iframe = element.getFirst().getFirst();
+
+			// Disable native browser menu. (#4825)
+			element.disableContextMenu();
 
 			this.element = element;
 
@@ -198,9 +201,6 @@ CKEDITOR.plugins.add( 'floatpanel',
 
 				CKEDITOR.tools.setTimeout( function()
 					{
-						if ( rtl )
-							left -= element.$.offsetWidth;
-
 						var panelLoad = CKEDITOR.tools.bind( function ()
 						{
 							var target = element.getFirst();
@@ -247,24 +247,72 @@ CKEDITOR.plugins.add( 'floatpanel',
 							else
 								target.removeStyle( 'height' );
 
+							// Flip panel layout horizontally in RTL with known width.
+							if ( rtl )
+								left -= element.$.offsetWidth;
+
+							// Pop the style now for measurement.
+							element.setStyle( 'left', left + 'px' );
+
+							/* panel layout smartly fit the viewport size. */
 							var panelElement = panel.element,
 								panelWindow = panelElement.getWindow(),
-								windowScroll = panelWindow.getScrollPosition(),
-								viewportSize = panelWindow.getViewPaneSize(),
-								panelSize =
+								rect = element.$.getBoundingClientRect(),
+								viewportSize = panelWindow.getViewPaneSize();
+
+							// Compensation for browsers that dont support "width" and "height".
+							var rectWidth = rect.width || rect.right - rect.left,
+							rectHeight = rect.height || rect.bottom - rect.top;
+
+							// Check if default horizontal layout is impossible.
+							var spaceAfter = rtl ? rect.right : viewportSize.width - rect.left,
+								spaceBefore = rtl ? viewportSize.width - rect.right : rect.left;
+
+							if ( rtl )
+							{
+								if ( spaceAfter < rectWidth )
 								{
-									'height' : panelElement.$.offsetHeight,
-									'width' : panelElement.$.offsetWidth
-								};
+									// Flip to show on right.
+									if ( spaceBefore > rectWidth )
+										left += rectWidth;
+									// Align to window left.
+									else if ( viewportSize.width > rectWidth )
+										left = left - rect.left;
+									// Align to window right, never cutting the panel at right.
+									else
+										left = left - rect.right + viewportSize.width;
+								}
+							}
+							else if ( spaceAfter < rectWidth )
+							{
+									// Flip to show on left.
+									if ( spaceBefore > rectWidth )
+										left -= rectWidth;
+									// Align to window right.
+									else if ( viewportSize.width > rectWidth )
+										left = left - rect.right + viewportSize.width;
+									// Align to window left, never cutting the panel at left.
+									else
+										left = left - rect.left;
+								}
 
-							// If the menu is horizontal off, shift it toward
-							// the opposite language direction.
-							if ( rtl ? left < 0 : left + panelSize.width > viewportSize.width + windowScroll.x )
-								left += ( panelSize.width * ( rtl ? 1 : -1 ) );
 
-							// Vertical off screen is simpler.
-							if ( top + panelSize.height > viewportSize.height + windowScroll.y )
-								top -= panelSize.height;
+							// Check if the default vertical layout is possible.
+							var spaceBelow = viewportSize.height - rect.top,
+								spaceAbove = rect.top;
+
+							if ( spaceBelow < rectHeight )
+							{
+								// Flip to show above.
+								if ( spaceAbove > rectHeight )
+									top -= rectHeight;
+								// Align to window bottom.
+								else if ( viewportSize.height > rectHeight )
+									top = top - rect.bottom + viewportSize.height;
+								// Align to top, never cutting the panel at top.
+								else
+									top = top - rect.top;
+							}
 
 							// If IE is in RTL, we have troubles with absolute
 							// position and horizontal scrolls. Here we have a
