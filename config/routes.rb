@@ -23,7 +23,11 @@ Developer::Application.routes.draw do
   root :to => "pages#home"
 
   namespace :api do
-    resources :api_users, :path => "api-users", :only => [:create]
+    resources :api_users, :path => "api-users", :only => [:show, :create] do
+      member do
+        get "validate"
+      end
+    end
   end
 
   devise_for :admins, :controllers => { :omniauth_callbacks => "admin/admins/omniauth_callbacks" }
