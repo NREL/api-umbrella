@@ -101,21 +101,20 @@ describe Rack::AuthProxy::Authorize do
   describe "API user services" do
     it "should deny access by default" do
       api_user = Factory.create(:api_user)
-      post "/api/api_user.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
+      post "/api/api-user.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == false
       last_response.status.should == 403
       last_response.body.should include("The api_key supplied is not authorized to access the given service.")
     end
 
-    it "should grant access to users with the 'vin' role" do
+    it "should grant access to users with the 'api_user_creation' role" do
       api_user = Factory.create(:api_user, :roles => ["api_user_creation"])
-      post "/api/api_user.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
+      post "/api/api-user.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == true
       last_response.status.should == @target_app_status
       last_response.body.should == @target_app_content
     end
   end
-
 end
