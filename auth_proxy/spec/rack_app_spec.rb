@@ -47,7 +47,7 @@ describe AuthProxy::RackApp do
 
     describe "a valid request" do
       it "should return a 200 OK response" do
-        api_user = Factory.create(:api_user)
+        api_user = FactoryGirl.create(:api_user)
         get "/api/foo.xml?api_key=#{api_user.api_key}"
 
         last_response.status.should == 200
@@ -73,7 +73,7 @@ describe AuthProxy::RackApp do
 
     describe "an unauthorized request" do
       it "should deny access for geocoding services to unauthorized users" do
-        api_user = Factory.create(:api_user)
+        api_user = FactoryGirl.create(:api_user)
         get "/api/geocode.json?api_key=#{api_user.api_key}"
 
         last_response.status.should == 403
@@ -81,7 +81,7 @@ describe AuthProxy::RackApp do
       end
 
       it "should allow access for geocoding services to authorized users" do
-        api_user = Factory.create(:api_user, :roles => ["geocode"])
+        api_user = FactoryGirl.create(:api_user, :roles => ["geocode"])
         get "/api/geocode.json?api_key=#{api_user.api_key}"
 
         last_response.status.should == 200

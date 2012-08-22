@@ -62,7 +62,7 @@ describe Rack::AuthProxy::Authenticate do
 
   describe "disabled api_key supplied" do
     before(:all) do
-      @api_user = Factory.create(:disabled_api_user)
+      @api_user = FactoryGirl.create(:disabled_api_user)
     end
 
     it "should not call the target app" do
@@ -80,7 +80,7 @@ describe Rack::AuthProxy::Authenticate do
 
   describe "valid api_key supplied" do
     before(:all) do
-      @api_user = Factory.create(:api_user)
+      @api_user = FactoryGirl.create(:api_user)
     end
 
     it "should call the target app" do

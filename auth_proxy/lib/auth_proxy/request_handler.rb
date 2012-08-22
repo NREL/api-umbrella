@@ -1,10 +1,5 @@
-require "thin_parser"
 require "auth_proxy/http_response"
 require "auth_proxy/rack_app"
-
-# Raised by Thin's Thin::HttpParser when an incoming request is not valid and
-# the server can not process it.
-class InvalidRequest < IOError; end
 
 module AuthProxy
   # After our ProxyMachine server has received the full HTTP request headers,
@@ -32,29 +27,6 @@ module AuthProxy
       @headers = headers
     end
 
-    # Parse the HTTP headers from their raw string format into a hash of key
-    # and value pairs.
-    #
-    # @return [Hash] The HTTP headers for the request in a hash format.
-    def request_env
-      unless @request_env
-        @request_env = {}
-
-        # Parse the headers using Thin's http_parser. http_parser will place the
-        # parsed headers into the env hash we pass in.
-        http_parser = Thin::HttpParser.new
-        @request_env = {
-          "rack.input" => StringIO.new, # So Rack::Request can pretend like it has a body.
-        }
-        start = 0
-        http_parser.execute(@request_env, self.headers, start)
-
-        LOGGER.debug("Request: #{@request_env.inspect}")
-      end
-
-      @request_env
-    end
-
     # Return the proper response instruction for the ProxyMachine server. This
     # is determined by using the parsed headers and feeding it to our Rack
     # application. The Rack application makes it easy to use Rack middleware to
@@ -62,7 +34,7 @@ module AuthProxy
     #
     # @return [Hash] A ProxyMachine response instruction.
     def proxy_instruction
-      status, headers, response = AuthProxy::RackApp.instance.call(self.request_env)
+      status, headers, response = AuthProxy::RackApp.instance.call(self.headers)
 
       if(status == 200)
         { :remote => self.class.random_api_router_server }

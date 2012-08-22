@@ -1,13 +1,14 @@
 source :rubygems
 
-# Run everything through the ProxyMachine server.
-gem "proxymachine"
+# Run everything through the EventMachine proxy.
+gem "em-proxy"
+gem "eventmachine", ">= 1.0.0.rc.4"
 
 # For some of activesupport's niceties, like blank?
-gem "activesupport", "~> 3.0.10"
+gem "activesupport", "~> 3.2.7"
 
 # MongoDB
-gem "mongoid"
+gem "mongoid", "~> 2.4.12"
 
 # Lock the BSON version dependency, since the 1.3 branch didn't do this.
 gem "bson", "~> 1.3.1"
@@ -22,16 +23,16 @@ gem "rack-throttle"
 gem "hiredis"
 gem "redis", :require => ["redis", "redis/connection/hiredis"]
 
-platforms :ruby_18 do
-  # Redis recommends SystemTimer over the default Timeout class.
-  gem "SystemTimer", "1.2.3"
-end
+# For parsing the raw HTTP requests.
+gem "http_parser.rb"
 
-# Use thin for parsing the raw HTTP requests.
+# For generating raw HTTP responses.
 gem "thin"
 
 # Yajl for JSON encoding.
 gem "yajl-ruby"
+
+gem "trollop"
 
 group :development do
   # Yard and markdown dependencies

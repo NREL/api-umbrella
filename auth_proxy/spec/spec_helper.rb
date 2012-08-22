@@ -8,7 +8,7 @@ require "rack/test"
 require "timecop"
 require "yajl"
 
-Factory.find_definitions
+FactoryGirl.find_definitions
 
 RSpec.configure do |config|
   config.before(:suite) do
