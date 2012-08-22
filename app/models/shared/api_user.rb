@@ -43,7 +43,7 @@ class ApiUser
   validates_format_of :website,
     :with => /\w+\.\w+/,
     :unless => lambda { |user| user.no_domain_signup },
-    :message => "Your website must be a valid URL in the form of http://nrel.gov"
+    :message => "Your website must be a valid URL in the form of http://data.gov"
   validates_acceptance_of :terms_and_conditions,
     :message => "Check the box to agree to the terms and conditions."
 

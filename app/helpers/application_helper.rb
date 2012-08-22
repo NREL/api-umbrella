@@ -1,9 +1,9 @@
 module ApplicationHelper
   def html_title
-    title = "NREL: Developer Network"
-    
+    title = "Data.gov Developer Network"
+
     if crumbs.any?
-      title << " - #{crumbs.last.first}"
+      title = "#{crumbs.last.first} | #{title}"
     end
 
     title

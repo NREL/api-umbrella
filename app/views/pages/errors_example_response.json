@@ -1,5 +1,5 @@
 {
   "errors":[
-    "An invalid api_key was supplied. Get one at http://developer.nrel.gov/"
+    "An invalid api_key was supplied. Get one at http://api.data.gov/"
   ]
 }

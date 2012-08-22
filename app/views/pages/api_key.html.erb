@@ -5,19 +5,19 @@
 
 <ul>
   <li>Uniquely identifies you.</li>
-  <li>Gives you access to NREL's Web services.</li>
+  <li>Gives you access to Data.gov's Web services.</li>
   <li>Should be kept private and should not be shared.</li>
 </ul>
 
 <p>To use your key, simply pass the key as a URL query parameter when making Web service requests. For example:</p>
 
-<p class="doc-example-url">GET http://developer.nrel.gov/api/alt-fuel-stations/v1.json?api_key=YOUR_KEY_HERE</p>
+<p class="doc-example-url">GET http://api.data.gov/api/alt-fuel-stations/v1.json?api_key=YOUR_KEY_HERE</p>
 
 <p>Regardless of the HTTP method being called, the API key should always be passed as a GET parameter in the URL query. So even if you will be POSTing or PUTing to an specific service, the <em>api_key</em> query parameter should always be supplied in the URL query parameters.</p>
 
 <h2>Alternative Method</h2>
 <p>Depending on your usage, it can sometimes be easier to pass the API key along as HTTP Basic authentication. If you want to use this method, pass your API key in as the username, while leaving the password blank. For example:</p>
 
-<p class="doc-example-url">GET http://YOUR_KEY_HERE@developer.nrel.gov/api/alt-fuel-stations/v1.json<p>
+<p class="doc-example-url">GET http://YOUR_KEY_HERE@api.data.gov/api/alt-fuel-stations/v1.json<p>
 
 </div>

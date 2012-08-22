@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <errors>
-  <error>An invalid api_key was supplied. Get one at http://developer.nrel.gov/</error>
+  <error>An invalid api_key was supplied. Get one at http://api.data.gov/</error>
 </errors>

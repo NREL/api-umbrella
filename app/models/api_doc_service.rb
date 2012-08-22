@@ -47,7 +47,7 @@ class ApiDocService
   def assign_default_body
     self.body ||= <<EOS
 <h2>Request URL</h2>
-<div class="doc-service-url">GET http://developer.nrel.gov/api/example/service<em>.format?parameters</em></div>
+<div class="doc-service-url">GET http://api.data.gov/api/example/service<em>.format?parameters</em></div>
 
 <h2>Request Parameters</h2>
 <table border="0" cellpadding="0" cellspacing="0" class="doc-parameters">
@@ -154,7 +154,7 @@ class ApiDocService
 
 <h2>Examples</h2>
 <h3>JSON Output Format</h3>
-<div class="doc-example-url">GET <a href="http://developer.nrel.gov/api/example/service.json?api_key=DEMO_KEY">http://developer.nrel.gov/api/example/service.json?api_key=DEMO_KEY</a></div>
+<div class="doc-example-url">GET <a href="http://api.data.gov/api/example/service.json?api_key=DEMO_KEY">http://api.data.gov/api/example/service.json?api_key=DEMO_KEY</a></div>
 <pre class="brush:jscript;">
 [
   {
@@ -165,7 +165,7 @@ class ApiDocService
 </pre>
 
 <h3>XML Output Format</h3>
-<div class="doc-example-url">GET <a href="http://developer.nrel.gov/api/example/service.xml?api_key=DEMO_KEY">http://developer.nrel.gov/api/example/service.xml?api_key=DEMO_KEY</a></div>
+<div class="doc-example-url">GET <a href="http://api.data.gov/api/example/service.xml?api_key=DEMO_KEY">http://api.data.gov/api/example/service.xml?api_key=DEMO_KEY</a></div>
 <pre class="brush:xml;">
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;records type="array"&gt;
