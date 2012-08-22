@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+require "trollop"
+require "auth_proxy/server"
+
+options = Trollop::options do
+  opt :host, "Hostname to bind",
+    :short => "h",
+    :default => "0.0.0.0"
+  opt :port, "Port to listen on",
+    :short => "p",
+    :default => 7890
+end
+
+AuthProxy::Server.run(options)

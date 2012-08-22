@@ -21,7 +21,7 @@ describe Rack::AuthProxy::Authorize do
   end
 
   it "should allow access to services by default" do
-    api_user = Factory.create(:api_user)
+    api_user = FactoryGirl.create(:api_user)
     get "/api/foo.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
     @target_app_called.should == true
@@ -31,7 +31,7 @@ describe Rack::AuthProxy::Authorize do
 
   describe "VIBE services" do
     it "should deny access by default" do
-      api_user = Factory.create(:api_user)
+      api_user = FactoryGirl.create(:api_user)
       get "/api/afdc_laws.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == false
@@ -40,7 +40,7 @@ describe Rack::AuthProxy::Authorize do
     end
 
     it "should grant access to users with the 'vibe' role" do
-      api_user = Factory.create(:api_user, :roles => ["vibe"])
+      api_user = FactoryGirl.create(:api_user, :roles => ["vibe"])
       get "/api/afdc_laws.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == true
@@ -51,7 +51,7 @@ describe Rack::AuthProxy::Authorize do
 
   describe "geocoding services" do
     it "should deny access by default" do
-      api_user = Factory.create(:api_user)
+      api_user = FactoryGirl.create(:api_user)
       get "/api/geocode.json?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == false
@@ -60,7 +60,7 @@ describe Rack::AuthProxy::Authorize do
     end
 
     it "should deny access to users with non-authorized roles" do
-      api_user = Factory.create(:api_user, :roles => ["vibe", "vin", "foo", "bar"])
+      api_user = FactoryGirl.create(:api_user, :roles => ["vibe", "vin", "foo", "bar"])
       get "/api/geocode.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == false
@@ -69,7 +69,7 @@ describe Rack::AuthProxy::Authorize do
     end
 
     it "should grant access to users with the 'geocode' role" do
-      api_user = Factory.create(:api_user, :roles => ["geocode"])
+      api_user = FactoryGirl.create(:api_user, :roles => ["geocode"])
       get "/api/geocode.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == true
@@ -80,7 +80,7 @@ describe Rack::AuthProxy::Authorize do
 
   describe "VIN services" do
     it "should deny access by default" do
-      api_user = Factory.create(:api_user)
+      api_user = FactoryGirl.create(:api_user)
       get "/api/vin.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == false
@@ -89,7 +89,7 @@ describe Rack::AuthProxy::Authorize do
     end
 
     it "should grant access to users with the 'vin' role" do
-      api_user = Factory.create(:api_user, :roles => ["vin"])
+      api_user = FactoryGirl.create(:api_user, :roles => ["vin"])
       get "/api/vin.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == true
@@ -100,7 +100,7 @@ describe Rack::AuthProxy::Authorize do
 
   describe "API user services" do
     it "should deny access by default" do
-      api_user = Factory.create(:api_user)
+      api_user = FactoryGirl.create(:api_user)
       post "/api/api-user.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == false
@@ -109,7 +109,7 @@ describe Rack::AuthProxy::Authorize do
     end
 
     it "should grant access to users with the 'api_user_creation' role" do
-      api_user = Factory.create(:api_user, :roles => ["api_user_creation"])
+      api_user = FactoryGirl.create(:api_user, :roles => ["api_user_creation"])
       post "/api/api-user.xml?api_key=#{api_user.api_key}", {}, "rack.api_user" => api_user
 
       @target_app_called.should == true

@@ -18,7 +18,7 @@ describe Rack::AuthProxy::Log do
   end
 
   before(:each) do
-    @api_key = Factory.next(:api_key)
+    @api_key = FactoryGirl.generate(:api_key)
   end
 
   it "should log the details for a request" do

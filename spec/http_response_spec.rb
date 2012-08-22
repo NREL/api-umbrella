@@ -7,7 +7,14 @@ describe AuthProxy::HttpResponse do
     @headers = { "Content-Type" => "text/plain" }
     @response = ["Body message"]
 
-    @http_response = AuthProxy::HttpResponse.new(@status, @headers, @response)
+    @http_response = AuthProxy::HttpResponse.new
+    @http_response.status = @status
+    @http_response.headers = @headers
+    @http_response.body = @response
+  end
+
+  it "inherits from Thin::Response" do
+    @http_response.should be_kind_of(Thin::Response)
   end
 
   it "should accept parameters during initialization" do
@@ -25,12 +32,6 @@ describe AuthProxy::HttpResponse do
       @http_response.headers["Server"] = "AuthProxy"
 
       @http_response.headers_output.should include("Server: AuthProxy")
-    end
-  end
-
-  describe "#to_s" do
-    it "outputs the entire response as a string" do
-      @http_response.to_s.should == "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nBody message"
     end
   end
 end
