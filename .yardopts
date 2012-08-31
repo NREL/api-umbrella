@@ -1,0 +1,6 @@
+--protected
+--private
+--debug
+--output-dir /srv/developer/devdev/docs/router/auth_proxy
+lib/**/*.rb
+models/**/*.rb

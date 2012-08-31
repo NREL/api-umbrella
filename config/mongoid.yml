@@ -1,0 +1,28 @@
+# Use ERB to include the contents of our shared YAML database config file.
+<%= IO.read("/etc/db_config/database.yml") %>
+
+development:
+  <<: *developer_mongodb_development
+
+gsa_development:
+  <<: *gsa_developer_mongodb_development
+
+test:
+  <<: *developer_mongodb_test
+  logger: false
+
+staging_int:
+  <<: *developer_mongodb_staging_int
+  logger: false
+
+gsa_staging_int:
+  <<: *gsa_developer_mongodb_staging_int
+  logger: false
+
+production:
+  <<: *developer_mongodb_production
+  logger: false
+
+gsa_production:
+  <<: *gsa_developer_mongodb_production
+  logger: false
