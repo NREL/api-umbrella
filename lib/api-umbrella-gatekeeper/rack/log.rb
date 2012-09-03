@@ -27,7 +27,7 @@ module ApiUmbrella
           # Call the rest of the Rack middlewares.
           status, headers, response = @app.call(env)
 
-          request = Rack::Request.new(env)
+          request = ::Rack::Request.new(env)
 
           response_error = nil
           if(status != 200)

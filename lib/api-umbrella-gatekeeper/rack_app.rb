@@ -26,7 +26,7 @@ module ApiUmbrella
       end
 
       def self.instance
-        @@instance ||= Rack::Builder.app do
+        @@instance ||= ::Rack::Builder.app do
           use ApiUmbrella::Gatekeeper::Rack::Log
           use ApiUmbrella::Gatekeeper::Rack::FormattedErrorResponse
           use ApiUmbrella::Gatekeeper::Rack::Authenticate

@@ -4,7 +4,7 @@ module ApiUmbrella
   module Gatekeeper
     module Rack
       module Throttle
-        class Limiter < Rack::Throttle::Limiter
+        class Limiter < ::Rack::Throttle::Limiter
           def initialize(app, options = {})
             super
           end

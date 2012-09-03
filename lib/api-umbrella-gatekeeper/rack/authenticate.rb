@@ -18,7 +18,7 @@ module ApiUmbrella
 
         # Authenticate against the ApiUser model 
         def call(env)
-          request = Rack::Request.new(env)
+          request = ::Rack::Request.new(env)
 
           # By default, the API key should be passed in through the "api_key" GET
           # parameter.
@@ -31,7 +31,7 @@ module ApiUmbrella
           # doesn't support passing a specific GET parameter along with every
           # request.
           if(!env["rack.api_key"])
-            http_auth = Rack::Auth::Basic::Request.new(env)
+            http_auth = ::Rack::Auth::Basic::Request.new(env)
             if(http_auth.provided? && http_auth.basic?)
               env["rack.api_key"] = http_auth.username
             end

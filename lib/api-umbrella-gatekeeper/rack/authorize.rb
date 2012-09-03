@@ -8,7 +8,7 @@ module ApiUmbrella
         end
 
         def call(env)
-          request = Rack::Request.new(env)
+          request = ::Rack::Request.new(env)
 
           required_roles = []
           case(request.path)

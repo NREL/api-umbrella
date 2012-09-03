@@ -29,14 +29,14 @@ module ApiUmbrella
           status, headers, response = @app.call(env)
 
           if(status != 200)
-            request = Rack::Request.new(env)
+            request = ::Rack::Request.new(env)
 
             format_extension = ::File.extname(request.path).to_s.downcase
             if(format_extension.empty? && !request.GET["format"].blank?)
               format_extension = ".#{request.GET["format"].to_s.downcase}"
             end
 
-            headers["Content-Type"] = Rack::Mime.mime_type(format_extension, "text/plain")
+            headers["Content-Type"] = ::Rack::Mime.mime_type(format_extension, "text/plain")
 
             # The rack response should be an array (or something that responds to
             # #each). However, rack-throttle incorrectly returns a string for
