@@ -2,23 +2,13 @@ require "spec_helper"
 require "api-umbrella-gatekeeper/rack_app"
 
 describe ApiUmbrella::Gatekeeper::RackApp do
-  describe "redis_cache" do
-    it "should be a Redis instance" do
-      ApiUmbrella::Gatekeeper::RackApp.redis_cache.should be_instance_of(Redis)
-    end
-
-    it "should be a singleton" do
-      ApiUmbrella::Gatekeeper::RackApp.redis_cache.should equal(ApiUmbrella::Gatekeeper::RackApp.redis_cache)
-    end
-  end
-
   describe "instance" do
     it "should look like a Rack application" do
       ApiUmbrella::Gatekeeper::RackApp.instance.should respond_to(:call)
     end
 
     it "first middleware layer should be an instance of Rack::ApiUmbrella::Gatekeeper::Log" do
-      ApiUmbrella::Gatekeeper::RackApp.instance.should be_instance_of(Rack::ApiUmbrella::Gatekeeper::Log)
+      ApiUmbrella::Gatekeeper::RackApp.instance.should be_instance_of(ApiUmbrella::Gatekeeper::Rack::Log)
     end
 
     it "should be a singleton" do
@@ -37,7 +27,7 @@ describe ApiUmbrella::Gatekeeper::RackApp do
       it "should be logged" do
         get "/api/log_test.xml"
 
-        log = ApiRequestLog.where(:path => "/api/log_test.xml").first
+        log = ApiUmbrella::ApiRequestLog.where(:path => "/api/log_test.xml").first
 
         log.api_key.should == nil
         log.ip_address.should == "127.0.0.1"
@@ -86,6 +76,32 @@ describe ApiUmbrella::Gatekeeper::RackApp do
 
         last_response.status.should == 200
         last_response.body.should == "OK"
+      end
+    end
+
+    describe "rate limit throttling" do
+      it "returns a 200 OK response when under the rate limit" do
+        Timecop.freeze do
+          api_user = FactoryGirl.create(:throttled_3_hourly_api_user)
+          3.times do
+            get "/api/foo.xml?api_key=#{api_user.api_key}"
+
+            last_response.status.should == 200
+            last_response.body.should == "OK"
+          end
+        end
+      end
+
+      it "returns a service unavailable error when over the rate limit" do
+        Timecop.freeze do
+          api_user = FactoryGirl.create(:throttled_3_hourly_api_user)
+          4.times do
+            get "/api/foo.xml?api_key=#{api_user.api_key}"
+          end
+
+          last_response.status.should == 503
+          last_response.body.should include('<error>503 Service Unavailable (Rate Limit Exceeded)')
+        end
       end
     end
   end

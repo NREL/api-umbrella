@@ -1,5 +1,3 @@
-require "active_support"
-
 module ApiUmbrella
   module Gatekeeper
     module Rack

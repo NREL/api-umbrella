@@ -17,8 +17,8 @@ module ApiUmbrella
                   allowed = (count <= max)
                 end
               rescue => e
-                LOGGER.error(e.to_s)
-                LOGGER.error(e.backtrace.join("\n"))
+                ApiUmbrella::Gatekeeper.logger.error(e.to_s)
+                ApiUmbrella::Gatekeeper.logger.error(e.backtrace.join("\n"))
               end
             end
 
