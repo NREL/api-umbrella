@@ -8,8 +8,8 @@ Gem::Specification.new do |gem|
   gem.version       = ApiUmbrella::Gatekeeper::VERSION
   gem.authors       = ["Nick Muerdter"]
   gem.email         = ["nick.muerdter@nrel.gov"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{A custom reverse proxy to control access to your APIs. Performs API key validation, request rate limiting, and gathers analytics.}
+  gem.summary       = %q{A custom reverse proxy to control access to your APIs.}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($/)
