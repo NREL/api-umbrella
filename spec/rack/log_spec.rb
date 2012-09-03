@@ -28,7 +28,7 @@ describe ApiUmbrella::Gatekeeper::Rack::Log do
 
       log.api_key.should == @api_key
       log.ip_address.should == "127.0.0.1"
-      log.requested_at.utc.should == Time.now.utc
+      log.requested_at.utc.to_i.should == Time.now.utc.to_i
       log.response_status.should == @target_app_status
       log.response_error.should == nil
     end
@@ -42,7 +42,7 @@ describe ApiUmbrella::Gatekeeper::Rack::Log do
 
       log.api_key.should == nil
       log.ip_address.should == "127.0.0.1"
-      log.requested_at.utc.should == Time.now.utc
+      log.requested_at.utc.to_i.should == Time.now.utc.to_i
       log.response_status.should == @target_app_status
       log.response_error.should == nil
     end
