@@ -1,28 +1,28 @@
 require "spec_helper"
-require "auth_proxy/rack_app"
+require "api-umbrella-gatekeeper/rack_app"
 
-describe AuthProxy::RackApp do
+describe ApiUmbrella::Gatekeeper::RackApp do
   describe "redis_cache" do
     it "should be a Redis instance" do
-      AuthProxy::RackApp.redis_cache.should be_instance_of(Redis)
+      ApiUmbrella::Gatekeeper::RackApp.redis_cache.should be_instance_of(Redis)
     end
 
     it "should be a singleton" do
-      AuthProxy::RackApp.redis_cache.should equal(AuthProxy::RackApp.redis_cache)
+      ApiUmbrella::Gatekeeper::RackApp.redis_cache.should equal(ApiUmbrella::Gatekeeper::RackApp.redis_cache)
     end
   end
 
   describe "instance" do
     it "should look like a Rack application" do
-      AuthProxy::RackApp.instance.should respond_to(:call)
+      ApiUmbrella::Gatekeeper::RackApp.instance.should respond_to(:call)
     end
 
-    it "first middleware layer should be an instance of Rack::AuthProxy::Log" do
-      AuthProxy::RackApp.instance.should be_instance_of(Rack::AuthProxy::Log)
+    it "first middleware layer should be an instance of Rack::ApiUmbrella::Gatekeeper::Log" do
+      ApiUmbrella::Gatekeeper::RackApp.instance.should be_instance_of(Rack::ApiUmbrella::Gatekeeper::Log)
     end
 
     it "should be a singleton" do
-      AuthProxy::RackApp.instance.should equal(AuthProxy::RackApp.instance)
+      ApiUmbrella::Gatekeeper::RackApp.instance.should equal(ApiUmbrella::Gatekeeper::RackApp.instance)
     end
   end
 
@@ -30,7 +30,7 @@ describe AuthProxy::RackApp do
     include Rack::Test::Methods
 
     def app
-      AuthProxy::RackApp.instance
+      ApiUmbrella::Gatekeeper::RackApp.instance
     end
 
     describe "any request" do

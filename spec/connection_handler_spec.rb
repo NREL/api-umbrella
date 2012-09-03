@@ -3,9 +3,9 @@
 require "timecop"
 
 require "em-proxy"
-require "auth_proxy/connection_handler"
+require "api-umbrella-gatekeeper/connection_handler"
 
-describe AuthProxy::ConnectionHandler do
+describe ApiUmbrella::Gatekeeper::ConnectionHandler do
   CRLF = "\r\n"
 
   before(:each) do
@@ -24,7 +24,7 @@ describe AuthProxy::ConnectionHandler do
     @connection.stub(:server) {}
     @connection.stub(:close_connection_after_writing) {}
 
-    @handler = AuthProxy::ConnectionHandler.new(@connection)
+    @handler = ApiUmbrella::Gatekeeper::ConnectionHandler.new(@connection)
   end
 
   describe "start_time" do
@@ -207,7 +207,7 @@ describe AuthProxy::ConnectionHandler do
       end
 
       it "closes the error response http object" do
-        AuthProxy::HttpResponse.any_instance.should_receive(:close)
+        ApiUmbrella::Gatekeeper::HttpResponse.any_instance.should_receive(:close)
         @handler.request_headers_parsed(@headers)
       end
 

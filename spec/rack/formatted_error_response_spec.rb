@@ -1,7 +1,7 @@
 require "spec_helper"
-require "rack/auth_proxy/formatted_error_response"
+require "api-umbrella-gatekeeper/rack/formatted_error_response"
 
-describe Rack::AuthProxy::FormattedErrorResponse do
+describe ApiUmbrella::Gatekeeper::Rack::FormattedErrorResponse do
   include Rack::Test::Methods
 
   describe "application error" do
@@ -14,7 +14,7 @@ describe Rack::AuthProxy::FormattedErrorResponse do
     end
 
     def app
-      Rack::AuthProxy::FormattedErrorResponse.new(target_app)
+      ApiUmbrella::Gatekeeper::Rack::FormattedErrorResponse.new(target_app)
     end
 
     it "should default to plain text errors" do
@@ -105,7 +105,7 @@ describe Rack::AuthProxy::FormattedErrorResponse do
     end
 
     def app
-      Rack::AuthProxy::FormattedErrorResponse.new(target_app)
+      ApiUmbrella::Gatekeeper::Rack::FormattedErrorResponse.new(target_app)
     end
 
     it "should format the error message desipte the invalid/string-based rack response" do
@@ -129,7 +129,7 @@ describe Rack::AuthProxy::FormattedErrorResponse do
     end
 
     def app
-      Rack::AuthProxy::FormattedErrorResponse.new(target_app)
+      ApiUmbrella::Gatekeeper::Rack::FormattedErrorResponse.new(target_app)
     end
 
     it "should pass through the successful response" do

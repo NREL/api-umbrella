@@ -1,8 +1,7 @@
 require "spec_helper"
-require "rack/auth_proxy/log"
+require "api-umbrella-gatekeeper/rack/log"
 
-
-describe Rack::AuthProxy::Log do
+describe ApiUmbrella::Gatekeeper::Rack::Log do
   include Rack::Test::Methods
 
   def target_app
@@ -14,7 +13,7 @@ describe Rack::AuthProxy::Log do
   end
 
   def app
-    Rack::AuthProxy::Log.new(target_app)
+    ApiUmbrella::Gatekeeper::Rack::Log.new(target_app)
   end
 
   before(:each) do
@@ -81,7 +80,7 @@ describe Rack::AuthProxy::Log do
     end
 
     def app
-      Rack::AuthProxy::Log.new(target_error_app)
+      ApiUmbrella::Gatekeeper::Rack::Log.new(target_error_app)
     end
 
     it "should log the response body for errors" do

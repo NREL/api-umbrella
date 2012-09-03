@@ -1,2 +1,2 @@
-require "rack/auth_proxy/throttle/daily"
-require "rack/auth_proxy/throttle/hourly"
+require "api-umbrella-gatekeeper/rack/throttle/daily"
+require "api-umbrella-gatekeeper/rack/throttle/hourly"

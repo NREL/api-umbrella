@@ -1,7 +1,7 @@
 require "spec_helper"
-require "rack/auth_proxy/authorize"
+require "api-umbrella-gatekeeper/rack/authorize"
 
-describe Rack::AuthProxy::Authorize do
+describe ApiUmbrella::Gatekeeper::Rack::Authorize do
   include Rack::Test::Methods
 
   def target_app
@@ -17,7 +17,7 @@ describe Rack::AuthProxy::Authorize do
   end
 
   def app
-    Rack::AuthProxy::Authorize.new(target_app)
+    ApiUmbrella::Gatekeeper::Rack::Authorize.new(target_app)
   end
 
   it "should allow access to services by default" do

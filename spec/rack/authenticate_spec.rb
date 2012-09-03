@@ -1,7 +1,7 @@
 require "spec_helper"
-require "rack/auth_proxy/authenticate"
+require "api-umbrella-gatekeeper/rack/authenticate"
 
-describe Rack::AuthProxy::Authenticate do
+describe ApiUmbrella::Gatekeeper::Rack::Authenticate do
   include Rack::Test::Methods
 
   def target_app
@@ -15,7 +15,7 @@ describe Rack::AuthProxy::Authenticate do
   end
 
   def app
-    Rack::AuthProxy::Authenticate.new(target_app)
+    ApiUmbrella::Gatekeeper::Rack::Authenticate.new(target_app)
   end
 
   describe "no api_key supplied" do

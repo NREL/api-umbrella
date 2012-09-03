@@ -1,13 +1,13 @@
 require "spec_helper"
-require "auth_proxy/http_response"
+require "api-umbrella-gatekeeper/http_response"
 
-describe AuthProxy::HttpResponse do
+describe ApiUmbrella::Gatekeeper::HttpResponse do
   before(:each) do
     @status = 200
     @headers = { "Content-Type" => "text/plain" }
     @response = ["Body message"]
 
-    @http_response = AuthProxy::HttpResponse.new
+    @http_response = ApiUmbrella::Gatekeeper::HttpResponse.new
     @http_response.status = @status
     @http_response.headers = @headers
     @http_response.body = @response
@@ -29,9 +29,9 @@ describe AuthProxy::HttpResponse do
     end
 
     it "still returns custom server headers" do
-      @http_response.headers["Server"] = "AuthProxy"
+      @http_response.headers["Server"] = "ApiUmbrella::Gatekeeper"
 
-      @http_response.headers_output.should include("Server: AuthProxy")
+      @http_response.headers_output.should include("Server: ApiUmbrella::Gatekeeper")
     end
   end
 end

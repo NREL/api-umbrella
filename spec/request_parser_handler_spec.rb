@@ -1,12 +1,12 @@
 # encoding: utf-8
 
-require "auth_proxy/connection_handler"
-require "auth_proxy/request_parser_handler"
+require "api-umbrella-gatekeeper/connection_handler"
+require "api-umbrella-gatekeeper/request_parser_handler"
 
-describe AuthProxy::RequestParserHandler do
+describe ApiUmbrella::Gatekeeper::RequestParserHandler do
   before(:each) do
-    @connection_handler = AuthProxy::ConnectionHandler.new(nil)
-    @handler = AuthProxy::RequestParserHandler.new(@connection_handler)
+    @connection_handler = ApiUmbrella::Gatekeeper::ConnectionHandler.new(nil)
+    @handler = ApiUmbrella::Gatekeeper::RequestParserHandler.new(@connection_handler)
   end
 
   describe "on_headers_complete" do

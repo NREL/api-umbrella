@@ -1,5 +1,5 @@
 require "spec_helper"
-require "auth_proxy/request_handler"
+require "api-umbrella-gatekeeper/request_handler"
 
-describe AuthProxy::RequestHandler do
+describe ApiUmbrella::Gatekeeper::RequestHandler do
 end
