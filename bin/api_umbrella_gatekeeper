@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require "trollop"
-require "auth_proxy/server"
+require "api-umbrella-gatekeeper/server"
 
 options = Trollop::options do
   opt :host, "Hostname to bind",
@@ -12,4 +12,4 @@ options = Trollop::options do
     :default => 7890
 end
 
-AuthProxy::Server.run(options)
+ApiUmbrella::Gatekeeper::Server.run(options)
