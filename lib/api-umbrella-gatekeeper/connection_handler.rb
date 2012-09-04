@@ -1,12 +1,17 @@
 require "http/parser"
 
 require "api-umbrella-gatekeeper/http_response"
+require "api-umbrella-gatekeeper/rack_app"
 require "api-umbrella-gatekeeper/request_parser_handler"
 require "api-umbrella-gatekeeper/response_parser_handler"
 
 module ApiUmbrella
   module Gatekeeper
     class ConnectionHandler
+      API_ROUTER_SERVERS = [
+        { :host => "127.0.0.1", :port => 50100 }
+      ]
+
       attr_reader :connection, :start_time, :end_time, :request_buffer, :request_size, :response_size
       attr_accessor :request_body_size, :response_body_size
 
@@ -25,8 +30,11 @@ module ApiUmbrella
         @response_size = 0
         @response_body_size = 0
 
-        @request_parser = Http::Parser.new(RequestParserHandler.new(self))
-        @response_parser = Http::Parser.new(ResponseParserHandler.new(self))
+        @request_parser_handler = RequestParserHandler.new(self)
+        @request_parser = @request_parser_handler.parser
+
+        @response_parser_handler = ResponseParserHandler.new(self)
+        @response_parser = @response_parser_handler.parser
       end
 
       def on_data(chunk)
@@ -82,18 +90,13 @@ module ApiUmbrella
         :close
       end
 
-      def request_headers_parsed(headers)
+      def request_headers_parsed(rack_env)
         #p [:request_headers_parsed]
-        #puts headers.inspect
+        #puts rack_env.inspect
 
-        instruction = proxy_instruction(headers)
+        instruction = gatekeeper_instruction(rack_env)
         if(instruction[:status] == 200)
-          #@connection.server :api_router, :host => "www.example.com", :port => 80
-          #@connection.server :api_router, :host => "www.google.com", :port => 80
-          #@connection.server :api_router, :host => "192.168.50.20", :port => 80
-          @connection.server :api_router, :host => "localhost", :port => 3000
-          #@connection.server :api_router, :host => "www.nytimes.com", :port => 80
-          #@connection.server :api_router, :host => "twitter.com", :port => 80
+          @connection.server :api_router, self.class.random_api_router_server
 
           @relay_time = Time.now
           @connection.relay_to_servers @request_buffer
@@ -115,21 +118,25 @@ module ApiUmbrella
         @request_headers_parsed = true
       end
 
+      # Pick a random API Router server out of a possible cluster of router
+      # servers. This is the server that ProxyMachine passes the request onto
+      # assuming the request has been authenticated.
+      #
+      # @see API_ROUTER_SERVERS
+      # @return [String] The host and port of a routing server to connect to.
+      def self.random_api_router_server
+        API_ROUTER_SERVERS[Kernel.rand(API_ROUTER_SERVERS.length)]
+      end
+
       private
 
-      def proxy_instruction(headers)
-        #status, headers, response = ApiUmbrella::Gatekeeper::RackApp.instance.call(headers)
-
-        status = 200
-        headers = {
-          "Location" => "http://stackoverflow.com/",
-        }
-        response = "<head><title>Document Moved</title></head>\n<body><h1>Object Moved</h1>This document may be found <a HREF=\"http://stackoverflow.com/\">here</a></body>"
+      def gatekeeper_instruction(rack_env)
+        rack_response = ApiUmbrella::Gatekeeper::RackApp.instance.call(rack_env)
 
         {
-          :status => status,
-          :headers => headers,
-          :response => response,
+          :status => rack_response[0],
+          :headers => rack_response[1],
+          :response => rack_response[2],
         }
       end
     end

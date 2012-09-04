@@ -79,6 +79,36 @@ describe ApiUmbrella::Gatekeeper::ConnectionHandler do
     end
   end
 
+  describe "request_body_size" do
+    it "is 0 when the headers are being parsed" do
+      @handler.on_data("GET / HTTP/1.1#{CRLF}")
+      @handler.on_data("Transfer-Encoding: chunked#{CRLF}#{CRLF}")
+      @handler.request_body_size.should == 0
+    end
+
+    it "increments once the body beings" do
+      @handler.on_data("GET / HTTP/1.1#{CRLF}")
+      @handler.on_data("Transfer-Encoding: chunked#{CRLF}#{CRLF}")
+      @handler.on_data("5#{CRLF}Body #{CRLF}7#{CRLF}Message#{CRLF}0#{CRLF}#{CRLF}")
+      @handler.request_body_size.should == 12
+    end
+
+    it "increments if the data is spread across " do
+      @handler.on_data("GET / HTTP/1.1#{CRLF}")
+      @handler.on_data("Transfer-Encoding: chunked#{CRLF}#{CRLF}")
+      @handler.on_data("5#{CRLF}Body #{CRLF}7#{CRLF}Message#{CRLF}")
+      @handler.on_data("8#{CRLF}Another #{CRLF}7#{CRLF}Message#{CRLF}0#{CRLF}#{CRLF}")
+      @handler.request_body_size.should == 27
+    end
+
+    it "increments by bytesize" do
+      @handler.on_data("GET / HTTP/1.1#{CRLF}")
+      @handler.on_data("Transfer-Encoding: chunked#{CRLF}#{CRLF}")
+      @handler.on_data("6#{CRLF}Bödy #{CRLF}7#{CRLF}Message#{CRLF}0#{CRLF}#{CRLF}")
+      @handler.request_body_size.should == 13
+    end
+  end
+
   describe "response_size" do
     it "defaults to 0" do
       @handler.response_size.should == 0
@@ -99,6 +129,35 @@ describe ApiUmbrella::Gatekeeper::ConnectionHandler do
       @handler.on_response(:backend, "HTTP/1.1 200 OK#{CRLF}")
       @handler.on_response(:backend, "Server: ñgiñx/1.0.0#{CRLF}")
       @handler.response_size.should == 40
+    end
+  end
+
+  describe "response_body_size" do
+    it "is 0 when the headers are being parsed" do
+      @handler.on_response(:backend, "HTTP/1.1 200 OK#{CRLF}#{CRLF}")
+      @handler.response_body_size.should == 0
+    end
+
+    it "increments once the body beings" do
+      @handler.on_response(:backend, "HTTP/1.1 200 OK#{CRLF}")
+      @handler.on_response(:backend, "Transfer-Encoding: chunked#{CRLF}#{CRLF}")
+      @handler.on_response(:backend, "5#{CRLF}Body #{CRLF}7#{CRLF}Message#{CRLF}0#{CRLF}#{CRLF}")
+      @handler.response_body_size.should == 12
+    end
+
+    it "increments if the data is spread across " do
+      @handler.on_response(:backend, "HTTP/1.1 200 OK#{CRLF}")
+      @handler.on_response(:backend, "Transfer-Encoding: chunked#{CRLF}#{CRLF}")
+      @handler.on_response(:backend, "5#{CRLF}Body #{CRLF}7#{CRLF}Message#{CRLF}")
+      @handler.on_response(:backend, "8#{CRLF}Another #{CRLF}7#{CRLF}Message#{CRLF}0#{CRLF}#{CRLF}")
+      @handler.response_body_size.should == 27
+    end
+
+    it "increments by bytesize" do
+      @handler.on_response(:backend, "HTTP/1.1 200 OK#{CRLF}")
+      @handler.on_response(:backend, "Transfer-Encoding: chunked#{CRLF}#{CRLF}")
+      @handler.on_response(:backend, "6#{CRLF}Bödy #{CRLF}7#{CRLF}Message#{CRLF}0#{CRLF}#{CRLF}")
+      @handler.response_body_size.should == 13
     end
   end
 
@@ -134,16 +193,16 @@ describe ApiUmbrella::Gatekeeper::ConnectionHandler do
 
   describe "request_headers_parsed" do
     it "does not get called until all headers have been passed in" do
-      headers = { "Host" => "localhost", "Accept" => "*/*" }
-      @handler.should_not_receive(:request_headers_parsed).with(headers)
+      rack_env = {"HTTP_HOST"=>"localhost", "HTTP_ACCEPT"=>"*/*", "SERVER_NAME"=>"localhost", "REQUEST_METHOD"=>"GET", "REQUEST_URI"=>"/", "QUERY_STRING"=>"", "HTTP_VERSION"=>"1.1", "SCRIPT_NAME"=>"/", "REQUEST_PATH"=>"/", "PATH_INFO"=>"/", "FRAGMENT"=>""}
+      @handler.should_not_receive(:request_headers_parsed).with(rack_env)
       @handler.on_data("GET / HTTP/1.1#{CRLF}")
       @handler.on_data("Host: localhost#{CRLF}")
       @handler.on_data("Accept: */*#{CRLF}")
     end
 
-    it "gets called with the parsed headers after all headers have been passed in" do
-      headers = { "Host" => "localhost", "Accept" => "*/*" }
-      @handler.should_receive(:request_headers_parsed).with(headers)
+    it "gets called with the rack env after all headers have been passed in" do
+      rack_env = {"HTTP_HOST"=>"localhost", "HTTP_ACCEPT"=>"*/*", "SERVER_NAME"=>"localhost", "REQUEST_METHOD"=>"GET", "REQUEST_URI"=>"/", "QUERY_STRING"=>"", "HTTP_VERSION"=>"1.1", "SCRIPT_NAME"=>"/", "REQUEST_PATH"=>"/", "PATH_INFO"=>"/", "FRAGMENT"=>""}
+      @handler.should_receive(:request_headers_parsed).with(rack_env)
       @handler.on_data("GET / HTTP/1.1#{CRLF}")
       @handler.on_data("Host: localhost#{CRLF}")
       @handler.on_data("Accept: */*#{CRLF}")
@@ -153,7 +212,7 @@ describe ApiUmbrella::Gatekeeper::ConnectionHandler do
     describe "successful proxy instruction" do
       before(:each) do
         @headers = { "Content-Type" => "text/plain" }
-        @handler.stub(:proxy_instruction) do
+        @handler.stub(:gatekeeper_instruction) do
           {
             :status => 200,
             :headers => @headers,
@@ -163,8 +222,8 @@ describe ApiUmbrella::Gatekeeper::ConnectionHandler do
       end
 
       it "establishes a connection with the backend" do
-        @connection.should_receive(:server).with(:api_router, :host => "localhost", :port => 3000)
-        @handler.request_headers_parsed(@headers)
+        @connection.should_receive(:server).with(:api_router, :host => "127.0.0.1", :port => 50100)
+        @handler.request_headers_parsed({})
       end
 
       it "relays the request buffer to the backend" do
@@ -175,7 +234,7 @@ describe ApiUmbrella::Gatekeeper::ConnectionHandler do
       end
 
       it "does not directly respond to the client" do
-        @handler.request_headers_parsed(@headers)
+        @handler.request_headers_parsed({})
         @sent_response.should == ""
       end
     end
@@ -183,7 +242,7 @@ describe ApiUmbrella::Gatekeeper::ConnectionHandler do
     describe "error proxy instruction" do
       before(:each) do
         @headers = { "Content-Type" => "text/plain" }
-        @handler.stub(:proxy_instruction) do
+        @handler.stub(:gatekeeper_instruction) do
           {
             :status => 403,
             :headers => @headers,
@@ -196,28 +255,28 @@ describe ApiUmbrella::Gatekeeper::ConnectionHandler do
         Timecop.freeze do
           expected_response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/plain\r\nConnection: close\r\nDate: #{Time.now.httpdate}\r\n\r\nBody message"
 
-          @handler.request_headers_parsed(@headers)
+          @handler.request_headers_parsed({})
           @sent_response.should == expected_response
         end
       end
 
       it "closes the connection after writing" do
         @connection.should_receive(:close_connection_after_writing)
-        @handler.request_headers_parsed(@headers)
+        @handler.request_headers_parsed({})
       end
 
       it "closes the error response http object" do
         ApiUmbrella::Gatekeeper::HttpResponse.any_instance.should_receive(:close)
-        @handler.request_headers_parsed(@headers)
+        @handler.request_headers_parsed({})
       end
 
       it "closes the connection after writing" do
         @connection.should_receive(:close_connection_after_writing)
-        @handler.request_headers_parsed(@headers)
+        @handler.request_headers_parsed({})
       end
 
       it "does not relay the request to the backend" do
-        @handler.request_headers_parsed(@headers)
+        @handler.request_headers_parsed({})
         @relayed_request.should == ""
       end
     end

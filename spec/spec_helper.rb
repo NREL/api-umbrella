@@ -62,8 +62,10 @@ RSpec.configure do |config|
     }.map { |k, v| "#{k} #{v}" }.join('\n')
     `echo '#{redis_options}' | redis-server -`
 
-    ApiUmbrella::Gatekeeper.redis_cache = Redis.new(:host => "localhost", :port => 9736)
-    ApiUmbrella::Gatekeeper.redis_cache.flushall
+    sleep 0.2
+
+    ApiUmbrella::Gatekeeper.redis = Redis.new(:host => "localhost", :port => 9736)
+    ApiUmbrella::Gatekeeper.redis.flushall
   end
 
   config.after(:suite) do

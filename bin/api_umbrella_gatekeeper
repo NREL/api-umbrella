@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require "trollop"
-require "api-umbrella-gatekeeper/server"
+require "api-umbrella-gatekeeper"
 
 options = Trollop::options do
   opt :host, "Hostname to bind",
@@ -10,6 +10,15 @@ options = Trollop::options do
   opt :port, "Port to listen on",
     :short => "p",
     :default => 7890
+  opt :environment, "Framework environment",
+    :short => "e",
+    :default => "development"
+  opt :mongoid_config, "Path to mongoid.yml config file",
+    :short => "m",
+    :default => "config/mongoid.yml"
+  opt :redis_config, "Path to redis.yml config file",
+    :short => "r",
+    :default => "config/redis.yml"
 end
 
 ApiUmbrella::Gatekeeper::Server.run(options)

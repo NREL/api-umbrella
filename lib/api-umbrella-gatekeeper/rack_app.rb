@@ -17,11 +17,11 @@ module ApiUmbrella
           use ApiUmbrella::Gatekeeper::Rack::Authenticate
           use ApiUmbrella::Gatekeeper::Rack::Authorize
           use ApiUmbrella::Gatekeeper::Rack::Throttle::Daily,
-            :cache => ApiUmbrella::Gatekeeper.redis_cache,
+            :cache => ApiUmbrella::Gatekeeper.redis,
             :max => 10000,
             :code => 503
           use ApiUmbrella::Gatekeeper::Rack::Throttle::Hourly,
-            :cache => ApiUmbrella::Gatekeeper.redis_cache,
+            :cache => ApiUmbrella::Gatekeeper.redis,
             :max => 1000,
             :code => 503
 
