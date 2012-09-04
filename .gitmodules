@@ -1,0 +1,12 @@
+[submodule "chef/cookbooks/cron"]
+	path = chef/cookbooks/cron
+	url = http://github.com/opscode-cookbooks/cron.git
+[submodule "chef/cookbooks/chef-client"]
+	path = chef/cookbooks/chef-client
+	url = http://github.com/opscode-cookbooks/chef-client.git
+[submodule "chef/cookbooks/build-essential"]
+	path = chef/cookbooks/build-essential
+	url = http://github.com/opscode-cookbooks/build-essential.git
+[submodule "chef/cookbooks/haproxy"]
+	path = chef/cookbooks/haproxy
+	url = http://github.com/NREL-cookbooks/haproxy.git
