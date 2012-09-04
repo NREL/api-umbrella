@@ -15,7 +15,7 @@
 # Or switch all this to Ruby once we switch from proxymachine to em-proxy.
 
 # For handling internal-only APIs
-backend auth_proxy_farm_internal_apis
+backend gatekeeper_farm_internal_apis
   # FIXME: Internal APIs should be blocked from external access. But this is
   # trickier than I antipciated in HAProxy, since it's difficult to determine
   # the source IP address (src matches the actual source, while hdr_ip matches
@@ -29,22 +29,22 @@ backend auth_proxy_farm_internal_apis
   # block unless source_match_internal_network
 
   balance roundrobin
-  server auth_proxy1 127.0.0.1:50000
-  server auth_proxy2 127.0.0.1:50001
-  server auth_proxy3 127.0.0.1:50002
-  server auth_proxy3 127.0.0.1:50003
+  server gatekeeper1 127.0.0.1:50000
+  server gatekeeper2 127.0.0.1:50001
+  server gatekeeper3 127.0.0.1:50002
+  server gatekeeper3 127.0.0.1:50003
 
   # Retry connections 30 times (so 30 seconds). This lets the the proxymachine
   # servers restart without dropping any connection.
   retries 30
 
 # For handling public APIs
-backend auth_proxy_farm_public_apis
+backend gatekeeper_farm_public_apis
   balance roundrobin
-  server auth_proxy1 127.0.0.1:50000
-  server auth_proxy2 127.0.0.1:50001
-  server auth_proxy3 127.0.0.1:50002
-  server auth_proxy3 127.0.0.1:50003
+  server gatekeeper1 127.0.0.1:50000
+  server gatekeeper2 127.0.0.1:50001
+  server gatekeeper3 127.0.0.1:50002
+  server gatekeeper3 127.0.0.1:50003
 
   # Retry connections 30 times (so 30 seconds). This lets the the proxymachine
   # servers restart without dropping any connection.

@@ -1,15 +1,15 @@
-[program:<%= deploy_name %>-auth_proxy]
-; Run 4 auth_proxy instances.
+[program:<%= deploy_name %>-gatekeeper]
+; Run 4 gatekeeper instances.
 numprocs=4
 
-; Start each proxymachine instance with ports starting at 50000.
-; Execute proxymachine via RVM and Bundler. 
-directory=<%=current_path %>/auth_proxy
-environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,RACK_ENV=<%= rails_env %>
-command=/opt/rbenv/shims/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 50%(process_num)03d
+; Start each Gatekeeper instance with ports starting at 50000.
+; Execute Gatekeeper via RVM and Bundler. 
+directory=<%=current_path %>
+environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+command=bundle exec api_umbrella_gatekeeper --host 127.0.0.1 --port 50%(process_num)03d --environment gsa_<%= rails_env %> --mongoid-config <%= current_path %>/config/mongoid.yml --redis-config <%= current_path %>/config/redis.yml
 
-; Name each process by the port number, eg "auth_proxy_50000",
-; "auth_proxy_50001"
+; Name each process by the port number, eg "gatekeeper_50000",
+; "gatekeeper_50001"
 process_name=%(program_name)s_50%(process_num)03d
 
 ; Always keep running.
@@ -32,7 +32,7 @@ stopwaitsecs=90
 user=www-data-local
 
 ; Log both stdout and stderr to the same log file. One log file per
-; proxymachine instance running on each port.
+; Gatekeeper instance running on each port.
 redirect_stderr=true
 stdout_logfile=<%= current_path %>/log/%(program_name)s_50%(process_num)03d.log
 
@@ -40,19 +40,19 @@ stdout_logfile=<%= current_path %>/log/%(program_name)s_50%(process_num)03d.log
 logfile_maxbytes=0
 
 ; FIXME: GSA TEMPORARY DEMO: Separate auth proxy for GSA.
-[program:<%= deploy_name %>-gsa_auth_proxy]
-; Run 2 auth_proxy instances.
+[program:<%= deploy_name %>-gsa_gatekeeper]
+; Run 2 gatekeeper instances.
 numprocs=2
 
-; Start each proxymachine instance with ports starting at 56000.
-; Execute proxymachine via RVM and Bundler. 
-directory=<%=current_path %>/auth_proxy
+; Start each Gatekeeper instance with ports starting at 56000.
+; Execute Gatekeeper via RVM and Bundler. 
+directory=<%=current_path %>
 ; FIXME: Remove logic once everything's on the new setup using rbenv.
-environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,RACK_ENV=gsa_<%= rails_env %>
-command=/opt/rbenv/shims/bundle exec proxymachine --config <%= current_path %>/auth_proxy/proxymachine_config.rb --host 127.0.0.1 --port 56%(process_num)03d
+environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+command=bundle exec api_umbrella_gatekeeper --host 127.0.0.1 --port 56%(process_num)03d --environment <%= rails_env %> --mongoid-config <%= current_path %>/config/mongoid.yml --redis-config <%= current_path %>/config/redis.yml
 
-; Name each process by the port number, eg "auth_proxy_56000",
-; "auth_proxy_56001"
+; Name each process by the port number, eg "gatekeeper_56000",
+; "gatekeeper_56001"
 process_name=%(program_name)s_56%(process_num)03d
 
 ; Always keep running.
@@ -75,7 +75,7 @@ stopwaitsecs=90
 user=www-data-local
 
 ; Log both stdout and stderr to the same log file. One log file per
-; proxymachine instance running on each port.
+; Gatekeeper instance running on each port.
 redirect_stderr=true
 stdout_logfile=<%= current_path %>/log/%(program_name)s_56%(process_num)03d.log
 
@@ -84,4 +84,4 @@ logfile_maxbytes=0
 
 ; Define a group so everything in this deployment can be controlled together.
 [group:<%= deploy_name %>]
-programs=<%= deploy_name %>-auth_proxy,<%= deploy_name %>-gsa_auth_proxy
+programs=<%= deploy_name %>-gatekeeper,<%= deploy_name %>-gsa_gatekeeper
