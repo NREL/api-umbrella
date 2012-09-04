@@ -1,5 +1,9 @@
-source "http://gems.cttsdev.nrel.gov"
-source :rubygems
+source 'https://rubygems.org'
 
-gem "capistrano-ext"
-gem "capistrano_nrel_ext", "~> 0.2.10"
+gem "api-umbrella-gatekeeper", :git => "http://github.com/NREL/api-umbrella-gatekeeper.git"
+
+group :development do
+  # Deployment
+  gem "capistrano-ext"
+  gem "capistrano_nrel_ext", :git => "http://github.com/NREL/capistrano_nrel_ext.git"
+end
