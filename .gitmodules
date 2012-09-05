@@ -76,3 +76,12 @@
 [submodule "chef/cookbooks/python"]
 	path = chef/cookbooks/python
 	url = http://github.com/opscode-cookbooks/python.git
+[submodule "chef/cookbooks/pygments"]
+	path = chef/cookbooks/pygments
+	url = http://github.com/NREL-cookbooks/pygments.git
+[submodule "chef/cookbooks/mongodb"]
+	path = chef/cookbooks/mongodb
+	url = http://github.com/NREL-cookbooks/mongodb.git
+[submodule "chef/cookbooks/redis"]
+	path = chef/cookbooks/redis
+	url = http://github.com/NREL-cookbooks/redis.git
