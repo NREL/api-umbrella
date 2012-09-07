@@ -3,7 +3,6 @@ description "A role for the local vagrant development instances"
 
 run_list([
   "recipe[vagrant_extras]",
-  "recipe[vagrant_extras::ssl_cert]",
 ])
 
 default_attributes({
