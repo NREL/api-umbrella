@@ -2,7 +2,6 @@ name "ruby"
 description "The bare essentials for servers that are using ruby."
 
 run_list([
-  "recipe[rbenv]",
   "recipe[rbenv::global_version]",
   "recipe[rubygems::client]",
   "recipe[bundler]",
