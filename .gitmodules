@@ -12,7 +12,7 @@
 	url = http://github.com/NREL-cookbooks/haproxy.git
 [submodule "chef/cookbooks/vagrant_extras"]
 	path = chef/cookbooks/vagrant_extras
-	url = http://github.com/fnichol/chef-vagrant_extras.git
+	url = http://github.com/NREL-cookbooks/vagrant_extras.git
 [submodule "chef/cookbooks/sudo"]
 	path = chef/cookbooks/sudo
 	url = http://github.com/NREL-cookbooks/sudo.git
