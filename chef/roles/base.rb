@@ -25,6 +25,9 @@ run_list([
   # man pages are handy.
   "recipe[man]",
 
+  # Standardize the shasum implementation (used for deployments).
+  "recipe[shasum]",
+
   # Screen is always nice to have for background processes.
   "recipe[screen]",
 

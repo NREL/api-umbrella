@@ -85,3 +85,6 @@
 [submodule "chef/cookbooks/redis"]
 	path = chef/cookbooks/redis
 	url = http://github.com/NREL-cookbooks/redis.git
+[submodule "chef/cookbooks/shasum"]
+	path = chef/cookbooks/shasum
+	url = http://github.com/NREL-cookbooks/shasum.git
