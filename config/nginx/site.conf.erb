@@ -1,5 +1,5 @@
 server {
-  listen 51099;
+  listen 51000;
   server_name <%= domain %>;
 
   # Write the real client IP when it's passed via X-Forwarded-For from HAProxy.
@@ -23,5 +23,5 @@ server {
 
 <% if(rails_env == "production") %>
 # Pre-start the rails app.
-passenger_pre_start http://<%= domain %>:51099/;
+passenger_pre_start http://<%= domain %>:51000/;
 <% end %>
