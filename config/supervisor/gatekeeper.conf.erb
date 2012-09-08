@@ -6,7 +6,7 @@ numprocs=4
 ; Execute Gatekeeper via RVM and Bundler. 
 directory=<%=current_path %>
 environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-command=bundle exec api_umbrella_gatekeeper --host 127.0.0.1 --port 50%(process_num)03d --environment gsa_<%= rails_env %> --mongoid-config <%= current_path %>/config/mongoid.yml --redis-config <%= current_path %>/config/redis.yml
+command=/opt/rbenv/shims/bundle exec api_umbrella_gatekeeper --host 127.0.0.1 --port 50%(process_num)03d --environment gsa_<%= rails_env %> --mongoid-config <%= current_path %>/config/mongoid.yml --redis-config <%= current_path %>/config/redis.yml
 
 ; Name each process by the port number, eg "gatekeeper_50000",
 ; "gatekeeper_50001"
@@ -49,7 +49,7 @@ numprocs=2
 directory=<%=current_path %>
 ; FIXME: Remove logic once everything's on the new setup using rbenv.
 environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-command=bundle exec api_umbrella_gatekeeper --host 127.0.0.1 --port 56%(process_num)03d --environment <%= rails_env %> --mongoid-config <%= current_path %>/config/mongoid.yml --redis-config <%= current_path %>/config/redis.yml
+command=/opt/rbenv/shims/bundle exec api_umbrella_gatekeeper --host 127.0.0.1 --port 56%(process_num)03d --environment <%= rails_env %> --mongoid-config <%= current_path %>/config/mongoid.yml --redis-config <%= current_path %>/config/redis.yml
 
 ; Name each process by the port number, eg "gatekeeper_56000",
 ; "gatekeeper_56001"
