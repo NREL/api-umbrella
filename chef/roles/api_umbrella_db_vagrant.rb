@@ -6,7 +6,7 @@ run_list([
   # fails while running.
   "role[vagrant]",
 
-  "role[api_umbrella_db_development]",
+  "role[api_umbrella_db_base_development]",
 ])
 
 default_attributes({

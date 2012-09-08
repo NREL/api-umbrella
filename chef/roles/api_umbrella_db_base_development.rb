@@ -1,5 +1,5 @@
-name "api_umbrella_db_development"
-description "A role for development API Umbrella database servers"
+name "api_umbrella_db_base_development"
+description "A base role for development API Umbrella database servers"
 
 run_list([
   "role[api_umbrella_db_base]",
