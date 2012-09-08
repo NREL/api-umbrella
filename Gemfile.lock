@@ -19,7 +19,7 @@ GIT
 
 GIT
   remote: http://github.com/NREL/capistrano_nrel_ext.git
-  revision: b5dfdf2971455b527839b4225a3071dff184d3bd
+  revision: d604afad83a5d7bdd0f312d05cae1c4ab5647dd0
   specs:
     capistrano_nrel_ext (0.2.22)
       capistrano
@@ -41,7 +41,7 @@ GEM
     bson (1.7.0)
     bson_ext (1.7.0)
       bson (~> 1.7.0)
-    builder (3.0.0)
+    builder (3.0.2)
     capistrano (2.13.3)
       highline
       net-scp (>= 1.0.0)

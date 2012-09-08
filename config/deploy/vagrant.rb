@@ -14,7 +14,7 @@ set :base_domain, "api.vagrant"
 
 # Only maintain a single release and checkout for our local development. This
 # means there's no ability to rollback releases.
-set :deploy_via, :cached_checkout
+set :deploy_via, :no_op
 
 # Set the Rails environment.
 set :rails_env, "development"

@@ -19,8 +19,8 @@ server {
   ssl_certificate_key /etc/ssl/certs/devprod-int_nrel_gov.key;
   <% end %>
 
-  access_log <%= shared_path %>/log/ssl_proxy-access.log combined;
-  error_log <%= shared_path %>/log/ssl_proxy-error.log;
+  access_log <%= current_path %>/log/ssl_proxy-access.log combined;
+  error_log <%= current_path %>/log/ssl_proxy-error.log;
 
   location / {
     proxy_pass http://127.0.0.1:81;
