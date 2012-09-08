@@ -20,3 +20,6 @@
 
 # Ignore log files
 /log/*.log
+
+# Ignore temp files
+/tmp
