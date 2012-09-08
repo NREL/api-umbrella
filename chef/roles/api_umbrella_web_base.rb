@@ -11,6 +11,7 @@ run_list([
   "role[supervisor]",
 
   "recipe[pygments]",
+  "recipe[xml]",
 ])
 
 default_attributes({
