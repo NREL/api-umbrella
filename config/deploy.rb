@@ -11,7 +11,7 @@ require "capistrano_nrel_ext/recipes/supervisor"
 set :application, "api-umbrella-router"
 
 set :scm, "git"
+set :repository, "https://github.com/NREL/api-umbrella-router.git"
 set :branch, "master"
-set(:repository) { "http://github.com/NREL/#{application}.git" }
 
 ssh_options[:forward_agent] = true
