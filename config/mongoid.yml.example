@@ -1,0 +1,18 @@
+development:
+  host: localhost
+  database: api_umbrella_development
+
+test:
+  host: localhost
+  database: api_umbrella_test
+  logger: false
+
+staging:
+  host: localhost
+  database: api_umbrella_staging_int
+  logger: false
+
+production:
+  host: localhost
+  database: api_umbrella_production_int
+  logger: false
