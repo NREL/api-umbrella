@@ -4,8 +4,13 @@ server {
 
   <% case rails_env %>
   <% when "development" %>
-  ssl_certificate /etc/ssl/certs/devdev_nrel_gov.crt;
-  ssl_certificate_key /etc/ssl/certs/devdev_nrel_gov.key;
+    <% if(base_domain =~ /vagrant/) %>
+      ssl_certificate /etc/ssl/certs/vagrant.crt;
+      ssl_certificate_key /etc/ssl/certs/vagrant.key;
+    <% else %>
+      ssl_certificate /etc/ssl/certs/devdev_nrel_gov.crt;
+      ssl_certificate_key /etc/ssl/certs/devdev_nrel_gov.key;
+    <% end %>
   <% when "staging_int" %>
   ssl_certificate /etc/ssl/certs/devstage-int_nrel_gov.crt;
   ssl_certificate_key /etc/ssl/certs/devstage-int_nrel_gov.key;
