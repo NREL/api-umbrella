@@ -1,0 +1,14 @@
+development:
+  host: localhost
+
+gsa_development:
+  host: localhost
+
+test:
+  host: localhost
+
+staging:
+  host: localhost
+
+production:
+  host: localhost
