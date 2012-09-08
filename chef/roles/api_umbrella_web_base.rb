@@ -1,14 +1,12 @@
 name "api_umbrella_web_base"
-description "A base role for developer.nrel.gov web servers."
+description "A base role for API Umbrella web servers"
 
 run_list([
   "role[base]",
 
-  "role[haproxy]",
   "role[nginx]",
   "role[passenger_nginx_module]",
   "role[ruby]",
-  "role[supervisor]",
 
   "recipe[pygments]",
   "recipe[xml]",
@@ -22,11 +20,5 @@ default_attributes({
 
   :passenger => {
     :version => "3.0.17",
-  },
-
-  :rsyslog => {
-    :network => {
-      :enable => true,
-    },
   },
 })

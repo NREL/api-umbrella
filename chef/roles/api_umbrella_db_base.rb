@@ -1,5 +1,5 @@
-name "developer_db_base"
-description "A base role for developer.nrel.gov database servers."
+name "api_umbrella_db_base"
+description "A base role for API Umbrella database servers"
 
 run_list([
   "role[base]",
@@ -9,12 +9,4 @@ run_list([
 ])
 
 default_attributes({
-  :mongodb => {
-    :server => {
-      :db_dir => "/srv/developer/db/mongo",
-    },
-    :backup => {
-      :dir => "/srv/developer/backups/mongo",
-    },
-  },
 })

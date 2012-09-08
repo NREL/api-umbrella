@@ -1,12 +1,12 @@
-name "api_umbrella_db_vagrant"
-description "A role for local development API Umbrella database servers running in Vagrant"
+name "api_umbrella_router_vagrant"
+description "A role for local development API Umbrella router servers running in Vagrant"
 
 run_list([
   # Run vagrant things first off so the sudoers file doesn't get hosed if chef
   # fails while running.
   "role[vagrant]",
 
-  "role[api_umbrella_db_development]",
+  "role[api_umbrella_router_development]",
 ])
 
 default_attributes({
@@ -14,5 +14,13 @@ default_attributes({
   # the cost of a remote DNS lookup.
   :dnsmasq => {
     :addresses => ["/api.vagrant/127.0.0.1"],
+  },
+
+  :supervisor => {
+    :logrotate => {
+      :extra_paths => [
+        "/vagrant/workspace/api-umbrella-router/log/*-gatekeeper-*.log",
+      ],
+    },
   },
 })

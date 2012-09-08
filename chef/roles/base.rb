@@ -22,6 +22,9 @@ run_list([
   # Setup log rotation.
   "recipe[logrotate]",
 
+  # For fetching and committing our code.
+  "recipe[git]",
+
   # man pages are handy.
   "recipe[man]",
 
@@ -64,8 +67,4 @@ default_attributes({
     :compress => true,
     :delaycompress => true,
   },
-})
-
-override_attributes({
-  :chef_client => { :server_url => "http://chef.devdev.nrel.gov" },
 })

@@ -52,8 +52,9 @@ Vagrant::Config.run do |config|
 
     #chef.log_level = :debug
 
-    chef.add_role "api_umbrella_web_vagrant"
     chef.add_role "api_umbrella_db_vagrant"
+    chef.add_role "api_umbrella_router_vagrant"
+    chef.add_role "api_umbrella_web_vagrant"
   end
 
   # Adjust memory used by the VM.

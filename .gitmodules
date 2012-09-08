@@ -97,3 +97,6 @@
 [submodule "chef/cookbooks/xml"]
 	path = chef/cookbooks/xml
 	url = http://github.com/opscode-cookbooks/xml.git
+[submodule "chef/cookbooks/zsh"]
+	path = chef/cookbooks/zsh
+	url = http://github.com/opscode-cookbooks/zsh.git
