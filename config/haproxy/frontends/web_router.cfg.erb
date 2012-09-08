@@ -44,10 +44,6 @@ frontend web_router
   acl url_match_api path_beg /api/
   acl url_match_internal_apis path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/internal_apis.lst") %>
 
-  # FIXME: GSA TEMPORARY DEMO: Requests starting with /gsa/ get sent to the
-  acl host_match_gsa hdr_end(host) api.data.gov
-  use_backend gsa_gatekeeper_farm_public_apis if host_match_gsa url_match_api
-
   # Use two separate backends for internal-only or public APIs so we cean
   # perform response changes based on the request.
   use_backend gatekeeper_farm_internal_apis if url_match_api url_match_internal_apis
@@ -56,14 +52,6 @@ frontend web_router
   # Requests starting with /auth get sent to Tomcat for our CAS servlet.
   acl url_match_auth path_beg /auth
   use_backend tomcat_farm if via_https url_match_auth
-
-  # FIXME: GSA TEMPORARY DEMO: Requests starting with /gsa/ get sent to the
-  # separate developer site.
-  acl url_match_gsa_api path_beg /gsa/api/
-  use_backend gsa_gatekeeper_farm_public_apis if url_match_gsa_api
-
-  acl url_match_gsa path_reg /gsa(/|$)
-  use_backend gsa_developer_site_farm if url_match_gsa || host_match_gsa
 
   # All other requests go to our main site.
   default_backend developer_site_farm

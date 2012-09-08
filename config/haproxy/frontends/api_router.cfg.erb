@@ -23,11 +23,3 @@ frontend api_router 127.0.0.1:50100
   # FleetAtlas Services
   acl url_match_api_fleet_atlas path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_fleet_atlas.lst") %>
   use_backend api_fleet_atlas_farm if url_match_api_fleet_atlas
-
-  # FIXME: GSA TEMPORARY DEMO: FCC's Broadband Map
-  acl url_match_api_gsa_broadbandmap path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_gsa_broadbandmap.lst") %>
-  use_backend api_gsa_broadbandmap_farm if url_match_api_gsa_broadbandmap
-
-  # FIXME: GSA TEMPORARY DEMO: NREL
-  acl url_match_api_gsa_nrel path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_gsa_nrel.lst") %>
-  use_backend api_gsa_nrel_farm if url_match_api_gsa_nrel
