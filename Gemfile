@@ -86,6 +86,8 @@ group :development do
 
   gem "yajl-ruby", :require => false
 
+  gem "awesome_print"
+
   gem "yard", :require => false
   gem "kramdown", :require => false
 end

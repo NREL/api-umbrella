@@ -15,9 +15,6 @@ Developer::Application.configure do
   # Enable caching, so we can properly develop accounting for the cache.
   config.action_controller.perform_caching = true
 
-  # Use a file-based cache store
-  config.cache_store = :file_store, "#{Rails.root}/tmp/cache"
-
   # Don't care if the mailer can't send
   config.action_mailer.raise_delivery_errors = false
 
@@ -26,7 +23,6 @@ Developer::Application.configure do
 
   # Only use best-standards-support built into browsers
   config.action_dispatch.best_standards_support = :builtin
-
 
   # Do not compress assets
   config.assets.compress = false
