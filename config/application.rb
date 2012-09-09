@@ -17,9 +17,6 @@ end
 
 module Developer
   class Application < Rails::Application
-    # Define the default URL root this application will be deployed to.
-    config.relative_url_root = ENV["RAILS_RELATIVE_URL_ROOT"]
-
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
