@@ -66,7 +66,7 @@ $ cap vagrant deploy
 # Tada?
 ```
 
-Assuming all that goes smoothly, you should be able see the homepage at [http://localhost:8274/](http://localhost:8274/)
+Assuming all that goes smoothly, you should be able see the homepage at [http://localhost:8080/](http://localhost:8080/)
 
 Problems? Open an [issue](https://github.com/NREL/api-umbrella/issues).
 

@@ -26,7 +26,7 @@ Vagrant::Config.run do |config|
   # via the IP. Host-only networks can talk to the host machine as well as
   # any other machines on the same network, but cannot be accessed (through this
   # network interface) by any external networks.
-  config.vm.network :hostonly, "192.168.50.61"
+  config.vm.network :hostonly, "10.10.10.2"
 
   # Assign this VM to a bridged network, allowing you to connect directly to a
   # network using the host's network device. This makes the VM appear as another
@@ -35,12 +35,19 @@ Vagrant::Config.run do |config|
 
   # Forward a port from the guest to the host, which allows for outside
   # computers to access the VM, whereas host only networking does not.
-  config.vm.forward_port 80, 8274
+  config.vm.forward_port 80, 8080
 
   # Share an additional folder to the guest VM. The first argument is
   # an identifier, the second is the path on the guest to mount the
   # folder, and the third is the path on the host to the actual folder.
   config.vm.share_folder "v-root", "/vagrant", ".", :nfs => !is_windows
+
+  # Our site's haproxy and nginx config files resides on the /vagrant share.
+  # Since this isn't mounted at boot time, always restart things after the
+  # server and shares are completely up.
+  config.vm.provision :shell, :inline => "if [ -f /etc/init.d/haproxy ]; then /etc/init.d/haproxy restart; fi"
+  config.vm.provision :shell, :inline => "if [ -f /etc/init.d/nginx ]; then /etc/init.d/nginx restart; fi"
+  config.vm.provision :shell, :inline => "mkdir -p /srv/sites && chown vagrant /srv/sites"
 
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
   # path, and data_bags path (all relative to this Vagrantfile), and adding 
