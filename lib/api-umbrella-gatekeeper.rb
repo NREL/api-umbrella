@@ -5,7 +5,9 @@ module ApiUmbrella
     mattr_accessor :redis
 
     mattr_accessor :logger
-    self.logger = Logger.new(STDOUT)
+
+    $stdout.sync = true
+    self.logger = Logger.new($stdout)
   end
 end
 
