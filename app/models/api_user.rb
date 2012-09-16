@@ -5,6 +5,8 @@ module ApiUmbrella
     include Mongoid::Document
     include Mongoid::Timestamps
 
+    self.collection_name = "api_users"
+
     field :api_key
     field :first_name
     field :last_name
