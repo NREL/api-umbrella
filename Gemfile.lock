@@ -1,12 +1,12 @@
 GIT
   remote: http://github.com/NREL/api-umbrella-gatekeeper.git
-  revision: 528aad6749fe74aa6ca0847f00ebff3340de3d6d
+  revision: 30bee1f2793bd8ef1919391c5094d57bc4934804
   specs:
     api-umbrella-gatekeeper (0.0.1)
       activesupport (~> 3.2.7)
       bson_ext
       em-proxy
-      eventmachine (>= 1.0.0.rc.4)
+      eventmachine (>= 1.0.0)
       hiredis
       http_parser.rb
       mongoid (~> 2.4.12)
@@ -41,7 +41,7 @@ GEM
     bson (1.7.0)
     bson_ext (1.7.0)
       bson (~> 1.7.0)
-    builder (3.0.2)
+    builder (3.0.3)
     capistrano (2.13.3)
       highline
       net-scp (>= 1.0.0)
@@ -50,14 +50,14 @@ GEM
       net-ssh-gateway (>= 1.1.0)
     capistrano-ext (1.2.1)
       capistrano (>= 1.0.0)
-    chronic (0.7.0)
+    chronic (0.8.0)
     daemons (1.1.9)
     diffy (2.0.8)
     em-proxy (0.1.6)
       eventmachine
     erubis (2.7.0)
-    eventmachine (1.0.0.rc.4)
-    highline (1.6.14)
+    eventmachine (1.0.0)
+    highline (1.6.15)
     hiredis (0.4.5)
     http_parser.rb (0.5.3)
     i18n (0.6.1)
