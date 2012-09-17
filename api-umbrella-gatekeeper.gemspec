@@ -19,7 +19,7 @@ Gem::Specification.new do |gem|
 
   # Run everything through the EventMachine proxy.
   gem.add_dependency("em-proxy")
-  gem.add_dependency("eventmachine", ">= 1.0.0.rc.4")
+  gem.add_dependency("eventmachine", ">= 1.0.0")
 
   # For some of activesupport's niceties, like `blank?`
   gem.add_dependency("activesupport", "~> 3.2.7")
