@@ -1,4 +1,7 @@
-require "api_user"
+require "rack/request"
+require "rack/auth/basic"
+
+require "api-umbrella/api_user"
 
 module ApiUmbrella
   module Gatekeeper
@@ -16,7 +19,7 @@ module ApiUmbrella
           @options = options
         end
 
-        # Authenticate against the ApiUser model 
+        # Authenticate against the ApiUser model.
         def call(env)
           request = ::Rack::Request.new(env)
 

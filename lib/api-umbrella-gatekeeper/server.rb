@@ -1,4 +1,7 @@
 require "em-proxy"
+require "erb"
+require "redis"
+require "yaml"
 
 require "api-umbrella-gatekeeper/connection_handler"
 
@@ -18,7 +21,6 @@ module ApiUmbrella
         end
 
         proxy_options = options.slice(:host, :port)
-        puts proxy_options.inspect
         Proxy.start(proxy_options) do |conn|
           @handler = ConnectionHandler.new(conn)
           conn.on_data { |data| @handler.on_data(data) }

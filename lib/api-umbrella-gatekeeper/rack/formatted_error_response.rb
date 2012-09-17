@@ -1,3 +1,6 @@
+require "rack/mime"
+require "rack/request"
+
 module ApiUmbrella
   module Gatekeeper
     module Rack

@@ -1,4 +1,7 @@
 require "http/parser"
+require "rack/request"
+
+require "api-umbrella/api_request_log"
 
 require "api-umbrella-gatekeeper/http_response"
 require "api-umbrella-gatekeeper/rack_app"
@@ -60,10 +63,7 @@ module ApiUmbrella
       end
 
       def on_response(backend, chunk)
-        #p [:on_response, backend, chunk]
-
-        @response_size += chunk.bytesize
-        @response_parser << chunk
+        handle_response_chunk(chunk)
 
         @end_time = Time.now
 
@@ -73,32 +73,21 @@ module ApiUmbrella
       def on_finish(backend)
         @finish_time = Time.now
 
-        @response_header_size = @response_size - @response_body_size
-        @request_header_size = @request_size - @request_body_size
-        p [:on_finish, backend]
-        #p [:on_finish, :time, (@finish_time.to_f - @connect_time.to_f)]
-        p [:on_finish, :time, (@end_time.to_f - @start_time.to_f)]
-        p [:on_finish, :relay_time, (@end_time.to_f - @relay_time.to_f)]
-        p [:on_finish, :status_code, @response_parser.status_code]
-        p [:on_finish, :request_size, @request_size]
-        p [:on_finish, :request_header_size, @request_header_size]
-        p [:on_finish, :request_body_size, @request_body_size]
-        p [:on_finish, :response_size, @response_size]
-        p [:on_finish, :response_header_size, @response_header_size]
-        p [:on_finish, :response_body_size, @response_body_size]
+        @backend_time = @end_time.to_f - @backend_start_time.to_f
+
+        log
 
         :close
       end
 
       def request_headers_parsed(rack_env)
-        #p [:request_headers_parsed]
-        #puts rack_env.inspect
+        @rack_env = rack_env
 
-        instruction = gatekeeper_instruction(rack_env)
+        instruction = gatekeeper_instruction(@rack_env)
         if(instruction[:status] == 200)
           @connection.server :api_router, self.class.random_api_router_server
 
-          @relay_time = Time.now
+          @backend_start_time = Time.now
           @connection.relay_to_servers @request_buffer
         else
           error_response = ApiUmbrella::Gatekeeper::HttpResponse.new
@@ -107,11 +96,16 @@ module ApiUmbrella
           error_response.body = instruction[:response]
 
           error_response.each do |chunk|
-            # p chunk
+            handle_response_chunk(chunk)
+
             @connection.send_data chunk
           end
           @connection.close_connection_after_writing
           error_response.close
+
+          @backend_time = nil
+
+          log
         end
 
         @request_buffer.clear
@@ -130,6 +124,11 @@ module ApiUmbrella
 
       private
 
+      def handle_response_chunk(chunk)
+        @response_size += chunk.bytesize
+        @response_parser << chunk
+      end
+
       def gatekeeper_instruction(rack_env)
         rack_response = ApiUmbrella::Gatekeeper::RackApp.instance.call(rack_env)
 
@@ -138,6 +137,39 @@ module ApiUmbrella
           :headers => rack_response[1],
           :response => rack_response[2],
         }
+      end
+
+      def log
+        request = ::Rack::Request.new(@rack_env)
+
+        log_data = {
+          :api_key => @rack_env["rack.api_key"],
+          :path => request.path,
+          :ip_address => request.ip,
+
+          :requested_at => @start_time,
+          :time => @end_time.to_f - @start_time.to_f,
+          :backend_time => @backend_time,
+
+          :request_size => @request_size,
+          :request_header_size => @request_size - @request_body_size,
+          :request_body_size => @request_body_size,
+          :request_headers => @request_parser.headers,
+
+          :response_status => @response_parser.status_code,
+          :response_size => @response_size,
+          :response_header_size => @response_size - @response_body_size,
+          :response_body_size => @response_body_size,
+          :response_headers => @response_parser.headers,
+        }
+
+        @finish_time = Time.now
+        log_data[:finish_time] = @finish_time.to_f - @start_time.to_f
+        log_data[:proxy_time] = log_data[:finish_time] - log_data[:backend_time].to_f
+
+        # Create a new log entry for this request, saving asynchronously.
+        log = ApiUmbrella::ApiRequestLog.new(log_data)
+        log.save(:validate => false, :safe => false)
       end
     end
   end
