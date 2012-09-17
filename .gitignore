@@ -23,4 +23,4 @@
 /config/supervisor/gatekeeper.conf
 
 # Ignore log files
-/log/*.log
+/log/*
