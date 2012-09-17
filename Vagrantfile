@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant::Config.run do |config|
-  is_64bit = (RUBY_PLATFORM =~ /x64/)
+  box_arch = if(RUBY_PLATFORM =~ /64/) then "x86_64" else "i386" end
   is_windows = (RUBY_PLATFORM =~ /mswin|mingw|cygwin/)
 
   # All Vagrant configuration is done here. The most common configuration
@@ -10,11 +10,11 @@ Vagrant::Config.run do |config|
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "CentOS-6.3-x86_64-minimal"
+  config.vm.box = "CentOS-6.3-#{box_arch}-v20120914"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  config.vm.box_url = "https://dl.dropbox.com/u/7225008/Vagrant/CentOS-6.3-x86_64-minimal.box"
+  config.vm.box_url = "https://github.com/downloads/NREL/vagrant-boxes/CentOS-6.3-#{box_arch}-v20120914.box"
 
   # Boot with a GUI so you can see the screen. (Default is headless)
   # config.vm.boot_mode = :gui
