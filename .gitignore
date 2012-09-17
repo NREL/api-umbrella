@@ -19,7 +19,7 @@
 /config/nginx/site.conf
 
 # Ignore log files
-/log/*.log
+/log/*
 
 # Ignore temp files
 /tmp
