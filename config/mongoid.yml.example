@@ -2,10 +2,6 @@ development:
   host: localhost
   database: api_umbrella_development
 
-gsa_development:
-  host: localhost
-  database: gsa_api_umbrella_development
-
 test:
   host: localhost
   database: api_umbrella_test
