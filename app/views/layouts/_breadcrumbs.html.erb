@@ -1,0 +1,14 @@
+<ul class="breadcrumb">
+  <% render_crumbs do |crumbs| %>
+    <% crumbs.each_with_index do |crumb, index| %>
+      <li class="<%= "active" if(index >= crumbs.size - 1) %>">
+        <% if(index >= crumbs.size - 1) %>
+          <%= crumb.first %>
+        <% else %>
+          <%= link_to *crumb %>
+        <% end %>
+        <%= %[<span class="divider">#{t("breadcrumb_divider")}</span>].html_safe unless index >= crumbs.size - 1 %>
+      </li>
+    <% end %>
+  <% end %>
+</ul>

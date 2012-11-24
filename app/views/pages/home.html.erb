@@ -1,31 +1,33 @@
-<div id="content" class="grid_12">
+<div id="content">
   <p>Data.gov's developer network helps developers access and use Web services across the federal government.</p>
   <hr>
 </div>
 
-<div class="feature grid_4">
-  <h2><%= link_to("Web Service Documentation", doc_path) %></h2>
-  <p>Explore our available Web services.</p>
-  <ul>
-    <% @collections.each do |collection| %>
-      <li><%= link_to(collection.title, collection.url_path) %></li>
-    <% end %>
-  </ul>
-</div>
+<div class="row-fluid">
+  <div class="span4 feature">
+    <h2><%= link_to("Web Service Documentation", doc_path) %></h2>
+    <p>Explore our available Web services.</p>
+    <ul>
+      <% @collections.each do |collection| %>
+        <li><%= link_to(collection.title, collection.url_path) %></li>
+      <% end %>
+    </ul>
+  </div>
 
-<div class="feature grid_4">
-  <h2><%= link_to("API Key", signup_path) %></h2>
-  <p>Sign up to use our APIs.</p>
-  <ul>
-    <li><%= link_to("Get an API Key", signup_path) %></li>
-  </ul>
+  <div class="span4 feature">
+    <h2><%= link_to("API Key", signup_path) %></h2>
+    <p>Sign up to use our APIs.</p>
+    <ul>
+      <li><%= link_to("Get an API Key", signup_path) %></li>
+    </ul>
 
-</div>
+  </div>
 
-<div class="feature grid_4">
-  <h2><%= link_to("Community", community_path) %></h2>
-  <p>Join the discussion and stay updated.</p>
-  <ul>
-    <li><%= link_to("Follow Us on Twitter", "http://twitter.com/usdatagov") %></li>
-  </ul>
+  <div class="span4 feature">
+    <h2><%= link_to("Community", community_path) %></h2>
+    <p>Join the discussion and stay updated.</p>
+    <ul>
+      <li><%= link_to("Follow Us on Twitter", "http://twitter.com/usdatagov") %></li>
+    </ul>
+  </div>
 </div>

@@ -46,7 +46,10 @@ gem "albino"
 # in production environments by default.
 group :assets do
   gem 'sass-rails',   '~> 3.2.3'
-  gem 'coffee-rails', '~> 3.2.1'
+
+  # A Sass version of Twitter Bootstrap. This it the basis for our styles and
+  # JavaScript components.
+  gem "bootstrap-sass"
 
   # Sass utilities and automatic image spirtes
   gem "compass-rails"

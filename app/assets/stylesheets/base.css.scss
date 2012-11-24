@@ -1,42 +1,10 @@
-p {
-  text-align: inherit;
+.row-fluid {
+  max-width: 1000px;
+  margin: 0px auto;
 }
 
 .required {
   color: inherit;
-}
-
-h3 {
-  font-size: 100%;
-}
-
-header {
-  margin-bottom: 8px;
-  float: left;
-}
-
-nav {
-  text-indent: -9999px;
-  overflow: hidden;
-  height: 21px;
-  float: left;
-  width: 100%;
-}
-
-#navigation ul {
-  padding: 0px;
-  margin: 0px;
-}
-
-#navigation li {
-  list-style-type: none;
-  float: left;
-  border-right: 1px solid #91b6e2;
-}
-
-#navigation li a {
-  display: block;
-  height: 21px;
 }
 
 .toc {
@@ -99,33 +67,6 @@ footer {
   width: 100%;
 }
 
-input.string,
-textarea {
-  padding: 2px 3px;
-}
-
-input.string,
-textarea,
-select {
-  font-size: 116%;
-  -ms-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-}
-
-form.col-2 .input label {
-  text-align: right;
-  font-weight: bold;
-  color: #444;
-  padding-top: 4px;
-  font-size: 108%;
-}
-
-.input {
-  margin-bottom: 18px;
-}
-
 abbr.required, .abbr-required {
   border-style: none;
   cursor: default;
@@ -138,38 +79,6 @@ abbr.required, .abbr-required {
 
 label abbr.required, label .abbr-required {
   margin-left: 2px;
-}
-
-.field_with_errors input {
-}
-
-.error {
-  background-image: url(../assets/error_tip.png);
-  background-repeat: no-repeat;
-  background-position: left center;
-  color: #fff;
-  padding: 5px 8px 5px 12px;
-  margin: 2px 0px 0px 4px;
-
-  display: inline-block;
-  max-width: 180px;
-
-  font-weight: bold;
-  font-size: 77%;
-  line-height: 100%;
-}
-
-form.col-2 .string .error,
-form.col-2 .text .error {
-  /* margin-left: -16px; */
-}
-
-.user-terms-and-conditions label {
-  font-size: 93% !important;
-
-  /* Taller so the two-line error box the right doesn't shift the layout
-   * around. */
-  line-height: 46px;
 }
 
 .required-fields {
@@ -243,6 +152,33 @@ body.popup {
   padding: 10px 20px;
 }
 
-ol, ul, dl {
-  margin-left: 2em;
+input,
+textarea,
+.uneditable-input {
+  width: auto;
+}
+
+.account-form {
+  .control-label {
+    width: 300px;
+  }
+
+  .controls {
+    margin-left: 320px;
+  }
+
+  label {
+    font-weight: bold;
+    font-size: pxtoem(15px);
+  }
+
+  input,
+  textarea {
+    font-size: pxtoem(15px);
+  }
+
+  input.string,
+  textarea {
+    width: 380px;
+  }
 }

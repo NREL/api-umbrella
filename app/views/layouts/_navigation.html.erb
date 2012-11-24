@@ -1,0 +1,9 @@
+<nav class="navbar">
+  <div class="navbar-inner">
+    <%= tabs_tag(:builder => BootstrapNavbarTabBuilder, :link_current => true, :open_tabs => { :class => "nav" }) do |tab| %>
+      <%= tab.home "Home", root_path, :class => "nav-home" %>
+      <%= tab.documentation "Documentation", doc_path, :class => "nav-documentation" %>
+      <%= tab.community "Community", community_path, :class => "nav-community" %>
+    <% end %>
+  </div>
+</nav>

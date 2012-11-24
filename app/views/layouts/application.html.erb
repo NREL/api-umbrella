@@ -6,65 +6,34 @@
     <meta content="en" name="language">
     <meta content="width=1015,maximum-scale=1.0" name="viewport">
 
-    <%= stylesheet_link_tag "public" %>
-    <!--[if IE]
-     script type="text/javascript" src="http://html5shiv.googlecode.com/svn/trunk/html5.js"-->
-    <%= javascript_include_tag "public" %>
+    <%= stylesheet_link_tag "application" %>
+
+    <!--[if lt IE 9]>
+      <%= javascript_include_tag "ie_lt_9" %>
+    <![endif]-->
+    <%= javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" %>
+    <%= javascript_include_tag "application" %>
+
     <%= csrf_meta_tag %>
   </head>
   <body>
-    <!-- PreHeader Section -->
-    <div id="preheader">
-      <div id="preheader-inner" class="container_12">
-        <div id="whitehouse"><p><%= image_tag("gsa/usaflag.gif", :alt => "USA Flag") %> <em>An Official Website of the United States Government</em></p></div>
-      </div>
-    </div>
-    <div id="main" class="container_12">
-      <!-- Header Section -->
-      <div id="header" class="grid_12">
-        <div id="logo"><a class="logo" href="#" title="Home">Data.gov</a></div>
-      </div>
-      <div class="clear"></div>
+    <%= render("layouts/preheader") %>
 
-      <!-- Navigation Section -->
-      <div id="navigation" class="grid_12">
-        <%= tabs_tag(:link_current => true) do |tab| %>
-          <%= tab.home "Home", root_path, :class => "nav-home" %>
-          <%= tab.documentation "Documentation", doc_path, :class => "nav-documentation" %>
-          <%= tab.community "Community", community_path, :class => "nav-community" %>
+    <div class="container-fluid">
+      <div id="main" class="row-fluid">
+        <%= render("layouts/header") %>
+        <%= render("layouts/navigation") %>
+
+        <% if crumbs.length > 1 %>
+          <%= render("layouts/breadcrumbs") %>
         <% end %>
-      </div>
-      <div class="clear"></div>
 
-      <!-- Content Section -->
-      <% if crumbs.length > 1 %>
-        <div class="crumbs grid_12">
-          <%= render_crumbs %>
+        <div id="content">
+          <%= yield %>
         </div>
-      <% end %>
-
-      <%= yield %>
-
-      <div class="clear"></div>
-    </div>
-
-    <!-- Footer Section -->
-    <div id="footer">
-      <div id="footer-inner" class="container_12">
-        <div id="footer-menu">
-          <ul class="menu">
-            <li class="first leaf"><a href="http://www.data.gov/about">About</a></li>
-            <li class="leaf"><a href="http://www.data.gov/accessibility">Accessibility</a></li>
-            <li class="leaf"><a href="http://www.data.gov/contact-us">Contact Us</a></li>
-            <li class="leaf"><a href="http://www.data.gov/data-policy">Data Policy</a></li>
-            <li class="leaf"><a href="http://www.data.gov/faq">FAQ</a></li>
-            <li class="leaf"><a href="http://www.data.gov/privacy-policy">Privacy Policy</a></li>
-            <li class="leaf"><a href="http://www.data.gov/sitemap" title="">Sitemap</a></li>
-            <li class="last leaf"><a href="http://www.usa.gov" title="">USA.gov</a></li>
-          </ul>
-        </div>
-        <div id="footer-logo"><%= image_tag("gsa/datagov-footer-logo.png", :alt => "Data.gov") %></div>
       </div>
     </div>
+
+    <%= render("layouts/footer") %>
   </body>
 </html>
