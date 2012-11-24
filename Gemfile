@@ -39,8 +39,8 @@ gem "jquery-rails"
 
 gem "crummy"
 
-gem "client_side_validations", "~> 3.2.0.beta"
-gem "client_side_validations-simple_form", "~> 2.0.0.beta"
+gem "client_side_validations", ">= 3.2.0"
+gem "client_side_validations-simple_form", ">= 2.0.0"
 
 gem "nokogiri"
 gem "babosa"
