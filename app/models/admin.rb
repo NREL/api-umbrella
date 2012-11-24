@@ -17,7 +17,7 @@ class Admin
   field :current_sign_in_ip, :type => String
   field :last_sign_in_ip,    :type => String
 
-  index :username, :unique => true
+  index({ :username => 1 }, { :unique => true })
 
   validates_presence_of :username
   validates_uniqueness_of :username

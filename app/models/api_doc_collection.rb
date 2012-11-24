@@ -11,9 +11,9 @@ class ApiDocCollection
 
   default_scope asc(:title)
 
-  index :title
-  index :slug
-  index :url_path, :unique => true
+  index :title => 1
+  index :slug => 1
+  index({ :url_path => 1 }, { :unique => true })
 
   validates_uniqueness_of :slug
 

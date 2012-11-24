@@ -10,8 +10,8 @@ class ApiDocService
   field :body, :type => String
   field :internal_only_access, :type => Boolean
 
-  index [:http_method, :path], :unique => true
-  index :url_path, :unique => true
+  index({ :http_method => 1, :path => 1 }, { :unique => true })
+  index({ :url_path => 1 }, { :unique => true })
 
   belongs_to :api_doc_collection
 

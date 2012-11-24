@@ -16,7 +16,7 @@ class ApiUser
 
   field :roles, :type => Array
 
-  index :api_key, :unique => true
+  index({ :api_key => 1 }, { :unique => true })
 
   # Validations
   #

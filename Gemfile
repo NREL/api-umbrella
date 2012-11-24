@@ -3,11 +3,7 @@ source :rubygems
 gem "rails", "~> 3.2.6"
 
 # MongoDB
-gem "mongoid", "~> 2.4.12"
-
-# Lock the BSON version dependency, since the 1.3 branch didn't do this.
-gem "bson", "~> 1.3.1"
-gem "bson_ext", "~> 1.3.1"
+gem "mongoid", ">= 3.0.0"
 
 # Structure trees of mongoid documents
 gem "mongoid-tree", :require => "mongoid/tree"
@@ -77,6 +73,7 @@ end
 group :development, :test do
   gem "rspec-rails"
   gem "factory_girl_rails"
+  gem "rspec-html-matchers"
 end
 
 group :development do

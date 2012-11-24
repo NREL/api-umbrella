@@ -36,7 +36,7 @@ class Api::ApiUsersController < ApplicationController
     @user.attributes = params
 
     # Safe safely to be absolutely positive the save succeeded.
-    if @user.safely.save
+    if @user.with(:safe => true).save
       respond_to do |format|
         format.json { render :json => @user, :status => :created }
       end
