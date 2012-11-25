@@ -3,22 +3,14 @@
 
 <p class="required-fields"><%= t("simple_form.required.html") %> Required fields</p>
 
-<%= simple_form_for(@contact, :url => contact_path, :validate => true, :html => { :class => "col-2" }) do |f| %>
-  <%= f.input(:name,
-    :wrapper_html => { :class => "column span-12" },
-    :label_html => { :class => "column span-3 alpha" },
-    :input_html => { :class => "column span-3 omega" }) %>
-  <%= f.input(:email,
-    :wrapper_html => { :class => "column span-12" },
-    :label_html => { :class => "column span-3 alpha" },
-    :input_html => { :class => "column span-3 omega" }) %>
+<%= simple_form_for(@contact, :url => contact_path, :validate => true, :html => { :class => "form-horizontal account-form" }) do |f| %>
+  <%= f.input(:name) %>
+  <%= f.input(:email) %>
   <%= f.input(:message,
     :as => :text,
-    :wrapper_html => { :class => "column span-12" },
-    :label_html => { :class => "column span-3 alpha" },
-    :input_html => { :class => "column span-5 omega", :rows => 6 }) %>
+    :input_html => { :rows => 6 }) %>
 
-  <div class="column span-9 prepend-3">
-    <button type="submit" class="submit">Send</button>
+  <div class="controls">
+    <button type="submit" class="btn btn-large btn-primary">Send</button>
   </div>
 <% end %>
