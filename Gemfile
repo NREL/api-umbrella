@@ -24,12 +24,6 @@ gem "kaminari"
 # Navigation links
 gem "tabs_on_rails"
 
-# Sass stylesheets and automatic image spirtes
-gem "compass-rails"
-
-# Improve PNG speed for image sprite generation
-gem "oily_png"
-
 # Unobtrusive javascript for Rails helpers (things like delete links).
 gem "jquery-rails"
 

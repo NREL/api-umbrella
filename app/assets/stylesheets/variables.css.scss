@@ -1,24 +1,23 @@
 $baseFontSize: 13px;
 
-$sansFontFamily: Arial, Helvetica, Verdana, "Bitstream Vera Sans", sans-serif;
-$serifFontFamily: Georgia, "Times New Roman", Times, serif;
-$textColor: #666;
+$sansFontFamily: Verdana, Arial, Helvetica, sans-serif;
+$textColor: #000;
 
-$linkColor: #3366ac;
-$linkColorHover: #4782b1;
+$linkColor: #004f99;
+$linkColorHover: #c60;
+$linkColorVisited: #c60;
 
-$headingsFontFamily: $serifFontFamily;
-$headingsColor: #0a3163;
+$headingsColor: #c60;
 
-$navbarHeight: 35px;
+$navbarHeight: 21px;
 
-$navbarBackgroundHighlight: #284a77;
-$navbarBackground: #0b3064;
+$navbarBackgroundHighlight: #0067b7;
+$navbarBackground: #00509a;
 
 $navbarText: #fff;
 $navbarLinkColor: $navbarText;
-$navbarLinkColorActive: $navbarText;
-$navbarLinkColorHover: $navbarText;
+$navbarLinkColorActive: #06539b;
+$navbarLinkColorHover: $navbarLinkColorActive;
 
-$navbarLinkBackgroundActive: #4782b1;
+$navbarLinkBackgroundActive: #fff;
 $navbarLinkBackgroundHover: $navbarLinkBackgroundActive;

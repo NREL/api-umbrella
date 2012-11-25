@@ -3,6 +3,10 @@
   margin: 0px auto;
 }
 
+a:visited {
+  color: $linkColorVisited;
+}
+
 .required {
   color: inherit;
 }
@@ -24,47 +28,8 @@
   color:#004f99;
 }
 
-/*
-.crumbs {
-  font-size: 85%;
-  color: #3c4349;
-  font-weight: bold;
-  margin-bottom: 12px;
-}
-
-.crumbs a:link,
-.crumbs a:visited {
-  color: #3c4349;
-}
-*/
-
 .intro-text p {
   margin: 32px 0px 40px 0px;
-  font-weight: 200;
-}
-
-.intro-box {
-  background-color: #f7f7f7;
-
-  border: 1px solid #ddd;
-  -webkit-border-radius: 6px;
-  -moz-border-radius: 6px;
-  border-radius: 6px;
-
-  padding: 6px 8px;
-  width: 302px;
-
-  height: 210px;
-}
-
-.intro-box h2 {
-  margin: 0px;
-}
-
-footer {
-  clear: both;
-  float: left;
-  width: 100%;
 }
 
 abbr.required, .abbr-required {
