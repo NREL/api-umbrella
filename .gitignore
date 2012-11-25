@@ -23,3 +23,6 @@
 
 # Ignore temp files
 /tmp
+
+# Ignore generated sprite images
+/app/assets/generated_sprites/*

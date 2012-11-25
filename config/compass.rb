@@ -1,4 +1,3 @@
-# Require any additional compass plugins here.
 project_type = :rails
 
 # Separate the generated sprites from the normal image assets.
