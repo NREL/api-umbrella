@@ -3,16 +3,18 @@
   <head>
     <meta charset="utf-8">
     <title><%= html_title %></title>
+
+    <%= stylesheet_link_tag "application" %>
+
     <!--[if lt IE 9]>
-      <%= javascript_include_tag "html5.js" %>
+      <%= javascript_include_tag "ie_lt_9" %>
     <![endif]-->
-    <%= include_stylesheets :public %>
-    <%= include_javascripts :public %>
+    <%= javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" %>
+    <%= javascript_include_tag "application" %>
+
     <%= csrf_meta_tag %>
   </head>
   <body class="popup">
     <%= yield %>
-
-    <%= render("layouts/footer") %>
   </body>
 </html>
