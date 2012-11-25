@@ -8,6 +8,23 @@ h2, h3 {
   margin-top: 12px;
 }
 
+.toc {
+  border: 1px solid #e2e2e2;
+  background-color: #f7f7f7;
+  color: #999;
+  float: left;
+  padding: 10px 0px;
+}
+
+.toc ul {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.toc a:visited {
+  color:#004f99;
+}
+
 .doc-service-url {
   color: #222;
   font-size: 108%;
@@ -43,6 +60,11 @@ h2, h3 {
 .doc-parameters td {
   text-align: left;
   padding: 8px;
+}
+
+.doc-parameters tbody tr:hover th,
+.doc-parameters tbody tr:hover td {
+  background-color: #f7f7f7;
 }
 
 .doc-parameters-name {

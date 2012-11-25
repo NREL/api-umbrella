@@ -2,14 +2,14 @@
 @import "bootstrap";
 @import "bootstrap-responsive";
 
-@import "bootstrap_grid";
+@import "shared/grid";
+@import "shared/scalable_fonts";
+@import "shared/scaffolding";
+@import "shared/forms";
+@import "shared/signup";
+@import "shared/popup";
+@import "shared/pygments";
+@import "shared/pygments_overrides";
+@import "shared/docs";
 
-@import "gsa/datagov";
-@import "em_fonts";
-
-@import "base";
-@import "gsa/api";
-
-@import "pygments";
-@import "pygments_overrides";
-@import "doc_service";
+@import "api_umbrella";

@@ -17,13 +17,10 @@
     <%= csrf_meta_tag %>
   </head>
   <body>
-    <%= render("layouts/preheader") %>
+    <%= render("layouts/navigation") %>
 
     <div class="container-fluid">
       <div id="main" class="row-fluid">
-        <%= render("layouts/header") %>
-        <%= render("layouts/navigation") %>
-
         <% if crumbs.length > 1 %>
           <%= render("layouts/breadcrumbs") %>
         <% end %>

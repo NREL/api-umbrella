@@ -1,0 +1,47 @@
+abbr.required, .abbr-required {
+  border-style: none;
+  cursor: default;
+  color: #E87723;
+  font-family: "Verdana";
+  font-size: 14px;
+  font-weight: bold;
+  font-weight: 1000;
+}
+
+label abbr.required, label .abbr-required {
+  margin-left: 2px;
+}
+
+.required-fields {
+  font-size: 93%;
+  color: #555;
+}
+
+.required-fields .abbr-required {
+  font-size: 12px;
+}
+
+.account-form {
+  .control-label {
+    width: 300px;
+  }
+
+  .controls {
+    margin-left: 320px;
+  }
+
+  label {
+    font-weight: bold;
+    font-size: pxtoem(15px);
+  }
+
+  input,
+  textarea {
+    font-size: pxtoem(15px);
+  }
+
+  input.string,
+  textarea {
+    width: 380px;
+  }
+}

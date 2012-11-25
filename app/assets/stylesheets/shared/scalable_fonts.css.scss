@@ -1,14 +1,14 @@
 body {
   font-size: #{$baseFontSize / 16px}em;
-  line-height: 1.231;
+  line-height: #{$baseLineHeight / 16px}em;
 }
 
 // Convert px to em
-@function pxtoem($target, $context: 13px) {
+@function pxtoem($target, $context: $baseFontSize) {
   @return #{$target / $context}em;
 }
 
 // Convert em to px
-@function emtopx($target, $context: 13px) {
+@function emtopx($target, $context: $baseFontSize) {
   @return #{$target * $context}px;
 }

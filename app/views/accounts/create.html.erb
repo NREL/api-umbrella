@@ -1,10 +1,10 @@
 <h1>API Key Signup</h1>
 
 <p>Your API key for <strong><%= @user.website %></strong> is:</p>
-<pre class="key"><%= @user.api_key %></pre>
+<code class="signup-key"><%= @user.api_key %></code>
 
 <p>You can start using this key to make Web service requests. Simply pass your key in the URL when making a Web request. Here's an example:</p>
-<pre class="doc-example-url"><%= link_to("http://api.data.gov/api/alt-fuel-stations/v1/nearest.json?<strong>api_key=#{@user.api_key}</strong><br />&location=1617+Cole+Blvd+80401".html_safe, "/api/alt-fuel-stations/v1/nearest.json?api_key=#{@user.api_key}&location=1617+Cole+Blvd+80401") %></pre>
+<pre><%= link_to("http://api.data.gov/api/alt-fuel-stations/v1/nearest.json?<strong>api_key=#{@user.api_key}</strong><br />&location=1617+Cole+Blvd+80401".html_safe, "/api/alt-fuel-stations/v1/nearest.json?api_key=#{@user.api_key}&location=1617+Cole+Blvd+80401") %></pre>
 
 <h2>What Next?</h2>
 <ul>
