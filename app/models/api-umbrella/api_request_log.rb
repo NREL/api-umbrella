@@ -4,7 +4,7 @@ module ApiUmbrella
   class ApiRequestLog
     include Mongoid::Document
 
-    self.collection_name = "api_request_logs"
+    store_in :collection => "api_request_logs"
 
     field :api_key
     field :path

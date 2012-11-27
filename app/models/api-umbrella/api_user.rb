@@ -5,7 +5,7 @@ module ApiUmbrella
     include Mongoid::Document
     include Mongoid::Timestamps
 
-    self.collection_name = "api_users"
+    store_in :collection => "api_users"
 
     field :api_key
     field :first_name
@@ -21,7 +21,7 @@ module ApiUmbrella
 
     field :roles, :type => Array
 
-    index :api_key, :unique => true
+    index({ :api_key => 1 }, { :unique => true })
 
     # Validations
     #
