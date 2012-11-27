@@ -19,7 +19,7 @@ API Umbrella is broken into several components:
 
 * **[API Umbrella Gatekeeper](https://github.com/NREL/api-umbrella-gatekeeper):** A custom reverse proxy to control access to your APIs. Performs API key validation, request rate limiting, and gathers analytics.
 * **[API Umbrella Router](https://github.com/NREL/api-umbrella-router/tree/master):** Combines reverse proxies (API Umbrella Gatekeeper and HAProxy) to route requests to the appropriate backend. Ensures all API requests are approved by the gatekeeper and gives the appearance of unified APIs.
-* **[API Umbrella Web](https://github.com/NREL/api-umbrella-web):** A web application for providing API documentation and API key signup.
+* **[API Umbrella Web](https://github.com/NREL/api-umbrella-web/tree/master):** A web application for providing API documentation and API key signup.
 
 ## Dependencies
 
@@ -75,7 +75,7 @@ Problems? Open an [issue](https://github.com/NREL/api-umbrella/issues).
 Migrating to other servers or a production environment can be largely handled by [Chef](http://www.opscode.com/chef/) and [Capistrano](http://capistranorb.com/):
 
 1. Setup your servers using Chef and the available [cookbooks and roles](https://github.com/NREL/api-umbrella/tree/master/chef).
-2. Deploy [api-umbrella-router](https://github.com/NREL/api-umbrella-router/tree/master) and [api-umbrella-web](https://github.com/NREL/api-umbrella-web) with Capistrano: `cap production deploy`
+2. Deploy [api-umbrella-router](https://github.com/NREL/api-umbrella-router/tree/master) and [api-umbrella-web](https://github.com/NREL/api-umbrella-web/tree/master) with Capistrano: `cap production deploy`
 
 ## Who's using API Umbrella?
 
