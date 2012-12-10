@@ -17,28 +17,6 @@ frontend web_router
   # ACL rule if the request was HTTPS tunneled through nginx.
   acl via_https dst_port eq 81
 
-  <% if(rails_env == "development") %>
-  # chef.devdev.nrel.gov
-  acl host_match_chef hdr_beg(host) -i chef.
-  use_backend devdev_chef_farm if host_match_chef
-
-  # chefweb.devdev.nrel.gov
-  acl host_match_chefweb hdr_beg(host) -i chefweb.
-  use_backend devdev_chefweb_farm if host_match_chefweb
-
-  # opsview.devdev.nrel.gov
-  acl host_match_opsview hdr_beg(host) -i opsview.
-  use_backend apache_farm if host_match_opsview
-
-  # docs.devdev.nrel.gov
-  acl host_match_docs hdr_beg(host) -i docs.
-  use_backend devdev_docs_farm if host_match_docs
-
-  # vagrant.devdev.nrel.gov
-  acl host_match_vagrant hdr_beg(host) -i vagrant.
-  use_backend devdev_docs_farm if host_match_vagrant
-  <% end %>
-
   # Requests starting with /api/ get sent to the auth proxy for authentication
   # and rate limiting.
   acl url_match_api path_beg /api/
