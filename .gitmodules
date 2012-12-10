@@ -90,10 +90,10 @@
 	url = http://github.com/NREL-cookbooks/shasum.git
 [submodule "workspace/api-umbrella-router"]
 	path = workspace/api-umbrella-router
-	url = https://github.com/NREL/api-umbrella-router.git
+	url = http://github.com/NREL/api-umbrella-router.git
 [submodule "workspace/api-umbrella-web"]
 	path = workspace/api-umbrella-web
-	url = https://github.com/NREL/api-umbrella-web.git
+	url = http://github.com/NREL/api-umbrella-web.git
 [submodule "chef/cookbooks/xml"]
 	path = chef/cookbooks/xml
 	url = http://github.com/opscode-cookbooks/xml.git
