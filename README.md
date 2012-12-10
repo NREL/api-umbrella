@@ -37,7 +37,9 @@ Don't sweat this list, though—installation and configuration of everything can
 
 The easiest way to get started with API Umbrella is to use [Vagrant](http://vagrantup.com/) to setup a local development environment.
 
-First install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://vagrantup.com/) on your computer. Then:
+First install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://vagrantup.com/) on your computer. Then follow these steps:
+
+**Note for Windows Users:** As of Vagrant 1.0.5, there's currently a bug with Vagrant that will prevent the `vagrant up` step from completing properly. This should be fixed in the next release of Vagrant, but in the meantime, you can work around this issue by following the steps in this [comment](https://github.com/NREL/api-umbrella/issues/1#issuecomment-11178377).
 
 ```sh
 # Get the code
