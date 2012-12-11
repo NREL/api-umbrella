@@ -143,7 +143,7 @@ Assuming you added the Google Geocoding API example to your router config, you s
 
 You can see how API Umbrella layers its authentication on top of existing APIs by making a request using an invalid key:
 
-`[http://localhost:8080/api/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY](http://localhost:8080/api/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY)`
+[http://localhost:8080/api/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY](http://localhost:8080/api/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY)
 
 ### Login to the web admin
 
