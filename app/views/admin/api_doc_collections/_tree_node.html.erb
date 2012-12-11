@@ -1,7 +1,7 @@
 <li>
   <div class="collection-item">
     <%= link_to(tree_node.title, edit_admin_api_doc_collection_path(tree_node)) %>
-    <span class="collection-actions"><%= link_to("Delete", admin_api_doc_collection_path(tree_node), :class => "icon icon-trash", :method => :delete, :confirm => "Are you sure you want to delete this collection?") %></span>
+    <span class="collection-actions"><%= link_to('<i class="icon-trash"></i> Delete'.html_safe, admin_api_doc_collection_path(tree_node), :method => :delete, :confirm => "Are you sure you want to delete this collection?") %></span>
   </div>
   <% if tree_node.children.any? %>
     <ul>

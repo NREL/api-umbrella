@@ -1,9 +1,0 @@
-@import "compass/utilities/sprites";
-
-/**
- * Navigation Sprite
- */
-$admin-icons-sprite-dimensions: true;
-@import "admin/icon/*.png";
-
-@include all-icon-sprites;

@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>Data.gov Developer Network</title>
     <%= stylesheet_link_tag "admin" %>
+    <%= javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" %>
     <%= javascript_include_tag "admin" %>
     <%= javascript_include_tag(File.join(ActionController::Base.config.relative_url_root.to_s, "/javascripts/ckeditor/ckeditor.js")) %>
     <%= javascript_include_tag(File.join(ActionController::Base.config.relative_url_root.to_s, "/javascripts/ckeditor/adapters/jquery.js")) %>
@@ -19,20 +20,20 @@
 
       <h3>Statistics</h3>
       <ul>
-        <li><%= link_to("By Service", admin_api_doc_services_path, :class => "icon-chart") %></li>
-        <li><%= link_to("By User", admin_api_doc_services_path, :class => "icon-chart") %></li>
+        <li><%= link_to('<i class="icon-signal"></i>By Service'.html_safe, admin_api_doc_services_path) %></li>
+        <li><%= link_to('<i class="icon-signal"></i>By User'.html_safe, admin_api_doc_services_path) %></li>
       </ul>
 
       <h3>API Documentation</h3>
       <ul>
-        <li><%= link_to("Collections", admin_api_doc_collections_path, :class => "icon-nested") %></li>
-        <li><%= link_to("Web Services", admin_api_doc_services_path, :class => "icon-categories") %></li>
+        <li><%= link_to('<i class="icon-th-list"></i>Collections'.html_safe, admin_api_doc_collections_path) %></li>
+        <li><%= link_to('<i class="icon-pencil"></i>Web Services'.html_safe, admin_api_doc_services_path) %></li>
       </ul>
 
       <h3>Users</h3>
       <ul>
-        <li><%= link_to("API Users", admin_api_users_path, :class => "icon-view_users") %></li>
-        <li><%= link_to("Admin Accounts", admin_admins_path, :class => "icon-view_users") %></li>
+        <li><%= link_to('<i class="icon-user"></i>API Users'.html_safe, admin_api_users_path) %></li>
+        <li><%= link_to('<i class="icon-user"></i>Admin Accounts'.html_safe, admin_admins_path) %></li>
       </ul>
 
       <hr />
