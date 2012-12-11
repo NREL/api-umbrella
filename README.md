@@ -39,7 +39,7 @@ The easiest way to get started with API Umbrella is to use [Vagrant](http://vagr
 
 First install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://vagrantup.com/) on your computer. Then follow these steps:
 
-**Note for Windows Users:** As of Vagrant 1.0.5, there's currently a bug with Vagrant that will prevent the `vagrant up` step from completing properly. This should be fixed in the next release of Vagrant, but in the meantime, you can work around this issue by following the steps in this [comment](https://github.com/NREL/api-umbrella/issues/1#issuecomment-11178377).
+**Note for Windows Users:** As of Vagrant 1.0.5, there's currently a bug with Vagrant that will prevent the `vagrant up` step from completing properly. See [Running API Umbrella in Windows on Vagrant 1.0.5](https://github.com/NREL/api-umbrella/wiki/Running-API-Umbrella-in-Windows-on-Vagrant-1.0.5) before proceeding for a workaround.
 
 ```sh
 # Get the code
@@ -72,7 +72,94 @@ Assuming all that goes smoothly, you should be able see the homepage at [http://
 
 Problems? Open an [issue](https://github.com/NREL/api-umbrella/issues).
 
-### Setting Up Production Servers
+## Using API Umbrella
+
+Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. Here are some of the tasks
+
+### Add APIs to the router
+
+Out of the box, API Umbrella doesn't know about any APIs. You must first configure the URL endpoints you want proxied to APIs in the router.
+
+In this example, we'll proxy to Google's Geocoding API (but you'll more likely be proxying to your own web services).
+
+**Step 1:** Create `config/haproxy/backends/api_google_farm.cfg.erb` with the following contents:
+
+```
+backend api_google_farm
+  # Strip /api from the beginning of the request URL before the receiving
+  # backend application sees the request.
+  #
+  # Turns a request from "GET /api/something" to "GET /something"
+  reqirep ^([^\ ]*)\ /api(/.*) \1\ \2
+
+  # Modify the host header on the request.
+  reqirep ^Host: Host:\ maps.googleapis.com
+
+  balance roundrobin
+  server api_google1 maps.googleapis.com:80
+```
+
+*This backend file defines the server you want to route requests to. The request can be modified to alter URL paths, HTTP headers and more. See [HAProxy backend documentation](http://cbonte.github.com/haproxy-dconv/configuration-1.4.html#4) for more info.*
+
+**Step 2:** Create `config/haproxy/api_router_matches/api_google.lst` with the following contents:
+
+```
+/api/maps/
+```
+
+*This config file lists any URL prefixes you wish to route to the new backend. One line per URL prefx. See [HAProxy ACL documentation](http://cbonte.github.com/haproxy-dconv/configuration-1.4.html#7) (specifically the `-f` option) for more info*
+
+**Step 3:** Update `config/haproxy/frontends/api_router.cfg.erb` and add to the bottom:
+
+```
+  # Insert your own...
+  acl url_match_api_google path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_google.lst") %>
+  use_backend api_google_farm if url_match_api_google
+```
+
+*This frontend file is the glue that instructs the router to route any URL prefixes contained in `api_google.lst` to the servers defined in the `api_google_farm` backend. See [HAProxy frontend documentation](http://cbonte.github.com/haproxy-dconv/configuration-1.4.html#4) for more info.* 
+
+**Step 4:** Deploy your changes
+
+```sh
+$ vagrant ssh
+$ cd /vagrant/workspace/api-umbrella-router
+$ cap vagrant deploy
+```
+
+### Signup for an API key
+
+On your local environment, visit the signup form:
+
+[http://localhost:8080/signup](http://localhost:8080/signup)
+
+Signup to receive your own unique API key for your development environment.
+
+### Make an API request
+
+Assuming you added the Google Geocoding API example to your router config, you should now be able to make a request to Google's Geocoding API proxied through your local API Umbrella instance:
+
+`http://localhost:8080/api/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=**YOUR_KEY_HERE**`
+
+You can see how API Umbrella layers its authentication on top of existing APIs by making a request using an invalid key:
+
+`[http://localhost:8080/api/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY](http://localhost:8080/api/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY)`
+
+### Login to the web admin
+
+A web admin is available to perform basic tasks:
+
+[http://localhost:8080/admin/](http://localhost:8080/admin/)
+
+While in your local development environment, you may login with any name and e-mail address.
+
+*This open admin is obviously not suitable for production, but alternative authentication mechanisms can be added via a variety of [OmniAuth strategies](https://github.com/intridea/omniauth/wiki/List-of-Strategies).*
+
+### Write API documentation
+
+Login to the [web admin](http://localhost:8080/admin/) and create documentation for individual web services and organize them into hierarchical collections. As documentation and collections are added, they will show up in the [documentation section](http://localhost:8080/doc) of the frontend.
+
+## Deploying to Production
 
 Migrating to other servers or a production environment can be largely handled by [Chef](http://www.opscode.com/chef/) and [Capistrano](http://capistranorb.com/):
 
