@@ -3,7 +3,7 @@ class Admin
   include Mongoid::Paranoia
 
   # Devise-based authentication using CAS through OmniAuth
-  devise :omniauthable, :trackable, :omniauth_providers => [:cas]
+  devise :omniauthable, :trackable
 
   field :username, :type => String
   field :email, :type => String
@@ -23,7 +23,7 @@ class Admin
   validates_uniqueness_of :username
 
   def apply_omniauth(omniauth)
-    if(extra = omniauth["extra"]["attributes"].first)
+    if(omniauth["extra"]["attributes"] && extra = omniauth["extra"]["attributes"].first)
       self.first_name = extra["firstName"]
       self.last_name = extra["lastName"]
       self.email = extra["email"]

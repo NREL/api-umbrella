@@ -11,9 +11,9 @@ gem "mongoid-tree", :require => "mongoid/tree"
 # Database seeding
 gem "seed-fu"
 
-# CAS-based authentication
+# OmniAuth-based authentication
 gem "devise"
-gem "omniauth-cas"
+gem "omniauth"
 
 # Form layout and display
 gem "simple_form"
