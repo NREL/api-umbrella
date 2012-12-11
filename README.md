@@ -82,7 +82,7 @@ Out of the box, API Umbrella doesn't know about any APIs. You must first configu
 
 In this example, we'll proxy to Google's Geocoding API (but you'll more likely be proxying to your own web services).
 
-**Step 1:** Create `config/haproxy/backends/api_google_farm.cfg.erb` with the following contents:
+**Step 1:** Create `workspace/api-umbrella-router/config/haproxy/backends/api_google_farm.cfg.erb` with the following contents:
 
 ```
 backend api_google_farm
@@ -101,7 +101,7 @@ backend api_google_farm
 
 *This backend file defines the server you want to route requests to. The request can be modified to alter URL paths, HTTP headers and more. See [HAProxy backend documentation](http://cbonte.github.com/haproxy-dconv/configuration-1.4.html#4) for more info.*
 
-**Step 2:** Create `config/haproxy/api_router_matches/api_google.lst` with the following contents:
+**Step 2:** Create `workspace/api-umbrella-router/config/haproxy/api_router_matches/api_google.lst` with the following contents:
 
 ```
 /api/maps/
@@ -109,7 +109,7 @@ backend api_google_farm
 
 *This config file lists any URL prefixes you wish to route to the new backend. One line per URL prefx. See [HAProxy ACL documentation](http://cbonte.github.com/haproxy-dconv/configuration-1.4.html#7) (specifically the `-f` option) for more info*
 
-**Step 3:** Update `config/haproxy/frontends/api_router.cfg.erb` and add to the bottom:
+**Step 3:** Update `workspace/api-umbrella-router/config/haproxy/frontends/api_router.cfg.erb` and add to the bottom:
 
 ```
   # Insert your own...
