@@ -64,11 +64,17 @@ module ApiUmbrella
     # has_role? simply needs to return true or false whether a user has a role or not.  
     # It may be a good idea to have "admin" roles return true always
     def has_role?(role_in_question)
-      if(self.roles.include?("admin"))
-        true
-      else
-        self.roles.include?(role_in_question.to_s)
+      has_role = false
+
+      if self.roles
+        if self.roles.include?("admin")
+          has_role = true
+        else
+          has_role = self.roles.include?(role_in_question.to_s)
+        end
       end
+
+      has_role
     end
 
     def self.human_attribute_name(attribute, options = {})
