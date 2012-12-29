@@ -14,11 +14,10 @@ run_list([
 
 default_attributes({
   :nginx => {
-    :version => "1.2.3",
     :listen => 8082,
   },
 
   :passenger => {
-    :version => "3.0.17",
+    :version => "3.0.18",
   },
 })

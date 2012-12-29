@@ -11,10 +11,6 @@ run_list([
 ])
 
 default_attributes({
-  :nginx => {
-    :version => "1.2.3",
-  },
-
   :rsyslog => {
     :network => {
       :enable => true,
