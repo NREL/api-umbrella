@@ -1,6 +1,6 @@
 [submodule "chef/cookbooks/cron"]
 	path = chef/cookbooks/cron
-	url = http://github.com/opscode-cookbooks/cron.git
+	url = http://github.com/NREL-cookbooks/cron.git
 [submodule "chef/cookbooks/chef-client"]
 	path = chef/cookbooks/chef-client
 	url = http://github.com/opscode-cookbooks/chef-client.git
@@ -115,3 +115,9 @@
 [submodule "chef/cookbooks/apt"]
 	path = chef/cookbooks/apt
 	url = https://github.com/opscode-cookbooks/apt.git
+[submodule "chef/cookbooks/cpu"]
+	path = chef/cookbooks/cpu
+	url = https://github.com/Youscribe/cpu-cookbook.git
+[submodule "chef/cookbooks/ruby_build"]
+	path = chef/cookbooks/ruby_build
+	url = https://github.com/fnichol/chef-ruby_build.git
