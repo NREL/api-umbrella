@@ -100,3 +100,18 @@
 [submodule "chef/cookbooks/zsh"]
 	path = chef/cookbooks/zsh
 	url = http://github.com/opscode-cookbooks/zsh.git
+[submodule "chef/cookbooks/dmg"]
+	path = chef/cookbooks/dmg
+	url = https://github.com/opscode-cookbooks/dmg.git
+[submodule "chef/cookbooks/runit"]
+	path = chef/cookbooks/runit
+	url = https://github.com/opscode-cookbooks/runit.git
+[submodule "chef/cookbooks/windows"]
+	path = chef/cookbooks/windows
+	url = https://github.com/opscode-cookbooks/windows.git
+[submodule "chef/cookbooks/chef_handler"]
+	path = chef/cookbooks/chef_handler
+	url = https://github.com/opscode-cookbooks/chef_handler.git
+[submodule "chef/cookbooks/apt"]
+	path = chef/cookbooks/apt
+	url = https://github.com/opscode-cookbooks/apt.git

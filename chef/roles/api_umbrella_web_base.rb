@@ -5,7 +5,7 @@ run_list([
   "role[base]",
 
   "role[nginx]",
-  "role[passenger_nginx_module]",
+  "role[passenger_nginx]",
   "role[ruby]",
 
   "recipe[pygments]",
@@ -15,9 +15,9 @@ run_list([
 default_attributes({
   :nginx => {
     :listen => 8082,
-  },
 
-  :passenger => {
-    :version => "3.0.18",
+    :passenger => {
+      :version => "3.0.18",
+    },
   },
 })
