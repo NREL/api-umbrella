@@ -1,10 +1,3 @@
-require "rack"
-
-require "api-umbrella-gatekeeper/rack/authenticate"
-require "api-umbrella-gatekeeper/rack/authorize"
-require "api-umbrella-gatekeeper/rack/formatted_error_response"
-require "api-umbrella-gatekeeper/rack/throttle"
-
 module ApiUmbrella
   module Gatekeeper
     class RackApp

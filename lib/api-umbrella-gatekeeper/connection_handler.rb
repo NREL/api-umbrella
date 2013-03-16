@@ -1,13 +1,3 @@
-require "http/parser"
-require "rack/request"
-
-require "api-umbrella/api_request_log"
-
-require "api-umbrella-gatekeeper/http_response"
-require "api-umbrella-gatekeeper/rack_app"
-require "api-umbrella-gatekeeper/request_parser_handler"
-require "api-umbrella-gatekeeper/response_parser_handler"
-
 module ApiUmbrella
   module Gatekeeper
     class ConnectionHandler

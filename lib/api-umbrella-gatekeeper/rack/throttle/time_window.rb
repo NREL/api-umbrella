@@ -1,5 +1,3 @@
-require "api-umbrella-gatekeeper/rack/throttle/limiter"
-
 module ApiUmbrella
   module Gatekeeper
     module Rack

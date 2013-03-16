@@ -1,10 +1,3 @@
-require "em-proxy"
-require "erb"
-require "redis"
-require "yaml"
-
-require "api-umbrella-gatekeeper/connection_handler"
-
 module ApiUmbrella
   module Gatekeeper
     class Server

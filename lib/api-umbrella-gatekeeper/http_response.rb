@@ -1,5 +1,3 @@
-require "thin"
-
 module ApiUmbrella
   module Gatekeeper
     # The Gatekeeper needs to respond with possible authentication and rate

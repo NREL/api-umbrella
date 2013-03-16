@@ -1,5 +1,4 @@
 require "spec_helper"
-require "api-umbrella-gatekeeper/rack/authenticate"
 
 describe ApiUmbrella::Gatekeeper::Rack::Authenticate do
   include Rack::Test::Methods

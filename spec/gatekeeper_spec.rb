@@ -1,5 +1,4 @@
 require "spec_helper"
-require "api-umbrella-gatekeeper"
 
 describe ApiUmbrella::Gatekeeper do
   describe "redis" do

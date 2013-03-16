@@ -1,5 +1,4 @@
 require "spec_helper"
-require "api-umbrella-gatekeeper/rack/formatted_error_response"
 
 describe ApiUmbrella::Gatekeeper::Rack::FormattedErrorResponse do
   include Rack::Test::Methods

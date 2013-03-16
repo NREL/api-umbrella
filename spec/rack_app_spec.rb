@@ -1,5 +1,4 @@
 require "spec_helper"
-require "api-umbrella-gatekeeper/rack_app"
 
 describe ApiUmbrella::Gatekeeper::RackApp do
   describe "instance" do

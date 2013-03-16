@@ -1,5 +1,3 @@
-require "api-umbrella-gatekeeper/http_parser_handler"
-
 module ApiUmbrella
   module Gatekeeper
     class RequestParserHandler < HttpParserHandler

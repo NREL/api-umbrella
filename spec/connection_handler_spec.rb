@@ -1,9 +1,6 @@
 # encoding: utf-8
 
-require "timecop"
-
-require "em-proxy"
-require "api-umbrella-gatekeeper/connection_handler"
+require "spec_helper"
 
 describe ApiUmbrella::Gatekeeper::ConnectionHandler do
   CRLF = "\r\n"

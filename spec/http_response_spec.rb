@@ -1,5 +1,4 @@
 require "spec_helper"
-require "api-umbrella-gatekeeper/http_response"
 
 describe ApiUmbrella::Gatekeeper::HttpResponse do
   before(:each) do

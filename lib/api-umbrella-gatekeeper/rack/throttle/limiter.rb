@@ -1,5 +1,3 @@
-require "rack/throttle"
-
 module ApiUmbrella
   module Gatekeeper
     module Rack

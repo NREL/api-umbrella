@@ -1,5 +1,3 @@
-require "api_user"
-
 FactoryGirl.define do
   sequence :api_key do |n|
     "TESTING_KEY_#{n}"

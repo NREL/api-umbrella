@@ -1,5 +1,3 @@
-require "api-umbrella-gatekeeper/rack/throttle/time_window"
-
 module ApiUmbrella
   module Gatekeeper
     module Rack

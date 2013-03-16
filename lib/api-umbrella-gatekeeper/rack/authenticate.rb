@@ -1,8 +1,3 @@
-require "rack/request"
-require "rack/auth/basic"
-
-require "api-umbrella/api_user"
-
 module ApiUmbrella
   module Gatekeeper
     module Rack

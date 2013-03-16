@@ -1,5 +1,5 @@
+=begin
 require "spec_helper"
-require "api-umbrella-gatekeeper/rack/log"
 
 describe ApiUmbrella::Gatekeeper::Rack::Log do
   include Rack::Test::Methods
@@ -94,3 +94,4 @@ describe ApiUmbrella::Gatekeeper::Rack::Log do
     end
   end
 end
+=end
