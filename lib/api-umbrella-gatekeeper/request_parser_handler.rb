@@ -4,7 +4,6 @@ module ApiUmbrella
       HTTP_PREFIX     = 'HTTP_'
       SERVER_NAME     = 'SERVER_NAME'
       SERVER_PORT     = 'SERVER_PORT'
-      SCRIPT_NAME     = 'SCRIPT_NAME'
       REMOTE_ADDR     = 'REMOTE_ADDR'
       CONTENT_LENGTH  = 'CONTENT_LENGTH'
       CONTENT_TYPE    = 'CONTENT_TYPE'
@@ -26,7 +25,10 @@ module ApiUmbrella
 
       def on_body(chunk)
         #p [:request, :on_body, chunk]
-        connection_handler.request_body_size += chunk.bytesize
+      end
+
+      def on_message_complete
+        connection_handler.request_completed = true
       end
 
       private
@@ -52,7 +54,6 @@ module ApiUmbrella
         rack_env[REQUEST_URI]     = parser.request_url
         rack_env[QUERY_STRING]    = parser.query_string
         rack_env[HTTP_VERSION]    = parser.http_version.join('.')
-        rack_env[SCRIPT_NAME]     = parser.request_path
         rack_env[REQUEST_PATH]    = parser.request_path
         rack_env[PATH_INFO]       = parser.request_path
         rack_env[FRAGMENT]        = parser.fragment

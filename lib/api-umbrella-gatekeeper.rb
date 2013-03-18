@@ -5,6 +5,7 @@ require "http/parser"
 require "rack"
 require "rack/throttle"
 require "redis"
+require "settingslogic"
 require "thin"
 require "yaml"
 
@@ -13,13 +14,15 @@ require "api-umbrella/api_user"
 
 module ApiUmbrella
   module Gatekeeper
-    mattr_accessor :redis
+    DEFAULT_CONFIG = {
+      "throttle" => {
+        "http_code" => 503,
+        "hourly_max" => 1000,
+        "daily_max" => 10000,
+      },
+    }
 
-    mattr_accessor :logger
-
-    $stdout.sync = true
-    self.logger = Logger.new($stdout)
-
+    autoload :Config, "api-umbrella-gatekeeper/config"
     autoload :ConnectionHandler, "api-umbrella-gatekeeper/connection_handler"
     autoload :HttpParserHandler, "api-umbrella-gatekeeper/http_parser_handler"
     autoload :HttpResponse, "api-umbrella-gatekeeper/http_response"
@@ -39,6 +42,17 @@ module ApiUmbrella
         autoload :Limiter, "api-umbrella-gatekeeper/rack/throttle/limiter"
         autoload :TimeWindow, "api-umbrella-gatekeeper/rack/throttle/time_window"
       end
+    end
+
+    mattr_accessor :redis
+
+    mattr_accessor :logger
+    $stdout.sync = true
+    self.logger = Logger.new($stdout)
+
+    mattr_accessor :config
+    def self.config
+      @@config ||= ApiUmbrella::Gatekeeper::Config.new(DEFAULT_CONFIG)
     end
   end
 end

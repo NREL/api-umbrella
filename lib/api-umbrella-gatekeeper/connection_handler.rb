@@ -5,23 +5,30 @@ module ApiUmbrella
         { :host => "127.0.0.1", :port => 50100 }
       ]
 
-      attr_reader :connection, :start_time, :end_time, :request_buffer, :request_size, :response_size
-      attr_accessor :request_body_size, :response_body_size
+      attr_reader :connection, :request_start_time, :response_end_time, :request_buffer, :request_size, :response_size
+      attr_accessor :request_completed, :response_completed
 
       def initialize(connection)
-        @connection = connection
+        @request_start_time = Time.now
+        @response_end_time = nil
 
-        @start_time = nil
-        @end_time = nil
+        @connection = connection
+        @backends = ApiUmbrella::Gatekeeper.config["backends"].map do |backend|
+          parts = backend.split(":")
+          { :host => parts[0], :port => parts[1] }
+        end
 
         @request_buffer = ""
         @request_headers_parsed = false
 
         @request_size = 0
-        @request_body_size = 0
+        @request_header_size = 0
 
         @response_size = 0
-        @response_body_size = 0
+        @response_header_size = 0
+
+        @request_completed = false
+        @response_completed = false
 
         @request_parser_handler = RequestParserHandler.new(self)
         @request_parser = @request_parser_handler.parser
@@ -31,39 +38,49 @@ module ApiUmbrella
       end
 
       def on_data(chunk)
-        unless @start_time
-          @start_time = Time.now
-        end
-
         #p [:on_data, chunk]
+
+        # Ignore data if the response has already been sent.
+        #
+        # This can happen if the user sends a large body as part of an
+        # unauthenticated request. While we close the client connection as soon
+        # as the headers are read in (see request_headers_parsed), EventMachine
+        # might still be sending us the request data that it already read in.
+        return if(@response_completed)
 
         @request_size += chunk.bytesize
 
+        chunk_buffered = false
         unless @request_headers_parsed
           @request_buffer << chunk
+          chunk_buffered = true
         end
 
         @request_parser << chunk
 
-        if @request_buffer.empty?
-          chunk
-        else
+        if chunk_buffered
           nil
+        else
+          chunk
         end
       end
 
       def on_response(backend, chunk)
         handle_response_chunk(chunk)
 
-        @end_time = Time.now
+        @response_end_time = Time.now
 
         chunk
       end
 
       def on_finish(backend)
-        @finish_time = Time.now
+        #p [:on_finish, backend]
 
-        @backend_time = @end_time.to_f - @backend_start_time.to_f
+        # In case the request aborts before the response is sent back, define
+        # the response end time.
+        @response_end_time ||= Time.now
+
+        @backend_time = @response_end_time.to_f - @backend_start_time.to_f
 
         log
 
@@ -72,12 +89,16 @@ module ApiUmbrella
 
       def request_headers_parsed(rack_env)
         @rack_env = rack_env
+        @rack_env["REMOTE_ADDR"] = if(@connection.peer) then @connection.peer.first else nil end
+
+        @request_header_size = @request_buffer.index("\r\n\r\n") + 4
 
         instruction = gatekeeper_instruction(@rack_env)
         if(instruction[:status] == 200)
-          @connection.server :api_router, self.class.random_api_router_server
+          @connection.server :api_router, self.random_backend_server
 
           @backend_start_time = Time.now
+          #p [:relay, @request_buffer]
           @connection.relay_to_servers @request_buffer
         else
           error_response = ApiUmbrella::Gatekeeper::HttpResponse.new
@@ -87,12 +108,13 @@ module ApiUmbrella
 
           error_response.each do |chunk|
             handle_response_chunk(chunk)
-
             @connection.send_data chunk
           end
+
           @connection.close_connection_after_writing
           error_response.close
 
+          @response_completed = true
           @backend_time = nil
 
           log
@@ -108,24 +130,35 @@ module ApiUmbrella
       #
       # @see API_ROUTER_SERVERS
       # @return [String] The host and port of a routing server to connect to.
-      def self.random_api_router_server
-        API_ROUTER_SERVERS[Kernel.rand(API_ROUTER_SERVERS.length)]
+      def random_backend_server
+        @backends[Kernel.rand(@backends.length)]
       end
 
       private
 
       def handle_response_chunk(chunk)
         @response_size += chunk.bytesize
+
+        unless @response_headers_parsed
+          if(index = chunk.index("\r\n\r\n"))
+            @response_header_size += index + 4
+            @response_headers_parsed = true
+          else
+            @response_header_size += chunk.bytesize
+          end
+        end
+
         @response_parser << chunk
       end
 
       def gatekeeper_instruction(rack_env)
-        rack_response = ApiUmbrella::Gatekeeper::RackApp.instance.call(rack_env)
+        rack = ApiUmbrella::Gatekeeper::RackApp.instance.call(rack_env)
+        response = ::Rack::Response.new(rack[2], rack[0], rack[1]).to_a
 
         {
-          :status => rack_response[0],
-          :headers => rack_response[1],
-          :response => rack_response[2],
+          :status => response[0],
+          :headers => response[1],
+          :response => response[2],
         }
       end
 
@@ -134,28 +167,30 @@ module ApiUmbrella
 
         log_data = {
           :api_key => @rack_env["rack.api_key"],
-          :path => request.path,
+          :fullpath => request.fullpath,
           :ip_address => request.ip,
 
-          :requested_at => @start_time,
-          :time => @end_time.to_f - @start_time.to_f,
+          :requested_at => @request_start_time,
           :backend_time => @backend_time,
 
-          :request_size => @request_size,
-          :request_header_size => @request_size - @request_body_size,
-          :request_body_size => @request_body_size,
+          :request_total_size => @request_size,
+          :request_header_size => @request_header_size,
+          :request_body_size => @request_size - @request_header_size,
           :request_headers => @request_parser.headers,
 
           :response_status => @response_parser.status_code,
-          :response_size => @response_size,
-          :response_header_size => @response_size - @response_body_size,
-          :response_body_size => @response_body_size,
+          :response_total_size => @response_size,
+          :response_header_size => @response_header_size,
+          :response_body_size => @response_size - @response_header_size,
           :response_headers => @response_parser.headers,
         }
 
+        log_data[:request_aborted] = true unless(@request_completed)
+        log_data[:response_aborted] = true unless(@response_completed)
+
         @finish_time = Time.now
-        log_data[:finish_time] = @finish_time.to_f - @start_time.to_f
-        log_data[:proxy_time] = log_data[:finish_time] - log_data[:backend_time].to_f
+        log_data[:total_time] = @finish_time.to_f - @request_start_time.to_f
+        log_data[:proxy_overhead_time] = log_data[:total_time] - log_data[:backend_time].to_f
 
         # Create a new log entry for this request, saving asynchronously.
         log = ApiUmbrella::ApiRequestLog.new(log_data)

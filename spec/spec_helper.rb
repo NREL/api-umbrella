@@ -2,18 +2,16 @@ ENV["RACK_ENV"] = "test"
 
 require "api-umbrella-gatekeeper"
 require "database_cleaner"
-require "factory_girl"
+require "em-http-request"
 require "fileutils"
 require "nokogiri"
 require "rack/test"
 require "timecop"
 require "yajl"
 
-Mongoid.configure do |config|
-  config.connect_to("api_umbrella_gatekeeper_test")
-end
-
-FactoryGirl.find_definitions
+# Requires supporting ruby files with custom matchers and macros, etc,
+# in spec/support/ and its subdirectories.
+Dir[File.expand_path("../support/**/*.rb", __FILE__)].each {|f| require f}
 
 RSpec.configure do |config|
   REDIS_PID = File.expand_path("../tmp/pids/redis-test.pid", __FILE__)

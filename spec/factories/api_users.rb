@@ -1,6 +1,6 @@
 FactoryGirl.define do
   sequence :api_key do |n|
-    "TESTING_KEY_#{n}"
+    "TESTING_KEY_#{n.to_s.rjust(5, "0")}"
   end
 
   factory :api_user, :class => ApiUmbrella::ApiUser do

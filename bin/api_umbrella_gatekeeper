@@ -10,6 +10,10 @@ options = Trollop::options do
   opt :port, "Port to listen on",
     :short => "p",
     :default => 7890
+  opt :backend, "Backend server",
+    :short => "b",
+    :multi => true,
+    :default => "127.0.0.1:50100"
   opt :environment, "Framework environment",
     :short => "e",
     :default => "development"

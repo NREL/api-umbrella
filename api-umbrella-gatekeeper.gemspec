@@ -30,6 +30,9 @@ Gem::Specification.new do |gem|
   # Rack for contructing our proxy using modularized middlewares.
   gem.add_dependency("rack")
 
+  # For dealing with the YAML config file.
+  gem.add_dependency("settingslogic")
+
   # rack-throttle and redis for rate limiting. Use hiredis for better
   # performance.
   gem.add_dependency("rack-throttle")
@@ -45,13 +48,23 @@ Gem::Specification.new do |gem|
   # Yajl for JSON encoding.
   gem.add_dependency("yajl-ruby")
 
+  # For command line tool option parsing
   gem.add_dependency("trollop")
 
+  # Testing
   gem.add_development_dependency("rake")
   gem.add_development_dependency("rspec")
 
   # For building objects.
   gem.add_development_dependency("factory_girl")
+
+  # Making requests to the test server.
+  gem.add_development_dependency("em-http-request")
+
+  # For running a backend server for testing.
+  gem.add_development_dependency("unicorn")
+  gem.add_development_dependency("sinatra")
+  gem.add_development_dependency("childprocess")
 
   # For clearing the database between tests.
   gem.add_development_dependency("database_cleaner")
