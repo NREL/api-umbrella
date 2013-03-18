@@ -21,7 +21,7 @@ describe ApiUmbrella::Gatekeeper::Server do
 
         Timecop.freeze do
           make_multiple_requests(51, :get, "/hello?api_key=#{api_user.api_key}")
-          @last_header.status.should == 503
+          @last_header.status.should == 429
           @last_response.should include("Rate Limit Exceeded")
         end
       end
@@ -68,7 +68,7 @@ describe ApiUmbrella::Gatekeeper::Server do
 
         Timecop.freeze(start_time + 1.hour) do
           make_multiple_requests(11, :get, "/hello?api_key=#{api_user.api_key}")
-          @last_header.status.should == 503
+          @last_header.status.should == 429
           @last_response.should include("Rate Limit Exceeded")
         end
       end

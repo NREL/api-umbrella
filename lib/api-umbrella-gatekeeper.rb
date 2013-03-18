@@ -16,7 +16,7 @@ module ApiUmbrella
   module Gatekeeper
     DEFAULT_CONFIG = {
       "throttle" => {
-        "http_code" => 503,
+        "http_code" => 429,
         "hourly_max" => 1000,
         "daily_max" => 10000,
       },
