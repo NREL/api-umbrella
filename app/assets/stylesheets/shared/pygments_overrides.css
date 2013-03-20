@@ -1,25 +1,33 @@
 .highlighttable {
   border: 1px solid #eeeeff;
   width: 100%;
-}
 
-.highlighttable th,
-.highlighttable td {
-  border-style: none;
-}
+  .code {
+    background-color: #f5f9ff;
+  }
 
-.highlighttable .linenos {
-  width: 8px;
-  background-color: #def;
-  color: gray;
-  text-align: right;
-}
+  td, th {
+    padding: 0.5em;
+    border-style: none;
+  }
 
-.highlighttable .code {
-  background-color: #f5f9ff;
+  pre {
+    margin: 0px;
+    color: inherit;
+    font-size: pxtoem(13px);
+    word-break: normal;
+    word-spacing: 0px;
+    word-wrap: normal;
+    white-space: pre;
+    padding: 0px;
+    border-style: none;
+    background-color: transparent;
+  }
 
-}
-
-.highlighttable pre {
-  margin: 0px;
+  .linenos {
+    width: 8px;
+    background-color: #def;
+    color: gray;
+    text-align: right;
+  }
 }
