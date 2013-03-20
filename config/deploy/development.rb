@@ -1,3 +1,4 @@
+require "capistrano_nrel_ext/recipes/development_deploy"
 require "capistrano_nrel_ext/recipes/sandboxes"
 
 # Set the servers for this stage.
@@ -12,13 +13,11 @@ role :db, "devdev.nrel.gov", :primary => true
 role :db, "devdev-db.nrel.gov", :no_release => true
 
 # Set the base path for deployment.
-set :deploy_to_base, "/srv/developer/devdev"
+set :deploy_to_base, "/srv/developer/sites"
+set :releases_path_base, "/srv/developer"
 
 # Set the accessible web domain for this site.
 set :base_domain, "dev.api.data.gov"
-
-# Reduce the number of copies kept since this is the development environment.
-set :keep_releases, 2
 
 # Set the Rails environment.
 set :rails_env, "development"
