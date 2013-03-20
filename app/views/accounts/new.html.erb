@@ -3,7 +3,7 @@
 
 <p class="required-fields"><%= t("simple_form.required.html") %> Required fields</p>
 
-<%= simple_form_for(@user, :url => account_path, :validate => true, :html => { :class => "form-horizontal account-form" }) do |f| %>
+<%= simple_form_for(@user, :url => account_path, :method => :post, :validate => true, :html => { :class => "form-horizontal account-form" }) do |f| %>
   <%= f.input(:first_name) %>
   <%= f.input(:last_name) %>
   <%= f.input(:email) %>

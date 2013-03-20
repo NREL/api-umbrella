@@ -71,6 +71,12 @@ group :development, :test do
   gem "rspec-rails"
   gem "factory_girl_rails"
   gem "rspec-html-matchers"
+
+  # Real browser testing
+  gem "capybara"
+
+  # Headless webkit for capybara
+  gem "poltergeist"
 end
 
 group :development do
