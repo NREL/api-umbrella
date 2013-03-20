@@ -74,9 +74,7 @@ module Developer
       admin.css
       admin.js
       ckeditor.css
-      ie_lte_8.js
-      public.css
-      public.js
+      ie_lt_9.js
     )
 
     # Use a file-based cache store
