@@ -1,8 +1,8 @@
 GIT
   remote: http://github.com/NREL/capistrano_nrel_ext.git
-  revision: d7040e02d2452ded128d7dfb93221f2088312145
+  revision: 429dd87953107502808b5f9a4b31d761855a6f0b
   specs:
-    capistrano_nrel_ext (0.2.22)
+    capistrano_nrel_ext (0.3.0)
       artii
       capistrano
       chronic (>= 0.6.0)
@@ -55,7 +55,7 @@ GEM
     bootstrap-sass (2.2.1.1)
       sass (~> 3.2)
     builder (3.0.4)
-    capistrano (2.13.5)
+    capistrano (2.14.2)
       highline
       net-scp (>= 1.0.0)
       net-sftp (>= 2.0.0)
@@ -63,7 +63,7 @@ GEM
       net-ssh-gateway (>= 1.1.0)
     capistrano-ext (1.2.1)
       capistrano (>= 1.0.0)
-    chronic (0.8.0)
+    chronic (0.9.1)
     chunky_png (1.2.6)
     client_side_validations (3.2.1)
     client_side_validations-simple_form (2.0.1)
@@ -82,7 +82,7 @@ GEM
       railties (~> 3.1)
       warden (~> 1.2.1)
     diff-lcs (1.1.3)
-    diffy (2.1.0)
+    diffy (2.1.3)
     erubis (2.7.0)
     execjs (1.4.0)
       multi_json (~> 1.0)
@@ -93,7 +93,7 @@ GEM
       railties (>= 3.0.0)
     fssm (0.2.9)
     hashie (1.2.0)
-    highline (1.6.15)
+    highline (1.6.16)
     hike (1.2.1)
     i18n (0.6.1)
     journey (1.0.4)
