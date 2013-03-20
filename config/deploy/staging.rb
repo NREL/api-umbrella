@@ -20,4 +20,4 @@ set :deploy_to_base, "/srv/developer/devstage-int"
 set :base_domain, "stage.api.data.gov"
 
 # Set the Rails environment.
-set :rails_env, "staging_int"
+set :rails_env, "staging"
