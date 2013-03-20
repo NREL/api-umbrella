@@ -4,11 +4,11 @@
 //= require_self
 
 $(document).ready(function() {
-  $("textarea.editor").ckeditor({
-    extraPlugins: "syntaxhighlight",
+  CKEDITOR.replace("api_doc_service_body", {
+    extraPlugins: "pbckcode",
     height: 500,
     contentsCss: [
-      "/assets/public.css",
+      "/assets/application.css",
       "/assets/ckeditor.css",
     ],
     stylesSet: [
@@ -36,7 +36,7 @@ $(document).ready(function() {
       ["Bold", "Italic", "-", "RemoveFormat"],
       ["Link", "Unlink"],
       ["NumberedList", "BulletedList", "-", "Outdent", "Indent"],
-      ["Code", "Table", "Image"],
+      ["pbckcode", "Table", "Image"],
       ["Source"]
     ]
   });

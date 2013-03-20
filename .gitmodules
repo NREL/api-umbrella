@@ -1,0 +1,6 @@
+[submodule "public/javascripts/vendor/ckeditor"]
+	path = public/javascripts/vendor/ckeditor
+	url = https://github.com/ckeditor/ckeditor-releases.git
+[submodule "public/javascripts/vendor/PBCKCode"]
+	path = public/javascripts/vendor/PBCKCode
+	url = https://github.com/prbaron/PBCKCode.git

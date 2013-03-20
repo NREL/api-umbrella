@@ -6,8 +6,10 @@
     <%= stylesheet_link_tag "admin" %>
     <%= javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" %>
     <%= javascript_include_tag "admin" %>
-    <%= javascript_include_tag(File.join(ActionController::Base.config.relative_url_root.to_s, "/javascripts/ckeditor/ckeditor.js")) %>
-    <%= javascript_include_tag(File.join(ActionController::Base.config.relative_url_root.to_s, "/javascripts/ckeditor/adapters/jquery.js")) %>
+    <%= javascript_include_tag(File.join(ActionController::Base.config.relative_url_root.to_s, "/javascripts/vendor/ckeditor/ckeditor.js")) %>
+    <%= javascript_tag do %>
+      CKEDITOR.plugins.addExternal("pbckcode", "/javascripts/vendor/PBCKCode/");
+    <% end %>
     <%= csrf_meta_tag %>
   </head>
   <body>
