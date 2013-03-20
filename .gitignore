@@ -18,8 +18,8 @@
 /config/mongoid.yml
 /config/nginx/site.conf
 
-# Ignore log files
-/log/*
+# Ignore log directory
+/log
 
 # Ignore temp files
 /tmp
