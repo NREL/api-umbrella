@@ -13,6 +13,7 @@ set :application, "api-umbrella-web"
 
 set :scm, "git"
 set :repository, "https://github.com/NREL/api-umbrella-web.git"
+set :git_enable_submodules, true
 set :branch, "gsa"
 
 ssh_options[:forward_agent] = true
