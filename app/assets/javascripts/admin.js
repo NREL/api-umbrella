@@ -38,6 +38,14 @@ $(document).ready(function() {
       ["NumberedList", "BulletedList", "-", "Outdent", "Indent"],
       ["pbckcode", "Table", "Image"],
       ["Source"]
-    ]
+    ],
+    pbckcode: {
+      modes: [
+        ["JSON", "json"],
+        ["XML", "xml"],
+        ["Text", "text"]
+      ],
+      defaultMode: "json"
+    }
   });
 });
