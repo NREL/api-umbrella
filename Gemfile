@@ -34,7 +34,9 @@ gem "client_side_validations-simple_form", ">= 2.0.0"
 
 gem "nokogiri"
 gem "babosa"
-gem "albino"
+
+# For running the python pygmentize program
+gem "childprocess"
 
 # Gems used only for assets and not required
 # in production environments by default.
@@ -50,6 +52,7 @@ group :assets do
 
   # See https://github.com/sstephenson/execjs#readme for more supported runtimes
   gem 'therubyracer', :platforms => :ruby
+  gem 'therubyrhino', :platforms => [:jruby]
 
   # JavaScript compression
   gem 'uglifier'
@@ -61,7 +64,7 @@ group :assets do
   gem "sprockets-urlrewriter"
 
   # Improve PNG speed for image sprite generation
-  gem "oily_png"
+  gem "oily_png", :platforms => [:ruby]
 end
 
 # Bundle gems for the local environment. Make sure to
@@ -84,7 +87,10 @@ group :development do
   gem "capistrano-ext"
   gem "capistrano_nrel_ext", :git => "http://github.com/NREL/capistrano_nrel_ext.git"
 
-  gem "yajl-ruby", :require => false
+  gem "torquebox-server", :platforms => [:jruby]
+
+  gem "yajl-ruby", :require => false, :platforms => [:ruby]
+  gem "oj", :require => false, :platforms => [:ruby]
 
   gem "awesome_print"
 

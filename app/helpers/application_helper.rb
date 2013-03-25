@@ -10,7 +10,27 @@ module ApplicationHelper
   end
 
   def highlight_code(language, code)
-    highlighted = Albino.new(code, language).colorize(:O => "linenos=True")
+    process = ChildProcess.build("pygmentize", "-l", language, "-f", "html", "-O", "encoding=utf-8", "-O", "linenos=True")
+
+    # Store the pygmentize output on a StringIO object.
+    output = StringIO.new
+    process.io.stdout = output
+
+    # Setup pipe so we can pass to stdin. 
+    process.duplex = true
+
+    process.start
+
+    # Pass the code block to pygmentize via stdin pip.
+    process.io.stdin.puts code
+    process.io.stdin.close
+
+    # Wait for pygmentize to complete with a 10 second timeout. 
+    process.poll_for_exit(10)
+
+    # Reade pygmentize's output.
+    output.rewind
+    highlighted = output.read
 
     %(<div class="highlight-code">#{highlighted}</div>).html_safe
   end
