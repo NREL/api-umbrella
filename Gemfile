@@ -2,6 +2,9 @@ source :rubygems
 
 gem "rails", "~> 3.2.6"
 
+# Rails app server
+gem "torquebox", :platforms => [:jruby]
+
 # MongoDB
 gem "mongoid", ">= 3.0.0"
 

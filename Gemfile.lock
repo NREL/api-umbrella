@@ -339,6 +339,7 @@ DEPENDENCIES
   sprockets-urlrewriter
   tabs_on_rails
   therubyracer
+  torquebox
   torquebox-server
   turbo-sprockets-rails3!
   uglifier
