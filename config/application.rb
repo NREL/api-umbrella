@@ -77,7 +77,7 @@ module Developer
       ie_lt_9.js
     )
 
-    # Use a file-based cache store
-    config.cache_store = :file_store, "#{Rails.root}/tmp/cache"
+    # Use TorqueBox::Infinispan::Cache for the Rails cache store
+    config.cache_store = :torque_box_store, { :mode => :replicated }
   end
 end
