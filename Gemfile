@@ -58,7 +58,8 @@ group :assets do
   gem 'uglifier'
 
   # CSS compression
-  gem "yui-compressor"
+  # This Github fork has JRuby compatibility.
+  gem "yui-compressor", :git => "https://github.com/kares/ruby-yui-compressor.git"
 
   # Smarter handling of compiled CSS with relative paths (like Jammit)
   gem "sprockets-urlrewriter"
