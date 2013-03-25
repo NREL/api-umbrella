@@ -64,6 +64,9 @@ group :assets do
   # Smarter handling of compiled CSS with relative paths (like Jammit)
   gem "sprockets-urlrewriter"
 
+  # Faster asset precompilation and caching.
+  gem "turbo-sprockets-rails3"
+
   # Improve PNG speed for image sprite generation
   gem "oily_png", :platforms => [:ruby]
 end
