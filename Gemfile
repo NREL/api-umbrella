@@ -52,7 +52,8 @@ group :assets do
 
   # See https://github.com/sstephenson/execjs#readme for more supported runtimes
   gem 'therubyracer', :platforms => :ruby
-  gem 'therubyrhino', :platforms => [:jruby]
+  # For JRuby, use the Node.js execjs runtime - We'll assume it's on the
+  # servers so it gets picked up by execjs. It's faster than therubyrhino.
 
   # JavaScript compression
   gem 'uglifier'
@@ -65,7 +66,11 @@ group :assets do
   gem "sprockets-urlrewriter"
 
   # Faster asset precompilation and caching.
-  gem "turbo-sprockets-rails3"
+  #
+  # This fork allows cleaning expired assets at the same time as precompiling,
+  # so two rake tasks aren't necessary during our cap deploys. This saves
+  # significant time under JRuby. Hopefully it'll be merged into the main gem.
+  gem "turbo-sprockets-rails3", :git => "https://github.com/GUI/turbo-sprockets-rails3.git"
 
   # Improve PNG speed for image sprite generation
   gem "oily_png", :platforms => [:ruby]
