@@ -4,3 +4,6 @@
 [submodule "public/javascripts/vendor/PBCKCode"]
 	path = public/javascripts/vendor/PBCKCode
 	url = https://github.com/prbaron/PBCKCode.git
+[submodule "app/assets/javascripts/vendor/dirtyforms"]
+	path = app/assets/javascripts/vendor/dirtyforms
+	url = https://github.com/snikch/jquery.dirtyforms.git

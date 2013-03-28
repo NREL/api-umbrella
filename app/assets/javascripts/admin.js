@@ -1,6 +1,8 @@
 //= require jquery_ujs
 //= require rails.validations
 //= require vendor/jquery.slugify
+//= require vendor/dirtyforms/jquery.dirtyforms
+//= require vendor/dirtyforms/helpers/ckeditor
 //= require_self
 
 $(document).ready(function() {
@@ -48,4 +50,16 @@ $(document).ready(function() {
       defaultMode: "json"
     }
   });
+
+  // Use the default browser "beforeunload" dialog.
+  $.DirtyForms.dialog = false 
+  $(window).bind('beforeunload', function(e) {
+    if($.DirtyForms.isDirty()) {
+      return $.DirtyForms.message;
+    } else {
+      return;
+    }
+  });
+
+  $("form").dirtyForms();
 });
