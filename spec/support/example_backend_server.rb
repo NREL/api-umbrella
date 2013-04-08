@@ -23,7 +23,8 @@ module ExampleBackendServer
       url = "http://127.0.0.1:9333#{path}"
 
       EM.run do
-        ApiUmbrella::Gatekeeper::Server.run(:config => File.expand_path("../../config/gatekeeper.yml", __FILE__))
+        config_name = @gatekeeper_config || "gatekeeper.yml"
+        ApiUmbrella::Gatekeeper::Server.run(:config => File.expand_path("../../config/#{config_name}", __FILE__))
 
         EventMachine.add_timer(0.05) do
           http = EventMachine::HttpRequest.new(url, :connect_timeout => 1.5, :inactivity_timeout => 1.5).send(method, options)
@@ -40,7 +41,8 @@ module ExampleBackendServer
       url = "http://127.0.0.1:9333#{path}"
 
       EM.run do
-        ApiUmbrella::Gatekeeper::Server.run(:config => File.expand_path("../../config/gatekeeper.yml", __FILE__))
+        config_name = @gatekeeper_config || "gatekeeper.yml"
+        ApiUmbrella::Gatekeeper::Server.run(:config => File.expand_path("../../config/#{config_name}", __FILE__))
 
         EventMachine.add_timer(0.05) do
           http = nil
@@ -66,7 +68,8 @@ module ExampleBackendServer
       pre_request
 
       EM.run do
-        ApiUmbrella::Gatekeeper::Server.run(:config => File.expand_path("../../config/gatekeeper.yml", __FILE__))
+        config_name = @gatekeeper_config || "gatekeeper.yml"
+        ApiUmbrella::Gatekeeper::Server.run(:config => File.expand_path("../../config/#{config_name}", __FILE__))
 
         EventMachine.add_timer(0.05) do
           SendHttpChunks.chunks = chunks
