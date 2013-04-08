@@ -89,7 +89,6 @@ module ApiUmbrella
 
       def request_headers_parsed(rack_env)
         @rack_env = rack_env
-        @rack_env["REMOTE_ADDR"] = if(@connection.peer) then @connection.peer.first else nil end
 
         @request_header_size = @request_buffer.index("\r\n\r\n") + 4
 

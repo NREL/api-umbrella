@@ -6,6 +6,7 @@ module ApiUmbrella
       SERVER_PORT     = 'SERVER_PORT'
       REMOTE_ADDR     = 'REMOTE_ADDR'
       CONTENT_LENGTH  = 'CONTENT_LENGTH'
+      SCRIPT_NAME  = 'SCRIPT_NAME'
       CONTENT_TYPE    = 'CONTENT_TYPE'
       REQUEST_METHOD  = 'REQUEST_METHOD'
       REQUEST_URI     = 'REQUEST_URI'
@@ -16,6 +17,15 @@ module ApiUmbrella
       FRAGMENT        = 'FRAGMENT'
       CONNECTION      = 'CONNECTION'
       UPGRADE_DATA    = 'UPGRADE_DATA'
+      REMOTE_ADDR    = 'REMOTE_ADDR'
+      RACK_INPUT    = 'rack.input'
+      RACK_URL_SCHEME    = 'rack.url_scheme'
+      RACK_ERRORS    = 'rack.errors'
+      RACK_VERSION    = 'rack.version'
+      RACK_MULTITHREAD    = 'rack.multithread'
+      RACK_MULTIPROCESS    = 'rack.multiprocess'
+      RACK_RUN_ONCE    = 'rack.run_once'
+      RACK_VERSION_NUM    = [1, 2]
 
       def on_headers_complete(headers)
         #p [:request, :on_headers_complete, headers]
@@ -51,12 +61,22 @@ module ApiUmbrella
         end
 
         rack_env[REQUEST_METHOD]  = parser.http_method
-        rack_env[REQUEST_URI]     = parser.request_url
-        rack_env[QUERY_STRING]    = parser.query_string
-        rack_env[HTTP_VERSION]    = parser.http_version.join('.')
-        rack_env[REQUEST_PATH]    = parser.request_path
+        rack_env[SCRIPT_NAME]     = ""
         rack_env[PATH_INFO]       = parser.request_path
+        rack_env[QUERY_STRING]    = parser.query_string
+        rack_env[REQUEST_URI]     = parser.request_url
+        rack_env[REQUEST_PATH]    = parser.request_path
         rack_env[FRAGMENT]        = parser.fragment
+        rack_env[HTTP_VERSION]    = parser.http_version.join('.')
+        rack_env[REMOTE_ADDR] = if(connection_handler.connection.peer) then connection_handler.connection.peer.first else nil end
+        rack_env[RACK_VERSION] = RACK_VERSION_NUM
+        rack_env[RACK_URL_SCHEME] = if(rack_env["HTTPS"]) then "https" else "http" end
+        rack_env[RACK_INPUT] = StringIO.new
+        rack_env[RACK_INPUT].set_encoding("ASCII-8BIT")
+        rack_env[RACK_ERRORS] = STDERR
+        rack_env[RACK_MULTITHREAD] = false
+        rack_env[RACK_MULTIPROCESS] = false
+        rack_env[RACK_RUN_ONCE] = false
 
         rack_env
       end
