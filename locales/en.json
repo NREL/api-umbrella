@@ -1,0 +1,6 @@
+{
+  "api_key_none": "No api_key was supplied. Get one at %s",
+  "api_key_invalid": "An invalid api_key was supplied. Get one at %s",
+  "api_key_disabled": "The api_key supplied has been disabled. Contact us at %s for assistance",
+  "api_key_unauthorized": "The api_key supplied is not authorized to access the given service. Contact us at %s for assistance"
+}

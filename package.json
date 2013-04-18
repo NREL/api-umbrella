@@ -1,0 +1,43 @@
+{
+  "name": "api-umbrella-gatekeeper",
+  "description": "A custom reverse proxy to control access to your APIs. Performs API key validation, request rate limiting, and gathers analytics.",
+  "version": "0.1.0",
+  "engines": ">= 0.8.0",
+  "author": "Nick Muerdter <nick.muerdter@nrel.gov>",
+  "main": "./lib/api-umbrella-gatekeeper",
+  "bin": {
+    "api_umbrella_gatekeeper": "./bin/api_umbrella_gatekeeper"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "dependencies": {
+    "addr": "1.0.x",
+    "async": "0.2.x",
+    "connect": "2.7.x",
+    "hiredis": "0.1.x",
+    "http-proxy": "0.10.x",
+    "i18n": "0.4.x",
+    "mongodb": "1.2.x",
+    "nconf": "0.6.x",
+    "optimist": "0.3.x",
+    "redis": "0.8.x",
+    "underscore": "1.4.x"
+  },
+  "devDependencies": {
+    "chai": "1.5.x",
+    "database-cleaner": "0.7.x",
+    "express": "3.1.x",
+    "factory-lady": "0.1.x",
+    "grunt": "0.3.x",
+    "mocha": "1.9.x",
+    "mongoose": "3.6.x",
+    "request": "2.16.x",
+    "timekeeper": "0.0.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NREL/api-umbrella-gatekeeper.git"
+  },
+  "license": "MIT"
+}

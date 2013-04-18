@@ -1,0 +1,3 @@
+--reporter spec
+--globals backendCalled
+--recursive

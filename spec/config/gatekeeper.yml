@@ -1,8 +1,0 @@
-test:
-  host: 127.0.0.1
-  port: 9333
-  backends:
-    - 127.0.0.1:9444
-  throttle:
-    hourly_max: 50
-    daily_max: 60
