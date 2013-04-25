@@ -15,14 +15,20 @@
     "addr": "1.0.x",
     "async": "0.2.x",
     "connect": "2.7.x",
+    "connect-base": "0.1.x",
+    "elasticsearchclient": "0.4.x",
+    "geoip-lite": "1.0.x",
+    "glossy": "0.1.x",
     "hiredis": "0.1.x",
-    "http-proxy": "0.10.x",
+    "http-proxy": "~0.10.2",
     "i18n": "0.4.x",
     "mongodb": "1.2.x",
     "nconf": "0.6.x",
     "optimist": "0.3.x",
     "redis": "0.8.x",
-    "underscore": "1.4.x"
+    "redis-convoy": "0.1.x",
+    "underscore": "1.4.x",
+    "urlsafe-base64": "0.0.x"
   },
   "devDependencies": {
     "chai": "1.5.x",
@@ -33,6 +39,7 @@
     "mocha": "1.9.x",
     "mongoose": "3.6.x",
     "request": "2.16.x",
+    "badconnection": "0.0.x",
     "timekeeper": "0.0.x"
   },
   "repository": {
