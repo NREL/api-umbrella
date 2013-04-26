@@ -23,17 +23,20 @@ global.shared = {
         port: 9333,
         backend: "localhost:9444",
         mongo: 'mongodb://127.0.0.1:27017/api_umbrella_test',
+        haproxy_log_listener: {
+          port: 9334
+        },
         rate_limits: [],
       }, options);
 
       backendCalled = false;
-      this.server = gatekeeper.createServer(serverOptions, function() {
+      this.gatekeeper = gatekeeper.startNonForked(serverOptions, function() {
         done();
       });
     });
 
     afterEach(function(done) {
-      this.server.close(function() {
+      this.gatekeeper.closeNonForked(function() {
         done();
       });
     });

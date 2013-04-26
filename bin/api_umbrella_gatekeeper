@@ -1,38 +1,4 @@
 #!/usr/bin/env node
 
 var gatekeeper = require("../lib/api-umbrella-gatekeeper");
-
-/*
-var optimist = require("optimist")
-  .usage("Count the lines in a file.\nUsage: $0")
-  .alias("h", "host")
-  .default("h", "0.0.0.0")
-  .describe("h", "Hostname to bind")
-  .alias("p", "port")
-  .default("p", "7890")
-  .describe("p", "Port to listen on")
-  .alias("b", "backend")
-  .default("b", "127.0.0.1:50100")
-  .describe("b", "Backend server")
-  .alias("e", "environment")
-  .default("e", "development")
-  .describe("e", "Framework environment")
-  .boolean("help")
-  .describe("help", "Show this help info")
-  .demand(["h", "p", "b", "e"])
-
-var argv = optimist.argv;
-
-if(argv.help) {
-  optimist.showHelp();
-}
-
-var config = {
-  host: argv.host,
-  port: argv.port,
-  backend: argv.backend,
-  environment: argv.environment,
-};
-*/
-
-gatekeeper.createServer();
+gatekeeper.start();
