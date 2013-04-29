@@ -8,9 +8,11 @@ var redis = require('redis'),
     DatabaseCleaner = require('database-cleaner');
 
 before(function(done) {
-  var databaseCleaner = new DatabaseCleaner('mongodb');
-  databaseCleaner.clean(mongoose.connection.db, function() {
-    done();
+  mongoose.connection.on('connected', function() {
+    var databaseCleaner = new DatabaseCleaner('mongodb');
+    databaseCleaner.clean(mongoose.connection.db, function() {
+      done();
+    });
   });
 });
 
