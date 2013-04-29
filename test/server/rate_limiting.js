@@ -8,15 +8,17 @@ describe('ApiUmbrellaGatekeper', function() {
   describe('rate limiting', function() {
     describe('single hourly limit', function() {
       shared.runServer({
-        rate_limits: [
-          {
-            duration: 60 * 60 * 1000, // 1 hour
-            accuracy: 1 * 60 * 1000, // 1 minute
-            limit_by: 'api_key',
-            limit: 10,
-            distributed: true,
-          }
-        ]
+        proxy: {
+          rate_limits: [
+            {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'api_key',
+              limit: 10,
+              distributed: true,
+            }
+          ]
+        }
       });
 
       it('allows up to the hourly limit of requests', function(done) {
@@ -70,20 +72,22 @@ describe('ApiUmbrellaGatekeper', function() {
 
     describe('multiple limits', function() {
       shared.runServer({
-        rate_limits: [
-          {
-            duration: 10 * 1000, // 10 second
-            accuracy: 1000, // 1 second
-            limit_by: 'api_key',
-            limit: 3,
-          }, {
-            duration: 60 * 60 * 1000, // 1 hour
-            accuracy: 1 * 60 * 1000, // 1 minute
-            limit_by: 'api_key',
-            limit: 10,
-            distributed: true,
-          }
-        ]
+        proxy: {
+          rate_limits: [
+            {
+              duration: 10 * 1000, // 10 second
+              accuracy: 1000, // 1 second
+              limit_by: 'api_key',
+              limit: 3,
+            }, {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'api_key',
+              limit: 10,
+              distributed: true,
+            }
+          ]
+        }
       });
 
       it('does not count excess queries in the smaller time window against the larger time window', function(done) {

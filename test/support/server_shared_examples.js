@@ -10,7 +10,7 @@ global.shared = {
       }, options);
   },
 
-  runServer: function(options) {
+  runServer: function(configOverrides) {
     beforeEach(function(done) {
       Factory.create('api_user', function(user) {
         this.apiKey = user.api_key;
@@ -19,18 +19,8 @@ global.shared = {
     });
 
     beforeEach(function(done) {
-      var serverOptions = _.extend({
-        port: 9333,
-        backend: "localhost:9444",
-        mongo: 'mongodb://127.0.0.1:27017/api_umbrella_test',
-        haproxy_log_listener: {
-          port: 9334
-        },
-        rate_limits: [],
-      }, options);
-
       backendCalled = false;
-      this.gatekeeper = gatekeeper.startNonForked(serverOptions, function() {
+      this.gatekeeper = gatekeeper.startNonForked(configOverrides, function() {
         done();
       });
     });

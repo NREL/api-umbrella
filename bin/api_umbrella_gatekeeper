@@ -1,4 +1,4 @@
 #!/usr/bin/env node
 
-var gatekeeper = require("../lib/api-umbrella-gatekeeper");
+var gatekeeper = require('../lib/api-umbrella-gatekeeper');
 gatekeeper.start();

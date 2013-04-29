@@ -1,3 +1,5 @@
+require('./support/env');
+
 var _ = require('underscore'),
     request = require('request'),
     Factory = require('factory-lady'),

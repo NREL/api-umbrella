@@ -2,12 +2,14 @@ require('../test_helper');
 
 describe('ApiUmbrellaGatekeper', function() {
   shared.runServer({
-    restricted_apis: [
-      {
-        path_regex: "^/restricted",
-        role: "restricted",
-      },
-    ],
+    proxy: {
+      restricted_apis: [
+        {
+          path_regex: "^/restricted",
+          role: "restricted",
+        },
+      ],
+    }
   });
 /*
   beforeEach(function(done) {
