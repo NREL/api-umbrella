@@ -2,6 +2,15 @@ frontend web_router
   bind *:80 # Public HTTP traffic
   bind *:81 # HTTPS traffic tunneled through nginx
 
+  # Add a unique ID header to the request, so the request can be tracked
+  # through multiple proxies.  
+  unique-id-format %{+X}o%ci%cp%fi%fp%Ts%ms%pid%rt%H
+  unique-id-header X-ApiUmbrella-UID
+
+  # Custom log format - Like default HTTP log, but includes bytes_uploaded (%U)
+  # and unique-id (%ID).
+  log-format %ci:%cp\ [%t]\ %ft\ %b/%s\ %Tq/%Tw/%Tc/%Tr/%Tt\ %ST\ %B\ %U\ %CC\ \ %CS\ %tsc\ %ac/%fc/%bc/%sc/%rc\ %sq/%bq\ %ID\ %hr\ %hs\ %{+Q}r
+
   # Ensure connections are closed for forwardfor compatability.
   option http-server-close
 

@@ -10,17 +10,22 @@
 # Ignore local bundle
 /vendor/bundle
 
+# Ignore local npm modules
+/node_modules
+
 # Ignore Capistrano files
 /REVISION
 /config/deployed.yml
 
 # Ignore files generated from templates
-/config/mongoid.yml
-/config/redis.yml
+/config/default.json
 /config/haproxy/backends/*.cfg
 /config/haproxy/frontends/*.cfg
 /config/nginx/site.conf
 /config/supervisor/gatekeeper.conf
+
+# Ignore node generated file
+/config/runtime.json
 
 # Ignore log files
 /log/*

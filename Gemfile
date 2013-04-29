@@ -1,7 +1,5 @@
 source 'http://rubygems.org'
 
-gem "api-umbrella-gatekeeper", :git => "http://github.com/NREL/api-umbrella-gatekeeper.git"
-
 group :development do
   # Deployment
   gem "capistrano-ext"

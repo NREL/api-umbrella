@@ -30,9 +30,6 @@ backend gatekeeper_farm_internal_apis
 
   balance roundrobin
   server gatekeeper1 127.0.0.1:50000
-  server gatekeeper2 127.0.0.1:50001
-  server gatekeeper3 127.0.0.1:50002
-  server gatekeeper3 127.0.0.1:50003
 
   # Retry connections 30 times (so 30 seconds). This lets the the proxymachine
   # servers restart without dropping any connection.
@@ -42,9 +39,6 @@ backend gatekeeper_farm_internal_apis
 backend gatekeeper_farm_public_apis
   balance roundrobin
   server gatekeeper1 127.0.0.1:50000
-  server gatekeeper2 127.0.0.1:50001
-  server gatekeeper3 127.0.0.1:50002
-  server gatekeeper3 127.0.0.1:50003
 
   # Retry connections 30 times (so 30 seconds). This lets the the proxymachine
   # servers restart without dropping any connection.

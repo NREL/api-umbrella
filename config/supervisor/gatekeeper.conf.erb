@@ -1,16 +1,7 @@
 [program:<%= deploy_name %>-gatekeeper]
-; Run 4 gatekeeper instances.
-numprocs=4
-
-; Start each Gatekeeper instance with ports starting at 50000.
-; Execute Gatekeeper via RVM and Bundler. 
 directory=<%=current_path %>
-environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-command=/opt/rbenv/shims/bundle exec api_umbrella_gatekeeper --host 127.0.0.1 --port 50%(process_num)03d --environment <%= rails_env %> --mongoid-config <%= current_path %>/config/mongoid.yml --redis-config <%= current_path %>/config/redis.yml
-
-; Name each process by the port number, eg "gatekeeper-50000",
-; "gatekeeper-50001"
-process_name=%(program_name)s-50%(process_num)03d
+environment=PATH=/opt/nodejs/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,NODE_ENV=<%= rails_env %>,NODE_CONFIG_DIR=<%= current_path %>/config
+command=<%= current_path %>/node_modules/.bin/api_umbrella_gatekeeper
 
 ; Always keep running.
 autostart=true
@@ -18,7 +9,7 @@ autorestart=true
 
 ; It can take longer for the the proxy to fully startup, so set a longer
 ; startup time.
-startsecs=10
+startsecs=5
 
 ; Graceful shutdown, remaining open `stopwaitsecs` seconds for open connections
 ; to disconnect.
@@ -34,7 +25,7 @@ user=www-data-local
 ; Log both stdout and stderr to the same log file. One log file per
 ; Gatekeeper instance running on each port.
 redirect_stderr=true
-stdout_logfile=<%= current_path %>/log/%(program_name)s-50%(process_num)03d.log
+stdout_logfile=<%= current_path %>/log/gatekeeper.log
 
 ; Don't rotate based on file size. We'll rotate externally using logrotate.
 logfile_maxbytes=0

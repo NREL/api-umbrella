@@ -1,7 +1,21 @@
 frontend api_router 127.0.0.1:50100
+  # Custom log format - Like default HTTP log, but includes bytes_uploaded (%U)
+  # and unique-id (%ID).
+  log-format %ci:%cp\ [%t]\ %ft\ %b/%s\ %Tq/%Tw/%Tc/%Tr/%Tt\ %ST\ %B\ %U\ %CC\ \ %CS\ %tsc\ %ac/%fc/%bc/%sc/%rc\ %sq/%bq\ %ID\ %hr\ %hs\ %{+Q}r
+
+  # Capture the existing unique ID header (assigned in the web_router frontend)
+  # for use in the log file.
+  capture request header X-ApiUmbrella-UID len 100
+
+  # Strip the uniuqe ID header before sending the request onto the real
+  # destination (the unique ID is only for internal use).
+  reqidel ^X-ApiUmbrella-UID:.*
+
   # developer.nrel.gov - The public facing developer.nrel.gov site has services
   # of its own for things like account signup.
   acl url_match_api_developer_site path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_developer_site.lst") %>
   use_backend developer_site_farm if url_match_api_developer_site
 
   # Insert your own...
+  acl url_match_api_google path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_google.lst") %>
+  use_backend api_google_farm if url_match_api_google
