@@ -26,15 +26,10 @@ frontend web_router
   # ACL rule if the request was HTTPS tunneled through nginx.
   acl via_https dst_port eq 81
 
-  # Requests starting with /api/ get sent to the auth proxy for authentication
+  # Requests starting with /api/ get sent to the gatekeeper for access control
   # and rate limiting.
   acl url_match_api path_beg /api/
-  acl url_match_internal_apis path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/internal_apis.lst") %>
-
-  # Use two separate backends for internal-only or public APIs so we cean
-  # perform response changes based on the request.
-  use_backend gatekeeper_farm_internal_apis if url_match_api url_match_internal_apis
-  use_backend gatekeeper_farm_public_apis if url_match_api !url_match_internal_apis
+  use_backend gatekeeper_farm if url_match_api
 
   # Requests starting with /auth get sent to Tomcat for our CAS servlet.
   acl url_match_auth path_beg /auth
