@@ -12,3 +12,5 @@ set :base_domain, "api.vagrant"
 
 # Set the Rails environment.
 set :rails_env, "development"
+
+set :ssl_cert_pem, "/etc/ssl/certs/vagrant.pem"

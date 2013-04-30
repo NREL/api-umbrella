@@ -1,6 +1,6 @@
 frontend web_router
-  bind *:80 # Public HTTP traffic
-  bind *:81 # HTTPS traffic tunneled through nginx
+  bind *:80
+  bind *:443 ssl crt <%= ssl_cert_pem %> ciphers RC4-SHA:AES128-SHA:AES:!ADH:!aNULL:!DH:!EDH:!eNULL
 
   # Add a unique ID header to the request, so the request can be tracked
   # through multiple proxies.  
@@ -15,16 +15,13 @@ frontend web_router
   option http-server-close
 
   # Add X-Forwarded-* headers unless we've already passed through WAF.
-  option forwardfor except 192.174.58.16/31
-
-  acl has_forwarded_proto hdr_cnt(X-Forwarded-Proto) gt 0
-  reqadd X-Forwarded-Proto:\ http unless has_forwarded_proto
-
-  acl has_forwarded_port hdr_cnt(X-Forwarded-Port) gt 0
-  reqadd X-Forwarded-Port:\ 80 unless has_forwarded_port
+  option forwardfor
 
   # ACL rule if the request was HTTPS tunneled through nginx.
-  acl via_https dst_port eq 81
+  acl via_https ssl_fc
+
+  reqadd X-Forwarded-Proto:\ https if via_https
+  reqadd X-Forwarded-Port:\ 443 if via_https
 
   # Requests starting with /api/ get sent to the gatekeeper for access control
   # and rate limiting.

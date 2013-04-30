@@ -21,7 +21,6 @@
 /config/default.json
 /config/haproxy/backends/*.cfg
 /config/haproxy/frontends/*.cfg
-/config/nginx/site.conf
 /config/supervisor/gatekeeper.conf
 
 # Ignore node generated file
