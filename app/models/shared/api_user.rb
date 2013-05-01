@@ -93,7 +93,14 @@ class ApiUser
 
   def generate_api_key
     unless self.api_key
-      self.api_key = SecureRandom.hex(20) # This actually generates a random key 40, not 20, characters long.
+      # Generate a key containing A-Z, a-z, and 0-9 that's 40 chars in
+      # length.
+      key = ""
+      while key.length < 40
+        key = SecureRandom.base64(50).delete("+/=")[0,40]
+      end
+
+      self.api_key = key
     end
   end
 end
