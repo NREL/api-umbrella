@@ -17,5 +17,3 @@ frontend api_router 127.0.0.1:50100
   use_backend developer_site_farm if url_match_api_developer_site
 
   # Insert your own...
-  acl url_match_api_google path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_google.lst") %>
-  use_backend api_google_farm if url_match_api_google
