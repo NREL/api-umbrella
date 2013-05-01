@@ -1,5 +1,5 @@
 {
-  "mongodb": "mongodb://db1-api.hopto.org:27017/api_umbrella_production",
+  "mongodb": "mongodb://ip-10-12-126-195.ec2.internal:27017/api_umbrella_production",
   "proxy": {
     "workers": 4,
     "port": 50000,
