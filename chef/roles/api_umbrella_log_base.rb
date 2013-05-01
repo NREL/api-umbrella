@@ -1,10 +1,10 @@
-name "api_umbrella_db_base"
+name "api_umbrella_log_base"
 description "A base role for API Umbrella database servers"
 
 run_list([
   "role[base]",
 
-  "role[mongodb_server]",
+  "role[elasticsearch]",
 ])
 
 default_attributes({

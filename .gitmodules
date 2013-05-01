@@ -121,3 +121,21 @@
 [submodule "chef/cookbooks/ruby_build"]
 	path = chef/cookbooks/ruby_build
 	url = https://github.com/fnichol/chef-ruby_build.git
+[submodule "chef/cookbooks/java"]
+	path = chef/cookbooks/java
+	url = https://github.com/NREL-cookbooks/java.git
+[submodule "chef/cookbooks/elasticsearch"]
+	path = chef/cookbooks/elasticsearch
+	url = https://github.com/elasticsearch/cookbook-elasticsearch.git
+[submodule "chef/cookbooks/ark"]
+	path = chef/cookbooks/ark
+	url = https://github.com/bryanwb/chef-ark.git
+[submodule "chef/cookbooks/nodejs"]
+	path = chef/cookbooks/nodejs
+	url = https://github.com/NREL-cookbooks/nodejs.git
+[submodule "chef/cookbooks/ca_certificates"]
+	path = chef/cookbooks/ca_certificates
+	url = https://github.com/NREL-cookbooks/ca_certificates.git
+[submodule "chef/cookbooks/redisio"]
+	path = chef/cookbooks/redisio
+	url = https://github.com/brianbianco/redisio.git

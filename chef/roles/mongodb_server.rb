@@ -8,6 +8,14 @@ run_list([
 
 default_attributes({
   :mongodb => {
+    :client => {
+      :version => "2.4.3-mongodb_1",
+    },
+
+    :server => {
+      :version => "2.4.3-mongodb_1",
+    },
+
     :backup => {
       # We should probably revisit this so we can take advtange of oplog
       # backups, but to do that, we need to enable replica sets on the

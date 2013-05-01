@@ -2,11 +2,14 @@ name "base"
 description "A base role all servers."
 
 run_list([
+  # Ensure any custom root certificate changes get made prior to any HTTPS
+  # calls.
+  "recipe[ca_certificates]",
+
   # Manage the sudoers file
   "recipe[sudo]",
   "recipe[sudo::nrel_defaults]",
   "recipe[sudo::secure_path]",
-  "recipe[sudo::afdc_deployment]",
 
   # Default iptables setup on all servers.
   "recipe[iptables]",

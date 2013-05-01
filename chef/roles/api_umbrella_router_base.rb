@@ -6,7 +6,8 @@ run_list([
 
   "role[haproxy]",
   "role[nginx]",
-  "role[ruby]",
+  "role[nodejs]",
+  "role[redis_server]",
   "role[supervisor]",
 ])
 
