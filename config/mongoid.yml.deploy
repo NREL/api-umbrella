@@ -1,0 +1,44 @@
+defaults: &defaults
+  sessions:
+    default:
+      options:
+        safe: true
+  options:
+    allow_dynamic_fields: false
+
+development:
+  <<: *defaults
+  sessions:
+    default:
+      database: api_umbrella_staging
+      hosts:
+        - localhost:27017
+
+test:
+  sessions:
+    default:
+      database: api_umbrella_test
+      hosts:
+        - localhost:27017
+      options:
+        consistency: :strong
+        # In the test environment we lower the retries and retry interval to
+        # low amounts for fast failures.
+        max_retries: 1
+        retry_interval: 0
+
+staging:
+  <<: *defaults
+  sessions:
+    default:
+      database: api_umbrella_staging
+      hosts:
+        - localhost:27017
+
+production:
+  <<: *defaults
+  sessions:
+    default:
+      database: api_umbrella_production
+      hosts:
+        - 10.12.126.195:27017
