@@ -9,7 +9,7 @@ default_attributes({
   :nginx => {
     :install_method => "source",
 
-    :version => "1.2.6",
+    :version => "1.2.8",
 
     :user => "www-data-local",
 
