@@ -1,4 +1,10 @@
 backend api_nrel_farm
+  # Strip /api/nrel from the beginning of the request URL before the receiving
+  # backend application sees the request.
+  #
+  # Turns a request from "GET /api/nrel/something" to "GET /api/something"
+  reqirep ^([^\ ]*)\ /api/nrel(/.*) \1\ /api\2
+
   # Strip the `api_key` GET parameter out of the URL for all requests.
   reqirep ^([^\ ]*)\ (.*)(\?)(.*)api_key=[^&\ ]*&?(.*) \1\ \2\3\4\5
 
