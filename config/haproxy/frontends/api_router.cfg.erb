@@ -17,3 +17,11 @@ frontend api_router 127.0.0.1:50100
   use_backend developer_site_farm if url_match_api_developer_site
 
   # Insert your own...
+
+  # FIXME: GSA TEMPORARY DEMO: FCC's Broadband Map
+  acl url_match_api_broadbandmap path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_broadbandmap.lst") %>
+  use_backend api_broadbandmap_farm if url_match_api_broadbandmap
+
+  # FIXME: GSA TEMPORARY DEMO: NREL
+  acl url_match_api_nrel path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_nrel.lst") %>
+  use_backend api_nrel_farm if url_match_api_nrel
