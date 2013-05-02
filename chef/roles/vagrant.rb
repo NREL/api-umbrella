@@ -33,4 +33,8 @@ override_attributes({
     :user => "vagrant",
     :group => "vagrant",
   },
+
+  :elasticsearch => {
+    :allocated_memory => "512m",
+  },
 })
