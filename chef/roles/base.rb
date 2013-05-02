@@ -62,6 +62,8 @@ default_attributes({
   },
   :chef_client => {
     :verbose_logging => false,
+    :server_url => "https://api.opscode.com/organizations/apidatagov",
+    :validation_client_name => "apidatagov-validator",
   },
   # Rotate and compress logs daily by default.
   :logrotate => {

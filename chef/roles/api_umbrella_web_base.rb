@@ -5,7 +5,7 @@ run_list([
   "role[base]",
 
   "role[nginx]",
-  "role[passenger_nginx]",
+  "role[torquebox]",
   "role[ruby]",
 
   "recipe[pygments]",
@@ -15,9 +15,13 @@ run_list([
 default_attributes({
   :nginx => {
     :listen => 8082,
+  },
 
-    :passenger => {
-      :version => "3.0.18",
-    },
+  :torquebox => {
+    :append_java_opts => [
+      "-Xmn256m",
+      "-Xms512m",
+      "-Xmx512m",
+    ],
   },
 })

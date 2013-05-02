@@ -139,3 +139,9 @@
 [submodule "chef/cookbooks/redisio"]
 	path = chef/cookbooks/redisio
 	url = https://github.com/brianbianco/redisio.git
+[submodule "chef/cookbooks/torquebox"]
+	path = chef/cookbooks/torquebox
+	url = https://github.com/NREL-cookbooks/torquebox.git
+[submodule "chef/cookbooks/inotify_tools"]
+	path = chef/cookbooks/inotify_tools
+	url = https://github.com/NREL-cookbooks/inotify_tools.git
