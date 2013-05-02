@@ -1,6 +1,6 @@
 GIT
   remote: http://github.com/NREL/capistrano_nrel_ext.git
-  revision: 99aa23b0278690f259291fa40ca6ea181c098571
+  revision: 8f60b403b91f21d66e51e571d94a09da49beedd0
   specs:
     capistrano_nrel_ext (0.3.0)
       artii
@@ -29,6 +29,7 @@ GEM
     erubis (2.7.0)
     highline (1.6.18)
     jruby-pageant (1.1.1)
+    jruby-pageant (1.1.1-java)
     net-scp (1.0.4)
       net-ssh (>= 1.99.1)
     net-sftp (2.0.5)
@@ -40,6 +41,7 @@ GEM
     tzinfo (0.3.37)
 
 PLATFORMS
+  java
   ruby
 
 DEPENDENCIES
