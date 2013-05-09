@@ -4,6 +4,14 @@
     "host": "127.0.0.1",
     "port": 6379
   },
+  "elasticsearch": {
+    "hosts": [
+      {
+        "host": "127.0.0.1",
+        "port": 9200
+      }
+    ]
+  },
   "account_signup_uri": "http://example.com/",
   "contact_uri": "http://example.com/contact",
   "trusted_proxies": ["127.0.0.1"],
