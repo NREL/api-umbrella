@@ -1,6 +1,6 @@
 GIT
   remote: http://github.com/NREL/capistrano_nrel_ext.git
-  revision: 8f60b403b91f21d66e51e571d94a09da49beedd0
+  revision: 292c97c60345c27b6d65ba71ccc50667b385e1c0
   specs:
     capistrano_nrel_ext (0.3.0)
       artii
