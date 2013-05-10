@@ -32,6 +32,11 @@ frontend web_router
   acl url_match_auth path_beg /auth
   use_backend tomcat_farm if via_https url_match_auth
 
+  # Requests starting with /backstage get sent to the gatekeeper for access control
+  # and rate limiting.
+  acl url_match_backstage path_beg /backstage
+  use_backend torquebox_farm if url_match_backstage
+
   # All other requests go to our main site.
   default_backend developer_site_farm
 

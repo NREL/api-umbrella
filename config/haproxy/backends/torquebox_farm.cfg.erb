@@ -1,0 +1,7 @@
+# Torquebox Farm
+#
+# Direct backend for torquebox, when nginx isn't being used in front of
+# torquebox.
+backend torquebox_farm
+  balance roundrobin
+  server developer_site1 127.0.0.1:8180
