@@ -12,6 +12,7 @@ set :application, "api-umbrella-router"
 
 set :scm, "git"
 set :repository, "https://github.com/NREL/api-umbrella-router.git"
+set :git_enable_submodules, true
 set :branch, "master"
 
 ssh_options[:forward_agent] = true
