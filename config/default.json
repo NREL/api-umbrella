@@ -1,3 +1,7 @@
 {
+  "proxy": {
+    "port": 50000,
+    "target": "localhost:50100"
+  },
   "geoip_data_dir": "/opt/geoip-lite/data"
 }
