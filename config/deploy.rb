@@ -16,4 +16,4 @@ set :branch, "master"
 
 ssh_options[:forward_agent] = true
 
-set :npm_apps, ["."]
+set :npm_apps, ["gatekeeper"]

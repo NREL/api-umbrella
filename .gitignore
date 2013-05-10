@@ -18,7 +18,6 @@
 /config/deployed.yml
 
 # Ignore files generated from templates
-/config/default.json
 /config/haproxy/backends/*.cfg
 /config/haproxy/frontends/*.cfg
 /config/supervisor/gatekeeper.conf

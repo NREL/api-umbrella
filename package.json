@@ -1,8 +1,0 @@
-{
-  "name": "api-umbrella-router",
-  "version": "0.0.1",
-  "private": true,
-  "dependencies": {
-    "api-umbrella-gatekeeper": "git://github.com/NREL/api-umbrella-gatekeeper.git#node"
-  }
-}

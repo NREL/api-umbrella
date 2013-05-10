@@ -1,7 +1,7 @@
 [program:<%= deploy_name %>-gatekeeper]
-directory=<%=current_path %>
+directory=<%=current_path %>/gatekeeper
 environment=PATH=/opt/nodejs/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,NODE_ENV=<%= rails_env %>,NODE_CONFIG_DIR=<%= current_path %>/config
-command=<%= current_path %>/node_modules/.bin/api_umbrella_gatekeeper
+command=<%= current_path %>/gatekeeper/bin/api_umbrella_gatekeeper
 
 ; Always keep running.
 autostart=true
