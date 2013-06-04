@@ -10,7 +10,7 @@ module ApplicationHelper
   end
 
   def highlight_code(language, code)
-    process = ChildProcess.build("pygmentize", "-l", language, "-f", "html", "-O", "encoding=utf-8", "-O", "linenos=True")
+    process = ChildProcess.build("pygmentize", "-l", language.to_s, "-f", "html", "-O", "encoding=utf-8", "-O", "linenos=True")
 
     # Store the pygmentize output on a StringIO object.
     output = StringIO.new
