@@ -9,6 +9,8 @@ run_list([
   "role[nodejs]",
   "role[redis_server]",
   "role[supervisor]",
+
+  "recipe[geoip::nodejs]",
 ])
 
 default_attributes({

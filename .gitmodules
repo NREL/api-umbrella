@@ -81,7 +81,7 @@
 	url = http://github.com/NREL-cookbooks/pygments.git
 [submodule "chef/cookbooks/mongodb"]
 	path = chef/cookbooks/mongodb
-	url = http://github.com/NREL-cookbooks/mongodb.git
+	url = https://github.com/edelight/chef-mongodb.git
 [submodule "chef/cookbooks/redis"]
 	path = chef/cookbooks/redis
 	url = http://github.com/NREL-cookbooks/redis.git
@@ -145,3 +145,12 @@
 [submodule "chef/cookbooks/inotify_tools"]
 	path = chef/cookbooks/inotify_tools
 	url = https://github.com/NREL-cookbooks/inotify_tools.git
+[submodule "chef/cookbooks/openssl"]
+	path = chef/cookbooks/openssl
+	url = https://github.com/opscode-cookbooks/openssl.git
+[submodule "chef/cookbooks/hostsfile"]
+	path = chef/cookbooks/hostsfile
+	url = https://github.com/customink-webops/hostsfile.git
+[submodule "chef/cookbooks/geoip"]
+	path = chef/cookbooks/geoip
+	url = https://github.com/NREL-cookbooks/geoip.git
