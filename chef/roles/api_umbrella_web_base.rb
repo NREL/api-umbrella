@@ -8,6 +8,8 @@ run_list([
   "role[torquebox]",
   "role[ruby]",
 
+  "recipe[iptables::http]",
+  "recipe[iptables::https]",
   "recipe[pygments]",
   "recipe[xml]",
 ])
