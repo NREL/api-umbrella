@@ -1,6 +1,12 @@
 //= require jquery_ujs
 //= require rails.validations
+//= require vendor/underscore
+//= require vendor/backbone
+//= require vendor/handlebars/dist/handlebars
 //= require vendor/jquery.slugify
+//= require vendor/daterangepicker/moment
+//= require vendor/daterangepicker/daterangepicker
+//= require vendor/DataTables/media/js/jquery.dataTables
 //= require vendor/dirtyforms/jquery.dirtyforms
 //= require vendor/dirtyforms/helpers/ckeditor
 //= require_self

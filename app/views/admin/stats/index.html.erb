@@ -1,0 +1,99 @@
+<%= javascript_include_tag "admin/stats" %>
+
+<div class="row-fluid">
+<div class="btn-group" data-toggle="buttons-radio">
+  <button type="button" class="btn btn-mini">Hour</button>
+  <button type="button" class="btn btn-mini">Day</button>
+  <button type="button" class="btn btn-mini">Week</button>
+  <button type="button" class="btn btn-mini">Month</button>
+</div>
+<div id="reportrange" class="pull-right">
+    <i class="icon-calendar icon-large"></i>
+    <span></span> <b class="caret"></b>
+</div>
+ 
+</div>
+<script type="text/javascript">
+$('#reportrange').daterangepicker(
+    {
+        ranges: {
+                           'Today': [new Date(), new Date()],
+                           'Yesterday': [moment().subtract('days', 1), moment().subtract('days', 1)],
+                           'Last 7 Days': [moment().subtract('days', 6), new Date()],
+                           'Last 30 Days': [moment().subtract('days', 29), new Date()],
+                           'This Month': [moment().startOf('month'), moment().endOf('month')],
+                           'Last Month': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
+        }
+    },
+    function(start, end) {
+        $('#reportrange span').html(start.format('MMM D, YYYY') + ' - ' + end.format('MMM D, YYYY'));
+    }
+);
+</script>
+
+<div class="row-fluid">
+  <div id="hits_chart" style="height: 200px"></div>
+</div>
+<div class="row-fluid">
+  <div class="span3">
+    <h5>Users</h5>
+    <div id="user_chart"></div>
+    <div id="user_table"></div>
+  </div>
+  <div class="span3">
+    <h5>IP Addresses</h5>
+    <div id="request_ip_chart"></div>
+    <div id="request_ip_table"></div>
+  </div>
+  <div class="span3">
+    <h5>Response Statuses</h5>
+    <div id="response_status_chart"></div>
+    <div id="response_status_table"></div>
+  </div>
+  <div class="span3">
+    <h5>Content Type</h5>
+    <div id="response_content_type_chart"></div>
+    <div id="response_content_type_table"></div>
+  </div>
+</div>
+<div class="row-fluid">
+  <div class="span3">
+    <h5>Method</h5>
+    <div id="request_method_chart"></div>
+    <div id="request_method_table"></div>
+  </div>
+</div>
+
+<div class="row-fluid">
+  <div id="results_table"></div>
+</div>
+
+<script id="facet_table_template" type="text/x-handlebars-template">
+  <table class="table facet-table">
+    {{#each rows}}
+      <tr>
+        <td>{{c.[0].v}}</td>
+        <td class="value">{{c.[1].f}}</td>
+      </tr>
+    {{/each}}
+  </table>
+</script>
+
+<script id="results_table_template" type="text/x-handlebars-template">
+  <table class="table table-striped table-bordered">
+    <tbody>
+      {{#each rows}}
+        <tr>
+          <td>{{request_method}}</td>
+          <td>{{request_url}}</td>
+          <td>{{user_id}}</td>
+          <td>{{request_ip}}</td>
+          <td>{{response_status}}</td>
+          <td>{{response_content_type}}</td>
+          <td>{{request_accept_encoding}}</td>
+          <td>{{request_user_agent}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</script>

@@ -2,4 +2,7 @@
 @import "bootstrap";
 @import "bootstrap-responsive";
 
+@import "vendor/DataTables/media/css/jquery.dataTables";
+@import "vendor/daterangepicker/daterangepicker";
 @import "admin/base";
+@import "admin/stats";

@@ -40,6 +40,12 @@ Developer::Application.routes.draw do
   match "/admin" => redirect("/admin/api_doc_collections")
 
   namespace :admin do
+    resources :stats do
+      collection do
+        get "data"
+      end
+    end
+
     resources :admins do
       get "page/:page", :action => :index, :on => :collection
     end

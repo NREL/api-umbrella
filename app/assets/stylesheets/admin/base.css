@@ -195,3 +195,7 @@ table thead th {
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#505359', endColorstr='#303030',GradientType=0 ); /* IE6-9 */
   background: linear-gradient(top, rgba(80,83,89,1) 0%,rgba(48,48,48,1) 100%); /* W3C */
 }
+
+.rickshaw_graph .line {
+  stroke-width: 3px;
+}

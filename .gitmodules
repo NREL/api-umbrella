@@ -4,3 +4,12 @@
 [submodule "public/javascripts/vendor/PBCKCode"]
 	path = public/javascripts/vendor/PBCKCode
 	url = https://github.com/prbaron/PBCKCode.git
+[submodule "app/assets/javascripts/vendor/DataTables"]
+	path = app/assets/javascripts/vendor/DataTables
+	url = https://github.com/DataTables/DataTables.git
+[submodule "app/assets/javascripts/vendor/daterangepicker"]
+	path = app/assets/javascripts/vendor/daterangepicker
+	url = https://github.com/dangrossman/bootstrap-daterangepicker.git
+[submodule "app/assets/javascripts/vendor/handlebars"]
+	path = app/assets/javascripts/vendor/handlebars
+	url = https://github.com/wycats/handlebars.js.git
