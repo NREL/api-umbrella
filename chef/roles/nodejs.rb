@@ -10,8 +10,8 @@ default_attributes({
   :nodejs => {
     :install_method => "binary",
     :dir => "/opt/nodejs",
-    :version => "0.10.5",
-    :checksum_linux_x64 => "182b0992401ff04a288b5777e2892f14d912a509a6c15edc7c0daded3a20d3c7",
+    :version => "0.10.10",
+    :checksum_linux_x64 => "ab42335b0e6e45bac62823d995d8062e9ba0344bc416c76a263a5e45773b2e7d",
   },
 })
 
