@@ -14,17 +14,19 @@ run_list([
   # Some sudo things the capistrano torquebox recipe needs.
   "recipe[sudo::torquebox_deployment]",
 
+  "recipe[iptables::torquebox]",
   "recipe[torquebox]",
+
+  "recipe[torquebox::backstage]",
 ])
 
 default_attributes({
   :rbenv => {
-    :rubies => ["jruby-1.7.3"],
+    :rubies => ["jruby-1.7.4"],
   },
 
   :torquebox => {
-    :version => "2.3.0",
-    :rbenv_version => "jruby-1.7.3",
+    :rbenv_version => "jruby-1.7.4",
     :http_port => 8180,
     :bind_ip => "127.0.0.1",
   },
