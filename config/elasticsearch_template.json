@@ -56,6 +56,10 @@
         },
         "response_status": {
           "type": "short"
+        },
+        "request_ip_location": {
+          "type": "geo_point",
+          "lat_lon": true
         }
       }
     }

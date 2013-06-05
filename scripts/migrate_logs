@@ -17,14 +17,18 @@ var MigrateLogs = function() {
 
 _.extend(MigrateLogs.prototype, {
   users: {},
+  commands: [],
   startTime: moment.utc("2013-04-01"),
   endTime: moment(),
 
   initialize: function() {
+    // Set the global 'geodatadir' variable geoip-lite optionally reads from.
+    global.geodatadir = "/opt/geoip-lite/data";
+
     this.elasticSearch = new ElasticSearchClient({
       "hosts": [
         {
-          "host": "127.0.0.1",
+          "host": process.env.ELASTIC,
           "port": 9200
         }
       ]
@@ -66,47 +70,51 @@ _.extend(MigrateLogs.prototype, {
   },
 
   migrate: function(asyncSeriesCallback) {
-    var mongoLogs = this.mongo.collection('api_request_logs');
+    this.mongoLogs = this.mongo.collection('api_request_logs');
 
-    var chunkStartTime = this.startTime;
+    this.chunkStartTime = this.startTime;
     async.whilst(function() {
-      return chunkStartTime.isBefore(this.endTime);
-    }, function(asyncWhilstCallback) {
-      var timerStart = Date.now();
-
-      var chunkEndTime = moment(chunkStartTime).add("hours", 1);
-
-      console.info("== " + chunkStartTime.toString() + " - " + chunkEndTime.toString() + " ==");
-
-      var startId = ObjectID.createFromTime(chunkStartTime.unix());
-      var endId = ObjectID.createFromTime(chunkEndTime.unix());
-      var cursor = mongoLogs.find({
-        "_id": { "$gte": startId, "$lt": endId }
-      }).sort({ "_id": -1 });
-
-      var count = 0;
-      cursor.each(function(error, oldLog) {
-        if(error) {
-          console.error(error);
-          process.exit(1);
-          return false;
-        }
-
-        if(oldLog != null) {
-          count++;
-          this.handleLog(oldLog);
-        } else {
-          var duration = (Date.now() - timerStart) / 1000;
-          rate = count / duration;
-          console.info("  Processed " + count + " in: " + duration + " seconds (" + rate + " records/second)");
-
-          chunkStartTime = chunkEndTime;
-          asyncWhilstCallback(null);
-        }
-      }.bind(this));
-    }.bind(this), function(error) {
+      return this.chunkStartTime.isBefore(this.endTime);
+    }.bind(this), this.processChunk.bind(this), function(error) {
       asyncSeriesCallback(error);
     });
+  },
+
+  processChunk: function(asyncWhilstCallback) {
+    var timerStart = Date.now();
+
+    var chunkEndTime = moment(this.chunkStartTime).add("hours", 1);
+
+    console.info("== " + this.chunkStartTime.toString() + " - " + chunkEndTime.toString() + " ==");
+
+    var startId = ObjectID.createFromTime(this.chunkStartTime.unix());
+    var endId = ObjectID.createFromTime(chunkEndTime.unix());
+    this.cursor = this.mongoLogs.find({
+      "_id": { "$gte": startId, "$lt": endId }
+    }).sort({ "_id": -1 });
+
+    this.count = 0;
+    this.cargo = async.cargo(this.bulkIndex.bind(this), 1000);
+
+    this.cursor.each(function(error, oldLog) {
+      if(error) {
+        console.error(error);
+        process.exit(1);
+        return false;
+      }
+
+      if(oldLog != null) {
+        this.count++;
+        this.handleLog(oldLog);
+      } else {
+        var duration = (Date.now() - timerStart) / 1000;
+        rate = this.count / duration;
+        console.info("  Processed " + this.count + " in: " + duration + " seconds (" + rate + " records/second)");
+
+        this.chunkStartTime = chunkEndTime;
+        asyncWhilstCallback(null);
+      }
+    }.bind(this));
   },
 
   handleLog: function(oldLog) {
@@ -116,6 +124,7 @@ _.extend(MigrateLogs.prototype, {
     }
 
     var newLog = {
+      //"_type": "log",
       "request_at": oldLog["requested_at"].toISOString(),
       "request_method": env["REQUEST_METHOD"],
       "request_url": "http://developer.nrel.gov" + env["REQUEST_URI"],
@@ -127,9 +136,6 @@ _.extend(MigrateLogs.prototype, {
       "api_key": oldLog["api_key"],
     };
 
-    var uid = newLog["request_url"] + newLog["requested_at"];
-    var id = URLSafeBase64.encode(crypto.createHash('sha256').update(uid).digest('base64'));
-
     if(newLog["api_key"]) {
       if(this.users[newLog["api_key"]]) {
         newLog["user_id"] = this.users[newLog["api_key"]]["_id"]
@@ -138,9 +144,37 @@ _.extend(MigrateLogs.prototype, {
 
     logCleaner(newLog);
 
-    var index = 'api-umbrella-logs-' + newLog.request_at.substring(0, 10);
-    this.elasticSearch.index(index, 'log', newLog, id).exec();
+    this.cargo.push(newLog);
   },
+
+  bulkIndex: function(logs, callback) {
+    var commands = [];
+
+    for(var i = 0; i < logs.length; i++) {
+      var log = logs[i];
+
+      var uid = log["request_url"] + log["requested_at"];
+      commands.push({
+        "index": {
+          "_index": 'api-umbrella-logs-' + log.request_at.substring(0, 10),
+          "_type": "log",
+          "_id": URLSafeBase64.encode(crypto.createHash('sha256').update(uid).digest('base64')),
+        },
+      });
+
+      commands.push(log);
+    }
+
+    this.elasticSearch.bulk(commands).
+      on("done", function() {
+        callback();
+      }).
+      on("error", function(error) {
+        console.error(error);
+        process.exit(1);
+        return false;
+      }).exec();
+  }
 });
 
 new MigrateLogs();
