@@ -1,14 +1,37 @@
 class Admin::StatsController < Admin::BaseController
   set_tab :analytics
+
   def index
   end
 
   def data
-    start_time = (Time.now - 3.months).utc
+    start_time = (Time.now - 5.months).utc
     end_time = Time.now.utc
     date_range = start_time.to_date..end_time.to_date
 
     indexes = date_range.map { |date| "api-umbrella-logs-#{date.iso8601}" }
+
+    # Compact the list of indexes by using wildcards for full months. This
+    # helps trim down the URL length when indexes get passed to elasticsearch.
+    # Otherwise, it's easy to bump elasticsearch's HTTP length limits for GET
+    # URLs.
+    #
+    # If we still run into issues, we could actually tweak Elasticsearch's
+    # allowable HTTP sizes:
+    # https://github.com/elasticsearch/elasticsearch/issues/1174
+    if(indexes.length > 28)
+      month = date_range.min.beginning_of_month
+      while(month < date_range.last)
+        month_range = month..month.end_of_month
+        if(month_range.min >= date_range.min && month_range.max <= date_range.max)
+          index_prefix = "api-umbrella-logs-#{month.strftime("%Y-%m")}-"
+          indexes.reject! { |index| index.start_with?(index_prefix) }
+          indexes << "#{index_prefix}*"
+        end
+
+        month += 1.month
+      end
+    end
 
     interval = "day"
 
