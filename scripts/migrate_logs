@@ -1,0 +1,146 @@
+#!/usr/bin/env node
+
+var _ = require('underscore'),
+    async = require('async'),
+    crypto = require('crypto'),
+    ElasticSearchClient = require('elasticsearchclient'),
+    logCleaner = require('../lib/log_processor/cleaner'),
+    mime = require('mime'),
+    moment = require('moment'),
+    MongoClient = require('mongodb').MongoClient,
+    ObjectID = require('mongodb').ObjectID,
+    URLSafeBase64 = require('urlsafe-base64');
+
+var MigrateLogs = function() {
+  this.initialize.apply(this, arguments);
+}
+
+_.extend(MigrateLogs.prototype, {
+  users: {},
+  startTime: moment.utc("2013-04-01"),
+  endTime: moment(),
+
+  initialize: function() {
+    this.elasticSearch = new ElasticSearchClient({
+      "hosts": [
+        {
+          "host": "127.0.0.1",
+          "port": 9200
+        }
+      ]
+    });
+
+    async.series([
+      this.connectMongo.bind(this),
+      this.fetchUsers.bind(this),
+      this.migrate.bind(this),
+    ], function(error) {
+      if(error) {
+        console.info(error);
+      }
+    });
+  },
+
+  connectMongo: function(asyncSeriesCallback) {
+    MongoClient.connect(process.env.MONGO, this.handleConnectMongo.bind(this, asyncSeriesCallback));
+  },
+
+  handleConnectMongo: function(asyncSeriesCallback, error, db) {
+    if(!error) {
+      this.mongo = db;
+      asyncSeriesCallback(null);
+    } else {
+      asyncSeriesCallback(error);
+    }
+  },
+
+  fetchUsers: function(asyncSeriesCallback) {
+    var mongoUsers = this.mongo.collection('api_users');
+    mongoUsers.find().each(function(error, user) {
+      if(user != null) {
+        this.users[user.api_key] = user;
+      } else {
+        asyncSeriesCallback(null);
+      }
+    }.bind(this));
+  },
+
+  migrate: function(asyncSeriesCallback) {
+    var mongoLogs = this.mongo.collection('api_request_logs');
+
+    var chunkStartTime = this.startTime;
+    async.whilst(function() {
+      return chunkStartTime.isBefore(this.endTime);
+    }, function(asyncWhilstCallback) {
+      var timerStart = Date.now();
+
+      var chunkEndTime = moment(chunkStartTime).add("hours", 1);
+
+      console.info("== " + chunkStartTime.toString() + " - " + chunkEndTime.toString() + " ==");
+
+      var startId = ObjectID.createFromTime(chunkStartTime.unix());
+      var endId = ObjectID.createFromTime(chunkEndTime.unix());
+      var cursor = mongoLogs.find({
+        "_id": { "$gte": startId, "$lt": endId }
+      }).sort({ "_id": -1 });
+
+      var count = 0;
+      cursor.each(function(error, oldLog) {
+        if(error) {
+          console.error(error);
+          process.exit(1);
+          return false;
+        }
+
+        if(oldLog != null) {
+          count++;
+          this.handleLog(oldLog);
+        } else {
+          var duration = (Date.now() - timerStart) / 1000;
+          rate = count / duration;
+          console.info("  Processed " + count + " in: " + duration + " seconds (" + rate + " records/second)");
+
+          chunkStartTime = chunkEndTime;
+          asyncWhilstCallback(null);
+        }
+      }.bind(this));
+    }.bind(this), function(error) {
+      asyncSeriesCallback(error);
+    });
+  },
+
+  handleLog: function(oldLog) {
+    var env = {};
+    if(oldLog["env"]) {
+      env = JSON.parse(oldLog["env"]);
+    }
+
+    var newLog = {
+      "request_at": oldLog["requested_at"].toISOString(),
+      "request_method": env["REQUEST_METHOD"],
+      "request_url": "http://developer.nrel.gov" + env["REQUEST_URI"],
+      "request_user_agent": env["HTTP_USER_AGENT"],
+      "request_accept_encoding": env["HTTP_ACCEPT_ENCODING"],
+      "request_ip": oldLog["ip_address"],
+      "response_status": oldLog["response_status"],
+      "response_content_type": mime.lookup(oldLog["path"]),
+      "api_key": oldLog["api_key"],
+    };
+
+    var uid = newLog["request_url"] + newLog["requested_at"];
+    var id = URLSafeBase64.encode(crypto.createHash('sha256').update(uid).digest('base64'));
+
+    if(newLog["api_key"]) {
+      if(this.users[newLog["api_key"]]) {
+        newLog["user_id"] = this.users[newLog["api_key"]]["_id"]
+      }
+    }
+
+    logCleaner(newLog);
+
+    var index = 'api-umbrella-logs-' + newLog.request_at.substring(0, 10);
+    this.elasticSearch.index(index, 'log', newLog, id).exec();
+  },
+});
+
+new MigrateLogs();

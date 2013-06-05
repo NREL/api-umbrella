@@ -37,6 +37,7 @@
     "express": "3.1.x",
     "factory-lady": "0.1.x",
     "grunt": "0.3.x",
+    "mime": "1.2.x",
     "mocha": "1.9.x",
     "mongoose": "3.6.x",
     "request": "2.16.x",
