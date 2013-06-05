@@ -17,36 +17,41 @@
     <%= csrf_meta_tag %>
   </head>
   <body>
-    <aside id="sidebar" class="column">
-      <header>
-        <%= link_to("Developer Admin") %>
-      </header>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container-fluid">
+          <span class="brand">API Umbrella</span>
+          <%= tabs_tag(:builder => BootstrapNavbarTabBuilder, :link_current => true, :open_tabs => { :class => "nav" }) do |tab| %>
+            <%= tab.home "Dashboard", root_path, :class => "nav-home" %>
+            <%= tab.analytics('Analytics <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-analytics", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
+              <ul class="dropdown-menu">
+                <li><%= link_to('<i class="icon-signal"></i> By Service'.html_safe, admin_api_doc_services_path) %></li>
+                <li><%= link_to('<i class="icon-signal"></i> By User'.html_safe, admin_api_doc_services_path) %></li>
+              </ul>
+            <% end %>
+            <%= tab.documentation('Documentation <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-documentation", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
+              <ul class="dropdown-menu">
+                <li><%= link_to('<i class="icon-th-list"></i> Collections'.html_safe, admin_api_doc_collections_path) %></li>
+                <li><%= link_to('<i class="icon-pencil"></i> Web Services'.html_safe, admin_api_doc_services_path) %></li>
+              </ul>
+            <% end %>
+            <%= tab.users('Users  <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-users", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
+              <ul class="dropdown-menu">
+                <li><%= link_to('<i class="icon-user"></i> API Users'.html_safe, admin_api_users_path) %></li>
+                <li><%= link_to('<i class="icon-user"></i> Admin Accounts'.html_safe, admin_admins_path) %></li>
+              </ul>
+            <% end %>
+          <% end %>
 
-      <h3><%= link_to("Dashboard", admin_api_doc_collections_path) %></h3>
+          <ul class="nav pull-right">
+            <li><%= current_admin.email %></li>
+            <li><%= link_to("Logout", destroy_admin_session_path) %></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
 
-      <h3>Statistics</h3>
-      <ul>
-        <li><%= link_to('<i class="icon-signal"></i>By Service'.html_safe, admin_api_doc_services_path) %></li>
-        <li><%= link_to('<i class="icon-signal"></i>By User'.html_safe, admin_api_doc_services_path) %></li>
-      </ul>
-
-      <h3>API Documentation</h3>
-      <ul>
-        <li><%= link_to('<i class="icon-th-list"></i>Collections'.html_safe, admin_api_doc_collections_path) %></li>
-        <li><%= link_to('<i class="icon-pencil"></i>Web Services'.html_safe, admin_api_doc_services_path) %></li>
-      </ul>
-
-      <h3>Users</h3>
-      <ul>
-        <li><%= link_to('<i class="icon-user"></i>API Users'.html_safe, admin_api_users_path) %></li>
-        <li><%= link_to('<i class="icon-user"></i>Admin Accounts'.html_safe, admin_admins_path) %></li>
-      </ul>
-
-      <hr />
-      <p><%= current_admin.email %>&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp;<%= link_to("Logout", destroy_admin_session_path) %></p>
-    </aside><!-- end of sidebar -->
-
-    <div class="container_12">
+    <div class="container-fluid">
       <% if crumbs.length > 1 %>
         <div class="grid_12 crumbs">
           <%= render_crumbs.html_safe %>

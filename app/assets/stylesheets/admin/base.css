@@ -1,101 +1,9 @@
-html, body {
-  height: 100%;
+body {
+  padding-top: 60px;
 }
 
-header {
-  height: 55px;
-  width: 100%;
-  background: #222222 url(/assets/admin/header_bg.png) repeat-x;
-  text-align: center;
-  line-height: 55px;
-}
-
-h1 {
-  font-weight: 200;
-  font-size: 197%;
-  margin: 0px 0px 2px 0px;
-}
-
-#sidebar header a {
-  color: #fff;
-  font-size: 182%;
-  font-weight: 100;
-  text-decoration: none;
-}
-
-#sidebar header a:hover {
-  text-decoration: none;
-}
-
-#sidebar {
-  width: 28%;
-  background-color: #e0e0e3;
-  float: left;
-
-  -webkit-box-shadow: 2px 0px 8px 1px rgba(0, 0, 0, .5);
-  -moz-box-shadow: 2px 0px 8px 1px rgba(0, 0, 0, .5);
-  box-shadow: 2px 0px 8px 1px rgba(0, 0, 0, .5);
-
-  min-height: 100%;
-}
-
-#sidebar hr {
-  border-style: none;
-  border-top: 1px solid #ccc;
-  border-bottom: 1px solid #f1f1f2;
-}
-
-#sidebar h3 {
-  color: #1F1F20;
-  text-transform: uppercase;
-  text-shadow: 0 1px 0 #fff;
-  font-size: 108%;
-  margin: 10px 0 0px 6%;
-}
-
-#sidebar li {
-  list-style: none;
-}
-
-#sidebar li a {
-  color: #333;
-  text-decoration: none;
-  text-shadow: 0 1px 0 #fff;
-  margin: 2px 0;
-}
-
-#sidebar li a:hover {
-  color: #555;
-}
-
-#sidebar li a i {
-  margin-right: 3px;
-}
-
-#sidebar p {
-  color: #666666;
-  padding-left: 6%;
-  text-shadow: 0 1px 0 #fff;
-  margin: 10px 0 0 0;
-}
-
-#sidebar a {
-  color: #666666;
-  text-decoration: none;
-}
-
-#sidebar a:hover {
-  text-decoration: underline;
-}
-
-#sidebar footer {
-  margin-top: 20%;
-}
-
-.container_12 {
-  float: left;
-  width: 68%;
-  margin: 5px 2%;
+.navbar .brand {
+  font-weight: bold;
 }
 
 .crumbs {
@@ -178,24 +86,4 @@ textarea.fill {
 .button-actions {
   text-align: right;
   margin-bottom: 16px;
-}
-
-table thead th {
-  color: #fff;
-  line-height: 100%;
-
-  text-shadow: #666 1px 1px 0;
-
-  background: rgb(80,83,89); /* Old browsers */
-  background: -moz-linear-gradient(top, rgba(80,83,89,1) 0%, rgba(48,48,48,1) 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(80,83,89,1)), color-stop(100%,rgba(48,48,48,1))); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, rgba(80,83,89,1) 0%,rgba(48,48,48,1) 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, rgba(80,83,89,1) 0%,rgba(48,48,48,1) 100%); /* Opera11.10+ */
-  background: -ms-linear-gradient(top, rgba(80,83,89,1) 0%,rgba(48,48,48,1) 100%); /* IE10+ */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#505359', endColorstr='#303030',GradientType=0 ); /* IE6-9 */
-  background: linear-gradient(top, rgba(80,83,89,1) 0%,rgba(48,48,48,1) 100%); /* W3C */
-}
-
-.rickshaw_graph .line {
-  stroke-width: 3px;
 }

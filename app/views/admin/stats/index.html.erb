@@ -36,37 +36,37 @@ $('#reportrange').daterangepicker(
 </div>
 <div class="row-fluid">
   <div class="span3">
-    <h5>Users</h5>
-    <div id="user_chart"></div>
-    <div id="user_table"></div>
+    <div class="stats-block">
+      <h5>Users</h5>
+      <div id="user_chart"></div>
+      <div id="user_table"></div>
+    </div>
+    <div class="stats-block">
+      <h5>IP Addresses</h5>
+      <div id="request_ip_chart"></div>
+      <div id="request_ip_table"></div>
+    </div>
+    <div class="stats-block">
+      <h5>Response Statuses</h5>
+      <div id="response_status_chart"></div>
+      <div id="response_status_table"></div>
+    </div>
+    <div class="stats-block">
+      <h5>Content Type</h5>
+      <div id="response_content_type_chart"></div>
+      <div id="response_content_type_table"></div>
+    </div>
+    <div class="stats-block">
+      <h5>Method</h5>
+      <div id="request_method_chart"></div>
+      <div id="request_method_table"></div>
+    </div>
   </div>
-  <div class="span3">
-    <h5>IP Addresses</h5>
-    <div id="request_ip_chart"></div>
-    <div id="request_ip_table"></div>
-  </div>
-  <div class="span3">
-    <h5>Response Statuses</h5>
-    <div id="response_status_chart"></div>
-    <div id="response_status_table"></div>
-  </div>
-  <div class="span3">
-    <h5>Content Type</h5>
-    <div id="response_content_type_chart"></div>
-    <div id="response_content_type_table"></div>
-  </div>
-</div>
-<div class="row-fluid">
-  <div class="span3">
-    <h5>Method</h5>
-    <div id="request_method_chart"></div>
-    <div id="request_method_table"></div>
+  <div class="span9">
+    <div id="results_table"></div>
   </div>
 </div>
 
-<div class="row-fluid">
-  <div id="results_table"></div>
-</div>
 
 <script id="facet_table_template" type="text/x-handlebars-template">
   <table class="table facet-table">

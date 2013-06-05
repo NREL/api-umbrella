@@ -1,4 +1,5 @@
 class Admin::ApiUsersController < Admin::BaseController
+  set_tab :users
   add_crumb("Users") { }
 
   def index

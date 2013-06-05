@@ -1,9 +1,10 @@
 class Admin::StatsController < Admin::BaseController
+  set_tab :analytics
   def index
   end
 
   def data
-    start_time = (Time.now - 6.weeks).utc
+    start_time = (Time.now - 3.months).utc
     end_time = Time.now.utc
     date_range = start_time.to_date..end_time.to_date
 
@@ -11,7 +12,7 @@ class Admin::StatsController < Admin::BaseController
 
     interval = "day"
 
-    server = Stretcher::Server.new("http://localhost:9200", :logger => Logger.new("/tmp/blah.log"))
+    server = Stretcher::Server.new("http://devdev-db.nrel.gov:9200", :logger => Logger.new("/tmp/blah.log"))
     @result = server.index(indexes.join(",")).search({
       :size => 50,
       :ignore_indices => "missing",

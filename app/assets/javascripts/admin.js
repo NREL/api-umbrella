@@ -1,4 +1,5 @@
 //= require jquery_ujs
+//= require bootstrap
 //= require rails.validations
 //= require vendor/underscore
 //= require vendor/backbone
