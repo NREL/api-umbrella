@@ -1,5 +1,5 @@
 name "elasticsearch"
-description "A default role for nodejs"
+description "A default role for elasticsearch"
 
 run_list([
   "role[java]",
