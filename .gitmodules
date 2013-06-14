@@ -13,3 +13,9 @@
 [submodule "app/assets/javascripts/vendor/handlebars"]
 	path = app/assets/javascripts/vendor/handlebars
 	url = https://github.com/wycats/handlebars.js.git
+[submodule "app/assets/javascripts/vendor/jsTimezoneDetect"]
+	path = app/assets/javascripts/vendor/jsTimezoneDetect
+	url = https://github.com/nubgames/jstimezonedetect.git
+[submodule "app/assets/javascripts/vendor/jquery-deserialize"]
+	path = app/assets/javascripts/vendor/jquery-deserialize
+	url = https://github.com/kflorence/jquery-deserialize.git

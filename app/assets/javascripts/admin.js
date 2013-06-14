@@ -4,6 +4,8 @@
 //= require vendor/underscore
 //= require vendor/backbone
 //= require vendor/handlebars/dist/handlebars
+//= require vendor/jstz
+//= require vendor/jquery-deserialize/src/jquery.deserialize
 //= require vendor/jquery.slugify
 //= require vendor/daterangepicker/moment
 //= require vendor/daterangepicker/daterangepicker

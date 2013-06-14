@@ -87,3 +87,20 @@ textarea.fill {
   text-align: right;
   margin-bottom: 16px;
 }
+
+.select-mini {
+  font-size: 11px;
+  height: 22px;
+  line-height: 22px;
+  margin-bottom: 0px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+#results_table {
+  overflow-x: auto;
+}
+
+#results_table .table td {
+  white-space: nowrap;
+}

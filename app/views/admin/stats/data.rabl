@@ -2,7 +2,7 @@ node :hits do
   @hits.map do |time, count|
     {
       :c => [
-        { :v => time },
+        { :v => time , :f => formatted_interval_time(time) },
         { :v => count, :f => number_with_delimiter(count) },
       ]
     }

@@ -1,8 +1,158 @@
+var StatsApp = Backbone.Router.extend({
+  routes: {
+    "": "defaultLoad",
+    ":query": "refresh",
+  },
+
+  defaultQuery: "interval=day" +
+    '&tz=' + jstz.determine().name() +
+    "&start=" + moment().subtract('days', 29).format('YYYY-MM-DD') +
+    "&end=" + moment().format('YYYY-MM-DD'),
+
+  initialize: function() {
+    var stats = new Stats();
+    this.chartFormView = new ChartFormView({ model: stats });
+    new HitsChartView({ model: stats });
+    new ResultsTableView({ model: stats });
+
+    new UserChartView({ model: stats });
+    new UserTableView({ model: stats });
+
+    new ResponseStatusChartView({ model: stats });
+    new ResponseStatusTableView({ model: stats });
+    new ResponseContentTypeChartView({ model: stats });
+    new ResponseContentTypeTableView({ model: stats });
+
+    new RequestIpChartView({ model: stats });
+    new RequestIpTableView({ model: stats });
+
+    new RequestMethodChartView({ model: stats });
+    new RequestMethodTableView({ model: stats });
+
+    new ResultsTableView({ model: stats });
+  },
+
+  defaultLoad: function() {
+    this.chartFormView.setFromParams(this.defaultQuery);
+    this.chartFormView.render();
+    this.chartFormView.loadResults(this.defaultQuery);
+  },
+
+  refresh: function(query) {
+    this.chartFormView.setFromParams(query);
+    this.chartFormView.render();
+    this.chartFormView.loadResults(query);
+  },
+});
+
+
 var Stats = Backbone.Model.extend({
-  url: "/admin/stats/data.json"
+  url: function() {
+    return "/admin/stats/data.json?" + this.query;
+  },
+
+  setQuery: function(query) {
+    this.query = query;
+  },
 });
 
 var StatsView = Backbone.View.extend({
+});
+
+var ChartFormView = Backbone.View.extend({
+  el: "#chart_form",
+
+  events: {
+    "click #interval_buttons button": "handleIntervalChange",
+    "change select": "submit",
+  },
+
+  datePickerRanges: {
+    'Today': [
+      moment().startOf('day'),
+      moment().endOf('day'),
+    ],
+    'Yesterday': [
+      moment().subtract('days', 1),
+      moment().subtract('days', 1).endOf('day'),
+    ],
+    'Last 7 Days': [
+      moment().subtract('days', 6),
+      moment().endOf('day'),
+    ],
+    'Last 30 Days': [
+      moment().subtract('days', 29).startOf('day'),
+      moment().endOf('day'),
+    ],
+    'This Month': [
+      moment().startOf('month'),
+      moment().endOf('month'),
+    ],
+    'Last Month': [
+      moment().subtract('month', 1).startOf('month'),
+      moment().subtract('month', 1).endOf('month'),
+    ]
+  },
+
+  initialize: function() {
+  },
+
+  render: function() {
+    $('#reportrange').daterangepicker({
+        ranges: this.datePickerRanges,
+        startDate: moment(this.$el.find("#start").val(), 'YYYY-MM-DD'),
+        endDate: moment(this.$el.find("#end").val(), 'YYYY-MM-DD'),
+      }, _.bind(this.handleDateRangeChange, this));
+  },
+
+  setFromParams: function(params) {
+    this.$el.deserialize(params, { noEvents: true });
+
+    var interval = this.$el.find("#interval").val();
+    this.$el.find("button[value='" + interval + "']").button('toggle');
+
+    var start = moment(this.$el.find("#start").val());
+    var end = moment(this.$el.find("#end").val());
+    this.setDateRangeDisplay(start, end);
+  },
+
+  submit: function() {
+    var query = this.$el.serialize();
+    app.navigate(query);
+    this.loadResults(query);
+  },
+
+  loadResults: function(query) {
+    this.model.setQuery(query);
+    this.model.fetch({
+      success: function() {
+        console.info("SUCCESS %o", arguments);
+      },
+      error: function() {
+        console.info("ERROR %o", arguments);
+      },
+    });
+  },
+
+  handleIntervalChange: function(event) {
+    $("#interval").val($(event.target).val());
+    this.submit();
+  },
+
+  setDateRange: function(start, end) {
+    $("#start").val(start.format("YYYY-MM-DD"));
+    $("#end").val(end.format("YYYY-MM-DD"));
+    this.setDateRangeDisplay(start, end);
+  },
+
+  setDateRangeDisplay: function(start, end) {
+    $('#reportrange span').html(start.format('MMM D, YYYY') + ' - ' + end.format('MMM D, YYYY'));
+  },
+
+  handleDateRangeChange: function(start, end) {
+    this.setDateRange(start, end);
+    this.submit();
+  },
 });
 
 var HitsChartView = Backbone.View.extend({
@@ -135,7 +285,6 @@ var ResultsTableView = Backbone.View.extend({
   },
 });
 
-
 var UserChartView = FacetChartView.extend({
   el: "#user_chart",
   modelData: "user_id",
@@ -145,7 +294,6 @@ var UserTableView = FacetTableView.extend({
   el: "#user_table",
   modelData: "user_id",
 });
-
 
 var ResponseStatusChartView = FacetChartView.extend({
   el: "#response_status_chart",
@@ -188,35 +336,12 @@ var RequestMethodTableView = FacetTableView.extend({
 });
 
 
+var app;
 google.setOnLoadCallback(function() {
-  var stats = new Stats();
-  new HitsChartView({ model: stats });
-  new ResultsTableView({ model: stats });
+  app = new StatsApp();
 
-  new UserChartView({ model: stats });
-  new UserTableView({ model: stats });
-
-  new ResponseStatusChartView({ model: stats });
-  new ResponseStatusTableView({ model: stats });
-  new ResponseContentTypeChartView({ model: stats });
-  new ResponseContentTypeTableView({ model: stats });
-
-  new RequestIpChartView({ model: stats });
-  new RequestIpTableView({ model: stats });
-
-  new RequestMethodChartView({ model: stats });
-  new RequestMethodTableView({ model: stats });
-
-
-  new ResultsTableView({ model: stats });
-
-  stats.fetch({
-    success: function() {
-      console.info("SUCCESS %o", arguments);
-    },
-    error: function() {
-      console.info("ERROR %o", arguments);
-    },
-  });
+  Backbone.history.start({
+    pushState: false,
+    root: "/admin/stats/",
+  })
 });
-
