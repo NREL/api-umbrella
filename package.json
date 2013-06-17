@@ -28,7 +28,7 @@
     "redis": "0.8.x",
     "redis-convoy": "0.1.x",
     "underscore": "1.4.x",
-    "useragent": "2.0.x",
+    "uas-parser": "~0.1.0",
     "urlsafe-base64": "0.0.x"
   },
   "devDependencies": {
