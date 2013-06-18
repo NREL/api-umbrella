@@ -154,3 +154,6 @@
 [submodule "chef/cookbooks/geoip"]
 	path = chef/cookbooks/geoip
 	url = https://github.com/NREL-cookbooks/geoip.git
+[submodule "chef/cookbooks/ntp"]
+	path = chef/cookbooks/ntp
+	url = https://github.com/opscode-cookbooks/ntp.git
