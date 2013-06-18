@@ -31,6 +31,9 @@ run_list([
   # man pages are handy.
   "recipe[man]",
 
+  # Ensure ntp is used to keep clocks in sync.
+  "recipe[ntp]",
+
   # Standardize the shasum implementation (used for deployments).
   "recipe[shasum]",
 
