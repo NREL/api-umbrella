@@ -37,4 +37,10 @@ override_attributes({
   :elasticsearch => {
     :allocated_memory => "512m",
   },
+
+  :torquebox => {
+    :backstage => {
+      :password => "admin",
+    },
+  },
 })
