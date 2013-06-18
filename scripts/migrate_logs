@@ -18,7 +18,7 @@ var MigrateLogs = function() {
 _.extend(MigrateLogs.prototype, {
   users: {},
   commands: [],
-  startTime: moment.utc("2013-04-01"),
+  startTime: moment.utc("2013-06-01"),
   endTime: moment(),
 
   initialize: function() {
@@ -142,7 +142,7 @@ _.extend(MigrateLogs.prototype, {
       }
     }
 
-    logCleaner(newLog);
+    logCleaner(this.elasticSearch, newLog);
 
     this.cargo.push(newLog);
   },
