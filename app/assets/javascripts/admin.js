@@ -9,7 +9,11 @@
 //= require vendor/jquery.slugify
 //= require vendor/daterangepicker/moment
 //= require vendor/daterangepicker/daterangepicker
-//= require vendor/DataTables/media/js/jquery.dataTables
+//= require vendor/backbone-pageable/lib/backbone-pageable
+//= require vendor/backgrid/lib/backgrid
+//= require vendor/backgrid/lib/extensions/paginator/backgrid-paginator
+//= require vendor/backgrid/lib/extensions/moment-cell/backgrid-moment-cell
+//= require vendor/spin.js/dist/spin
 //= require vendor/dirtyforms/jquery.dirtyforms
 //= require vendor/dirtyforms/helpers/ckeditor
 //= require_self

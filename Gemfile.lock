@@ -95,7 +95,10 @@ GEM
       sass (~> 3.1)
     compass-rails (1.0.3)
       compass (>= 0.12.2, < 0.14)
+    countries (0.9.2)
+      currencies (>= 0.4.0)
     crummy (1.7.1)
+    currencies (0.4.2)
     devise (2.2.3)
       bcrypt-ruby (~> 3.0)
       orm_adapter (~> 0.1)
@@ -327,6 +330,7 @@ DEPENDENCIES
   client_side_validations (>= 3.2.0)
   client_side_validations-simple_form (>= 2.0.0)
   compass-rails
+  countries
   crummy
   devise
   factory_girl_rails

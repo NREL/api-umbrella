@@ -47,6 +47,9 @@ gem "childprocess"
 # Views/templates for APIs
 gem "rabl"
 
+# Country and state name lookups
+gem "countries"
+
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do

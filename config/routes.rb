@@ -42,6 +42,7 @@ Developer::Application.routes.draw do
   namespace :admin do
     resources :stats do
       collection do
+        get "map"
         get "data"
       end
     end

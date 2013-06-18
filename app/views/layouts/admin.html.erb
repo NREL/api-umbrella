@@ -12,7 +12,7 @@
     <%= javascript_include_tag "admin" %>
     <%= javascript_include_tag "//www.google.com/jsapi" %>
     <%= javascript_tag do %>
-      google.load("visualization", "1", {packages:["corechart"]});
+      google.load("visualization", "1", {packages:["corechart", "geochart"]});
     <% end %>
     <%= csrf_meta_tag %>
   </head>
@@ -62,5 +62,7 @@
         <%= yield %>
       </div>
     </div>
+
+    <div id="loading_overlay" style="display: none;"></div>
   </body>
 </html>

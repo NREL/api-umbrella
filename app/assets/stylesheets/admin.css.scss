@@ -2,7 +2,8 @@
 @import "bootstrap";
 @import "bootstrap-responsive";
 
-@import "vendor/DataTables/media/css/jquery.dataTables";
+@import "vendor/backgrid/lib/backgrid";
+@import "vendor/backgrid/lib/extensions/paginator/backgrid-paginator";
 @import "vendor/daterangepicker/daterangepicker";
 @import "admin/base";
 @import "admin/stats";

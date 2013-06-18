@@ -19,3 +19,12 @@
 [submodule "app/assets/javascripts/vendor/jquery-deserialize"]
 	path = app/assets/javascripts/vendor/jquery-deserialize
 	url = https://github.com/kflorence/jquery-deserialize.git
+[submodule "app/assets/javascripts/vendor/backgrid"]
+	path = app/assets/javascripts/vendor/backgrid
+	url = https://github.com/wyuenho/backgrid.git
+[submodule "app/assets/javascripts/vendor/spin.js"]
+	path = app/assets/javascripts/vendor/spin.js
+	url = https://github.com/fgnass/spin.js.git
+[submodule "app/assets/javascripts/vendor/backbone-pageable"]
+	path = app/assets/javascripts/vendor/backbone-pageable
+	url = https://github.com/wyuenho/backbone-pageable.git
