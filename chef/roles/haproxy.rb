@@ -9,9 +9,9 @@ default_attributes({
   :haproxy => {
     :install_method => "source",
     :source => {
-      :version => "1.5-dev18",
-      :url => "http://haproxy.1wt.eu/download/1.5/src/devel/haproxy-1.5-dev18.tar.gz",
-      :checksum => "b18bf513585d36b9c4c8a74c3c7b4ad5ac6ebe86339d70894a1cdee74071629f",
+      :version => "1.5-dev19",
+      :url => "http://haproxy.1wt.eu/download/1.5/src/devel/haproxy-1.5-dev19.tar.gz",
+      :checksum => "cb411f3dae1309d2ad848681bc7af1c4c60f102993bb2c22d5d4fd9f5d53d30f",
       :prefix => "/opt/haproxy",
       :target_os => "linux2628",
       :target_cpu => "native",
