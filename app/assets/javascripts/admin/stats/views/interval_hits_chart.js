@@ -3,8 +3,8 @@ var IntervalHitsChartView = Backbone.View.extend({
     focusTarget: "category",
     width: "100%",
     chartArea: {
-      width: "98%",
-      height: "90%",
+      width: "95%",
+      height: "88%",
       top: 0,
     },
     fontSize: 12,
@@ -45,11 +45,6 @@ var IntervalHitsChartView = Backbone.View.extend({
       this.chartData.rows[i].c[0].v = new Date(this.chartData.rows[i].c[0].v);
     }
 
-    this.chart = new google.visualization.AreaChart(this.el);
-    $(window).on("resize", this.render.bind(this));
-  },
-
-  render: function() {
     if(this.chartData.rows.length < 100) {
       this.chartOptions.pointSize = 8 
       this.chartOptions.lineWidth = 4
@@ -58,7 +53,23 @@ var IntervalHitsChartView = Backbone.View.extend({
       this.chartOptions.lineWidth = 3
     }
 
-    var data = new google.visualization.DataTable(this.chartData);
-    this.chart.draw(data, this.chartOptions);
+    this.dataTable = new google.visualization.DataTable(this.chartData);
+
+    this.chart = new google.visualization.AreaChart(this.el);
+    $(window).on("resize", this.resize.bind(this));
+  },
+
+  onShow: function() {
+    this.resize();
+  },
+
+  render: function() {
+    this.chart.draw(this.dataTable, this.chartOptions);
+  },
+
+  resize: function() {
+    // Redraw the chart on resize, so the percentage based width renders
+    // properly.
+    this.render();
   },
 });
