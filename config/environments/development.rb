@@ -28,5 +28,6 @@ Developer::Application.configure do
   config.assets.compress = false
 
   # Expands the lines which load the assets
-  config.assets.debug = true
+  # Disable debugging - Seems very slow for development under JRuby.
+  config.assets.debug = false
 end
