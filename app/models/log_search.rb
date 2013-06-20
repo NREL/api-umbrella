@@ -1,0 +1,223 @@
+class LogSearch
+  attr_accessor :query, :query_options
+  attr_reader :server, :start_time, :end_time, :interval, :region, :country, :state
+
+  def initialize(options = {})
+    #@server = Stretcher::Server.new("http://10.20.5.139:9200", :logger => Logger.new("/tmp/blah.log"))
+    @server = Stretcher::Server.new("http://127.0.0.1:9200", :logger => Logger.new("/tmp/blah.log"))
+
+    @start_time = Time.zone.parse(options[:start_time])
+    @end_time = Time.zone.parse(options[:end_time]).end_of_day
+    if(@end_time > Time.zone.now)
+      @end_time = Time.zone.now
+    end
+
+    @interval = options[:interval]
+    @region = options[:region]
+
+    @query = {
+      :query => {
+        :filtered => {
+          :query => {
+            :match_all => {},
+          },
+          :filter => {
+            :and => [],
+          },
+        },
+      },
+      :facets => {}
+    }
+
+    @query_options = {
+      :size => 0,
+      :ignore_indices => "missing",
+    }
+  end
+
+  def result
+    raw_result = @server.index(indexes.join(",")).search(@query_options, @query)
+    @result = LogResult.new(self, raw_result)
+  end
+
+  def search!(query_string)
+    if(query_string.present?)
+      @query[:query][:filtered][:query] = {
+        :query_string => {
+          :query => query_string
+        },
+      }
+    end
+  end
+
+  def limit!(size)
+    @query_options[:size] = size
+  end
+
+  def filter_by_date_range!
+    @query[:query][:filtered][:filter][:and] << {
+      :range => {
+        :request_at => {
+          :from => @start_time.iso8601,
+          :to => @end_time.iso8601,
+        },
+      },
+    }
+  end
+
+  def filter_by_user!(user_id)
+    @query[:query][:filtered][:filter][:and] << {
+      :term => {
+        :user => {
+          :user_id => user_id,
+        },
+      },
+    }
+  end
+
+  def facet_by_interval!
+    @query[:facets][:interval_hits] = {
+      :date_histogram => {
+        :field => "request_at",
+        :interval => @interval,
+        :all_terms => true,
+        :time_zone => Time.zone.name,
+        :pre_zone_adjust_large_interval => true,
+      },
+    }
+  end
+
+  def facet_by_region!
+    case(@region)
+    when "world"
+      facet_by_country!
+    when "US"
+      @country = @region
+      facet_by_country_regions!(@region)
+    when /^(US)-([A-Z]{2})$/
+      @country = $1
+      @state = $2
+      facet_by_us_state_cities!(@country, @state)
+    else
+      @country = @region
+      facet_by_country_cities!(@region)
+    end
+  end
+
+  def facet_by_country!
+    @query[:facets][:regions] = {
+      :terms => {
+        :field => "request_ip_country",
+        :size => 250,
+      },
+    }
+  end
+
+  def facet_by_country_regions!(country)
+    @query[:query][:filtered][:filter][:and] << {
+      :term => { :request_ip_country => country },
+    }
+
+    @query[:facets][:regions] = {
+      :terms => {
+        :field => "request_ip_region",
+        :size => 250,
+      },
+    }
+  end
+
+  def facet_by_us_state_cities!(country, state)
+    @query[:query][:filtered][:filter][:and] << {
+      :term => { :request_ip_country => country },
+    }
+    @query[:query][:filtered][:filter][:and] << {
+      :term => { :request_ip_region => state },
+    }
+
+    @query[:facets][:regions] = {
+      :terms => {
+        :field => "request_ip_city",
+        :size => 250,
+      },
+    }
+  end
+
+  def facet_by_country_cities!(country)
+    @query[:query][:filtered][:filter][:and] << {
+      :term => { :request_ip_country => country },
+    }
+
+    @query[:facets][:regions] = {
+      :terms => {
+        :field => "request_ip_city",
+        :size => 250,
+      },
+    }
+  end
+
+  def facet_by_term!(term, size)
+    @query[:facets][term.to_sym] = {
+      :terms => {
+        :field => term.to_s,
+        :size => size,
+      },
+    }
+  end
+
+  def facet_by_users!(size)
+    facet_by_term!(:user_id, size)
+  end
+
+  def facet_by_response_status!(size)
+    facet_by_term!(:response_status, size)
+  end
+
+  def facet_by_response_content_type!(size)
+    facet_by_term!(:response_content_type, size)
+  end
+
+  def facet_by_request_method!(size)
+    facet_by_term!(:request_method, size)
+  end
+
+  def facet_by_request_ip!(size)
+    facet_by_term!(:request_ip, size)
+  end
+
+  def facet_by_request_user_agent_family!(size)
+    facet_by_term!(:request_user_agent_family, size)
+  end
+
+  private
+
+  def indexes
+    unless @indexes
+      date_range = @start_time.utc.to_date..@end_time.utc.to_date
+      @indexes = date_range.map { |date| "api-umbrella-logs-#{date.iso8601}" }
+
+      # Compact the list of indexes by using wildcards for full months. This
+      # helps trim down the URL length when indexes get passed to elasticsearch.
+      # Otherwise, it's easy to bump elasticsearch's HTTP length limits for GET
+      # URLs.
+      #
+      # If we still run into issues, we could actually tweak Elasticsearch's
+      # allowable HTTP sizes:
+      # https://github.com/elasticsearch/elasticsearch/issues/1174
+      if(@indexes.length > 28)
+        month = date_range.min.beginning_of_month
+        while(month < date_range.last)
+          month_range = month..month.end_of_month
+          if(month_range.min >= date_range.min && month_range.max <= date_range.max)
+            index_prefix = "api-umbrella-logs-#{month.strftime("%Y-%m")}-"
+            @indexes.reject! { |index| index.start_with?(index_prefix) }
+            @indexes << "#{index_prefix}*"
+          end
+
+          month += 1.month
+        end
+      end
+    end
+
+    @indexes
+  end
+end

@@ -1,3 +1,5 @@
+<% enable ||= [] %>
+
 <%= form_tag("#", :method => :get, :id => "filter_form") do %>
   <div class="row-fluid">
     <% if(enable.include?(:interval)) %>

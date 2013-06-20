@@ -1,8 +1,18 @@
 module Admin::StatsHelper
+  def user_email(user_id)
+    users = @result.users_by_id[user_id]
+
+    if users
+      users.first.email
+    else
+      "Unknown User"
+    end
+  end
+
   def formatted_interval_time(time)
     time = Time.at(time / 1000).in_time_zone
 
-    case params[:interval]
+    case @search.interval
     when "minute"
       time.strftime("%a, %b %-d, %Y %-I:%0M%P %Z")
     when "hour"
@@ -11,15 +21,15 @@ module Admin::StatsHelper
       time.strftime("%a, %b %-d, %Y")
     when "week"
       end_of_week = time.end_of_week
-      if(end_of_week > @end_time)
-        end_of_week = @end_time
+      if(end_of_week > @search.end_time)
+        end_of_week = @search.end_time
       end
 
       "#{time.strftime("%b %-d, %Y")} - #{end_of_week.strftime("%b %-d, %Y")}"
     when "month"
       end_of_month = time.end_of_month
-      if(end_of_month > @end_time)
-        end_of_month = @end_time
+      if(end_of_month > @search.end_time)
+        end_of_month = @search.end_time
       end
 
       "#{time.strftime("%b %-d, %Y")} - #{end_of_month.strftime("%b %-d, %Y")}"
@@ -29,9 +39,9 @@ module Admin::StatsHelper
   def region_location_columns(term)
     columns = []
 
-    if(@query[:facets][:regions][:terms][:field] == "request_ip_city")
+    if(@search.query[:facets][:regions][:terms][:field] == "request_ip_city")
       city = term[:term]
-      location = @cities[city]
+      location = @result.cities[city]
 
       lat = nil
       lon = nil

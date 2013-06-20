@@ -1,3 +1,5 @@
+object false
+
 node :rows do
   rows = locals[:facet][:terms].map do |term|
     { 

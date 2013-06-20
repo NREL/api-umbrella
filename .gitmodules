@@ -28,3 +28,9 @@
 [submodule "app/assets/javascripts/vendor/backbone-pageable"]
 	path = app/assets/javascripts/vendor/backbone-pageable
 	url = https://github.com/wyuenho/backbone-pageable.git
+[submodule "app/assets/javascripts/vendor/marionette"]
+	path = app/assets/javascripts/vendor/marionette
+	url = https://github.com/marionettejs/backbone.marionette.git
+[submodule "app/assets/javascripts/vendor/deparam"]
+	path = app/assets/javascripts/vendor/deparam
+	url = https://github.com/chrissrogers/jquery-deparam.git

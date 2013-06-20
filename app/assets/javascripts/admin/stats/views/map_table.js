@@ -1,12 +1,37 @@
 var MapTable = Backbone.View.extend({
-  el: "#table_container",
-
   columns: [
     {
       name: "name",
       label: "Name",
       editable: false,
-      cell: "string",
+      cell: LinkCell.extend({
+        uri: function() {
+          var uri;
+          var currentQuery = StatsApp.router.getCurrentQuery();
+          var newRegion = this.model.get('region');
+          if(StatsApp.mapController.currentRegionField == 'request_ip_city') {
+            var query = _.extend({}, currentQuery, {
+              search: 'request_ip_city:' + newRegion,
+            });
+
+            delete query.region;
+
+            uri = '#search/' + $.param(query);
+          } else {
+            if(currentQuery.region == 'US') {
+              newRegion = 'US-' + newRegion;
+            }
+
+            var query = _.extend({}, currentQuery, {
+              region: newRegion,
+            });
+
+            uri = '#map/' + $.param(query);
+          }
+
+          return uri;
+        },
+      }),
     }, {
       name: "hits",
       label: "Hits",
@@ -15,44 +40,19 @@ var MapTable = Backbone.View.extend({
     },
   ],
 
-  initialize: function() {
-    this.listenTo(this.model, "change", this.render);
-
-    this.dataEntries = new PageableHits();
-  },
-
-  render: function() {
-    this.dataEntries.fullCollection.reset();
-
-    var regions = this.model.get('regions');
-    for(var i = 0; i < regions.length; i++) {
-      var region = regions[i];
-      var name = region.c[region.c.length - 2];
-      var hits = region.c[region.c.length - 1];
-      this.dataEntries.add({
-        name: (name.f) ? name.f : name.v,
-        hits: hits.v,
-      });
-    }
-
-    this.dataEntries.setPageSize(25);
-    this.dataEntries.setSorting("hits", 1);
-    this.dataEntries.fullCollection.sort();
-
-    this.pageableGrid = new Backgrid.Grid({
+  initialize: function(collection) {
+    this.grid = new Backgrid.Grid({
       columns: this.columns,
-      collection: this.dataEntries
+      collection: collection,
     });
 
     this.paginator = new Backgrid.Extension.Paginator({
-      collection: this.dataEntries
+      collection: collection,
     });
+  },
 
-
-    if(!this.blah) {
-    this.$el.append(this.pageableGrid.render().$el);
+  render: function() {
+    this.$el.append(this.grid.render().$el);
     this.$el.append(this.paginator.render().$el);
-    this.blah = true;
-}
   },
 });
