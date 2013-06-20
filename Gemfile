@@ -5,6 +5,9 @@ gem "rails", "~> 3.2.6"
 # Rails app server
 gem "torquebox", :platforms => [:jruby]
 
+# Abort requests that take too long
+gem "rack-timeout"
+
 # MongoDB
 gem "mongoid", ">= 3.0.0"
 
