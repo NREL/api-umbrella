@@ -22,33 +22,66 @@
   <div id="map_container"></div>
 </script>
 
-
 <script id="filter_template" type="text/template">
   <%= form_tag("#", :method => :get, :id => "filter_form") do %>
-    <div id="search_field" class="input-append">
-      <%= text_field_tag(:search, "", :class => "input-block-level") %>
-      <button class="btn" type="button">Search</button>
-    </div>
-
     <div class="row-fluid">
-      <%= hidden_field_tag(:interval) %>
-      <div id="interval_buttons" class="btn-group" data-toggle="buttons-radio">
-        <button type="button" class="btn btn-mini" value="hour">Hour</button>
-        <button type="button" class="btn btn-mini" value="day">Day</button>
-        <button type="button" class="btn btn-mini" value="week">Week</button>
-        <button type="button" class="btn btn-mini" value="month">Month</button>
+      <div class="span5 advanced-filter">
+        <div id="search_field">
+          <div class="input-append">
+            <%= text_field_tag(:search, "", :class => "input-xlarge", :placeholder => "Advanced filters...") %>
+            <button class="btn btn-small" type="submit">Filter</button>
+          </div>
+          <span class="help-block">Advanced filters use <a href="#" rel="popover" id="query_syntax_help">Lucene's Query Syntax</a>.</span>
+          <div id="query_syntax_help_content" style="display: none;">
+            <p>Use <a href="http://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene's query syntax</a> to perform complex queries.</p>
+            <p>Example:</p>
+            <pre>request_method:"POST" AND
+  response_status:[400 TO *]</pre>
+            <p>Available Fields:</p>
+            <ul>
+              <li>request_at</li>
+              <li>request_method</li>
+              <li>request_url</li>
+              <li>request_path</li>
+              <li>request_user_agent</li>
+              <li>request_user_agent_type</li>
+              <li>request_user_agent_family</li>
+              <li>request_accept_encoding</li>
+              <li>request_ip</li>
+              <li>request_ip_country</li>
+              <li>request_ip_region</li>
+              <li>request_ip_city</li>
+              <li>response_status</li>
+              <li>response_content_type</li>
+              <li>api_key</li>
+              <li>user_id</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <%= hidden_field_tag(:region) %>
 
-      <%= hidden_field_tag(:start) %>
-      <%= hidden_field_tag(:end) %>
-      <div id="reportrange" class="pull-right">
-        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-          <i class="icon-calendar icon-large"></i>
-          <span class="text"></span>
-          <span class="caret"></span>
-        </a>
+      <div class="span7 filter-times">
+        <%= hidden_field_tag(:interval) %>
+        <div id="interval_buttons" class="btn-group" data-toggle="buttons-radio">
+          <button type="button" class="btn btn-mini" value="hour">Hour</button>
+          <button type="button" class="btn btn-mini" value="day">Day</button>
+          <button type="button" class="btn btn-mini" value="week">Week</button>
+          <button type="button" class="btn btn-mini" value="month">Month</button>
+        </div>
+
+
+        <%= hidden_field_tag(:start) %>
+        <%= hidden_field_tag(:end) %>
+        <div id="reportrange" class="pull-right">
+
+          <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+            <i class="icon-calendar icon-large"></i>
+            <span class="text"></span>
+            <span class="caret"></span>
+          </a>
+        </div>
       </div>
     </div>
   <% end %>

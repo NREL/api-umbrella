@@ -15,3 +15,34 @@
   width: 700px;
   margin: 0px auto;
 }
+
+.advanced-filter {
+  .input-append {
+    margin-bottom: 0px;
+  }
+
+  input {
+    font-size: 12px;
+    padding: 2px 3px;
+    min-height: 20px;
+  }
+
+  .help-block {
+    font-size: 85%;
+    line-height: 110%;
+    margin-top: 2px;
+  }
+}
+
+.filter-times {
+  text-align: right;
+
+  #interval_buttons {
+    display: inline-block;
+    margin: 4px 30px 0px 0px;
+  }
+
+  #reportrange {
+    display: inline-block;
+  }
+}

@@ -44,6 +44,20 @@ var FilterView = Backbone.Marionette.ItemView.extend({
     ]
   },
 
+  onRender: function() {
+    this.ui.form.submit(_.bind(this.submit, this));
+
+    this.$el.find("#query_syntax_help").popover({
+      html: true,
+      placement: 'bottom',
+      content: this.$el.find("#query_syntax_help_content").html(),
+    }).click(function(e) { 
+      e.preventDefault(); 
+    });
+
+    $("#query_syntax_help").popover('show');
+  },
+
   setFromQuery: function(query) {
     this.ui.form.deserialize(query, { noEvents: true });
 
@@ -61,7 +75,11 @@ var FilterView = Backbone.Marionette.ItemView.extend({
       }, _.bind(this.handleDateRangeChange, this));
   },
 
-  submit: function() {
+  submit: function(event) {
+    if(event) {
+      event.preventDefault();
+    }
+
     var query = this.ui.form.serialize();
     StatsApp.router.navigate(StatsApp.router.getCurrentMode() + '/' + query, { trigger: true });
   },
