@@ -2,7 +2,7 @@ var MapView = Backbone.Marionette.ItemView.extend({
   template: "#map_template",
 
   ui: {
-    map: "#map_container",
+    map: "#map",
     breadcrumbs: "#map_breadcrumbs",
   },
 
@@ -11,6 +11,7 @@ var MapView = Backbone.Marionette.ItemView.extend({
   },
 
   chartOptions: {
+    width: 640,
     colorAxis: {
       colors: ["#B0DBFF", "#4682B4"],
     },
@@ -61,8 +62,12 @@ var MapView = Backbone.Marionette.ItemView.extend({
     for(var i = 0; i < this.breadcrumbs.length; i++) {
       var breadcrumb = this.breadcrumbs[i];
       if(breadcrumb.region) {
-        var url = '#' + Backbone.history.fragment;
-        url = url.replace(/((^|&)region)=[^&]*/, '$1=' + breadcrumb.region);
+        var currentQuery = StatsApp.router.getCurrentQuery();
+        var query = _.extend({}, currentQuery, {
+          region: breadcrumb.region,
+        });
+
+        var url = '#map/' + $.param(query);
         breadcrumbsHtml.push('<a href="' + url + '">' + breadcrumb.name + '</a>');
       } else {
         breadcrumbsHtml.push(breadcrumb.name);

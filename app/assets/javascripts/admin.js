@@ -6,6 +6,7 @@
 //= require vendor/marionette/lib/backbone.marionette
 //= require vendor/handlebars/dist/handlebars
 //= require vendor/deparam/jquery-deparam
+//= require vendor/inflections/underscore.inflections
 //= require vendor/jstz
 //= require vendor/jquery-deserialize/src/jquery.deserialize
 //= require vendor/jquery.slugify
@@ -16,6 +17,7 @@
 //= require vendor/backgrid/lib/extensions/paginator/backgrid-paginator
 //= require vendor/backgrid/lib/extensions/moment-cell/backgrid-moment-cell
 //= require admin/backgrid_link_cell
+//= require vendor/Numeral-js/numeral
 //= require vendor/spin.js/dist/spin
 //= require vendor/dirtyforms/jquery.dirtyforms
 //= require vendor/dirtyforms/helpers/ckeditor

@@ -34,3 +34,12 @@
 [submodule "app/assets/javascripts/vendor/deparam"]
 	path = app/assets/javascripts/vendor/deparam
 	url = https://github.com/chrissrogers/jquery-deparam.git
+[submodule "app/assets/javascripts/vendor/Numeral-js"]
+	path = app/assets/javascripts/vendor/Numeral-js
+	url = https://github.com/adamwdraper/Numeral-js.git
+[submodule "app/assets/javascripts/vendor/jquery.quantize"]
+	path = app/assets/javascripts/vendor/jquery.quantize
+	url = https://github.com/quinnbaetz/jquery.quantize.js.git
+[submodule "app/assets/javascripts/vendor/inflections"]
+	path = app/assets/javascripts/vendor/inflections
+	url = https://github.com/xixilive/_.inflections.git

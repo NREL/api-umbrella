@@ -29,8 +29,11 @@ var SearchController = Marionette.Controller.extend({
   handleLoadSuccess: function(data) {
     StatsApp.vizRegion.show(new IntervalHitsChartView(data.interval_hits));
 
-    var facets = new PieFacets(data.pie_facets);
-    StatsApp.facetRegion.show(new PieFacetListView({ collection: facets }));
+    var totals = new Totals({
+      totals: data.totals,
+      facets: data.facets,
+    });
+    StatsApp.highlightsRegion.show(new NumberHighlightsView({ model: totals }));
 
     var logs = new Logs(data.logs);
     StatsApp.tableRegion.show(new LogTableView(logs));

@@ -1,19 +1,25 @@
+.toggle-facet-table {
+  font-size: 11px;
+}
+
 .facet-table {
   font-size: 11px;
 
+  th,
   td {
     padding: 2px;
     line-height: 14px;
   }
 
+  th.value,
   td.value {
     text-align: right;
   }
 }
 
 #map_container {
-  width: 700px;
-  margin: 0px auto;
+  width: 640px;
+  margin: 0px auto 20px auto;
 }
 
 .advanced-filter {
@@ -46,3 +52,30 @@
     display: inline-block;
   }
 }
+
+.number-highlights {
+  margin: 20px 0px;
+}
+
+.number-highlight {
+  text-align: center;
+
+  strong {
+    font-size: 54px;
+    line-height: 100%;
+    font-weight: 100;
+    display: block;
+
+    .units {
+      font-size: 28px;
+      line-height: 100%;
+    }
+  }
+
+  small {
+    font-weight: bold;
+    font-size: 14px;
+  }
+}
+
+

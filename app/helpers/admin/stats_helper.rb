@@ -1,4 +1,23 @@
 module Admin::StatsHelper
+  def facet_result(facet_name)
+    facet = @result.facets[facet_name]
+
+    terms = facet[:terms]
+    if facet[:other] > 0
+      terms << {
+        :term => "Other",
+        :count => facet[:other],
+      }
+    end
+
+    total = @result.total
+    terms.each do |term|
+      term[:percent] = ((term[:count] / total.to_f) * 100).round
+    end
+
+    terms
+  end
+
   def user_email(user_id)
     users = @result.users_by_id[user_id]
 

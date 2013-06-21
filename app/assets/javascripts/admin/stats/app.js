@@ -4,7 +4,7 @@ StatsApp.addInitializer(function(options){
   StatsApp.addRegions({
     filterRegion: "#filter_region",
     vizRegion: "#viz_region",
-    facetRegion: "#facet_region",
+    highlightsRegion: "#highlight_region",
     tableRegion: "#table_region",
   });
 

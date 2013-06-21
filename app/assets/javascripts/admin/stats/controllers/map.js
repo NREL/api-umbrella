@@ -27,7 +27,7 @@ var MapController = Marionette.Controller.extend({
   },
 
   handleLoadSuccess: function(data) {
-    StatsApp.facetRegion.close();
+    StatsApp.highlightsRegion.close();
 
     this.currentRegionField = data.region_field;
 

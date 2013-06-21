@@ -1,6 +1,6 @@
 class LogResult
   attr_reader :raw_result
-  delegate :results, :facets, :to => :raw_result
+  delegate :total, :results, :facets, :to => :raw_result
 
   def initialize(search, raw_result)
     @search = search

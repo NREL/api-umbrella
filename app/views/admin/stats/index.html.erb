@@ -18,8 +18,10 @@
 </script>
 
 <script id="map_template" type="text/template">
-  <div id="map_breadcrumbs"></div>
-  <div id="map_container"></div>
+  <div id="map_container">
+    <div id="map_breadcrumbs"></div>
+    <div id="map"></div>
+  </div>
 </script>
 
 <script id="filter_template" type="text/template">
@@ -87,7 +89,56 @@
   <% end %>
 </script>
 
+<script id="facet_table_partial" type="text/template">
+  <table class="table facet-table" style="display: none;">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th class="value">Hits</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each this}}
+        <tr>
+          <td><a href="#">{{term}}</a></td>
+          <td class="value">{{formatNumber count}}</td>
+          <td class="value">{{percent}}%</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</script>
+
+<script id="number_highlights" type="text/template">
+  <div class="row-fluid number-highlights">
+    <div class="span3 number-highlight">
+      <strong>{{formatNumber totals.hits}}</strong>
+      <small>{{pluralize "hit" totals.hits}}</small>
+    </div>
+    <div class="span3 number-highlight">
+      <strong>{{formatNumber totals.users}}</strong>
+      <small>unique {{pluralize "user" totals.users}}</small>
+
+      <div class="toggle-facet-table"><a href="#" data-toggle="facet-table">view top users</a></div>
+      {{> facetTable facets.users}}
+    </div>
+    <div class="span3 number-highlight">
+      <strong>{{formatNumber totals.ips}}</strong>
+      <small>unique ip {{pluralize "address" totals.ips}}</small>
+
+      <div class="toggle-facet-table"><a href="#" data-toggle="facet-table">view top ips</a></div>
+      {{> facetTable facets.ips}}
+    </div>
+    <div class="span3 number-highlight">
+      <strong>{{formatNumber totals.avg_response_time}} <span class="units">ms</span></strong>
+      <small>average response time</small>
+    </div>
+  </div>
+</script>
+
 <div id="filter_region"></div>
 <div id="viz_region"></div>
+<div id="highlight_region"></div>
 <div id="facet_region"></div>
 <div id="table_region"></div>

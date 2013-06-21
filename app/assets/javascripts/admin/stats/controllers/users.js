@@ -10,7 +10,7 @@ var UsersController = Marionette.Controller.extend({
     query = _.extend(this.defaultQuery, query);
 
     StatsApp.filterView.disableSearch();
-    StatsApp.filterView.enableInterval();
+    StatsApp.filterView.disableInterval();
 
     StatsApp.filterView.setFromQuery(query);
     this.loadResults(query);
@@ -27,9 +27,8 @@ var UsersController = Marionette.Controller.extend({
   },
 
   handleLoadSuccess: function(data) {
-    StatsApp.facetRegion.close();
-
-    StatsApp.vizRegion.show(new IntervalHitsChartView(data.interval_hits));
+    StatsApp.vizRegion.close();
+    StatsApp.highlightsRegion.close();
 
     var users = new Users(data.users);
     StatsApp.tableRegion.show(new UsersTableView(users));

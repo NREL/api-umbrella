@@ -10,4 +10,3 @@ node :interval_hits do
     }
   end
 end
-
