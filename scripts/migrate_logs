@@ -18,7 +18,7 @@ var MigrateLogs = function() {
 _.extend(MigrateLogs.prototype, {
   users: {},
   commands: [],
-  startTime: moment.utc("2013-06-01"),
+  startTime: moment.utc("2013-01-01"),
   endTime: moment(),
 
   initialize: function() {
@@ -139,6 +139,7 @@ _.extend(MigrateLogs.prototype, {
     if(newLog["api_key"]) {
       if(this.users[newLog["api_key"]]) {
         newLog["user_id"] = this.users[newLog["api_key"]]["_id"]
+        newLog["user_email"] = this.users[newLog["api_key"]]["email"]
       }
     }
 
