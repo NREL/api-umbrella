@@ -92,6 +92,9 @@ group :assets do
 
   # Improve PNG speed for image sprite generation
   gem "oily_png", :platforms => [:ruby]
+
+  # For JavaScript templates
+  gem "handlebars_assets"
 end
 
 # Bundle gems for the local environment. Make sure to

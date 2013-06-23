@@ -128,6 +128,10 @@ GEM
     ffi (1.8.1)
     ffi (1.8.1-java)
     fssm (0.2.10)
+    handlebars_assets (0.14.1)
+      execjs (>= 1.2.9)
+      sprockets (>= 2.0.3)
+      tilt
     hashie (1.2.0)
     highline (1.6.19)
     hike (1.2.2)
@@ -333,6 +337,7 @@ DEPENDENCIES
   crummy
   devise
   factory_girl_rails
+  handlebars_assets
   jquery-rails
   kaminari
   kramdown
