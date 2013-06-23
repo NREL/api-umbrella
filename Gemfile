@@ -120,6 +120,4 @@ group :development do
 
   gem "yard", :require => false
   gem "kramdown", :require => false
-  gem "addressable"
-  gem "useragent"
 end
