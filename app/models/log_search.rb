@@ -1,10 +1,11 @@
+require "elasticsearch_config"
+
 class LogSearch
   attr_accessor :query, :query_options
   attr_reader :server, :start_time, :end_time, :interval, :region, :country, :state
 
   def initialize(options = {})
-    #@server = Stretcher::Server.new("http://10.20.5.139:9200", :logger => Logger.new("/tmp/blah.log"))
-    @server = Stretcher::Server.new("http://127.0.0.1:9200", :logger => Logger.new("/tmp/blah.log"))
+    @server = Stretcher::Server.new(ElasticsearchConfig.server)
 
     @start_time = Time.zone.parse(options[:start_time])
     @end_time = Time.zone.parse(options[:end_time]).end_of_day

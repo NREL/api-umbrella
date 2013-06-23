@@ -15,6 +15,7 @@
 /config/deployed.yml
 
 # Ignore files generated from templates
+/config/elasticsearch.yml
 /config/mongoid.yml
 /config/nginx/site.conf
 

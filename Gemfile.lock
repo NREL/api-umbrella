@@ -1,6 +1,6 @@
 GIT
   remote: http://github.com/NREL/capistrano_nrel_ext.git
-  revision: 87cafca92080f2c47ad842a67c04f5c63df0ac24
+  revision: 33b2a6ff1c9b10305563a9ff6a7504d42cab11a5
   specs:
     capistrano_nrel_ext (0.3.0)
       artii
@@ -129,7 +129,7 @@ GEM
     ffi (1.8.1-java)
     fssm (0.2.10)
     hashie (1.2.0)
-    highline (1.6.18)
+    highline (1.6.19)
     hike (1.2.2)
     http_parser.rb (0.5.3)
     http_parser.rb (0.5.3-java)
@@ -243,6 +243,7 @@ GEM
     seed-fu (2.2.0)
       activerecord (~> 3.1)
       activesupport (~> 3.1)
+    settingslogic (2.0.9)
     simple_form (2.0.4)
       actionpack (~> 3.0)
       activemodel (~> 3.0)
@@ -349,6 +350,7 @@ DEPENDENCIES
   rspec-rails
   sass-rails (~> 3.2.3)
   seed-fu
+  settingslogic
   simple_form
   sprockets-urlrewriter
   stretcher
