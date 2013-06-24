@@ -1,93 +1,93 @@
 [submodule "chef/cookbooks/cron"]
 	path = chef/cookbooks/cron
-	url = http://github.com/NREL-cookbooks/cron.git
+	url = https://github.com/NREL-cookbooks/cron.git
 [submodule "chef/cookbooks/chef-client"]
 	path = chef/cookbooks/chef-client
-	url = http://github.com/opscode-cookbooks/chef-client.git
+	url = https://github.com/opscode-cookbooks/chef-client.git
 [submodule "chef/cookbooks/build-essential"]
 	path = chef/cookbooks/build-essential
-	url = http://github.com/opscode-cookbooks/build-essential.git
+	url = https://github.com/opscode-cookbooks/build-essential.git
 [submodule "chef/cookbooks/haproxy"]
 	path = chef/cookbooks/haproxy
-	url = http://github.com/NREL-cookbooks/haproxy.git
+	url = https://github.com/NREL-cookbooks/haproxy.git
 [submodule "chef/cookbooks/vagrant_extras"]
 	path = chef/cookbooks/vagrant_extras
-	url = http://github.com/NREL-cookbooks/vagrant_extras.git
+	url = https://github.com/NREL-cookbooks/vagrant_extras.git
 [submodule "chef/cookbooks/sudo"]
 	path = chef/cookbooks/sudo
-	url = http://github.com/NREL-cookbooks/sudo.git
+	url = https://github.com/NREL-cookbooks/sudo.git
 [submodule "chef/cookbooks/iptables"]
 	path = chef/cookbooks/iptables
-	url = http://github.com/NREL-cookbooks/iptables.git
+	url = https://github.com/NREL-cookbooks/iptables.git
 [submodule "chef/cookbooks/etc"]
 	path = chef/cookbooks/etc
-	url = http://github.com/NREL-cookbooks/etc.git
+	url = https://github.com/NREL-cookbooks/etc.git
 [submodule "chef/cookbooks/logrotate"]
 	path = chef/cookbooks/logrotate
-	url = http://github.com/opscode-cookbooks/logrotate.git
+	url = https://github.com/opscode-cookbooks/logrotate.git
 [submodule "chef/cookbooks/man"]
 	path = chef/cookbooks/man
-	url = http://github.com/opscode-cookbooks/man.git
+	url = https://github.com/opscode-cookbooks/man.git
 [submodule "chef/cookbooks/screen"]
 	path = chef/cookbooks/screen
-	url = http://github.com/opscode-cookbooks/screen.git
+	url = https://github.com/opscode-cookbooks/screen.git
 [submodule "chef/cookbooks/ack"]
 	path = chef/cookbooks/ack
-	url = http://github.com/NREL-cookbooks/ack.git
+	url = https://github.com/NREL-cookbooks/ack.git
 [submodule "chef/cookbooks/yum"]
 	path = chef/cookbooks/yum
-	url = http://github.com/NREL-cookbooks/yum.git
+	url = https://github.com/NREL-cookbooks/yum.git
 [submodule "chef/cookbooks/vim"]
 	path = chef/cookbooks/vim
-	url = http://github.com/opscode-cookbooks/vim.git
+	url = https://github.com/opscode-cookbooks/vim.git
 [submodule "chef/cookbooks/nano"]
 	path = chef/cookbooks/nano
-	url = http://github.com/josephholsten/nano-cookbook.git
+	url = https://github.com/josephholsten/nano-cookbook.git
 [submodule "chef/cookbooks/unzip"]
 	path = chef/cookbooks/unzip
-	url = http://github.com/NREL-cookbooks/unzip.git
+	url = https://github.com/NREL-cookbooks/unzip.git
 [submodule "chef/cookbooks/rbenv"]
 	path = chef/cookbooks/rbenv
-	url = http://github.com/NREL-cookbooks/rbenv.git
+	url = https://github.com/NREL-cookbooks/rbenv.git
 [submodule "chef/cookbooks/git"]
 	path = chef/cookbooks/git
-	url = http://github.com/opscode-cookbooks/git.git
+	url = https://github.com/opscode-cookbooks/git.git
 [submodule "chef/cookbooks/ohai"]
 	path = chef/cookbooks/ohai
-	url = http://github.com/opscode-cookbooks/ohai.git
+	url = https://github.com/opscode-cookbooks/ohai.git
 [submodule "chef/cookbooks/rubygems"]
 	path = chef/cookbooks/rubygems
-	url = http://github.com/NREL-cookbooks/rubygems.git
+	url = https://github.com/NREL-cookbooks/rubygems.git
 [submodule "chef/cookbooks/rsyslog"]
 	path = chef/cookbooks/rsyslog
-	url = http://github.com/NREL-cookbooks/rsyslog.git
+	url = https://github.com/NREL-cookbooks/rsyslog.git
 [submodule "chef/cookbooks/nginx"]
 	path = chef/cookbooks/nginx
-	url = http://github.com/NREL-cookbooks/nginx.git
+	url = https://github.com/NREL-cookbooks/nginx.git
 [submodule "chef/cookbooks/passenger"]
 	path = chef/cookbooks/passenger
-	url = http://github.com/NREL-cookbooks/passenger.git
+	url = https://github.com/NREL-cookbooks/passenger.git
 [submodule "chef/cookbooks/bundler"]
 	path = chef/cookbooks/bundler
-	url = http://github.com/NREL-cookbooks/bundler.git
+	url = https://github.com/NREL-cookbooks/bundler.git
 [submodule "chef/cookbooks/supervisor"]
 	path = chef/cookbooks/supervisor
-	url = http://github.com/NREL-cookbooks/supervisor.git
+	url = https://github.com/NREL-cookbooks/supervisor.git
 [submodule "chef/cookbooks/python"]
 	path = chef/cookbooks/python
-	url = http://github.com/opscode-cookbooks/python.git
+	url = https://github.com/opscode-cookbooks/python.git
 [submodule "chef/cookbooks/pygments"]
 	path = chef/cookbooks/pygments
-	url = http://github.com/NREL-cookbooks/pygments.git
+	url = https://github.com/NREL-cookbooks/pygments.git
 [submodule "chef/cookbooks/mongodb"]
 	path = chef/cookbooks/mongodb
 	url = https://github.com/NREL-cookbooks/mongodb.git
 [submodule "chef/cookbooks/redis"]
 	path = chef/cookbooks/redis
-	url = http://github.com/NREL-cookbooks/redis.git
+	url = https://github.com/NREL-cookbooks/redis.git
 [submodule "chef/cookbooks/shasum"]
 	path = chef/cookbooks/shasum
-	url = http://github.com/NREL-cookbooks/shasum.git
+	url = https://github.com/NREL-cookbooks/shasum.git
 [submodule "workspace/router"]
 	path = workspace/router
 	url = https://github.com/NREL/api-umbrella-web.git
@@ -96,10 +96,10 @@
 	url = https://github.com/NREL/api-umbrella-web.git
 [submodule "chef/cookbooks/xml"]
 	path = chef/cookbooks/xml
-	url = http://github.com/opscode-cookbooks/xml.git
+	url = https://github.com/opscode-cookbooks/xml.git
 [submodule "chef/cookbooks/zsh"]
 	path = chef/cookbooks/zsh
-	url = http://github.com/opscode-cookbooks/zsh.git
+	url = https://github.com/opscode-cookbooks/zsh.git
 [submodule "chef/cookbooks/dmg"]
 	path = chef/cookbooks/dmg
 	url = https://github.com/opscode-cookbooks/dmg.git
