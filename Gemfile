@@ -1,9 +1,10 @@
 source :rubygems
+source "http://torquebox.org/rubygems"
 
 gem "rails", "~> 3.2.6"
 
 # Rails app server
-gem "torquebox", :platforms => [:jruby]
+gem "torquebox", "~> 2.3.2", :platforms => [:jruby]
 
 # Abort requests that take too long
 gem "rack-timeout"
