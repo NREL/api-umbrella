@@ -155,6 +155,8 @@ GEM
       i18n (>= 0.4.0)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
+    marionette-rails (1.0.3)
+      rails (>= 3.1.0)
     mime-types (1.23)
     mongoid (3.1.3)
       activemodel (~> 3.2)
@@ -341,6 +343,7 @@ DEPENDENCIES
   jquery-rails
   kaminari
   kramdown
+  marionette-rails
   mongoid (>= 3.0.0)
   mongoid-tree
   nokogiri

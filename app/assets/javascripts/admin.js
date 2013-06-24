@@ -4,7 +4,7 @@
 //= require handlebars
 //= require vendor/underscore
 //= require vendor/backbone
-//= require vendor/marionette/lib/backbone.marionette
+//= require backbone.marionette
 //= require vendor/deparam/jquery-deparam
 //= require vendor/inflections/underscore.inflections
 //= require vendor/jstz

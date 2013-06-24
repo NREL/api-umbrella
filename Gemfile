@@ -93,6 +93,9 @@ group :assets do
   # Improve PNG speed for image sprite generation
   gem "oily_png", :platforms => [:ruby]
 
+  # JavaScript Backbone extensions
+  gem "marionette-rails"
+
   # For JavaScript templates
   gem "handlebars_assets"
 end
