@@ -14,6 +14,8 @@ default_attributes({
     },
 
     :passenger => {
+      :version => "4.0.5",
+
       # Run all passengers processes as the nginx user.
       :user_switching => false,
       :default_user => "www-data-local",

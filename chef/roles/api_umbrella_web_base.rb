@@ -5,7 +5,7 @@ run_list([
   "role[base]",
 
   "role[nginx]",
-  "role[torquebox]",
+  "role[passenger_nginx]",
   "role[ruby]",
 
   "recipe[iptables::http]",
