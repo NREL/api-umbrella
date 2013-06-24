@@ -2,19 +2,14 @@ name "mongodb_server"
 description "A minimal role for all mongodb servers."
 
 run_list([
-  "recipe[mongodb::server]",
-  "recipe[mongodb::backup]",
+  "recipe[mongodb::10gen_repo]",
+  "recipe[mongodb]",
+  "recipe[iptables::mongodb]",
 ])
 
 default_attributes({
   :mongodb => {
-    :client => {
-      :version => "2.4.3-mongodb_1",
-    },
-
-    :server => {
-      :version => "2.4.3-mongodb_1",
-    },
+    :package_version => "2.4.4-mongodb_1",
 
     :backup => {
       # We should probably revisit this so we can take advtange of oplog

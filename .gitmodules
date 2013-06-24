@@ -81,7 +81,7 @@
 	url = http://github.com/NREL-cookbooks/pygments.git
 [submodule "chef/cookbooks/mongodb"]
 	path = chef/cookbooks/mongodb
-	url = https://github.com/edelight/chef-mongodb.git
+	url = https://github.com/NREL-cookbooks/mongodb.git
 [submodule "chef/cookbooks/redis"]
 	path = chef/cookbooks/redis
 	url = http://github.com/NREL-cookbooks/redis.git
