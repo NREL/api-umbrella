@@ -2,7 +2,7 @@
 
 ## What Is API Umbrella?
 
-API Umbrella is a platform for exposing web service APIs. The basic goal of API Umbrella is to make life easier for both API creators and API consumers. How?
+API Umbrella is an open source API management platform for exposing web service APIs. The basic goal of API Umbrella is to make life easier for both API creators and API consumers. How?
 
 * **Make life easier for API creators:** Allow API creators to focus on building APIs.
   * **Standardize the boring stuff:** APIs can assume the boring stuff (access control, rate limiting, analytics, etc.) is already taken care if the API is being accessed, so common functionality doesn't need to be implemented in the API code.
@@ -19,17 +19,24 @@ API Umbrella is broken into several components:
 
 * **[API Umbrella Gatekeeper](https://github.com/NREL/api-umbrella-gatekeeper):** A custom reverse proxy to control access to your APIs. Performs API key validation, request rate limiting, and gathers analytics.
 * **[API Umbrella Router](https://github.com/NREL/api-umbrella-router/tree/master):** Combines reverse proxies (API Umbrella Gatekeeper and HAProxy) to route requests to the appropriate backend. Ensures all API requests are approved by the gatekeeper and gives the appearance of unified APIs.
-* **[API Umbrella Web](https://github.com/NREL/api-umbrella-web/tree/master):** A web application for providing API documentation and API key signup.
+* **[API Umbrella Web](https://github.com/NREL/api-umbrella-web/tree/master):** A web application for providing API documentation and API key signup. Also provides the admin interface for managing documentation, users, and viewing analytics.
 
 ## Dependencies
 
-* [HAProxy](http://haproxy.1wt.eu/)
-* [MongoDB](http://www.mongodb.org/)
-* [nginx](http://nginx.org/) (or your favorite web server)
-* [Phusion Passenger](http://www.modrails.com/) (or your favorite Rails application server)
-* [Redis](http://redis.io/)
-* [Ruby](http://www.ruby-lang.org/en/) (currently only supports MRI Ruby 1.9, but hopefully JRuby soon)
-* [Supervisor](http://supervisord.org/)
+* API Umbrella Gatekeeper
+  * [Node.js](http://nodejs.org/)
+  * [Redis](http://redis.io/)
+  * [Elasticsearch](http://www.elasticsearch.org/)
+  * [MongoDB](http://www.mongodb.org/)
+  * [Supervisor](http://supervisord.org/)
+* API Umbrella Router
+  * [HAProxy](http://haproxy.1wt.eu/)
+* API Umbrella Web
+  * [Ruby](http://www.ruby-lang.org/en/) (defaults to MRI Ruby 1.9)
+  * [nginx](http://nginx.org/) (or your favorite web server)
+  * [Phusion Passenger](http://www.modrails.com/) (or your favorite Rails application server)
+  * [Elasticsearch](http://www.elasticsearch.org/)
+  * [MongoDB](http://www.mongodb.org/)
 
 Don't sweat this list, though—installation and configuration of everything can be automated through [Chef](http://www.opscode.com/chef/). See [Running API Umbrella](#running-api-umbrella) below for details.
 
@@ -38,8 +45,6 @@ Don't sweat this list, though—installation and configuration of everything can
 The easiest way to get started with API Umbrella is to use [Vagrant](http://vagrantup.com/) to setup a local development environment.
 
 First install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://vagrantup.com/) on your computer. Then follow these steps:
-
-**Note for Windows Users:** As of Vagrant 1.0.5, there's currently a bug with Vagrant that will prevent the `vagrant up` step from completing properly. See [Running API Umbrella in Windows on Vagrant 1.0.5](https://github.com/NREL/api-umbrella/wiki/Running-API-Umbrella-in-Windows-on-Vagrant-1.0.5) before proceeding for a workaround.
 
 ```sh
 # Get the code
@@ -55,12 +60,12 @@ $ vagrant up
 $ vagrant ssh
 
 # Setup the apps on your local VM
-$ cd /vagrant/workspace/api-umbrella-router
+$ cd /vagrant/workspace/router
 $ cp config/mongoid.yml.example config/mongoid.yml && cp config/redis.yml.example config/redis.yml
 $ bundle install --path=vendor/bundle
 $ cap vagrant deploy
 
-$ cd /vagrant/workspace/api-umbrella-web
+$ cd /vagrant/workspace/web
 $ cp config/mongoid.yml.example config/mongoid.yml
 $ bundle install --path=vendor/bundle
 $ cap vagrant deploy
@@ -82,7 +87,7 @@ Out of the box, API Umbrella doesn't know about any APIs. You must first configu
 
 In this example, we'll proxy to Google's Geocoding API (but you'll more likely be proxying to your own web services).
 
-**Step 1:** Create `workspace/api-umbrella-router/config/haproxy/backends/api_google_farm.cfg.erb` with the following contents:
+**Step 1:** Create `workspace/router/config/haproxy/backends/api_google_farm.cfg.erb` with the following contents:
 
 ```
 backend api_google_farm
@@ -101,7 +106,7 @@ backend api_google_farm
 
 *This backend file defines the server you want to route requests to. The request can be modified to alter URL paths, HTTP headers and more. See [HAProxy backend documentation](http://cbonte.github.com/haproxy-dconv/configuration-1.4.html#4) for more info.*
 
-**Step 2:** Create `workspace/api-umbrella-router/config/haproxy/api_router_matches/api_google.lst` with the following contents:
+**Step 2:** Create `workspace/router/config/haproxy/api_router_matches/api_google.lst` with the following contents:
 
 ```
 /api/maps/
@@ -109,7 +114,7 @@ backend api_google_farm
 
 *This config file lists any URL prefixes you wish to route to the new backend. One line per URL prefx. See [HAProxy ACL documentation](http://cbonte.github.com/haproxy-dconv/configuration-1.4.html#7) (specifically the `-f` option) for more info*
 
-**Step 3:** Update `workspace/api-umbrella-router/config/haproxy/frontends/api_router.cfg.erb` and add to the bottom:
+**Step 3:** Update `workspace/router/config/haproxy/frontends/api_router.cfg.erb` and add to the bottom:
 
 ```
   # Insert your own...
@@ -123,7 +128,7 @@ backend api_google_farm
 
 ```sh
 $ vagrant ssh
-$ cd /vagrant/workspace/api-umbrella-router
+$ cd /vagrant/workspace/router
 $ cap vagrant deploy
 ```
 
