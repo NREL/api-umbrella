@@ -12,8 +12,8 @@ module ApplicationHelper
   def highlight_code(language, code)
     process = ChildProcess.build("pygmentize", "-l", language.to_s, "-f", "html", "-O", "encoding=utf-8", "-O", "linenos=True")
 
-    # Store the pygmentize output on a StringIO object.
-    output = StringIO.new
+    # Store the pygmentize output on a Tempfile.
+    output = Tempfile.new("api-umbrella-pygmentize")
     process.io.stdout = output
 
     # Setup pipe so we can pass to stdin. 
