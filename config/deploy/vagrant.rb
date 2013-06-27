@@ -4,6 +4,9 @@ require "capistrano_nrel_ext/recipes/vagrant_deploy"
 role :app, "api.vagrant"
 role :web, "api.vagrant"
 
+# Set the application being deployed.
+set :application, "web"
+
 # Set the base path for deployment.
 set :deploy_to_base, "/srv/sites"
 
