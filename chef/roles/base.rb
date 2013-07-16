@@ -22,6 +22,9 @@ run_list([
   # Manage misc /etc files.
   "recipe[etc::environment]",
 
+  # Default setup for yum on all servers.
+  "role[yum]",
+
   # Setup log rotation.
   "recipe[logrotate]",
 
