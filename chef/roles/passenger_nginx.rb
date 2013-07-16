@@ -14,7 +14,7 @@ default_attributes({
     },
 
     :passenger => {
-      :version => "4.0.5",
+      :version => "4.0.8",
 
       # Run all passengers processes as the nginx user.
       :user_switching => false,
@@ -38,8 +38,7 @@ default_attributes({
 
       # Keep the spanwers alive indefinitely, so new app processes can spin up
       # quickly.
-      :rails_framework_spawner_idle_time => 0, # Not actually used since we use smart-lv2 spawning?
-      :rails_app_spawner_idle_time => 0,
+      :max_preloader_idle_time => 0,
     },
   },
 })
