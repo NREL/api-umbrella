@@ -129,7 +129,7 @@
 	url = https://github.com/elasticsearch/cookbook-elasticsearch.git
 [submodule "chef/cookbooks/ark"]
 	path = chef/cookbooks/ark
-	url = https://github.com/bryanwb/chef-ark.git
+	url = https://github.com/opscode-cookbooks/ark.git
 [submodule "chef/cookbooks/nodejs"]
 	path = chef/cookbooks/nodejs
 	url = https://github.com/NREL-cookbooks/nodejs.git
