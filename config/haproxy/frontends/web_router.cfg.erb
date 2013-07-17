@@ -23,22 +23,26 @@ frontend web_router
   reqadd X-Forwarded-Proto:\ https if via_https
   reqadd X-Forwarded-Port:\ 443 if via_https
 
-  # Requests starting with /api/ get sent to the gatekeeper for access control
-  # and rate limiting.
-  acl url_match_api path_beg /api/
-  use_backend gatekeeper_farm if url_match_api
+  # Route requests for the static web content.
+  acl url_match_web_pages path_reg ^$ ^/$ ^/(about|community|doc|docs|images|static)(/|$)
+  use_backend github_pages_farm if url_match_web_pages
+
+  # Route requests for the dynamic web app.
+  acl url_match_web_app path_reg ^/(account|admin|admins|assets|contact|signup)(/|$)
+  use_backend developer_site_farm if url_match_web_app
 
   # Requests starting with /auth get sent to Tomcat for our CAS servlet.
   acl url_match_auth path_beg /auth
   use_backend tomcat_farm if via_https url_match_auth
 
-  # Requests starting with /backstage get sent to the gatekeeper for access control
-  # and rate limiting.
+  # Requests starting with /backstage get sent to the Torquebox backstage
+  # admin.
   acl url_match_backstage path_beg /backstage
   use_backend torquebox_farm if url_match_backstage
 
-  # All other requests go to our main site.
-  default_backend developer_site_farm
+  # All other requests are assumed to be API requests, so they go to the
+  # gatekeeper.
+  default_backend gatekeeper_farm
 
   # Remove server versioning headers per Cyber.
   #

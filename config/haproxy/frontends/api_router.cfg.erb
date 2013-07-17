@@ -11,6 +11,13 @@ frontend api_router 127.0.0.1:50100
   # destination (the unique ID is only for internal use).
   reqidel ^X-ApiUmbrella-UID:.*
 
+  # Strip /api/ from the beginning of the request URL before matching the
+  # request to a backend. This is to normalize for backwards compatibility when
+  # all APIs used to have to begin with /api/.
+  #
+  # Turns a request from "GET /api/something" to "GET /something"
+  reqirep ^([^\ ]*)\ /api(/.*) \1\ \2
+
   # developer.nrel.gov - The public facing developer.nrel.gov site has services
   # of its own for things like account signup.
   acl url_match_api_developer_site path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_developer_site.lst") %>
@@ -25,3 +32,11 @@ frontend api_router 127.0.0.1:50100
   # FIXME: GSA TEMPORARY DEMO: NREL
   acl url_match_api_nrel path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_nrel.lst") %>
   use_backend api_nrel_farm if url_match_api_nrel
+
+  # FIXME: GSA TEMPORARY DEMO: Census
+  acl url_match_api_census path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_census.lst") %>
+  use_backend api_census_farm if url_match_api_census
+
+  # FIXME: GSA TEMPORARY DEMO: MyUSA
+  acl url_match_api_myusa_discovery path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_myusa_discovery.lst") %>
+  use_backend api_myusa_discovery_farm if url_match_api_myusa_discovery
