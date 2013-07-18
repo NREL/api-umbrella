@@ -3,5 +3,11 @@
 # The public site that provides the frontend for API registration and
 # documentation.
 backend developer_site_farm
+  # Append /api to the beginning of the request URL for certain API calls. This
+  # could be clened up in the actual app.
+  #
+  # Turns a request from "GET /api-users/something" to "GET /api/api-users/something"
+  reqirep ^([^\ ]*)\ (/api-users/.*) \1\ /api\2
+
   balance roundrobin
   server developer_site1 127.0.0.1:51000
