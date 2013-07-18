@@ -3,8 +3,8 @@ backend api_census_farm
   # backend application sees the request.
   #
   # Turns a request from "GET /census/something" to "GET /something"
-  reqirep ^([^\ :]*)\ /census/american-community-survey/v1/([0-9]{4})/populations/([A-Z]{2}).*(\ .*) \1\ /data/\2/acs5?key=e81ad00727f0e08a8fd615d9db0e2d148ff44f77&get=B02001_001E,NAME&for=state:\3\4
-  reqirep ^([^\ :]*)\ /census/american-community-survey/v1/([0-9]{4})/populations.*(\ .*) \1\ /data/\2/acs5?key=e81ad00727f0e08a8fd615d9db0e2d148ff44f77&get=B02001_001E,NAME&for=state:*\3
+  reqirep ^([^\ :]*)\ /census/american-community-survey/v1/([0-9]{4})/populations/states/([A-Z]{2}).*(\ .*) \1\ /data/\2/acs5?key=e81ad00727f0e08a8fd615d9db0e2d148ff44f77&get=B02001_001E,NAME&for=state:\3\4
+  reqirep ^([^\ :]*)\ /census/american-community-survey/v1/([0-9]{4})/populations/states.*(\ .*) \1\ /data/\2/acs5?key=e81ad00727f0e08a8fd615d9db0e2d148ff44f77&get=B02001_001E,NAME&for=state:*\3
   reqirep ^([^\ :]*)\ (.*for=state:)AL(.*) \1\ \201\3
   reqirep ^([^\ :]*)\ (.*for=state:)AK(.*) \1\ \202\3
   reqirep ^([^\ :]*)\ (.*for=state:)AZ(.*) \1\ \204\3
