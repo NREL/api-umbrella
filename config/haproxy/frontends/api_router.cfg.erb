@@ -40,3 +40,11 @@ frontend api_router 127.0.0.1:50100
   # FIXME: GSA TEMPORARY DEMO: MyUSA
   acl url_match_api_myusa_discovery path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_myusa_discovery.lst") %>
   use_backend api_myusa_discovery_farm if url_match_api_myusa_discovery
+
+  # FIXME: GSA TEMPORARY DEMO: Bureau of Justice Statistics
+  acl url_match_api_bjs path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_bjs.lst") %>
+  use_backend api_bjs_farm if url_match_api_bjs
+
+  # FIXME: GSA TEMPORARY DEMO: Department of Labor
+  acl url_match_api_dol path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_dol.lst") %>
+  use_backend api_dol_farm if url_match_api_dol
