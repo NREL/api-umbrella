@@ -9,6 +9,7 @@ run_list([
   "role[nodejs]",
   "role[redis_server]",
   "role[supervisor]",
+  "role[varnish]",
 
   "recipe[geoip::nodejs]",
 ])

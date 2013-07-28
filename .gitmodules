@@ -157,3 +157,6 @@
 [submodule "chef/cookbooks/ntp"]
 	path = chef/cookbooks/ntp
 	url = https://github.com/opscode-cookbooks/ntp.git
+[submodule "chef/cookbooks/varnish"]
+	path = chef/cookbooks/varnish
+	url = https://github.com/NREL-cookbooks/varnish.git
