@@ -39,6 +39,18 @@
         "limit": 150000,
         "distributed": false
       }, {
+        "duration": 15000,
+        "accuracy": 1000,
+        "limit_by": "ip",
+        "limit": 250000,
+        "distributed": true
+      }, {
+        "duration": 15000,
+        "accuracy": 1000,
+        "limit_by": "api_key",
+        "limit": 150000,
+        "distributed": true
+      }, {
         "duration": 3600000,
         "accuracy": 60000,
         "limit_by": "api_key",
