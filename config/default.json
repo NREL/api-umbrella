@@ -19,7 +19,7 @@
     "workers": 1,
     "host": "0.0.0.0",
     "port": 7890,
-    "target": "127.0.0.1:50100",
+    "target": "127.0.0.1:6081",
     "api_key_methods": [
       "header",
       "get_param",
