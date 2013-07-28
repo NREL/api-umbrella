@@ -1,4 +1,7 @@
 frontend api_router 127.0.0.1:50100
+  # Log to Gatekeeper's syslog listener.
+  log 127.0.0.1:5114 local3 info
+
   # Custom log format - Like default HTTP log, but includes bytes_uploaded (%U)
   # and unique-id (%ID).
   log-format %ci:%cp\ [%t]\ %ft\ %b/%s\ %Tq/%Tw/%Tc/%Tr/%Tt\ %ST\ %B\ %U\ %CC\ \ %CS\ %tsc\ %ac/%fc/%bc/%sc/%rc\ %sq/%bq\ %ID\ %hr\ %hs\ %{+Q}r
