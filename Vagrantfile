@@ -55,10 +55,9 @@ Vagrant.configure("2") do |config|
     vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
   end
   
-  # Our site's haproxy and nginx config files resides on the /vagrant share.
-  # Since this isn't mounted at boot time, always restart things after the
-  # server and shares are completely up.
-  config.vm.provision :shell, :inline => "if [ -f /etc/init.d/haproxy ]; then /etc/init.d/haproxy restart; fi"
+  # Our site's nginx config files resides on the /vagrant share. Since this
+  # isn't mounted at boot time, always restart things after the server and
+  # shares are completely up.
   config.vm.provision :shell, :inline => "if [ -f /etc/init.d/nginx ]; then /etc/init.d/nginx restart; fi"
   config.vm.provision :shell, :inline => "mkdir -p /srv/sites && chown vagrant /srv/sites"
 

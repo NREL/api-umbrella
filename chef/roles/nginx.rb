@@ -9,15 +9,18 @@ default_attributes({
   :nginx => {
     :install_method => "source",
 
-    :version => "1.2.9",
+    :version => "1.4.2",
 
     :user => "www-data-local",
 
     :source => {
-      :checksum => "71486674b757f6aa93a4f7ec6e68ef82557d4944deeb08f3ad3de00079d22b1c",
+      :checksum => "5361ffb7b0ebf8b1a04369bc3d1295eaed091680c1c58115f88d56c8e51f3611",
       :modules => [
+        "headers_more_module",
+        "http_echo_module",
         "http_realip_module",
         "http_stub_status_module",
+        "x_rid_header_module",
       ],
     },
 
@@ -28,6 +31,10 @@ default_attributes({
     :gzip_types => [
       "text/csv",
     ],
+
+    :realip => {
+      :real_ip_recursive => "on",
+    },
   },
 })
 
