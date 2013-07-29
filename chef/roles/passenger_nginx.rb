@@ -14,7 +14,7 @@ default_attributes({
     },
 
     :passenger => {
-      :version => "4.0.8",
+      :version => "4.0.10",
 
       # Run all passengers processes as the nginx user.
       :user_switching => false,
