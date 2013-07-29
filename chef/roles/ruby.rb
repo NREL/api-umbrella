@@ -12,7 +12,7 @@ run_list([
 default_attributes({
   :rbenv => {
     # Don't use the git:// protocol behind our firewall.
-    :git_url => "http://github.com/sstephenson/rbenv.git",
+    :git_url => "https://github.com/sstephenson/rbenv.git",
     :git_ref => "v0.4.0",
     :upgrade => true,
     :root_path => "/opt/rbenv",
@@ -26,7 +26,7 @@ default_attributes({
     :upgrade => true,
   },
   :rubygems => {
-    :version => "2.0.5",
+    :version => "2.0.6",
     :default_options => "--no-ri --no-rdoc",
   },
   :bundler => {
