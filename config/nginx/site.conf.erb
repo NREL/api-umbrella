@@ -1,36 +1,217 @@
+include <%= latest_release %>/config/nginx/ssl_terminator.conf;
+include <%= latest_release %>/config/nginx/backends/*.conf;
+
+log_format api_umbrella_log '"$x_api_umbrella_uid","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent"';
+
+# Limit the number of simultaneous connections per IP address.
+limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:5m;
+limit_conn_status 429;
+
+# Rate limits per IP address.
+#
+# In general, we want to rely on the more granular and configurable rate limits
+# provided by the API Umbrella Gatekeeper, so this limit should be higher than
+# the Gatekeeper's limits. This just provides an extra line of simple defense
+# against misbehaving clients from overloading the Gatekeeper.
+limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:5m rate=100r/s;
+limit_req_status 429;
+
 server {
-  listen 443 ssl;
-  server_name <%= domain %>;
+  listen 80;
+  server_name <%= all_domains.join(" ") %>;
 
-  <% case rails_env %>
-  <% when "development" %>
-    <% if(base_domain =~ /vagrant/) %>
-      ssl_certificate /etc/ssl/certs/vagrant.crt;
-      ssl_certificate_key /etc/ssl/certs/vagrant.key;
-    <% else %>
-      ssl_certificate /etc/ssl/certs/devdev_nrel_gov.crt;
-      ssl_certificate_key /etc/ssl/certs/devdev_nrel_gov.key;
-    <% end %>
-  <% when "staging_int" %>
-  ssl_certificate /etc/ssl/certs/devstage-int_nrel_gov.crt;
-  ssl_certificate_key /etc/ssl/certs/devstage-int_nrel_gov.key;
-  <% when "production" %>
-  ssl_certificate /etc/ssl/certs/devprod-int_nrel_gov.crt;
-  ssl_certificate_key /etc/ssl/certs/devprod-int_nrel_gov.key;
-  <% end %>
+  access_log <%= current_path %>/log/access.log combined;
+  error_log <%= current_path %>/log/error.log;
 
-  access_log <%= current_path %>/log/ssl_proxy-access.log combined;
-  error_log <%= current_path %>/log/ssl_proxy-error.log;
+  # Limit the number of simulaneous connections per IP address to 50.
+  limit_conn api_umbrella_conn_addr_zone 50;
+
+  # After the 100 requests/second rate is reached, allow a sizable burst before
+  # completely terminating requests at this router level. This is so we can
+  # generally rely on API Umbrella Gatekeeper for rate limiting, but still
+  # throttle traffic to the Gatekeeper.
+  limit_req zone=api_umbrella_req_addr_zone burst=100 nodelay;
+
+  keepalive_timeout 30s;
+
+  location ~* ^/(about|community|doc|docs|images|static|)(/|$) {
+    rewrite ^/doc(/|$) /docs/ permanent;
+
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_set_header Host "api.data.gov";
+    proxy_pass http://github_pages_backend;
+  }
+
+  location ~* ^/(account|admin|admins|assets|contact|signup)(/|$) {
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_pass http://api_umbrella_web_backend;
+  }
 
   location / {
-    proxy_pass http://127.0.0.1:81;
+    set $x_api_umbrella_uid $request_id;
+    set $router_name "web_router";
+    access_log <%= current_path %>/log/router.log api_umbrella_log;
 
-    proxy_redirect http://<%= domain %>:81/ /;
-    proxy_redirect http://<%= domain %>:443/ /;
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
 
-    proxy_set_header Host $host;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Api-Umbrella-UID $request_id;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto https;
-    proxy_set_header X-Forwarded-Port 443;
+    proxy_pass http://api_umbrella_gatekeeper_backend;
+  }
+}
+
+server {
+  listen 50100;
+
+  access_log <%= current_path %>/log/access.log combined;
+  error_log <%= current_path %>/log/error.log;
+
+  set $x_api_umbrella_uid $http_x_api_umbrella_uid;
+  set $router_name "api_router";
+  access_log <%= current_path %>/log/router.log api_umbrella_log;
+
+  keepalive_timeout 5m;
+
+  # Remove the legacy /api/ prefix from all API urls. Now we assume API URLs
+  # are all top-level.
+  rewrite ^/api(/.*) $1 break;
+
+  location ~* ^/api-users/ {
+    # Re-add the /api prefix for this web backend.
+    rewrite ^(/api-users/.*) /api$1 break;
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_set_header Host $http_host;
+    proxy_pass http://api_umbrella_web_backend;
+  }
+
+  location ~* ^/bjs/ {
+    rewrite ^/bjs(/.*) $1 break;
+    proxy_set_header Host "bjs.gov:8080";
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_pass http://bjs_apis_backend;
+  }
+
+  location ~* ^/fcc/ {
+    rewrite ^/fcc(/.*) $1 break;
+    proxy_set_header Host "broadbandmap.gov";
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_pass http://broadbandmap_apis_backend;
+  }
+
+  location ~* ^/census/ {
+    rewrite ^(.*/states)/AL $1/01;
+    rewrite ^(.*/states)/AK $1/02;
+    rewrite ^(.*/states)/AZ $1/04;
+    rewrite ^(.*/states)/AR $1/05;
+    rewrite ^(.*/states)/CA $1/06;
+    rewrite ^(.*/states)/CO $1/08;
+    rewrite ^(.*/states)/CT $1/09;
+    rewrite ^(.*/states)/DE $1/10;
+    rewrite ^(.*/states)/DC $1/11;
+    rewrite ^(.*/states)/FL $1/12;
+    rewrite ^(.*/states)/GA $1/13;
+    rewrite ^(.*/states)/HI $1/15;
+    rewrite ^(.*/states)/ID $1/16;
+    rewrite ^(.*/states)/IL $1/17;
+    rewrite ^(.*/states)/IN $1/18;
+    rewrite ^(.*/states)/IA $1/19;
+    rewrite ^(.*/states)/KS $1/20;
+    rewrite ^(.*/states)/KY $1/21;
+    rewrite ^(.*/states)/LA $1/22;
+    rewrite ^(.*/states)/ME $1/23;
+    rewrite ^(.*/states)/MD $1/24;
+    rewrite ^(.*/states)/MA $1/25;
+    rewrite ^(.*/states)/MI $1/26;
+    rewrite ^(.*/states)/MN $1/27;
+    rewrite ^(.*/states)/MS $1/28;
+    rewrite ^(.*/states)/MO $1/29;
+    rewrite ^(.*/states)/MT $1/30;
+    rewrite ^(.*/states)/NE $1/31;
+    rewrite ^(.*/states)/NV $1/32;
+    rewrite ^(.*/states)/NH $1/33;
+    rewrite ^(.*/states)/NJ $1/34;
+    rewrite ^(.*/states)/NM $1/35;
+    rewrite ^(.*/states)/NY $1/36;
+    rewrite ^(.*/states)/NC $1/37;
+    rewrite ^(.*/states)/ND $1/38;
+    rewrite ^(.*/states)/OH $1/39;
+    rewrite ^(.*/states)/OK $1/40;
+    rewrite ^(.*/states)/OR $1/41;
+    rewrite ^(.*/states)/PA $1/42;
+    rewrite ^(.*/states)/RI $1/44;
+    rewrite ^(.*/states)/SC $1/45;
+    rewrite ^(.*/states)/SD $1/46;
+    rewrite ^(.*/states)/TN $1/47;
+    rewrite ^(.*/states)/TX $1/48;
+    rewrite ^(.*/states)/UT $1/49;
+    rewrite ^(.*/states)/VT $1/50;
+    rewrite ^(.*/states)/VA $1/51;
+    rewrite ^(.*/states)/WA $1/53;
+    rewrite ^(.*/states)/WV $1/54;
+    rewrite ^(.*/states)/WI $1/55;
+    rewrite ^(.*/states)/WY $1/56;
+    rewrite ^/census/american-community-survey/v1/([0-9][0-9][0-9][0-9])/populations/states/([0-9][0-9]) /data/$1/acs5?key=e81ad00727f0e08a8fd615d9db0e2d148ff44f77&get=B02001_001E,NAME&for=state:$2? break;
+    rewrite ^/census/american-community-survey/v1/([0-9][0-9][0-9][0-9])/populations/states /data/$1/acs5?key=e81ad00727f0e08a8fd615d9db0e2d148ff44f77&get=B02001_001E,NAME&for=state:*? break;
+    rewrite ^(.+for=state:)AL(.*) $101$2 break;
+    proxy_set_header Host "api.census.gov";
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_pass http://census_apis_backend;
+  }
+
+  location ~* ^/dol/ {
+    rewrite ^/dol(/.*) $1?KEY=9f54ed13-2052-4764-b26a-0232e0f50247 break;
+    proxy_set_header Host "api.dol.gov";
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_pass http://dol_apis_backend;
+  }
+
+  location ~* ^/myusa/ {
+    rewrite ^/myusa/discovery(/.*) $1 break;
+    proxy_set_header Host "discovery.my.usa.gov";
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_pass http://myusa_discovery_apis_backend;
+  }
+
+  location ~* ^/nrel/ {
+    rewrite ^/nrel(/.*) /api$1?api_key=bcc50c5b78ad7fe4109dffad2bcc1b8d28f724c6 break;
+    proxy_set_header Host "developer.nrel.gov";
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_pass http://nrel_apis_backend;
   }
 }
