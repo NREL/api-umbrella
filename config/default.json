@@ -30,31 +30,31 @@
         "duration": 1000,
         "accuracy": 500,
         "limit_by": "ip",
-        "limit": 250000,
+        "limit": 50,
         "distributed": false
       }, {
         "duration": 1000,
         "accuracy": 500,
         "limit_by": "api_key",
-        "limit": 150000,
+        "limit": 20,
         "distributed": false
       }, {
         "duration": 15000,
         "accuracy": 1000,
         "limit_by": "ip",
-        "limit": 250000,
+        "limit": 250,
         "distributed": true
       }, {
         "duration": 15000,
         "accuracy": 1000,
         "limit_by": "api_key",
-        "limit": 150000,
+        "limit": 150,
         "distributed": true
       }, {
         "duration": 3600000,
         "accuracy": 60000,
         "limit_by": "api_key",
-        "limit": 10000000,
+        "limit": 1000,
         "distributed": true
       }
     ],
