@@ -63,8 +63,8 @@
   "log_processor": {
     "workers": 1
   },
-  "haproxy_log_listener": {
+  "router_log_listener": {
     "workers": 1,
-    "port": 5114
+    "log_path": "/var/log/api_umbrella/router.log"
   }
 }
