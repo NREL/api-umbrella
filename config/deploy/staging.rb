@@ -12,7 +12,7 @@ set :base_domain, "api.data.gov"
 set :copy_exclude, [".git"]
 
 # Set the Rails environment.
-set :rails_env, "production"
+set :rails_env, "staging"
 
 set :user, "root"
 ssh_options[:keys] = ["/vagrant/workspace/aws_nmuerdter.pem"]
