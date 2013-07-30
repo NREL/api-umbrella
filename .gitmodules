@@ -160,3 +160,6 @@
 [submodule "chef/cookbooks/varnish"]
 	path = chef/cookbooks/varnish
 	url = https://github.com/NREL-cookbooks/varnish.git
+[submodule "chef/cookbooks/selinux"]
+	path = chef/cookbooks/selinux
+	url = https://github.com/opscode-cookbooks/selinux.git

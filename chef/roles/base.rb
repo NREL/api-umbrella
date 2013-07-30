@@ -6,6 +6,9 @@ run_list([
   # calls.
   "recipe[ca_certificates]",
 
+  # Varnish doesn't seem to get along with SELinux. Should investigate more.
+  "recipe[selinux::permissive]",
+
   # Manage the sudoers file
   "recipe[sudo]",
   "recipe[sudo::nrel_defaults]",
