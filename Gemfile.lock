@@ -20,12 +20,6 @@ GIT
       railties (> 3.2.8, < 4.0.0)
       sprockets (>= 2.0.0)
 
-GIT
-  remote: https://github.com/kares/ruby-yui-compressor.git
-  revision: 9e0a558df790e958efee038b415d388c5b0058eb
-  specs:
-    yui-compressor (0.9.6)
-
 GEM
   remote: http://rubygems.org/
   remote: http://torquebox.org/rubygems/
@@ -139,7 +133,7 @@ GEM
       tilt
     hashie (2.0.5)
     highline (1.6.19)
-    hike (1.2.2)
+    hike (1.2.3)
     http_parser.rb (0.5.3)
     http_parser.rb (0.5.3-java)
     i18n (0.6.1)
@@ -149,8 +143,8 @@ GEM
       thor (>= 0.14, < 2.0)
     jruby-pageant (1.1.1)
     jruby-pageant (1.1.1-java)
-    json (1.7.7)
-    json (1.7.7-java)
+    json (1.8.0)
+    json (1.8.0-java)
     kaminari (0.14.1)
       actionpack (>= 3.0.0)
       activesupport (>= 3.0.0)
@@ -171,7 +165,7 @@ GEM
     mongoid-tree (1.0.1)
       mongoid (>= 3.0, <= 4.0)
     moped (1.4.5)
-    multi_json (1.7.2)
+    multi_json (1.7.7)
     multipart-post (1.2.0)
     net-scp (1.0.4)
       net-ssh (>= 1.99.1)
@@ -245,7 +239,7 @@ GEM
       rspec-core (~> 2.13.0)
       rspec-expectations (~> 2.13.0)
       rspec-mocks (~> 2.13.0)
-    sass (3.2.8)
+    sass (3.2.10)
     sass-rails (3.2.6)
       railties (~> 3.2.0)
       sass (>= 3.1.10)
@@ -276,7 +270,7 @@ GEM
       libv8 (~> 3.11.8.12)
       ref
     thor (0.18.1)
-    tilt (1.4.0)
+    tilt (1.4.1)
     torquebox (2.3.2)
       thor (>= 0.14.6)
       torquebox-cache (= 2.3.2)
@@ -376,4 +370,3 @@ DEPENDENCIES
   uglifier
   yajl-ruby
   yard
-  yui-compressor!

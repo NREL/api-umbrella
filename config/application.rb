@@ -67,7 +67,9 @@ module Developer
 
     # Choose the compressors to use
     config.assets.js_compressor  = :uglifier
-    config.assets.css_compressor = :yui
+
+    # Rely on Sass's built-in compressor for CSS minifying.
+    # config.assets.css_compressor = :yui
 
     # Precompile additional assets (application.js, application.css, and all non-JS/CSS are already added)
     config.assets.precompile += %w( 
