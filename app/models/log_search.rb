@@ -5,7 +5,7 @@ class LogSearch
   attr_reader :server, :start_time, :end_time, :interval, :region, :country, :state
 
   def initialize(options = {})
-    @server = Stretcher::Server.new(ElasticsearchConfig.server)
+    @server = Stretcher::Server.new(ElasticsearchConfig.server, :logger => Rails.logger)
 
     @start_time = Time.zone.parse(options[:start_time])
     @end_time = Time.zone.parse(options[:end_time]).end_of_day
@@ -194,29 +194,8 @@ class LogSearch
   def indexes
     unless @indexes
       date_range = @start_time.utc.to_date..@end_time.utc.to_date
-      @indexes = date_range.map { |date| "api-umbrella-logs-#{date.iso8601}" }
-
-      # Compact the list of indexes by using wildcards for full months. This
-      # helps trim down the URL length when indexes get passed to elasticsearch.
-      # Otherwise, it's easy to bump elasticsearch's HTTP length limits for GET
-      # URLs.
-      #
-      # If we still run into issues, we could actually tweak Elasticsearch's
-      # allowable HTTP sizes:
-      # https://github.com/elasticsearch/elasticsearch/issues/1174
-      if(@indexes.length > 28)
-        month = date_range.min.beginning_of_month
-        while(month < date_range.last)
-          month_range = month..month.end_of_month
-          if(month_range.min >= date_range.min && month_range.max <= date_range.max)
-            index_prefix = "api-umbrella-logs-#{month.strftime("%Y-%m")}-"
-            @indexes.reject! { |index| index.start_with?(index_prefix) }
-            @indexes << "#{index_prefix}*"
-          end
-
-          month += 1.month
-        end
-      end
+      @indexes = date_range.map { |date| "api-umbrella-logs-#{date.strftime("%Y-%m")}" }
+      @indexes.uniq!
     end
 
     @indexes
