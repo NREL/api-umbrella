@@ -19,4 +19,33 @@ server {
 
   # Allow for larger request bodies to allow for huge documentation pages.
   client_max_body_size 10m;
+
+  # FIXME: Some static end points for temporary benchmarking.
+  location /api/api-users/benchmark {
+    default_type text/plain;
+    echo "Hello World";
+    echo_flush;
+  }
+
+  location /api/api-users/benchmark_cached {
+    default_type text/plain;
+    expires 24h;
+    echo "Hello World";
+    echo_flush;
+  }
+
+  location /api/api-users/benchmark_delayed {
+    default_type text/plain;
+    echo_sleep 5;
+    echo "Hello World";
+    echo_flush;
+  }
+
+  location /api/api-users/benchmark_delayed_cached {
+    default_type text/plain;
+    expires 24h;
+    echo_sleep 0.5;
+    echo "Hello World";
+    echo_flush;
+  }
 }
