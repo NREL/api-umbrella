@@ -20,7 +20,16 @@
   "trailing": true,
   "smarttabs": true,
   "globals": {
+    "afterEach": true,
+    "backendCalled": true,
+    "before": true,
+    "beforeEach": true,
     "describe": true,
-    "it": true
+    "Factory": true,
+    "gatekeeper": true,
+    "it": true,
+    "mongoose": true,
+    "shared": true,
+    "request": true
   }
 }

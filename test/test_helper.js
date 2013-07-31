@@ -1,3 +1,5 @@
+'use strict';
+
 require('./support/env');
 
 var _ = require('underscore'),
