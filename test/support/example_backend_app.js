@@ -48,13 +48,13 @@ app.get('/sleep_timeout', function(req, res) {
 });
 
 app.get('/chunked', function(req, res) {
-  res.write('5\r\nHello\r\n')
+  res.write('5\r\nHello\r\n');
 
   setTimeout(function() {
-    res.write('7\r\nGoodbye\r\n')
+    res.write('7\r\nGoodbye\r\n');
 
     setTimeout(function() {
-      res.write('0\r\n\r\n')
+      res.write('0\r\n\r\n');
     }, 100);
   }, 100);
 });

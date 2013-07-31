@@ -35,7 +35,7 @@ global.shared = {
   },
 
   itBehavesLikeGatekeeperBlocked: function(path, statusCode, message, options) {
-    it('doesn't call the target app', function(done) {
+    it('doesn\'t call the target app', function(done) {
       request(shared.buildRequestOptions(path, this.apiKey, options), function(error, response, body) {
         backendCalled.should.eql(false);
         done();
@@ -66,4 +66,4 @@ global.shared = {
       });
     });
   },
-}
+};
