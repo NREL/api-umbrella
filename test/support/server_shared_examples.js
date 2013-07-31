@@ -36,7 +36,7 @@ global.shared = {
 
   itBehavesLikeGatekeeperBlocked: function(path, statusCode, message, options) {
     it('doesn\'t call the target app', function(done) {
-      request(shared.buildRequestOptions(path, this.apiKey, options), function(error, response, body) {
+      request(shared.buildRequestOptions(path, this.apiKey, options), function() {
         backendCalled.should.eql(false);
         done();
       });
@@ -53,14 +53,14 @@ global.shared = {
 
   itBehavesLikeGatekeeperAllowed: function(path, message, options) {
     it('calls the target app', function(done) {
-      request(shared.buildRequestOptions(path, this.apiKey, options), function(error, response, body) {
+      request(shared.buildRequestOptions(path, this.apiKey, options), function() {
         backendCalled.should.eql(true);
         done();
       });
     });
 
     it('returns a successful response', function(done) {
-      request(shared.buildRequestOptions(path, this.apiKey, options), function(error, response, body) {
+      request(shared.buildRequestOptions(path, this.apiKey, options), function(error, response) {
         response.statusCode.should.eql(200);
         done();
       });

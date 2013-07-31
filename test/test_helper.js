@@ -2,8 +2,7 @@
 
 require('./support/env');
 
-var _ = require('underscore'),
-    request = require('request'),
+var request = require('request'),
     Factory = require('factory-lady'),
     mongoose = require('mongoose'),
     gatekeeper = require('../lib/api-umbrella-gatekeeper');

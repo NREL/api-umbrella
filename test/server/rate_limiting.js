@@ -2,8 +2,7 @@
 
 require('../test_helper');
 
-var _ = require('underscore'),
-    async = require('async'),
+var async = require('async'),
     timekeeper = require('timekeeper');
 
 describe('ApiUmbrellaGatekeper', function() {
@@ -38,7 +37,7 @@ describe('ApiUmbrellaGatekeper', function() {
       it('rejects requests after the hourly limit has been exceeded', function(done) {
         timekeeper.freeze(new Date(2013, 1, 1, 1, 27, 0));
         async.times(10, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
+          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function() {
             asyncCallback(null);
           });
         }.bind(this), function() {
@@ -56,7 +55,7 @@ describe('ApiUmbrellaGatekeper', function() {
       it('allows requests again in the next hour after the rate limit has been exceeded', function(done) {
         timekeeper.freeze(new Date(2013, 1, 1, 1, 27, 0));
         async.times(11, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
+          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function() {
             asyncCallback(null);
           });
         }.bind(this), function() {
@@ -95,7 +94,7 @@ describe('ApiUmbrellaGatekeper', function() {
       it('does not count excess queries in the smaller time window against the larger time window', function(done) {
         timekeeper.freeze(new Date(2013, 1, 1, 1, 27, 43));
         async.times(15, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
+          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function() {
             asyncCallback(null);
           });
         }.bind(this), function() {
