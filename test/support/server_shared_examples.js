@@ -4,6 +4,8 @@ require('../test_helper');
 
 var _ = require('underscore');
 
+global.backendCalled = false;
+
 global.shared = {
   buildRequestOptions: function(path, apiKey, options) {
     return _.extend({

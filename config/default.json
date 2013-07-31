@@ -65,6 +65,6 @@
   },
   "router_log_listener": {
     "workers": 1,
-    "log_path": "/var/log/api_umbrella/router.log"
+    "log_path": "log/router.log"
   }
 }
