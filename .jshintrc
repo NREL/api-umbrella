@@ -1,10 +1,9 @@
 {
   "node": true,
   "browser": false,
-  "es5": true,
   "esnext": true,
   "bitwise": true,
-  "camelcase": true,
+  "camelcase": false,
   "curly": true,
   "eqeqeq": true,
   "immed": true,
