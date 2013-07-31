@@ -2,7 +2,7 @@
 
 require('../test_helper');
 
-var ApiUser = mongoose.model("api_users", {
+var ApiUser = mongoose.model('api_users', {
   api_key: {
     type: String,
     index: { unique: true },

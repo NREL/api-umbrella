@@ -27,7 +27,7 @@ describe('ApiUmbrellaGatekeper', function() {
         async.times(10, function(index, asyncCallback) {
           request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
             response.statusCode.should.eql(200);
-            body.should.eql("Hello World");
+            body.should.eql('Hello World');
             asyncCallback(null);
           });
         }.bind(this), function() {
@@ -45,7 +45,7 @@ describe('ApiUmbrellaGatekeper', function() {
           timekeeper.freeze(new Date(2013, 1, 1, 2, 26, 59));
           request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
             response.statusCode.should.eql(429);
-            body.should.include("over_rate_limit");
+            body.should.include('over_rate_limit');
 
             timekeeper.reset();
             done();
@@ -63,7 +63,7 @@ describe('ApiUmbrellaGatekeper', function() {
           timekeeper.freeze(new Date(2013, 1, 1, 2, 27, 0));
           request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
             response.statusCode.should.eql(200);
-            body.should.eql("Hello World");
+            body.should.eql('Hello World');
 
             timekeeper.reset();
             done();
@@ -103,7 +103,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
           request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
             response.statusCode.should.eql(200);
-            body.should.eql("Hello World");
+            body.should.eql('Hello World');
 
             timekeeper.reset();
             done();

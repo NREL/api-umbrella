@@ -7,8 +7,8 @@ describe('ApiUmbrellaGatekeper', function() {
     proxy: {
       restricted_apis: [
         {
-          path_regex: "^/restricted",
-          role: "restricted",
+          path_regex: '^/restricted',
+          role: 'restricted',
         },
       ],
     }
@@ -18,7 +18,7 @@ describe('ApiUmbrellaGatekeper', function() {
     backendCalled = false;
     this.server = gatekeeper.createServer({
       port: 9333,
-      backend: "localhost:9444",
+      backend: 'localhost:9444',
       mongo: 'mongodb://127.0.0.1:27017/api_umbrella_test',
     }, function() {
       done();
