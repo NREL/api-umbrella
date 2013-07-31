@@ -1,3 +1,5 @@
+'use strict';
+
 var path = require('path');
 
 process.env['NODE_ENV'] = 'test';

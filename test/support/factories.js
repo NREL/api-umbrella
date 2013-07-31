@@ -1,3 +1,5 @@
+'use strict';
+
 require('../test_helper');
 
 mongoose.connect('mongodb://127.0.0.1:27017/api_umbrella_test');

@@ -1,3 +1,5 @@
+'use strict';
+
 require('../test_helper');
 
 var ApiUser = mongoose.model("api_users", {
