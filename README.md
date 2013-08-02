@@ -18,7 +18,7 @@ API Umbrella is an open source API management platform for exposing web service 
 API Umbrella is broken into several components:
 
 * **[API Umbrella Gatekeeper](https://github.com/NREL/api-umbrella-gatekeeper):** A custom reverse proxy to control access to your APIs. Performs API key validation, request rate limiting, and gathers analytics.
-* **[API Umbrella Router](https://github.com/NREL/api-umbrella-router/tree/master):** Combines reverse proxies (API Umbrella Gatekeeper and HAProxy) to route requests to the appropriate backend. Ensures all API requests are approved by the gatekeeper and gives the appearance of unified APIs.
+* **[API Umbrella Router](https://github.com/NREL/api-umbrella-router/tree/master):** Combines reverse proxies (API Umbrella Gatekeeper and nginx) to route requests to the appropriate backend. Ensures all API requests are approved by the gatekeeper and gives the appearance of unified APIs.
 * **[API Umbrella Web](https://github.com/NREL/api-umbrella-web/tree/master):** A web application for providing API documentation and API key signup. Also provides the admin interface for managing documentation, users, and viewing analytics.
 
 ## Dependencies
@@ -30,7 +30,7 @@ API Umbrella is broken into several components:
   * [MongoDB](http://www.mongodb.org/)
   * [Supervisor](http://supervisord.org/)
 * API Umbrella Router
-  * [HAProxy](http://haproxy.1wt.eu/)
+  * [nginx](http://nginx.org/)
 * API Umbrella Web
   * [Ruby](http://www.ruby-lang.org/en/) (defaults to MRI Ruby 1.9)
   * [nginx](http://nginx.org/) (or your favorite web server)
@@ -50,8 +50,7 @@ First install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagra
 # Get the code
 $ git clone https://github.com/NREL/api-umbrella.git
 $ cd api-umbrella
-$ git submodule init
-$ git submodule update
+$ git submodule update --init --recursive
 
 # Bootstrap a local VM environment (this will take a while)
 $ vagrant up
@@ -61,12 +60,11 @@ $ vagrant ssh
 
 # Setup the apps on your local VM
 $ cd /vagrant/workspace/router
-$ cp config/mongoid.yml.example config/mongoid.yml && cp config/redis.yml.example config/redis.yml
 $ bundle install --path=vendor/bundle
 $ cap vagrant deploy
 
 $ cd /vagrant/workspace/web
-$ cp config/mongoid.yml.example config/mongoid.yml
+$ cp config/mongoid.yml.deploy config/mongoid.yml
 $ bundle install --path=vendor/bundle
 $ cap vagrant deploy
 
@@ -174,3 +172,5 @@ Migrating to other servers or a production environment can be largely handled by
 ## Who's using API Umbrella?
 
 * [NREL Developer Network](http://developer.nrel.gov/)
+
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/9caf7fc8bb54ccd9e1670affa6b82618 "githalytics.com")](http://githalytics.com/NREL/api-umbrella)
