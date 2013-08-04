@@ -66,11 +66,11 @@ class LogSearch
     }
   end
 
-  def filter_by_user!(user_id)
+  def filter_by_user!(user_email)
     @query[:query][:filtered][:filter][:and] << {
       :term => {
         :user => {
-          :user_id => user_id,
+          :user_email => user_email,
         },
       },
     }
@@ -166,7 +166,7 @@ class LogSearch
   end
 
   def facet_by_users!(size)
-    facet_by_term!(:user_id, size)
+    facet_by_term!(:user_email, size)
   end
 
   def facet_by_response_status!(size)

@@ -7,7 +7,7 @@ var UsersTableView = Backbone.View.extend({
       cell: LinkCell.extend({
         uri: function() {
           var query = _.extend({}, StatsApp.router.getCurrentQuery(), {
-            search: 'user_id:' + this.model.get('id'),
+            search: 'user_email:' + this.model.get('id'),
           });
 
           return '#search/' + $.param(query);

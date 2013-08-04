@@ -62,19 +62,6 @@ class LogResult
     @map_breadcrumbs
   end
 
-  def users_by_id
-    unless @users_by_id
-      user_ids = @raw_result.results.map { |result| result[:user_id] }
-      if @raw_result.facets[:user_id]
-        user_ids += @raw_result.facets[:user_id][:terms].map { |term| term[:term] }
-      end
-
-      @users_by_id = ApiUser.where(:_id.in => user_ids).all.to_a.group_by { |user| user.id.to_s }
-    end
-
-    @users_by_id
-  end
-
   def cities
     unless @cities
       @cities = {}
@@ -115,29 +102,3 @@ class LogResult
     @cities
   end
 end
-
-=begin
-    user_ids = @result.facets[:user_id][:terms].map { |term| term[:term] }
-    user_ids += @result.results.map { |result| result[:user_id] }
-    @users = ApiUser.where(:_id.in => user_ids).all.to_a.group_by { |user| user.id.to_s }
-    @result.results.each do |result|
-      if @users[result[:user_id]]
-        user = @users[result[:user_id]].first
-        result[:email] = user.email
-      end
-    end
-
-    @result.facets[:user_id][:terms].each do |term|
-      if @users[term[:term]]
-        user = @users[term[:term]].first
-        term[:term] = user.email
-      end
-    end
-
-    @result.facets[:response_status][:terms].each do |term|
-      name = Rack::Utils::HTTP_STATUS_CODES[term[:term].to_i]
-      if(name)
-        term[:term] = "#{term[:term]} (#{name})"
-      end
-    end
-=end

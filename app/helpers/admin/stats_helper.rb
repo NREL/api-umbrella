@@ -18,16 +18,6 @@ module Admin::StatsHelper
     terms
   end
 
-  def user_email(user_id)
-    users = @result.users_by_id[user_id]
-
-    if users
-      users.first.email
-    else
-      "Unknown User"
-    end
-  end
-
   def formatted_interval_time(time)
     time = Time.at(time / 1000).in_time_zone
 

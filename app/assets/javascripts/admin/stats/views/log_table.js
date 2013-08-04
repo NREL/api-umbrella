@@ -18,7 +18,7 @@ var LogTableView = Backbone.View.extend({
       editable: false,
       cell: "string"
     }, {
-      name: "email",
+      name: "user_email",
       label: "User",
       editable: false,
       cell: "string"

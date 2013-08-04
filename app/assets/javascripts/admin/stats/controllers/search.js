@@ -29,6 +29,18 @@ var SearchController = Marionette.Controller.extend({
   handleLoadSuccess: function(data) {
     StatsApp.vizRegion.show(new IntervalHitsChartView(data.interval_hits));
 
+    _.each(data.facets.users, function(term) {
+      var query = _.extend({}, StatsApp.router.getCurrentQuery());
+      query.search = [query.search, 'user_email:' + term.term].join(' AND ');
+      term.link = '#search/' + $.param(query);
+    });
+
+    _.each(data.facets.ips, function(term) {
+      var query = _.extend({}, StatsApp.router.getCurrentQuery());
+      query.search = [query.search, 'request_ip:' + term.term].join(' AND ');
+      term.link = '#search/' + $.param(query);
+    });
+
     var totals = new Totals({
       totals: data.totals,
       facets: data.facets,
