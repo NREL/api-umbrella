@@ -18,7 +18,9 @@ var MigrateLogs = function() {
 _.extend(MigrateLogs.prototype, {
   users: {},
   commands: [],
-  startTime: moment.utc("2013-01-01"),
+  //startTime: moment.utc("2010-07-01 00:00:00"),
+  startTime: moment.utc("2013-07-23 14:00:00"),
+  //endTime: moment.utc("2013-01-02 00:00:00"),
   endTime: moment(),
 
   initialize: function() {
@@ -33,6 +35,8 @@ _.extend(MigrateLogs.prototype, {
         }
       ]
     });
+
+    this.cargo = async.cargo(this.bulkIndex.bind(this), 1000);
 
     async.series([
       this.connectMongo.bind(this),
@@ -94,7 +98,6 @@ _.extend(MigrateLogs.prototype, {
     }).sort({ "_id": -1 });
 
     this.count = 0;
-    this.cargo = async.cargo(this.bulkIndex.bind(this), 1000);
 
     this.cursor.each(function(error, oldLog) {
       if(error) {
@@ -107,14 +110,46 @@ _.extend(MigrateLogs.prototype, {
         this.count++;
         this.handleLog(oldLog);
       } else {
-        var duration = (Date.now() - timerStart) / 1000;
-        rate = this.count / duration;
-        console.info("  Processed " + this.count + " in: " + duration + " seconds (" + rate + " records/second)");
+        if(this.cargo.length() === 0) {
+          console.info("  No Records Found");
 
-        this.chunkStartTime = chunkEndTime;
-        asyncWhilstCallback(null);
+          this.finishChunk(chunkEndTime, asyncWhilstCallback);
+        } else {
+          this.cargo.drain = function() {
+            var duration = (Date.now() - timerStart) / 1000;
+            rate = this.count / duration;
+            console.info("  Processed " + this.count + " in: " + duration + " seconds (" + rate + " records/second)");
+
+            this.cargo.drain = null;
+            this.finishChunk(chunkEndTime, asyncWhilstCallback);
+          }.bind(this);
+        }
+
       }
     }.bind(this));
+  },
+
+  finishChunk: function(chunkEndTime, asyncWhilstCallback) {
+    this.chunkStartTime = chunkEndTime;
+
+    if(chunkEndTime.date() == 1 && chunkEndTime.hour() == 2) {
+      var optimizeTimerStart = Date.now();
+      var index = 'api-umbrella-logs-' + moment(chunkEndTime).subtract("days", 1).format("YYYY-MM")
+      console.info('== Optimizing ' + index + ' ==');
+      this.elasticSearch.optimize(index, { max_num_segments: 1 }).
+        on("done", function() {
+          var duration = (Date.now() - optimizeTimerStart) / 1000;
+          console.info('  Optimized ' + index + ' in: ' + duration + ' seconds');
+          asyncWhilstCallback(null);
+        }).
+        on("error", function(error) {
+          console.error(error);
+          process.exit(1);
+          return false;
+        }).exec();
+    } else {
+      asyncWhilstCallback(null);
+    }
   },
 
   handleLog: function(oldLog) {
@@ -124,13 +159,13 @@ _.extend(MigrateLogs.prototype, {
     }
 
     var newLog = {
-      //"_type": "log",
+      "uid": oldLog["_id"].toString(),
       "request_at": oldLog["requested_at"].toISOString(),
       "request_method": env["REQUEST_METHOD"],
       "request_url": "http://developer.nrel.gov" + env["REQUEST_URI"],
       "request_user_agent": env["HTTP_USER_AGENT"],
       "request_accept_encoding": env["HTTP_ACCEPT_ENCODING"],
-      "request_ip": oldLog["ip_address"],
+      "request_ip": oldLog["ip_address"] || "127.0.0.1",
       "response_status": oldLog["response_status"],
       "response_content_type": mime.lookup(oldLog["path"]),
       "api_key": oldLog["api_key"],
@@ -154,10 +189,12 @@ _.extend(MigrateLogs.prototype, {
     for(var i = 0; i < logs.length; i++) {
       var log = logs[i];
 
-      var uid = log["request_url"] + log["requested_at"];
+      var uid = log["uid"];
+      delete log.uid;
+      //var uid = log["request_url"] + log["requested_at"];
       commands.push({
         "index": {
-          "_index": 'api-umbrella-logs-' + log.request_at.substring(0, 10),
+          "_index": 'api-umbrella-logs-' + moment.utc(log.request_at).format("YYYY-MM"),
           "_type": "log",
           "_id": URLSafeBase64.encode(crypto.createHash('sha256').update(uid).digest('base64')),
         },
@@ -168,6 +205,7 @@ _.extend(MigrateLogs.prototype, {
 
     this.elasticSearch.bulk(commands).
       on("done", function() {
+        console.info('    Indexed ' + (commands.length / 2) + ' records');
         callback();
       }).
       on("error", function(error) {

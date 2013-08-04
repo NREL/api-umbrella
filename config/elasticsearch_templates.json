@@ -40,7 +40,7 @@
       "template": "api-umbrella-logs-*",
       "settings": {
         "index": {
-          "number_of_shards": 1
+          "number_of_shards": 3
         },
         "analysis": {
           "analyzer": {
