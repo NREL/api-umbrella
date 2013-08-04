@@ -34,22 +34,37 @@ server {
 
   keepalive_timeout 30s;
 
+  # Proxy over HTTP 1.1 so keepalive connections to the backend are supported.
+  proxy_http_version 1.1;
+  proxy_set_header Connection "";
+
+  # Default proxy headers.
+  proxy_set_header Host $http_host;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+  # Conditional proxy headers. Don't set these x-forwarded headers if they've
+  # already been set (by the SSL terminator).
+  set $real_scheme $http_x_forwarded_proto;
+  if ($real_scheme = "") {
+    set $real_scheme $scheme; 
+  }
+
+  set $real_port $http_x_forwarded_port;
+  if ($real_port = "") {
+    set $real_port $server_port; 
+  }
+
+  proxy_set_header X-Forwarded-Proto $real_scheme;
+  proxy_set_header X-Forwarded-Port $real_port;
+
   location ~* ^/(about|community|doc|docs|images|static|)(/|$) {
     rewrite ^/doc(/|$) /docs/ permanent;
-
-    proxy_http_version 1.1;
-    proxy_set_header Connection "";
 
     proxy_set_header Host "api.data.gov";
     proxy_pass http://github_pages_backend;
   }
 
   location ~* ^/(account|admin|admins|assets|contact|signup)(/|$) {
-    proxy_http_version 1.1;
-    proxy_set_header Connection "";
-
-    proxy_set_header Host $http_host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_pass http://api_umbrella_web_backend;
   }
 
@@ -58,12 +73,7 @@ server {
     set $router_name "web_router";
     access_log <%= current_path %>/log/router.log api_umbrella_log;
 
-    proxy_http_version 1.1;
-    proxy_set_header Connection "";
-
-    proxy_set_header Host $http_host;
     proxy_set_header X-Api-Umbrella-UID $request_id;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_pass http://api_umbrella_gatekeeper_backend;
   }
 }
