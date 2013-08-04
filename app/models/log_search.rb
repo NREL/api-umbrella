@@ -27,6 +27,9 @@ class LogSearch
           },
         },
       },
+      :sort => [
+        { :request_at => :desc },
+      ],
       :facets => {}
     }
 
