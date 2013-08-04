@@ -1,6 +1,4 @@
-# Force a branched deployment on the staging server for the GSA demo.
-ENV["BRANCH"] = "gsa"
-require "capistrano_nrel_ext/recipes/branches"
+require "dotenv/capistrano"
 
 # Set the servers for this stage.
 role :app, "devstage-int.nrel.gov"

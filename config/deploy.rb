@@ -24,3 +24,6 @@ ssh_options[:forward_agent] = true
 set :rails_app_paths,  {
   "." => "/",
 }
+
+# Setup dotenv to pull from chef-configured file.
+set :dotenv_path, "/home/dotenv/env"
