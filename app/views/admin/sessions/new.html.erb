@@ -1,0 +1,37 @@
+<div class="row-fluid">
+  <div class="span4 offset4">
+    <h1>Admin Login</h1>
+
+    <%- resource_class.omniauth_providers.each do |provider| %>
+      <% if(provider == :persona) %>
+        <form id="persona_form" action="/admins/auth/persona/callback">
+          <input type="hidden" name="assertion"/>
+          <button type="submit" class="btn btn-primary btn-block">Login with Persona</button>
+        </form>
+      <% else %>
+        <%= link_to "Login with #{t(provider, :scope => [:omniauth_providers])}", omniauth_authorize_path(resource_name, provider), :class => "btn btn-primary btn-block" %><br />
+      <% end %>
+    <% end -%>
+  </div>
+</div>
+
+<script src="https://login.persona.org/include.js" type="text/javascript"></script>
+<script type="text/javascript">
+  function loginViaEmail() {
+    navigator.id.get(function(assertion) {
+      if(assertion) {
+        $("input[name=assertion]").val(assertion);
+        $("form").submit();
+      } else {
+        window.location = "#{failure_path}"
+      }
+    });  
+  }
+
+  $(function() {
+    $("button").click(function() {
+      loginViaEmail();
+      return false;
+    });
+  });
+</script>

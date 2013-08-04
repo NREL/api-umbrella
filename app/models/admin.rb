@@ -2,7 +2,7 @@ class Admin
   include Mongoid::Document
   include Mongoid::Paranoia
 
-  # Devise-based authentication using CAS through OmniAuth
+  # Devise-based authentication using OmniAuth
   devise :omniauthable, :trackable
 
   field :username, :type => String

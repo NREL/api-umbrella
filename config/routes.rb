@@ -33,8 +33,8 @@ Developer::Application.routes.draw do
   devise_for :admins, :controllers => { :omniauth_callbacks => "admin/admins/omniauth_callbacks" }
 
   devise_scope :admin do
-    get "/admin/login" => "admin_sessions#new", :as => :new_admin_session
-    get "/admin/logout" => "admin_sessions#destroy", :as => :destroy_admin_session
+    get "/admin/login" => "admin/sessions#new", :as => :new_admin_session
+    get "/admin/logout" => "admin/sessions#destroy", :as => :destroy_admin_session
   end
 
   match "/admin" => redirect("/admin/api_doc_collections")

@@ -10,6 +10,9 @@
 # Ignore local bundle
 /vendor/bundle
 
+# Ignore environment specific configuration
+/.env
+
 # Ignore Capistrano files
 /REVISION
 /config/deployed.yml

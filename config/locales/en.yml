@@ -1,3 +1,9 @@
 en:
   twitter_account: NRELdev
   breadcrumb_divider: "&raquo;"
+  omniauth_providers:
+    cas: MAX.gov
+    developer: dummy login (development only)
+    google_oauth2: Google
+    myusa: MyUSA
+    persona: Persona

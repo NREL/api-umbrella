@@ -1,0 +1,2 @@
+module Admin::SessionsHelper
+end

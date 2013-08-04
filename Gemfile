@@ -3,6 +3,9 @@ source "http://torquebox.org/rubygems"
 
 gem "rails", "~> 3.2.6"
 
+# Environment specific configuration
+gem "dotenv-rails"
+
 # Rails app server
 gem "torquebox", "~> 2.3.2", :platforms => [:jruby]
 
@@ -24,6 +27,8 @@ gem "stretcher"
 # OmniAuth-based authentication
 gem "devise"
 gem "omniauth"
+gem "omniauth-google-oauth2"
+gem "omniauth-persona"
 
 # Form layout and display
 gem "simple_form"
