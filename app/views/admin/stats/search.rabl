@@ -20,6 +20,8 @@ end
 
 node :logs do
   @result.results.map do |log|
-    log.except(:api_key, :_type, :_score, :_index)
+    log.except(:api_key, :_type, :_score, :_index).merge({
+      :request_url => log.request_url.gsub(%r{^.*://[^/]*}, "")
+    })
   end
 end
