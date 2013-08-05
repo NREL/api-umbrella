@@ -64,7 +64,7 @@ server {
     proxy_pass http://github_pages_backend;
   }
 
-  location ~* ^/(account|admin|admins|assets|contact|signup)(/|$) {
+  location ~* ^/(account|admin|admins|assets|contact|favicon\.ico|javascripts|robots.txt|signup)(/|$) {
     proxy_pass http://api_umbrella_web_backend;
   }
 
