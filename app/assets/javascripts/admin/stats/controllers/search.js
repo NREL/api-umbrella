@@ -31,13 +31,13 @@ var SearchController = Marionette.Controller.extend({
 
     _.each(data.facets.users, function(term) {
       var query = _.extend({}, StatsApp.router.getCurrentQuery());
-      query.search = [query.search, 'user_email:' + term.term].join(' AND ');
+      query.search = _.compact([query.search, 'user_email:' + term.term]).join(' AND ');
       term.link = '#search/' + $.param(query);
     });
 
     _.each(data.facets.ips, function(term) {
       var query = _.extend({}, StatsApp.router.getCurrentQuery());
-      query.search = [query.search, 'request_ip:' + term.term].join(' AND ');
+      query.search = _.compact([query.search, 'request_ip:' + term.term]).join(' AND ');
       term.link = '#search/' + $.param(query);
     });
 
