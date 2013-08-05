@@ -25,6 +25,8 @@ class Admin::AdminsController < Admin::BaseController
   def create
     @admin = Admin.new(params[:admin])
     @admin.save!
+
+    flash[:success] = "Successfully added admin account"
     redirect_to(admin_admins_path)
   rescue Mongoid::Errors::Validations
     render(:action => "new")
@@ -33,6 +35,8 @@ class Admin::AdminsController < Admin::BaseController
   def update
     @admin = Admin.find(params[:id])
     @admin.update_attributes!(params[:admin])
+
+    flash[:success] = "Successfully updated admin account"
     redirect_to(admin_admins_path)
   rescue Mongoid::Errors::Validations
     render(:action => "edit")

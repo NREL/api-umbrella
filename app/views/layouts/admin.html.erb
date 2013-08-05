@@ -59,9 +59,13 @@
         </div>
       <% end %>
 
-      <div class="grid_12">
-        <%= yield %>
-      </div>
+      <% flash.each do |flash_type, message| %>
+        <div class="alert alert-<%= flash_type %>">
+          <%= message %>
+        </div>
+      <% end %>
+
+      <%= yield %>
     </div>
 
     <div id="loading_overlay" style="display: none;"></div>

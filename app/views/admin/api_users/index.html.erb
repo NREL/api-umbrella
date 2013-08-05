@@ -1,27 +1,25 @@
 <h1>API Users</h1>
 
-<table class="table table-striped" style="width: 2000px;">
+<table class="table table-striped">
   <thead>
     <tr>
-      <th scope="col">API Key</th>
+      <th scope="col">E-mail</th>
       <th scope="col">First Name</th>
       <th scope="col">Last Name</th>
-      <th scope="col">E-mail</th>
-      <th scope="col">Website</th>
       <th scope="col">Puprose</th>
       <th scope="col">Created</th>
+      <th scope="col">API Key</th>
     </tr>
   </thead>
   <tbody>
     <% @api_users.each do |api_user| %>
       <tr>
-        <td><%= api_user.api_key %></td>
+        <td><%= link_to(api_user.email, edit_admin_api_user_path(api_user)) %></td>
         <td><%= api_user.first_name %></td>
         <td><%= api_user.last_name %></td>
-        <td><%= api_user.email %></td>
-        <td><%= api_user.website %></td>
         <td><%= api_user.use_description %></td>
         <td><%= api_user.created_at %></td>
+        <td><%= api_user.api_key.truncate(16) %></td>
       </tr>
     <% end %>
   </tbody>

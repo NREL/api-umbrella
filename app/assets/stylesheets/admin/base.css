@@ -114,3 +114,15 @@ textarea.fill {
   background-color: rgba(100, 100, 100, 0.5);
   z-index: 999;
 }
+
+.control-label {
+  font-weight: bold;
+}
+
+.form-horizontal.info .control-group {
+  margin: 3px 0px 5px 0px;
+}
+
+.form-horizontal.info .control-label {
+  padding-top: 0px;
+}

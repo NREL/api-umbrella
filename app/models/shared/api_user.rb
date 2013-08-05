@@ -55,6 +55,9 @@ class ApiUser
   # Protect against mass-assignment.
   attr_accessible :first_name, :last_name, :email, :website, :use_description,
     :terms_and_conditions
+  attr_accessible :first_name, :last_name, :email, :use_description,
+    :terms_and_conditions, :unthrottled, :throttle_daily_limit,
+    :throttle_hourly_limit, :throttle_by_ip, :throttle_mode, :as => :admin
 
   # has_role? simply needs to return true or false whether a user has a role or not.  
   # It may be a good idea to have "admin" roles return true always
@@ -87,6 +90,31 @@ class ApiUser
     end
 
     hash
+  end
+
+  def throttle_mode
+    if(self.unthrottled)
+      :unthrottled
+    elsif(self.throttle_daily_limit.present? || self.throttle_hourly_limit.present?)
+      :custom
+    else
+      :default
+    end
+  end
+
+  def throttle_mode=(mode)
+    case(mode.to_s)
+    when "unthrottled"
+      self.unthrottled = true
+      self.throttle_daily_limit = nil
+      self.throttle_hourly_limit = nil
+    when "custom"
+      self.unthrottled = false
+    else
+      self.unthrottled = false
+      self.throttle_daily_limit = nil
+      self.throttle_hourly_limit = nil
+    end
   end
 
   private
