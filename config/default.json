@@ -55,7 +55,8 @@
         "accuracy": 60000,
         "limit_by": "api_key",
         "limit": 1000,
-        "distributed": true
+        "distributed": true,
+        "response_headers": true
       }
     ],
     "restricted_apis": []
