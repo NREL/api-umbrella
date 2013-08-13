@@ -10,7 +10,7 @@ development:
   <<: *defaults
   sessions:
     default:
-      database: api_umbrella_staging
+      database: api_umbrella_development
       hosts:
         - localhost:27017
 

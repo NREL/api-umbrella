@@ -4,13 +4,6 @@ require "dotenv/capistrano"
 role :app, "devstage-int.nrel.gov"
 role :web, "devstage-int.nrel.gov"
 
-# Define the primary db server as our app server so database migrations can run
-# from the code checkout there.
-role :db, "devstage-int.nrel.gov", :primary => true
-
-# On our real database server, don't actually perform a code deployment.
-role :db, "devstage-int-db.nrel.gov", :no_release => true
-
 # Set the base path for deployment.
 set :deploy_to_base, "/srv/developer/devstage-int"
 
