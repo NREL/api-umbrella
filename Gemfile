@@ -1,5 +1,4 @@
 source :rubygems
-source "http://torquebox.org/rubygems"
 
 gem "rails", "~> 3.2.6"
 
@@ -25,13 +24,13 @@ gem "seed-fu"
 gem "stretcher"
 
 # OmniAuth-based authentication
-gem "devise"
+gem "devise", "~> 3.0.2"
 gem "omniauth"
 gem "omniauth-google-oauth2"
 gem "omniauth-persona"
 
 # Form layout and display
-gem "simple_form"
+gem "simple_form", "~> 2.1.0"
 
 # Pagination
 gem "kaminari"
@@ -44,8 +43,8 @@ gem "jquery-rails"
 
 gem "crummy"
 
-gem "client_side_validations", ">= 3.2.0"
-gem "client_side_validations-simple_form", ">= 2.0.0"
+gem "client_side_validations", "~> 3.2.6"
+gem "client_side_validations-simple_form", "~> 2.1.0"
 
 gem "nokogiri"
 gem "babosa"
