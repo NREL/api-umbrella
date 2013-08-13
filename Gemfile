@@ -1,6 +1,6 @@
 source :rubygems
 
-gem "rails", "~> 3.2.6"
+gem "rails", "~> 3.2.14"
 
 # Environment specific configuration
 gem "dotenv-rails"
@@ -12,16 +12,16 @@ gem "torquebox", "~> 2.3.2", :platforms => [:jruby]
 gem "rack-timeout"
 
 # MongoDB
-gem "mongoid", ">= 3.0.0"
+gem "mongoid", "~> 3.1.4"
 
 # Structure trees of mongoid documents
-gem "mongoid-tree", :require => "mongoid/tree"
+gem "mongoid-tree", "~> 1.0.3", :require => "mongoid/tree"
 
 # Database seeding
 gem "seed-fu"
 
 # Elasticsearch
-gem "stretcher"
+gem "stretcher", "~> 1.17.0"
 
 # OmniAuth-based authentication
 gem "devise", "~> 3.0.2"
@@ -39,21 +39,24 @@ gem "kaminari"
 gem "tabs_on_rails"
 
 # Unobtrusive javascript for Rails helpers (things like delete links).
-gem "jquery-rails"
+gem "jquery-rails", "~> 3.0.4"
 
-gem "crummy"
+# Breadcrumbs
+gem "crummy", "~> 1.7.2"
 
 gem "client_side_validations", "~> 3.2.6"
 gem "client_side_validations-simple_form", "~> 2.1.0"
 
 gem "nokogiri"
-gem "babosa"
+
+# For creating friendly URL slugs.
+gem "babosa", "~> 0.3.11"
 
 # For running the python pygmentize program
 gem "childprocess"
 
 # Views/templates for APIs
-gem "rabl"
+gem "rabl", "~> 0.8.6"
 
 # Country and state name lookups
 gem "countries"
