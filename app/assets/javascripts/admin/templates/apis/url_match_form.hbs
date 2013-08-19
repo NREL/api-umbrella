@@ -1,0 +1,28 @@
+{{#formFor model}}
+  <div class="modal-body">
+    <div class="row-fluid">
+      <div class="span5">
+        {{input frontendPrefix
+          placeholder='/example'
+          inputConfig='class:span12'}}
+      </div>
+      <div class="span2 arrow">
+        <i class="icon-arrow-right icon-2x"></i>
+        <div>rewrite to</div>
+      </div>
+      <div class="span5">
+        {{input backendPrefix
+          placeholder='/example'
+          inputConfig='class:span12'}}
+      </div>
+    </div>
+
+    <h4>Example:</h4>
+    <div><strong>Incoming Frontend Request:</strong> {{exampleIncomingUrl}}</div>
+    <div><strong>Outgoing Backend Request:</strong> {{exampleOutgoingUrl}}</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" {{action cancel}}>Cancel</button>
+    <button class="btn btn-primary" {{action save}}>OK</button>
+  </div>
+{{/formFor}}

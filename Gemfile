@@ -97,11 +97,14 @@ group :assets do
   # Improve PNG speed for image sprite generation
   gem "oily_png", :platforms => [:ruby]
 
+  gem "ember-rails", "~> 0.13.0"
+  gem "ember-source", "~> 1.0.0.rc7"
+
   # JavaScript Backbone extensions
   gem "marionette-rails"
 
   # For JavaScript templates
-  gem "handlebars_assets"
+  #gem "handlebars_assets"
 end
 
 # Bundle gems for the local environment. Make sure to

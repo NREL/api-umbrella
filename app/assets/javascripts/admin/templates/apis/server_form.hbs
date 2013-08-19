@@ -1,0 +1,26 @@
+{{#formFor model}}
+  <div class="modal-body">
+    <div class="row-fluid">
+      <div class="span2">
+        {{input protocol as='select'
+          value='protocol'
+          inputConfig='class:span12'
+          collection='protocolOptions'
+          optionValuePath='content.id'
+          optionLabelPath='content.name'}}
+      </div>
+      <div class="span8">
+        {{input host
+          placeholder='api.example.com'
+          inputConfig='class:span12'}}
+      </div>
+      <div class="span2">
+        {{input port inputConfig='class:span12'}}
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" {{action cancel}}>Cancel</button>
+    <button class="btn btn-primary" {{action save}}>OK</button>
+  </div>
+{{/formFor}}

@@ -80,6 +80,9 @@ module Developer
       ie_lt_9.js
     )
 
+    config.ember.variant = :development
+    config.handlebars.templates_root = ["admin/templates", "templates"]
+
     # Use a file-based cache store
     config.cache_store = :file_store, "#{Rails.root}/tmp/cache"
   end

@@ -50,13 +50,12 @@ ul.collection-list .collection-actions {
 }
 
 .input {
-  margin-top: 24px;
+  margin: 3px 0px;
 }
 
 .input label {
-  display: block;
   font-weight: bold;
-  color: #444;
+  margin-bottom: 2px;
 }
 
 .hint {
@@ -117,6 +116,7 @@ textarea.fill {
 
 .control-label {
   font-weight: bold;
+  margin-bottom: 2px;
 }
 
 .form-horizontal.info .control-group {
@@ -125,4 +125,104 @@ textarea.fill {
 
 .form-horizontal.info .control-label {
   padding-top: 0px;
+}
+
+.modal form {
+  margin: 0px;
+}
+
+fieldset {
+  margin: 24px 0px;
+}
+
+legend {
+  margin-bottom: 2px;
+  line-height: 26px;
+}
+
+.fieldset-note {
+  font-size: 85%;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+fieldset .table {
+  margin-bottom: 4px;
+}
+
+.arrow {
+  margin-top: 24px;
+  text-align: center;
+  color: #999;
+  font-size: 10px;
+  line-height: 10px;
+}
+
+.arrow i {
+  color: #ddd;
+}
+
+a {
+  [class^="icon-"],
+  [class*=" icon-"] {
+    display: inline-block;
+    text-decoration: none;
+    margin-right: 3px;
+  }
+}
+
+.table .table-row-actions {
+  text-align: right;
+
+  a {
+    margin-left: 24px;
+  }
+
+  a.remove-action {
+    font-size: 85%;
+    color: $red;
+  }
+}
+
+.table-actions {
+}
+
+.narrow-form {
+  max-width: 920px;
+}
+
+table input {
+  margin-bottom: 0px !important;
+}
+
+.form-horizontal-wide {
+  .control-label {
+    width: 240px;
+  }
+
+  .controls {
+    margin-left: 260px;
+  }
+}
+
+legend a:hover {
+  text-decoration: none;
+}
+
+a[data-toggle='collapse'] .icon-caret-down:before {
+  width: 16px;
+  text-align: center;
+}
+
+a[data-toggle='collapse'].collapsed .icon-caret-down:before {
+  content: "\f0da";
+}
+
+a:hover {
+  cursor: pointer;
+}
+
+.modal {
+  width: 820px;
+  margin-left: -410px;
 }

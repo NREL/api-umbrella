@@ -1,0 +1,20 @@
+<h1>APIs</h1>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each api in this}}
+      <tr>
+        <td>{{api.name}}</td>
+        <td class="table-row-actions">
+          {{#linkTo 'apis.edit' api._id}}<i class="icon-pencil"></i>Edit{{/linkTo}}
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

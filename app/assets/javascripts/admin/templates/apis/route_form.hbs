@@ -1,0 +1,20 @@
+{{#formFor model}}
+  <div class="modal-body">
+    {{input matcher as='select'
+       collection='matcherOptions'
+       optionValuePath='content.id'
+       optionLabelPath='content.name'}}
+    {{input httpMethod as='select'
+       collection='httpMethodOptions'
+       optionValuePath='content.id'
+       optionLabelPath='content.name'}}
+    {{input from}}
+    {{input to}}
+
+    http://api.data.gov{{from}} -> http://developer.nrel.gov{{to}}
+  </div>
+  <div class="modal-footer">
+    <button class="btn" {{action cancel}}>Cancel</button>
+    <button class="btn btn-primary" {{action save}}>OK</button>
+  </div>
+{{/formFor}}

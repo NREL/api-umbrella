@@ -37,7 +37,7 @@ Developer::Application.routes.draw do
     get "/admin/logout" => "admin/sessions#destroy", :as => :destroy_admin_session
   end
 
-  match "/admin" => redirect("/admin/api_doc_collections")
+  match "/admin" => "admin/base#empty"
 
   namespace :admin do
     resources :stats, :only => [:index] do
@@ -47,6 +47,8 @@ Developer::Application.routes.draw do
         get "map"
       end
     end
+
+    resources :apis
 
     resources :admins do
       get "page/:page", :action => :index, :on => :collection
