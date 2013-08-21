@@ -134,11 +134,11 @@ Signup to receive your own unique API key for your development environment.
 
 Assuming you added the Google Geocoding API example to your router config, you should now be able to make a request to Google's Geocoding API proxied through your local API Umbrella instance:
 
-`http://localhost:8080/api/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=**YOUR_KEY_HERE**`
+`http://localhost:8080/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=**YOUR_KEY_HERE**`
 
 You can see how API Umbrella layers its authentication on top of existing APIs by making a request using an invalid key:
 
-[http://localhost:8080/api/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY](http://localhost:8080/api/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY)
+[http://localhost:8080/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY](http://localhost:8080/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY)
 
 ### Login to the web admin
 
