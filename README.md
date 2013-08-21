@@ -64,7 +64,7 @@ $ bundle install --path=vendor/bundle
 $ cap vagrant deploy
 
 $ cd /vagrant/workspace/web
-$ cp config/mongoid.yml.deploy config/mongoid.yml
+$ cp config/mongoid.yml.deploy config/mongoid.yml && cp config/elasticsearch.yml.deploy config/elasticsearch.yml
 $ bundle install --path=vendor/bundle
 $ cap vagrant deploy
 
