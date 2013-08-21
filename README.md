@@ -85,42 +85,34 @@ Out of the box, API Umbrella doesn't know about any APIs. You must first configu
 
 In this example, we'll proxy to Google's Geocoding API (but you'll more likely be proxying to your own web services).
 
-**Step 1:** Create `workspace/router/config/haproxy/backends/api_google_farm.cfg.erb` with the following contents:
+**Step 1:** Create `workspace/router/config/nginx/backends/google_apis.conf` with the following contents:
 
 ```
-backend api_google_farm
-  # Strip /api from the beginning of the request URL before the receiving
-  # backend application sees the request.
-  #
-  # Turns a request from "GET /api/something" to "GET /something"
-  reqirep ^([^\ ]*)\ /api(/.*) \1\ \2
-
-  # Modify the host header on the request.
-  reqirep ^Host: Host:\ maps.googleapis.com
-
-  balance roundrobin
-  server api_google1 maps.googleapis.com:80
+upstream google_apis_backend {
+  server maps.googleapis.com:80;
+  keepalive 10;
+}
 ```
 
-*This backend file defines the server you want to route requests to. The request can be modified to alter URL paths, HTTP headers and more. See [HAProxy backend documentation](http://cbonte.github.com/haproxy-dconv/configuration-1.4.html#4) for more info.*
+*This backend file defines the server or servers you want to route requests to. For more complex load-balancing configurations see [nginx's upstream documentation](http://wiki.nginx.org/HttpUpstreamModule) for more info.*
 
-**Step 2:** Create `workspace/router/config/haproxy/api_router_matches/api_google.lst` with the following contents:
-
-```
-/api/maps/
-```
-
-*This config file lists any URL prefixes you wish to route to the new backend. One line per URL prefx. See [HAProxy ACL documentation](http://cbonte.github.com/haproxy-dconv/configuration-1.4.html#7) (specifically the `-f` option) for more info*
-
-**Step 3:** Update `workspace/router/config/haproxy/frontends/api_router.cfg.erb` and add to the bottom:
+**Step 2:** Update `workspace/router/config/nginx/site.conf.erb` and add to the bottom inside the `server` block:
 
 ```
   # Insert your own...
-  acl url_match_api_google path_beg -i -f <%= File.join(latest_release, "config/haproxy/api_router_matches/api_google.lst") %>
-  use_backend api_google_farm if url_match_api_google
+  location ~* ^/google/ {
+    rewrite ^/google(/.*) $1 break;
+    proxy_set_header Host "maps.googleapis.com:80";
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_pass http://google_apis_backend;
+  }
 ```
 
-*This frontend file is the glue that instructs the router to route any URL prefixes contained in `api_google.lst` to the servers defined in the `api_google_farm` backend. See [HAProxy frontend documentation](http://cbonte.github.com/haproxy-dconv/configuration-1.4.html#4) for more info.* 
+*This configuration defines which URL prefixes you wish to route to the new backend, and adjusts parts of the request when proxying occurs. See nginx's [proxy documentation](http://wiki.nginx.org/HttpProxyModule) and [location documentation](http://wiki.nginx.org/HttpCoreModule#location) for more info.* 
 
 **Step 4:** Deploy your changes
 
@@ -171,6 +163,7 @@ Migrating to other servers or a production environment can be largely handled by
 
 ## Who's using API Umbrella?
 
+* [api.data.gov](http://api.data.gov/)
 * [NREL Developer Network](http://developer.nrel.gov/)
 
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/9caf7fc8bb54ccd9e1670affa6b82618 "githalytics.com")](http://githalytics.com/NREL/api-umbrella)
