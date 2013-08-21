@@ -58,10 +58,7 @@ server {
   proxy_set_header X-Forwarded-Port $real_port;
 
   location ~* ^/(about|community|doc|docs|images|static|)(/|$) {
-    rewrite ^/doc(/|$) /docs/ permanent;
-
-    proxy_set_header Host "api.data.gov";
-    proxy_pass http://github_pages_backend;
+    proxy_pass http://api_umbrella_web_backend;
   }
 
   location ~* ^/(account|admin|admins|assets|contact|favicon\.ico|javascripts|robots.txt|signup)(/|$) {
