@@ -4,6 +4,7 @@ description "A base role for API Umbrella web servers"
 run_list([
   "role[base]",
 
+  "role[dotenv]",
   "role[nginx]",
   "role[passenger_nginx]",
   "role[ruby]",

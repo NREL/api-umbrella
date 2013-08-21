@@ -163,3 +163,6 @@
 [submodule "chef/cookbooks/selinux"]
 	path = chef/cookbooks/selinux
 	url = https://github.com/opscode-cookbooks/selinux.git
+[submodule "chef/cookbooks/envbuilder"]
+	path = chef/cookbooks/envbuilder
+	url = https://github.com/theodi/chef-envbuilder.git
