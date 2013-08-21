@@ -60,12 +60,12 @@ $ vagrant ssh
 
 # Setup the apps on your local VM
 $ cd /vagrant/workspace/router
-$ bundle install --path=vendor/bundle
+$ bundle install --path=/srv/sites/router/shared/vendor/bundle
 $ cap vagrant deploy
 
 $ cd /vagrant/workspace/web
 $ cp config/mongoid.yml.deploy config/mongoid.yml && cp config/elasticsearch.yml.deploy config/elasticsearch.yml
-$ bundle install --path=vendor/bundle
+$ bundle install --path=/srv/sites/web/shared/vendor/bundle
 $ cap vagrant deploy
 
 # Tada?
