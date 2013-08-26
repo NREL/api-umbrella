@@ -1,9 +1,0 @@
-{
-  "proxy": {
-    "port": 50000
-  },
-  "router_log_listener": {
-    "log_path": "../log/router.log"
-  },
-  "geoip_data_dir": "/opt/geoip-lite/data"
-}
