@@ -10,11 +10,11 @@ describe('ApiUmbrellaGatekeper', function() {
     describe('single hourly limit', function() {
       shared.runServer({
         proxy: {
-          rate_limits: [
+          rateLimits: [
             {
               duration: 60 * 60 * 1000, // 1 hour
               accuracy: 1 * 60 * 1000, // 1 minute
-              limit_by: 'api_key',
+              limitBy: 'apiKey',
               limit: 10,
               distributed: true,
             }
@@ -74,16 +74,16 @@ describe('ApiUmbrellaGatekeper', function() {
     describe('multiple limits', function() {
       shared.runServer({
         proxy: {
-          rate_limits: [
+          rateLimits: [
             {
               duration: 10 * 1000, // 10 second
               accuracy: 1000, // 1 second
-              limit_by: 'api_key',
+              limitBy: 'apiKey',
               limit: 3,
             }, {
               duration: 60 * 60 * 1000, // 1 hour
               accuracy: 1 * 60 * 1000, // 1 minute
-              limit_by: 'api_key',
+              limitBy: 'apiKey',
               limit: 10,
               distributed: true,
             }

@@ -2,7 +2,8 @@
 
 require('../test_helper');
 
-var _ = require('underscore');
+var _ = require('underscore'),
+    config = require('../../lib/config');
 
 global.backendCalled = false;
 
@@ -24,7 +25,13 @@ global.shared = {
 
     beforeEach(function(done) {
       backendCalled = false;
-      this.gatekeeper = gatekeeper.startNonForked(configOverrides, function() {
+
+      if(configOverrides) {
+        config.reset();
+        config.updateRuntime({ apiUmbrella: configOverrides });
+      }
+
+      this.gatekeeper = gatekeeper.startNonForked(function() {
         done();
       });
     });

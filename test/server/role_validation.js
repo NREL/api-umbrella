@@ -5,9 +5,9 @@ require('../test_helper');
 describe('ApiUmbrellaGatekeper', function() {
   shared.runServer({
     proxy: {
-      restricted_apis: [
+      restrictedApis: [
         {
-          path_regex: '^/restricted',
+          pathRegex: '^/restricted',
           role: 'restricted',
         },
       ],
