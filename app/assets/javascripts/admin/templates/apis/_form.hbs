@@ -105,7 +105,7 @@
     <legend><a data-toggle="collapse" class="collapsed" data-target="#request_rewriting"><i class="icon-caret-down"></i> Rewrite Requests</a></legend>
     <div id="request_rewriting" class="collapse">
       <p class="fieldset-note">Modify the incoming request's URL or headers before passing it to the backend.</p>
-      {{#if routes}}
+      {{#if rewrites}}
         <table class="table table-striped table-condensed">
           <thead>
             <tr>
@@ -116,21 +116,21 @@
             </tr>
           </thead>
           <tbody>
-            {{#each routes}}
+            {{#each rewrites}}
               <tr>
                 <td>{{matcher}}</td>
                 <td>{{http_method}} {{from}}</td>
                 <td>{{to}}</td>
                 <td class="table-row-actions">
-                  <a href="#" {{action 'editRoute' this}}><i class="icon-pencil"></i>Edit</a>
-                  <a href="#" class="remove-action" {{action 'deleteRoute' this}}><i class="icon-remove"></i>Remove</a>
+                  <a href="#" {{action 'editRewrite' this}}><i class="icon-pencil"></i>Edit</a>
+                  <a href="#" class="remove-action" {{action 'deleteRewrite' this}}><i class="icon-remove"></i>Remove</a>
                 </td>
               </tr>
             {{/each}}
           </tbody>
         </table>
       {{/if}}
-      <button class="btn btn-mini" {{action 'addRoute'}}><i class="icon-plus-sign"></i> Add Route</button>
+      <button class="btn btn-mini" {{action 'addRewrite'}}><i class="icon-plus-sign"></i> Add Rewrite</button>
     </div>
   </fieldset>
 

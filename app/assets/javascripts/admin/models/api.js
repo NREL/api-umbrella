@@ -12,7 +12,7 @@ Admin.Api = Ember.Model.extend({
 
   servers: Ember.hasMany('Admin.ApiServer', { key: 'servers', embedded: true }),
   urlMatches: Ember.hasMany('Admin.ApiUrlMatch', { key: 'url_matches', embedded: true }),
-  routes: Ember.hasMany('Admin.ApiRoute', { key: 'routes', embedded: true }),
+  rewrites: Ember.hasMany('Admin.ApiRewrite', { key: 'rewrites', embedded: true }),
   //rateLimits: Ember.hasMany('Admin.ApiRateLimit', { key: 'rate_limits', embedded: true }),
 
   exampleIncomingUrlRoot: function() {

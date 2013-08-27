@@ -1,8 +1,8 @@
 Model = Ember.Object.extend();
-Admin.ApisRouteFormController = Ember.ObjectController.extend({
+Admin.ApisRewriteFormController = Ember.ObjectController.extend({
   needs: ['modal'],
 
-  title: "Add Route",
+  title: "Add Rewrite",
 
   matcherOptions: [
     { id: "prefix", name: "Prefix" },
@@ -22,14 +22,14 @@ Admin.ApisRouteFormController = Ember.ObjectController.extend({
     { id: "PATCH", name: "PATCH" },
   ],
 
-  edit: function(apiModel, route) {
+  edit: function(apiModel, rewrite) {
     this.apiModel = apiModel;
 
-    if(!route) {
-      route = this.apiModel.get('routes').create();
+    if(!rewrite) {
+      rewrite = this.apiModel.get('rewrites').create();
     }
 
-    this.set('model', route);
+    this.set('model', rewrite);
   },
 
   save: function() {
@@ -38,7 +38,7 @@ Admin.ApisRouteFormController = Ember.ObjectController.extend({
 
   cancel: function() {
     if(this.get('model').isNew) {
-      this.apiModel.get('routes').removeObject(this.get('model'));
+      this.apiModel.get('rewrites').removeObject(this.get('model'));
     } else {
       this.get('model').revert();
     }

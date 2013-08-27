@@ -32,14 +32,14 @@ Admin.ApisFormController = Ember.ObjectController.extend({
     this.send('openModal', "apis/url_match_form");
   },
 
-  addRoute: function() {
-    this.controllerFor("apis_route_form").edit(this.get('model'));
-    this.send('openModal', "apis/route_form");
+  addRewrite: function() {
+    this.controllerFor("apis_rewrite_form").edit(this.get('model'));
+    this.send('openModal', "apis/rewrite_form");
   },
 
-  editRoute: function(route) {
-    this.controllerFor("apis_route_form").edit(this.get('model'), route);
-    this.send('openModal', "apis/route_form");
+  editRewrite: function(rewrite) {
+    this.controllerFor("apis_rewrite_form").edit(this.get('model'), rewrite);
+    this.send('openModal', "apis/rewrite_form");
   },
 });
 

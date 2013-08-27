@@ -31,10 +31,10 @@ class Admin::ApisController < Admin::BaseController
   private
 
   def save!
-    params[:api][:servers_attributes] = params[:api].delete(:servers),
-    params[:api][:url_matches_attributes] = params[:api].delete(:url_matches),
-    params[:api][:rewrites_attributes] = params[:api].delete(:rewrites),
-    params[:api][:rate_limits_attributes] = params[:api].delete(:rate_limits),
+    params[:api][:servers_attributes] = params[:api].delete(:servers) || []
+    params[:api][:url_matches_attributes] = params[:api].delete(:url_matches) || []
+    params[:api][:rewrites_attributes] = params[:api].delete(:rewrites) || []
+    params[:api][:rate_limits_attributes] = params[:api].delete(:rate_limits) || []
 
     @api.attributes = params[:api]
     @api.save!
