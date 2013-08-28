@@ -1,0 +1,28 @@
+{{#each apis}}
+  upstream api_umbrella_<%= id %>_backend {
+    {{#unless defaultBalance}}
+      {{balance_algorithm}};
+    {{/unless}}
+
+    {{#each servers}}
+      server {{host}}:{{port}};
+    {{/each}}
+
+    {{#if keepalive_connections}}
+      keepalive {{keepalive_connections}};
+    {{/if}}
+  }
+{{/each}}
+
+{{#each hosts}}
+  server {
+    listen 80;
+    server_name {{.}};
+  }
+{{/each}}
+
+server {
+  listen 50100;
+
+  proxy_pass $http_x_api_umbrella_backend_scheme://api_umbrella_${http_x_api_umbrella_backend_id}_backend;
+}

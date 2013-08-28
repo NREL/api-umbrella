@@ -1,2 +1,2 @@
 /node_modules
-/test/config/runtime.json
+/test/config/runtime.yml*
