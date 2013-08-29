@@ -6,7 +6,7 @@ gem "rails", "~> 3.2.14"
 gem "dotenv-rails"
 
 # Rails app server
-gem "torquebox", "~> 2.3.2", :platforms => [:jruby]
+gem "torquebox", "~> 3.0.0", :platforms => [:jruby]
 
 # Abort requests that take too long
 gem "rack-timeout"
@@ -27,10 +27,10 @@ gem "mongoid_delorean", "~> 1.1.1"
 gem "seed-fu"
 
 # Elasticsearch
-gem "stretcher", "~> 1.17.0"
+gem "stretcher", "~> 1.19.0"
 
 # OmniAuth-based authentication
-gem "devise", "~> 3.0.2"
+gem "devise", "~> 3.0.3"
 gem "omniauth"
 gem "omniauth-google-oauth2"
 gem "omniauth-persona"
@@ -72,7 +72,7 @@ gem "settingslogic"
 
 # Ember.js
 gem "ember-rails", "~> 0.13.0"
-gem "ember-source", "~> 1.0.0.rc7"
+gem "ember-source", "~> 1.0.0.rc8"
 
 # Gems used only for assets and not required
 # in production environments by default.
