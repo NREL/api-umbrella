@@ -40,6 +40,7 @@ gem "simple_form", "~> 2.1.0"
 
 # Pagination
 gem "kaminari"
+gem "kaminari-bootstrap"
 
 # Navigation links
 gem "tabs_on_rails"
