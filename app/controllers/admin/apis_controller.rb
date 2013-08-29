@@ -1,6 +1,5 @@
 class Admin::ApisController < Admin::BaseController
   set_tab :apis
-  add_crumb("APIs") { }
 
   def index
     @apis = Api.desc(:sort_order).desc(:_id).all

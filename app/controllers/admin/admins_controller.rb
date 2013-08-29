@@ -1,6 +1,5 @@
 class Admin::AdminsController < Admin::BaseController
   set_tab :users
-  add_crumb("Users") { }
 
   def index
     @admins = Admin.page(params[:page])

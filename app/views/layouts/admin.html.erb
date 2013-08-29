@@ -56,9 +56,7 @@
 
     <div id="content" class="container-fluid">
       <% if crumbs.length > 1 %>
-        <div class="grid_12 crumbs">
-          <%= render_crumbs.html_safe %>
-        </div>
+        <%= render("layouts/breadcrumbs") %>
       <% end %>
 
       <% flash.each do |flash_type, message| %>
