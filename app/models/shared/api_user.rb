@@ -86,7 +86,7 @@ class ApiUser
   end
 
   def self.existing_roles
-    @existing_roles ||= ApiUser.distinct(:roles)
+    ApiUser.distinct(:roles)
   end
 
   def as_json(*args)
