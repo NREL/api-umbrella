@@ -70,6 +70,10 @@ gem "countries"
 # Custom YAML config files
 gem "settingslogic"
 
+# Ember.js
+gem "ember-rails", "~> 0.13.0"
+gem "ember-source", "~> 1.0.0.rc7"
+
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
@@ -102,9 +106,6 @@ group :assets do
 
   # Improve PNG speed for image sprite generation
   gem "oily_png", :platforms => [:ruby]
-
-  gem "ember-rails", "~> 0.13.0"
-  gem "ember-source", "~> 1.0.0.rc7"
 
   # JavaScript Backbone extensions
   gem "marionette-rails"
