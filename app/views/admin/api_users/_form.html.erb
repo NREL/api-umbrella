@@ -39,7 +39,7 @@
 
   <fieldset class="form-horizontal info">
     <legend>Permissions</legend>
-    <%= f.input(:roles, :collection => ApiUser.existing_roles, :include_blank => false, :input_html => { :multiple => true }) %>
+    <%= f.input(:roles, :collection => available_roles, :include_blank => false, :input_html => { :multiple => true }) %>
   </fieldset>
 
   <div class="row-fluid">
