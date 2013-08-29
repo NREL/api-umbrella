@@ -1,30 +1,30 @@
 <%= simple_form_for [:admin, @api_user] do |f| %>
   <fieldset class="form-horizontal info">
     <legend>User Info</legend>
-    <div class="control-group">
-      <div class="control-label">E-mail</div>
-      <div class="controls"><%= @api_user.email %></div>
-    </div>
-    <div class="control-group">
-      <div class="control-label">First Name</div>
-      <div class="controls"><%= @api_user.first_name %></div>
-    </div>
-    <div class="control-group">
-      <div class="control-label">Last Name</div>
-      <div class="controls"><%= @api_user.last_name %></div>
-    </div>
-    <div class="control-group">
-      <div class="control-label">Purpose</div>
-      <div class="controls"><%= @api_user.use_description %></div>
-    </div>
-    <div class="control-group">
-      <div class="control-label">Signed up</div>
-      <div class="controls"><%= @api_user.created_at %></div>
-    </div>
-    <div class="control-group">
-      <div class="control-label">API key</div>
-      <div class="controls"><%= @api_user.api_key.truncate(16) %></div>
-    </div>
+    <%= f.input :email %>
+    <%= f.input :first_name %>
+    <%= f.input :last_name %>
+    <%= f.input(:use_description,
+      :as => :text,
+      :label => "Purpose",
+      :input_html => { :rows => 3 }) %>
+
+    <% if(@api_user.new_record?) %>
+      <%= f.input(:terms_and_conditions,
+        :as => :boolean,
+        :required => false,
+        :label => false,
+        :inline_label => %[User agrees to the #{link_to("terms and conditions", terms_account_path, :title => "Opens new window to terms and conditions", :onclick => "window.open(this.href, 'api_download_popup', 'height=500,width=790,menubar=no,toolbar=no,location=no,personalbar=no,status=no,resizable=yes,scrollbars=yes'); return false;")}.].html_safe) %>
+    <% else %>
+      <div class="control-group">
+        <div class="control-label">Signed up</div>
+        <div class="controls"><%= @api_user.created_at %></div>
+      </div>
+      <div class="control-group">
+        <div class="control-label">API key</div>
+        <div class="controls"><span class="api-key"><%= @api_user.api_key %></span></div>
+      </div>
+    <% end %>
   </fieldset>
 
   <fieldset>

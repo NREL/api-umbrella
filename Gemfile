@@ -17,6 +17,9 @@ gem "mongoid", "~> 3.1.4"
 # Structure trees of mongoid documents
 gem "mongoid-tree", "~> 1.0.3", :require => "mongoid/tree"
 
+# Versioning for mongoid
+gem "mongoid-history", "~> 0.4.0"
+
 # Database seeding
 gem "seed-fu"
 

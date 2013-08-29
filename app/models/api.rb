@@ -1,5 +1,7 @@
 class Api
   include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::History::Trackable
 
   # Fields
   field :name, :type => String
@@ -18,6 +20,9 @@ class Api
   embeds_many :rewrites, :class_name => "Api::Rewrite"
   embeds_many :rate_limits, :class_name => "Api::RateLimit"
 
+  # History
+  track_history
+
   attr_accessible :name,
     :sort_order,
     :frontend_host,
@@ -25,6 +30,7 @@ class Api
     :append_query_string,
     :require_https,
     :required_roles,
+    :balance_algorithm,
     :servers_attributes,
     :url_matches_attributes,
     :rewrites_attributes,
