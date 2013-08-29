@@ -27,3 +27,6 @@ set :rails_app_paths,  {
 
 # Setup dotenv to pull from chef-configured file.
 set :dotenv_path, "/home/dotenv/env"
+
+# We don't have ActiveRecord migrations to deploy since we're using Mongoid.
+set :rails_auto_migrate, false
