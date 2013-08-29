@@ -3,6 +3,10 @@ class Admin::BaseController < ApplicationController
 
   layout "admin"
 
+  # Clear out any root crumbs from ApplicationController (that's for the public
+  # site).
+  clear_crumbs
+
   def empty
     render(:text => "", :layout => true)
   end
