@@ -1,6 +1,9 @@
 class Admin
   include Mongoid::Document
+  include Mongoid::Timestamps
   include Mongoid::Paranoia
+  include Mongoid::Userstamp
+  include Mongoid::Delorean::Trackable
 
   # Devise-based authentication using OmniAuth
   devise :omniauthable, :trackable

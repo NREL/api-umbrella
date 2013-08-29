@@ -40,16 +40,19 @@
   <fieldset class="form-horizontal info">
     <legend>Permissions</legend>
     <%= f.input(:roles, :collection => ApiUser.existing_roles, :include_blank => false, :input_html => { :multiple => true }) %>
-    <%= javascript_tag do %>
-      $('#api_user_roles').selectize({
-        plugins: ['restore_on_backspace', 'remove_button'],
-        delimiter: ',',
-        create: true,
-      });
-    <% end %>
   </fieldset>
 
-  <%= f.button :submit %>
+  <div class="row-fluid">
+    <div class="span6">
+      <%= f.button :submit, :value => "Save", :class => "btn btn-large btn-primary" %>
+    </div>
+    <div class="span6 record-details">
+      <% unless(@api_user.new_record?) %>
+        Created: <%= @api_user.created_at %><%= if(@api_user.creator) then " by #{@api_user.creator.username}" end %><br>
+        Last Updated: <%= @api_user.updated_at %><%= if(@api_user.updator) then " by #{@api_user.updator.username}" end %>
+      <% end %>
+    </div>
+  </div>
 <% end %>
 
 <%= javascript_tag do %>
@@ -59,5 +62,11 @@
     } else {
       $("#throttle_mode_custom").hide();
     }
+  });
+
+  $('#api_user_roles').selectize({
+    plugins: ['restore_on_backspace', 'remove_button'],
+    delimiter: ',',
+    create: true,
   });
 <% end %>

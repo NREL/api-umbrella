@@ -108,7 +108,6 @@ GEM
     dotenv (0.8.0)
     dotenv-rails (0.8.0)
       dotenv (= 0.8.0)
-    easy_diff (0.0.2)
     edn (1.0.0)
       parslet (~> 1.4.0)
     ember-data-source (0.13)
@@ -183,12 +182,12 @@ GEM
       moped (~> 1.4)
       origin (~> 1.0)
       tzinfo (~> 0.3.22)
-    mongoid-history (0.4.0)
-      activesupport
-      easy_diff
-      mongoid (~> 3.0)
     mongoid-tree (1.0.3)
       mongoid (>= 3.0, <= 4.0)
+    mongoid_delorean (1.1.1)
+      mongoid (>= 3.0.0)
+    mongoid_userstamp (0.2.1)
+      mongoid (>= 3.0.4)
     moped (1.5.1)
     multi_json (1.7.9)
     multipart-post (1.2.0)
@@ -390,8 +389,9 @@ DEPENDENCIES
   kramdown
   marionette-rails
   mongoid (~> 3.1.4)
-  mongoid-history (~> 0.4.0)
   mongoid-tree (~> 1.0.3)
+  mongoid_delorean (~> 1.1.1)
+  mongoid_userstamp (~> 0.2.1)
   nokogiri
   oily_png
   oj

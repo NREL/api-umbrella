@@ -1,5 +1,8 @@
 class Api
   include Mongoid::Document
+  include Mongoid::Timestamps
+  include Mongoid::Userstamp
+  include Mongoid::Delorean::Trackable
 
   # Fields
   field :name, :type => String
@@ -25,6 +28,7 @@ class Api
     :append_query_string,
     :require_https,
     :required_roles,
+    :balance_algorithm,
     :servers_attributes,
     :url_matches_attributes,
     :rewrites_attributes,

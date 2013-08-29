@@ -17,8 +17,11 @@ gem "mongoid", "~> 3.1.4"
 # Structure trees of mongoid documents
 gem "mongoid-tree", "~> 1.0.3", :require => "mongoid/tree"
 
+# Created/updated userstamping 
+gem "mongoid_userstamp", "~> 0.2.1"
+
 # Versioning for mongoid
-gem "mongoid-history", "~> 0.4.0"
+gem "mongoid_delorean", "~> 1.1.1"
 
 # Database seeding
 gem "seed-fu"

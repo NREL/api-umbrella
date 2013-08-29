@@ -1,6 +1,8 @@
 class ApiUser
   include Mongoid::Document
   include Mongoid::Timestamps
+  include Mongoid::Userstamp
+  include Mongoid::Delorean::Trackable
 
   field :api_key
   field :first_name

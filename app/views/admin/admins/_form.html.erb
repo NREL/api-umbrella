@@ -1,4 +1,15 @@
 <%= simple_form_for [:admin, @admin] do |f| %>
   <%= f.input :username %>
-  <%= f.button :submit %>
+
+  <div class="row-fluid">
+    <div class="span6">
+      <%= f.button :submit, :value => "Save", :class => "btn btn-large btn-primary" %>
+    </div>
+    <div class="span6 record-details">
+      <% unless(@admin.new_record?) %>
+        Created: <%= @admin.created_at %><%= if(@admin.creator) then " by #{@admin.creator.username}" end %><br>
+        Last Updated: <%= @admin.updated_at %><%= if(@admin.updator) then " by #{@admin.updator.username}" end %>
+      <% end %>
+    </div>
+  </div>
 <% end %>
