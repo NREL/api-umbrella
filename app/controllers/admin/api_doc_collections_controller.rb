@@ -1,6 +1,5 @@
 class Admin::ApiDocCollectionsController < Admin::BaseController
   set_tab :documentation
-  add_crumb("API Documentation") { }
 
   def index
     @collections = ApiDocCollection.roots
