@@ -1,6 +1,10 @@
 class Admin::ApiUsersController < Admin::BaseController
   set_tab :users
 
+  add_crumb "API Users", :admin_api_users_path
+  add_crumb "New User", :only => [:new, :create]
+  add_crumb "Edit User", :only => [:edit, :update]
+
   def index
     @api_users = ApiUser.desc(:created_at).page(params[:page])
 
@@ -13,21 +17,14 @@ class Admin::ApiUsersController < Admin::BaseController
       ])
     end
 
-    add_crumb "API Users"
   end
 
   def new
     @api_user = ApiUser.new
-
-    add_crumb "API Users", admin_api_users_path
-    add_crumb "New User"
   end
 
   def edit
     @api_user = ApiUser.find(params[:id])
-
-    add_crumb "API Users", admin_api_users_path
-    add_crumb "Edit User"
   end
 
   def create

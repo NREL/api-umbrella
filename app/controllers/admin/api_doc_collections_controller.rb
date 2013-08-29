@@ -1,24 +1,20 @@
 class Admin::ApiDocCollectionsController < Admin::BaseController
   set_tab :documentation
 
+  add_crumb "Collections", :admin_api_doc_collections_path
+  add_crumb "New Collection", :only => [:new, :create]
+  add_crumb "Edit Collection", :only => [:edit, :update]
+
   def index
     @collections = ApiDocCollection.roots
-
-    add_crumb "Collections"
   end
 
   def new
     @collection = ApiDocCollection.new
-
-    add_crumb "Collections", admin_api_doc_collections_path
-    add_crumb "Add New Collection"
   end
 
   def edit
     @collection = ApiDocCollection.find(params[:id])
-
-    add_crumb "Collections", admin_api_doc_collections_path
-    add_crumb "Edit Collection"
   end
 
   def create
