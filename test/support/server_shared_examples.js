@@ -26,14 +26,17 @@ global.shared = {
     beforeEach(function(done) {
       backendCalled = false;
 
-      if(configOverrides) {
-        config.reset();
-        config.updateRuntime({ apiUmbrella: configOverrides });
-      }
+      config.reset();
 
       this.gatekeeper = gatekeeper.startNonForked(function() {
         done();
       });
+
+      if(configOverrides) {
+        this.gatekeeper.on('configReady', function() {
+          config.updateRuntime({ apiUmbrella: configOverrides });
+        });
+      }
     });
 
     afterEach(function(done) {

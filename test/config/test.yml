@@ -6,6 +6,13 @@ apiUmbrella:
     rateLimits: []
   haproxyLogListener:
     port: 9334
+  apis: 
+    - frontend_host: localhost
+      backend_host: localhost
+      id: default-api
+      url_matches:
+        - frontend_prefix: /
+          backend_prefix: /
 convoy:
   keys:
     prefix: "cv:"

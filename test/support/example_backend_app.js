@@ -1,6 +1,7 @@
 'use strict';
 
-var express = require('express');
+var express = require('express'),
+    url = require('url');
 
 var app = express();
 app.use(express.bodyParser());
@@ -57,6 +58,13 @@ app.get('/chunked', function(req, res) {
       res.write('0\r\n\r\n');
     }, 100);
   }, 100);
+});
+
+app.get('/info/*', function(req, res) {
+  res.json({
+    headers: req.headers,
+    url: url.parse(req.protocol + '://' + req.host + req.url),
+  });
 });
 
 app.listen(9444);
