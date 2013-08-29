@@ -43,3 +43,6 @@
 [submodule "app/assets/javascripts/vendor/inflections"]
 	path = app/assets/javascripts/vendor/inflections
 	url = https://github.com/xixilive/_.inflections.git
+[submodule "app/assets/javascripts/vendor/selectize.js"]
+	path = app/assets/javascripts/vendor/selectize.js
+	url = https://github.com/brianreavis/selectize.js.git

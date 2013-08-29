@@ -37,6 +37,18 @@
     <%= f.input :throttle_by_ip, :as => :radio_buttons, :collection => [:false, :true], :checked => !!@api_user.throttle_by_ip %>
   </fieldset>
 
+  <fieldset class="form-horizontal info">
+    <legend>Permissions</legend>
+    <%= f.input(:roles, :collection => ApiUser.existing_roles, :include_blank => false, :input_html => { :multiple => true }) %>
+    <%= javascript_tag do %>
+      $('#api_user_roles').selectize({
+        plugins: ['restore_on_backspace', 'remove_button'],
+        delimiter: ',',
+        create: true,
+      });
+    <% end %>
+  </fieldset>
+
   <%= f.button :submit %>
 <% end %>
 

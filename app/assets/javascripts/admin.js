@@ -10,6 +10,7 @@
 //= require vendor/ember-easyForm
 //= require admin/app
 //= require vendor/deparam/jquery-deparam
+//= require vendor/selectize.js/dist/js/standalone/selectize.js
 //= require vendor/inflections/underscore.inflections
 //= require vendor/jstz
 //= require vendor/jquery-deserialize/src/jquery.deserialize
