@@ -16,7 +16,6 @@ class Admin::ApiUsersController < Admin::BaseController
         { :api_key => /#{params[:search]}/i },
       ])
     end
-
   end
 
   def new
@@ -31,7 +30,7 @@ class Admin::ApiUsersController < Admin::BaseController
     @api_user = ApiUser.new
     save!
 
-    flash[:success] = "Successfully created user account"
+    flash[:success] = %(Successfully created user account.<br>E-mail: #{@api_user.email}<br>API Key: <span class="api-key">#{@api_user.api_key}</span>).html_safe
     redirect_to(admin_api_users_path)
   rescue Mongoid::Errors::Validations
     logger.info($!.inspect)

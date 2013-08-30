@@ -22,7 +22,13 @@
       </div>
       <div class="control-group">
         <div class="control-label">API key</div>
-        <div class="controls"><span class="api-key"><%= @api_user.api_key %></span></div>
+        <div class="controls">
+          <% if(@api_user.created_by == current_admin.id && @api_user.created_at >= (Time.now - 10.minutes)) %>
+            <span class="api-key"><%= @api_user.api_key %></span> <small>(full API key will disappear in <%= ((@api_user.created_at + 10.minutes - Time.now) / 60.0).round %> minutes)</small>
+          <% else %>
+            <span class="api-key"><%= @api_user.api_key.truncate(11) %></span>
+          <% end %>
+        </div>
       </div>
     <% end %>
   </fieldset>

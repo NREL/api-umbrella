@@ -33,7 +33,7 @@
         <td><%= api_user.last_name %></td>
         <td title="<%= api_user.use_description %>"><%= api_user.use_description.truncate(50, :separator => " ") %></td>
         <td><%= api_user.created_at %></td>
-        <td><small class="api-key" title="<%= api_user.api_key %>"><%= api_user.api_key.truncate(10) %></small></td>
+        <td><small class="api-key"><%= api_user.api_key.truncate(11) %></small></td>
       </tr>
     <% end %>
   </tbody>
