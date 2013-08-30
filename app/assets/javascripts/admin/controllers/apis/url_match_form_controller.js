@@ -13,18 +13,20 @@ Admin.ApisUrlMatchFormController = Ember.ObjectController.extend({
     this.set('model', urlMatch);
   },
 
-  save: function() {
-    this.send('closeModal');
-  },
+  actions: {
+    save: function() {
+      this.send('closeModal');
+    },
 
-  cancel: function() {
-    if(this.get('model').isNew) {
-      this.apiModel.get('urlMatches').removeObject(this.get('model'));
-    } else {
-      this.get('model').revert();
-    }
+    cancel: function() {
+      if(this.get('model').isNew) {
+        this.apiModel.get('urlMatches').removeObject(this.get('model'));
+      } else {
+        this.get('model').revert();
+      }
 
-    this.send('closeModal');
+      this.send('closeModal');
+    },
   },
 
   exampleSuffix: 'example.json?param=value',

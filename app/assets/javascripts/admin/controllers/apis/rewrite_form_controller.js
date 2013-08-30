@@ -32,17 +32,19 @@ Admin.ApisRewriteFormController = Ember.ObjectController.extend({
     this.set('model', rewrite);
   },
 
-  save: function() {
-    this.send('closeModal');
-  },
+  actions: {
+    save: function() {
+      this.send('closeModal');
+    },
 
-  cancel: function() {
-    if(this.get('model').isNew) {
-      this.apiModel.get('rewrites').removeObject(this.get('model'));
-    } else {
-      this.get('model').revert();
-    }
+    cancel: function() {
+      if(this.get('model').isNew) {
+        this.apiModel.get('rewrites').removeObject(this.get('model'));
+      } else {
+        this.get('model').revert();
+      }
 
-    this.send('closeModal');
+      this.send('closeModal');
+    },
   },
 });

@@ -1,5 +1,5 @@
 Admin.ApplicationRoute = Ember.Route.extend({
-  events: {
+  actions: {
     openModal: function(template) {
       this.render(template, { into: "modal", outlet: "modalBody" });
       $(".modal").modal("show");
