@@ -8,4 +8,7 @@ class Api::RateLimit
   field :limit, :type => Integer
   field :distributed, :type => Boolean
   field :response_headers, :type => Boolean
+
+  # Relations
+  embedded_in :api
 end

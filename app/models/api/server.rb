@@ -5,6 +5,9 @@ class Api::Server
   field :host, :type => String
   field :port, :type => Integer
 
+  # Relations
+  embedded_in :api
+
   # Validations
   validates :port,
     :inclusion => { :in => 0..65535 }
