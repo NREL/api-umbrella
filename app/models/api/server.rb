@@ -2,9 +2,12 @@ class Api::Server
   include Mongoid::Document
 
   # Fields
-  field :protocol, :type => String
   field :host, :type => String
   field :port, :type => Integer
 
-  attr_accessible :protocol, :host, :port
+  # Validations
+  validates :port,
+    :inclusion => { :in => 0..65535 }
+
+  attr_accessible :host, :port
 end

@@ -1,6 +1,11 @@
 Admin.ApisFormController = Ember.ObjectController.extend({
   needs: ['apis_server_form', 'apis_url_match_form'],
 
+  backendProtocolOptions: [
+    { id: "http", name: "http" },
+    { id: "https", name: "https" },
+  ],
+
   balanceAlgorithmOptions: [
     { id: "least_conn", name: "Least Connections" },
     { id: "round_robin", name: "Round Robin" },

@@ -1,15 +1,7 @@
 {{#formFor model}}
   <div class="modal-body">
     <div class="row-fluid">
-      <div class="span2">
-        {{input protocol as='select'
-          value='protocol'
-          inputConfig='class:span12'
-          collection='protocolOptions'
-          optionValuePath='content.id'
-          optionLabelPath='content.name'}}
-      </div>
-      <div class="span8">
+      <div class="span10">
         {{input host
           placeholder='api.example.com'
           inputConfig='class:span12'}}

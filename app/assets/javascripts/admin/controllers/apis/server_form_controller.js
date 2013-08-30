@@ -3,11 +3,6 @@ Admin.ApisServerFormController = Ember.ObjectController.extend({
 
   title: "Add Server",
 
-  protocolOptions: [
-    { id: "http", name: "http" },
-    { id: "https", name: "https" },
-  ],
-
   edit: function(apiModel, server) {
     this.apiModel = apiModel;
 

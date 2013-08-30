@@ -7,12 +7,13 @@ class Api
   # Fields
   field :name, :type => String
   field :sort_order, :type => Integer
+  field :backend_protocol, :type => String
   field :frontend_host, :type => String
   field :backend_host, :type => String
   field :append_query_string, :type => String
   field :require_https, :type => Boolean
   field :required_roles, :type => Array
-  field :balance_algorithm, :type => String # round_robin, least_conn, ip_hash
+  field :balance_algorithm, :type => String
 
   # Relations
   #embeds_many :headers, :class_name => "Api::Header"
@@ -21,8 +22,15 @@ class Api
   embeds_many :rewrites, :class_name => "Api::Rewrite"
   embeds_many :rate_limits, :class_name => "Api::RateLimit"
 
+  # Validations
+  validates :backend_protocol,
+    :inclusion => { :in => %w(http https) }
+  validates :balance_algorithm,
+    :inclusion => { :in => %w(round_robin least_conn ip_hash) }
+
   attr_accessible :name,
     :sort_order,
+    :backend_protocol,
     :frontend_host,
     :backend_host,
     :append_query_string,

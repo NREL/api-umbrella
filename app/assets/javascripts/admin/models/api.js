@@ -1,6 +1,7 @@
 Admin.Api = Ember.Model.extend({
   name: Ember.attr(),
   sortOrder: Ember.attr(),
+  backendProtocol: Ember.attr(),
   frontendHost: Ember.attr(),
   backendHost: Ember.attr(),
   requireHttps: Ember.attr(),
@@ -22,7 +23,7 @@ Admin.Api = Ember.Model.extend({
   exampleOutgoingUrlRoot: function() {
     var server = this.get('servers.firstObject');
     if(server) {
-      return server.get('urlString');
+      return this.get('backendProtocol') + server.get('urlString');
     } else {
       return 'http://localhost';
     }
