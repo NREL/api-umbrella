@@ -1,4 +1,5 @@
 Admin.ApiUrlMatch = Ember.Model.extend({
+  _id: Ember.attr(),
   frontendPrefix: Ember.attr(),
   backendPrefix: Ember.attr(),
 

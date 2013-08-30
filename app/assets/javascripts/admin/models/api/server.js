@@ -1,4 +1,5 @@
 Admin.ApiServer = Ember.Model.extend({
+  _id: Ember.attr(),
   host: Ember.attr(),
   port: Ember.attr(Number),
 
