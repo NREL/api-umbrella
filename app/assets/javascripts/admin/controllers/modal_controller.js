@@ -1,3 +1,3 @@
 Admin.ModalController = Ember.Controller.extend({
-  title: "MOOO"
+  title: "Example Modal Title"
 });

@@ -1,5 +1,5 @@
 Admin.ApisFormController = Ember.ObjectController.extend({
-  needs: ['apis_server_form', 'apis_url_match_form'],
+  needs: ['apis_server_form', 'apis_url_match_form', 'apis_rewrite_form'],
 
   backendProtocolOptions: [
     { id: "http", name: "http" },
@@ -19,32 +19,32 @@ Admin.ApisFormController = Ember.ObjectController.extend({
     },
 
     addServer: function() {
-      this.get('controllers.apis_server_form').edit(this.get('model'));
+      this.get('controllers.apis_server_form').add(this.get('model'), 'servers');
       this.send('openModal', "apis/server_form");
     },
 
     editServer: function(server) {
-      this.get('controllers.apis_server_form').edit(this.get('model'), server);
+      this.get('controllers.apis_server_form').edit(this.get('model'), 'servers', server);
       this.send('openModal', "apis/server_form");
     },
 
     addUrlMatch: function() {
-      this.get('controllers.apis_url_match_form').edit(this.get('model'));
+      this.get('controllers.apis_url_match_form').add(this.get('model'), 'urlMatches');
       this.send('openModal', "apis/url_match_form");
     },
 
-    editUrlMatch: function(url_match) {
-      this.get('controllers.apis_url_match_form').edit(this.get('model'), url_match);
+    editUrlMatch: function(urlMatch) {
+      this.get('controllers.apis_url_match_form').edit(this.get('model'), 'urlMatches', urlMatch);
       this.send('openModal', "apis/url_match_form");
     },
 
     addRewrite: function() {
-      this.controllerFor("apis_rewrite_form").edit(this.get('model'));
+      this.get('controllers.apis_rewrite_form').add(this.get('model'), 'urlMatches');
       this.send('openModal', "apis/rewrite_form");
     },
 
     editRewrite: function(rewrite) {
-      this.controllerFor("apis_rewrite_form").edit(this.get('model'), rewrite);
+      this.get('controllers.apis_rewrite_form').edit(this.get('model'), 'urlMatches', rewrite);
       this.send('openModal', "apis/rewrite_form");
     },
   },
