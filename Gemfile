@@ -73,7 +73,7 @@ gem "settingslogic"
 
 # Ember.js
 gem "ember-rails", "~> 0.13.0"
-gem "ember-source", "~> 1.0.0.rc8"
+gem "ember-source", "~> 1.0.0"
 
 # Gems used only for assets and not required
 # in production environments by default.
