@@ -1,0 +1,26 @@
+Admin.ApiSubSettings = Ember.Model.extend({
+  _id: Ember.attr(),
+  httpMethod: Ember.attr(),
+  regex: Ember.attr(),
+
+  settings: Ember.belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
+
+  init: function() {
+    this._super();
+
+    // Set defaults for new records.
+    this.setDefaults();
+
+    // For existing records, we need to set the defaults after loading.
+    this.on('didLoad', this, this.setDefaults);
+  },
+
+  setDefaults: function() {
+    if(!this.get('settings')) {
+      this.set('settings', Admin.ApiSettings.create());
+    }
+  },
+});
+
+Admin.ApiSubSettings.primaryKey = "_id";
+Admin.ApiSubSettings.camelizeKeys = true;

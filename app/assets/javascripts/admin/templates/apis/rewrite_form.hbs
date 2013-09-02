@@ -1,13 +1,15 @@
 {{#formFor model}}
   <div class="modal-body">
     {{input matcher as='select'
-       collection='matcherOptions'
-       optionValuePath='content.id'
-       optionLabelPath='content.name'}}
+      value='matcher'
+      collection='matcherOptions'
+      optionValuePath='content.id'
+      optionLabelPath='content.name'}}
     {{input httpMethod as='select'
-       collection='httpMethodOptions'
-       optionValuePath='content.id'
-       optionLabelPath='content.name'}}
+      value='httpMethod'
+      collection='httpMethodOptions'
+      optionValuePath='content.id'
+      optionLabelPath='content.name'}}
     {{input from}}
     {{input to}}
 

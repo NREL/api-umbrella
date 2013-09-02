@@ -1,0 +1,37 @@
+{{#with settings}}
+  {{input appendQueryString
+    class='row-fluid'
+    label='Append Query String Parameters'
+    placeholder='param1=value&param2=value'
+    inputConfig='class:span12'}}
+  {{input headersString as='text'
+    class='row-fluid'
+    label='Set Headers'
+    placeholder='X-Example-Header: value'
+    inputConfig='class:span12'}}
+  {{input httpBasicAuth
+    class='row-fluid'
+    label='HTTP Basic Authentication'
+    placeholder='username:password'
+    inputConfig='class:span12'}}
+  {{input requireHttps as='select'
+    value='requireHttps'
+    label='HTTPS Requirements'
+    collection='controller.controllers.apis_settings_fields.requireHttpsOptions'
+    optionValuePath='content.id'
+    optionLabelPath='content.name'}}
+  {{input disableApiKey as='select'
+    value='disableApiKey'
+    label='API Key Checks'
+    collection='controller.controllers.apis_settings_fields.disableApiKeyOptions'
+    optionValuePath='content.id'
+    optionLabelPath='content.name'}}
+  {{input requiredRoles
+    class='row-fluid'
+    label='Required Roles'
+    inputConfig='class:span12'}}
+  {{input hourlyRateLimit
+    class='row-fluid'
+    label='Rate Limit'
+    inputConfig='class:span12'}}
+{{/with}}

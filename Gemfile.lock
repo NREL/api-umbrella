@@ -20,6 +20,13 @@ GIT
       railties (> 3.2.8, < 4.0.0)
       sprockets (>= 2.0.0)
 
+GIT
+  remote: https://github.com/crafters/mongoid_delorean.git
+  revision: a9741d2b51ca6be51c392b23ef459368757f0533
+  specs:
+    mongoid_delorean (1.1.1)
+      mongoid (>= 3.0.0)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -186,8 +193,6 @@ GEM
       tzinfo (~> 0.3.22)
     mongoid-tree (1.0.3)
       mongoid (>= 3.0, <= 4.0)
-    mongoid_delorean (1.1.1)
-      mongoid (>= 3.0.0)
     mongoid_userstamp (0.2.1)
       mongoid (>= 3.0.4)
     moped (1.5.1)
@@ -394,7 +399,7 @@ DEPENDENCIES
   marionette-rails
   mongoid (~> 3.1.4)
   mongoid-tree (~> 1.0.3)
-  mongoid_delorean (~> 1.1.1)
+  mongoid_delorean (~> 1.1.1)!
   mongoid_userstamp (~> 0.2.1)
   nokogiri
   oily_png

@@ -1,0 +1,25 @@
+{{#formFor model}}
+  <div class="modal-body">
+    <div class="row-fluid">
+      {{input httpMethod as='select'
+        value='httpMethod'
+        class='span2'
+        collection='httpMethodOptions'
+        optionValuePath='content.id'
+        optionLabelPath='content.name'
+        inputConfig='class:span12'}}
+      {{input regex
+        class='span10'
+        placeholder='^/example.*param1=.+'
+        inputConfig='class:span12'}}
+    </div>
+
+    <div class="form-horizontal form-horizontal-wide">
+      {{partial 'apis/settings'}}
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" {{action cancel}}>Cancel</button>
+    <button class="btn btn-primary" {{action ok}}>OK</button>
+  </div>
+{{/formFor}}
