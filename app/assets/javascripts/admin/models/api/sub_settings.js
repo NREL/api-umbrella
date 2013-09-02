@@ -1,5 +1,6 @@
 Admin.ApiSubSettings = Ember.Model.extend({
   _id: Ember.attr(),
+  sortOrder: Ember.attr(Number),
   httpMethod: Ember.attr(),
   regex: Ember.attr(),
 

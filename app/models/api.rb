@@ -36,16 +36,10 @@ class Api
     :frontend_host,
     :backend_host,
     :balance_algorithm,
-    :settings_attributes,
-    :servers_attributes,
-    :url_matches_attributes,
-    :sub_settings_attributes,
-    :rewrites_attributes,
-    :rate_limits_attributes
-  accepts_nested_attributes_for :settings
-  accepts_nested_attributes_for :servers, :reject_if => :all_blank, :allow_destroy => true
-  accepts_nested_attributes_for :url_matches, :reject_if => :all_blank, :allow_destroy => true
-  accepts_nested_attributes_for :sub_settings, :reject_if => :all_blank, :allow_destroy => true
-  accepts_nested_attributes_for :rewrites, :reject_if => :all_blank, :allow_destroy => true
-  accepts_nested_attributes_for :rate_limits, :reject_if => :all_blank, :allow_destroy => true
+    :settings,
+    :servers,
+    :url_matches,
+    :sub_settings,
+    :rewrites,
+    :rate_limits
 end

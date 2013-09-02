@@ -14,6 +14,5 @@ class Api::SubSettings
     :inclusion => { :in => %w(any GET POST PUT DELETE HEAD TRACE OPTIONS CONNECT PATCH) }
 
   # Mass assignment security
-  attr_accessible :http_method, :regex, :settings_attributes
-  accepts_nested_attributes_for :settings
+  attr_accessible :_id, :http_method, :regex, :settings
 end

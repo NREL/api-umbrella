@@ -1,6 +1,6 @@
 Admin.Api = Ember.Model.extend({
   name: Ember.attr(),
-  sortOrder: Ember.attr(),
+  sortOrder: Ember.attr(Number),
   backendProtocol: Ember.attr(),
   frontendHost: Ember.attr(),
   backendHost: Ember.attr(),

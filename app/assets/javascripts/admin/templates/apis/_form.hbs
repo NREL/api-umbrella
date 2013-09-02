@@ -58,29 +58,7 @@
   <fieldset>
     <legend>Matching URL Prefixes</legend>
     <p class="fieldset-note">What URL prefixes on api.data.gov should be routed to this backend?</p>
-    {{#if urlMatches}}
-      <table class="table table-striped table-condensed">
-        <thead>
-          <tr>
-            <th>Frontend Prefix</th>
-            <th>Backend Prefix</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{#each urlMatches}}
-            <tr>
-              <td>{{frontendPrefix}}</td>
-              <td>{{backendPrefixWithDefault}}</td>
-              <td class="table-row-actions" style="width: 90px; white-space: nowrap;">
-                <a href="#" {{action 'editUrlMatch' this}}><i class="icon-pencil"></i>Edit</a>
-                <a href="#" class="remove-action" {{action 'deleteUrlMatch' this}}><i class="icon-remove"></i>Remove</a>
-              </td>
-            </tr>
-          {{/each}}
-        </tbody>
-      </table>
-    {{/if}}
-    <button type="button" class="btn btn-mini" {{action 'addUrlMatch'}}><i class="icon-plus-sign"></i> Add URL Prefix</button>
+    {{render 'apis/url_matches' urlMatches}}
   </fieldset>
 
   <fieldset>
@@ -94,60 +72,15 @@
     <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="icon-caret-down"></i> Sub-URL Request Settings</a></legend>
     <div id="sub_settings" class="collapse">
       <p class="fieldset-note">Change settings for specific sub-URLs within this API.</p>
-      {{#if subSettings}}
-        <table class="table table-striped table-condensed">
-          <thead>
-            <tr>
-              <th>URL Matcher</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{#each subSettings}}
-              <tr>
-                <td>{{regex}}</td>
-                <td class="table-row-actions" style="width: 90px; white-space: nowrap;">
-                  <a href="#" {{action 'editSubSettings' this}}><i class="icon-pencil"></i>Edit</a>
-                  <a href="#" class="remove-action" {{action 'deleteSubSettings' this}}><i class="icon-remove"></i>Remove</a>
-                </td>
-              </tr>
-            {{/each}}
-          </tbody>
-        </table>
-      {{/if}}
-      <button type="button" class="btn btn-mini" {{action 'addSubSettings'}}><i class="icon-plus-sign"></i> Add URL Settings</button>
+      {{render 'apis/sub_settings' subSettings}}
     </div>
   </fieldset>
 
   <fieldset>
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#request_rewriting"><i class="icon-caret-down"></i> Advanced Requests Rewriting</a></legend>
-    <div id="request_rewriting" class="collapse">
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites"><i class="icon-caret-down"></i> Advanced Requests Rewriting</a></legend>
+    <div id="rewrites" class="collapse">
       <p class="fieldset-note">Modify the incoming request's URL or headers before passing it to the backend.</p>
-      {{#if rewrites}}
-        <table class="table table-striped table-condensed">
-          <thead>
-            <tr>
-              <th>Matching Type</th>
-              <th>From</th>
-              <th>To</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {{#each rewrites}}
-              <tr>
-                <td>{{matcher}}</td>
-                <td>{{http_method}} {{from}}</td>
-                <td>{{to}}</td>
-                <td class="table-row-actions">
-                  <a href="#" {{action 'editRewrite' this}}><i class="icon-pencil"></i>Edit</a>
-                  <a href="#" class="remove-action" {{action 'deleteRewrite' this}}><i class="icon-remove"></i>Remove</a>
-                </td>
-              </tr>
-            {{/each}}
-          </tbody>
-        </table>
-      {{/if}}
-      <button type="button" class="btn btn-mini" {{action 'addRewrite'}}><i class="icon-plus-sign"></i> Add Rewrite</button>
+      {{render 'apis/rewrites' rewrites}}
     </div>
   </fieldset>
 

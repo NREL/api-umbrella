@@ -15,11 +15,11 @@ class Api::Settings
   embedded_in :sub_settings
 
   # Mass assignment security
-  attr_accessible :append_query_string,
+  attr_accessible :_id,
+    :append_query_string,
     :http_basic_auth,
     :require_https,
     :disable_api_key,
     :required_roles,
     :hourly_rate_limit
-  accepts_nested_attributes_for :headers, :reject_if => :all_blank, :allow_destroy => true
 end

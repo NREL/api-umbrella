@@ -1,5 +1,6 @@
 Admin.ApiUrlMatch = Ember.Model.extend({
   _id: Ember.attr(),
+  sortOrder: Ember.attr(Number),
   frontendPrefix: Ember.attr(),
   backendPrefix: Ember.attr(),
 

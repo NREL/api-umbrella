@@ -245,3 +245,23 @@ a:hover {
   line-height: 13px;
   color: #777;
 }
+
+th.reorder-handle,
+td.reorder-handle {
+  display: none;
+  width: 60px;
+  text-align: center;
+  cursor: move;
+}
+
+.reorder-active {
+  th.reorder-handle,
+  td.reorder-handle {
+    display: table-cell;
+  }
+}
+
+.reorder-placeholder th,
+.reorder-placeholder td {
+  background-color: $warningBackground !important;
+}

@@ -1,0 +1,32 @@
+{{#if model}}
+  <table class="table table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>URL Matcher</th>
+        <th class="reorder-handle"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each}}
+        <tr data-id="{{unbound _id}}">
+          <td>{{regex}}</td>
+          <td class="table-row-actions" style="width: 90px; white-space: nowrap;">
+            <a href="#" {{action 'editSubSettings' this}}><i class="icon-pencil"></i>Edit</a>
+            <a href="#" class="remove-action" {{action 'deleteSubSettings' this}}><i class="icon-remove"></i>Remove</a>
+          </td>
+          <td class="reorder-handle"><i class="icon-reorder"></i></td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+{{/if}}
+<div class="row-fluid">
+  <div class="span6">
+    <button type="button" class="btn btn-mini" {{action 'addSubSettings'}}><i class="icon-plus-sign"></i> Add URL Settings</button>
+  </div>
+  <div class="span6 text-right">
+    {{#if reorderable}}
+      <button type="button" class="btn btn-mini" {{action 'reorderSubSettings'}}><i class="icon-reorder"></i> <span class="reorder-button-text">Reorder</span></button>
+    {{/if}}
+  </div>
+</div>
