@@ -3,7 +3,8 @@
 require('../test_helper');
 
 var _ = require('underscore'),
-    config = require('../../lib/config');
+    config = require('../../lib/config'),
+    ippp = require('ipplusplus');
 
 global.backendCalled = false;
 
@@ -17,6 +18,12 @@ global.shared = {
 
   runServer: function(configOverrides) {
     beforeEach(function(done) {
+      if(!this.ipAddress) {
+        this.ipAddress = '10.0.0.1';
+      } else {
+        this.ipAddress = ippp.next(this.ipAddress);
+      }
+
       Factory.create('api_user', function(user) {
         this.apiKey = user.api_key;
         done();

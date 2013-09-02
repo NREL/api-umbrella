@@ -2,10 +2,10 @@
 
 require('../test_helper');
 
-describe('ApiUmbrellaGatekeper', function() {
-  shared.runServer();
+describe('api key validation', function() {
+  describe('default settings', function() {
+    shared.runServer();
 
-  describe('api key validation', function() {
     describe('no api key supplied', function() {
       beforeEach(function() {
         this.apiKey = null;
@@ -72,6 +72,128 @@ describe('ApiUmbrellaGatekeper', function() {
         request.get('http://invalid:@localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
           body.should.eql('Hello World');
           done();
+        });
+      });
+    });
+  });
+
+  describe('custom api key settings', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          id: 'default',
+          url_matches: [
+            {
+              frontend_prefix: '/info/no-keys',
+              backend_prefix: '/info/no-keys',
+            }
+          ],
+          settings: {
+            disable_api_key: true,
+          },
+          sub_settings: [
+            {
+              http_method: 'any',
+              regex: 'force_disabled=true',
+              settings: {
+                disable_api_key: true,
+              },
+            },
+            {
+              http_method: 'any',
+              regex: '^/info/no-keys/nevermind',
+              settings: {
+                disable_api_key: false,
+              },
+            },
+            {
+              http_method: 'POST',
+              regex: '^/info/no-keys/post-required',
+              settings: {
+                disable_api_key: false,
+              },
+            },
+            {
+              http_method: 'any',
+              regex: '^/info/no-keys/inherit',
+              settings: {
+                disable_api_key: null,
+              },
+            },
+          ],
+        },
+        {
+          'frontend_host': 'localhost',
+          'backend_host': 'example.com',
+          'id': 'default',
+          'url_matches': [
+            {
+              'frontend_prefix': '/',
+              'backend_prefix': '/',
+            }
+          ],
+        },
+      ],
+    });
+
+    it('defaults to requiring api keys', function(done) {
+      request.get('http://localhost:9333/info/', function(error, response) {
+        response.statusCode.should.eql(403);
+        done();
+      });
+    });
+
+    it('allows api keys to be disabled for specific url prefixes', function(done) {
+      request.get('http://localhost:9333/info/no-keys', function(error, response) {
+        response.statusCode.should.eql(200);
+        done();
+      });
+    });
+
+    it('still verifies api keys if given, even if not required', function(done) {
+      request.get('http://localhost:9333/info/no-keys?api_key=invalid', function(error, response) {
+        response.statusCode.should.eql(403);
+
+        request.get('http://localhost:9333/info/no-keys?api_key=' + this.apiKey, function(error, response) {
+          response.statusCode.should.eql(200);
+          done();
+        });
+      }.bind(this));
+    });
+
+
+    describe('sub-url settings', function() {
+      it('inherits from the parent api setting when null', function(done) {
+        request.get('http://localhost:9333/info/no-keys/inherit', function(error, response) {
+          response.statusCode.should.eql(200);
+          done();
+        });
+      });
+
+      it('allows sub-url matches to override the parent api setting', function(done) {
+        request.get('http://localhost:9333/info/no-keys/nevermind', function(error, response) {
+          response.statusCode.should.eql(403);
+          done();
+        });
+      });
+
+      it('matches the sub-url settings in order', function(done) {
+        request.get('http://localhost:9333/info/no-keys/nevermind?force_disabled=true', function(error, response) {
+          response.statusCode.should.eql(200);
+          done();
+        });
+      });
+
+      it('matches based on the http method', function(done) {
+        request.get('http://localhost:9333/info/no-keys/post-required', function(error, response) {
+          response.statusCode.should.eql(200);
+
+          request.post('http://localhost:9333/info/no-keys/post-required', function(error, response) {
+            response.statusCode.should.eql(403);
+            done();
+          });
         });
       });
     });

@@ -43,6 +43,7 @@
     "deep-extend": "~0.2.5",
     "express": "~3.3.5",
     "factory-lady": "~0.1.0",
+    "ipplusplus": "~0.0.2",
     "grunt": "~0.4.1",
     "grunt-cli": "~0.1.9",
     "grunt-contrib-jshint": "~0.6.2",
