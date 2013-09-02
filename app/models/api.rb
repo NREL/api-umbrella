@@ -36,7 +36,7 @@ class Api
     :frontend_host,
     :backend_host,
     :balance_algorithm,
-    :settings,
+    :settings_attributes,
     :servers_attributes,
     :url_matches_attributes,
     :sub_settings_attributes,

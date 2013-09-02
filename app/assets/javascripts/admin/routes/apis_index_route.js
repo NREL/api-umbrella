@@ -4,9 +4,6 @@ Admin.ApisIndexRoute = Ember.Route.extend({
   },
 
   setupController: function(controller, model) {
-console.info("HELLO SETUP INDEX %o", controller);
-console.info("HELLO SETUP INDEX %o", model);
     controller.set('model', model);
-  }
-
+  },
 });

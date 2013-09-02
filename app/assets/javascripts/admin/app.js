@@ -8,6 +8,17 @@
 //= require_tree ./routes
 
 //Ember.LOG_BINDINGS = true
+
+// Set Bootbox defaults.
+bootbox.animate(false);
+
+// Pines Notify Defaults.
+$.pnotify.defaults.history = false;
+$.pnotify.defaults.width = '400px';
+$.pnotify.defaults.sticker = false;
+$.pnotify.defaults.animate_speed = 'fast';
+$.pnotify.defaults.icon = false;
+
 Admin = Ember.Application.create({
   LOG_TRANSITIONS: true,
 

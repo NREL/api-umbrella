@@ -20,8 +20,19 @@ Admin.ApisFormController = Ember.ObjectController.extend({
 
   actions: {
     submit: function() {
-      this.get('model').save();
-      console.info("SUBMIT %o", this.get('model'));
+      var button = $('#save_button');
+      button.button('loading');
+
+      this.get('model').save().then(_.bind(function() {;
+        button.button('reset');
+        $.pnotify({
+          type: "success",
+          title: "Saved",
+          text: "Successfully saved the '" + this.get('model').get('name') + "' API",
+        });
+
+        this.transitionTo('apis');
+      }, this));
     },
 
     addServer: function() {
@@ -34,6 +45,10 @@ Admin.ApisFormController = Ember.ObjectController.extend({
       this.send('openModal', "apis/server_form");
     },
 
+    deleteServer: function(server) {
+      this.deleteChildRecord('servers', server, 'Are you sure you want to remove this server?');
+    },
+
     addUrlMatch: function() {
       this.get('controllers.apis_url_match_form').add(this.get('model'), 'urlMatches');
       this.send('openModal', "apis/url_match_form");
@@ -42,6 +57,10 @@ Admin.ApisFormController = Ember.ObjectController.extend({
     editUrlMatch: function(urlMatch) {
       this.get('controllers.apis_url_match_form').edit(this.get('model'), 'urlMatches', urlMatch);
       this.send('openModal', "apis/url_match_form");
+    },
+
+    deleteUrlMatch: function(urlMatch) {
+      this.deleteChildRecord('urlMatches', urlMatch, 'Are you sure you want to remove this URL prefix?');
     },
 
     addSubSettings: function() {
@@ -54,6 +73,10 @@ Admin.ApisFormController = Ember.ObjectController.extend({
       this.send('openModal', "apis/sub_settings_form");
     },
 
+    deleteSubSettings: function(subSettings) {
+      this.deleteChildRecord('subSettings', subSettings, 'Are you sure you want to remove this URL setting?');
+    },
+
     addRewrite: function() {
       this.get('controllers.apis_rewrite_form').add(this.get('model'), 'rewrites');
       this.send('openModal', "apis/rewrite_form");
@@ -63,6 +86,19 @@ Admin.ApisFormController = Ember.ObjectController.extend({
       this.get('controllers.apis_rewrite_form').edit(this.get('model'), 'rewrites', rewrite);
       this.send('openModal', "apis/rewrite_form");
     },
+
+    deleteRewrite: function(rewrite) {
+      this.deleteChildRecord('rewrites', rewrite, 'Are you sure you want to remove this rewrite?');
+    },
+  },
+
+  deleteChildRecord: function(collectionName, record, message) {
+    var collection = this.get('model').get(collectionName);
+    bootbox.confirm(message, function(result) {
+      if(result) {
+        collection.removeObject(record);
+      }
+    });
   },
 });
 

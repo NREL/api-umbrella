@@ -8,6 +8,8 @@
 //= require ember
 //= require vendor/ember-model
 //= require vendor/ember-easyForm
+//= require vendor/pnotify/jquery.pnotify
+//= require vendor/bootbox/bootbox
 //= require admin/app
 //= require vendor/deparam/jquery-deparam
 //= require vendor/selectize.js/dist/js/standalone/selectize.js

@@ -118,8 +118,7 @@
     </div>
   </fieldset>
 
-
-  <fieldeset>
+  <fieldset>
     <legend><a data-toggle="collapse" class="collapsed" data-target="#request_rewriting"><i class="icon-caret-down"></i> Advanced Requests Rewriting</a></legend>
     <div id="request_rewriting" class="collapse">
       <p class="fieldset-note">Modify the incoming request's URL or headers before passing it to the backend.</p>
@@ -163,5 +162,5 @@
     </div>
   </fieldset>
 
-  <button type="submit" class="btn btn-large btn-primary">Save</button>
+  <button type="submit" id="save_button" class="btn btn-large btn-primary" data-loading-text="<i class='icon-refresh icon-spin'></i> Saving...">Save</button>
 {{/formFor}}

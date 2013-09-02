@@ -46,3 +46,9 @@
 [submodule "app/assets/javascripts/vendor/selectize.js"]
 	path = app/assets/javascripts/vendor/selectize.js
 	url = https://github.com/brianreavis/selectize.js.git
+[submodule "app/assets/javascripts/vendor/pnotify"]
+	path = app/assets/javascripts/vendor/pnotify
+	url = https://github.com/sciactive/pnotify.git
+[submodule "app/assets/javascripts/vendor/bootbox"]
+	path = app/assets/javascripts/vendor/bootbox
+	url = https://github.com/makeusabrew/bootbox.git
