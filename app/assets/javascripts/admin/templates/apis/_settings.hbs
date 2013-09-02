@@ -1,19 +1,4 @@
 {{#with settings}}
-  {{input appendQueryString
-    class='row-fluid'
-    label='Append Query String Parameters'
-    placeholder='param1=value&param2=value'
-    inputConfig='class:span12'}}
-  {{input headersString as='text'
-    class='row-fluid'
-    label='Set Headers'
-    placeholder='X-Example-Header: value'
-    inputConfig='class:span12'}}
-  {{input httpBasicAuth
-    class='row-fluid'
-    label='HTTP Basic Authentication'
-    placeholder='username:password'
-    inputConfig='class:span12'}}
   {{input requireHttps as='select'
     value='requireHttps'
     label='HTTPS Requirements'
