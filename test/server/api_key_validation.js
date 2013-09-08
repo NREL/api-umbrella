@@ -187,10 +187,11 @@ describe('api key validation', function() {
       });
 
       it('matches based on the http method', function(done) {
-        request.get('http://localhost:9333/info/no-keys/post-required', function(error, response) {
+        var url = 'http://localhost:9333/info/no-keys/post-required';
+        request.get(url, function(error, response) {
           response.statusCode.should.eql(200);
 
-          request.post('http://localhost:9333/info/no-keys/post-required', function(error, response) {
+          request.post(url, function(error, response) {
             response.statusCode.should.eql(403);
             done();
           });

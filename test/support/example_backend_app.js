@@ -60,7 +60,7 @@ app.get('/chunked', function(req, res) {
   }, 100);
 });
 
-app.get('/info/*', function(req, res) {
+app.all('/info/*', function(req, res) {
   res.json({
     headers: req.headers,
     url: url.parse(req.protocol + '://' + req.host + req.url, true),

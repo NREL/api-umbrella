@@ -284,4 +284,173 @@ describe('request rewriting', function() {
       });
     });
   });
+
+  describe('url rewriting', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          id: 'default',
+          url_matches: [
+            {
+              frontend_prefix: '/info/prefix/',
+              backend_prefix: '/info/replacement/',
+            },
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          rewrites: [
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/:category/:id.:ext?foo=:foo&bar=:bar',
+              backend_replacement: '/info/?category={{category}}&id={{id}}&format={{ext}}&foo={{foo}}&bar={{bar}}',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/wildcard/*after',
+              backend_replacement: '/info/after-wildcard/{{after}}',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/replacement/',
+              backend_replacement: '/info/second-replacement/',
+            },
+            {
+              matcher_type: 'regex',
+              http_method: 'any',
+              frontend_matcher: '^/info/\\?foo=bar$',
+              backend_replacement: '/info/?foo=moo',
+            },
+            {
+              matcher_type: 'regex',
+              http_method: 'any',
+              frontend_matcher: 'state=([A-Z]+)',
+              backend_replacement: 'region=US-$1',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/route/*after?region=:region',
+              backend_replacement: '/info/after-route/{{after}}?region={{region}}',
+            },
+            {
+              matcher_type: 'regex',
+              http_method: 'POST',
+              frontend_matcher: 'post_only=before',
+              backend_replacement: 'post_only=after',
+            },
+          ],
+        },
+      ],
+    });
+
+    describe('route patterns', function() {
+      it('matches a route pattern, without regard to query string ordering', function(done) {
+        var options = {
+          headers: {
+            'X-Api-Key': this.apiKey,
+          },
+        };
+
+        request.get('http://localhost:9333/info/cat/10.json?bar=hello&foo=goodbye', options, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.url.query.should.eql({
+            'category': 'cat',
+            'id': '10',
+            'format': 'json',
+            'foo': 'goodbye',
+            'bar': 'hello',
+          });
+
+          done();
+        });
+      });
+    });
+
+    describe('regular expressions', function() {
+      it('replaces only the matched part of the regex', function(done) {
+        request.get('http://localhost:9333/info/?state=CO&api_key=' + this.apiKey, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.url.query.should.eql({
+            region: 'US-CO',
+          });
+
+          done();
+        });
+      });
+
+      it('replaces all instances of the regex', function(done) {
+        request.get('http://localhost:9333/info/state=CO/?state=CO&api_key=' + this.apiKey, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.url.pathname.should.eql('/info/region=US-CO/');
+          data.url.query.should.eql({
+            region: 'US-CO',
+          });
+
+          done();
+        });
+      });
+
+      it('matches the regex case insensitively', function(done) {
+        request.get('http://localhost:9333/info/?STATE=CO&api_key=' + this.apiKey, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.url.query.should.eql({
+            region: 'US-CO',
+          });
+
+          done();
+        });
+      });
+    });
+
+    describe('ordering', function() {
+      it('matches after the api key has been removed from the query string', function(done) {
+        request.get('http://localhost:9333/info/?api_key=' + this.apiKey + '&foo=bar', function(error, response, body) {
+          var data = JSON.parse(body);
+          data.url.path.should.eql('/info/?foo=moo');
+
+          done();
+        });
+      });
+
+      it('matches after url prefixes have been replaced', function(done) {
+        request.get('http://localhost:9333/info/prefix/?api_key=' + this.apiKey, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.url.pathname.should.eql('/info/second-replacement/');
+
+          done();
+        });
+      });
+
+      it('chains multiple replacements in given order', function(done) {
+        request.get('http://localhost:9333/info/route/hello?state=CO&api_key=' + this.apiKey, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.url.path.should.eql('/info/after-route/hello?region=US-CO');
+
+          done();
+        });
+      });
+    });
+
+    it('matches based on the http method', function(done) {
+      var url = 'http://localhost:9333/info/?post_only=before&api_key=' + this.apiKey;
+      request.get(url, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.url.query.post_only.should.eql('before');
+
+        request.post(url, function(error, response, body) {
+          data = JSON.parse(body);
+          data.url.query.post_only.should.eql('after');
+
+          done();
+        });
+      });
+    });
+  });
 });
