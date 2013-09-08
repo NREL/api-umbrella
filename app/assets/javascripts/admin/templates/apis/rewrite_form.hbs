@@ -5,15 +5,31 @@
       collection='matcherOptions'
       optionValuePath='content.id'
       optionLabelPath='content.name'}}
-    {{input httpMethod as='select'
-      value='httpMethod'
-      collection='httpMethodOptions'
-      optionValuePath='content.id'
-      optionLabelPath='content.name'}}
-    {{input from}}
-    {{input to}}
 
-    http://api.data.gov{{from}} -> http://developer.nrel.gov{{to}}
+    <div class="row-fluid">
+      {{input httpMethod as='select'
+        value='httpMethod'
+        class='span2'
+        collection='httpMethodOptions'
+        optionValuePath='content.id'
+        optionLabelPath='content.name'
+        inputConfig='class:span12'}}
+      {{input frontendMatcher
+        class='span10'
+        placeholder='/example'
+        inputConfig='class:span12'}}
+    </div>
+
+    <div class="row-fluid arrow arrow-vertical">
+      <i class="icon-arrow-down icon-2x"></i> rewrite to
+    </div>
+
+    <div class="row-fluid">
+      {{input backendReplacement
+        class='span10 offset2'
+        placeholder='/example'
+        inputConfig='class:span12'}}
+    </div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn" {{action cancel}}>Cancel</button>

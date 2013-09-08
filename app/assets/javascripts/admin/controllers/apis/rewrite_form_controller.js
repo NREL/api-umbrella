@@ -2,8 +2,8 @@ Admin.ApisRewriteFormController = Admin.NestedFormController.extend({
   titleBase: 'Rewrite',
 
   matcherOptions: [
-    { id: "prefix", name: "Prefix" },
-    { id: "pattern", name: "Route Pattern" },
+    { id: "route", name: "Route Pattern" },
+    { id: "regex", name: "Regular Expression" },
   ],
 
   httpMethodOptions: [

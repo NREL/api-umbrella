@@ -170,6 +170,14 @@ fieldset .table {
   color: #ddd;
 }
 
+.arrow-vertical {
+  margin: 0px;
+}
+
+.arrow-vertical i {
+  vertical-align: middle;
+}
+
 a {
   [class^="icon-"],
   [class*=" icon-"] {
