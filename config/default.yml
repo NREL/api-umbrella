@@ -47,7 +47,6 @@ apiUmbrella:
         limit: 1000
         distributed: true
         responseHeaders: true
-    restrictedApis: []
   logProcessor:
     workers: 1
   routerLogListener:
