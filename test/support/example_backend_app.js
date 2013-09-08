@@ -63,8 +63,18 @@ app.get('/chunked', function(req, res) {
 app.get('/info/*', function(req, res) {
   res.json({
     headers: req.headers,
-    url: url.parse(req.protocol + '://' + req.host + req.url),
+    url: url.parse(req.protocol + '://' + req.host + req.url, true),
   });
 });
+
+var auth = express.basicAuth(function(user, pass) {
+  return (user === 'somebody' && pass === 'secret') ||
+    (user === 'anotheruser' && pass === 'anothersecret');
+});
+
+app.get('/auth/*', auth, function(req, res) {
+  res.send(req.user);
+});
+
 
 app.listen(9444);
