@@ -19,28 +19,22 @@ class ConfigVersion
   end
 
   def self.needs_publishing?
-    if(!self.last_change || !self.last_version)
+    change = self.last_change
+    version = self.last_version
+    if(!change || !version)
       true
     else
-      (self.last_change > self.last_version)
+      (change > version)
     end
   end
 
   def self.last_version
-    unless @last_version
-      last = self.desc(:version).first
-      @last_version = if(last) then last.version else nil end
-    end
-
-    @last_version
+    last = self.desc(:version).first
+    if(last) then last.version else nil end
   end
 
   def self.last_change
-    unless @last_change
-      last = Api.desc(:updated_at).first
-      @last_change = if(last) then last.updated_at else nil end
-    end
-
-    @last_change
+    last = Api.desc(:updated_at).first
+    if(last) then last.updated_at else nil end
   end
 end
