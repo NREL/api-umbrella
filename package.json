@@ -15,6 +15,7 @@
     "addr": "~1.0.0",
     "always-tail": "~0.1.0",
     "async": "~0.2.9",
+    "atomic-write": "~0.1.0",
     "connect": "~2.8.5",
     "connect-base": "~0.1.5",
     "clone": "~0.1.10",
