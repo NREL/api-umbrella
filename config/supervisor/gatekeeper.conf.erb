@@ -1,6 +1,6 @@
 [program:<%= deploy_name %>-gatekeeper]
 directory=<%=current_path %>/gatekeeper
-environment=PATH=/opt/nodejs/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,NODE_ENV=<%= rails_env %>,NODE_CONFIG_DIR=<%= current_path %>/config
+environment=PATH=/opt/nodejs/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,NODE_ENV=<%= rails_env %>,NODE_CONFIG_DIR=<%= current_path %>/config,NODE_LOG_DIR=<%= current_path %>/log/gatekeeper
 command=<%= current_path %>/gatekeeper/bin/api_umbrella_gatekeeper
 
 ; Always keep running.
@@ -25,7 +25,7 @@ user=www-data-local
 ; Log both stdout and stderr to the same log file. One log file per
 ; Gatekeeper instance running on each port.
 redirect_stderr=true
-stdout_logfile=<%= current_path %>/log/gatekeeper.log
+stdout_logfile=<%= current_path %>/log/gatekeeper/supervisor.log
 
 ; Don't rotate based on file size. We'll rotate externally using logrotate.
 logfile_maxbytes=0

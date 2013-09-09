@@ -1,20 +1,16 @@
 include <%= latest_release %>/config/nginx/ssl_terminator.conf;
-include <%= latest_release %>/config/nginx/backends/*.conf;
 
-log_format api_umbrella_log '"$x_api_umbrella_uid","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent"';
+upstream api_umbrella_web_backend {
+  server 127.0.0.1:51000;
+  keepalive 10;
+}
 
-# Limit the number of simultaneous connections per IP address.
-limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:5m;
-limit_conn_status 429;
+upstream api_umbrella_gatekeeper_frontend {
+  server 127.0.0.1:50090;
+  keepalive 10;
+}
 
-# Rate limits per IP address.
-#
-# In general, we want to rely on the more granular and configurable rate limits
-# provided by the API Umbrella Gatekeeper, so this limit should be higher than
-# the Gatekeeper's limits. This just provides an extra line of simple defense
-# against misbehaving clients from overloading the Gatekeeper.
-limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:5m rate=100r/s;
-limit_req_status 429;
+include <%= current_path %>/config/gatekeeper_nginx.conf;
 
 server {
   listen 80;
@@ -23,24 +19,12 @@ server {
   access_log <%= current_path %>/log/access.log combined;
   error_log <%= current_path %>/log/error.log;
 
-  # Limit the number of simulaneous connections per IP address to 50.
-  limit_conn api_umbrella_conn_addr_zone 50;
-
-  # After the 100 requests/second rate is reached, allow a sizable burst before
-  # completely terminating requests at this router level. This is so we can
-  # generally rely on API Umbrella Gatekeeper for rate limiting, but still
-  # throttle traffic to the Gatekeeper.
-  limit_req zone=api_umbrella_req_addr_zone burst=100 nodelay;
-
-  keepalive_timeout 30s;
+  proxy_set_header Host $host;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
   # Proxy over HTTP 1.1 so keepalive connections to the backend are supported.
   proxy_http_version 1.1;
   proxy_set_header Connection "";
-
-  # Default proxy headers.
-  proxy_set_header Host $http_host;
-  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
   # Conditional proxy headers. Don't set these x-forwarded headers if they've
   # already been set (by the SSL terminator).
@@ -66,26 +50,6 @@ server {
   }
 
   location / {
-    set $x_api_umbrella_uid $request_id;
-    set $router_name "web_router";
-    access_log <%= current_path %>/log/router.log api_umbrella_log;
-
-    proxy_set_header X-Api-Umbrella-UID $request_id;
-    proxy_pass http://api_umbrella_gatekeeper_backend;
+    proxy_pass http://api_umbrella_gatekeeper_frontend;
   }
-}
-
-server {
-  listen 50100;
-
-  access_log <%= current_path %>/log/access.log combined;
-  error_log <%= current_path %>/log/error.log;
-
-  set $x_api_umbrella_uid $http_x_api_umbrella_uid;
-  set $router_name "api_router";
-  access_log <%= current_path %>/log/router.log api_umbrella_log;
-
-  keepalive_timeout 5m;
-
-  # Insert your own...
 }
