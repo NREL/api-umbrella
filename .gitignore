@@ -1,2 +1,4 @@
 /node_modules
+/test/config/gatekeeper_nginx.conf
+/test/config/runtime.json
 /test/config/runtime.yml*

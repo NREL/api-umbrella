@@ -83,7 +83,7 @@ describe('api key validation', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          id: 'default',
+          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/info/no-keys',
@@ -127,7 +127,7 @@ describe('api key validation', function() {
         {
           'frontend_host': 'localhost',
           'backend_host': 'example.com',
-          'id': 'default',
+          '_id': 'default',
           'url_matches': [
             {
               'frontend_prefix': '/',

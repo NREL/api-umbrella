@@ -10,7 +10,7 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             'frontend_host': 'localhost:7777',
             'backend_host': 'example.com',
-            'id': 'localhost-non-matching-port',
+            '_id': 'localhost-non-matching-port',
             'url_matches': [
               {
                 'frontend_prefix': '/info/',
@@ -21,7 +21,7 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             'frontend_host': 'localhost:9333',
             'backend_host': 'example.com',
-            'id': 'localhost-with-port',
+            '_id': 'localhost-with-port',
             'url_matches': [
               {
                 'frontend_prefix': '/info/',
@@ -32,7 +32,7 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             'frontend_host': 'localhost:80',
             'backend_host': 'example.com',
-            'id': 'localhost-default-port',
+            '_id': 'localhost-default-port',
             'url_matches': [
               {
                 'frontend_prefix': '/info/',
@@ -43,7 +43,7 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             'frontend_host': 'localhost:443',
             'backend_host': 'example.com',
-            'id': 'localhost-ssl-port',
+            '_id': 'localhost-ssl-port',
             'url_matches': [
               {
                 'frontend_prefix': '/info/',
@@ -54,7 +54,7 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             'frontend_host': 'fallback.example.com',
             'backend_host': 'example.com',
-            'id': 'fallback-no-port',
+            '_id': 'fallback-no-port',
             'url_matches': [
               {
                 'frontend_prefix': '/info/',
@@ -65,7 +65,7 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             'frontend_host': 'fallback.example.com:80',
             'backend_host': 'example.com',
-            'id': 'fallback-no-port',
+            '_id': 'fallback-no-port',
             'url_matches': [
               {
                 'frontend_prefix': '/info/',
@@ -171,7 +171,7 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             'frontend_host': 'localhost',
             'backend_host': 'example.com',
-            'id': 'other-prefix',
+            '_id': 'other-prefix',
             'url_matches': [
               {
                 'frontend_prefix': '/info/other/',
@@ -182,7 +182,7 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             'frontend_host': 'unused.example.com',
             'backend_host': 'example.com',
-            'id': 'specific-prefix-different-host',
+            '_id': 'specific-prefix-different-host',
             'url_matches': [
               {
                 'frontend_prefix': '/info/specific/',
@@ -193,7 +193,7 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             'frontend_host': 'localhost',
             'backend_host': 'example.com',
-            'id': 'specific-prefix',
+            '_id': 'specific-prefix',
             'url_matches': [
               {
                 'frontend_prefix': '/info/specific/',
@@ -239,7 +239,7 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             'frontend_host': 'localhost',
             'backend_host': 'example.com',
-            'id': 'rewrites',
+            '_id': 'rewrites',
             'url_matches': [
               {
                 'frontend_prefix': '/info/incoming/',
