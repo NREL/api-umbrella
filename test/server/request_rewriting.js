@@ -27,13 +27,80 @@ describe('request rewriting', function() {
     });
   });
 
+  describe('host header', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: null,
+          _id: 'default',
+          url_matches: [
+            {
+              frontend_prefix: '/info/none',
+              backend_prefix: '/info/none',
+            }
+          ],
+        },
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com:8080',
+          _id: 'default',
+          url_matches: [
+            {
+              frontend_prefix: '/info/port',
+              backend_prefix: '/info/port',
+            }
+          ],
+        },
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          _id: 'default',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+        },
+      ],
+    });
+
+    it('sets the host header', function(done) {
+      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers.host.should.eql('example.com');
+
+        done();
+      }.bind(this));
+    });
+
+    it('includes the port number when given', function(done) {
+      request.get('http://localhost:9333/info/port?api_key=' + this.apiKey, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers.host.should.eql('example.com:8080');
+
+        done();
+      }.bind(this));
+    });
+
+    it('leaves the host header untouched when a backend replacement is not present', function(done) {
+      request.get('http://localhost:9333/info/none?api_key=' + this.apiKey, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers.host.should.eql('localhost:9333');
+
+        done();
+      }.bind(this));
+    });
+  });
+
   describe('appending query strings', function() {
     shared.runServer({
       apis: [
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          id: 'default',
+          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/',
@@ -123,7 +190,7 @@ describe('request rewriting', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          id: 'default',
+          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/',
@@ -207,7 +274,7 @@ describe('request rewriting', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          id: 'default',
+          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/auth/',
@@ -291,7 +358,7 @@ describe('request rewriting', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          id: 'default',
+          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/info/prefix/',
