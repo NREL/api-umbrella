@@ -24,6 +24,12 @@ class Admin::ApisController < Admin::BaseController
     respond_with(@api, :root => "api")
   end
 
+  def destroy
+    @api = Api.find(params[:id])
+    @api.destroy
+    respond_with(@api, :root => "api")
+  end
+
   private
 
   def save!
@@ -37,8 +43,9 @@ class Admin::ApisController < Admin::BaseController
         # incoming array order as correct.
         if(params[:api][collection].first[:sort_order].present?)
           params[:api][collection].sort_by! { |p| p[:sort_order] }
-          params[:api][collection].each { |p| p.delete(:sort_order) }
         end
+
+        params[:api][collection].each { |p| p.delete(:sort_order) }
       end
     end
 

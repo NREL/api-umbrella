@@ -24,7 +24,6 @@
           <span class="brand">API Umbrella</span>
           <%= tabs_tag(:builder => BootstrapNavbarTabBuilder, :link_current => true, :open_tabs => { :class => "nav" }) do |tab| %>
             <%= tab.home "Dashboard", root_path, :class => "nav-home" %>
-            <%= tab.analytics("APIs", "/admin/#/apis", :class => "nav-apis") %>
             <%= tab.analytics('Analytics <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-analytics", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
               <ul class="dropdown-menu">
                 <li><%= link_to('<i class="icon-signal"></i> Filter Logs'.html_safe, admin_stats_path(:trailing_slash => true, :anchor => "search")) %></li>
@@ -42,6 +41,12 @@
               <ul class="dropdown-menu">
                 <li><%= link_to('<i class="icon-user"></i> API Users'.html_safe, admin_api_users_path) %></li>
                 <li><%= link_to('<i class="icon-user"></i> Admin Accounts'.html_safe, admin_admins_path) %></li>
+              </ul>
+            <% end %>
+            <%= tab.analytics('Configuration <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-config", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
+              <ul class="dropdown-menu">
+                <li><%= link_to('<i class="icon-gear"></i> API Backends'.html_safe, '/admin/#/apis') %></li>
+                <li><%= link_to('<i class="icon-upload-alt"></i> Publish Changes'.html_safe, admin_config_publish_path) %></li>
               </ul>
             <% end %>
           <% end %>

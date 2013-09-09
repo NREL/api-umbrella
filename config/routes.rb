@@ -1,5 +1,4 @@
 Developer::Application.routes.draw do
-  namespace :admin do resources :api_users end
 
   get "/doc/api-key" => "pages#api_key", :as => :doc_api_key
   get "/doc/errors" => "pages#errors"
@@ -40,6 +39,8 @@ Developer::Application.routes.draw do
   match "/admin" => "admin/base#empty"
 
   namespace :admin do
+    resources :api_users
+
     resources :stats, :only => [:index] do
       collection do
         get "search"
@@ -49,6 +50,11 @@ Developer::Application.routes.draw do
     end
 
     resources :apis
+
+    namespace :config do
+      get "publish", :action => "show"
+      post "publish", :action => "create"
+    end
 
     resources :admins do
       get "page/:page", :action => :index, :on => :collection

@@ -1,7 +1,7 @@
-<h1>APIs</h1>
+<h1>API Backends</h1>
 
 <div class="button-actions">
-  <a href="#/apis/new" class="btn btn-primary"><i class="icon-plus icon-white"></i> Add New API</a>
+  <a href="#/apis/new" class="btn btn-primary"><i class="icon-plus icon-white"></i> Add API Backend</a>
 </div>
 
 <table class="table table-striped">
@@ -17,6 +17,7 @@
         <td>{{api.name}}</td>
         <td class="table-row-actions">
           {{#linkTo 'apis.edit' api._id}}<i class="icon-pencil"></i>Edit{{/linkTo}}
+          <a href="#" class="remove-action" {{action 'delete' api}}><i class="icon-remove"></i>Delete</a>
         </td>
       </tr>
     {{/each}}
