@@ -10,7 +10,7 @@ upstream api_umbrella_gatekeeper_frontend {
   keepalive 10;
 }
 
-include <%= current_path %>/config/gatekeeper_nginx.conf;
+include <%= current_path %>/config/gatekeeper_nginx*.conf;
 
 server {
   listen 80;
