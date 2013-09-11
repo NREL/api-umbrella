@@ -51,4 +51,3 @@ apiUmbrella:
     workers: 1
   routerLogListener:
     workers: 1
-    logPath: log/router.log
