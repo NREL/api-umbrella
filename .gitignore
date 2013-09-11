@@ -23,9 +23,9 @@
 /config/supervisor/gatekeeper.conf
 
 # Ignore node generated file
-/config/gatekeeper_nginx.conf
-/config/runtime.json
-/config/runtime.yml*
+/config/gatekeeper/nginx.conf
+/config/gatekeeper/runtime.json
+/config/gatekeeper/runtime.yml*
 
 # Ignore log files
 /log/*.log
