@@ -18,3 +18,13 @@ set :branch, "master"
 ssh_options[:forward_agent] = true
 
 set :npm_apps, ["gatekeeper"]
+
+after "deploy:setup", "deploy:app:setup_dirs"
+
+namespace :deploy do
+  namespace :app do
+    task :setup_dirs, :except => { :no_release => true } do
+      run "#{try_sudo} mkdir -p #{File.join(shared_path, "log/gatekeeper")}"
+    end
+  end
+end
