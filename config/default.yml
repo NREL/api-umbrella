@@ -1,6 +1,4 @@
 apiUmbrella:
   proxy: 
     port: 50000
-  routerLogListener: 
-    logPath: ../log/router.log
   geoipDataDir: "/opt/geoip-lite/data"
