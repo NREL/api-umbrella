@@ -19,6 +19,16 @@ ssh_options[:forward_agent] = true
 
 set :npm_apps, ["gatekeeper"]
 
+set :web_server_user, "www-data-local"
+
+set :shared_children_files, %w(config/runtime.yml config/runtime.json)
+set(:writable_paths) {
+  [
+    File.join(shared_path, "config/runtime.yml"),
+    File.join(shared_path, "config/runtime.json"),
+  ]
+}
+
 after "deploy:setup", "deploy:app:setup_dirs"
 
 namespace :deploy do

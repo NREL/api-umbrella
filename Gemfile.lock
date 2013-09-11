@@ -1,6 +1,6 @@
 GIT
   remote: http://github.com/NREL/capistrano_nrel_ext.git
-  revision: 87cafca92080f2c47ad842a67c04f5c63df0ac24
+  revision: 6a7bc70025c478832bbbb8c6915fabbe64d92354
   specs:
     capistrano_nrel_ext (0.3.0)
       artii
@@ -16,7 +16,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     artii (2.0.3)
-    capistrano (2.15.4)
+    capistrano (2.15.5)
       highline
       net-scp (>= 1.0.0)
       net-sftp (>= 2.0.0)
@@ -24,10 +24,10 @@ GEM
       net-ssh-gateway (>= 1.1.0)
     capistrano-ext (1.2.1)
       capistrano (>= 1.0.0)
-    chronic (0.9.1)
-    diffy (2.1.4)
+    chronic (0.10.2)
+    diffy (3.0.1)
     erubis (2.7.0)
-    highline (1.6.18)
+    highline (1.6.19)
     jruby-pageant (1.1.1)
     jruby-pageant (1.1.1-java)
     net-scp (1.0.4)
@@ -38,7 +38,7 @@ GEM
       jruby-pageant (>= 1.0.2)
     net-ssh-gateway (1.1.0)
       net-ssh (>= 1.99.1)
-    tzinfo (0.3.37)
+    tzinfo (1.0.1)
 
 PLATFORMS
   java
