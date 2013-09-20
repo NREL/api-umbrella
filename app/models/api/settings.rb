@@ -21,5 +21,28 @@ class Api::Settings
     :require_https,
     :disable_api_key,
     :required_roles,
+    :required_roles_string,
     :hourly_rate_limit
+
+  def required_roles_string
+    unless @required_roles_string
+      @required_roles_string = ""
+      if self.required_roles.present?
+        @required_roles_string = self.required_roles.join(",")
+      end
+    end
+
+    @required_roles_string
+  end
+
+  def required_roles_string=(string)
+    @required_roles_string = string
+
+    roles = nil
+    if(string.present?)
+      roles = string.split(",").map { |role| role.strip }
+    end
+
+    self.required_roles = roles
+  end
 end

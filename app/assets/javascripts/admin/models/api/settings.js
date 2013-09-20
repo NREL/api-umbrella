@@ -5,7 +5,7 @@ Admin.ApiSettings = Ember.Model.extend({
   httpBasicAuth: Ember.attr(),
   requireHttps: Ember.attr(),
   disableApiKey: Ember.attr(),
-  requiredRoles: Ember.attr(),
+  requiredRolesString: Ember.attr(),
   hourlyRateLimit: Ember.attr(),
 
   headers: function(key, value) {

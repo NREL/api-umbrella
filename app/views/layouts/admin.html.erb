@@ -9,6 +9,8 @@
     <%= javascript_include_tag(File.join(ActionController::Base.config.relative_url_root.to_s, "/javascripts/vendor/ckeditor/ckeditor.js")) %>
     <%= javascript_tag do %>
       CKEDITOR.plugins.addExternal("pbckcode", "/javascripts/vendor/PBCKCode/");
+
+      apiUserExistingRoles = <%= ApiUser.existing_roles.map { |role| { :id => role, :title => role } }.to_json.html_safe %>;
     <% end %>
     <%= javascript_include_tag "admin" %>
     <%= javascript_include_tag "//www.google.com/jsapi" %>

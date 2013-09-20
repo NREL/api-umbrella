@@ -10,4 +10,7 @@ Admin.ApisSettingsFieldsController = Ember.ObjectController.extend({
     { id: false, name: "Required - API keys are mandatory" },
     { id: true, name: "Disabled - API keys are optional" },
   ],
+
+  // FIXME: Don't use a global variable for getting the list of roles.
+  roleOptions: apiUserExistingRoles,
 });

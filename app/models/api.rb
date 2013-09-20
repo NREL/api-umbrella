@@ -48,4 +48,11 @@ class Api
     :sub_settings,
     :rewrites,
     :rate_limits
+
+  def as_json(options)
+    options[:methods] ||= []
+    options[:methods] << :required_roles_string
+
+    super(options)
+  end
 end

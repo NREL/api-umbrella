@@ -11,10 +11,11 @@
     collection='controller.controllers.apis_settings_fields.disableApiKeyOptions'
     optionValuePath='content.id'
     optionLabelPath='content.name'}}
-  {{input requiredRoles
-    class='row-fluid'
-    label='Required Roles'
-    inputConfig='class:span12'}}
+  {{#view Admin.SelectizeView}}
+    {{input requiredRolesString
+      class='row-fluid'
+      label='Required Roles'}}
+  {{/view}}
   {{input hourlyRateLimit
     class='row-fluid'
     label='Rate Limit'
