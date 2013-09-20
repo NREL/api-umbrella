@@ -35,7 +35,7 @@ namespace :deploy do
 
     task :finalize_permissions, :except => { :no_release => true } do
       begin
-        run "setfacl -R -m 'u:api-umbrella-gatekeeper:rwx' #{File.join(shared_path, "config/gatekeeper")}"
+        run "setfacl -R -m 'u:api-umbrella-gatekeeper:rwx' #{File.join(shared_path, "config/gatekeeper")} #{File.join(current_path, "log/gatekeeper")}"
       rescue Capistrano::CommandError
         # Fail silently. We'll assume failures are due the files being owned by
         # another user, but that the permissions are already setup correctly.
