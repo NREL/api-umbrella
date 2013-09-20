@@ -9,25 +9,25 @@ class Admin::ApisController < Admin::BaseController
 
   def show
     @api = Api.find(params[:id])
-    respond_with(@api, :root => "api")
+    respond_with(:admin, @api, :root => "api")
   end
 
   def create
     @api = Api.new
     save!
-    respond_with(@api, :root => "api")
+    respond_with(:admin, @api, :root => "api")
   end
 
   def update
     @api = Api.find(params[:id])
     save!
-    respond_with(@api, :root => "api")
+    respond_with(:admin, @api, :root => "api")
   end
 
   def destroy
     @api = Api.find(params[:id])
     @api.destroy
-    respond_with(@api, :root => "api")
+    respond_with(:admin, @api, :root => "api")
   end
 
   private
