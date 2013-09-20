@@ -10,10 +10,16 @@ run_list([
   "role[supervisor]",
   "role[varnish]",
 
+  "recipe[api-umbrella::router]",
   "recipe[geoip::nodejs]",
 ])
 
 default_attributes({
+  :nginx => {
+    # Allow for longer host names
+    :server_names_hash_bucket_size => 128,
+  },
+
   :rsyslog => {
     :network => {
       :enable => true,
