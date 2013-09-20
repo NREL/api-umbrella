@@ -24,8 +24,14 @@ class Api
   embeds_many :rate_limits, :class_name => "Api::RateLimit"
 
   # Validations
+  validates :name,
+    :presence => true
   validates :backend_protocol,
     :inclusion => { :in => %w(http https) }
+  validates :frontend_host,
+    :presence => true
+  validates :backend_host,
+    :presence => true
   validates :balance_algorithm,
     :inclusion => { :in => %w(round_robin least_conn ip_hash) }
 
