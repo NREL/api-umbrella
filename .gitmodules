@@ -166,3 +166,6 @@
 [submodule "chef/cookbooks/envbuilder"]
 	path = chef/cookbooks/envbuilder
 	url = https://github.com/theodi/chef-envbuilder.git
+[submodule "chef/cookbooks/api-umbrella"]
+	path = chef/cookbooks/api-umbrella
+	url = https://github.com/NREL-cookbooks/api-umbrella.git
