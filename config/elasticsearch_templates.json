@@ -106,8 +106,7 @@
             },
             "request_path": {
               "type": "string",
-              "index_analyzer": "path_hierarchy_lowercase",
-              "search_analyzer": "simple"
+              "analyzer": "path_hierarchy_lowercase"
             },
             "response_status": {
               "type": "short"
