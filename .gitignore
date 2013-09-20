@@ -13,3 +13,7 @@
 # Custom root certificates that need to be installed for HTTPS. Only used
 # inside NREL's network, so ignore from git.
 /chef/data_bags/ca_certificates
+
+# Ignore real databags.
+/chef/data_bags/envs/staging.json
+/chef/data_bags/envs/production.json
