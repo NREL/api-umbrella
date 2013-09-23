@@ -163,7 +163,6 @@ describe('api key validation', function() {
       }.bind(this));
     });
 
-
     describe('sub-url settings', function() {
       it('inherits from the parent api setting when null', function(done) {
         request.get('http://localhost:9333/info/no-keys/inherit', function(error, response) {
@@ -193,6 +192,17 @@ describe('api key validation', function() {
 
           request.post(url, function(error, response) {
             response.statusCode.should.eql(403);
+            done();
+          });
+        });
+      });
+
+      it('does not let sub-settings affect subsequent calls to the parent', function(done) {
+        request.post('http://localhost:9333/info/no-keys/post-required', function(error, response) {
+          response.statusCode.should.eql(403);
+
+          request.get('http://localhost:9333/info/no-keys', function(error, response) {
+            response.statusCode.should.eql(200);
             done();
           });
         });
