@@ -1,6 +1,8 @@
 'use strict';
 
-var express = require('express'),
+var _ = require('underscore'),
+    async = require('async'),
+    express = require('express'),
     url = require('url');
 
 var app = express();
@@ -21,6 +23,20 @@ app.post('/hello', function(req, res) {
 
 app.post('/echo', function(req, res) {
   res.send(req.body);
+});
+
+app.get('/echo_delayed_chunked', function(req, res) {
+  var parts = req.query.input.split('');
+  async.eachSeries(parts, function(part, next) {
+    setTimeout(function() {
+      res.write(part);
+      next();
+    }, _.random(5, 15));
+  }, function() {
+    setTimeout(function() {
+      res.end('');
+    }, _.random(5, 15));
+  });
 });
 
 app.get('/restricted', function(req, res) {
