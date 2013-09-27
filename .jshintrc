@@ -29,6 +29,7 @@
     "it": true,
     "mongoose": true,
     "shared": true,
+    "should": true,
     "request": true
   }
 }

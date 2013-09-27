@@ -27,6 +27,72 @@ describe('request rewriting', function() {
     });
   });
 
+  describe('roles header', function() {
+    shared.runServer();
+
+    it('passes a header defining the user\'s roles to the backend', function(done) {
+      Factory.create('api_user', { roles: ['private'] }, function(user) {
+        request.get('http://localhost:9333/info/?api_key=' + user.api_key, function(error, response, body) {
+          var data = JSON.parse(body);
+          console.info(data.headers);
+          data.headers['x-api-roles'].should.eql('private');
+
+          done();
+        });
+      });
+    });
+
+    it('delimits multiple roles with commas', function(done) {
+      Factory.create('api_user', { roles: ['private', 'foo', 'bar'] }, function(user) {
+        request.get('http://localhost:9333/info/?api_key=' + user.api_key, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.headers['x-api-roles'].should.eql('private,foo,bar');
+
+          done();
+        });
+      });
+    });
+
+    it('strips forged role headers on the incoming request', function(done) {
+      Factory.create('api_user', { roles: null }, function(user) {
+        var options = {
+          headers: {
+            'X-Api-Key': user.api_key,
+            'X-Api-Roles': 'bogus',
+          }
+        };
+
+        request.get('http://localhost:9333/info/', options, function(error, response, body) {
+          var data = JSON.parse(body);
+          should.not.exist(data.headers['x-api-roles']);
+          should.not.exist(data.headers['X-Api-Roles']);
+
+          done();
+        });
+      });
+    });
+
+    it('strips forged role headers, case insensitvely', function(done) {
+      Factory.create('api_user', { roles: null }, function(user) {
+        var options = {
+          headers: {
+            'X-Api-Key': user.api_key,
+            'X-API-ROLES': 'bogus',
+          }
+        };
+
+        request.get('http://localhost:9333/info/', options, function(error, response, body) {
+          var data = JSON.parse(body);
+          should.not.exist(data.headers['x-api-roles']);
+          should.not.exist(data.headers['X-Api-Roles']);
+          should.not.exist(data.headers['X-API-ROLES']);
+
+          done();
+        });
+      });
+    });
+  });
+
   describe('host header', function() {
     shared.runServer({
       apis: [

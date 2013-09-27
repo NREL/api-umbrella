@@ -2,4 +2,4 @@
 
 require('../test_helper');
 
-require('chai').should();
+global.should = require('chai').should();
