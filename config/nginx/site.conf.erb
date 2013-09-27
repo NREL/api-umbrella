@@ -12,43 +12,44 @@ upstream api_umbrella_gatekeeper_frontend {
 
 include <%= current_path %>/config/gatekeeper/nginx*.conf;
 
+# The main, front-facing public host server. This serves up both the APIs and
+# the web content.
 server {
   listen 80;
   server_name <%= all_domains.join(" ") %>;
 
-  access_log <%= current_path %>/log/access.log combined;
-  error_log <%= current_path %>/log/error.log;
+  include <%= latest_release %>/config/nginx/public_defaults.conf;
 
-  proxy_set_header Host $host;
-  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-  # Proxy over HTTP 1.1 so keepalive connections to the backend are supported.
-  proxy_http_version 1.1;
-  proxy_set_header Connection "";
-
-  # Conditional proxy headers. Don't set these x-forwarded headers if they've
-  # already been set (by the SSL terminator).
-  set $real_scheme $http_x_forwarded_proto;
-  if ($real_scheme = "") {
-    set $real_scheme $scheme; 
-  }
-
-  set $real_port $http_x_forwarded_port;
-  if ($real_port = "") {
-    set $real_port $server_port; 
-  }
-
-  proxy_set_header X-Forwarded-Proto $real_scheme;
-  proxy_set_header X-Forwarded-Port $real_port;
-
+  # Route the docs and other static pages to the Rails web app. This may
+  # change, so that's why we're treating it separately.
   location ~* ^/(about|community|doc|docs|images|static|)(/|$) {
     proxy_pass http://api_umbrella_web_backend;
   }
 
+  # Route the dynamic portions of the site to the Rails web app.
   location ~* ^/(account|admin|admins|assets|contact|favicon\.ico|javascripts|robots.txt|signup)(/|$) {
     proxy_pass http://api_umbrella_web_backend;
   }
 
+  # Route all other requests as APIs going through the API Umbrella Gatekeeper.
+  location / {
+    # Remove the legacy /api/ prefix from all API urls. Now we assume API URLs
+    # are all top-level.
+    rewrite ^/api(/.*) $1 break;
+
+    proxy_pass http://api_umbrella_gatekeeper_frontend;
+  }
+}
+
+# Secondary hosts. These are other hosts we're handling only API traffic for,
+# but don't want to show web page content for.
+server {
+  listen 80 default_server;
+  server_name _;
+
+  include <%= latest_release %>/config/nginx/public_defaults.conf;
+
+  # Route all other requests as APIs going through the API Umbrella Gatekeeper.
   location / {
     proxy_pass http://api_umbrella_gatekeeper_frontend;
   }

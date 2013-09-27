@@ -18,6 +18,7 @@
 /config/deployed.yml
 
 # Ignore files generated from templates
+/config/nginx/public_defaults.conf
 /config/nginx/site.conf
 /config/nginx/ssl_terminator.conf
 /config/supervisor/gatekeeper.conf
