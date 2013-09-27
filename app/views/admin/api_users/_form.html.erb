@@ -1,4 +1,6 @@
 <%= simple_form_for [:admin, @api_user] do |f| %>
+  <%= f.error_notification %>
+
   <fieldset class="form-horizontal info">
     <legend>User Info</legend>
     <%= f.input :email %>
