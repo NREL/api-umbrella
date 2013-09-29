@@ -27,6 +27,13 @@ Developer::Application.routes.draw do
         get "validate"
       end
     end
+
+    resources :health_checks, :path => "health-checks", :only => [] do
+      collection do
+        get :ip
+        get :logging
+      end
+    end
   end
 
   devise_for :admins, :controllers => { :omniauth_callbacks => "admin/admins/omniauth_callbacks" }

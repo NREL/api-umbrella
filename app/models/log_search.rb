@@ -7,8 +7,16 @@ class LogSearch
   def initialize(options = {})
     @server = Stretcher::Server.new(ElasticsearchConfig.server, :logger => Rails.logger)
 
-    @start_time = Time.zone.parse(options[:start_time])
-    @end_time = Time.zone.parse(options[:end_time]).end_of_day
+    @start_time = options[:start_time]
+    unless(@start_time.kind_of?(Time))
+      @start_time = Time.zone.parse(@start_time)
+    end
+
+    @end_time = options[:end_time]
+    unless(@end_time.kind_of?(Time))
+      @end_time = Time.zone.parse(@end_time).end_of_day
+    end
+
     if(@end_time > Time.zone.now)
       @end_time = Time.zone.now
     end
@@ -65,6 +73,14 @@ class LogSearch
           :from => @start_time.iso8601,
           :to => @end_time.iso8601,
         },
+      },
+    }
+  end
+
+  def filter_by_api_key!(api_key)
+    @query[:query][:filtered][:filter][:and] << {
+      :term => {
+        :api_key => api_key,
       },
     }
   end
