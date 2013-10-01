@@ -86,7 +86,25 @@ class ApiUser
   end
 
   def self.existing_roles
-    ApiUser.distinct(:roles)
+    existing_roles = ApiUser.distinct(:roles)
+
+    api_roles = Api.all.each do |api|
+      if(api.settings && api.settings.required_roles)
+        existing_roles += api.settings.required_roles
+      end
+
+      if(api.sub_settings)
+        api.sub_settings.each do |sub|
+          if(sub.settings && sub.settings.required_roles)
+            existing_roles += sub.settings.required_roles
+          end
+        end
+      end
+    end
+
+    existing_roles.uniq!
+
+    existing_roles
   end
 
   def as_json(*args)
