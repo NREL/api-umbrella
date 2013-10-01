@@ -77,6 +77,14 @@ class LogSearch
     }
   end
 
+  def filter_by_request_path!(request_path)
+    @query[:query][:filtered][:filter][:and] << {
+      :term => {
+        :request_path => request_path,
+      },
+    }
+  end
+
   def filter_by_api_key!(api_key)
     @query[:query][:filtered][:filter][:and] << {
       :term => {

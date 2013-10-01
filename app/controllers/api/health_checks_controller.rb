@@ -11,6 +11,7 @@ class Api::HealthChecksController < ApplicationController
 
     @search.filter_by_date_range!
     @search.filter_by_api_key!(params[:user_key])
+    @search.filter_by_request_path!("/api/health-checks/logging")
     @search.limit!(1)
     @result = @search.result
 
