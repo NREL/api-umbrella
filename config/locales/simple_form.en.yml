@@ -28,6 +28,7 @@ en:
         throttle_daily_limit: Daily rate limit
         throttle_mode: Rate limits
         throttle_by_ip: Limit By
+        enabled: Account enabled
       api_doc_service:
         http_method: "HTTP Method"
         api_doc_collection_id: "Documentation Collection Page"
@@ -49,6 +50,9 @@ en:
         throttle_by_ip:
           "true": "Rate limit by IP address"
           "false": "Rate limit by API key"
+        enabled:
+          "true": Enabled
+          "false": Disabled
   helpers:
     submit:
       api_user:

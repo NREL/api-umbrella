@@ -60,7 +60,7 @@ class ApiUser
     :terms_and_conditions
   attr_accessible :first_name, :last_name, :email, :use_description,
     :terms_and_conditions, :roles, :unthrottled, :throttle_daily_limit,
-    :throttle_hourly_limit, :throttle_by_ip, :throttle_mode, :as => :admin
+    :throttle_hourly_limit, :throttle_by_ip, :throttle_mode, :enabled, :as => :admin
 
   # has_role? simply needs to return true or false whether a user has a role or not.  
   # It may be a good idea to have "admin" roles return true always
@@ -139,6 +139,20 @@ class ApiUser
       self.unthrottled = false
       self.throttle_daily_limit = nil
       self.throttle_hourly_limit = nil
+    end
+  end
+
+  def enabled
+    self.disabled_at.nil?
+  end
+
+  def enabled=(enabled)
+    if(enabled.to_s == "false")
+      if(self.disabled_at.nil?)
+        self.disabled_at = Time.now
+      end
+    else
+      self.disabled_at = nil
     end
   end
 

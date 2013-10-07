@@ -48,6 +48,7 @@
   <fieldset class="form-horizontal info">
     <legend>Permissions</legend>
     <%= f.input(:roles, :collection => available_roles, :include_blank => false, :input_html => { :multiple => true }) %>
+    <%= f.input :enabled, :as => :radio_buttons, :collection => [:true, :false] %>
   </fieldset>
 
   <div class="row-fluid">
