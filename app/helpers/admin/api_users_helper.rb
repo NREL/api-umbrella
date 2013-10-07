@@ -9,6 +9,6 @@ module Admin::ApiUsersHelper
       roles.uniq!
     end
 
-    roles
+    roles.map { |role| { :id => role, :title => role } }
   end
 end

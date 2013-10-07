@@ -47,7 +47,7 @@
 
   <fieldset class="form-horizontal info">
     <legend>Permissions</legend>
-    <%= f.input(:roles, :collection => available_roles, :include_blank => false, :input_html => { :multiple => true }) %>
+    <%= f.input(:roles_string) %>
     <%= f.input :enabled, :as => :radio_buttons, :collection => [:true, :false] %>
   </fieldset>
 
@@ -73,9 +73,14 @@
     }
   });
 
-  $('#api_user_roles').selectize({
+  $('#api_user_roles_string').selectize({
     plugins: ['restore_on_backspace', 'remove_button'],
     delimiter: ',',
+    options: <%= available_roles.to_json.html_safe %>,
+    valueField: 'id',
+    labelField: 'title',
+    searchField: 'title',
+    sortField: 'title',
     create: true,
   });
 <% end %>
