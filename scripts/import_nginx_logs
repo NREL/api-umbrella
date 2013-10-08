@@ -1,0 +1,187 @@
+#!/usr/bin/env node
+
+var _ = require('underscore'),
+    async = require('async'),
+    crypto = require('crypto'),
+    config = require('../lib/config'),
+    csv = require('csv'),
+    ElasticSearchClient = require('elasticsearchclient'),
+    fs = require('fs'),
+    logCleaner = require('../lib/log_processor/cleaner'),
+    mime = require('mime'),
+    moment = require('moment'),
+    MongoClient = require('mongodb').MongoClient,
+    url = require('url');
+    URLSafeBase64 = require('urlsafe-base64');
+
+var MigrateLogs = function() {
+  this.initialize.apply(this, arguments);
+}
+
+_.extend(MigrateLogs.prototype, {
+  users: {},
+
+  initialize: function() {
+    console.info(process.argv);
+    this.logPath = process.argv[2];
+    if(!this.logPath) {
+      console.info('Path to router.log must be given');
+      process.exit(1);
+    } else if(!fs.existsSync(this.logPath)) {
+      console.info('Log file does not exist: ' + this.logPath);
+      process.exit(1);
+    }
+
+    this.elasticSearch = new ElasticSearchClient(config.get('elasticsearch'));
+
+    async.series([
+      this.connectMongo.bind(this),
+      this.fetchUsers.bind(this),
+      this.migrate.bind(this),
+    ], function(error) {
+      if(error) {
+        console.info(error);
+      }
+    });
+  },
+
+  connectMongo: function(asyncSeriesCallback) {
+    MongoClient.connect(config.get('mongodb'), this.handleConnectMongo.bind(this, asyncSeriesCallback));
+  },
+
+  handleConnectMongo: function(asyncSeriesCallback, error, db) {
+    if(!error) {
+      this.mongo = db;
+      asyncSeriesCallback(null);
+    } else {
+      asyncSeriesCallback(error);
+    }
+  },
+
+  fetchUsers: function(asyncSeriesCallback) {
+    var mongoUsers = this.mongo.collection('api_users');
+    mongoUsers.find().each(function(error, user) {
+      if(user != null) {
+        this.users[user.api_key] = user;
+      } else {
+        asyncSeriesCallback(null);
+      }
+    }.bind(this));
+  },
+
+  migrate: function(asyncSeriesCallback) {
+    csv().from.path(this.logPath).transform(this.handleRows.bind(this));
+  },
+
+  handleRows: function(row) {
+    var routerName = row[1];
+    if(routerName != 'web_router') {
+      return false;
+    }
+
+    var uid = row[0];
+    var id = URLSafeBase64.encode(crypto.createHash('sha256').update(uid).digest('base64'));
+    var log = {
+      logged_at: parseFloat(row[3]),
+      response_time: parseFloat(row[4]),
+      backend_response_time: parseFloat(row[5]),
+      request_size: parseInt(row[6], 10),
+      response_size: parseInt(row[7], 10),
+      response_status: parseInt(row[8], 10),
+      request_ip: row[9],
+      request_method: row[10],
+      request_scheme: row[11],
+      request_host: row[12],
+      request_port: row[13],
+      request_uri: row[14],
+      request_user_agent: row[15],
+    };
+
+    var combined = {};
+    var data = log;
+
+    combined.request_at = moment.unix(data.logged_at - data.response_time).toISOString();
+    combined.response_status = data.response_status;
+    combined.response_size = data.response_size;
+    combined.request_size = data.request_size;
+    combined.response_time = data.response_time * 1000;
+
+    if(combined.hasOwnProperty('backend_response_time')) {
+      combined.proxy_overhead = data.backend_response_time * 1000 - combined.backend_response_time;
+    }
+
+    combined.request_ip = data.request_ip;
+    combined.request_method = data.request_method;
+    combined.request_url = data.request_scheme + '://' + data.request_host + data.request_uri;
+    combined.request_user_agent = data.request_user_agent;
+
+    var urlParts = url.parse(combined.request_url, true);
+    var contentType = mime.lookup(urlParts.pathname);
+    if(contentType !== 'application/octet-stream') {
+      combined.response_content_type = mime.lookup(urlParts.pathname);
+    }
+
+    var apiKey = urlParts.query.api_key;
+    if(apiKey) {
+      combined.api_key = apiKey;
+      var user = this.users[apiKey];
+      if(user) {
+        combined.user_id = user._id
+        combined.user_email = user.email
+      }
+    }
+
+    logCleaner(this.elasticSearch, combined);
+
+    var index = 'api-umbrella-logs-' + moment(combined.request_at).format('YYYY-MM');
+    this.elasticSearch.get(index, 'log', id, function(error, response) {
+      var result = JSON.parse(response)
+      if(result.exists) {
+        var existing = result._source;
+        var update = {};
+        for(var key in combined) {
+          var newValue = combined[key];
+          var existingValue = existing[key];
+          if(key == 'request_ip_location') {
+            break;
+          }
+
+          if(newValue && !existingValue) {
+            //console.info(id + ' - ' + combined.request_at + ' - Filling in missing field: ' + key + ' - ' + newValue);
+            update[key] = newValue;
+          } else if(newValue != existingValue) {
+            //console.info(id + ' - ' + combined.request_at + ' - Value mismatch: ' + key + ' - ' + existingValue + ' - ' + newValue);
+            if(key == 'request_url' || key == 'request_path') {
+              update[key] = newValue;
+            }
+          }
+        }
+
+        if(Object.keys(update).length > 0) {
+          console.info(id + ' - ' + uid + ' - ' + combined.request_at + ' - Updating with new attributes ' + JSON.stringify(update) + ' - ' + JSON.stringify(existing));
+
+          this.elasticSearch.update(index, 'log', id, { doc: update }, function(error) {
+            if(error) {
+              console.info('  ERROR: ' + error);
+            } else {
+              console.info('  Updated');
+            }
+          });
+        } else {
+          console.info(id + ' - ' + uid + ' - ' + combined.request_at + ' - Skipping, already exists ' + combined.request_url);
+        }
+      } else {
+        console.info(id + ' - ' + combined.request_at + ' - Indexing, missing');
+        this.elasticSearch.index(index, 'log', combined, id, function(error) {
+          if(error) {
+            console.info('  ERROR: ' + error);
+          } else {
+            console.info('  Indexed');
+          }
+        });
+      }
+    }.bind(this));
+  },
+});
+
+new MigrateLogs();
