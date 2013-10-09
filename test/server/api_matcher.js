@@ -157,7 +157,7 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       describe('non-matching host', function() {
-        shared.itBehavesLikeGatekeeperBlocked('/info/', 404, 'Not found', {
+        shared.itBehavesLikeGatekeeperBlocked('/info/', 404, 'NOT_FOUND', {
           headers: {
             'Host': 'unmatched.example.com',
           },
@@ -224,7 +224,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
       describe('non-matching prefixes', function() {
         describe('mismatched trailing slash', function() {
-          shared.itBehavesLikeGatekeeperBlocked('/info/specific', 404, 'Not found', {
+          shared.itBehavesLikeGatekeeperBlocked('/info/specific', 404, 'NOT_FOUND', {
             headers: {
               'Host': 'unmatched.example.com',
             },

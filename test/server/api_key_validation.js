@@ -11,7 +11,7 @@ describe('api key validation', function() {
         this.apiKey = null;
       });
 
-      shared.itBehavesLikeGatekeeperBlocked('/hello', 403, 'No api_key was supplied.');
+      shared.itBehavesLikeGatekeeperBlocked('/hello', 403, 'API_KEY_MISSING');
     });
 
     describe('empty api key supplied', function() {
@@ -19,7 +19,7 @@ describe('api key validation', function() {
         this.apiKey = '';
       });
 
-      shared.itBehavesLikeGatekeeperBlocked('/hello', 403, 'No api_key was supplied.');
+      shared.itBehavesLikeGatekeeperBlocked('/hello', 403, 'API_KEY_MISSING');
     });
 
     describe('invalid api key supplied', function() {
@@ -27,7 +27,18 @@ describe('api key validation', function() {
         this.apiKey = 'invalid';
       });
 
-      shared.itBehavesLikeGatekeeperBlocked('/hello', 403, 'An invalid api_key was supplied.');
+      shared.itBehavesLikeGatekeeperBlocked('/hello', 403, 'API_KEY_INVALID');
+    });
+
+    describe('disabled api key supplied', function() {
+      beforeEach(function(done) {
+        Factory.create('api_user', { disabled_at: new Date() }, function(user) {
+          this.apiKey = user.api_key;
+          done();
+        }.bind(this));
+      });
+
+      shared.itBehavesLikeGatekeeperBlocked('/hello', 403, 'API_KEY_DISABLED');
     });
 
     describe('valid api key supplied', function() {

@@ -12,6 +12,7 @@ var ApiUser = mongoose.model('api_users', {
   email: String,
   website: String,
   roles: [String],
+  disabled_at: Date,
 });
 
 var userCounter = 1;

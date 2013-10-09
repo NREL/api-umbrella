@@ -144,14 +144,14 @@ describe('ApiUmbrellaGatekeper', function() {
       it('rejects requests after the hourly limit has been exceeded', function(done) {
         timekeeper.freeze(new Date(2013, 1, 1, 1, 27, 0));
         async.times(10, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function() {
+          request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, function() {
             asyncCallback(null);
           });
         }.bind(this), function() {
           timekeeper.freeze(new Date(2013, 1, 1, 2, 26, 59));
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
+          request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, function(error, response, body) {
             response.statusCode.should.eql(429);
-            body.should.include('over_rate_limit');
+            body.should.include('<code>OVER_RATE_LIMIT</code>');
 
             timekeeper.reset();
             done();

@@ -51,7 +51,7 @@ describe('ApiUmbrellaGatekeper', function() {
         }.bind(this));
       });
 
-      shared.itBehavesLikeGatekeeperBlocked('/info/', 403, 'The api_key supplied is not authorized');
+      shared.itBehavesLikeGatekeeperBlocked('/info/', 403, 'API_KEY_UNAUTHORIZED');
     });
 
     describe('unauthorized api_key with empty roles', function() {
@@ -62,7 +62,7 @@ describe('ApiUmbrellaGatekeper', function() {
         }.bind(this));
       });
 
-      shared.itBehavesLikeGatekeeperBlocked('/info/', 403, 'The api_key supplied is not authorized');
+      shared.itBehavesLikeGatekeeperBlocked('/info/', 403, 'API_KEY_UNAUTHORIZED');
     });
 
     describe('unauthorized api_key with other roles', function() {
@@ -73,7 +73,7 @@ describe('ApiUmbrellaGatekeper', function() {
         }.bind(this));
       });
 
-      shared.itBehavesLikeGatekeeperBlocked('/info/', 403, 'The api_key supplied is not authorized');
+      shared.itBehavesLikeGatekeeperBlocked('/info/', 403, 'API_KEY_UNAUTHORIZED');
     });
 
     describe('authorized api_key with one of the appropriate role', function() {
@@ -107,7 +107,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }.bind(this));
         });
 
-        shared.itBehavesLikeGatekeeperBlocked('/info/sub', 403, 'The api_key supplied is not authorized');
+        shared.itBehavesLikeGatekeeperBlocked('/info/sub', 403, 'API_KEY_UNAUTHORIZED');
       });
 
       describe('authorized api_key with the appropriate role', function() {

@@ -4,7 +4,9 @@ require('../test_helper');
 
 var _ = require('underscore'),
     config = require('../../lib/config'),
-    ippp = require('ipplusplus');
+    csv = require('csv'),
+    ippp = require('ipplusplus'),
+    xml2js = require('xml2js');
 
 global.backendCalled = false;
 
@@ -53,7 +55,7 @@ global.shared = {
     });
   },
 
-  itBehavesLikeGatekeeperBlocked: function(path, statusCode, message, options) {
+  itBehavesLikeGatekeeperBlocked: function(path, statusCode, errorCode, options) {
     it('doesn\'t call the target app', function(done) {
       request(shared.buildRequestOptions(path, this.apiKey, options), function() {
         backendCalled.should.eql(false);
@@ -61,11 +63,39 @@ global.shared = {
       });
     });
 
-    it('returns a blocked status code and message', function(done) {
+    it('returns a blocked status code and error code', function(done) {
       request(shared.buildRequestOptions(path, this.apiKey, options), function(error, response, body) {
         response.statusCode.should.eql(statusCode);
-        body.should.include(message);
+        body.should.include(errorCode);
         done();
+      });
+    });
+
+    describe('formatted error responses', function() {
+      it('returns a JSON error response', function(done) {
+        request(shared.buildRequestOptions(path + '.json', this.apiKey, options), function(error, response, body) {
+          var data = JSON.parse(body);
+          data.error.code.should.eql(errorCode);
+          done();
+        });
+      });
+
+      it('returns an XML error response', function(done) {
+        request(shared.buildRequestOptions(path + '.xml', this.apiKey, options), function(error, response, body) {
+          xml2js.parseString(body, function(error, data) {
+            data.response.error[0].code[0].should.eql(errorCode);
+            done();
+          });
+        });
+      });
+
+      it('returns CSV error response', function(done) {
+        request(shared.buildRequestOptions(path + '.csv', this.apiKey, options), function(error, response, body) {
+          csv().from.string(body).to.array(function(data) {
+            data[1][0].should.eql(errorCode);
+            done();
+          });
+        });
       });
     });
   },
