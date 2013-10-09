@@ -104,12 +104,61 @@
 
   <fieldset>
     <legend><a data-toggle="collapse" class="collapsed" data-target="#advanced_settings"><i class="icon-caret-down"></i> Advanced Settings</a></legend>
-    <div id="advanced_settings" class="collapse">
+    <div id="advanced_settings" class="collapse form-horizontal form-horizontal-wide">
       {{input balanceAlgorithm as='select'
          value='balanceAlgorithm'
          collection='balanceAlgorithmOptions'
          optionValuePath='content.id'
          optionLabelPath='content.name'}}
+
+      {{#with settings}}
+        {{#with errorTemplates}}
+          <h4>Error Templates</h4>
+          {{input json as='ace'
+            class='row-fluid'
+            label='JSON Template'
+            inputConfig='data-ace-mode:json'}}
+
+          {{input xml as='ace'
+            class='row-fluid'
+            label='XML Template'
+            inputConfig='data-ace-mode:xml'}}
+
+          {{input csv as='ace'
+            class='row-fluid'
+            label='CSV Template'
+            inputConfig='data-ace-mode:plain_text'}}
+        {{/with}}
+
+        {{#with errorDataYamlStrings}}
+          <h4>Error Data</h4>
+
+          {{input api_key_missing as='ace'
+            class='row-fluid'
+            label='API Key Missing'
+            inputConfig='data-ace-mode:yaml'}}
+
+          {{input api_key_invalid as='ace'
+            class='row-fluid'
+            label='API Key Invalid'
+            inputConfig='data-ace-mode:yaml'}}
+
+          {{input api_key_disabled as='ace'
+            class='row-fluid'
+            label='API Key Disabled'
+            inputConfig='data-ace-mode:yaml'}}
+
+          {{input api_key_unauthorized as='ace'
+            class='row-fluid'
+            label='API Key Unauthorized'
+            inputConfig='data-ace-mode:yaml'}}
+
+          {{input over_rate_limit as='ace'
+            class='row-fluid'
+            label='Over Rate Limit'
+            inputConfig='data-ace-mode:yaml'}}
+        {{/with}}
+      {{/with}}
     </div>
   </fieldset>
 

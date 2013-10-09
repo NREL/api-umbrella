@@ -273,3 +273,7 @@ td.reorder-handle {
 .reorder-placeholder td {
   background-color: $warningBackground !important;
 }
+
+.form-horizontal .ace_editor {
+  height: 96px;
+}

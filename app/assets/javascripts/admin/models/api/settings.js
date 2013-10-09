@@ -7,6 +7,8 @@ Admin.ApiSettings = Ember.Model.extend({
   disableApiKey: Ember.attr(),
   requiredRolesString: Ember.attr(),
   hourlyRateLimit: Ember.attr(),
+  errorTemplates: Ember.attr(),
+  errorDataYamlStrings: Ember.attr(),
 
   headers: function(key, value) {
     console.info("HEADER: %o", arguments);
