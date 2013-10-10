@@ -117,16 +117,33 @@
           {{input json as='ace'
             class='row-fluid'
             label='JSON Template'
+            tooltip='<p>A <a href="http://handlebarsjs.com" target="_blank">Handlebars</a> template of the JSON error response. Available Handlebars variables are defined below in the Error Data section.</p>
+<p>Default template:</p>
+<pre>{
+  "error": {
+    "code": {{code}},
+    "message": {{message}}
+  }
+}</pre>'
             inputConfig='data-ace-mode:json'}}
 
           {{input xml as='ace'
             class='row-fluid'
             label='XML Template'
+            tooltip='<pre>&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+&amp;lt;response&amp;gt;
+  &amp;lt;error&amp;gt;
+    &amp;lt;code&amp;gt;{{code}}&amp;lt;/code&amp;gt;
+    &amp;lt;message&amp;gt;{{message}}&amp;lt;/message&amp;gt;
+  &amp;lt;/error&amp;gt;
+&amp;lt;/response&amp;gt;</pre>'
             inputConfig='data-ace-mode:xml'}}
 
           {{input csv as='ace'
             class='row-fluid'
             label='CSV Template'
+            tooltip='<pre>Error Code,Error Message
+{{code}},{{message}}</pre>'
             inputConfig='data-ace-mode:plain_text'}}
         {{/with}}
 
@@ -136,26 +153,61 @@
           {{input api_key_missing as='ace'
             class='row-fluid'
             label='API Key Missing'
+            tooltip='<p><a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.</p>
+<p>Default data:</p>
+<pre>
+status_code: 403
+code: API_KEY_MISSING
+message: No api_key was supplied. Get one at {{signupUrl}}
+</pre>'
             inputConfig='data-ace-mode:yaml'}}
 
           {{input api_key_invalid as='ace'
             class='row-fluid'
             label='API Key Invalid'
+            tooltip='<p><a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.</p>
+<p>Default data:</p>
+<pre>
+status_code: 403
+code: API_KEY_INVALID
+message: An invalid api_key was supplied. Get one at {{signupUrl}}
+</pre>'
             inputConfig='data-ace-mode:yaml'}}
 
           {{input api_key_disabled as='ace'
             class='row-fluid'
             label='API Key Disabled'
+            tooltip='<p><a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.</p>
+<p>Default data:</p>
+<pre>
+status_code: 403
+code: API_KEY_DISABLED
+message: The api_key supplied has been disabled. Contact us at {{contactUrl}} for assistance
+</pre>'
             inputConfig='data-ace-mode:yaml'}}
 
           {{input api_key_unauthorized as='ace'
             class='row-fluid'
             label='API Key Unauthorized'
+            tooltip='<p><a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.</p>
+<p>Default data:</p>
+<pre>
+status_code: 403
+code: API_KEY_UNAUTHORIZED
+message: The api_key supplied is not authorized to access the given service. Contact us at {{contactUrl}} for assistance
+</pre>'
             inputConfig='data-ace-mode:yaml'}}
 
           {{input over_rate_limit as='ace'
             class='row-fluid'
             label='Over Rate Limit'
+            tooltip='<p><a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.</p>
+<p>Default data:</p>
+<pre>
+status_code: 429
+code: OVER_RATE_LIMIT
+message: You have exceeded your rate limit. Try again later or contact us at {{contactUrl}} for assistance
+</pre>'
             inputConfig='data-ace-mode:yaml'}}
         {{/with}}
       {{/with}}

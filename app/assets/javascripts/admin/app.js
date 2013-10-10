@@ -27,6 +27,51 @@ Admin = Ember.Application.create({
   rootElement: "#content"
 });
 
+Ember.EasyForm.Tooltip = Ember.EasyForm.BaseView.extend({
+  tagName: 'a',
+  attributeBindings: ['title', 'rel'],
+  template: Ember.Handlebars.compile('<i class="icon-question-sign"></i>'),
+  rel: 'tooltip',
+
+  didInsertElement: function() {
+    this._super();
+
+    this.$().qtip({
+      show: {
+        event: "click",
+        solo: true
+      },
+      hide: {
+        event: "unfocus"
+      },
+      style: {
+        classes: 'qtip-bootstrap',
+      },
+      position: {
+        viewport: true,
+        my: "bottom left",
+        at: "top center",
+        adjust: {
+          y: 2
+        }
+      }
+    }).bind("click", function(event) {
+      event.preventDefault();
+    });
+    console.info('inserted');
+  },
+});
+
+
+Ember.Handlebars.registerHelper('tooltip-field', function(property, options) {
+  options = Ember.EasyForm.processOptions(property, options);
+  options.hash.viewName = 'tooltip-field-'+options.data.view.elementId;
+  return Ember.Handlebars.helpers.view.call(this, Ember.EasyForm.Tooltip, options);
+});
+
+
+Ember.TEMPLATES['easyForm/wrapped_input'] = Ember.Handlebars.compile('<div class="control-label">{{label-field propertyBinding=view.property textBinding=view.label}}{{#if view.tooltip}}{{tooltip-field titleBinding=view.tooltip}}{{/if}}</div><div class="{{unbound view.controlsWrapperClass}}">{{partial "easyForm/inputControls"}}</div>');
+
 Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
   attributeBindings: ['data-ace-mode'],
 
@@ -57,7 +102,6 @@ Ember.EasyForm.Config.registerWrapper('default', {
   fieldErrorClass: 'error',
   errorClass: 'help-inline',
   hintClass: 'help-block',
-  labelClass: 'control-label',
   inputClass: 'control-group',
   wrapControls: true,
   controlsWrapperClass: 'controls'

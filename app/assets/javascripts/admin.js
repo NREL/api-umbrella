@@ -3,6 +3,7 @@
 //= require rails.validations
 //= require handlebars
 //= require vendor/ace/src-noconflict/ace
+//= require vendor/qtip/jquery.qtip
 //= require vendor/underscore
 //= require vendor/backbone
 //= require backbone.marionette
@@ -89,4 +90,25 @@ $(document).ready(function() {
   });
 
   $("form").dirtyForms();
+
+  // Setup qTip defaults.
+  $("a[rel=tooltip]").qtip({
+    show: {
+      event: "click",
+      solo: true
+    },
+    hide: {
+      event: "unfocus"
+    },
+    position: {
+      viewport: true,
+      my: "bottom left",
+      at: "top center",
+      adjust: {
+        y: 2
+      }
+    }
+  }).bind("click", function(event) {
+    event.preventDefault();
+  });
 });

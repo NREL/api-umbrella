@@ -116,7 +116,11 @@ textarea.fill {
 
 .control-label {
   font-weight: bold;
-  margin-bottom: 2px;
+
+  label {
+    font-weight: bold;
+    display: inline;
+  }
 }
 
 .control-group {
@@ -276,4 +280,20 @@ td.reorder-handle {
 
 .form-horizontal .ace_editor {
   height: 96px;
+  border: 1px solid $inputBorder;
+  @include border-radius($inputBorderRadius);
+}
+
+.control-group a[rel='tooltip'] {
+  margin-left: 8px;
+}
+
+.qtip-bootstrap {
+  font-size: 12px;
+  max-width: 320px;
+
+  pre {
+    font-size: 11px;
+    line-height: 15px;
+  }
 }
