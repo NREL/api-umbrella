@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var _ = require('underscore'),
+var _ = require('lodash'),
     async = require('async'),
     crypto = require('crypto'),
     config = require('../lib/config'),

@@ -54,4 +54,117 @@ describe('formatted error responses', function() {
       });
     });
   });
+
+  describe('api specific templates', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          _id: 'custom',
+          url_matches: [
+            {
+              frontend_prefix: '/custom/',
+              backend_prefix: '/custom/',
+            }
+          ],
+          settings: {
+            error_templates: {
+              json: '{ "code": {{code}}, "message": {{message}}, "custom": "custom hello", "newvar": {{newvar}} }',
+            },
+            error_data: {
+              api_key_missing: {
+                newvar: 'foo',
+                message: 'new message',
+              },
+            },
+          },
+        },
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          _id: 'default',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+        },
+      ],
+    });
+
+    it('returns custom error templates', function(done) {
+      request.get('http://localhost:9333/custom/hello.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.custom.should.eql('custom hello');
+        done();
+      });
+    });
+
+    it('allows new variables to be set while still inheriting default variables', function(done) {
+      request.get('http://localhost:9333/custom/hello.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.newvar.should.eql('foo');
+        data.message.should.eql('new message');
+        data.code.should.eql('API_KEY_MISSING');
+        done();
+      });
+    });
+
+    it('uses the default error templates if not specified', function(done) {
+      request.get('http://localhost:9333/hello.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        Object.keys(data).should.eql(['error']);
+        Object.keys(data.error).sort().should.eql(['code', 'message']);
+        done();
+      });
+    });
+  });
+
+  describe('invalid templates', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          _id: 'default',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          settings: {
+            error_templates: {
+              json: '{ "unknown": {{bogusvar}} }',
+              xml: '<invalid>{{oops}</invalid>',
+            },
+            error_data: {
+              api_key_missing: {
+                newvar: 'foo',
+                message: 'new message',
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    it('returns custom error templates', function(done) {
+      request.get('http://localhost:9333/hello.json', function(error, response, body) {
+        body.should.eql('{ "unknown":  }');
+        done();
+      });
+    });
+
+    it('returns custom error templates', function(done) {
+      request.get('http://localhost:9333/hello.xml', function(error, response, body) {
+        response.statusCode.should.eql(500);
+        body.should.eql('Internal Server Error');
+        done();
+      });
+    });
+
+  });
 });

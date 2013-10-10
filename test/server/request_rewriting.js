@@ -2,7 +2,7 @@
 
 require('../test_helper');
 
-var _ = require('underscore');
+var _ = require('lodash');
 
 describe('request rewriting', function() {
   describe('api key normaliztion', function() {
@@ -34,7 +34,6 @@ describe('request rewriting', function() {
       Factory.create('api_user', { roles: ['private'] }, function(user) {
         request.get('http://localhost:9333/info/?api_key=' + user.api_key, function(error, response, body) {
           var data = JSON.parse(body);
-          console.info(data.headers);
           data.headers['x-api-roles'].should.eql('private');
 
           done();

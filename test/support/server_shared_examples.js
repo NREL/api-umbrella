@@ -2,7 +2,7 @@
 
 require('../test_helper');
 
-var _ = require('underscore'),
+var _ = require('lodash'),
     config = require('../../lib/config'),
     csv = require('csv'),
     ippp = require('ipplusplus'),

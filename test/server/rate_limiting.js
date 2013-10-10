@@ -2,7 +2,7 @@
 
 require('../test_helper');
 
-var _ = require('underscore'),
+var _ = require('lodash'),
     async = require('async'),
     ippp = require('ipplusplus'),
     timekeeper = require('timekeeper');

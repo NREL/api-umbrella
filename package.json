@@ -30,6 +30,7 @@
     "i18n": "~0.4.1",
     "js-yaml": "~2.1.0",
     "lockfile": "~0.4.2",
+    "lodash": "~2.2.1",
     "object-extend": "~0.5.0",
     "mime": "~1.2.11",
     "moment": "~2.1.0",
@@ -40,14 +41,12 @@
     "route-pattern": "~0.0.6",
     "traverse": "~0.6.5",
     "uas-parser": "~0.1.1",
-    "underscore": "~1.5.1",
     "urlsafe-base64": "~0.0.2",
     "winston": "~0.7.2"
   },
   "devDependencies": {
     "chai": "~1.7.2",
     "database-cleaner": "~0.7.0",
-    "deep-extend": "~0.2.5",
     "express": "~3.3.5",
     "factory-lady": "~0.1.0",
     "ipplusplus": "~0.0.2",
