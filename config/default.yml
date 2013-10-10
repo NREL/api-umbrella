@@ -7,8 +7,6 @@ apiUmbrella:
     hosts:
       - host: 127.0.0.1
         port: 9200
-  accountSignupUri: "http://example.com/"
-  contactUri: "http://example.com/contact"
   trustedProxies:
     - 127.0.0.1
   proxy:
@@ -86,20 +84,20 @@ apiUmbrella:
       api_key_missing:
         status_code: 403
         code: API_KEY_MISSING
-        message: No api_key was supplied. Get one at {{signupUrl}}
+        message: No api_key was supplied. Get one at {{baseUrl}}
       api_key_invalid:
         status_code: 403
         code: API_KEY_INVALID
-        message: An invalid api_key was supplied. Get one at {{signupUrl}}
+        message: An invalid api_key was supplied. Get one at {{baseUrl}}
       api_key_disabled:
         status_code: 403
         code: API_KEY_DISABLED
-        message: The api_key supplied has been disabled. Contact us at {{contactUrl}} for assistance
+        message: The api_key supplied has been disabled. Contact us at {{baseUrl}}/contact for assistance
       api_key_unauthorized:
         status_code: 403
         code: API_KEY_UNAUTHORIZED
-        message: The api_key supplied is not authorized to access the given service. Contact us at {{contactUrl}} for assistance
+        message: The api_key supplied is not authorized to access the given service. Contact us at {{baseUrl}}/contact for assistance
       over_rate_limit:
         status_code: 429
         code: OVER_RATE_LIMIT
-        message: You have exceeded your rate limit. Try again later or contact us at {{contactUrl}} for assistance
+        message: You have exceeded your rate limit. Try again later or contact us at {{baseUrl}}/contact for assistance

@@ -55,6 +55,20 @@ describe('formatted error responses', function() {
     });
   });
 
+  describe('data variables', function() {
+    shared.runServer();
+
+    it('substitutes the baseUrl variable', function(done) {
+      Factory.create('api_user', { disabled_at: new Date() }, function(user) {
+        request.get('http://localhost:9333/hello.json?api_key=' + user.api_key, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.error.message.should.include(' http://localhost:9333/contact ');
+          done();
+        });
+      });
+    });
+  });
+
   describe('api specific templates', function() {
     shared.runServer({
       apis: [
@@ -151,14 +165,14 @@ describe('formatted error responses', function() {
       ],
     });
 
-    it('returns custom error templates', function(done) {
+    it('returns empty space when variables are undefined', function(done) {
       request.get('http://localhost:9333/hello.json', function(error, response, body) {
         body.should.eql('{ "unknown":  }');
         done();
       });
     });
 
-    it('returns custom error templates', function(done) {
+    it('doesn\'t die when there are parsing errors in the template', function(done) {
       request.get('http://localhost:9333/hello.xml', function(error, response, body) {
         response.statusCode.should.eql(500);
         body.should.eql('Internal Server Error');
