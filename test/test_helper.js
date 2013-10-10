@@ -13,6 +13,7 @@ global.gatekeeper = gatekeeper;
 global.mongoose = mongoose;
 
 require('./support/chai');
+require('./support/database_setup');
 require('./support/factories');
 require('./support/example_backend_app');
 require('./support/server_shared_examples');

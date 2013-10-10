@@ -19,6 +19,7 @@
   "trailing": true,
   "smarttabs": true,
   "globals": {
+    "after": true,
     "afterEach": true,
     "backendCalled": true,
     "before": true,
