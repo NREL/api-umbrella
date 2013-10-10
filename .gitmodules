@@ -52,6 +52,3 @@
 [submodule "app/assets/javascripts/vendor/bootbox"]
 	path = app/assets/javascripts/vendor/bootbox
 	url = https://github.com/makeusabrew/bootbox.git
-[submodule "app/assets/javascripts/vendor/ace"]
-	path = app/assets/javascripts/vendor/ace
-	url = https://github.com/ajaxorg/ace-builds.git

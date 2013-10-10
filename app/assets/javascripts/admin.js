@@ -2,7 +2,6 @@
 //= require bootstrap
 //= require rails.validations
 //= require handlebars
-//= require vendor/ace/src-noconflict/ace
 //= require vendor/qtip/jquery.qtip
 //= require vendor/underscore
 //= require vendor/backbone

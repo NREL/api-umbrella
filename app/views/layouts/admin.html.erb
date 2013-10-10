@@ -6,6 +6,7 @@
     <%= stylesheet_link_tag "admin" %>
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
     <%= javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" %>
+    <%= javascript_include_tag "//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/ace.js" %>
     <%= javascript_include_tag(File.join(ActionController::Base.config.relative_url_root.to_s, "/javascripts/vendor/ckeditor/ckeditor.js")) %>
     <%= javascript_tag do %>
       CKEDITOR.plugins.addExternal("pbckcode", "/javascripts/vendor/PBCKCode/");
