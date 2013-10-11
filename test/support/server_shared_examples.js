@@ -37,15 +37,9 @@ global.shared = {
 
       config.reset();
 
-      this.gatekeeper = gatekeeper.startNonForked(function() {
+      this.gatekeeper = gatekeeper.startNonForked(configOverrides, function() {
         done();
       });
-
-      if(configOverrides) {
-        this.gatekeeper.on('configReady', function() {
-          config.updateRuntime({ apiUmbrella: configOverrides });
-        });
-      }
     });
 
     afterEach(function(done) {

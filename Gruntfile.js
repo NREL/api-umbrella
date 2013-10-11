@@ -21,6 +21,9 @@ module.exports = function(grunt) {
       test: {
         options: {
           reporter: 'spec',
+
+          // Force colors for the output of mutliTest
+          colors: true,
         },
         src: ['test/**/*.js']
       },
