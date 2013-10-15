@@ -27,6 +27,40 @@ class Admin::StatsController < Admin::BaseController
     @result = @search.result
   end
 
+  def logs
+    @search = LogSearch.new({
+      :start_time => params[:start],
+      :end_time => params[:end],
+      :interval => params[:interval],
+    })
+
+    @search.search!(params[:search])
+    @search.filter_by_date_range!
+    @search.offset!(params[:iDisplayStart])
+    @search.limit!(params[:iDisplayLength])
+
+    sort = []
+
+    i = 0
+    while true
+      column_index = params["iSortCol_#{i}"]
+      break if(column_index.nil?)
+
+      column = params["mDataProp_#{column_index}"]
+      order = params["sSortDir_#{i}"]
+      sort << { column => order }
+
+      i += 1
+    end
+
+    if(sort.any?)
+      @search.sort!(sort)
+    end
+
+    @result = @search.result
+
+  end
+
   def users
     @search = LogSearch.new({
       :start_time => params[:start],

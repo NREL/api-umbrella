@@ -51,6 +51,7 @@ Developer::Application.routes.draw do
     resources :stats, :only => [:index] do
       collection do
         get "search"
+        get "logs"
         get "users"
         get "map"
       end

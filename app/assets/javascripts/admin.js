@@ -5,6 +5,8 @@
 //= require vendor/qtip/jquery.qtip
 //= require vendor/underscore
 //= require vendor/backbone
+//= require vendor/DataTables/media/js/jquery.dataTables
+//= require vendor/DataTables-Plugins/integration/bootstrap/2/dataTables.bootstrap
 //= require backbone.marionette
 //= require ember
 //= require vendor/ember-model
@@ -12,7 +14,6 @@
 //= require vendor/pnotify/jquery.pnotify
 //= require vendor/bootbox/bootbox
 //= require vendor/jquery-ui-1.10.3.custom
-//= require admin/app
 //= require vendor/deparam/jquery-deparam
 //= require vendor/selectize.js/dist/js/standalone/selectize.js
 //= require vendor/inflections/underscore.inflections
@@ -30,6 +31,7 @@
 //= require vendor/spin.js/dist/spin
 //= require vendor/dirtyforms/jquery.dirtyforms
 //= require vendor/dirtyforms/helpers/ckeditor
+//= require admin/app
 //= require_self
 
 $(document).ready(function() {

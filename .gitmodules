@@ -52,3 +52,6 @@
 [submodule "app/assets/javascripts/vendor/bootbox"]
 	path = app/assets/javascripts/vendor/bootbox
 	url = https://github.com/makeusabrew/bootbox.git
+[submodule "app/assets/javascripts/vendor/DataTables-Plugins"]
+	path = app/assets/javascripts/vendor/DataTables-Plugins
+	url = https://github.com/DataTables/Plugins.git

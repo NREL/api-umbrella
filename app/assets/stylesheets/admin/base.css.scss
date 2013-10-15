@@ -100,9 +100,71 @@ textarea.fill {
   overflow-x: auto;
 }
 
+#results_table .table th,
 #results_table .table td {
   white-space: nowrap;
 }
+
+#results_table .table thead th {
+  color: $linkColor;
+}
+
+table.table thead .sorting,
+table.table thead .sorting_asc,
+table.table thead .sorting_desc {
+  background: none;
+}
+
+table.table thead .sorting:after,
+table.table thead .sorting_asc:after,
+table.table thead .sorting_desc:after {
+  font-family: FontAwesome;
+  color: #ddd;
+  margin-left: 8px;
+}
+
+table.table thead .sorting_asc:after,
+table.table thead .sorting_desc:after {
+  color: $linkColor;
+}
+
+table.table thead .sorting:after {
+  content: "\F0DC";
+}
+
+table.table thead .sorting_asc:after {
+  content: "\F0DE";
+}
+
+table.table thead .sorting_desc:after {
+  content: "\F0DD";
+}
+
+div.dataTables_info {
+  padding: 0px;
+  font-size: 13px;
+  color: #666;
+}
+
+div.dataTables_paginate {
+  text-align: center;
+  float: none;
+}
+
+div.dataTables_length {
+  text-align: right;
+
+  label {
+    float: none;
+    font-size: 13px;
+    color: #666;
+  }
+
+  select {
+    font-size: 13px;
+  }
+}
+
 
 #loading_overlay {
   position: fixed;

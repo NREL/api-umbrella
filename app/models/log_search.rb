@@ -62,8 +62,16 @@ class LogSearch
     end
   end
 
+  def offset!(from)
+    @query_options[:from] = from
+  end
+
   def limit!(size)
     @query_options[:size] = size
+  end
+
+  def sort!(sort)
+    @query[:sort] = sort
   end
 
   def filter_by_date_range!
