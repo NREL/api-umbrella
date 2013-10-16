@@ -3,7 +3,17 @@ module Admin::StatsHelper
     facet = @result.facets[facet_name]
 
     terms = facet[:terms]
-    if facet[:other] > 0
+
+    if(facet[:missing] > 0)
+      if(terms.length < 10 || facet[:missing] >= terms.last[:count])
+        terms << {
+          :term => "Missing / Unknown",
+          :count => facet[:missing],
+        }
+      end
+    end
+
+    if(facet[:other] > 0)
       terms << {
         :term => "Other",
         :count => facet[:other],
