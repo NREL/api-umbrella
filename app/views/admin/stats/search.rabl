@@ -5,8 +5,8 @@ extends "admin/stats/_interval_hits"
 node :totals do
   {
     :hits => @result.total,
-    :users => @result.facets[:user_email].terms.length + @result.facets[:user_email][:other],
-    :ips => @result.facets[:request_ip].terms.length + @result.facets[:request_ip][:other],
+    :users => @result.facets[:total_user_email].terms.length,
+    :ips => @result.facets[:total_request_ip].terms.length,
   }
 end
 

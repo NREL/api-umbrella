@@ -191,8 +191,9 @@ class LogSearch
     }
   end
 
-  def facet_by_term!(term, size)
-    @query[:facets][term.to_sym] = {
+  def facet_by_term!(term, size, options = {})
+    facet_name = options[:facet_name] || term
+    @query[:facets][facet_name.to_sym] = {
       :terms => {
         :field => term.to_s,
         :size => size,
@@ -202,26 +203,32 @@ class LogSearch
 
   def facet_by_users!(size)
     facet_by_term!(:user_email, size)
+    facet_by_term!(:user_email, 1000000, :facet_name => :total_user_email)
   end
 
   def facet_by_response_status!(size)
     facet_by_term!(:response_status, size)
+    facet_by_term!(:response_status, 1000000, :facet_name => :total_response_status)
   end
 
   def facet_by_response_content_type!(size)
     facet_by_term!(:response_content_type, size)
+    facet_by_term!(:response_content_type, 1000000, :facet_name => :total_response_content_type)
   end
 
   def facet_by_request_method!(size)
     facet_by_term!(:request_method, size)
+    facet_by_term!(:request_method, 1000000, :facet_name => :total_request_method)
   end
 
   def facet_by_request_ip!(size)
     facet_by_term!(:request_ip, size)
+    facet_by_term!(:request_ip, 1000000, :facet_name => :total_request_ip)
   end
 
   def facet_by_request_user_agent_family!(size)
     facet_by_term!(:request_user_agent_family, size)
+    facet_by_term!(:request_user_agent_family, 1000000, :facet_name => :total_request_user_agent_family)
   end
 
   private
