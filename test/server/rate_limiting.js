@@ -276,5 +276,83 @@ describe('ApiUmbrellaGatekeper', function() {
         });
       });
     });
+
+    describe('api specific limits', function() {
+      shared.runServer({
+        apiSettings: {
+          rate_limits: [
+            {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'apiKey',
+              limit: 5,
+              distributed: true,
+            }
+          ]
+        },
+        apis: [
+          {
+            frontend_host: 'localhost',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/info/lower/',
+                backend_prefix: '/info/lower/',
+              }
+            ],
+            settings: {
+              rate_limits: [
+                {
+                  duration: 60 * 60 * 1000, // 1 hour
+                  accuracy: 1 * 60 * 1000, // 1 minute
+                  limit_by: 'apiKey',
+                  limit: 3,
+                  distributed: true,
+                }
+              ],
+            },
+            sub_settings: [
+              {
+                http_method: 'any',
+                regex: '^/info/lower/sub-higher',
+                settings: {
+                  rate_limits: [
+                    {
+                      duration: 60 * 60 * 1000, // 1 hour
+                      accuracy: 1 * 60 * 1000, // 1 minute
+                      limit_by: 'apiKey',
+                      limit: 7,
+                      distributed: true,
+                    }
+                  ],
+                },
+              },
+            ],
+          },
+          {
+            frontend_host: 'localhost',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/',
+                backend_prefix: '/',
+              }
+            ],
+          },
+        ],
+      });
+
+      describe('api with lower rate limits', function() {
+        itBehavesLikeApiKeyRateLimits('/info/lower/', 3);
+      });
+
+      describe('sub-settings within an api that give higher rate limits', function() {
+        itBehavesLikeApiKeyRateLimits('/info/lower/sub-higher', 7);
+      });
+
+      describe('api with no rate limit settings uses the defaults', function() {
+        itBehavesLikeApiKeyRateLimits('/hello', 5);
+      });
+    });
   });
 });
