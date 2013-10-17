@@ -98,7 +98,6 @@ describe('request rewriting', function() {
         {
           frontend_host: 'localhost',
           backend_host: null,
-          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/info/none',
@@ -109,7 +108,6 @@ describe('request rewriting', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com:8080',
-          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/info/port',
@@ -120,7 +118,6 @@ describe('request rewriting', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/',
@@ -165,7 +162,6 @@ describe('request rewriting', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/',
@@ -255,7 +251,6 @@ describe('request rewriting', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/',
@@ -339,7 +334,6 @@ describe('request rewriting', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/auth/',
@@ -423,7 +417,6 @@ describe('request rewriting', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/info/prefix/',

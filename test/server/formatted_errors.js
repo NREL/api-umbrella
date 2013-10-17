@@ -75,7 +75,6 @@ describe('formatted error responses', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          _id: 'custom',
           url_matches: [
             {
               frontend_prefix: '/custom/',
@@ -97,7 +96,6 @@ describe('formatted error responses', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/',
@@ -142,7 +140,6 @@ describe('formatted error responses', function() {
         {
           frontend_host: 'localhost',
           backend_host: 'example.com',
-          _id: 'default',
           url_matches: [
             {
               frontend_prefix: '/',

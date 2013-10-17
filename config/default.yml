@@ -18,38 +18,38 @@ apiUmbrella:
       - header
       - getParam
       - basicAuthUsername
-    rateLimits:
-      - duration: 1000
-        accuracy: 500
-        limitBy: ip
-        limit: 50
-        distributed: false
-      - duration: 1000
-        accuracy: 500
-        limitBy: apiKey
-        limit: 20
-        distributed: false
-      - duration: 15000
-        accuracy: 1000
-        limitBy: ip
-        limit: 250
-        distributed: true
-      - duration: 15000
-        accuracy: 1000
-        limitBy: apiKey
-        limit: 150
-        distributed: true
-      - duration: 3600000
-        accuracy: 60000
-        limitBy: apiKey
-        limit: 1000
-        distributed: true
-        responseHeaders: true
   logProcessor:
     workers: 1
   routerLogListener:
     workers: 1
   apiSettings:
+    rate_limits:
+      - duration: 1000
+        accuracy: 500
+        limit_by: ip
+        limit: 50
+        distributed: false
+      - duration: 1000
+        accuracy: 500
+        limit_by: apiKey
+        limit: 20
+        distributed: false
+      - duration: 15000
+        accuracy: 1000
+        limit_by: ip
+        limit: 250
+        distributed: true
+      - duration: 15000
+        accuracy: 1000
+        limit_by: apiKey
+        limit: 150
+        distributed: true
+      - duration: 3600000
+        accuracy: 60000
+        limit_by: apiKey
+        limit: 1000
+        distributed: true
+        response_headers: true
     error_templates:
       json: |
         {

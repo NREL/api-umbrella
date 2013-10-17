@@ -116,12 +116,12 @@ describe('ApiUmbrellaGatekeper', function() {
 
     describe('single hourly limit', function() {
       shared.runServer({
-        proxy: {
-          rateLimits: [
+        apiSettings: {
+          rate_limits: [
             {
               duration: 60 * 60 * 1000, // 1 hour
               accuracy: 1 * 60 * 1000, // 1 minute
-              limitBy: 'apiKey',
+              limit_by: 'apiKey',
               limit: 10,
               distributed: true,
             }
@@ -180,17 +180,17 @@ describe('ApiUmbrellaGatekeper', function() {
 
     describe('multiple limits', function() {
       shared.runServer({
-        proxy: {
-          rateLimits: [
+        apiSettings: {
+          rate_limits: [
             {
               duration: 10 * 1000, // 10 second
               accuracy: 1000, // 1 second
-              limitBy: 'apiKey',
+              limit_by: 'apiKey',
               limit: 3,
             }, {
               duration: 60 * 60 * 1000, // 1 hour
               accuracy: 1 * 60 * 1000, // 1 minute
-              limitBy: 'apiKey',
+              limit_by: 'apiKey',
               limit: 10,
               distributed: true,
             }
@@ -220,12 +220,12 @@ describe('ApiUmbrellaGatekeper', function() {
 
     describe('ip based rate limits', function() {
       shared.runServer({
-        proxy: {
-          rateLimits: [
+        apiSettings: {
+          rate_limits: [
             {
               duration: 60 * 60 * 1000, // 1 hour
               accuracy: 1 * 60 * 1000, // 1 minute
-              limitBy: 'ip',
+              limit_by: 'ip',
               limit: 5,
               distributed: true,
             }
@@ -238,12 +238,12 @@ describe('ApiUmbrellaGatekeper', function() {
 
     describe('api key limits but no api key required', function() {
       shared.runServer({
-        proxy: {
-          rateLimits: [
+        apiSettings: {
+          rate_limits: [
             {
               duration: 60 * 60 * 1000, // 1 hour
               accuracy: 1 * 60 * 1000, // 1 minute
-              limitBy: 'apiKey',
+              limit_by: 'apiKey',
               limit: 5,
               distributed: true,
             }
@@ -253,7 +253,6 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             frontend_host: 'localhost',
             backend_host: 'example.com',
-            _id: 'default',
             url_matches: [
               {
                 frontend_prefix: '/info/no-keys',

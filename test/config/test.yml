@@ -9,7 +9,6 @@ apiUmbrella:
   apis: 
     - frontend_host: localhost
       backend_host: localhost
-      _id: default-api
       url_matches:
         - frontend_prefix: /
           backend_prefix: /
