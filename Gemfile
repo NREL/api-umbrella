@@ -28,7 +28,7 @@ gem "mongoid_delorean", "~> 1.1.1", :git => "https://github.com/crafters/mongoid
 gem "seed-fu"
 
 # Elasticsearch
-gem "stretcher", "~> 1.19.0"
+gem "stretcher", "~> 1.21.0"
 
 # OmniAuth-based authentication
 gem "devise", "~> 3.0.3"
