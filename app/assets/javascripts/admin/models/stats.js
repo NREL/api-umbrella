@@ -1,19 +1,24 @@
-Admin.Stats = Ember.Model.extend({
-  intervalHits: Ember.attr(),
-  totals: Ember.attr(),
-  facets: Ember.attr(),
-  logs: Ember.attr(),
+Admin.Stats = Ember.Object.extend(Ember.Evented, {
+  interval_hits: null,
+  totals: null,
+  facets: null,
+  logs: null,
 });
 
 Admin.Stats.reopenClass({
-  something: function(params) {
-    var record = this.cachedRecordForId(JSON.stringify(params));
-    this.adapter.findQuery(this, record, params);
-    return record;
+  find: function(params) {
+    var promise = Ember.Deferred.create();
+
+    $.ajax({
+      url: "/admin/stats/search.json",
+      data: params,
+    }).done(function(data) {
+      var stats = Admin.Stats.create(data);
+      promise.resolve(stats);
+    }).fail(function() {
+      promise.reject();
+    });
+
+    return promise;
   },
 });
-
-Admin.Stats.url = "/admin/stats/search";
-Admin.Stats.primaryKey = "_id";
-Admin.Stats.camelizeKeys = true;
-Admin.Stats.adapter = Ember.RESTAdapter.create();

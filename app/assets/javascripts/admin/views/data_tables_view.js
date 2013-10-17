@@ -4,22 +4,18 @@ Admin.DataTablesView = Ember.View.extend({
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
 
   didInsertElement: function() {
-console.info('INSERT');
-var query = this.get('controller.query');
-console.info(this.get('query'));
     this.$().dataTable({
       "bProcessing": true,
       "bServerSide": true,
       "bFilter": false,
       "bSearchable": false,
       "sAjaxSource": "/admin/stats/logs.json",
-      "fnServerParams": function(aoData) {
-        console.info('PUSH: %o', query);
+      "fnServerParams": _.bind(function(aoData) {
+        var query = this.get('controller.query.params');
         for(var key in query) {
           aoData.push({ name: key, value: query[key] });
         }
-console.info(aoData);
-      },
+      }, this),
       "sDom": 'rt<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
       "aaSorting": [[0, "desc"]],
       "aoColumns": [
@@ -92,17 +88,6 @@ console.info(aoData);
   },
 
   refreshData: function() {
-console.info('refresh data');
     this.$().dataTable().fnDraw();
-  }.observes('controller.query.search', 'controller.query.start', 'controller.query.end'),
-
-
-/*
-  refreshData: function() {
-    var dataTable = this.$().dataTable();
-    dataTable.fnClearTable();
-    dataTable.fnAddData(this.get('data') || []);
-    console.info('new data');
-  }.observes('data'),
-*/
+  }.observes('controller.query.params.search', 'controller.query.params.start', 'controller.query.params.end'),
 });

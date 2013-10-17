@@ -1,9 +1,9 @@
-<form id="filter_form" action="#" method="get" {{action 'submit'}}>
+<form id="filter_form" action="#" method="get" {{action 'submit' on='submit'}}>
   <div class="row-fluid">
     <div class="span5 advanced-filter">
       <div id="search_field">
         <div class="input-append">
-          <input type="text" name="search" class="input-xlarge" placeholder="Advanced filters..." {{bind-attr value=query.search}} />
+          <input type="text" name="search" class="input-xlarge" placeholder="Advanced filters..." {{bind-attr value='query.params.search'}} />
           <button class="btn btn-small" type="submit">Filter</button>
         </div>
         <span class="help-block">Advanced filters use <a href="#" rel="popover" id="query_syntax_help">Lucene's Query Syntax</a>.</span>
@@ -35,10 +35,7 @@ response_status:[400 TO *]</pre>
       </div>
     </div>
 
-    <input type="hidden" name="region" {{bind-attr value=query.region}} />
-
     <div class="span7 filter-times">
-      <input type="hidden" name="interval" {{bind-attr value=query.interval}} />
       <div id="interval_buttons" class="btn-group" data-toggle="buttons-radio">
         <button type="button" class="btn btn-mini" value="hour" {{action clickInterval 'hour' target='view'}}>Hour</button>
         <button type="button" class="btn btn-mini" value="day" {{action clickInterval 'day' target='view'}}>Day</button>
@@ -46,8 +43,6 @@ response_status:[400 TO *]</pre>
         <button type="button" class="btn btn-mini" value="month" {{action clickInterval 'month' target='view'}}>Month</button>
       </div>
 
-      <input type="hidden" name="start" {{bind-attr value=query.start}} />
-      <input type="hidden" name="end" {{bind-attr value=query.end}} />
       <div id="reportrange" class="pull-right">
         <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
           <i class="icon-calendar icon-large"></i>
@@ -59,8 +54,37 @@ response_status:[400 TO *]</pre>
   </div>
 </form>
 
+{{view Admin.Stats.IntervalChartView dataBinding='model.interval_hits'}}
+
+<div class="row-fluid number-highlights">
+  <div class="span3 number-highlight">
+    <strong>{{formatNumber model.totals.hits}}</strong>
+    <small>{{pluralize "hit" model.totals.hits}}</small>
+  </div>
+  <div class="span3 number-highlight">
+    <strong>{{formatNumber model.totals.users}}</strong>
+    <small>unique {{pluralize "user" model.totals.users}}</small>
+
+    {{view Admin.Stats.FacetTableView
+       dataBinding='model.facets.users'
+       facetTerm='user_email'
+       toggleLabel='view top users'}}
+  </div>
+  <div class="span3 number-highlight">
+    <strong>{{formatNumber model.totals.ips}}</strong>
+    <small>unique ip {{pluralize "address" model.totals.ips}}</small>
+
+    {{view Admin.Stats.FacetTableView
+       dataBinding='model.facets.ips'
+       facetTerm='request_ip'
+       toggleLabel='view top ips'}}
+  </div>
+  <div class="span3 number-highlight">
+    <strong>{{formatNumber model.totals.avg_response_time}} <span class="units">ms</span></strong>
+    <small>average response time</small>
+  </div>
+</div>
+
 <div id="results_table">
   {{view Admin.DataTablesView dataBinding='model.logs' queryBinding='query'}}
 </div>
-
-{{model}}

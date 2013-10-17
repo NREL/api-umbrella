@@ -58,7 +58,6 @@ class Admin::StatsController < Admin::BaseController
     end
 
     @result = @search.result
-
   end
 
   def users
