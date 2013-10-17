@@ -3,7 +3,6 @@ Admin.StatsLogsController = Ember.ObjectController.extend({
 
   query: null,
 
-
   actions: {
     submit: function() {
       this.set('query.params.search', $('#filter_form input[name=search]').val());

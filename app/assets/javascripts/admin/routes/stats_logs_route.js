@@ -7,6 +7,8 @@ Admin.StatsLogsRoute = Ember.Route.extend({
   },
 
   model: function(params) {
+    this.controllerFor('application').set('isLoading', true);
+
     this.setQueryParams(params);
     return Admin.Stats.find(this.get('query.params'));
   },
@@ -17,6 +19,8 @@ Admin.StatsLogsRoute = Ember.Route.extend({
     }
 
     controller.set('model', model);
+
+    this.controllerFor('application').set('isLoading', false);
   },
 
   setQueryParams: function(params) {

@@ -17,6 +17,9 @@ Admin.DataTablesView = Ember.View.extend({
         }
       }, this),
       "sDom": 'rt<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
+      "oLanguage": {
+        "sProcessing": '<i class="icon-spinner icon-spin icon-large"></i>'
+      },
       "aaSorting": [[0, "desc"]],
       "aoColumns": [
         {

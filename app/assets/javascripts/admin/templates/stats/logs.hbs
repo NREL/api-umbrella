@@ -88,3 +88,5 @@ response_status:[400 TO *]</pre>
 <div id="results_table">
   {{view Admin.DataTablesView dataBinding='model.logs' queryBinding='query'}}
 </div>
+
+{{view Admin.LoadingOverlayView isLoadingBinding='controllers.application.isLoading'}}
