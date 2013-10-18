@@ -1,6 +1,5 @@
-Admin.StatsLogsRoute = Ember.Route.extend({
+Admin.StatsBaseRoute = Ember.Route.extend({
   defaultQueryParams: {
-    interval: 'day',
     tz: jstz.determine().name(),
     start: moment().subtract('days', 29).format('YYYY-MM-DD'),
     end: moment().format('YYYY-MM-DD'),
@@ -10,7 +9,6 @@ Admin.StatsLogsRoute = Ember.Route.extend({
     this.controllerFor('application').set('isLoading', true);
 
     this.setQueryParams(params);
-    return Admin.Stats.find(this.get('query.params'));
   },
 
   setupController: function(controller, model) {
@@ -25,7 +23,7 @@ Admin.StatsLogsRoute = Ember.Route.extend({
 
   setQueryParams: function(params) {
     var activeQueryParams = {};
-    if(params.query) {
+    if(params && params.query) {
       activeQueryParams = $.deparam(params.query);
     }
 

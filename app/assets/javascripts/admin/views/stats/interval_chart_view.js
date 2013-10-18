@@ -1,4 +1,4 @@
-Admin.Stats.IntervalChartView = Ember.View.extend({
+Admin.StatsIntervalChartView = Ember.View.extend({
   data: [],
 
   chartOptions: {

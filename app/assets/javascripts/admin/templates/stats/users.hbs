@@ -1,0 +1,7 @@
+{{view Admin.StatsQueryFormView}}
+
+<div id="results_table">
+  {{view Admin.StatsUsersTableView dataBinding='model.users'}}
+</div>
+
+{{view Admin.LoadingOverlayView isLoadingBinding='controllers.application.isLoading'}}

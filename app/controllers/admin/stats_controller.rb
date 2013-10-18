@@ -64,11 +64,10 @@ class Admin::StatsController < Admin::BaseController
     @search = LogSearch.new({
       :start_time => params[:start],
       :end_time => params[:end],
-      :interval => params[:interval],
     })
 
+    @search.search!(params[:search])
     @search.filter_by_date_range!
-    @search.facet_by_interval!
     @search.facet_by_users!(500)
 
     @result = @search.result

@@ -1,11 +1,5 @@
-Admin.StatsLogsController = Ember.ObjectController.extend({
-  needs: ['application'],
+Admin.StatsLogsController = Admin.StatsBaseController.extend({
+});
 
-  query: null,
-
-  actions: {
-    submit: function() {
-      this.set('query.params.search', $('#filter_form input[name=search]').val());
-    },
-  },
+Admin.StatsLogsDefaultController = Admin.StatsLogsController.extend({
 });

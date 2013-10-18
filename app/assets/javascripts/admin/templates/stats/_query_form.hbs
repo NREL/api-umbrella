@@ -1,0 +1,58 @@
+<form id="filter_form" action="#" method="get" {{action 'submit' on='submit'}}>
+  <div class="row-fluid">
+    <div class="span5 advanced-filter">
+      <div id="search_field">
+        <div class="input-append">
+          <input type="text" name="search" class="input-xlarge" placeholder="Advanced filters..." {{bind-attr value='query.params.search'}} />
+          <button class="btn btn-small" type="submit">Filter</button>
+        </div>
+        <span class="help-block">Advanced filters use <a href="#" rel="popover" id="query_syntax_help">Lucene's Query Syntax</a>.</span>
+        <div id="query_syntax_help_content" style="display: none;">
+          <p>Use <a href="http://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene's query syntax</a> to perform complex queries.</p>
+          <p>Example:</p>
+          <pre>request_method:"POST" AND
+response_status:[400 TO *]</pre>
+          <p>Available Fields:</p>
+          <ul>
+            <li>request_at</li>
+            <li>request_method</li>
+            <li>request_url</li>
+            <li>request_path</li>
+            <li>request_user_agent</li>
+            <li>request_user_agent_type</li>
+            <li>request_user_agent_family</li>
+            <li>request_accept_encoding</li>
+            <li>request_ip</li>
+            <li>request_ip_country</li>
+            <li>request_ip_region</li>
+            <li>request_ip_city</li>
+            <li>response_status</li>
+            <li>response_content_type</li>
+            <li>api_key</li>
+            <li>user_id</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="span7 filter-times">
+      {{#if view.enableInterval}}
+        <div id="interval_buttons" class="btn-group" data-toggle="buttons-radio">
+          <button type="button" class="btn btn-mini" value="hour" {{action clickInterval 'hour' target='view'}}>Hour</button>
+          <button type="button" class="btn btn-mini" value="day" {{action clickInterval 'day' target='view'}}>Day</button>
+          <button type="button" class="btn btn-mini" value="week" {{action clickInterval 'week' target='view'}}>Week</button>
+          <button type="button" class="btn btn-mini" value="month" {{action clickInterval 'month' target='view'}}>Month</button>
+        </div>
+      {{/if}}
+
+      <div id="reportrange" class="pull-right">
+        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+          <i class="icon-calendar icon-large"></i>
+          <span class="text"></span>
+          <span class="caret"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</form>
+

@@ -1,4 +1,4 @@
-Admin.Stats.FacetTableView = Ember.View.extend({
+Admin.StatsFacetTableView = Ember.View.extend({
   templateName: 'stats/_facet_table',
 
   setLinks: function() {

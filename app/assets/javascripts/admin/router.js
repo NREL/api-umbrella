@@ -7,7 +7,10 @@ Admin.Router.map(function() {
   this.resource("stats", { path: "/stats" }, function() {
     this.route("logs", { path: "/logs/*query" });
     this.route("logsDefault", { path: "/logs" });
-    this.route("users");
+
+    this.route("users", { path: "/users/*query" });
+    this.route("usersDefault", { path: "/users" });
+
     this.route("map");
   });
 });

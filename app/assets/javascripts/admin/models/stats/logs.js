@@ -1,11 +1,11 @@
-Admin.Stats = Ember.Object.extend(Ember.Evented, {
+Admin.StatsLogs = Ember.Object.extend(Ember.Evented, {
   interval_hits: null,
   totals: null,
   facets: null,
   logs: null,
 });
 
-Admin.Stats.reopenClass({
+Admin.StatsLogs.reopenClass({
   find: function(params) {
     var promise = Ember.Deferred.create();
 
@@ -13,7 +13,7 @@ Admin.Stats.reopenClass({
       url: "/admin/stats/search.json",
       data: params,
     }).done(function(data) {
-      var stats = Admin.Stats.create(data);
+      var stats = Admin.StatsLogs.create(data);
       promise.resolve(stats);
     }).fail(function() {
       promise.reject();
