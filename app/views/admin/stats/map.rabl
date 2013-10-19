@@ -5,7 +5,7 @@ node :region_field do
 end
 
 node :regions do
-  rows = @result.facets[:regions][:terms].map do |term|
+  rows = @result.facets["regions"]["terms"].map do |term|
     {
       :c => region_location_columns(term) + [
         { :v => term[:count], :f => number_with_delimiter(term[:count]) },
@@ -13,10 +13,10 @@ node :regions do
     }
   end
 
-  if @result.facets[:regions][:missing] > 0
+  if @result.facets["regions"]["missing"] > 0
     rows << {
       :c => region_location_columns(:term => "Unknown") + [
-        { :v => @result.facets[:regions][:missing], :f => number_with_delimiter(@result.facets[:regions][:missing]) },
+        { :v => @result.facets["regions"]["missing"], :f => number_with_delimiter(@result.facets["regions"]["missing"]) },
       ]
     }
   end

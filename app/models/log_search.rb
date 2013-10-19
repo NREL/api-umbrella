@@ -49,6 +49,7 @@ class LogSearch
 
   def result
     raw_result = @server.index(indexes.join(",")).search(@query_options, @query)
+
     @result = LogResult.new(self, raw_result)
   end
 
@@ -110,6 +111,15 @@ class LogSearch
       },
     }
   end
+
+  def filter_by_user_ids!(user_ids)
+    @query[:query][:filtered][:filter][:and] << {
+      :terms => {
+        :user_id => user_ids,
+      },
+    }
+  end
+
 
   def facet_by_interval!
     @query[:facets][:interval_hits] = {
@@ -229,6 +239,19 @@ class LogSearch
   def facet_by_request_user_agent_family!(size)
     facet_by_term!(:request_user_agent_family, size)
     facet_by_term!(:request_user_agent_family, 1000000, :facet_name => :total_request_user_agent_family)
+  end
+
+  def facet_by_user_stats!(options = {})
+    @query[:facets][:user_stats] = {
+      :terms_stats => {
+        :key_field => :user_id,
+        :value_field => :request_at,
+        :size => 0,
+        :order => "count",
+      }.merge(options),
+    }
+
+    #facet_by_term!(:user_id, 1000000, :facet_name => :total_user_id)
   end
 
   private

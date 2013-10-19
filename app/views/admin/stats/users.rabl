@@ -1,11 +1,7 @@
 object false
 
-node :users do
-  @result.facets[:user_email][:terms].map do |term|
-    {
-      :id => term[:term],
-      :email => term[:term],
-      :hits => term[:count],
-    }
-  end
-end
+
+node(:sEcho) { params[:sEcho] }
+node(:iTotalRecords) { @total }
+node(:iTotalDisplayRecords) { @total }
+node(:aaData) { @user_data }

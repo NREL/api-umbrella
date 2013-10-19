@@ -5,8 +5,8 @@ extends "admin/stats/_interval_hits"
 node :totals do
   {
     :hits => @result.total,
-    :users => @result.facets[:total_user_email].terms.length,
-    :ips => @result.facets[:total_request_ip].terms.length,
+    :users => @result.facets["total_user_email"]["terms"].length,
+    :ips => @result.facets["total_request_ip"]["terms"].length,
   }
 end
 
@@ -19,9 +19,9 @@ node :facets do
 end
 
 node :logs do
-  @result.results.map do |log|
-    log.except(:api_key, :_type, :_score, :_index).merge({
-      :request_url => log.request_url.gsub(%r{^.*://[^/]*}, "")
+  @result.documents.map do |log|
+    log.except("api_key", "_type", "_score", "_index").merge({
+      "request_url" => log["request_url"].gsub(%r{^.*://[^/]*}, "")
     })
   end
 end

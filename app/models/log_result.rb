@@ -1,14 +1,25 @@
 class LogResult
   attr_reader :raw_result
-  delegate :total, :results, :facets, :to => :raw_result
 
   def initialize(search, raw_result)
     @search = search
     @raw_result = raw_result
   end
 
+  def total
+    raw_result.total
+  end
+
+  def documents
+    raw_result.documents
+  end
+
+  def facets
+    raw_result.raw_plain["facets"]
+  end
+
   def interval_hits
-    if(!@interval_hits && @raw_result.facets[:interval_hits])
+    if(!@interval_hits && facets["interval_hits"])
       @interval_hits = {}
 
       # Default all interval points to 0 (so in case any are missing from the
@@ -27,8 +38,8 @@ class LogResult
       end
 
       # Overwrite the default 0 values with the real values.
-      @raw_result.facets[:interval_hits][:entries].each do |entry|
-        @interval_hits[entry[:time]] = entry[:count]
+      facets["interval_hits"]["entries"].each do |entry|
+        @interval_hits[entry["time"]] = entry["count"]
       end
     end
 
@@ -66,9 +77,9 @@ class LogResult
     unless @cities
       @cities = {}
 
-      @regions = @raw_result.facets[:regions][:terms]
+      @regions = facets["regions"]["terms"]
       if(@search.query[:facets][:regions][:terms][:field] == "request_ip_city")
-        @city_names = @regions.map { |term| term[:term] }
+        @city_names = @regions.map { |term| term["term"] }
         @cities = {}
 
         if @city_names.any?
@@ -92,8 +103,8 @@ class LogResult
             :terms => { :city => @city_names },
           }
 
-          @search.server.index("api-umbrella").search({ :size => 500 }, query).results.each do |result|
-            @cities[result[:city]] = result[:location]
+          @search.server.index("api-umbrella").search({ :size => 500 }, query).documents.each do |result|
+            @cities[result["city"]] = result["location"]
           end
         end
       end

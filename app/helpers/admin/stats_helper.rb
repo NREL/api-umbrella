@@ -1,28 +1,28 @@
 module Admin::StatsHelper
   def facet_result(facet_name)
-    facet = @result.facets[facet_name]
+    facet = @result.facets[facet_name.to_s]
 
-    terms = facet[:terms]
+    terms = facet["terms"]
 
-    if(facet[:missing] > 0)
-      if(terms.length < 10 || facet[:missing] >= terms.last[:count])
+    if(facet["missing"] > 0)
+      if(terms.length < 10 || facet["missing"] >= terms.last["count"])
         terms << {
-          :term => "Missing / Unknown",
-          :count => facet[:missing],
+          "term" => "Missing / Unknown",
+          "count" => facet["missing"],
         }
       end
     end
 
-    if(facet[:other] > 0)
+    if(facet["other"] > 0)
       terms << {
-        :term => "Other",
-        :count => facet[:other],
+        "term" => "Other",
+        "count" => facet["other"],
       }
     end
 
-    total = @result.total
+    total = @result.total.to_f
     terms.each do |term|
-      term[:percent] = ((term[:count] / total.to_f) * 100).round
+      term["percent"] = ((term["count"] / total) * 100).round
     end
 
     terms

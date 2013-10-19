@@ -28,7 +28,9 @@ gem "mongoid_delorean", "~> 1.1.1", :git => "https://github.com/crafters/mongoid
 gem "seed-fu"
 
 # Elasticsearch
-gem "stretcher", "~> 1.21.0"
+# This git branch allows access to the ruby hash for responses to improve
+# performance: https://github.com/PoseBiz/stretcher/pull/70
+gem "stretcher", "~> 1.21.0", :git => "https://github.com/GUI/stretcher.git", :branch => "optional-mash"
 
 # OmniAuth-based authentication
 gem "devise", "~> 3.0.3"

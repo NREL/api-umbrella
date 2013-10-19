@@ -1,7 +1,7 @@
 Admin.StatsUsersRoute = Admin.StatsBaseRoute.extend({
   model: function(params) {
     this._super(params);
-    return Admin.StatsUsers.find(this.get('query.params'));
+    return {};
   },
 
   queryChange: function() {

@@ -17,7 +17,7 @@ class Api::HealthChecksController < ApplicationController
 
     healthy = false
     if(@result.total >= params[:min_results].to_i)
-      result = @result.results.first
+      result = @result.documents.first
 
       if(result)
         # Make sure logging details from the gatekeeper are present.
