@@ -250,8 +250,14 @@ class LogSearch
         :order => "count",
       }.merge(options),
     }
+  end
 
-    #facet_by_term!(:user_id, 1000000, :facet_name => :total_user_id)
+  def facet_by_response_time_stats!
+    @query[:facets][:response_time_stats] = {
+      :statistical => {
+        :field => :response_time,
+      },
+    }
   end
 
   private

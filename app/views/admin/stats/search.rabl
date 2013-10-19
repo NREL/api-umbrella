@@ -2,11 +2,12 @@ object false
 
 extends "admin/stats/_interval_hits"
 
-node :totals do
+node :stats do
   {
-    :hits => @result.total,
-    :users => @result.facets["total_user_email"]["terms"].length,
-    :ips => @result.facets["total_request_ip"]["terms"].length,
+    :total_hits => @result.total,
+    :total_users => @result.facets["total_user_email"]["terms"].length,
+    :total_ips => @result.facets["total_request_ip"]["terms"].length,
+    :average_response_time => @result.facets["response_time_stats"]["mean"],
   }
 end
 

@@ -4,12 +4,12 @@
 
 <div class="row-fluid number-highlights">
   <div class="span3 number-highlight">
-    <strong>{{formatNumber model.totals.hits}}</strong>
-    <small>{{pluralize "hit" model.totals.hits}}</small>
+    <strong>{{formatNumber model.stats.total_hits}}</strong>
+    <small>{{pluralize "hit" model.stats.total_hits}}</small>
   </div>
   <div class="span3 number-highlight">
-    <strong>{{formatNumber model.totals.users}}</strong>
-    <small>unique {{pluralize "user" model.totals.users}}</small>
+    <strong>{{formatNumber model.stats.total_users}}</strong>
+    <small>unique {{pluralize "user" model.stats.total_users}}</small>
 
     {{view Admin.StatsFacetTableView
        dataBinding='model.facets.users'
@@ -17,8 +17,8 @@
        toggleLabel='view top users'}}
   </div>
   <div class="span3 number-highlight">
-    <strong>{{formatNumber model.totals.ips}}</strong>
-    <small>unique ip {{pluralize "address" model.totals.ips}}</small>
+    <strong>{{formatNumber model.stats.total_ips}}</strong>
+    <small>unique ip {{pluralize "address" model.stats.total_ips}}</small>
 
     {{view Admin.StatsFacetTableView
        dataBinding='model.facets.ips'
@@ -26,7 +26,7 @@
        toggleLabel='view top ips'}}
   </div>
   <div class="span3 number-highlight">
-    <strong>{{formatNumber model.totals.avg_response_time}} <span class="units">ms</span></strong>
+    <strong>{{formatNumber model.stats.average_response_time}} <span class="units">ms</span></strong>
     <small>average response time</small>
   </div>
 </div>

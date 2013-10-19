@@ -22,7 +22,8 @@ class Admin::StatsController < Admin::BaseController
     @search.facet_by_request_method!(10)
     @search.facet_by_request_ip!(10)
     @search.facet_by_request_user_agent_family!(10)
-    @search.limit!(500)
+    @search.facet_by_response_time_stats!
+    @search.limit!(1)
 
     @result = @search.result
   end

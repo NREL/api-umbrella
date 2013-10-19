@@ -1,6 +1,6 @@
 Admin.StatsLogs = Ember.Object.extend(Ember.Evented, {
   interval_hits: null,
-  totals: null,
+  stats: null,
   facets: null,
   logs: null,
 });
