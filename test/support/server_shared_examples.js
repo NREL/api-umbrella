@@ -27,6 +27,7 @@ global.shared = {
       }
 
       Factory.create('api_user', function(user) {
+        this.user = user;
         this.apiKey = user.api_key;
         done();
       }.bind(this));

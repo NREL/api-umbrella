@@ -27,6 +27,71 @@ describe('request rewriting', function() {
     });
   });
 
+  describe('user id header', function() {
+    shared.runServer();
+
+    it('passes a header containing the user id to the backend', function(done) {
+      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers['x-api-user-id'].should.eql(this.user._id);
+        data.headers['x-api-user-id'].length.should.eql(36);
+
+        done();
+      }.bind(this));
+    });
+
+    it('passes user\'s with object ids as hex strings', function(done) {
+      Factory.create('api_user', { _id: mongoose.Types.ObjectId() }, function(user) {
+        user._id.should.be.instanceOf(mongoose.Types.ObjectId);
+
+        request.get('http://localhost:9333/info/?api_key=' + user.api_key, function(error, response, body) {
+          var data = JSON.parse(body);
+
+          data.headers['x-api-user-id'].should.eql(user._id.toHexString());
+          data.headers['x-api-user-id'].length.should.eql(24);
+
+          done();
+        });
+      });
+    });
+
+    it('strips forged role headers on the incoming request', function(done) {
+      var options = {
+        headers: {
+          'X-Api-Key': this.apiKey,
+          'X-Api-User-Id': 'bogus',
+        }
+      };
+
+      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers['x-api-user-id'].should.not.eql('bogus');
+        data.headers['x-api-user-id'].length.should.eql(36);
+
+        done();
+      });
+    });
+
+    it('strips forged role headers, case insensitvely', function(done) {
+      var options = {
+        headers: {
+          'X-Api-Key': this.apiKey,
+          'X-API-USER-ID': 'bogus',
+        }
+      };
+
+      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers['x-api-user-id'].should.not.eql('bogus');
+        data.headers['x-api-user-id'].length.should.eql(36);
+        should.not.exist(data.headers['X-Api-User-Id']);
+        should.not.exist(data.headers['X-API-USER-ID']);
+
+        done();
+      });
+    });
+  });
+
   describe('roles header', function() {
     shared.runServer();
 
@@ -279,7 +344,7 @@ describe('request rewriting', function() {
     });
 
     function stripStandardHeaders(headers) {
-      return _.omit(headers, 'host', 'connection', 'x-api-umbrella-backend-scheme', 'x-api-umbrella-backend-id', 'x-api-key');
+      return _.omit(headers, 'host', 'connection', 'x-api-umbrella-backend-scheme', 'x-api-umbrella-backend-id', 'x-api-key', 'x-api-user-id');
     }
 
     describe('default', function() {

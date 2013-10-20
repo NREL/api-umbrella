@@ -55,6 +55,7 @@
     "grunt-mocha-test": "~0.7.0",
     "mocha": "~1.13.0",
     "mongoose": "~3.6.20",
+    "node-uuid": "~1.4.1",
     "request": "~2.27.0",
     "timekeeper": "~0.0.3",
     "xml2js": "~0.2.8"
