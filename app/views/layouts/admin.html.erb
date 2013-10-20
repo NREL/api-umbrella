@@ -29,9 +29,9 @@
             <%= tab.home "Dashboard", root_path, :class => "nav-home" %>
             <%= tab.analytics('Analytics <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-analytics", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
               <ul class="dropdown-menu">
-                <li><%= link_to('<i class="icon-signal"></i> Filter Logs'.html_safe, admin_stats_path(:trailing_slash => true, :anchor => "search")) %></li>
-                <li><%= link_to('<i class="icon-user"></i> By Users'.html_safe, admin_stats_path(:trailing_slash => true, :anchor => "users")) %></li>
-                <li><%= link_to('<i class="icon-map-marker"></i> By Location'.html_safe, admin_stats_path(:trailing_slash => true, :anchor => "map")) %></li>
+                <li><%= link_to('<i class="icon-signal"></i> Filter Logs'.html_safe, "/admin/#/stats/logs") %></li>
+                <li><%= link_to('<i class="icon-user"></i> By Users'.html_safe, "/admin/#/stats/users") %></li>
+                <li><%= link_to('<i class="icon-map-marker"></i> By Location'.html_safe, "/admin/#/stats/map") %></li>
               </ul>
             <% end %>
             <%= tab.documentation('Documentation <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-documentation", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
