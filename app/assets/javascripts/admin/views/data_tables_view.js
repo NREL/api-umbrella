@@ -27,8 +27,12 @@ Admin.DataTablesView = Ember.View.extend({
           sType: "date",
           sTitle: "Time",
           sDefaultContent: "-",
-          mRender: function(time) {
-            return moment(time).format('YYYY-MM-DD HH:mm:ss');
+          mRender: function(time, type) {
+            if(type === 'display' && time && time !== '-') {
+              return moment(time).format('YYYY-MM-DD HH:mm:ss');
+            }
+
+            return time;
           },
         },
         {

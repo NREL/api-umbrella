@@ -7,21 +7,31 @@ end
 node :regions do
   rows = @result.facets["regions"]["terms"].map do |term|
     {
-      :c => region_location_columns(term) + [
-        { :v => term[:count], :f => number_with_delimiter(term[:count]) },
-      ]
+      :id => term["term"],
+      :name => region_name(term["term"]),
+      :hits => term["count"],
     }
   end
 
   if @result.facets["regions"]["missing"] > 0
     rows << {
-      :c => region_location_columns(:term => "Unknown") + [
-        { :v => @result.facets["regions"]["missing"], :f => number_with_delimiter(@result.facets["regions"]["missing"]) },
-      ]
+      :id => "missing",
+      :name => "Unknown",
+      :hits => @result.facets["regions"]["missing"],
     }
   end
 
   rows
+end
+
+node :map_regions do
+  @result.facets["regions"]["terms"].map do |term|
+    {
+      :c => region_location_columns(term) + [
+        { :v => term["count"], :f => number_with_delimiter(term["count"]) },
+      ]
+    }
+  end
 end
 
 node :map_breadcrumbs do

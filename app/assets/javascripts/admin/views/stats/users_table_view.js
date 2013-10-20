@@ -42,8 +42,8 @@ Admin.StatsUsersTableView = Ember.View.extend({
           sType: "date",
           sTitle: "Signed Up",
           sDefaultContent: "-",
-          mRender: function(time) {
-            if(time && time !== '-') {
+          mRender: function(time, type) {
+            if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');
             }
           },
@@ -52,16 +52,25 @@ Admin.StatsUsersTableView = Ember.View.extend({
           mData: "hits",
           sTitle: "Hits",
           sDefaultContent: "-",
+          mRender: function(number, type) {
+            if(type === 'display' && number && number !== '-') {
+              return numeral(number).format('0,0')
+            }
+
+            return number;
+          },
         },
         {
           mData: "last_request_at",
           sType: "date",
           sTitle: "Last Request",
           sDefaultContent: "-",
-          mRender: function(time) {
-            if(time && time !== '-') {
+          mRender: function(time, type) {
+            if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');
             }
+
+            return time;
           },
         },
         {

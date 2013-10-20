@@ -59,14 +59,14 @@ module Admin::StatsHelper
     columns = []
 
     if(@search.query[:facets][:regions][:terms][:field] == "request_ip_city")
-      city = term[:term]
+      city = term["term"]
       location = @result.cities[city]
 
       lat = nil
       lon = nil
       if location
-        lat = location[:lat].to_f
-        lon = location[:lon].to_f
+        lat = location["lat"].to_f
+        lon = location["lon"].to_f
       end
 
       columns += [
@@ -75,7 +75,7 @@ module Admin::StatsHelper
         { :v => city },
       ]
     else
-      columns << { :v => term[:term], :f => region_name(term[:term]) }
+      columns << { :v => term["term"], :f => region_name(term["term"]) }
     end
 
     columns

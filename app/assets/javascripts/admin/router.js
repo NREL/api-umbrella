@@ -11,6 +11,7 @@ Admin.Router.map(function() {
     this.route("users", { path: "/users/*query" });
     this.route("usersDefault", { path: "/users" });
 
-    this.route("map");
+    this.route("map", { path: "/map/*query" });
+    this.route("mapDefault", { path: "/map" });
   });
 });

@@ -137,6 +137,7 @@ class Admin::StatsController < Admin::BaseController
       :region => params[:region],
     })
 
+    @search.search!(params[:search])
     @search.filter_by_date_range!
     @search.facet_by_region!
 
