@@ -195,8 +195,6 @@ GEM
     mail (2.5.4)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
-    marionette-rails (1.1.0)
-      rails (>= 3.1.0)
     mime-types (1.25)
     mini_portile (0.5.1)
     mongoid (3.1.4)
@@ -402,7 +400,6 @@ DEPENDENCIES
   kaminari
   kaminari-bootstrap
   kramdown
-  marionette-rails
   mongoid (~> 3.1.4)
   mongoid-tree (~> 1.0.3)
   mongoid_delorean (~> 1.1.1)!

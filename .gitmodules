@@ -10,36 +10,18 @@
 [submodule "app/assets/javascripts/vendor/daterangepicker"]
 	path = app/assets/javascripts/vendor/daterangepicker
 	url = https://github.com/dangrossman/bootstrap-daterangepicker.git
-[submodule "app/assets/javascripts/vendor/handlebars"]
-	path = app/assets/javascripts/vendor/handlebars
-	url = https://github.com/wycats/handlebars.js.git
 [submodule "app/assets/javascripts/vendor/jsTimezoneDetect"]
 	path = app/assets/javascripts/vendor/jsTimezoneDetect
 	url = https://github.com/nubgames/jstimezonedetect.git
-[submodule "app/assets/javascripts/vendor/jquery-deserialize"]
-	path = app/assets/javascripts/vendor/jquery-deserialize
-	url = https://github.com/kflorence/jquery-deserialize.git
-[submodule "app/assets/javascripts/vendor/backgrid"]
-	path = app/assets/javascripts/vendor/backgrid
-	url = https://github.com/wyuenho/backgrid.git
 [submodule "app/assets/javascripts/vendor/spin.js"]
 	path = app/assets/javascripts/vendor/spin.js
 	url = https://github.com/fgnass/spin.js.git
-[submodule "app/assets/javascripts/vendor/backbone-pageable"]
-	path = app/assets/javascripts/vendor/backbone-pageable
-	url = https://github.com/wyuenho/backbone-pageable.git
-[submodule "app/assets/javascripts/vendor/marionette"]
-	path = app/assets/javascripts/vendor/marionette
-	url = https://github.com/marionettejs/backbone.marionette.git
 [submodule "app/assets/javascripts/vendor/deparam"]
 	path = app/assets/javascripts/vendor/deparam
 	url = https://github.com/chrissrogers/jquery-deparam.git
 [submodule "app/assets/javascripts/vendor/Numeral-js"]
 	path = app/assets/javascripts/vendor/Numeral-js
 	url = https://github.com/adamwdraper/Numeral-js.git
-[submodule "app/assets/javascripts/vendor/jquery.quantize"]
-	path = app/assets/javascripts/vendor/jquery.quantize
-	url = https://github.com/quinnbaetz/jquery.quantize.js.git
 [submodule "app/assets/javascripts/vendor/inflections"]
 	path = app/assets/javascripts/vendor/inflections
 	url = https://github.com/xixilive/_.inflections.git
