@@ -3,10 +3,14 @@ Admin.ApisUrlMatchFormController = Admin.NestedFormController.extend({
   exampleSuffix: 'example.json?param=value',
 
   exampleIncomingUrl: function() {
-    return this.get('apiModel').get('exampleIncomingUrlRoot') + this.get('frontendPrefix') + this.get('exampleSuffix');
+    var root = this.get('apiModel.exampleIncomingUrlRoot') || '';
+    var prefix = this.get('frontendPrefix') || '';
+    return root + prefix + this.get('exampleSuffix');
   }.property('frontendPrefix'),
 
   exampleOutgoingUrl: function() {
-    return this.get('apiModel').get('exampleOutgoingUrlRoot') + this.get('backendPrefixWithDefault') + this.get('exampleSuffix');
+    var root = this.get('apiModel.exampleOutgoingUrlRoot') || '';
+    var prefix = this.get('backendPrefixWithDefault') || '';
+    return root + prefix + this.get('exampleSuffix');
   }.property('backendPrefix', 'frontendPrefix'),
 });

@@ -30,17 +30,12 @@ Admin.Api = Ember.Model.extend({
   },
 
   exampleIncomingUrlRoot: function() {
-    return 'http://' + this.get('frontendHost');
+    return 'http://' + (this.get('frontendHost') || '');
   }.property('frontendHost'),
 
   exampleOutgoingUrlRoot: function() {
-    var server = this.get('servers.firstObject');
-    if(server) {
-      return this.get('backendProtocol') + server.get('urlString');
-    } else {
-      return 'http://localhost';
-    }
-  }.property('servers.firstObject'),
+    return 'http://' + (this.get('backendHost') || this.get('frontendHost') || '');
+  }.property('backendHost'),
 })
 
 Admin.Api.url = "/admin/apis";
