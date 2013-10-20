@@ -19,6 +19,9 @@ Admin.StatsBaseRoute = Ember.Route.extend({
     controller.set('model', model);
 
     this.controllerFor('application').set('isLoading', false);
+
+    $('ul.nav li').removeClass('active');
+    $('ul.nav li.nav-analytics').addClass('active');
   },
 
   setQueryParams: function(params) {

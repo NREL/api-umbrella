@@ -1,4 +1,6 @@
 class Admin::ConfigController < Admin::BaseController
+  set_tab :config
+
   def show
   end
 

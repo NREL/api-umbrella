@@ -1,6 +1,6 @@
 class Admin::ApisController < Admin::BaseController
   respond_to :json
-  set_tab :apis
+  set_tab :config
 
   def index
     @apis = Api.desc(:sort_order).desc(:_id).all
