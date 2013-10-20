@@ -9,11 +9,11 @@
     {{/if}}
   {{/each}}
 
-  {{view Admin.StatsMapGeoView dataBinding='model.map_regions' regionFieldBinding='model.region_field'}}
+  {{view Admin.StatsMapGeoView modelBinding='model'}}
 </div>
 
 <div id="results_table">
-  {{view Admin.StatsMapTableView dataBinding='model.regions'}}
+  {{view Admin.StatsMapTableView modelBinding='model'}}
 </div>
 
 {{view Admin.LoadingOverlayView isLoadingBinding='controllers.application.isLoading'}}

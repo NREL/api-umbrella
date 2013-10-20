@@ -26,6 +26,17 @@ Admin.StatsUsersTableView = Ember.View.extend({
           mData: "email",
           sTitle: "Email",
           sDefaultContent: "-",
+          mRender: _.bind(function(email, type, data) {
+            if(type === 'display' && email && email !== '-') {
+              var params = _.clone(this.get('controller.query.params'));
+              params.search = 'user_id:"' + data.id + '"';
+              var link = '#/stats/logs/' + $.param(params);
+
+              return '<a href="' + link + '">' + email + '</a>';
+            }
+
+            return email;
+          }, this),
         },
         {
           mData: "first_name",

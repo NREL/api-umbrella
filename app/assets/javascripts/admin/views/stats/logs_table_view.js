@@ -1,4 +1,4 @@
-Admin.DataTablesView = Ember.View.extend({
+Admin.LogsTableView = Ember.View.extend({
   tagName: 'table',
 
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
@@ -49,6 +49,17 @@ Admin.DataTablesView = Ember.View.extend({
           mData: "user_email",
           sTitle: "User",
           sDefaultContent: "-",
+          mRender: _.bind(function(email, type, data) {
+            if(type === 'display' && email && email !== '-') {
+              var params = _.clone(this.get('controller.query.params'));
+              params.search = _.compact([params.search, 'user_id:"' + data.user_id + '"']).join(' AND ');
+              var link = '#/stats/logs/' + $.param(params);
+
+              return '<a href="' + link + '">' + email + '</a>';
+            }
+
+            return email;
+          }, this),
         },
         {
           mData: "request_ip",
