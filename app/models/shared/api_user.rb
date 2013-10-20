@@ -4,6 +4,8 @@ class ApiUser
   include Mongoid::Userstamp
   include Mongoid::Delorean::Trackable
 
+  # Fields
+  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
   field :api_key
   field :first_name
   field :last_name
@@ -15,9 +17,9 @@ class ApiUser
   field :throttle_daily_limit, :type => Integer
   field :throttle_by_ip, :type => Boolean
   field :disabled_at, :type => Time
-
   field :roles, :type => Array
 
+  # Indexes
   index({ :api_key => 1 }, { :unique => true })
 
   # Validations

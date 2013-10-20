@@ -24,6 +24,12 @@ gem "mongoid_userstamp", "~> 0.2.1"
 # This git branch fixes embeds_one functionality.
 gem "mongoid_delorean", "~> 1.1.1", :git => "https://github.com/crafters/mongoid_delorean.git"
 
+# Data migrations
+gem "mongoid_rails_migrations"
+
+# Generate UUIDs
+gem "uuidtools"
+
 # Database seeding
 gem "seed-fu"
 

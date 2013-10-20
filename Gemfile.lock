@@ -204,6 +204,11 @@ GEM
       tzinfo (~> 0.3.22)
     mongoid-tree (1.0.3)
       mongoid (>= 3.0, <= 4.0)
+    mongoid_rails_migrations (1.0.1)
+      activesupport (>= 3.2.0)
+      bundler (>= 1.0.0)
+      rails (>= 3.2.0)
+      railties (>= 3.2.0)
     mongoid_userstamp (0.2.1)
       mongoid (>= 3.0.4)
     moped (1.5.1)
@@ -367,6 +372,7 @@ GEM
     uglifier (2.2.1)
       execjs (>= 0.3.0)
       multi_json (~> 1.0, >= 1.0.2)
+    uuidtools (2.1.4)
     warden (1.2.3)
       rack (>= 1.0)
     xpath (2.0.0)
@@ -403,6 +409,7 @@ DEPENDENCIES
   mongoid (~> 3.1.4)
   mongoid-tree (~> 1.0.3)
   mongoid_delorean (~> 1.1.1)!
+  mongoid_rails_migrations
   mongoid_userstamp (~> 0.2.1)
   nokogiri
   oily_png
@@ -428,5 +435,6 @@ DEPENDENCIES
   torquebox-server
   turbo-sprockets-rails3!
   uglifier
+  uuidtools
   yajl-ruby
   yard
