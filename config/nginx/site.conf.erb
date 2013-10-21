@@ -10,6 +10,14 @@ upstream api_umbrella_gatekeeper_frontend {
   keepalive 10;
 }
 
+upstream api_umbrella_gatekeeper_backends {
+  server 127.0.0.1:50000;
+  server 127.0.0.1:50001;
+  server 127.0.0.1:50002;
+  server 127.0.0.1:50003;
+  keepalive 10;
+}
+
 include <%= current_path %>/config/gatekeeper/nginx*.conf;
 
 # The main, front-facing public host server. This serves up both the APIs and

@@ -1,11 +1,19 @@
 [program:<%= deploy_name %>-gatekeeper]
+; Run 4 auth_proxy instances.
+numprocs=4
+
 directory=<%=current_path %>/gatekeeper
 environment=PATH=/opt/nodejs/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,NODE_ENV=<%= rails_env %>,NODE_CONFIG_DIR=<%= current_path %>/config/gatekeeper,NODE_RUNTIME_CONFIG_DIR=<%= shared_path %>/config/gatekeeper,NODE_LOG_DIR=<%= current_path %>/log/gatekeeper
-command=<%= current_path %>/gatekeeper/bin/api_umbrella_gatekeeper
+command=<%= current_path %>/gatekeeper/bin/api_umbrella_gatekeeper -p 50%(process_num)03d
+
+; Name each process by the port number, eg "auth_proxy_50000",
+; "auth_proxy_50001"
+process_name=%(program_name)s_50%(process_num)03d
 
 ; Always keep running.
 autostart=true
 autorestart=true
+startretries=25
 
 ; It can take longer for the the proxy to fully startup, so set a longer
 ; startup time.
@@ -30,6 +38,73 @@ stdout_logfile=<%= current_path %>/log/gatekeeper/supervisor.log
 ; Don't rotate based on file size. We'll rotate externally using logrotate.
 logfile_maxbytes=0
 
+[program:<%= deploy_name %>-logging]
+directory=<%=current_path %>/gatekeeper
+environment=PATH=/opt/nodejs/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,NODE_ENV=<%= rails_env %>,NODE_CONFIG_DIR=<%= current_path %>/config/gatekeeper,NODE_RUNTIME_CONFIG_DIR=<%= shared_path %>/config/gatekeeper,NODE_LOG_DIR=<%= current_path %>/log/gatekeeper
+command=<%= current_path %>/gatekeeper/bin/api_umbrella_logging
+
+; Always keep running.
+autostart=true
+autorestart=true
+startretries=25
+
+; It can take longer for the the proxy to fully startup, so set a longer
+; startup time.
+startsecs=5
+
+; Graceful shutdown, remaining open `stopwaitsecs` seconds for open connections
+; to disconnect.
+stopsignal=QUIT
+
+; Eventually we have to kill off any open connections so we can restart, but
+; we'll give them quite a while.
+stopwaitsecs=90
+
+; Run as the web user.
+user=api-umbrella-gatekeeper
+
+; Log both stdout and stderr to the same log file. One log file per
+; Gatekeeper instance running on each port.
+redirect_stderr=true
+stdout_logfile=<%= current_path %>/log/gatekeeper/supervisor.log
+
+; Don't rotate based on file size. We'll rotate externally using logrotate.
+logfile_maxbytes=0
+
+[program:<%= deploy_name %>-config_reloader]
+directory=<%=current_path %>/gatekeeper
+environment=PATH=/opt/nodejs/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,NODE_ENV=<%= rails_env %>,NODE_CONFIG_DIR=<%= current_path %>/config/gatekeeper,NODE_RUNTIME_CONFIG_DIR=<%= shared_path %>/config/gatekeeper,NODE_LOG_DIR=<%= current_path %>/log/gatekeeper
+command=<%= current_path %>/gatekeeper/bin/api_umbrella_config_reloader
+
+; Always keep running.
+autostart=true
+autorestart=true
+startretries=25
+
+; It can take longer for the the proxy to fully startup, so set a longer
+; startup time.
+startsecs=5
+
+; Graceful shutdown, remaining open `stopwaitsecs` seconds for open connections
+; to disconnect.
+stopsignal=QUIT
+
+; Eventually we have to kill off any open connections so we can restart, but
+; we'll give them quite a while.
+stopwaitsecs=90
+
+; Run as the web user.
+user=api-umbrella-gatekeeper
+
+; Log both stdout and stderr to the same log file. One log file per
+; Gatekeeper instance running on each port.
+redirect_stderr=true
+stdout_logfile=<%= current_path %>/log/gatekeeper/supervisor.log
+
+; Don't rotate based on file size. We'll rotate externally using logrotate.
+logfile_maxbytes=0
+
+
 ; Define a group so everything in this deployment can be controlled together.
 [group:<%= deploy_name %>]
-programs=<%= deploy_name %>-gatekeeper
+programs=<%= deploy_name %>-gatekeeper,<%= deploy_name %>-logging,<%= deploy_name %>-config_reloader
