@@ -1,4 +1,4 @@
-source :rubygems
+source "https://rubygems.org"
 
 gem "rails", "~> 3.2.14"
 
@@ -17,7 +17,7 @@ gem "mongoid", "~> 3.1.4"
 # Structure trees of mongoid documents
 gem "mongoid-tree", "~> 1.0.3", :require => "mongoid/tree"
 
-# Created/updated userstamping 
+# Created/updated userstamping
 gem "mongoid_userstamp", "~> 0.2.1"
 
 # Versioning for mongoid
@@ -139,7 +139,7 @@ end
 group :development do
   # Deployment
   gem "capistrano-ext"
-  gem "capistrano_nrel_ext", :git => "http://github.com/NREL/capistrano_nrel_ext.git"
+  gem "capistrano_nrel_ext", :git => "https://github.com/NREL/capistrano_nrel_ext.git"
 
   gem "torquebox-server", :platforms => [:jruby]
 
