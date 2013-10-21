@@ -34,6 +34,7 @@ default_attributes({
 
     :realip => {
       :real_ip_recursive => "on",
+      :addresses => ["10.0.0.0/16"],
     },
   },
 })
