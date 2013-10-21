@@ -21,7 +21,7 @@ GIT
 
 GIT
   remote: https://github.com/NREL/capistrano_nrel_ext.git
-  revision: c94b3d138da69929c7bbbb985bfa74cb256caa29
+  revision: 8feb862fb5fc3b1130980bb13baae700df32f78c
   specs:
     capistrano_nrel_ext (0.3.0)
       artii
@@ -168,7 +168,7 @@ GEM
     fssm (0.2.10)
     handlebars-source (1.0.12)
     hashie (2.0.5)
-    highline (1.6.19)
+    highline (1.6.20)
     hike (1.2.3)
     http_parser.rb (0.5.3)
     http_parser.rb (0.5.3-java)
@@ -368,7 +368,7 @@ GEM
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
-    tzinfo (0.3.37)
+    tzinfo (0.3.38)
     uglifier (2.2.1)
       execjs (>= 0.3.0)
       multi_json (~> 1.0, >= 1.0.2)
@@ -388,6 +388,7 @@ DEPENDENCIES
   awesome_print
   babosa (~> 0.3.11)
   bootstrap-sass
+  capistrano (~> 2.15.5)
   capistrano-ext
   capistrano_nrel_ext!
   capybara
