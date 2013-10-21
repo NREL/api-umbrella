@@ -398,6 +398,7 @@ DEPENDENCIES
   countries
   crummy (~> 1.7.2)
   devise (~> 3.0.3)
+  diffy
   dotenv-rails
   ember-rails (~> 0.13.0)
   ember-source (~> 1.0.0)

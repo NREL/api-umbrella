@@ -84,6 +84,9 @@ gem "settingslogic"
 gem "ember-rails", "~> 0.13.0"
 gem "ember-source", "~> 1.0.0"
 
+# HTML diffs
+gem "diffy"
+
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do

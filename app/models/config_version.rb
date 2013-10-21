@@ -12,9 +12,7 @@ class ConfigVersion
   def self.publish!
     self.create!({
       :version => Time.now,
-      :config => {
-        :apis => Api.asc(:sort_order).all.map { |api| api.attributes },
-      }
+      :config => self.current_config,
     })
   end
 
@@ -36,5 +34,16 @@ class ConfigVersion
   def self.last_change
     last = Api.desc(:updated_at).first
     if(last) then last.updated_at else nil end
+  end
+
+  def self.last_config
+    last = self.desc(:version).first
+    if(last) then last.config else nil end
+  end
+
+  def self.current_config
+    {
+      "apis" => Api.asc(:sort_order).all.map { |api| Hash[api.attributes] }
+    }
   end
 end

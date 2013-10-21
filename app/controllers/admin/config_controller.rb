@@ -2,6 +2,10 @@ class Admin::ConfigController < Admin::BaseController
   set_tab :config
 
   def show
+    if(ConfigVersion.needs_publishing?)
+      @published_config = YAML.dump(ConfigVersion.last_config)
+      @new_config = YAML.dump(ConfigVersion.current_config)
+    end
   end
 
   def create
