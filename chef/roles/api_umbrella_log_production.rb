@@ -9,7 +9,7 @@ default_attributes({
   :elasticsearch => {
     :custom_config => {
       "discovery.zen.ping.multicast.enabled" => false,
-      "discovery.zen.ping.unicast.hosts" => ["10.0.10.37", "10.0.11.199"],
+      "discovery.zen.ping.unicast.hosts" => ["10.0.10.193", "10.0.11.199"],
     },
   },
 })
