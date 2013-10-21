@@ -32,7 +32,15 @@ class UserUuids < Mongoid::Migration
     total = nil
     while(total.nil? || (total && from < total))
       puts "#{from} - #{from + size} of #{total}"
-      result = server.index("api-umbrella-logs-*").search(:from => from, :size => size)
+
+      query_options = { :from => from, :size => size }
+      query = {
+        :sort => [
+          { :request_at => :asc },
+        ],
+      }
+
+      result = server.index("api-umbrella-logs-*").search(query_options, query)
       total ||= result.total
 
       result.raw_plain["hits"]["hits"].each do |hit|
@@ -40,10 +48,10 @@ class UserUuids < Mongoid::Migration
         if(legacy_id.present?)
           if(users_by_legacy_id[legacy_id] && users_by_legacy_id[legacy_id].first)
             user = users_by_legacy_id[legacy_id].first
-            puts "#{hit["_id"]}: #{legacy_id} => #{user.id}"
+            puts "#{hit["_index"]}/#{hit["_type"]}/#{hit["_id"]}: #{legacy_id} => #{user.id}"
             server.index(hit["_index"]).type(hit["_type"]).update(hit["_id"], :script => "ctx._source.user_id = '#{user.id}'")
           else
-            puts "Could not find user id: #{legacy_id}"
+            puts "#{hit["_index"]}/#{hit["_type"]}/#{hit["_id"]}: Could not find user id: #{legacy_id}"
           end
         end
       end
