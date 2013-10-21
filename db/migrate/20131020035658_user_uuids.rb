@@ -6,11 +6,11 @@ class UserUuids < Mongoid::Migration
     db = Mongoid::Sessions.default
 
     ApiUser.all.each do |user|
-      if user.legacy_id.blank?
+      if user.read_attribute(:legacy_id).blank?
         # Duplicate the record (since _id can't be updated) to apply the new
         # UUID _id value.
         new_user = user.clone
-        new_user.legacy_id = Moped::BSON::ObjectId.from_string(user._id)
+        new_user.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(user._id))
         new_user._id = UUIDTools::UUID.random_create.to_s
 
         puts "#{user._id.to_s} => #{new_user._id}"
@@ -24,7 +24,7 @@ class UserUuids < Mongoid::Migration
       end
     end
 
-    users_by_legacy_id = ApiUser.all.to_a.group_by { |user| user.legacy_id.to_s }
+    users_by_legacy_id = ApiUser.all.to_a.group_by { |user| user.read_attribute(:legacy_id).to_s }
     server = Stretcher::Server.new(ElasticsearchConfig.server, :logger => Rails.logger)
 
     from = 0
