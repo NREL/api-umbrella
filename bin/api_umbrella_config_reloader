@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+
+var ConfigReloader = require('../lib/config_reloader').ConfigReloader;
+new ConfigReloader();

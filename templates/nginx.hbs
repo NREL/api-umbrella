@@ -1,8 +1,3 @@
-upstream api_umbrella_gatekeeper_backend {
-  server 127.0.0.1:50000;
-  keepalive 10;
-}
-
 log_format api_umbrella_log '"$x_api_umbrella_uid","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent"';
 
 # Limit the number of simultaneous connections per IP address.
@@ -65,7 +60,7 @@ limit_req_status 429;
       proxy_set_header Host $host;
       proxy_set_header X-Api-Umbrella-UID $request_id;
 
-      proxy_pass http://api_umbrella_gatekeeper_backend;
+      proxy_pass http://api_umbrella_gatekeeper_backends;
     }
   }
 {{/each}}

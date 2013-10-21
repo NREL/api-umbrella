@@ -38,13 +38,17 @@ global.shared = {
 
       config.reset();
 
-      this.gatekeeper = gatekeeper.startNonForked(configOverrides, function() {
+      if(configOverrides) {
+        config.updateRuntime({ apiUmbrella: configOverrides });
+      }
+
+      this.gatekeeper = gatekeeper.start({}, function() {
         done();
       });
     });
 
     afterEach(function(done) {
-      this.gatekeeper.closeNonForked(function() {
+      this.gatekeeper.close(function() {
         done();
       });
     });

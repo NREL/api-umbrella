@@ -5,7 +5,7 @@ require('./support/env');
 var request = require('request'),
     Factory = require('factory-lady'),
     mongoose = require('mongoose'),
-    gatekeeper = require('../lib/api-umbrella-gatekeeper');
+    gatekeeper = require('../lib/gatekeeper');
 
 global.request = request;
 global.Factory = Factory;
