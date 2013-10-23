@@ -1,19 +1,29 @@
-# developer.nrel.gov
+# API Umbrella Web
 
-## How-tos
-* {file:docs/HowToAddWebService.md Add a new web service application backend}
-* {file:docs/HowToConfigureUrlEndpoints.md Configure URL endpoints to an existing web service application backend}
+API Umbrella Web provides the website frontend and web admin tool for the [API Umbrella](http://github.com/NREL/api-umbrella) project. API Umbrella Web is a Ruby on Rails web application.
 
-## Architecture
+## Usage
 
-* {file:docs/ArchitectureServers.md Network & Servers Architecture}
-* {file:docs/ArchitectureSoftware.md Software Architecture}
+See [Running API Umbrella]() for setup instructions.
 
-### Component Documentation
+## Features
 
-* [Public Site Documentation](/public_site/)
-* [auth_proxy Documentation](/router/auth_proxy/)
+*TODO: Finish documenting*
 
-### API Applications Documentation
+### API Key Signup
 
-* [Sustainable Fuels & Vehicles API Documentation](/apis/sfv/)
+### An API for API Umbrella
+
+### Documentation
+
+### Admin
+
+## License
+
+API Umbrella is open sourced under the [MIT license](https://github.com/NREL/api-umbrella-web/blob/master/LICENSE.txt).
+
+## Acknowledgements
+
+Geographic data comes from GeoLite data created by [MaxMind](http://www.maxmind.com).
+
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/a0758eb1737f21f4d63eaa487161d8df "githalytics.com")](http://githalytics.com/NREL/api-umbrella-web)
