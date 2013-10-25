@@ -1,47 +1,28 @@
 # Getting Started
 
-### Add APIs to the router
+### Login to the web admin
 
-Out of the box, API Umbrella doesn't know about any APIs. You must first configure the URL endpoints you want proxied to APIs in the router.
+A web admin is available to perform basic tasks:
+
+[http://localhost:8080/admin/](http://localhost:8080/admin/)
+
+While in your local development environment, you can choose the dummy login option to login using any e-mail address (no password required).
+
+### Add API Backends
+
+Out of the box, API Umbrella doesn't know about any APIs. You must first configure the API backends that will be proxied to.
 
 In this example, we'll proxy to Google's Geocoding API (but you'll more likely be proxying to your own web services).
 
-**Step 1:** Create `workspace/router/config/nginx/backends/google_apis.conf` with the following contents:
+**Step 1:** Login to the [web admin](http://localhost:8080/admin/) and navigate to the "API Backends" section under the "Configuration" menu.
 
-```
-upstream google_apis_backend {
-  server maps.googleapis.com:80;
-  keepalive 10;
-}
-```
+**Step 2:** Add a new backend:
 
-*This backend file defines the server or servers you want to route requests to. For more complex load-balancing configurations see [nginx's upstream documentation](http://wiki.nginx.org/HttpUpstreamModule) for more info.*
+![Add API Backend Example](https://github.com/NREL/api-umbrella/raw/master/docs/images/add_api_backend_example.png)
 
-**Step 2:** Update `workspace/router/config/nginx/site.conf.erb` and add to the bottom inside the `server` block:
+**Step 3:** Navigate to the "Publish Changes" page under the "Configuration" menu and press the Publish button.
 
-```
-  # Insert your own...
-  location ~* ^/google/ {
-    rewrite ^/google(/.*) $1 break;
-    proxy_set_header Host "maps.googleapis.com:80";
-
-    # Enable keep alive connections to the backend servers.
-    proxy_http_version 1.1;
-    proxy_set_header Connection "";
-
-    proxy_pass http://google_apis_backend;
-  }
-```
-
-*This configuration defines which URL prefixes you wish to route to the new backend, and adjusts parts of the request when proxying occurs. See nginx's [proxy documentation](http://wiki.nginx.org/HttpProxyModule) and [location documentation](http://wiki.nginx.org/HttpCoreModule#location) for more info.* 
-
-**Step 4:** Deploy your changes
-
-```sh
-$ vagrant ssh
-$ cd /vagrant/workspace/router
-$ cap vagrant deploy
-```
+Google's API should now be available through the API Umbrella proxy.
 
 ### Signup for an API key
 
@@ -53,7 +34,7 @@ Signup to receive your own unique API key for your development environment.
 
 ### Make an API request
 
-Assuming you added the Google Geocoding API example to your router config, you should now be able to make a request to Google's Geocoding API proxied through your local API Umbrella instance:
+Assuming you added the Google Geocoding example as an API backend, you should now be able to make a request to Google's Geocoding API proxied through your local API Umbrella instance:
 
 `http://localhost:8080/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=**YOUR_KEY_HERE**`
 
@@ -61,16 +42,15 @@ You can see how API Umbrella layers its authentication on top of existing APIs b
 
 [http://localhost:8080/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY](http://localhost:8080/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY)
 
-### Login to the web admin
+### View Analytics
 
-A web admin is available to perform basic tasks:
+Login to the [web admin](http://localhost:8080/admin/). Navigate to the "Filter Logs" section under the "Analytics" menu. As you make API requests against your API Umbrella server, the requests should start to show up here (there may be a 30 second delay before the requests show up in the analytics).
 
-[http://localhost:8080/admin/](http://localhost:8080/admin/)
+![Analytics](https://github.com/NREL/api-umbrella/raw/master/docs/images/analytics.png)
 
-While in your local development environment, you may login with any name and e-mail address.
-
-*This open admin is obviously not suitable for production, but alternative authentication mechanisms can be added via a variety of [OmniAuth strategies](https://github.com/intridea/omniauth/wiki/List-of-Strategies).*
 
 ### Write API documentation
 
 Login to the [web admin](http://localhost:8080/admin/) and create documentation for individual web services and organize them into hierarchical collections. As documentation and collections are added, they will show up in the [documentation section](http://localhost:8080/doc) of the frontend.
+
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/9caf7fc8bb54ccd9e1670affa6b82618 "githalytics.com")](http://githalytics.com/NREL/api-umbrella)
