@@ -78,7 +78,7 @@ Problems? Open an [issue](https://github.com/NREL/api-umbrella/issues).
 
 ## Getting Started
 
-Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial see [getting started](https://github.com/NREL/api-umbrella/blob/master/doc/GettingStarted.md).
+Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial see [getting started](https://github.com/NREL/api-umbrella/blob/master/docs/GettingStarted.md).
 
 ## Deploying to Production
 
