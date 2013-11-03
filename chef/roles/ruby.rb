@@ -26,7 +26,7 @@ default_attributes({
     :upgrade => true,
   },
   :rubygems => {
-    :version => "2.0.6",
+    :version => "2.1.7",
     :default_options => "--no-ri --no-rdoc",
   },
   :bundler => {

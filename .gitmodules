@@ -82,9 +82,6 @@
 [submodule "chef/cookbooks/mongodb"]
 	path = chef/cookbooks/mongodb
 	url = https://github.com/NREL-cookbooks/mongodb.git
-[submodule "chef/cookbooks/redis"]
-	path = chef/cookbooks/redis
-	url = https://github.com/NREL-cookbooks/redis.git
 [submodule "chef/cookbooks/shasum"]
 	path = chef/cookbooks/shasum
 	url = https://github.com/NREL-cookbooks/shasum.git
@@ -169,3 +166,12 @@
 [submodule "chef/cookbooks/api-umbrella"]
 	path = chef/cookbooks/api-umbrella
 	url = https://github.com/NREL-cookbooks/api-umbrella.git
+[submodule "chef/cookbooks/aws"]
+	path = chef/cookbooks/aws
+	url = https://github.com/opscode-cookbooks/aws.git
+[submodule "chef/cookbooks/bluepill"]
+	path = chef/cookbooks/bluepill
+	url = https://github.com/opscode-cookbooks/bluepill.git
+[submodule "chef/cookbooks/ulimit"]
+	path = chef/cookbooks/ulimit
+	url = https://github.com/bmhatfield/chef-ulimit.git

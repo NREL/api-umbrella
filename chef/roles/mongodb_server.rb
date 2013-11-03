@@ -9,7 +9,7 @@ run_list([
 
 default_attributes({
   :mongodb => {
-    :package_version => "2.4.6-mongodb_1",
+    :package_version => "2.4.8-mongodb_1",
 
     :backup => {
       # We should probably revisit this so we can take advtange of oplog

@@ -9,18 +9,18 @@ default_attributes({
   :nginx => {
     :install_method => "source",
 
-    :version => "1.4.2",
+    :version => "1.4.3",
 
     :user => "www-data-local",
 
     :source => {
-      :checksum => "5361ffb7b0ebf8b1a04369bc3d1295eaed091680c1c58115f88d56c8e51f3611",
+      :checksum => "ae123885c923a6c3f5bab0a8b7296ef21c4fdf6087834667ebbc16338177de84",
       :modules => [
-        "headers_more_module",
-        "http_echo_module",
-        "http_realip_module",
-        "http_stub_status_module",
-        "x_rid_header_module",
+        "nginx::headers_more_module",
+        "nginx::http_echo_module",
+        "nginx::http_realip_module",
+        "nginx::http_stub_status_module",
+        "nginx::x_rid_header_module",
       ],
     },
 

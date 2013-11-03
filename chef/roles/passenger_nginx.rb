@@ -9,12 +9,12 @@ default_attributes({
   :nginx => {
     :source => {
       :modules => [
-        "passenger",
+        "nginx::passenger",
       ],
     },
 
     :passenger => {
-      :version => "4.0.10",
+      :version => "4.0.23",
 
       # Run all passengers processes as the nginx user.
       :user_switching => false,
