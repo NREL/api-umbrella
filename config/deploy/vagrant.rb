@@ -19,3 +19,6 @@ set :rails_env, "development"
 # Set gem bundler options for the development environment.
 set :bundle_without, [:test]
 set :bundle_flags, "--quiet"
+
+# Don't migrate in development mode.
+set :rails_auto_migrate, false
