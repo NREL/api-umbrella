@@ -12,6 +12,7 @@ set :deploy_to_base, "/srv/sites"
 
 # Set the accessible web domain for this site.
 set :base_domain, "api.vagrant"
+set :base_domain_aliases, ["localhost"]
 
 # Set the Rails environment.
 set :rails_env, "development"
