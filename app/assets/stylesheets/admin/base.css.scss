@@ -378,3 +378,16 @@ td.reorder-handle {
     line-height: 15px;
   }
 }
+
+.qtip-wide {
+  max-width: 600px;
+}
+
+.query-syntax-help .example {
+  text-align: right;
+}
+
+.query-syntax-help td.example {
+  font-style: italic;
+  font-size: 11px;
+}

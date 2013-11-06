@@ -6,31 +6,110 @@
           <input type="text" name="search" class="input-xlarge" placeholder="Advanced filters..." {{bind-attr value='query.params.search'}} />
           <button class="btn btn-small" type="submit">Filter</button>
         </div>
-        <span class="help-block">Advanced filters use <a href="#" rel="popover" id="query_syntax_help">Lucene's Query Syntax</a>.</span>
+        <span class="help-block">Advanced filters use <a href="#query_syntax_help_content" rel="popover">Lucene's Query Syntax</a>.</span>
         <div id="query_syntax_help_content" style="display: none;">
           <p>Use <a href="http://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene's query syntax</a> to perform complex queries.</p>
           <p>Example:</p>
-          <pre>request_method:"POST" AND
-response_status:[400 TO *]</pre>
+          <pre>request_method:"POST" AND response_status:[400 TO *]</pre>
           <p>Available Fields:</p>
-          <ul>
-            <li>request_at</li>
-            <li>request_method</li>
-            <li>request_url</li>
-            <li>request_path</li>
-            <li>request_user_agent</li>
-            <li>request_user_agent_type</li>
-            <li>request_user_agent_family</li>
-            <li>request_accept_encoding</li>
-            <li>request_ip</li>
-            <li>request_ip_country</li>
-            <li>request_ip_region</li>
-            <li>request_ip_city</li>
-            <li>response_status</li>
-            <li>response_content_type</li>
-            <li>api_key</li>
-            <li>user_id</li>
-          </ul>
+          <table class="table table-condensed query-syntax-help">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th class="example">Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>request_at</td>
+                <td class="example">2013-11-06T20:02:53.752Z</td>
+              </tr>
+              <tr>
+                <td>request_method</td>
+                <td class="example">GET</td>
+              </tr>
+              <tr>
+                <td>request_url</td>
+                <td class="example">http://api.data.gov/nrel/alt-fuel-stations/v1.json?limit=2</td>
+              </tr>
+              <tr>
+                <td>request_path</td>
+                <td class="example">/nrel/alt-fuel-stations/v1</td>
+              </tr>
+              <tr>
+                <td>request_user_agent</td>
+                <td class="example">curl/7.33.0</td>
+              </tr>
+              <tr>
+                <td>request_user_agent_type</td>
+                <td class="example">Library</td>
+              </tr>
+              <tr>
+                <td>request_user_agent_family</td>
+                <td class="example">cURL</td>
+              </tr>
+              <tr>
+                <td>request_accept_encoding</td>
+                <td class="example">deflate, gzip</td>
+              </tr>
+              <tr>
+                <td>request_ip</td>
+                <td class="example">93.184.216.119</td>
+              </tr>
+              <tr>
+                <td>request_ip_country</td>
+                <td class="example">US</td>
+              </tr>
+              <tr>
+                <td>request_ip_region</td>
+                <td class="example">CO</td>
+              </tr>
+              <tr>
+                <td>request_ip_city</td>
+                <td class="example">Golden</td>
+              </tr>
+              <tr>
+                <td>request_ip_location.lat</td>
+                <td class="example">39.7555</td>
+              </tr>
+              <tr>
+                <td>request_ip_location.lon</td>
+                <td class="example">-105.2211</td>
+              </tr>
+              <tr>
+                <td>response_status</td>
+                <td class="example">200</td>
+              </tr>
+              <tr>
+                <td>response_content_type</td>
+                <td class="example">application/json; charset=utf-8</td>
+              </tr>
+              <tr>
+                <td>response_content_encoding</td>
+                <td class="example">gzip</td>
+              </tr>
+              <tr>
+                <td>response_transfer_encoding</td>
+                <td class="example">chunked</td>
+              </tr>
+              <tr>
+                <td>response_server</td>
+                <td class="example">nginx/1.4.2</td>
+              </tr>
+              <tr>
+                <td>api_key</td>
+                <td class="example">DEMO_KEY</td>
+              </tr>
+              <tr>
+                <td>user_email</td>
+                <td class="example">demo.api_keys@data.gov</td>
+              </tr>
+              <tr>
+                <td>user_id</td>
+                <td class="example">ad2d94b6-e0f8-4e26-b1a6-1bc6b12f3d76</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

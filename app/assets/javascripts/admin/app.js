@@ -83,33 +83,6 @@ Ember.EasyForm.Tooltip = Ember.EasyForm.BaseView.extend({
   attributeBindings: ['title', 'rel'],
   template: Ember.Handlebars.compile('<i class="icon-question-sign"></i>'),
   rel: 'tooltip',
-
-  didInsertElement: function() {
-    this._super();
-
-    this.$().qtip({
-      show: {
-        event: "click",
-        solo: true
-      },
-      hide: {
-        event: "unfocus"
-      },
-      style: {
-        classes: 'qtip-bootstrap',
-      },
-      position: {
-        viewport: true,
-        my: "bottom left",
-        at: "top center",
-        adjust: {
-          y: 2
-        }
-      }
-    }).bind("click", function(event) {
-      event.preventDefault();
-    });
-  },
 });
 
 Ember.Handlebars.helper('formatNumber', function(number) {

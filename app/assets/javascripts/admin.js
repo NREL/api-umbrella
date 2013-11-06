@@ -27,51 +27,6 @@
 //= require_self
 
 $(document).ready(function() {
-  CKEDITOR.replace("api_doc_service_body", {
-    extraPlugins: "pbckcode",
-    height: 500,
-    contentsCss: [
-      "/assets/application.css",
-      "/assets/ckeditor.css",
-    ],
-    stylesSet: [
-      {
-        name: "Section",
-        element: "h2",
-      },
-      {
-        name: "Sub-Section",
-        element: "h3",
-      },
-      {
-        name: "Service URL",
-        element: "div",
-        attributes: { "class" : "docs-service-url" }
-      },
-      {
-        name: "Example URL",
-        element: "div",
-        attributes: { "class" : "docs-example-url" }
-      }
-    ],
-    toolbar: [
-      ["Styles"],
-      ["Bold", "Italic", "-", "RemoveFormat"],
-      ["Link", "Unlink"],
-      ["NumberedList", "BulletedList", "-", "Outdent", "Indent"],
-      ["pbckcode", "Table", "Image"],
-      ["Source"]
-    ],
-    pbckcode: {
-      modes: [
-        ["JSON", "json"],
-        ["XML", "xml"],
-        ["Text", "text"]
-      ],
-      defaultMode: "json"
-    }
-  });
-
   // Use the default browser "beforeunload" dialog.
   $.DirtyForms.dialog = false 
   $(window).bind('beforeunload', function(e) {
@@ -85,23 +40,65 @@ $(document).ready(function() {
   $("form").dirtyForms();
 
   // Setup qTip defaults.
-  $("a[rel=tooltip]").qtip({
-    show: {
-      event: "click",
-      solo: true
-    },
-    hide: {
-      event: "unfocus"
-    },
-    position: {
-      viewport: true,
-      my: "bottom left",
-      at: "top center",
-      adjust: {
-        y: 2
+  $(document).on('click', 'a[rel=tooltip]', function(event) {
+    $(this).qtip({
+      overwrite: false,
+      show: {
+        event: event.type,
+        ready: true,
+        solo: true
+      },
+      hide: {
+        event: "unfocus"
+      },
+      style: {
+        classes: 'qtip-bootstrap',
+      },
+      position: {
+        viewport: true,
+        my: "bottom left",
+        at: "top center",
+        adjust: {
+          y: 2
+        }
       }
-    }
-  }).bind("click", function(event) {
+    }, event);
+
+    event.preventDefault();
+  });
+
+  $(document).on('click', 'a[rel=popover]', function(event) {
+    $(this).qtip({
+      overwrite: false,
+      show: {
+        event: event.type,
+        ready: true,
+        solo: true
+      },
+      hide: {
+        event: "unfocus"
+      },
+      content: {
+        text: function(event, api) {
+          var target = $(event.target).attr("href");
+          var content = $(target).html();
+
+          return content;
+        },
+      },
+      style: {
+        classes: 'qtip-bootstrap qtip-wide',
+      },
+      position: {
+        viewport: false,
+        my: "top left",
+        at: "bottom center",
+        adjust: {
+          y: 2
+        }
+      }
+    }, event);
+
     event.preventDefault();
   });
 });
