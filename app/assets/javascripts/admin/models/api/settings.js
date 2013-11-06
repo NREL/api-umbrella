@@ -10,9 +10,27 @@ Admin.ApiSettings = Ember.Model.extend({
   errorTemplates: Ember.attr(),
   errorDataYamlStrings: Ember.attr(),
 
-  headers: function(key, value) {
-    console.info("HEADER: %o", arguments);
-  }.property('headersString'),
+  init: function() {
+    this._super();
+
+    // Set defaults for new records.
+    this.setDefaults();
+
+    // For existing records, we need to set the defaults after loading.
+    this.on('didLoad', this, this.setDefaults);
+  },
+
+  setDefaults: function() {
+    // Make sure at least an empty object exists so the form builder can dive
+    // into this section even when there's no pre-existing data.
+    if(!this.get('errorTemplates')) {
+      this.set('errorTemplates', {});
+    }
+
+    if(!this.get('errorDataYamlStrings')) {
+      this.set('errorDataYamlStrings', {});
+    }
+  },
 });
 
 Admin.ApiSettings.primaryKey = "_id";

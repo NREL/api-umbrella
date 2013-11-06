@@ -50,6 +50,13 @@ class Api::Settings
     self.required_roles = roles
   end
 
+  def error_templates=(templates)
+    if(templates.present?)
+      templates.reject! { |key, value| value.blank? }
+      self[:error_templates] = templates
+    end
+  end
+
   def error_data_yaml_strings
     unless @error_data_yaml_strings
       @error_data_yaml_strings = {}

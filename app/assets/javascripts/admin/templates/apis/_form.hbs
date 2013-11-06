@@ -130,7 +130,9 @@
           {{input xml as='ace'
             class='row-fluid'
             label='XML Template'
-            tooltip='<pre>&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
+            tooltip='<p>A <a href="http://handlebarsjs.com" target="_blank">Handlebars</a> template of the XML error response. Available Handlebars variables are defined below in the Error Data section.</p>
+<p>Default template:</p>
+<pre>&amp;lt;?xml version="1.0" encoding="UTF-8"?&amp;gt;
 &amp;lt;response&amp;gt;
   &amp;lt;error&amp;gt;
     &amp;lt;code&amp;gt;{{code}}&amp;lt;/code&amp;gt;
@@ -142,7 +144,9 @@
           {{input csv as='ace'
             class='row-fluid'
             label='CSV Template'
-            tooltip='<pre>Error Code,Error Message
+            tooltip='<p>A <a href="http://handlebarsjs.com" target="_blank">Handlebars</a> template of the CSV error response. Available Handlebars variables are defined below in the Error Data section.</p>
+<p>Default template:</p>
+<pre>Error Code,Error Message
 {{code}},{{message}}</pre>'
             inputConfig='data-ace-mode:plain_text'}}
         {{/with}}
