@@ -133,9 +133,6 @@
 [submodule "chef/cookbooks/ca_certificates"]
 	path = chef/cookbooks/ca_certificates
 	url = https://github.com/NREL-cookbooks/ca_certificates.git
-[submodule "chef/cookbooks/redisio"]
-	path = chef/cookbooks/redisio
-	url = https://github.com/brianbianco/redisio.git
 [submodule "chef/cookbooks/torquebox"]
 	path = chef/cookbooks/torquebox
 	url = https://github.com/NREL-cookbooks/torquebox.git
@@ -175,3 +172,6 @@
 [submodule "chef/cookbooks/ulimit"]
 	path = chef/cookbooks/ulimit
 	url = https://github.com/bmhatfield/chef-ulimit.git
+[submodule "chef/cookbooks/redis"]
+	path = chef/cookbooks/redis
+	url = https://github.com/NREL-cookbooks/redis.git
