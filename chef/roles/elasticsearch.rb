@@ -9,7 +9,7 @@ run_list([
 
 default_attributes({
   :elasticsearch => {
-    :version => "0.90.5",
-    :checksum => "f14ff217039b5c398a9256b68f46a90093e0a1e54e89f94ee6a2ee7de557bd6d",
+    :version => "0.90.6",
+    :checksum => "2ff87847e993d52723b4e789db3cbba887f414b85bf04fd897032bc52fe0ad3a",
   },
 })
