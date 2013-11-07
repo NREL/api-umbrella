@@ -31,7 +31,7 @@
         <td><%= link_to(api_user.email, edit_admin_api_user_path(api_user)) %></td>
         <td><%= api_user.first_name %></td>
         <td><%= api_user.last_name %></td>
-        <td title="<%= api_user.use_description %>"><%= api_user.use_description.truncate(50, :separator => " ") %></td>
+        <td title="<%= api_user.use_description %>"><%= api_user.use_description.to_s.truncate(50, :separator => " ") %></td>
         <td><%= api_user.created_at %></td>
         <td><small class="api-key"><%= api_user.api_key.truncate(11) %></small></td>
       </tr>
