@@ -2,6 +2,7 @@ class Api::UrlMatch
   include Mongoid::Document
 
   # Fields
+  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
   field :frontend_prefix, :type => String
   field :backend_prefix, :type => String
 

@@ -8,7 +8,7 @@
     <div class="span6 record-details">
       <% unless(@admin.new_record?) %>
         Created: <%= @admin.created_at %><%= if(@admin.creator) then " by #{@admin.creator.username}" end %><br>
-        Last Updated: <%= @admin.updated_at %><%= if(@admin.updator) then " by #{@admin.updator.username}" end %>
+        Last Updated: <%= @admin.updated_at %><%= if(@admin.updater) then " by #{@admin.updater.username}" end %>
       <% end %>
     </div>
   </div>

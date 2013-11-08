@@ -8,6 +8,8 @@ class Admin
   # Devise-based authentication using OmniAuth
   devise :omniauthable, :trackable
 
+  # Fields
+  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
   field :username, :type => String
   field :email, :type => String
   field :first_name, :type => String

@@ -58,7 +58,7 @@
     <div class="span6 record-details">
       <% unless(@api_user.new_record?) %>
         Created: <%= @api_user.created_at %><%= if(@api_user.creator) then " by #{@api_user.creator.username}" end %><br>
-        Last Updated: <%= @api_user.updated_at %><%= if(@api_user.updator) then " by #{@api_user.updator.username}" end %>
+        Last Updated: <%= @api_user.updated_at %><%= if(@api_user.updater) then " by #{@api_user.updater.username}" end %>
       <% end %>
     </div>
   </div>
