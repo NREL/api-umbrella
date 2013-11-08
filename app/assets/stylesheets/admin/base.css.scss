@@ -332,6 +332,10 @@ a:hover {
   width: 100%;
 }
 
+.selectize-dropdown {
+  z-index: 9999;
+}
+
 .record-details {
   text-align: right;
   font-size: 11px;

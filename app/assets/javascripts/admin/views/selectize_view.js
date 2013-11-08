@@ -9,6 +9,9 @@ Admin.SelectizeView = Ember.View.extend({
       searchField: 'title',
       sortField: 'title',
       create: true,
+
+      // Add to body so it doesn't get clipped by parent div containers.
+      dropdownParent: 'body',
     });
   }
 });
