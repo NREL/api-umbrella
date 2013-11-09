@@ -7,7 +7,6 @@ Admin.ApiUrlMatch = Ember.Model.extend({
   backendPrefixWithDefault: function() {
     return this.get('backendPrefix') || this.get('frontendPrefix');
   }.property('backendPrefix', 'frontendPrefix'),
-
 });
 
 Admin.ApiUrlMatch.primaryKey = "_id";

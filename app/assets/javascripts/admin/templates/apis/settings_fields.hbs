@@ -1,0 +1,93 @@
+{{input requireHttps as='select'
+  value='requireHttps'
+  label='HTTPS Requirements'
+  collection='requireHttpsOptions'
+  optionValuePath='content.id'
+  optionLabelPath='content.name'}}
+{{input disableApiKey as='select'
+  value='disableApiKey'
+  label='API Key Checks'
+  collection='disableApiKeyOptions'
+  optionValuePath='content.id'
+  optionLabelPath='content.name'}}
+{{#view Admin.SelectizeView}}
+  {{input requiredRolesString
+    class='row-fluid'
+    label='Required Roles'}}
+{{/view}}
+{{input rateLimitMode as='select'
+  value='rateLimitMode'
+  label='Rate Limit'
+  collection='rateLimitModeOptions'
+  optionValuePath='content.id'
+  optionLabelPath='content.name'}}
+
+{{#if isRateLimitModeCustom}}
+  <div class="control-group">
+    <div class="controls">
+      {{#if rateLimits}}
+        <table class="table table-striped table-condensed table-small small-form">
+          <thead>
+            <tr>
+              <th>Duration</th>
+              <th></th>
+              <th>Limit By</th>
+              <th>Limit</th>
+              <th class="text-center">
+                Primary
+                <a rel="tooltip" title="<p>Controls which rate limit will return its status in the HTTP response headers. This informs the end-users of this limit and how many remaining requests they have. For example:</p>
+  <pre>
+  X-RateLimit-Limit: 1000
+  X-RateLimit-Remaining: 840
+  </pre>
+  <p>Only one rate limit may return this status information, so it will likely be your primary, publicized rate limit (for example, hourly), and not more granular rate limits you may have assigned (for example, per-second limits).</p>"><i class="icon-question-sign"></i></a>
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each rateLimits}}
+              <tr>
+                <td class="input-small">
+                  {{input-field durationInUnits inputConfig='class:input-small'}}
+                </td>
+                <td class="input-medium" style="text-align: left;">
+                  {{input-field durationUnits as='select'
+                    value='durationUnits'
+                    collection='controller.rateLimitDurationUnitOptions'
+                    inputConfig='class:input-small'
+                    optionValuePath='content.id'
+                    optionLabelPath='content.name'}}
+                </td>
+                <td class="input-medium">
+                  {{input-field limitBy as='select'
+                    value='limitBy'
+                    collection='controller.rateLimitLimitByOptions'
+                    inputConfig='class:input-small'
+                    optionValuePath='content.id'
+                    optionLabelPath='content.name'}}
+                </td>
+                <td class="input-medium">
+                  <div class="input-append">
+                    {{input-field limit inputConfig='class:input-small'}}
+                    <span class="add-on">requests</span>
+                  </div>
+                </td>
+                <td class="input-small text-center">
+                  {{view Admin.BooleanRadioButtonView
+                    nameBinding='controller.uniqueSettingsId'
+                    selectionBinding='responseHeaders'
+                    value='true'}}
+                </td>
+                <td class="table-row-actions">
+                  <a href="#" class="remove-action" {{action 'deleteRateLimit' this}}><i class="icon-remove"></i>Remove</a>
+                </td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      {{/if}}
+      <button type="button" class="btn btn-mini" {{action 'addRateLimit'}}><i class="icon-plus-sign"></i> Add Rate Limit</button>
+    </div>
+  </div>
+{{/if}}

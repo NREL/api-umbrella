@@ -22,7 +22,6 @@ class Api
   embeds_many :url_matches, :class_name => "Api::UrlMatch"
   embeds_many :sub_settings, :class_name => "Api::SubSettings"
   embeds_many :rewrites, :class_name => "Api::Rewrite"
-  embeds_many :rate_limits, :class_name => "Api::RateLimit"
 
   # Validations
   validates :name,
@@ -47,8 +46,7 @@ class Api
     :servers,
     :url_matches,
     :sub_settings,
-    :rewrites,
-    :rate_limits
+    :rewrites
 
   def as_json(options)
     options[:methods] ||= []

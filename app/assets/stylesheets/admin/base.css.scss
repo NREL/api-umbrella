@@ -274,13 +274,14 @@ a {
 
 .table .table-row-actions {
   text-align: right;
+  white-space: nowrap;
 
   a {
     margin-left: 24px;
   }
 
   a.remove-action {
-    font-size: 85%;
+    font-size: 12px;
     color: $red;
   }
 }
@@ -394,4 +395,34 @@ td.reorder-handle {
 .query-syntax-help td.example {
   font-style: italic;
   font-size: 11px;
+}
+
+.table-small {
+  font-size: 13px;
+}
+
+.small-form {
+  input {
+    font-size: 12px;
+    padding: 2px 4px;
+  }
+
+  .add-on {
+    font-size: 12px;
+    padding: 2px 5px;
+  }
+
+  select {
+    font-size: 11px;
+    height: 26px;
+    line-height: 26px;
+    margin-bottom: 0px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
+}
+
+.table th.text-center,
+.table td.text-center {
+  text-align: center;
 }

@@ -8,14 +8,19 @@ class Api::Settings
   field :require_https, :type => Boolean
   field :disable_api_key, :type => Boolean
   field :required_roles, :type => Array
-  field :hourly_rate_limit, :type => Integer
+  field :rate_limit_mode, :type => String
   field :error_templates, :type => Hash
   field :error_data, :type => Hash
 
   # Relations
   embeds_many :headers, :class_name => "Api::Header"
+  embeds_many :rate_limits, :class_name => "Api::RateLimit"
   embedded_in :api
   embedded_in :sub_settings
+
+  # Validations
+  validates :rate_limit_mode,
+    :inclusion => { :in => %w(unlimited custom), :allow_blank => true }
 
   # Mass assignment security
   attr_accessible :_id,
@@ -23,9 +28,10 @@ class Api::Settings
     :http_basic_auth,
     :require_https,
     :disable_api_key,
+    :rate_limit_mode,
+    :rate_limits,
     :required_roles,
     :required_roles_string,
-    :hourly_rate_limit,
     :error_templates,
     :error_data_yaml_strings
 

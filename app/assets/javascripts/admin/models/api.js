@@ -11,7 +11,6 @@ Admin.Api = Ember.Model.extend({
   settings: Ember.belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
   subSettings: Ember.hasMany('Admin.ApiSubSettings', { key: 'sub_settings', embedded: true }),
   rewrites: Ember.hasMany('Admin.ApiRewrite', { key: 'rewrites', embedded: true }),
-  //rateLimits: Ember.hasMany('Admin.ApiRateLimit', { key: 'rate_limits', embedded: true }),
 
   init: function() {
     this._super();

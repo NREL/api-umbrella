@@ -1,6 +1,5 @@
 Admin.ApisFormController = Ember.ObjectController.extend({
   needs: [
-    'apis_settings_fields',
     'apis_server_form',
     'apis_url_match_form',
     'apis_sub_settings_form',

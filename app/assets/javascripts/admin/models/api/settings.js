@@ -6,9 +6,11 @@ Admin.ApiSettings = Ember.Model.extend({
   requireHttps: Ember.attr(),
   disableApiKey: Ember.attr(),
   requiredRolesString: Ember.attr(),
-  hourlyRateLimit: Ember.attr(),
+  rateLimitMode: Ember.attr(),
   errorTemplates: Ember.attr(),
   errorDataYamlStrings: Ember.attr(),
+
+  rateLimits: Ember.hasMany('Admin.ApiRateLimit', { key: 'rate_limits', embedded: true }),
 
   init: function() {
     this._super();
@@ -31,6 +33,10 @@ Admin.ApiSettings = Ember.Model.extend({
       this.set('errorDataYamlStrings', {});
     }
   },
+
+  isRateLimitModeCustom: function() {
+    return (this.get('rateLimitMode') === 'custom');
+  }.property('rateLimitMode'),
 });
 
 Admin.ApiSettings.primaryKey = "_id";
