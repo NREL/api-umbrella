@@ -2,6 +2,7 @@ class Api::Settings
   include Mongoid::Document
 
   # Fields
+  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
   field :append_query_string, :type => String
   field :http_basic_auth, :type => String
   field :require_https, :type => Boolean

@@ -2,6 +2,7 @@ class Api::SubSettings
   include Mongoid::Document
 
   # Fields
+  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
   field :http_method, :type => String
   field :regex, :type => String
 

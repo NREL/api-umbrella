@@ -2,6 +2,7 @@ class Api::Route
   include Mongoid::Document
 
   # Fields
+  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
   field :matcher, :type => String
   field :http_method, :type => String
   field :from, :type => String
