@@ -7,7 +7,7 @@ Admin.StatsFacetTableView = Ember.View.extend({
       params.search = _.compact([params.search, this.facetTerm + ':"' + term.term + '"']).join(' AND ');
       term.linkQuery = $.param(params);
     }, this));
-  }.observes('data'),
+  }.observes('data').on('init'),
 
   actions: {
     toggleFacetTable: function(event) {
