@@ -81,8 +81,8 @@ gem "countries"
 gem "settingslogic"
 
 # Ember.js
-gem "ember-rails", "~> 0.13.0"
-gem "ember-source", "~> 1.0.0"
+gem "ember-rails", "~> 0.14.0"
+gem "ember-source", "~> 1.1.2"
 
 # HTML diffs
 gem "diffy"

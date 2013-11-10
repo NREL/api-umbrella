@@ -26,7 +26,7 @@ $.pnotify.defaults.icon = false;
   var major = parseInt(versionParts[0]);
   var minor = parseInt(versionParts[1]);
   var patch = parseInt(versionParts[2]);
-  if(major > 1 || (major == 1 && (minor > 0 || patch > 0))) {
+  if(major > 1 || (major == 1 && (minor > 1 || patch > 2))) {
     Ember.Logger.warn('WARNING: New Ember version detected. URL hash monkey patch possibly no longer needed or broken. Check for compatibility.');
   }
 
@@ -99,8 +99,9 @@ Ember.Handlebars.registerHelper('tooltip-field', function(property, options) {
   return Ember.Handlebars.helpers.view.call(this, Ember.EasyForm.Tooltip, options);
 });
 
-
-Ember.TEMPLATES['easyForm/wrapped_input'] = Ember.Handlebars.compile('<div class="control-label">{{label-field propertyBinding=view.property textBinding=view.label}}{{#if view.tooltip}}{{tooltip-field titleBinding=view.tooltip}}{{/if}}</div><div class="{{unbound view.controlsWrapperClass}}">{{partial "easyForm/inputControls"}}</div>');
+// Use a custom template for Easy Form. This adds a tooltip and wraps that in
+// the control-label div with the label.
+Ember.TEMPLATES['easyForm/wrapped_input'] = Ember.Handlebars.compile('<div class="control-label">{{label-field propertyBinding="view.property" textBinding="view.label"}}{{#if view.tooltip}}{{tooltip-field titleBinding="view.tooltip"}}{{/if}}</div><div class="{{unbound view.controlsWrapperClass}}">{{partial "easyForm/inputControls"}}</div>');
 
 Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
   attributeBindings: ['data-ace-mode'],

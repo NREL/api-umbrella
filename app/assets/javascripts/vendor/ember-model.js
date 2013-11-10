@@ -1,5 +1,16 @@
 (function() {
 
+var VERSION = '0.0.10';
+
+if (Ember.libraries) {
+  Ember.libraries.register('Ember Model', VERSION);
+}
+
+
+})();
+
+(function() {
+
 function mustImplement(message) {
   var fn = function() {
     var className = this.constructor.toString();
@@ -207,7 +218,7 @@ Ember.FilteredRecordArray = Ember.RecordArray.extend({
 
   updateFilterForRecord: function(record) {
     var results = get(this, 'content');
-    if (this.filterFunction(record)) {
+    if (this.filterFunction(record) && !results.contains(record)) {
       results.pushObject(record);
     }
   },
@@ -239,7 +250,6 @@ Ember.ManyArray = Ember.RecordArray.extend({
   _records: null,
   originalContent: null,
 
-  // TODO: make isDirty check more robust
   isDirty: function() {
     var originalContent = get(this, 'originalContent'),
         originalContentLength = get(originalContent, 'length'),
@@ -251,7 +261,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var isDirty = false;
 
     for (var i = 0, l = contentLength; i < l; i++) {
-      if (content[i] !== originalContent[i]) {
+      if (!originalContent.contains(content[i])) {
         isDirty = true;
         break;
       }
@@ -287,7 +297,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
     var content = get(this, 'content');
     if (content) {
       content.removeArrayObserver(this);
-      set(this, 'originalContent', content.slice());
+      this._setupOriginalContent(content);
     }
   }.observesBefore('content'),
 
@@ -312,8 +322,16 @@ Ember.ManyArray = Ember.RecordArray.extend({
     }
   },
 
+  _setupOriginalContent: function(content) {
+    content = content || get(this, 'content');
+    if (content) {
+      set(this, 'originalContent', content.slice());
+    }
+  },
+
   init: function() {
     this._super();
+    this._setupOriginalContent();
     this._contentDidChange();
   }
 });
@@ -444,7 +462,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
   _relationshipBecameDirty: function(name) {
     var dirtyAttributes = get(this, '_dirtyAttributes');
-    dirtyAttributes.pushObject(name);
+    if (!dirtyAttributes.contains(name)) { dirtyAttributes.pushObject(name); }
   },
 
   _relationshipBecameClean: function(name) {
@@ -474,9 +492,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
         id = this.getPrimaryKey();
 
     if (!reference) {
-      reference = this.constructor._referenceForId(id);
+      reference = this.constructor._getOrCreateReferenceForId(id);
       reference.record = this;
       this._reference = reference;
+    } else if (reference.id !== id) {
+      reference.id = id;
+      this.constructor._cacheReference(reference);
     }
 
     if (!reference.id) {
@@ -494,6 +515,27 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
     var data = {};
     data[get(this.constructor, 'primaryKey')] = id;
     set(this, '_data', Ember.merge(data, hash));
+
+    // eagerly load embedded data
+    var relationships = this.constructor._relationships || [], meta = Ember.meta(this), relationshipKey, relationship, relationshipMeta, relationshipData, relationshipType;
+    for (var i = 0, l = relationships.length; i < l; i++) {
+      relationshipKey = relationships[i];
+      relationship = meta.descs[relationshipKey];
+      relationshipMeta = relationship.meta();
+
+      if (relationshipMeta.options.embedded) {
+        relationshipType = relationshipMeta.type;
+        if (typeof relationshipType === "string") {
+          relationshipType = Ember.get(Ember.lookup, relationshipType);
+        }
+
+        relationshipData = data[relationshipKey];
+        if (relationshipData) {
+          relationshipType.load(relationshipData);
+        }
+      }
+    }
+
     set(this, 'isLoaded', true);
     set(this, 'isNew', false);
     this._createReference();
@@ -609,10 +651,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
 
     set(this, 'isNew', false);
 
-    if (!this.constructor.recordCache) this.constructor.recordCache = {};
-    this.constructor.recordCache[id] = this;
-
-    this._copyDirtyAttributesToData();
+    set(this, '_dirtyAttributes', []);
     this.constructor.addToRecordArrays(this);
     this.trigger('didCreateRecord');
     this.didSaveRecord();
@@ -685,12 +724,12 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       if (embedded) {
         primaryKey = get(type, 'primaryKey');
         mapFunction = function(attrs) {
-          reference = type._referenceForId(attrs[primaryKey]);
+          reference = type._getOrCreateReferenceForId(attrs[primaryKey]);
           reference.data = attrs;
           return reference;
         };
       } else {
-        mapFunction = function(id) { return type._referenceForId(id); };
+        mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
       content = Ember.EnumerableUtils.map(content, mapFunction);
     }
@@ -827,6 +866,14 @@ Ember.Model.reopenClass({
 
     var promise = this.adapter.findAll(this, records);
 
+    // Remove the cached record array if the promise is rejected
+    if (promise.then) {
+      promise.then(null, function() {
+        self._findAllRecordArray = null;
+        return Ember.RSVP.reject.apply(null, arguments);
+      });
+    }
+
     return isFetch ? promise : records;
   },
 
@@ -948,29 +995,20 @@ Ember.Model.reopenClass({
     });
   },
 
-  pushIntoRecordCache: function(records){
-    var primaryKey = get(this, 'primaryKey'), self = this;
-    if (!this.recordCache) this.recordCache = {};
-
-    records.forEach(function(record){
-      self.recordCache[get(record, primaryKey)] = record;
-    });
-  },
-
-  getFromRecordCache: function(id){
-    if (!this.recordCache) this.recordCache = {};
-    return this.recordCache[id];
+  getCachedReferenceRecord: function(id){
+    var ref = this._getReferenceById(id);
+    if(ref) return ref.record;
+    return undefined;
   },
 
   cachedRecordForId: function(id) {
-    var record = this.getFromRecordCache(id);
+    var record = this.getCachedReferenceRecord(id);
 
     if (!record) {
       var primaryKey = get(this, 'primaryKey'),
         attrs = {isLoaded: false};
       attrs[primaryKey] = id;
       record = this.create(attrs);
-      this.pushIntoRecordCache([record]);
       var sideloadedData = this.sideloadedData && this.sideloadedData[id];
       if (sideloadedData) {
         record.load(id, sideloadedData);
@@ -1004,20 +1042,16 @@ Ember.Model.reopenClass({
   },
 
   clearCache: function () {
-    this.recordCache = undefined;
     this.sideloadedData = undefined;
-    this._idToReference = undefined;
+    this._referenceCache = undefined;
   },
 
   removeFromCache: function (key) {
     if (this.sideloadedData && this.sideloadedData[key]) {
       delete this.sideloadedData[key];
     }
-    if (this.recordCache && this.recordCache[key]) {
-      delete this.recordCache[key];
-    }
-    if(this._idToReference && this._idToReference[key]) {
-      delete this._idToReference[key];
+    if(this._referenceCache && this._referenceCache[key]) {
+      delete this._referenceCache[key];
     }
   },
 
@@ -1056,27 +1090,38 @@ Ember.Model.reopenClass({
   },
 
   forEachCachedRecord: function(callback) {
-    if (!this.recordCache) { return Ember.A([]); }
-    var ids = Object.keys(this.recordCache);
+    var ids = Object.keys(this._referenceCache);
     ids.map(function(id) {
-      return this.recordCache[id];
+      return this._getReferenceById(id).record;
     }, this).forEach(callback);
   },
 
   load: function(hashes) {
+    if (Ember.typeOf(hashes) !== 'array') { hashes = [hashes]; }
+
     if (!this.sideloadedData) { this.sideloadedData = {}; }
+
     for (var i = 0, l = hashes.length; i < l; i++) {
       var hash = hashes[i],
-        primaryKey = hash[get(this, 'primaryKey')];
-      this.removeFromCache(primaryKey);
-      this.sideloadedData[primaryKey] = hash;
+          primaryKey = hash[get(this, 'primaryKey')],
+          record = this.getCachedReferenceRecord(primaryKey);
+
+      if (record) {
+        record.load(primaryKey, hash);
+      } else {
+        this.sideloadedData[primaryKey] = hash;
+      }
     }
   },
 
-  _referenceForId: function(id) {
-    if (!this._idToReference) { this._idToReference = {}; }
+  _getReferenceById: function(id) {
+    if (!this._referenceCache) { this._referenceCache = {}; }
+    return this._referenceCache[id];
+  },
 
-    var reference = this._idToReference[id];
+  _getOrCreateReferenceForId: function(id) {
+    var reference = this._getReferenceById(id);
+
     if (!reference) {
       reference = this._createReference(id);
     }
@@ -1085,22 +1130,26 @@ Ember.Model.reopenClass({
   },
 
   _createReference: function(id) {
-    if (!this._idToReference) { this._idToReference = {}; }
+    if (!this._referenceCache) { this._referenceCache = {}; }
 
-    Ember.assert('The id ' + id + ' has alread been used with another record of type ' + this.toString() + '.', !id || !this._idToReference[id]);
+    Ember.assert('The id ' + id + ' has alread been used with another record of type ' + this.toString() + '.', !id || !this._referenceCache[id]);
 
     var reference = {
       id: id,
       clientId: this._clientIdCounter++
     };
 
-    // if we're creating an item, this process will be done
-    // later, once the object has been persisted.
-    if (id) {
-      this._idToReference[id] = reference;
-    }
+    this._cacheReference(reference);
 
     return reference;
+  },
+
+  _cacheReference: function(reference) {
+    // if we're creating an item, this process will be done
+    // later, once the object has been persisted.
+    if (reference.id) {
+      this._referenceCache[reference.id] = reference;
+    }
   }
 });
 
@@ -1141,7 +1190,6 @@ Ember.Model.reopen({
     });
 
     this._registerHasManyArray(collection);
-    if (embedded) type.pushIntoRecordCache(collection);
 
     return collection;
   }
@@ -1212,9 +1260,10 @@ Ember.Model.reopen({
     }
 
     if (meta.options.embedded) {
-      var primaryKey = get(type, 'primaryKey');
-      record = type.create({ isLoaded: false });
-      record.load(idOrAttrs[primaryKey], idOrAttrs);
+      var primaryKey = get(type, 'primaryKey'),
+        id = idOrAttrs[primaryKey];
+      record = type.create({ isLoaded: false, id: id });
+      record.load(id, idOrAttrs);
     } else {
       record = type.find(idOrAttrs);
     }
@@ -1271,6 +1320,15 @@ function deserialize(value, type) {
   }
 }
 
+function serialize(value, type) {
+  if (type && type.serialize) {
+    return type.serialize(value);
+  } else if (type && Ember.Model.dataTypes[type]) {
+    return Ember.Model.dataTypes[type].serialize(value);
+  } else {
+    return value;
+  }
+}
 
 Ember.attr = function(type, options) {
   return Ember.computed(function(key, value) {
@@ -1295,7 +1353,7 @@ Ember.attr = function(type, options) {
         dataValue = data[dataKey] = value;
       }
 
-      if (dataValue !== value) {
+      if (dataValue !== serialize(value, type)) {
         dirtyAttributes.pushObject(key);
       } else {
         dirtyAttributes.removeObject(key);
@@ -1418,8 +1476,8 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     record.didDeleteRecord();
   },
 
-  ajax: function(url, params, method) {
-    return this._ajax(url, params, method || "GET");
+  ajax: function(url, params, method, settings) {
+    return this._ajax(url, params, (method || "GET"), settings);
   },
 
   buildURL: function(klass, id) {
@@ -1432,7 +1490,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       return urlRoot + ".json";
     }
   },
-  
+
   ajaxSettings: function(url, method) {
     return {
       url: url,
@@ -1441,8 +1499,10 @@ Ember.RESTAdapter = Ember.Adapter.extend({
     };
   },
 
-  _ajax: function(url, params, method) {
-    var settings = this.ajaxSettings(url, method);
+  _ajax: function(url, params, method, settings) {
+    if (!settings) {
+      settings = this.ajaxSettings(url, method);
+    }
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       if (params) {
@@ -1463,7 +1523,7 @@ Ember.RESTAdapter = Ember.Adapter.extend({
         if (jqXHR) {
           jqXHR.then = null;
         }
-        
+
         Ember.run(null, reject, jqXHR);
       };
 
@@ -1506,5 +1566,124 @@ Ember.loadPromise = function(target) {
   }
 };
 
+
+})();
+
+(function() {
+
+// This is a debug adapter for the Ember Extension, don't let the fact this is called an "adapter" confuse you.
+// Most copied from: https://github.com/emberjs/data/blob/master/packages/ember-data/lib/system/debug/debug_adapter.js
+
+if (!Ember.DataAdapter) { return; }
+
+var get = Ember.get, capitalize = Ember.String.capitalize, underscore = Ember.String.underscore;
+
+var DebugAdapter = Ember.DataAdapter.extend({
+  getFilters: function() {
+    return [
+      { name: 'isNew', desc: 'New' },
+      { name: 'isModified', desc: 'Modified' },
+      { name: 'isClean', desc: 'Clean' }
+    ];
+  },
+
+  detect: function(klass) {
+    return klass !== Ember.Model && Ember.Model.detect(klass);
+  },
+
+  columnsForType: function(type) {
+    var columns = [], count = 0, self = this;
+    Ember.A(get(type.proto(), 'attributes')).forEach(function(name, meta) {
+        if (count++ > self.attributeLimit) { return false; }
+        var desc = capitalize(underscore(name).replace('_', ' '));
+        columns.push({ name: name, desc: desc });
+    });
+    return columns;
+  },
+
+  getRecords: function(type) {
+    var records = [];
+    type.forEachCachedRecord(function(record) { records.push(record); });
+    return records;
+  },
+
+  getRecordColumnValues: function(record) {
+    var self = this, count = 0,
+        columnValues = { id: get(record, 'id') };
+
+    record.get('attributes').forEach(function(key) {
+      if (count++ > self.attributeLimit) {
+        return false;
+      }
+      var value = get(record, key);
+      columnValues[key] = value;
+    });
+    return columnValues;
+  },
+
+  getRecordKeywords: function(record) {
+    var keywords = [], keys = Ember.A(['id']);
+    record.get('attributes').forEach(function(key) {
+      keys.push(key);
+    });
+    keys.forEach(function(key) {
+      keywords.push(get(record, key));
+    });
+    return keywords;
+  },
+
+  getRecordFilterValues: function(record) {
+    return {
+      isNew: record.get('isNew'),
+      isModified: record.get('isDirty') && !record.get('isNew'),
+      isClean: !record.get('isDirty')
+    };
+  },
+
+  getRecordColor: function(record) {
+    var color = 'black';
+    if (record.get('isNew')) {
+      color = 'green';
+    } else if (record.get('isDirty')) {
+      color = 'blue';
+    }
+    return color;
+  },
+
+  observeRecord: function(record, recordUpdated) {
+    var releaseMethods = Ember.A(), self = this,
+        keysToObserve = Ember.A(['id', 'isNew', 'isDirty']);
+
+    record.get('attributes').forEach(function(key) {
+      keysToObserve.push(key);
+    });
+
+    keysToObserve.forEach(function(key) {
+      var handler = function() {
+        recordUpdated(self.wrapRecord(record));
+      };
+      Ember.addObserver(record, key, handler);
+      releaseMethods.push(function() {
+        Ember.removeObserver(record, key, handler);
+      });
+    });
+
+    var release = function() {
+      releaseMethods.forEach(function(fn) { fn(); } );
+    };
+
+    return release;
+  }
+});
+
+Ember.onLoad('Ember.Application', function(Application) {
+  Application.initializer({
+    name: "dataAdapter",
+
+    initialize: function(container, application) {
+      application.register('dataAdapter:main', DebugAdapter);
+    }
+  });
+});
 
 })();
