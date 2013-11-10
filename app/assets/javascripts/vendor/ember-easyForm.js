@@ -137,6 +137,15 @@ Ember.Handlebars.registerHelper('input-field', function(property, options) {
     delete options.hash.inputOptions;
   }
 
+  if (options.hash.inputConfig) {
+    var configs = options.hash.inputConfig.split(';');
+    var i = configs.length;
+    while(i--) {
+      var config = configs[i].split(':');
+      options.hash[config[0]] = config[1];
+    }
+  }
+
   if (options.hash.as === 'text') {
     return Ember.Handlebars.helpers.view.call(context, Ember.EasyForm.TextArea, options);
   } else if (options.hash.as === 'select') {
@@ -367,7 +376,7 @@ Ember.EasyForm.Input = Ember.EasyForm.BaseView.extend({
     this.set('label-field-'+this.elementId+'.for', this.get('input-field-'+this.elementId+'.elementId'));
   },
   concatenatedProperties: ['inputOptions', 'bindableInputOptions'],
-  inputOptions: ['as', 'collection', 'optionValuePath', 'optionLabelPath', 'selection', 'value', 'multiple'],
+  inputOptions: ['as', 'inputConfig', 'collection', 'optionValuePath', 'optionLabelPath', 'selection', 'value', 'multiple'],
   bindableInputOptions: ['placeholder', 'prompt'],
   controlsWrapperClass: function() {
     return this.getWrapperConfig('controlsWrapperClass');
