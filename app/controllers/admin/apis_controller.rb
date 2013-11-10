@@ -33,7 +33,7 @@ class Admin::ApisController < Admin::BaseController
   private
 
   def save!
-    # Resort the incoming embedded arrays based on the virtual `sort_order`
+    # Re-sort the incoming embedded arrays based on the virtual `sort_order`
     # attribute. We won't store this value since the embedded array implicitly
     # provides this sort value.
     [:url_matches, :sub_settings, :rewrites].each do |collection|
