@@ -28,8 +28,6 @@ class Api::RateLimit
     :numericality => { :greater_than => 0 }
   validates :distributed,
     :presence => true
-  validates :response_headers,
-    :presence => true
 
   # Callbacks
   before_validation :auto_calculate_accuracy
