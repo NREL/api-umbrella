@@ -81,8 +81,8 @@ class RemoveLegacyIds < Mongoid::Migration
           end
         end
 
-        if(api.rate_limits)
-          api.rate_limits.each do |limit|
+        if(api.read_attribute(:rate_limits))
+          api.read_attribute(:rate_limits).each do |limit|
             if limit.has_attribute?(:legacy_id)
               limit.remove_attribute(:legacy_id)
             end
