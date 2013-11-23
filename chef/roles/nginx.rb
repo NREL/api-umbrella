@@ -9,11 +9,11 @@ default_attributes({
   :nginx => {
     :install_method => "source",
 
-    :version => "1.4.4",
-
     :user => "www-data-local",
 
+    :version => "1.4.4",
     :source => {
+      :version => "1.4.4",
       :checksum => "7c989a58e5408c9593da0bebcd0e4ffc3d892d1316ba5042ddb0be5b0b4102b9",
       :modules => [
         "nginx::headers_more_module",
