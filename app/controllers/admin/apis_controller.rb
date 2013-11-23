@@ -3,7 +3,7 @@ class Admin::ApisController < Admin::BaseController
   set_tab :config
 
   def index
-    @apis = Api.desc(:sort_order).desc(:_id).all
+    @apis = Api.sorted.all
     respond_with({ :apis => @apis })
   end
 

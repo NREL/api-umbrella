@@ -43,7 +43,7 @@ class ConfigVersion
 
   def self.current_config
     {
-      "apis" => Api.asc(:sort_order).all.map { |api| Hash[api.attributes] }
+      "apis" => Api.sorted.all.map { |api| Hash[api.attributes] }
     }
   end
 end

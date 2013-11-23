@@ -51,6 +51,10 @@ class Api
     :sub_settings,
     :rewrites
 
+  def self.sorted
+    order_by(:sort_order.asc, :created_at.desc)
+  end
+
   def as_json(options)
     options[:methods] ||= []
     options[:methods] += [:required_roles_string, :error_data_yaml_strings]
