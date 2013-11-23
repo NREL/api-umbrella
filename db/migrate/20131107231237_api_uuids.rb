@@ -65,8 +65,8 @@ class ApiUuids < Mongoid::Migration
           end
         end
 
-        if(new_api.rate_limits)
-          new_api.rate_limits.each do |limit|
+        if(new_api.read_attribute(:rate_limits))
+          new_api.read_attribute(:rate_limits).each do |limit|
             limit.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(limit._id))
             limit._id = UUIDTools::UUID.random_create.to_s
           end
