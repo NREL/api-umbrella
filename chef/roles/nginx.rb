@@ -14,7 +14,7 @@ default_attributes({
     :user => "www-data-local",
 
     :source => {
-      :checksum => "4ae123885c923a6c3f5bab0a8b7296ef21c4fdf6087834667ebbc16338177de84",
+      :checksum => "7c989a58e5408c9593da0bebcd0e4ffc3d892d1316ba5042ddb0be5b0b4102b9",
       :modules => [
         "nginx::headers_more_module",
         "nginx::http_echo_module",
