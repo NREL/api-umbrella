@@ -27,6 +27,7 @@ server {
   server_name <%= all_domains.join(" ") %>;
 
   include <%= latest_release %>/config/nginx/public_defaults.conf;
+  include <%= latest_release %>/config/nginx/ssl.conf;
 
   # Route the docs and other static pages to the Rails web app. This may
   # change, so that's why we're treating it separately.
