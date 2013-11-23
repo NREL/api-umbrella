@@ -121,9 +121,10 @@ Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
     this.editor.getSession().setMode('ace/mode/' + this.$().data('ace-mode'));
     this.editor.getSession().setValue(this.$().val());
 
+    var element = this.$();
     this.$().closest('form').submit(_.bind(function() {
-      this.$().val(this.editor.getSession().getValue());
-      this.$().trigger('change');
+      element.val(this.editor.getSession().getValue());
+      element.trigger('change');
     }, this));
   },
 }));

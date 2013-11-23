@@ -21,7 +21,7 @@ class Admin::ConfigController < Admin::BaseController
     data = sort_hash_by_keys(data)
     stringify_object_ids!(data)
 
-    YAML.dump(data)
+    Psych.dump(data)
   end
 
   def self.stringify_object_ids!(object)

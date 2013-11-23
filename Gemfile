@@ -24,6 +24,9 @@ gem "mongoid_userstamp", "~> 0.3.0"
 # This git branch fixes embeds_one functionality.
 gem "mongoid_delorean", "~> 1.1.1", :git => "https://github.com/GUI/mongoid_delorean.git"
 
+# Display deeply nested validation errors on embedded documents.
+gem "mongoid-embedded-errors"
+
 # Data migrations
 gem "mongoid_rails_migrations"
 
@@ -86,6 +89,11 @@ gem "ember-source", "~> 1.1.2"
 
 # HTML diffs
 gem "diffy"
+
+# Use a newer version of Psych for YAML. The newer gem version does a better
+# job of making multi-line strings and strings with colons in them more human
+# readable.
+gem "psych"
 
 # Gems used only for assets and not required
 # in production environments by default.

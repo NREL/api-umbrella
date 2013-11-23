@@ -3,6 +3,7 @@ class Api
   include Mongoid::Timestamps
   include Mongoid::Userstamp
   include Mongoid::Delorean::Trackable
+  include Mongoid::EmbeddedErrors
 
   # Fields
   field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }

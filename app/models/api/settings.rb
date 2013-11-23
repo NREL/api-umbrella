@@ -21,6 +21,7 @@ class Api::Settings
   # Validations
   validates :rate_limit_mode,
     :inclusion => { :in => %w(unlimited custom), :allow_blank => true }
+  validate :validate_error_data_yaml_strings
 
   # Mass assignment security
   attr_accessible :_id,
@@ -69,7 +70,7 @@ class Api::Settings
       @error_data_yaml_strings = {}
       if self.error_data.present?
         self.error_data.each do |key, value|
-          @error_data_yaml_strings[key] = YAML.dump(value).gsub(/^---\n/, "").strip
+          @error_data_yaml_strings[key] = Psych.dump(value).gsub(/^---\s*\n/, "").strip
         end
       end
     end
@@ -80,15 +81,37 @@ class Api::Settings
   def error_data_yaml_strings=(strings)
     @error_data_yaml_strings = strings
 
-    data = {}
+    begin
+      data = {}
+      if(strings.present?)
+        strings.each do |key, value|
+          if value.present?
+            data[key] = Psych.load(value)
+          end
+        end
+      end
+
+      self.error_data = data
+    rescue Psych::SyntaxError
+      # Ignore YAML errors, we'll deal with validating during
+      # validate_error_data_yaml_strings.
+    end
+  end
+
+  private
+
+  def validate_error_data_yaml_strings
+    strings = @error_data_yaml_strings
     if(strings.present?)
       strings.each do |key, value|
         if value.present?
-          data[key] = YAML.load(value)
+          begin
+            Psych.load(value)
+          rescue Psych::SyntaxError => error
+            self.errors.add("error_data_yaml_strings.#{key}", "YAML parsing error: #{error.message}")
+          end
         end
       end
     end
-
-    self.error_data = data
   end
 end
