@@ -16,17 +16,17 @@ default_attributes({
     :git_ref => "v0.4.0",
     :upgrade => true,
     :root_path => "/opt/rbenv",
-    :rubies => ["1.9.3-p448"],
-    :global => "1.9.3-p448",
+    :rubies => ["1.9.3-p484"],
+    :global => "1.9.3-p484",
   },
   :ruby_build => {
     # Don't use the git:// protocol behind our firewall.
     :git_url => "https://github.com/sstephenson/ruby-build.git",
-    :git_ref => "v20130628",
+    :git_ref => "v20131122",
     :upgrade => true,
   },
   :rubygems => {
-    :version => "2.1.7",
+    :version => "2.1.11",
     :default_options => "--no-ri --no-rdoc",
   },
   :bundler => {
