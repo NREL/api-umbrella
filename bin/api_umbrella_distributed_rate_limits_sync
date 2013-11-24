@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+
+var DistributedRateLimitsSync = require('../lib/distributed_rate_limits_sync').DistributedRateLimitsSync;
+new DistributedRateLimitsSync();
