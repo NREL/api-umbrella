@@ -18,8 +18,7 @@ class Api::Rewrite
     :inclusion => { :in => %w(any GET POST PUT DELETE HEAD TRACE OPTIONS CONNECT PATCH) }
 
   # Mass assignment security
-  attr_accessible :_id,
-    :matcher_type,
+  attr_accessible :matcher_type,
     :http_method,
     :frontend_matcher,
     :backend_replacement

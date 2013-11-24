@@ -34,8 +34,7 @@ class Api::RateLimit
   before_validation :auto_calculate_distributed
 
   # Mass assignment security
-  attr_accessible :_id,
-    :duration,
+  attr_accessible :duration,
     :limit_by,
     :limit,
     :response_headers

@@ -14,6 +14,11 @@ class Api::SubSettings
   validates :http_method,
     :inclusion => { :in => %w(any GET POST PUT DELETE HEAD TRACE OPTIONS CONNECT PATCH) }
 
+  # Nested attributes
+  accepts_nested_attributes_for :settings
+
   # Mass assignment security
-  attr_accessible :_id, :http_method, :regex, :settings
+  attr_accessible :http_method,
+    :regex,
+    :settings_attributes
 end

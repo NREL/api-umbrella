@@ -23,18 +23,21 @@ class Api::Settings
     :inclusion => { :in => %w(unlimited custom), :allow_blank => true }
   validate :validate_error_data_yaml_strings
 
+  # Nested attributes
+  accepts_nested_attributes_for :headers, :rate_limits, :allow_destroy => true
+
   # Mass assignment security
-  attr_accessible :_id,
-    :append_query_string,
+  attr_accessible :append_query_string,
     :http_basic_auth,
     :require_https,
     :disable_api_key,
     :rate_limit_mode,
-    :rate_limits,
     :required_roles,
     :required_roles_string,
     :error_templates,
-    :error_data_yaml_strings
+    :error_data_yaml_strings,
+    :headers_attributes,
+    :rate_limits_attributes
 
   def required_roles_string
     unless @required_roles_string

@@ -33,23 +33,7 @@ class Admin::ApisController < Admin::BaseController
   private
 
   def save!
-    # Re-sort the incoming embedded arrays based on the virtual `sort_order`
-    # attribute. We won't store this value since the embedded array implicitly
-    # provides this sort value.
-    [:url_matches, :sub_settings, :rewrites].each do |collection|
-      if(params[:api][collection].present?)
-        # The virtual `sort_order` attribute will only be present if the data
-        # has been resorted by the user. Otherwise, we can just accept the
-        # incoming array order as correct.
-        if(params[:api][collection].first[:sort_order].present?)
-          params[:api][collection].sort_by! { |p| p[:sort_order] }
-        end
-
-        params[:api][collection].each { |p| p.delete(:sort_order) }
-      end
-    end
-
-    @api.attributes = params[:api]
+    @api.nested_attributes = params[:api]
     @api.save
   end
 end

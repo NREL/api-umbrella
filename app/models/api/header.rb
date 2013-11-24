@@ -7,5 +7,5 @@ class Api::Header
   field :value, :type => String
 
   # Mass assignment security
-  attr_accessible :_id, :key, :value
+  attr_accessible :key, :value
 end

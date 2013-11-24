@@ -14,5 +14,5 @@ class Api::Server
     :inclusion => { :in => 0..65535 }
 
   # Mass assignment security
-  attr_accessible :_id, :host, :port
+  attr_accessible :host, :port
 end

@@ -10,5 +10,6 @@ class Api::UrlMatch
   embedded_in :api
 
   # Mass assignment security
-  attr_accessible :_id, :frontend_prefix, :backend_prefix
+  attr_accessible :frontend_prefix,
+    :backend_prefix
 end
