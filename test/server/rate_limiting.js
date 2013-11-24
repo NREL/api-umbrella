@@ -21,6 +21,23 @@ describe('ApiUmbrellaGatekeper', function() {
       return headersObj;
     }
 
+    function itBehavesLikeRateLimitResponseHeaders(path, limit, headerOverrides) {
+      it('returns rate limit counter headers in the response', function(done) {
+        var options = {
+          headers: headers({
+            'X-Forwarded-For': this.ipAddress,
+            'X-Api-Key': this.apiKey,
+          }, headerOverrides),
+        };
+
+        request.get('http://localhost:9333' + path, options, function(error, response) {
+          response.headers['x-ratelimit-limit'].should.eql(limit.toString());
+          response.headers['x-ratelimit-remaining'].should.eql((limit - 1).toString());
+          done();
+        });
+      });
+    }
+
     function itBehavesLikeApiKeyRateLimits(path, limit, headerOverrides) {
       it('allows up to the limit of requests and then begins rejecting requests', function(done) {
         var options = {
@@ -65,6 +82,8 @@ describe('ApiUmbrellaGatekeper', function() {
           });
         });
       });
+
+      itBehavesLikeRateLimitResponseHeaders(path, limit, headerOverrides);
     }
 
     function itBehavesLikeIpRateLimits(path, limit, headerOverrides) {
@@ -112,6 +131,41 @@ describe('ApiUmbrellaGatekeper', function() {
           });
         }.bind(this));
       });
+
+      itBehavesLikeRateLimitResponseHeaders(path, limit, headerOverrides);
+    }
+
+    function itBehavesLikeUnlimitedRateLimits(path, limit, headerOverrides) {
+      it('can exceed the limits and still accept requests', function(done) {
+        var options = {
+          headers: headers({
+            'X-Api-Key': this.apiKey,
+          }, headerOverrides),
+        };
+
+        async.times(limit + 1, function(index, asyncCallback) {
+          request.get('http://localhost:9333' + path, options, function(error, response) {
+            response.statusCode.should.eql(200);
+            asyncCallback(null);
+          });
+        }.bind(this), function() {
+          done();
+        });
+      });
+
+      it('omits rate limit counter headers in the response', function(done) {
+        var options = {
+          headers: headers({
+            'X-Api-Key': this.apiKey,
+          }, headerOverrides),
+        };
+
+        request.get('http://localhost:9333' + path, options, function(error, response) {
+          should.not.exist(response.headers['x-ratelimit-limit']);
+          should.not.exist(response.headers['x-ratelimit-remaining']);
+          done();
+        });
+      });
     }
 
     describe('single hourly limit', function() {
@@ -124,22 +178,13 @@ describe('ApiUmbrellaGatekeper', function() {
               limit_by: 'apiKey',
               limit: 10,
               distributed: true,
+              response_headers: true,
             }
           ]
         }
       });
 
-      it('allows up to the hourly limit of requests', function(done) {
-        async.times(10, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
-            response.statusCode.should.eql(200);
-            body.should.eql('Hello World');
-            asyncCallback(null);
-          });
-        }.bind(this), function() {
-          done();
-        });
-      });
+      itBehavesLikeApiKeyRateLimits('/hello', 10);
 
       it('rejects requests after the hourly limit has been exceeded', function(done) {
         timekeeper.freeze(new Date(2013, 1, 1, 1, 27, 0));
@@ -187,11 +232,13 @@ describe('ApiUmbrellaGatekeper', function() {
               accuracy: 1000, // 1 second
               limit_by: 'apiKey',
               limit: 3,
+              response_headers: true,
             }, {
               duration: 60 * 60 * 1000, // 1 hour
               accuracy: 1 * 60 * 1000, // 1 minute
               limit_by: 'apiKey',
               limit: 10,
+              response_headers: false,
               distributed: true,
             }
           ]
@@ -216,6 +263,30 @@ describe('ApiUmbrellaGatekeper', function() {
           });
         }.bind(this));
       });
+
+      describe('sets the response header counters from the limit that has that enabled', function() {
+        itBehavesLikeRateLimitResponseHeaders('/hello', 3);
+      });
+
+      it('counts down the response header counters, but never returns negative', function(done) {
+        var limit = 3;
+        async.timesSeries(limit + 2, function(index, asyncCallback) {
+          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+            response.headers['x-ratelimit-limit'].should.eql(limit.toString());
+
+            var remaining = limit - 1 - index;
+            if(remaining < 0) {
+              remaining = 0;
+            }
+
+            response.headers['x-ratelimit-remaining'].should.eql(remaining.toString());
+
+            asyncCallback(null);
+          });
+        }.bind(this), function() {
+          done();
+        });
+      });
     });
 
     describe('ip based rate limits', function() {
@@ -228,6 +299,7 @@ describe('ApiUmbrellaGatekeper', function() {
               limit_by: 'ip',
               limit: 5,
               distributed: true,
+              response_headers: true,
             }
           ]
         },
@@ -246,6 +318,7 @@ describe('ApiUmbrellaGatekeper', function() {
               limit_by: 'apiKey',
               limit: 5,
               distributed: true,
+              response_headers: true,
             }
           ]
         },
@@ -277,6 +350,31 @@ describe('ApiUmbrellaGatekeper', function() {
       });
     });
 
+    describe('unlimited rate limits', function() {
+      shared.runServer({
+        apiSettings: {
+          rate_limit_mode: 'unlimited',
+          rate_limits: [
+            {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'apiKey',
+              limit: 5,
+              response_headers: true,
+            },
+            {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'ip',
+              limit: 5,
+            }
+          ]
+        },
+      });
+
+      itBehavesLikeUnlimitedRateLimits('/hello', 5);
+    });
+
     describe('api specific limits', function() {
       shared.runServer({
         apiSettings: {
@@ -287,6 +385,7 @@ describe('ApiUmbrellaGatekeper', function() {
               limit_by: 'apiKey',
               limit: 5,
               distributed: true,
+              response_headers: true,
             }
           ]
         },
@@ -308,6 +407,7 @@ describe('ApiUmbrellaGatekeper', function() {
                   limit_by: 'apiKey',
                   limit: 3,
                   distributed: true,
+                  response_headers: true,
                 }
               ],
             },
@@ -323,6 +423,7 @@ describe('ApiUmbrellaGatekeper', function() {
                       limit_by: 'apiKey',
                       limit: 7,
                       distributed: true,
+                      response_headers: true,
                     }
                   ],
                 },
