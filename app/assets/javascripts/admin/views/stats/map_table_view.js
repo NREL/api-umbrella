@@ -32,7 +32,7 @@ Admin.StatsMapTableView = Ember.View.extend({
                 var link = '#/stats/map/' + $.param(params);
               }
 
-              return '<a href="' + link + '">' + name + '</a>';
+              return '<a href="' + link + '">' + _.escape(name) + '</a>';
             }
 
             return name;

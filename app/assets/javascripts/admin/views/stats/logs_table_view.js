@@ -55,7 +55,7 @@ Admin.LogsTableView = Ember.View.extend({
               params.search = _.compact([params.search, 'user_id:"' + data.user_id + '"']).join(' AND ');
               var link = '#/stats/logs/' + $.param(params);
 
-              return '<a href="' + link + '">' + email + '</a>';
+              return '<a href="' + link + '">' + _.escape(email) + '</a>';
             }
 
             return email;

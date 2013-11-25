@@ -32,7 +32,7 @@ Admin.StatsUsersTableView = Ember.View.extend({
               params.search = 'user_id:"' + data.id + '"';
               var link = '#/stats/logs/' + $.param(params);
 
-              return '<a href="' + link + '">' + email + '</a>';
+              return '<a href="' + link + '">' + _.escape(email) + '</a>';
             }
 
             return email;
