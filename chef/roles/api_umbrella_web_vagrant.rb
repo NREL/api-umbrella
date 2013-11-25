@@ -19,8 +19,7 @@ default_attributes({
   :nginx => {
     :logrotate => {
       :extra_paths => [
-        "/vagrant/workspace/api-umbrella-router/log/ssl_proxy-*.log",
-        "/vagrant/workspace/api-umbrella-web/log/*.log",
+        "/vagrant/workspace/web/log/*.log",
       ],
     },
   },

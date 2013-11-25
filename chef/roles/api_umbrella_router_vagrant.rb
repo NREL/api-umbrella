@@ -19,7 +19,8 @@ default_attributes({
   :supervisor => {
     :logrotate => {
       :extra_paths => [
-        "/vagrant/workspace/api-umbrella-router/log/*-gatekeeper-*.log",
+        "/vagrant/workspace/router/log/*.log",
+        "/vagrant/workspace/router/log/gatekeeper/*.log",
       ],
     },
   },

@@ -18,6 +18,12 @@ run_list([
 default_attributes({
   :nginx => {
     :listen => 8082,
+
+    :logrotate => {
+      :extra_paths => [
+        "/srv/api-umbrella-web/current/log/*.log",
+      ],
+    },
   },
 
   :torquebox => {

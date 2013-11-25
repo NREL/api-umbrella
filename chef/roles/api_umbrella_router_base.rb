@@ -25,4 +25,13 @@ default_attributes({
       :enable => true,
     },
   },
+
+  :supervisor => {
+    :logrotate => {
+      :extra_paths => [
+        "/srv/api-umbrella-router/current/log/*.log",
+        "/srv/api-umbrella-router/current/log/gatekeeper/*.log",
+      ],
+    },
+  },
 })
