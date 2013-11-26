@@ -23,6 +23,10 @@ Admin.ApiSettings = Ember.Model.extend({
   },
 
   setDefaults: function() {
+    if(this.get('rateLimitMode') === undefined) {
+      this.set('rateLimitMode', null);
+    }
+
     // Make sure at least an empty object exists so the form builder can dive
     // into this section even when there's no pre-existing data.
     if(!this.get('errorTemplates')) {

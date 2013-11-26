@@ -1,0 +1,83 @@
+{{#form-for model}}
+  <fieldset class="form-horizontal info">
+    <legend>User Info</legend>
+
+    {{input email
+      label='E-mail'
+      inputConfig='class:span6'}}
+    {{input firstName
+      label='First Name'
+      inputConfig='class:span6'}}
+    {{input lastName
+      label='Last Name'
+      inputConfig='class:span6'}}
+    {{input useDescription as='text'
+      label='Purpose'
+      inputConfig='rows:3;class:span6'}}
+
+    {{#if id}}
+      <div class="control-group">
+        <div class="control-label">Signed up</div>
+        <div class="controls">{{formatDate createdAt}}</div>
+      </div>
+      <div class="control-group">
+        <div class="control-label">API key</div>
+        <div class="controls">
+          {{#if apiKey}}
+            <span class="api-key">{{apiKey}}</span><small class="api-key-hides-at-message"> (full API key will disappear <span {{bind-attr data-livestamp="apiKeyHidesAt"}}></span>)</small>
+          {{else}}
+            <span class="api-key">{{apiKeyPreview}}</span>
+          {{/if}}
+        </div>
+      </div>
+    {{else}}
+      <div class="control-group">
+        <div class="controls">
+          <label class="checkbox">
+            {{view Ember.Checkbox checkedBinding='termsAndConditions'}}
+            User agrees to the <a href="/account/terms" onclick="window.open(this.href, 'api_download_popup', 'height=500,width=790,menubar=no,toolbar=no,location=no,personalbar=no,status=no,resizable=yes,scrollbars=yes'); return false;" title="Opens new window to terms and conditions">terms and conditions</a>
+          </label>
+        </div>
+      </div>
+    {{/if}}
+  </fieldset>
+
+  <fieldset class="form-horizontal">
+    <legend>Rate Limiting</legend>
+    {{render 'apis/settings_rate_limit_fields' settings}}
+
+    {{input throttleByIp as='select'
+      value='throttleByIp'
+      label='Limit By'
+      collection='throttleByIpOptions'
+      optionValuePath='content.id'
+      optionLabelPath='content.name'}}
+  </fieldset>
+
+  <fieldset class="form-horizontal">
+    <legend>Permissions</legend>
+
+    {{#view Admin.SelectizeView valueBinding='rolesString'}}
+      {{input rolesString
+        class='row-fluid'
+        label='Roles'}}
+    {{/view}}
+
+    {{input enabled as='select'
+      value='enabled'
+      label='Account Enabled'
+      collection='enabledOptions'
+      optionValuePath='content.id'
+      optionLabelPath='content.name'}}
+  </fieldset>
+
+  <div class="row-fluid">
+    <div class="span6">
+      <button type="submit" id="save_button" class="btn btn-large btn-primary" data-loading-text="<i class='icon-refresh icon-spin'></i> Saving...">Save</button>
+    </div>
+    <div class="span6 record-details">
+      Created: {{formatDate createdAt}} by {{creator.username}}<br>
+      Last Updated: {{formatDate updatedAt}} by {{updater.username}}<br>
+    </div>
+  </div>
+{{/form-for}}

@@ -17,6 +17,7 @@ class Api::Settings
   embeds_many :rate_limits, :class_name => "Api::RateLimit"
   embedded_in :api
   embedded_in :sub_settings
+  embedded_in :api_user
 
   # Validations
   validates :rate_limit_mode,
@@ -37,7 +38,8 @@ class Api::Settings
     :error_templates,
     :error_data_yaml_strings,
     :headers_attributes,
-    :rate_limits_attributes
+    :rate_limits_attributes,
+    :as => [:default, :admin]
 
   def required_roles_string
     unless @required_roles_string

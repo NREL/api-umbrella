@@ -62,7 +62,6 @@ Admin.ApiRateLimit = Ember.Model.extend({
   toJSON: function() {
     var json = this._super();
     json.duration = this.get('durationFromUnits');
-    console.info(json);
     return json;
   },
 });

@@ -33,7 +33,7 @@ class Admin::ApisController < Admin::BaseController
   private
 
   def save!
-    @api.nested_attributes = params[:api]
+    @api.assign_nested_attributes(params[:api])
     @api.save
   end
 end

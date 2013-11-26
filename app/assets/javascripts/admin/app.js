@@ -85,6 +85,18 @@ Ember.EasyForm.Tooltip = Ember.EasyForm.BaseView.extend({
   rel: 'tooltip',
 });
 
+Ember.Handlebars.registerBoundHelper('formatDate', function(date, format) {
+  if(!format || !_.isString(format)) {
+    format = 'YYYY-MM-DD HH:mm Z';
+  }
+
+  if(date) {
+    return moment(date).format(format);
+  } else {
+    return '';
+  }
+});
+
 Ember.Handlebars.helper('formatNumber', function(number) {
   return numeral(number).format('0,0');
 });

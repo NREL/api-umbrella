@@ -87,6 +87,13 @@ textarea.fill {
   margin-bottom: 16px;
 }
 
+.button-actions-down {
+  position: relative;
+  height: 0px;
+  margin: 0px;
+  z-index: 999;
+}
+
 .select-mini {
   font-size: 11px;
   height: 22px;
@@ -162,6 +169,12 @@ div.dataTables_length {
 
   select {
     font-size: 13px;
+  }
+}
+
+div.dataTables_filter {
+  label {
+    float: left;
   }
 }
 

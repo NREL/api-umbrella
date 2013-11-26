@@ -42,7 +42,7 @@
             <% end %>
             <%= tab.users('Users  <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-users", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
               <ul class="dropdown-menu">
-                <li><%= link_to('<i class="icon-user"></i> API Users'.html_safe, admin_api_users_path) %></li>
+                <li><%= link_to('<i class="icon-user"></i> API Users'.html_safe, "/admin/#/api_users") %></li>
                 <li><%= link_to('<i class="icon-user"></i> Admin Accounts'.html_safe, admin_admins_path) %></li>
               </ul>
             <% end %>
