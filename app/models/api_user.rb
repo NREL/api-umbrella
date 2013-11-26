@@ -56,7 +56,9 @@ class ApiUser
     :unless => lambda { |user| user.no_domain_signup },
     :message => "Your website must be a valid URL in the form of http://data.gov"
   validates_acceptance_of :terms_and_conditions,
-    :message => "Check the box to agree to the terms and conditions."
+    :message => "Check the box to agree to the terms and conditions.",
+    :on => :create,
+    :allow_nil => false
 
   # Callbacks
   before_validation :generate_api_key, :on => :create

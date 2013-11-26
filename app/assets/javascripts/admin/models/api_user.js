@@ -8,6 +8,7 @@ Admin.ApiUser = Ember.Model.extend({
   email: Ember.attr(),
   website: Ember.attr(),
   useDescription: Ember.attr(),
+  termsAndConditions: Ember.attr(),
   throttleByIp: Ember.attr(),
   rolesString: Ember.attr(),
   enabled: Ember.attr(),
@@ -38,6 +39,18 @@ Admin.ApiUser = Ember.Model.extend({
     if(!this.get('settings')) {
       this.set('settings', Admin.ApiSettings.create());
     }
+  },
+
+  toJSON: function() {
+    var json = this._super();
+
+    // Translate the terms_and_conditions checkbox into the string '1' if true.
+    // This is to match how validates_acceptance_of accepts things.
+    if(json.api_user && json.api_user.terms_and_conditions === true) {
+      json.api_user.terms_and_conditions = '1';
+    }
+
+    return json;
   },
 })
 
