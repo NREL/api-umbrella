@@ -4,4 +4,4 @@
 
 require File.expand_path('../config/application', __FILE__)
 
-Developer::Application.load_tasks
+ApiUmbrella::Application.load_tasks

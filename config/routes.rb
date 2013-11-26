@@ -1,4 +1,4 @@
-Developer::Application.routes.draw do
+ApiUmbrella::Application.routes.draw do
 
   get "/doc/api-key" => "pages#api_key", :as => :doc_api_key
   get "/doc/errors" => "pages#errors"
