@@ -156,22 +156,4 @@ class Admin::StatsController < Admin::BaseController
   ensure
     Time.zone = old_time_zone
   end
-
-  def datatables_sort
-    sort = []
-
-    i = 0
-    while true
-      column_index = params["iSortCol_#{i}"]
-      break if(column_index.nil?)
-
-      column = params["mDataProp_#{column_index}"]
-      order = params["sSortDir_#{i}"]
-      sort << { column => order }
-
-      i += 1
-    end
-
-    sort
-  end
 end

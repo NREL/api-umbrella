@@ -37,7 +37,8 @@ class Api::RateLimit
   attr_accessible :duration,
     :limit_by,
     :limit,
-    :response_headers
+    :response_headers,
+    :as => [:default, :admin]
 
   private
 

@@ -1,8 +1,12 @@
+require "attributify_data"
+
 class ApiUser
   include Mongoid::Document
   include Mongoid::Timestamps
   include Mongoid::Userstamp
   include Mongoid::Delorean::Trackable
+  include Mongoid::EmbeddedErrors
+  include ApiUmbrella::AttributifyData
 
   # Fields
   field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
@@ -12,12 +16,15 @@ class ApiUser
   field :email
   field :website
   field :use_description
-  field :unthrottled, :type => Boolean
-  field :throttle_hourly_limit, :type => Integer
-  field :throttle_daily_limit, :type => Integer
   field :throttle_by_ip, :type => Boolean
   field :disabled_at, :type => Time
   field :roles, :type => Array
+
+  # Virtual fields
+  attr_accessor :terms_and_conditions, :no_domain_signup
+
+  # Relations
+  embeds_one :settings, :class_name => "Api::Settings"
 
   # Indexes
   index({ :api_key => 1 }, { :unique => true })
@@ -54,14 +61,22 @@ class ApiUser
   # Callbacks
   before_validation :generate_api_key, :on => :create
 
-  attr_accessor :terms_and_conditions, :no_domain_signup
+  # Nested attributes
+  accepts_nested_attributes_for :settings
 
-  # Protect against mass-assignment.
-  attr_accessible :first_name, :last_name, :email, :website, :use_description,
-    :terms_and_conditions
-  attr_accessible :first_name, :last_name, :email, :use_description,
-    :terms_and_conditions, :roles_string, :unthrottled, :throttle_daily_limit,
-    :throttle_hourly_limit, :throttle_by_ip, :throttle_mode, :enabled, :as => :admin
+  # Mass assignment security
+  attr_accessible :first_name,
+    :last_name,
+    :email,
+    :website,
+    :use_description,
+    :terms_and_conditions,
+    :as => [:default, :admin]
+  attr_accessible :roles_string,
+    :throttle_by_ip,
+    :enabled,
+    :settings_attributes,
+    :as => :admin
 
   # has_role? simply needs to return true or false whether a user has a role or not.  
   # It may be a good idea to have "admin" roles return true always
@@ -118,31 +133,6 @@ class ApiUser
     hash
   end
 
-  def throttle_mode
-    if(self.unthrottled)
-      :unthrottled
-    elsif(self.throttle_daily_limit.present? || self.throttle_hourly_limit.present?)
-      :custom
-    else
-      :default
-    end
-  end
-
-  def throttle_mode=(mode)
-    case(mode.to_s)
-    when "unthrottled"
-      self.unthrottled = true
-      self.throttle_daily_limit = nil
-      self.throttle_hourly_limit = nil
-    when "custom"
-      self.unthrottled = false
-    else
-      self.unthrottled = false
-      self.throttle_daily_limit = nil
-      self.throttle_hourly_limit = nil
-    end
-  end
-
   def enabled
     self.disabled_at.nil?
   end
@@ -179,6 +169,9 @@ class ApiUser
     self.roles = roles
   end
 
+  def api_key_preview
+    self.api_key.truncate(9)
+  end
 
   private
 
@@ -193,5 +186,20 @@ class ApiUser
 
       self.api_key = key
     end
+  end
+
+  # After the API is saved, clear out any left-over rate_limits for settings
+  # where the rate limit mode is no longer "custom."
+  #
+  # Ideally this would be an after_save callback inside the Settings model, but
+  # turning on cascade_callbacks seems to lead to tack level too deep errors.
+  def handle_rate_limit_mode
+    if(self.settings.present?)
+      if(self.settings.rate_limit_mode != "custom")
+        self.settings.rate_limits.clear
+      end
+    end
+
+    true
   end
 end

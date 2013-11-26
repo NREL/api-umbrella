@@ -1,4 +1,5 @@
 class Admin::ApiUsersController < Admin::BaseController
+  respond_to :json
   set_tab :users
 
   add_crumb "API Users", :admin_api_users_path
@@ -6,53 +7,46 @@ class Admin::ApiUsersController < Admin::BaseController
   add_crumb "Edit User", :only => [:edit, :update]
 
   def index
-    @api_users = ApiUser.desc(:created_at).page(params[:page])
+    limit = params[:iDisplayLength].to_i
+    limit = 10 if(limit == 0)
 
-    if(params[:search].present?)
+    @api_users = ApiUser
+      .order_by(datatables_sort_array)
+      .skip(params[:iDisplayStart].to_i)
+      .limit(limit)
+
+    if(params[:sSearch].present?)
       @api_users = @api_users.or([
-        { :first_name => /#{params[:search]}/i },
-        { :last_name => /#{params[:search]}/i },
-        { :email => /#{params[:search]}/i },
-        { :api_key => /#{params[:search]}/i },
+        { :first_name => /#{params[:sSearch]}/i },
+        { :last_name => /#{params[:sSearch]}/i },
+        { :email => /#{params[:sSearch]}/i },
+        { :api_key => /#{params[:sSearch]}/i },
+        { :_id => /#{params[:sSearch]}/i },
       ])
     end
   end
 
-  def new
-    @api_user = ApiUser.new
-  end
-
-  def edit
+  def show
     @api_user = ApiUser.find(params[:id])
   end
 
   def create
     @api_user = ApiUser.new
     save!
-
-    flash[:success] = %(Successfully created user account.<br>E-mail: #{@api_user.email}<br>API Key: <span class="api-key">#{@api_user.api_key}</span>).html_safe
-    redirect_to(admin_api_users_path)
-  rescue Mongoid::Errors::Validations
-    logger.info($!.inspect)
-    logger.info(@api_user.errors.inspect)
-    render(:action => "new")
+    respond_with(:admin, @api_user, :root => "api_user")
   end
 
   def update
     @api_user = ApiUser.find(params[:id])
     save!
-
-    flash[:success] = "Successfully updated user account"
-    redirect_to(admin_api_users_path)
-  rescue Mongoid::Errors::Validations
-    render(:action => "edit")
+    respond_with(:admin, @api_user, :root => "api_user")
   end
 
   private
 
   def save!
     @api_user.no_domain_signup = true;
-    @api_user.assign_attributes(params[:api_user], :as => :admin)
-    @api_user.save!
+    @api_user.assign_nested_attributes(params[:api_user], :as => :admin)
+    @api_user.save
   end
 end
