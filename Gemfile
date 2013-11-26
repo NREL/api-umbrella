@@ -1,21 +1,21 @@
 source "https://rubygems.org"
 
-gem "rails", "~> 3.2.14"
+gem "rails", "~> 3.2.15"
 
 # Environment specific configuration
-gem "dotenv-rails"
+gem "dotenv-rails", "~> 0.9.0"
 
 # Rails app server
-gem "torquebox", "~> 3.0.0", :platforms => [:jruby]
+gem "torquebox", "~> 3.0.1", :platforms => [:jruby]
 
 # Abort requests that take too long
-gem "rack-timeout"
+gem "rack-timeout", "~> 0.0.4"
 
 # MongoDB
-gem "mongoid", "~> 3.1.4"
+gem "mongoid", "~> 3.1.5"
 
 # Structure trees of mongoid documents
-gem "mongoid-tree", "~> 1.0.3", :require => "mongoid/tree"
+gem "mongoid-tree", "~> 1.0.4", :require => "mongoid/tree"
 
 # Created/updated userstamping
 gem "mongoid_userstamp", "~> 0.3.0"
@@ -25,98 +25,96 @@ gem "mongoid_userstamp", "~> 0.3.0"
 gem "mongoid_delorean", "~> 1.1.1", :git => "https://github.com/GUI/mongoid_delorean.git"
 
 # Display deeply nested validation errors on embedded documents.
-gem "mongoid-embedded-errors"
+gem "mongoid-embedded-errors", "~> 2.0.1"
 
 # Data migrations
-gem "mongoid_rails_migrations"
+gem "mongoid_rails_migrations", "~> 1.0.1"
 
 # Generate UUIDs
-gem "uuidtools"
+gem "uuidtools", "~> 2.1.4"
 
 # Database seeding
-gem "seed-fu"
+gem "seed-fu", "~> 2.3.0"
 
 # Elasticsearch
-# This git branch allows access to the ruby hash for responses to improve
-# performance: https://github.com/PoseBiz/stretcher/pull/70
-gem "stretcher", "~> 1.21.0", :git => "https://github.com/GUI/stretcher.git", :branch => "optional-mash"
+gem "stretcher", "~> 1.21.1"
 
 # OmniAuth-based authentication
-gem "devise", "~> 3.0.3"
-gem "omniauth"
-gem "omniauth-google-oauth2"
-gem "omniauth-persona"
+gem "devise", "~> 3.2.2"
+gem "omniauth", "~> 1.1.4"
+gem "omniauth-google-oauth2", "~> 0.2.1"
+gem "omniauth-persona", "~> 0.0.1"
 
 # Form layout and display
 gem "simple_form", "~> 2.1.0"
 
 # Pagination
-gem "kaminari"
-gem "kaminari-bootstrap"
+gem "kaminari", "~> 0.15.0"
+gem "kaminari-bootstrap", "~> 0.1.3"
 
 # Navigation links
-gem "tabs_on_rails"
+gem "tabs_on_rails", "~> 2.2.0"
 
 # Unobtrusive javascript for Rails helpers (things like delete links).
 gem "jquery-rails", "~> 3.0.4"
 
 # Breadcrumbs
-gem "crummy", "~> 1.7.2"
+gem "crummy", "~> 1.8.0"
 
 gem "client_side_validations", "~> 3.2.6"
 gem "client_side_validations-simple_form", "~> 2.1.0"
 
-gem "nokogiri"
+gem "nokogiri", "~> 1.6.0"
 
 # For creating friendly URL slugs.
 gem "babosa", "~> 0.3.11"
 
 # For running the python pygmentize program
-gem "childprocess"
+gem "childprocess", "~> 0.3.9"
 
 # Views/templates for APIs
-gem "rabl", "~> 0.8.6"
+gem "rabl", "~> 0.9.2"
 
 # Country and state name lookups
-gem "countries"
+gem "countries", "~> 0.9.3"
 
 # Custom YAML config files
-gem "settingslogic"
+gem "settingslogic", "~> 2.0.9"
 
 # Ember.js
 gem "ember-rails", "~> 0.14.0"
 gem "ember-source", "~> 1.1.2"
 
 # HTML diffs
-gem "diffy"
+gem "diffy", "~> 3.0.1"
 
 # Use a newer version of Psych for YAML. The newer gem version does a better
 # job of making multi-line strings and strings with colons in them more human
 # readable.
-gem "psych"
+gem "psych", "~> 2.0.1"
 
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
-  gem 'sass-rails',   '~> 3.2.3'
+  gem 'sass-rails', '~> 3.2.6'
 
   # A Sass version of Twitter Bootstrap. This it the basis for our styles and
   # JavaScript components.
-  gem "bootstrap-sass"
+  gem "bootstrap-sass", "~> 2.3.2.2"
 
   # Sass utilities and automatic image spirtes
-  gem "compass-rails"
+  gem "compass-rails", "~> 1.0.3"
 
   # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-  gem 'therubyracer', :platforms => :ruby
+  gem 'therubyracer', "~> 0.12.0", :platforms => :ruby
   # For JRuby, use the Node.js execjs runtime - We'll assume it's on the
   # servers so it gets picked up by execjs. It's faster than therubyrhino.
 
   # JavaScript compression
-  gem 'uglifier'
+  gem 'uglifier', "~> 2.3.1"
 
   # Smarter handling of compiled CSS with relative paths (like Jammit)
-  gem "sprockets-urlrewriter"
+  gem "sprockets-urlrewriter", "~> 0.1.2"
 
   # Faster asset precompilation and caching.
   #
@@ -126,37 +124,37 @@ group :assets do
   gem "turbo-sprockets-rails3", :git => "https://github.com/GUI/turbo-sprockets-rails3.git"
 
   # Improve PNG speed for image sprite generation
-  gem "oily_png", :platforms => [:ruby]
+  gem "oily_png", "~> 1.1.0", :platforms => [:ruby]
 end
 
 # Bundle gems for the local environment. Make sure to
 # put test-only gems in this group so their generators
 # and rake tasks are available in development mode:
 group :development, :test do
-  gem "rspec-rails"
-  gem "factory_girl_rails"
-  gem "rspec-html-matchers"
+  gem "rspec-rails", "~> 2.14.0"
+  gem "factory_girl_rails", "~> 4.3.0"
+  gem "rspec-html-matchers", "~> 0.4.3"
 
   # Real browser testing
-  gem "capybara"
+  gem "capybara", "~> 2.1.0"
 
   # Headless webkit for capybara
-  gem "poltergeist"
+  gem "poltergeist", "~> 1.4.1"
 end
 
 group :development do
   # Deployment
   gem "capistrano", "~> 2.15.5"
-  gem "capistrano-ext"
+  gem "capistrano-ext", "~> 1.2.1"
   gem "capistrano_nrel_ext", :git => "https://github.com/NREL/capistrano_nrel_ext.git"
 
-  gem "torquebox-server", :platforms => [:jruby]
+  gem "torquebox-server", "~> 3.0.1", :platforms => [:jruby]
 
-  gem "yajl-ruby", :require => false, :platforms => [:ruby]
-  gem "oj", :require => false, :platforms => [:ruby]
+  gem "yajl-ruby", "~> 1.1.0", :require => false, :platforms => [:ruby]
+  gem "oj", "~> 2.2.3", :require => false, :platforms => [:ruby]
 
-  gem "awesome_print"
+  gem "awesome_print", "~> 1.2.0"
 
-  gem "yard", :require => false
-  gem "kramdown", :require => false
+  gem "yard", "~> 0.8.7", :require => false
+  gem "kramdown", "~> 1.2.0", :require => false
 end
