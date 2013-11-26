@@ -19,6 +19,7 @@
 //= require vendor/jquery.slugify
 //= require vendor/daterangepicker/moment
 //= require vendor/daterangepicker/daterangepicker
+//= require vendor/livestampjs/livestamp
 //= require vendor/Numeral-js/numeral
 //= require vendor/spin.js/dist/spin
 //= require vendor/dirtyforms/jquery.dirtyforms

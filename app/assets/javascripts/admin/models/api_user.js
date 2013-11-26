@@ -1,6 +1,7 @@
 Admin.ApiUser = Ember.Model.extend({
   id: Ember.attr(),
   apiKey: Ember.attr(),
+  apiKeyHidesAt: Ember.attr(),
   apiKeyPreview: Ember.attr(),
   firstName: Ember.attr(),
   lastName: Ember.attr(),

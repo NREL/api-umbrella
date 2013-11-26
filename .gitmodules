@@ -37,3 +37,6 @@
 [submodule "app/assets/javascripts/vendor/DataTables-Plugins"]
 	path = app/assets/javascripts/vendor/DataTables-Plugins
 	url = https://github.com/DataTables/Plugins.git
+[submodule "app/assets/javascripts/vendor/livestampjs"]
+	path = app/assets/javascripts/vendor/livestampjs
+	url = https://github.com/mattbradley/livestampjs.git

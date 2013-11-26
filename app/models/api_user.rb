@@ -173,6 +173,10 @@ class ApiUser
     self.api_key.truncate(9)
   end
 
+  def api_key_hides_at
+    @api_key_hides_at ||= self.created_at + 10.minutes
+  end
+
   private
 
   def generate_api_key

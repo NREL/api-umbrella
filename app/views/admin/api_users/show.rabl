@@ -13,8 +13,9 @@ attributes :id,
            :created_at,
            :updated_at
 
-if(@api_user.created_by == current_admin.id && @api_user.created_at >= (Time.now - 10.minutes))
+if(@api_user.created_by == current_admin.id && Time.now < @api_user.api_key_hides_at)
   attributes :api_key
+  attributes :api_key_hides_at
 end
 
 child :settings => :settings do

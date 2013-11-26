@@ -24,7 +24,7 @@
         <div class="control-label">API key</div>
         <div class="controls">
           {{#if apiKey}}
-            <span class="api-key">{{apiKey}}</span> <small>(full API key will disappear in <%= ((@api_user.created_at + 10.minutes - Time.now) / 60.0).round %> minutes)</small>
+            <span class="api-key">{{apiKey}}</span><small class="api-key-hides-at-message"> (full API key will disappear <span {{bind-attr data-livestamp="apiKeyHidesAt"}}></span>)</small>
           {{else}}
             <span class="api-key">{{apiKeyPreview}}</span>
           {{/if}}
