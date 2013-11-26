@@ -26,3 +26,11 @@ child :settings => :settings do
     attributes *Api::RateLimit.fields.keys
   end
 end
+
+child :creator => :creator do
+  attributes :username
+end
+
+child :updater => :updater do
+  attributes :username
+end

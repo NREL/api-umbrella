@@ -18,7 +18,7 @@
     {{#if id}}
       <div class="control-group">
         <div class="control-label">Signed up</div>
-        <div class="controls">{{createdAt}}</div>
+        <div class="controls">{{formatDate createdAt}}</div>
       </div>
       <div class="control-group">
         <div class="control-label">API key</div>
@@ -69,8 +69,15 @@
       collection='enabledOptions'
       optionValuePath='content.id'
       optionLabelPath='content.name'}}
-
   </fieldset>
 
-  <button type="submit" id="save_button" class="btn btn-large btn-primary" data-loading-text="<i class='icon-refresh icon-spin'></i> Saving...">Save</button>
+  <div class="row-fluid">
+    <div class="span6">
+      <button type="submit" id="save_button" class="btn btn-large btn-primary" data-loading-text="<i class='icon-refresh icon-spin'></i> Saving...">Save</button>
+    </div>
+    <div class="span6 record-details">
+      Created: {{formatDate createdAt}} by {{creator.username}}<br>
+      Last Updated: {{formatDate updatedAt}} by {{updater.username}}<br>
+    </div>
+  </div>
 {{/form-for}}

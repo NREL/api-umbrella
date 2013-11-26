@@ -14,6 +14,8 @@ Admin.ApiUser = Ember.Model.extend({
   enabled: Ember.attr(),
   createdAt: Ember.attr(),
   updatedAt: Ember.attr(),
+  creator: Ember.attr(),
+  updater: Ember.attr(),
 
   settings: Ember.belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
 
