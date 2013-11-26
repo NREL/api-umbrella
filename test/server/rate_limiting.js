@@ -455,5 +455,73 @@ describe('ApiUmbrellaGatekeper', function() {
         itBehavesLikeApiKeyRateLimits('/hello', 5);
       });
     });
+
+    describe('user specific limits', function() {
+      shared.runServer({
+        apiSettings: {
+          rate_limits: [
+            {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'apiKey',
+              limit: 5,
+              distributed: true,
+              response_headers: true,
+            }
+          ]
+        }
+      });
+
+      describe('ip based limits', function() {
+        beforeEach(function(done) {
+          Factory.create('api_user', { throttle_by_ip: true }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        itBehavesLikeIpRateLimits('/hello', 5);
+      });
+
+      describe('unlimited rate limits', function() {
+        beforeEach(function(done) {
+          Factory.create('api_user', {
+            settings: {
+              rate_limit_mode: 'unlimited'
+            }
+          }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        itBehavesLikeUnlimitedRateLimits('/hello', 5);
+      });
+
+      describe('custom rate limits', function() {
+        beforeEach(function(done) {
+          Factory.create('api_user', {
+            settings: {
+              rate_limits: [
+                {
+                  _id: '599c6d07-a69f-4f7b-8a8a-4c6cfbf6c1b5',
+                  duration: 60 * 60 * 1000, // 1 hour
+                  accuracy: 1 * 60 * 999, // 1 minute
+                  limit_by: 'apiKey',
+                  limit: 10,
+                  distributed: true,
+                  response_headers: true,
+                }
+              ]
+            }
+          }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        itBehavesLikeApiKeyRateLimits('/hello', 10);
+      });
+    });
   });
 });

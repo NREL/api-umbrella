@@ -16,6 +16,8 @@ var ApiUser = mongoose.model('api_users', {
   website: String,
   roles: [String],
   disabled_at: Date,
+  throttle_by_ip: Boolean,
+  settings: mongoose.Schema.Types.Mixed,
 });
 
 function generateId(callback) {
