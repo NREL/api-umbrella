@@ -1,3 +1,4 @@
+/log/*
 /node_modules
 /config/nginx.conf
 /config/runtime.json
