@@ -76,7 +76,7 @@ class Api::RateLimit
   end
 
   def auto_calculate_distributed
-    if(self.accuracy && self.accuracy >= 10000)
+    if(self.duration && self.duration >= 10000)
       self.distributed = true
     else
       self.distributed = false
