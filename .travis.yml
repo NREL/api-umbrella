@@ -6,3 +6,7 @@ node_js:
 matrix:
   allow_failures:
     - node_js: "0.11"
+services:
+  - redis-server
+  - mongodb
+  - elasticsearch
