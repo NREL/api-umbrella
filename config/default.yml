@@ -100,3 +100,7 @@ apiUmbrella:
         status_code: 429
         code: OVER_RATE_LIMIT
         message: You have exceeded your rate limit. Try again later or contact us at {{baseUrl}}/contact for assistance
+      internal_server_error:
+        status_code: 500
+        code: INTERNAL_SERVER_ERROR
+        message: An unexpected error has occurred. Try again later or contact us at {{baseUrl}}/contact for assistance
