@@ -34,6 +34,10 @@ ApiUmbrella::Application.routes.draw do
         get :logging
       end
     end
+
+    resource :hooks, :only => [] do
+      post "publish_static_site"
+    end
   end
 
   devise_for :admins, :controllers => { :omniauth_callbacks => "admin/admins/omniauth_callbacks" }

@@ -93,6 +93,13 @@ gem "diffy", "~> 3.0.1"
 # readable.
 gem "psych", "~> 2.0.1"
 
+# Environment-specific configuration files.
+gem "rails_config", "~> 0.3.3"
+
+# Delayed jobs and background tasks
+gem "delayed_job_mongoid", "~> 2.0.0"
+gem "daemons", "~> 1.1.9"
+
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
