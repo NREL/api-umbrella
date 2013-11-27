@@ -91,7 +91,7 @@ gem "diffy", "~> 3.0.1"
 # Use a newer version of Psych for YAML. The newer gem version does a better
 # job of making multi-line strings and strings with colons in them more human
 # readable.
-gem "psych", "~> 2.0.1"
+gem "psych", "~> 2.0.1", :platforms => [:ruby]
 
 # Gems used only for assets and not required
 # in production environments by default.

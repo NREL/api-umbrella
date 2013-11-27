@@ -5,6 +5,7 @@ rvm:
   - jruby-19mode
   - rbx-19mode
 matrix:
+  fast_finish: true
   allow_failures:
     - rvm: rbx-19mode
 services:
