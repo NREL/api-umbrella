@@ -10,3 +10,6 @@ matrix:
 services:
   - mongodb
   - elasticsearch
+before_script:
+  - cp config/mongoid.yml.deploy config/mongoid.yml
+  - cp config/elasticsearch.yml.deploy config/elasticsearch.yml
