@@ -15,9 +15,28 @@ run_list([
 ])
 
 default_attributes({
+  :api_umbrella => {
+    :gatekeeper => {
+      :logrotate_paths => [
+        "/srv/api-umbrella-router/current/log/gatekeeper/production.log",
+        "/srv/api-umbrella-router/current/log/gatekeeper/staging.log",
+        "/srv/api-umbrella-router/current/log/gatekeeper/development.log",
+      ],
+    },
+  },
+
   :nginx => {
     # Allow for longer host names
     :server_names_hash_bucket_size => 128,
+
+    :logrotate => {
+      :extra_paths => [
+        "/srv/api-umbrella-router/current/log/*.log",
+        "/srv/api-umbrella-router/current/log/gatekeeper/access.log",
+        "/srv/api-umbrella-router/current/log/gatekeeper/error.log",
+        "/srv/api-umbrella-router/current/log/gatekeeper/router.log",
+      ],
+    },
   },
 
   :rsyslog => {
@@ -29,8 +48,7 @@ default_attributes({
   :supervisor => {
     :logrotate => {
       :extra_paths => [
-        "/srv/api-umbrella-router/current/log/*.log",
-        "/srv/api-umbrella-router/current/log/gatekeeper/*.log",
+        "/srv/api-umbrella-router/current/log/gatekeeper/supervisor.log",
       ],
     },
   },
