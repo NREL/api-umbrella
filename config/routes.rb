@@ -5,7 +5,7 @@ ApiUmbrella::Application.routes.draw do
   get "/doc/rate-limits" => "pages#rate_limits", :as => :doc_rate_limits
 
   get "/doc" => "api_doc_collections#index"
-  get "/doc/api/:path" => "api_doc_services#show", :as => :api_doc_service, :constraints => {:path => /.*/}
+  get "/doc/api/:path" => "api_doc_services#show", :as => :api_doc_service, :constraints => { :path => /.*/ }
   get "/doc/:slug" => "api_doc_collections#show", :as => :api_doc_collection
 
   get "/community" => "pages#community"

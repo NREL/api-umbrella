@@ -2,7 +2,7 @@ class Api::Settings
   include Mongoid::Document
 
   # Fields
-  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :append_query_string, :type => String
   field :http_basic_auth, :type => String
   field :require_https, :type => Boolean
@@ -97,9 +97,10 @@ class Api::Settings
       end
 
       self.error_data = data
-    rescue Psych::SyntaxError
+    rescue Psych::SyntaxError => error
       # Ignore YAML errors, we'll deal with validating during
       # validate_error_data_yaml_strings.
+      logger.info("YAML parsing error: #{error.message}")
     end
   end
 

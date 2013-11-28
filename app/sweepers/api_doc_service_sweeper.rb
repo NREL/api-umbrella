@@ -3,15 +3,15 @@ class ApiDocServiceSweeper < ActionController::Caching::Sweeper
 
   def after_create(service)
   end
- 
+
   def after_update(service)
     expire_cache_for(service)
   end
- 
+
   def after_destroy(service)
     expire_cache_for(service)
   end
- 
+
   private
 
   def expire_cache_for(service)

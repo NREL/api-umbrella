@@ -39,5 +39,4 @@ class Admin::ApiDocServicesController < Admin::BaseController
     @service.destroy
     redirect_to(admin_api_doc_services_path)
   end
-
 end

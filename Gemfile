@@ -135,6 +135,8 @@ group :development, :test do
   gem "factory_girl_rails", "~> 4.3.0"
   gem "rspec-html-matchers", "~> 0.4.3"
 
+  gem "rubocop", "~> 0.15.0"
+
   # Real browser testing
   gem "capybara", "~> 2.1.0"
 

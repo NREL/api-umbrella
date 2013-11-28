@@ -9,7 +9,7 @@ class Api
   include ApiUmbrella::AttributifyData
 
   # Fields
-  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :name, :type => String
   field :sort_order, :type => Integer
   field :backend_protocol, :type => String
