@@ -1,6 +1,7 @@
 AllCops:
   Excludes:
     - tmp/**
+    - vendor/**
     - config/compass.rb
   RunRailsCops: true
 
