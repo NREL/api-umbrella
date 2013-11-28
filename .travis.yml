@@ -7,4 +7,4 @@ services:
   - elasticsearch
 script:
   - npm test
-  - ./node_modules/.bin/grunt coveralls
+  - ./node_modules/.bin/grunt shell:coveralls
