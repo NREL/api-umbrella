@@ -135,7 +135,11 @@ group :development, :test do
   gem "factory_girl_rails", "~> 4.3.0"
   gem "rspec-html-matchers", "~> 0.4.3"
 
+  # Ruby lint/style checker
   gem "rubocop", "~> 0.15.0"
+
+  # Code coverage testing
+  gem "coveralls", "~> 0.7.0", :require => false
 
   # Real browser testing
   gem "capybara", "~> 2.1.0"
