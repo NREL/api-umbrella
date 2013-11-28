@@ -9,7 +9,11 @@
     "api_umbrella_gatekeeper": "./bin/api_umbrella_gatekeeper"
   },
   "scripts": {
-   "test": "grunt"
+    "test": "grunt",
+    "blanket": {
+      "pattern": "/lib/",
+      "data-cover-never": ["test", "node_modules"]
+    }
   },
   "dependencies": {
     "addr": "~1.0.0",
@@ -47,15 +51,19 @@
     "winston": "~0.7.2"
   },
   "devDependencies": {
+    "blanket": "~1.1.5",
     "chai": "~1.8.1",
+    "coveralls": "~2.5.0",
     "express": "~3.4.4",
     "factory-lady": "~0.1.0",
     "grunt": "~0.4.2",
     "grunt-cli": "~0.1.11",
     "grunt-contrib-jshint": "~0.7.1",
     "grunt-mocha-test": "~0.7.0",
+    "grunt-shell": "~0.6.1",
     "ipplusplus": "~0.0.2",
     "mocha": "~1.14.0",
+    "mocha-lcov-reporter": "~0.0.1",
     "mongoose": "~3.8.1",
     "node-uuid": "~1.4.1",
     "request": "~2.27.0",

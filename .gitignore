@@ -6,3 +6,4 @@
 /test/config/nginx.conf
 /test/config/runtime.json
 /test/config/runtime.yml*
+/test/tmp/*

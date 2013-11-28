@@ -3,6 +3,7 @@
 module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-mocha-test');
+  grunt.loadNpmTasks('grunt-shell');
 
   grunt.initConfig({
     jshint: {
@@ -24,8 +25,25 @@ module.exports = function(grunt) {
 
           // Force colors for the output of mutliTest
           colors: true,
+
+          require: 'test/support/blanket'
         },
         src: ['test/**/*.js']
+      },
+      coverage: {
+        options: {
+          reporter: 'mocha-lcov-reporter',
+          quiet: true,
+          captureFile: 'test/tmp/coverage.lcov'
+        },
+        src: ['test/**/*.js'],
+      },
+    },
+
+    shell: {
+      coveralls: {
+        command: 'cat test/tmp/coverage.lcov | ./node_modules/.bin/coveralls',
+        failOnError: true
       },
     },
   });

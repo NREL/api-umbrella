@@ -5,3 +5,6 @@ services:
   - redis-server
   - mongodb
   - elasticsearch
+script:
+  - npm test
+  - ./node_modules/.bin/grunt coveralls
