@@ -77,7 +77,7 @@ describe('config reloader', function() {
       var block = this.nginxConfigContents.match(/upstream api_umbrella_example-api_backend {[^}]*}/)[0];
       var ip = block.match(/server (.+):80;/)[1];
 
-      ip.should.not.eql('0.0.0.0');
+      ip.should.not.eql('255.255.255.255');
       ipaddr.isValid(ip).should.eql(true);
     });
 
@@ -88,11 +88,11 @@ describe('config reloader', function() {
       upstreamIp.should.eql('8.8.8.8');
     });
 
-    it('resolves unknown hosts to 0.0.0.0', function() {
+    it('resolves unknown hosts to 255.255.255.255', function() {
       var block = this.nginxConfigContents.match(/upstream api_umbrella_invalid-api_backend {[^}]*}/)[0];
       var upstreamIp = block.match(/server (.+):80;/)[1];
 
-      upstreamIp.should.eql('0.0.0.0');
+      upstreamIp.should.eql('255.255.255.255');
     });
 
     it('resolves local hostnames (like localhost)', function() {
@@ -104,7 +104,7 @@ describe('config reloader', function() {
 
     it('caches resolved addresses in redis', function(done) {
       redisClient.get('router_active_ip:example.com', function(error, ip) {
-        ip.should.not.eql('0.0.0.0');
+        ip.should.not.eql('255.255.255.255');
         ipaddr.isValid(ip).should.eql(true);
         done();
       });
@@ -122,7 +122,7 @@ describe('config reloader', function() {
       var ip = block.match(/server (.+):80;/)[1];
 
       ip.should.not.eql('5.6.7.8');
-      ip.should.not.eql('0.0.0.0');
+      ip.should.not.eql('255.255.255.255');
       ipaddr.isValid(ip).should.eql(true);
     });
   });
