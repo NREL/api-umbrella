@@ -4,6 +4,7 @@ require('../test_helper');
 
 var _ = require('lodash'),
     async = require('async'),
+    config = require('../../lib/config'),
     ippp = require('ipplusplus'),
     timekeeper = require('timekeeper');
 
@@ -219,6 +220,25 @@ describe('ApiUmbrellaGatekeper', function() {
             timekeeper.reset();
             done();
           });
+        }.bind(this));
+      });
+
+      it('allows rate limits to be changed live', function(done) {
+        var url = 'http://localhost:9333/hello?api_key=' + this.apiKey;
+        request.get(url, function(error, response) {
+          response.headers['x-ratelimit-limit'].should.eql('10');
+
+          var apiSettings = config.get('apiSettings');
+          apiSettings.rate_limits[0].limit = 70;
+
+          config.updateRuntime({
+            apiSettings: apiSettings,
+          });
+
+          request.get(url, function(error, response) {
+            response.headers['x-ratelimit-limit'].should.eql('70');
+            done();
+          }.bind(this));
         }.bind(this));
       });
     });
@@ -454,6 +474,27 @@ describe('ApiUmbrellaGatekeper', function() {
       describe('api with no rate limit settings uses the defaults', function() {
         itBehavesLikeApiKeyRateLimits('/hello', 5);
       });
+
+      describe('changing rate limits', function() {
+        it('allows rate limits to be changed live', function(done) {
+          var url = 'http://localhost:9333/info/lower/?api_key=' + this.apiKey;
+          request.get(url, function(error, response) {
+            response.headers['x-ratelimit-limit'].should.eql('3');
+
+            var apis = config.get('apis');
+            apis[0].settings.rate_limits[0].limit = 80;
+
+            config.updateRuntime({
+              apis: apis,
+            });
+
+            request.get(url, function(error, response) {
+              response.headers['x-ratelimit-limit'].should.eql('80');
+              done();
+            }.bind(this));
+          }.bind(this));
+        });
+      });
     });
 
     describe('user specific limits', function() {
@@ -504,9 +545,8 @@ describe('ApiUmbrellaGatekeper', function() {
             settings: {
               rate_limits: [
                 {
-                  _id: '599c6d07-a69f-4f7b-8a8a-4c6cfbf6c1b5',
                   duration: 60 * 60 * 1000, // 1 hour
-                  accuracy: 1 * 60 * 999, // 1 minute
+                  accuracy: 1 * 60 * 1000, // 1 minute
                   limit_by: 'apiKey',
                   limit: 10,
                   distributed: true,
@@ -515,12 +555,29 @@ describe('ApiUmbrellaGatekeper', function() {
               ]
             }
           }, function(user) {
+            this.user = user;
             this.apiKey = user.api_key;
             done();
           }.bind(this));
         });
 
         itBehavesLikeApiKeyRateLimits('/hello', 10);
+
+        it('allows rate limits to be changed live', function(done) {
+          var url = 'http://localhost:9333/hello?api_key=' + this.apiKey;
+          request.get(url, function(error, response) {
+            response.headers['x-ratelimit-limit'].should.eql('10');
+
+            this.user.settings.rate_limits[0].limit = 90;
+            this.user.markModified('settings');
+            this.user.save(function() {
+              request.get(url, function(error, response) {
+                response.headers['x-ratelimit-limit'].should.eql('90');
+                done();
+              }.bind(this));
+            }.bind(this));
+          }.bind(this));
+        });
       });
     });
   });
