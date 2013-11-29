@@ -10,7 +10,7 @@ var _ = require('lodash'),
 
 global.backendCalled = false;
 
-global.shared = {
+_.merge(global.shared, {
   buildRequestOptions: function(path, apiKey, options) {
     return _.extend({
         url: 'http://localhost:9333' + path,
@@ -42,15 +42,11 @@ global.shared = {
         config.updateRuntime({ apiUmbrella: configOverrides });
       }
 
-      this.gatekeeper = gatekeeper.start({}, function() {
-        done();
-      });
+      this.gatekeeper = gatekeeper.start({}, done);
     });
 
     afterEach(function(done) {
-      this.gatekeeper.close(function() {
-        done();
-      });
+      this.gatekeeper.close(done);
     });
   },
 
@@ -114,4 +110,4 @@ global.shared = {
       });
     });
   },
-};
+});

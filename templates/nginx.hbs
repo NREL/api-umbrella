@@ -20,7 +20,7 @@ limit_req_status 429;
     {{/unless}}
 
     {{#each servers}}
-      server {{host}}:{{port}};
+      server {{ip}}:{{port}};
     {{/each}}
 
     {{#if keepalive_connections}}
