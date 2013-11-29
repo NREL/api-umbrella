@@ -33,12 +33,9 @@ _.merge(global.shared, {
       config.reset();
 
       this.configReloader = new ConfigReloader(function() {
-        console.info('config reloader done');
         async.parallel([
           function(callback) {
             var filePath = path.join(config.configDir, 'nginx.conf');
-            console.info('filePath ', filePath);
-            logger.info('reading config file');
             fs.readFile(filePath, function(error, data) {
               this.nginxConfigContents = data.toString();
               callback(error);
@@ -46,7 +43,6 @@ _.merge(global.shared, {
           }.bind(this),
           function(callback) {
             var filePath = config.runtimePath;
-            console.info('filePath ', filePath);
             fs.readFile(filePath, function(error, data) {
               this.gatekeeperConfigContents = data.toString();
               callback(error);

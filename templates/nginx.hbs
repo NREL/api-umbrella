@@ -14,13 +14,14 @@ limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:5m rate=100r/
 limit_req_status 429;
 
 {{#each apis}}
+  # {{name}}
   upstream api_umbrella_{{_id}}_backend {
     {{#unless defaultBalance}}
       {{balance_algorithm}};
     {{/unless}}
 
     {{#each servers}}
-      server {{ip}}:{{port}};
+      server {{ip}}:{{port}}; # {{host}}
     {{/each}}
 
     {{#if keepalive_connections}}
