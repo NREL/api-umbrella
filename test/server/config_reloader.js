@@ -61,6 +61,15 @@ describe('config reloader', function() {
             },
           ],
         },
+        {
+          _id: 'localhost-api',
+          servers: [
+            {
+              host: 'localhost',
+              port: 80,
+            },
+          ],
+        },
       ],
     });
 
@@ -84,6 +93,13 @@ describe('config reloader', function() {
       var upstreamIp = block.match(/server (.+):80;/)[1];
 
       upstreamIp.should.eql('0.0.0.0');
+    });
+
+    it('resolves local hostnames (like localhost)', function() {
+      var block = this.nginxConfigContents.match(/upstream api_umbrella_localhost-api_backend {[^}]*}/)[0];
+      var upstreamIp = block.match(/server (.+):80;/)[1];
+
+      upstreamIp.should.eql('127.0.0.1');
     });
 
     it('caches resolved addresses in redis', function(done) {
