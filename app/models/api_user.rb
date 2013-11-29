@@ -64,6 +64,7 @@ class ApiUser
 
   # Callbacks
   before_validation :generate_api_key, :on => :create
+  after_save :handle_rate_limit_mode
 
   # Nested attributes
   accepts_nested_attributes_for :settings
