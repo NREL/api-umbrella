@@ -18,17 +18,22 @@ before(function(done) {
 
 // Wipe the redis data.
 before(function(done) {
-  var client = redis.createClient();
-  client.flushdb(function() {
-    client.quit(function() {
-      done();
-    });
+  global.redisClient = redis.createClient();
+  global.redisClient.flushdb(function() {
+    done();
   });
 });
 
 // Close the mongo connection cleanly after each run.
 after(function(done) {
   mongoose.connection.close(function() {
+    done();
+  });
+
+});
+
+after(function(done) {
+  global.redisClient.quit(function() {
     done();
   });
 });

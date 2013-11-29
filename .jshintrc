@@ -31,6 +31,7 @@
     "mongoose": true,
     "shared": true,
     "should": true,
+    "redisClient": true,
     "request": true
   }
 }
