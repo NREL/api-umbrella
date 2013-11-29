@@ -110,6 +110,14 @@ describe('config reloader', function() {
       });
     });
 
+    it('does not cache unresolved addresses in redis', function(done) {
+      redisClient.get('router_active_ip:foo.blah', function(error, ip) {
+        console.info(arguments);
+        should.not.exist(ip);
+        done();
+      });
+    });
+
     it('maintains previously cached addresses even if no longer valid', function() {
       var block = this.nginxConfigContents.match(/upstream api_umbrella_once-valid-api_backend {[^}]*}/)[0];
       var upstreamIp = block.match(/server (.+):80;/)[1];
