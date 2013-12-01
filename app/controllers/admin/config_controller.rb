@@ -168,26 +168,27 @@ class Admin::ConfigController < Admin::BaseController
   end
 
   def self.prettify_data(data)
-    data = sort_hash_by_keys(data)
-    stringify_object_ids!(data)
-
-    data
+    stringify_object_ids(sort_hash_by_keys(data))
   end
 
-  def self.stringify_object_ids!(object)
-    if(object.kind_of?(Hash))
-      object.each do |key, value|
+  def self.stringify_object_ids(object)
+    duplicate = if(object.duplicable?) then object.dup else object end
+
+    if(duplicate.kind_of?(Hash))
+      duplicate.each do |key, value|
         if(value.kind_of?(Moped::BSON::ObjectId))
-          object[key] = value.to_s
+          duplicate[key] = value.to_s
         else
-          stringify_object_ids!(object[key])
+          duplicate[key] = stringify_object_ids(value)
         end
       end
-    elsif(object.kind_of?(Array))
-      object.map! do |item|
-        stringify_object_ids!(item)
+    elsif(duplicate.kind_of?(Array))
+      duplicate.map! do |item|
+        stringify_object_ids(item)
       end
     end
+
+    duplicate
   end
 
   def self.sort_hash_by_keys(object)
