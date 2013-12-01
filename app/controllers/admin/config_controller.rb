@@ -44,7 +44,17 @@ class Admin::ConfigController < Admin::BaseController
     validate_api_ids = params[:import_new_api_ids] + params[:import_modified_api_ids]
     validate_api_ids.each do |id|
       api = Api.new
-      api.import_nested_attributes(@uploaded_apis_by_id[id])
+
+      # Set all the raw data from the incoming record without mass-assignment
+      # protection (so we can maintain things like IDs).
+      api.assign_attributes(@uploaded_apis_by_id[id], :without_protection => true)
+
+      # Overwrite the imported updated timestamp/userstamp fields to keep track
+      # of when the import was performed and also allow
+      # ConfigVersion.needs_publishing? to determine that data has changed.
+      api.updated_at = Time.now
+      api.updater = self.current_admin
+
       @apis << api
     end
 
