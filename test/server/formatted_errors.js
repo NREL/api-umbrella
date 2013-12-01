@@ -2,6 +2,8 @@
 
 require('../test_helper');
 
+var xml2js = require('xml2js');
+
 describe('formatted error responses', function() {
   describe('format detection', function() {
     shared.runServer();
@@ -65,6 +67,46 @@ describe('formatted error responses', function() {
           data.error.message.should.include(' http://localhost:9333/contact ');
           done();
         });
+      });
+    });
+  });
+
+  describe('format validation', function() {
+    shared.runServer({
+      apiSettings: {
+        error_templates: {
+          json: '\n\n{ "code": {{code}} }\n\n',
+          xml: '\n\n   <?xml version="1.0" encoding="UTF-8"?><code>{{code}}</code>\n\n   ',
+        },
+      },
+    });
+
+    it('returns valid json', function(done) {
+      request.get('http://localhost:9333/hello.json?format=json', function(error, response, body) {
+        var validate = function() {
+          JSON.parse(body);
+        };
+
+        validate.should.not.throw(Error);
+        done();
+      });
+    });
+
+    it('returns valid xml', function(done) {
+      request.get('http://localhost:9333/hello.xml?format=json', function(error, response, body) {
+        var validate = function() {
+          xml2js.parseString(body, { trim: false, strict: true });
+        };
+
+        validate.should.not.throw(Error);
+        done();
+      });
+    });
+
+    it('strips leading and trailing whitespace from template', function(done) {
+      request.get('http://localhost:9333/hello.xml?format=json', function(error, response, body) {
+        body.should.eql('<?xml version="1.0" encoding="UTF-8"?><code>API_KEY_MISSING</code>');
+        done();
       });
     });
   });
