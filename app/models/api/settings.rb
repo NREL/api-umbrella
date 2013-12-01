@@ -64,10 +64,9 @@ class Api::Settings
   end
 
   def error_templates=(templates)
-    if(templates.present?)
-      templates.reject! { |key, value| value.blank? }
-      self[:error_templates] = templates
-    end
+    templates ||= {}
+    templates.reject! { |key, value| value.blank? }
+    self[:error_templates] = templates
   end
 
   def error_data_yaml_strings
