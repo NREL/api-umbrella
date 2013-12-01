@@ -26,6 +26,16 @@ class Admin::ConfigController < Admin::BaseController
     @published_config = self.class.pretty_dump(ConfigVersion.last_config)
 
     respond_to do |format|
+      if(params[:download] == "true")
+        filename = [
+          "api_umbrella",
+          request.host.gsub(".", "-"),
+          Time.now.utc.iso8601.gsub(":", "-")
+        ].join("_")
+
+        send_file_headers!(:disposition => "attachment", :filename => "#{filename}.#{params[:format]}")
+      end
+
       format.yaml { render(:text => @published_config) }
     end
   end
