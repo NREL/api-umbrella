@@ -91,7 +91,7 @@ class Api::Settings
       if(strings.present?)
         strings.each do |key, value|
           if value.present?
-            data[key] = Psych.load(value)
+            data[key] = SafeYAML.load(value)
           end
         end
       end
@@ -112,7 +112,7 @@ class Api::Settings
       strings.each do |key, value|
         if value.present?
           begin
-            Psych.load(value)
+            SafeYAML.load(value)
           rescue Psych::SyntaxError => error
             self.errors.add("error_data_yaml_strings.#{key}", "YAML parsing error: #{error.message}")
           end
