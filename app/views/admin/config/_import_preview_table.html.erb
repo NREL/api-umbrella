@@ -19,7 +19,7 @@
       <tr class="line-bottom">
         <td></td>
         <td colspan="2">
-          <%= yaml_diff(@local_apis_by_id[id], @uploaded_apis_by_id[id]) %>
+          <%= import_yaml_diff(@local_apis_by_id[id], @uploaded_apis_by_id[id]) %>
         </td>
       </tr>
     <% end %>

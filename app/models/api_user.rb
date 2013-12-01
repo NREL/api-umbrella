@@ -1,4 +1,4 @@
-require "attributify_data"
+require "api_umbrella/attributify_data"
 
 class ApiUser
   include Mongoid::Document

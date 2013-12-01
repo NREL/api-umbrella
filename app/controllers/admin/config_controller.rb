@@ -3,6 +3,8 @@ class Admin::ConfigController < Admin::BaseController
 
   before_filter :setup_import, :only => [:import_preview, :import]
 
+  helper_method :simplify_import_data
+
   def show
     if(ConfigVersion.needs_publishing?)
       @published_config = self.class.prettify_data(ConfigVersion.last_config)
@@ -34,33 +36,37 @@ class Admin::ConfigController < Admin::BaseController
   def import
     @apis = []
 
-    if(params[:new_api_ids].present?)
-      params[:new_api_ids].each do |id|
-        api = Api.new
-        api.assign_nested_attributes(@uploaded_apis_by_id[id])
-        @apis << api
-      end
-    end
+    params[:import_new_api_ids] ||= []
+    params[:import_modified_api_ids] ||= []
+    params[:import_deleted_api_ids] ||= []
 
-    if(params[:import_modified_api_ids].present?)
-      params[:import_modified_api_ids].each do |id|
-        api = Api.find(id)
-        api.assign_nested_attributes(@uploaded_apis_by_id[id])
-        @apis << api
-      end
+    # Build up Api objects for all new or modified records to first validate.
+    validate_api_ids = params[:import_new_api_ids] + params[:import_modified_api_ids]
+    validate_api_ids.each do |id|
+      api = Api.new
+      api.import_nested_attributes(@uploaded_apis_by_id[id])
+      @apis << api
     end
 
     valid = @apis.all? { |api| api.valid? }
     if(valid)
+      # To modify existing records, we'll actually delete and re-create the
+      # entire record. This is so that we can persist the imported IDs on both
+      # new and existing embedded documents.
+      params[:import_modified_api_ids].each do |id|
+        api = Api.find(id)
+        api.destroy
+      end
+
+      # Save all the new and modified records.
       @apis.each do |api|
         api.save!
       end
 
-      if(params[:import_deleted_api_ids].present?)
-        params[:import_deleted_api_ids].each do |id|
-          api = Api.find(id)
-          api.destroy
-        end
+      # Delete records marked for removal.
+      params[:import_deleted_api_ids].each do |id|
+        api = Api.find(id)
+        api.destroy
       end
 
       flash[:success] = "Successfully imported configuration. Configuration still needs to be published to take effect."
@@ -71,6 +77,14 @@ class Admin::ConfigController < Admin::BaseController
   end
 
   private
+
+  def simplify_import_data(data)
+    # Don't look at timestamp/userstamp/versioning fields when comparing the
+    # data to import, since these are likely to differ even if the data is
+    # really the same (since these depend on when the import was actually
+    # performed).
+    data.except(*%w(version created_by created_at updated_at updated_by))
+  end
 
   def setup_import
     if(params[:file].blank? && params[:uploaded].blank?)
@@ -113,7 +127,7 @@ class Admin::ConfigController < Admin::BaseController
     @uploaded["apis"].each do |uploaded_api|
       local_api = @local["apis"].detect { |api| api["_id"] == uploaded_api["_id"] }
       if(local_api.present?)
-        if(uploaded_api == local_api)
+        if(simplify_import_data(uploaded_api) == simplify_import_data(local_api))
           @identical_api_ids << uploaded_api["_id"]
         else
           @modified_api_ids << uploaded_api["_id"]

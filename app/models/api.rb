@@ -1,4 +1,5 @@
-require "attributify_data"
+require "api_umbrella/attributify_data"
+require "api_umbrella/importable"
 
 class Api
   include Mongoid::Document
@@ -7,6 +8,7 @@ class Api
   include Mongoid::Delorean::Trackable
   include Mongoid::EmbeddedErrors
   include ApiUmbrella::AttributifyData
+  include ApiUmbrella::Importable
 
   # Fields
   field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
@@ -57,7 +59,7 @@ class Api
     :servers_attributes,
     :url_matches_attributes,
     :sub_settings_attributes,
-    :rewrites_attributes,
+    :rewrites_attributes
 
   def self.sorted
     order_by(:sort_order.asc, :created_at.desc)

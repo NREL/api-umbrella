@@ -12,4 +12,8 @@ module Admin::ConfigHelper
 
     Diffy::Diff.new(before_dump, after_dump).to_s(:html).html_safe
   end
+
+  def import_yaml_diff(before, after)
+    yaml_diff(simplify_import_data(before), simplify_import_data(after))
+  end
 end
