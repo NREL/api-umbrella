@@ -103,7 +103,7 @@ class Admin::ConfigController < Admin::BaseController
     # data to import, since these are likely to differ even if the data is
     # really the same (since these depend on when the import was actually
     # performed).
-    data.except(*%w(version created_by created_at updated_at updated_by))
+    data.except(*%w(version created_by created_at updated_at updated_by)) if(data)
   end
 
   def setup_import
