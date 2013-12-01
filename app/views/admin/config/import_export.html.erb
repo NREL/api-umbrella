@@ -5,7 +5,7 @@
   <div class="text-center">
     <p class="muted">Download an export of your <em>currently published</em> configuration settings on this server.</p>
     <strong>Last Publish:</strong> <%= ConfigVersion.last_version %><br>
-    <strong>Total APIs:</strong> <%= ConfigVersion.last_config["apis"].count %><br>
+    <strong>Total APIs:</strong> <%= if(ConfigVersion.last_config) then ConfigVersion.last_config["apis"].count else 0 end %><br>
     <%= link_to("Download", admin_config_export_path(:format => "yaml", :download => "true"), :class => "btn btn-primary") %>
   </div>
 </fieldset>
