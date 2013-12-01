@@ -31,6 +31,6 @@
     <style type="text/css">
       <%= Diffy::CSS.html_safe %>
     </style>
-    <%= Diffy::Diff.new(@published_config, @new_config).to_s(:html).html_safe %>
+    <%= yaml_diff(@published_config, @new_config) %>
   </div>
 <% end %>

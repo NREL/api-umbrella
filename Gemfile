@@ -93,6 +93,10 @@ gem "diffy", "~> 3.0.1"
 # readable.
 gem "psych", "~> 2.0.1", :platforms => [:ruby]
 
+# For user-inputted YAML.
+# Use version from git so it doesn't automatically monkey-patch.
+gem "safe_yaml", :git => "https://github.com/dtao/safe_yaml.git", :require => "safe_yaml/load"
+
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do

@@ -27,6 +27,12 @@ GIT
       net-ssh (~> 2.4.0)
       tzinfo (>= 0.3.0)
 
+GIT
+  remote: https://github.com/dtao/safe_yaml.git
+  revision: 683c9737b19bd71ef29755899f690bca90be19e8
+  specs:
+    safe_yaml (0.9.7)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -458,6 +464,7 @@ DEPENDENCIES
   rspec-html-matchers (~> 0.4.3)
   rspec-rails (~> 2.14.0)
   rubocop (~> 0.15.0)
+  safe_yaml!
   sass-rails (~> 3.2.6)
   seed-fu (~> 2.3.0)
   settingslogic (~> 2.0.9)

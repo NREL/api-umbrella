@@ -439,3 +439,9 @@ td.reorder-handle {
 .table td.text-center {
   text-align: center;
 }
+
+.table tr.line-bottom th,
+.table tr.line-bottom td {
+  border-top: none;
+  border-bottom: 1px solid $tableBorder;
+}
