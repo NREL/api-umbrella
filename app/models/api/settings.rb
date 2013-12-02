@@ -37,7 +37,7 @@ class Api::Settings
     :required_roles_string,
     :error_templates,
     :error_data_yaml_strings,
-    :headers_attributes,
+    :headers_string,
     :rate_limits_attributes,
     :as => [:default, :admin]
 
@@ -61,6 +61,38 @@ class Api::Settings
     end
 
     self.required_roles = roles
+  end
+
+  def headers_string
+    unless @headers_string
+      @headers_string = ""
+      if(self.headers.present?)
+        @headers_string = self.headers.map do |header|
+          header.to_s
+        end.join("\n")
+      end
+    end
+
+    @headers_string
+  end
+
+  def headers_string=(string)
+    @headers_string = string
+
+    header_objects = []
+
+    header_lines = string.split(/[\r\n]+/)
+    header_lines.each do |line|
+      next if(line.strip.blank?)
+
+      parts = line.split(":", 2)
+      header_objects << Api::Header.new({
+        :key => parts[0].to_s.strip,
+        :value => parts[1].to_s.strip,
+      })
+    end
+
+    self.headers = header_objects
   end
 
   def error_templates=(templates)
