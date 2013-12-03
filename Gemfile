@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "rails", "~> 3.2.15"
+gem "rails", "~> 3.2.16"
 
 # Environment specific configuration
 gem "dotenv-rails", "~> 0.9.0"
