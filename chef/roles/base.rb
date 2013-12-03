@@ -6,6 +6,9 @@ run_list([
   # calls.
   "recipe[ca_certificates]",
 
+  # Keep the Chef omnibus installation up-to-date.
+  "recipe[omnibus_updater]",
+
   # Varnish doesn't seem to get along with SELinux. Should investigate more.
   "recipe[selinux::permissive]",
 
@@ -80,5 +83,10 @@ default_attributes({
     :rotate => 30,
     :compress => true,
     :delaycompress => true,
+  },
+
+  :omnibus_updater => {
+    :version => "11.8.0",
+    :remove_chef_system_gem => true,
   },
 })

@@ -175,3 +175,15 @@
 [submodule "chef/cookbooks/redis"]
 	path = chef/cookbooks/redis
 	url = https://github.com/NREL-cookbooks/redis.git
+[submodule "chef/cookbooks/omnibus_updater"]
+	path = chef/cookbooks/omnibus_updater
+	url = https://github.com/hw-cookbooks/omnibus_updater.git
+[submodule "chef/cookbooks/user"]
+	path = chef/cookbooks/user
+	url = https://github.com/fnichol/chef-user.git
+[submodule "chef/cookbooks/fail2ban"]
+	path = chef/cookbooks/fail2ban
+	url = https://github.com/opscode-cookbooks/fail2ban.git
+[submodule "chef/cookbooks/openssh"]
+	path = chef/cookbooks/openssh
+	url = https://github.com/opscode-cookbooks/openssh.git
