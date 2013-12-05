@@ -22,3 +22,6 @@ if ($real_port = "") {
 
 proxy_set_header X-Forwarded-Proto $real_scheme;
 proxy_set_header X-Forwarded-Port $real_port;
+
+# Don't buffer proxied requests to allow for streaming APIs.
+proxy_buffering off;
