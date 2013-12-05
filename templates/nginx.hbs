@@ -61,6 +61,9 @@ limit_req_status 429;
       proxy_set_header Host $host;
       proxy_set_header X-Api-Umbrella-UID $request_id;
 
+      # Don't buffer proxied requests to allow for streaming APIs.
+      proxy_buffering off;
+
       proxy_pass http://api_umbrella_gatekeeper_backends;
     }
   }
@@ -86,6 +89,9 @@ server {
   proxy_set_header X-Api-Umbrella-UID "";
   proxy_set_header X-Api-Umbrella-Backend-Scheme "";
   proxy_set_header X-Api-Umbrella-Backend-Id "";
+
+  # Don't buffer proxied requests to allow for streaming APIs.
+  proxy_buffering off;
 
   location / {
     proxy_pass $http_x_api_umbrella_backend_scheme://api_umbrella_${http_x_api_umbrella_backend_id}_backend;
