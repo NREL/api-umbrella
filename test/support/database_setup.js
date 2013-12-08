@@ -8,14 +8,14 @@ var async = require('async'),
     net = require('net'),
     spawn = require('child_process').spawn;
 
-mongoose.connect(config.get('mongodb'));
+mongoose.testConnection = mongoose.createConnection(config.get('mongodb'), config.get('mongodb_options'));
 
 // Drop the mongodb database.
 before(function(done) {
-  mongoose.connection.on('connected', function() {
+  mongoose.testConnection.on('connected', function() {
     // Drop the whole database, since that properly blocks for any active
     // connections. The database will get re-created on demand.
-    mongoose.connection.db.dropDatabase(function() {
+    mongoose.testConnection.db.dropDatabase(function() {
       done();
     });
   });
@@ -61,7 +61,7 @@ before(function(done) {
 
 // Close the mongo connection cleanly after each run.
 after(function(done) {
-  mongoose.connection.close(function() {
+  mongoose.testConnection.close(function() {
     done();
   });
 });
