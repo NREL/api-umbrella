@@ -3,12 +3,116 @@
 require('../test_helper');
 
 var async = require('async'),
+    dns = require('native-dns'),
     DnsResolver = require('../../lib/config_reloader/dns_resolver').DnsResolver,
     ipaddr = require('ipaddr.js'),
-    moment = require('moment');
+    moment = require('moment'),
+    sinon = require('sinon');
 
 describe('config reloader', function() {
   describe('dns resolver', function() {
+    // Stub the DNS lookups since these can be unpredictably slow depending on
+    // your DNS provider and network connection.
+    before(function() {
+      // Stub the dns.Request send call.
+      this.dnsRequestSend = sinon.stub(dns.Request.prototype, 'send', function() {
+        var message = {
+          answer: [],
+        };
+
+        if(this.question.type !== 1) {
+          console.error('Unexpected question type for DNS request stub:', this.question.type);
+          process.exit(1);
+        }
+
+        switch(this.question.name) {
+          case 'google.com':
+            message.answer = [
+              { name: 'google.com',
+                type: 1,
+                class: 1,
+                ttl: 174,
+                address: '74.125.228.105' },
+              { name: 'google.com',
+                type: 1,
+                class: 1,
+                ttl: 174,
+                address: '74.125.228.100' },
+              { name: 'google.com',
+                type: 1,
+                class: 1,
+                ttl: 174,
+                address: '74.125.228.110' },
+            ];
+
+            break;
+          case 'example.com':
+            message.answer = [
+              { name: 'example.com',
+                type: 1,
+                class: 1,
+                ttl: 40138,
+                address: '93.184.216.119' },
+            ];
+
+            break;
+          case 'yahoo.com':
+            message.answer = [
+              { name: 'yahoo.com',
+                type: 1,
+                class: 1,
+                ttl: 765,
+                address: '98.138.253.109' },
+              { name: 'yahoo.com',
+                type: 1,
+                class: 1,
+                ttl: 765,
+                address: '98.139.183.24' },
+              { name: 'yahoo.com',
+                type: 1,
+                class: 1,
+                ttl: 765,
+                address: '206.190.36.45' }
+            ];
+
+            break;
+          case 'localhost':
+          case 'once-valid.blah':
+          case 'foo.blah':
+            message.answer = [];
+            break;
+          default:
+            console.error('Unexpected host for DNS request stub:', this.question.name);
+            process.exit(1);
+        }
+
+        process.nextTick(function() {
+          this.handle(null, message, false);
+        }.bind(this));
+      });
+
+      // Stub the fallback dns.lookup call.
+      this.dnsLookupStub = sinon.stub(dns, 'lookup', function(host, callback) {
+        switch(host) {
+          case 'localhost':
+            callback(null, '127.0.0.1');
+            break;
+          case 'once-valid.blah':
+          case 'foo.blah':
+            callback('Not found');
+            break;
+          default:
+            console.error('Unexpected host for DNS lookup stub:', host);
+            process.exit(1);
+        }
+      });
+    });
+
+    after(function() {
+      this.dnsRequestSend.restore();
+      this.dnsLookupStub.restore();
+    });
+
     before(function(done) {
       async.parallel([
         function(callback) {
