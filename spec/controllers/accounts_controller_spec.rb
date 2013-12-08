@@ -25,9 +25,9 @@ describe AccountsController do
     context "with valid attributes" do
       context "new user" do
         it "creates a new record in the database" do
-          expect {
+          expect do
             post :create, :api_user => FactoryGirl.attributes_for(:api_user)
-          }.to change { ApiUser.count }.by(1)
+          end.to change { ApiUser.count }.by(1)
         end
 
         it "renders a page with their new API key" do
@@ -42,9 +42,9 @@ describe AccountsController do
         end
 
         it "does not create a new record in the database" do
-          expect {
+          expect do
             post :create, :api_user => FactoryGirl.attributes_for(:api_user).merge(:email => @existing_user.email)
-          }.to_not change { ApiUser.count }
+          end.to_not change { ApiUser.count }
         end
 
         it "renders a page with their existing API key" do
@@ -56,9 +56,9 @@ describe AccountsController do
 
     context "with invalid attributes" do
       it "does not create a new record in the database" do
-        expect {
+        expect do
           post :create, :api_user => FactoryGirl.attributes_for(:invalid_api_user)
-        }.to_not change { ApiUser.count }
+        end.to_not change { ApiUser.count }
       end
 
       it "renders the form again" do

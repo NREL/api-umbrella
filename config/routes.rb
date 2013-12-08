@@ -5,7 +5,7 @@ ApiUmbrella::Application.routes.draw do
   get "/doc/rate-limits" => "pages#rate_limits", :as => :doc_rate_limits
 
   get "/doc" => "api_doc_collections#index"
-  get "/doc/api/:path" => "api_doc_services#show", :as => :api_doc_service, :constraints => {:path => /.*/}
+  get "/doc/api/:path" => "api_doc_services#show", :as => :api_doc_service, :constraints => { :path => /.*/ }
   get "/doc/:slug" => "api_doc_collections#show", :as => :api_doc_collection
 
   get "/community" => "pages#community"
@@ -66,6 +66,11 @@ ApiUmbrella::Application.routes.draw do
     namespace :config do
       get "publish", :action => "show"
       post "publish", :action => "create"
+
+      get "import_export"
+      get "export"
+      post "import_preview"
+      post "import"
     end
 
     resources :admins do

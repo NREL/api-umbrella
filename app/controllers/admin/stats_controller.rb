@@ -37,8 +37,8 @@ class Admin::StatsController < Admin::BaseController
 
     @search.search!(params[:search])
     @search.filter_by_date_range!
-    @search.offset!(params[:iDisplayStart])
-    @search.limit!(params[:iDisplayLength])
+    @search.offset!(params["iDisplayStart"])
+    @search.limit!(params["iDisplayLength"])
 
     sort = datatables_sort
     if(sort.any?)
@@ -54,8 +54,8 @@ class Admin::StatsController < Admin::BaseController
       :end_time => params[:end],
     })
 
-    offset = params[:iDisplayStart].to_i
-    limit = params[:iDisplayLength].to_i
+    offset = params["iDisplayStart"].to_i
+    limit = params["iDisplayLength"].to_i
 
     sort = datatables_sort.first
     sort_field = sort.keys.first if(sort)

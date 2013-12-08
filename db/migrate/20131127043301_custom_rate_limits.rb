@@ -23,7 +23,7 @@ class CustomRateLimits < Mongoid::Migration
 
         if(hourly_limit.present?)
           user.settings.rate_limits.build({
-            :duration => 3600000,
+            :duration => 3_600_000,
             :limit_by => limit_by,
             :limit => hourly_limit,
           })
@@ -31,7 +31,7 @@ class CustomRateLimits < Mongoid::Migration
 
         if(daily_limit.present?)
           user.settings.rate_limits.build({
-            :duration => 86400000,
+            :duration => 86_400_000,
             :limit_by => limit_by,
             :limit => daily_limit,
           })

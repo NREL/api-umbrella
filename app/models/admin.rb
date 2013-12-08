@@ -9,7 +9,7 @@ class Admin
   devise :omniauthable, :trackable
 
   # Fields
-  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :username, :type => String
   field :email, :type => String
   field :first_name, :type => String
@@ -24,14 +24,19 @@ class Admin
 
   index({ :username => 1 }, { :unique => true })
 
-  validates_presence_of :username
-  validates_uniqueness_of :username
+  validates :username,
+    :presence => true
+  validates :username,
+    :uniqueness => true
 
   def apply_omniauth(omniauth)
-    if(omniauth["extra"]["attributes"] && extra = omniauth["extra"]["attributes"].first)
-      self.first_name = extra["firstName"]
-      self.last_name = extra["lastName"]
-      self.email = extra["email"]
+    if(omniauth["extra"]["attributes"])
+      extra = omniauth["extra"]["attributes"].first
+      if(extra)
+        self.first_name = extra["firstName"]
+        self.last_name = extra["lastName"]
+        self.email = extra["email"]
+      end
     end
   end
 end

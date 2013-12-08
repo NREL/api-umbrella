@@ -1,4 +1,4 @@
-require "attributify_data"
+require "api_umbrella/attributify_data"
 
 class ApiUser
   include Mongoid::Document
@@ -9,7 +9,7 @@ class ApiUser
   include ApiUmbrella::AttributifyData
 
   # Fields
-  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :api_key
   field :first_name
   field :last_name
@@ -37,31 +37,34 @@ class ApiUser
   # and ActiveResource combined don't give great flexibility for error message
   # handling, so we're stuck with full sentences and changing how the errors
   # are displayed.
-  validates_uniqueness_of :api_key
-  validates_presence_of :first_name,
-    :message => "Provide your first name."
-  validates_presence_of :last_name,
-    :message => "Provide your last name."
-  validates_presence_of :email,
-    :message => "Provide your email address."
-  validates_format_of :email,
-    :with => /.+@.+\..+/,
-    :allow_blank => true,
-    :message => "Provide a valid email address."
-  validates_presence_of :website,
-    :message => "Provide your website URL.",
+  validates :api_key,
+    :uniqueness => true
+  validates :first_name,
+    :presence => { :message => "Provide your first name." }
+  validates :last_name,
+    :presence => { :message => "Provide your last name." }
+  validates :email,
+    :presence => { :message => "Provide your email address." },
+    :format => {
+      :with => /.+@.+\..+/,
+      :allow_blank => true,
+      :message => "Provide a valid email address.",
+    }
+  validates :website,
+    :presence => { :message => "Provide your website URL." },
+    :format => {
+      :with => /\w+\.\w+/,
+      :message => "Your website must be a valid URL in the form of http://data.gov",
+    },
     :unless => lambda { |user| user.no_domain_signup }
-  validates_format_of :website,
-    :with => /\w+\.\w+/,
-    :unless => lambda { |user| user.no_domain_signup },
-    :message => "Your website must be a valid URL in the form of http://data.gov"
-  validates_acceptance_of :terms_and_conditions,
-    :message => "Check the box to agree to the terms and conditions.",
+  validates :terms_and_conditions,
+    :acceptance => { :message => "Check the box to agree to the terms and conditions." },
     :on => :create,
     :allow_nil => false
 
   # Callbacks
   before_validation :generate_api_key, :on => :create
+  after_save :handle_rate_limit_mode
 
   # Nested attributes
   accepts_nested_attributes_for :settings
@@ -80,7 +83,7 @@ class ApiUser
     :settings_attributes,
     :as => :admin
 
-  # has_role? simply needs to return true or false whether a user has a role or not.  
+  # has_role? simply needs to return true or false whether a user has a role or not.
   # It may be a good idea to have "admin" roles return true always
   def has_role?(role_in_question)
     if(self.roles.include?("admin"))
@@ -106,7 +109,7 @@ class ApiUser
   def self.existing_roles
     existing_roles = ApiUser.distinct(:roles)
 
-    api_roles = Api.all.each do |api|
+    Api.all.each do |api|
       if(api.settings && api.settings.required_roles)
         existing_roles += api.settings.required_roles
       end
@@ -187,7 +190,7 @@ class ApiUser
       # length.
       key = ""
       while key.length < 40
-        key = SecureRandom.base64(50).delete("+/=")[0,40]
+        key = SecureRandom.base64(50).delete("+/=")[0, 40]
       end
 
       self.api_key = key

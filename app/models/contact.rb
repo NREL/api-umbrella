@@ -7,16 +7,17 @@ class Contact
 
   attr_accessible :name, :email, :message
 
-  validates_presence_of :name,
-    :message => "Provide your first name."
-  validates_presence_of :email,
-    :message => "Provide your email address."
-  validates_format_of :email,
-    :with => /.+@.+\..+/,
-    :allow_blank => true,
-    :message => "Provide a valid email address."
-  validates_presence_of :message,
-    :message => "Provide a message."
+  validates :name,
+    :presence => { :message => "Provide your first name." }
+  validates :email,
+    :presence => { :message => "Provide your email address." },
+    :format => {
+      :with => /.+@.+\..+/,
+      :allow_blank => true,
+      :message => "Provide a valid email address.",
+    }
+  validates :message,
+    :presence => { :message => "Provide a message." }
 
   def initialize(attrs = {})
     self.attributes = attrs

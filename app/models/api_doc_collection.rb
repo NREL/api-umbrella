@@ -15,7 +15,8 @@ class ApiDocCollection
   index :slug => 1
   index({ :url_path => 1 }, { :unique => true })
 
-  validates_uniqueness_of :slug
+  validates :slug,
+    :uniqueness => true
 
   has_many :api_doc_services
 
@@ -39,7 +40,7 @@ class ApiDocCollection
   end
 
   def api_doc_service_ids
-    self.api_doc_services.collect { |service| service.id }
+    self.api_doc_services.map { |service| service.id }
   end
 
   def api_doc_service_ids=(new_ids)

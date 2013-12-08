@@ -1,0 +1,73 @@
+<% if(@apis.present?) %>
+  <div class="alert alert-error">
+    <p>There were errors in the data you tried to import. No changes have been made. Please resolve the issues in the import file and try again.</p>
+    <ul>
+      <% @apis.each do |api| %>
+        <% if(!api.valid?) %>
+          <li>
+            <%= api.name %> (<%= api.id %>)
+            <ul>
+              <% api.errors.full_messages.each do |message| %>
+                <li><%= message %></li>
+              <% end %>
+            </ul>
+          </li>
+        <% end %>
+      <% end %>
+    <ul>
+  </div>
+<% end %>
+
+<h1>Import Preview</h1>
+
+<style type="text/css">
+  <%= Diffy::CSS.html_safe %>
+</style>
+
+<div class="alert alert-info">
+  Your imported configuration changes are not yet live. Review the changes here and choose if you would like to continue with the import process.
+</div>
+
+<%= form_tag(admin_config_import_path) do %>
+  <%= hidden_field_tag(:uploaded, @uploaded_raw) %>
+
+  <fieldset>
+    <legend><%= @new_api_ids.count %> New API Backends</legend>
+    <%= render("import_preview_table", :api_ids => @new_api_ids, :group => "new") %>
+  </fieldset>
+
+  <fieldset>
+    <legend><%= @modified_api_ids.count %> Modified API Backends</legend>
+    <%= render("import_preview_table", :api_ids => @modified_api_ids, :group => "modified") %>
+  </fieldset>
+
+  <fieldset>
+    <legend><%= @deleted_api_ids.count %> Deleted API Backends</legend>
+    <%= render("import_preview_table", :api_ids => @deleted_api_ids, :group => "deleted") %>
+  </fieldset>
+
+  <fieldset>
+    <legend><%= @identical_api_ids.count %> Identical API Backends</legend>
+    <table class="table table-condensed">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th style="width: 320px;">ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @identical_api_ids.each do |id| %>
+          <tr>
+            <td><%= @uploaded_apis_by_id[id]["name"] %></td>
+            <td><%= @uploaded_apis_by_id[id]["_id"] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </fieldset>
+
+  <div class="text-center">
+    <button type="submit" id="publish_button" class="btn btn-large btn-primary" data-loading-text="<i class='icon-refresh icon-spin'></i> Import...">Import Changes</button><br><br>
+    <%= link_to("Cancel", admin_config_import_export_path, :class => "text-error") %>
+  </div>
+<% end %>

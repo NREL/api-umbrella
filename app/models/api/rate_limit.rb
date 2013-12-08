@@ -2,7 +2,7 @@ class Api::RateLimit
   include Mongoid::Document
 
   # Fields
-  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :duration, :type => Integer
   field :accuracy, :type => Integer
   field :limit_by, :type => String
@@ -76,7 +76,7 @@ class Api::RateLimit
   end
 
   def auto_calculate_distributed
-    if(self.duration && self.duration >= 10000)
+    if(self.duration && self.duration >= 10_000)
       self.distributed = true
     else
       self.distributed = false

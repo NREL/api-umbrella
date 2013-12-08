@@ -1,0 +1,77 @@
+AllCops:
+  Excludes:
+    - tmp/**
+    - vendor/**
+    - config/compass.rb
+  RunRailsCops: true
+
+AlignHash:
+  Enabled: false
+
+AlignParameters:
+  Enabled: false
+
+BlockNesting:
+  Enabled: false
+
+BracesAroundHashParameters:
+  Enabled: false
+
+ClassLength:
+  Enabled: false
+
+CollectionMethods:
+  PreferredMethods:
+    find: 'detect'
+
+CyclomaticComplexity:
+  Enabled: false
+
+Documentation:
+  Enabled: false
+
+Encoding:
+  Enabled: false
+
+FavorUnlessOverNegatedIf:
+  Enabled: false
+
+HashSyntax:
+  EnforcedStyle: hash_rockets
+
+IfUnlessModifier:
+  Enabled: false
+
+Lambda:
+  Enabled: false
+
+LineLength:
+  Enabled: false
+
+MethodLength:
+  Enabled: false
+
+OneLineConditional:
+  Enabled: false
+
+Output:
+  Ignore:
+    - '^.*/db/migrate/.*$'
+
+ParenthesesAroundCondition:
+  Enabled: false
+
+RedundantSelf:
+  Enabled: false
+
+SignalException:
+  Enabled: false
+
+SpaceAfterControlKeyword:
+  Enabled: false
+
+StringLiterals:
+  Enabled: false
+
+WhileUntilModifier:
+  Enabled: false

@@ -2,7 +2,7 @@ class Api::Rewrite
   include Mongoid::Document
 
   # Fields
-  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :matcher_type, :type => String
   field :http_method, :type => String
   field :frontend_matcher, :type => String

@@ -1,0 +1,26 @@
+<h1>Import/Export Configuration</h1>
+
+<fieldset>
+  <legend>Export Configuration</legend>
+  <div class="text-center">
+    <p class="muted">Download an export of your <em>currently published</em> configuration settings on this server.</p>
+    <strong>Last Publish:</strong> <%= ConfigVersion.last_version %><br>
+    <strong>Total APIs:</strong> <%= if(ConfigVersion.last_config) then ConfigVersion.last_config["apis"].count else 0 end %><br>
+    <%= link_to("Download", admin_config_export_path(:format => "yaml", :download => "true"), :class => "btn btn-primary") %>
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>Import Configuration</legend>
+  <%= form_tag(admin_config_import_preview_path, :class => "text-center", :multipart => true) do %>
+    <p class="muted">Import configuration settings from a YAML file to this server.</p>
+    <%= file_field_tag(:file) %><br />
+    <button type="submit" id="upload_button" class="btn btn-primary" data-loading-text="<i class='icon-refresh icon-spin'></i> Uploading...">Next...</button>
+    <%= javascript_tag do %>
+      var button = $('#upload_button');
+      $('form').submit(function(e) {
+        button.button('loading');
+      });
+    <% end %>
+  <% end %>
+</fieldset>

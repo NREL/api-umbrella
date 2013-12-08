@@ -120,7 +120,6 @@ class LogSearch
     }
   end
 
-
   def facet_by_interval!
     @query[:facets][:interval_hits] = {
       :date_histogram => {
@@ -141,8 +140,8 @@ class LogSearch
       @country = @region
       facet_by_country_regions!(@region)
     when /^(US)-([A-Z]{2})$/
-      @country = $1
-      @state = $2
+      @country = Regexp.last_match[1]
+      @state = Regexp.last_match[2]
       facet_by_us_state_cities!(@country, @state)
     else
       @country = @region
@@ -213,32 +212,32 @@ class LogSearch
 
   def facet_by_users!(size)
     facet_by_term!(:user_email, size)
-    facet_by_term!(:user_email, 1000000, :facet_name => :total_user_email)
+    facet_by_term!(:user_email, 1_000_000, :facet_name => :total_user_email)
   end
 
   def facet_by_response_status!(size)
     facet_by_term!(:response_status, size)
-    facet_by_term!(:response_status, 1000000, :facet_name => :total_response_status)
+    facet_by_term!(:response_status, 1_000_000, :facet_name => :total_response_status)
   end
 
   def facet_by_response_content_type!(size)
     facet_by_term!(:response_content_type, size)
-    facet_by_term!(:response_content_type, 1000000, :facet_name => :total_response_content_type)
+    facet_by_term!(:response_content_type, 1_000_000, :facet_name => :total_response_content_type)
   end
 
   def facet_by_request_method!(size)
     facet_by_term!(:request_method, size)
-    facet_by_term!(:request_method, 1000000, :facet_name => :total_request_method)
+    facet_by_term!(:request_method, 1_000_000, :facet_name => :total_request_method)
   end
 
   def facet_by_request_ip!(size)
     facet_by_term!(:request_ip, size)
-    facet_by_term!(:request_ip, 1000000, :facet_name => :total_request_ip)
+    facet_by_term!(:request_ip, 1_000_000, :facet_name => :total_request_ip)
   end
 
   def facet_by_request_user_agent_family!(size)
     facet_by_term!(:request_user_agent_family, size)
-    facet_by_term!(:request_user_agent_family, 1000000, :facet_name => :total_request_user_agent_family)
+    facet_by_term!(:request_user_agent_family, 1_000_000, :facet_name => :total_request_user_agent_family)
   end
 
   def facet_by_user_stats!(options = {})

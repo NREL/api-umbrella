@@ -5,6 +5,8 @@ class ApplicationController < ActionController::Base
     sort = []
 
     i = 0
+
+    # rubocop:disable LiteralInCondition
     while true
       column_index = params["iSortCol_#{i}"]
       break if(column_index.nil?)
@@ -15,6 +17,7 @@ class ApplicationController < ActionController::Base
 
       i += 1
     end
+    # rubocop:enable LiteralInCondition
 
     sort
   end

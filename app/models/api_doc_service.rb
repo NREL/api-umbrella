@@ -1,7 +1,7 @@
 class ApiDocService
   include Mongoid::Document
 
-  HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "HEAD"]
+  HTTP_METHODS = %w(GET POST PUT DELETE HEAD)
 
   field :http_method, :type => String
   field :path, :type => String
@@ -15,9 +15,16 @@ class ApiDocService
 
   belongs_to :api_doc_collection
 
-  validates_presence_of :http_method, :path, :summary, :body
-  validates_inclusion_of :http_method, :in => HTTP_METHODS
-  validates_uniqueness_of :path, :scope => :http_method
+  validates :http_method,
+    :presence => true,
+    :inclusion => { :in => HTTP_METHODS }
+  validates :path,
+    :presence => true,
+    :uniqueness => true
+  validates :summary,
+    :presence => true
+  validates :body,
+    :presence => true
 
   after_initialize :assign_default_body
   before_save :generate_url_path

@@ -2,7 +2,7 @@ class Api::Settings
   include Mongoid::Document
 
   # Fields
-  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :append_query_string, :type => String
   field :http_basic_auth, :type => String
   field :require_https, :type => Boolean
@@ -37,7 +37,7 @@ class Api::Settings
     :required_roles_string,
     :error_templates,
     :error_data_yaml_strings,
-    :headers_attributes,
+    :headers_string,
     :rate_limits_attributes,
     :as => [:default, :admin]
 
@@ -63,11 +63,42 @@ class Api::Settings
     self.required_roles = roles
   end
 
-  def error_templates=(templates)
-    if(templates.present?)
-      templates.reject! { |key, value| value.blank? }
-      self[:error_templates] = templates
+  def headers_string
+    unless @headers_string
+      @headers_string = ""
+      if(self.headers.present?)
+        @headers_string = self.headers.map do |header|
+          header.to_s
+        end.join("\n")
+      end
     end
+
+    @headers_string
+  end
+
+  def headers_string=(string)
+    @headers_string = string
+
+    header_objects = []
+
+    header_lines = string.split(/[\r\n]+/)
+    header_lines.each do |line|
+      next if(line.strip.blank?)
+
+      parts = line.split(":", 2)
+      header_objects << Api::Header.new({
+        :key => parts[0].to_s.strip,
+        :value => parts[1].to_s.strip,
+      })
+    end
+
+    self.headers = header_objects
+  end
+
+  def error_templates=(templates)
+    templates ||= {}
+    templates.reject! { |key, value| value.blank? }
+    self[:error_templates] = templates
   end
 
   def error_data_yaml_strings
@@ -91,15 +122,16 @@ class Api::Settings
       if(strings.present?)
         strings.each do |key, value|
           if value.present?
-            data[key] = Psych.load(value)
+            data[key] = SafeYAML.load(value)
           end
         end
       end
 
       self.error_data = data
-    rescue Psych::SyntaxError
+    rescue Psych::SyntaxError => error
       # Ignore YAML errors, we'll deal with validating during
       # validate_error_data_yaml_strings.
+      logger.info("YAML parsing error: #{error.message}")
     end
   end
 
@@ -111,7 +143,7 @@ class Api::Settings
       strings.each do |key, value|
         if value.present?
           begin
-            Psych.load(value)
+            SafeYAML.load(value)
           rescue Psych::SyntaxError => error
             self.errors.add("error_data_yaml_strings.#{key}", "YAML parsing error: #{error.message}")
           end

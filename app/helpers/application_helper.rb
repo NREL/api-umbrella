@@ -16,7 +16,7 @@ module ApplicationHelper
     output = Tempfile.new("api-umbrella-pygmentize")
     process.io.stdout = output
 
-    # Setup pipe so we can pass to stdin. 
+    # Setup pipe so we can pass to stdin.
     process.duplex = true
 
     process.start
@@ -25,7 +25,7 @@ module ApplicationHelper
     process.io.stdin.puts code
     process.io.stdin.close
 
-    # Wait for pygmentize to complete with a 10 second timeout. 
+    # Wait for pygmentize to complete with a 10 second timeout.
     process.poll_for_exit(10)
 
     # Reade pygmentize's output.

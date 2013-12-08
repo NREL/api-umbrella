@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "rails", "~> 3.2.15"
+gem "rails", "~> 3.2.16"
 
 # Environment specific configuration
 gem "dotenv-rails", "~> 0.9.0"
@@ -91,7 +91,11 @@ gem "diffy", "~> 3.0.1"
 # Use a newer version of Psych for YAML. The newer gem version does a better
 # job of making multi-line strings and strings with colons in them more human
 # readable.
-gem "psych", "~> 2.0.1"
+gem "psych", "~> 2.0.1", :platforms => [:ruby]
+
+# For user-inputted YAML.
+# Use version from git so it doesn't automatically monkey-patch.
+gem "safe_yaml", :git => "https://github.com/dtao/safe_yaml.git", :require => "safe_yaml/load"
 
 # Environment-specific configuration files.
 gem "rails_config", "~> 0.3.3"
@@ -141,6 +145,12 @@ group :development, :test do
   gem "rspec-rails", "~> 2.14.0"
   gem "factory_girl_rails", "~> 4.3.0"
   gem "rspec-html-matchers", "~> 0.4.3"
+
+  # Ruby lint/style checker
+  gem "rubocop", "~> 0.15.0"
+
+  # Code coverage testing
+  gem "coveralls", "~> 0.7.0", :require => false
 
   # Real browser testing
   gem "capybara", "~> 2.1.0"

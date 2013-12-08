@@ -1,4 +1,4 @@
-require "attributify_data"
+require "api_umbrella/attributify_data"
 
 class Api
   include Mongoid::Document
@@ -9,7 +9,7 @@ class Api
   include ApiUmbrella::AttributifyData
 
   # Fields
-  field :_id, type: String, default: lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :name, :type => String
   field :sort_order, :type => Integer
   field :backend_protocol, :type => String
@@ -57,7 +57,7 @@ class Api
     :servers_attributes,
     :url_matches_attributes,
     :sub_settings_attributes,
-    :rewrites_attributes,
+    :rewrites_attributes
 
   def self.sorted
     order_by(:sort_order.asc, :created_at.desc)
@@ -65,7 +65,7 @@ class Api
 
   def as_json(options)
     options[:methods] ||= []
-    options[:methods] += [:required_roles_string, :error_data_yaml_strings]
+    options[:methods] += [:required_roles_string, :error_data_yaml_strings, :headers_string]
 
     super(options)
   end

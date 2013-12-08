@@ -52,15 +52,15 @@ class LogResult
 
       case(@search.region)
       when /^([A-Z]{2})$/
-        country = $1
+        country = Regexp.last_match[1]
 
         @map_breadcrumbs = [
           { :region => "world", :name => "World" },
           { :name => Country[country].name },
         ]
       when /^(US)-([A-Z]{2})$/
-        country = $1
-        state = $2
+        country = Regexp.last_match[1]
+        state = Regexp.last_match[2]
 
         @map_breadcrumbs = [
           { :region => "world", :name => "World" },
