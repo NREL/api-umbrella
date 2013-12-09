@@ -3,6 +3,9 @@
 # Exit on any errors
 set -e
 
+# Print the executed commands
+set -v
+
 # Clone if new
 if [ ! -d $CHECKOUT_DIR ]; then
   git clone $GIT_URL $CHECKOUT_DIR
@@ -10,9 +13,9 @@ fi
 
 # Pull the latest down
 cd $CHECKOUT_DIR
-git checkout $BRANCH
+git fetch
+git reset --hard $GIT_COMMIT
 git submodule update --init --recursive
-git pull
 
 # Install dependencies
 bundle install --path=vendor/bundle

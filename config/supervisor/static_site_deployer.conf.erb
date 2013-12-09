@@ -3,8 +3,8 @@
 numprocs=1
 
 directory=<%=current_path %>
-environment=PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,RAILS_ENV=<%= rails_env %>
-command=/opt/rbenv/shims/bundle exec <%= current_path %>/script/delayed_job --queue api_umbrella_static_site_deployer
+environment=USER=api-umbrella-deployer,HOME=/home/api-umbrella-deployer,PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,RAILS_ENV=<%= rails_env %>
+command=/opt/rbenv/shims/bundle exec <%= current_path %>/script/delayed_job run --queue api_umbrella_static_site_deployer
 
 ; Always keep running.
 autostart=true
@@ -16,7 +16,7 @@ startretries=25
 startsecs=30
 
 ; Run as the web user.
-user=api-umbrella-static-site-deployer
+user=api-umbrella-deployer
 
 ; Log both stdout and stderr to the same log file. One log file per
 ; Gatekeeper instance running on each port.
@@ -25,3 +25,7 @@ stdout_logfile=<%= current_path %>/log/static_site_deployer_supervisor.log
 
 ; Don't rotate based on file size. We'll rotate externally using logrotate.
 logfile_maxbytes=0
+
+; Define a group so everything in this deployment can be controlled together.
+[group:<%= deploy_name %>]
+programs=<%= deploy_name %>-static_site_deployer

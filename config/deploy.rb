@@ -7,6 +7,7 @@ require "capistrano_nrel_ext/recipes/gem_bundler"
 require "capistrano_nrel_ext/recipes/nginx"
 require "capistrano_nrel_ext/recipes/rails"
 require "capistrano_nrel_ext/recipes/redhat"
+require "capistrano_nrel_ext/recipes/supervisor"
 
 # Set the application being deployed.
 set :application, "api-umbrella-web"

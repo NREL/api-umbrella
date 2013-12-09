@@ -21,6 +21,7 @@
 /config/elasticsearch.yml
 /config/mongoid.yml
 /config/nginx/site.conf
+/config/supervisor/static_site_deployer.conf
 
 # Ignore log directory
 /log
