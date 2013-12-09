@@ -9,6 +9,7 @@ run_list([
   "role[passenger_nginx]",
   "role[ruby]",
 
+  "recipe[api-umbrella::web]",
   "recipe[iptables::http]",
   "recipe[iptables::https]",
   "recipe[pygments]",

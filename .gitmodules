@@ -187,3 +187,6 @@
 [submodule "chef/cookbooks/openssh"]
 	path = chef/cookbooks/openssh
 	url = https://github.com/opscode-cookbooks/openssh.git
+[submodule "chef/cookbooks/acl"]
+	path = chef/cookbooks/acl
+	url = https://github.com/NREL-cookbooks/acl.git
