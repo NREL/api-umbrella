@@ -1,24 +1,9 @@
 'use strict';
 
 require('../test_helper');
+require('../../lib/models/api_user');
 
 var uuid = require('node-uuid');
-
-var ApiUser = mongoose.model('api_users', {
-  _id: mongoose.Schema.Types.Mixed,
-  api_key: {
-    type: String,
-    index: { unique: true },
-  },
-  first_name: String,
-  last_name: String,
-  email: String,
-  website: String,
-  roles: [String],
-  disabled_at: Date,
-  throttle_by_ip: Boolean,
-  settings: mongoose.Schema.Types.Mixed,
-});
 
 function generateId(callback) {
   callback(uuid.v4());
@@ -29,7 +14,7 @@ function generateApiKey(callback) {
   callback('TESTING_KEY_' + ('00000' + userCounter++).slice(-5));
 }
 
-Factory.define('api_user', ApiUser, {
+Factory.define('api_user', mongoose.testConnection.model('ApiUser'), {
   _id: generateId,
   api_key: generateApiKey,
   first_name: 'Testing',
