@@ -34,6 +34,12 @@ describe AccountsController do
           post :create, :api_user => FactoryGirl.attributes_for(:api_user)
           response.body.should =~ /api_key=/
         end
+
+        it "defaults" do
+          post :create, :api_user => FactoryGirl.attributes_for(:api_user)
+          user = ApiUser.desc(:created_at).last
+          user.registration_source.should eql("web")
+        end
       end
 
       context "existing user" do

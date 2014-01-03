@@ -17,11 +17,11 @@
 
     {{#if id}}
       <div class="control-group">
-        <div class="control-label">Signed up</div>
+        <div class="control-label">Signed Up</div>
         <div class="controls">{{formatDate createdAt}}</div>
       </div>
       <div class="control-group">
-        <div class="control-label">API key</div>
+        <div class="control-label">API Key</div>
         <div class="controls">
           {{#if apiKey}}
             <span class="api-key">{{apiKey}}</span><small class="api-key-hides-at-message"> (full API key will disappear <span {{bind-attr data-livestamp="apiKeyHidesAt"}}></span>)</small>
@@ -29,6 +29,10 @@
             <span class="api-key">{{apiKeyPreview}}</span>
           {{/if}}
         </div>
+      </div>
+      <div class="control-group">
+        <div class="control-label">Registration Source</div>
+        <div class="controls">{{registrationSource}}</div>
       </div>
     {{else}}
       <div class="control-group">

@@ -47,6 +47,11 @@ class Admin::ApiUsersController < Admin::BaseController
   def save!
     @api_user.no_domain_signup = true
     @api_user.assign_nested_attributes(params[:api_user], :as => :admin)
+
+    if(@api_user.new_record?)
+      @api_user.registration_source = "web_admin"
+    end
+
     @api_user.save
   end
 end

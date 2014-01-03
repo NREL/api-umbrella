@@ -16,6 +16,7 @@ class ApiUser
   field :email
   field :website
   field :use_description
+  field :registration_source
   field :throttle_by_ip, :type => Boolean
   field :disabled_at, :type => Time
   field :roles, :type => Array
@@ -76,6 +77,7 @@ class ApiUser
     :website,
     :use_description,
     :terms_and_conditions,
+    :registration_source,
     :as => [:default, :admin]
   attr_accessible :roles_string,
     :throttle_by_ip,
