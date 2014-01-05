@@ -24,6 +24,7 @@ apiUmbrella:
       - header
       - getParam
       - basicAuthUsername
+  log_template_version: v1
   logProcessor:
     workers: 1
   routerLogListener:

@@ -1,9 +1,11 @@
 #!/usr/bin/env node
+'use strict';
 
 var _ = require('lodash'),
     async = require('async'),
+    config = require('../lib/config'),
     crypto = require('crypto'),
-    ElasticSearchClient = require('elasticsearchclient'),
+    elasticsearch = require('elasticsearch'),
     logCleaner = require('../lib/log_processor/cleaner'),
     mime = require('mime'),
     moment = require('moment'),
@@ -13,25 +15,24 @@ var _ = require('lodash'),
 
 var MigrateLogs = function() {
   this.initialize.apply(this, arguments);
-}
+};
 
 _.extend(MigrateLogs.prototype, {
   users: {},
+  createdIndexes: {},
   commands: [],
-  //startTime: moment.utc("2010-07-01 00:00:00"),
-  startTime: moment.utc("2013-07-23 14:00:00"),
-  //endTime: moment.utc("2013-01-02 00:00:00"),
-  endTime: moment(),
+  startTime: moment.utc(),
+  endTime: moment.utc('2010-07-01 00:00:00'),
 
   initialize: function() {
     // Set the global 'geodatadir' variable geoip-lite optionally reads from.
-    global.geodatadir = "/opt/geoip-lite/data";
+    global.geodatadir = '/opt/geoip-lite/data';
 
-    this.elasticSearch = new ElasticSearchClient({
-      "hosts": [
+    this.elasticSearch = new elasticsearch.Client({
+      'hosts': [
         {
-          "host": process.env.ELASTIC,
-          "port": 9200
+          'host': process.env.ELASTIC,
+          'port': 9200
         }
       ]
     });
@@ -50,6 +51,7 @@ _.extend(MigrateLogs.prototype, {
   },
 
   connectMongo: function(asyncSeriesCallback) {
+    console.info('Connecting to mongo...');
     MongoClient.connect(process.env.MONGO, this.handleConnectMongo.bind(this, asyncSeriesCallback));
   },
 
@@ -58,14 +60,16 @@ _.extend(MigrateLogs.prototype, {
       this.mongo = db;
       asyncSeriesCallback(null);
     } else {
+      console.info('Connected to mongo...');
       asyncSeriesCallback(error);
     }
   },
 
   fetchUsers: function(asyncSeriesCallback) {
+    console.info('Fetching users...');
     var mongoUsers = this.mongo.collection('api_users');
     mongoUsers.find().each(function(error, user) {
-      if(user != null) {
+      if(user !== null) {
         this.users[user.api_key] = user;
       } else {
         asyncSeriesCallback(null);
@@ -74,28 +78,82 @@ _.extend(MigrateLogs.prototype, {
   },
 
   migrate: function(asyncSeriesCallback) {
+    console.info('Beginning migration...');
     this.mongoLogs = this.mongo.collection('api_request_logs');
 
-    this.chunkStartTime = this.startTime;
+    this.chunkStartTime = moment(this.startTime).subtract('hours', 1);
     async.whilst(function() {
-      return this.chunkStartTime.isBefore(this.endTime);
-    }.bind(this), this.processChunk.bind(this), function(error) {
+      var chunkEndTime = moment(this.chunkStartTime).add('hours', 1);
+      return chunkEndTime.isAfter(this.endTime);
+    }.bind(this), this.setupAliases.bind(this), function(error) {
       asyncSeriesCallback(error);
     });
   },
 
-  processChunk: function(asyncWhilstCallback) {
+  setupAliases: function(asyncWhilstCallback) {
+    var chunkEndTime = moment(this.chunkStartTime).add('hours', 1);
+
+    var env = config.environment;
+    var start = this.chunkStartTime.format('YYYY-MM');
+    var end = chunkEndTime.format('YYYY-MM');
+
+    var aliases = _.uniq([
+      {
+        name: 'api-umbrella-logs-' + env + '-' + start,
+        index: 'api-umbrella-logs-' + config.get('log_template_version') + '-' + env + '-' + start,
+      },
+      {
+        name: 'api-umbrella-logs-write-' + env + '-' + start,
+        index: 'api-umbrella-logs-' + config.get('log_template_version') + '-' + env + '-' + start,
+      },
+      {
+        name: 'api-umbrella-logs-' + env + '-' + end,
+        index: 'api-umbrella-logs-' + config.get('log_template_version') + '-' + env + '-' + end,
+      },
+      {
+        name: 'api-umbrella-logs-write-' + env + '-' + end,
+        index: 'api-umbrella-logs-' + config.get('log_template_version') + '-' + env + '-' + end,
+      },
+    ], 'name');
+
+    async.each(aliases, this.createAlias.bind(this), function() {
+      this.processChunk(chunkEndTime, asyncWhilstCallback);
+    }.bind(this));
+  },
+
+  createAlias: function(alias, callback) {
+    if(this.createdIndexes[alias.name]) {
+      callback(null);
+      return;
+    }
+
+    this.elasticSearch.indices.existsAlias({
+      name: alias.name,
+    }, function(error, exists) {
+      this.createdIndexes[alias.name] = true;
+
+      if(exists) {
+        callback(error);
+      } else {
+        this.elasticSearch.indices.create({
+          index: alias.index,
+        }, function() {
+          this.elasticSearch.indices.putAlias(alias, callback);
+        }.bind(this));
+      }
+    }.bind(this));
+  },
+
+  processChunk: function(chunkEndTime, asyncWhilstCallback) {
     var timerStart = Date.now();
 
-    var chunkEndTime = moment(this.chunkStartTime).add("hours", 1);
-
-    console.info("== " + this.chunkStartTime.toString() + " - " + chunkEndTime.toString() + " ==");
+    console.info('== ' + this.chunkStartTime.toString() + ' - ' + chunkEndTime.toString() + ' ==');
 
     var startId = ObjectID.createFromTime(this.chunkStartTime.unix());
     var endId = ObjectID.createFromTime(chunkEndTime.unix());
     this.cursor = this.mongoLogs.find({
-      "_id": { "$gte": startId, "$lt": endId }
-    }).sort({ "_id": -1 });
+      '_id': { '$gte': startId, '$lt': endId }
+    }).sort({ '_id': -1 });
 
     this.count = 0;
 
@@ -106,19 +164,19 @@ _.extend(MigrateLogs.prototype, {
         return false;
       }
 
-      if(oldLog != null) {
+      if(oldLog !== null) {
         this.count++;
         this.handleLog(oldLog);
       } else {
         if(this.cargo.length() === 0) {
-          console.info("  No Records Found");
+          console.info('  No Records Found');
 
           this.finishChunk(chunkEndTime, asyncWhilstCallback);
         } else {
           this.cargo.drain = function() {
             var duration = (Date.now() - timerStart) / 1000;
-            rate = this.count / duration;
-            console.info("  Processed " + this.count + " in: " + duration + " seconds (" + rate + " records/second)");
+            var rate = this.count / duration;
+            console.info('  Processed ' + this.count + ' in: ' + duration + ' seconds (' + rate + ' records/second)');
 
             this.cargo.drain = null;
             this.finishChunk(chunkEndTime, asyncWhilstCallback);
@@ -130,23 +188,26 @@ _.extend(MigrateLogs.prototype, {
   },
 
   finishChunk: function(chunkEndTime, asyncWhilstCallback) {
-    this.chunkStartTime = chunkEndTime;
+    this.chunkStartTime = moment(chunkEndTime).subtract('hours', 2);
 
-    if(chunkEndTime.date() == 1 && chunkEndTime.hour() == 2) {
+    if(chunkEndTime.date() === 1 && chunkEndTime.hour() === 1) {
       var optimizeTimerStart = Date.now();
-      var index = 'api-umbrella-logs-' + moment(chunkEndTime).subtract("days", 1).format("YYYY-MM")
+      var index = 'api-umbrella-logs-write-' + config.environment + '-' + chunkEndTime.format('YYYY-MM');
       console.info('== Optimizing ' + index + ' ==');
-      this.elasticSearch.optimize(index, { max_num_segments: 1 }).
-        on("done", function() {
-          var duration = (Date.now() - optimizeTimerStart) / 1000;
-          console.info('  Optimized ' + index + ' in: ' + duration + ' seconds');
-          asyncWhilstCallback(null);
-        }).
-        on("error", function(error) {
+      this.elasticSearch.indices.optimize({
+        index: index,
+        maxNumSegments: 1,
+      }, function(error) {
+        if(error) {
           console.error(error);
           process.exit(1);
           return false;
-        }).exec();
+        }
+
+        var duration = (Date.now() - optimizeTimerStart) / 1000;
+        console.info('  Optimized ' + index + ' in: ' + duration + ' seconds');
+        asyncWhilstCallback(null);
+      });
     } else {
       asyncWhilstCallback(null);
     }
@@ -154,31 +215,37 @@ _.extend(MigrateLogs.prototype, {
 
   handleLog: function(oldLog) {
     var env = {};
-    if(oldLog["env"]) {
-      env = JSON.parse(oldLog["env"]);
+    if(oldLog['env']) {
+      env = JSON.parse(oldLog['env']);
     }
 
     var newLog = {
-      "uid": oldLog["_id"].toString(),
-      "request_at": oldLog["requested_at"].toISOString(),
-      "request_method": env["REQUEST_METHOD"],
-      "request_url": "http://developer.nrel.gov" + env["REQUEST_URI"],
-      "request_user_agent": env["HTTP_USER_AGENT"],
-      "request_accept_encoding": env["HTTP_ACCEPT_ENCODING"],
-      "request_ip": oldLog["ip_address"] || "127.0.0.1",
-      "response_status": oldLog["response_status"],
-      "response_content_type": mime.lookup(oldLog["path"]),
-      "api_key": oldLog["api_key"],
+      'uid': oldLog['_id'].toString(),
+      'request_at': oldLog['requested_at'].toISOString(),
+      'request_method': env['REQUEST_METHOD'],
+      'request_url': 'http://developer.nrel.gov' + env['REQUEST_URI'],
+      'request_user_agent': env['HTTP_USER_AGENT'],
+      'request_accept': env['HTTP_ACCEPT'],
+      'request_accept_encoding': env['HTTP_ACCEPT_ENCODING'],
+      'request_connection': env['HTTP_CONNECTION'],
+      'request_content_type': env['HTTP_CONTENT_TYPE'],
+      'request_origin': env['HTTP_ORIGIN'],
+      'request_referer': env['HTTP_REFERER'],
+      'request_ip': oldLog['ip_address'] || '127.0.0.1',
+      'response_status': oldLog['response_status'],
+      'response_content_type': mime.lookup(oldLog['path']),
+      'api_key': oldLog['api_key'],
     };
 
-    if(newLog["api_key"]) {
-      if(this.users[newLog["api_key"]]) {
-        newLog["user_id"] = this.users[newLog["api_key"]]["_id"]
-        newLog["user_email"] = this.users[newLog["api_key"]]["email"]
+    if(newLog['api_key']) {
+      if(this.users[newLog['api_key']]) {
+        newLog['user_id'] = this.users[newLog['api_key']]['_id'];
+        newLog['user_email'] = this.users[newLog['api_key']]['email'];
+        newLog['user_registration_source'] = this.users[newLog['api_key']]['registration_source'];
       }
     }
 
-    logCleaner(this.elasticSearch, newLog);
+    logCleaner.all(this.elasticSearch, newLog);
 
     this.cargo.push(newLog);
   },
@@ -189,30 +256,30 @@ _.extend(MigrateLogs.prototype, {
     for(var i = 0; i < logs.length; i++) {
       var log = logs[i];
 
-      var uid = log["uid"];
+      var uid = log['uid'];
       delete log.uid;
-      //var uid = log["request_url"] + log["requested_at"];
+      //var uid = log['request_url'] + log['requested_at'];
       commands.push({
-        "index": {
-          "_index": 'api-umbrella-logs-' + moment.utc(log.request_at).format("YYYY-MM"),
-          "_type": "log",
-          "_id": URLSafeBase64.encode(crypto.createHash('sha256').update(uid).digest('base64')),
+        'index': {
+          '_index': 'api-umbrella-logs-write-' + config.environment + '-' + moment.utc(log.request_at).format('YYYY-MM'),
+          '_type': 'log',
+          '_id': URLSafeBase64.encode(crypto.createHash('sha256').update(uid).digest('base64')),
         },
       });
 
       commands.push(log);
     }
 
-    this.elasticSearch.bulk(commands).
-      on("done", function() {
-        console.info('    Indexed ' + (commands.length / 2) + ' records');
-        callback();
-      }).
-      on("error", function(error) {
+    this.elasticSearch.bulk({ body: commands }, function(error) {
+      if(error) {
         console.error(error);
         process.exit(1);
         return false;
-      }).exec();
+      }
+
+      console.info('    Indexed ' + (commands.length / 2) + ' records');
+      callback();
+    });
   }
 });
 

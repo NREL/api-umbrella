@@ -21,5 +21,6 @@ Factory.define('api_user', mongoose.testConnection.model('ApiUser'), {
   last_name: 'Key',
   email: 'testing_key@nrel.gov',
   website: 'http://nrel.gov/',
+  registration_source: 'web',
   roles: [],
 });

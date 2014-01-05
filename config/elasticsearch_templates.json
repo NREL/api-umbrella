@@ -35,9 +35,9 @@
     }
   },
   {
-    "id": "api-umbrella-log-template",
+    "id": "api-umbrella-log-v1-template",
     "template": {
-      "template": "api-umbrella-logs-*",
+      "template": "api-umbrella-logs-v1-*",
       "settings": {
         "index": {
           "number_of_shards": 3

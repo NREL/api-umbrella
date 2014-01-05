@@ -1,22 +1,23 @@
 #!/usr/bin/env node
+'use strict';
 
 var _ = require('lodash'),
     async = require('async'),
     crypto = require('crypto'),
     config = require('../lib/config'),
     csv = require('csv'),
-    ElasticSearchClient = require('elasticsearchclient'),
+    elasticsearch = require('elasticsearch'),
     fs = require('fs'),
     logCleaner = require('../lib/log_processor/cleaner'),
     mime = require('mime'),
     moment = require('moment'),
     MongoClient = require('mongodb').MongoClient,
-    url = require('url');
+    url = require('url'),
     URLSafeBase64 = require('urlsafe-base64');
 
 var MigrateLogs = function() {
   this.initialize.apply(this, arguments);
-}
+};
 
 _.extend(MigrateLogs.prototype, {
   users: {},
@@ -32,7 +33,7 @@ _.extend(MigrateLogs.prototype, {
       process.exit(1);
     }
 
-    this.elasticSearch = new ElasticSearchClient(config.get('elasticsearch'));
+    this.elasticSearch = new elasticsearch.Client(config.get('elasticsearch'));
 
     async.series([
       this.connectMongo.bind(this),
@@ -61,7 +62,7 @@ _.extend(MigrateLogs.prototype, {
   fetchUsers: function(asyncSeriesCallback) {
     var mongoUsers = this.mongo.collection('api_users');
     mongoUsers.find().each(function(error, user) {
-      if(user != null) {
+      if(user !== null) {
         this.users[user.api_key] = user;
       } else {
         asyncSeriesCallback(null);
@@ -69,13 +70,13 @@ _.extend(MigrateLogs.prototype, {
     }.bind(this));
   },
 
-  migrate: function(asyncSeriesCallback) {
+  migrate: function() {
     csv().from.path(this.logPath).transform(this.handleRows.bind(this));
   },
 
   handleRows: function(row) {
     var routerName = row[1];
-    if(routerName != 'web_router') {
+    if(routerName !== 'web_router') {
       return false;
     }
 
@@ -126,32 +127,32 @@ _.extend(MigrateLogs.prototype, {
       combined.api_key = apiKey;
       var user = this.users[apiKey];
       if(user) {
-        combined.user_id = user._id
-        combined.user_email = user.email
+        combined.user_id = user._id;
+        combined.user_email = user.email;
       }
     }
 
     logCleaner(this.elasticSearch, combined);
 
-    var index = 'api-umbrella-logs-' + moment(combined.request_at).format('YYYY-MM');
+    var index = 'api-umbrella-logs-write-' + config.environment + '-' + moment(combined.request_at).format('YYYY-MM');
     this.elasticSearch.get(index, 'log', id, function(error, response) {
-      var result = JSON.parse(response)
+      var result = JSON.parse(response);
       if(result.exists) {
         var existing = result._source;
         var update = {};
         for(var key in combined) {
           var newValue = combined[key];
           var existingValue = existing[key];
-          if(key == 'request_ip_location') {
+          if(key === 'request_ip_location') {
             break;
           }
 
           if(newValue && !existingValue) {
             //console.info(id + ' - ' + combined.request_at + ' - Filling in missing field: ' + key + ' - ' + newValue);
             update[key] = newValue;
-          } else if(newValue != existingValue) {
+          } else if(newValue !== existingValue) {
             //console.info(id + ' - ' + combined.request_at + ' - Value mismatch: ' + key + ' - ' + existingValue + ' - ' + newValue);
-            if(key == 'request_url' || key == 'request_path') {
+            if(key === 'request_url' || key === 'request_path') {
               update[key] = newValue;
             }
           }

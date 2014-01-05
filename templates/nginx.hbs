@@ -1,4 +1,4 @@
-log_format api_umbrella_log '"$x_api_umbrella_uid","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent"';
+log_format api_umbrella_log '"$x_api_umbrella_uid","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent","$http_referer","$http_x_api_key","$remote_user"';
 
 # Limit the number of simultaneous connections per IP address.
 limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:5m;

@@ -67,14 +67,18 @@ describe('request logging', function() {
           'api_key',
           'internal_gatekeeper_time',
           'internal_response_time',
+          'request_accept',
           'request_accept_encoding',
           'request_at',
+          'request_connection',
           'request_content_type',
           'request_ip',
           'request_method',
           'request_origin',
           'request_url',
           'request_user_agent',
+          'request_referer',
+          'request_basic_auth_username',
           'response_age',
           'response_content_encoding',
           'response_content_length',
@@ -84,6 +88,7 @@ describe('request logging', function() {
           'response_transfer_encoding',
           'user_email',
           'user_id',
+          'user_registration_source',
         ];
 
         var gotKeys = Object.keys(data);
@@ -103,26 +108,44 @@ describe('request logging', function() {
         headers: {
           'X-Api-Key': this.apiKey,
           'X-Api-Umbrella-Uid': _.uniqueId(),
+          'Accept': 'text/plain',
+          'Accept-Encoding': 'gzip,deflate',
+          'Connection': 'keep-alive',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Origin': 'http://example.com/',
+          'User-Agent': 'curl/7.34.0',
+          'Referer': 'http://google.com/',
         },
       };
 
       spy.reset();
-      request.get('http://localhost:9333/hello?foo=bar&hello', options, function() {
+      request.get('http://foo:bar@localhost:9333/hello?foo=bar&hello', options, function() {
         var call = spy.getCall(0);
         var data = JSON.parse(call.args[2]);
-
         var date = new Date(data.request_at);
-        data.request_at.should.eql(date.toISOString());
-        data.request_method.should.eql('GET');
-        data.request_url.should.eql('http://localhost:9333/hello?foo=bar&hello');
 
-        data.response_status.should.eql(200);
-        data.response_content_length.should.eql(11);
-        data.response_content_type.should.eql('text/html; charset=utf-8');
-
-        data.api_key.should.eql(this.apiKey);
-        data.user_id.should.eql(this.user._id);
-        data.user_email.should.eql(this.user.email);
+        _.omit(data, 'internal_gatekeeper_time', 'internal_response_time').should.eql({
+          request_at: date.toISOString(),
+          request_method: 'GET',
+          request_url: 'http://localhost:9333/hello?foo=bar&hello',
+          request_user_agent: 'curl/7.34.0',
+          request_accept: 'text/plain',
+          request_accept_encoding: 'gzip,deflate',
+          request_connection: 'keep-alive',
+          request_content_type: 'application/x-www-form-urlencoded',
+          request_origin: 'http://example.com/',
+          request_referer: 'http://google.com/',
+          request_basic_auth_username: 'foo',
+          request_ip: '127.0.0.1',
+          response_status: 200,
+          response_content_length: 11,
+          response_content_type: 'text/html; charset=utf-8',
+          response_age: null,
+          api_key: this.apiKey,
+          user_id: this.user._id,
+          user_email: this.user.email,
+          user_registration_source: this.user.registration_source,
+        });
 
         data.internal_gatekeeper_time.should.be.a('number');
         data.internal_response_time.should.be.a('number');
@@ -147,16 +170,21 @@ describe('request logging', function() {
       request.get('http://localhost:9333/hello?foo=bar&hello', options, function() {
         var call = spy.getCall(0);
         var data = JSON.parse(call.args[2]);
-
         var date = new Date(data.request_at);
-        data.request_at.should.eql(date.toISOString());
-        data.request_method.should.eql('GET');
-        data.request_url.should.eql('http://localhost:9333/hello?foo=bar&hello');
 
-        data.response_status.should.eql(403);
-        data.response_content_type.should.eql('application/json');
+        _.omit(data, 'internal_gatekeeper_time').should.eql({
+          request_at: date.toISOString(),
+          request_method: 'GET',
+          request_url: 'http://localhost:9333/hello?foo=bar&hello',
+          request_connection: 'keep-alive',
+          request_ip: '127.0.0.1',
+          response_status: 403,
+          response_content_length: null,
+          response_content_type: 'application/json',
+          response_age: null,
+          api_key: 'INVALID_KEY',
+        });
 
-        data.api_key.should.eql('INVALID_KEY');
         should.not.exist(data.user_id);
         should.not.exist(data.user_email);
 

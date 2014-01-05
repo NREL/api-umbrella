@@ -1,0 +1,4 @@
+{
+  "adapter": "../../../lib/east_api_umbrella_mongo",
+  "timeout": 604800000
+}
