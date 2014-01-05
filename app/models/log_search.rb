@@ -264,7 +264,7 @@ class LogSearch
   def indexes
     unless @indexes
       date_range = @start_time.utc.to_date..@end_time.utc.to_date
-      @indexes = date_range.map { |date| "api-umbrella-logs-#{date.strftime("%Y-%m")}" }
+      @indexes = date_range.map { |date| "api-umbrella-logs-#{Rails.env}-#{date.strftime("%Y-%m")}" }
       @indexes.uniq!
     end
 
