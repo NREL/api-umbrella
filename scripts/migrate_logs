@@ -21,7 +21,7 @@ _.extend(MigrateLogs.prototype, {
   users: {},
   createdIndexes: {},
   commands: [],
-  startTime: moment.utc('2013-12-02 00:00:00'),
+  startTime: moment.utc('2013-12-03 00:00:00'),
   endTime: moment.utc('2010-07-01 00:00:00'),
 
   initialize: function() {

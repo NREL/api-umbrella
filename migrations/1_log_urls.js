@@ -23,7 +23,7 @@ exports.migrate = function(client, done) {
       index: 'api-umbrella-logs-20*',
       search_type: 'scan',
       scroll: '5m',
-      size: 100,
+      size: 1000,
       body: {
         query: {
           match_all: {},
