@@ -23,7 +23,7 @@ class Api::ApiUsersController < ApplicationController
   end
 
   def create
-    @user = ApiUser.find_or_initialize_by(:email => params[:email], :website => params[:website])
+    @user = ApiUser.find_or_initialize_by(:email => params[:email], :website => params[:website], :registration_source => params[:registration_source])
     @user.no_domain_signup = true
 
     # Only allow the use description to be set if something is actually passed
