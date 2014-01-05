@@ -21,7 +21,7 @@ _.extend(MigrateLogs.prototype, {
   users: {},
   createdIndexes: {},
   commands: [],
-  startTime: moment.utc(),
+  startTime: moment.utc('2013-12-02 00:00:00'),
   endTime: moment.utc('2010-07-01 00:00:00'),
 
   initialize: function() {
@@ -245,9 +245,9 @@ _.extend(MigrateLogs.prototype, {
       }
     }
 
-    logCleaner.all(this.elasticSearch, newLog);
-
-    this.cargo.push(newLog);
+    logCleaner.all(this.elasticSearch, newLog, function(error, log) {
+      this.cargo.push(log);
+    }.bind(this));
   },
 
   bulkIndex: function(logs, callback) {
