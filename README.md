@@ -14,7 +14,7 @@ In the API Umbrella stack, the Gatekeeper is represented below:
 
 ## Usage
 
-See [Running API Umbrella]() for setup instructions.
+See [Running API Umbrella](https://github.com/NREL/api-umbrella#running-api-umbrella) for setup instructions.
 
 ## Features
 
