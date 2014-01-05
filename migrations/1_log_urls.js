@@ -144,7 +144,18 @@ exports.migrate = function(client, done) {
                               console.info('UPDATE ALIAS ERROR: ', error);
                             }
 
-                            callback(null);
+                            console.info('Optimizing ', newIndex);
+                            elasticSearch.indices.optimize({
+                              index: newIndex,
+                              maxNumSegments: 1,
+                            }, function(error) {
+                              if(error) {
+                                console.info('OPTIMIZE ALIAS ERROR: ', error);
+                              }
+
+                              console.info('Finished optimizing');
+                              callback(null);
+                            });
                           });
                         }
                       });
