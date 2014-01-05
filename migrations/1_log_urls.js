@@ -130,11 +130,12 @@ exports.migrate = function(client, done) {
                           console.info('DELETE INDEX ERROR: ', error);
                           callback(null);
                         } else {
+                          var readIndex = newIndex.replace(/-v1-/, '-');
                           var writeIndex = newIndex.replace(/v1/, 'write');
                           elasticSearch.indices.updateAliases({
                             body: {
                               actions: [
-                                { add: { index: newIndex, alias: oldIndex } },
+                                { add: { index: newIndex, alias: readIndex } },
                                 { add: { index: newIndex, alias: writeIndex } },
                               ],
                             },
