@@ -15,5 +15,8 @@
 <div id="results_table">
   {{view Admin.StatsMapTableView modelBinding='model'}}
 </div>
+<div class="results-table-actions">
+  <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
+</div>
 
 {{view Admin.LoadingOverlayView isLoadingBinding='controllers.application.isLoading'}}

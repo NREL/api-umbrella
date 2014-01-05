@@ -1,0 +1,21 @@
+csv << [
+  "Email",
+  "First Name",
+  "Last Name",
+  "Signed Up",
+  "Hits",
+  "Last Request",
+  "Use Description",
+]
+
+@user_data.each do |row|
+  csv << [
+    row[:email],
+    row[:first_name],
+    row[:last_name],
+    row[:created_at],
+    row[:hits],
+    row[:last_request_at],
+    row[:use_description],
+  ]
+end

@@ -74,6 +74,7 @@ gem "childprocess", "~> 0.3.9"
 
 # Views/templates for APIs
 gem "rabl", "~> 0.9.2"
+gem "csv_builder", "~> 2.1.1"
 
 # Country and state name lookups
 gem "countries", "~> 0.9.3"

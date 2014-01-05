@@ -17,7 +17,7 @@ Admin.StatsMapTableView = Ember.View.extend({
       "aoColumns": [
         {
           mData: "name",
-          sTitle: "Name",
+          sTitle: "Location",
           sDefaultContent: "-",
           mRender: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {

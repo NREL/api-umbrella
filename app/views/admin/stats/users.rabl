@@ -1,6 +1,5 @@
 object false
 
-
 node(:sEcho) { params[:sEcho] }
 node(:iTotalRecords) { @total }
 node(:iTotalDisplayRecords) { @total }

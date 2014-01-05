@@ -120,6 +120,8 @@ GEM
       term-ansicolor
       thor
     crummy (1.8.0)
+    csv_builder (2.1.1)
+      actionpack (>= 3.0.0)
     currencies (0.4.2)
     daemons (1.1.9)
     delayed_job (3.0.5)
@@ -442,6 +444,7 @@ DEPENDENCIES
   countries (~> 0.9.3)
   coveralls (~> 0.7.0)
   crummy (~> 1.8.0)
+  csv_builder (~> 2.1.1)
   daemons (~> 1.1.9)
   delayed_job_mongoid (~> 2.0.0)
   devise (~> 3.2.2)

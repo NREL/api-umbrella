@@ -1,0 +1,18 @@
+csv << [
+  "Location",
+  "Hits",
+]
+
+@result.facets["regions"]["terms"].each do |term|
+  csv << [
+    region_name(term["term"]),
+    term["count"],
+  ]
+end
+
+if(@result.facets["regions"]["missing"] > 0)
+  csv << [
+    "Unknown",
+    @result.facets["regions"]["missing"],
+  ]
+end

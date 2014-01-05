@@ -1,0 +1,10 @@
+csv << [
+  "Time",
+  "Method",
+  "URL",
+  "User",
+  "IP Address",
+  "Country",
+  "State",
+]
+

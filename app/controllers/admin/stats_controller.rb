@@ -35,10 +35,16 @@ class Admin::StatsController < Admin::BaseController
       :interval => params[:interval],
     })
 
+    offset = params["iDisplayStart"].to_i
+    limit = params["iDisplayLength"].to_i
+    if(request.format == "csv")
+      limit = 100_000
+    end
+
     @search.search!(params[:search])
     @search.filter_by_date_range!
-    @search.offset!(params["iDisplayStart"])
-    @search.limit!(params["iDisplayLength"])
+    @search.offset!(offset)
+    @search.limit!(limit)
 
     sort = datatables_sort
     if(sort.any?)
@@ -56,6 +62,9 @@ class Admin::StatsController < Admin::BaseController
 
     offset = params["iDisplayStart"].to_i
     limit = params["iDisplayLength"].to_i
+    if(request.format == "csv")
+      limit = 100_000
+    end
 
     sort = datatables_sort.first
     sort_field = sort.keys.first if(sort)
@@ -128,6 +137,11 @@ class Admin::StatsController < Admin::BaseController
 
       @user_data = @user_data.slice(offset, limit)
     end
+
+    respond_to do |format|
+      format.json
+      format.csv
+    end
   end
 
   def map
@@ -142,6 +156,11 @@ class Admin::StatsController < Admin::BaseController
     @search.facet_by_region!
 
     @result = @search.result
+
+    respond_to do |format|
+      format.json
+      format.csv
+    end
   end
 
   private

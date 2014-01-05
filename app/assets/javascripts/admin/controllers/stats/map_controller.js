@@ -17,6 +17,10 @@ Admin.StatsMapController = Admin.StatsBaseController.extend({
 
     return crumbs;
   }.property('model.breadcrumb'),
+
+  downloadUrl: function() {
+    return '/admin/stats/map.csv?' + $.param(this.get('query.params'));
+  }.property('query.params'),
 });
 
 Admin.StatsMapDefaultController = Admin.StatsMapController.extend({
