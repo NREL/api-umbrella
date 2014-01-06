@@ -10,6 +10,7 @@ var _ = require('lodash'),
     mime = require('mime'),
     moment = require('moment'),
     MongoClient = require('mongodb').MongoClient,
+    mongoConnect = require('../lib/mongo_connect'),
     ObjectID = require('mongodb').ObjectID,
     URLSafeBase64 = require('urlsafe-base64');
 
@@ -40,6 +41,7 @@ _.extend(MigrateLogs.prototype, {
     this.cargo = async.cargo(this.bulkIndex.bind(this), 1000);
 
     async.series([
+      mongoConnect,
       this.connectMongo.bind(this),
       this.fetchUsers.bind(this),
       this.migrate.bind(this),
@@ -156,6 +158,7 @@ _.extend(MigrateLogs.prototype, {
     }).sort({ '_id': -1 });
 
     this.count = 0;
+    this.cargoPushes = 0;
 
     this.cursor.each(function(error, oldLog) {
       if(error) {
@@ -178,6 +181,10 @@ _.extend(MigrateLogs.prototype, {
             var rate = this.count / duration;
             console.info('  Processed ' + this.count + ' in: ' + duration + ' seconds (' + rate + ' records/second)');
 
+            if(this.count !== this.cargoPushes) {
+              console.info('  WARNING: Counts don\'t match: ' + this.count + ' vs ' + this.cargoPushes);
+            }
+
             this.cargo.drain = null;
             this.finishChunk(chunkEndTime, asyncWhilstCallback);
           }.bind(this);
@@ -191,12 +198,15 @@ _.extend(MigrateLogs.prototype, {
     this.chunkStartTime = moment(chunkEndTime).subtract('hours', 2);
 
     if(chunkEndTime.date() === 1 && chunkEndTime.hour() === 1) {
+      asyncWhilstCallback(null);
+      /*
       var optimizeTimerStart = Date.now();
       var index = 'api-umbrella-logs-write-' + config.environment + '-' + chunkEndTime.format('YYYY-MM');
       console.info('== Optimizing ' + index + ' ==');
       this.elasticSearch.indices.optimize({
         index: index,
         maxNumSegments: 1,
+        requestTimeout: 1800000,
       }, function(error) {
         if(error) {
           console.error(error);
@@ -208,6 +218,7 @@ _.extend(MigrateLogs.prototype, {
         console.info('  Optimized ' + index + ' in: ' + duration + ' seconds');
         asyncWhilstCallback(null);
       });
+      */
     } else {
       asyncWhilstCallback(null);
     }
@@ -246,6 +257,7 @@ _.extend(MigrateLogs.prototype, {
     }
 
     logCleaner.all(this.elasticSearch, newLog, function(error, log) {
+      this.cargoPushes++;
       this.cargo.push(log);
     }.bind(this));
   },
@@ -270,7 +282,7 @@ _.extend(MigrateLogs.prototype, {
       commands.push(log);
     }
 
-    this.elasticSearch.bulk({ body: commands }, function(error) {
+    this.elasticSearch.bulk({ body: commands, requestTimeout: 120000 }, function(error) {
       if(error) {
         console.error(error);
         process.exit(1);
