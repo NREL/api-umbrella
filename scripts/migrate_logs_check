@@ -1,0 +1,88 @@
+#!/usr/bin/env node
+'use strict';
+
+var _ = require('lodash'),
+    async = require('async'),
+    config = require('../lib/config'),
+    elasticSearchConnect = require('../lib/elasticsearch_connect'),
+    moment = require('moment'),
+    mongoConnect = require('../lib/mongo_connect'),
+    mongoose = require('mongoose'),
+    ObjectID = require('mongodb').ObjectID;
+
+var ApiRequestLog = mongoose.model('ApiRequestLog', new mongoose.Schema({
+}, { collection: 'api_request_logs' }));
+
+var MigrateCheck = function() {
+  this.initialize.apply(this, arguments);
+};
+
+_.extend(MigrateCheck.prototype, {
+  startTime: moment.utc('2013-12-03 00:00:00'),
+  endTime: moment.utc('2010-07-01 00:00:00'),
+
+  initialize: function() {
+    async.series([
+      mongoConnect,
+      this.connectElasticsearch.bind(this),
+      this.checkCounts.bind(this),
+    ], function(error) {
+      if(error) {
+        console.info(error);
+      }
+    });
+  },
+
+  connectElasticsearch: function(asyncReadyCallback) {
+    elasticSearchConnect(function(error, client) {
+      this.elasticSearch = client;
+      asyncReadyCallback(error);
+    }.bind(this));
+  },
+
+  checkCounts: function() {
+    var days = [];
+    for(var day = this.startTime; day.isAfter(this.endTime); day = moment(day).subtract('days', 1)) {
+      days.push(day);
+    }
+
+    async.eachSeries(days, function(day, callback) {
+      var end = moment(day).add('days', 1);
+      var index = 'api-umbrella-logs-' + config.environment + '-' + moment(day).utc().format('YYYY-MM');
+      this.elasticSearch.count({
+        index: index,
+        ignoreIndices: 'missing',
+        body: {
+          filtered: {
+            filter: {
+              range: {
+                request_at: {
+                  gte: day.toISOString(),
+                  lt: end.toISOString(),
+                },
+              },
+            },
+          },
+        },
+      }, function(error, response) {
+        var elasticSearchCount = response.count;
+
+        ApiRequestLog.count({
+          '_id': {
+            '$gte': ObjectID.createFromTime(day.unix()),
+            '$lt': ObjectID.createFromTime(end.unix()),
+          },
+        }, function(error, mongoCount) {
+          if(elasticSearchCount !== mongoCount) {
+            console.info(day.toString() + ': ERROR: Counts do not match: ElasticSearch: ' + elasticSearchCount + ' MongoDB: ' + mongoCount);
+          } else {
+            console.info(day.toString() + ': Counts match');
+          }
+          callback(null);
+        });
+      });
+    }.bind(this));
+  },
+});
+
+new MigrateCheck();
