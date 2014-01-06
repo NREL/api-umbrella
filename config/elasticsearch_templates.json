@@ -108,8 +108,35 @@
               "type": "string",
               "analyzer": "path_hierarchy_lowercase"
             },
+            "request_size": {
+              "type": "integer"
+            },
             "response_status": {
               "type": "short"
+            },
+            "response_age": {
+              "type": "integer"
+            },
+            "response_content_length": {
+              "type": "integer"
+            },
+            "response_size": {
+              "type": "integer"
+            },
+            "response_time": {
+              "type": "integer"
+            },
+            "backend_response_time": {
+              "type": "integer"
+            },
+            "proxy_overhead": {
+              "type": "integer"
+            },
+            "internal_response_time": {
+              "type": "float"
+            },
+            "internal_gatekeeper_time": {
+              "type": "float"
             },
             "request_ip_location": {
               "type": "geo_point",
