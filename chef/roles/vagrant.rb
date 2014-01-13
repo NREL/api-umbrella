@@ -16,6 +16,9 @@ override_attributes({
   :common_writable_group => "vagrant",
   :nginx => {
     :user => "vagrant",
+    :source => {
+      :use_existing_user => true,
+    },
   },
   :passenger => {
     :default_user => "vagrant",

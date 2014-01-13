@@ -2,20 +2,8 @@ name "base"
 description "A base role all servers."
 
 run_list([
-  # Ensure any custom root certificate changes get made prior to any HTTPS
-  # calls.
-  "recipe[ca_certificates]",
-
   # Keep the Chef omnibus installation up-to-date.
   "recipe[omnibus_updater]",
-
-  # Varnish doesn't seem to get along with SELinux. Should investigate more.
-  "recipe[selinux::permissive]",
-
-  # Manage the sudoers file
-  "recipe[sudo]",
-  "recipe[sudo::nrel_defaults]",
-  "recipe[sudo::secure_path]",
 
   # Default iptables setup on all servers.
   "recipe[iptables]",
@@ -43,9 +31,6 @@ run_list([
   # Ensure ntp is used to keep clocks in sync.
   "recipe[ntp]",
 
-  # Standardize the shasum implementation (used for deployments).
-  "recipe[shasum]",
-
   # Screen is always nice to have for background processes.
   "recipe[screen]",
 
@@ -55,9 +40,6 @@ run_list([
   # Default editors that are handy to have on all servers.
   "recipe[vim]",
   "recipe[nano]",
-
-  # Unzip is typically handy to have.
-  "recipe[unzip]",
 ])
 
 default_attributes({
@@ -66,17 +48,16 @@ default_attributes({
       :include_sudoers_d => true,
       :groups => [
         "wheel",
-        "UnixISODesktopAdmins",
-        "UnixISOServerAdmins",
-        "rsa",
       ],
     },
   },
+
   :chef_client => {
     :verbose_logging => false,
     :server_url => "https://api.opscode.com/organizations/apidatagov",
     :validation_client_name => "apidatagov-validator",
   },
+
   # Rotate and compress logs daily by default.
   :logrotate => {
     :frequency => "daily",
@@ -86,7 +67,8 @@ default_attributes({
   },
 
   :omnibus_updater => {
-    :version => "11.8.0",
+    :version => "11.8.2",
+    :always_download => false,
     :remove_chef_system_gem => true,
   },
 })

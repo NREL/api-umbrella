@@ -1,0 +1,205 @@
+{
+  "sources": {
+    "ack": {
+      "locked_version": "0.1.1",
+      "git": "git://github.com/NREL-cookbooks/ack.git",
+      "ref": "5322a188a84a1a848460e56b2b9c1e70915ddb50"
+    },
+    "acl": {
+      "locked_version": "0.1.0",
+      "git": "git://github.com/NREL-cookbooks/acl.git",
+      "ref": "44ab2ff871e0be9ddce1947898f39002cfccb3bd"
+    },
+    "api-umbrella": {
+      "locked_version": "0.2.1",
+      "git": "git://github.com/NREL-cookbooks/api-umbrella.git",
+      "ref": "0d5eabff250efe71e529683a992459ce42a5bf64"
+    },
+    "bundler": {
+      "locked_version": "0.1.4",
+      "git": "git://github.com/NREL-cookbooks/bundler.git",
+      "ref": "e9a431ebed41cb4d78af888f5013cf213436e93b"
+    },
+    "chef-client": {
+      "locked_version": "3.2.0"
+    },
+    "envbuilder": {
+      "locked_version": "0.2.0",
+      "git": "git://github.com/theodi/chef-envbuilder.git",
+      "ref": "27252c8b85be41067ce364d62f9779855c5108b0"
+    },
+    "etc": {
+      "locked_version": "0.0.2",
+      "git": "git://github.com/NREL-cookbooks/etc.git",
+      "ref": "2c04be5fd96df4154a378f427a5cec0a130e7ef1"
+    },
+    "fail2ban": {
+      "locked_version": "2.1.2"
+    },
+    "geoip": {
+      "locked_version": "0.1.0",
+      "git": "git://github.com/NREL-cookbooks/geoip.git",
+      "ref": "6b22ea85584ba64e2981fe96929df7228e46da2e"
+    },
+    "iptables": {
+      "locked_version": "0.10.1",
+      "git": "git://github.com/NREL-cookbooks/iptables.git",
+      "ref": "1f28434d71b19e59042ef4ce63e7d04d0a090e39"
+    },
+    "mongodb": {
+      "locked_version": "0.14.4",
+      "git": "git://github.com/NREL-cookbooks/mongodb.git",
+      "ref": "7320588f508de41aa3bdbac9240b67aba57a8fb6"
+    },
+    "nano": {
+      "locked_version": "1.0.0"
+    },
+    "nginx": {
+      "locked_version": "2.2.0",
+      "git": "git://github.com/NREL-cookbooks/nginx.git",
+      "ref": "ed893177fa1bc06598bef6923efbe4d8aa7ec050"
+    },
+    "nodejs": {
+      "locked_version": "1.3.0",
+      "git": "git://github.com/NREL-cookbooks/nodejs.git",
+      "ref": "9309c030eff2af382c7325eac6a1f44782b8a641"
+    },
+    "openssh": {
+      "locked_version": "1.3.2"
+    },
+    "omnibus_updater": {
+      "locked_version": "0.2.8"
+    },
+    "pygments": {
+      "locked_version": "0.0.1",
+      "git": "git://github.com/NREL-cookbooks/pygments.git",
+      "ref": "a77b570318669ffd2cc870ffb4f0219f656f71b3"
+    },
+    "rbenv": {
+      "locked_version": "0.7.3",
+      "git": "git://github.com/NREL-cookbooks/rbenv.git",
+      "ref": "7ab5edd2444cb283b4bbd054884e8c42a775c424"
+    },
+    "redis": {
+      "locked_version": "0.1.7",
+      "git": "git://github.com/NREL-cookbooks/redis.git",
+      "ref": "215f3647f8940f6caf5fba70c67994cc1e03cf73"
+    },
+    "rubygems": {
+      "locked_version": "0.1.2",
+      "git": "git://github.com/NREL-cookbooks/rubygems.git",
+      "ref": "58f26908163934b928808a41cbf7c9b2bd6500a7"
+    },
+    "screen": {
+      "locked_version": "0.8.0"
+    },
+    "shasum": {
+      "locked_version": "0.0.1",
+      "git": "git://github.com/NREL-cookbooks/shasum.git",
+      "ref": "b0fe98341f7d2f657fe4ed37ba2c3f9161ee0369"
+    },
+    "sudo": {
+      "locked_version": "2.2.3",
+      "git": "git://github.com/NREL-cookbooks/sudo.git",
+      "ref": "084d85ea2280ade6eedd8d2936e4f6fd16ee4989"
+    },
+    "supervisor": {
+      "locked_version": "0.4.11",
+      "git": "git://github.com/NREL-cookbooks/supervisor.git",
+      "ref": "ab5b015c7747fa19d4709cdb250c7922fa5bdefb"
+    },
+    "vagrant_extras": {
+      "locked_version": "0.2.1",
+      "git": "git://github.com/NREL-cookbooks/vagrant_extras.git",
+      "ref": "0ba239057358f05400a9831ef472c2907cb662a5"
+    },
+    "varnish": {
+      "locked_version": "0.9.11",
+      "git": "git://github.com/NREL-cookbooks/varnish.git",
+      "ref": "fdcf18d93664efde8f8bb4f9d6bd8bcddb782fcf"
+    },
+    "vim": {
+      "locked_version": "1.1.2"
+    },
+    "yum": {
+      "locked_version": "2.4.1",
+      "git": "git://github.com/NREL-cookbooks/yum.git",
+      "ref": "a94cb2f1c63017830966cef48dd69b40c609e7f2"
+    },
+    "zsh": {
+      "locked_version": "1.0.0"
+    },
+    "elasticsearch": {
+      "locked_version": "0.3.7"
+    },
+    "build-essential": {
+      "locked_version": "1.4.2"
+    },
+    "xml": {
+      "locked_version": "1.2.0"
+    },
+    "java": {
+      "locked_version": "1.17.4"
+    },
+    "windows": {
+      "locked_version": "1.12.6"
+    },
+    "chef_handler": {
+      "locked_version": "1.1.4"
+    },
+    "aws": {
+      "locked_version": "1.0.0"
+    },
+    "monit": {
+      "locked_version": "0.7.1"
+    },
+    "ark": {
+      "locked_version": "0.4.2"
+    },
+    "git": {
+      "locked_version": "2.9.0"
+    },
+    "dmg": {
+      "locked_version": "2.1.2"
+    },
+    "runit": {
+      "locked_version": "1.5.8"
+    },
+    "yum-epel": {
+      "locked_version": "0.2.0"
+    },
+    "logrotate": {
+      "locked_version": "1.4.0"
+    },
+    "man": {
+      "locked_version": "0.7.0"
+    },
+    "ntp": {
+      "locked_version": "1.5.4"
+    },
+    "ruby_build": {
+      "locked_version": "0.8.0"
+    },
+    "selinux": {
+      "locked_version": "0.6.2"
+    },
+    "cron": {
+      "locked_version": "1.2.8"
+    },
+    "apt": {
+      "locked_version": "2.3.4"
+    },
+    "python": {
+      "locked_version": "1.4.4"
+    },
+    "bluepill": {
+      "locked_version": "2.3.1"
+    },
+    "rsyslog": {
+      "locked_version": "1.10.2"
+    },
+    "ohai": {
+      "locked_version": "1.1.12"
+    }
+  }
+}

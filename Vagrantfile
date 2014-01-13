@@ -10,11 +10,11 @@ Vagrant.configure("2") do |config|
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "CentOS-6.4-#{box_arch}-v20131103"
+  config.vm.box = "CentOS-6.5-#{box_arch}-v20140110"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  config.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.4-#{box_arch}-v20131103.box"
+  config.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.5-#{box_arch}-v20140110.box"
 
   # Boot with a GUI so you can see the screen. (Default is headless)
   # config.vm.boot_mode = :gui
@@ -54,7 +54,22 @@ Vagrant.configure("2") do |config|
     # HTTP requests.
     vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
   end
-  
+
+  # The path to the Berksfile to use with Vagrant Berkshelf
+  # config.berkshelf.berksfile_path = "./Berksfile"
+
+  # Enabling the Berkshelf plugin. To enable this globally, add this configuration
+  # option to your ~/.vagrant.d/Vagrantfile file
+  config.berkshelf.enabled = true
+
+  # An array of symbols representing groups of cookbook described in the Vagrantfile
+  # to exclusively install and copy to Vagrant's shelf.
+  # config.berkshelf.only = []
+
+  # An array of symbols representing groups of cookbook described in the Vagrantfile
+  # to skip installing and copying to Vagrant's shelf.
+  # config.berkshelf.except = []
+
   # Our site's nginx config files resides on the /vagrant share. Since this
   # isn't mounted at boot time, always restart things after the server and
   # shares are completely up.
@@ -65,15 +80,21 @@ Vagrant.configure("2") do |config|
   # path, and data_bags path (all relative to this Vagrantfile), and adding
   # some recipes and/or roles.
   config.vm.provision :chef_solo do |chef|
-    chef.cookbooks_path = "chef/cookbooks"
     chef.roles_path = "chef/roles"
     chef.data_bags_path = "chef/data_bags"
+    chef.formatter = "doc"
 
-    #chef.log_level = :debug
+    # FIXME: Temporary workaround for chef logging in Vagrant:
+    # https://tickets.opscode.com/browse/CHEF-4725
+    chef.custom_config_path = "chef/streaming_fix.rb"
 
-    chef.add_role "api_umbrella_db_vagrant"
-    chef.add_role "api_umbrella_log_base"
-    chef.add_role "api_umbrella_router_vagrant"
-    chef.add_role "api_umbrella_web_vagrant"
+    chef.run_list = [
+      "role[vagrant]",
+      "role[base_development]",
+      "recipe[api-umbrella::db]",
+      "recipe[api-umbrella::log]",
+      "recipe[api-umbrella::router]",
+      "recipe[api-umbrella::web]",
+    ]
   end
 end

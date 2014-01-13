@@ -48,6 +48,9 @@ The easiest way to get started with API Umbrella is to use [Vagrant](http://vagr
 First install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://vagrantup.com/) on your computer. Then follow these steps:
 
 ```sh
+# Install the Vagrant Berkshelf plugin
+$ vagrant plugin install vagrant-berkshelf
+
 # Get the code
 $ git clone https://github.com/NREL/api-umbrella.git
 $ cd api-umbrella
