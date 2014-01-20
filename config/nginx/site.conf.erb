@@ -18,6 +18,9 @@ upstream api_umbrella_gatekeeper_backends {
   keepalive 10;
 }
 
+# Allow any sized uploads to backends.
+client_max_body_size 0;
+
 include <%= current_path %>/config/gatekeeper/nginx*.conf;
 
 # The main, front-facing public host server. This serves up both the APIs and
