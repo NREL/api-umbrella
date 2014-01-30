@@ -91,4 +91,41 @@ module.exports = function(grunt) {
       done();
     });
   });
+
+  grunt.registerTask('cleanup_logs', 'Re-process any failed or stuck log jobs', function() {
+    var async = require('async'),
+        config = require('./lib/config'),
+        redis = require('redis');
+
+    var done = this.async();
+    var redisClient = redis.createClient(config.get('redis'));
+
+    var queues = ['cv:log_queue:processing', 'cv:log_queue:failed'];
+    async.eachSeries(queues, function(queue, queueCallback) {
+      redisClient.zrange(queue, 0, -1, function(error, ids) {
+        console.info('Re-processing ' + ids.length + ' logs for ' + queue);
+
+        async.eachSeries(ids, function(id, callback) {
+          redisClient.hgetall('log:' + id, function(error, log) {
+            if(log) {
+              console.info('Re-processing ' + id);
+              var processAt = Date.now();
+              redisClient.multi()
+                .zrem('cv:log_queue:processing', id)
+                .srem('cv:log_queue:committed', id)
+                .zadd('log_jobs', processAt, id, callback)
+                .exec(callback);
+            } else {
+              console.info('Cleaning up ' + id);
+              redisClient.multi()
+                .zrem('cv:log_queue:processing', id)
+                .zrem('cv:log_queue:failed', id)
+                .srem('cv:log_queue:committed', id)
+                .exec(callback);
+            }
+          });
+        }, queueCallback);
+      });
+    }, done);
+  });
 };
