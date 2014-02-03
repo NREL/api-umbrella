@@ -56,6 +56,9 @@ $ git clone https://github.com/NREL/api-umbrella.git
 $ cd api-umbrella
 $ git submodule update --init --recursive
 
+# Add api.vagrant to your hosts file.
+$ sudo sh -c 'echo "10.10.10.2 api.vagrant" >> /etc/hosts'
+
 # Bootstrap a local VM environment (this will take a while)
 $ vagrant up
 
