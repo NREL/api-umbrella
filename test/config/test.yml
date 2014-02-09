@@ -1,0 +1,36 @@
+apiUmbrella:
+  mongodb: "mongodb://127.0.0.1:27017/api_umbrella_test"
+  redis:
+    host: 127.0.0.1
+    port: 9736
+  nginx:
+    frontend_port: 9332
+    backend_port: 9335
+  proxy:
+    port: 9333
+    target: "127.0.0.1:9334"
+    rateLimits: []
+  varnish:
+    port: 9334
+  apis: 
+    - _id: down
+      frontend_host: localhost
+      backend_host: localhost
+      servers:
+        - host: 127.0.0.1
+          port: 9445
+      url_matches:
+        - frontend_prefix: /down
+          backend_prefix: /down
+    - _id: example
+      frontend_host: localhost
+      backend_host: localhost
+      servers:
+        - host: 127.0.0.1
+          port: 9444
+      url_matches:
+        - frontend_prefix: /
+          backend_prefix: /
+convoy:
+  keys:
+    prefix: "cv:"
