@@ -35,8 +35,8 @@ limit_req_status 429;
     listen 50090;
     server_name {{.}};
 
-    access_log {{logDir}}/access.log combined;
-    error_log {{logDir}}/error.log;
+    access_log {{../logDir}}/access.log combined;
+    error_log {{../logDir}}/error.log;
 
     # Limit the number of simulaneous connections per IP address to 50.
     limit_conn api_umbrella_conn_addr_zone 50;
