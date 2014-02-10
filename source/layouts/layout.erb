@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title><%= current_page.data.title || "API Umbrella" %></title>
+    <%= stylesheet_link_tag "all" %>
+    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway:400,300,700" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+  <body class="<%= page_classes %>">
+    <div id="navigation" class="navbar navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#"><i class="fa fa-umbrella"></i> <b>API Umbrella</b></a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="<%= "active" if(current_page.url == "/") %>"><a href="/">Home</a></li>
+            <li class="<%= "active" if(current_page.url =~ %r{^/docs/}) %>"><a href="/docs/">Documentation</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <% if(current_page.data.header) %>
+      <header>
+        <div class="container">
+          <h1><%= current_page.data.header %></h1>
+        </div>
+      </header>
+    <% end %>
+
+    <%= yield %>
+
+    <%= javascript_include_tag "all" %>
+  </body>
+</html>
