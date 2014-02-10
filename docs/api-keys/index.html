@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>API Keys - Documentation - API Umbrella</title>
+    <link href="/stylesheets/all-eca34f2b.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway:400,300,700" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+  <body class="docs docs_api-keys docs_api-keys_index">
+    <div id="navigation" class="navbar navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#"><i class="fa fa-umbrella"></i> <b>API Umbrella</b></a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class=""><a href="/">Home</a></li>
+            <li class="active"><a href="/docs/">Documentation</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    
+      <header>
+        <div class="container">
+          <h1>Documentation</h1>
+        </div>
+      </header>
+    
+
+      <div class="container">
+    <div class="row">
+      <nav class="col-md-3">
+        <ul>
+  <li class="">
+    <a href="/docs/architecture/">Architecture</a>
+  </li>
+  <li class="active">
+    <a href="/docs/api-keys/">API Keys</a>
+  </li>
+  <li class="">
+    <a href="/docs/backend-headers/">Backend HTTP Headers</a>
+  </li>
+  <li class="">
+    <a href="/docs/caching/">Caching</a>
+  </li>
+</ul>
+
+      </nav>
+      <div class="col-md-9">
+        <h2 id="api-keys">API Keys</h2>
+
+<p>A user may pass their API key in one of several ways. In order of precedence, </p>
+
+<h3 id="http-header">HTTP Header</h3>
+
+<p>Pass the API key into the <code>X-Api-Key</code> header:</p>
+
+<pre class="highlight shell">curl -H <span class="s1">'X-Api-Key: DEMO_KEY'</span> <span class="s1">'http://example.com/api'</span>
+</pre>
+<h3 id="get-query-param">GET Query Param</h3>
+
+<p>Pass the API key into the <code>api_key</code> GET query string parameter:</p>
+
+<pre class="highlight shell">curl <span class="s1">'http://example.com/api?api_key=DEMO_KEY'</span>
+</pre>
+<p><em>Note:</em> The GET query parameter may be used for non-GET requests (such as POST and PUT).</p>
+
+<h3 id="http-basic-auth-username">HTTP Basic Auth Username</h3>
+
+<p>As an alternative, pass the API key as the username (with an empty password) using HTTP basic authentication:</p>
+
+<pre class="highlight shell">curl <span class="s1">'http://DEMO_KEY@example.com/api'</span>
+</pre>
+      </div>
+    </div>
+  </div>
+
+
+    <script src="/javascripts/all-acef642d.js" type="text/javascript"></script>
+  </body>
+</html>
