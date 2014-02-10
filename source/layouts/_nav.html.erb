@@ -1,14 +1,14 @@
 <ul>
   <li class="<%= "active" if(current_page.url == "/docs/architecture/") %>">
-    <a href="/docs/architecture/">Architecture</a>
+    <%= link_to("Architecture", "/docs/architecture/") %>
   </li>
   <li class="<%= "active" if(current_page.url == "/docs/api-keys/") %>">
-    <a href="/docs/api-keys/">API Keys</a>
+    <%= link_to("API Keys", "/docs/api-keys/") %>
   </li>
   <li class="<%= "active" if(current_page.url == "/docs/backend-headers/") %>">
-    <a href="/docs/backend-headers/">Backend HTTP Headers</a>
+    <%= link_to("Backend HTTP Headers", "/docs/backend-headers/") %>
   </li>
   <li class="<%= "active" if(current_page.url == "/docs/caching/") %>">
-    <a href="/docs/caching/">Caching</a>
+    <%= link_to("Caching", "/docs/caching/") %>
   </li>
 </ul>

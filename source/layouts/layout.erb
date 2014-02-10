@@ -22,8 +22,8 @@
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li class="<%= "active" if(current_page.url == "/") %>"><a href="/">Home</a></li>
-            <li class="<%= "active" if(current_page.url =~ %r{^/docs/}) %>"><a href="/docs/">Documentation</a></li>
+            <li class="<%= "active" if(current_page.url == "/") %>"><%= link_to("Home", "/") %></li>
+            <li class="<%= "active" if(current_page.url =~ %r{^/docs/}) %>"><%= link_to("Documentation", "/docs/") %></li>
           </ul>
         </div>
       </div>
