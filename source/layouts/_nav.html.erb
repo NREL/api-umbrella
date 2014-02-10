@@ -1,14 +1,14 @@
 <ul>
   <li class="<%= "active" if(current_page.url == "/docs/architecture/") %>">
-    <%= link_to("Architecture", "/docs/architecture/") %>
+    <%= link_to("Architecture", "/docs/architecture.html", :relative => true) %>
   </li>
   <li class="<%= "active" if(current_page.url == "/docs/api-keys/") %>">
-    <%= link_to("API Keys", "/docs/api-keys/") %>
+    <%= link_to("API Keys", "/docs/api-keys.html", :relative => true) %>
   </li>
   <li class="<%= "active" if(current_page.url == "/docs/backend-headers/") %>">
-    <%= link_to("Backend HTTP Headers", "/docs/backend-headers/") %>
+    <%= link_to("Backend HTTP Headers", "/docs/backend-headers.html", :relative => true) %>
   </li>
   <li class="<%= "active" if(current_page.url == "/docs/caching/") %>">
-    <%= link_to("Caching", "/docs/caching/") %>
+    <%= link_to("Caching", "/docs/caching.html", :relative => true) %>
   </li>
 </ul>
