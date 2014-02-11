@@ -32,7 +32,7 @@ Admin.ApiUser = Ember.Model.extend({
 
   setDefaults: function() {
     if(this.get('throttleByIp') === undefined) {
-      this.set('throttleByIp', true);
+      this.set('throttleByIp', false);
     }
 
     if(this.get('enabled') === undefined) {
