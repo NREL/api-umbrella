@@ -5,6 +5,8 @@ require('../test_helper');
 var async = require('async'),
     fs = require('fs'),
     http = require('http'),
+    net = require('net'),
+    randomstring = require('randomstring'),
     stk = require('stream-tk'),
     temp = require('temp');
 
@@ -12,7 +14,7 @@ temp.track();
 
 describe('proxying', function() {
   beforeEach(function(done) {
-    Factory.create('api_user', function(user) {
+    Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.apiKey = user.api_key;
       done();
     }.bind(this));
@@ -121,6 +123,101 @@ describe('proxying', function() {
       var form = req.form();
       form.append('upload', fs.createReadStream(stream.path));
     }.bind(this));
+  });
+
+  describe('header size', function() {
+    function requestOfHeaderSize(options, callback) {
+      var rawRequest = 'GET /info/ HTTP/1.1\r\n' +
+        'X-Api-Key: ' + options.apiKey + '\r\n' +
+        'Host: localhost:9080\r\n' +
+        'Connection: close\r\n';
+
+      var index = 5;
+      while(rawRequest.length < options.size) {
+        if(index > options.numHeaders) {
+          break;
+        }
+
+        var headerName = 'X-Test' + index + ': ';
+        rawRequest += headerName +
+          randomstring.generate(options.lineLength - headerName.length - 2) +
+          '\r\n';
+        index++;
+      }
+
+      rawRequest = rawRequest.substring(0, options.size - 4) + '\r\n\r\n';
+
+      if(options.numHeaders) {
+        rawRequest.replace(/\s*$/, '').split('\r\n').length.should.eql(options.numHeaders);
+      } else {
+        rawRequest.length.should.eql(options.size);
+      }
+
+      var client = net.connect(9080, '127.0.0.1', function() {
+        client.write(rawRequest);
+      });
+
+      var response = '';
+      client.on('data', function(data) {
+        response += data.toString();
+      });
+
+      client.on('end', function() {
+        var parts = response.split('\r\n\r\n');
+        callback(parts[0], parts[1]);
+      });
+    }
+
+    it('allows a total header size of up to 32KB-ish', function(done) {
+      requestOfHeaderSize({ size: 32000, lineLength: 4048, apiKey: this.apiKey }, function(headers, body) {
+        headers.should.contain('200 OK');
+        body.should.contain('"x-test5":');
+        done();
+      });
+    });
+
+    it('returns 400 bad request when the total header size exceeds 32KB-ish', function(done) {
+      requestOfHeaderSize({ size: 34000, lineLength: 4048, apiKey: this.apiKey }, function(headers) {
+        headers.should.contain('400 Bad Request');
+        done();
+      });
+    });
+
+    it('allows an individual header to be 8KB', function(done) {
+      requestOfHeaderSize({ size: 12000, lineLength: 8192, apiKey: this.apiKey }, function(headers, body) {
+        headers.should.contain('200 OK');
+
+        var data = JSON.parse(body);
+        var headerLength = data.headers['x-test5'].length;
+        headerLength += 'x-test5: \r\n'.length;
+        headerLength.should.eql(8192);
+
+        done();
+      });
+    });
+
+    it('returns 400 bad request when an individual header exceeds 8KB', function(done) {
+      requestOfHeaderSize({ size: 12000, lineLength: 8193, apiKey: this.apiKey }, function(headers) {
+        headers.should.contain('400 Bad Request');
+        done();
+      });
+    });
+
+    it('allows up to 53 header lines', function(done) {
+      requestOfHeaderSize({ size: 12000, lineLength: 24, numHeaders: 53, apiKey: this.apiKey }, function(headers, body) {
+        headers.should.contain('200 OK');
+        body.should.contain('"x-test53":');
+        body.should.not.contain('"x-test54":');
+        done();
+      });
+    });
+
+    it('returns 413 request entity too large when the number of header lines exceeds 53', function(done) {
+      requestOfHeaderSize({ size: 12000, lineLength: 24, numHeaders: 54, apiKey: this.apiKey }, function(headers) {
+        headers.should.contain('413 Request Entity Too Large');
+        done();
+      });
+    });
   });
 
   describe('timeouts', function() {

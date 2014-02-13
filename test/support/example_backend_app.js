@@ -1,12 +1,20 @@
 'use strict';
 
-var express = require('express');
+var express = require('express'),
+    url = require('url');
 
 var app = express();
 app.use(express.bodyParser());
 
 app.use(function(req, res, next) {
   next();
+});
+
+app.all('/info/*', function(req, res) {
+  res.json({
+    headers: req.headers,
+    url: url.parse(req.protocol + '://' + req.host + req.url, true),
+  });
 });
 
 app.post('/upload', function(req, res) {
