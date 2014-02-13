@@ -79,8 +79,20 @@ before(function(done) {
     // Spin up the process;
     var server = spawn(processConfig.command, processConfig.args, processConfig.options);
 
-    server.on('close', function (code) {
+    var stdout = '';
+    var stderr = '';
+
+    server.stdout.on('data', function(message) {
+      stdout += message.toString();
+    });
+
+    server.stderr.on('data', function(message) {
+      stderr += message.toString();
+    });
+
+    server.on('close', function(code) {
       console.error(processConfig.command + ' exited with:', code);
+      console.error(processConfig.command + ' STDERR:', stderr);
       process.exit(1);
     });
 
