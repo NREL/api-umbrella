@@ -309,6 +309,38 @@ describe('ApiUmbrellaGatekeper', function() {
       });
     });
 
+    describe('multiple limits with response headers being the non-first limit', function() {
+      shared.runServer({
+        apiSettings: {
+          rate_limits: [
+            {
+              duration: 10 * 1000, // 10 second
+              accuracy: 1000, // 1 second
+              limit_by: 'apiKey',
+              limit: 3,
+              response_headers: false,
+            }, {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'apiKey',
+              limit: 10,
+              response_headers: true,
+              distributed: true,
+            }
+          ]
+        }
+      });
+
+      it('returns over rate limit errors for each request, even if the first limit has been exceeded', function(done) {
+        async.timesSeries(15, function(index, asyncCallback) {
+          request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, function(error, response) {
+            response.headers['x-ratelimit-limit'].should.eql('10');
+            asyncCallback(null);
+          });
+        }.bind(this), done);
+      });
+    });
+
     describe('ip based rate limits', function() {
       shared.runServer({
         apiSettings: {
