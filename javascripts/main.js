@@ -1,1 +1,0 @@
-$(document).ready(function(){$(".image-link").magnificPopup({type:"image",image:{cursor:null,verticalFit:!1},retina:{ratio:2}})});

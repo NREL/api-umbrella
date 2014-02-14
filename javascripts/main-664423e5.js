@@ -1,0 +1,1 @@
+$(document).ready(function(){$(".image-link").magnificPopup({type:"image",image:{cursor:null,verticalFit:!1},retina:{ratio:2,replaceSrc:function(i){return $(i.el).find("img").data("at2x")}}})});
