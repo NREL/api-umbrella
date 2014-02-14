@@ -6,7 +6,10 @@ $(document).ready(function() {
       verticalFit: false,
     },
     retina: {
-      ratio: 2
+      ratio: 2,
+      replaceSrc: function(item, ratio) {
+        return $(item.el).find('img').data('at2x');
+      }
     }
   });
 });
