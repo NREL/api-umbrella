@@ -94,7 +94,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('cleanup_logs', 'Re-process any failed or stuck log jobs', function() {
     var async = require('async'),
-        config = require('./lib/config'),
+        config = require('api-umbrella-config'),
         redis = require('redis');
 
     var done = this.async();

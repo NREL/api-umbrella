@@ -3,7 +3,7 @@
 
 var _ = require('lodash'),
     async = require('async'),
-    config = require('../lib/config'),
+    config = require('api-umbrella-config'),
     crypto = require('crypto'),
     elasticsearch = require('elasticsearch'),
     logCleaner = require('../lib/log_processor/cleaner'),

@@ -3,7 +3,7 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    config = require('../../lib/config'),
+    config = require('api-umbrella-config'),
     csv = require('csv'),
     ippp = require('ipplusplus'),
     xml2js = require('xml2js');
@@ -36,10 +36,10 @@ _.merge(global.shared, {
     beforeEach(function(done) {
       backendCalled = false;
 
-      config.reset();
+      config.resetRuntime();
 
       if(configOverrides) {
-        config.updateRuntime({ apiUmbrella: configOverrides });
+        config.setRuntime(configOverrides);
       }
 
       this.gatekeeper = gatekeeper.start({}, done);

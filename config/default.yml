@@ -1,114 +1,114 @@
-apiUmbrella:
-  mongodb: "mongodb://127.0.0.1:27017/api_umbrella_development"
-  mongodb_options:
+mongodb:
+  url: "mongodb://127.0.0.1:27017/api_umbrella_development"
+  options:
     server:
       socketOptions:
         keepAlive: 500
     replset:
       socketOptions:
         keepAlive: 500
-  redis:
-    host: 127.0.0.1
-    port: 6379
-  elasticsearch:
-    hosts:
-      - host: 127.0.0.1
-        port: 9200
-  trustedProxies:
-    - 127.0.0.1
-  proxy:
-    host: 127.0.0.1
-    port: 4000
-    target: "127.0.0.1:6081"
-    apiKeyMethods:
-      - header
-      - getParam
-      - basicAuthUsername
-  log_template_version: v1
-  logProcessor:
-    workers: 1
-  routerLogListener:
-    workers: 1
-  apiSettings:
-    rate_limits:
-      - duration: 1000
-        accuracy: 500
-        limit_by: ip
-        limit: 50
-        distributed: false
-      - duration: 1000
-        accuracy: 500
-        limit_by: apiKey
-        limit: 20
-        distributed: false
-      - duration: 15000
-        accuracy: 1000
-        limit_by: ip
-        limit: 250
-        distributed: true
-      - duration: 15000
-        accuracy: 1000
-        limit_by: apiKey
-        limit: 150
-        distributed: true
-      - duration: 3600000
-        accuracy: 60000
-        limit_by: apiKey
-        limit: 1000
-        distributed: true
-        response_headers: true
-    error_templates:
-      json: |
-        {
-          "error": {
-            "code": {{code}},
-            "message": {{message}}
-          }
+redis:
+  host: 127.0.0.1
+  port: 6379
+elasticsearch:
+  hosts:
+    - host: 127.0.0.1
+      port: 9200
+trustedProxies:
+  - 127.0.0.1
+proxy:
+  host: 127.0.0.1
+  port: 4000
+  target: "127.0.0.1:6081"
+  apiKeyMethods:
+    - header
+    - getParam
+    - basicAuthUsername
+log_template_version: v1
+logProcessor:
+  workers: 1
+routerLogListener:
+  workers: 1
+apiSettings:
+  rate_limits:
+    - duration: 1000
+      accuracy: 500
+      limit_by: ip
+      limit: 50
+      distributed: false
+    - duration: 1000
+      accuracy: 500
+      limit_by: apiKey
+      limit: 20
+      distributed: false
+    - duration: 15000
+      accuracy: 1000
+      limit_by: ip
+      limit: 250
+      distributed: true
+    - duration: 15000
+      accuracy: 1000
+      limit_by: apiKey
+      limit: 150
+      distributed: true
+    - duration: 3600000
+      accuracy: 60000
+      limit_by: apiKey
+      limit: 1000
+      distributed: true
+      response_headers: true
+  error_templates:
+    json: |
+      {
+        "error": {
+          "code": {{code}},
+          "message": {{message}}
         }
-      xml: |
-        <?xml version="1.0" encoding="UTF-8"?>
-        <response>
-          <error>
-            <code>{{code}}</code>
-            <message>{{message}}</message>
-          </error>
-        </response>
-      csv: |
-        Error Code,Error Message
-        {{code}},{{message}}
-      html: |
-        <html>
-          <body>
-            <h1>{{code}}</h1>
-            <p>{{message}}</p>
-          </body>
-        </html>
-    error_data:
-      not_found:
-        status_code: 404
-        code: NOT_FOUND
-        message: The requested URL was not found on this server.
-      api_key_missing:
-        status_code: 403
-        code: API_KEY_MISSING
-        message: No api_key was supplied. Get one at {{baseUrl}}
-      api_key_invalid:
-        status_code: 403
-        code: API_KEY_INVALID
-        message: An invalid api_key was supplied. Get one at {{baseUrl}}
-      api_key_disabled:
-        status_code: 403
-        code: API_KEY_DISABLED
-        message: The api_key supplied has been disabled. Contact us at {{baseUrl}}/contact for assistance
-      api_key_unauthorized:
-        status_code: 403
-        code: API_KEY_UNAUTHORIZED
-        message: The api_key supplied is not authorized to access the given service. Contact us at {{baseUrl}}/contact for assistance
-      over_rate_limit:
-        status_code: 429
-        code: OVER_RATE_LIMIT
-        message: You have exceeded your rate limit. Try again later or contact us at {{baseUrl}}/contact for assistance
-      internal_server_error:
-        status_code: 500
-        code: INTERNAL_SERVER_ERROR
-        message: An unexpected error has occurred. Try again later or contact us at {{baseUrl}}/contact for assistance
+      }
+    xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <response>
+        <error>
+          <code>{{code}}</code>
+          <message>{{message}}</message>
+        </error>
+      </response>
+    csv: |
+      Error Code,Error Message
+      {{code}},{{message}}
+    html: |
+      <html>
+        <body>
+          <h1>{{code}}</h1>
+          <p>{{message}}</p>
+        </body>
+      </html>
+  error_data:
+    not_found:
+      status_code: 404
+      code: NOT_FOUND
+      message: The requested URL was not found on this server.
+    api_key_missing:
+      status_code: 403
+      code: API_KEY_MISSING
+      message: No api_key was supplied. Get one at {{baseUrl}}
+    api_key_invalid:
+      status_code: 403
+      code: API_KEY_INVALID
+      message: An invalid api_key was supplied. Get one at {{baseUrl}}
+    api_key_disabled:
+      status_code: 403
+      code: API_KEY_DISABLED
+      message: The api_key supplied has been disabled. Contact us at {{baseUrl}}/contact for assistance
+    api_key_unauthorized:
+      status_code: 403
+      code: API_KEY_UNAUTHORIZED
+      message: The api_key supplied is not authorized to access the given service. Contact us at {{baseUrl}}/contact for assistance
+    over_rate_limit:
+      status_code: 429
+      code: OVER_RATE_LIMIT
+      message: You have exceeded your rate limit. Try again later or contact us at {{baseUrl}}/contact for assistance
+    internal_server_error:
+      status_code: 500
+      code: INTERNAL_SERVER_ERROR
+      message: An unexpected error has occurred. Try again later or contact us at {{baseUrl}}/contact for assistance

@@ -18,6 +18,7 @@
   "dependencies": {
     "addr": "~1.0.0",
     "always-tail": "~0.1.0",
+    "api-umbrella-config": "~0.1.0",
     "async": "~0.2.9",
     "atomic-write": "~0.1.0",
     "basic-auth": "~0.0.1",

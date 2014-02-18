@@ -4,7 +4,7 @@ require('../test_helper');
 
 var _ = require('lodash'),
     async = require('async'),
-    config = require('../../lib/config'),
+    config = require('api-umbrella-config'),
     ippp = require('ipplusplus'),
     timekeeper = require('timekeeper');
 
@@ -231,7 +231,7 @@ describe('ApiUmbrellaGatekeper', function() {
           var apiSettings = config.get('apiSettings');
           apiSettings.rate_limits[0].limit = 70;
 
-          config.updateRuntime({
+          config.setRuntime({
             apiSettings: apiSettings,
           });
 
@@ -516,7 +516,7 @@ describe('ApiUmbrellaGatekeper', function() {
             var apis = config.get('apis');
             apis[0].settings.rate_limits[0].limit = 80;
 
-            config.updateRuntime({
+            config.setRuntime({
               apis: apis,
             });
 

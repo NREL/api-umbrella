@@ -1,7 +1,7 @@
 'use strict';
 
 var async = require('async'),
-    config = require('../lib/config'),
+    config = require('api-umbrella-config'),
     elasticSearchConnect = require('../lib/elasticsearch_connect'),
     logCleaner = require('../lib/log_processor/cleaner'),
     moment = require('moment'),
