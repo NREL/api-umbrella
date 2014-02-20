@@ -1,0 +1,18 @@
+http_port: 9000
+https_port: 9001
+nginx:
+  workers: 4
+gatekeeper:
+  workers: 4
+varnish:
+  port: 51700
+mongodb:
+  url: "mongodb://127.0.0.1:27017/api_umbrella_development"
+  options:
+    server:
+      socketOptions:
+        keepAlive: 500
+    replset:
+      socketOptions:
+        keepAlive: 500
+

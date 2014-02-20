@@ -1,0 +1,71 @@
+#!/usr/bin/env node
+
+var parser = require('nomnom'),
+    router = require('../lib/router');
+
+parser.command('start')
+  .help('Start the API Umbrella server')
+  .option('config', {
+    abbr: 'c',
+    metavar: 'FILE',
+    default: ['/etc/api-umbrella/api-umbrella.yml'],
+    list: true,
+    help: 'Conifg file to use (include multiple times for multiple files)',
+  })
+  .callback(function(options) {
+    router.start(options);
+  });
+
+parser.command('stop')
+  .help('Stop the API Umbrella server')
+  .option('config', {
+    abbr: 'c',
+    metavar: 'FILE',
+    default: ['/etc/api-umbrella/api-umbrella.yml'],
+    list: true,
+    help: 'Conifg file to use (include multiple times for multiple files)',
+  })
+  .callback(function(options) {
+    router.stop(options);
+  });
+
+parser.command('restart')
+  .help('Restart the API Umbrella server')
+  .option('config', {
+    abbr: 'c',
+    metavar: 'FILE',
+    default: ['/etc/api-umbrella/api-umbrella.yml'],
+    list: true,
+    help: 'Conifg file to use (include multiple times for multiple files)',
+  })
+  .callback(function(options) {
+    router.restart(options);
+  });
+
+parser.command('reload')
+  .help('Reload the configuration of the API Umbrella server')
+  .option('config', {
+    abbr: 'c',
+    metavar: 'FILE',
+    default: ['/etc/api-umbrella/api-umbrella.yml'],
+    list: true,
+    help: 'Conifg file to use (include multiple times for multiple files)',
+  })
+  .callback(function(options) {
+    router.reload(options);
+  });
+
+parser.command('status')
+  .help('Show the status of the API Umbrella server')
+  .option('config', {
+    abbr: 'c',
+    metavar: 'FILE',
+    default: ['/etc/api-umbrella/api-umbrella.yml'],
+    list: true,
+    help: 'Conifg file to use (include multiple times for multiple files)',
+  })
+  .callback(function(options) {
+    router.status(options);
+  });
+
+parser.parse();

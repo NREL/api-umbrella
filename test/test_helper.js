@@ -11,6 +11,7 @@ global.Factory = Factory;
 global.mongoose = mongoose;
 
 require('./support/chai');
+require('./support/config');
 require('./support/database_setup');
 require('./support/factories');
 

@@ -3,7 +3,7 @@
 require('../test_helper');
 
 var async = require('async'),
-    config = require('../../gatekeeper/lib/config'),
+    config = require('api-umbrella-config'),
     fs = require('fs'),
     net = require('net'),
     path = require('path'),
@@ -12,6 +12,9 @@ var async = require('async'),
 before(function(done) {
   this.timeout(10000);
 
+  var configFile = path.resolve(__dirname, '../config/test.yml');
+
+/*
   var configFile = path.resolve(__dirname, '../config/nginx.conf');
 
   // Delete the generated config file before running tests, so we know when the
@@ -20,11 +23,12 @@ before(function(done) {
   if(fs.existsSync(configFile)) {
     fs.unlinkSync(configFile);
   }
+  */
 
   var processConfigs = [
     {
       command: 'api_umbrella_gatekeeper',
-      args: ['-p', config.get('proxy.port')],
+      args: ['-c', configFile],
       options: {
         cwd: path.resolve(__dirname, '../../gatekeeper'),
       },
@@ -34,10 +38,12 @@ before(function(done) {
     },
     {
       command: 'api_umbrella_logging',
+      args: ['-c', configFile],
       options: {
         cwd: path.resolve(__dirname, '../../gatekeeper'),
       },
     },
+    /*
     {
       command: 'api_umbrella_config_reloader',
       options: {
@@ -47,8 +53,10 @@ before(function(done) {
         file: configFile,
       },
     },
+    */
     {
       command: 'api_umbrella_distributed_rate_limits_sync',
+      args: ['-c', configFile],
       options: {
         cwd: path.resolve(__dirname, '../../gatekeeper'),
       },
@@ -83,10 +91,12 @@ before(function(done) {
     var stderr = '';
 
     server.stdout.on('data', function(message) {
+      console.info(message.toString());
       stdout += message.toString();
     });
 
     server.stderr.on('data', function(message) {
+      console.info(message.toString());
       stderr += message.toString();
     });
 
@@ -106,6 +116,7 @@ before(function(done) {
     });
 
     if(!processConfig.wait) {
+      console.info('Started ' + processConfig.command);
       eachCallback(null);
     } else {
       if(processConfig.wait.port) {

@@ -22,11 +22,15 @@
 /config/nginx/site.conf
 /config/nginx/ssl_terminator.conf
 /config/supervisor/gatekeeper.conf
+/config/nginx/router.conf
+/config/supervisord.conf
 
 # Ignore node generated file
 /config/gatekeeper/nginx.conf
 /config/gatekeeper/runtime.json
 /config/gatekeeper/runtime.yml*
+/test/config/runtime.yml
+/test/config/nginx.conf
 
 # Ignore log files
 /log/*.log

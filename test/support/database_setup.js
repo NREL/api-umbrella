@@ -3,12 +3,12 @@
 require('../test_helper');
 
 var async = require('async'),
-    config = require('../../gatekeeper/lib/config'),
+    config = require('api-umbrella-config'),
     redis = require('redis'),
     net = require('net'),
     spawn = require('child_process').spawn;
 
-mongoose.testConnection = mongoose.createConnection(config.get('mongodb'), config.get('mongodb_options'));
+mongoose.testConnection = mongoose.createConnection(config.get('mongodb.url'), config.get('mongodb.options'));
 
 // Drop the mongodb database.
 before(function(done) {

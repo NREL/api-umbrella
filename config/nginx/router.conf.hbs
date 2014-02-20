@@ -1,0 +1,148 @@
+worker_processes {{nginx.workers}};
+
+daemon off;
+
+pid /tmp/api_umbrella_nginx.pid;
+
+events {
+  worker_connections 1024;
+}
+
+error_log stderr;
+
+
+http {
+  error_log stderr;
+  access_log off;
+
+  log_format api_umbrella_log '"$x_api_umbrella_uid","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent","$http_referer","$http_x_api_key","$remote_user"';
+
+  # Limit the number of simultaneous connections per IP address.
+  limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:5m;
+  limit_conn_status 429;
+
+  # Rate limits per IP address.
+  #
+  # In general, we want to rely on the more granular and configurable rate limits
+  # provided by the API Umbrella Gatekeeper, so this limit should be higher than
+  # the Gatekeeper's limits. This just provides an extra line of simple defense
+  # against misbehaving clients from overloading the Gatekeeper.
+  limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:5m rate=100r/s;
+  limit_req_status 429;
+
+  upstream api_umbrella_web_backend {
+    server 127.0.0.1:51000;
+    keepalive 10;
+  }
+
+  upstream api_umbrella_gatekeeper_backends {
+    {{#each gatekeeper_hosts}}
+    server {{.}};
+    {{/each}}
+    keepalive 10;
+  }
+
+  # Allow any sized uploads to backends.
+  client_max_body_size 0;
+
+  # Limit the number of simulaneous connections per IP address to 50.
+  limit_conn api_umbrella_conn_addr_zone 50;
+
+  # After the 100 requests/second rate is reached, allow a sizable burst before
+  # completely terminating requests at this router level. This is so we can
+  # generally rely on API Umbrella Gatekeeper for rate limiting, but still
+  # throttle traffic to the Gatekeeper.
+  limit_req zone=api_umbrella_req_addr_zone burst=100 nodelay;
+
+  keepalive_timeout 30s;
+
+  # The main, front-facing public host server. This serves up both the APIs and
+  # the web content.
+  server {
+    listen {{http_port}};
+    listen {{https_port}} ssl;
+    server_name api.vagrant localhost;
+
+    include ./public_defaults.conf;
+    include ./ssl.conf;
+
+    # Route the docs and other static pages to the Rails web app. This may
+    # change, so that's why we're treating it separately.
+    location ~* ^/(about|community|doc|docs|images|static|)(/|$) {
+      proxy_pass http://api_umbrella_web_backend;
+    }
+
+    # Route the dynamic portions of the site to the Rails web app.
+    location ~* ^/(account|admin|admins|assets|contact|favicon\.ico|javascripts|robots.txt|signup)(/|$) {
+      proxy_pass http://api_umbrella_web_backend;
+    }
+
+    # Route all other requests as APIs going through the API Umbrella Gatekeeper.
+    location / {
+      include ./public_defaults.conf;
+      include ./gatekeeper.conf;
+    }
+  }
+
+  # Secondary hosts. These are other hosts we're handling only API traffic for,
+  # but don't want to show web page content for.
+  server {
+    listen {{http_port}} default_server;
+    listen {{https_port}} ssl default_server;
+    server_name _;
+
+    include ./public_defaults.conf;
+
+    # Route all other requests as APIs going through the API Umbrella Gatekeeper.
+    location / {
+      include ./public_defaults.conf;
+      include ./gatekeeper.conf;
+    }
+  }
+
+  {{#each apis}}
+    # {{name}}
+    upstream api_umbrella_{{_id}}_backend {
+      {{#unless defaultBalance}}
+        {{balance_algorithm}};
+      {{/unless}}
+
+      {{#each servers}}
+        server {{ip}}:{{port}}; # {{host}}
+      {{/each}}
+
+      {{#if keepalive_connections}}
+        keepalive {{keepalive_connections}};
+      {{/if}}
+    }
+  {{/each}}
+
+  server {
+    listen 50100;
+
+    access_log {{log_dir}}/access.log combined;
+    error_log {{log_dir}}/error.log;
+
+    set $x_api_umbrella_uid $http_x_api_umbrella_uid;
+    set $router_name "api_router";
+    access_log {{log_dir}}/router.log api_umbrella_log;
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    keepalive_timeout 5m;
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Api-Umbrella-UID "";
+    proxy_set_header X-Api-Umbrella-Backend-Scheme "";
+    proxy_set_header X-Api-Umbrella-Backend-Id "";
+
+    # Don't buffer proxied requests to allow for streaming APIs.
+    proxy_buffering off;
+
+    location / {
+      proxy_pass $http_x_api_umbrella_backend_scheme://api_umbrella_${http_x_api_umbrella_backend_id}_backend;
+    }
+  }
+}
