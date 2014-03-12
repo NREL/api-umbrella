@@ -341,6 +341,31 @@ describe('ApiUmbrellaGatekeper', function() {
       });
     });
 
+    describe('multiple limits exceeding the non-first limit', function() {
+      shared.runServer({
+        apiSettings: {
+          rate_limits: [
+            {
+              duration: 10 * 1000, // 10 second
+              accuracy: 1000, // 1 second
+              limit_by: 'apiKey',
+              limit: 10,
+              response_headers: false,
+            }, {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'apiKey',
+              limit: 3,
+              response_headers: true,
+              distributed: true,
+            }
+          ]
+        }
+      });
+
+      itBehavesLikeApiKeyRateLimits('/hello', 3);
+    });
+
     describe('ip based rate limits', function() {
       shared.runServer({
         apiSettings: {
