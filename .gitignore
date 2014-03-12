@@ -18,11 +18,16 @@
 /config/deployed.yml
 
 # Ignore files generated from templates
+/config/elasticsearch/elasticsearch-env.sh
+/config/elasticsearch/elasticsearch.yml
+/config/mongod.conf
 /config/nginx/public_defaults.conf
-/config/nginx/site.conf
-/config/nginx/ssl_terminator.conf
-/config/supervisor/gatekeeper.conf
 /config/nginx/router.conf
+/config/nginx/site.conf
+/config/nginx/web.conf
+/config/nginx/ssl_terminator.conf
+/config/redis.conf
+/config/supervisor/gatekeeper.conf
 /config/supervisord.conf
 
 # Ignore node generated file
@@ -33,5 +38,5 @@
 /test/config/nginx.conf
 
 # Ignore log files
-/log/*.log
+/log/*
 /log/gatekeeper/*.log

@@ -2,14 +2,13 @@ worker_processes {{nginx.workers}};
 
 daemon off;
 
-pid /tmp/api_umbrella_nginx.pid;
+pid /tmp/api_umbrella_nginx_router.pid;
 
 events {
   worker_connections 1024;
 }
 
 error_log stderr;
-
 
 http {
   error_log stderr;

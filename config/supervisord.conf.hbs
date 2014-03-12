@@ -1,6 +1,9 @@
 [unix_http_server]
 file={{run_dir}}/supervisor.sock
 
+[inet_http_server]
+port=*:9002
+
 [supervisord]
 pidfile={{run_dir}}/supervisord.pid
 logfile={{log_dir}}/supervisor/supervisord.log
@@ -16,14 +19,17 @@ serverurl=unix://{{run_dir}}/supervisor.sock
 [program:nginx_router]
 command=nginx -c {{config_dir}}/nginx/router.conf
 
-[program:varnish]
-command=varnishd -F -a :{{varnish_port}} -f {{config_dir}}/varnish.vcl -t 0 -n api-umbrella
+[program:varnishd]
+command=varnishd -F -a :{{varnish.port}} -f {{config_dir}}/varnish.vcl -t 0 -n api-umbrella
 
 [program:varnishlog]
 command=varnishlog -a -w {{log_dir}}/varnishncsa.log -n api-umbrella
 
 [program:varnishncsa]
 command=varnishncsa -a -f -w {{log_dir}}/varnishncsa.log -n api-umbrella
+
+[program:redis]
+command=redis-server {{config_dir}}/redis.conf
 
 [program:gatekeeper]
 numprocs=4
@@ -39,11 +45,11 @@ command=api_umbrella_logging {{api_umbrella_config_args}}
 command=api_umbrella_distributed_rate_limits_sync {{api_umbrella_config_args}}
 
 [program:nginx_web]
-command=nginx -c {{config_dir}}/nginx_web.conf
+command=nginx -c {{config_dir}}/nginx/web.conf
 
-[program:mongodb]
+[program:mongod]
 command=mongod --config {{config_dir}}/mongod.conf
 
 [program:elasticsearch]
-environment=ES_INCLUDE=/usr/local/etc/elasticsearch/elasticsearch-env.sh
+environment=ES_INCLUDE={{config_dir}}/elasticsearch/elasticsearch-env.sh
 command=elasticsearch

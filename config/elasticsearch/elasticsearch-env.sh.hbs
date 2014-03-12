@@ -1,0 +1,16 @@
+ES_HOME='/opt/api-umbrella/embedded/elasticsearch'
+ES_CLASSPATH=$ES_CLASSPATH:$ES_HOME/lib/*:$ES_HOME/lib/sigar/*
+ES_HEAP_SIZE=512m
+
+ES_JAVA_OPTS="
+  -server
+  -Djava.net.preferIPv4Stack=true
+  -Des.config={{config_dir}}/elasticsearch/elasticsearch.yml
+  -Xms512m
+  -Xmx512m
+  -Xss256k
+    -XX:+UseParNewGC
+  -XX:+UseConcMarkSweepGC
+  -XX:CMSInitiatingOccupancyFraction=75
+  -XX:+UseCMSInitiatingOccupancyOnly
+  -XX:+HeapDumpOnOutOfMemoryError"

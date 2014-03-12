@@ -1,5 +1,8 @@
 http_port: 9000
 https_port: 9001
+redis:
+  host: 127.0.0.1
+  port: 50379
 nginx:
   workers: 4
 gatekeeper:
@@ -15,4 +18,11 @@ mongodb:
     replset:
       socketOptions:
         keepAlive: 500
-
+  embedded_server_config:
+    port: 50217
+    dbpath: /tmp/db/mongodb
+elasticsearch:
+  embedded_server_config:
+    path_data: /tmp/db/elasticsearch
+    http_port: 50200
+    transport_tcp_port: 50300
