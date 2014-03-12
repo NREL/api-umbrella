@@ -13,7 +13,7 @@ var options = nomnom
   })
   .option('port', {
     abbr: 'p',
-    default: config.get('proxy.port'),
+    default: 50000,
     help: 'Port to listen on',
   })
   .parse();
