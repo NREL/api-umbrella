@@ -6,9 +6,12 @@ directory=<%=current_path %>
 environment=USER=api-umbrella-deployer,HOME=/home/api-umbrella-deployer,PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,RAILS_ENV=<%= rails_env %>
 command=/opt/rbenv/shims/bundle exec <%= current_path %>/script/delayed_job run --queue api_umbrella_static_site_deployer
 
+; Disable this since we're not using it for now.
+autostart=false
+
 ; Always keep running.
-autostart=true
-autorestart=true
+;autostart=true
+;autorestart=true
 startretries=25
 
 ; It can take longer for the the whole Rails application to fully startup, so
