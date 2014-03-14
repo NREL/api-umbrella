@@ -86,6 +86,7 @@ module ApiUmbrella
     # Use a file-based cache store
     config.cache_store = :file_store, "#{Rails.root}/tmp/cache"
 
+    config.action_mailer.raise_delivery_errors = true
     config.action_mailer.default_url_options = {
       :host => 'example.com',
     }
