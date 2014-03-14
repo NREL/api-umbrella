@@ -1,14 +1,3 @@
 <h1>API Key Signup</h1>
 
-<p>Your API key for <strong><%= @user.website %></strong> is:</p>
-<code class="signup-key"><%= @user.api_key %></code>
-
-<p>You can start using this key to make Web service requests. Simply pass your key in the URL when making a Web request. Here's an example:</p>
-<pre><%= link_to("http://api.data.gov/api/alt-fuel-stations/v1/nearest.json?<strong>api_key=#{@user.api_key}</strong><br />&location=1617+Cole+Blvd+80401".html_safe, "/api/alt-fuel-stations/v1/nearest.json?api_key=#{@user.api_key}&location=1617+Cole+Blvd+80401") %></pre>
-
-<h2>What Next?</h2>
-<ul>
-  <li>Explore our <%= link_to("available Web services", doc_path) %>.</li>
-  <li>Stay informed and tell us what you've built in our <%= link_to("community", community_path) %>.</li>
-  <li>Need more help? Reach us <%= link_to("@#{t("twitter_account")}", "http://twitter.com/#{t("twitter_account")}") %> or <%= link_to("contact us", contact_path) %>.</li>
-</ul>
+<%= render("welcome") %>

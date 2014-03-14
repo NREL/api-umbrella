@@ -33,6 +33,11 @@ class Admin::ApiUsersController < Admin::BaseController
   def create
     @api_user = ApiUser.new
     save!
+
+    if(@api_user.errors.blank? && params[:api_user][:send_welcome_email])
+      ApiUserMailer.delay.signup_email(@api_user)
+    end
+
     respond_with(:admin, @api_user, :root => "api_user")
   end
 

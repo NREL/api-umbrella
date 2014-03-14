@@ -5,7 +5,7 @@ class ContactMailer < ActionMailer::Base
     @contact = contact
 
     mail :from => contact.email,
-      :subject => "developer.nrel.gov Contact Message from #{contact.email}",
+      :subject => "#{t("site_name")} Contact Message from #{contact.email}",
       :to => "nick.muerdter@nrel.gov"
   end
 end

@@ -1,0 +1,18 @@
+<p>Your API key for <strong><%= @user.website %></strong> is:</p>
+<code class="signup-key"><%= @user.api_key %></code>
+
+<p>You can start using this key to make Web service requests. Simply pass your key in the URL when making a Web request. Here's an example:</p>
+<pre><%= link_to("#{root_url(:protocol => "https")}nrel/alt-fuel-stations/v1/nearest.json?<strong>api_key=#{@user.api_key}</strong>&location=Denver+CO".html_safe, url_for("#{root_url(:protocol => "https")}nrel/alt-fuel-stations/v1/nearest.json?api_key=#{@user.api_key}&location=Denver+CO")) %></pre>
+
+<h2>What Next?</h2>
+<ul>
+  <li>Explore our <%= link_to("available Web services", doc_url) %>.</li>
+  <li>Stay informed and tell us what you've built in our <%= link_to("community", community_url) %>.</li>
+  <li>Need more help? Reach us <%= link_to("@#{t("twitter_account")}", "http://twitter.com/#{t("twitter_account")}") %> or <%= link_to("contact us", contact_url) %>.</li>
+</ul>
+
+<div class="signup-footer">
+  <p>For additional support, please <%= link_to("contact us", contact_url) %>. When contacting us, please tell us what API you're accessing and provide the following account details so we can quickly find you:</p>
+  Account Email: <%= @user.email %><br>
+  Account ID: <%= @user.id %>
+</div>

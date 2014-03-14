@@ -10,6 +10,7 @@ Admin.ApiUser = Ember.Model.extend({
   useDescription: Ember.attr(),
   registrationSource: Ember.attr(),
   termsAndConditions: Ember.attr(),
+  sendWelcomeEmail: Ember.attr(),
   throttleByIp: Ember.attr(),
   rolesString: Ember.attr(),
   enabled: Ember.attr(),

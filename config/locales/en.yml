@@ -1,5 +1,6 @@
 en:
-  twitter_account: NRELdev
+  site_name: API Umbrella
+  twitter_account: apiUmbrella
   breadcrumb_divider: "&raquo;"
   omniauth_providers:
     cas: MAX.gov

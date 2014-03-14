@@ -22,3 +22,6 @@ set :bundle_flags, "--quiet"
 
 # Don't migrate in development mode.
 set :rails_auto_migrate, false
+
+# Set the user the web server runs as.
+set :web_server_user, "vagrant"

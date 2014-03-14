@@ -31,7 +31,7 @@ class Contact
 
   def deliver
     if self.valid?
-      ContactMailer.contact_email(self).deliver
+      ContactMailer.delay.contact_email(self)
     else
       false
     end

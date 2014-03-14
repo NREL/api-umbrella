@@ -1,3 +1,31 @@
+[program:<%= deploy_name %>-delayed_job]
+; Run 1 worker.
+numprocs=1
+
+directory=<%=current_path %>
+environment=USER=api-umbrella-deployer,HOME=/home/api-umbrella-deployer,PATH=/opt/rbenv/shims:/opt/rbenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin,RAILS_ENV=<%= rails_env %>
+command=/opt/rbenv/shims/bundle exec <%= current_path %>/script/delayed_job run
+
+; Always keep running.
+autostart=true
+autorestart=true
+startretries=25
+
+; It can take longer for the the whole Rails application to fully startup, so
+; set a longer startup time.
+startsecs=30
+
+; Run as the web user.
+user=<%= web_server_user %>
+
+; Log both stdout and stderr to the same log file. One log file per
+; Gatekeeper instance running on each port.
+redirect_stderr=true
+stdout_logfile=<%= current_path %>/log/delayed_job_supervisor.log
+
+; Don't rotate based on file size. We'll rotate externally using logrotate.
+logfile_maxbytes=0
+
 [program:<%= deploy_name %>-static_site_deployer]
 ; Run 1 worker.
 numprocs=1
@@ -8,11 +36,12 @@ command=/opt/rbenv/shims/bundle exec <%= current_path %>/script/delayed_job run 
 
 ; Disable this since we're not using it for now.
 autostart=false
+autorestart=false
 
 ; Always keep running.
 ;autostart=true
 ;autorestart=true
-startretries=25
+;startretries=25
 
 ; It can take longer for the the whole Rails application to fully startup, so
 ; set a longer startup time.
@@ -31,4 +60,5 @@ logfile_maxbytes=0
 
 ; Define a group so everything in this deployment can be controlled together.
 [group:<%= deploy_name %>]
-programs=<%= deploy_name %>-static_site_deployer
+;programs=<%= deploy_name %>-delayed_job,<%= deploy_name %>-static_site_deployer
+programs=<%= deploy_name %>-delayed_job

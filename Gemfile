@@ -105,6 +105,9 @@ gem "rails_config", "~> 0.3.3"
 gem "delayed_job_mongoid", "~> 2.0.0"
 gem "daemons", "~> 1.1.9"
 
+# HTML email styling
+gem "premailer-rails", "~> 1.7.0"
+
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
