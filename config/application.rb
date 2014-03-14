@@ -71,6 +71,18 @@ module ApiUmbrella
     # Rely on Sass's built-in compressor for CSS minifying.
     # config.assets.css_compressor = :yui
 
+    # Reset the default precompile list list to exclude our vendored submodule
+    # stuff. This should go away in Rails 4, where vendor/assets is
+    # automatically excluded.
+    # Based on the original here:
+    # https://github.com/rails/rails/blob/v3.2.17/railties/lib/rails/application/configuration.rb#L48-L49
+    config.assets.precompile = [
+      Proc.new do |path|
+        !File.extname(path).in?(['.js', '.css']) && path !~ /^vendor/
+      end,
+      /(?:\/|\\|\A)application\.(css|js)$/,
+    ]
+
     # Precompile additional assets (application.js, application.css, and all non-JS/CSS are already added)
     config.assets.precompile += %w(
       admin.css
