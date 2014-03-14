@@ -12,7 +12,7 @@ class AccountsController < ApplicationController
 
     # Safe safely to be absolutely positive the save succeeded.
     if @user.with(:safe => true).save
-      ApiUserMailer.delay.signup_email(@user)
+      ApiUserMailer.delay(:queue => "mailers").signup_email(@user)
 
       respond_to do |format|
         format.html

@@ -31,7 +31,7 @@ class Contact
 
   def deliver
     if self.valid?
-      ContactMailer.delay.contact_email(self)
+      ContactMailer.delay(:queue => "mailers").contact_email(self)
     else
       false
     end
