@@ -77,7 +77,7 @@ module ApiUmbrella
     # Based on the original here:
     # https://github.com/rails/rails/blob/v3.2.17/railties/lib/rails/application/configuration.rb#L48-L49
     config.assets.precompile = [
-      Proc.new do |path|
+      proc do |path|
         !File.extname(path).in?(['.js', '.css']) && path !~ /^vendor/
       end,
       /(?:\/|\\|\A)application\.(css|js)$/,
