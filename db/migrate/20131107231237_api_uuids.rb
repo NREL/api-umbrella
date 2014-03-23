@@ -6,6 +6,9 @@ class ApiUuids < Mongoid::Migration
     db = Mongoid::Sessions.default
 
     Api.all.each do |api|
+      # Skip records that already UUIDs.
+      next if(api._id =~ /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+
       if api.read_attribute(:legacy_id).blank?
         # Duplicate the record (since _id can't be updated) to apply the new
         # UUID _id value.

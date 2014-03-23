@@ -6,6 +6,9 @@ class AdminUuids < Mongoid::Migration
     db = Mongoid::Sessions.default
 
     Admin.all.each do |admin|
+      # Skip records that already UUIDs.
+      next if(admin._id =~ /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+
       if admin.read_attribute(:legacy_id).blank?
         # Duplicate the record (since _id can't be updated) to apply the new
         # UUID _id value.
