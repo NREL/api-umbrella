@@ -14,7 +14,9 @@ class Api::Header
     :presence => true
 
   # Mass assignment security
-  attr_accessible :key, :value
+  attr_accessible :key,
+    :value,
+    :as => [:default, :admin]
 
   def to_s
     "#{key}: #{value}"

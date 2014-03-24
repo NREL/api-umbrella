@@ -292,14 +292,18 @@ a {
   a {
     margin-left: 24px;
   }
+}
 
-  a.remove-action {
-    font-size: 12px;
-    color: $red;
-  }
+a.remove-action {
+  font-size: 12px;
+  color: $red;
 }
 
 .table-actions {
+}
+
+.form-extra-actions {
+  margin-top: 20px;
 }
 
 table input {

@@ -21,5 +21,6 @@ class Api::Rewrite
   attr_accessible :matcher_type,
     :http_method,
     :frontend_matcher,
-    :backend_replacement
+    :backend_replacement,
+    :as => [:default, :admin]
 end

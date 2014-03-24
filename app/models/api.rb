@@ -57,7 +57,8 @@ class Api
     :servers_attributes,
     :url_matches_attributes,
     :sub_settings_attributes,
-    :rewrites_attributes
+    :rewrites_attributes,
+    :as => [:default, :admin]
 
   def self.sorted
     order_by(:sort_order.asc, :created_at.desc)

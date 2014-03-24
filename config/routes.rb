@@ -56,7 +56,9 @@ ApiUmbrella::Application.routes.draw do
   match "/admin" => "admin/base#empty"
 
   namespace :admin do
-    resources :api_users
+    resources :admins, :only => [:index]
+    resources :api_users, :only => [:index]
+    resources :apis, :only => [:index]
 
     resources :stats, :only => [:index] do
       collection do
@@ -75,10 +77,6 @@ ApiUmbrella::Application.routes.draw do
       get "export"
       post "import_preview"
       post "import"
-    end
-
-    resources :admins do
-      get "page/:page", :action => :index, :on => :collection
     end
 
     resources :api_doc_services do

@@ -11,5 +11,6 @@ class Api::UrlMatch
 
   # Mass assignment security
   attr_accessible :frontend_prefix,
-    :backend_prefix
+    :backend_prefix,
+    :as => [:default, :admin]
 end
