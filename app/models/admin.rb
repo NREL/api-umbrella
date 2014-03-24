@@ -12,9 +12,9 @@ class Admin
   field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :username, :type => String
   field :email, :type => String
-  field :first_name, :type => String
-  field :last_name, :type => String
+  field :name, :type => String
   field :authentication_token, :type => String
+  field :last_sign_in_provider, :type => String
 
   ## Trackable
   field :sign_in_count,      :type => Integer, :default => 0

@@ -1,45 +1,22 @@
 class Admin::AdminsController < Admin::BaseController
-  set_tab :users
-
-  add_crumb "Admin Accounts", :admin_admins_path
-  add_crumb "New Admin", :only => [:new, :create]
-  add_crumb "Edit Admin", :only => [:edit, :update]
-
   def index
-    @admins = Admin.page(params[:page])
-  end
+    limit = params["iDisplayLength"].to_i
+    limit = 10 if(limit == 0)
 
-  def new
-    @admin = Admin.new
-  end
+    @admins = Admin
+      .order_by(datatables_sort_array)
+      .skip(params["iDisplayStart"].to_i)
+      .limit(limit)
 
-  def edit
-    @admin = Admin.find(params[:id])
-  end
-
-  def create
-    @admin = Admin.new(params[:admin])
-    @admin.save!
-
-    flash[:success] = "Successfully added admin account"
-    redirect_to(admin_admins_path)
-  rescue Mongoid::Errors::Validations
-    render(:action => "new")
-  end
-
-  def update
-    @admin = Admin.find(params[:id])
-    @admin.update_attributes!(params[:admin])
-
-    flash[:success] = "Successfully updated admin account"
-    redirect_to(admin_admins_path)
-  rescue Mongoid::Errors::Validations
-    render(:action => "edit")
-  end
-
-  def destroy
-    @admin = Admin.find(params[:id])
-    @admin.destroy
-    redirect_to(admin_admins_path)
+    if(params["sSearch"].present?)
+      @admins = @admins.or([
+        { :first_name => /#{params["sSearch"]}/i },
+        { :last_name => /#{params["sSearch"]}/i },
+        { :email => /#{params["sSearch"]}/i },
+        { :username => /#{params["sSearch"]}/i },
+        { :authentication_token => /#{params["sSearch"]}/i },
+        { :_id => /#{params["sSearch"]}/i },
+      ])
+    end
   end
 end

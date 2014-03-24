@@ -58,7 +58,7 @@ Admin.ApiUser = Ember.Model.extend({
   },
 })
 
-Admin.ApiUser.url = "/admin/api_users";
+Admin.ApiUser.url = "/api/v1/users";
 Admin.ApiUser.rootKey = "api_user";
 Admin.ApiUser.collectionKey = "api_users";
 Admin.ApiUser.primaryKey = "id";

@@ -1,0 +1,22 @@
+Admin.Admin = Ember.Model.extend({
+  id: Ember.attr(),
+  username: Ember.attr(),
+  email: Ember.attr(),
+  name: Ember.attr(),
+  signInCount: Ember.attr(),
+  lastSignInAt: Ember.attr(),
+  lastSignInIp: Ember.attr(),
+  lastSignInProvider: Ember.attr(),
+  authenticationToken: Ember.attr(),
+  createdAt: Ember.attr(),
+  updatedAt: Ember.attr(),
+  creator: Ember.attr(),
+  updater: Ember.attr(),
+})
+
+Admin.Admin.url = "/api/v1/admins";
+Admin.Admin.rootKey = "admin";
+Admin.Admin.collectionKey = "admins";
+Admin.Admin.primaryKey = "id";
+Admin.Admin.camelizeKeys = true;
+Admin.Admin.adapter = Ember.RESTAdapter.create();

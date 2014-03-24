@@ -38,6 +38,12 @@ ApiUmbrella::Application.routes.draw do
     resource :hooks, :only => [] do
       post "publish_static_site"
     end
+
+    namespace :v1 do
+      resources :admins
+      resources :apis
+      resources :users
+    end
   end
 
   devise_for :admins, :controllers => { :omniauth_callbacks => "admin/admins/omniauth_callbacks" }
@@ -60,8 +66,6 @@ ApiUmbrella::Application.routes.draw do
         get "map"
       end
     end
-
-    resources :apis
 
     namespace :config do
       get "publish", :action => "show"

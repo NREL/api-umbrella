@@ -36,6 +36,11 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
     end
 
     if @admin
+      @admin.last_sign_in_provider = env["omniauth.auth"]["provider"]
+      @admin.email = env["omniauth.auth"]["info"]["email"]
+      @admin.name = env["omniauth.auth"]["info"]["name"]
+      @admin.save!
+
       sign_in_and_redirect(:admin, @admin)
     else
       flash[:error] = %(The account for '#{@email}' is not authorized to access the admin. Please <a href="#{contact_path}">contact us</a> for further assistance.).html_safe
