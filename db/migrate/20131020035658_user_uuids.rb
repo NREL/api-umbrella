@@ -16,7 +16,7 @@ class UserUuids < Mongoid::Migration
         new_user.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(user._id))
         new_user._id = UUIDTools::UUID.random_create.to_s
 
-        puts "#{user._id.to_s} => #{new_user._id}"
+        puts "#{user._id} => #{new_user._id}"
 
         # Deleting the old record via Mongoid doesn't seem to work now that
         # we're treating _id as a string, so drop down to Moped to delete the

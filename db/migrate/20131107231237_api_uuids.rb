@@ -75,7 +75,7 @@ class ApiUuids < Mongoid::Migration
           end
         end
 
-        puts "#{api._id.to_s} => #{new_api._id}"
+        puts "#{api._id} => #{new_api._id}"
 
         # Deleting the old record via Mongoid doesn't seem to work now that
         # we're treating _id as a string, so drop down to Moped to delete the
