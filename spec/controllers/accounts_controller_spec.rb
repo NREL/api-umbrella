@@ -17,7 +17,7 @@ describe AccountsController do
 
     it "uses i18n labels" do
       get :new
-      response.body.should have_tag("label", :text => /How will you use the APIs/)
+      response.body.should have_tag("label", :text => /How will you use the APIs\?\s*\(optional\)/)
     end
   end
 

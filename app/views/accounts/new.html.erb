@@ -10,6 +10,7 @@
   <%= f.input(:website, :required => true, :validate => true) %>
   <%= f.input(:use_description,
     :as => :text,
+    :label => t(:"simple_form.labels.api_user.use_description").html_safe,
     :input_html => { :rows => 3 }) %>
   <%= f.input(:terms_and_conditions,
     :as => :boolean,
