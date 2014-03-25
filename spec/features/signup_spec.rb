@@ -16,7 +16,7 @@ describe "signup process" do
       check("I have read and agree to the terms and conditions.")
       click_button "Signup"
 
-      page.should have_content /Your API key for .+ is:/
+      page.should have_content(/Your API key for .+ is:/)
     end
   end
 end

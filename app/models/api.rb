@@ -6,6 +6,7 @@ class Api
   include Mongoid::Userstamp
   include Mongoid::Delorean::Trackable
   include Mongoid::EmbeddedErrors
+  include Mongoid::Orderable
   include ApiUmbrella::AttributifyData
 
   # Fields
@@ -39,6 +40,8 @@ class Api
   validates :balance_algorithm,
     :inclusion => { :in => %w(round_robin least_conn ip_hash) }
 
+  orderable :column => :sort_order
+
   # Callbacks
   after_save :handle_rate_limit_mode
 
@@ -57,7 +60,8 @@ class Api
     :servers_attributes,
     :url_matches_attributes,
     :sub_settings_attributes,
-    :rewrites_attributes
+    :rewrites_attributes,
+    :as => [:default, :admin]
 
   def self.sorted
     order_by(:sort_order.asc, :created_at.desc)

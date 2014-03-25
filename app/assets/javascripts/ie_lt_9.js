@@ -1,1 +1,1 @@
-//= require vendor/html5shiv
+//= require html5shiv

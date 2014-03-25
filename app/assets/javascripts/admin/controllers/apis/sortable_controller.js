@@ -6,15 +6,12 @@ Admin.ApisSortableController = Ember.ArrayController.extend({
 
   updateSortOrder: function(indexes) {
     this.forEach(function(record) {
-      console.info('RECORD: ', record);
-      var index = indexes[record.get('_id')];
+      var index = indexes[record.get('id')];
       record.set('sortOrder', index);
     });
   },
 
   reorderCollection: function(containerId) {
-    console.info("REORDER: %o", arguments);
-
     var $container = $('#' + containerId);
     var $buttonText = $container.find('.reorder-button-text');
 
@@ -42,8 +39,6 @@ Admin.ApisSortableController = Ember.ArrayController.extend({
         $(this).find('tr').each(function(index) {
           indexes[$(this).data('id')] = index;
         });
-
-        console.info('INDEXES: ', indexes);
 
         controller.updateSortOrder(indexes);
       },

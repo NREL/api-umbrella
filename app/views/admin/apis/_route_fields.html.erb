@@ -1,7 +1,0 @@
-<div class="nested-fields">
-  <%= f.input(:matcher, :collection => ["Prefix", "Route Pattern"]) %>
-  <%= f.input(:http_method, :collection => ["Any", "GET", "POST", "PUT", "DELETE", "HEAD", "TRACE", "OPTIONS", "CONNECT", "PATCH"]) %>
-  <%= f.input(:from, :input_html => { :class => "span6" }) %>
-  <%= f.input(:to, :input_html => { :class => "span6" }) %>
-  <%= link_to_remove_association('<i class="icon-minus-sign"></i> Remove Route'.html_safe, f, :class => "btn btn-mini") %>
-</div>

@@ -38,6 +38,12 @@ ApiUmbrella::Application.routes.draw do
     resource :hooks, :only => [] do
       post "publish_static_site"
     end
+
+    namespace :v1 do
+      resources :admins
+      resources :apis
+      resources :users
+    end
   end
 
   devise_for :admins, :controllers => { :omniauth_callbacks => "admin/admins/omniauth_callbacks" }
@@ -50,7 +56,13 @@ ApiUmbrella::Application.routes.draw do
   match "/admin" => "admin/base#empty"
 
   namespace :admin do
-    resources :api_users
+    resources :admins, :only => [:index]
+    resources :api_users, :only => [:index]
+    resources :apis, :only => [:index] do
+      member do
+        put "move_to"
+      end
+    end
 
     resources :stats, :only => [:index] do
       collection do
@@ -61,8 +73,6 @@ ApiUmbrella::Application.routes.draw do
       end
     end
 
-    resources :apis
-
     namespace :config do
       get "publish", :action => "show"
       post "publish", :action => "create"
@@ -71,10 +81,6 @@ ApiUmbrella::Application.routes.draw do
       get "export"
       post "import_preview"
       post "import"
-    end
-
-    resources :admins do
-      get "page/:page", :action => :index, :on => :collection
     end
 
     resources :api_doc_services do

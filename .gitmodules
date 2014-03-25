@@ -7,36 +7,6 @@
 [submodule "app/assets/javascripts/vendor/DataTables"]
 	path = app/assets/javascripts/vendor/DataTables
 	url = https://github.com/DataTables/DataTables.git
-[submodule "app/assets/javascripts/vendor/daterangepicker"]
-	path = app/assets/javascripts/vendor/daterangepicker
-	url = https://github.com/dangrossman/bootstrap-daterangepicker.git
-[submodule "app/assets/javascripts/vendor/jsTimezoneDetect"]
-	path = app/assets/javascripts/vendor/jsTimezoneDetect
-	url = https://github.com/nubgames/jstimezonedetect.git
-[submodule "app/assets/javascripts/vendor/spin.js"]
-	path = app/assets/javascripts/vendor/spin.js
-	url = https://github.com/fgnass/spin.js.git
-[submodule "app/assets/javascripts/vendor/deparam"]
-	path = app/assets/javascripts/vendor/deparam
-	url = https://github.com/chrissrogers/jquery-deparam.git
-[submodule "app/assets/javascripts/vendor/Numeral-js"]
-	path = app/assets/javascripts/vendor/Numeral-js
-	url = https://github.com/adamwdraper/Numeral-js.git
-[submodule "app/assets/javascripts/vendor/inflections"]
-	path = app/assets/javascripts/vendor/inflections
-	url = https://github.com/xixilive/_.inflections.git
-[submodule "app/assets/javascripts/vendor/selectize.js"]
-	path = app/assets/javascripts/vendor/selectize.js
-	url = https://github.com/brianreavis/selectize.js.git
-[submodule "app/assets/javascripts/vendor/pnotify"]
-	path = app/assets/javascripts/vendor/pnotify
-	url = https://github.com/sciactive/pnotify.git
-[submodule "app/assets/javascripts/vendor/bootbox"]
-	path = app/assets/javascripts/vendor/bootbox
-	url = https://github.com/makeusabrew/bootbox.git
 [submodule "app/assets/javascripts/vendor/DataTables-Plugins"]
 	path = app/assets/javascripts/vendor/DataTables-Plugins
 	url = https://github.com/DataTables/Plugins.git
-[submodule "app/assets/javascripts/vendor/livestampjs"]
-	path = app/assets/javascripts/vendor/livestampjs
-	url = https://github.com/mattbradley/livestampjs.git

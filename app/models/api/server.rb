@@ -19,7 +19,9 @@ class Api::Server
   validate :validate_host_resolves
 
   # Mass assignment security
-  attr_accessible :host, :port
+  attr_accessible :host,
+    :port,
+    :as => [:default, :admin]
 
   private
 

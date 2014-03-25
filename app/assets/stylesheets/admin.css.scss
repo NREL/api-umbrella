@@ -4,9 +4,9 @@
 @import "bootstrap";
 @import "bootstrap-responsive";
 
-@import "vendor/qtip/jquery.qtip";
-@import "vendor/daterangepicker/daterangepicker";
-@import "vendor/selectize.js/dist/css/selectize.default";
-@import "vendor/pnotify/jquery.pnotify.default";
+@import "qtip2/jquery.qtip";
+@import "bootstrap-daterangepicker/daterangepicker-bs2";
+@import "selectize/selectize.default";
+@import "pnotify/jquery.pnotify.default";
 @import "admin/base";
 @import "admin/stats";

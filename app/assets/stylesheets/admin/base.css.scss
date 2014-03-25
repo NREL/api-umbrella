@@ -180,6 +180,13 @@ div.dataTables_filter {
 
 .dataTables_wrapper {
   position: relative;
+
+  .blockUI {
+    color: #999 !important;
+    border: 1px solid #ddd !important;
+    font-size: 32px !important;
+    line-height: 60px !important;
+  }
 }
 
 .dataTables_processing {
@@ -292,14 +299,18 @@ a {
   a {
     margin-left: 24px;
   }
+}
 
-  a.remove-action {
-    font-size: 12px;
-    color: $red;
-  }
+a.remove-action {
+  font-size: 12px;
+  color: $red;
 }
 
 .table-actions {
+}
+
+.form-extra-actions {
+  margin-top: 20px;
 }
 
 table input {

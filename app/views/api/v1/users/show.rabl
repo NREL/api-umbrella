@@ -1,4 +1,4 @@
-object @api_user
+object @api_user => :user
 attributes :id,
            :api_key_preview,
            :first_name,

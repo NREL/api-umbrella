@@ -20,5 +20,6 @@ class Api::SubSettings
   # Mass assignment security
   attr_accessible :http_method,
     :regex,
-    :settings_attributes
+    :settings_attributes,
+    :as => [:default, :admin]
 end

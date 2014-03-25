@@ -1,11 +1,9 @@
 Admin.ApisIndexController = Ember.ArrayController.extend({
+  reorderActive: false,
+
   actions: {
-    delete: function(record) {
-      bootbox.confirm('Are you sure you want to delete this API backend?', function(result) {
-        if(result) {
-          record.deleteRecord();
-        }
-      });
+    toggleReorderApis: function(event) {
+      this.set('reorderActive', !this.get('reorderActive'));
     },
   },
 });

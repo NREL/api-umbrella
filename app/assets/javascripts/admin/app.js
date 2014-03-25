@@ -102,7 +102,7 @@ Ember.Handlebars.helper('formatNumber', function(number) {
 });
 
 Ember.Handlebars.helper('pluralize', function(word, number) {
-  return (number == 1) ? word : _.pluralize(word);
+  return (number == 1) ? word : inflection.pluralize(word);
 });
 
 Ember.Handlebars.registerHelper('tooltip-field', function(property, options) {
@@ -149,4 +149,67 @@ Ember.EasyForm.Config.registerWrapper('default', {
   inputClass: 'control-group',
   wrapControls: true,
   controlsWrapperClass: 'controls'
+});
+
+// DataTables plugin to programmatically show the processing indidicator.
+// https://datatables.net/plug-ins/api#fnProcessingIndicator
+jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff )
+{
+  if( typeof(onoff) == 'undefined' )
+  {
+    onoff=true;
+  }
+  this.oApi._fnProcessingDisplay( oSettings, onoff );
+};
+
+
+// Defaults for DataTables.
+_.merge($.fn.dataTable.defaults, {
+  // Don't show the DataTables processing message. We'll handle the processing
+  // message logic in fnInitComplete with blockui.
+  "bProcessing": false,
+
+  // Enable global searching.
+  "bFilter": true,
+
+  // Disable per-column searching.
+  "bSearchable": false,
+
+  // Re-arrange how the table and surrounding fields (pagination, search, etc)
+  // are laid out.
+  "sDom": 'rft<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
+
+  "oLanguage": {
+    // Don't have an explicit label for the search field. Used the placeholder
+    // created in fnInitComplete instead.
+    "sSearch": "",
+  },
+
+  "fnPreDrawCallback": function() {
+    if(!this.customProcessingCallbackSet) {
+      // Use blockui to provide a more obvious processing message the overlays
+      // the entire table (this helps for long tables, where a simple processing
+      // message might appear out of your current view).
+      //
+      // Set this early on during pre-draw so that the processing message shows
+      // up for the first load.
+      this.on('processing', _.bind(function(event, settings, processing) {
+        if(processing) {
+          this.block({
+            message: '<i class="icon-spinner icon-spin icon-large"></i>',
+          });
+        } else {
+          this.unblock();
+        }
+      }, this));
+
+      this.customProcessingCallbackSet = true;
+    }
+  },
+
+  "fnInitComplete": function() {
+    // Add a placeholder instead of the "Search:" label to the filter
+    // input.
+    $('.dataTables_filter input').attr("placeholder", "Search...");
+  },
 });

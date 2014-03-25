@@ -5,6 +5,10 @@ AllCops:
     - config/compass.rb
   RunRailsCops: true
 
+# Not valid for Rails 3.
+ActionFilter:
+  Enabled: false
+
 AlignHash:
   Enabled: false
 
@@ -17,6 +21,9 @@ BlockNesting:
 BracesAroundHashParameters:
   Enabled: false
 
+ClassAndModuleChildren:
+  Enabled: false
+
 ClassLength:
   Enabled: false
 
@@ -25,6 +32,10 @@ CollectionMethods:
     find: 'detect'
 
 CyclomaticComplexity:
+  Enabled: false
+
+# Not valid for mongoid
+DefaultScope:
   Enabled: false
 
 Documentation:
@@ -42,10 +53,16 @@ HashSyntax:
 IfUnlessModifier:
   Enabled: false
 
+IndentHash:
+  EnforcedStyle: consistent
+
 Lambda:
   Enabled: false
 
 LineLength:
+  Enabled: false
+
+LiteralInInterpolation:
   Enabled: false
 
 MethodLength:
@@ -55,8 +72,8 @@ OneLineConditional:
   Enabled: false
 
 Output:
-  Ignore:
-    - '^.*/db/migrate/.*$'
+  Exclude:
+    - db/migrate/**
 
 ParenthesesAroundCondition:
   Enabled: false
@@ -71,6 +88,9 @@ SpaceAfterControlKeyword:
   Enabled: false
 
 StringLiterals:
+  Enabled: false
+
+TrailingComma:
   Enabled: false
 
 WhileUntilModifier:

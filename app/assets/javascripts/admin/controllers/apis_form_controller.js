@@ -47,6 +47,15 @@ Admin.ApisFormController = Ember.ObjectController.extend({
       });
     },
 
+    delete: function() {
+      bootbox.confirm('Are you sure you want to delete this API backend?', _.bind(function(result) {
+        if(result) {
+          this.get('model').deleteRecord();
+          this.transitionTo('apis');
+        }
+      }, this));
+    },
+
     addServer: function() {
       this.get('controllers.apis_server_form').add(this.get('model'), 'servers');
       this.send('openModal', "apis/server_form");

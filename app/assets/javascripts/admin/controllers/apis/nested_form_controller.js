@@ -39,7 +39,7 @@ Admin.NestedFormController = Ember.ObjectController.extend({
         this.get('parentCollection').removeObject(this.get('model'));
       } else {
         var data = this.get('originalData');
-        this.get('model').load(data._id, data);
+        this.get('model').load(data.id, data);
       }
 
       this.send('closeModal');

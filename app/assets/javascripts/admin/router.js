@@ -9,6 +9,11 @@ Admin.Router.map(function() {
     this.route("edit", { path: "/:apiUserId/edit" });
   });
 
+  this.resource("admins", { path: "/admins" }, function() {
+    this.route("new");
+    this.route("edit", { path: "/:adminId/edit" });
+  });
+
   this.resource("stats", { path: "/stats" }, function() {
     this.route("logs", { path: "/logs/*query" });
     this.route("logsDefault", { path: "/logs" });

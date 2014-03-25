@@ -1,5 +1,5 @@
 Admin.ApiSubSettings = Ember.Model.extend({
-  _id: Ember.attr(),
+  id: Ember.attr(),
   sortOrder: Ember.attr(Number),
   httpMethod: Ember.attr(),
   regex: Ember.attr(),
@@ -23,5 +23,5 @@ Admin.ApiSubSettings = Ember.Model.extend({
   },
 });
 
-Admin.ApiSubSettings.primaryKey = "_id";
+Admin.ApiSubSettings.primaryKey = "id";
 Admin.ApiSubSettings.camelizeKeys = true;

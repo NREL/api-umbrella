@@ -79,12 +79,12 @@ module ApiUmbrella
       # expects for removed items (they'll just be missing). So we need to
       # manually fill in the items that have been destroyed.
       old_ids = collection_old_data.map { |d| d["_id"].to_s }
-      new_ids = data[attribute_key].map { |d| d["_id"].to_s }
+      new_ids = data[attribute_key].map { |d| d["id"].to_s }
 
       deleted_ids = old_ids - new_ids
       deleted_ids.each do |id|
         data[attribute_key] << {
-          "_id" => id,
+          "id" => id,
           :_destroy => true,
         }
       end
@@ -94,9 +94,9 @@ module ApiUmbrella
       if(collection_name == "sub_settings")
         data[attribute_key].each do |sub_attributes|
           sub_old_data = nil
-          if(sub_attributes["_id"].present?)
+          if(sub_attributes["id"].present?)
             sub_old_data = collection_old_data.detect do |old|
-              old["_id"] == sub_attributes["_id"]
+              old["_id"] == sub_attributes["id"]
             end
           end
 

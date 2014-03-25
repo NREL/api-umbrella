@@ -1,25 +1,12 @@
 <h1>API Backends</h1>
 
-<div class="button-actions">
+<div class="button-actions button-actions-down">
   <a href="#/apis/new" class="btn btn-primary"><i class="icon-plus icon-white"></i> Add API Backend</a>
 </div>
 
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each api in this}}
-      <tr>
-        <td>{{api.name}}</td>
-        <td class="table-row-actions">
-          {{#linkTo 'apis.edit' api._id}}<i class="icon-pencil"></i>Edit{{/linkTo}}
-          <a href="#" class="remove-action" {{action 'delete' api}}><i class="icon-remove"></i>Delete</a>
-        </td>
-      </tr>
-    {{/each}}
-  </tbody>
-</table>
+<div id="results_table searchable-table-with-add">
+  {{view Admin.ApisTableView}}
+</div>
+<div class="text-right">
+  <button type="button" id="apis_reorder" class="btn btn-mini" {{action 'toggleReorderApis'}}><i class="icon-reorder"></i> <span class="reorder-button-text">Reorder</span></button>
+</div>
