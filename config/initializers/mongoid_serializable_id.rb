@@ -4,7 +4,7 @@ module Mongoid
     # since this is an implementation detail we don't want to expose.
     def serializable_hash(*args)
       hash = super(*args)
-      if(hash.has_key?('_id'))
+      if(hash.key?('_id'))
         hash['id'] = hash.delete('_id')
       end
 
