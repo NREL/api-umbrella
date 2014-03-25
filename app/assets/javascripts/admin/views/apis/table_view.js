@@ -17,7 +17,7 @@ Admin.ApisTableView = Ember.View.extend({
       "sAjaxSource": "/admin/apis.json",
       "iDisplayLength": 50,
       "fnRowCallback": function(row, data) {
-        $(row).data("id", data._id);
+        $(row).data("id", data.id);
         $(row).data("sort-order", data.sort_order);
       },
       "aaSorting": [[0, "asc"]],
@@ -28,7 +28,7 @@ Admin.ApisTableView = Ember.View.extend({
           sDefaultContent: "-",
           mRender: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
-              var link = '#/apis/' + data._id + '/edit';
+              var link = '#/apis/' + data.id + '/edit';
               return '<a href="' + link + '">' + _.escape(name) + '</a>';
             }
 

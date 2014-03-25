@@ -1,5 +1,5 @@
 Admin.ApiSettings = Ember.Model.extend({
-  _id: Ember.attr(),
+  id: Ember.attr(),
   appendQueryString: Ember.attr(),
   headersString: Ember.attr(),
   httpBasicAuth: Ember.attr(),
@@ -43,5 +43,5 @@ Admin.ApiSettings = Ember.Model.extend({
   }.property('rateLimitMode'),
 });
 
-Admin.ApiSettings.primaryKey = "_id";
+Admin.ApiSettings.primaryKey = "id";
 Admin.ApiSettings.camelizeKeys = true;

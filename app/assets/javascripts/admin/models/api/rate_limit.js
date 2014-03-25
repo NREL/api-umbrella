@@ -1,5 +1,5 @@
 Admin.ApiRateLimit = Ember.Model.extend({
-  _id: Ember.attr(),
+  id: Ember.attr(),
   duration: Ember.attr(Number),
   limitBy: Ember.attr(),
   limit: Ember.attr(),
@@ -56,7 +56,7 @@ Admin.ApiRateLimit = Ember.Model.extend({
     console.info(this);
     console.info(this.get('parent'));
     console.info(this.get('_parent'));
-    return this.get('parent._id');
+    return this.get('parent.id');
   }.property(),
 
   toJSON: function() {
@@ -66,5 +66,5 @@ Admin.ApiRateLimit = Ember.Model.extend({
   },
 });
 
-Admin.ApiRateLimit.primaryKey = "_id";
+Admin.ApiRateLimit.primaryKey = "id";
 Admin.ApiRateLimit.camelizeKeys = true;

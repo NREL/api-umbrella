@@ -1,11 +1,6 @@
 class Api::V1::ApisController < Api::V1::BaseController
   respond_to :json
 
-  def index
-    @apis = Api.sorted.all
-    respond_with({ :apis => @apis })
-  end
-
   def show
     @api = Api.find(params[:id])
     respond_with(:api_v1, @api, :root => "api")

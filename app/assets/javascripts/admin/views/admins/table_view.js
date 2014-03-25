@@ -16,7 +16,7 @@ Admin.AdminsTableView = Ember.View.extend({
           sDefaultContent: "-",
           mRender: _.bind(function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
-              var link = '#/admins/' + data._id + '/edit';
+              var link = '#/admins/' + data.id + '/edit';
               return '<a href="' + link + '">' + _.escape(email) + '</a>';
             }
 

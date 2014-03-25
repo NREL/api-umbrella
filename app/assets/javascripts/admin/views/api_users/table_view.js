@@ -16,7 +16,7 @@ Admin.ApiUsersTableView = Ember.View.extend({
           sDefaultContent: "-",
           mRender: _.bind(function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
-              var link = '#/api_users/' + data._id + '/edit';
+              var link = '#/api_users/' + data.id + '/edit';
               return '<a href="' + link + '">' + _.escape(email) + '</a>';
             }
 

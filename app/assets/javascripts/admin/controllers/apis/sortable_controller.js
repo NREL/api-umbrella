@@ -6,7 +6,7 @@ Admin.ApisSortableController = Ember.ArrayController.extend({
 
   updateSortOrder: function(indexes) {
     this.forEach(function(record) {
-      var index = indexes[record.get('_id')];
+      var index = indexes[record.get('id')];
       record.set('sortOrder', index);
     });
   },
