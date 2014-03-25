@@ -117,10 +117,10 @@
     <div class="span7 filter-times">
       {{#if view.enableInterval}}
         <div id="interval_buttons" class="btn-group" data-toggle="buttons-radio">
-          <button type="button" class="btn btn-mini" value="hour" {{action clickInterval 'hour' target='view'}}>Hour</button>
-          <button type="button" class="btn btn-mini" value="day" {{action clickInterval 'day' target='view'}}>Day</button>
-          <button type="button" class="btn btn-mini" value="week" {{action clickInterval 'week' target='view'}}>Week</button>
-          <button type="button" class="btn btn-mini" value="month" {{action clickInterval 'month' target='view'}}>Month</button>
+          <button type="button" class="btn btn-mini" value="hour" {{action 'clickInterval' 'hour' target='view'}}>Hour</button>
+          <button type="button" class="btn btn-mini" value="day" {{action 'clickInterval' 'day' target='view'}}>Day</button>
+          <button type="button" class="btn btn-mini" value="week" {{action 'clickInterval' 'week' target='view'}}>Week</button>
+          <button type="button" class="btn btn-mini" value="month" {{action 'clickInterval' 'month' target='view'}}>Month</button>
         </div>
       {{/if}}
 

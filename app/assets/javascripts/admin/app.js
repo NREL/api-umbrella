@@ -102,7 +102,7 @@ Ember.Handlebars.helper('formatNumber', function(number) {
 });
 
 Ember.Handlebars.helper('pluralize', function(word, number) {
-  return (number == 1) ? word : _.pluralize(word);
+  return (number == 1) ? word : inflection.pluralize(word);
 });
 
 Ember.Handlebars.registerHelper('tooltip-field', function(property, options) {

@@ -1,4 +1,5 @@
 source "https://rubygems.org"
+source "https://rails-assets.org"
 
 gem "rails", "~> 3.2.17"
 
@@ -86,8 +87,8 @@ gem "countries", "~> 0.9.3"
 gem "settingslogic", "~> 2.0.9"
 
 # Ember.js
-gem "ember-rails", "~> 0.14.0"
-gem "ember-source", "~> 1.1.2"
+gem "ember-rails", "~> 0.14.1"
+gem "ember-source", "~> 1.4.0"
 
 # HTML diffs
 gem "diffy", "~> 3.0.1"
@@ -143,6 +144,23 @@ group :assets do
 
   # Improve PNG speed for image sprite generation
   gem "oily_png", "~> 1.1.0", :platforms => [:ruby]
+
+  gem "rails-assets-bootbox", "~> 3.3.0"
+  gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.4"
+  gem "rails-assets-ember-model", "~> 0.0.11"
+  gem "rails-assets-html5shiv", "~> 3.7.0"
+  gem "rails-assets-inflection", "~> 1.3.5"
+  gem "rails-assets-jquery", "~> 1.11.0"
+  gem "rails-assets-jquery-bbq-deparam", "~> 1.2.1"
+  gem "rails-assets-jstz-detect", "~> 1.0.5"
+  gem "rails-assets-livestampjs", "~> 1.1.2"
+  gem "rails-assets-lodash", "~> 2.4.1"
+  gem "rails-assets-moment", "~> 2.5.1"
+  gem "rails-assets-numeral", "~> 1.5.3"
+  gem "rails-assets-pnotify", "~> 1.3.1"
+  gem "rails-assets-qtip2", "~> 2.2.0"
+  gem "rails-assets-selectize", "~> 0.9.0"
+  gem "rails-assets-spinjs", "~> 2.0.0"
 end
 
 # Bundle gems for the local environment. Make sure to
