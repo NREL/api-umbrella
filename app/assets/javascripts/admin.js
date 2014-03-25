@@ -21,7 +21,7 @@
 //= require bootstrap-daterangepicker
 //= require livestampjs/livestamp
 //= require numeral
-//= require vendor/blockui/jquery.blockUI
+//= require vendor/jquery.blockUI
 //= require spinjs
 //= require vendor/dirtyforms/jquery.dirtyforms
 //= require vendor/dirtyforms/helpers/ckeditor

@@ -10,6 +10,3 @@
 [submodule "app/assets/javascripts/vendor/DataTables-Plugins"]
 	path = app/assets/javascripts/vendor/DataTables-Plugins
 	url = https://github.com/DataTables/Plugins.git
-[submodule "app/assets/javascripts/vendor/blockui"]
-	path = app/assets/javascripts/vendor/blockui
-	url = https://github.com/malsup/blockui.git
