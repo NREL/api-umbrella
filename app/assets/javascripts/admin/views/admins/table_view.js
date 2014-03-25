@@ -7,6 +7,7 @@ Admin.AdminsTableView = Ember.View.extend({
     this.$().dataTable({
       "bServerSide": true,
       "sAjaxSource": "/admin/admins.json",
+      "iDisplayLength": 50,
       "aaSorting": [[0, "asc"]],
       "aoColumns": [
         {

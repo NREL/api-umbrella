@@ -7,6 +7,7 @@ Admin.ApiUsersTableView = Ember.View.extend({
     this.$().dataTable({
       "bServerSide": true,
       "sAjaxSource": "/admin/api_users.json",
+      "iDisplayLength": 50,
       "aaSorting": [[4, "desc"]],
       "aoColumns": [
         {

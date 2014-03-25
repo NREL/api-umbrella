@@ -15,6 +15,7 @@ Admin.ApisTableView = Ember.View.extend({
     this.set('table', this.$().dataTable({
       "bServerSide": true,
       "sAjaxSource": "/admin/apis.json",
+      "iDisplayLength": 50,
       "fnRowCallback": function(row, data) {
         $(row).data("id", data._id);
         $(row).data("sort-order", data.sort_order);
