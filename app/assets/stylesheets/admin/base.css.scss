@@ -182,10 +182,10 @@ div.dataTables_filter {
   position: relative;
 
   .blockUI {
-    color: #999;
+    color: #999 !important;
     border: 1px solid #ddd !important;
-    font-size: 32px;
-    line-height: 60px;
+    font-size: 32px !important;
+    line-height: 60px !important;
   }
 }
 

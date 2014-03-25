@@ -185,22 +185,31 @@ _.merge($.fn.dataTable.defaults, {
     "sSearch": "",
   },
 
+  "fnPreDrawCallback": function() {
+    if(!this.customProcessingCallbackSet) {
+      // Use blockui to provide a more obvious processing message the overlays
+      // the entire table (this helps for long tables, where a simple processing
+      // message might appear out of your current view).
+      //
+      // Set this early on during pre-draw so that the processing message shows
+      // up for the first load.
+      this.on('processing', _.bind(function(event, settings, processing) {
+        if(processing) {
+          this.block({
+            message: '<i class="icon-spinner icon-spin icon-large"></i>',
+          });
+        } else {
+          this.unblock();
+        }
+      }, this));
+
+      this.customProcessingCallbackSet = true;
+    }
+  },
+
   "fnInitComplete": function() {
     // Add a placeholder instead of the "Search:" label to the filter
     // input.
     $('.dataTables_filter input').attr("placeholder", "Search...");
-
-    // Use blockui to provide a more obvious processing message the overlays
-    // the entire table (this helps for long tables, where a simple processing
-    // message might appear out of your current view).
-    this.on('processing', _.bind(function(event, settings, processing) {
-      if(processing) {
-        this.block({
-          message: '<i class="icon-spinner icon-spin icon-large"></i>',
-        });
-      } else {
-        this.unblock();
-      }
-    }, this));
   },
 });
