@@ -1,4 +1,6 @@
 class Admin::ApisController < Admin::BaseController
+  respond_to :json
+
   def index
     limit = params["iDisplayLength"].to_i
     limit = 10 if(limit == 0)
@@ -19,5 +21,12 @@ class Admin::ApisController < Admin::BaseController
         { :_id => /#{params["sSearch"]}/i },
       ])
     end
+  end
+
+  def move_to
+    @api = Api.find(params[:id])
+    @api.move_to(params[:move_to].to_i)
+    @api.save
+    respond_with(:admin, @api, :root => "api")
   end
 end

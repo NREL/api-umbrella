@@ -21,6 +21,7 @@
 //= require vendor/daterangepicker/daterangepicker
 //= require vendor/livestampjs/livestamp
 //= require vendor/Numeral-js/numeral
+//= require vendor/blockui/jquery.blockUI
 //= require vendor/spin.js/dist/spin
 //= require vendor/dirtyforms/jquery.dirtyforms
 //= require vendor/dirtyforms/helpers/ckeditor

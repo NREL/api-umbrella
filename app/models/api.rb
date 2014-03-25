@@ -6,6 +6,7 @@ class Api
   include Mongoid::Userstamp
   include Mongoid::Delorean::Trackable
   include Mongoid::EmbeddedErrors
+  include Mongoid::Orderable
   include ApiUmbrella::AttributifyData
 
   # Fields
@@ -38,6 +39,8 @@ class Api
     :presence => true
   validates :balance_algorithm,
     :inclusion => { :in => %w(round_robin least_conn ip_hash) }
+
+  orderable :column => :sort_order
 
   # Callbacks
   after_save :handle_rate_limit_mode

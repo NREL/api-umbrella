@@ -5,10 +5,8 @@ Admin.LogsTableView = Ember.View.extend({
 
   didInsertElement: function() {
     this.$().dataTable({
-      "bProcessing": true,
-      "bServerSide": true,
       "bFilter": false,
-      "bSearchable": false,
+      "bServerSide": true,
       "sAjaxSource": "/admin/stats/logs.json",
       "fnServerParams": _.bind(function(aoData) {
         var query = this.get('controller.query.params');
@@ -16,10 +14,6 @@ Admin.LogsTableView = Ember.View.extend({
           aoData.push({ name: key, value: query[key] });
         }
       }, this),
-      "sDom": 'rt<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
-      "oLanguage": {
-        "sProcessing": '<i class="icon-spinner icon-spin icon-large"></i>'
-      },
       "aaSorting": [[0, "desc"]],
       "aoColumns": [
         {

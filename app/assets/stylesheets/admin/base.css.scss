@@ -180,6 +180,13 @@ div.dataTables_filter {
 
 .dataTables_wrapper {
   position: relative;
+
+  .blockUI {
+    color: #999;
+    border: 1px solid #ddd !important;
+    font-size: 32px;
+    line-height: 60px;
+  }
 }
 
 .dataTables_processing {

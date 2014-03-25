@@ -58,7 +58,11 @@ ApiUmbrella::Application.routes.draw do
   namespace :admin do
     resources :admins, :only => [:index]
     resources :api_users, :only => [:index]
-    resources :apis, :only => [:index]
+    resources :apis, :only => [:index] do
+      member do
+        put "move_to"
+      end
+    end
 
     resources :stats, :only => [:index] do
       collection do

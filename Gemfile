@@ -30,6 +30,9 @@ gem "mongoid-embedded-errors", "~> 2.0.1"
 # Data migrations
 gem "mongoid_rails_migrations", "~> 1.0.1"
 
+# Data migrations
+gem "mongoid_orderable", "~> 4.1.0"
+
 # Generate UUIDs
 gem "uuidtools", "~> 2.1.4"
 

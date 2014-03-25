@@ -40,3 +40,6 @@
 [submodule "app/assets/javascripts/vendor/livestampjs"]
 	path = app/assets/javascripts/vendor/livestampjs
 	url = https://github.com/mattbradley/livestampjs.git
+[submodule "app/assets/javascripts/vendor/blockui"]
+	path = app/assets/javascripts/vendor/blockui
+	url = https://github.com/malsup/blockui.git
