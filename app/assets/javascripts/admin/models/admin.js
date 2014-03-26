@@ -14,9 +14,9 @@ Admin.Admin = Ember.Model.extend({
   updater: Ember.attr(),
 })
 
-Admin.Admin.url = "/api/v1/admins";
+Admin.Admin.url = "/api-umbrella/v1/admins";
 Admin.Admin.rootKey = "admin";
 Admin.Admin.collectionKey = "admins";
 Admin.Admin.primaryKey = "id";
 Admin.Admin.camelizeKeys = true;
-Admin.Admin.adapter = Ember.RESTAdapter.create();
+Admin.Admin.adapter = Admin.APIUmbrellaRESTAdapter.create();

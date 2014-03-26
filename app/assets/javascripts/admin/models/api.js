@@ -37,9 +37,9 @@ Admin.Api = Ember.Model.extend({
   }.property('backendHost'),
 })
 
-Admin.Api.url = "/api/v1/apis";
+Admin.Api.url = "/api-umbrella/v1/apis";
 Admin.Api.rootKey = "api";
 Admin.Api.collectionKey = "apis";
 Admin.Api.primaryKey = "id";
 Admin.Api.camelizeKeys = true;
-Admin.Api.adapter = Ember.RESTAdapter.create();
+Admin.Api.adapter = Admin.APIUmbrellaRESTAdapter.create();

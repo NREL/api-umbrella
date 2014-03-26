@@ -21,28 +21,31 @@ ApiUmbrella::Application.routes.draw do
 
   root :to => "pages#home"
 
-  namespace :api do
-    resources :api_users, :path => "api-users", :only => [:show, :create] do
-      member do
-        get "validate"
+  # Mount the API at both /api/ and /api-umbrella/ for backwards compatibility.
+  %w(api api-umbrella).each do |path|
+    namespace(:api, :path => path) do
+      resources :api_users, :path => "api-users", :only => [:show, :create] do
+        member do
+          get "validate"
+        end
       end
-    end
 
-    resources :health_checks, :path => "health-checks", :only => [] do
-      collection do
-        get :ip
-        get :logging
+      resources :health_checks, :path => "health-checks", :only => [] do
+        collection do
+          get :ip
+          get :logging
+        end
       end
-    end
 
-    resource :hooks, :only => [] do
-      post "publish_static_site"
-    end
+      resource :hooks, :only => [] do
+        post "publish_static_site"
+      end
 
-    namespace :v1 do
-      resources :admins
-      resources :apis
-      resources :users
+      namespace :v1 do
+        resources :admins
+        resources :apis
+        resources :users
+      end
     end
   end
 

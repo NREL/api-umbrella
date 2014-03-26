@@ -151,6 +151,19 @@ Ember.EasyForm.Config.registerWrapper('default', {
   controlsWrapperClass: 'controls'
 });
 
+Admin.APIUmbrellaRESTAdapter = Ember.RESTAdapter.extend({
+  ajaxSettings: function(url, method) {
+    return {
+      url: url,
+      type: method,
+      dataType: 'json',
+      headers: {
+        'X-Api-Key': webAdminAjaxApiKey
+      }
+    };
+  }
+});
+
 // DataTables plugin to programmatically show the processing indidicator.
 // https://datatables.net/plug-ins/api#fnProcessingIndicator
 jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff )
