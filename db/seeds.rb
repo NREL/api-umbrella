@@ -8,7 +8,7 @@ api.assign_attributes({
   :servers => [
     {
       'host' => '127.0.0.1',
-      'port' => 51000
+      'port' => 51_000
     }
   ],
   :url_matches => [
