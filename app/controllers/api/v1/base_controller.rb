@@ -25,6 +25,7 @@ class Api::V1::BaseController < ApplicationController
         begin
           Mongoid::Userstamp.config.user_model.current = self.send(Mongoid::Userstamp.config.user_reader)
         rescue
+          Rails.logger.warn("Unexpected error setting userstamp: #{$!}")
         end
       end
     end
