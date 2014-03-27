@@ -1,404 +1,253 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>API Umbrella</title>
-    <link href="../../stylesheets/all-eca34f2b.css" media="screen" rel="stylesheet" type="text/css" />
-    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
-    <link href="http://fonts.googleapis.com/css?family=Raleway:400,300,700" rel="stylesheet" type="text/css">
-
-    <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-      ga('create', 'UA-42866857-2', 'nrel.github.io');
-      ga('send', 'pageview');
-    </script>
-  </head>
-  <body>
-  <body class="docs docs_admin-api docs_admin-api_index">
-    <div id="navigation" class="navbar navbar-default">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#"><i class="fa fa-umbrella"></i> <b>API Umbrella</b></a>
-        </div>
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li class=""><a href="../../">Home</a></li>
-            <li class="active"><a href="../">Documentation</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    
-
-      <div class="container">
-    <div class="row">
-      <nav class="col-md-3">
-        <ul>
-  <li class="">
-    <a href="../architecture/">Architecture</a>
-  </li>
-  <li class="">
-    <a href="../api-keys/">API Keys</a>
-  </li>
-  <li class="">
-    <a href="../backend-headers/">Backend HTTP Headers</a>
-  </li>
-  <li class="">
-    <a href="../caching/">Caching</a>
-  </li>
-</ul>
-
-      </nav>
-      <div class="col-md-9">
-        <h1 id="api-umbrella-admin-api">API Umbrella Admin API</h1>
-
-<p>The admin API is accessible via <code>/api-umbrella/v1</code>. In order to access this API, you must pass:</p>
-
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>API Umbrella Admin API</title><link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"><link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"><link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400,700|Inconsolata|Raleway:200"><style>/* Highlight.js Theme Tomorrow */
+.hljs-comment,.hljs-title{color:#8e908c}.hljs-variable,.hljs-attribute,.hljs-tag,.hljs-regexp,.ruby .hljs-constant,.xml .hljs-tag .hljs-title,.xml .hljs-pi,.xml .hljs-doctype,.html .hljs-doctype,.css .hljs-id,.css .hljs-class,.css .hljs-pseudo{color:#c82829}.hljs-number,.hljs-preprocessor,.hljs-pragma,.hljs-built_in,.hljs-literal,.hljs-params,.hljs-constant{color:#f5871f}.ruby .hljs-class .hljs-title,.css .hljs-rules .hljs-attribute{color:#eab700}.hljs-string,.hljs-value,.hljs-inheritance,.hljs-header,.ruby .hljs-symbol,.xml .hljs-cdata{color:#718c00}.css .hljs-hexcolor{color:#3e999f}.hljs-function,.python .hljs-decorator,.python .hljs-title,.ruby .hljs-function .hljs-title,.ruby .hljs-title .hljs-keyword,.perl .hljs-sub,.javascript .hljs-title,.coffeescript .hljs-title{color:#4271ae}.hljs-keyword,.javascript .hljs-function{color:#8959a8}.hljs{display:block;background:white;color:#4d4d4c;padding:.5em}.coffeescript .javascript,.javascript .xml,.tex .hljs-formula,.xml .javascript,.xml .vbscript,.xml .css,.xml .hljs-cdata{opacity:.5}</style><style>body,
+h4,
+h5 {
+  font-family: 'Roboto' sans-serif !important;
+}
+h1,
+h2,
+h3,
+.aglio {
+  font-family: 'Raleway' sans-serif !important;
+}
+h1 a,
+h2 a,
+h3 a,
+h4 a,
+h5 a {
+  display: none;
+}
+h1:hover a,
+h2:hover a,
+h3:hover a,
+h4:hover a,
+h5:hover a {
+  display: inline;
+}
+code {
+  color: #444;
+  background-color: #ddd;
+  font-family: 'Inconsolata' monospace !important;
+}
+a[data-target] {
+  cursor: pointer;
+}
+h4 {
+  font-size: 100%;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.back-to-top {
+  position: fixed;
+  z-index: 1;
+  bottom: 0px;
+  right: 24px;
+  padding: 4px 8px;
+  background-color: #eee;
+  text-decoration: none !important;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  border-left: 1px solid rgba(0,0,0,0.1);
+  border-right: 1px solid rgba(0,0,0,0.1);
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+.panel {
+  overflow: hidden;
+}
+.panel-heading code {
+  color: #c7254e;
+  background-color: transparent;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+.panel-heading h3 {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+a.list-group-item {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+a.list-group-item.heading {
+  background-color: #f5f5f5;
+}
+.list-group-item.collapse {
+  display: none;
+}
+.list-group-item.collapse.in {
+  display: block;
+}
+#nav {
+  margin-top: 38px;
+  min-width: 255px;
+  top: 0;
+  bottom: 0;
+  padding-right: 12px;
+  padding-bottom: 12px;
+  overflow-y: auto;
+}
+@media (max-width: 1199px) {
+  #nav {
+    min-width: 212px;
+  }
+}
+</style></head><body><a href="#top" class="text-muted back-to-top"><i class="fa fa-toggle-up"></i>&nbsp;Back to top</a><div class="container"><div class="row"><div class="col-md-3"><nav id="nav" class="hidden-sm hidden-xs affix nav"><div class="list-group"><a href="#users-/-api-keys" class="list-group-item heading">Users / API Keys</a><a href="#users-/-api-keys-user-collection" class="list-group-item"><i class="fa fa-bars"></i>&nbsp;User Collection</a><a href="#users-/-api-keys-user-collection-get" style="padding-left: 32px" class="list-group-item"><i class="fa fa-arrow-circle-down"></i>&nbsp;Get All Users</a><a href="#users-/-api-keys-user-collection-post" style="padding-left: 32px" class="list-group-item"><i class="fa fa-plus-square"></i>&nbsp;Create New User</a><a href="#users-/-api-keys-user" class="list-group-item"><i class="fa fa-bars"></i>&nbsp;User</a><a href="#users-/-api-keys-user-get" style="padding-left: 32px" class="list-group-item"><i class="fa fa-arrow-circle-down"></i>&nbsp;Get User</a><a href="#users-/-api-keys-user-put" style="padding-left: 32px" class="list-group-item"><i class="fa fa-pencil"></i>&nbsp;Update User</a></div><div class="list-group"><a href="#api-backends" class="list-group-item heading">API Backends</a><a href="#api-backends-api-backend-collection" class="list-group-item"><i class="fa fa-bars"></i>&nbsp;API Backend Collection</a><a href="#api-backends-api-backend-collection-get" style="padding-left: 32px" class="list-group-item"><i class="fa fa-arrow-circle-down"></i>&nbsp;Get All API Backends</a><a href="#api-backends-api-backend-collection-post" style="padding-left: 32px" class="list-group-item"><i class="fa fa-plus-square"></i>&nbsp;Create New API Backend</a><a href="#api-backends-api-backend" class="list-group-item"><i class="fa fa-bars"></i>&nbsp;API Backend</a><a href="#api-backends-api-backend-get" style="padding-left: 32px" class="list-group-item"><i class="fa fa-arrow-circle-down"></i>&nbsp;Get API Backend</a><a href="#api-backends-api-backend-put" style="padding-left: 32px" class="list-group-item"><i class="fa fa-pencil"></i>&nbsp;Update API Backend</a></div><div class="list-group"><a href="#admin-accounts" class="list-group-item heading">Admin Accounts</a><a href="#admin-accounts-admin-collection" class="list-group-item"><i class="fa fa-bars"></i>&nbsp;Admin Collection</a><a href="#admin-accounts-admin-collection-get" style="padding-left: 32px" class="list-group-item"><i class="fa fa-arrow-circle-down"></i>&nbsp;Get All Admins</a><a href="#admin-accounts-admin-collection-post" style="padding-left: 32px" class="list-group-item"><i class="fa fa-plus-square"></i>&nbsp;Create New Admin</a><a href="#admin-accounts-admin" class="list-group-item"><i class="fa fa-bars"></i>&nbsp;Admin</a><a href="#admin-accounts-admin-get" style="padding-left: 32px" class="list-group-item"><i class="fa fa-arrow-circle-down"></i>&nbsp;Get Admin</a><a href="#admin-accounts-admin-put" style="padding-left: 32px" class="list-group-item"><i class="fa fa-pencil"></i>&nbsp;Update Admin</a></div></nav></div><div class="col-md-9"><div><header><div class="page-header"><h1 id="top">API Umbrella Admin API</h1></div></header><div class="description"><p>The admin API is accessible via <code>/api-umbrella/v1</code>. In order to access this API, you must pass:</p>
 <ul>
-  <li>Your API key via one of the <a href="http://nrel.github.io/api-umbrella/docs/api-keys/">supported methods</a>.</li>
-  <li><strong>AND</strong> an admin token via the <code>X-Admin-Auth-Token</code> header.</li>
+<li>Your API key via one of the <a href="http://nrel.github.io/api-umbrella/docs/api-keys/">supported methods</a>.</li>
+<li><strong>AND</strong> an admin token via the <code>X-Admin-Auth-Token</code> header.</li>
 </ul>
+<p>To find the admin auth token for your admin account, login the web admin tool, and choose “My Account” under the top right gear menu. On that page, you should see your “Admin API Token” listed. Use this in conjunction with your normal API key to make requests to the admin APIs:</p>
+<pre><code class="lang-http"><span class="hljs-attribute">X-Api-Key</span>: <span class="hljs-string">YOUR_API_KEY_HERE</span>
+<span class="hljs-attribute">X-Admin-Auth-Token</span>: <span class="hljs-string">YOUR_ADMIN_TOKEN_HERE</span>
+</code></pre>
+</div></div><div><div class="panel panel-default"><div class="panel-heading"><h3 id="users-/-api-keys">Users / API Keys&nbsp;<a href="#users-/-api-keys"><i class="fa fa-link"></i></a></h3></div><div class="panel-body"><h4 id="users-/-api-keys-user-collection">User Collection&nbsp;<a href="#users-/-api-keys-user-collection"><i class="fa fa-link"></i></a></h4><section id="users-/-api-keys-user-collection-get" class="panel panel-info"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Get All Users</span></div><div style="float:left"><a href="#users-/-api-keys-user-collection-get" class="btn btn-xs btn-primary">GET</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/users</code></div></div><div class="panel-body"><p>TODO</p>
+</div><ul class="list-group"></ul></section><section id="users-/-api-keys-user-collection-post" class="panel panel-success"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Create New User</span></div><div style="float:left"><a href="#users-/-api-keys-user-collection-post" class="btn btn-xs btn-success">POST</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/users</code></div></div><ul class="list-group"><li class="list-group-item"><strong>Request</strong><a data-toggle="collapse" data-target="#9897ba894c964e4aa153407d399dc7d3" class="pull-right">Toggle</a></li><li id="9897ba894c964e4aa153407d399dc7d3" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">X-Api-Key</span>: <span class="hljs-string">YOUR_API_KEY_HERE</span><br><span class="hljs-attribute">X-Admin-Auth-Token</span>: <span class="hljs-string">YOUR_ADMIN_TOKEN_HERE</span><br></code></pre><h5>Body</h5><pre><code>{
+  "<span class="hljs-attribute">user</span>":<span class="hljs-value">{
+    "<span class="hljs-attribute">email</span>":<span class="hljs-value"><span class="hljs-string">"john.doe@example.com"</span></span>,
+    "<span class="hljs-attribute">first_name</span>":<span class="hljs-value"><span class="hljs-string">"John"</span></span>,
+    "<span class="hljs-attribute">last_name</span>":<span class="hljs-value"><span class="hljs-string">"Doe"</span></span>,
+    "<span class="hljs-attribute">use_description</span>":<span class="hljs-value"><span class="hljs-string">""</span></span>,
+    "<span class="hljs-attribute">terms_and_conditions</span>":<span class="hljs-value"><span class="hljs-literal">true</span></span>,
+    "<span class="hljs-attribute">send_welcome_email</span>":<span class="hljs-value"><span class="hljs-literal">false</span></span>,
+    "<span class="hljs-attribute">throttle_by_ip</span>":<span class="hljs-value"><span class="hljs-literal">false</span></span>,
+    "<span class="hljs-attribute">roles</span>":<span class="hljs-value">[<span class="hljs-string">"write_access"</span>]</span>,
+    "<span class="hljs-attribute">enabled</span>":<span class="hljs-value"><span class="hljs-literal">true</span></span>,
+    "<span class="hljs-attribute">settings</span>":<span class="hljs-value">{
+      "<span class="hljs-attribute">rate_limit_mode</span>":<span class="hljs-value"><span class="hljs-literal">null</span></span>,
+      "<span class="hljs-attribute">rate_limits</span>":<span class="hljs-value">[]
+    </span>}
+  </span>}
+</span>}
+</code></pre></li><li class="list-group-item"><strong>Response&nbsp;&nbsp;<code>201</code></strong><a data-toggle="collapse" data-target="#3c3cb6b4d87356449a2cf45880e1577d" class="pull-right">Toggle</a></li><li id="3c3cb6b4d87356449a2cf45880e1577d" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json; charset=utf-8</span><br></code></pre><h5>Body</h5><pre><code>{
+  "<span class="hljs-attribute">user</span>":<span class="hljs-value">{
+    "<span class="hljs-attribute">id</span>":<span class="hljs-value"><span class="hljs-string">"4339b882-1f7a-4f19-aa84-273c876a5f3d"</span></span>,
+    "<span class="hljs-attribute">api_key</span>":<span class="hljs-value"><span class="hljs-string">"2gcg6Gvq4a2evmdp69AsS1I6v7x1KJYaMJQIhQ3D"</span></span>,
+    "<span class="hljs-attribute">api_key_hides_at</span>":<span class="hljs-value"><span class="hljs-string">"2014-03-27T05:28:25Z"</span></span>,
+    "<span class="hljs-attribute">api_key_preview</span>":<span class="hljs-value"><span class="hljs-string">"2gcg6G..."</span></span>,
+    "<span class="hljs-attribute">first_name</span>":<span class="hljs-value"><span class="hljs-string">"John"</span></span>,
+    "<span class="hljs-attribute">last_name</span>":<span class="hljs-value"><span class="hljs-string">"Doe"</span></span>,
+    "<span class="hljs-attribute">email</span>":<span class="hljs-value"><span class="hljs-string">"john.doe@example.com"</span></span>,
+    "<span class="hljs-attribute">website</span>":<span class="hljs-value"><span class="hljs-literal">null</span></span>,
+    "<span class="hljs-attribute">use_description</span>":<span class="hljs-value"><span class="hljs-string">""</span></span>,
+    "<span class="hljs-attribute">registration_source</span>":<span class="hljs-value"><span class="hljs-string">"web_admin"</span></span>,
+    "<span class="hljs-attribute">throttle_by_ip</span>":<span class="hljs-value"><span class="hljs-literal">false</span></span>,
+    "<span class="hljs-attribute">roles</span>":<span class="hljs-value">[<span class="hljs-string">"write_access"</span>]</span>,
+    "<span class="hljs-attribute">enabled</span>":<span class="hljs-value"><span class="hljs-literal">true</span></span>,
+    "<span class="hljs-attribute">created_at</span>":<span class="hljs-value"><span class="hljs-string">"2014-03-27T05:18:25Z"</span></span>,
+    "<span class="hljs-attribute">updated_at</span>":<span class="hljs-value"><span class="hljs-string">"2014-03-27T05:18:25Z"</span></span>,
+    "<span class="hljs-attribute">settings</span>":<span class="hljs-value">{
+      "<span class="hljs-attribute">id</span>":<span class="hljs-value"><span class="hljs-string">"aa22932d-aecb-47a3-9ef3-806bf89e7a21"</span></span>,
+      "<span class="hljs-attribute">rate_limit_mode</span>":<span class="hljs-value"><span class="hljs-literal">null</span></span>,
+      "<span class="hljs-attribute">rate_limits</span>":<span class="hljs-value">[
+      ]
+    </span>}</span>,
+    "<span class="hljs-attribute">creator</span>":<span class="hljs-value">{
+      "<span class="hljs-attribute">username</span>":<span class="hljs-value"><span class="hljs-string">"admin@example.com"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">updater</span>":<span class="hljs-value">{
+      "<span class="hljs-attribute">username</span>":<span class="hljs-value"><span class="hljs-string">"admin@example.com"</span>
+    </span>}
+  </span>}
+</span>}
+</code></pre></li><li class="list-group-item"><strong>Response&nbsp;&nbsp;<code>422</code></strong><a data-toggle="collapse" data-target="#3d37b42982910e93ed2aad801485d085" class="pull-right">Toggle</a></li><li id="3d37b42982910e93ed2aad801485d085" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json; charset=utf-8</span><br></code></pre><h5>Body</h5><pre><code>{
+  "<span class="hljs-attribute">errors</span>":<span class="hljs-value">{
+    "<span class="hljs-attribute">email</span>":<span class="hljs-value">[
+      <span class="hljs-string">"Provide a valid email address."</span>
+    ]
+  </span>}
+</span>}
+</code></pre></li></ul></section><h4 id="users-/-api-keys-user">User&nbsp;<a href="#users-/-api-keys-user"><i class="fa fa-link"></i></a></h4><section id="users-/-api-keys-user-get" class="panel panel-info"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Get User</span></div><div style="float:left"><a href="#users-/-api-keys-user-get" class="btn btn-xs btn-primary">GET</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/users/{id}</code></div></div><ul class="list-group"><li class="list-group-item bg-default"><strong>Parameters</strong></li><li class="list-group-item"><dl class="dl-horizontal"><dt>id</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>bc7e8a90-b569-11e3-a5e2-0800200c9a66</span></span><p>The user account ID</p>
+</dd></dl></li></ul><ul class="list-group"><li class="list-group-item"><strong>Response&nbsp;&nbsp;<code>200</code></strong><a data-toggle="collapse" data-target="#ec5b17789584009c08ffe7aa02f89182" class="pull-right">Toggle</a></li><li id="ec5b17789584009c08ffe7aa02f89182" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json; charset=utf-8</span><br></code></pre><h5>Body</h5><pre><code>{
+  "<span class="hljs-attribute">user</span>":<span class="hljs-value">{
+    "<span class="hljs-attribute">id</span>":<span class="hljs-value"><span class="hljs-string">"4339b882-1f7a-4f19-aa84-273c876a5f3d"</span></span>,
+    "<span class="hljs-attribute">api_key_preview</span>":<span class="hljs-value"><span class="hljs-string">"2gcg6G..."</span></span>,
+    "<span class="hljs-attribute">first_name</span>":<span class="hljs-value"><span class="hljs-string">"John"</span></span>,
+    "<span class="hljs-attribute">last_name</span>":<span class="hljs-value"><span class="hljs-string">"Doe"</span></span>,
+    "<span class="hljs-attribute">email</span>":<span class="hljs-value"><span class="hljs-string">"john.doe@example.com"</span></span>,
+    "<span class="hljs-attribute">website</span>":<span class="hljs-value"><span class="hljs-literal">null</span></span>,
+    "<span class="hljs-attribute">use_description</span>":<span class="hljs-value"><span class="hljs-string">""</span></span>,
+    "<span class="hljs-attribute">registration_source</span>":<span class="hljs-value"><span class="hljs-string">"web_admin"</span></span>,
+    "<span class="hljs-attribute">throttle_by_ip</span>":<span class="hljs-value"><span class="hljs-literal">false</span></span>,
+    "<span class="hljs-attribute">roles</span>":<span class="hljs-value">[<span class="hljs-string">"write_access"</span>]</span>,
+    "<span class="hljs-attribute">enabled</span>":<span class="hljs-value"><span class="hljs-literal">true</span></span>,
+    "<span class="hljs-attribute">created_at</span>":<span class="hljs-value"><span class="hljs-string">"2014-03-27T05:18:25Z"</span></span>,
+    "<span class="hljs-attribute">updated_at</span>":<span class="hljs-value"><span class="hljs-string">"2014-03-27T05:18:25Z"</span></span>,
+    "<span class="hljs-attribute">settings</span>":<span class="hljs-value">{
+      "<span class="hljs-attribute">id</span>":<span class="hljs-value"><span class="hljs-string">"aa22932d-aecb-47a3-9ef3-806bf89e7a21"</span></span>,
+      "<span class="hljs-attribute">rate_limit_mode</span>":<span class="hljs-value"><span class="hljs-literal">null</span></span>,
+      "<span class="hljs-attribute">rate_limits</span>":<span class="hljs-value">[
+      ]
+    </span>}</span>,
+    "<span class="hljs-attribute">creator</span>":<span class="hljs-value">{
+      "<span class="hljs-attribute">username</span>":<span class="hljs-value"><span class="hljs-string">"admin@example.com"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">updater</span>":<span class="hljs-value">{
+      "<span class="hljs-attribute">username</span>":<span class="hljs-value"><span class="hljs-string">"admin@example.com"</span>
+    </span>}
+  </span>}
+</span>}
+</code></pre></li></ul></section><section id="users-/-api-keys-user-put" class="panel panel-warning"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Update User</span></div><div style="float:left"><a href="#users-/-api-keys-user-put" class="btn btn-xs btn-warning">PUT</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/users/{id}</code></div></div><ul class="list-group"><li class="list-group-item bg-default"><strong>Parameters</strong></li><li class="list-group-item"><dl class="dl-horizontal"><dt>id</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>bc7e8a90-b569-11e3-a5e2-0800200c9a66</span></span><p>The user account ID</p>
+</dd></dl></li></ul><ul class="list-group"><li class="list-group-item"><strong>Request</strong><a data-toggle="collapse" data-target="#7042ed3e51223fff6d01612ce13974b6" class="pull-right">Toggle</a></li><li id="7042ed3e51223fff6d01612ce13974b6" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json</span><br><span class="hljs-attribute">X-Api-Key</span>: <span class="hljs-string">YOUR_API_KEY_HERE</span><br><span class="hljs-attribute">X-Admin-Auth-Token</span>: <span class="hljs-string">YOUR_ADMIN_TOKEN_HERE</span><br></code></pre><h5>Body</h5><pre><code>{
+  "<span class="hljs-attribute">user</span>": <span class="hljs-value">{
+    "<span class="hljs-attribute">enabled</span>": <span class="hljs-value"><span class="hljs-literal">false</span>
+  </span>}
+</span>}
+</code></pre></li><li class="list-group-item"><strong>Response&nbsp;&nbsp;<code>200</code></strong><a data-toggle="collapse" data-target="#f95303c6230fc402923b9d4a5d80caaf" class="pull-right">Toggle</a></li><li id="f95303c6230fc402923b9d4a5d80caaf" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json; charset=utf-8</span><br></code></pre><h5>Body</h5><pre><code>{
+  "<span class="hljs-attribute">user</span>":<span class="hljs-value">{
+    "<span class="hljs-attribute">id</span>":<span class="hljs-value"><span class="hljs-string">"422ed2fc-6e8d-456d-9253-4e0fe9735bdc"</span></span>,
+    "<span class="hljs-attribute">api_key_preview</span>":<span class="hljs-value"><span class="hljs-string">"upHYhK..."</span></span>,
+    "<span class="hljs-attribute">first_name</span>":<span class="hljs-value"><span class="hljs-string">"John"</span></span>,
+    "<span class="hljs-attribute">last_name</span>":<span class="hljs-value"><span class="hljs-string">"Doe"</span></span>,
+    "<span class="hljs-attribute">email</span>":<span class="hljs-value"><span class="hljs-string">"john.doe@example.com"</span></span>,
+    "<span class="hljs-attribute">website</span>":<span class="hljs-value"><span class="hljs-literal">null</span></span>,
+    "<span class="hljs-attribute">use_description</span>":<span class="hljs-value"><span class="hljs-string">""</span></span>,
+    "<span class="hljs-attribute">registration_source</span>":<span class="hljs-value"><span class="hljs-string">"web_admin"</span></span>,
+    "<span class="hljs-attribute">throttle_by_ip</span>":<span class="hljs-value"><span class="hljs-literal">false</span></span>,
+    "<span class="hljs-attribute">roles</span>":<span class="hljs-value">[<span class="hljs-string">"write_access"</span>]</span>,
+    "<span class="hljs-attribute">enabled</span>":<span class="hljs-value"><span class="hljs-literal">false</span></span>,
+    "<span class="hljs-attribute">created_at</span>":<span class="hljs-value"><span class="hljs-string">"2014-03-27T05:23:41Z"</span></span>,
+    "<span class="hljs-attribute">updated_at</span>":<span class="hljs-value"><span class="hljs-string">"2014-03-27T05:39:44Z"</span></span>,
+    "<span class="hljs-attribute">settings</span>":<span class="hljs-value">{
+      "<span class="hljs-attribute">id</span>":<span class="hljs-value"><span class="hljs-string">"055fde68-0586-4780-a904-ba07df020cf1"</span></span>,
+      "<span class="hljs-attribute">rate_limit_mode</span>":<span class="hljs-value"><span class="hljs-literal">null</span></span>,
+      "<span class="hljs-attribute">rate_limits</span>":<span class="hljs-value">[
+      ]
+    </span>}</span>,
+    "<span class="hljs-attribute">creator</span>":<span class="hljs-value">{
+      "<span class="hljs-attribute">username</span>":<span class="hljs-value"><span class="hljs-string">"admin@example.com"</span>
+    </span>}</span>,
+    "<span class="hljs-attribute">updater</span>":<span class="hljs-value">{
+      "<span class="hljs-attribute">username</span>":<span class="hljs-value"><span class="hljs-string">"admin@example.com"</span>
+    </span>}
+  </span>}
+</span>}
+</code></pre></li><li class="list-group-item"><strong>Response&nbsp;&nbsp;<code>422</code></strong><a data-toggle="collapse" data-target="#174743ce3b96fed249ce3a45f5f84cf2" class="pull-right">Toggle</a></li><li id="174743ce3b96fed249ce3a45f5f84cf2" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json; charset=utf-8</span><br></code></pre><h5>Body</h5><pre><code>{
+  "<span class="hljs-attribute">errors</span>":<span class="hljs-value">{
+    "<span class="hljs-attribute">email</span>":<span class="hljs-value">[
+      <span class="hljs-string">"Provide a valid email address."</span>
+    ]
+  </span>}
+</span>}
+</code></pre></li></ul></section></div></div></div><div><div class="panel panel-default"><div class="panel-heading"><h3 id="api-backends">API Backends&nbsp;<a href="#api-backends"><i class="fa fa-link"></i></a></h3></div><div class="panel-body"><h4 id="api-backends-api-backend-collection">API Backend Collection&nbsp;<a href="#api-backends-api-backend-collection"><i class="fa fa-link"></i></a></h4><section id="api-backends-api-backend-collection-get" class="panel panel-info"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Get All API Backends</span></div><div style="float:left"><a href="#api-backends-api-backend-collection-get" class="btn btn-xs btn-primary">GET</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/apis</code></div></div><div class="panel-body"><p>TODO</p>
+</div><ul class="list-group"></ul></section><section id="api-backends-api-backend-collection-post" class="panel panel-success"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Create New API Backend</span></div><div style="float:left"><a href="#api-backends-api-backend-collection-post" class="btn btn-xs btn-success">POST</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/apis</code></div></div><ul class="list-group"></ul></section><h4 id="api-backends-api-backend">API Backend&nbsp;<a href="#api-backends-api-backend"><i class="fa fa-link"></i></a></h4><section id="api-backends-api-backend-get" class="panel panel-info"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Get API Backend</span></div><div style="float:left"><a href="#api-backends-api-backend-get" class="btn btn-xs btn-primary">GET</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/apis/{id}</code></div></div><ul class="list-group"><li class="list-group-item bg-default"><strong>Parameters</strong></li><li class="list-group-item"><dl class="dl-horizontal"><dt>id</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>e5708670-b568-11e3-a5e2-0800200c9a66</span></span><p>The API backend ID</p>
+</dd></dl></li></ul><ul class="list-group"></ul></section><section id="api-backends-api-backend-put" class="panel panel-warning"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Update API Backend</span></div><div style="float:left"><a href="#api-backends-api-backend-put" class="btn btn-xs btn-warning">PUT</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/apis/{id}</code></div></div><ul class="list-group"><li class="list-group-item bg-default"><strong>Parameters</strong></li><li class="list-group-item"><dl class="dl-horizontal"><dt>id</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>e5708670-b568-11e3-a5e2-0800200c9a66</span></span><p>The API backend ID</p>
+</dd></dl></li></ul><ul class="list-group"></ul></section></div></div></div><div><div class="panel panel-default"><div class="panel-heading"><h3 id="admin-accounts">Admin Accounts&nbsp;<a href="#admin-accounts"><i class="fa fa-link"></i></a></h3></div><div class="panel-body"><h4 id="admin-accounts-admin-collection">Admin Collection&nbsp;<a href="#admin-accounts-admin-collection"><i class="fa fa-link"></i></a></h4><section id="admin-accounts-admin-collection-get" class="panel panel-info"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Get All Admins</span></div><div style="float:left"><a href="#admin-accounts-admin-collection-get" class="btn btn-xs btn-primary">GET</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/admins</code></div></div><div class="panel-body"><p>TODO</p>
+</div><ul class="list-group"></ul></section><section id="admin-accounts-admin-collection-post" class="panel panel-success"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Create New Admin</span></div><div style="float:left"><a href="#admin-accounts-admin-collection-post" class="btn btn-xs btn-success">POST</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/admins</code></div></div><ul class="list-group"></ul></section><h4 id="admin-accounts-admin">Admin&nbsp;<a href="#admin-accounts-admin"><i class="fa fa-link"></i></a></h4><section id="admin-accounts-admin-get" class="panel panel-info"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Get Admin</span></div><div style="float:left"><a href="#admin-accounts-admin-get" class="btn btn-xs btn-primary">GET</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/admins/{id}</code></div></div><ul class="list-group"><li class="list-group-item bg-default"><strong>Parameters</strong></li><li class="list-group-item"><dl class="dl-horizontal"><dt>id</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>c3890fe0-b569-11e3-a5e2-0800200c9a66</span></span><p>The admin account ID</p>
+</dd></dl></li></ul><ul class="list-group"></ul></section><section id="admin-accounts-admin-put" class="panel panel-warning"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Update Admin</span></div><div style="float:left"><a href="#admin-accounts-admin-put" class="btn btn-xs btn-warning">PUT</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/admins/{id}</code></div></div><ul class="list-group"><li class="list-group-item bg-default"><strong>Parameters</strong></li><li class="list-group-item"><dl class="dl-horizontal"><dt>id</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>c3890fe0-b569-11e3-a5e2-0800200c9a66</span></span><p>The admin account ID</p>
+</dd></dl></li></ul><ul class="list-group"></ul></section></div></div></div></div></div></div><p style="text-align: center;" class="text-muted">Generated by&nbsp;<a href="https://github.com/danielgtaylor/aglio" class="aglio">aglio</a>&nbsp;on 27 Mar 2014</p><div id="localFile" style="display: none; position: absolute; top: 0; left: 0; width: 100%; color: white; background: red; font-size: 150%; text-align: center; padding: 1em;">This page may not display correctly when opened as a local file. Instead, view it from a web server.
 
-<p>To find the admin auth token for your admin account, login the web admin tool, and choose "My Account" under the top right gear menu. On that page, you should see your "Admin API Token" listed. Use this in conjunction with your normal API key to make requests to the admin APIs:</p>
+</div></body><script src="//code.jquery.com/jquery-1.11.0.min.js"></script><script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script><script>(function() {
+  if (location.protocol === 'file:') {
+    document.getElementById('localFile').style.display = 'block';
+  }
 
-<pre class="highlight http"><span class="err">X-Api-Key: YOUR_API_KEY_HERE
-X-Admin-Auth-Token: YOUR_ADMIN_TOKEN_HERE
-</span></pre>
-<h1 id="group-users--api-keys">Group Users / API Keys</h1>
+}).call(this);
+</script><script>(function() {
+  $('table').addClass('table');
 
-<h2 id="user-collection-api-umbrellav1users">User Collection [/api-umbrella/v1/users]</h2>
-
-<h3 id="get-all-users-get">Get All Users [GET]</h3>
-<p>TODO</p>
-
-<h3 id="create-new-user-post">Create New User [POST]</h3>
-
-<ul>
-  <li>
-    <p>Request</p>
-
-    <ul>
-      <li>
-        <p>Headers</p>
-
-<pre class="highlight plaintext">  Content-Type: application/json
-  X-Api-Key: YOUR_API_KEY_HERE
-  X-Admin-Auth-Token: YOUR_ADMIN_TOKEN_HERE
-</pre>      </li>
-      <li>
-        <p>Body</p>
-
-<pre class="highlight json"><span class="w">  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"user"</span><span class="p">:{</span><span class="w">
-      </span><span class="s2">"email"</span><span class="p">:</span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"first_name"</span><span class="p">:</span><span class="s2">"John"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"last_name"</span><span class="p">:</span><span class="s2">"Doe"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"use_description"</span><span class="p">:</span><span class="s2">""</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"terms_and_conditions"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"send_welcome_email"</span><span class="p">:</span><span class="kc">false</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"throttle_by_ip"</span><span class="p">:</span><span class="kc">false</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"roles"</span><span class="p">:[</span><span class="s2">"write_access"</span><span class="p">],</span><span class="w">
-      </span><span class="s2">"enabled"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"settings"</span><span class="p">:{</span><span class="w">
-        </span><span class="s2">"rate_limit_mode"</span><span class="p">:</span><span class="err">null</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"rate_limits"</span><span class="p">:[]</span><span class="w">
-      </span><span class="p">}</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span></pre>      </li>
-    </ul>
-  </li>
-  <li>
-    <p>Response 201</p>
-
-    <ul>
-      <li>
-        <p>Headers</p>
-
-<pre class="highlight plaintext">  Content-Type: application/json; charset=utf-8
-</pre>      </li>
-      <li>
-        <p>Body</p>
-
-<pre class="highlight json"><span class="w">  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"user"</span><span class="p">:{</span><span class="w">
-      </span><span class="s2">"id"</span><span class="p">:</span><span class="s2">"4339b882-1f7a-4f19-aa84-273c876a5f3d"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"api_key"</span><span class="p">:</span><span class="s2">"2gcg6Gvq4a2evmdp69AsS1I6v7x1KJYaMJQIhQ3D"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"api_key_hides_at"</span><span class="p">:</span><span class="s2">"2014-03-27T05:28:25Z"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"api_key_preview"</span><span class="p">:</span><span class="s2">"2gcg6G..."</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"first_name"</span><span class="p">:</span><span class="s2">"John"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"last_name"</span><span class="p">:</span><span class="s2">"Doe"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"email"</span><span class="p">:</span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"website"</span><span class="p">:</span><span class="err">null</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"use_description"</span><span class="p">:</span><span class="s2">""</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"registration_source"</span><span class="p">:</span><span class="s2">"web_admin"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"throttle_by_ip"</span><span class="p">:</span><span class="kc">false</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"roles"</span><span class="p">:[</span><span class="s2">"write_access"</span><span class="p">],</span><span class="w">
-      </span><span class="s2">"enabled"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"created_at"</span><span class="p">:</span><span class="s2">"2014-03-27T05:18:25Z"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"updated_at"</span><span class="p">:</span><span class="s2">"2014-03-27T05:18:25Z"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"settings"</span><span class="p">:{</span><span class="w">
-        </span><span class="s2">"id"</span><span class="p">:</span><span class="s2">"aa22932d-aecb-47a3-9ef3-806bf89e7a21"</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"rate_limit_mode"</span><span class="p">:</span><span class="err">null</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"rate_limits"</span><span class="p">:[</span><span class="w">
-        </span><span class="p">]</span><span class="w">
-      </span><span class="p">},</span><span class="w">
-      </span><span class="s2">"creator"</span><span class="p">:{</span><span class="w">
-        </span><span class="s2">"username"</span><span class="p">:</span><span class="s2">"admin@example.com"</span><span class="w">
-      </span><span class="p">},</span><span class="w">
-      </span><span class="s2">"updater"</span><span class="p">:{</span><span class="w">
-        </span><span class="s2">"username"</span><span class="p">:</span><span class="s2">"admin@example.com"</span><span class="w">
-      </span><span class="p">}</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span></pre>      </li>
-    </ul>
-  </li>
-  <li>
-    <p>Response 422</p>
-
-    <ul>
-      <li>
-        <p>Headers</p>
-
-<pre class="highlight plaintext">  Content-Type: application/json; charset=utf-8
-</pre>      </li>
-      <li>
-        <p>Body</p>
-
-<pre class="highlight json"><span class="w">  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"errors"</span><span class="p">:{</span><span class="w">
-      </span><span class="s2">"email"</span><span class="p">:[</span><span class="w">
-        </span><span class="s2">"Provide a valid email address."</span><span class="w">
-      </span><span class="p">]</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span></pre>      </li>
-    </ul>
-  </li>
-</ul>
-
-<h2 id="user-api-umbrellav1usersid">User [/api-umbrella/v1/users/{id}]</h2>
-
-<ul>
-  <li>
-    <p>Parameters</p>
-
-    <ul>
-      <li>id (required, string, <code>bc7e8a90-b569-11e3-a5e2-0800200c9a66</code>) … The user account ID</li>
-    </ul>
-  </li>
-</ul>
-
-<h3 id="get-user-get">Get User [GET]</h3>
-
-<ul>
-  <li>
-    <p>Response 200</p>
-
-    <ul>
-      <li>
-        <p>Headers</p>
-
-<pre class="highlight plaintext">  Content-Type: application/json; charset=utf-8
-</pre>      </li>
-      <li>
-        <p>Body</p>
-
-<pre class="highlight json"><span class="w">  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"user"</span><span class="p">:{</span><span class="w">
-      </span><span class="s2">"id"</span><span class="p">:</span><span class="s2">"4339b882-1f7a-4f19-aa84-273c876a5f3d"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"api_key_preview"</span><span class="p">:</span><span class="s2">"2gcg6G..."</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"first_name"</span><span class="p">:</span><span class="s2">"John"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"last_name"</span><span class="p">:</span><span class="s2">"Doe"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"email"</span><span class="p">:</span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"website"</span><span class="p">:</span><span class="err">null</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"use_description"</span><span class="p">:</span><span class="s2">""</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"registration_source"</span><span class="p">:</span><span class="s2">"web_admin"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"throttle_by_ip"</span><span class="p">:</span><span class="kc">false</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"roles"</span><span class="p">:[</span><span class="s2">"write_access"</span><span class="p">],</span><span class="w">
-      </span><span class="s2">"enabled"</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"created_at"</span><span class="p">:</span><span class="s2">"2014-03-27T05:18:25Z"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"updated_at"</span><span class="p">:</span><span class="s2">"2014-03-27T05:18:25Z"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"settings"</span><span class="p">:{</span><span class="w">
-        </span><span class="s2">"id"</span><span class="p">:</span><span class="s2">"aa22932d-aecb-47a3-9ef3-806bf89e7a21"</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"rate_limit_mode"</span><span class="p">:</span><span class="err">null</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"rate_limits"</span><span class="p">:[</span><span class="w">
-        </span><span class="p">]</span><span class="w">
-      </span><span class="p">},</span><span class="w">
-      </span><span class="s2">"creator"</span><span class="p">:{</span><span class="w">
-        </span><span class="s2">"username"</span><span class="p">:</span><span class="s2">"admin@example.com"</span><span class="w">
-      </span><span class="p">},</span><span class="w">
-      </span><span class="s2">"updater"</span><span class="p">:{</span><span class="w">
-        </span><span class="s2">"username"</span><span class="p">:</span><span class="s2">"admin@example.com"</span><span class="w">
-      </span><span class="p">}</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span></pre>      </li>
-    </ul>
-  </li>
-</ul>
-
-<h3 id="update-user-put">Update User [PUT]</h3>
-
-<ul>
-  <li>
-    <p>Request</p>
-
-    <ul>
-      <li>
-        <p>Headers</p>
-
-<pre class="highlight plaintext">  Content-Type: application/json
-  X-Api-Key: YOUR_API_KEY_HERE
-  X-Admin-Auth-Token: YOUR_ADMIN_TOKEN_HERE
-</pre>      </li>
-      <li>
-        <p>Body</p>
-
-<pre class="highlight json"><span class="w">  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"user"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-      </span><span class="s2">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span></pre>      </li>
-    </ul>
-  </li>
-  <li>
-    <p>Response 200</p>
-
-    <ul>
-      <li>
-        <p>Headers</p>
-
-<pre class="highlight plaintext">  Content-Type: application/json; charset=utf-8
-</pre>      </li>
-      <li>
-        <p>Body</p>
-
-<pre class="highlight json"><span class="w">  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"user"</span><span class="p">:{</span><span class="w">
-      </span><span class="s2">"id"</span><span class="p">:</span><span class="s2">"422ed2fc-6e8d-456d-9253-4e0fe9735bdc"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"api_key_preview"</span><span class="p">:</span><span class="s2">"upHYhK..."</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"first_name"</span><span class="p">:</span><span class="s2">"John"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"last_name"</span><span class="p">:</span><span class="s2">"Doe"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"email"</span><span class="p">:</span><span class="s2">"john.doe@example.com"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"website"</span><span class="p">:</span><span class="err">null</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"use_description"</span><span class="p">:</span><span class="s2">""</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"registration_source"</span><span class="p">:</span><span class="s2">"web_admin"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"throttle_by_ip"</span><span class="p">:</span><span class="kc">false</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"roles"</span><span class="p">:[</span><span class="s2">"write_access"</span><span class="p">],</span><span class="w">
-      </span><span class="s2">"enabled"</span><span class="p">:</span><span class="kc">false</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"created_at"</span><span class="p">:</span><span class="s2">"2014-03-27T05:23:41Z"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"updated_at"</span><span class="p">:</span><span class="s2">"2014-03-27T05:39:44Z"</span><span class="p">,</span><span class="w">
-      </span><span class="s2">"settings"</span><span class="p">:{</span><span class="w">
-        </span><span class="s2">"id"</span><span class="p">:</span><span class="s2">"055fde68-0586-4780-a904-ba07df020cf1"</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"rate_limit_mode"</span><span class="p">:</span><span class="err">null</span><span class="p">,</span><span class="w">
-        </span><span class="s2">"rate_limits"</span><span class="p">:[</span><span class="w">
-        </span><span class="p">]</span><span class="w">
-      </span><span class="p">},</span><span class="w">
-      </span><span class="s2">"creator"</span><span class="p">:{</span><span class="w">
-        </span><span class="s2">"username"</span><span class="p">:</span><span class="s2">"admin@example.com"</span><span class="w">
-      </span><span class="p">},</span><span class="w">
-      </span><span class="s2">"updater"</span><span class="p">:{</span><span class="w">
-        </span><span class="s2">"username"</span><span class="p">:</span><span class="s2">"admin@example.com"</span><span class="w">
-      </span><span class="p">}</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span></pre>      </li>
-    </ul>
-  </li>
-  <li>
-    <p>Response 422</p>
-
-    <ul>
-      <li>
-        <p>Headers</p>
-
-<pre class="highlight plaintext">  Content-Type: application/json; charset=utf-8
-</pre>      </li>
-      <li>
-        <p>Body</p>
-
-<pre class="highlight json"><span class="w">  </span><span class="p">{</span><span class="w">
-    </span><span class="s2">"errors"</span><span class="p">:{</span><span class="w">
-      </span><span class="s2">"email"</span><span class="p">:[</span><span class="w">
-        </span><span class="s2">"Provide a valid email address."</span><span class="w">
-      </span><span class="p">]</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-  </span><span class="p">}</span><span class="w">
-</span></pre>      </li>
-    </ul>
-  </li>
-</ul>
-
-<h1 id="group-api-backends">Group API Backends</h1>
-
-<h2 id="api-backend-collection-api-umbrellav1apis">API Backend Collection [/api-umbrella/v1/apis]</h2>
-
-<h3 id="get-all-api-backends-get">Get All API Backends [GET]</h3>
-<p>TODO</p>
-
-<h3 id="create-new-api-backend-post">Create New API Backend [POST]</h3>
-
-<h2 id="api-backend-api-umbrellav1apisid">API Backend [/api-umbrella/v1/apis/{id}]</h2>
-
-<ul>
-  <li>
-    <p>Parameters</p>
-
-    <ul>
-      <li>id (required, string, <code>e5708670-b568-11e3-a5e2-0800200c9a66</code>) … The API backend ID</li>
-    </ul>
-  </li>
-</ul>
-
-<h3 id="get-api-backend-get">Get API Backend [GET]</h3>
-
-<h3 id="update-api-backend-put">Update API Backend [PUT]</h3>
-
-<h1 id="group-admin-accounts">Group Admin Accounts</h1>
-
-<h2 id="admin-collection-api-umbrellav1admins">Admin Collection [/api-umbrella/v1/admins]</h2>
-
-<h3 id="get-all-admins-get">Get All Admins [GET]</h3>
-<p>TODO</p>
-
-<h3 id="create-new-admin-post">Create New Admin [POST]</h3>
-
-<h2 id="admin-api-umbrellav1adminsid">Admin [/api-umbrella/v1/admins/{id}]</h2>
-
-<ul>
-  <li>
-    <p>Parameters</p>
-
-    <ul>
-      <li>id (required, string, <code>c3890fe0-b569-11e3-a5e2-0800200c9a66</code>) … The admin account ID</li>
-    </ul>
-  </li>
-</ul>
-
-<h3 id="get-admin-get">Get Admin [GET]</h3>
-
-<h3 id="update-admin-put">Update Admin [PUT]</h3>
-
-
-      </div>
-    </div>
-  </div>
-
-
-    <script src="../../javascripts/all-5bf21b8f.js" type="text/javascript"></script>
-  </body>
-</html>
+}).call(this);
+</script></html>
