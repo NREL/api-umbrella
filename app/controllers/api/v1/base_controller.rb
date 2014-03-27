@@ -9,7 +9,7 @@ class Api::V1::BaseController < ApplicationController
   private
 
   def authenticate_admin_from_token!
-    admin_token = params[:admin_token].presence
+    admin_token = request.headers['X-Admin-Auth-Token'].presence
     admin = admin_token && Admin.where(:authentication_token => admin_token.to_s).first
 
     if admin
