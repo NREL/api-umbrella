@@ -27,9 +27,9 @@ Admin.ApiUsersFormController = Ember.ObjectController.extend({
         var message = "<h3>Error</h3>";
         try {
           var errors = response.responseJSON.errors;
-          for(var prop in errors) {
-            message += prop + ': ' + errors[prop].join(', ') + '<br>';
-          }
+          _.each(errors, function(error) {
+            message += error.field + ': ' + error.message + '<br>';
+          });
         } catch(e) {
           message = 'An unexpected error occurred: ' + response.responseText;
         }

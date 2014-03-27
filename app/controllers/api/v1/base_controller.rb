@@ -30,4 +30,18 @@ class Api::V1::BaseController < ApplicationController
       end
     end
   end
+
+  def errors_response(record)
+    response = { :errors => [] }
+
+    record.errors.each do |field, message|
+      response[:errors] << {
+        :code => "INVALID_INPUT",
+        :message => message,
+        :field => field,
+      }
+    end
+
+    response
+  end
 end

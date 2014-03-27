@@ -17,7 +17,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       if(@api_user.save)
         format.json { render("show", :status => :created, :location => api_v1_user_url(@api_user)) }
       else
-        format.json { render(:json => { :errors => @api_user.errors }, :status => :unprocessable_entity) }
+        format.json { render(:json => errors_response(@api_user), :status => :unprocessable_entity) }
       end
     end
   end
@@ -30,7 +30,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       if(@api_user.save)
         format.json { render("show", :status => :ok, :location => api_v1_user_url(@api_user)) }
       else
-        format.json { render(:json => { :errors => @api_user.errors }, :status => :unprocessable_entity) }
+        format.json { render(:json => errors_response(@api_user), :status => :unprocessable_entity) }
       end
     end
   end
