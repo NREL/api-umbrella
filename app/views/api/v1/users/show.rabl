@@ -19,7 +19,7 @@ if(@api_user.created_by == current_admin.id && Time.now < @api_user.api_key_hide
 end
 
 child :settings => :settings do
-  attributes :_id
+  attributes :id
   attributes :rate_limit_mode
 
   child :rate_limits, :object_root => false do
