@@ -59,11 +59,15 @@ class ApiUser
     },
     :unless => lambda { |user| user.no_domain_signup }
   validates :terms_and_conditions,
-    :acceptance => { :message => "Check the box to agree to the terms and conditions." },
+    :acceptance => {
+      :message => "Check the box to agree to the terms and conditions.",
+      :accept => true,
+    },
     :on => :create,
     :allow_nil => false
 
   # Callbacks
+  before_validation :normalize_terms_and_conditions
   before_validation :generate_api_key, :on => :create
   after_save :handle_rate_limit_mode
 
@@ -153,6 +157,13 @@ class ApiUser
   end
 
   private
+
+  def normalize_terms_and_conditions
+    # Handle the acceptance validation regardless of if it comes from the JSON
+    # api (true values) or from an HTML form ('1' values).
+    self.terms_and_conditions = (self.terms_and_conditions == true || self.terms_and_conditions == '1')
+    true
+  end
 
   def generate_api_key
     unless self.api_key
