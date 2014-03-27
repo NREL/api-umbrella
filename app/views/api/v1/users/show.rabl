@@ -9,7 +9,6 @@ attributes :id,
            :registration_source,
            :throttle_by_ip,
            :roles,
-           :roles_string,
            :enabled,
            :created_at,
            :updated_at

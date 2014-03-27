@@ -79,7 +79,7 @@ class ApiUser
     :terms_and_conditions,
     :registration_source,
     :as => [:default, :admin]
-  attr_accessible :roles_string,
+  attr_accessible :roles,
     :throttle_by_ip,
     :enabled,
     :settings_attributes,
@@ -142,28 +142,6 @@ class ApiUser
     else
       self.disabled_at = nil
     end
-  end
-
-  def roles_string
-    unless @roles_string
-      @roles_string = ""
-      if self.roles.present?
-        @roles_string = self.roles.join(",")
-      end
-    end
-
-    @roles_string
-  end
-
-  def roles_string=(string)
-    @roles_string = string
-
-    roles = nil
-    if(string.present?)
-      roles = string.split(",").map { |role| role.strip }
-    end
-
-    self.roles = roles
   end
 
   def api_key_preview

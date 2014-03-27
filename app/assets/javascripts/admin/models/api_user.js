@@ -12,7 +12,7 @@ Admin.ApiUser = Ember.Model.extend({
   termsAndConditions: Ember.attr(),
   sendWelcomeEmail: Ember.attr(),
   throttleByIp: Ember.attr(),
-  rolesString: Ember.attr(),
+  roles: Ember.attr(),
   enabled: Ember.attr(),
   createdAt: Ember.attr(),
   updatedAt: Ember.attr(),
@@ -44,6 +44,22 @@ Admin.ApiUser = Ember.Model.extend({
       this.set('settings', Admin.ApiSettings.create());
     }
   },
+
+  rolesString: function(key, value) {
+    // Setter
+    if(arguments.length > 1) {
+      var roles = value.split(',');
+      this.set('roles', roles);
+    }
+
+    // Getter
+    var rolesString = '';
+    if(this.get('roles')) {
+      rolesString = this.get('roles').join(',');
+    }
+
+    return rolesString;
+  }.property('roles'),
 
   toJSON: function() {
     var json = this._super();
