@@ -98,11 +98,13 @@ TODO
     + Body
 
             {
-              "errors":{
-                "email":[
-                  "Provide a valid email address."
-                ]
-              }
+              "errors":[
+                {
+                  "code":"INVALID_INPUT",
+                  "message":"Provide a valid email address.",
+                  "field":"email"
+                }
+              ]
             }
 
 ## User [/api-umbrella/v1/users/{id}]
@@ -216,13 +218,14 @@ TODO
     + Body
 
             {
-              "errors":{
-                "email":[
-                  "Provide a valid email address."
-                ]
-              }
+              "errors":[
+                {
+                  "code":"INVALID_INPUT",
+                  "message":"Provide a valid email address.",
+                  "field":"email"
+                }
+              ]
             }
-
 
 # Group API Backends
 
