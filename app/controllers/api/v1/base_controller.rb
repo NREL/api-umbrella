@@ -16,6 +16,17 @@ class Api::V1::BaseController < ApplicationController
       # Don't store the user on the session, so the token is required on every
       # request.
       sign_in(admin, :store => false)
+
+      # The mongoid_userstamp plugin doesn't seem to pickup the current admin
+      # user when we load via this token (something to do with callback
+      # ordering?). To to fix that, force the userstamp model to pickup the
+      # current admin account after this token-based login.
+      unless Mongoid::Userstamp.current_user
+        begin
+          Mongoid::Userstamp.config.user_model.current = self.send(Mongoid::Userstamp.config.user_reader)
+        rescue
+        end
+      end
     end
   end
 end
