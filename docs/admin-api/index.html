@@ -153,12 +153,14 @@ a.list-group-item.heading {
     </span>}
   </span>}
 </span>}
-</code></pre></li><li class="list-group-item"><strong>Response&nbsp;&nbsp;<code>422</code></strong><a data-toggle="collapse" data-target="#3d37b42982910e93ed2aad801485d085" class="pull-right">Toggle</a></li><li id="3d37b42982910e93ed2aad801485d085" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json; charset=utf-8</span><br></code></pre><h5>Body</h5><pre><code>{
-  "<span class="hljs-attribute">errors</span>":<span class="hljs-value">{
-    "<span class="hljs-attribute">email</span>":<span class="hljs-value">[
-      <span class="hljs-string">"Provide a valid email address."</span>
-    ]
-  </span>}
+</code></pre></li><li class="list-group-item"><strong>Response&nbsp;&nbsp;<code>422</code></strong><a data-toggle="collapse" data-target="#0fc23931f484680bf9a6193d53662852" class="pull-right">Toggle</a></li><li id="0fc23931f484680bf9a6193d53662852" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json; charset=utf-8</span><br></code></pre><h5>Body</h5><pre><code>{
+  "<span class="hljs-attribute">errors</span>":<span class="hljs-value">[
+    {
+      "<span class="hljs-attribute">code</span>":<span class="hljs-value"><span class="hljs-string">"INVALID_INPUT"</span></span>,
+      "<span class="hljs-attribute">message</span>":<span class="hljs-value"><span class="hljs-string">"Provide a valid email address."</span></span>,
+      "<span class="hljs-attribute">field</span>":<span class="hljs-value"><span class="hljs-string">"email"</span>
+    </span>}
+  ]
 </span>}
 </code></pre></li></ul></section><h4 id="users-/-api-keys-user">User&nbsp;<a href="#users-/-api-keys-user"><i class="fa fa-link"></i></a></h4><section id="users-/-api-keys-user-get" class="panel panel-info"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Get User</span></div><div style="float:left"><a href="#users-/-api-keys-user-get" class="btn btn-xs btn-primary">GET</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/users/{id}</code></div></div><ul class="list-group"><li class="list-group-item bg-default"><strong>Parameters</strong></li><li class="list-group-item"><dl class="dl-horizontal"><dt>id</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>bc7e8a90-b569-11e3-a5e2-0800200c9a66</span></span><p>The user account ID</p>
 </dd></dl></li></ul><ul class="list-group"><li class="list-group-item"><strong>Response&nbsp;&nbsp;<code>200</code></strong><a data-toggle="collapse" data-target="#ec5b17789584009c08ffe7aa02f89182" class="pull-right">Toggle</a></li><li id="ec5b17789584009c08ffe7aa02f89182" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json; charset=utf-8</span><br></code></pre><h5>Body</h5><pre><code>{
@@ -225,12 +227,14 @@ a.list-group-item.heading {
     </span>}
   </span>}
 </span>}
-</code></pre></li><li class="list-group-item"><strong>Response&nbsp;&nbsp;<code>422</code></strong><a data-toggle="collapse" data-target="#174743ce3b96fed249ce3a45f5f84cf2" class="pull-right">Toggle</a></li><li id="174743ce3b96fed249ce3a45f5f84cf2" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json; charset=utf-8</span><br></code></pre><h5>Body</h5><pre><code>{
-  "<span class="hljs-attribute">errors</span>":<span class="hljs-value">{
-    "<span class="hljs-attribute">email</span>":<span class="hljs-value">[
-      <span class="hljs-string">"Provide a valid email address."</span>
-    ]
-  </span>}
+</code></pre></li><li class="list-group-item"><strong>Response&nbsp;&nbsp;<code>422</code></strong><a data-toggle="collapse" data-target="#7483d69808567af2fc260633669e215b" class="pull-right">Toggle</a></li><li id="7483d69808567af2fc260633669e215b" class="list-group-item panel-collapse collapse"><div class="description"></div><h5>Headers</h5><pre><code><span class="hljs-attribute">Content-Type</span>: <span class="hljs-string">application/json; charset=utf-8</span><br></code></pre><h5>Body</h5><pre><code>{
+  "<span class="hljs-attribute">errors</span>":<span class="hljs-value">[
+    {
+      "<span class="hljs-attribute">code</span>":<span class="hljs-value"><span class="hljs-string">"INVALID_INPUT"</span></span>,
+      "<span class="hljs-attribute">message</span>":<span class="hljs-value"><span class="hljs-string">"Provide a valid email address."</span></span>,
+      "<span class="hljs-attribute">field</span>":<span class="hljs-value"><span class="hljs-string">"email"</span>
+    </span>}
+  ]
 </span>}
 </code></pre></li></ul></section></div></div></div><div><div class="panel panel-default"><div class="panel-heading"><h3 id="api-backends">API Backends&nbsp;<a href="#api-backends"><i class="fa fa-link"></i></a></h3></div><div class="panel-body"><h4 id="api-backends-api-backend-collection">API Backend Collection&nbsp;<a href="#api-backends-api-backend-collection"><i class="fa fa-link"></i></a></h4><section id="api-backends-api-backend-collection-get" class="panel panel-info"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Get All API Backends</span></div><div style="float:left"><a href="#api-backends-api-backend-collection-get" class="btn btn-xs btn-primary">GET</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/apis</code></div></div><div class="panel-body"><p>TODO</p>
 </div><ul class="list-group"></ul></section><section id="api-backends-api-backend-collection-post" class="panel panel-success"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Create New API Backend</span></div><div style="float:left"><a href="#api-backends-api-backend-collection-post" class="btn btn-xs btn-success">POST</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/apis</code></div></div><ul class="list-group"></ul></section><h4 id="api-backends-api-backend">API Backend&nbsp;<a href="#api-backends-api-backend"><i class="fa fa-link"></i></a></h4><section id="api-backends-api-backend-get" class="panel panel-info"><div class="panel-heading"><div style="float:right"><span style="text-transform: lowercase">Get API Backend</span></div><div style="float:left"><a href="#api-backends-api-backend-get" class="btn btn-xs btn-primary">GET</a></div><div style="overflow:hidden"><code>/api-umbrella/v1/apis/{id}</code></div></div><ul class="list-group"><li class="list-group-item bg-default"><strong>Parameters</strong></li><li class="list-group-item"><dl class="dl-horizontal"><dt>id</dt><dd><code>string</code>&nbsp;<span class="required">(required)</span>&nbsp;<span class="text-muted example"><strong>Example:&nbsp;</strong><span>e5708670-b568-11e3-a5e2-0800200c9a66</span></span><p>The API backend ID</p>
