@@ -79,3 +79,5 @@ set :markdown, {
   :input => 'GFM',
   :smart_quotes => ['apos', 'apos', 'quot', 'quot'],
 }
+
+ignore "docs/admin-api.blueprint.md"
