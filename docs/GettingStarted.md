@@ -53,4 +53,15 @@ Login to the [web admin](http://localhost:8080/admin/). Navigate to the "Filter 
 
 Login to the [web admin](http://localhost:8080/admin/) and create documentation for individual web services and organize them into hierarchical collections. As documentation and collections are added, they will show up in the [documentation section](http://localhost:8080/doc) of the frontend.
 
+
+### Roles
+Roles are created by simply using a new role's name on either the API backend or API key side of things. It behaves like a tagging interface, so there's no explicit action needed to create a new role.
+
+For global settings, when you define an API backend's configuration (eg, that api.data.gov/foo/ gets routed to wherever your server lives), you can assign a required role for accessing that entire API backend. This would mean that all requests to /foo/ would need to have an API key with this specific role assigned to it before it's able to access those APIs.
+
+### Fine-Grained Access Control
+You can also setup more granular rules under the "Sub-URL Request Settings." In there you can define required roles for more specific URLs within your API, allowing you to do things like define that /foo/bar/ and /foo/moo/ require separate roles. You can also assign these requires roles based on HTTP method access, so you can setup different required roles for POST vs GET vs PUT vs DELETE vs etc.
+
+The most common thing we've done is to allow all API keys to have GET access by default, but then setup a sub-url request setting to restrict POST/PUT/DELETE access to specific roles. So, for example, everyone can access the GET API without any role, but only API keys with a "foo-write" role assigned to them can POST to the API.
+
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/9caf7fc8bb54ccd9e1670affa6b82618 "githalytics.com")](http://githalytics.com/NREL/api-umbrella)
