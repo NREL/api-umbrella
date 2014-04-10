@@ -2,9 +2,11 @@ csv << [
   "Email",
   "First Name",
   "Last Name",
-  "Signed Up",
+  "Website",
+  "Registration Source",
+  "Signed Up (UTC)",
   "Hits",
-  "Last Request",
+  "Last Request (UTC)",
   "Use Description",
 ]
 
@@ -13,9 +15,11 @@ csv << [
     row[:email],
     row[:first_name],
     row[:last_name],
-    row[:created_at],
+    row[:website],
+    row[:registration_source],
+    csv_time(row[:created_at]),
     row[:hits],
-    row[:last_request_at],
+    csv_time(row[:last_request_at]),
     row[:use_description],
   ]
 end

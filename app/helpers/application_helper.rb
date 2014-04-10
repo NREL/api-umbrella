@@ -40,4 +40,10 @@ module ApplicationHelper
       safe_concat(highlight_code(language, code))
     end
   end
+
+  def csv_time(time)
+    if(time)
+      time.utc.strftime("%Y-%m-%d %H:%M:%S")
+    end
+  end
 end

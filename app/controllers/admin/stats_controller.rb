@@ -120,6 +120,8 @@ class Admin::StatsController < Admin::BaseController
         :email => user["email"],
         :first_name => user["first_name"],
         :last_name => user["last_name"],
+        :website => user["website"],
+        :registration_source => user["registration_source"],
         :created_at => user["created_at"],
         :hits => term["count"],
         :last_request_at => Time.at(term["max"] / 1000),
