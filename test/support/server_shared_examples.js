@@ -6,6 +6,7 @@ var _ = require('lodash'),
     config = require('api-umbrella-config'),
     csv = require('csv'),
     ippp = require('ipplusplus'),
+    path = require('path'),
     xml2js = require('xml2js');
 
 global.backendCalled = false;
@@ -42,7 +43,9 @@ _.merge(global.shared, {
         config.setRuntime(configOverrides);
       }
 
-      this.gatekeeper = gatekeeper.start({}, done);
+      this.gatekeeper = gatekeeper.start({
+        config: path.resolve(__dirname, '../config/test.yml'),
+      }, done);
     });
 
     afterEach(function(done) {
