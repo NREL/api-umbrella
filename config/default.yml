@@ -10,7 +10,7 @@ gatekeeper:
 varnish:
   port: 51700
 mongodb:
-  url: "mongodb://127.0.0.1:27017/api_umbrella_development"
+  url: "mongodb://127.0.0.1:50217/api_umbrella_development"
   options:
     server:
       socketOptions:
