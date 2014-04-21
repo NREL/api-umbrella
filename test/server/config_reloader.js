@@ -76,6 +76,66 @@ describe('config reloader', function() {
             ];
 
             break;
+          case 'www.akamai.com':
+            message.answer = [
+              { name: 'www.akamai.com',
+                type: 5,
+                class: 1,
+                ttl: 11,
+                data: 'wwwsecure.akamai.com.edgekey.net' },
+              { name: 'wwwsecure.akamai.com.edgekey.net',
+                type: 5,
+                class: 1,
+                ttl: 312,
+                data: 'e8921.dscb.akamaiedge.net' },
+              { name: 'e8921.dscb.akamaiedge.net',
+                type: 1,
+                class: 1,
+                ttl: 20,
+                address: '23.7.77.233' }
+            ];
+
+            break;
+          case 'blogs.akamai.com':
+            message.answer = [
+              { name: 'blogs.akamai.com',
+                type: 5,
+                class: 1,
+                ttl: 300,
+                data: 'blogs.akamai.com.edgekey.net' },
+              { name: 'blogs.akamai.com.edgekey.net',
+                type: 5,
+                class: 1,
+                ttl: 657,
+                data: 'e5246.dscb.akamaiedge.net' },
+              { name: 'e5246.dscb.akamaiedge.net',
+                type: 1,
+                class: 1,
+                ttl: 20,
+                address: '184.28.63.64' }
+            ];
+
+            break;
+          case 'api.data.gov':
+            message.answer = [
+              { name: 'api.data.gov',
+                type: 5,
+                class: 1,
+                ttl: 293,
+                data: 'apis-947257526.us-east-1.elb.amazonaws.com' },
+              { name: 'apis-947257526.us-east-1.elb.amazonaws.com',
+                type: 1,
+                class: 1,
+                ttl: 60,
+                address: '54.84.241.143' },
+              { name: 'apis-947257526.us-east-1.elb.amazonaws.com',
+                type: 1,
+                class: 1,
+                ttl: 60,
+                address: '54.85.135.143' }
+            ];
+
+            break;
           case 'localhost':
           case 'once-valid.blah':
           case 'foo.blah':
@@ -119,17 +179,17 @@ describe('config reloader', function() {
           redisClient.set('router_active_ip:once-valid.blah', '1.2.3.4', callback);
         },
         function(callback) {
-          redisClient.set('router_active_ip:google.com', '10.0.0.1', callback);
+          redisClient.set('router_active_ip:www.akamai.com', '10.0.0.1', callback);
         },
         function(callback) {
-          var key = 'router_seen_ips:google.com:' + moment().subtract(3, 'hours').format(DnsResolver.RECENT_IP_BUCKET_TIME_FORMAT);
+          var key = 'router_seen_ips:www.akamai.com:' + moment().subtract(3, 'hours').format(DnsResolver.RECENT_IP_BUCKET_TIME_FORMAT);
           redisClient.sadd(key, ['10.0.0.1'], callback);
         },
         function(callback) {
-          redisClient.set('router_active_ip:yahoo.com', '10.0.0.1', callback);
+          redisClient.set('router_active_ip:blogs.akamai.com', '10.0.0.1', callback);
         },
         function(callback) {
-          var key = 'router_seen_ips:yahoo.com:' + moment().subtract(4, 'hours').format(DnsResolver.RECENT_IP_BUCKET_TIME_FORMAT);
+          var key = 'router_seen_ips:blogs.akamai.com:' + moment().subtract(4, 'hours').format(DnsResolver.RECENT_IP_BUCKET_TIME_FORMAT);
           redisClient.sadd(key, ['10.0.0.1'], callback);
         },
       ], done);
@@ -192,19 +252,37 @@ describe('config reloader', function() {
           ],
         },
         {
-          _id: 'use-recent-api',
+          _id: 'dont-cache-recent-api',
           servers: [
             {
-              host: 'google.com',
+              host: 'api.data.gov',
               port: 80,
             },
           ],
         },
         {
-          _id: 'recent-expired-api',
+          _id: 'use-recent-cname-api',
+          servers: [
+            {
+              host: 'www.akamai.com',
+              port: 80,
+            },
+          ],
+        },
+        {
+          _id: 'use-recent-domain-api',
           servers: [
             {
               host: 'yahoo.com',
+              port: 80,
+            },
+          ],
+        },
+        {
+          _id: 'use-recent-expired-api',
+          servers: [
+            {
+              host: 'blogs.akamai.com',
               port: 80,
             },
           ],
@@ -249,11 +327,28 @@ describe('config reloader', function() {
       });
     });
 
-    it('maintains a list of recently seen vaid ips in redis', function(done) {
-      var key = 'router_seen_ips:example.com:' + moment().format(DnsResolver.RECENT_IP_BUCKET_TIME_FORMAT);
+    it('maintains a list of recently seen valid ips in redis for cnames that are set to ignore the ttl', function(done) {
+      var key = 'router_seen_ips:blogs.akamai.com:' + moment().format(DnsResolver.RECENT_IP_BUCKET_TIME_FORMAT);
       redisClient.smembers(key, function(error, ips) {
         ips.length.should.be.greaterThan(0);
         ipaddr.isValid(ips[0]).should.eql(true);
+        done();
+      });
+    });
+
+    it('maintains a list of recently seen valid ips in redis for domains that are set to ignore the ttl', function(done) {
+      var key = 'router_seen_ips:yahoo.com:' + moment().format(DnsResolver.RECENT_IP_BUCKET_TIME_FORMAT);
+      redisClient.smembers(key, function(error, ips) {
+        ips.length.should.be.greaterThan(0);
+        ipaddr.isValid(ips[0]).should.eql(true);
+        done();
+      });
+    });
+
+    it('does not cache recently seen ips by default', function(done) {
+      var key = 'router_seen_ips:api.data.gov:' + moment().format(DnsResolver.RECENT_IP_BUCKET_TIME_FORMAT);
+      redisClient.smembers(key, function(error, ips) {
+        ips.length.should.be.eql(0);
         done();
       });
     });
@@ -281,19 +376,17 @@ describe('config reloader', function() {
     });
 
     it('keeps using the same address if it has been seen in the past 4 wall hours', function() {
-      var block = this.nginxConfigContents.match(/upstream api_umbrella_use-recent-api_backend {[^}]*}/)[0];
+      var block = this.nginxConfigContents.match(/upstream api_umbrella_use-recent-cname-api_backend {[^}]*}/)[0];
       var ip = block.match(/server (.+):80;/)[1];
 
       ip.should.eql('10.0.0.1');
     });
 
     it('stops using recently seen address more than 4 wall hours old', function() {
-      var block = this.nginxConfigContents.match(/upstream api_umbrella_recent-expired-api_backend {[^}]*}/)[0];
+      var block = this.nginxConfigContents.match(/upstream api_umbrella_use-recent-expired-api_backend {[^}]*}/)[0];
       var ip = block.match(/server (.+):80;/)[1];
 
-      ip.should.not.eql('10.0.0.2');
-      ip.should.not.eql('255.255.255.255');
-      ipaddr.isValid(ip).should.eql(true);
+      ip.should.eql('184.28.63.64');
     });
   });
 });

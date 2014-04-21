@@ -15,6 +15,10 @@ apiUmbrella:
       url_matches:
         - frontend_prefix: /
           backend_prefix: /
+  dns_resolver:
+    ignore_ttl_domains:
+      - "akamaiedge\\.net$"
+      - "yahoo\\.com"
 convoy:
   keys:
     prefix: "cv:"

@@ -24,6 +24,9 @@ apiUmbrella:
       - header
       - getParam
       - basicAuthUsername
+  dns_resolver:
+    ignore_ttl_domains:
+      - "akamaiedge\\.net$"
   log_template_version: v1
   logProcessor:
     workers: 1
