@@ -10,11 +10,11 @@ Vagrant.configure("2") do |config|
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "CentOS-6.5-#{box_arch}-v20140110"
+  config.vm.box = "CentOS-6.5-#{box_arch}-v20140504"
 
   # The url from where the 'config.vm.box' box will be fetched if it
   # doesn't already exist on the user's system.
-  config.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.5-#{box_arch}-v20140110.box"
+  config.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.5-#{box_arch}-v20140504.box"
 
   # Boot with a GUI so you can see the screen. (Default is headless)
   # config.vm.boot_mode = :gui
@@ -48,11 +48,6 @@ Vagrant.configure("2") do |config|
     # Adjust memory used by the VM.
     vb.customize ["modifyvm", :id, "--memory", 2048]
     vb.customize ["modifyvm", :id, "--cpus", 2]
-
-    # Disable DNS proxy. FIXME? It seems like this should be
-    # on, but enabling it results in a 5 second delay for any
-    # HTTP requests.
-    vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
   end
 
   # The path to the Berksfile to use with Vagrant Berkshelf
@@ -83,10 +78,6 @@ Vagrant.configure("2") do |config|
     chef.roles_path = "chef/roles"
     chef.data_bags_path = "chef/data_bags"
     chef.formatter = "doc"
-
-    # FIXME: Temporary workaround for chef logging in Vagrant:
-    # https://tickets.opscode.com/browse/CHEF-4725
-    chef.custom_config_path = "chef/streaming_fix.rb"
 
     chef.run_list = [
       "role[vagrant]",

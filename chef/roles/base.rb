@@ -67,7 +67,7 @@ default_attributes({
   },
 
   :omnibus_updater => {
-    :version => "11.8.2",
+    :version => "11.12.4",
     :always_download => false,
     :remove_chef_system_gem => true,
   },
