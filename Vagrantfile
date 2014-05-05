@@ -10,11 +10,8 @@ Vagrant.configure("2") do |config|
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "CentOS-6.5-#{box_arch}-v20140504"
-
-  # The url from where the 'config.vm.box' box will be fetched if it
-  # doesn't already exist on the user's system.
-  config.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.5-#{box_arch}-v20140504.box"
+  config.vm.box = "nrel/CentOS-6.5-#{box_arch}"
+  config.vm.box_version = ">= 1.2.0, < 2.0.0"
 
   # Boot with a GUI so you can see the screen. (Default is headless)
   # config.vm.boot_mode = :gui

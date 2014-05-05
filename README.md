@@ -45,10 +45,10 @@ Don't sweat this list, though—installation and configuration of everything can
 
 The easiest way to get started with API Umbrella is to use [Vagrant](http://vagrantup.com/) to setup a local development environment.
 
-First install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://vagrantup.com/) on your computer. Then follow these steps:
+First install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](http://vagrantup.com/) (version 1.5 or higher) on your computer. Then follow these steps:
 
 ```sh
-# Install the Vagrant Berkshelf plugin
+# Install the Vagrant Berkshelf plugin (version 2.0.1 or higher).
 $ vagrant plugin install vagrant-berkshelf --plugin-version '>= 2.0.1'
 
 # Get the code
