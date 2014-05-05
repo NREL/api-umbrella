@@ -49,7 +49,7 @@ First install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagra
 
 ```sh
 # Install the Vagrant Berkshelf plugin
-$ vagrant plugin install vagrant-berkshelf
+$ vagrant plugin install vagrant-berkshelf --plugin-version '>= 2.0.1'
 
 # Get the code
 $ git clone https://github.com/NREL/api-umbrella.git
