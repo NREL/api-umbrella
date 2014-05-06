@@ -6,6 +6,8 @@ Admin.ApiSettings = Ember.Model.extend({
   requireHttps: Ember.attr(),
   disableApiKey: Ember.attr(),
   requiredRolesString: Ember.attr(),
+  allowedIps: Ember.attr(),
+  allowedReferers: Ember.attr(),
   rateLimitMode: Ember.attr(),
   errorTemplates: Ember.attr(),
   errorDataYamlStrings: Ember.attr(),
@@ -37,6 +39,38 @@ Admin.ApiSettings = Ember.Model.extend({
       this.set('errorDataYamlStrings', {});
     }
   },
+
+  allowedIpsString: function(key, value) {
+    // Setter
+    if(arguments.length > 1) {
+      var ips = value.split(/[\r\n]+/);
+      this.set('allowedIps', ips);
+    }
+
+    // Getter
+    var allowedIpsString = '';
+    if(this.get('allowedIps')) {
+      allowedIpsString = this.get('allowedIps').join('\n');
+    }
+
+    return allowedIpsString;
+  }.property('allowedIps'),
+
+  allowedReferersString: function(key, value) {
+    // Setter
+    if(arguments.length > 1) {
+      var referers = value.split(/[\r\n]+/);
+      this.set('allowedReferers', referers);
+    }
+
+    // Getter
+    var allowedReferersString = '';
+    if(this.get('allowedReferers')) {
+      allowedReferersString = this.get('allowedReferers').join('\n');
+    }
+
+    return allowedReferersString;
+  }.property('allowedReferers'),
 
   isRateLimitModeCustom: function() {
     return (this.get('rateLimitMode') === 'custom');

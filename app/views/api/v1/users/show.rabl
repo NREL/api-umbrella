@@ -21,6 +21,8 @@ end
 child :settings => :settings do
   attributes :id
   attributes :rate_limit_mode
+  attributes :allowed_ips
+  attributes :allowed_referers
 
   child :rate_limits, :object_root => false do
     attributes *Api::RateLimit.fields.keys

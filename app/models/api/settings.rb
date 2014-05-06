@@ -8,6 +8,8 @@ class Api::Settings
   field :require_https, :type => Boolean
   field :disable_api_key, :type => Boolean
   field :required_roles, :type => Array
+  field :allowed_ips, :type => Array
+  field :allowed_referers, :type => Array
   field :rate_limit_mode, :type => String
   field :error_templates, :type => Hash
   field :error_data, :type => Hash
@@ -35,6 +37,8 @@ class Api::Settings
     :rate_limit_mode,
     :required_roles,
     :required_roles_string,
+    :allowed_ips,
+    :allowed_referers,
     :error_templates,
     :error_data_yaml_strings,
     :headers_string,

@@ -81,6 +81,9 @@
         label='Roles'}}
     {{/view}}
 
+    {{render 'apis/settings_allowed_ips_fields' settings}}
+    {{render 'apis/settings_allowed_referers_fields' settings}}
+
     {{input enabled as='select'
       value='enabled'
       label='Account Enabled'
