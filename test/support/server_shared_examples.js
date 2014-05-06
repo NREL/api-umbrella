@@ -95,7 +95,7 @@ _.merge(global.shared, {
     });
   },
 
-  itBehavesLikeGatekeeperAllowed: function(path, message, options) {
+  itBehavesLikeGatekeeperAllowed: function(path, options) {
     it('calls the target app', function(done) {
       request(shared.buildRequestOptions(path, this.apiKey, options), function() {
         backendCalled.should.eql(true);

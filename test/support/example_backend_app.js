@@ -17,6 +17,10 @@ app.get('/hello', function(req, res) {
   res.send('Hello World');
 });
 
+app.get('/hello/*', function(req, res) {
+  res.send('Hello World');
+});
+
 app.post('/hello', function(req, res) {
   res.send('Goodbye');
 });
