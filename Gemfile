@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 source "https://rails-assets.org"
 
-gem "rails", "~> 3.2.17"
+gem "rails", "~> 3.2.18"
 
 # Environment specific configuration
 gem "dotenv-rails", "~> 0.10.0"
