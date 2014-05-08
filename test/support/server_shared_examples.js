@@ -66,6 +66,13 @@ _.merge(global.shared, {
       });
     });
 
+    it('allows errors to be accessed from any origin via CORS', function(done) {
+      request(shared.buildRequestOptions(path, this.apiKey, options), function(error, response) {
+        response.headers['access-control-allow-origin'].should.eql('*');
+        done();
+      });
+    });
+
     describe('formatted error responses', function() {
       it('returns a JSON error response', function(done) {
         request(shared.buildRequestOptions(path + '.json', this.apiKey, options), function(error, response, body) {
