@@ -182,6 +182,9 @@ group :development, :test do
 
   # Headless webkit for capybara
   gem "poltergeist", "~> 1.5.0"
+
+  # Clean the database between tests
+  gem "database_cleaner", "~> 1.2.0"
 end
 
 group :development do

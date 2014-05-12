@@ -13,7 +13,7 @@ attributes :id,
            :created_at,
            :updated_at
 
-if(@api_user.created_by == current_admin.id && Time.now < @api_user.api_key_hides_at)
+if((!current_admin || @api_user.created_by == current_admin.id) && Time.now < @api_user.api_key_hides_at)
   attributes :api_key
   attributes :api_key_hides_at
 end
