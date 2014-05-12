@@ -39,10 +39,11 @@ describe('ApiUmbrellaGatekeper', function() {
       });
     }
 
-    function itBehavesLikeApiKeyRateLimits(path, limit, headerOverrides) {
+    function itBehavesLikeApiKeyRateLimits(path, limit, headerOverrides, taskOptions) {
       it('allows up to the limit of requests and then begins rejecting requests', function(done) {
         var options = {
           headers: headers({
+            'X-Forwarded-For': this.ipAddress,
             'X-Api-Key': this.apiKey,
           }, headerOverrides),
         };
@@ -63,6 +64,7 @@ describe('ApiUmbrellaGatekeper', function() {
       it('counts api keys differently', function(done) {
         var options = {
           headers: headers({
+            'X-Forwarded-For': this.ipAddress,
             'X-Api-Key': this.apiKey,
           }, headerOverrides),
         };
@@ -84,10 +86,12 @@ describe('ApiUmbrellaGatekeper', function() {
         });
       });
 
-      itBehavesLikeRateLimitResponseHeaders(path, limit, headerOverrides);
+      if(!taskOptions || !taskOptions.skipResponseHeadersTest) {
+        itBehavesLikeRateLimitResponseHeaders(path, limit, headerOverrides);
+      }
     }
 
-    function itBehavesLikeIpRateLimits(path, limit, headerOverrides) {
+    function itBehavesLikeIpRateLimits(path, limit, headerOverrides, taskOptions) {
       it('allows up to the limit of requests and then begins rejecting requests', function(done) {
         var options = {
           headers: headers({
@@ -133,7 +137,9 @@ describe('ApiUmbrellaGatekeper', function() {
         }.bind(this));
       });
 
-      itBehavesLikeRateLimitResponseHeaders(path, limit, headerOverrides);
+      if(!taskOptions || !taskOptions.skipResponseHeadersTest) {
+        itBehavesLikeRateLimitResponseHeaders(path, limit, headerOverrides);
+      }
     }
 
     function itBehavesLikeUnlimitedRateLimits(path, limit, headerOverrides) {
@@ -396,7 +402,15 @@ describe('ApiUmbrellaGatekeper', function() {
               limit: 5,
               distributed: true,
               response_headers: true,
-            }
+            },
+            {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'ip',
+              limit: 7,
+              distributed: true,
+              response_headers: false,
+            },
           ]
         },
         apis: [
@@ -405,24 +419,80 @@ describe('ApiUmbrellaGatekeper', function() {
             backend_host: 'example.com',
             url_matches: [
               {
-                frontend_prefix: '/info/no-keys',
-                backend_prefix: '/info/no-keys',
+                frontend_prefix: '/info/no-keys-default',
+                backend_prefix: '/info/no-keys-default',
               }
             ],
             settings: {
               disable_api_key: true,
             },
           },
+          {
+            frontend_host: 'localhost',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/info/no-keys-ip-fallback',
+                backend_prefix: '/info/no-keys-ip-fallback',
+              }
+            ],
+            settings: {
+              disable_api_key: true,
+              anonymous_rate_limit_behavior: 'ip_fallback',
+            },
+          },
+          {
+            frontend_host: 'localhost',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/info/no-keys-ip-only',
+                backend_prefix: '/info/no-keys-ip-only',
+              }
+            ],
+            settings: {
+              disable_api_key: true,
+              anonymous_rate_limit_behavior: 'ip_only',
+            },
+          },
         ],
       });
 
-      describe('api key not required but still given', function() {
-        itBehavesLikeApiKeyRateLimits('/info/no-keys', 5);
+      describe('default/blank anonymous rate limit behavior', function() {
+        describe('api key not required but still given - uses api key limit', function() {
+          itBehavesLikeApiKeyRateLimits('/info/no-keys-default', 5);
+        });
+
+        describe('api key ommitted - uses api key limit as ip limit', function() {
+          itBehavesLikeIpRateLimits('/info/no-keys-default', 5, {
+            'X-Api-Key': undefined,
+          });
+        });
       });
 
-      describe('api key ommitted', function() {
-        itBehavesLikeIpRateLimits('/info/no-keys', 5, {
-          'X-Api-Key': undefined,
+      describe('ip fallback anonymous rate limit behavior', function() {
+        describe('api key not required but still given - uses api key limit', function() {
+          itBehavesLikeApiKeyRateLimits('/info/no-keys-ip-fallback', 5);
+        });
+
+        describe('api key ommitted - uses api key limit as ip limit', function() {
+          itBehavesLikeIpRateLimits('/info/no-keys-ip-fallback', 5, {
+            'X-Api-Key': undefined,
+          });
+        });
+      });
+
+      describe('ip only anonymous rate limit behavior', function() {
+        describe('api key not required but still given - uses api key limit', function() {
+          itBehavesLikeApiKeyRateLimits('/info/no-keys-ip-only', 5);
+        });
+
+        describe('api key ommitted - ignores api key limit and only uses ip limit', function() {
+          itBehavesLikeIpRateLimits('/info/no-keys-ip-only', 7, {
+            'X-Api-Key': undefined,
+          }, {
+            skipResponseHeadersTest: true,
+          });
         });
       });
     });
