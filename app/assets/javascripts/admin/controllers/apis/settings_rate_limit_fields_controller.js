@@ -17,6 +17,11 @@ Admin.ApisSettingsRateLimitFieldsController = Ember.ObjectController.extend({
     { id: "ip", name: "IP Address" },
   ],
 
+  anonymousRateLimitBehaviorOptions: [
+    { id: "ip_fallback", name: "IP Fallback - API key rate limits are applied as IP limits" },
+    { id: "ip_only", name: "IP Only - API key rate limits are ignored (only IP based limits are applied)" },
+  ],
+
   uniqueSettingsId: function() {
     return _.uniqueId('api_settings_');
   }.property(),

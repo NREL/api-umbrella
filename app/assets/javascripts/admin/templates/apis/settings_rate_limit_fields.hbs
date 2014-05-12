@@ -74,3 +74,12 @@
     </div>
   </div>
 {{/if}}
+
+{{#if disableApiKey}}
+  {{input anonymousRateLimitBehavior as='select'
+    value='anonymousRateLimitBehavior'
+    label='Anonymous Rate Limit Behavior'
+    collection='anonymousRateLimitBehaviorOptions'
+    optionValuePath='content.id'
+    optionLabelPath='content.name'}}
+{{/if}}
