@@ -39,6 +39,23 @@ describe('ApiUmbrellaGatekeper', function() {
       });
     }
 
+    function itBehavesLikeNoRateLimitResponseHeaders(path, limit, headerOverrides) {
+      it('returns no rate limit counter headers in the response', function(done) {
+        var options = {
+          headers: headers({
+            'X-Forwarded-For': this.ipAddress,
+            'X-Api-Key': this.apiKey,
+          }, headerOverrides),
+        };
+
+        request.get('http://localhost:9333' + path, options, function(error, response) {
+          should.not.exist(response.headers['x-ratelimit-limit']);
+          should.not.exist(response.headers['x-ratelimit-remaining']);
+          done();
+        });
+      });
+    }
+
     function itBehavesLikeApiKeyRateLimits(path, limit, headerOverrides, taskOptions) {
       it('allows up to the limit of requests and then begins rejecting requests', function(done) {
         var options = {
@@ -86,7 +103,9 @@ describe('ApiUmbrellaGatekeper', function() {
         });
       });
 
-      if(!taskOptions || !taskOptions.skipResponseHeadersTest) {
+      if(taskOptions && taskOptions.noResponseHeadersTest) {
+        itBehavesLikeNoRateLimitResponseHeaders(path, limit, headerOverrides);
+      } else {
         itBehavesLikeRateLimitResponseHeaders(path, limit, headerOverrides);
       }
     }
@@ -137,7 +156,9 @@ describe('ApiUmbrellaGatekeper', function() {
         }.bind(this));
       });
 
-      if(!taskOptions || !taskOptions.skipResponseHeadersTest) {
+      if(taskOptions && taskOptions.noResponseHeadersTest) {
+        itBehavesLikeNoRateLimitResponseHeaders(path, limit, headerOverrides);
+      } else {
         itBehavesLikeRateLimitResponseHeaders(path, limit, headerOverrides);
       }
     }
@@ -491,7 +512,7 @@ describe('ApiUmbrellaGatekeper', function() {
           itBehavesLikeIpRateLimits('/info/no-keys-ip-only', 7, {
             'X-Api-Key': undefined,
           }, {
-            skipResponseHeadersTest: true,
+            noResponseHeadersTest: true,
           });
         });
       });
