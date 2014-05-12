@@ -145,6 +145,34 @@ describe Api::V1::UsersController do
       post :create, params
       response.headers["Access-Control-Allow-Origin"].should eql("*")
     end
+
+    it "allows admins to set private fields" do
+      p = params
+      p[:user][:roles] = ["admin"]
+
+      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      post :create, p
+
+      response.status.should eql(success_response_status)
+
+      data = MultiJson.load(response.body)
+      user = ApiUser.find(data["user"]["id"])
+      user.roles.should eql(["admin"])
+    end
+
+    it "disallows non-admins to set private fields" do
+      p = params
+      p[:user][:roles] = ["admin"]
+
+      request.env["HTTP_X_API_ROLES"] = "api-umbrella-key-creator"
+      post :create, p
+
+      response.status.should eql(success_response_status)
+
+      data = MultiJson.load(response.body)
+      user = ApiUser.find(data["user"]["id"])
+      user.roles.should eql(nil)
+    end
   end
 
   describe "PUT update" do
