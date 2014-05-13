@@ -47,9 +47,6 @@ Documentation:
 Encoding:
   Enabled: false
 
-FavorUnlessOverNegatedIf:
-  Enabled: false
-
 HashSyntax:
   EnforcedStyle: hash_rockets
 
