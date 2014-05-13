@@ -43,6 +43,10 @@ Admin.ApiUser = Ember.Model.extend({
     if(!this.get('settings')) {
       this.set('settings', Admin.ApiSettings.create());
     }
+
+    if(!this.get('registrationSource') && this.get('isNew')) {
+      this.set('registrationSource', 'web_admin');
+    }
   },
 
   rolesString: function(key, value) {
