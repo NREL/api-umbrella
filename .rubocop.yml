@@ -1,7 +1,7 @@
 AllCops:
-  Excludes:
-    - tmp/**
-    - vendor/**
+  Exclude:
+    - tmp/**/*
+    - vendor/**/*
     - config/compass.rb
   RunRailsCops: true
 
@@ -38,6 +38,9 @@ CyclomaticComplexity:
 DefaultScope:
   Enabled: false
 
+Delegate:
+  Enabled: false
+
 Documentation:
   Enabled: false
 
@@ -68,6 +71,9 @@ LiteralInInterpolation:
 MethodLength:
   Enabled: false
 
+NegatedIf:
+  Enabled: false
+
 OneLineConditional:
   Enabled: false
 
@@ -93,5 +99,14 @@ StringLiterals:
 TrailingComma:
   Enabled: false
 
+UnusedBlockArgument:
+  Enabled: false
+
+UnusedMethodArgument:
+  Enabled: false
+
 WhileUntilModifier:
+  Enabled: false
+
+WordArray:
   Enabled: false

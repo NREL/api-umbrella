@@ -57,7 +57,9 @@ describe Api::V1::UsersController do
       @api_user = FactoryGirl.create(:api_user)
     end
 
-    let(:params) do { :format => "json", :id => @api_user.id } end
+    let(:params) do
+      { :format => "json", :id => @api_user.id }
+    end
     let(:success_response_status) { 200 }
 
     it_behaves_like "admin token access", :get, :show
