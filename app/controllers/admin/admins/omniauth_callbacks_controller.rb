@@ -48,4 +48,8 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
       redirect_to new_admin_session_path
     end
   end
+
+  def after_omniauth_failure_path_for(scope)
+    new_admin_session_path
+  end
 end
