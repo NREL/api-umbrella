@@ -44,6 +44,7 @@ describe AccountsController do
 
       context "existing user" do
         before(:all) do
+          pending("Not applicable with website field disabled") unless(ApiUser.fields.include?("website"))
           @existing_user = FactoryGirl.create(:api_user, :email => "existing.user@example.com")
         end
 

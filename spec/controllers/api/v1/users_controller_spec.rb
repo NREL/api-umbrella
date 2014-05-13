@@ -72,7 +72,7 @@ describe Api::V1::UsersController do
         "user",
       ])
 
-      data["user"].keys.sort.should eql([
+      expected_keys = [
         "api_key_preview",
         "created_at",
         "creator",
@@ -88,8 +88,13 @@ describe Api::V1::UsersController do
         "updated_at",
         "updater",
         "use_description",
-        "website",
-      ])
+      ]
+
+      if(ApiUser.fields.include?("website"))
+        expected_keys << "website"
+      end
+
+      data["user"].keys.sort.should eql(expected_keys.sort)
     end
   end
 

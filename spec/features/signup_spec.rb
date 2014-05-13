@@ -8,7 +8,9 @@ describe "signup process" do
       fill_in "api_user_first_name", :with => "Ambrose"
       fill_in "api_user_last_name", :with => "Burnside"
       fill_in "api_user_email", :with => "ambrose.burnside@example.com"
-      fill_in "api_user_website", :with => "example.com"
+      if(ApiUser.fields.include?("website"))
+        fill_in "api_user_website", :with => "example.com"
+      end
       click_button "Signup"
 
       page.should have_content "Check the box to agree to the terms and conditions"
