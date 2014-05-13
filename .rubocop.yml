@@ -81,6 +81,9 @@ Output:
 ParenthesesAroundCondition:
   Enabled: false
 
+RaiseArgs:
+  Enabled: false
+
 RedundantSelf:
   Enabled: false
 
