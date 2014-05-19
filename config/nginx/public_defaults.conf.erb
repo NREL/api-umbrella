@@ -1,7 +1,7 @@
 access_log <%= current_path %>/log/access.log combined;
 error_log <%= current_path %>/log/error.log;
 
-proxy_set_header Host $host;
+proxy_set_header Host $host:$server_port;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
 # Proxy over HTTP 1.1 so keepalive connections to the backend are supported.

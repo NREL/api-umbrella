@@ -20,13 +20,13 @@ serverurl=unix://{{run_dir}}/supervisor.sock
 command=nginx -c {{config_dir}}/nginx/router.conf
 
 [program:varnishd]
-command=varnishd -F -a :{{varnish.port}} -f {{config_dir}}/varnish.vcl -t 0 -n api-umbrella
+command=varnishd -F -a :{{varnish.port}} -f {{config_dir}}/varnish.vcl -t 0 -n /tmp/api-umbrella
 
 [program:varnishlog]
-command=varnishlog -a -w {{log_dir}}/varnishncsa.log -n api-umbrella
+command=varnishlog -a -w {{log_dir}}/varnishncsa.log -n /tmp/api-umbrella
 
 [program:varnishncsa]
-command=varnishncsa -a -f -w {{log_dir}}/varnishncsa.log -n api-umbrella
+command=varnishncsa -a -f -w {{log_dir}}/varnishncsa.log -n /tmp/api-umbrella
 
 [program:redis]
 command=redis-server {{config_dir}}/redis.conf
@@ -36,15 +36,20 @@ numprocs=4
 command=api_umbrella_gatekeeper {{api_umbrella_config_args}} -p 50%(process_num)03d
 
 ; Name each process by the port number
-process_name=50%(process_num)03d
+process_name=gatekeeper_50%(process_num)03d
+
+[program:config_reloader]
+command=api-umbrella-config-reloader {{api_umbrella_config_args}}
 
 [program:logging]
+directory={{gatekeeper_dir}}
 command=api_umbrella_logging {{api_umbrella_config_args}}
 
 [program:distributed_rate_limits_sync]
 command=api_umbrella_distributed_rate_limits_sync {{api_umbrella_config_args}}
 
 [program:nginx_web]
+environment=MONGODB_URL={{mongodb.url}},ELASTICSEARCH_URL={{elasticsearch.url}}
 command=nginx -c {{config_dir}}/nginx/web.conf
 
 [program:mongod]

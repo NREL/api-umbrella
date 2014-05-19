@@ -9,6 +9,8 @@ gatekeeper:
   workers: 4
 varnish:
   port: 51700
+web:
+  port: 31000
 mongodb:
   url: "mongodb://127.0.0.1:50217/api_umbrella_development"
   options:
@@ -22,6 +24,7 @@ mongodb:
     port: 50217
     dbpath: /tmp/db/mongodb
 elasticsearch:
+  url: "http://127.0.0.1:50200"
   embedded_server_config:
     path_data: /tmp/db/elasticsearch
     http_port: 50200

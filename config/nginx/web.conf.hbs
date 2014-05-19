@@ -10,12 +10,31 @@ events {
 
 error_log stderr;
 
+
+
 http {
-  error_log stderr;
-  access_log off;
+  error_log {{log_dir}}/web_error.log;
+  access_log {{log_dir}}/web_access.log;
+
+  server_tokens off;
+
+  passenger_root /opt/api-umbrella/embedded/lib/ruby/gems/2.1.0/gems/passenger-4.0.41;
+  passenger_ruby /opt/api-umbrella/embedded/bin/ruby;
+  passenger_min_instances 1;
+  passenger_max_pool_size 16;
+  passenger_pool_idle_time 900;
+  passenger_max_preloader_idle_time 0;
+  passenger_user_switching off;
+  passenger_show_version_in_header off;
+
+  client_body_temp_path /tmp/nginx_client_body_temp;
+  proxy_temp_path /tmp/nginx_proxy_temp;
+  fastcgi_temp_path /tmp/nginx_fastcgi_temp;
+  uwsgi_temp_path /tmp/nginx_uwsgi_temp;
+  scgi_temp_path /tmp/nginx_scgi_temp;
 
   server {
-    listen 31000;
+    listen {{web.port}};
     server_name api.vagrant localhost;
 
     # Write the real client IP when it's passed via X-Forwarded-For from HAProxy.

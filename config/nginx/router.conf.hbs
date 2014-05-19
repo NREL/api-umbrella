@@ -11,8 +11,15 @@ events {
 error_log stderr;
 
 http {
-  error_log stderr;
-  access_log off;
+  error_log {{log_dir}}/router_error.log;
+  access_log {{log_dir}}/router_access.log;
+
+  client_body_temp_path /tmp/nginx_client_body_temp;
+  proxy_temp_path /tmp/nginx_proxy_temp;
+  fastcgi_temp_path /tmp/nginx_fastcgi_temp;
+  uwsgi_temp_path /tmp/nginx_uwsgi_temp;
+  scgi_temp_path /tmp/nginx_scgi_temp;
+  server_tokens off;
 
   log_format api_umbrella_log '"$x_api_umbrella_uid","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent","$http_referer","$http_x_api_key","$remote_user"';
 
@@ -30,7 +37,7 @@ http {
   limit_req_status 429;
 
   upstream api_umbrella_web_backend {
-    server 127.0.0.1:51000;
+    server 127.0.0.1:{{web.port}};
     keepalive 10;
   }
 
@@ -62,8 +69,31 @@ http {
     listen {{https_port}} ssl;
     server_name api.vagrant localhost;
 
+    ssl_certificate /etc/ssl/certs/vagrant.crt;
+    ssl_certificate_key /etc/ssl/certs/vagrant.key;
+
     include ./public_defaults.conf;
-    include ./ssl.conf;
+
+    # Determine the SSL status when it's passed via X-Forwarded-Proto from the
+    # SSL terminator.
+    set $ssl_status "off";
+    if ($server_port = {{https_port}}) {
+      set $ssl_status "on";
+    }
+
+    if ($http_x_forwarded_proto = "https") {
+      set $ssl_status "on";
+    }
+
+    # Match any required HTTPS-only pages.
+    if ($uri ~ ^/(account|admin|admins|signup)(/|$)) {
+      set $ssl_status "${ssl_status}_required";
+    }
+
+    # Force certain content to HTTPS-only.
+    if ($ssl_status = "off_required") {
+      rewrite ^ https://$server_name:{{https_port}}$request_uri? permanent;
+    }
 
     # Route the docs and other static pages to the Rails web app. This may
     # change, so that's why we're treating it separately.
@@ -87,7 +117,7 @@ http {
   # but don't want to show web page content for.
   server {
     listen {{http_port}} default_server;
-    listen {{https_port}} ssl default_server;
+    #listen {{https_port}} ssl default_server;
     server_name _;
 
     include ./public_defaults.conf;
