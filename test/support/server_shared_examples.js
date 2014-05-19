@@ -3,11 +3,13 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    config = require('api-umbrella-config'),
+    apiUmbrellaConfig = require('api-umbrella-config'),
     csv = require('csv'),
+    fs = require('fs'),
     ippp = require('ipplusplus'),
     path = require('path'),
-    xml2js = require('xml2js');
+    xml2js = require('xml2js'),
+    yaml = require('js-yaml');
 
 global.backendCalled = false;
 
@@ -20,6 +22,22 @@ _.merge(global.shared, {
   },
 
   runServer: function(configOverrides) {
+    beforeEach(function(done) {
+      var overridesPath = path.resolve(__dirname, '../config/overrides.yml');
+      fs.writeFileSync(overridesPath, yaml.dump(configOverrides || {}));
+
+      apiUmbrellaConfig.loader({
+        paths: [
+          path.resolve(__dirname, '../../config/default.yml'),
+          path.resolve(__dirname, '../config/test.yml'),
+        ],
+        overrides: configOverrides,
+      }, function(error, loader) {
+        this.loader = loader;
+        done(error);
+      }.bind(this));
+    });
+
     beforeEach(function(done) {
       if(!this.ipAddress) {
         this.ipAddress = '10.0.0.1';
@@ -37,15 +55,16 @@ _.merge(global.shared, {
     beforeEach(function(done) {
       backendCalled = false;
 
-      config.resetRuntime();
-
-      if(configOverrides) {
-        config.setRuntime(configOverrides);
-      }
-
+      //console.info('BEFORE GATEKEEPER', this.loader.runtimeFile);
+      //console.info('Overrides: ', configOverrides);
+      //console.info('Content: ', fs.readFileSync(this.loader.runtimeFile).toString());
       this.gatekeeper = gatekeeper.start({
-        config: path.resolve(__dirname, '../config/test.yml'),
+        config: this.loader.runtimeFile,
       }, done);
+    });
+
+    afterEach(function(done) {
+      this.loader.close(done);
     });
 
     afterEach(function(done) {

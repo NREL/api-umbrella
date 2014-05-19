@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-var nomnom = require('nomnom');
+var logging = require('../lib/logging'),
+    nomnom = require('nomnom');
 
 var options = nomnom
   .option('config', {
@@ -12,4 +13,4 @@ var options = nomnom
   })
   .parse();
 
-require('../lib/logging');
+logging.start(options);

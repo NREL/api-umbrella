@@ -2,11 +2,14 @@
 
 require('../test_helper');
 
-var async = require('async'),
-    config = require('api-umbrella-config'),
+var apiUmbrellaConfig = require('api-umbrella-config'),
+    async = require('async'),
     redis = require('redis'),
     net = require('net'),
+    path = require('path'),
     spawn = require('child_process').spawn;
+
+var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 mongoose.testConnection = mongoose.createConnection(config.get('mongodb.url'), config.get('mongodb.options'));
 

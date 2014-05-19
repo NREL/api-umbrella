@@ -45,7 +45,7 @@ exports.migrate = function(client, done) {
 
         logCleaner.url(hit._source);
         logCleaner.user(hit._source, { force: true }, function() {
-          var index = hit._index.replace(/api-umbrella-logs-/, 'api-umbrella-logs-v1-' + config.environment + '-');
+          var index = hit._index.replace(/api-umbrella-logs-/, 'api-umbrella-logs-v1-' + config.get('environment') + '-');
           indexes[hit._index] = index;
 
           bulkCommands.push({

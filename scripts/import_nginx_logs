@@ -134,7 +134,7 @@ _.extend(MigrateLogs.prototype, {
 
     logCleaner(this.elasticSearch, combined);
 
-    var index = 'api-umbrella-logs-write-' + config.environment + '-' + moment(combined.request_at).format('YYYY-MM');
+    var index = 'api-umbrella-logs-write-' + config.get('environment') + '-' + moment(combined.request_at).format('YYYY-MM');
     this.elasticSearch.get(index, 'log', id, function(error, response) {
       var result = JSON.parse(response);
       if(result.exists) {

@@ -2,10 +2,12 @@
 
 require('../test_helper');
 
-var config = require('api-umbrella-config'),
+/*
+var apiUmbrellaConfig = require('api-umbrella-config'),
     path = require('path');
 
-config.setFiles([
+apiUmbrellaConfig.loader([
   path.resolve(__dirname, '../../config/default.yml'),
   path.resolve(__dirname, '../config/test.yml'),
 ]);
+*/

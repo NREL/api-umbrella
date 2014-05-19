@@ -28,7 +28,7 @@ module.exports = function(grunt) {
           // Force colors for the output of mutliTest
           colors: true,
 
-          require: 'test/support/blanket'
+          //require: 'test/support/blanket'
         },
         src: ['test/**/*.js']
       },

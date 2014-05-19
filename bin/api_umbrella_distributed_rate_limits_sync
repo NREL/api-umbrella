@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var DistributedRateLimitsSync = require('../lib/distributed_rate_limits_sync').DistributedRateLimitsSync;
+var sync = require('../lib/distributed_rate_limits_sync'),
     nomnom = require('nomnom');
 
 var options = nomnom
@@ -13,4 +13,4 @@ var options = nomnom
   })
   .parse();
 
-new DistributedRateLimitsSync();
+sync.start(options);
