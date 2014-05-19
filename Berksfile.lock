@@ -7,7 +7,7 @@ DEPENDENCIES
     revision: 04cca3029cb3dd6d07e47dcf9ea0508b30347614
   api-umbrella
     git: git://github.com/NREL-cookbooks/api-umbrella.git
-    revision: e88e446a9612c4e9c2fc1c97d2bbfee36fc843f1
+    revision: 05054061126b5a932bdfba8ab81355c21e9bb4a0
   bundler
     git: git://github.com/NREL-cookbooks/bundler.git
     revision: 8e3feb73697fcb4a0c42fd4f1631ee3e5dc4a461
@@ -36,7 +36,7 @@ DEPENDENCIES
   nano (~> 1.0.0)
   nginx
     git: git://github.com/NREL-cookbooks/nginx.git
-    revision: d0a240caf2033d165c49899018ce507c61157435
+    revision: d33b75b38ef0c2dcb5aca4fa5b078174596721e9
     branch: api-umbrella
   nodejs
     git: git://github.com/NREL-cookbooks/nodejs.git
@@ -85,7 +85,7 @@ GRAPH
   ack (0.2.1)
     perl (>= 0.0.0)
   acl (0.1.0)
-  api-umbrella (0.3.0)
+  api-umbrella (0.3.3)
     acl (>= 0.0.0)
     bundler (>= 0.0.0)
     elasticsearch (>= 0.0.0)
@@ -159,7 +159,7 @@ GRAPH
     yum (>= 0.0.0)
   monit (0.7.1)
   nano (1.0.0)
-  nginx (2.0.8)
+  nginx (2.0.9)
     apt (~> 2.2)
     bluepill (~> 2.3)
     build-essential (~> 1.4)
