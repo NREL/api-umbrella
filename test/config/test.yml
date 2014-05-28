@@ -16,6 +16,7 @@ apiUmbrella:
         - frontend_prefix: /
           backend_prefix: /
   dns_resolver:
+    minimum_ttl: 0.1
     ignore_ttl_domains:
       - "akamaiedge\\.net$"
       - "yahoo\\.com"

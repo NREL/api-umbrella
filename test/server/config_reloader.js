@@ -2,15 +2,20 @@
 
 require('../test_helper');
 
-var async = require('async'),
+var _ = require('lodash'),
+    async = require('async'),
     dns = require('native-dns'),
     DnsResolver = require('../../lib/config_reloader/dns_resolver').DnsResolver,
     ipaddr = require('ipaddr.js'),
+    ippp = require('ipplusplus'),
     moment = require('moment'),
     sinon = require('sinon');
 
 describe('config reloader', function() {
   describe('dns resolver', function() {
+    var incrementingIp = '10.10.10.1';
+    var alternatingIp = '10.20.20.1';
+
     // Stub the DNS lookups since these can be unpredictably slow depending on
     // your DNS provider and network connection.
     before(function() {
@@ -133,6 +138,28 @@ describe('config reloader', function() {
                 class: 1,
                 ttl: 60,
                 address: '54.85.135.143' }
+            ];
+
+            break;
+          case 'uncached-incrementing.blah':
+            incrementingIp = ippp.next(incrementingIp);
+            message.answer = [
+              { name: 'uncached-incrementing.blah',
+                type: 1,
+                class: 1,
+                ttl: 0.1,
+                address: incrementingIp },
+            ];
+
+            break;
+          case 'uncached-alternating.blah':
+            alternatingIp = (alternatingIp === '10.20.20.1') ? '10.20.20.2' : '10.20.20.1';
+            message.answer = [
+              { name: 'uncached-alternating.blah',
+                type: 1,
+                class: 1,
+                ttl: 0.1,
+                address: alternatingIp },
             ];
 
             break;
@@ -287,6 +314,24 @@ describe('config reloader', function() {
             },
           ],
         },
+        {
+          _id: 'use-uncached-incrementing-api',
+          servers: [
+            {
+              host: 'uncached-incrementing.blah',
+              port: 80,
+            },
+          ],
+        },
+        {
+          _id: 'use-uncached-alternating-api',
+          servers: [
+            {
+              host: 'uncached-alternating.blah',
+              port: 80,
+            },
+          ],
+        },
       ],
     });
 
@@ -387,6 +432,42 @@ describe('config reloader', function() {
       var ip = block.match(/server (.+):80;/)[1];
 
       ip.should.eql('184.28.63.64');
+    });
+
+    it('triggers change events each time the IP changes for uncached hosts', function(done) {
+      var i = 0;
+      var ips = [];
+      this.configReloader.resolver.on('hostChanged', function(host, ip) {
+        if(host === 'uncached-incrementing.blah') {
+          ips.push(ip);
+          i++;
+
+          if(i === 10) {
+            ips.length.should.eql(10);
+            _.uniq(ips).length.should.eql(10);
+
+            done();
+          }
+        }
+      });
+    });
+
+    it('triggers change events even if IPs have recently been seen for uncached hosts', function(done) {
+      var i = 0;
+      var ips = [];
+      this.configReloader.resolver.on('hostChanged', function(host, ip) {
+        if(host === 'uncached-alternating.blah') {
+          ips.push(ip);
+          i++;
+
+          if(i === 10) {
+            ips.length.should.eql(10);
+            _.uniq(ips).length.should.eql(2);
+
+            done();
+          }
+        }
+      });
     });
   });
 });
