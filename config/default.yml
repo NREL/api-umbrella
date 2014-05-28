@@ -33,6 +33,10 @@ apiUmbrella:
     workers: 1
   routerLogListener:
     workers: 1
+  router_global_rate_limits:
+    ip_rate: "101r/s"
+    ip_burst: 100
+    ip_connections: 50
   apiSettings:
     rate_limits:
       - duration: 1000
