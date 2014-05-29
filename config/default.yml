@@ -28,6 +28,9 @@ apiUmbrella:
     minimum_ttl: 40
     ignore_ttl_domains:
       - "akamaiedge\\.net$"
+      - "akamaiedge-staging\\.net$"
+      - "herokuapp\\.com$"
+      - "httpbin\\.org$"
   log_template_version: v1
   logProcessor:
     workers: 1
