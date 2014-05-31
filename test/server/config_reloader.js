@@ -469,6 +469,45 @@ describe('config reloader', function() {
         }
       });
     });
+
+    it('triggers an nginx restart when hosts change', function(done) {
+      var changeCount = 0;
+      var nginxWriteCount = 0;
+
+      this.configReloader.on('nginx', function() {
+        nginxWriteCount++;
+      });
+
+      this.configReloader.resolver.on('hostChanged', function(host) {
+        if(host === 'uncached-incrementing.blah') {
+          changeCount++;
+          if(changeCount === 2) {
+            nginxWriteCount.should.eql(1);
+            done();
+          }
+        }
+      });
+    });
+
+    it('delays an nginx restart if it has already been restarted recently', function(done) {
+      var changeCount = 0;
+      var nginxWriteCount = 0;
+
+      this.configReloader.on('nginx', function() {
+        nginxWriteCount++;
+      });
+
+      this.configReloader.resolver.on('hostChanged', function(host) {
+        if(host === 'uncached-incrementing.blah') {
+          changeCount++;
+          if(changeCount === 10) {
+            nginxWriteCount.should.eql(1);
+            this.configReloader.hostChangedRestart.should.not.eql(null);
+            done();
+          }
+        }
+      });
+    });
   });
 });
 
