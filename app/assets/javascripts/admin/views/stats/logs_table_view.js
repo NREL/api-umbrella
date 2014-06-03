@@ -35,6 +35,11 @@ Admin.LogsTableView = Ember.View.extend({
           sDefaultContent: "-",
         },
         {
+          mData: "request_host",
+          sTitle: "Host",
+          sDefaultContent: "-",
+        },
+        {
           mData: "request_url",
           sTitle: "URL",
           sDefaultContent: "-",
@@ -79,6 +84,18 @@ Admin.LogsTableView = Ember.View.extend({
           mData: "response_status",
           sTitle: "Status",
           sDefaultContent: "-",
+        },
+        {
+          mData: "response_time",
+          sTitle: "Response Time",
+          sDefaultContent: "-",
+          mRender: function(time, type) {
+            if(type === 'display' && time && time !== '-') {
+              return time = time + ' ms';
+            }
+
+            return time;
+          },
         },
         {
           mData: "response_content_type",
