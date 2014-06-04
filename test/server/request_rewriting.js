@@ -2,7 +2,8 @@
 
 require('../test_helper');
 
-var _ = require('lodash');
+var _ = require('lodash'),
+    Curler = require('curler').Curler;
 
 describe('request rewriting', function() {
   describe('api key normaliztion', function() {
@@ -640,6 +641,47 @@ describe('request rewriting', function() {
 
           done();
         });
+      });
+    });
+  });
+
+  // These tests probably belong in the router project, once we get the full
+  // stack more testable there (so we can actually verify Varnish works):
+  // https://github.com/NREL/api-umbrella/issues/28
+  //
+  // Also, this is a little tricky to test in node.js, since all OPTIONS
+  // requests originating from node's http library currently add the chunked
+  // headers: https://github.com/joyent/node/pull/7725 So we'll drop to a curl
+  // library to make these test requests.
+  describe('OPTIONS fixes', function() {
+    shared.runServer();
+
+    it('does not add chunked headers for requests without a body', function(done) {
+      var curl = new Curler();
+      curl.request({
+        method: 'OPTIONS',
+        url: 'http://localhost:9333/info/?test=test&api_key=' + this.apiKey,
+      }, function(error, response, body) {
+        var data = JSON.parse(body);
+        should.not.exist(data.headers['transfer-encoding']);
+        done();
+      });
+    });
+
+    it('passes chunked headers for requests with a body', function(done) {
+      var curl = new Curler();
+      curl.request({
+        method: 'OPTIONS',
+        url: 'http://localhost:9333/info/?test=test&api_key=' + this.apiKey,
+        headers: {
+          'Transfer-Encoding': 'chunked',
+          'Content-Length': '4',
+        },
+        data: 'test',
+      }, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers['transfer-encoding'].should.eql('chunked');
+        done();
       });
     });
   });
