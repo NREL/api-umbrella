@@ -518,6 +518,112 @@ describe('ApiUmbrellaGatekeper', function() {
       });
     });
 
+    describe('ip limits when api key supplied but no api key required', function() {
+      shared.runServer({
+        apiSettings: {
+          rate_limits: [
+            {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'ip',
+              limit: 5,
+              distributed: true,
+              response_headers: true,
+            },
+            {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'apiKey',
+              limit: 7,
+              distributed: true,
+              response_headers: false,
+            },
+          ]
+        },
+        apis: [
+          {
+            frontend_host: 'localhost',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/info/ip-limit-default',
+                backend_prefix: '/info/ip-limit-default',
+              }
+            ],
+            settings: {
+              disable_api_key: true,
+            },
+          },
+          {
+            frontend_host: 'localhost',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/info/ip-limit-all',
+                backend_prefix: '/info/ip-limit-all',
+              }
+            ],
+            settings: {
+              disable_api_key: true,
+              authenticated_rate_limit_behavior: 'all',
+            },
+          },
+          {
+            frontend_host: 'localhost',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/info/ip-limit-api-key-only',
+                backend_prefix: '/info/ip-limit-api-key-only',
+              }
+            ],
+            settings: {
+              disable_api_key: true,
+              authenticated_rate_limit_behavior: 'api_key_only',
+            },
+          },
+        ],
+      });
+
+      describe('default/blank authenticated rate limit behavior', function() {
+        describe('api key not required but still given - uses first, smaller limit (ip)', function() {
+          itBehavesLikeIpRateLimits('/info/ip-limit-all', 5);
+        });
+
+        describe('api key ommitted - uses ip limit', function() {
+          itBehavesLikeIpRateLimits('/info/ip-limit-default', 5, {
+            'X-Api-Key': undefined,
+          });
+        });
+      });
+
+      describe('all limits authenticated rate limit behavior', function() {
+        describe('api key not required but still given - uses first, smaller limit (ip)', function() {
+          itBehavesLikeIpRateLimits('/info/ip-limit-all', 5);
+        });
+
+        describe('api key ommitted - uses ip limit', function() {
+          itBehavesLikeIpRateLimits('/info/ip-limit-all', 5, {
+            'X-Api-Key': undefined,
+          });
+        });
+      });
+
+      describe('api key only rate limit behavior', function() {
+        describe('api key not required but still given - uses api key limit', function() {
+          itBehavesLikeApiKeyRateLimits('/info/ip-limit-api-key-only', 7, {}, {
+            noResponseHeadersTest: true,
+          });
+        });
+
+        describe('api key ommitted - uses ip limit', function() {
+          itBehavesLikeIpRateLimits('/info/ip-limit-api-key-only', 5, {
+            'X-Api-Key': undefined,
+          });
+        });
+      });
+    });
+
     describe('unlimited rate limits', function() {
       shared.runServer({
         apiSettings: {
