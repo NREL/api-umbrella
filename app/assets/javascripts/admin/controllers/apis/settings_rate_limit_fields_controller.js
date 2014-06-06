@@ -22,6 +22,11 @@ Admin.ApisSettingsRateLimitFieldsController = Ember.ObjectController.extend({
     { id: "ip_only", name: "IP Only - API key rate limits are ignored (only IP based limits are applied)" },
   ],
 
+  authenticatedRateLimitBehaviorOptions: [
+    { id: "all", name: "All Limits - Both API key rate limits and IP based limits are applied" },
+    { id: "api_key_only", name: "API Key Only - IP based rate limits are ignored (only API key limits are applied)" },
+  ],
+
   uniqueSettingsId: function() {
     return _.uniqueId('api_settings_');
   }.property(),

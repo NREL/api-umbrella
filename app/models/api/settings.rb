@@ -12,6 +12,7 @@ class Api::Settings
   field :allowed_referers, :type => Array
   field :rate_limit_mode, :type => String
   field :anonymous_rate_limit_behavior, :type => String
+  field :authenticated_rate_limit_behavior, :type => String
   field :error_templates, :type => Hash
   field :error_data, :type => Hash
 
@@ -27,6 +28,8 @@ class Api::Settings
     :inclusion => { :in => %w(unlimited custom), :allow_blank => true }
   validates :anonymous_rate_limit_behavior,
     :inclusion => { :in => %w(ip_fallback ip_only), :allow_blank => true }
+  validates :authenticated_rate_limit_behavior,
+    :inclusion => { :in => %w(all api_key_only), :allow_blank => true }
   validate :validate_error_data_yaml_strings
 
   # Nested attributes
@@ -39,6 +42,7 @@ class Api::Settings
     :disable_api_key,
     :rate_limit_mode,
     :anonymous_rate_limit_behavior,
+    :authenticated_rate_limit_behavior,
     :required_roles,
     :required_roles_string,
     :allowed_ips,

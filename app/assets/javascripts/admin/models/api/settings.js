@@ -10,6 +10,7 @@ Admin.ApiSettings = Ember.Model.extend({
   allowedReferers: Ember.attr(),
   rateLimitMode: Ember.attr(),
   anonymousRateLimitBehavior: Ember.attr(),
+  authenticatedRateLimitBehavior: Ember.attr(),
   errorTemplates: Ember.attr(),
   errorDataYamlStrings: Ember.attr(),
 
