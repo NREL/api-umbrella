@@ -63,6 +63,7 @@
     "curler": "~0.0.5",
     "express": "~3.4.4",
     "factory-lady": "~0.1.0",
+    "forever-monitor": "~1.2.3",
     "grunt": "~0.4.2",
     "grunt-cli": "~0.1.11",
     "grunt-contrib-jshint": "~0.7.1",
