@@ -74,6 +74,8 @@ $ cd /vagrant/workspace/web
 $ cp config/mongoid.yml.deploy config/mongoid.yml && cp config/elasticsearch.yml.deploy config/elasticsearch.yml
 $ bundle install --path=/srv/sites/web/shared/vendor/bundle
 $ cap vagrant deploy
+$ rake db:seed
+$ bundle exec rails runner 'ConfigVersion.publish!'
 
 # Tada?
 ```
