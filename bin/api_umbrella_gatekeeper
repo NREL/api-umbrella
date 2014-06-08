@@ -8,7 +8,6 @@ var options = nomnom
     abbr: 'c',
     metavar: 'FILE',
     default: ['/etc/api-umbrella/api-umbrella.yml'],
-    list: true,
     help: 'Conifg file to use (include multiple times for multiple files)',
   })
   .option('port', {
