@@ -24,11 +24,22 @@ proxy:
     - header
     - getParam
     - basicAuthUsername
+dns_resolver:
+  minimum_ttl: 40
+  ignore_ttl_domains:
+    - "akamaiedge\\.net$"
+    - "akamaiedge-staging\\.net$"
+    - "herokuapp\\.com$"
+    - "httpbin\\.org$"
 log_template_version: v1
 logProcessor:
   workers: 1
 routerLogListener:
   workers: 1
+router_global_rate_limits:
+  ip_rate: "100r/s"
+  ip_burst: 100
+  ip_connections: 50
 apiSettings:
   rate_limits:
     - duration: 1000

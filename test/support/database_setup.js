@@ -4,10 +4,11 @@ require('../test_helper');
 
 var apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
-    redis = require('redis'),
-    net = require('net'),
+    forever = require('forever-monitor'),
+    fs = require('fs'),
     path = require('path'),
-    spawn = require('child_process').spawn;
+    redis = require('redis'),
+    net = require('net');
 
 var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
@@ -29,29 +30,57 @@ before(function(done) {
 // deprecated. This also ensures our tests don't accidentally step on a
 // person's local usage of any random database on the main redis instance.
 var redisServer;
+var redisPidFile = path.resolve(__dirname, '../tmp/redis.pid');
 before(function(done) {
-  // Spin up the redis-server process.
-  redisServer = spawn('redis-server', ['--port', config.get('redis.port')]);
+  if(fs.existsSync(redisPidFile)) {
+    var pid = fs.readFileSync(redisPidFile);
+    if(pid) {
+      forever.kill(pid, false, 'SIGKILL');
+    }
+  }
 
-  // Ensure that the process is killed when the tests end.
-  process.on('exit', function () {
-    redisServer.kill('SIGKILL');
+  // Spin up the redis-server process.
+  redisServer = new (forever.Monitor)(['redis-server', '--port', config.get('redis.port')], {
+    max: 1,
+    silent: true,
+    pidFile: redisPidFile,
   });
 
-  // Wait until we're able to establish a connection before moving on.
-  var connected = false;
-  async.until(function() {
-    return connected;
-  }, function(callback) {
-    net.connect({
-      port: config.get('redis.port'),
-    }).on('connect', function() {
-      connected = true;
-      callback();
-    }).on('error', function() {
-      setTimeout(callback, 20);
-    });
-  }, done);
+  // Make sure the redis-server process doesn't just quickly die on startup
+  // (for example, if the port is already in use).
+  var exitListener = function () {
+    console.error('\nFailed to start redis server:');
+    process.exit(1);
+  };
+  redisServer.on('exit', exitListener);
+
+  setTimeout(function() {
+    if(exitListener) {
+      redisServer.removeListener('exit', exitListener);
+      exitListener = null;
+    }
+  }, 1000);
+
+  redisServer.on('start', function(process, data) {
+    fs.writeFileSync(redisPidFile, data.pid);
+
+    // Wait until we're able to establish a connection before moving on.
+    var connected = false;
+    async.until(function() {
+      return connected;
+    }, function(callback) {
+      net.connect({
+        port: config.get('redis.port'),
+      }).on('connect', function() {
+        connected = true;
+        callback();
+      }).on('error', function() {
+        setTimeout(callback, 20);
+      });
+    }, done);
+  });
+
+  redisServer.start();
 });
 
 // Wipe the redis data.
@@ -71,11 +100,15 @@ after(function(done) {
 
 after(function(done) {
   global.redisClient.quit(function() {
-    redisServer.on('exit', function() {
-      done();
-    });
+    if(redisServer.running) {
+      redisServer.on('exit', function() {
+        done();
+      });
 
-    // Attempt to gracefully shutdown.
-    redisServer.kill('SIGTERM');
+      redisServer.stop();
+      fs.unlinkSync(redisPidFile);
+    } else {
+      done();
+    }
   });
 });

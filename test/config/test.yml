@@ -9,9 +9,14 @@ proxy:
   rateLimits: []
 haproxyLogListener:
   port: 9334
-apis: 
+apis:
   - frontend_host: localhost
     backend_host: localhost
     url_matches:
       - frontend_prefix: /
         backend_prefix: /
+dns_resolver:
+  minimum_ttl: 0.1
+  ignore_ttl_domains:
+    - "akamaiedge\\.net$"
+    - "yahoo\\.com"

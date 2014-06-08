@@ -10,7 +10,7 @@ limit_conn_status 429;
 # provided by the API Umbrella Gatekeeper, so this limit should be higher than
 # the Gatekeeper's limits. This just provides an extra line of simple defense
 # against misbehaving clients from overloading the Gatekeeper.
-limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:5m rate=100r/s;
+limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:5m rate={{rate_limits.ip_rate}};
 limit_req_status 429;
 
 {{#each apis}}
@@ -38,14 +38,14 @@ limit_req_status 429;
     access_log {{../logDir}}/access.log combined;
     error_log {{../logDir}}/error.log;
 
-    # Limit the number of simulaneous connections per IP address to 50.
-    limit_conn api_umbrella_conn_addr_zone 50;
+    # Limit the number of simultaneous connections per IP address to {{../rate_limits.ip_connections}}.
+    limit_conn api_umbrella_conn_addr_zone {{../rate_limits.ip_connections}};
 
-    # After the 100 requests/second rate is reached, allow a sizable burst before
+    # After the {{../rate_limits.ip_rate}} requests/second rate is reached, allow a sizable burst before
     # completely terminating requests at this router level. This is so we can
     # generally rely on API Umbrella Gatekeeper for rate limiting, but still
     # throttle traffic to the Gatekeeper.
-    limit_req zone=api_umbrella_req_addr_zone burst=100 nodelay;
+    limit_req zone=api_umbrella_req_addr_zone burst={{../rate_limits.ip_burst}} nodelay;
 
     keepalive_timeout 30s;
 
