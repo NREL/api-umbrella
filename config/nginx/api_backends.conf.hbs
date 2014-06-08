@@ -35,7 +35,7 @@ limit_req_status 429;
     listen 50090;
     server_name {{.}};
 
-    access_log {{../logDir}}/access.log combined;
+    access_log {{../logDir}}/access.log combined buffer=32k flush=10s;
     error_log {{../logDir}}/error.log;
 
     # Limit the number of simulaneous connections per IP address to 50.
@@ -52,7 +52,7 @@ limit_req_status 429;
     location / {
       set $x_api_umbrella_uid $request_id;
       set $router_name "web_router";
-      access_log {{../logDir}}/router.log api_umbrella_log;
+      access_log {{../logDir}}/router.log api_umbrella_log buffer=32k flush=10s;
 
       # Proxy over HTTP 1.1 so keepalive connections to the backend are supported.
       proxy_http_version 1.1;
@@ -72,12 +72,12 @@ limit_req_status 429;
 server {
   listen 50100;
 
-  access_log {{logDir}}/access.log combined;
+  access_log {{logDir}}/access.log combined buffer=32k flush=10s;
   error_log {{logDir}}/error.log;
 
   set $x_api_umbrella_uid $http_x_api_umbrella_uid;
   set $router_name "api_router";
-  access_log {{logDir}}/router.log api_umbrella_log;
+  access_log {{logDir}}/router.log api_umbrella_log buffer=32k flush=10s;
 
   # Enable keep alive connections to the backend servers.
   proxy_http_version 1.1;

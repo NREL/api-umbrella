@@ -21,6 +21,7 @@
 /config/elasticsearch/elasticsearch-env.sh
 /config/elasticsearch/elasticsearch.yml
 /config/mongod.conf
+/config/nginx/api_backends.conf
 /config/nginx/public_defaults.conf
 /config/nginx/router.conf
 /config/nginx/site.conf

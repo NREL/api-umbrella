@@ -12,7 +12,7 @@ error_log stderr;
 
 http {
   error_log {{log_dir}}/router_error.log;
-  access_log {{log_dir}}/router_access.log;
+  access_log {{log_dir}}/router_access.log combined buffer=32k flush=10s;
 
   client_body_temp_path /tmp/nginx_client_body_temp;
   proxy_temp_path /tmp/nginx_proxy_temp;
@@ -149,12 +149,12 @@ http {
   server {
     listen 30100;
 
-    access_log {{log_dir}}/access.log combined;
+    access_log {{log_dir}}/access.log combined buffer=32k flush=10s;
     error_log {{log_dir}}/error.log;
 
     set $x_api_umbrella_uid $http_x_api_umbrella_uid;
     set $router_name "api_router";
-    access_log {{log_dir}}/router.log api_umbrella_log;
+    access_log {{log_dir}}/router.log api_umbrella_log buffer=32k flush=10s;
 
     # Enable keep alive connections to the backend servers.
     proxy_http_version 1.1;

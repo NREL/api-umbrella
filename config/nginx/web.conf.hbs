@@ -10,22 +10,11 @@ events {
 
 error_log stderr;
 
-
-
 http {
   error_log {{log_dir}}/web_error.log;
-  access_log {{log_dir}}/web_access.log;
+  access_log {{log_dir}}/web_access.log combined buffer=32k flush=10s;
 
   server_tokens off;
-
-  passenger_root /opt/api-umbrella/embedded/lib/ruby/gems/2.1.0/gems/passenger-4.0.41;
-  passenger_ruby /opt/api-umbrella/embedded/bin/ruby;
-  passenger_min_instances 1;
-  passenger_max_pool_size 16;
-  passenger_pool_idle_time 900;
-  passenger_max_preloader_idle_time 0;
-  passenger_user_switching off;
-  passenger_show_version_in_header off;
 
   client_body_temp_path /tmp/nginx_client_body_temp;
   proxy_temp_path /tmp/nginx_proxy_temp;
@@ -33,23 +22,26 @@ http {
   uwsgi_temp_path /tmp/nginx_uwsgi_temp;
   scgi_temp_path /tmp/nginx_scgi_temp;
 
+  upstream puma {
+    server {{web.puma.bind}};
+  }
+
   server {
     listen {{web.port}};
     server_name api.vagrant localhost;
 
-    # Write the real client IP when it's passed via X-Forwarded-For from HAProxy.
-    set_real_ip_from 127.0.0.1;
-    real_ip_header X-Forwarded-For;
-
     root /vagrant/workspace/web/public;
-
-    # Serve this rails site with Passenger.
-    passenger_enabled on;
-
-    # Set the current environment.
-    rails_env development;
 
     # Allow for larger request bodies to allow for huge documentation pages.
     client_max_body_size 10m;
+
+    # Serve non-static resources with Torquebox.
+    try_files $uri/index.html $uri.html $uri @app;
+    location @app {
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+
+      proxy_pass http://puma;
+    }
   }
 }
