@@ -2,7 +2,9 @@
 
 require('../test_helper');
 
-var xml2js = require('xml2js');
+var Factory = require('factory-lady'),
+    request = require('request'),
+    xml2js = require('xml2js');
 
 describe('formatted error responses', function() {
   describe('format detection', function() {

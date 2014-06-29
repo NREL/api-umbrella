@@ -6,6 +6,7 @@ var apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
     forever = require('forever-monitor'),
     fs = require('fs'),
+    mongoose = require('mongoose'),
     path = require('path'),
     redis = require('redis'),
     net = require('net');

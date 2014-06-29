@@ -2,6 +2,8 @@
 
 require('../test_helper');
 
+var Factory = require('factory-lady');
+
 describe('ip validation', function() {
   shared.runServer({
     apis: [

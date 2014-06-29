@@ -2,15 +2,9 @@
 
 require('./support/env');
 
-var request = require('request'),
-    Factory = require('factory-lady'),
-    mongoose = require('mongoose'),
-    gatekeeper = require('../lib/gatekeeper');
+var gatekeeper = require('../lib/gatekeeper');
 
-global.request = request;
-global.Factory = Factory;
 global.gatekeeper = gatekeeper;
-global.mongoose = mongoose;
 
 require('./support/chai');
 require('./support/config');

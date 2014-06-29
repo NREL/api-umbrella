@@ -4,6 +4,7 @@ require('../test_helper');
 
 var async = require('async'),
     moment = require('moment'),
+    mongoose = require('mongoose'),
     rateLimitModel = require('../../lib/models/rate_limit_model');
 
 describe('distributed rate limit sync', function() {

@@ -4,8 +4,10 @@ require('../test_helper');
 
 var _ = require('lodash'),
     async = require('async'),
+    Factory = require('factory-lady'),
     fs = require('fs'),
     ippp = require('ipplusplus'),
+    request = require('request'),
     timekeeper = require('timekeeper'),
     yaml = require('js-yaml');
 

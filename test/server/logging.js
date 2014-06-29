@@ -4,6 +4,7 @@ require('../test_helper');
 
 var _ = require('lodash'),
     ProxyLogger = require('../../lib/gatekeeper/logger').Logger,
+    request = require('request'),
     sinon = require('sinon');
 
 var spy = sinon.spy(ProxyLogger.prototype, 'push');

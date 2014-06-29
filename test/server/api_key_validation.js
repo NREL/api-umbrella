@@ -2,6 +2,9 @@
 
 require('../test_helper');
 
+var Factory = require('factory-lady'),
+    request = require('request');
+
 describe('api key validation', function() {
   describe('default settings', function() {
     shared.runServer();

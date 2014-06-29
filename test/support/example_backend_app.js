@@ -2,11 +2,13 @@
 
 var _ = require('lodash'),
     async = require('async'),
+    basicAuth = require('basic-auth-connect'),
+    bodyParser = require('body-parser'),
     express = require('express'),
     url = require('url');
 
 var app = express();
-app.use(express.bodyParser());
+app.use(bodyParser.raw());
 
 app.use(function(req, res, next) {
   backendCalled = true;
@@ -87,7 +89,7 @@ app.all('/info/*', function(req, res) {
   });
 });
 
-var auth = express.basicAuth(function(user, pass) {
+var auth = basicAuth(function(user, pass) {
   return (user === 'somebody' && pass === 'secret') ||
     (user === 'anotheruser' && pass === 'anothersecret');
 });
@@ -95,6 +97,5 @@ var auth = express.basicAuth(function(user, pass) {
 app.get('/auth/*', auth, function(req, res) {
   res.send(req.user);
 });
-
 
 app.listen(9444);

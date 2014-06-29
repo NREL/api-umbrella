@@ -3,7 +3,10 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    Curler = require('curler').Curler;
+    Curler = require('curler').Curler,
+    Factory = require('factory-lady'),
+    mongoose = require('mongoose'),
+    request = require('request');
 
 describe('request rewriting', function() {
   describe('api key normaliztion', function() {

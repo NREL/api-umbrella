@@ -5,9 +5,11 @@ require('../test_helper');
 var _ = require('lodash'),
     apiUmbrellaConfig = require('api-umbrella-config'),
     csv = require('csv'),
+    Factory = require('factory-lady'),
     fs = require('fs'),
     ippp = require('ipplusplus'),
     path = require('path'),
+    request = require('request'),
     xml2js = require('xml2js'),
     yaml = require('js-yaml');
 
