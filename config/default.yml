@@ -10,13 +10,19 @@ gatekeeper:
   workers: 4
 varnish:
   port: 51700
+  backend:
+    host: localhost
+    port: 50100
 web:
-  port: 31000
+  port: 51000
   puma:
     bind: "unix:///tmp/puma.sock"
     workers: 2
     min_threads: 2
     max_threads: 24
+router:
+  api_backends:
+    port: 50100
 mongodb:
   url: "mongodb://127.0.0.1:50217/api_umbrella_development"
   options:
@@ -40,7 +46,7 @@ trustedProxies:
 proxy:
   host: 127.0.0.1
   port: 4000
-  target: "127.0.0.1:6081"
+  target: "127.0.0.1:51700"
   apiKeyMethods:
     - header
     - getParam

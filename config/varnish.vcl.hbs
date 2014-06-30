@@ -1,8 +1,8 @@
 import std;
 
 backend default {
-  .host = "localhost";
-  .port = "50100";
+  .host = "{{varnish.backend.host}}";
+  .port = "{{varnish.backend.port}}";
   .first_byte_timeout = 60s;
 }
 

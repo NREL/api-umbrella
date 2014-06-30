@@ -1,9 +1,12 @@
 'use strict';
 
 require('../test_helper');
-require('../../gatekeeper/lib/models/api_user');
 
-var uuid = require('node-uuid');
+var Factory = require('factory-lady'),
+    mongoose = require('mongoose'),
+    uuid = require('node-uuid');
+
+require('api-umbrella-gatekeeper').models(mongoose);
 
 function generateId(callback) {
   callback(uuid.v4());

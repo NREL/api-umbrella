@@ -1,10 +1,20 @@
 'use strict';
 
-var express = require('express'),
+var bodyParser = require('body-parser'),
+    express = require('express'),
+    fs = require('fs'),
+    multer = require('multer'),
+    path = require('path'),
     url = require('url');
 
 var app = express();
-app.use(express.bodyParser());
+app.use(bodyParser.raw());
+app.use(multer({
+  dest: path.resolve(__dirname, '../tmp'),
+  onFileUploadComplete: function(file) {
+    fs.unlinkSync(file.path);
+  },
+}));
 
 app.use(function(req, res, next) {
   next();

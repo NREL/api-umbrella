@@ -37,6 +37,7 @@
 /config/gatekeeper/runtime.yml*
 /test/config/runtime.yml
 /test/config/nginx.conf
+/run
 
 # Ignore log files
 /log/*

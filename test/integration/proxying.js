@@ -3,10 +3,12 @@
 require('../test_helper');
 
 var async = require('async'),
+    Factory = require('factory-lady'),
     fs = require('fs'),
     http = require('http'),
     net = require('net'),
     randomstring = require('randomstring'),
+    request = require('request'),
     stk = require('stream-tk'),
     temp = require('temp');
 

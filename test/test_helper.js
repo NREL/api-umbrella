@@ -10,11 +10,10 @@ global.request = request;
 global.Factory = Factory;
 global.mongoose = mongoose;
 
+require('./support/processes');
+
 require('./support/chai');
-require('./support/config');
 require('./support/database_setup');
 require('./support/factories');
-
-require('./support/processes');
 
 global.shared = {};
