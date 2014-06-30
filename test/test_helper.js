@@ -7,7 +7,6 @@ var gatekeeper = require('../lib/gatekeeper');
 global.gatekeeper = gatekeeper;
 
 require('./support/chai');
-require('./support/config');
 require('./support/database_setup');
 require('./support/factories');
 require('./support/example_backend_app');
