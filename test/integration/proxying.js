@@ -3,6 +3,7 @@
 require('../test_helper');
 
 var async = require('async'),
+    Curler = require('curler').Curler,
     Factory = require('factory-lady'),
     fs = require('fs'),
     http = require('http'),
@@ -218,6 +219,54 @@ describe('proxying', function() {
       requestOfHeaderSize({ size: 12000, lineLength: 24, numHeaders: 54, apiKey: this.apiKey }, function(headers) {
         headers.should.contain('413 Request Entity Too Large');
         done();
+      });
+    });
+  });
+
+  // Ensure basic HTTP requests of all HTTP methods work with the entire stack
+  // in place.
+  //
+  // This mainly stems from nodejs breaking OPTIONS requests without bodies
+  // and Varnish really not liking it (this should be fixed in NodeJS v0.11):
+  // https://github.com/joyent/node/pull/7725
+  //
+  // Also, this is a little tricky to test in node.js, since all OPTIONS
+  // requests originating from node's http library currently add the chunked
+  // headers (due to above issue). So we'll drop to a curl library to make
+  // these test requests.
+  describe('all http methods work', function() {
+    describe('without request body', function() {
+      ['GET', 'HEAD', 'DELETE', 'OPTIONS'].forEach(function(method) {
+        it('successfully makes ' + method + ' requests', function(done) {
+          var curl = new Curler();
+          curl.request({
+            method: method,
+            url: 'http://localhost:9080/info/?api_key=' + this.apiKey,
+          }, function(error, response) {
+            response.statusCode.should.eql(200);
+            done();
+          });
+        });
+      });
+    });
+
+    describe('with request body', function() {
+      ['POST', 'PUT', 'OPTIONS', 'PATCH'].forEach(function(method) {
+        it('successfully makes ' + method + ' requests', function(done) {
+          var curl = new Curler();
+          curl.request({
+            method: method,
+            url: 'http://localhost:9080/info/?api_key=' + this.apiKey,
+            headers: {
+              'Transfer-Encoding': 'chunked',
+              'Content-Length': '4',
+            },
+            data: 'test',
+          }, function(error, response) {
+            response.statusCode.should.eql(200);
+            done();
+          });
+        });
       });
     });
   });
