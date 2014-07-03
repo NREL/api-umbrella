@@ -16,7 +16,7 @@ describe('referer validation', function() {
         ],
         settings: {
           allowed_referers: [
-            '*.example.com/*',
+            '*.example.com*',
             'https://google.com/',
           ],
         },
@@ -66,10 +66,25 @@ describe('referer validation', function() {
     });
   });
 
+  describe('unauthorized empty referer', function() {
+    shared.itBehavesLikeGatekeeperBlocked('/info/', 403, 'API_KEY_UNAUTHORIZED', {
+      headers: {
+      },
+    });
+  });
+
   describe('authorized referer based on wildcard match', function() {
     shared.itBehavesLikeGatekeeperAllowed('/info/', {
       headers: {
         'Referer': 'http://www.example.com/testing',
+      },
+    });
+  });
+
+  describe('authorized referer based on origin fallback header', function() {
+    shared.itBehavesLikeGatekeeperAllowed('/info/', {
+      headers: {
+        'Origin': 'http://www.example.com',
       },
     });
   });
