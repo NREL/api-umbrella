@@ -68,6 +68,9 @@ Vagrant.configure("2") do |config|
   config.vm.provision :shell, :inline => "if [ -f /etc/init.d/nginx ]; then /etc/init.d/nginx restart; fi"
   config.vm.provision :shell, :inline => "mkdir -p /srv/sites && chown vagrant /srv/sites"
 
+  # Use the user's local SSH keys for git access.
+  config.ssh.forward_agent = true
+
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
   # path, and data_bags path (all relative to this Vagrantfile), and adding
   # some recipes and/or roles.
