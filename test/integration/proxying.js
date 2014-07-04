@@ -118,6 +118,7 @@ describe('proxying', function() {
     random.pipe(stream);
     stream.on('finish', function() {
       var req = request.post('http://localhost:9080/upload?api_key=' + this.apiKey, function(error, response, body) {
+        response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.upload_size.should.eql(size);
         done();
@@ -271,6 +272,91 @@ describe('proxying', function() {
     });
   });
 
+  describe('server-side keep alive', function() {
+    it('keeps 10 idle keepalive connections opened to the backend', function(done) {
+      // Open a bunch of concurrent connections first, and then inspect the
+      // number of number of connections still active afterwards.
+      var options = { agentOptions: { maxSockets: 150 } };
+      async.times(50, function(index, callback) {
+        request.get('http://localhost:9080/keepalive9445/connections?api_key=' + this.apiKey, options, function(error, response) {
+          response.statusCode.should.eql(200);
+          callback(error);
+        });
+      }.bind(this), function() {
+        request.get('http://localhost:9080/keepalive9445/connections?api_key=' + this.apiKey, function(error, response, body) {
+          response.statusCode.should.eql(200);
+
+          var data = JSON.parse(body);
+          data.start.connections.should.eql(10);
+          data.start.requests.should.eql(1);
+          data.end.connections.should.eql(10);
+          data.end.requests.should.eql(1);
+
+          done();
+        });
+      }.bind(this));
+    });
+
+    it('allows the number of idle backend keepalive connections to be configured', function(done) {
+      // Open a bunch of concurrent connections first, and then inspect the
+      // number of number of connections still active afterwards.
+      var options = { agentOptions: { maxSockets: 150 } };
+      async.times(50, function(index, callback) {
+        request.get('http://localhost:9080/keepalive9446/connections?api_key=' + this.apiKey, options, function(error, response) {
+          response.statusCode.should.eql(200);
+          callback(error);
+        });
+      }.bind(this), function() {
+        request.get('http://localhost:9080/keepalive9446/connections?api_key=' + this.apiKey, function(error, response, body) {
+          response.statusCode.should.eql(200);
+
+          var data = JSON.parse(body);
+          data.start.connections.should.eql(6);
+          data.start.requests.should.eql(1);
+          data.end.connections.should.eql(6);
+          data.end.requests.should.eql(1);
+
+          done();
+        });
+      }.bind(this));
+    });
+
+    it('allows the number of concurrent connections to execeed the number of keepalive connections', function(done) {
+      var maxConnections = 0;
+      var maxRequests = 0;
+
+      var options = { agentOptions: { maxSockets: 150 } };
+      async.times(150, function(index, callback) {
+        request.get('http://localhost:9080/keepalive9447/connections?api_key=' + this.apiKey, options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+
+          var data = JSON.parse(body);
+
+          if(data.start.connections > maxConnections) {
+            maxConnections = data.start.connections;
+          }
+
+          if(data.start.requests > maxRequests) {
+            maxRequests = data.start.requests;
+          }
+
+          callback(error);
+        });
+      }.bind(this), function() {
+        // We sent 150 concurrent requests, but the number of concurrent
+        // requests to the backend will likely be lower, since we're testing
+        // the full stack, and the requests have to go through multiple layers
+        // (the gatekeeper, caching, etc) which may lower absolute concurrency.
+        // But all we're really trying to test here is that this does increase
+        // above the 10 keepalived connections.
+        maxRequests.should.be.greaterThan(25);
+        maxConnections.should.be.greaterThan(25);
+
+        done();
+      });
+    });
+  });
+
   describe('timeouts', function() {
     it('times out quickly if a backend is down', function(done) {
       this.timeout(500);
@@ -335,8 +421,5 @@ describe('proxying', function() {
         },
       ], done);
     });
-  });
-
-  describe('keep alive', function() {
   });
 });

@@ -6,16 +6,51 @@ mongodb:
 redis:
   host: 127.0.0.1
   port: 50831
+router_global_rate_limits:
+  ip_rate: "1000r/s"
+  ip_burst: 1000
+  ip_connections: 250
 apis:
   - _id: down
     frontend_host: localhost
     backend_host: localhost
     servers:
       - host: 127.0.0.1
-        port: 9445
+        port: 9450
     url_matches:
       - frontend_prefix: /down
         backend_prefix: /down
+  - _id: keepalive
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9445
+    url_matches:
+      - frontend_prefix: /keepalive9445/
+        backend_prefix: /keepalive9445/
+    rate_limit_mode: unlimited
+  - _id: keepalive2
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9446
+    url_matches:
+      - frontend_prefix: /keepalive9446/
+        backend_prefix: /keepalive9446/
+    rate_limit_mode: unlimited
+    keepalive_connections: 6
+  - _id: keepalive3
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9447
+    url_matches:
+      - frontend_prefix: /keepalive9447/
+        backend_prefix: /keepalive9447/
+    rate_limit_mode: unlimited
   - _id: example
     frontend_host: localhost
     backend_host: localhost

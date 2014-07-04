@@ -15,5 +15,7 @@ require('./support/processes');
 require('./support/chai');
 require('./support/database_setup');
 require('./support/factories');
+require('./support/example_backend_app');
+require('./support/keepalive_test_backend_app');
 
 global.shared = {};

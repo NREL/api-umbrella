@@ -8,6 +8,7 @@ var bodyParser = require('body-parser'),
     url = require('url');
 
 var app = express();
+
 app.use(bodyParser.raw());
 app.use(multer({
   dest: path.resolve(__dirname, '../tmp'),
@@ -16,9 +17,6 @@ app.use(multer({
   },
 }));
 
-app.use(function(req, res, next) {
-  next();
-});
 
 app.all('/info/*', function(req, res) {
   res.json({

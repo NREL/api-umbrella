@@ -56,6 +56,12 @@ logProcessor:
   workers: 1
 routerLogListener:
   workers: 1
+router_global_rate_limits:
+  ip_rate: "100r/s"
+  ip_burst: 100
+  ip_rate_size: 8m
+  ip_connections: 50
+  ip_connections_size: 5m
 apiSettings:
   rate_limits:
     - duration: 1000

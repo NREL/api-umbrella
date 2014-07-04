@@ -4,7 +4,7 @@ rewrite ^/api(/.*) $1 break;
 
 set $x_api_umbrella_uid $request_id;
 set $router_name "web_router";
-access_log /srv/sites/router/current/log/router.log api_umbrella_log;
+access_log {{log_dir}}/router.log api_umbrella_log buffer=32k flush=10s;
 
 proxy_set_header X-Api-Umbrella-UID $request_id;
 

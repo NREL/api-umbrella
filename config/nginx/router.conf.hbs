@@ -24,8 +24,8 @@ http {
   log_format api_umbrella_log '"$x_api_umbrella_uid","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent","$http_referer","$http_x_api_key","$remote_user"';
 
   # Limit the number of simultaneous connections per IP address.
-  limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:5m;
-  limit_conn_status 429;
+  limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:{{router_global_rate_limits.ip_connections_size}};
+  limit_conn_status {{apiSettings.error_data.over_rate_limit.status_code}};
 
   # Rate limits per IP address.
   #
@@ -33,8 +33,13 @@ http {
   # provided by the API Umbrella Gatekeeper, so this limit should be higher than
   # the Gatekeeper's limits. This just provides an extra line of simple defense
   # against misbehaving clients from overloading the Gatekeeper.
-  limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:5m rate=100r/s;
-  limit_req_status 429;
+  limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:{{router_global_rate_limits.ip_rate_size}} rate={{router_global_rate_limits.ip_rate}};
+  limit_req_status {{apiSettings.error_data.over_rate_limit.status_code}};
+
+  # Allow any sized uploads to backends.
+  client_max_body_size 0;
+
+  keepalive_timeout 30s;
 
   upstream api_umbrella_web_backend {
     server 127.0.0.1:{{web.port}};
@@ -48,20 +53,6 @@ http {
     keepalive 10;
   }
 
-  # Allow any sized uploads to backends.
-  client_max_body_size 0;
-
-  # Limit the number of simulaneous connections per IP address to 50.
-  limit_conn api_umbrella_conn_addr_zone 50;
-
-  # After the 100 requests/second rate is reached, allow a sizable burst before
-  # completely terminating requests at this router level. This is so we can
-  # generally rely on API Umbrella Gatekeeper for rate limiting, but still
-  # throttle traffic to the Gatekeeper.
-  limit_req zone=api_umbrella_req_addr_zone burst=100 nodelay;
-
-  keepalive_timeout 30s;
-
   # The main, front-facing public host server. This serves up both the APIs and
   # the web content.
   server {
@@ -72,7 +63,7 @@ http {
     ssl_certificate /etc/ssl/certs/vagrant.crt;
     ssl_certificate_key /etc/ssl/certs/vagrant.key;
 
-    include ./public_defaults.conf;
+    include ./frontend_defaults.conf;
 
     # Determine the SSL status when it's passed via X-Forwarded-Proto from the
     # SSL terminator.
@@ -108,7 +99,7 @@ http {
 
     # Route all other requests as APIs going through the API Umbrella Gatekeeper.
     location / {
-      include ./public_defaults.conf;
+      include ./frontend_proxy_header_defaults.conf;
       include ./gatekeeper.conf;
     }
   }
@@ -120,11 +111,11 @@ http {
     #listen {{https_port}} ssl default_server;
     server_name _;
 
-    include ./public_defaults.conf;
+    include ./frontend_defaults.conf;
 
     # Route all other requests as APIs going through the API Umbrella Gatekeeper.
     location / {
-      include ./public_defaults.conf;
+      include ./frontend_proxy_header_defaults.conf;
       include ./gatekeeper.conf;
     }
   }
@@ -134,9 +125,6 @@ http {
   server {
     listen {{router.api_backends.port}};
 
-    access_log {{log_dir}}/access.log combined buffer=32k flush=10s;
-    error_log {{log_dir}}/error.log;
-
     set $x_api_umbrella_uid $http_x_api_umbrella_uid;
     set $router_name "api_router";
     access_log {{log_dir}}/router.log api_umbrella_log buffer=32k flush=10s;
@@ -145,7 +133,7 @@ http {
     proxy_http_version 1.1;
     proxy_set_header Connection "";
 
-    keepalive_timeout 5m;
+    keepalive_timeout 10s;
 
     proxy_set_header Host $host;
     proxy_set_header X-Api-Umbrella-UID "";
