@@ -14,6 +14,7 @@
   "dependencies": {
     "api-umbrella-gatekeeper": "NREL/api-umbrella-gatekeeper",
     "api-umbrella-config": "NREL/api-umbrella-config#v0.2.0",
+    "cli-color": "0.3.2",
     "clone": "0.1.17",
     "handlebars": "1.3.0",
     "forever-monitor": "1.2.3",

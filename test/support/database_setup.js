@@ -32,3 +32,9 @@ before(function(done) {
 after(function(done) {
   mongoose.testConnection.close(done);
 });
+
+after(function() {
+  if(global.redisClient.connected) {
+    global.redisClient.end();
+  }
+});

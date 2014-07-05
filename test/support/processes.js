@@ -12,5 +12,9 @@ before(function(done) {
     config: [path.resolve(__dirname, '../config/test.yml')],
   };
 
-  router.run(options, done);
+  this.router = router.run(options, done);
+});
+
+after(function(done) {
+  this.router.stop(done);
 });
