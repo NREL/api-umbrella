@@ -12,7 +12,7 @@ var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'
 mongoose.testConnection = mongoose.createConnection();
 
 // Drop the mongodb database.
-before(function(done) {
+before(function mongoOpen(done) {
   mongoose.testConnection.on('connected', function() {
     // Drop the whole database, since that properly blocks for any active
     // connections. The database will get re-created on demand.
@@ -23,18 +23,18 @@ before(function(done) {
 });
 
 // Wipe the redis data.
-before(function(done) {
+before(function redisOpen(done) {
   global.redisClient = redis.createClient(config.get('redis'));
   global.redisClient.flushdb(done);
 });
 
 // Close the mongo connection cleanly after each run.
-after(function(done) {
+after(function mongoClose(done) {
   mongoose.testConnection.close(done);
 });
 
-after(function() {
-  if(global.redisClient.connected) {
+after(function redisClose() {
+  if(global.redisClient && global.redisClient.connected) {
     global.redisClient.end();
   }
 });

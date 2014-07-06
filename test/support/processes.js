@@ -5,8 +5,8 @@ require('../test_helper');
 var path = require('path'),
     router = require('../../lib/router');
 
-before(function(done) {
-  this.timeout(20000);
+before(function startProcesses(done) {
+  this.timeout(60000);
 
   var options = {
     config: [path.resolve(__dirname, '../config/test.yml')],
@@ -15,6 +15,8 @@ before(function(done) {
   this.router = router.run(options, done);
 });
 
-after(function(done) {
-  this.router.stop(done);
+after(function stopProcesses(done) {
+  if(this.router) {
+    this.router.stop(done);
+  }
 });
