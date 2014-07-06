@@ -2,7 +2,8 @@
 
 require('../test_helper');
 
-var async = require('async'),
+var _ = require('lodash'),
+    async = require('async'),
     Curler = require('curler').Curler,
     Factory = require('factory-lady'),
     fs = require('fs'),
@@ -11,7 +12,8 @@ var async = require('async'),
     randomstring = require('randomstring'),
     request = require('request'),
     stk = require('stream-tk'),
-    temp = require('temp');
+    temp = require('temp'),
+    zlib = require('zlib');
 
 temp.track();
 
@@ -75,42 +77,30 @@ describe('proxying', function() {
     });
 
     it('streams responses', function(done) {
-      http.get('http://localhost:9080/chunked?api_key=' + this.apiKey, function(response) {
-        var chunks = [];
-        var chunkTimeGaps = [];
-        var lastChunkTime;
-        response.on('data', function(chunk) {
-          chunks.push(chunk.toString());
+      var options = {
+        url: 'http://localhost:9080/chunked?api_key=' + this.apiKey,
+      };
 
-          if(lastChunkTime) {
-            var gap = Date.now() - lastChunkTime;
-            chunkTimeGaps.push(gap);
-          }
+      shared.chunkedRequestDetails(options, function(response, data) {
+        data.stringChunks.should.eql([
+          'hello',
+          'salutations',
+          'goodbye',
+        ]);
 
-          lastChunkTime = Date.now();
-        });
+        data.chunkTimeGaps.length.should.eql(2);
+        data.chunkTimeGaps[0].should.be.greaterThan(400);
+        data.chunkTimeGaps[1].should.be.greaterThan(400);
 
-        response.on('end', function() {
-          chunks.should.eql([
-            'hello',
-            'salutations',
-            'goodbye',
-          ]);
+        response.headers['transfer-encoding'].should.eql('chunked');
 
-          chunkTimeGaps.length.should.eql(2);
-          chunkTimeGaps[0].should.be.greaterThan(400);
-          chunkTimeGaps[1].should.be.greaterThan(400);
-
-          response.headers['transfer-encoding'].should.eql('chunked');
-
-          done();
-        });
+        done();
       });
     });
   });
 
   it('accepts large uploads', function(done) {
-    this.timeout(10000);
+    this.timeout(15000);
 
     var size = 20 * 1024 * 1024;
     var random = stk.createRandom('read', size);
@@ -349,12 +339,239 @@ describe('proxying', function() {
         // (the gatekeeper, caching, etc) which may lower absolute concurrency.
         // But all we're really trying to test here is that this does increase
         // above the 10 keepalived connections.
-        maxRequests.should.be.greaterThan(25);
-        maxConnections.should.be.greaterThan(25);
+        maxRequests.should.be.greaterThan(20);
+        maxConnections.should.be.greaterThan(20);
 
         done();
       });
     });
+  });
+
+  describe('gzip', function() {
+    describe('backend returning non-gzipped content', function() {
+      it('gzips the response when the content length is greather than or equal to 1000', function(done) {
+        var options = { headers: { 'Accept-Encoding': 'gzip' }, encoding: null };
+        request.get('http://localhost:9080/compressible/1000?api_key=' + this.apiKey, options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          response.headers['content-encoding'].should.eql('gzip');
+          body.toString().length.should.be.lessThan(1000);
+          zlib.gunzip(body, function(error, decodedBody) {
+            should.not.exist(error);
+            decodedBody.toString().length.should.eql(1000);
+            done();
+          });
+        });
+      });
+
+      it('does not gzip the response when the content length is less than 1000', function(done) {
+        var options = { headers: { 'Accept-Encoding': 'gzip' }, encoding: null };
+        request.get('http://localhost:9080/compressible/999?api_key=' + this.apiKey, options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          should.not.exist(response.headers['content-encoding']);
+          body.toString().length.should.eql(999);
+          done();
+        });
+      });
+
+      it('gzips chunked responses of any size', function(done) {
+        var options = { headers: { 'Accept-Encoding': 'gzip' }, encoding: null };
+        request.get('http://localhost:9080/compressible-chunked/5?api_key=' + this.apiKey, options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          response.headers['content-encoding'].should.eql('gzip');
+          zlib.gunzip(body, function(error, decodedBody) {
+            should.not.exist(error);
+            decodedBody.toString().length.should.eql(15);
+            done();
+          });
+        });
+      });
+
+      it('returns unzipped response when unsupported', function(done) {
+        var options = { headers: { 'Accept-Encoding': '' }, encoding: null };
+        request.get('http://localhost:9080/compressible/1000?api_key=' + this.apiKey, options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          should.not.exist(response.headers['content-encoding']);
+          body.toString().length.should.eql(1000);
+          done();
+        });
+      });
+    });
+
+    describe('backend returning pre-gzipped content', function() {
+      it('returns gzipped response when supported', function(done) {
+        var options = { headers: { 'Accept-Encoding': 'gzip' }, encoding: null };
+        request.get('http://localhost:9080/compressible-pre-gzip?api_key=' + this.apiKey, options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          response.headers['content-encoding'].should.eql('gzip');
+          zlib.gunzip(body, function(error, decodedBody) {
+            should.not.exist(error);
+            decodedBody.toString().should.eql('Hello Small World');
+            done();
+          });
+        });
+      });
+
+      it('returns unzipped response when unsupported', function(done) {
+        var options = { headers: { 'Accept-Encoding': '' }, encoding: null };
+        request.get('http://localhost:9080/compressible-pre-gzip?api_key=' + this.apiKey, options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          should.not.exist(response.headers['content-encoding']);
+          body.toString().should.eql('Hello Small World');
+          done();
+        });
+      });
+    });
+
+    describe('compressible response types', function() {
+      [
+        'application/atom+xml',
+        'application/javascript',
+        'application/json',
+        'application/rss+xml',
+        'application/x-javascript',
+        'application/xml',
+        'text/css',
+        'text/csv',
+        'text/html',
+        'text/javascript',
+        'text/plain',
+        'text/xml',
+      ].forEach(function(mime) {
+        it('returns gzip response for "' + mime + '" content type', function(done) {
+          var options = {
+            url: 'http://localhost:9080/compressible/1000',
+            qs: {
+              api_key: this.apiKey,
+              content_type: mime,
+            },
+            headers: { 'Accept-Encoding': 'gzip' },
+            encoding: null,
+          };
+
+          request(options, function(error, response, body) {
+            response.statusCode.should.eql(200);
+            response.headers['content-encoding'].should.eql('gzip');
+            body.toString().length.should.be.lessThan(1000);
+            done();
+          });
+        });
+      });
+    });
+
+    describe('non-compressible response types', function() {
+      [
+        '',
+        'image/png',
+        'application/octet-stream',
+        'application/x-perl',
+        'application/x-whatever-unknown',
+      ].forEach(function(mime) {
+        it('returns non-gzip response for "' + mime + '" content type', function(done) {
+          var options = {
+            url: 'http://localhost:9080/compressible/1000',
+            qs: {
+              api_key: this.apiKey,
+              content_type: mime,
+            },
+            headers: { 'Accept-Encoding': 'gzip' },
+            encoding: null,
+          };
+
+          request(options, function(error, response, body) {
+            response.statusCode.should.eql(200);
+            should.not.exist(response.headers['content-encoding']);
+            body.toString().length.should.eql(1000);
+            done();
+          });
+        });
+      });
+    });
+
+    describe('response streaming', function() {
+      it('streams back small chunks directly as gzipped chunks', function(done) {
+        var options = {
+          url: 'http://localhost:9080/compressible-chunked/5?api_key=' + this.apiKey,
+          headers: { 'Accept-Encoding': 'gzip' },
+          encoding: null,
+        };
+
+        shared.chunkedRequestDetails(options, function(response, data) {
+          var buffer = Buffer.concat(data.chunks);
+          zlib.gunzip(buffer, function(error, decodedBody) {
+            should.not.exist(error);
+
+            response.headers['content-encoding'].should.eql('gzip');
+            response.headers['transfer-encoding'].should.eql('chunked');
+            decodedBody.toString().length.should.eql(15);
+
+            // Ensure we have at least 3 chunks (it may be 4, due to gzipping
+            // messing with things).
+            data.chunks.length.should.be.gte(3);
+
+            // Make sure that there were 2 primary gaps between chunks from the
+            // server (again, gzipping may introduce other chunks, but we're just
+            // interested in ensuring the chunks sent back from the server are
+            // present).
+            var longTimeGaps = _.filter(data.chunkTimeGaps, function(gap) {
+              return gap >= 400;
+            });
+            longTimeGaps.length.should.eql(2);
+
+            done();
+          });
+        });
+      });
+
+      describe('when the underlying server supports gzip but the client does not', function() {
+        it('combines small response chunks into a single response', function(done) {
+          var options = {
+            url: 'http://localhost:9080/compressible-chunked/10?api_key=' + this.apiKey,
+            encoding: null,
+          };
+
+          shared.chunkedRequestDetails(options, function(response, data) {
+            should.not.exist(response.headers['content-encoding']);
+            response.headers['transfer-encoding'].should.eql('chunked');
+            data.bodyString.length.should.eql(30);
+
+            data.chunks.length.should.eql(1);
+
+            done();
+          });
+        });
+
+        it('still streams back the original chunks at different times if they are large enough', function(done) {
+          var options = {
+            url: 'http://localhost:9080/compressible-chunked/50000?api_key=' + this.apiKey,
+            encoding: null,
+          };
+
+          shared.chunkedRequestDetails(options, function(response, data) {
+            should.not.exist(response.headers['content-encoding']);
+            response.headers['transfer-encoding'].should.eql('chunked');
+            data.bodyString.length.should.eql(150000);
+
+            var longTimeGaps = _.filter(data.chunkTimeGaps, function(gap) {
+              return gap >= 400;
+            });
+
+            var shortTimeGaps = _.filter(data.chunkTimeGaps, function(gap) {
+              return gap < 400;
+            });
+
+            // With response sizes this big, we'll have a lot of response
+            // chunks, but what we mainly want to test is that there are
+            // distinct gaps in the chunks corresponding to how the backend
+            // streams stuff back.
+            longTimeGaps.length.should.eql(2);
+            shortTimeGaps.length.should.be.greaterThan(10);
+
+            done();
+          });
+        });
+      });
+    });
+
   });
 
   describe('timeouts', function() {

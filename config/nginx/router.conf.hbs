@@ -41,6 +41,14 @@ http {
 
   keepalive_timeout 30s;
 
+  gzip on;
+  gzip_comp_level 2;
+  gzip_disable msie6;
+  gzip_min_length 1000;
+  gzip_proxied any;
+  gzip_types application/atom+xml application/javascript application/json application/rss+xml application/x-javascript application/xml text/css text/csv text/javascript text/plain text/xml;
+  gzip_vary on;
+
   upstream api_umbrella_web_backend {
     server 127.0.0.1:{{web.port}};
     keepalive 10;

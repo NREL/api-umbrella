@@ -19,3 +19,5 @@ require('./support/example_backend_app');
 require('./support/keepalive_test_backend_app');
 
 global.shared = {};
+
+require('./support/helper_functions');

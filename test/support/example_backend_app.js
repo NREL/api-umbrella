@@ -5,7 +5,9 @@ var bodyParser = require('body-parser'),
     fs = require('fs'),
     multer = require('multer'),
     path = require('path'),
-    url = require('url');
+    randomstring = require('randomstring'),
+    url = require('url'),
+    zlib = require('zlib');
 
 var app = express();
 
@@ -16,7 +18,6 @@ app.use(multer({
     fs.unlinkSync(file.path);
   },
 }));
-
 
 app.all('/info/*', function(req, res) {
   res.json({
@@ -63,6 +64,35 @@ app.post('/receive_chunks', function(req, res) {
       chunks: chunks,
       chunkTimeGaps: chunkTimeGaps,
     });
+  });
+});
+
+app.get('/compressible/:size', function(req, res) {
+  var size = parseInt(req.params.size);
+  var contentType = (req.query.content_type === undefined) ? 'text/plain' : req.query.content_type;
+  res.set('Content-Type', contentType);
+  res.set('Content-Length', size);
+  res.end(randomstring.generate(size));
+});
+
+app.get('/compressible-chunked/:size', function(req, res) {
+  var size = parseInt(req.params.size);
+  res.set('Content-Type', 'text/plain');
+  res.write(randomstring.generate(size));
+  setTimeout(function() {
+    res.write(randomstring.generate(size));
+    setTimeout(function() {
+      res.write(randomstring.generate(size));
+      res.end();
+    }, 500);
+  }, 500);
+});
+
+app.get('/compressible-pre-gzip', function(req, res) {
+  res.set('Content-Type', 'text/plain');
+  res.set('Content-Encoding', 'gzip');
+  zlib.gzip('Hello Small World', function(error, data) {
+    res.end(data);
   });
 });
 
