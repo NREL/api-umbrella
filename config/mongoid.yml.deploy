@@ -1,6 +1,7 @@
 defaults: &defaults
   sessions:
     default:
+      uri: <%= ENV['MONGODB_URL'] || "mongodb://localhost:50217/api_umbrella_development" %>
       options:
         safe: true
   options:
@@ -8,11 +9,6 @@ defaults: &defaults
 
 development:
   <<: *defaults
-  sessions:
-    default:
-      database: api_umbrella_development
-      hosts:
-        - localhost:27017
 
 test:
   sessions:
@@ -29,16 +25,6 @@ test:
 
 staging:
   <<: *defaults
-  sessions:
-    default:
-      database: api_umbrella_staging
-      hosts:
-        - localhost:27017
 
 production:
   <<: *defaults
-  sessions:
-    default:
-      database: api_umbrella_production
-      hosts:
-        - 10.12.126.195:27017

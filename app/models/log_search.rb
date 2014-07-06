@@ -5,7 +5,7 @@ class LogSearch
   attr_reader :server, :start_time, :end_time, :interval, :region, :country, :state
 
   def initialize(options = {})
-    @server = Stretcher::Server.new(ElasticsearchConfig.server, :logger => Rails.logger)
+    @server = Stretcher::Server.new(ENV["ELASTICSEARCH_URL"] || "http://localhost:9200", :logger => Rails.logger)
 
     @start_time = options[:start_time]
     unless(@start_time.kind_of?(Time))
