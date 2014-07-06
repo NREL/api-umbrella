@@ -1,0 +1,150 @@
+[
+  {
+    "id": "api-umbrella-template",
+    "template": {
+      "template": "api-umbrella",
+      "mappings": {
+        "city": {
+          "_all": {
+            "enabled": false
+          },
+          "_timestamp": {
+            "enabled": true,
+            "path": "updated_at"
+          },
+          "properties": {
+            "country": {
+              "type": "string",
+              "index": "not_analyzed"
+            },
+            "region": {
+              "type": "string",
+              "index": "not_analyzed"
+            },
+            "city": {
+              "type": "string",
+              "index": "not_analyzed"
+            },
+            "location": {
+              "type": "geo_point",
+              "lat_lon": true
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "api-umbrella-log-v1-template",
+    "template": {
+      "template": "api-umbrella-logs-v1-*",
+      "settings": {
+        "index": {
+          "number_of_shards": 3
+        },
+        "analysis": {
+          "analyzer": {
+            "keyword_lowercase": {
+              "type": "custom",
+              "tokenizer": "keyword",
+              "filter": ["lowercase"]
+            },
+            "path_hierarchy_lowercase": {
+              "type": "custom",
+              "tokenizer": "path_hierarchy",
+              "filter": ["lowercase"]
+            }
+          }
+        }
+      },
+      "mappings": {
+        "log": {
+          "_all": {
+            "enabled": false
+          },
+          "_timestamp": {
+            "enabled": true,
+            "path": "request_at"
+          },
+          "dynamic_templates": [
+            {
+              "string_template": {
+                "match": "*",
+                "match_mapping_type": "string",
+                "mapping": {
+                  "type": "string",
+                  "index": "analyzed",
+                  "analyzer": "keyword_lowercase"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "index": "not_analyzed"
+            },
+            "user_id": {
+              "type": "string",
+              "index": "not_analyzed"
+            },
+            "request_ip": {
+              "type": "string",
+              "index": "not_analyzed"
+            },
+            "request_ip_country": {
+              "type": "string",
+              "index": "not_analyzed"
+            },
+            "request_ip_region": {
+              "type": "string",
+              "index": "not_analyzed"
+            },
+            "request_ip_city": {
+              "type": "string",
+              "index": "not_analyzed"
+            },
+            "request_path_hierarchy": {
+              "type": "string",
+              "analyzer": "path_hierarchy_lowercase"
+            },
+            "request_size": {
+              "type": "integer"
+            },
+            "response_status": {
+              "type": "short"
+            },
+            "response_age": {
+              "type": "integer"
+            },
+            "response_content_length": {
+              "type": "integer"
+            },
+            "response_size": {
+              "type": "integer"
+            },
+            "response_time": {
+              "type": "integer"
+            },
+            "backend_response_time": {
+              "type": "integer"
+            },
+            "proxy_overhead": {
+              "type": "integer"
+            },
+            "internal_response_time": {
+              "type": "float"
+            },
+            "internal_gatekeeper_time": {
+              "type": "float"
+            },
+            "request_ip_location": {
+              "type": "geo_point",
+              "lat_lon": true
+            }
+          }
+        }
+      }
+    }
+  }
+]
