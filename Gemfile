@@ -3,6 +3,8 @@ source "https://rails-assets.org"
 
 gem "rails", "~> 3.2.18"
 
+gem "puma", "~> 2.8.2"
+
 # Environment specific configuration
 gem "dotenv-rails", "~> 0.10.0"
 
