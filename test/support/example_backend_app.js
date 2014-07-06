@@ -85,7 +85,7 @@ app.get('/chunked', function(req, res) {
 app.all('/info/*', function(req, res) {
   res.json({
     headers: req.headers,
-    url: url.parse(req.protocol + '://' + req.host + req.url, true),
+    url: url.parse(req.protocol + '://' + req.hostname + req.url, true),
   });
 });
 
