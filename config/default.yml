@@ -36,7 +36,8 @@ mongodb:
     port: 50217
     dbpath: /tmp/db/mongodb
 elasticsearch:
-  url: "http://127.0.0.1:50200"
+  hosts:
+    - "http://127.0.0.1:50200"
   embedded_server_config:
     path_data: /tmp/db/elasticsearch
     http_port: 50200

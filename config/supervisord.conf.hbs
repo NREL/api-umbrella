@@ -24,7 +24,7 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 
 [program:elasticsearch]
-environment=ES_INCLUDE={{config_dir}}/elasticsearch/elasticsearch-env.sh
+environment=ES_INCLUDE="{{config_dir}}/elasticsearch/elasticsearch-env.sh"
 command=elasticsearch
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
@@ -97,7 +97,7 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 
 [program:web_puma]
-environment=MONGODB_URL={{mongodb.url}},ELASTICSEARCH_URL={{elasticsearch.url}}
+environment=MONGODB_URL="{{mongodb.url}}",ELASTICSEARCH_HOSTS="{{elasticsearch.hosts}}"
 directory=/vagrant/workspace/web
 command=bundle exec puma -q -e {{app_env}} -w {{web.puma.workers}} -t {{web.puma.min_threads}}:{{web.puma.max_threads}} -b {{web.puma.bind}}
 redirect_stderr=true
