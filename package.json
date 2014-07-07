@@ -57,6 +57,7 @@
     "chai": "1.9.1",
     "coveralls": "2.11.0",
     "curler": "0.0.5",
+    "csv": "0.3.6",
     "express": "4.5.0",
     "factory-lady": "0.1.0",
     "forever-monitor": "1.2.3",
