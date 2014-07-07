@@ -43,7 +43,7 @@ gem "uuidtools", "~> 2.1.4"
 gem "seed-fu", "~> 2.3.0"
 
 # Elasticsearch
-gem "stretcher", "~> 1.21.1"
+gem "elasticsearch", "~> 1.0.4"
 
 # OmniAuth-based authentication
 gem "devise", "~> 3.2.4"

@@ -21,9 +21,9 @@ class Api::HealthChecksController < ApplicationController
 
       if(result)
         # Make sure logging details from the gatekeeper are present.
-        if(result["internal_gatekeeper_time"] && result["internal_gatekeeper_time"] > 0)
+        if(result["_source"]["internal_gatekeeper_time"] && result["_source"]["internal_gatekeeper_time"] > 0)
           # Make sure logging details from the router are present.
-          if(result["backend_response_time"] && result["backend_response_time"] > 0)
+          if(result["_source"]["backend_response_time"] && result["_source"]["backend_response_time"] > 0)
             healthy = true
           end
         end

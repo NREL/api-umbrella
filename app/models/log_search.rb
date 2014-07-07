@@ -2,10 +2,13 @@ require "elasticsearch_config"
 
 class LogSearch
   attr_accessor :query, :query_options
-  attr_reader :server, :start_time, :end_time, :interval, :region, :country, :state
+  attr_reader :client, :start_time, :end_time, :interval, :region, :country, :state
 
   def initialize(options = {})
-    @server = Stretcher::Server.new(ENV["ELASTICSEARCH_URL"] || "http://localhost:9200", :logger => Rails.logger)
+    @client = Elasticsearch::Client.new({
+      :hosts => (ENV["ELASTICSEARCH_HOSTS"] || "http://localhost:9200").split(","),
+      :logger => Rails.logger
+    })
 
     @start_time = options[:start_time]
     unless(@start_time.kind_of?(Time))
@@ -43,12 +46,16 @@ class LogSearch
 
     @query_options = {
       :size => 0,
-      :ignore_indices => "missing",
+      :ignore_unavailable => "missing",
+      :allow_no_indices => true,
     }
   end
 
   def result
-    raw_result = @server.index(indexes.join(",")).search(@query_options, @query)
+    raw_result = @client.search(@query_options.merge({
+      :index => indexes.join(","),
+      :body => @query,
+    }))
 
     @result = LogResult.new(self, raw_result)
   end

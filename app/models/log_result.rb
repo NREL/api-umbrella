@@ -7,15 +7,15 @@ class LogResult
   end
 
   def total
-    raw_result.total
+    raw_result["hits"]["total"]
   end
 
   def documents
-    raw_result.documents
+    raw_result["hits"]["hits"]
   end
 
   def facets
-    raw_result.raw_plain["facets"]
+    raw_result["facets"]
   end
 
   def interval_hits
@@ -104,7 +104,7 @@ class LogResult
           }
 
           @search.server.index("api-umbrella").search({ :size => 500 }, query).documents.each do |result|
-            @cities[result["city"]] = result["location"]
+            @cities[result["city"]] = result["_source"]["location"]
           end
         end
       end
