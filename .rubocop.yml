@@ -5,108 +5,121 @@ AllCops:
     - config/compass.rb
   RunRailsCops: true
 
-# Not valid for Rails 3.
-ActionFilter:
+
+Lint/UnusedBlockArgument:
   Enabled: false
 
-AlignHash:
+Lint/UnusedMethodArgument:
   Enabled: false
 
-AlignParameters:
+Style/AlignHash:
   Enabled: false
 
-BlockNesting:
+Style/AlignParameters:
   Enabled: false
 
-BracesAroundHashParameters:
+Style/BlockNesting:
   Enabled: false
 
-ClassAndModuleChildren:
+Style/BracesAroundHashParameters:
   Enabled: false
 
-ClassLength:
+Style/ClassAndModuleChildren:
   Enabled: false
 
-CollectionMethods:
+Style/ClassCheck:
+  Enabled: false
+
+Style/ClassLength:
+  Enabled: false
+
+Style/CollectionMethods:
   PreferredMethods:
     find: 'detect'
 
-CyclomaticComplexity:
+Style/CyclomaticComplexity:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/EachWithObject:
+  Enabled: false
+
+Style/Encoding:
+  Enabled: false
+
+Style/GuardClause:
+  Enabled: false
+
+Style/HashSyntax:
+  EnforcedStyle: hash_rockets
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/IndentHash:
+  EnforcedStyle: consistent
+
+Style/Lambda:
+  Enabled: false
+
+Style/LineLength:
+  Enabled: false
+
+Style/LiteralInInterpolation:
+  Enabled: false
+
+Style/MethodLength:
+  Enabled: false
+
+Style/NegatedIf:
+  Enabled: false
+
+Style/Next:
+  Enabled: false
+
+Style/OneLineConditional:
+  Enabled: false
+
+Style/ParenthesesAroundCondition:
+  Enabled: false
+
+Style/RaiseArgs:
+  Enabled: false
+
+Style/RedundantSelf:
+  Enabled: false
+
+Style/SignalException:
+  Enabled: false
+
+Style/SpaceAfterControlKeyword:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: false
+
+Style/TrailingComma:
+  Enabled: false
+
+Style/WhileUntilModifier:
+  Enabled: false
+
+Style/WordArray:
+  Enabled: false
+
+# Not valid for Rails 3.
+Rails/ActionFilter:
   Enabled: false
 
 # Not valid for mongoid
-DefaultScope:
+Rails/DefaultScope:
   Enabled: false
 
-Delegate:
+Rails/Delegate:
   Enabled: false
 
-Documentation:
-  Enabled: false
-
-Encoding:
-  Enabled: false
-
-HashSyntax:
-  EnforcedStyle: hash_rockets
-
-IfUnlessModifier:
-  Enabled: false
-
-IndentHash:
-  EnforcedStyle: consistent
-
-Lambda:
-  Enabled: false
-
-LineLength:
-  Enabled: false
-
-LiteralInInterpolation:
-  Enabled: false
-
-MethodLength:
-  Enabled: false
-
-NegatedIf:
-  Enabled: false
-
-OneLineConditional:
-  Enabled: false
-
-Output:
+Rails/Output:
   Exclude:
     - db/migrate/**
-
-ParenthesesAroundCondition:
-  Enabled: false
-
-RaiseArgs:
-  Enabled: false
-
-RedundantSelf:
-  Enabled: false
-
-SignalException:
-  Enabled: false
-
-SpaceAfterControlKeyword:
-  Enabled: false
-
-StringLiterals:
-  Enabled: false
-
-TrailingComma:
-  Enabled: false
-
-UnusedBlockArgument:
-  Enabled: false
-
-UnusedMethodArgument:
-  Enabled: false
-
-WhileUntilModifier:
-  Enabled: false
-
-WordArray:
-  Enabled: false

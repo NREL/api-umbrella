@@ -172,7 +172,7 @@ group :development, :test do
   gem "rspec-html-matchers", "~> 0.5.0"
 
   # Ruby lint/style checker
-  gem "rubocop", "~> 0.21.0"
+  gem "rubocop", "~> 0.24.1"
 
   # Code coverage testing
   gem "coveralls", "~> 0.7.0", :require => false

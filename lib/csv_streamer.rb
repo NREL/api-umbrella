@@ -15,7 +15,7 @@ class CsvStreamer
       @buffer << @headers
     end
 
-    while true
+    while(true) # rubocop:disable Lint/LiteralInCondition
       # Fetch this batch from elasticsearch.
       scroll = @server.request(:get, "_search/scroll", { :scroll => "10m", :scroll_id => @scroll_id }, nil, {}, :mashify => false)
       @scroll_id = scroll["_scroll_id"]
