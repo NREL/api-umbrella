@@ -1,3 +1,5 @@
+vcl 4.0;
+
 import std;
 
 backend default {
@@ -28,13 +30,13 @@ sub vcl_recv {
 
   # Remove the cookie if it's now empty, so simple stats cookies don't prevent caching.
   if(req.http.Cookie == "") {
-    remove req.http.Cookie;
+    unset req.http.Cookie;
   }
 
   # Remove the cookie for all static files, so they can always be returned from
   # the cache, even if the user has other cookies set.
   if(req.url ~ "\.(html|js|css|png|gif|jpg|jpeg)$") {
-    remove req.http.Cookie;
+    unset req.http.Cookie;
   }
 
   # Allow internal connections to bypass the cache for testing/debug purposes.
@@ -64,7 +66,7 @@ sub vcl_hash {
   }
 }
 
-sub vcl_fetch {
+sub vcl_backend_response {
   # Don't cache error pages.
   #
   # (While it might be tempting to cache error pages, this stemmed from a

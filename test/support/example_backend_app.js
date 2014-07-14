@@ -75,7 +75,21 @@ app.get('/compressible/:size', function(req, res) {
   res.end(randomstring.generate(size));
 });
 
-app.get('/compressible-chunked/:size', function(req, res) {
+app.get('/compressible-chunked/:chunks/:size', function(req, res) {
+  var contentType = (req.query.content_type === undefined) ? 'text/plain' : req.query.content_type;
+  var chunks = parseInt(req.params.chunks);
+  var size = parseInt(req.params.size);
+
+  res.set('Content-Type', contentType);
+  setTimeout(function() {
+    for(var i = 0; i < chunks; i++) {
+      res.write(randomstring.generate(size));
+    }
+    res.end();
+  }, 50);
+});
+
+app.get('/compressible-delayed-chunked/:size', function(req, res) {
   var size = parseInt(req.params.size);
   res.set('Content-Type', 'text/plain');
   res.write(randomstring.generate(size));

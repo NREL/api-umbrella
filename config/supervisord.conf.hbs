@@ -46,14 +46,14 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 
 [program:varnishlog]
-command=varnishlog -a -w {{log_dir}}/varnishncsa.log -n /tmp/api-umbrella
+command=varnishlog -a -w {{log_dir}}/varnish.log -n /tmp/api-umbrella
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 
 [program:varnishncsa]
-command=varnishncsa -a -f -w {{log_dir}}/varnishncsa.log -n /tmp/api-umbrella
+command=varnishncsa -a -w {{log_dir}}/varnishncsa.log -n /tmp/api-umbrella
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
