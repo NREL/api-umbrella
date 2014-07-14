@@ -10,3 +10,7 @@ before_script:
   - cp config/elasticsearch.yml.deploy config/elasticsearch.yml
 script:
   - bundle exec rake
+notifications:
+  email:
+    on_success: change
+    on_failure: always
