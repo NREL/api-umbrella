@@ -6,6 +6,13 @@ mongodb:
 redis:
   host: 127.0.0.1
   port: 50831
+elasticsearch:
+  hosts:
+    - "http://127.0.0.1:50208"
+  embedded_server_config:
+    path_data: /tmp/db/elasticsearch
+    http_port: 50208
+    transport_tcp_port: 50308
 router_global_rate_limits:
   ip_rate: "1000r/s"
   ip_burst: 1000
