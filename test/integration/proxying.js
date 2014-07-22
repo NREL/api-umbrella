@@ -616,16 +616,18 @@ describe('proxying', function() {
   });
 
   describe('timeouts', function() {
+    var httpOptions = { agentOptions: { maxSockets: 150  } };
+
     it('times out quickly if a backend is down', function(done) {
       this.timeout(500);
-      request.get('http://localhost:9080/down?api_key=' + this.apiKey, function(error, response) {
+      request.get('http://localhost:9080/down?api_key=' + this.apiKey, httpOptions, function(error, response) {
         response.statusCode.should.eql(502);
         done();
       });
     });
 
     it('behaves with 60-second connection timeouts', function(done) {
-      this.timeout(75000);
+      this.timeout(85000);
 
       var apiKey = this.apiKey;
 
@@ -635,10 +637,25 @@ describe('proxying', function() {
       // there's a better option, we'll run all these inside a single test in
       // parallel.
       async.parallel([
-        // times out after 60 seconds if a backend is non-respnosive
+        // times out after 60 seconds if a backend is non-responsive for GET
+        // requests
         function(callback) {
           var startTime = Date.now();
-          request.get('http://localhost:9080/delay/65000?api_key=' + apiKey, function(error, response) {
+          request.get('http://localhost:9080/delay/65000?api_key=' + apiKey, httpOptions, function(error, response) {
+            response.statusCode.should.eql(504);
+
+            var duration = Date.now() - startTime;
+            duration.should.be.greaterThan(60000);
+            duration.should.be.lessThan(65000);
+            callback();
+          });
+        },
+
+        // times out after 60 seconds if a backend is non-responsive for
+        // non-GET requests
+        function(callback) {
+          var startTime = Date.now();
+          request.post('http://localhost:9080/delay/65000?api_key=' + apiKey, httpOptions, function(error, response) {
             response.statusCode.should.eql(504);
 
             var duration = Date.now() - startTime;
@@ -651,7 +668,7 @@ describe('proxying', function() {
         // doesn't time out if a backend starts sending the request within 60
         // seconds
         function(callback) {
-          request.get('http://localhost:9080/delays/57000/65000?api_key=' + apiKey, function(error, response, body) {
+          request.get('http://localhost:9080/delays/57000/65000?api_key=' + apiKey, httpOptions, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('firstdone');
             callback();
@@ -661,7 +678,7 @@ describe('proxying', function() {
         // doesn't time out if a backend sends chunks at least once every 60
         // seconds
         function(callback) {
-          request.get('http://localhost:9080/delays/7000/65000?api_key=' + apiKey, function(error, response, body) {
+          request.get('http://localhost:9080/delays/7000/65000?api_key=' + apiKey, httpOptions, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('firstdone');
             callback();
@@ -671,10 +688,65 @@ describe('proxying', function() {
         // closes the response if the backend waits more than 60 seconds
         // between sending chunks
         function(callback) {
-          request.get('http://localhost:9080/delays/3000/65000?api_key=' + apiKey, function(error, response, body) {
+          request.get('http://localhost:9080/delays/3000/65000?api_key=' + apiKey, httpOptions, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('first');
             callback();
+          });
+        },
+
+        // only sends 1 request to the backend on timeouts for GET requests
+        //
+        // This is to ensure that no proxy in front of the backend makes
+        // multiple retry attempts when a request times out (since we don't
+        // want to duplicate requests if a backend is already struggling).
+        //
+        // FIXME: Currently failing in Varnish. No apparent way to disable this
+        // without completely disabling keep-alive (which I'm hesitant to do):
+        //
+        // https://www.varnish-cache.org/lists/pipermail/varnish-misc/2010-December/019538.html
+        // https://www.varnish-cache.org/lists/pipermail/varnish-dev/2012-November/007378.html
+        function(callback) {
+          global.getTimeoutBackendCallCount.should.eql(0);
+
+          request.get('http://localhost:9080/timeout?api_key=' + apiKey, httpOptions, function(error, response) {
+            response.statusCode.should.eql(504);
+
+            // Ensure that the backend has only been called once.
+            global.getTimeoutBackendCallCount.should.eql(1);
+
+            // Wait 10 seconds for any possible retry attempts that might be
+            // pending, and then ensure the backend has still only been called
+            // once.
+            setTimeout(function() {
+              global.getTimeoutBackendCallCount.should.eql(1);
+              callback();
+            }, 10000);
+          });
+        },
+
+        // only sends 1 request to the backend on timeouts for POST requests
+        //
+        // Same test as above, but ensure non-GET requests are behaving the
+        // same (no retry allowed). This is probably even more important for
+        // non-GET requests since duplicating POST requests could be harmful
+        // (multiple creates, updates, etc).
+        function(callback) {
+          global.postTimeoutBackendCallCount.should.eql(0);
+
+          request.post('http://localhost:9080/timeout?api_key=' + apiKey, httpOptions, function(error, response) {
+            response.statusCode.should.eql(504);
+
+            // Ensure that the backend has only been called once.
+            global.postTimeoutBackendCallCount.should.eql(1);
+
+            // Wait 10 seconds for any possible retry attempts that might be
+            // pending, and then ensure the backend has still only been called
+            // once.
+            setTimeout(function() {
+              global.postTimeoutBackendCallCount.should.eql(1);
+              callback();
+            }, 10000);
           });
         },
       ], done);

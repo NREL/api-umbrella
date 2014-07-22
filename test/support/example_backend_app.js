@@ -9,6 +9,9 @@ var bodyParser = require('body-parser'),
     url = require('url'),
     zlib = require('zlib');
 
+global.getTimeoutBackendCallCount = 0;
+global.postTimeoutBackendCallCount = 0;
+
 var app = express();
 
 app.use(bodyParser.raw());
@@ -110,14 +113,14 @@ app.get('/compressible-pre-gzip', function(req, res) {
   });
 });
 
-app.get('/delay/:milliseconds', function(req, res) {
+app.all('/delay/:milliseconds', function(req, res) {
   var time = parseInt(req.params.milliseconds);
   setTimeout(function() {
     res.end('done');
   }, time);
 });
 
-app.get('/delays/:delay1/:delay2', function(req, res) {
+app.all('/delays/:delay1/:delay2', function(req, res) {
   var delay1 = parseInt(req.params.delay1);
   var delay2 = parseInt(req.params.delay2);
 
@@ -128,6 +131,20 @@ app.get('/delays/:delay1/:delay2', function(req, res) {
   setTimeout(function() {
     res.end('done');
   }, delay2);
+});
+
+app.get('/timeout', function(req, res) {
+  global.getTimeoutBackendCallCount++;
+  setTimeout(function() {
+    res.end('done');
+  }, 65000);
+});
+
+app.post('/timeout', function(req, res) {
+  global.postTimeoutBackendCallCount++;
+  setTimeout(function() {
+    res.end('done');
+  }, 65000);
 });
 
 app.listen(9444);
