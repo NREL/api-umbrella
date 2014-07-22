@@ -151,6 +151,10 @@ http {
     # Don't buffer proxied requests to allow for streaming APIs.
     proxy_buffering off;
 
+    # If the backend only returns gzipped responses, decompress them as
+    # appropriate to meet the Accept headers of the current client.
+    gunzip on;
+
     location / {
       proxy_pass $http_x_api_umbrella_backend_scheme://api_umbrella_${http_x_api_umbrella_backend_id}_backend;
     }
