@@ -11,6 +11,13 @@ var bodyParser = require('body-parser'),
 
 global.getTimeoutBackendCallCount = 0;
 global.postTimeoutBackendCallCount = 0;
+global.cachableCallCounts = {};
+
+function incrementCachableCallCount(id) {
+  id = parseInt(id);
+  global.cachableCallCounts[id] = global.cachableCallCounts[id] || 0;
+  global.cachableCallCounts[id]++;
+}
 
 var app = express();
 
@@ -145,6 +152,35 @@ app.post('/timeout', function(req, res) {
   setTimeout(function() {
     res.end('done');
   }, 65000);
+});
+
+app.get('/cacheable-but-not/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+  res.end('done');
+});
+
+app.get('/cacheable-cache-control-max-age/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+  res.set('Cache-Control', 'max-age=60');
+  res.end('done');
+});
+
+app.get('/cacheable-cache-control-s-maxage/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+  res.set('Cache-Control', 's-maxage=60');
+  res.end('done');
+});
+
+app.get('/cacheable-cache-control-expires/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+  res.set('Expires', new Date(Date.now() + 60000).toUTCString());
+  res.end('done');
+});
+
+app.get('/cacheable-cache-control-max-age/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+  res.set('Surrogate-Control', 'max-age=60');
+  res.end('done');
 });
 
 app.listen(9444);
