@@ -33,7 +33,7 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="<%= "active" if(current_page.url == "/") %>"><%= link_to("Home", "/index.html", :relative => true) %></li>
-            <li class="<%= "active" if(current_page.url =~ %r{^/docs/}) %>"><%= link_to("Documentation", "/docs/index.html", :relative => true) %></li>
+            <li class="<%= "active" if(current_page.url =~ %r{^/docs/}) %>"><%= link_to("Documentation", "/docs/architecture.html", :relative => true) %></li>
           </ul>
         </div>
       </div>
