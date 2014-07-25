@@ -2,6 +2,8 @@
 
 API Umbrella Web provides the website frontend and web admin tool for the [API Umbrella](http://github.com/NREL/api-umbrella) project. API Umbrella Web is a Ruby on Rails web application.
 
+Issues for this project are [maintained here](https://github.com/NREL/api-umbrella/issues).  
+
 ## Usage
 
 See [Running API Umbrella]() for setup instructions.
