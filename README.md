@@ -2,6 +2,8 @@
 
 API Umbrella Router provides the necessary configuration to join together [API Umbrealla Gatekeeper](http://github.com/NREL/api-umbrella-gatekeeper) with other open source proxies. It is part of the [API Umbrella](http://github.com/NREL/api-umbrella) project.
 
+Issues for this project are [maintained here](https://github.com/NREL/api-umbrella/issues).  
+
 ## Overview
 
 The Router's role is to combine API Umbrella Gatekeeper with a load balancer (nginx) and a caching layer (Varnish).
