@@ -5,8 +5,7 @@ require('../test_helper');
 var _ = require('lodash'),
     async = require('async'),
     Factory = require('factory-lady'),
-    request = require('request'),
-    zlib = require('zlib');
+    request = require('request');
 
 describe('caching', function() {
   beforeEach(function(done) {
@@ -256,12 +255,7 @@ describe('caching', function() {
 
   it('delivers a cached gzip response when the request was first made with gzip', function(done) {
     var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
-    var options = _.merge({}, this.options, {
-      headers: {
-        'Accept-Encoding': 'gzip',
-      },
-      encoding: null,
-    });
+    var options = _.merge({}, this.options, { gzip: true });
 
     request.get(url, options, function(error, response, firstBody) {
       response.statusCode.should.eql(200);
@@ -271,79 +265,48 @@ describe('caching', function() {
         response.statusCode.should.eql(200);
         response.headers['content-encoding'].should.eql('gzip');
 
-        zlib.gunzip(firstBody, function(error, decodedFirstBody) {
-          should.not.exist(error);
-          zlib.gunzip(secondBody, function(error, decodedSecondBody) {
-            should.not.exist(error);
-            decodedFirstBody.toString().should.eql(decodedSecondBody.toString());
-            done();
-          });
-        });
+        firstBody.toString().should.eql(secondBody.toString());
+        done();
       });
     });
   });
 
   it('delivers a cached gzip response when the request was first made without gzip', function(done) {
     var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
-    var options = _.merge({}, this.options, {
-      headers: {
-        'Accept-Encoding': '',
-      },
-    });
+    var options = _.merge({}, this.options, { gzip: false });
 
     request.get(url, options, function(error, response, firstBody) {
       response.statusCode.should.eql(200);
       should.not.exist(response.headers['content-encoding']);
 
-      _.merge(options, {
-        headers: {
-          'Accept-Encoding': 'gzip',
-        },
-        encoding: null,
-      });
+      _.merge(options, { gzip: true });
 
       request.get(url, options, function(error, response, secondBody) {
         response.statusCode.should.eql(200);
         response.headers['content-encoding'].should.eql('gzip');
 
-        zlib.gunzip(secondBody, function(error, decodedSecondBody) {
-          should.not.exist(error);
-          firstBody.should.eql(decodedSecondBody.toString());
-          done();
-        });
+        firstBody.toString().should.eql(secondBody.toString());
+        done();
       });
     });
   });
 
   it('delivers a cached non-gzipped response when the request was first made with gzip', function(done) {
     var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
-    var options = _.merge({}, this.options, {
-      headers: {
-        'Accept-Encoding': 'gzip',
-      },
-      encoding: null,
-    });
+    var options = _.merge({}, this.options, { gzip: true });
 
     request.get(url, options, function(error, response, firstBody) {
       response.statusCode.should.eql(200);
       response.headers['content-encoding'].should.eql('gzip');
 
-      _.merge(options, {
-        headers: {
-          'Accept-Encoding': '',
-        },
-        encoding: undefined,
-      });
+      _.merge(options, { gzip: false });
 
       request.get(url, options, function(error, response, secondBody) {
         response.statusCode.should.eql(200);
         should.not.exist(response.headers['content-encoding']);
 
-        zlib.gunzip(firstBody, function(error, decodedFirstBody) {
-          should.not.exist(error);
-          decodedFirstBody.toString().should.eql(secondBody.toString());
-          done();
-        });
+        firstBody.toString().should.eql(secondBody.toString());
+        done();
       });
     });
   });

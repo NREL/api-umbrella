@@ -370,21 +370,17 @@ describe('proxying', function() {
   describe('gzip', function() {
     describe('backend returning non-gzipped content', function() {
       it('gzips the response when the content length is greather than or equal to 1000', function(done) {
-        var options = { headers: { 'Accept-Encoding': 'gzip' }, encoding: null };
+        var options = { gzip: true };
         request.get('http://localhost:9080/compressible/1000?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           response.headers['content-encoding'].should.eql('gzip');
-          body.toString().length.should.be.lessThan(1000);
-          zlib.gunzip(body, function(error, decodedBody) {
-            should.not.exist(error);
-            decodedBody.toString().length.should.eql(1000);
-            done();
-          });
+          body.toString().length.should.eql(1000);
+          done();
         });
       });
 
       it('does not gzip the response when the content length is less than 1000', function(done) {
-        var options = { headers: { 'Accept-Encoding': 'gzip' }, encoding: null };
+        var options = { gzip: true };
         request.get('http://localhost:9080/compressible/999?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           should.not.exist(response.headers['content-encoding']);
@@ -394,20 +390,17 @@ describe('proxying', function() {
       });
 
       it('gzips chunked responses of any size', function(done) {
-        var options = { headers: { 'Accept-Encoding': 'gzip' }, encoding: null };
+        var options = { gzip: true };
         request.get('http://localhost:9080/compressible-delayed-chunked/5?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           response.headers['content-encoding'].should.eql('gzip');
-          zlib.gunzip(body, function(error, decodedBody) {
-            should.not.exist(error);
-            decodedBody.toString().length.should.eql(15);
-            done();
-          });
+          body.toString().length.should.eql(15);
+          done();
         });
       });
 
       it('returns unzipped response when unsupported', function(done) {
-        var options = { headers: { 'Accept-Encoding': '' }, encoding: null };
+        var options = { gzip: false };
         request.get('http://localhost:9080/compressible/1000?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           should.not.exist(response.headers['content-encoding']);
@@ -419,20 +412,17 @@ describe('proxying', function() {
 
     describe('backend returning pre-gzipped content', function() {
       it('returns gzipped response when supported', function(done) {
-        var options = { headers: { 'Accept-Encoding': 'gzip' }, encoding: null };
+        var options = { gzip: true };
         request.get('http://localhost:9080/compressible-pre-gzip?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           response.headers['content-encoding'].should.eql('gzip');
-          zlib.gunzip(body, function(error, decodedBody) {
-            should.not.exist(error);
-            decodedBody.toString().should.eql('Hello Small World');
-            done();
-          });
+          body.toString().should.eql('Hello Small World');
+          done();
         });
       });
 
       it('returns unzipped response when unsupported', function(done) {
-        var options = { headers: { 'Accept-Encoding': '' }, encoding: null };
+        var options = { gzip: false };
         request.get('http://localhost:9080/compressible-pre-gzip?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           should.not.exist(response.headers['content-encoding']);
@@ -464,14 +454,13 @@ describe('proxying', function() {
               api_key: this.apiKey,
               content_type: mime,
             },
-            headers: { 'Accept-Encoding': 'gzip' },
-            encoding: null,
+            gzip: true,
           };
 
           request(options, function(error, response, body) {
             response.statusCode.should.eql(200);
             response.headers['content-encoding'].should.eql('gzip');
-            body.toString().length.should.be.lessThan(1000);
+            body.toString().length.should.eql(1000);
             done();
           });
         });
@@ -493,8 +482,7 @@ describe('proxying', function() {
               api_key: this.apiKey,
               content_type: mime,
             },
-            headers: { 'Accept-Encoding': 'gzip' },
-            encoding: null,
+            gzip: true,
           };
 
           request(options, function(error, response, body) {
@@ -511,8 +499,7 @@ describe('proxying', function() {
       it('streams back small chunks directly as gzipped chunks', function(done) {
         var options = {
           url: 'http://localhost:9080/compressible-delayed-chunked/5?api_key=' + this.apiKey,
-          headers: { 'Accept-Encoding': 'gzip' },
-          encoding: null,
+          gzip: true,
         };
 
         shared.chunkedRequestDetails(options, function(response, data) {
@@ -608,7 +595,7 @@ describe('proxying', function() {
       // this problem reproducible. So test everything from 252850 - 253850
       // bytes.
       var sizes = _.times(1000, function(index) { return index + 252850; });
-      var options = { headers: { 'Accept-Encoding': 'gzip' }, encoding: null, agentOptions: { maxSockets: 150  } };
+      var options = { gzip: true, agentOptions: { maxSockets: 150  } };
       async.eachLimit(sizes, 100, function(size, callback) {
         request.get('http://localhost:9080/compressible-chunked/1/' + size + '?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
@@ -618,11 +605,8 @@ describe('proxying', function() {
           //
           //response.headers['transfer-encoding'].should.eql('chunked');
           //should.not.exist(response.headers['content-length']);
-          zlib.gunzip(body, function(error, decodedBody) {
-            should.not.exist(error);
-            decodedBody.toString().length.should.eql(size);
-            callback();
-          });
+          body.toString().length.should.eql(size);
+          callback();
         });
       }.bind(this), done);
     });
