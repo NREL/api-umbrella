@@ -265,6 +265,19 @@ describe('proxying', function() {
         });
       });
     });
+
+    describe('disallowed', function() {
+      it('returns 405 not allowed error for TRACE requests', function(done) {
+        var curl = new Curler();
+        curl.request({
+          method: 'TRACE',
+          url: 'http://localhost:9080/info/?api_key=' + this.apiKey,
+        }, function(error, response) {
+          response.statusCode.should.eql(405);
+          done();
+        });
+      });
+    });
   });
 
   describe('server-side keep alive', function() {
@@ -707,19 +720,19 @@ describe('proxying', function() {
         // https://www.varnish-cache.org/lists/pipermail/varnish-misc/2010-December/019538.html
         // https://www.varnish-cache.org/lists/pipermail/varnish-dev/2012-November/007378.html
         function(callback) {
-          global.getTimeoutBackendCallCount.should.eql(0);
+          should.not.exist(global.backendCallCounts['get-timeout']);
 
           request.get('http://localhost:9080/timeout?api_key=' + apiKey, httpOptions, function(error, response) {
             response.statusCode.should.eql(504);
 
             // Ensure that the backend has only been called once.
-            global.getTimeoutBackendCallCount.should.eql(1);
+            global.backendCallCounts['get-timeout'].should.eql(1);
 
             // Wait 10 seconds for any possible retry attempts that might be
             // pending, and then ensure the backend has still only been called
             // once.
             setTimeout(function() {
-              global.getTimeoutBackendCallCount.should.eql(1);
+              global.backendCallCounts['get-timeout'].should.eql(1);
               callback();
             }, 10000);
           });
@@ -732,19 +745,19 @@ describe('proxying', function() {
         // non-GET requests since duplicating POST requests could be harmful
         // (multiple creates, updates, etc).
         function(callback) {
-          global.postTimeoutBackendCallCount.should.eql(0);
+          should.not.exist(global.backendCallCounts['post-timeout']);
 
           request.post('http://localhost:9080/timeout?api_key=' + apiKey, httpOptions, function(error, response) {
             response.statusCode.should.eql(504);
 
             // Ensure that the backend has only been called once.
-            global.postTimeoutBackendCallCount.should.eql(1);
+            global.backendCallCounts['post-timeout'].should.eql(1);
 
             // Wait 10 seconds for any possible retry attempts that might be
             // pending, and then ensure the backend has still only been called
             // once.
             setTimeout(function() {
-              global.postTimeoutBackendCallCount.should.eql(1);
+              global.backendCallCounts['post-timeout'].should.eql(1);
               callback();
             }, 10000);
           });

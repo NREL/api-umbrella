@@ -9,14 +9,15 @@ var bodyParser = require('body-parser'),
     url = require('url'),
     zlib = require('zlib');
 
-global.getTimeoutBackendCallCount = 0;
-global.postTimeoutBackendCallCount = 0;
-global.cachableCallCounts = {};
+global.backendCallCounts = {};
 
 function incrementCachableCallCount(id) {
-  id = parseInt(id);
-  global.cachableCallCounts[id] = global.cachableCallCounts[id] || 0;
-  global.cachableCallCounts[id]++;
+  global.backendCallCounts[id] = global.backendCallCounts[id] || 0;
+  global.backendCallCounts[id]++;
+}
+
+function uniqueOutput() {
+  return process.hrtime().join('-') + '-' + Math.random();
 }
 
 var app = express();
@@ -141,46 +142,80 @@ app.all('/delays/:delay1/:delay2', function(req, res) {
 });
 
 app.get('/timeout', function(req, res) {
-  global.getTimeoutBackendCallCount++;
+  incrementCachableCallCount('get-timeout');
   setTimeout(function() {
     res.end('done');
   }, 65000);
 });
 
 app.post('/timeout', function(req, res) {
-  global.postTimeoutBackendCallCount++;
+  incrementCachableCallCount('post-timeout');
   setTimeout(function() {
     res.end('done');
   }, 65000);
 });
 
-app.get('/cacheable-but-not/:id', function(req, res) {
-  incrementCachableCallCount(req.params.id);
-  res.end('done');
+app.all('/cacheable-but-not/:id', function(req, res) {
+  res.end(uniqueOutput());
 });
 
-app.get('/cacheable-cache-control-max-age/:id', function(req, res) {
+app.all('/cacheable-thundering-herd/:id', function(req, res) {
   incrementCachableCallCount(req.params.id);
+
+  setTimeout(function() {
+    res.set('Cache-Control', 'max-age=60');
+    res.end(uniqueOutput());
+  }, 1000);
+});
+
+app.all('/cacheable-but-no-explicit-cache-thundering-herd/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+
+  setTimeout(function() {
+    res.set('Cache-Control', 'max-age=0, private, must-revalidate');
+    res.end(uniqueOutput());
+  }, 1000);
+});
+
+app.all('/cacheable-but-cache-forbidden-thundering-herd/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+
+  setTimeout(function() {
+    res.set('Cache-Control', 'max-age=0, private, must-revalidate');
+    res.end(uniqueOutput());
+  }, 1000);
+});
+
+app.all('/cacheable-cache-control-max-age/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
-  res.end('done');
+  res.end(uniqueOutput());
 });
 
-app.get('/cacheable-cache-control-s-maxage/:id', function(req, res) {
-  incrementCachableCallCount(req.params.id);
+app.all('/cacheable-cache-control-s-maxage/:id', function(req, res) {
   res.set('Cache-Control', 's-maxage=60');
-  res.end('done');
+  res.end(uniqueOutput());
 });
 
-app.get('/cacheable-cache-control-expires/:id', function(req, res) {
-  incrementCachableCallCount(req.params.id);
+app.all('/cacheable-expires/:id', function(req, res) {
   res.set('Expires', new Date(Date.now() + 60000).toUTCString());
-  res.end('done');
+  res.end(uniqueOutput());
 });
 
-app.get('/cacheable-cache-control-max-age/:id', function(req, res) {
-  incrementCachableCallCount(req.params.id);
-  res.set('Surrogate-Control', 'max-age=60');
-  res.end('done');
+app.all('/cacheable-expires-0/:id', function(req, res) {
+  res.set('Expires', new Date(Date.now() + 60000).toUTCString());
+  res.end(uniqueOutput());
 });
+
+app.all('/cacheable-surrogate-control-max-age/:id', function(req, res) {
+  res.set('Surrogate-Control', 'max-age=60');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-compressible/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
 
 app.listen(9444);

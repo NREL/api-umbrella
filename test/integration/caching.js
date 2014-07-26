@@ -3,8 +3,10 @@
 require('../test_helper');
 
 var _ = require('lodash'),
+    async = require('async'),
     Factory = require('factory-lady'),
-    request = require('request');
+    request = require('request'),
+    zlib = require('zlib');
 
 describe('caching', function() {
   beforeEach(function(done) {
@@ -22,33 +24,85 @@ describe('caching', function() {
 
   function actsLikeNotCacheable(baseUrl, options, done) {
     var id = _.uniqueId();
-    request.get(baseUrl + id, options, function(error, response) {
-      response.statusCode.should.eql(200);
-      response.headers['age'].should.eql('0');
-      global.cachableCallCounts[id].should.eql(1);
+    options = _.merge({
+      method: 'GET',
+    }, options);
 
-      request.get(baseUrl + id, options, function(error, response) {
-        response.statusCode.should.eql(200);
+    request(baseUrl + id, options, function(error, response, firstBody) {
+      response.statusCode.should.eql(200);
+      if(response.headers['age']) {
         response.headers['age'].should.eql('0');
-        global.cachableCallCounts[id].should.eql(2);
+      } else {
+        should.not.exist(response.headers['age']);
+      }
+
+      request.get(baseUrl + id, options, function(error, response, secondBody) {
+        response.statusCode.should.eql(200);
+        if(response.headers['age']) {
+          response.headers['age'].should.eql('0');
+        } else {
+          should.not.exist(response.headers['age']);
+        }
+
+        firstBody.should.not.eql(secondBody);
 
         done();
       });
     });
   }
 
-  function actsLikeCacheable(url, options, done) {
+  function actsLikeCacheable(baseUrl, options, done) {
     var id = _.uniqueId();
-    request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, options, function(error, response) {
+    request.get(baseUrl + id, options, function(error, response, firstBody) {
       response.statusCode.should.eql(200);
-      global.cachableCallCounts[id].should.eql(1);
 
-      request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, options, function(error, response) {
+      request.get(baseUrl + id, options, function(error, response, secondBody) {
         response.statusCode.should.eql(200);
-        global.cachableCallCounts[id].should.eql(1);
+        firstBody.should.eql(secondBody);
 
         done();
       });
+    });
+  }
+
+  function actsLikeThunderingHerd(baseUrl, options, done) {
+    var id = _.uniqueId().toString();
+    var url = baseUrl + id;
+    options = _.merge({
+      method: 'GET',
+    }, options, { agentOptions: { maxSockets: 150 } });
+
+    async.times(50, function(index, callback) {
+      request(url, options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        callback(null, body);
+      });
+    }, function(error, bodies) {
+      global.backendCallCounts[id].should.eql(50);
+      bodies.length.should.eql(50);
+      _.uniq(bodies).length.should.eql(50);
+      done();
+    });
+
+  }
+
+  function actsLikeNotThunderingHerd(baseUrl, options, done) {
+    var id = _.uniqueId().toString();
+    var url = baseUrl + id;
+    options = _.merge({
+      method: 'GET',
+    }, options, { agentOptions: { maxSockets: 150 } });
+
+    async.times(50, function(index, callback) {
+      request(url, options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        callback(null, body);
+      });
+    }, function(error, bodies) {
+      global.backendCallCounts[id].should.eql(1);
+      bodies.length.should.eql(50);
+      _.uniq(bodies).length.should.eql(1);
+      done();
     });
   }
 
@@ -70,6 +124,24 @@ describe('caching', function() {
 
   it('acknowledges surrogate-control max-age headers', function(done) {
     actsLikeCacheable('http://localhost:9080/cacheable-surrogate-control-max-age/', this.options, done);
+  });
+
+  describe('cacheable http methods', function() {
+    ['GET', 'HEAD'].forEach(function(method) {
+      it('allows caching for ' + method + ' requests', function(done) {
+        var options = _.merge({ method: method }, this.options);
+        actsLikeCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
+      });
+    });
+  });
+
+  describe('non-cacheable http methods', function() {
+    ['POST', 'PUT', 'PATCH', 'OPTIONS', 'DELETE'].forEach(function(method) {
+      it('does not allow caching for ' + method + ' requests', function(done) {
+        var options = _.merge({ method: method }, this.options);
+        actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
+      });
+    });
   });
 
   it('increases the age in the response over time for cached responses', function(done) {
@@ -104,25 +176,64 @@ describe('caching', function() {
     }.bind(this));
   });
 
-  it('prevents thundering herds for potentially cacheable requests', function() {
+  it('prevents thundering herds for cacheable requests', function(done) {
+    this.timeout(3000);
+    actsLikeNotThunderingHerd('http://localhost:9080/cacheable-thundering-herd/', this.options, done);
   });
 
-  it('allows thundering herds for non-cacheable requests', function() {
+  it('allows thundering herds for potentially cacheable requests that explicitly forbid caching', function(done) {
+    this.timeout(5000);
+    actsLikeThunderingHerd('http://localhost:9080/cacheable-but-cache-forbidden-thundering-herd/', this.options, done);
   });
 
-  it('does not cache requests with authorization header', function() {
+  it('allows thundering herds for potentially cacheable requests that have no explicit cache control', function(done) {
+    this.timeout(5000);
+    actsLikeThunderingHerd('http://localhost:9080/cacheable-but-no-explicit-cache-thundering-herd/', this.options, done);
+  });
+
+  it('allows thundering herds for non-cacheable requests', function(done) {
+    this.timeout(3000);
+    var options = _.merge({ method: 'POST' }, this.options);
+    actsLikeThunderingHerd('http://localhost:9080/cacheable-thundering-herd/', options, done);
+  });
+
+  it('does not cache requests with authorization header', function(done) {
+    var options = _.merge({
+      headers: {
+        'Authorization': 'foo',
+      },
+    }, this.options);
+    actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
   });
 
   it('does cache requests with public cookies', function() {
   });
 
-  it('does not cache requests with private cookies', function() {
+  it('does not cache requests with private/unknown cookies', function(done) {
+    var options = _.merge({
+      headers: {
+        'Cookie': 'foo=bar',
+      },
+    }, this.options);
+    actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
   });
 
-  it('does not cache requests with public and private cookies', function() {
+  it('does not cache requests with public and private cookies', function(done) {
+    var options = _.merge({
+      headers: {
+        'Cookie': 'foo=bar; __utma=blah;',
+      },
+    }, this.options);
+    actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
   });
 
-  it('ignores client no-cache headers on the request', function() {
+  it('ignores client no-cache headers on the request', function(done) {
+    var options = _.merge({
+      headers: {
+        'Cache-Control': 'no-cache',
+      },
+    }, this.options);
+    actsLikeCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
   });
 
   it('does not cache responses that set cookies', function() {
@@ -143,16 +254,120 @@ describe('caching', function() {
   it('delivers the same cached response for users with different api keys (api keys are not part of the cache key url)', function() {
   });
 
-  it('delivers a cached gzip response when the request was first made with gzip', function() {
+  it('delivers a cached gzip response when the request was first made with gzip', function(done) {
+    var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
+    var options = _.merge({}, this.options, {
+      headers: {
+        'Accept-Encoding': 'gzip',
+      },
+      encoding: null,
+    });
+
+    request.get(url, options, function(error, response, firstBody) {
+      response.statusCode.should.eql(200);
+      response.headers['content-encoding'].should.eql('gzip');
+
+      request.get(url, options, function(error, response, secondBody) {
+        response.statusCode.should.eql(200);
+        response.headers['content-encoding'].should.eql('gzip');
+
+        zlib.gunzip(firstBody, function(error, decodedFirstBody) {
+          should.not.exist(error);
+          zlib.gunzip(secondBody, function(error, decodedSecondBody) {
+            should.not.exist(error);
+            decodedFirstBody.toString().should.eql(decodedSecondBody.toString());
+            done();
+          });
+        });
+      });
+    });
   });
 
-  it('delivers a cached gzip response when the request was first made without gzip', function() {
+  it('delivers a cached gzip response when the request was first made without gzip', function(done) {
+    var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
+    var options = _.merge({}, this.options, {
+      headers: {
+        'Accept-Encoding': '',
+      },
+    });
+
+    request.get(url, options, function(error, response, firstBody) {
+      response.statusCode.should.eql(200);
+      should.not.exist(response.headers['content-encoding']);
+
+      _.merge(options, {
+        headers: {
+          'Accept-Encoding': 'gzip',
+        },
+        encoding: null,
+      });
+
+      request.get(url, options, function(error, response, secondBody) {
+        response.statusCode.should.eql(200);
+        response.headers['content-encoding'].should.eql('gzip');
+
+        zlib.gunzip(secondBody, function(error, decodedSecondBody) {
+          should.not.exist(error);
+          firstBody.should.eql(decodedSecondBody.toString());
+          done();
+        });
+      });
+    });
   });
 
-  it('delivers a cached non-gzipped response when the request was first made wth gzip', function() {
+  it('delivers a cached non-gzipped response when the request was first made with gzip', function(done) {
+    var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
+    var options = _.merge({}, this.options, {
+      headers: {
+        'Accept-Encoding': 'gzip',
+      },
+      encoding: null,
+    });
+
+    request.get(url, options, function(error, response, firstBody) {
+      response.statusCode.should.eql(200);
+      response.headers['content-encoding'].should.eql('gzip');
+
+      _.merge(options, {
+        headers: {
+          'Accept-Encoding': '',
+        },
+        encoding: undefined,
+      });
+
+      request.get(url, options, function(error, response, secondBody) {
+        response.statusCode.should.eql(200);
+        should.not.exist(response.headers['content-encoding']);
+
+        zlib.gunzip(firstBody, function(error, decodedFirstBody) {
+          should.not.exist(error);
+          decodedFirstBody.toString().should.eql(secondBody.toString());
+          done();
+        });
+      });
+    });
   });
 
-  it('delivers a cached non-gzipped response when the request was first made without gzip', function() {
+  it('delivers a cached non-gzipped response when the request was first made without gzip', function(done) {
+    var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
+    var options = _.merge({}, this.options, {
+      headers: {
+        'Accept-Encoding': '',
+      },
+    });
+
+    request.get(url, options, function(error, response, firstBody) {
+      response.statusCode.should.eql(200);
+      should.not.exist(response.headers['content-encoding']);
+
+      request.get(url, options, function(error, response, secondBody) {
+        response.statusCode.should.eql(200);
+        should.not.exist(response.headers['content-encoding']);
+
+        firstBody.toString().should.eql(secondBody.toString());
+        done();
+      });
+    });
   });
 
   it('normalizes gzip headers', function() {
