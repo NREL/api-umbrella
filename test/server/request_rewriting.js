@@ -679,8 +679,6 @@ describe('request rewriting', function() {
       }.bind(this));
     });
 
-
-
     it('removes only the analytics cookies when other cookies are present', function(done) {
       var options = {
         headers: {
