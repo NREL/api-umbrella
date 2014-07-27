@@ -612,6 +612,23 @@ describe('proxying', function() {
     });
   });
 
+  describe('cookies', function() {
+    it('strips analytics cookies', function(done) {
+      var options = {
+        headers: {
+          'Cookie': '__utma=foo; foo=bar; _ga=test; moo=boo',
+        },
+      };
+
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.headers['cookie'].should.eql('foo=bar; moo=boo');
+        done();
+      });
+    });
+  });
+
   describe('timeouts', function() {
     var httpOptions = { agentOptions: { maxSockets: 150  } };
 

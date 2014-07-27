@@ -196,6 +196,11 @@ app.all('/cacheable-cache-control-s-maxage/:id', function(req, res) {
   res.end(uniqueOutput());
 });
 
+app.all('/cacheable-cache-control-case-insensitive/:id', function(req, res) {
+  res.set('CAcHE-cONTROL', 'max-age=60');
+  res.end(uniqueOutput());
+});
+
 app.all('/cacheable-expires/:id', function(req, res) {
   res.set('Expires', new Date(Date.now() + 60000).toUTCString());
   res.end(uniqueOutput());
@@ -211,11 +216,21 @@ app.all('/cacheable-surrogate-control-max-age/:id', function(req, res) {
   res.end(uniqueOutput());
 });
 
+app.all('/cacheable-surrogate-control-case-insensitive/:id', function(req, res) {
+  res.set('SURrOGATE-CONtROL', 'max-age=60');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-surrogate-control-and-cache-control/:id', function(req, res) {
+  res.set('Surrogate-Control', 'max-age=60');
+  res.set('Cache-Control', 'max-age=0, private, must-revalidate');
+  res.end(uniqueOutput());
+});
+
 app.all('/cacheable-compressible/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
   res.set('Content-Type', 'text/plain');
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
-
 
 app.listen(9444);

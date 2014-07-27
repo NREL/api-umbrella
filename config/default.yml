@@ -63,6 +63,10 @@ router_global_rate_limits:
   ip_rate_size: 8m
   ip_connections: 50
   ip_connections_size: 5m
+strip_cookies:
+  - ^__utm.*$
+  - ^_ga$
+  - ^is_returning$
 apiSettings:
   rate_limits:
     - duration: 1000

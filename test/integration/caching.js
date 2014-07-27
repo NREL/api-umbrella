@@ -82,7 +82,6 @@ describe('caching', function() {
       _.uniq(bodies).length.should.eql(50);
       done();
     });
-
   }
 
   function actsLikeNotThunderingHerd(baseUrl, options, done) {
@@ -117,12 +116,40 @@ describe('caching', function() {
     actsLikeCacheable('http://localhost:9080/cacheable-cache-control-s-maxage/', this.options, done);
   });
 
+  it('acknowledges cache-control headers case insensitively', function(done) {
+    actsLikeCacheable('http://localhost:9080/cacheable-cache-control-case-insensitive/', this.options, done);
+  });
+
   it('acknowledges expires headers', function(done) {
     actsLikeCacheable('http://localhost:9080/cacheable-expires/', this.options, done);
   });
 
   it('acknowledges surrogate-control max-age headers', function(done) {
     actsLikeCacheable('http://localhost:9080/cacheable-surrogate-control-max-age/', this.options, done);
+  });
+
+  it('acknowledges surrogate-control headers case insensitively', function(done) {
+    actsLikeCacheable('http://localhost:9080/cacheable-surrogate-control-case-insensitive/', this.options, done);
+  });
+
+  // FIXME: Currently failing in Varnish. Need to likely change how the
+  // Surrogate-Control header gets applied.
+  it('surrogate-control headers take precedence over cache-control headers', function(done) {
+    actsLikeCacheable('http://localhost:9080/cacheable-surrogate-control-and-cache-control/', this.options, done);
+  });
+
+  it('does not return surrogate-control headers to the client', function(done) {
+    request.get('http://localhost:9080/cacheable-surrogate-control-max-age/' + _.uniqueId(), this.options, function(error, response) {
+      should.not.exist(response.headers['surrogate-control']);
+      done();
+    });
+  });
+
+  it('surrogate-control headers do not interfere with cache-control headers being returned', function(done) {
+    request.get('http://localhost:9080/cacheable-surrogate-control-and-cache-control/' + _.uniqueId(), this.options, function(error, response) {
+      response.headers['cache-control'].should.eql('max-age=0, private, must-revalidate');
+      done();
+    });
   });
 
   describe('cacheable http methods', function() {
@@ -205,10 +232,16 @@ describe('caching', function() {
     actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
   });
 
-  it('does cache requests with public cookies', function() {
+  it('does cache requests with analytics cookies', function(done) {
+    var options = _.merge({
+      headers: {
+        'Cookie': '__utma=foo',
+      },
+    }, this.options);
+    actsLikeCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
   });
 
-  it('does not cache requests with private/unknown cookies', function(done) {
+  it('does not cache requests with unknown cookies', function(done) {
     var options = _.merge({
       headers: {
         'Cookie': 'foo=bar',
@@ -217,10 +250,10 @@ describe('caching', function() {
     actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
   });
 
-  it('does not cache requests with public and private cookies', function(done) {
+  it('does not cache requests with analytics and unknown cookies', function(done) {
     var options = _.merge({
       headers: {
-        'Cookie': 'foo=bar; __utma=blah;',
+        'Cookie': 'foo=bar; __utma=foo;',
       },
     }, this.options);
     actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
