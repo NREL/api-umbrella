@@ -648,6 +648,82 @@ describe('request rewriting', function() {
     });
   });
 
+  describe('cookie stripping', function() {
+    shared.runServer();
+
+    it('removes the cookie completely when only a single analytics cookie is present', function(done) {
+      var options = {
+        headers: {
+          'Cookie': '__utma=foo'
+        }
+      };
+
+      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+        var data = JSON.parse(body);
+        should.not.exist(data.headers['cookie']);
+        done();
+      }.bind(this));
+    });
+
+    it('removes the cookie completely when only multiple analytics cookies are present', function(done) {
+      var options = {
+        headers: {
+          'Cookie': '__utma=foo; __utmz=bar; _ga=foo'
+        }
+      };
+
+      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+        var data = JSON.parse(body);
+        should.not.exist(data.headers['cookie']);
+        done();
+      }.bind(this));
+    });
+
+
+
+    it('removes only the analytics cookies when other cookies are present', function(done) {
+      var options = {
+        headers: {
+          'Cookie': '__utma=foo; moo=boo; __utmz=bar; foo=bar; _ga=foo'
+        }
+      };
+
+      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers['cookie'].should.eql('moo=boo; foo=bar');
+        done();
+      }.bind(this));
+    });
+
+    it('parses cookies with variable whitespace between entries', function(done) {
+      var options = {
+        headers: {
+          'Cookie': '__utma=foo;moo=boo;    __utmz=bar;    foo=bar;_ga=foo'
+        }
+      };
+
+      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers['cookie'].should.eql('moo=boo; foo=bar');
+        done();
+      }.bind(this));
+    });
+
+    it('leaves the cookie alone when no analytics cookies are present', function(done) {
+      var options = {
+        headers: {
+          'Cookie': 'foo=bar; moo=boo'
+        }
+      };
+
+      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers['cookie'].should.eql('foo=bar; moo=boo');
+        done();
+      }.bind(this));
+    });
+  });
+
   // These tests probably belong in the router project, once we get the full
   // stack more testable there (so we can actually verify Varnish works):
   // https://github.com/NREL/api-umbrella/issues/28

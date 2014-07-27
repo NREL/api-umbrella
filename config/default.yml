@@ -40,6 +40,10 @@ router_global_rate_limits:
   ip_rate: "100r/s"
   ip_burst: 100
   ip_connections: 50
+strip_cookies:
+  - ^__utm.*$
+  - ^_ga$
+  - ^is_returning$
 apiSettings:
   rate_limits:
     - duration: 1000
