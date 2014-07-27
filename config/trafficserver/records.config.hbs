@@ -1,0 +1,212 @@
+##############################################################################
+# *NOTE*: All options covered in this file should be documented in the docs:
+#
+#    https://docs.trafficserver.apache.org/en/latest/reference/configuration/records.config.en.html
+##############################################################################
+
+##############################################################################
+# Thread configurations. Docs:
+#    https://docs.trafficserver.apache.org/records.config#proxy-config-exec-thread-autoconfig
+##############################################################################
+CONFIG proxy.config.exec_thread.autoconfig INT 1
+CONFIG proxy.config.exec_thread.autoconfig.scale FLOAT 1.5
+CONFIG proxy.config.exec_thread.limit INT 2
+CONFIG proxy.config.ssl.number.threads INT 0
+CONFIG proxy.config.accept_threads INT 1
+CONFIG proxy.config.task_threads INT 2
+CONFIG proxy.config.cache.threads_per_disk INT 8
+    # https://docs.trafficserver.apache.org/records.config#proxy-config-exec-thread-affinity
+CONFIG proxy.config.exec_thread.affinity INT 0
+
+##############################################################################
+# Specify server addresses and ports to bind for HTTP and HTTPS. Docs:
+#    https://docs.trafficserver.apache.org/records.config#proxy-config-http-server-ports
+##############################################################################
+CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
+
+##############################################################################
+# Via: headers. Docs:
+#     https://docs.trafficserver.apache.org/records.config#proxy-config-http-insert-response-via-str
+##############################################################################
+CONFIG proxy.config.http.insert_request_via_str INT 1
+CONFIG proxy.config.http.insert_response_via_str INT 0
+
+##############################################################################
+# Parent proxy configuration, in addition to these settings also see parent.config. Docs:
+#    https://docs.trafficserver.apache.org/records.config#parent-proxy-configuration
+#    https://docs.trafficserver.apache.org/en/latest/reference/configuration/parent.config.en.html
+##############################################################################
+CONFIG proxy.config.http.parent_proxy_routing_enable INT 0
+CONFIG proxy.config.http.parent_proxy.retry_time INT 300
+CONFIG proxy.config.http.parent_proxy.connect_attempts_timeout INT 30
+CONFIG proxy.config.http.forward.proxy_auth_to_parent INT 0
+
+##############################################################################
+# HTTP connection timeouts (secs). Docs:
+#    https://docs.trafficserver.apache.org/records.config#http-connection-timeouts
+##############################################################################
+CONFIG proxy.config.http.keep_alive_no_activity_timeout_in INT 115
+CONFIG proxy.config.http.keep_alive_no_activity_timeout_out INT 120
+CONFIG proxy.config.http.transaction_no_activity_timeout_in INT 60 # Increase timeout to 60 seconds to match other pieces of the stack.
+CONFIG proxy.config.http.transaction_no_activity_timeout_out INT 60 # Increase timeout to 60 seconds to match other pieces of the stack.
+CONFIG proxy.config.http.transaction_active_timeout_in INT 900
+CONFIG proxy.config.http.transaction_active_timeout_out INT 0
+CONFIG proxy.config.http.accept_no_activity_timeout INT 120
+CONFIG proxy.config.net.default_inactivity_timeout INT 86400
+
+##############################################################################
+# Origin server connect attempts. Docs:
+#    https://docs.trafficserver.apache.org/records.config#origin-server-connect-attempts
+##############################################################################
+CONFIG proxy.config.http.connect_attempts_max_retries INT 0 # Don't retry requests when a server is not responding (we don't want to overwhelm servers that may already be struggling). 
+CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 3
+CONFIG proxy.config.http.connect_attempts_rr_retries INT 3
+CONFIG proxy.config.http.connect_attempts_timeout INT 30
+CONFIG proxy.config.http.post_connect_attempts_timeout INT 1800
+CONFIG proxy.config.http.down_server.cache_time INT 300
+CONFIG proxy.config.http.down_server.abort_threshold INT 10
+
+##############################################################################
+# Negative response caching, for redirects and errors. Docs:
+#    https://docs.trafficserver.apache.org/records.config#negative-response-caching
+##############################################################################
+CONFIG proxy.config.http.negative_caching_enabled INT 0
+CONFIG proxy.config.http.negative_caching_lifetime INT 1800
+
+##############################################################################
+# Proxy users variables. Docs:
+#    https://docs.trafficserver.apache.org/records.config#proxy-user-variables
+##############################################################################
+CONFIG proxy.config.http.anonymize_insert_client_ip INT 1
+CONFIG proxy.config.http.insert_squid_x_forwarded_for INT 1
+
+##############################################################################
+# Security. Docs:
+#    https://docs.trafficserver.apache.org/records.config#security
+##############################################################################
+CONFIG proxy.config.http.push_method_enabled INT 0
+
+##############################################################################
+# Cache control. Docs:
+#    https://docs.trafficserver.apache.org/records.config#cache-control
+#    https://docs.trafficserver.apache.org/en/latest/reference/configuration/cache.config.en.html
+##############################################################################
+CONFIG proxy.config.http.cache.ignore_client_cc_max_age INT 1
+CONFIG proxy.config.http.normalize_ae_gzip INT 1
+CONFIG proxy.config.http.cache.cache_responses_to_cookies INT 0 # Don't perform caching when the request contains cookies.
+CONFIG proxy.config.http.cache.cache_urls_that_look_dynamic INT 1
+    # https://docs.trafficserver.apache.org/records.config#proxy-config-http-cache-when-to-revalidate
+CONFIG proxy.config.http.cache.when_to_revalidate INT 0
+    # https://docs.trafficserver.apache.org/records.config#proxy-config-http-cache-required-headers
+CONFIG proxy.config.http.cache.required_headers INT 2
+
+##############################################################################
+# Heuristic cache expiration. Docs:
+#    https://docs.trafficserver.apache.org/records.config#heuristic-expiration
+##############################################################################
+CONFIG proxy.config.http.cache.heuristic_min_lifetime INT 3600
+CONFIG proxy.config.http.cache.heuristic_max_lifetime INT 86400
+CONFIG proxy.config.http.cache.heuristic_lm_factor FLOAT 0.10
+
+##############################################################################
+# Network. Docs:
+#    https://docs.trafficserver.apache.org/records.config#network
+##############################################################################
+CONFIG proxy.config.net.connections_throttle INT 30000
+
+##############################################################################
+# RAM and disk cache configurations. Docs:
+#    https://docs.trafficserver.apache.org/records.config#ram-cache
+#    https://docs.trafficserver.apache.org/en/latest/reference/configuration/storage.config.en.html
+##############################################################################
+CONFIG proxy.config.cache.ram_cache.size INT -1
+CONFIG proxy.config.cache.ram_cache_cutoff INT 4194304
+    # https://docs.trafficserver.apache.org/records.config#proxy-config-cache-limits-http-max-alts
+CONFIG proxy.config.cache.limits.http.max_alts INT 5
+    # https://docs.trafficserver.apache.org/records.config#proxy-config-cache-max-doc-size
+CONFIG proxy.config.cache.max_doc_size INT 0
+CONFIG proxy.config.cache.min_average_object_size INT 8000
+
+##############################################################################
+# Logging Config. Docs:
+#    https://docs.trafficserver.apache.org/records.config#logging-configuration
+#    https://docs.trafficserver.apache.org/en/latest/reference/configuration/logs_xml.config.en.html
+##############################################################################
+CONFIG proxy.config.log.logging_enabled INT 3
+CONFIG proxy.config.log.max_space_mb_for_logs INT 25000
+CONFIG proxy.config.log.max_space_mb_headroom INT 1000
+CONFIG proxy.config.log.squid_log_enabled INT 1
+CONFIG proxy.config.log.squid_log_is_ascii INT 0
+CONFIG proxy.config.log.rolling_enabled INT 1
+CONFIG proxy.config.log.rolling_interval_sec INT 86400
+CONFIG proxy.config.log.rolling_size_mb INT 10
+CONFIG proxy.config.log.auto_delete_rolled_files INT 1
+
+##############################################################################
+# These settings control remapping, and if the proxy allows (open) forward proxy or not. Docs:
+#    https://docs.trafficserver.apache.org/records.config#url-remap-rules
+#    https://docs.trafficserver.apache.org/en/latest/reference/configuration/remap.config.en.html
+##############################################################################
+CONFIG proxy.config.url_remap.remap_required INT 1
+    # https://docs.trafficserver.apache.org/records.config#proxy-config-url-remap-pristine-host-hdr
+CONFIG proxy.config.url_remap.pristine_host_hdr INT 0
+
+##############################################################################
+# SSL Termination. Docs:
+#    https://docs.trafficserver.apache.org/records.config#client-related-configuration
+#    https://docs.trafficserver.apache.org/en/latest/reference/configuration/ssl_multicert.config.en.html
+##############################################################################
+CONFIG proxy.config.ssl.client.verify.server INT 0
+CONFIG proxy.config.ssl.client.CA.cert.filename STRING NULL
+CONFIG proxy.config.ssl.server.cipher_suite STRING ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:AES128-GCM-SHA256:AES256-GCM-SHA384:ECDHE-RSA-RC4-SHA:ECDHE-RSA-AES128-SHA:ECDHE-RSA-AES256-SHA:RC4-SHA:RC4-MD5:AES128-SHA:AES256-SHA:DES-CBC3-SHA!SRP:!DSS:!PSK:!aNULL:!eNULL:!SSLv2
+
+##############################################################################
+# ICP Configuration. Docs:
+#    https://docs.trafficserver.apache.org/records.config#icp-configuration
+#    https://docs.trafficserver.apache.org/en/latest/reference/configuration/icp.config.en.html
+##############################################################################
+CONFIG proxy.config.icp.enabled INT 0
+
+##############################################################################
+# Debugging. Docs:
+#    https://docs.trafficserver.apache.org/records.config#diagnostic-logging-configuration
+##############################################################################
+CONFIG proxy.config.diags.debug.enabled INT 0
+CONFIG proxy.config.diags.debug.tags STRING http.*|dns.*
+# ToDo: Undocumented
+CONFIG proxy.config.dump_mem_info_frequency INT 0
+CONFIG proxy.config.http.slow.log.threshold INT 0
+
+##############################################################################
+# These are necessary (for now) to keep traffic_manager/_cop happy.
+##############################################################################
+CONFIG proxy.config.proxy_name STRING api.vagrant
+CONFIG proxy.config.admin.user_id STRING {{trafficserver.user}}
+CONFIG proxy.config.log.logfile_dir STRING var/log/trafficserver
+CONFIG proxy.config.output.logfile STRING traffic.out
+
+##############################################################################
+# Cluster Subsystem. Docs:
+#    https://docs.trafficserver.apache.org/records.config#cluster
+##############################################################################
+LOCAL proxy.local.cluster.type INT 3
+CONFIG proxy.config.cluster.ethernet_interface STRING lo
+CONFIG proxy.config.cluster.cluster_port INT 8086
+CONFIG proxy.config.cluster.rsport INT 8088
+CONFIG proxy.config.cluster.mcport INT 8089
+CONFIG proxy.config.cluster.mc_group_addr STRING 224.0.1.37
+
+##############################################################################
+# Customizations
+##############################################################################
+
+CONFIG proxy.config.bin_path STRING {{trafficserver.root}}/bin
+CONFIG proxy.config.plugin.plugin_dir STRING {{trafficserver.root}}/libexec/trafficserver
+CONFIG proxy.config.body_factory.template_sets_dir STRING {{trafficserver.root}}/etc/trafficserver/body_factory
+CONFIG proxy.config.log.logfile_dir STRING {{log_dir}}/trafficserver
+
+# Prevent Thundering Herds:
+https://docs.trafficserver.apache.org/en/latest/admin/http-proxy-caching.en.html#reducing-origin-server-requests-avoiding-the-thundering-herd
+CONFIG proxy.config.cache.enable_read_while_writer INT 1
+CONFIG proxy.config.http.background_fill_active_timeout INT 0
+CONFIG proxy.config.http.background_fill_completed_threshold FLOAT 0

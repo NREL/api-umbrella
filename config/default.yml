@@ -13,6 +13,13 @@ varnish:
   backend:
     host: localhost
     port: 50100
+trafficserver:
+  port: 51701
+  backend:
+    host: 127.0.0.1
+    port: 50100
+  user: vagrant
+  root: /home/vagrant/ats
 web:
   port: 51000
   puma:
@@ -47,7 +54,7 @@ trustedProxies:
 proxy:
   host: 127.0.0.1
   port: 4000
-  target: "127.0.0.1:51700"
+  target: "127.0.0.1:51701"
   apiKeyMethods:
     - header
     - getParam
