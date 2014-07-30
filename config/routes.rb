@@ -45,6 +45,7 @@ ApiUmbrella::Application.routes.draw do
         resources :admins
         resources :apis
         resources :users
+        resource :contact, :only => [:create]
       end
     end
   end
