@@ -19,7 +19,7 @@ trafficserver:
     host: 127.0.0.1
     port: 50100
   user: vagrant
-  root: /home/vagrant/ats
+  root: /opt/api-umbrella/embedded
 web:
   port: 51000
   puma:
@@ -54,7 +54,7 @@ trustedProxies:
 proxy:
   host: 127.0.0.1
   port: 4000
-  target: "127.0.0.1:51701"
+  target: "127.0.0.1:51700"
   apiKeyMethods:
     - header
     - getParam

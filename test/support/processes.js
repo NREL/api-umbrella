@@ -9,8 +9,8 @@ var exec = require('child_process').exec,
 before(function clearCache(done) {
   exec('traffic_server -Cclear', {
     env: {
+      'TS_ROOT': '/tmp/api-umbrella/trafficserver',
       'PATH': [
-        '/home/vagrant/ats/bin',
         '/opt/api-umbrella/embedded/bin',
         '/usr/local/sbin',
         '/usr/local/bin',

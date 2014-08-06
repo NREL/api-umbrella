@@ -240,6 +240,7 @@ describe('proxying', function() {
             url: 'http://localhost:9080/info/?api_key=' + this.apiKey,
           }, function(error, response) {
             response.statusCode.should.eql(200);
+            response.headers['x-received-method'].should.eql(method);
             done();
           });
         });
@@ -260,6 +261,7 @@ describe('proxying', function() {
             data: 'test',
           }, function(error, response) {
             response.statusCode.should.eql(200);
+            response.headers['x-received-method'].should.eql(method);
             done();
           });
         });

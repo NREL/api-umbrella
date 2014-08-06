@@ -31,6 +31,7 @@
 /config/redis.conf
 /config/supervisor/gatekeeper.conf
 /config/supervisord.conf
+/config/trafficserver/plugin.config
 /config/trafficserver/records.config
 /config/trafficserver/remap.config
 /config/varnish.vcl

@@ -80,26 +80,40 @@ sub vcl_backend_response {
     }
   }
 
+  # Don't cache responses with WWW-Authenticate headers.
+  # This is a more appropriate default:
+  # https://docs.trafficserver.apache.org/en/latest/admin/http-proxy-caching.en.html#configuring-traffic-server-to-ignore-www-authenticate-headers
+  if(beresp.http.WWW-Authenticate) {
+    set beresp.ttl = 0s;
+  }
+
   # Parse cache control headers out of the custom Surrogate-Control header.
   # This header controls only Varnish, and is not passed onto the end-user.
   # This allows for independant control of how the end-user should cache things
   # (Cache-Control) and how Varnish should cache things (Surrogate-Control).
   if(beresp.http.Surrogate-Control) {
+    #set beresp.http.X-Api-Umbrella-Orig-Cache-Control = beresp.http.Cache-Control;
+    #set beresp.http.Cache-Control = beresp.http.Surrogate-Control;
+
     # Parse the max-age from the Surrogate-Control header and set the
     # response's TTL to this value.
-    set beresp.http.surrogate_max_age = regsub(beresp.http.Surrogate-Control, "max-age\s*=\s*(\d+)", "\1s");
-    if(beresp.http.surrogate_max_age ~ "^\d+s$") {
-      set beresp.ttl = std.duration(beresp.http.surrogate_max_age, 0s);
+    set beresp.http.X-Surrogate-Control-Max-Age-Duration = regsub(beresp.http.Surrogate-Control, "max-age\s*=\s*(\d+)", "\1s");
+    if(beresp.http.X-Surrogate-Control-Max-Age-Duration ~ "^\d+s$") {
+      set beresp.ttl = std.duration(beresp.http.X-Surrogate-Control-Max-Age-Duration, 0s);
     }
 
     # Remove temp variable.
-    unset beresp.http.surrogate_max_age;
-
-    # Remove the Surrogate-Control header which is intended for internal
-    # Varnish use only.
-    unset beresp.http.Surrogate-Control;
+    unset beresp.http.X-Surrogate-Control-Max-Age-Duration;
   }
 
   # Allow for streaming responses.
   set beresp.do_stream = true;
+}
+
+sub vcl_deliver {
+  if(resp.http.Surrogate-Control) {
+    #set resp.http.Cache-Control = resp.http.X-Api-Umbrella-Orig-Cache-Control;
+    #unset resp.http.X-Api-Umbrella-Orig-Cache-Control;
+    unset resp.http.Surrogate-Control;
+  }
 }

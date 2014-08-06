@@ -1,6 +1,7 @@
 'use strict';
 
 var bodyParser = require('body-parser'),
+    compression = require('compression'),
     express = require('express'),
     fs = require('fs'),
     multer = require('multer'),
@@ -31,7 +32,9 @@ app.use(multer({
 }));
 
 app.all('/info/*', function(req, res) {
+  res.set('X-Received-Method', req.method);
   res.json({
+    method: req.method,
     headers: req.headers,
     url: url.parse(req.protocol + '://' + req.hostname + req.url, true),
   });
@@ -116,6 +119,7 @@ app.get('/compressible-delayed-chunked/:size', function(req, res) {
 app.get('/compressible-pre-gzip', function(req, res) {
   res.set('Content-Type', 'text/plain');
   res.set('Content-Encoding', 'gzip');
+  res.set('Vary', 'Accept-Encoding');
   zlib.gzip('Hello Small World', function(error, data) {
     res.end(data);
   });
@@ -188,6 +192,7 @@ app.all('/cacheable-but-cache-forbidden-thundering-herd/:id', function(req, res)
 
 app.all('/cacheable-cache-control-max-age/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
@@ -207,7 +212,24 @@ app.all('/cacheable-expires/:id', function(req, res) {
 });
 
 app.all('/cacheable-expires-0/:id', function(req, res) {
-  res.set('Expires', new Date(Date.now() + 60000).toUTCString());
+  res.set('Expires', '0');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-expires-past/:id', function(req, res) {
+  res.set('Expires', new Date(Date.now() - 60000).toUTCString());
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-set-cookie/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Set-Cookie', 'foo=bar');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-www-authenticate/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('WWW-Authenticate', 'Basic');
   res.end(uniqueOutput());
 });
 
@@ -227,9 +249,68 @@ app.all('/cacheable-surrogate-control-and-cache-control/:id', function(req, res)
   res.end(uniqueOutput());
 });
 
+app.all('/cacheable-dynamic/*', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.end(uniqueOutput());
+});
+
 app.all('/cacheable-compressible/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
   res.set('Content-Type', 'text/plain');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/cacheable-pre-gzip/:id', compression(), function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/cacheable-vary-accept-encoding/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Vary', 'Accept-Encoding');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/cacheable-pre-gzip-multiple-vary/:id', compression(), function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Vary', 'X-Foo,Accept-Encoding,Accept');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/cacheable-vary-accept-encoding-multiple/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Vary', 'X-Foo,Accept-Encoding,Accept');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/cacheable-vary-x-custom/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Vary', 'X-Custom');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-vary-accept-encoding-accept-separate/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Vary', 'Accept-Encoding');
+  res.set('Vary', 'Accept');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-multiple-vary/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Vary', 'X-Foo,Accept-Language,Accept');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-multiple-vary-with-accept-encoding/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Vary', 'X-Foo,Accept-Language,Accept-Encoding,Accept');
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 

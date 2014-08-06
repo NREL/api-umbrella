@@ -21,46 +21,72 @@ describe('caching', function() {
     }.bind(this));
   });
 
-  function actsLikeNotCacheable(baseUrl, options, done) {
+  function makeDuplicateRequests(baseUrl, options, done) {
     var id = _.uniqueId();
     options = _.merge({
       method: 'GET',
     }, options);
 
-    request(baseUrl + id, options, function(error, response, firstBody) {
-      response.statusCode.should.eql(200);
-      if(response.headers['age']) {
-        response.headers['age'].should.eql('0');
+    var secondCallOverrides = options.secondCallOverrides || {};
+    delete options.secondCallOverrides;
+
+    var secondCallSleep = options.secondCallSleep || 0;
+    delete options.secondCallSleep;
+
+    request(baseUrl + id, options, function(error, firstResponse, firstBody) {
+      firstResponse.statusCode.should.eql(200);
+
+      setTimeout(function() {
+        var secondCallOptions = _.merge({}, options, secondCallOverrides);
+        request(baseUrl + id, secondCallOptions, function(error, secondResponse, secondBody) {
+          secondResponse.statusCode.should.eql(200);
+
+          done(null, {
+            firstResponse: firstResponse,
+            firstBody: firstBody,
+            secondResponse: secondResponse,
+            secondBody: secondBody,
+          });
+        });
+      }, secondCallSleep);
+    });
+  }
+
+  function actsLikeNotCacheable(baseUrl, options, done) {
+    makeDuplicateRequests(baseUrl, options, function(error, result) {
+      if(result.firstResponse.headers['age']) {
+        result.firstResponse.headers['age'].should.eql('0');
       } else {
-        should.not.exist(response.headers['age']);
+        should.not.exist(result.firstResponse.headers['age']);
       }
 
-      request.get(baseUrl + id, options, function(error, response, secondBody) {
-        response.statusCode.should.eql(200);
-        if(response.headers['age']) {
-          response.headers['age'].should.eql('0');
-        } else {
-          should.not.exist(response.headers['age']);
-        }
+      if(result.secondResponse.headers['age']) {
+        result.secondResponse.headers['age'].should.eql('0');
+      } else {
+        should.not.exist(result.secondResponse.headers['age']);
+      }
 
-        firstBody.should.not.eql(secondBody);
+      result.firstBody.length.should.be.greaterThan(0);
+      result.firstBody.should.not.eql(result.secondBody);
 
-        done();
-      });
+      done(error, result);
     });
   }
 
   function actsLikeCacheable(baseUrl, options, done) {
-    var id = _.uniqueId();
-    request.get(baseUrl + id, options, function(error, response, firstBody) {
-      response.statusCode.should.eql(200);
+    makeDuplicateRequests(baseUrl, options, function(error, result) {
+      if(result.firstResponse.headers['age']) {
+        result.firstResponse.headers['age'].should.eql('0');
+      } else {
+        should.not.exist(result.firstResponse.headers['age']);
+      }
 
-      request.get(baseUrl + id, options, function(error, response, secondBody) {
-        response.statusCode.should.eql(200);
-        firstBody.should.eql(secondBody);
+      should.exist(result.secondResponse.headers['age']);
 
-        done();
-      });
+      result.firstBody.length.should.be.greaterThan(0);
+      result.firstBody.should.eql(result.secondBody);
+
+      done(error, result);
     });
   }
 
@@ -132,8 +158,6 @@ describe('caching', function() {
     actsLikeCacheable('http://localhost:9080/cacheable-surrogate-control-case-insensitive/', this.options, done);
   });
 
-  // FIXME: Currently failing in Varnish. Need to likely change how the
-  // Surrogate-Control header gets applied.
   it('surrogate-control headers take precedence over cache-control headers', function(done) {
     actsLikeCacheable('http://localhost:9080/cacheable-surrogate-control-and-cache-control/', this.options, done);
   });
@@ -153,10 +177,48 @@ describe('caching', function() {
   });
 
   describe('cacheable http methods', function() {
-    ['GET', 'HEAD'].forEach(function(method) {
+    ['GET'].forEach(function(method) {
       it('allows caching for ' + method + ' requests', function(done) {
-        var options = _.merge({ method: method }, this.options);
+        var options = _.merge({}, this.options, { method: method });
         actsLikeCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
+      });
+    });
+
+    ['HEAD'].forEach(function(method) {
+      it('allows caching for ' + method + ' requests', function(done) {
+        var options = _.merge({}, this.options, { method: method });
+        makeDuplicateRequests('http://localhost:9080/cacheable-cache-control-max-age/', options, function(error, result) {
+          if(result.firstResponse.headers['age']) {
+            result.firstResponse.headers['age'].should.eql('0');
+          } else {
+            should.not.exist(result.firstResponse.headers['age']);
+          }
+
+          should.exist(result.secondResponse.headers['age']);
+
+          result.firstResponse.headers['x-unique-output'].length.should.be.greaterThan(0);
+          result.firstResponse.headers['x-unique-output'].should.eql(result.secondResponse.headers['x-unique-output']);
+
+          done(error, result);
+        });
+      });
+
+      it('returns a cached ' + method + ' request when a GET request is made first', function(done) {
+        var options = _.merge({}, this.options, { method: method });
+        makeDuplicateRequests('http://localhost:9080/cacheable-cache-control-max-age/', options, function(error, result) {
+          if(result.firstResponse.headers['age']) {
+            result.firstResponse.headers['age'].should.eql('0');
+          } else {
+            should.not.exist(result.firstResponse.headers['age']);
+          }
+
+          should.exist(result.secondResponse.headers['age']);
+
+          result.firstResponse.headers['x-unique-output'].length.should.be.greaterThan(0);
+          result.firstResponse.headers['x-unique-output'].should.eql(result.secondResponse.headers['x-unique-output']);
+
+          done(error, result);
+        });
       });
     });
   });
@@ -164,7 +226,7 @@ describe('caching', function() {
   describe('non-cacheable http methods', function() {
     ['POST', 'PUT', 'PATCH', 'OPTIONS', 'DELETE'].forEach(function(method) {
       it('does not allow caching for ' + method + ' requests', function(done) {
-        var options = _.merge({ method: method }, this.options);
+        var options = _.merge({}, this.options, { method: method });
         actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
       });
     });
@@ -268,107 +330,494 @@ describe('caching', function() {
     actsLikeCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
   });
 
-  it('does not cache responses that set cookies', function() {
+  it('does not cache responses that set cookies', function(done) {
+    actsLikeNotCacheable('http://localhost:9080/cacheable-set-cookie/', this.options, done);
   });
 
-  it('does not cache responses that expires at 0', function() {
+  it('does not cache responses that expires at 0', function(done) {
+    var options = _.merge({}, this.options, { secondCallSleep: 1000 });
+    actsLikeNotCacheable('http://localhost:9080/cacheable-expires-0/', options, done);
   });
 
-  it('does not cache responses that expires in the past', function() {
+  it('does not cache responses that expires in the past', function(done) {
+    var options = _.merge({}, this.options, { secondCallSleep: 1000 });
+    actsLikeNotCacheable('http://localhost:9080/cacheable-expires-past/', options, done);
   });
 
-  it('does not cache responses that contain www-authenticate headers', function() {
+  it('does not cache responses that contain www-authenticate headers', function(done) {
+    actsLikeNotCacheable('http://localhost:9080/cacheable-www-authenticate/', this.options, done);
   });
 
-  it('does cache requests that contain dynamic looking urls', function() {
+  it('does cache requests that contain dynamic looking urls', function(done) {
+    actsLikeCacheable('http://localhost:9080/cacheable-dynamic/test.cgi?foo=bar&test=test&id=', this.options, done);
   });
 
-  it('delivers the same cached response for users with different api keys (api keys are not part of the cache key url)', function() {
-  });
+  it('delivers the same cached response for users with different api keys (api keys are not part of the cache key url)', function(done) {
+    var baseUrl = 'http://localhost:9080/cacheable-cache-control-max-age/' + _.uniqueId();
+    var firstApiKey = this.apiKey;
+    Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
+      var secondApiKey = user.api_key;
 
-  it('delivers a cached gzip response when the request was first made with gzip', function(done) {
-    var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
-    var options = _.merge({}, this.options, { gzip: true });
-
-    request.get(url, options, function(error, response, firstBody) {
-      response.statusCode.should.eql(200);
-      response.headers['content-encoding'].should.eql('gzip');
-
-      request.get(url, options, function(error, response, secondBody) {
+      request.get(baseUrl + '?api_key=' + firstApiKey, function(error, response, firstBody) {
         response.statusCode.should.eql(200);
-        response.headers['content-encoding'].should.eql('gzip');
 
-        firstBody.toString().should.eql(secondBody.toString());
-        done();
+        request.get(baseUrl + '?api_key=' + secondApiKey, function(error, response, secondBody) {
+          response.statusCode.should.eql(200);
+
+          firstBody.toString().should.eql(secondBody.toString());
+          done();
+        });
       });
     });
   });
 
-  it('delivers a cached gzip response when the request was first made without gzip', function(done) {
-    var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
-    var options = _.merge({}, this.options, { gzip: false });
+  describe('gzip', function() {
+    // Normalize the Accept-Encoding header to maximize caching:
+    // https://docs.trafficserver.apache.org/en/latest/reference/configuration/records.config.en.html?highlight=gzip#proxy-config-http-normalize-ae-gzip 
+    describe('accept-encoding normalization', function() {
+      it('leaves accept-encoding equalling "gzip"', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept-Encoding': 'gzip',
+          },
+        });
 
-    request.get(url, options, function(error, response, firstBody) {
-      response.statusCode.should.eql(200);
-      should.not.exist(response.headers['content-encoding']);
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          data.headers['accept-encoding'].should.eql('gzip');
+          done();
+        });
+      });
 
-      _.merge(options, { gzip: true });
+      it('changes accept-encoding containing "gzip" to just "gzip"', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept-Encoding': 'gzip, deflate, compress',
+          },
+        });
 
-      request.get(url, options, function(error, response, secondBody) {
-        response.statusCode.should.eql(200);
-        response.headers['content-encoding'].should.eql('gzip');
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          data.headers['accept-encoding'].should.eql('gzip');
+          done();
+        });
+      });
 
-        firstBody.toString().should.eql(secondBody.toString());
-        done();
+      it('removes accept-encoding not containing "gzip"', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept-Encoding': 'deflate, compress',
+          },
+        });
+
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          should.not.exist(data.headers['accept-encoding']);
+          done();
+        });
+      });
+
+      it('removes accept-encoding containing "gzip", but not as a standalone entry ("gzipp")', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept-Encoding': 'gzipp',
+          },
+        });
+
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          should.not.exist(data.headers['accept-encoding']);
+          done();
+        });
+      });
+
+      it('removes accept-encoding if gzip is q=0', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept-Encoding': 'gzip;q=0',
+          },
+        });
+
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          should.not.exist(data.headers['accept-encoding']);
+          done();
+        });
+      });
+    });
+
+    describe('cached gzip responses do not mix with uncompressed responses', function() {
+      function itBehavesLikeGzip() {
+        describe('first request is compressed ("Accept-Encoding: gzip" header)', function() {
+          beforeEach(function() {
+            this.options = _.merge({}, this.options, { gzip: true });
+          });
+
+          it('delivers a gzipped response when the second request is compressed ("Accept-Encoding: gzip" header)', function(done) {
+            var options = _.merge({}, this.options, {
+              secondCallOverrides: {
+                gzip: true,
+              },
+            });
+
+            makeDuplicateRequests(this.url, options, function(error, result) {
+              result.firstResponse.headers['content-encoding'].should.eql('gzip');
+              result.secondResponse.headers['content-encoding'].should.eql('gzip');
+              done();
+            });
+          });
+
+          it('delivers an uncompressed response when the second request is compressed ("Accept-Encoding: gzip" header)', function(done) {
+            var options = _.merge({}, this.options, {
+              secondCallOverrides: {
+                gzip: false,
+              },
+            });
+
+            makeDuplicateRequests(this.url, options, function(error, result) {
+              result.firstResponse.headers['content-encoding'].should.eql('gzip');
+              should.not.exist(result.secondResponse.headers['content-encoding']);
+              done();
+            });
+          });
+        });
+
+        describe('first request is uncompressed (no "Accept-Encoding" header)', function() {
+          beforeEach(function() {
+            this.options = _.merge({}, this.options, { gzip: false });
+          });
+
+          it('delivers a gzipped response when the second request is compressed ("Accept-Encoding: gzip" header)', function(done) {
+            var options = _.merge({}, this.options, {
+              secondCallOverrides: {
+                gzip: true,
+              },
+            });
+
+            makeDuplicateRequests(this.url, options, function(error, result) {
+              should.not.exist(result.firstResponse.headers['content-encoding']);
+              result.secondResponse.headers['content-encoding'].should.eql('gzip');
+              done();
+            });
+          });
+
+          it('delivers an uncompressed response when the second request is uncompressed (no "Accept-Encoding" header)', function(done) {
+            var options = _.merge({}, this.options, {
+              secondCallOverrides: {
+                gzip: false,
+              },
+            });
+
+            makeDuplicateRequests(this.url, options, function(error, result) {
+              should.not.exist(result.firstResponse.headers['content-encoding']);
+              should.not.exist(result.secondResponse.headers['content-encoding']);
+              done();
+            });
+          });
+        });
+      }
+
+      describe('backend does not support gzipping (returns no "Vary" header)', function() {
+        beforeEach(function() {
+          this.url = 'http://localhost:9080/cacheable-compressible/';
+        });
+
+        itBehavesLikeGzip();
+      });
+
+      describe('backend supports gzipping itself (always returns "Vary: Accept-Encoding" header)', function() {
+        beforeEach(function() {
+          this.url = 'http://localhost:9080/cacheable-pre-gzip/';
+        });
+
+        itBehavesLikeGzip();
+      });
+
+      describe('backend does not support gzipping, but still returns vary header (always returns "Vary: Accept-Encoding" header)', function() {
+        beforeEach(function() {
+          this.url = 'http://localhost:9080/cacheable-vary-accept-encoding/';
+        });
+
+        itBehavesLikeGzip();
+      });
+
+      describe('backend returns multiple very headers and supports gzipping itself (always returns "Vary: X-Foo,Accept-Encoding,Accept" header)', function() {
+        beforeEach(function() {
+          this.url = 'http://localhost:9080/cacheable-pre-gzip-multiple-vary/';
+        });
+
+        itBehavesLikeGzip();
+      });
+
+      describe('backend returns multiple very headers and does not support gzipping, but still returns vary header (always returns "Vary: X-Foo,Accept-Encoding,Accept" header)', function() {
+        beforeEach(function() {
+          this.url = 'http://localhost:9080/cacheable-vary-accept-encoding-multiple/';
+        });
+
+        itBehavesLikeGzip();
+      });
+    });
+
+    describe('optimized gzip behavior', function() {
+      function itBehavesLikeOptimizedGzip() {
+        describe('first request is compressed ("Accept-Encoding: gzip" header)', function() {
+          beforeEach(function() {
+            this.options = _.merge({}, this.options, { gzip: true });
+          });
+
+          it('delivers a cached gzipped response when the second request is compressed ("Accept-Encoding: gzip" header)', function(done) {
+            var options = _.merge({}, this.options, {
+              secondCallOverrides: {
+                gzip: true,
+              },
+            });
+
+            actsLikeCacheable(this.url, options, function(error, result) {
+              result.firstResponse.headers['content-encoding'].should.eql('gzip');
+              result.secondResponse.headers['content-encoding'].should.eql('gzip');
+              done();
+            });
+          });
+
+          it('delivers a cached uncompressed response when the second request is uncompressed (no "Accept-Encoding" header)', function(done) {
+            var options = _.merge({}, this.options, {
+              secondCallOverrides: {
+                gzip: false,
+              },
+            });
+
+            actsLikeCacheable(this.url, options, function(error, result) {
+              result.firstResponse.headers['content-encoding'].should.eql('gzip');
+              should.not.exist(result.secondResponse.headers['content-encoding']);
+              done();
+            });
+          });
+        });
+
+        describe('first request is uncompressed (no "Accept-Encoding" header)', function() {
+          beforeEach(function() {
+            this.options = _.merge({}, this.options, { gzip: false });
+          });
+
+          it('delivers a cached gzipped response when the second request is compressed ("Accept-Encoding: gzip" header)', function(done) {
+            var options = _.merge({}, this.options, {
+              secondCallOverrides: {
+                gzip: true,
+              },
+            });
+
+            actsLikeCacheable(this.url, options, function(error, result) {
+              should.not.exist(result.firstResponse.headers['content-encoding']);
+              result.secondResponse.headers['content-encoding'].should.eql('gzip');
+              done();
+            });
+          });
+
+          it('delivers a cached uncompressed response when the second request is uncompressed (no "Accept-Encoding" header)', function(done) {
+            var options = _.merge({}, this.options, {
+              secondCallOverrides: {
+                gzip: false,
+              },
+            });
+
+            actsLikeCacheable(this.url, options, function(error, result) {
+              should.not.exist(result.firstResponse.headers['content-encoding']);
+              should.not.exist(result.secondResponse.headers['content-encoding']);
+              done();
+            });
+          });
+        });
+      }
+
+      describe('backend does not support gzipping (returns no "Vary" header)', function() {
+        beforeEach(function() {
+          this.url = 'http://localhost:9080/cacheable-compressible/';
+        });
+
+        itBehavesLikeOptimizedGzip();
+      });
+
+      describe('backend supports gzipping itself (always returns "Vary: Accept-Encoding" header)', function() {
+        beforeEach(function() {
+          this.url = 'http://localhost:9080/cacheable-pre-gzip/';
+        });
+
+        itBehavesLikeOptimizedGzip();
+      });
+
+      describe('backend does not support gzipping, but still returns vary header (always returns "Vary: Accept-Encoding" header)', function() {
+        beforeEach(function() {
+          this.url = 'http://localhost:9080/cacheable-vary-accept-encoding/';
+        });
+
+        itBehavesLikeOptimizedGzip();
+      });
+
+      describe('backend returns multiple very headers and supports gzipping itself (always returns "Vary: X-Foo,Accept-Encoding,Accept" header)', function() {
+        beforeEach(function() {
+          this.url = 'http://localhost:9080/cacheable-pre-gzip-multiple-vary/';
+        });
+
+        itBehavesLikeOptimizedGzip();
+      });
+
+      describe('backend returns multiple very headers and does not support gzipping, but still returns vary header (always returns "Vary: X-Foo,Accept-Encoding,Accept" header)', function() {
+        beforeEach(function() {
+          this.url = 'http://localhost:9080/cacheable-vary-accept-encoding-multiple/';
+        });
+
+        itBehavesLikeOptimizedGzip();
       });
     });
   });
 
-  it('delivers a cached non-gzipped response when the request was first made with gzip', function(done) {
-    var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
-    var options = _.merge({}, this.options, { gzip: true });
+  describe('vary', function() {
+    it('caches requests with different custom headers if the response doesn\'t vary on the header', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'X-Custom': 'foo',
+        },
+        secondCallOverrides: {
+          headers: {
+            'X-Custom': 'bar',
+          },
+        },
+      });
 
-    request.get(url, options, function(error, response, firstBody) {
-      response.statusCode.should.eql(200);
-      response.headers['content-encoding'].should.eql('gzip');
+      actsLikeCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
+    });
 
-      _.merge(options, { gzip: false });
+    it('does not cache requests with different custom headers if the response varies on the header', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'X-Custom': 'foo',
+        },
+        secondCallOverrides: {
+          headers: {
+            'X-Custom': 'bar',
+          },
+        },
+      });
 
-      request.get(url, options, function(error, response, secondBody) {
-        response.statusCode.should.eql(200);
-        should.not.exist(response.headers['content-encoding']);
+      actsLikeNotCacheable('http://localhost:9080/cacheable-vary-x-custom/', options, done);
+    });
 
-        firstBody.toString().should.eql(secondBody.toString());
-        done();
+    it('caches identical requests if the response varies on a header that is not passed in', function(done) {
+      actsLikeCacheable('http://localhost:9080/cacheable-vary-x-custom/', this.options, done);
+    });
+
+    it('caches requests that have the same header value on the header that is varied on', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'X-Custom': 'foo',
+        },
+      });
+
+      actsLikeCacheable('http://localhost:9080/cacheable-vary-x-custom/', options, done);
+    });
+
+    describe('when responses vary on multiple headers', function() {
+      it('caches requests if the varied headers are the same', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept': 'text/plain',
+            'Accept-Language': 'en-US',
+            'X-Foo': 'bar',
+          },
+        });
+
+        actsLikeCacheable('http://localhost:9080/cacheable-multiple-vary/', options, done);
+      });
+
+      it('caches requests if a non-varied header differs', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept': 'text/plain',
+            'Accept-Language': 'en-US',
+            'X-Foo': 'bar',
+          },
+          secondCallOverrides: {
+            headers: {
+              'X-Bar': 'foo',
+            },
+          },
+        });
+
+        actsLikeCacheable('http://localhost:9080/cacheable-multiple-vary/', options, done);
+      });
+
+      it('does not cache requests if at least one varied header differs', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept': 'text/plain',
+            'Accept-Language': 'en-US',
+            'X-Foo': 'bar',
+          },
+          secondCallOverrides: {
+            headers: {
+              'Accept': 'application/json',
+            },
+          },
+        });
+
+        actsLikeNotCacheable('http://localhost:9080/cacheable-multiple-vary/', options, done);
       });
     });
-  });
 
-  it('delivers a cached non-gzipped response when the request was first made without gzip', function(done) {
-    var url = 'http://localhost:9080/cacheable-compressible/' + _.uniqueId();
-    var options = _.merge({}, this.options, {
-      headers: {
-        'Accept-Encoding': '',
-      },
-    });
+    describe('when responses vary on multiple headers, inclding accept-encoding', function() {
+      it('caches requests if the varied headers are the same', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept': 'text/plain',
+            'Accept-Language': 'en-US',
+            'X-Foo': 'bar',
+          },
+          gzip: true,
+        });
 
-    request.get(url, options, function(error, response, firstBody) {
-      response.statusCode.should.eql(200);
-      should.not.exist(response.headers['content-encoding']);
+        actsLikeCacheable('http://localhost:9080/cacheable-multiple-vary-with-accept-encoding/', options, done);
+      });
 
-      request.get(url, options, function(error, response, secondBody) {
-        response.statusCode.should.eql(200);
-        should.not.exist(response.headers['content-encoding']);
+      it('caches requests if a non-varied header differs', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept': 'text/plain',
+            'Accept-Language': 'en-US',
+            'X-Foo': 'bar',
+          },
+          gzip: true,
+          secondCallOverrides: {
+            headers: {
+              'X-Bar': 'foo',
+            },
+          },
+        });
 
-        firstBody.toString().should.eql(secondBody.toString());
-        done();
+        actsLikeCacheable('http://localhost:9080/cacheable-multiple-vary-with-accept-encoding/', options, done);
+      });
+
+      it('does not cache requests if at least one varied header differs', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept': 'text/plain',
+            'Accept-Language': 'en-US',
+            'X-Foo': 'bar',
+          },
+          gzip: true,
+          secondCallOverrides: {
+            headers: {
+              'Accept': 'application/json',
+            },
+          },
+        });
+
+        actsLikeNotCacheable('http://localhost:9080/cacheable-multiple-vary-with-accept-encoding/', options, done);
       });
     });
-  });
-
-  it('normalizes gzip headers', function() {
-  });
-
-  it('vary/accept encoding stuff', function() {
   });
 });
