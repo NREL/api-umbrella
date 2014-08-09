@@ -103,6 +103,7 @@ describe('caching', function() {
         callback(null, body);
       });
     }, function(error, bodies) {
+      should.exist(global.backendCallCounts[id]);
       global.backendCallCounts[id].should.eql(50);
       bodies.length.should.eql(50);
       _.uniq(bodies).length.should.eql(50);
@@ -123,6 +124,7 @@ describe('caching', function() {
         callback(null, body);
       });
     }, function(error, bodies) {
+      should.exist(global.backendCallCounts[id]);
       global.backendCallCounts[id].should.eql(1);
       bodies.length.should.eql(50);
       _.uniq(bodies).length.should.eql(1);

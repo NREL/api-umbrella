@@ -283,6 +283,8 @@ describe('proxying', function() {
 
   describe('server-side keep alive', function() {
     it('keeps 10 idle keepalive connections opened to the backend', function(done) {
+      this.timeout(3000);
+
       // Open a bunch of concurrent connections first, and then inspect the
       // number of number of connections still active afterwards.
       var options = { agentOptions: { maxSockets: 150 } };
@@ -292,21 +294,25 @@ describe('proxying', function() {
           callback(error);
         });
       }.bind(this), function() {
-        request.get('http://localhost:9080/keepalive9445/connections?api_key=' + this.apiKey, function(error, response, body) {
-          response.statusCode.should.eql(200);
+        setTimeout(function() {
+          request.get('http://localhost:9080/keepalive9445/connections?api_key=' + this.apiKey, function(error, response, body) {
+            response.statusCode.should.eql(200);
 
-          var data = JSON.parse(body);
-          data.start.connections.should.eql(10);
-          data.start.requests.should.eql(1);
-          data.end.connections.should.eql(10);
-          data.end.requests.should.eql(1);
+            var data = JSON.parse(body);
+            data.start.connections.should.eql(10);
+            data.start.requests.should.eql(1);
+            data.end.connections.should.eql(10);
+            data.end.requests.should.eql(1);
 
-          done();
-        });
+            done();
+          });
+        }.bind(this), 1000);
       }.bind(this));
     });
 
     it('allows the number of idle backend keepalive connections to be configured', function(done) {
+      this.timeout(3000);
+
       // Open a bunch of concurrent connections first, and then inspect the
       // number of number of connections still active afterwards.
       var options = { agentOptions: { maxSockets: 150 } };
@@ -316,17 +322,19 @@ describe('proxying', function() {
           callback(error);
         });
       }.bind(this), function() {
-        request.get('http://localhost:9080/keepalive9446/connections?api_key=' + this.apiKey, function(error, response, body) {
-          response.statusCode.should.eql(200);
+        setTimeout(function() {
+          request.get('http://localhost:9080/keepalive9446/connections?api_key=' + this.apiKey, function(error, response, body) {
+            response.statusCode.should.eql(200);
 
-          var data = JSON.parse(body);
-          data.start.connections.should.eql(6);
-          data.start.requests.should.eql(1);
-          data.end.connections.should.eql(6);
-          data.end.requests.should.eql(1);
+            var data = JSON.parse(body);
+            data.start.connections.should.eql(6);
+            data.start.requests.should.eql(1);
+            data.end.connections.should.eql(6);
+            data.end.requests.should.eql(1);
 
-          done();
-        });
+            done();
+          });
+        }.bind(this), 1000);
       }.bind(this));
     });
 
@@ -336,8 +344,8 @@ describe('proxying', function() {
       var maxConnections = 0;
       var maxRequests = 0;
 
-      var options = { agentOptions: { maxSockets: 150 } };
-      async.times(150, function(index, callback) {
+      var options = { agentOptions: { maxSockets: 200 } };
+      async.times(200, function(index, callback) {
         request.get('http://localhost:9080/keepalive9447/connections?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
 
@@ -354,7 +362,7 @@ describe('proxying', function() {
           callback(error);
         });
       }.bind(this), function() {
-        // We sent 150 concurrent requests, but the number of concurrent
+        // We sent 200 concurrent requests, but the number of concurrent
         // requests to the backend will likely be lower, since we're testing
         // the full stack, and the requests have to go through multiple layers
         // (the gatekeeper, caching, etc) which may lower absolute concurrency.

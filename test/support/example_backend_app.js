@@ -314,4 +314,9 @@ app.all('/cacheable-multiple-vary-with-accept-encoding/:id', function(req, res) 
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 
-app.listen(9444);
+var server = app.listen(9444);
+
+server.on('error', function(error) {
+  console.error('Failed to start example backend app:', error);
+  process.exit(1);
+});
