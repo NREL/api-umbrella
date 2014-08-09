@@ -204,7 +204,13 @@ describe('caching', function() {
       });
 
       it('returns a cached ' + method + ' request when a GET request is made first', function(done) {
-        var options = _.merge({}, this.options, { method: method });
+        var options = _.merge({}, this.options, {
+          method: 'GET',
+          secondCallOverrides: {
+            method: method,
+          },
+        });
+
         makeDuplicateRequests('http://localhost:9080/cacheable-cache-control-max-age/', options, function(error, result) {
           if(result.firstResponse.headers['age']) {
             result.firstResponse.headers['age'].should.eql('0');
@@ -377,6 +383,7 @@ describe('caching', function() {
     describe('accept-encoding normalization', function() {
       it('leaves accept-encoding equalling "gzip"', function(done) {
         var options = _.merge({}, this.options, {
+          gzip: true,
           headers: {
             'Accept-Encoding': 'gzip',
           },
@@ -392,6 +399,7 @@ describe('caching', function() {
 
       it('changes accept-encoding containing "gzip" to just "gzip"', function(done) {
         var options = _.merge({}, this.options, {
+          gzip: true,
           headers: {
             'Accept-Encoding': 'gzip, deflate, compress',
           },
@@ -407,6 +415,7 @@ describe('caching', function() {
 
       it('removes accept-encoding not containing "gzip"', function(done) {
         var options = _.merge({}, this.options, {
+          gzip: true,
           headers: {
             'Accept-Encoding': 'deflate, compress',
           },
