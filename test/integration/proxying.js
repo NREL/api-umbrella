@@ -20,6 +20,12 @@ describe('proxying', function() {
   beforeEach(function(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.apiKey = user.api_key;
+      this.options = {
+        headers: {
+          'X-Api-Key': this.apiKey,
+        },
+      };
+
       done();
     }.bind(this));
   });
@@ -539,10 +545,10 @@ describe('proxying', function() {
       });
 
       describe('when the underlying server supports gzip but the client does not', function() {
-        it('combines small response chunks into a single response', function(done) {
+        it('streams back small uncompressed chunks', function(done) {
           var options = {
             url: 'http://localhost:9080/compressible-delayed-chunked/10?api_key=' + this.apiKey,
-            encoding: null,
+            gzip: false,
           };
 
           shared.chunkedRequestDetails(options, function(response, data) {
@@ -550,16 +556,16 @@ describe('proxying', function() {
             response.headers['transfer-encoding'].should.eql('chunked');
             data.bodyString.length.should.eql(30);
 
-            data.chunks.length.should.eql(1);
+            data.chunks.length.should.eql(3);
 
             done();
           });
         });
 
-        it('still streams back the original chunks at different times if they are large enough', function(done) {
+        it('streams back large uncompressed chunks', function(done) {
           var options = {
             url: 'http://localhost:9080/compressible-delayed-chunked/50000?api_key=' + this.apiKey,
-            encoding: null,
+            gzip: false,
           };
 
           shared.chunkedRequestDetails(options, function(response, data) {
@@ -609,15 +615,221 @@ describe('proxying', function() {
         request.get('http://localhost:9080/compressible-chunked/1/' + size + '?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           response.headers['content-encoding'].should.eql('gzip');
-          // FIXME: Investigate why Varnish 4 randomly doesn't actually send back
-          // the responses as chunked.
-          //
-          //response.headers['transfer-encoding'].should.eql('chunked');
-          //should.not.exist(response.headers['content-length']);
+          response.headers['transfer-encoding'].should.eql('chunked');
+          should.not.exist(response.headers['content-length']);
           body.toString().length.should.eql(size);
           callback();
         });
       }.bind(this), done);
+    });
+
+    // Normalize the Accept-Encoding header to maximize caching:
+    // https://docs.trafficserver.apache.org/en/latest/reference/configuration/records.config.en.html?highlight=gzip#proxy-config-http-normalize-ae-gzip
+    describe('accept-encoding normalization', function() {
+      it('leaves accept-encoding equalling "gzip"', function(done) {
+        var options = _.merge({}, this.options, {
+          gzip: true,
+          headers: {
+            'Accept-Encoding': 'gzip',
+          },
+        });
+
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          data.headers['accept-encoding'].should.eql('gzip');
+          done();
+        });
+      });
+
+      it('changes accept-encoding containing "gzip" to just "gzip"', function(done) {
+        var options = _.merge({}, this.options, {
+          gzip: true,
+          headers: {
+            'Accept-Encoding': 'gzip, deflate, compress',
+          },
+        });
+
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          data.headers['accept-encoding'].should.eql('gzip');
+          done();
+        });
+      });
+
+      it('removes accept-encoding not containing "gzip"', function(done) {
+        var options = _.merge({}, this.options, {
+          gzip: true,
+          headers: {
+            'Accept-Encoding': 'deflate, compress',
+          },
+        });
+
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          should.not.exist(data.headers['accept-encoding']);
+          done();
+        });
+      });
+
+      it('removes accept-encoding containing "gzip", but not as a standalone entry ("gzipp")', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept-Encoding': 'gzipp',
+          },
+        });
+
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          should.not.exist(data.headers['accept-encoding']);
+          done();
+        });
+      });
+
+      it('removes accept-encoding if gzip is q=0', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept-Encoding': 'gzip;q=0',
+          },
+        });
+
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          should.not.exist(data.headers['accept-encoding']);
+          done();
+        });
+      });
+
+      it('removes accept-encoding if gzip is q=0.00', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept-Encoding': 'gzip;q=0.00',
+          },
+        });
+
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          should.not.exist(data.headers['accept-encoding']);
+          done();
+        });
+      });
+
+      it('keeps accept-encoding if gzip is q=0.01', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept-Encoding': 'gzip;q=0.01',
+          },
+        });
+
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          data.headers['accept-encoding'].should.eql('gzip');
+          done();
+        });
+      });
+    });
+
+    describe('gzip recieved by backend', function() {
+      it('recieves a gzip accept-encoding header when the client supports gzip', function(done) {
+        var url = 'http://localhost:9080/info/?accept_encoding_randomize=' + _.uniqueId();
+        var options = _.merge({}, this.options, {
+          gzip: true,
+        });
+
+        async.timesSeries(3, function(index, callback) {
+          request.get(url, options, function(error, response, body) {
+            response.statusCode.should.eql(200);
+            var data = JSON.parse(body);
+            data.headers['accept-encoding'].should.eql('gzip');
+            callback();
+          });
+        }, done);
+      });
+
+      it('recieves no accept-encoding header when the client does not support gzip', function(done) {
+        var url = 'http://localhost:9080/info/?accept_encoding_randomize=' + _.uniqueId();
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Accept-Encoding': '',
+          },
+        });
+
+        async.timesSeries(3, function(index, callback) {
+          request.get(url, options, function(error, response, body) {
+            response.statusCode.should.eql(200);
+            var data = JSON.parse(body);
+            should.not.exist(data.headers['accept-encoding']);
+            callback();
+          });
+        }, done);
+      });
+    });
+
+    // Ideally when a backend returns a non-chunked response it would be
+    // returned to the client as non-chunked, but Varnish appears to sometimes
+    // randomly change non-chunked responses into chunked responses.
+    // Update if Varnish's behavior changes:
+    // https://www.varnish-cache.org/trac/ticket/1506
+    xdescribe('consistently', function() {
+      [true, false].forEach(function(gzipEnabled) {
+        describe('gzip enabled: ' + gzipEnabled, function() {
+          it('returns small non-chunked responses', function(done) {
+            this.timeout(5000);
+            async.timesSeries(50, function(index, callback) {
+              var options = { gzip: gzipEnabled };
+              request.get('http://localhost:9080/compressible/10?api_key=' + this.apiKey, options, function(error, response) {
+                response.statusCode.should.eql(200);
+                console.info(response.headers);
+                should.not.exist(response.headers['transfer-encoding']);
+                callback();
+              });
+            }.bind(this), done);
+          });
+
+          it('returns larger non-chunked responses', function(done) {
+            this.timeout(5000);
+            async.timesSeries(50, function(index, callback) {
+              var options = { gzip: gzipEnabled };
+              request.get('http://localhost:9080/compressible/10000?api_key=' + this.apiKey, options, function(error, response) {
+                response.statusCode.should.eql(200);
+                console.info(response.headers);
+                should.not.exist(response.headers['transfer-encoding']);
+                callback();
+              });
+            }.bind(this), done);
+          });
+
+          it('returns small chunked responses', function(done) {
+            this.timeout(5000);
+            async.timesSeries(50, function(index, callback) {
+              var options = { gzip: gzipEnabled };
+              request.get('http://localhost:9080/compressible-chunked/1/500?api_key=' + this.apiKey, options, function(error, response) {
+                response.statusCode.should.eql(200);
+                response.headers['transfer-encoding'].should.eql('chunked');
+                callback();
+              });
+            }.bind(this), done);
+          });
+
+          it('returns larger chunked responses', function(done) {
+            this.timeout(5000);
+            async.timesSeries(50, function(index, callback) {
+              var options = { gzip: gzipEnabled };
+              request.get('http://localhost:9080/compressible-chunked/5/2000?api_key=' + this.apiKey, options, function(error, response) {
+                response.statusCode.should.eql(200);
+                response.headers['transfer-encoding'].should.eql('chunked');
+                callback();
+              });
+            }.bind(this), done);
+          });
+        });
+      });
     });
   });
 

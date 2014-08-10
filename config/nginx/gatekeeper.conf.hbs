@@ -6,6 +6,28 @@ set $x_api_umbrella_uid $request_id;
 set $router_name "web_router";
 access_log {{log_dir}}/router.log api_umbrella_log buffer=32k flush=10s;
 
+# Disable gzip for APIs at this front-most "web_router" proxy. Our assumption
+# is that gzip has already been handled by the "api_router".
+#
+# This is mainly disabled due to Varnish randomly turning non-chunked responses
+# into chunked responses: https://www.varnish-cache.org/trac/ticket/1506
+# Since all chunked responses are gzipped regardless of length, this
+# effectively means everything might get gzipped, disabling the effectiveness
+# of nginx's "gzip_min_length" setting.
+#
+# This does mean that no gatekeeper error responses will ever get gzipped (over
+# rate limit errors, invalid api key errors, etc), since those never interact
+# with the "api_router" proxy. So this might be worth revisiting if Varnish
+# fixes that issue.
+gzip off;
+gunzip off;
+
 proxy_set_header X-Api-Umbrella-UID $request_id;
+
+# Normalize the Accept-Encoding header to increase cache hit rates.
+# We're not currently using TrafficServer, but this is based on what it does by
+# default:
+# https://docs.trafficserver.apache.org/en/latest/reference/configuration/records.config.en.html?highlight=gzip#proxy-config-http-normalize-ae-gzip 
+proxy_set_header Accept-Encoding $normalized_accept_encoding;
 
 proxy_pass http://api_umbrella_gatekeeper_backends;

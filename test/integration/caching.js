@@ -380,88 +380,6 @@ describe('caching', function() {
   });
 
   describe('gzip', function() {
-    // Normalize the Accept-Encoding header to maximize caching:
-    // https://docs.trafficserver.apache.org/en/latest/reference/configuration/records.config.en.html?highlight=gzip#proxy-config-http-normalize-ae-gzip 
-    describe('accept-encoding normalization', function() {
-      it('leaves accept-encoding equalling "gzip"', function(done) {
-        var options = _.merge({}, this.options, {
-          gzip: true,
-          headers: {
-            'Accept-Encoding': 'gzip',
-          },
-        });
-
-        request.get('http://localhost:9080/info/', options, function(error, response, body) {
-          response.statusCode.should.eql(200);
-          var data = JSON.parse(body);
-          data.headers['accept-encoding'].should.eql('gzip');
-          done();
-        });
-      });
-
-      it('changes accept-encoding containing "gzip" to just "gzip"', function(done) {
-        var options = _.merge({}, this.options, {
-          gzip: true,
-          headers: {
-            'Accept-Encoding': 'gzip, deflate, compress',
-          },
-        });
-
-        request.get('http://localhost:9080/info/', options, function(error, response, body) {
-          response.statusCode.should.eql(200);
-          var data = JSON.parse(body);
-          data.headers['accept-encoding'].should.eql('gzip');
-          done();
-        });
-      });
-
-      it('removes accept-encoding not containing "gzip"', function(done) {
-        var options = _.merge({}, this.options, {
-          gzip: true,
-          headers: {
-            'Accept-Encoding': 'deflate, compress',
-          },
-        });
-
-        request.get('http://localhost:9080/info/', options, function(error, response, body) {
-          response.statusCode.should.eql(200);
-          var data = JSON.parse(body);
-          should.not.exist(data.headers['accept-encoding']);
-          done();
-        });
-      });
-
-      it('removes accept-encoding containing "gzip", but not as a standalone entry ("gzipp")', function(done) {
-        var options = _.merge({}, this.options, {
-          headers: {
-            'Accept-Encoding': 'gzipp',
-          },
-        });
-
-        request.get('http://localhost:9080/info/', options, function(error, response, body) {
-          response.statusCode.should.eql(200);
-          var data = JSON.parse(body);
-          should.not.exist(data.headers['accept-encoding']);
-          done();
-        });
-      });
-
-      it('removes accept-encoding if gzip is q=0', function(done) {
-        var options = _.merge({}, this.options, {
-          headers: {
-            'Accept-Encoding': 'gzip;q=0',
-          },
-        });
-
-        request.get('http://localhost:9080/info/', options, function(error, response, body) {
-          response.statusCode.should.eql(200);
-          var data = JSON.parse(body);
-          should.not.exist(data.headers['accept-encoding']);
-          done();
-        });
-      });
-    });
-
     describe('cached gzip responses do not mix with uncompressed responses', function() {
       function itBehavesLikeGzip() {
         describe('first request is compressed ("Accept-Encoding: gzip" header)', function() {
@@ -574,7 +492,26 @@ describe('caching', function() {
       });
     });
 
-    describe('optimized gzip behavior', function() {
+    // Ideally we would return a cached response regardless of whether the
+    // first request was gzipped or not. But for now, we don't support this,
+    // and the gzip and non-gzipped versions must be requested and cached
+    // separately.
+    //
+    // Varnish supports this more optimized behavior, but it does so by forcing
+    // gzip to always be on, then only caching the gzipped version, and then
+    // un-gzipping it on the fly for each non-gzip client. For our API traffic,
+    // it seems that gzip being enabled is actually the minority of requests
+    // (only 40% based on some current production stats), so forcing each
+    // request to be un-gzipped on the fly seems like unnecessary overhead
+    // given our current usage.
+    //
+    // In our explorations of TrafficServer, this is unsupported:
+    // http://permalink.gmane.org/gmane.comp.apache.trafficserver.user/4191
+    //
+    // It's possible we might want to revisit this if we decide saving the
+    // backend bandwidth is more efficient than unzipping each request on the
+    // fly for each non-gzip client.
+    xdescribe('optimized gzip behavior', function() {
       function itBehavesLikeOptimizedGzip() {
         describe('first request is compressed ("Accept-Encoding: gzip" header)', function() {
           beforeEach(function() {

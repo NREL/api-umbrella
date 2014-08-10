@@ -135,6 +135,12 @@ http {
   #  default $upstream_http_cache_control;
   #}
 
+  map $http_accept_encoding $normalized_accept_encoding {
+    "~(^|,) *gzip *; *q=0[\.0]* *($|,)" "";
+    "~(^|,) *gzip *($|,|;)" gzip;
+    default "";
+  }
+
   server {
     listen {{router.api_backends.port}};
 
