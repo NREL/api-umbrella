@@ -27,13 +27,24 @@ xdescribe('logging', function() {
 
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.apiKey = user.api_key;
+      this.options = {
+        headers: {
+          'X-Api-Key': this.apiKey,
+          'X-Disable-Router-Connection-Limits': 'yes',
+          'X-Disable-Router-Rate-Limits': 'yes',
+        },
+        agentOptions: {
+          maxSockets: 500,
+        },
+      };
+
       done();
     }.bind(this));
   });
 
   it('logs successful requests', function(done) {
     this.timeout(450000);
-    request.get('http://localhost:9080/info/connections?api_key=' + this.apiKey, function(error, response) {
+    request.get('http://localhost:9080/info/connections', this.options, function(error, response) {
       should.not.exist(error);
       response.statusCode.should.eql(200);
       setTimeout(function() {

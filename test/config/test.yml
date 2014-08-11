@@ -1,4 +1,4 @@
-app_env: development
+app_env: test
 http_port: 9080
 https_port: 9081
 mongodb:
@@ -13,10 +13,6 @@ elasticsearch:
     path_data: /tmp/db/elasticsearch
     http_port: 50208
     transport_tcp_port: 50308
-router_global_rate_limits:
-  ip_rate: "1000r/s"
-  ip_burst: 1000
-  ip_connections: 250
 apis:
   - _id: down
     frontend_host: localhost

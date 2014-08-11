@@ -23,6 +23,11 @@ describe('proxying', function() {
       this.options = {
         headers: {
           'X-Api-Key': this.apiKey,
+          'X-Disable-Router-Connection-Limits': 'yes',
+          'X-Disable-Router-Rate-Limits': 'yes',
+        },
+        agentOptions: {
+          maxSockets: 500,
         },
       };
 
@@ -82,9 +87,9 @@ describe('proxying', function() {
     });
 
     it('streams responses', function(done) {
-      var options = {
-        url: 'http://localhost:9080/chunked?api_key=' + this.apiKey,
-      };
+      var options = _.merge({}, this.options, {
+        url: 'http://localhost:9080/chunked',
+      });
 
       shared.chunkedRequestDetails(options, function(response, data) {
         data.stringChunks.should.eql([
@@ -112,7 +117,7 @@ describe('proxying', function() {
     var stream = temp.createWriteStream();
     random.pipe(stream);
     stream.on('finish', function() {
-      var req = request.post('http://localhost:9080/upload?api_key=' + this.apiKey, function(error, response, body) {
+      var req = request.post('http://localhost:9080/upload', this.options, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.upload_size.should.eql(size);
@@ -295,7 +300,6 @@ describe('proxying', function() {
         headers: {
           'Connection': 'close',
         },
-        agentOptions: { maxSockets: 150 },
       });
 
       // Open a bunch of concurrent connections first, and then inspect the
@@ -337,7 +341,6 @@ describe('proxying', function() {
         headers: {
           'Connection': 'close',
         },
-        agentOptions: { maxSockets: 150 },
       });
 
       // Open a bunch of concurrent connections first, and then inspect the
@@ -375,12 +378,16 @@ describe('proxying', function() {
     it('allows the number of concurrent connections to execeed the number of keepalive connections', function(done) {
       this.timeout(5000);
 
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Connection': 'close',
+        },
+      });
+
       var maxConnections = 0;
       var maxRequests = 0;
-
-      var options = { agentOptions: { maxSockets: 200 } };
       async.times(200, function(index, callback) {
-        request.get('http://localhost:9080/keepalive9447/connections?api_key=' + this.apiKey, options, function(error, response, body) {
+        request.get('http://localhost:9080/keepalive9447/connections', options, function(error, response, body) {
           response.statusCode.should.eql(200);
 
           var data = JSON.parse(body);
@@ -413,8 +420,8 @@ describe('proxying', function() {
   describe('gzip', function() {
     describe('backend returning non-gzipped content', function() {
       it('gzips the response when the content length is greather than or equal to 1000', function(done) {
-        var options = { gzip: true };
-        request.get('http://localhost:9080/compressible/1000?api_key=' + this.apiKey, options, function(error, response, body) {
+        var options = _.merge({}, this.options, { gzip: true });
+        request.get('http://localhost:9080/compressible/1000', options, function(error, response, body) {
           response.statusCode.should.eql(200);
           response.headers['content-encoding'].should.eql('gzip');
           body.toString().length.should.eql(1000);
@@ -423,8 +430,8 @@ describe('proxying', function() {
       });
 
       it('does not gzip the response when the content length is less than 1000', function(done) {
-        var options = { gzip: true };
-        request.get('http://localhost:9080/compressible/999?api_key=' + this.apiKey, options, function(error, response, body) {
+        var options = _.merge({}, this.options, { gzip: true });
+        request.get('http://localhost:9080/compressible/999', options, function(error, response, body) {
           response.statusCode.should.eql(200);
           should.not.exist(response.headers['content-encoding']);
           body.toString().length.should.eql(999);
@@ -433,8 +440,8 @@ describe('proxying', function() {
       });
 
       it('gzips chunked responses of any size', function(done) {
-        var options = { gzip: true };
-        request.get('http://localhost:9080/compressible-delayed-chunked/5?api_key=' + this.apiKey, options, function(error, response, body) {
+        var options = _.merge({}, this.options, { gzip: true });
+        request.get('http://localhost:9080/compressible-delayed-chunked/5', options, function(error, response, body) {
           response.statusCode.should.eql(200);
           response.headers['content-encoding'].should.eql('gzip');
           body.toString().length.should.eql(15);
@@ -443,8 +450,8 @@ describe('proxying', function() {
       });
 
       it('returns unzipped response when unsupported', function(done) {
-        var options = { gzip: false };
-        request.get('http://localhost:9080/compressible/1000?api_key=' + this.apiKey, options, function(error, response, body) {
+        var options = _.merge({}, this.options, { gzip: false });
+        request.get('http://localhost:9080/compressible/1000', options, function(error, response, body) {
           response.statusCode.should.eql(200);
           should.not.exist(response.headers['content-encoding']);
           body.toString().length.should.eql(1000);
@@ -455,8 +462,8 @@ describe('proxying', function() {
 
     describe('backend returning pre-gzipped content', function() {
       it('returns gzipped response when supported', function(done) {
-        var options = { gzip: true };
-        request.get('http://localhost:9080/compressible-pre-gzip?api_key=' + this.apiKey, options, function(error, response, body) {
+        var options = _.merge({}, this.options, { gzip: true });
+        request.get('http://localhost:9080/compressible-pre-gzip', options, function(error, response, body) {
           response.statusCode.should.eql(200);
           response.headers['content-encoding'].should.eql('gzip');
           body.toString().should.eql('Hello Small World');
@@ -465,8 +472,8 @@ describe('proxying', function() {
       });
 
       it('returns unzipped response when unsupported', function(done) {
-        var options = { gzip: false };
-        request.get('http://localhost:9080/compressible-pre-gzip?api_key=' + this.apiKey, options, function(error, response, body) {
+        var options = _.merge({}, this.options, { gzip: false });
+        request.get('http://localhost:9080/compressible-pre-gzip', options, function(error, response, body) {
           response.statusCode.should.eql(200);
           should.not.exist(response.headers['content-encoding']);
           body.toString().should.eql('Hello Small World');
@@ -491,14 +498,13 @@ describe('proxying', function() {
         'text/xml',
       ].forEach(function(mime) {
         it('returns gzip response for "' + mime + '" content type', function(done) {
-          var options = {
+          var options = _.merge({}, this.options, {
             url: 'http://localhost:9080/compressible/1000',
             qs: {
-              api_key: this.apiKey,
               content_type: mime,
             },
             gzip: true,
-          };
+          });
 
           request(options, function(error, response, body) {
             response.statusCode.should.eql(200);
@@ -519,14 +525,13 @@ describe('proxying', function() {
         'application/x-whatever-unknown',
       ].forEach(function(mime) {
         it('returns non-gzip response for "' + mime + '" content type', function(done) {
-          var options = {
+          var options = _.merge({}, this.options, {
             url: 'http://localhost:9080/compressible/1000',
             qs: {
-              api_key: this.apiKey,
               content_type: mime,
             },
             gzip: true,
-          };
+          });
 
           request(options, function(error, response, body) {
             response.statusCode.should.eql(200);
@@ -540,10 +545,10 @@ describe('proxying', function() {
 
     describe('response streaming', function() {
       it('streams back small chunks directly as gzipped chunks', function(done) {
-        var options = {
-          url: 'http://localhost:9080/compressible-delayed-chunked/5?api_key=' + this.apiKey,
+        var options = _.merge({}, this.options, {
+          url: 'http://localhost:9080/compressible-delayed-chunked/5',
           gzip: true,
-        };
+        });
 
         shared.chunkedRequestDetails(options, function(response, data) {
           var buffer = Buffer.concat(data.chunks);
@@ -574,10 +579,10 @@ describe('proxying', function() {
 
       describe('when the underlying server supports gzip but the client does not', function() {
         it('streams back small uncompressed chunks', function(done) {
-          var options = {
-            url: 'http://localhost:9080/compressible-delayed-chunked/10?api_key=' + this.apiKey,
+          var options = _.merge({}, this.options, {
+            url: 'http://localhost:9080/compressible-delayed-chunked/10',
             gzip: false,
-          };
+          });
 
           shared.chunkedRequestDetails(options, function(response, data) {
             should.not.exist(response.headers['content-encoding']);
@@ -591,10 +596,10 @@ describe('proxying', function() {
         });
 
         it('streams back large uncompressed chunks', function(done) {
-          var options = {
-            url: 'http://localhost:9080/compressible-delayed-chunked/50000?api_key=' + this.apiKey,
+          var options = _.merge({}, this.options, {
+            url: 'http://localhost:9080/compressible-delayed-chunked/50000',
             gzip: false,
-          };
+          });
 
           shared.chunkedRequestDetails(options, function(response, data) {
             should.not.exist(response.headers['content-encoding']);
@@ -632,15 +637,18 @@ describe('proxying', function() {
     it('successfully responds when dealing with large-ish, gzipped, chunked responses', function(done) {
       this.timeout(120000);
 
+      var options = _.merge({}, this.options, {
+        gzip: true,
+      });
+
       // Varnish 3 broken behavior only cropped up sporadically, but larger
       // responses seem to have triggered the behavior more frequently.
       // Responses somewhere in the neighborhood of 252850 bytes seemed to make
       // this problem reproducible. So test everything from 252850 - 253850
       // bytes.
       var sizes = _.times(1000, function(index) { return index + 252850; });
-      var options = { gzip: true, agentOptions: { maxSockets: 150  } };
       async.eachLimit(sizes, 100, function(size, callback) {
-        request.get('http://localhost:9080/compressible-chunked/1/' + size + '?api_key=' + this.apiKey, options, function(error, response, body) {
+        request.get('http://localhost:9080/compressible-chunked/1/' + size, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           response.headers['content-encoding'].should.eql('gzip');
           response.headers['transfer-encoding'].should.eql('chunked');
@@ -810,8 +818,8 @@ describe('proxying', function() {
           it('returns small non-chunked responses', function(done) {
             this.timeout(5000);
             async.timesSeries(50, function(index, callback) {
-              var options = { gzip: gzipEnabled };
-              request.get('http://localhost:9080/compressible/10?api_key=' + this.apiKey, options, function(error, response) {
+              var options = _.merge({}, this.options, { gzip: gzipEnabled });
+              request.get('http://localhost:9080/compressible/10', options, function(error, response) {
                 response.statusCode.should.eql(200);
                 should.not.exist(response.headers['transfer-encoding']);
                 callback();
@@ -822,8 +830,8 @@ describe('proxying', function() {
           it('returns larger non-chunked responses', function(done) {
             this.timeout(5000);
             async.timesSeries(50, function(index, callback) {
-              var options = { gzip: gzipEnabled };
-              request.get('http://localhost:9080/compressible/10000?api_key=' + this.apiKey, options, function(error, response) {
+              var options = _.merge({}, this.options, { gzip: gzipEnabled });
+              request.get('http://localhost:9080/compressible/10000', options, function(error, response) {
                 response.statusCode.should.eql(200);
                 should.not.exist(response.headers['transfer-encoding']);
                 callback();
@@ -834,8 +842,8 @@ describe('proxying', function() {
           it('returns small chunked responses', function(done) {
             this.timeout(5000);
             async.timesSeries(50, function(index, callback) {
-              var options = { gzip: gzipEnabled };
-              request.get('http://localhost:9080/compressible-chunked/1/500?api_key=' + this.apiKey, options, function(error, response) {
+              var options = _.merge({}, this.options, { gzip: gzipEnabled });
+              request.get('http://localhost:9080/compressible-chunked/1/500', options, function(error, response) {
                 response.statusCode.should.eql(200);
                 response.headers['transfer-encoding'].should.eql('chunked');
                 callback();
@@ -846,8 +854,8 @@ describe('proxying', function() {
           it('returns larger chunked responses', function(done) {
             this.timeout(5000);
             async.timesSeries(50, function(index, callback) {
-              var options = { gzip: gzipEnabled };
-              request.get('http://localhost:9080/compressible-chunked/5/2000?api_key=' + this.apiKey, options, function(error, response) {
+              var options = _.merge({}, this.options, { gzip: gzipEnabled });
+              request.get('http://localhost:9080/compressible-chunked/5/2000', options, function(error, response) {
                 response.statusCode.should.eql(200);
                 response.headers['transfer-encoding'].should.eql('chunked');
                 callback();
@@ -861,13 +869,13 @@ describe('proxying', function() {
 
   describe('cookies', function() {
     it('strips analytics cookies', function(done) {
-      var options = {
+      var options = _.merge({}, this.options, {
         headers: {
           'Cookie': '__utma=foo; foo=bar; _ga=test; moo=boo',
         },
-      };
+      });
 
-      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+      request.get('http://localhost:9080/info/', options, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.headers['cookie'].should.eql('foo=bar; moo=boo');
@@ -877,11 +885,9 @@ describe('proxying', function() {
   });
 
   describe('timeouts', function() {
-    var httpOptions = { agentOptions: { maxSockets: 150  } };
-
     it('times out quickly if a backend is down', function(done) {
       this.timeout(500);
-      request.get('http://localhost:9080/down?api_key=' + this.apiKey, httpOptions, function(error, response) {
+      request.get('http://localhost:9080/down', this.options, function(error, response) {
         response.statusCode.should.eql(502);
         done();
       });
@@ -890,7 +896,7 @@ describe('proxying', function() {
     it('behaves with 60-second connection timeouts', function(done) {
       this.timeout(85000);
 
-      var apiKey = this.apiKey;
+      var options = this.options;
 
       // Parallelize all the 60-second timeout tests. Ideally these would be
       // represented as separate tests, but since mocha doesn't support
@@ -902,7 +908,7 @@ describe('proxying', function() {
         // requests
         function(callback) {
           var startTime = Date.now();
-          request.get('http://localhost:9080/delay/65000?api_key=' + apiKey, httpOptions, function(error, response) {
+          request.get('http://localhost:9080/delay/65000', options, function(error, response) {
             response.statusCode.should.eql(504);
 
             var duration = Date.now() - startTime;
@@ -916,7 +922,7 @@ describe('proxying', function() {
         // non-GET requests
         function(callback) {
           var startTime = Date.now();
-          request.post('http://localhost:9080/delay/65000?api_key=' + apiKey, httpOptions, function(error, response) {
+          request.post('http://localhost:9080/delay/65000', options, function(error, response) {
             response.statusCode.should.eql(504);
 
             var duration = Date.now() - startTime;
@@ -929,7 +935,7 @@ describe('proxying', function() {
         // doesn't time out if a backend starts sending the request within 60
         // seconds
         function(callback) {
-          request.get('http://localhost:9080/delays/57000/65000?api_key=' + apiKey, httpOptions, function(error, response, body) {
+          request.get('http://localhost:9080/delays/57000/65000', options, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('firstdone');
             callback();
@@ -939,7 +945,7 @@ describe('proxying', function() {
         // doesn't time out if a backend sends chunks at least once every 60
         // seconds
         function(callback) {
-          request.get('http://localhost:9080/delays/7000/65000?api_key=' + apiKey, httpOptions, function(error, response, body) {
+          request.get('http://localhost:9080/delays/7000/65000', options, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('firstdone');
             callback();
@@ -949,7 +955,7 @@ describe('proxying', function() {
         // closes the response if the backend waits more than 60 seconds
         // between sending chunks
         function(callback) {
-          request.get('http://localhost:9080/delays/3000/65000?api_key=' + apiKey, httpOptions, function(error, response, body) {
+          request.get('http://localhost:9080/delays/3000/65000', options, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('first');
             callback();
@@ -970,7 +976,7 @@ describe('proxying', function() {
         /*function(callback) {
           should.not.exist(global.backendCallCounts['get-timeout']);
 
-          request.get('http://localhost:9080/timeout?api_key=' + apiKey, httpOptions, function(error, response) {
+          request.get('http://localhost:9080/timeout', options, function(error, response) {
             response.statusCode.should.eql(504);
 
             // Ensure that the backend has only been called once.
@@ -995,7 +1001,7 @@ describe('proxying', function() {
         function(callback) {
           should.not.exist(global.backendCallCounts['post-timeout']);
 
-          request.post('http://localhost:9080/timeout?api_key=' + apiKey, httpOptions, function(error, response) {
+          request.post('http://localhost:9080/timeout', options, function(error, response) {
             response.statusCode.should.eql(504);
 
             // Ensure that the backend has only been called once.
