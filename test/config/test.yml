@@ -47,7 +47,7 @@ apis:
       - frontend_prefix: /keepalive9446/
         backend_prefix: /keepalive9446/
     rate_limit_mode: unlimited
-    keepalive_connections: 6
+    keepalive_connections: 3
   - _id: keepalive3
     frontend_host: localhost
     backend_host: localhost
