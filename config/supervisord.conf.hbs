@@ -22,6 +22,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:elasticsearch]
 environment=ES_INCLUDE="{{config_dir}}/elasticsearch/elasticsearch-env.sh"
@@ -30,6 +31,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:redis]
 command=redis-server {{config_dir}}/redis.conf
@@ -37,6 +39,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:trafficserver]
 environment=TS_ROOT="{{trafficserver_run_dir}}"
@@ -45,6 +48,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:varnishd]
 command=varnishd -F -a :{{varnish.port}} -f {{config_dir}}/varnish.vcl -t 0 -n /tmp/api-umbrella -p http_gzip_support=off
@@ -52,6 +56,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:varnishlog]
 command=varnishlog -a -w {{log_dir}}/varnish.log -n /tmp/api-umbrella
@@ -59,6 +64,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:varnishncsa]
 command=varnishncsa -a -w {{log_dir}}/varnishncsa.log -n /tmp/api-umbrella
@@ -66,6 +72,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:nginx_router]
 command=nginx -c {{config_dir}}/nginx/router.conf
@@ -73,6 +80,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:gatekeeper]
 numprocs=4
@@ -82,6 +90,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s_50%(process_num)03d.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:config_reloader]
 command=api-umbrella-config-reloader {{api_umbrella_config_args}}
@@ -89,6 +98,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:router-log-listener]
 command=api-umbrella-router-log-listener {{api_umbrella_config_args}}
@@ -96,6 +106,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:log-processor]
 command=api-umbrella-log-processor {{api_umbrella_config_args}}
@@ -103,6 +114,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:distributed_rate_limits_sync]
 command=api_umbrella_distributed_rate_limits_sync {{api_umbrella_config_args}}
@@ -110,6 +122,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:web_puma]
 environment=MONGODB_URL="{{mongodb.url}}",ELASTICSEARCH_HOSTS="{{elasticsearch.hosts}}"
@@ -119,6 +132,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
 
 [program:web_nginx]
 command=nginx -c {{config_dir}}/nginx/web.conf
@@ -126,3 +140,4 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
+startsecs=3
