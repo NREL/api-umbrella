@@ -69,7 +69,7 @@ module.exports = function(grunt) {
         exec = require('child_process').exec;
 
     async.timesSeries(100, function(index, next) {
-      process.stdout.write('Run ' + index + ' ');
+      process.stdout.write('Run ' + (index + 1) + ' ');
       var progress = setInterval(function() {
         process.stdout.write('.');
       }, 500);
