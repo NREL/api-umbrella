@@ -314,6 +314,15 @@ app.all('/cacheable-multiple-vary-with-accept-encoding/:id', function(req, res) 
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 
+app.all('/logging-example/*', function(req, res) {
+  res.set('Age', '20');
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Expires', new Date(Date.now() + 60000).toUTCString());
+  res.set('Content-Length', 5);
+  res.end('hello');
+});
+
 var server = app.listen(9444);
 
 server.on('error', function(error) {

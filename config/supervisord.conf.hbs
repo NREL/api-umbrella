@@ -90,8 +90,15 @@ stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 
-[program:logging]
-command=api_umbrella_logging {{api_umbrella_config_args}}
+[program:router-log-listener]
+command=api-umbrella-router-log-listener {{api_umbrella_config_args}}
+redirect_stderr=true
+stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stderr_logfile=NONE
+logfile_maxbytes=0
+
+[program:log-processor]
+command=api-umbrella-log-processor {{api_umbrella_config_args}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE

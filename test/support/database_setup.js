@@ -3,6 +3,7 @@
 require('../test_helper');
 
 var apiUmbrellaConfig = require('api-umbrella-config'),
+    elasticsearch = require('elasticsearch'),
     mongoose = require('mongoose'),
     path = require('path'),
     redis = require('redis');
@@ -28,6 +29,18 @@ before(function redisOpen(done) {
   global.redisClient.flushdb(done);
 });
 
+// Wipe the elasticsearch data.
+before(function elasticsearchOpen(done) {
+  this.timeout(10000);
+
+  global.elasticsearch = new elasticsearch.Client(config.get('elasticsearch'));
+  global.elasticsearch.deleteByQuery({
+    index: 'api-umbrella-logs-*',
+    type: 'log',
+    q: '*',
+  }, done);
+});
+
 // Close the mongo connection cleanly after each run.
 after(function mongoClose(done) {
   mongoose.testConnection.close(done);
@@ -36,5 +49,11 @@ after(function mongoClose(done) {
 after(function redisClose() {
   if(global.redisClient && global.redisClient.connected) {
     global.redisClient.end();
+  }
+});
+
+after(function elasticsearchClose() {
+  if(global.elasticsearch) {
+    global.elasticsearch.close();
   }
 });

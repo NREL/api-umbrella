@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var logging = require('../lib/logging'),
+var routerLogListener = require('../lib/router_log_listener'),
     nomnom = require('nomnom');
 
 var options = nomnom
@@ -12,4 +12,4 @@ var options = nomnom
   })
   .parse();
 
-logging.start(options);
+routerLogListener.start(options);

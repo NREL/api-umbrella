@@ -3,29 +3,15 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    apiUmbrellaConfig = require('api-umbrella-config'),
-    elasticsearch = require('elasticsearch'),
+    async = require('async'),
     Factory = require('factory-lady'),
-    path = require('path'),
     request = require('request');
 
-xdescribe('logging', function() {
-  before(function truncateElasticsearch(done) {
-    this.timeout(5000);
-
-    var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
-    this.elasticsearch = new elasticsearch.Client(config.get('elasticsearch'));
-    this.elasticsearch.deleteByQuery({
-      index: 'api-umbrella-logs-*',
-      type: 'log',
-      q: '*',
-    }, done);
-  });
-
+describe('logging', function() {
   beforeEach(function(done) {
-    this.uniqueId = _.uniqueId();
-
+    this.uniqueQueryId = process.hrtime().join('-') + '-' + Math.random();
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
+      this.user = user;
       this.apiKey = user.api_key;
       this.options = {
         headers: {
@@ -42,55 +28,170 @@ xdescribe('logging', function() {
     }.bind(this));
   });
 
-  it('logs successful requests', function(done) {
-    this.timeout(450000);
-    request.get('http://localhost:9080/info/connections', this.options, function(error, response) {
-      should.not.exist(error);
-      response.statusCode.should.eql(200);
-      setTimeout(function() {
-        this.elasticsearch.search({
-          q: 'api_key:' + this.apiKey,
-        }, function(error, response) {
-          console.info('ELASTICSEARCH: ', arguments);
-          console.info(response);
-          console.info(response.hits.hits);
+  function waitForLog(uniqueQueryId, done) {
+    var response;
+    async.doWhilst(function(callback) {
+      global.elasticsearch.search({
+        q: 'request_query.unique_query_id:"' + uniqueQueryId + '"',
+      }, function(error, res) {
+        if(error) {
+          callback(error);
+        } else {
+          if(res && res.hits && res.hits.total > 0) {
+            response = res;
+            callback();
+          } else {
+            setTimeout(callback, 50);
+          }
+        }
+      });
+    }, function() {
+      return !response;
+    }, function(error) {
+      response.hits.total.should.eql(1);
+      var hit = response.hits.hits[0];
+      var record = hit._source;
+      done(error, response, hit, record);
+    });
+  }
 
-          should.not.exist(error);
-          response.hits.total.should.eql(1);
-          var record = response.hits.hits[0]._source;
-          _.keys(record).sort().should.eql([
+  describe('successful requests', function() {
+    it('logs all the expected response fileds (for a non-chunked, non-gzipped response)', function(done) {
+      this.timeout(45000);
+
+      var options = _.merge({}, this.options, {
+        qs: {
+          'unique_query_id': this.uniqueQueryId,
+        },
+        headers: {
+          'Accept': 'text/plain; q=0.5, text/html',
+          'Accept-Encoding': 'compress, gzip',
+          'Connection': 'close',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Origin': 'http://foo.example',
+          'User-Agent': 'curl/7.37.1',
+          'Referer': 'http://example.com',
+        },
+        auth: {
+          user: 'basic-auth-username-example',
+          pass: 'my-secret-password',
+        },
+      });
+
+      request.get('http://localhost:9080/logging-example/', options, function(error, response) {
+        response.statusCode.should.eql(200);
+
+        waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+          var fields = _.keys(record).sort();
+          fields.should.eql([
             'api_key',
             'backend_response_time',
             'internal_gatekeeper_time',
             'internal_response_time',
+            'proxy_overhead',
             'request_accept',
             'request_accept_encoding',
             'request_at',
-            'request_connection',
+            'request_basic_auth_username',
+            // FIXME: Connection is something we want to log, but it will never
+            // get logged, since this gets reset by the router (to force all
+            // backend connections to be keep-alived). But we are interested in
+            // logging this (so we know what client's support keep alive). We
+            // should fix this to log this based on what the front-most router
+            // recieves (before it gets reset). We should also look to log HTTP
+            // 1.0 vs 1.1 from the front-most connection, so we can also see
+            // keepalive support that way.
+            //'request_connection',
             'request_content_type',
+            'request_host',
             'request_ip',
             'request_method',
             'request_origin',
+            'request_path',
+            'request_path_hierarchy',
+            'request_query',
+            'request_referer',
+            'request_scheme',
+            'request_size',
             'request_url',
             'request_user_agent',
-            'request_referer',
-            'request_basic_auth_username',
+            'request_user_agent_family',
+            'request_user_agent_type',
             'response_age',
-            'response_content_encoding',
             'response_content_length',
             'response_content_type',
             'response_server',
+            'response_size',
             'response_status',
-            'response_transfer_encoding',
+            'response_time',
             'user_email',
             'user_id',
             'user_registration_source',
           ]);
 
+          record.api_key.should.eql(this.apiKey);
+          (typeof record.backend_response_time).should.eql('number');
+          (typeof record.internal_gatekeeper_time).should.eql('number');
+          (typeof record.internal_response_time).should.eql('number');
+          (typeof record.proxy_overhead).should.eql('number');
+          record.request_accept.should.eql('text/plain; q=0.5, text/html');
+          record.request_accept_encoding.should.eql('gzip');
+          record.request_at.should.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ$/);
+          record.request_basic_auth_username.should.eql('basic-auth-username-example');
+          record.request_content_type.should.eql('application/x-www-form-urlencoded');
+          record.request_host.should.eql('localhost');
+          record.request_ip.should.eql('127.0.0.1');
+          record.request_method.should.eql('GET');
+          record.request_origin.should.eql('http://foo.example');
+          record.request_path.should.eql('/complete-logging/');
+          record.request_path_hierarchy.should.eql('/complete-logging/');
+          record.request_query.should.eql({
+            'unique_query_id': this.uniqueQueryId,
+          });
+          record.request_referer.should.eql('http://example.com');
+          record.request_scheme.should.eql('http');
+          (typeof record.request_size).should.eql('number');
+          record.request_url.should.eql('http://localhost:9080/complete-logging/?unique_query_id=' + this.uniqueQueryId);
+          record.request_user_agent.should.eql('curl/7.37.1');
+          record.request_user_agent_family.should.eql('cURL');
+          record.request_user_agent_type.should.eql('Library');
+          record.response_age.should.eql(20);
+          record.response_content_length.should.eql(5);
+          record.response_content_type.should.eql('text/plain; charset=utf-8');
+          record.response_server.should.eql('nginx');
+          (typeof record.response_size).should.eql('number');
+          record.response_status.should.eql(200);
+          (typeof record.response_time).should.eql('number');
+          record.user_email.should.eql(this.user.email);
+          record.user_id.should.eql(this.user.id);
+          record.user_registration_source.should.eql('web');
+
           done();
-        });
-      }.bind(this), 45000);
-    }.bind(this));
+        }.bind(this));
+      }.bind(this));
+    });
+
+    it('logs the extra expected fields for chunked or gzip responses', function(done) {
+      this.timeout(45000);
+
+      var options = _.merge({}, this.options, {
+        gzip: true,
+        qs: {
+          'unique_query_id': this.uniqueQueryId,
+        },
+      });
+
+      request.get('http://localhost:9080/compressible-chunked/10/1000', options, function(error, response) {
+        response.statusCode.should.eql(200);
+
+        waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+          record.response_content_encoding.should.eql('gzip');
+          record.response_transfer_encoding.should.eql('chunked');
+
+          done();
+        }.bind(this));
+      }.bind(this));
+    });
   });
 
   it('logs requests denied by the gatekeeper', function() {
