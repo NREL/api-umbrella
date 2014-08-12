@@ -98,7 +98,7 @@ module.exports = function(grunt) {
         redis = require('redis');
 
     var done = this.async();
-    var redisClient = redis.createClient(config.get('redis'));
+    var redisClient = redis.createClient(config.get('redis.port'), config.get('redis.host'));
 
     var queues = ['cv:log_queue:processing', 'cv:log_queue:failed'];
     async.eachSeries(queues, function(queue, queueCallback) {

@@ -86,7 +86,7 @@ before(function redisStart(done) {
 
 // Wipe the redis data.
 before(function redisOpen(done) {
-  global.redisClient = redis.createClient(config.get('redis'));
+  global.redisClient = redis.createClient(config.get('redis.port'), config.get('redis.host'));
   global.redisClient.flushdb(function() {
     done();
   });
