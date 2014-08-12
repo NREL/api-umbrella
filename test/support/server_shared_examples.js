@@ -14,6 +14,7 @@ var _ = require('lodash'),
     yaml = require('js-yaml');
 
 global.backendCalled = false;
+global.autoIncrementingIpAddress = '10.0.0.0';
 
 _.merge(global.shared, {
   buildRequestOptions: function(path, apiKey, options) {
@@ -41,11 +42,8 @@ _.merge(global.shared, {
     });
 
     beforeEach(function(done) {
-      if(!this.ipAddress) {
-        this.ipAddress = '10.0.0.1';
-      } else {
-        this.ipAddress = ippp.next(this.ipAddress);
-      }
+      global.autoIncrementingIpAddress = ippp.next(global.autoIncrementingIpAddress);
+      this.ipAddress = global.autoIncrementingIpAddress;
 
       Factory.create('api_user', function(user) {
         this.user = user;
@@ -57,9 +55,6 @@ _.merge(global.shared, {
     beforeEach(function(done) {
       backendCalled = false;
 
-      //console.info('BEFORE GATEKEEPER', this.loader.runtimeFile);
-      //console.info('Overrides: ', configOverrides);
-      //console.info('Content: ', fs.readFileSync(this.loader.runtimeFile).toString());
       this.gatekeeper = gatekeeper.start({
         config: this.loader.runtimeFile,
       }, done);

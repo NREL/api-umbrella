@@ -149,8 +149,8 @@ describe('ApiUmbrellaGatekeper', function() {
             asyncCallback(null);
           });
         }, function() {
-          this.ipAddress = ippp.next(this.ipAddress);
-          options.headers['X-Forwarded-For'] = this.ipAddress;
+          global.autoIncrementingIpAddress = ippp.next(global.autoIncrementingIpAddress);
+          options.headers['X-Forwarded-For'] = global.autoIncrementingIpAddress;
 
           request.get('http://localhost:9333' + path, options, function(error, response) {
             response.statusCode.should.eql(200);
