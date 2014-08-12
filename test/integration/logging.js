@@ -143,15 +143,15 @@ describe('logging', function() {
           record.request_ip.should.eql('127.0.0.1');
           record.request_method.should.eql('GET');
           record.request_origin.should.eql('http://foo.example');
-          record.request_path.should.eql('/complete-logging/');
-          record.request_path_hierarchy.should.eql('/complete-logging/');
+          record.request_path.should.eql('/logging-example/');
+          record.request_path_hierarchy.should.eql('/logging-example/');
           record.request_query.should.eql({
             'unique_query_id': this.uniqueQueryId,
           });
           record.request_referer.should.eql('http://example.com');
           record.request_scheme.should.eql('http');
           (typeof record.request_size).should.eql('number');
-          record.request_url.should.eql('http://localhost:9080/complete-logging/?unique_query_id=' + this.uniqueQueryId);
+          record.request_url.should.eql('http://localhost:9080/logging-example/?unique_query_id=' + this.uniqueQueryId);
           record.request_user_agent.should.eql('curl/7.37.1');
           record.request_user_agent_family.should.eql('cURL');
           record.request_user_agent_type.should.eql('Library');
