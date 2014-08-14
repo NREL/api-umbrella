@@ -31,8 +31,6 @@
 .DS_Store
 
 # Ignore Shippable items, so the GitHub pages publish task can work. 
-/shippable
-/shippable_script
-/run_install
-/run_script
+/shippable*
+/run_*
 /Build*.tar.gz
