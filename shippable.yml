@@ -3,6 +3,7 @@ rvm:
   - 2.1.2
 script:
   - git status
+  - rm -rf build
   - rake publish
 notifications:
   email:
