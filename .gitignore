@@ -17,3 +17,15 @@
 # Ignore real databags.
 /chef/data_bags/envs/staging.json
 /chef/data_bags/envs/production.json
+
+# Ignore bundler config
+/.bundle
+
+# Ignore the build directory
+/build
+
+# Ignore Sass' cache
+/.sass-cache
+
+# Ignore .DS_store file
+.DS_Store
