@@ -1,0 +1,10 @@
+language: ruby
+rvm:
+  - 2.1.2
+script:
+  - git status
+  - cd website && rake publish
+notifications:
+  email:
+    on_success: change
+    on_failure: always
