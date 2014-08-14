@@ -5,7 +5,19 @@ import std;
 backend default {
   .host = "{{varnish.backend.host}}";
   .port = "{{varnish.backend.port}}";
-  .first_byte_timeout = 60s;
+
+  # Define a timeout in Varnish longer than the 60 second timeout defined in
+  # nginx. This works around the issue of Varnish sending a second request to
+  # the backend when the backend times out:
+  #
+  # https://www.varnish-cache.org/lists/pipermail/varnish-misc/2010-December/019538.html
+  # https://www.varnish-cache.org/lists/pipermail/varnish-dev/2012-November/007378.html
+  #
+  # It sidesteps this issue by ensuring that nginx terminates the incoming
+  # request before Varnish times out. Once Varnish does time out, then the
+  # incoming request has been terminated, which seems to prevent Varnish from
+  # trying the request a second time.
+  .first_byte_timeout = 65s;
 }
 
 acl internal_networks {

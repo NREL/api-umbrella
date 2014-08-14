@@ -807,7 +807,7 @@ describe('proxying', function() {
       });
     });
 
-    // Ideally when a backend returns a non-chunked response it would be
+    // TODO: Ideally when a backend returns a non-chunked response it would be
     // returned to the client as non-chunked, but Varnish appears to sometimes
     // randomly change non-chunked responses into chunked responses.
     // Update if Varnish's behavior changes:
@@ -894,7 +894,7 @@ describe('proxying', function() {
     });
 
     it('behaves with 60-second connection timeouts', function(done) {
-      this.timeout(85000);
+      this.timeout(90000);
 
       var options = this.options;
 
@@ -967,13 +967,7 @@ describe('proxying', function() {
         // This is to ensure that no proxy in front of the backend makes
         // multiple retry attempts when a request times out (since we don't
         // want to duplicate requests if a backend is already struggling).
-        //
-        // FIXME: Currently failing in Varnish. No apparent way to disable this
-        // without completely disabling keep-alive (which I'm hesitant to do):
-        //
-        // https://www.varnish-cache.org/lists/pipermail/varnish-misc/2010-December/019538.html
-        // https://www.varnish-cache.org/lists/pipermail/varnish-dev/2012-November/007378.html
-        /*function(callback) {
+        function(callback) {
           should.not.exist(global.backendCallCounts['get-timeout']);
 
           request.get('http://localhost:9080/timeout', options, function(error, response) {
@@ -982,13 +976,13 @@ describe('proxying', function() {
             // Ensure that the backend has only been called once.
             global.backendCallCounts['get-timeout'].should.eql(1);
 
-            // Wait 10 seconds for any possible retry attempts that might be
+            // Wait 15 seconds for any possible retry attempts that might be
             // pending, and then ensure the backend has still only been called
             // once.
             setTimeout(function() {
               global.backendCallCounts['get-timeout'].should.eql(1);
               callback();
-            }, 10000);
+            }, 15000);
           });
         },
 
@@ -1007,15 +1001,41 @@ describe('proxying', function() {
             // Ensure that the backend has only been called once.
             global.backendCallCounts['post-timeout'].should.eql(1);
 
-            // Wait 10 seconds for any possible retry attempts that might be
+            // Wait 15 seconds for any possible retry attempts that might be
             // pending, and then ensure the backend has still only been called
             // once.
             setTimeout(function() {
               global.backendCallCounts['post-timeout'].should.eql(1);
               callback();
-            }, 10000);
+            }, 15000);
           });
-        },*/
+        },
+
+        // only sends 1 request to the backend on timeouts that fall between
+        // the varnish and nginx timeout
+        //
+        // Since we have to workaround Varnish's double request issue by
+        // setting it's timeout longer than nginx's, just ensure everything
+        // still works when something times according to nginx's timeout, but
+        // not varnish's longer timeout.
+        function(callback) {
+          should.not.exist(global.backendCallCounts['post-between-varnish-timeout']);
+
+          request.get('http://localhost:9080/between-varnish-timeout', options, function(error, response) {
+            response.statusCode.should.eql(504);
+
+            // Ensure that the backend has only been called once.
+            global.backendCallCounts['post-between-varnish-timeout'].should.eql(1);
+
+            // Wait 15 seconds for any possible retry attempts that might be
+            // pending, and then ensure the backend has still only been called
+            // once.
+            setTimeout(function() {
+              global.backendCallCounts['post-between-varnish-timeout'].should.eql(1);
+              callback();
+            }, 15000);
+          });
+        },
       ], done);
     });
   });

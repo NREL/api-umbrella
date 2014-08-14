@@ -149,14 +149,21 @@ app.get('/timeout', function(req, res) {
   incrementCachableCallCount('get-timeout');
   setTimeout(function() {
     res.end('done');
-  }, 65000);
+  }, 70000);
 });
 
 app.post('/timeout', function(req, res) {
   incrementCachableCallCount('post-timeout');
   setTimeout(function() {
     res.end('done');
-  }, 65000);
+  }, 70000);
+});
+
+app.get('/between-varnish-timeout', function(req, res) {
+  incrementCachableCallCount('post-between-varnish-timeout');
+  setTimeout(function() {
+    res.end('done');
+  }, 62500);
 });
 
 app.all('/cacheable-but-not/:id', function(req, res) {
