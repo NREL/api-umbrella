@@ -1,6 +1,7 @@
 language: ruby
 rvm:
   - 2.1.2
+gemfile: website/Gemfile
 script:
   - git status
   - cd website && rake publish
