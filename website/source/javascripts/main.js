@@ -12,4 +12,12 @@ $(document).ready(function() {
       }
     }
   });
+
+  $('.image-link-no2x').magnificPopup({ 
+    type: 'image',
+    image: {
+      cursor: null,
+      verticalFit: false,
+    }
+  });
 });

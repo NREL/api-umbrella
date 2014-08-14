@@ -1,3 +1,8 @@
+---
+title: Getting Started - Documentation - API Umbrella
+header: Documentation
+---
+
 # Getting Started
 
 ### Login to the web admin
@@ -18,7 +23,7 @@ In this example, we'll proxy to Google's Geocoding API (but you'll more likely b
 
 **Step 2:** Add a new backend:
 
-![Add API Backend Example](https://github.com/NREL/api-umbrella/raw/master/docs/images/add_api_backend_example.png)
+<%= link_to(image_tag("../../images/docs/add_api_backend_example.png", :alt => "Add API Backend Example", :class => "img-responsive"), "/images/docs/add_api_backend_example.png", :relative => true, :class => "image-link-no2x") %>
 
 **Step 3:** Navigate to the "Publish Changes" page under the "Configuration" menu and press the Publish button.
 
@@ -46,7 +51,7 @@ You can see how API Umbrella layers its authentication on top of existing APIs b
 
 Login to the [web admin](http://localhost:8080/admin/). Navigate to the "Filter Logs" section under the "Analytics" menu. As you make API requests against your API Umbrella server, the requests should start to show up here (there may be a 30 second delay before the requests show up in the analytics).
 
-![Analytics](https://github.com/NREL/api-umbrella/raw/master/docs/images/analytics.png)
+<%= link_to(image_tag("../../images/docs/analytics.png", :alt => "Analytics", :class => "img-responsive"), "/images/docs/analytics.png", :relative => true, :class => "image-link-no2x") %>
 
 
 ### Write API documentation
@@ -63,5 +68,3 @@ For global settings, when you define an API backend's configuration (eg, that ap
 You can also setup more granular rules under the "Sub-URL Request Settings." In there you can define required roles for more specific URLs within your API, allowing you to do things like define that /foo/bar/ and /foo/moo/ require separate roles. You can also assign these requires roles based on HTTP method access, so you can setup different required roles for POST vs GET vs PUT vs DELETE vs etc.
 
 The most common thing we've done is to allow all API keys to have GET access by default, but then setup a sub-url request setting to restrict POST/PUT/DELETE access to specific roles. So, for example, everyone can access the GET API without any role, but only API keys with a "foo-write" role assigned to them can POST to the API.
-
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/9caf7fc8bb54ccd9e1670affa6b82618 "githalytics.com")](http://githalytics.com/NREL/api-umbrella)
