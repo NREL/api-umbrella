@@ -83,6 +83,14 @@ describe('logging', function() {
 
         waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
           var fields = _.keys(record).sort();
+
+          // Varnish randomly turns some non-chunked responses into chunked
+          // responses, so this header may crop up, but we'll ignore thit for
+          // this test's purposes.
+          // See: https://www.varnish-cache.org/trac/ticket/1506
+          // TODO: Remove if Varnish changes its behavior.
+          fields = _.without(fields, 'response_transfer_encoding');
+
           fields.should.eql([
             'api_key',
             'backend_response_time',
