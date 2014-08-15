@@ -2,26 +2,8 @@
 
 require('../test_helper');
 
-var exec = require('child_process').exec,
-    path = require('path'),
+var path = require('path'),
     router = require('../../lib/router');
-
-before(function clearCache(done) {
-  exec('traffic_server -Cclear', {
-    env: {
-      'TS_ROOT': '/tmp/api-umbrella/trafficserver',
-      'PATH': [
-        '/opt/api-umbrella/embedded/bin',
-        '/usr/local/sbin',
-        '/usr/local/bin',
-        '/usr/sbin',
-        '/usr/bin',
-        '/sbin',
-        '/bin',
-      ].join(':'),
-    }
-  }, done);
-});
 
 before(function startProcesses(done) {
   this.timeout(60000);

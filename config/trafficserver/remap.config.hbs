@@ -1,7 +1,0 @@
-map /cache-inspector/ http://{cache}
-
-# FIXME: Should no longer be necessary once TrafficServer 5.1.0 is released:
-# https://issues.apache.org/jira/browse/TS-2934
-map http://127.0.0.1:8083/synthetic.txt http://127.0.0.1:8083/synthetic.txt
-
-map / http://{{trafficserver.backend.host}}:{{trafficserver.backend.port}}

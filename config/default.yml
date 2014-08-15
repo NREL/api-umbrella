@@ -13,13 +13,6 @@ varnish:
   backend:
     host: localhost
     port: 50100
-trafficserver:
-  port: 51701
-  backend:
-    host: 127.0.0.1
-    port: 50100
-  user: vagrant
-  root: /opt/api-umbrella/embedded
 web:
   port: 51000
   puma:

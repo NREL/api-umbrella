@@ -41,15 +41,6 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
 
-[program:trafficserver]
-environment=TS_ROOT="{{trafficserver_run_dir}}"
-command=traffic_cop --stdout
-redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
-stderr_logfile=NONE
-logfile_maxbytes=0
-startsecs=3
-
 [program:varnishd]
 command=varnishd -F -a :{{varnish.port}} -f {{config_dir}}/varnish.vcl -t 0 -n /tmp/api-umbrella -p http_gzip_support=off
 redirect_stderr=true
