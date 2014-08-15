@@ -1036,6 +1036,26 @@ describe('proxying', function() {
             }, 15000);
           });
         },
+
+        // doesn't consider the gatekeeper backends down after a bunch of
+        // timeouts are encountered.
+        //
+        // This is to check the behavior of nginx's max_fails=0 in our
+        // gatekeeper backend setup, to ensure a bunch of backend timeouts
+        // don't accidentally remove all the gatekeepers from load balancing
+        // rotation.
+        function(callback) {
+          async.times(50, function(index, timesCallback) {
+            request.post('http://localhost:9080/delay/65000', options, timesCallback);
+          }, function() {
+            async.times(50, function(index, timesCallback) {
+              request.get('http://localhost:9080/info/', options, function(error, response) {
+                response.statusCode.should.eql(200);
+                timesCallback(error);
+              });
+            }.bind(this), callback);
+          });
+        },
       ], done);
     });
   });

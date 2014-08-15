@@ -72,8 +72,18 @@ http {
   }
 
   upstream api_umbrella_gatekeeper_backends {
+    # Set max_fails=0 to disable taking the servers out of rotation, even on
+    # failures.
+    #
+    # This should maybe be revisited, since this isn't quite ideal, but this
+    # fixes the default behavior that a bunch of backend timeouts can briefly
+    # take all the servers out of rotation (and since we're not in control of
+    # if an API backend times out, this doesn't seem ideal). The basic issue is
+    # that "proxy_next_upstream" cannot exclude timeout errors from this: "The
+    # cases of error, timeout and invalid_header are always considered
+    # unsuccessful attempts, even if they are not specified in the directive."
     {{#each gatekeeper_hosts}}
-    server {{.}};
+    server {{.}} max_fails=0;
     {{/each}}
     keepalive 10;
   }
@@ -175,6 +185,11 @@ http {
     proxy_set_header X-Api-Umbrella-UID "";
     proxy_set_header X-Api-Umbrella-Backend-Scheme "";
     proxy_set_header X-Api-Umbrella-Backend-Id "";
+
+    # Only retry backends in the event of connection errors (and not also
+    # connection timeouts as is the default). This prevents slow backend timeouts
+    # triggering multiple requests if multiple backends are defined.
+    proxy_next_upstream error;
 
     # Don't buffer proxied requests to allow for streaming APIs.
     proxy_buffering off;

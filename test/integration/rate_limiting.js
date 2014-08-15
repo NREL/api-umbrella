@@ -7,7 +7,7 @@ var _ = require('lodash'),
     Factory = require('factory-lady'),
     request = require('request');
 
-xdescribe('rate limiting', function() {
+describe('rate limiting', function() {
   beforeEach(function(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.apiKey = user.api_key;
