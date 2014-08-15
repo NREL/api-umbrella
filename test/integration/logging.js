@@ -164,7 +164,6 @@ describe('logging', function() {
           record.request_user_agent_family.should.eql('cURL');
           record.request_user_agent_type.should.eql('Library');
           record.response_age.should.eql(20);
-          record.response_content_length.should.eql(5);
           record.response_content_type.should.eql('text/plain; charset=utf-8');
           record.response_server.should.eql('nginx');
           (typeof record.response_size).should.eql('number');
@@ -173,6 +172,14 @@ describe('logging', function() {
           record.user_email.should.eql(this.user.email);
           record.user_id.should.eql(this.user.id);
           record.user_registration_source.should.eql('web');
+
+          // Handle the edge-case that Varnish randomly turns non-chunked
+          // responses into chunked responses.
+          if(record.response_content_length) {
+            record.response_content_length.should.eql(5);
+          } else {
+            record.response_transfer_encoding.should.eql('chunked');
+          }
 
           done();
         }.bind(this));
