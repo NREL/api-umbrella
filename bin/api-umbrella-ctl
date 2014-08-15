@@ -1,8 +1,72 @@
 #!/usr/bin/env node
 
-var forever = require('forever-monitor'),
-    parser = require('nomnom'),
-    router = require('../lib/router');
+var _ = require('lodash'),
+    forever = require('forever'),
+    parser = require('nomnom');
+
+var tasks = {
+  run: function(options) {
+    var router = require('../lib/router');
+    router.run(options);
+  },
+
+  start: function(options) {
+    forever.list(false, function(error, processes) {
+      if(processes && processes.length > 0) {
+        console.error('api-umbrella is already started');
+        process.exit(1);
+      } else {
+        // Pass along any command line args to the "run" command.
+        var runArgs = ['run'];
+        runArgs = runArgs.concat(process.argv.slice(3));
+
+        // Call the "run" command, but just start it in the background.
+        forever.startDaemon(__filename, {
+          silent: false,
+          options: runArgs,
+          logFile: '/tmp/blah.log',
+          outFile: '/tmp/blah-out.log',
+          errFile: '/tmp/blah-err.log',
+        });
+      }
+    });
+  },
+
+  stop: function() {
+    forever.list(false, function(error, processes) {
+      if(processes && processes.length > 0) {
+        forever.stopAll();
+      } else {
+        console.info('api-umbrella is already stopped');
+      }
+    });
+  },
+
+  restart: function() {
+    forever.list(false, function(error, processes) {
+      if(processes && processes.length > 0) {
+        forever.restartAll();
+      } else {
+        tasks.start();
+      }
+    });
+  },
+
+  reload: function() {
+  },
+
+  status: function() {
+    forever.list(false, function(error, processes) {
+      var pids = _.pluck(processes, 'pid');
+      if(processes && processes.length > 0) {
+        console.info('api-umbrella (pid ' + pids.join(', ') + ') is running');
+      } else {
+        console.error('api-umbrella is stopped');
+        process.exit(1);
+      }
+    });
+  },
+};
 
 parser.command('run')
   .help('Run the API Umbrella server in the foreground')
@@ -13,9 +77,7 @@ parser.command('run')
     list: true,
     help: 'Conifg file to use (include multiple times for multiple files)',
   })
-  .callback(function(options) {
-    router.run(options);
-  });
+  .callback(tasks.run);
 
 parser.command('start')
   .help('Start the API Umbrella server')
@@ -26,72 +88,22 @@ parser.command('start')
     list: true,
     help: 'Conifg file to use (include multiple times for multiple files)',
   })
-  .callback(function(options) {
-    console.info(process.execArgv);
-    console.info(__filename);
-    var child = new (forever.Monitor)(__filename, {
-      max: 5,
-      silent: false,
-      options: ['run'],
-      logFile: '/tmp/blah.log',
-      outFile: '/tmp/blah-out.log',
-      errFile: '/tmp/blah-err.log',
-    });
-
-    child.start();
-    //router.start(options);
-  });
+  .callback(tasks.start);
 
 parser.command('stop')
   .help('Stop the API Umbrella server')
-  .option('config', {
-    abbr: 'c',
-    metavar: 'FILE',
-    default: ['/etc/api-umbrella/api-umbrella.yml'],
-    list: true,
-    help: 'Conifg file to use (include multiple times for multiple files)',
-  })
-  .callback(function(options) {
-    router.stop(options);
-  });
+  .callback(tasks.stop);
 
 parser.command('restart')
   .help('Restart the API Umbrella server')
-  .option('config', {
-    abbr: 'c',
-    metavar: 'FILE',
-    default: ['/etc/api-umbrella/api-umbrella.yml'],
-    list: true,
-    help: 'Conifg file to use (include multiple times for multiple files)',
-  })
-  .callback(function(options) {
-    router.restart(options);
-  });
+  .callback(tasks.restart);
 
 parser.command('reload')
   .help('Reload the configuration of the API Umbrella server')
-  .option('config', {
-    abbr: 'c',
-    metavar: 'FILE',
-    default: ['/etc/api-umbrella/api-umbrella.yml'],
-    list: true,
-    help: 'Conifg file to use (include multiple times for multiple files)',
-  })
-  .callback(function(options) {
-    router.reload(options);
-  });
+  .callback(tasks.reload);
 
 parser.command('status')
   .help('Show the status of the API Umbrella server')
-  .option('config', {
-    abbr: 'c',
-    metavar: 'FILE',
-    default: ['/etc/api-umbrella/api-umbrella.yml'],
-    list: true,
-    help: 'Conifg file to use (include multiple times for multiple files)',
-  })
-  .callback(function(options) {
-    router.status(options);
-  });
+  .callback(tasks.status);
 
 parser.parse();
