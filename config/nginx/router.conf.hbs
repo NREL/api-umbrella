@@ -36,8 +36,15 @@ http {
     default $binary_remote_addr;
   }
   {{else}}
-  set $connection_limit_by $binary_remote_addr;
-  set $rate_limit_by $binary_remote_addr;
+  # Force the nginx-based rate limits to always be enabled in non-test
+  # environments.
+  map $http_x_disable_router_rate_limits $rate_limit_by {
+    default $binary_remote_addr;
+  }
+
+  map $http_x_disable_router_connection_limits $connection_limit_by {
+    default $binary_remote_addr;
+  }
   {{/if}}
 
   # Limit the number of simultaneous connections per IP address.
