@@ -53,6 +53,11 @@ var tasks = {
   },
 
   reload: function() {
+    forever.list(false, function(error, processes) {
+      processes.forEach(function(proc) {
+        process.kill(proc.pid, 'SIGHUP');
+      });
+    });
   },
 
   status: function() {
