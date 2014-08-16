@@ -47,7 +47,7 @@ _.extend(MigrateCheck.prototype, {
     }
 
     async.eachSeries(days, function(day, callback) {
-      var end = moment(day).add('days', 1);
+      var end = moment(day).add(1, 'days');
       var index = 'api-umbrella-logs-' + config.get('environment') + '-' + moment(day).utc().format('YYYY-MM');
       this.elasticSearch.count({
         index: index,

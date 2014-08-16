@@ -85,7 +85,7 @@ _.extend(MigrateLogs.prototype, {
 
     this.chunkStartTime = moment(this.startTime).subtract('hours', 1);
     async.whilst(function() {
-      var chunkEndTime = moment(this.chunkStartTime).add('hours', 1);
+      var chunkEndTime = moment(this.chunkStartTime).add(1, 'hours');
       return chunkEndTime.isAfter(this.endTime);
     }.bind(this), this.setupAliases.bind(this), function(error) {
       asyncSeriesCallback(error);
@@ -93,7 +93,7 @@ _.extend(MigrateLogs.prototype, {
   },
 
   setupAliases: function(asyncWhilstCallback) {
-    var chunkEndTime = moment(this.chunkStartTime).add('hours', 1);
+    var chunkEndTime = moment(this.chunkStartTime).add(1, 'hours');
 
     var env = config.get('environment');
     var start = this.chunkStartTime.format('YYYY-MM');
