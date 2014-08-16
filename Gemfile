@@ -1,18 +1,20 @@
 source "https://rubygems.org"
 source "https://rails-assets.org"
 
-gem "rails", "~> 3.2.18"
-
-gem "puma", "~> 2.8.2"
-
-# Environment specific configuration
-gem "dotenv-rails", "~> 0.10.0"
+gem "rails", "~> 3.2.19"
 
 # Rails app server
-gem "torquebox", "~> 3.0.1", :platforms => [:jruby]
+gem "puma", "~> 2.9.0"
+
+# Environment specific configuration
+gem "dotenv-rails", "~> 0.11.1"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.0.4"
+
+# JSON handling
+gem "multi_json", "~> 1.10.1"
+gem "oj", "~> 2.10.0", :platforms => [:ruby]
 
 # MongoDB
 gem "mongoid", "~> 3.1.6"
@@ -70,8 +72,6 @@ gem "crummy", "~> 1.8.0"
 gem "client_side_validations", "~> 3.2.6"
 gem "client_side_validations-simple_form", "~> 2.1.0"
 
-gem "nokogiri", "~> 1.6.1"
-
 # For creating friendly URL slugs.
 gem "babosa", "~> 0.3.11"
 
@@ -79,7 +79,7 @@ gem "babosa", "~> 0.3.11"
 gem "childprocess", "~> 0.5.1"
 
 # Views/templates for APIs
-gem "rabl", "~> 0.9.3"
+gem "rabl", "~> 0.10.1"
 gem "csv_builder", "~> 2.1.1"
 
 # Country and state name lookups
@@ -98,7 +98,7 @@ gem "diffy", "~> 3.0.3"
 # Use a newer version of Psych for YAML. The newer gem version does a better
 # job of making multi-line strings and strings with colons in them more human
 # readable.
-gem "psych", "~> 2.0.4", :platforms => [:ruby]
+gem "psych", "~> 2.0.5", :platforms => [:ruby]
 
 # For user-inputted YAML.
 # Use version from git so it doesn't automatically monkey-patch.
@@ -144,11 +144,8 @@ group :assets do
   # significant time under JRuby. Hopefully it'll be merged into the main gem.
   gem "turbo-sprockets-rails3", :git => "https://github.com/GUI/turbo-sprockets-rails3.git"
 
-  # Improve PNG speed for image sprite generation
-  gem "oily_png", "~> 1.1.1", :platforms => [:ruby]
-
   gem "rails-assets-bootbox", "~> 3.3.0"
-  gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.4"
+  gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.11"
   gem "rails-assets-ember-model", "~> 0.0.11"
   gem "rails-assets-html5shiv", "~> 3.7.0"
   gem "rails-assets-inflection", "~> 1.3.5"
@@ -157,11 +154,11 @@ group :assets do
   gem "rails-assets-jstz-detect", "~> 1.0.5"
   gem "rails-assets-livestampjs", "~> 1.1.2"
   gem "rails-assets-lodash", "~> 2.4.1"
-  gem "rails-assets-moment", "~> 2.5.1"
+  gem "rails-assets-moment", "~> 2.8.1"
   gem "rails-assets-numeral", "~> 1.5.3"
   gem "rails-assets-pnotify", "~> 1.3.1"
   gem "rails-assets-qtip2", "~> 2.2.0"
-  gem "rails-assets-selectize", "~> 0.9.0"
+  gem "rails-assets-selectize", "~> 0.11.0"
   gem "rails-assets-spinjs", "~> 2.0.0"
 end
 
@@ -169,34 +166,29 @@ end
 # put test-only gems in this group so their generators
 # and rake tasks are available in development mode:
 group :development, :test do
-  gem "rspec-rails", "~> 2.14.2"
+  gem "rspec-rails", "~> 2.99.0"
   gem "factory_girl_rails", "~> 4.4.1"
   gem "rspec-html-matchers", "~> 0.5.0"
 
   # Ruby lint/style checker
-  gem "rubocop", "~> 0.21.0"
+  gem "rubocop", "~> 0.25.0"
 
   # Code coverage testing
   gem "coveralls", "~> 0.7.0", :require => false
 
   # Real browser testing
-  gem "capybara", "~> 2.2.1"
+  gem "capybara", "~> 2.4.1"
 
   # Headless webkit for capybara
   gem "poltergeist", "~> 1.5.0"
 
   # Clean the database between tests
-  gem "database_cleaner", "~> 1.2.0"
+  gem "database_cleaner", "~> 1.3.0"
 end
 
 group :development do
   # Deployment
   gem "capistrano_nrel_ext", :git => "https://github.com/NREL/capistrano_nrel_ext.git"
 
-  gem "oj", "~> 2.6.1", :require => false, :platforms => [:ruby]
-
   gem "awesome_print", "~> 1.2.0"
-
-  gem "yard", "~> 0.8.7", :require => false
-  gem "kramdown", "~> 1.3.3", :require => false
 end
