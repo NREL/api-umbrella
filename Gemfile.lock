@@ -8,16 +8,17 @@ GIT
 
 GIT
   remote: https://github.com/NREL/capistrano_nrel_ext.git
-  revision: f76c31a8aba4d331d5d5c94c97c7a261d5e0fed7
+  revision: 2f7bab24bba421a4df38eeddae0f75fccbb990b9
   specs:
     capistrano_nrel_ext (0.3.0)
-      artii
-      capistrano
+      capistrano (< 3.0)
       chronic (>= 0.6.0)
+      chronic_duration
       diffy
       erubis (>= 2.6.0)
       highline
-      net-ssh (~> 2.4.0)
+      net-ssh (>= 2.5.2, < 2.8.0)
+      rainbow
       tzinfo (>= 0.3.0)
 
 GEM
@@ -55,7 +56,6 @@ GEM
       multi_json (~> 1.0)
     addressable (2.3.6)
     arel (3.0.3)
-    artii (2.0.4)
     ast (2.0.0)
     atomic (1.1.16)
     atomic (1.1.16-java)
@@ -77,8 +77,6 @@ GEM
       net-sftp (>= 2.0.0)
       net-ssh (>= 2.0.14)
       net-ssh-gateway (>= 1.1.0)
-    capistrano-ext (1.2.1)
-      capistrano (>= 1.0.0)
     capybara (2.2.1)
       mime-types (>= 1.16)
       nokogiri (>= 1.3.3)
@@ -88,6 +86,8 @@ GEM
     childprocess (0.5.1)
       ffi (~> 1.0, >= 1.0.11)
     chronic (0.10.2)
+    chronic_duration (0.10.5)
+      numerizer (~> 0.1.1)
     chunky_png (1.3.0)
     client_side_validations (3.2.6)
     client_side_validations-simple_form (2.1.0)
@@ -129,7 +129,7 @@ GEM
       thread_safe (~> 0.1)
       warden (~> 1.2.3)
     diff-lcs (1.2.5)
-    diffy (3.0.3)
+    diffy (3.0.6)
     docile (1.1.3)
     dotenv (0.10.0)
     dotenv-rails (0.10.0)
@@ -179,8 +179,6 @@ GEM
     jquery-rails (3.1.0)
       railties (>= 3.0, < 5.0)
       thor (>= 0.14, < 2.0)
-    jruby-pageant (1.1.1)
-    jruby-pageant (1.1.1-java)
     json (1.8.1)
     json (1.8.1-java)
     jwt (0.1.11)
@@ -222,18 +220,18 @@ GEM
     multi_json (1.10.0)
     multi_xml (0.5.5)
     multipart-post (1.2.0)
-    net-scp (1.0.4)
-      net-ssh (>= 1.99.1)
-    net-sftp (2.0.5)
-      net-ssh (>= 2.0.9)
-    net-ssh (2.4.0)
-      jruby-pageant (>= 1.0.2)
-    net-ssh-gateway (1.1.0)
-      net-ssh (>= 1.99.1)
+    net-scp (1.2.1)
+      net-ssh (>= 2.6.5)
+    net-sftp (2.1.2)
+      net-ssh (>= 2.6.5)
+    net-ssh (2.7.0)
+    net-ssh-gateway (1.2.0)
+      net-ssh (>= 2.6.5)
     nokogiri (1.6.1)
       mini_portile (~> 0.5.0)
     nokogiri (1.6.1-java)
       mini_portile (~> 0.5.0)
+    numerizer (0.1.1)
     oauth2 (0.9.3)
       faraday (>= 0.8, < 0.10)
       jwt (~> 0.1.8)
@@ -450,7 +448,7 @@ GEM
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
-    tzinfo (0.3.39)
+    tzinfo (0.3.41)
     uglifier (2.5.0)
       execjs (>= 0.3.0)
       json (>= 1.8.0)
@@ -472,8 +470,6 @@ DEPENDENCIES
   awesome_print (~> 1.2.0)
   babosa (~> 0.3.11)
   bootstrap-sass (~> 2.3.2.2)
-  capistrano (~> 2.15.5)
-  capistrano-ext (~> 1.2.1)
   capistrano_nrel_ext!
   capybara (~> 2.2.1)
   childprocess (~> 0.5.1)

@@ -191,13 +191,8 @@ end
 
 group :development do
   # Deployment
-  gem "capistrano", "~> 2.15.5"
-  gem "capistrano-ext", "~> 1.2.1"
   gem "capistrano_nrel_ext", :git => "https://github.com/NREL/capistrano_nrel_ext.git"
 
-  gem "torquebox-server", "~> 3.0.1", :platforms => [:jruby]
-
-  gem "yajl-ruby", "~> 1.2.0", :require => false, :platforms => [:ruby]
   gem "oj", "~> 2.6.1", :require => false, :platforms => [:ruby]
 
   gem "awesome_print", "~> 1.2.0"
