@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 
 var _ = require('lodash'),
     forever = require('forever'),
@@ -10,7 +11,7 @@ var tasks = {
     router.run(options);
   },
 
-  start: function(options) {
+  start: function() {
     forever.list(false, function(error, processes) {
       if(processes && processes.length > 0) {
         console.error('api-umbrella is already started');

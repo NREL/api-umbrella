@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 
 var routerLogListener = require('../lib/router_log_listener'),
     nomnom = require('nomnom');

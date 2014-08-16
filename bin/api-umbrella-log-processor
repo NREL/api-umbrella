@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict';
 
 var logProcessor = require('../lib/log_processor'),
     nomnom = require('nomnom');
