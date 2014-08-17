@@ -138,11 +138,9 @@ group :assets do
   gem "sprockets-urlrewriter", "~> 0.1.2"
 
   # Faster asset precompilation and caching.
-  #
-  # This fork allows cleaning expired assets at the same time as precompiling,
-  # so two rake tasks aren't necessary during our cap deploys. This saves
-  # significant time under JRuby. Hopefully it'll be merged into the main gem.
-  gem "turbo-sprockets-rails3", :git => "https://github.com/GUI/turbo-sprockets-rails3.git"
+  # This specific version contains the CLEAN_EXPIRED_ASSETS option to speed up
+  # deployments by combining two tasks into one (particularly under JRuby).
+  gem "turbo-sprockets-rails3", "0.3.13"
 
   gem "rails-assets-bootbox", "~> 3.3.0"
   gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.11"

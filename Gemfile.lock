@@ -1,12 +1,4 @@
 GIT
-  remote: https://github.com/GUI/turbo-sprockets-rails3.git
-  revision: 668f13b55dcf03e1dd083acf5afa54ea754bf85b
-  specs:
-    turbo-sprockets-rails3 (0.3.6)
-      railties (> 3.2.8, < 4.0.0)
-      sprockets (>= 2.0.0)
-
-GIT
   remote: https://github.com/NREL/capistrano_nrel_ext.git
   revision: 2f7bab24bba421a4df38eeddae0f75fccbb990b9
   specs:
@@ -413,6 +405,9 @@ GEM
     treetop (1.4.15)
       polyglot
       polyglot (>= 0.3.1)
+    turbo-sprockets-rails3 (0.3.13)
+      railties (> 3.2.8, < 4.0.0)
+      sprockets (>= 2.2.0)
     tzinfo (0.3.41)
     uglifier (2.5.3)
       execjs (>= 0.3.0)
@@ -503,6 +498,6 @@ DEPENDENCIES
   sprockets-urlrewriter (~> 0.1.2)
   tabs_on_rails (~> 2.2.0)
   therubyracer (~> 0.12.1)
-  turbo-sprockets-rails3!
+  turbo-sprockets-rails3 (= 0.3.13)
   uglifier (~> 2.5.0)
   uuidtools (~> 2.1.4)
