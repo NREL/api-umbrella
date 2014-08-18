@@ -6,7 +6,7 @@ class LogSearch
 
   def initialize(options = {})
     @client = Elasticsearch::Client.new({
-      :hosts => (ENV["ELASTICSEARCH_HOSTS"] || "http://localhost:9200").split(","),
+      :hosts => ElasticsearchConfig.hosts.split(","),
       :logger => Rails.logger
     })
 

@@ -144,6 +144,7 @@ group :assets do
 
   gem "rails-assets-bootbox", "~> 3.3.0"
   gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.11"
+  gem "rails-assets-datatables", "~> 1.10.2"
   gem "rails-assets-ember-model", "~> 0.0.11"
   gem "rails-assets-html5shiv", "~> 3.7.0"
   gem "rails-assets-inflection", "~> 1.3.5"
@@ -186,7 +187,8 @@ end
 
 group :development do
   # Deployment
-  gem "capistrano_nrel_ext", :git => "https://github.com/NREL/capistrano_nrel_ext.git"
+  gem "capistrano", "~> 3.2.1"
+  gem "capistrano-rails", "~> 1.1.1"
 
   gem "awesome_print", "~> 1.2.0"
 end

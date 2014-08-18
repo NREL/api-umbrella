@@ -1,33 +1,59 @@
-# Setup our multi-stage environments.
-require "capistrano/ext/multistage"
+# config valid only for Capistrano 3.1
+lock "3.2.1"
 
-require "capistrano_nrel_ext/recipes/defaults"
-require "capistrano_nrel_ext/recipes/asset_pipeline"
-require "capistrano_nrel_ext/recipes/gem_bundler"
-require "capistrano_nrel_ext/recipes/nginx"
-require "capistrano_nrel_ext/recipes/rails"
-require "capistrano_nrel_ext/recipes/redhat"
-require "capistrano_nrel_ext/recipes/supervisor"
+set :application, "web"
+set :repo_url, "https://github.com/NREL/api-umbrella-web.git"
+set :branch, "config"
 
-# Set the application being deployed.
-set :application, "api-umbrella-web"
+# Default deploy_to directory is /var/www/my_app
+set :deploy_to, "/opt/api-umbrella/embedded/apps/web"
 
-# Deploy from git.
-set :scm, "git"
-set :repository, "https://github.com/NREL/api-umbrella-web.git"
-set :git_enable_submodules, true
-set :branch, "gsa"
+# Default value for :scm is :git
+# set :scm, :git
 
-# Use the deploying user's local SSH keys for git access.
-ssh_options[:forward_agent] = true
+# Default value for :format is :pretty
+# set :format, :pretty
 
-# Define the rails-based applications.
-set :rails_app_paths,  {
-  "." => "/",
+# Default value for :log_level is :debug
+set :log_level, :info
+
+# Default value for :pty is false
+# set :pty, true
+
+# Default value for :linked_files is []
+# set :linked_files, %w{config/database.yml}
+
+# Default value for linked_dirs is []
+set :linked_dirs, %w{bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system}
+
+# Default value for default_env is {}
+fetch(:default_env).merge!({
+  "PATH" => "/opt/api-umbrella/bin:/opt/api-umbrella/embedded/bin:$PATH",
+})
+
+set :ssh_options, {
+  :forward_agent => true,
 }
 
-# Setup dotenv to pull from chef-configured file.
-set :dotenv_path, "/home/dotenv/env"
+namespace :deploy do
 
-# Perform mongoid migrations from mongoid_rails_migrations.
-set :rails_auto_migrate, true
+  desc "Restart application"
+  task :restart do
+    on roles(:app), in: :sequence, wait: 5 do
+      # Your restart mechanism here, for example:
+      # execute :touch, release_path.join("tmp/restart.txt")
+    end
+  end
+
+  after :publishing, :restart
+
+  after :restart, :clear_cache do
+    on roles(:web), in: :groups, limit: 3, wait: 10 do
+      # Here we can do anything such as:
+      # within release_path do
+      #   execute :rake, "cache:clear"
+      # end
+    end
+  end
+
+end

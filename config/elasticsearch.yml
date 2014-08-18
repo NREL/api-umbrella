@@ -1,0 +1,11 @@
+defaults: &defaults
+  hosts: <%= ENV["ELASTICSEARCH_HOSTS"] || "http://localhost:9200"%>
+
+development:
+  <<: *defaults
+
+staging:
+  <<: *defaults
+
+production:
+  <<: *defaults

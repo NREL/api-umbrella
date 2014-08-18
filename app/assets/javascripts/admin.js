@@ -5,8 +5,8 @@
 //= require ember
 //= require qtip2
 //= require lodash/lodash.compat
-//= require vendor/DataTables/media/js/jquery.dataTables
-//= require vendor/DataTables-Plugins/integration/bootstrap/2/dataTables.bootstrap
+//= require datatables/jquery.dataTables.js
+//= require vendor/datatables-plugins/dataTables.bootstrap
 //= require ember-model
 //= require vendor/ember-easyForm
 //= require pnotify
