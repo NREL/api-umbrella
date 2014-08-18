@@ -10,11 +10,7 @@
     "api-umbrella-distributed-rate-limits-sync": "./bin/api-umbrella-distributed-rate-limits-sync"
   },
   "scripts": {
-    "test": "grunt",
-    "blanket": {
-      "pattern": "/lib/",
-      "data-cover-never": ["test", "node_modules"]
-    }
+    "test": "grunt"
   },
   "dependencies": {
     "addr": "1.0.0",
