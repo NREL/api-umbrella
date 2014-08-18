@@ -6,7 +6,8 @@
   "author": "Nick Muerdter <nick.muerdter@nrel.gov>",
   "main": "./lib/api-umbrella-gatekeeper",
   "bin": {
-    "api_umbrella_gatekeeper": "./bin/api_umbrella_gatekeeper"
+    "api-umbrella-gatekeeper": "./bin/api-umbrella-gatekeeper",
+    "api-umbrella-distributed-rate-limits-sync": "./bin/api-umbrella-distributed-rate-limits-sync"
   },
   "scripts": {
     "test": "grunt",
