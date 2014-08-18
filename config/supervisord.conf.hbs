@@ -74,7 +74,7 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
 
-[program:nginx_router]
+[program:nginx-router]
 command=nginx -c {{config_dir}}/nginx/router.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
@@ -85,14 +85,14 @@ startsecs=3
 [program:gatekeeper]
 numprocs=4
 process_name=%(program_name)s_50%(process_num)03d
-command=api_umbrella_gatekeeper {{api_umbrella_config_args}} -p 50%(process_num)03d
+command=api-umbrella-gatekeeper {{api_umbrella_config_args}} -p 50%(process_num)03d
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s_50%(process_num)03d.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
 
-[program:config_reloader]
+[program:config-reloader]
 command=api-umbrella-config-reloader {{api_umbrella_config_args}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
@@ -116,15 +116,15 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
 
-[program:distributed_rate_limits_sync]
-command=api_umbrella_distributed_rate_limits_sync {{api_umbrella_config_args}}
+[program:distributed-rate-limits-sync]
+command=api-umbrella-distributed-rate-limits-sync {{api_umbrella_config_args}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
 
-[program:web_puma]
+[program:web-puma]
 environment=MONGODB_URL="{{mongodb.url}}",ELASTICSEARCH_HOSTS="{{elasticsearch.hosts}}"
 directory=/vagrant/workspace/web
 command=bundle exec puma -q -e {{app_env}} -w {{web.puma.workers}} -t {{web.puma.min_threads}}:{{web.puma.max_threads}} -b {{web.puma.bind}}
@@ -134,7 +134,7 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
 
-[program:web_nginx]
+[program:web-nginx]
 command=nginx -c {{config_dir}}/nginx/web.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log

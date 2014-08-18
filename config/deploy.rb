@@ -1,45 +1,59 @@
-# Setup our multi-stage environments.
-require "capistrano/ext/multistage"
+# config valid only for Capistrano 3.1
+lock "3.2.1"
 
-require "capistrano_nrel_ext/recipes/defaults"
-require "capistrano_nrel_ext/recipes/gem_bundler"
-require "capistrano_nrel_ext/recipes/npm"
-require "capistrano_nrel_ext/recipes/nginx"
-require "capistrano_nrel_ext/recipes/supervisor"
+set :application, "router"
+set :repo_url, "https://github.com/NREL/api-umbrella-router.git"
+set :branch, "config"
 
-# Set the application being deployed.
-set :application, "api-umbrella-router"
+# Default deploy_to directory is /var/www/my_app
+set :deploy_to, "/opt/api-umbrella/embedded/apps/router"
 
-set :scm, "git"
-set :repository, "https://github.com/NREL/api-umbrella-router.git"
-set :git_enable_submodules, true
-set :branch, "master"
+# Default value for :scm is :git
+# set :scm, :git
 
-ssh_options[:forward_agent] = true
+# Default value for :format is :pretty
+# set :format, :pretty
 
-set :npm_apps, ["gatekeeper"]
+# Default value for :log_level is :debug
+set :log_level, :info
 
-set :web_server_user, "www-data-local"
+# Default value for :pty is false
+# set :pty, true
 
-set :shared_children_files, %w(config/gatekeeper/runtime.yml config/gatekeeper/runtime.json config/gatekeeper/nginx.conf)
-set :writable_children_dirs, %w(config/gatekeeper)
+# Default value for :linked_files is []
+# set :linked_files, %w{config/database.yml}
 
-after "deploy:setup", "deploy:app:setup_dirs"
-after "deploy:finalize_permissions", "deploy:app:finalize_permissions"
+# Default value for linked_dirs is []
+set :linked_dirs, %w{node_modules}
+
+# Default value for default_env is {}
+fetch(:default_env).merge!({
+  "PATH" => "/opt/api-umbrella/bin:/opt/api-umbrella/embedded/bin:$PATH",
+})
+
+set :ssh_options, {
+  :forward_agent => true,
+}
 
 namespace :deploy do
-  namespace :app do
-    task :setup_dirs, :except => { :no_release => true } do
-      run "#{try_sudo} mkdir -p #{File.join(shared_path, "log/gatekeeper")}"
-    end
 
-    task :finalize_permissions, :except => { :no_release => true } do
-      begin
-        run "setfacl -R -m 'u:api-umbrella-gatekeeper:rwx' #{File.join(shared_path, "config/gatekeeper")} #{File.join(current_path, "log/gatekeeper")}"
-      rescue Capistrano::CommandError
-        # Fail silently. We'll assume failures are due the files being owned by
-        # another user, but that the permissions are already setup correctly.
-      end
+  desc "Restart application"
+  task :restart do
+    on roles(:app), in: :sequence, wait: 5 do
+      # Your restart mechanism here, for example:
+      # execute :touch, release_path.join("tmp/restart.txt")
     end
   end
+
+  after :publishing, :restart
+
+  after :restart, :clear_cache do
+    on roles(:web), in: :groups, limit: 3, wait: 10 do
+      # Here we can do anything such as:
+      # within release_path do
+      #   execute :rake, "cache:clear"
+      # end
+    end
+  end
+
 end

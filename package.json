@@ -4,16 +4,18 @@
   "version": "0.1.0",
   "engines": ">= 0.8.0",
   "author": "Nick Muerdter <nick.muerdter@nrel.gov>",
-  "main": "./lib/api-umbrella-gatekeeper",
   "bin": {
-    "api_umbrella_gatekeeper": "./bin/api_umbrella_gatekeeper"
+    "api-umbrella-config-reloader": "./bin/api-umbrella-config-reloader",
+    "api-umbrella-ctl": "./bin/api-umbrella-ctl",
+    "api-umbrella-log-processor": "./bin/api-umbrella-log-processor",
+    "api-umbrella-router-log-listener": "./bin/api-umbrella-router-log-listener"
   },
   "scripts": {
     "test": "grunt"
   },
   "dependencies": {
     "always-tail": "0.1.1",
-    "api-umbrella-gatekeeper": "NREL/api-umbrella-gatekeeper",
+    "api-umbrella-gatekeeper": "NREL/api-umbrella-gatekeeper#config",
     "api-umbrella-config": "NREL/api-umbrella-config#v0.2.0",
     "cli-color": "0.3.2",
     "clone": "0.1.17",
