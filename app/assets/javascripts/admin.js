@@ -24,7 +24,6 @@
 //= require vendor/jquery.blockUI
 //= require spinjs
 //= require vendor/dirtyforms/jquery.dirtyforms
-//= require vendor/dirtyforms/helpers/ckeditor
 //= require admin/app
 //= require_self
 

@@ -7,10 +7,7 @@
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
     <%= javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" %>
     <%= javascript_include_tag "//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/ace.js" %>
-    <%= javascript_include_tag(File.join(ActionController::Base.config.relative_url_root.to_s, "/javascripts/vendor/ckeditor/ckeditor.js")) %>
     <%= javascript_tag do %>
-      CKEDITOR.plugins.addExternal("pbckcode", "/javascripts/vendor/PBCKCode/");
-
       apiUserExistingRoles = <%= ApiUser.existing_roles.map { |role| { :id => role, :title => role } }.to_json.html_safe %>;
       webAdminAjaxApiKey = <%= ApiUser.where(:email => 'web.admin.ajax@internal.apiumbrella').order_by(:created_at.asc).first.api_key.to_json.html_safe %>;
     <% end %>
@@ -33,12 +30,6 @@
                 <li><%= link_to('<i class="icon-signal"></i> Filter Logs'.html_safe, "/admin/#/stats/logs") %></li>
                 <li><%= link_to('<i class="icon-user"></i> By Users'.html_safe, "/admin/#/stats/users") %></li>
                 <li><%= link_to('<i class="icon-map-marker"></i> By Location'.html_safe, "/admin/#/stats/map") %></li>
-              </ul>
-            <% end %>
-            <%= tab.documentation('Documentation <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-documentation", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
-              <ul class="dropdown-menu">
-                <li><%= link_to('<i class="icon-th-list"></i> Collections'.html_safe, admin_api_doc_collections_path) %></li>
-                <li><%= link_to('<i class="icon-pencil"></i> Web Services'.html_safe, admin_api_doc_services_path) %></li>
               </ul>
             <% end %>
             <%= tab.users('Users  <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-users", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>

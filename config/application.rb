@@ -88,7 +88,6 @@ module ApiUmbrella
       admin.css
       admin.js
       admin/stats.js
-      ckeditor.css
       ie_lt_9.js
     )
 

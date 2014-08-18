@@ -24,18 +24,10 @@ en:
         last_name: "Last Name"
         website: "Website"
         use_description: "How will you use the APIs?<br />(optional)"
-      api_doc_service:
-        http_method: "HTTP Method"
-        api_doc_collection_id: "Documentation Collection Page"
     placeholders:
       api_user:
         website: "http://"
-      api_doc_service:
-        path: "/api/example/service"
     hints:
-      api_doc_service:
-        path: "The base path to the web service endpoint."
-        summary: "A short description of this service (1-2 sentences)."
     options:
   helpers:
     submit:
