@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "addr": "1.0.0",
-    "api-umbrella-config": "NREL/api-umbrella-config#v0.2.0",
+    "api-umbrella-config": "0.2.0",
     "async": "0.9.0",
     "atomic-write": "0.1.1",
     "basic-auth": "1.0.0",
