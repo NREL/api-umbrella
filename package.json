@@ -16,7 +16,7 @@
   "dependencies": {
     "always-tail": "0.1.1",
     "api-umbrella-gatekeeper": "NREL/api-umbrella-gatekeeper#config",
-    "api-umbrella-config": "NREL/api-umbrella-config#v0.2.0",
+    "api-umbrella-config": "0.2.0",
     "cli-color": "0.3.2",
     "clone": "0.1.17",
     "csv": "0.3.6",
