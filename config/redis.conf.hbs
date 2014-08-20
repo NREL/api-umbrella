@@ -38,7 +38,7 @@ daemonize no
 
 # When running daemonized, Redis writes a pid file in /var/run/redis.pid by
 # default. You can specify a custom pid file location here.
-pidfile /var/run/redis.pid
+pidfile {{run_dir}}/redis.pid
 
 # Accept connections on the specified port, default is 6379.
 # If port 0 is specified Redis will not listen on a TCP socket.
@@ -67,8 +67,8 @@ port {{redis.port}}
 # incoming connections. There is no default, so Redis will not listen
 # on a unix socket when not specified.
 #
-# unixsocket /tmp/redis.sock
-# unixsocketperm 755
+unixsocket {{run_dir}}/redis.sock
+unixsocketperm 755
 
 # Close the connection after a client is idle for N seconds (0 to disable)
 timeout 0
@@ -184,7 +184,7 @@ dbfilename dump.rdb
 # The Append Only File will also be created inside this directory.
 # 
 # Note that you must specify a directory here, not a file name.
-dir ./
+dir {{db_dir}}/redis
 
 ################################# REPLICATION #################################
 

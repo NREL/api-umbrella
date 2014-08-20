@@ -23,7 +23,7 @@ http {
   scgi_temp_path /tmp/nginx_scgi_temp;
 
   upstream puma {
-    server {{web.puma.bind}};
+    server unix://{{run_dir}}/web-puma.sock;
   }
 
   server {

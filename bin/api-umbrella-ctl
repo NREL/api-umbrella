@@ -12,11 +12,51 @@ var tasks = {
   },
 
   start: function() {
+    var fs = require('fs'),
+        os = require('os'),
+        path = require('path'),
+        Tail = require('always-tail');
+
+    var started = false;
+
+    function exit(error) {
+      console.info('EXITTTT');
+      if(error) {
+        console.error(error.stack);
+      }
+
+      if(!started) {
+        forever.stopAll();
+        setTimeout(function() {
+          process.exit(1);
+        }, 2000);
+      }
+    }
+
+    process.on('SIGINT', exit);
+    process.on('uncaughtException', exit);
+
     forever.list(false, function(error, processes) {
       if(processes && processes.length > 0) {
         console.error('api-umbrella is already started');
         process.exit(1);
       } else {
+        var daemonLog = path.join(os.tmpdir(), 'api-umbrella-ctl.log');
+
+        // Make sure the file exists, or the Tail module will die.
+        var fd = fs.openSync(daemonLog, 'w');
+        fs.closeSync(fd);
+
+        var tail = new Tail(daemonLog, '\n');
+        tail.on('line', function(line) {
+          console.info(line);
+          if(/Starting api-umbrella.*OK/.test(line)) {
+            started = true;
+            process.exit(0);
+          }
+        });
+        tail.watch();
+
         // Pass along any command line args to the "run" command.
         var runArgs = ['run'];
         runArgs = runArgs.concat(process.argv.slice(3));
@@ -25,9 +65,7 @@ var tasks = {
         forever.startDaemon(__filename, {
           silent: false,
           options: runArgs,
-          logFile: '/tmp/blah.log',
-          outFile: '/tmp/blah-out.log',
-          errFile: '/tmp/blah-err.log',
+          logFile: daemonLog,
         });
       }
     });

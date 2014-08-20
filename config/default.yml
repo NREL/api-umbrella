@@ -1,6 +1,9 @@
 app_env: development
 http_port: 9000
 https_port: 9001
+log_dir: /opt/api-umbrella/var/log
+run_dir: /opt/api-umbrella/var/run
+db_dir: /opt/api-umbrella/var/db
 redis:
   host: 127.0.0.1
   port: 50379
@@ -16,7 +19,7 @@ varnish:
 web:
   port: 51000
   puma:
-    bind: "unix:///tmp/puma.sock"
+    bind: "unix:///opt/api-umbrella/var/run/puma.sock"
     workers: 2
     min_threads: 2
     max_threads: 24
@@ -34,12 +37,10 @@ mongodb:
         keepAlive: 500
   embedded_server_config:
     port: 50217
-    dbpath: /tmp/db/mongodb
 elasticsearch:
   hosts:
     - "http://127.0.0.1:50200"
   embedded_server_config:
-    path_data: /tmp/db/elasticsearch
     http_port: 50200
     transport_tcp_port: 50300
 trustedProxies:
