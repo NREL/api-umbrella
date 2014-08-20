@@ -13,14 +13,13 @@ var tasks = {
 
   start: function() {
     var fs = require('fs'),
-        os = require('os'),
+        mkdirp = require('mkdirp'),
         path = require('path'),
         Tail = require('always-tail');
 
     var started = false;
 
     function exit(error) {
-      console.info('EXITTTT');
       if(error) {
         console.error(error.stack);
       }
@@ -41,16 +40,23 @@ var tasks = {
         console.error('api-umbrella is already started');
         process.exit(1);
       } else {
-        var daemonLog = path.join(os.tmpdir(), 'api-umbrella-ctl.log');
+        var daemonDir = path.join(process.env['HOME'], '.api-umbrella');
+        var daemonLog = path.join(daemonDir, 'server.log');
+        var daemonPid = path.join(daemonDir, 'server.pid');
+
+        mkdirp.sync(daemonDir);
 
         // Make sure the file exists, or the Tail module will die.
         var fd = fs.openSync(daemonLog, 'w');
         fs.closeSync(fd);
 
-        var tail = new Tail(daemonLog, '\n');
-        tail.on('line', function(line) {
-          console.info(line);
-          if(/Starting api-umbrella.*OK/.test(line)) {
+        var tail = new Tail(daemonLog, '', { interval: 100 });
+        var buffer = '';
+        tail.on('line', function(chunk) {
+          process.stdout.write(chunk);
+          buffer += chunk
+          if(/Starting api-umbrella.*OK.*\]/.test(buffer)) {
+            process.stdout.write('\n');
             started = true;
             process.exit(0);
           }
@@ -64,6 +70,7 @@ var tasks = {
         // Call the "run" command, but just start it in the background.
         forever.startDaemon(__filename, {
           silent: false,
+          pidFile: daemonPid,
           options: runArgs,
           logFile: daemonLog,
         });
