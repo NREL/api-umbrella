@@ -1,3 +1,5 @@
+require "csv_streamer"
+
 class Admin::StatsController < Admin::BaseController
   set_tab :analytics
 
@@ -38,7 +40,7 @@ class Admin::StatsController < Admin::BaseController
     offset = params["iDisplayStart"].to_i
     limit = params["iDisplayLength"].to_i
     if(request.format == "csv")
-      limit = 100_000
+      limit = 500
     end
 
     @search.search!(params[:search])
@@ -51,7 +53,44 @@ class Admin::StatsController < Admin::BaseController
       @search.sort!(sort)
     end
 
+    if(request.format == "csv")
+      @search.query_options[:search_type] = "scan"
+      @search.query_options[:scroll] = "10m"
+    end
+
     @result = @search.result
+
+    respond_to do |format|
+      format.json
+      format.csv do
+        # Set Last-Modified so response streaming works:
+        # http://stackoverflow.com/a/10252798/222487
+        response.headers["Last-Modified"] = Time.now.httpdate
+
+        scroll_id = @result.raw_result.raw_plain["_scroll_id"]
+        headers = ["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Response Time", "Content Type", "Accept Encoding", "User Agent"]
+
+        send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.strftime("%b %-e %Y")}).#{params[:format]}")
+        self.response_body = CsvStreamer.new(scroll_id, headers) do |row|
+          [
+            Time.parse(row["request_at"]).utc.strftime("%Y-%m-%d %H:%M:%S"),
+            row["request_method"],
+            row["request_host"],
+            row["request_url"],
+            row["user_email"],
+            row["request_ip"],
+            row["request_ip_country"],
+            row["request_ip_region"],
+            row["request_ip_city"],
+            row["response_status"],
+            row["response_time"],
+            row["response_content_type"],
+            row["request_accept_encoding"],
+            row["request_user_agent"],
+          ]
+        end
+      end
+    end
   end
 
   def users

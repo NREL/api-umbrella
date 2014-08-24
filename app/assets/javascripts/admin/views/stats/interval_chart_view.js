@@ -67,6 +67,26 @@ Admin.StatsIntervalChartView = Ember.View.extend({
       this.chartOptions.lineWidth = 3
     }
 
+    // Show hours on the axis when viewing minutely date.
+    switch(this.get('controller.query.params.interval')) {
+      case 'minute':
+        this.chartOptions.hAxis.format = 'MMM d h a';
+        break;
+      default:
+        this.chartOptions.hAxis.format = 'MMM d';
+        break;
+    }
+
+    // Show hours on the axis when viewing less than 2 days of hourly data.
+    if(this.get('controller.query.params.interval') === 'hour') {
+      var start = moment(this.get('controller.query.params.start'));
+      var end = moment(this.get('controller.query.params.end'));
+      var maxDuration = 2 * 24 * 60 * 60; // 2 days
+      if(end.unix() - start.unix() <= maxDuration) {
+        this.chartOptions.hAxis.format = 'MMM d h a';
+      }
+    }
+
     this.dataTable = new google.visualization.DataTable(this.chartData);
     this.draw();
   }.observes('data'),
