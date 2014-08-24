@@ -68,6 +68,7 @@ strip_cookies:
   - ^__utm.*$
   - ^_ga$
   - ^is_returning$
+default_host: localhost
 apiSettings:
   rate_limits:
     - duration: 1000
