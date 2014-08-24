@@ -5,6 +5,8 @@ AllCops:
     - config/compass.rb
   RunRailsCops: true
 
+Lint/LiteralInInterpolation:
+  Enabled: false
 
 Lint/UnusedBlockArgument:
   Enabled: false
@@ -12,13 +14,28 @@ Lint/UnusedBlockArgument:
 Lint/UnusedMethodArgument:
   Enabled: false
 
+Metrics/BlockNesting:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/LineLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
 Style/AlignHash:
   Enabled: false
 
 Style/AlignParameters:
-  Enabled: false
-
-Style/BlockNesting:
   Enabled: false
 
 Style/BracesAroundHashParameters:
@@ -30,15 +47,9 @@ Style/ClassAndModuleChildren:
 Style/ClassCheck:
   Enabled: false
 
-Style/ClassLength:
-  Enabled: false
-
 Style/CollectionMethods:
   PreferredMethods:
     find: 'detect'
-
-Style/CyclomaticComplexity:
-  Enabled: false
 
 Style/Documentation:
   Enabled: false
@@ -62,15 +73,6 @@ Style/IndentHash:
   EnforcedStyle: consistent
 
 Style/Lambda:
-  Enabled: false
-
-Style/LineLength:
-  Enabled: false
-
-Style/LiteralInInterpolation:
-  Enabled: false
-
-Style/MethodLength:
   Enabled: false
 
 Style/NegatedIf:
