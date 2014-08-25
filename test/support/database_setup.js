@@ -36,6 +36,7 @@ before(function elasticsearchOpen(done) {
   global.elasticsearch = new elasticsearch.Client(config.get('elasticsearch'));
   global.elasticsearch.deleteByQuery({
     index: 'api-umbrella-logs-*',
+    allowNoIndices: true,
     type: 'log',
     q: '*',
   }, done);
