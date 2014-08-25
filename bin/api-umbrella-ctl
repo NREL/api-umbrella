@@ -54,7 +54,7 @@ var tasks = {
         var buffer = '';
         tail.on('line', function(chunk) {
           process.stdout.write(chunk);
-          buffer += chunk
+          buffer += chunk;
           if(/Starting api-umbrella.*OK.*\]/.test(buffer)) {
             process.stdout.write('\n');
             started = true;
