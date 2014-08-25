@@ -23,6 +23,8 @@ web:
     workers: 2
     min_threads: 2
     max_threads: 24
+static_site:
+  port: 51010
 router:
   api_backends:
     port: 50100

@@ -124,6 +124,17 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
 
+{{#if development_env}}
+[program:static-site]
+directory=/vagrant/workspace/static-site
+command=bundle exec middleman server -p {{static_site.port}} --verbose
+redirect_stderr=true
+stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stderr_logfile=NONE
+logfile_maxbytes=0
+startsecs=3
+{{/if}}
+
 [program:web-puma]
 environment=MONGODB_URL="{{mongodb.url}}",ELASTICSEARCH_HOSTS="{{elasticsearch.hosts}}"
 directory=/vagrant/workspace/web
