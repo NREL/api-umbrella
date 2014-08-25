@@ -71,6 +71,10 @@ module ApiUmbrella
     # Rely on Sass's built-in compressor for CSS minifying.
     # config.assets.css_compressor = :yui
 
+    # Move default assets directory so this project can co-exist with the
+    # static-site projectt that delivers most of the web content.
+    config.assets.prefix = "/web-assets"
+
     # Reset the default precompile list list to exclude our vendored submodule
     # stuff. This should go away in Rails 4, where vendor/assets is
     # automatically excluded.
