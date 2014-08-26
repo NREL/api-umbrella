@@ -67,3 +67,13 @@ apis:
     url_matches:
       - frontend_prefix: /
         backend_prefix: /
+
+# This is the config for redis-convoy. We're using their defaults, but the
+# defaults go away when in their test environment. So redefine them here.
+convoy:
+  keys:
+    prefix: "cv:"
+    logTTL: 86400,
+		queued: queued
+		processing: processing
+		failed: failed
