@@ -180,11 +180,6 @@ http {
 
   include ./api_backends.conf;
 
-  #map $upstream_http_surrogate_control $whatever {
-  #  "~.+" $upstream_http_surrogate_control;
-  #  default $upstream_http_cache_control;
-  #}
-
   map $http_accept_encoding $normalized_accept_encoding {
     "~(^|,) *gzip *; *q=0[\.0]* *($|,)" "";
     "~(^|,) *gzip *($|,|;)" gzip;
@@ -221,24 +216,6 @@ http {
     # If the backend only returns gzipped responses, decompress them as
     # appropriate to meet the Accept headers of the current client.
     gunzip on;
-
-    #header_filter_by_lua '
-    #  local vary = ngx.header.vary
-    #  ngx.log(ngx.ERR, "VARY: ", vary)
-    #  if vary then
-    #    local new_vary, n, err = ngx.re.sub(vary, "Accept-Encoding", "", "i")
-    #    new_vary, n, err = ngx.re.sub(new_vary, ",,", ",")
-    #    new_vary, n, err = ngx.re.sub(new_vary, "^,", "")
-    #    new_vary, n, err = ngx.re.sub(new_vary, ",$", "")
-    #    ngx.log(ngx.ERR, "NEW VARY: ", new_vary)
-    #    if new_vary then
-    #      ngx.header.vary = new_vary
-    #    end
-    #  end';
-
-    #more_set_headers "X-Api-Umbrella-Orig-Cache-Control: $upstream_http_cache_control";
-    #more_clear_headers "Cache-Control";
-    #more_set_headers "Cache-Control: $whatever";
 
     location / {
       proxy_pass $http_x_api_umbrella_backend_scheme://api_umbrella_${http_x_api_umbrella_backend_id}_backend;
