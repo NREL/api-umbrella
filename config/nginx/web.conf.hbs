@@ -28,9 +28,9 @@ http {
 
   server {
     listen {{web.port}};
-    server_name api.vagrant localhost;
+    server_name _;
 
-    root /vagrant/workspace/web/public;
+    root {{web.dir}}/public;
 
     # Allow for larger request bodies to allow for huge documentation pages.
     client_max_body_size 10m;

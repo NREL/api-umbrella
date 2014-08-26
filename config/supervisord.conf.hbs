@@ -126,7 +126,7 @@ startsecs=3
 
 {{#if development_env}}
 [program:static-site]
-directory=/vagrant/workspace/static-site
+directory={{static_site.dir}}
 command=bundle exec middleman server -p {{static_site.port}} --verbose
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
@@ -137,7 +137,7 @@ startsecs=3
 
 [program:web-puma]
 environment=MONGODB_URL="{{mongodb.url}}",ELASTICSEARCH_HOSTS="{{elasticsearch.hosts}}"
-directory=/vagrant/workspace/web
+directory={{web.dir}}
 command=bundle exec puma -q -e {{app_env}} -w {{web.puma.workers}} -t {{web.puma.min_threads}}:{{web.puma.max_threads}} -b unix://{{run_dir}}/web-puma.sock
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log

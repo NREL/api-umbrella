@@ -18,6 +18,7 @@ varnish:
     port: 50100
 web:
   port: 51000
+  dir: /vagrant/workspace/web
   puma:
     bind: "unix:///opt/api-umbrella/var/run/puma.sock"
     workers: 2
@@ -25,9 +26,17 @@ web:
     max_threads: 24
 static_site:
   port: 51010
+  dir: /vagrant/workspace/static-site
 router:
   api_backends:
     port: 50100
+hosts:
+  - hostname: api.vagrant
+    ssl_cert: /etc/ssl/certs/vagrant.crt
+    ssl_cert_key: /etc/ssl/certs/vagrant.key
+  - hostname: localhost
+    ssl_cert: /etc/ssl/certs/vagrant.crt
+    ssl_cert_key: /etc/ssl/certs/vagrant.key
 mongodb:
   url: "mongodb://127.0.0.1:50217/api_umbrella_development"
   options:

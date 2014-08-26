@@ -102,22 +102,24 @@ http {
     keepalive 10;
   }
 
-  # The main, front-facing public host server. This serves up both the APIs and
-  # the web content.
+  {{#each primary_hosts}}
+  # Primary host. Serves up both APIs and web content.
   server {
-    listen {{http_port}};
-    listen {{https_port}} ssl;
-    server_name api.vagrant localhost;
+    listen {{../http_port}};
+    server_name {{hostname}};
 
-    ssl_certificate /etc/ssl/certs/vagrant.crt;
-    ssl_certificate_key /etc/ssl/certs/vagrant.key;
+    {{#if ssl_cert}}
+    listen {{../../https_port}} ssl;
+    ssl_certificate {{ssl_cert}};
+    ssl_certificate_key {{ssl_cert_key}};
+    {{/if}}
 
     include ./frontend_defaults.conf;
 
     # Determine the SSL status when it's passed via X-Forwarded-Proto from the
     # SSL terminator.
     set $ssl_status "off";
-    if ($server_port = {{https_port}}) {
+    if ($server_port = {{../https_port}}) {
       set $ssl_status "on";
     }
 
@@ -132,7 +134,7 @@ http {
 
     # Force certain content to HTTPS-only.
     if ($ssl_status = "off_required") {
-      rewrite ^ https://$server_name:{{https_port}}$request_uri? permanent;
+      rewrite ^ https://$server_name:{{../https_port}}$request_uri? permanent;
     }
 
     # Route the docs and other static pages to the Rails web app. This may
@@ -152,12 +154,34 @@ http {
       include ./gatekeeper.conf;
     }
   }
+  {{/each}}
 
-  # Secondary hosts. These are other hosts we're handling only API traffic for,
-  # but don't want to show web page content for.
+  {{#each secondary_hosts}}
+  # Secondary host. Serves up only API traffic (no web page content).
+  server {
+    listen {{http_port}};
+    server_name {{hostname}};
+
+    {{#if ssl_cert}}
+    listen {{../../https_port}} ssl;
+    ssl_certificate {{ssl_cert}};
+    ssl_certificate_key {{ssl_cert_key}};
+    {{/if}}
+
+    include ./frontend_defaults.conf;
+
+    # Route all other requests as APIs going through the API Umbrella Gatekeeper.
+    location / {
+      include ./frontend_proxy_header_defaults.conf;
+      include ./gatekeeper.conf;
+    }
+  }
+  {{/each}}
+
+  # Catch-all host. Serves up only API traffic (no web page content).
+  # Like secondary hosts, but minus HTTPS (since we don't know the domain).
   server {
     listen {{http_port}} default_server;
-    #listen {{https_port}} ssl default_server;
     server_name _;
 
     include ./frontend_defaults.conf;
@@ -174,7 +198,7 @@ http {
     listen {{static_site.port}};
     server_name _;
 
-    root /vagrant/workspace/static-site/build;
+    root {{static_site.dir}}/build;
   }
   {{/unless}}
 
