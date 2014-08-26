@@ -34,11 +34,8 @@
 /config/varnish.vcl
 
 # Ignore node generated file
-/config/gatekeeper/nginx.conf
-/config/gatekeeper/runtime.json
-/config/gatekeeper/runtime.yml*
-/test/config/runtime.yml
-/test/config/nginx.conf
+/config/runtime.*
+/test/config/runtime.*
 /run
 
 # Ignore log files
