@@ -23,7 +23,7 @@
   X-RateLimit-Limit: 1000
   X-RateLimit-Remaining: 840
   </pre>
-  <p>Only one rate limit may return this status information, so it will likely be your primary, publicized rate limit (for example, hourly), and not more granular rate limits you may have assigned (for example, per-second limits).</p>"><i class="icon-question-sign"></i></a>
+  <p>Only one rate limit may return this status information, so it will likely be your primary, publicized rate limit (for example, hourly), and not more granular rate limits you may have assigned (for example, per-second limits).</p>"><i class="fa fa-question-circle"></i></a>
               </th>
               <th></th>
             </tr>
@@ -63,14 +63,14 @@
                     value='true'}}
                 </td>
                 <td class="table-row-actions">
-                  <a href="#" class="remove-action" {{action 'deleteRateLimit' this}}><i class="icon-remove"></i>Remove</a>
+                  <a href="#" class="remove-action" {{action 'deleteRateLimit' this}}><i class="fa fa-times"></i>Remove</a>
                 </td>
               </tr>
             {{/each}}
           </tbody>
         </table>
       {{/if}}
-      <button type="button" class="btn btn-mini" {{action 'addRateLimit'}}><i class="icon-plus-sign"></i> Add Rate Limit</button>
+      <button type="button" class="btn btn-mini" {{action 'addRateLimit'}}><i class="fa fa-plus-circle"></i> Add Rate Limit</button>
     </div>
   </div>
 {{/if}}

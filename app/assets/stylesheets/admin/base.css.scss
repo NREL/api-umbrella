@@ -284,9 +284,7 @@ fieldset .table {
 }
 
 a {
-  [class^="icon-"],
-  [class*=" icon-"] {
-    display: inline-block;
+  .fa {
     text-decoration: none;
     margin-right: 3px;
   }
@@ -331,12 +329,13 @@ legend a:hover {
   text-decoration: none;
 }
 
-a[data-toggle='collapse'] .icon-caret-down:before {
+a[data-toggle='collapse'] .fa-caret-down:before {
+  display: block;
   width: 16px;
   text-align: center;
 }
 
-a[data-toggle='collapse'].collapsed .icon-caret-down:before {
+a[data-toggle='collapse'].collapsed .fa-caret-down:before {
   content: "\f0da";
 }
 

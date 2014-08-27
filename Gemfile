@@ -142,6 +142,9 @@ group :assets do
   # deployments by combining two tasks into one (particularly under JRuby).
   gem "turbo-sprockets-rails3", "0.3.13"
 
+  # Icons
+  gem "rails-assets-fontawesome", "~> 4.1.0"
+
   gem "rails-assets-bootbox", "~> 3.3.0"
   gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.11"
   gem "rails-assets-datatables", "~> 1.10.2"

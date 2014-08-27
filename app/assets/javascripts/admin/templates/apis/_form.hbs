@@ -23,15 +23,15 @@
             <tr>
               <td>{{../backendProtocol}}://{{hostWithPort}}</td>
               <td class="table-row-actions">
-                <a href="#" {{action 'editServer' this}}><i class="icon-pencil"></i>Edit</a>
-                <a href="#" class="remove-action" {{action 'deleteServer' this}}><i class="icon-remove"></i>Remove</a>
+                <a href="#" {{action 'editServer' this}}><i class="fa fa-pencil"></i>Edit</a>
+                <a href="#" class="remove-action" {{action 'deleteServer' this}}><i class="fa fa-times"></i>Remove</a>
               </td>
             </tr>
           {{/each}}
         </tbody>
       </table>
     {{/if}}
-    <button type="button" class="btn btn-mini" {{action 'addServer'}}><i class="icon-plus-sign"></i> Add Server</button>
+    <button type="button" class="btn btn-mini" {{action 'addServer'}}><i class="fa fa-plus-circle"></i> Add Server</button>
   </fieldset>
 
   <fieldset>
@@ -43,7 +43,7 @@
           inputConfig='class:span12'}}
       </div>
       <div class="span2 arrow">
-        <i class="icon-arrow-right icon-2x"></i>
+        <i class="fa fa-arrow-right fa-2x"></i>
         <div>rewrite to</div>
       </div>
       <div class="span5">
@@ -62,7 +62,7 @@
   </fieldset>
 
   <fieldset>
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#global_settings"><i class="icon-caret-down"></i> Global Request Settings</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#global_settings"><i class="fa fa-caret-down"></i> Global Request Settings</a></legend>
     <div id="global_settings" class="collapse form-horizontal form-horizontal-wide">
       {{#with settings}}
         {{input appendQueryString
@@ -87,7 +87,7 @@
   </fieldset>
 
   <fieldset>
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="icon-caret-down"></i> Sub-URL Request Settings</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="fa fa-caret-down"></i> Sub-URL Request Settings</a></legend>
     <div id="sub_settings" class="collapse">
       <p class="fieldset-note">Change settings for specific sub-URLs within this API.</p>
       {{render 'apis/sub_settings' subSettings}}
@@ -95,7 +95,7 @@
   </fieldset>
 
   <fieldset>
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites"><i class="icon-caret-down"></i> Advanced Requests Rewriting</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites"><i class="fa fa-caret-down"></i> Advanced Requests Rewriting</a></legend>
     <div id="rewrites" class="collapse">
       <p class="fieldset-note">Modify the incoming request's URL or headers before passing it to the backend.</p>
       {{render 'apis/rewrites' rewrites}}
@@ -103,7 +103,7 @@
   </fieldset>
 
   <fieldset>
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#advanced_settings"><i class="icon-caret-down"></i> Advanced Settings</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#advanced_settings"><i class="fa fa-caret-down"></i> Advanced Settings</a></legend>
     <div id="advanced_settings" class="collapse form-horizontal form-horizontal-wide">
       {{input balanceAlgorithm as='select'
          value='balanceAlgorithm'
@@ -219,11 +219,11 @@ message: You have exceeded your rate limit. Try again later or contact us at {{c
   </fieldset>
 
   <div class="row-fluid">
-    <button type="submit" id="save_button" class="btn btn-large btn-primary" data-loading-text="<i class='icon-refresh icon-spin'></i> Saving...">Save</button>
+    <button type="submit" id="save_button" class="btn btn-large btn-primary" data-loading-text="<i class='fa fa-refresh fa-spin'></i> Saving...">Save</button>
   </div>
   {{#if id}}
     <div class="row-fluid form-extra-actions">
-      <a href="#" class="remove-action" {{action 'delete'}}><i class="icon-remove"></i>Delete API</a>
+      <a href="#" class="remove-action" {{action 'delete'}}><i class="fa fa-times"></i>Delete API</a>
     </div>
   {{/if}}
 {{/form-for}}

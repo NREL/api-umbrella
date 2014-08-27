@@ -13,10 +13,10 @@
           <td>{{httpMethod}}</td>
           <td>{{regex}}</td>
           <td class="table-row-actions" style="width: 90px; white-space: nowrap;">
-            <a href="#" {{action 'editSubSettings' this}}><i class="icon-pencil"></i>Edit</a>
-            <a href="#" class="remove-action" {{action 'deleteSubSettings' this}}><i class="icon-remove"></i>Remove</a>
+            <a href="#" {{action 'editSubSettings' this}}><i class="fa fa-pencil"></i>Edit</a>
+            <a href="#" class="remove-action" {{action 'deleteSubSettings' this}}><i class="fa fa-times"></i>Remove</a>
           </td>
-          <td class="reorder-handle"><i class="icon-reorder"></i></td>
+          <td class="reorder-handle"><i class="fa fa-reorder"></i></td>
         </tr>
       {{/each}}
     </tbody>
@@ -24,11 +24,11 @@
 {{/if}}
 <div class="row-fluid">
   <div class="span6">
-    <button type="button" class="btn btn-mini" {{action 'addSubSettings'}}><i class="icon-plus-sign"></i> Add URL Settings</button>
+    <button type="button" class="btn btn-mini" {{action 'addSubSettings'}}><i class="fa fa-plus-circle"></i> Add URL Settings</button>
   </div>
   <div class="span6 text-right">
     {{#if reorderable}}
-      <button type="button" class="btn btn-mini" {{action 'reorderSubSettings'}}><i class="icon-reorder"></i> <span class="reorder-button-text">Reorder</span></button>
+      <button type="button" class="btn btn-mini" {{action 'reorderSubSettings'}}><i class="fa fa-reorder"></i> <span class="reorder-button-text">Reorder</span></button>
     {{/if}}
   </div>
 </div>

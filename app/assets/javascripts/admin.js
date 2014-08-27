@@ -1,3 +1,4 @@
+//= require jquery/jquery.js
 //= require jquery_ujs
 //= require bootstrap
 //= require rails.validations

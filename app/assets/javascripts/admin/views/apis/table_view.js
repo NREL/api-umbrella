@@ -56,7 +56,7 @@ Admin.ApisTableView = Ember.View.extend({
           sClass: "reorder-handle",
           bSortable: false,
           mRender: function() {
-            return '<i class="icon-reorder"></i>';
+            return '<i class="fa fa-reorder"></i>';
           },
         },
       ]

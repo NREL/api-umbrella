@@ -81,7 +81,7 @@ Admin = Ember.Application.create({
 Ember.EasyForm.Tooltip = Ember.EasyForm.BaseView.extend({
   tagName: 'a',
   attributeBindings: ['title', 'rel'],
-  template: Ember.Handlebars.compile('<i class="icon-question-sign"></i>'),
+  template: Ember.Handlebars.compile('<i class="fa fa-question-circle"></i>'),
   rel: 'tooltip',
 });
 
@@ -209,7 +209,7 @@ _.merge($.fn.dataTable.defaults, {
       this.on('processing', _.bind(function(event, settings, processing) {
         if(processing) {
           this.block({
-            message: '<i class="icon-spinner icon-spin icon-large"></i>',
+            message: '<i class="fa fa-spinner fa-spin fa-lg"></i>',
           });
         } else {
           this.unblock();
