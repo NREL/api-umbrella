@@ -17,27 +17,6 @@
 /REVISION
 /config/deployed.yml
 
-# Ignore files generated from templates
-/config/elasticsearch/elasticsearch-env.sh
-/config/elasticsearch/elasticsearch.yml
-/config/mongod.conf
-/config/nginx/api_backends.conf
-/config/nginx/frontend_defaults.conf
-/config/nginx/frontend_proxy_header_defaults.conf
-/config/nginx/gatekeeper.conf
-/config/nginx/router.conf
-/config/nginx/web.conf
-/config/nginx/ssl_terminator.conf
-/config/redis.conf
-/config/supervisor/gatekeeper.conf
-/config/supervisord.conf
-/config/varnish.vcl
-
 # Ignore node generated file
 /config/runtime.*
 /test/config/runtime.*
-/run
-
-# Ignore log files
-/log/*
-/log/gatekeeper/*.log

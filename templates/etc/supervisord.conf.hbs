@@ -26,7 +26,7 @@ supervisor.ctl_factory = supervisorserialrestart.controllerplugin:make_serialres
 serverurl=unix://{{run_dir}}/supervisor.sock
 
 [program:mongod]
-command=mongod --config {{config_dir}}/mongod.conf
+command=mongod --config {{etc_dir}}/mongod.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -34,7 +34,7 @@ logfile_maxbytes=0
 startsecs=3
 
 [program:elasticsearch]
-environment=ES_INCLUDE="{{config_dir}}/elasticsearch/elasticsearch-env.sh"
+environment=ES_INCLUDE="{{etc_dir}}/elasticsearch/elasticsearch-env.sh"
 command=elasticsearch
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
@@ -43,7 +43,7 @@ logfile_maxbytes=0
 startsecs=3
 
 [program:redis]
-command=redis-server {{config_dir}}/redis.conf
+command=redis-server {{etc_dir}}/redis.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -51,7 +51,7 @@ logfile_maxbytes=0
 startsecs=3
 
 [program:varnishd]
-command=varnishd -F -a :{{varnish.port}} -f {{config_dir}}/varnish.vcl -t 0 -n {{run_dir}}/varnish/api-umbrella -p http_gzip_support=off
+command=varnishd -F -a :{{varnish.port}} -f {{etc_dir}}/varnish.vcl -t 0 -n {{run_dir}}/varnish/api-umbrella -p http_gzip_support=off
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -75,7 +75,7 @@ logfile_maxbytes=0
 startsecs=3
 
 [program:nginx-router]
-command=nginx -c {{config_dir}}/nginx/router.conf
+command=nginx -c {{etc_dir}}/nginx/router.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -85,6 +85,7 @@ startsecs=3
 [program:gatekeeper]
 numprocs=4
 process_name=%(program_name)s_50%(process_num)03d
+environment=NODE_LOG_DIR="{{log_dir}}",NODE_ENV="{{app_env}}"
 command=api-umbrella-gatekeeper {{api_umbrella_config_args}} -p 50%(process_num)03d
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s_50%(process_num)03d.log
@@ -146,7 +147,7 @@ logfile_maxbytes=0
 startsecs=3
 
 [program:web-nginx]
-command=nginx -c {{config_dir}}/nginx/web.conf
+command=nginx -c {{etc_dir}}/nginx/web.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE

@@ -1,6 +1,7 @@
 app_env: test
 http_port: 9080
 https_port: 9081
+etc_dir: /tmp/api-umbrella-test/etc
 log_dir: /tmp/api-umbrella-test/var/log
 run_dir: /tmp/api-umbrella-test/var/run
 db_dir: /tmp/api-umbrella-test/var/db

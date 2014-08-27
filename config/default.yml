@@ -1,6 +1,7 @@
 app_env: development
 http_port: 9000
 https_port: 9001
+etc_dir: /opt/api-umbrella/etc
 log_dir: /opt/api-umbrella/var/log
 run_dir: /opt/api-umbrella/var/run
 db_dir: /opt/api-umbrella/var/db
