@@ -4,9 +4,6 @@
     <meta charset="utf-8">
     <title>API Umbrella Admin</title>
     <%= stylesheet_link_tag "admin" %>
-    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-    <%= javascript_include_tag "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js" %>
-    <%= javascript_include_tag "//cdnjs.cloudflare.com/ajax/libs/ace/1.1.01/ace.js" %>
     <%= javascript_tag do %>
       apiUserExistingRoles = <%= ApiUser.existing_roles.map { |role| { :id => role, :title => role } }.to_json.html_safe %>;
       webAdminAjaxApiKey = <%= ApiUser.where(:email => 'web.admin.ajax@internal.apiumbrella').order_by(:created_at.asc).first.api_key.to_json.html_safe %>;

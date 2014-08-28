@@ -145,6 +145,9 @@ group :assets do
   # Icons
   gem "rails-assets-fontawesome", "~> 4.2.0"
 
+  # Code editor (for syntax highlighting inside textareas)
+  gem "rails-assets-ace-builds", "~> 1.1.6"
+
   gem "rails-assets-bootbox", "~> 3.3.0"
   gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.12"
   gem "rails-assets-datatables", "~> 1.10.2"
