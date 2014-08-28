@@ -130,6 +130,7 @@ Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
     this.editor.setShowPrintMargin(false);
     this.editor.setHighlightActiveLine(false);
     this.editor.getSession().setUseWorker(false);
+    this.editor.getSession().setTabSize(2);
     this.editor.getSession().setMode('ace/mode/' + this.$().data('ace-mode'));
     this.editor.getSession().setValue(this.$().val());
 
