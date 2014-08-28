@@ -101,8 +101,8 @@ Ember.Handlebars.helper('formatNumber', function(number) {
   return numeral(number).format('0,0');
 });
 
-Ember.Handlebars.helper('pluralize', function(word, number) {
-  return (number == 1) ? word : inflection.pluralize(word);
+Ember.Handlebars.helper('inflect', function(word, number) {
+  return inflection.inflect(word, number);
 });
 
 Ember.Handlebars.registerHelper('tooltip-field', function(property, options) {

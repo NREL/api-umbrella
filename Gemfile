@@ -14,7 +14,7 @@ gem "rack-timeout", "~> 0.0.4"
 
 # JSON handling
 gem "multi_json", "~> 1.10.1"
-gem "oj", "~> 2.10.0", :platforms => [:ruby]
+gem "oj", "~> 2.10.2", :platforms => [:ruby]
 
 # MongoDB
 gem "mongoid", "~> 3.1.6"
@@ -79,7 +79,7 @@ gem "babosa", "~> 0.3.11"
 gem "childprocess", "~> 0.5.1"
 
 # Views/templates for APIs
-gem "rabl", "~> 0.10.1"
+gem "rabl", "~> 0.11.0"
 gem "csv_builder", "~> 2.1.1"
 
 # Country and state name lookups
@@ -108,7 +108,7 @@ gem "safe_yaml", "~> 1.0.1", :require => "safe_yaml/load"
 gem "rails_config", "~> 0.3.3"
 
 # Delayed jobs and background tasks
-gem "delayed_job_mongoid", "~> 2.0.0"
+gem "delayed_job_mongoid", "~> 2.1.0"
 gem "daemons", "~> 1.1.9"
 
 # HTML email styling
@@ -143,20 +143,20 @@ group :assets do
   gem "turbo-sprockets-rails3", "0.3.13"
 
   # Icons
-  gem "rails-assets-fontawesome", "~> 4.1.0"
+  gem "rails-assets-fontawesome", "~> 4.2.0"
 
   gem "rails-assets-bootbox", "~> 3.3.0"
-  gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.11"
+  gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.12"
   gem "rails-assets-datatables", "~> 1.10.2"
   gem "rails-assets-ember-model", "~> 0.0.11"
   gem "rails-assets-html5shiv", "~> 3.7.0"
-  gem "rails-assets-inflection", "~> 1.3.5"
+  gem "rails-assets-inflection", "~> 1.4.0"
   gem "rails-assets-jquery", "~> 1.11.0"
   gem "rails-assets-jquery-bbq-deparam", "~> 1.2.1"
   gem "rails-assets-jstz-detect", "~> 1.0.5"
   gem "rails-assets-livestampjs", "~> 1.1.2"
   gem "rails-assets-lodash", "~> 2.4.1"
-  gem "rails-assets-moment", "~> 2.8.1"
+  gem "rails-assets-moment", "~> 2.8.2"
   gem "rails-assets-numeral", "~> 1.5.3"
   gem "rails-assets-pnotify", "~> 1.3.1"
   gem "rails-assets-qtip2", "~> 2.2.0"
