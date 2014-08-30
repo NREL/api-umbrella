@@ -53,6 +53,8 @@ gem "omniauth", "~> 1.2.1"
 gem "omniauth-google-oauth2", "~> 0.2.2"
 gem "omniauth-persona", "~> 0.0.1"
 
+gem "pundit", "~> 0.3.0"
+
 # Form layout and display
 gem "simple_form", "~> 2.1.1"
 
@@ -89,8 +91,8 @@ gem "countries", "~> 0.9.3"
 gem "settingslogic", "~> 2.0.9"
 
 # Ember.js
-gem "ember-rails", "~> 0.14.1"
-gem "ember-source", "~> 1.4.0"
+gem "ember-rails", "~> 0.15.0"
+gem "ember-source", "~> 1.7.0"
 
 # HTML diffs
 gem "diffy", "~> 3.0.3"

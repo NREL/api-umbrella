@@ -1,11 +1,13 @@
 class Admin::ApisController < Admin::BaseController
+  skip_after_filter :verify_authorized, :only => [:index]
+
   respond_to :json
 
   def index
     limit = params["iDisplayLength"].to_i
     limit = 10 if(limit == 0)
 
-    @apis = Api
+    @apis = policy_scope(Api)
       .order_by(datatables_sort_array)
       .skip(params["iDisplayStart"].to_i)
       .limit(limit)
@@ -21,6 +23,8 @@ class Admin::ApisController < Admin::BaseController
         { :_id => /#{params["sSearch"]}/i },
       ])
     end
+
+    @apis = @apis.to_a.select! { |api| ApiPolicy.new(pundit_user, api).show? }
   end
 
   def move_to

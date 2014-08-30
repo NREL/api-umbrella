@@ -1,5 +1,8 @@
 class ApplicationController < ActionController::Base
+  include Pundit
   protect_from_forgery
+
+  after_filter :verify_authorized
 
   def datatables_sort
     sort = []
@@ -24,5 +27,9 @@ class ApplicationController < ActionController::Base
 
   def datatables_sort_array
     datatables_sort.map { |sort| sort.to_a.flatten }
+  end
+
+  def pundit_user
+    current_admin
   end
 end

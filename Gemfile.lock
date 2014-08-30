@@ -128,18 +128,18 @@ GEM
     elasticsearch-transport (1.0.4)
       faraday
       multi_json
-    ember-data-source (0.14)
+    ember-data-source (1.0.0.beta.9)
       ember-source
-    ember-rails (0.14.1)
+    ember-rails (0.15.0)
       active_model_serializers
       barber (>= 0.4.1)
-      ember-data-source
-      ember-source
+      ember-data-source (>= 1.0.0.beta.5)
+      ember-source (>= 1.1.0)
       execjs (>= 1.2)
-      handlebars-source
+      handlebars-source (> 1.0.0)
       jquery-rails (>= 1.0.17)
       railties (>= 3.1)
-    ember-source (1.4.0)
+    ember-source (1.7.0)
       handlebars-source (~> 1.0)
     erubis (2.7.0)
     execjs (2.2.1)
@@ -252,6 +252,8 @@ GEM
       rack (>= 1.1, < 2.0)
     puma (2.9.0-java)
       rack (>= 1.1, < 2.0)
+    pundit (0.3.0)
+      activesupport (>= 3.0.0)
     rabl (0.11.0)
       activesupport (>= 2.3.14)
     rack (1.4.5)
@@ -435,8 +437,8 @@ DEPENDENCIES
   diffy (~> 3.0.3)
   dotenv-rails (~> 0.11.1)
   elasticsearch (~> 1.0.4)
-  ember-rails (~> 0.14.1)
-  ember-source (~> 1.4.0)
+  ember-rails (~> 0.15.0)
+  ember-source (~> 1.7.0)
   factory_girl_rails (~> 4.4.1)
   jquery-rails (~> 3.1.0)
   kaminari (~> 0.15.1)
@@ -457,6 +459,7 @@ DEPENDENCIES
   premailer-rails (~> 1.7.0)
   psych (~> 2.0.5)
   puma (~> 2.9.0)
+  pundit (~> 0.3.0)
   rabl (~> 0.11.0)
   rack-timeout (~> 0.0.4)
   rails (~> 3.2.19)

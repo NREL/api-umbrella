@@ -3,6 +3,7 @@ class Api::V1::ApisController < Api::V1::BaseController
 
   def show
     @api = Api.find(params[:id])
+    authorize(@api)
     respond_with(:api_v1, @api, :root => "api")
   end
 
@@ -20,6 +21,7 @@ class Api::V1::ApisController < Api::V1::BaseController
 
   def destroy
     @api = Api.find(params[:id])
+    authorize(@api)
     @api.destroy
     respond_with(:api_v1, @api, :root => "api")
   end
@@ -28,6 +30,8 @@ class Api::V1::ApisController < Api::V1::BaseController
 
   def save!
     @api.assign_nested_attributes(params[:api], :as => :admin)
+    authorize(@api)
+
     @api.save
   end
 end

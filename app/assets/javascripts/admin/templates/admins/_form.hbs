@@ -6,6 +6,10 @@
       label='Username'
       inputConfig='class:span6'}}
 
+    {{input notes as='text'
+      label='Notes'
+      inputConfig='class:span6'}}
+
     {{#if email}}
       <div class="control-group">
         <div class="control-label">E-mail</div>
@@ -30,6 +34,29 @@
       </div>
     </fieldset>
   {{/if}}
+
+  <fieldset class="form-horizontal info">
+    <legend>Permissions</legend>
+
+    <div class="control-group">
+      <div class="control-label">
+        <label>Groups</label>
+      </div>
+      <div class="controls">
+        {{view Admin.CheckboxListView checkedValuesBinding='groupIds' contentBinding='groupOptions'}}
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="controls">
+        <label class="checkbox">
+          {{view Ember.Checkbox checkedBinding='superuser'}}
+          Superuser
+        </label>
+      </div>
+    </div>
+
+  </fieldset>
 
   <div class="row-fluid">
     <div class="span6">

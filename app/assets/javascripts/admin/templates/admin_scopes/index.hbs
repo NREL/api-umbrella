@@ -1,0 +1,9 @@
+<h1>Admin Scope</h1>
+
+<div class="button-actions button-actions-down">
+  <a href="#/admin_scopes/new" class="btn btn-primary"><i class="fa fa-plus"></i> Add New Admin Scope</a>
+</div>
+
+<div id="results_table searchable-table-with-add">
+  {{view Admin.AdminScopesTableView dataBinding='model.logs' queryBinding='query'}}
+</div>

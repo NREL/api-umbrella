@@ -3,6 +3,7 @@ Admin.Admin = Ember.Model.extend({
   username: Ember.attr(),
   email: Ember.attr(),
   name: Ember.attr(),
+  groupIds: Ember.attr(),
   signInCount: Ember.attr(),
   lastSignInAt: Ember.attr(),
   lastSignInIp: Ember.attr(),
@@ -12,6 +13,8 @@ Admin.Admin = Ember.Model.extend({
   updatedAt: Ember.attr(),
   creator: Ember.attr(),
   updater: Ember.attr(),
+
+  groups: Ember.hasMany('Admin.AdminGroup', { key: 'group_ids' }),
 })
 
 Admin.Admin.url = "/api-umbrella/v1/admins";

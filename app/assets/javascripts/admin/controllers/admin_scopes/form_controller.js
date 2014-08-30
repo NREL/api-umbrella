@@ -1,8 +1,4 @@
-Admin.AdminsFormController = Ember.ObjectController.extend({
-  groupOptions: function() {
-    return Admin.AdminGroup.find();
-  }.property(),
-
+Admin.AdminScopesFormController = Ember.ObjectController.extend({
   actions: {
     submit: function() {
       var button = $('#save_button');
@@ -13,10 +9,10 @@ Admin.AdminsFormController = Ember.ObjectController.extend({
         $.pnotify({
           type: "success",
           title: "Saved",
-          text: "Successfully saved the admin '" + this.get('model').get('username') + "'",
+          text: "Successfully saved the admin scope '" + this.get('model').get('username') + "'",
         });
 
-        this.transitionTo('admins');
+        this.transitionTo('admin_scopes');
       }, this), function(response) {
         var message = "<h3>Error</h3>";
         try {
@@ -35,5 +31,5 @@ Admin.AdminsFormController = Ember.ObjectController.extend({
   },
 });
 
-Admin.AdminsEditController = Admin.AdminsFormController.extend();
-Admin.AdminsNewController = Admin.AdminsFormController.extend();
+Admin.AdminScopesEditController = Admin.AdminScopesFormController.extend();
+Admin.AdminScopesNewController = Admin.AdminScopesFormController.extend();

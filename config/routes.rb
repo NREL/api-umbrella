@@ -20,6 +20,8 @@ ApiUmbrella::Application.routes.draw do
       end
 
       namespace :v1 do
+        resources :admin_groups
+        resources :admin_scopes
         resources :admins
         resources :apis
         resources :users
@@ -39,6 +41,8 @@ ApiUmbrella::Application.routes.draw do
 
   namespace :admin do
     resources :admins, :only => [:index]
+    resources :admin_scopes, :only => [:index]
+    resources :admin_groups, :only => [:index]
     resources :api_users, :only => [:index]
     resources :apis, :only => [:index] do
       member do

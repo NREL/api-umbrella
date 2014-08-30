@@ -14,6 +14,16 @@ Admin.Router.map(function() {
     this.route("edit", { path: "/:adminId/edit" });
   });
 
+  this.resource("admin_scopes", { path: "/admin_scopes" }, function() {
+    this.route("new");
+    this.route("edit", { path: "/:adminScopeId/edit" });
+  });
+
+  this.resource("admin_groups", { path: "/admin_groups" }, function() {
+    this.route("new");
+    this.route("edit", { path: "/:adminGroupId/edit" });
+  });
+
   this.resource("stats", { path: "/stats" }, function() {
     this.route("logs", { path: "/logs/*query" });
     this.route("logsDefault", { path: "/logs" });
