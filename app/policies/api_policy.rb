@@ -41,6 +41,10 @@ class ApiPolicy < ApplicationPolicy
   end
 
   def create?
-    update?
+    show?
+  end
+
+  def destroy?
+    show?
   end
 end

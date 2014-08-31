@@ -30,11 +30,13 @@ class ApplicationController < ActionController::Base
   def new_datatables_sort
     sort = []
 
-    params[:order].each do |i, order|
-      column_index = order[:column]
-      column = params[:columns][column_index]
-      column_name = column[:data]
-      sort << [column_name, order[:dir]]
+    if(params[:order].present?)
+      params[:order].each do |i, order|
+        column_index = order[:column]
+        column = params[:columns][column_index]
+        column_name = column[:data]
+        sort << [column_name, order[:dir]]
+      end
     end
 
     sort

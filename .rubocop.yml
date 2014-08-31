@@ -122,6 +122,9 @@ Rails/DefaultScope:
 Rails/Delegate:
   Enabled: false
 
+Rails/HasAndBelongsToMany:
+  Enabled: false
+
 Rails/Output:
   Exclude:
     - db/migrate/**

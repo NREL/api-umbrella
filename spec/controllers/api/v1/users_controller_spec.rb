@@ -16,7 +16,7 @@ describe Api::V1::UsersController do
     end
 
     it "allows access with an admin token" do
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       send(method, action, params)
       response.status.should eql(success_response_status)
     end
@@ -66,7 +66,7 @@ describe Api::V1::UsersController do
     it_behaves_like "no api key role access", :get, :show
 
     it "contains the user response" do
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       get :show, params
 
       data = MultiJson.load(response.body)
@@ -119,7 +119,7 @@ describe Api::V1::UsersController do
     it_behaves_like "api key role access", :post, :create
 
     it "performs an create" do
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       expect do
         post :create, params
 
@@ -132,7 +132,7 @@ describe Api::V1::UsersController do
     end
 
     it "queues a welcome e-mail to be sent when requested" do
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       expect do
         p = params
         p[:user][:send_welcome_email] = "1"
@@ -141,14 +141,14 @@ describe Api::V1::UsersController do
     end
 
     it "does not send welcome e-mails by default" do
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       expect do
         post :create, params
       end.to change { Delayed::Job.count }.by(0)
     end
 
     it "returns a wildcard CORS response" do
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       post :create, params
       response.headers["Access-Control-Allow-Origin"].should eql("*")
     end
@@ -157,7 +157,7 @@ describe Api::V1::UsersController do
       p = params
       p[:user][:roles] = ["admin"]
 
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       post :create, p
 
       response.status.should eql(success_response_status)
@@ -182,14 +182,14 @@ describe Api::V1::UsersController do
     end
 
     it "defaults the registration source to 'api'" do
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       post :create, params
       data = MultiJson.load(response.body)
       data["user"]["registration_source"].should eql("api")
     end
 
     it "allows setting a custom registration source" do
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       p = params
       p[:user][:registration_source] = "whatever"
       post :create, p
@@ -218,7 +218,7 @@ describe Api::V1::UsersController do
     it_behaves_like "no api key role access", :put, :update
 
     it "performs an update" do
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       put :update, params
       data = MultiJson.load(response.body)
       data["user"]["first_name"].should eql("Bob")
@@ -229,7 +229,7 @@ describe Api::V1::UsersController do
 
     it "leaves existing registration sources alone" do
       user = FactoryGirl.create(:api_user, :registration_source => "something")
-      request.env["HTTP_X_ADMIN_AUTH_TOKEN"] = @admin.authentication_token
+      admin_token_auth(@admin)
       put :update, params.merge(:id => user.id)
       data = MultiJson.load(response.body)
       data["user"]["registration_source"].should eql("something")

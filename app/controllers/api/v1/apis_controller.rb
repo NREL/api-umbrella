@@ -1,6 +1,7 @@
 class Api::V1::ApisController < Api::V1::BaseController
-  skip_after_filter :verify_authorized, :only => [:index]
   respond_to :json
+
+  skip_after_filter :verify_authorized, :only => [:index]
 
   def index
     @apis = policy_scope(Api).order_by(new_datatables_sort)
@@ -13,7 +14,7 @@ class Api::V1::ApisController < Api::V1::BaseController
       @apis = @apis.limit(params["length"].to_i)
     end
 
-    if(params["search"]["value"].present?)
+    if(params["search"] && params["search"]["value"].present?)
       @apis = @apis.or([
         { :name => /#{params["search"]["value"]}/i },
         { :frontend_host => /#{params["search"]["value"]}/i },

@@ -14,7 +14,7 @@ class Api::V1::AdminsController < Api::V1::BaseController
       @admins = @admins.limit(params["length"].to_i)
     end
 
-    if(params["search"]["value"].present?)
+    if(params["search"] && params["search"]["value"].present?)
       @admins = @admins.or([
         { :first_name => /#{params["search"]["value"]}/i },
         { :last_name => /#{params["search"]["value"]}/i },

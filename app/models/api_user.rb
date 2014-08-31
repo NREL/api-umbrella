@@ -4,6 +4,7 @@ class ApiUser
   include Mongoid::Document
   include Mongoid::Timestamps
   include Mongoid::Userstamp
+  include Mongoid::Paranoia
   include Mongoid::Delorean::Trackable
   include Mongoid::EmbeddedErrors
   include ApiUmbrella::AttributifyData

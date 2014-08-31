@@ -31,6 +31,6 @@ class ApiUserPolicy < ApplicationPolicy
   end
 
   def create?
-    update?
+    true
   end
 end
