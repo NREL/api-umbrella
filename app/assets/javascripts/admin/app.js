@@ -165,6 +165,11 @@ Admin.APIUmbrellaRESTAdapter = Ember.RESTAdapter.extend({
   }
 });
 
+$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+  options.headers = options.headers || {};
+  options.headers['X-Api-Key'] = webAdminAjaxApiKey;
+});
+
 // DataTables plugin to programmatically show the processing indidicator.
 // https://datatables.net/plug-ins/api#fnProcessingIndicator
 jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff )

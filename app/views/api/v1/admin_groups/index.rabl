@@ -1,15 +1,18 @@
-collection @admin_groups, :root => "admin_groups", :object_root => false
-attributes :id,
-           :name,
-           :scope_id,
-           :access,
-           :created_at,
-           :updated_at
+object false
 
-child :creator => :creator do
-  attributes :username
-end
+node(:draw) { params[:draw].to_i }
+node(:recordsTotal) { @admin_groups.count }
+node(:recordsFiltered) { @admin_groups.count }
+node :data do
+  @admin_groups.map do |admin_group|
+    data = admin_group.serializable_hash
 
-child :updater => :updater do
-  attributes :username
+    if(admin_group.scope.present?)
+      data.merge!({
+        "scope_display_name" => admin_group.scope.display_name
+      })
+    end
+
+    data
+  end
 end

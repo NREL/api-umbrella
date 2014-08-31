@@ -4,10 +4,11 @@ class ApiPolicy < ApplicationPolicy
       if(user.superuser?)
         scope.all
       else
-        query_scopes = user.scopes.map do |scope|
-          {
-            :frontend_host => scope.host,
-            :"url_matches.frontend_prefix" => scope.path_prefix_matcher,
+        query_scopes = []
+        user.groups_with_access("backend_manage").each do |group|
+          query_scopes << {
+            :frontend_host => group.scope.host,
+            :"url_matches.frontend_prefix" => group.scope.path_prefix_matcher,
           }
         end
 
@@ -18,14 +19,18 @@ class ApiPolicy < ApplicationPolicy
 
   def show?
     allowed = false
-    user.scopes.each do |scope|
-      if(record.frontend_host == scope.host)
-        allowed = record.url_matches.all? do |url_match|
-          scope.path_prefix_matcher.match(url_match.frontend_prefix)
+    if(user.superuser?)
+      allowed = true
+    else
+      user.groups_with_access("backend_manage").each do |group|
+        if(record.frontend_host == group.scope.host)
+          allowed = record.url_matches.all? do |url_match|
+            group.scope.path_prefix_matcher.match(url_match.frontend_prefix)
+          end
         end
-      end
 
-      break if(allowed)
+        break if(allowed)
+      end
     end
 
     allowed

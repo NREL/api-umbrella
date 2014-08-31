@@ -8,7 +8,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
     omniauth = env["omniauth.auth"]
     @admin = Admin.where(:username => omniauth["uid"]).first
-    @admin ||= Admin.new(:username => omniauth["uid"])
+    @admin ||= Admin.new(:username => omniauth["uid"], :superuser => true)
     @admin.apply_omniauth(omniauth)
     @admin.save!
     sign_in(:admin, @admin)

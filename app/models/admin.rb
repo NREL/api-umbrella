@@ -40,8 +40,43 @@ class Admin
   # Callbacks
   before_validation :generate_authentication_token, :on => :create
 
+  # Mass assignment security
+  attr_accessible :username,
+    :email,
+    :name,
+    :notes,
+    :superuser,
+    :group_ids,
+    :as => [:admin]
+
   def scopes
     @scopes ||= groups.map { |group| group.scope }.compact.uniq
+  end
+
+  def can?(access)
+    allowed = false
+
+    if(self.superuser?)
+      allowed = true
+    else
+      allowed = self.groups.any? do |group|
+        group.can?(access)
+      end
+    end
+
+    allowed
+  end
+
+  def can_any?(access_list)
+    [access_list].flatten.any? do |access|
+      self.can?(access)
+    end
+  end
+
+  def groups_with_access(access)
+    self.groups.select do |group|
+      group.can?(access)
+    end
   end
 
   def apply_omniauth(omniauth)

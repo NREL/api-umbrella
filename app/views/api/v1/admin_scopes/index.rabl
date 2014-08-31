@@ -1,15 +1,10 @@
-collection @admin_scopes, :root => "admin_scopes", :object_root => false
-attributes :id,
-           :name,
-           :host,
-           :path_prefix,
-           :created_at,
-           :updated_at
+object false
 
-child :creator => :creator do
-  attributes :username
-end
-
-child :updater => :updater do
-  attributes :username
+node(:draw) { params[:draw].to_i }
+node(:recordsTotal) { @admin_scopes.count }
+node(:recordsFiltered) { @admin_scopes.count }
+node :data do
+  @admin_scopes.map do |admin_scope|
+    admin_scope.serializable_hash
+  end
 end

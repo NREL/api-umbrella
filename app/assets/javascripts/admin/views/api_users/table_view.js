@@ -5,16 +5,16 @@ Admin.ApiUsersTableView = Ember.View.extend({
 
   didInsertElement: function() {
     this.$().dataTable({
-      "bServerSide": true,
-      "sAjaxSource": "/admin/api_users.json",
-      "iDisplayLength": 50,
-      "aaSorting": [[4, "desc"]],
-      "aoColumns": [
+      serverSide: true,
+      ajax: "/api-umbrella/v1/users.json",
+      pageLength: 50,
+      order: [[4, "desc"]],
+      columns: [
         {
-          mData: "email",
-          sTitle: "E-mail",
-          sDefaultContent: "-",
-          mRender: _.bind(function(email, type, data) {
+          data: "email",
+          title: "E-mail",
+          defaultContent: "-",
+          render: _.bind(function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
               var link = '#/api_users/' + data.id + '/edit';
               return '<a href="' + link + '">' + _.escape(email) + '</a>';
@@ -24,26 +24,26 @@ Admin.ApiUsersTableView = Ember.View.extend({
           }, this),
         },
         {
-          mData: "first_name",
-          sTitle: "First Name",
-          sDefaultContent: "-",
+          data: "first_name",
+          title: "First Name",
+          defaultContent: "-",
         },
         {
-          mData: "last_name",
-          sTitle: "Last Name",
-          sDefaultContent: "-",
+          data: "last_name",
+          title: "Last Name",
+          defaultContent: "-",
         },
         {
-          mData: "use_description",
-          sTitle: "Purpose",
-          sDefaultContent: "-",
+          data: "use_description",
+          title: "Purpose",
+          defaultContent: "-",
         },
         {
-          mData: "created_at",
-          sType: "date",
-          sTitle: "Created",
-          sDefaultContent: "-",
-          mRender: function(time, type) {
+          data: "created_at",
+          type: "date",
+          title: "Created",
+          defaultContent: "-",
+          render: function(time, type) {
             if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');
             }
@@ -52,10 +52,10 @@ Admin.ApiUsersTableView = Ember.View.extend({
           },
         },
         {
-          mData: "api_key_preview",
-          sTitle: "API Key",
-          sDefaultContent: "-",
-          bSortable: false,
+          data: "api_key_preview",
+          title: "API Key",
+          defaultContent: "-",
+          orderable: false,
         },
       ]
     });

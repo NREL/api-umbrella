@@ -4,17 +4,17 @@ Admin.AdminScopesTableView = Ember.View.extend({
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
 
   didInsertElement: function() {
-    this.$().dataTable({
-      "bServerSide": true,
-      "sAjaxSource": "/admin/admin_scopes.json",
-      "iDisplayLength": 50,
-      "aaSorting": [[0, "asc"]],
-      "aoColumns": [
+    this.$().DataTable({
+      serverSide: true,
+      ajax: "/api-umbrella/v1/admin_scopes.json",
+      pageLength: 50,
+      order: [[0, "asc"]],
+      columns: [
         {
-          mData: "name",
-          sTitle: "Name",
-          sDefaultContent: "-",
-          mRender: _.bind(function(name, type, data) {
+          data: "name",
+          title: "Name",
+          defaultContent: "-",
+          render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               var link = '#/admin_scopes/' + data.id + '/edit';
               return '<a href="' + link + '">' + _.escape(name) + '</a>';
@@ -24,14 +24,14 @@ Admin.AdminScopesTableView = Ember.View.extend({
           }, this),
         },
         {
-          mData: "host",
-          sTitle: "Host",
-          sDefaultContent: "-",
+          data: "host",
+          title: "Host",
+          defaultContent: "-",
         },
         {
-          mData: "path_prefix",
-          sTitle: "Path Prefix",
-          sDefaultContent: "-",
+          data: "path_prefix",
+          title: "Path Prefix",
+          defaultContent: "-",
         }
       ]
     });

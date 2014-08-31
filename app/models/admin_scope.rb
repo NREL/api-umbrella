@@ -11,6 +11,12 @@ class AdminScope
   field :host, :type => String
   field :path_prefix, :type => String
 
+  # Mass assignment security
+  attr_accessible :name,
+    :host,
+    :path_prefix,
+    :as => [:admin]
+
   def path_prefix_matcher
     /^#{Regexp.escape(self.path_prefix)}/
   end

@@ -15,7 +15,7 @@ Admin.AdminScope = Ember.Model.extend({
 
 Admin.AdminScope.url = "/api-umbrella/v1/admin_scopes";
 Admin.AdminScope.rootKey = "admin_scope";
-Admin.AdminScope.collectionKey = "admin_scopes";
+Admin.AdminScope.collectionKey = "data";
 Admin.AdminScope.primaryKey = "id";
 Admin.AdminScope.camelizeKeys = true;
 Admin.AdminScope.adapter = Admin.APIUmbrellaRESTAdapter.create();

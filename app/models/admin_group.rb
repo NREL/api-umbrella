@@ -16,6 +16,17 @@ class AdminGroup
   # Validations
   validate :validate_access
 
+  # Mass assignment security
+  attr_accessible :name,
+    :access,
+    :scope_id,
+    :as => [:admin]
+
+  def can?(access_name)
+    access = self.access || []
+    access.include?(access_name.to_s)
+  end
+
   private
 
   def validate_access

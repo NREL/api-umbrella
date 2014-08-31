@@ -12,21 +12,21 @@ Admin.ApisTableView = Ember.View.extend({
   },
 
   didInsertElement: function() {
-    this.set('table', this.$().dataTable({
-      "bServerSide": true,
-      "sAjaxSource": "/admin/apis.json",
-      "iDisplayLength": 50,
-      "fnRowCallback": function(row, data) {
+    this.set('table', this.$().DataTable({
+      serverSide: true,
+      ajax: "/api-umbrella/v1/apis.json",
+      pageLength: 50,
+      rowCallback: function(row, data) {
         $(row).data("id", data.id);
         $(row).data("sort-order", data.sort_order);
       },
-      "aaSorting": [[0, "asc"]],
-      "aoColumns": [
+      order: [[0, "asc"]],
+      columns: [
         {
-          mData: "name",
-          sTitle: "Name",
-          sDefaultContent: "-",
-          mRender: _.bind(function(name, type, data) {
+          data: "name",
+          title: "Name",
+          defaultContent: "-",
+          render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               var link = '#/apis/' + data.id + '/edit';
               return '<a href="' + link + '">' + _.escape(name) + '</a>';
@@ -36,26 +36,26 @@ Admin.ApisTableView = Ember.View.extend({
           }, this),
         },
         {
-          mData: "frontend_host",
-          sTitle: "Host",
-          sDefaultContent: "-",
+          data: "frontend_host",
+          title: "Host",
+          defaultContent: "-",
         },
         {
-          mData: "frontend_prefixes",
-          sTitle: "Prefixes",
-          sDefaultContent: "-",
+          data: "frontend_prefixes",
+          title: "Prefixes",
+          defaultContent: "-",
         },
         {
-          mData: "sort_order",
-          sTitle: "Matching Order",
-          sDefaultContent: "-",
-          sWidth: 130,
+          data: "sort_order",
+          title: "Matching Order",
+          defaultContent: "-",
+          width: 130,
         },
         {
-          mData: null,
-          sClass: "reorder-handle",
-          bSortable: false,
-          mRender: function() {
+          data: null,
+          className: "reorder-handle",
+          orderable: false,
+          render: function() {
             return '<i class="fa fa-reorder"></i>';
           },
         },

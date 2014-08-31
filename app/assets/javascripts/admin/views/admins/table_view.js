@@ -4,17 +4,17 @@ Admin.AdminsTableView = Ember.View.extend({
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
 
   didInsertElement: function() {
-    this.$().dataTable({
-      "bServerSide": true,
-      "sAjaxSource": "/admin/admins.json",
-      "iDisplayLength": 50,
-      "aaSorting": [[0, "asc"]],
-      "aoColumns": [
+    this.$().DataTable({
+      serverSide: true,
+      ajax: "/api-umbrella/v1/admins.json",
+      pageLength: 50,
+      order: [[0, "asc"]],
+      columns: [
         {
-          mData: "username",
-          sTitle: "Username",
-          sDefaultContent: "-",
-          mRender: _.bind(function(email, type, data) {
+          data: "username",
+          title: "Username",
+          defaultContent: "-",
+          render: _.bind(function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
               var link = '#/admins/' + data.id + '/edit';
               return '<a href="' + link + '">' + _.escape(email) + '</a>';
@@ -24,21 +24,21 @@ Admin.AdminsTableView = Ember.View.extend({
           }, this),
         },
         {
-          mData: "email",
-          sTitle: "E-mail",
-          sDefaultContent: "-",
+          data: "email",
+          title: "E-mail",
+          defaultContent: "-",
         },
         {
-          mData: "name",
-          sTitle: "Name",
-          sDefaultContent: "-",
+          data: "name",
+          title: "Name",
+          defaultContent: "-",
         },
         {
-          mData: "last_sign_in_at",
-          sType: "date",
-          sTitle: "Last Signed In",
-          sDefaultContent: "-",
-          mRender: function(time, type) {
+          data: "last_sign_in_at",
+          type: "date",
+          title: "Last Signed In",
+          defaultContent: "-",
+          render: function(time, type) {
             if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');
             }
@@ -47,11 +47,11 @@ Admin.AdminsTableView = Ember.View.extend({
           },
         },
         {
-          mData: "created_at",
-          sType: "date",
-          sTitle: "Created",
-          sDefaultContent: "-",
-          mRender: function(time, type) {
+          data: "created_at",
+          type: "date",
+          title: "Created",
+          defaultContent: "-",
+          render: function(time, type) {
             if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');
             }

@@ -1,12 +1,15 @@
 class Api::V1::AdminScopesController < Api::V1::BaseController
   respond_to :json
 
+  skip_after_filter :verify_authorized, :only => [:index]
+
   def index
-    @admin_scopes = AdminScope.all
+    @admin_scopes = policy_scope(AdminScope)
   end
 
   def show
     @admin_scope = AdminScope.find(params[:id])
+    authorize(@admin_scope)
   end
 
   def create
@@ -25,6 +28,7 @@ class Api::V1::AdminScopesController < Api::V1::BaseController
 
   def save!
     @admin_scope.assign_attributes(params[:admin_scope], :as => :admin)
+    authorize(@admin_scope)
     @admin_scope.save
   end
 end

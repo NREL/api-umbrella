@@ -6,6 +6,8 @@ class Api::V1::BaseController < ApplicationController
   # session (so this API can be used from within the web admin tool).
   before_filter :authenticate_admin!
 
+  after_filter :verify_authorized
+
   private
 
   def authenticate_admin_from_token!

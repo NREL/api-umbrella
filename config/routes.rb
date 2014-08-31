@@ -40,11 +40,7 @@ ApiUmbrella::Application.routes.draw do
   match "/admin" => "admin/base#empty"
 
   namespace :admin do
-    resources :admins, :only => [:index]
-    resources :admin_scopes, :only => [:index]
-    resources :admin_groups, :only => [:index]
-    resources :api_users, :only => [:index]
-    resources :apis, :only => [:index] do
+    resources :apis, :only => [] do
       member do
         put "move_to"
       end

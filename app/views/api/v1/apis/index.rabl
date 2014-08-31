@@ -1,9 +1,9 @@
 object false
 
-node(:sEcho) { params[:sEcho] }
-node(:iTotalRecords) { @apis.count }
-node(:iTotalDisplayRecords) { @apis.count }
-node :aaData do
+node(:draw) { params[:draw].to_i }
+node(:recordsTotal) { @apis.count }
+node(:recordsFiltered) { @apis.count }
+node :data do
   @apis.map do |api|
     data = api.serializable_hash
 

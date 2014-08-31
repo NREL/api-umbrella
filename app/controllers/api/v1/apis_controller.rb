@@ -1,5 +1,32 @@
 class Api::V1::ApisController < Api::V1::BaseController
+  skip_after_filter :verify_authorized, :only => [:index]
   respond_to :json
+
+  def index
+    @apis = policy_scope(Api).order_by(new_datatables_sort)
+
+    if(params[:start].present?)
+      @apis = @apis.skip(params["start"].to_i)
+    end
+
+    if(params[:length].present?)
+      @apis = @apis.limit(params["length"].to_i)
+    end
+
+    if(params["search"]["value"].present?)
+      @apis = @apis.or([
+        { :name => /#{params["search"]["value"]}/i },
+        { :frontend_host => /#{params["search"]["value"]}/i },
+        { :backend_host => /#{params["search"]["value"]}/i },
+        { :"url_matches.backend_prefix" => /#{params["search"]["value"]}/i },
+        { :"url_matches.frontend_prefix" => /#{params["search"]["value"]}/i },
+        { :"servers.host" => /#{params["search"]["value"]}/i },
+        { :_id => /#{params["search"]["value"]}/i },
+      ])
+    end
+
+    @apis = @apis.to_a.select { |api| ApiPolicy.new(pundit_user, api).show? }
+  end
 
   def show
     @api = Api.find(params[:id])

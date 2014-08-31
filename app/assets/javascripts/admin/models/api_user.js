@@ -68,7 +68,7 @@ Admin.ApiUser = Ember.Model.extend({
 
 Admin.ApiUser.url = "/api-umbrella/v1/users";
 Admin.ApiUser.rootKey = "user";
-Admin.ApiUser.collectionKey = "users";
+Admin.ApiUser.collectionKey = "data";
 Admin.ApiUser.primaryKey = "id";
 Admin.ApiUser.camelizeKeys = true;
 Admin.ApiUser.adapter = Admin.APIUmbrellaRESTAdapter.create();

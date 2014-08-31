@@ -4,17 +4,17 @@ Admin.AdminGroupsTableView = Ember.View.extend({
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
 
   didInsertElement: function() {
-    this.$().dataTable({
-      "bServerSide": true,
-      "sAjaxSource": "/admin/admin_groups.json",
-      "iDisplayLength": 50,
-      "aaSorting": [[0, "asc"]],
-      "aoColumns": [
+    this.$().DataTable({
+      serverSide: true,
+      ajax: "/api-umbrella/v1/admin_groups.json",
+      pageLength: 50,
+      order: [[0, "asc"]],
+      columns: [
         {
-          mData: "name",
-          sTitle: "Name",
-          sDefaultContent: "-",
-          mRender: _.bind(function(name, type, data) {
+          data: "name",
+          title: "Name",
+          defaultContent: "-",
+          render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               var link = '#/admin_groups/' + data.id + '/edit';
               return '<a href="' + link + '">' + _.escape(name) + '</a>';
@@ -24,15 +24,15 @@ Admin.AdminGroupsTableView = Ember.View.extend({
           }, this),
         },
         {
-          mData: "scope_display_name",
-          sTitle: "Scope",
-          sDefaultContent: "-",
+          data: "scope_display_name",
+          title: "Scope",
+          defaultContent: "-",
         },
         {
-          mData: "access",
-          sTitle: "Access",
-          sDefaultContent: "-",
-          mRender: function(access, type, data) {
+          data: "access",
+          title: "Access",
+          defaultContent: "-",
+          render: function(access, type, data) {
             if(type === 'display' && access && access !== '-') {
               return access.join(', ');
             }
