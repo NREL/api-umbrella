@@ -8,7 +8,7 @@ class Api::V1::BaseController < ApplicationController
 
   after_filter :verify_authorized
 
-  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+  rescue_from Pundit::NotAuthorizedError, :with => :user_not_authorized
 
   private
 
