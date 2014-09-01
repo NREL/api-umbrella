@@ -82,7 +82,7 @@ describe "config publish", :js => true do
     end
 
     it "displays a notification after successfully publishing" do
-      api = FactoryGirl.create(:api)
+      FactoryGirl.create(:api)
 
       visit "/admin/#/config/publish"
       click_button("Publish")
