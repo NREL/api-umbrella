@@ -3,7 +3,8 @@ require 'spec_helper'
 describe Api::V1::ApisController do
   before(:all) do
     @admin = FactoryGirl.create(:admin)
-    @google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group)])
+    @google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_access)])
+    @unauthorized_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_access)])
 
     @api = FactoryGirl.create(:api)
     @google_api = FactoryGirl.create(:google_api)
@@ -64,6 +65,14 @@ describe Api::V1::ApisController do
         api_ids = data["data"].map { |api| api["id"] }
         api_ids.should_not include(@google_extra_url_match_api.id)
       end
+
+      it "excludes all apis for admins without proper access" do
+        admin_token_auth(@unauthorized_admin)
+        get :index, :format => "json"
+
+        data = MultiJson.load(response.body)
+        data["data"].length.should eql(0)
+      end
     end
   end
 
@@ -90,6 +99,15 @@ describe Api::V1::ApisController do
       it "prevents admins from creating apis outside the scope it has access to" do
         admin_token_auth(@google_admin)
         get :show, :format => "json", :id => @google_extra_url_match_api.id
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+      end
+
+      it "forbids admins without proper access" do
+        admin_token_auth(@unauthorized_admin)
+        get :show, :format => "json", :id => @google_api.id
 
         response.status.should eql(403)
         data = MultiJson.load(response.body)
@@ -127,6 +145,18 @@ describe Api::V1::ApisController do
       it "prevents admins from creating apis outside the scope it has access to" do
         admin_token_auth(@google_admin)
         attributes = FactoryGirl.attributes_for(:google_extra_url_match_api)
+
+        expect do
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(403)
+          data = MultiJson.load(response.body)
+          data.keys.should eql(["errors"])
+        end.to_not change { Api.count }
+      end
+
+      it "forbids admins without proper access" do
+        admin_token_auth(@unauthorized_admin)
+        attributes = FactoryGirl.attributes_for(:google_api)
 
         expect do
           post :create, :format => "json", :api => attributes
@@ -189,6 +219,19 @@ describe Api::V1::ApisController do
         @google_api.name.should_not eql(attributes["name"])
         @google_api.url_matches.length.should eql(1)
       end
+
+      it "forbids admins without proper access" do
+        admin_token_auth(@unauthorized_admin)
+        attributes = @google_api.serializable_hash
+        attributes["name"] = "Google Updated #{rand(999_999)}"
+        put :update, :format => "json", :id => @google_api.id, :api => attributes
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+        @google_extra_url_match_api = Api.find(@google_extra_url_match_api.id)
+        @google_extra_url_match_api.name.should_not eql(attributes["name"])
+      end
     end
   end
 
@@ -227,6 +270,18 @@ describe Api::V1::ApisController do
       it "prevents admins from deleting apis outside the scope it has access to" do
         admin_token_auth(@google_admin)
         api = FactoryGirl.create(:google_extra_url_match_api)
+
+        expect do
+          delete :destroy, :format => "json", :id => api.id
+          response.status.should eql(403)
+          data = MultiJson.load(response.body)
+          data.keys.should eql(["errors"])
+        end.to_not change { Api.count }
+      end
+
+      it "forbids admins without proper access" do
+        admin_token_auth(@unauthorized_admin)
+        api = FactoryGirl.create(:google_api)
 
         expect do
           delete :destroy, :format => "json", :id => api.id
