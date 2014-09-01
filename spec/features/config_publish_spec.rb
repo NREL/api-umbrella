@@ -8,13 +8,13 @@ describe "config publish", :js => true do
 
   describe "preview config changes" do
     it "shows the pending configuration changes grouped into categories" do
-      identical_api = FactoryGirl.create(:api)
+      FactoryGirl.create(:api)
       deleted_api = FactoryGirl.create(:api)
       modified_api = FactoryGirl.create(:api, :name => "Before")
       ConfigVersion.publish!(ConfigVersion.pending_config)
       deleted_api.destroy
       modified_api.update_attribute(:name, "After")
-      new_api = FactoryGirl.create(:api)
+      FactoryGirl.create(:api)
 
       visit "/admins/auth/developer"
       fill_in "Email", :with => "admin"
@@ -28,7 +28,7 @@ describe "config publish", :js => true do
 
     it "hides the categories that have no changes" do
       ConfigVersion.publish!(ConfigVersion.pending_config)
-      new_api = FactoryGirl.create(:api)
+      FactoryGirl.create(:api)
 
       visit "/admins/auth/developer"
       fill_in "Email", :with => "admin"
@@ -41,7 +41,7 @@ describe "config publish", :js => true do
     end
 
     it "presents a message when there are no configuration changes to publish" do
-      api = FactoryGirl.create(:api)
+      FactoryGirl.create(:api)
       ConfigVersion.publish!(ConfigVersion.pending_config)
 
       visit "/admins/auth/developer"
