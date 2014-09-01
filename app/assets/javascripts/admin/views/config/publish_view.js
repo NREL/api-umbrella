@@ -32,10 +32,4 @@ Admin.ConfigPublishView = Ember.View.extend({
       diffOutput.html(fragment);
     });
   },
-
-  actions: {
-    publish: function() {
-      $('button[type=submit]').button('loading');
-    },
-  },
 });

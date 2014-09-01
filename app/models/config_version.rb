@@ -9,10 +9,10 @@ class ConfigVersion
   # Indexes
   index({ :version => 1 }, { :unique => true })
 
-  def self.publish!
+  def self.publish!(config)
     self.create!({
       :version => Time.now,
-      :config => self.pending_config,
+      :config => config,
     })
   end
 
@@ -61,8 +61,8 @@ class ConfigVersion
     end
 
     pending_apis = pending_apis.sorted.all
-    pending_apis = pending_apis.to_a.select { |api| Pundit.policy!(current_admin, api).show? }
-    pending_apis.map! { |api| Hash[api.attributes] }
+    pending_apis = pending_apis.to_a.select { |api| Pundit.policy!(current_admin, api).publish? }
+    pending_apis.map! { |api| api.attributes_hash }
 
     active_config = ConfigVersion.active_config
 
@@ -86,7 +86,7 @@ class ConfigVersion
       if(pending_api["deleted_at"].present?)
         if(active_api.present?)
           changes[:deleted] << {
-            "category" => "deleted",
+            "mode" => "deleted",
             "active" => active_api,
             "pending" => nil,
           }
@@ -94,19 +94,19 @@ class ConfigVersion
       else
         if(active_api.blank?)
           changes[:new] << {
-            "category" => "new",
+            "mode" => "new",
             "active" => nil,
             "pending" => pending_api,
           }
         elsif(api_for_comparison(active_api) == api_for_comparison(pending_api))
           changes[:identical] << {
-            "category" => "identical",
+            "mode" => "identical",
             "active" => active_api,
             "pending" => pending_api,
           }
         else
           changes[:modified] << {
-            "category" => "modified",
+            "mode" => "modified",
             "active" => active_api,
             "pending" => pending_api,
           }
@@ -114,11 +114,10 @@ class ConfigVersion
       end
     end
 
-    changes.each do |category, category_changes|
-      category_changes.each do |change|
+    changes.each do |mode, mode_changes|
+      mode_changes.each do |change|
         change["id"] = if(change["pending"]) then change["pending"]["_id"] else change["active"]["_id"] end
         change["name"] = if(change["pending"]) then change["pending"]["name"] else change["active"]["name"] end
-        change["version"] = if(change["pending"]) then change["pending"]["version"] else change["active"]["version"] end
         change["active_yaml"] = pretty_dump(change["active"])
         change["pending_yaml"] = pretty_dump(change["pending"])
       end

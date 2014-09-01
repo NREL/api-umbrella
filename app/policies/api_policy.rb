@@ -17,12 +17,12 @@ class ApiPolicy < ApplicationPolicy
     end
   end
 
-  def show?
+  def show?(access = "backend_manage")
     allowed = false
     if(user.superuser?)
       allowed = true
     else
-      user.groups_with_access("backend_manage").each do |group|
+      user.groups_with_access(access).each do |group|
         if(record.frontend_host == group.scope.host)
           allowed = record.url_matches.all? do |url_match|
             group.scope.path_prefix_matcher.match(url_match.frontend_prefix)
@@ -46,5 +46,9 @@ class ApiPolicy < ApplicationPolicy
 
   def destroy?
     show?
+  end
+
+  def publish?
+    show?("backend_publish")
   end
 end

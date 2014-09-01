@@ -8,5 +8,5 @@ Admin.ConfigPublishController = Ember.Controller.extend({
     } else {
       return false;
     }
-  }.property(),
+  }.property('model.apis.new.@each', 'model.apis.modified.@each', 'model.apis.deleted.@each'),
 });
