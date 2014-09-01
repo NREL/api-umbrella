@@ -95,17 +95,17 @@ Admin.ApisTableView = Ember.View.extend({
       },
       stop: _.bind(function(event, ui) {
         var row = $(ui.item);
-        var currentOrder = parseInt(row.data('sort-order'));
+        var currentOrder = parseInt(row.data('sort-order'), 10);
         var previousRow = row.prev('tbody tr');
         var moveTo = 1;
         if(previousRow.length > 0) {
-          moveTo = parseInt($(previousRow[0]).data('sort-order'));
+          moveTo = parseInt($(previousRow[0]).data('sort-order'), 10);
           if(moveTo < currentOrder) {
             moveTo++;
           }
         } else {
           var data = this.get('table').fnGetData();
-          var sortOrders = _.map(_.compact(_.pluck(data, 'sort_order')), function(order) { return parseInt(order) });
+          var sortOrders = _.map(_.compact(_.pluck(data, 'sort_order')), function(order) { return parseInt(order, 10); });
           var minSortOrder = sortOrders.sort()[0];
           if(minSortOrder && minSortOrder > 1) {
             moveTo = minSortOrder - 1;

@@ -23,7 +23,7 @@ Admin.SelectizeView = Ember.View.extend({
   valueDidChange: function() {
     if(this.selectize) {
       var valueString = this.get('value');
-      if(valueString != this.selectize.getValue()) {
+      if(valueString !== this.selectize.getValue()) {
         var values = valueString;
         if(values) {
           values = values.split(',');

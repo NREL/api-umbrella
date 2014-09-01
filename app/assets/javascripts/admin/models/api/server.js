@@ -4,7 +4,6 @@ Admin.ApiServer = Ember.Model.extend({
   port: Ember.attr(Number),
 
   hostWithPort: function() {
-    var hostWithPort = '';
     return _.compact([this.get('host'), this.get('port')]).join(':');
   }.property('host', 'port'),
 });

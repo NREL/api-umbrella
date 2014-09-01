@@ -91,7 +91,7 @@ Admin.LogsTableView = Ember.View.extend({
           sDefaultContent: "-",
           mRender: function(time, type) {
             if(type === 'display' && time && time !== '-') {
-              return time = time + ' ms';
+              return time + ' ms';
             }
 
             return time;

@@ -11,7 +11,7 @@ Admin.AdminScope = Ember.Model.extend({
   displayName: function() {
     return this.get('name') + ' - ' + this.get('host') + this.get('pathPrefix');
   }.property('name', 'host', 'pathPrefix')
-})
+});
 
 Admin.AdminScope.url = "/api-umbrella/v1/admin_scopes";
 Admin.AdminScope.rootKey = "admin_scope";

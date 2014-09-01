@@ -32,7 +32,7 @@ Admin.AdminGroupsTableView = Ember.View.extend({
           data: "access",
           title: "Access",
           defaultContent: "-",
-          render: function(access, type, data) {
+          render: function(access, type) {
             if(type === 'display' && access && access !== '-') {
               return access.join(', ');
             }

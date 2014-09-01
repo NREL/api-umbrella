@@ -35,7 +35,7 @@ Admin.Api = Ember.Model.extend({
   exampleOutgoingUrlRoot: function() {
     return 'http://' + (this.get('backendHost') || this.get('frontendHost') || '');
   }.property('backendHost'),
-})
+});
 
 Admin.Api.url = "/api-umbrella/v1/apis";
 Admin.Api.rootKey = "api";

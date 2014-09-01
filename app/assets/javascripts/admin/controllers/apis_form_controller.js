@@ -22,7 +22,7 @@ Admin.ApisFormController = Ember.ObjectController.extend({
       var button = $('#save_button');
       button.button('loading');
 
-      this.get('model').save().then(_.bind(function() {;
+      this.get('model').save().then(_.bind(function() {
         button.button('reset');
         $.pnotify({
           type: "success",
@@ -43,7 +43,7 @@ Admin.ApisFormController = Ember.ObjectController.extend({
         }
 
         button.button('reset');
-        bootbox.alert(message); 
+        bootbox.alert(message);
       });
     },
 

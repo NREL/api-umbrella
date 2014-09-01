@@ -44,7 +44,7 @@ Admin.ApiRateLimit = Ember.Model.extend({
 
   durationFromUnits: function() {
     if(this.get('durationInUnits') && this.get('durationUnits')) {
-      var inUnits = parseInt(this.get('durationInUnits'));
+      var inUnits = parseInt(this.get('durationInUnits'), 10);
       var units = this.get('durationUnits');
       return moment.duration(inUnits, units).asMilliseconds();
     } else {
@@ -53,9 +53,6 @@ Admin.ApiRateLimit = Ember.Model.extend({
   }.property('durationInUnits', 'durationUnits'),
 
   settingsId: function() {
-    console.info(this);
-    console.info(this.get('parent'));
-    console.info(this.get('_parent'));
     return this.get('parent.id');
   }.property(),
 

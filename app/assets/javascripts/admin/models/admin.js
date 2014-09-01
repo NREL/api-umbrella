@@ -15,7 +15,7 @@ Admin.Admin = Ember.Model.extend({
   updater: Ember.attr(),
 
   groups: Ember.hasMany('Admin.AdminGroup', { key: 'group_ids' }),
-})
+});
 
 Admin.Admin.url = "/api-umbrella/v1/admins";
 Admin.Admin.rootKey = "admin";

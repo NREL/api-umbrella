@@ -60,11 +60,11 @@ Admin.StatsIntervalChartView = Ember.View.extend({
     }
 
     if(this.chartData.rows.length < 100) {
-      this.chartOptions.pointSize = 8
-      this.chartOptions.lineWidth = 4
+      this.chartOptions.pointSize = 8;
+      this.chartOptions.lineWidth = 4;
     } else {
-      this.chartOptions.pointSize = 0
-      this.chartOptions.lineWidth = 3
+      this.chartOptions.pointSize = 0;
+      this.chartOptions.lineWidth = 3;
     }
 
     // Show hours on the axis when viewing minutely date.

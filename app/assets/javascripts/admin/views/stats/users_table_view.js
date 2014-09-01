@@ -59,7 +59,7 @@ Admin.StatsUsersTableView = Ember.View.extend({
           sDefaultContent: "-",
           mRender: function(number, type) {
             if(type === 'display' && number && number !== '-') {
-              return numeral(number).format('0,0')
+              return numeral(number).format('0,0');
             }
 
             return number;

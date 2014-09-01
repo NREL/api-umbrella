@@ -199,7 +199,7 @@ group :development, :test do
   # Clean the database between tests
   gem "database_cleaner", "~> 1.3.0"
 
-  gem "jshintrb", "~> 0.2.4"
+  gem "jshintrb", "~> 0.2.4", :git => "https://github.com/Paxa/jshintrb.git"
 end
 
 group :development do

@@ -8,7 +8,7 @@ Admin.AdminGroup = Ember.Model.extend({
   updater: Ember.attr(),
 
   scope: Ember.belongsTo('Admin.AdminScope', { key: 'scope_id' }),
-})
+});
 
 Admin.AdminGroup.url = "/api-umbrella/v1/admin_groups";
 Admin.AdminGroup.rootKey = "admin_group";

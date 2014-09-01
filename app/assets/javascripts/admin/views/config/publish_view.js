@@ -35,8 +35,6 @@ Admin.ConfigPublishView = Ember.View.extend({
 
   actions: {
     publish: function() {
-      console.info(this.$().find('form'));
-      alert('publish!');
       $('button[type=submit]').button('loading');
     },
   },

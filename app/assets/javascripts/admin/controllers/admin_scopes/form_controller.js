@@ -4,7 +4,7 @@ Admin.AdminScopesFormController = Ember.ObjectController.extend({
       var button = $('#save_button');
       button.button('loading');
 
-      this.get('model').save().then(_.bind(function() {;
+      this.get('model').save().then(_.bind(function() {
         button.button('reset');
         $.pnotify({
           type: "success",

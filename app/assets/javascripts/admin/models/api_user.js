@@ -64,7 +64,7 @@ Admin.ApiUser = Ember.Model.extend({
 
     return rolesString;
   }.property('roles'),
-})
+});
 
 Admin.ApiUser.url = "/api-umbrella/v1/users";
 Admin.ApiUser.rootKey = "user";

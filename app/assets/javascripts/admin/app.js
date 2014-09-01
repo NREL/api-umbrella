@@ -23,10 +23,10 @@ $.pnotify.defaults.icon = false;
 
 (function() {
   var versionParts = Ember.VERSION.split('.');
-  var major = parseInt(versionParts[0]);
-  var minor = parseInt(versionParts[1]);
-  var patch = parseInt(versionParts[2]);
-  if(major > 1 || (major == 1 && (minor > 1 || patch > 2))) {
+  var major = parseInt(versionParts[0], 10);
+  var minor = parseInt(versionParts[1], 10);
+  var patch = parseInt(versionParts[2], 10);
+  if(major > 1 || (major === 1 && (minor > 1 || patch > 2))) {
     Ember.Logger.warn('WARNING: New Ember version detected. URL hash monkey patch possibly no longer needed or broken. Check for compatibility.');
   }
 
@@ -71,7 +71,7 @@ $.pnotify.defaults.icon = false;
   });
 })();
 
-Admin = Ember.Application.create({
+window.Admin = Ember.Application.create({
   LOG_TRANSITIONS: true,
   LOG_TRANSITIONS_INTERNAL: true,
 
@@ -165,7 +165,7 @@ Admin.APIUmbrellaRESTAdapter = Ember.RESTAdapter.extend({
   }
 });
 
-$.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+$.ajaxPrefilter(function(options) {
   options.headers = options.headers || {};
   options.headers['X-Api-Key'] = webAdminAjaxApiKey;
 });
@@ -174,7 +174,7 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
 // https://datatables.net/plug-ins/api#fnProcessingIndicator
 jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff )
 {
-  if( typeof(onoff) == 'undefined' )
+  if( typeof(onoff) === 'undefined' )
   {
     onoff=true;
   }

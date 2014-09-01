@@ -10,7 +10,7 @@ Admin.StatsFacetTableView = Ember.View.extend({
   }.observes('data').on('init'),
 
   actions: {
-    toggleFacetTable: function(event) {
+    toggleFacetTable: function() {
       this.$().find('table').toggle();
     },
   },
