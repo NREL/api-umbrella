@@ -75,7 +75,7 @@ window.Admin = Ember.Application.create({
   LOG_TRANSITIONS: true,
   LOG_TRANSITIONS_INTERNAL: true,
 
-  rootElement: "#content"
+  rootElement: '#content'
 });
 
 Ember.EasyForm.Tooltip = Ember.EasyForm.BaseView.extend({
@@ -186,25 +186,25 @@ jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff 
 _.merge($.fn.dataTable.defaults, {
   // Don't show the DataTables processing message. We'll handle the processing
   // message logic in fnInitComplete with blockui.
-  "bProcessing": false,
+  'bProcessing': false,
 
   // Enable global searching.
-  "bFilter": true,
+  'bFilter': true,
 
   // Disable per-column searching.
-  "bSearchable": false,
+  'bSearchable': false,
 
   // Re-arrange how the table and surrounding fields (pagination, search, etc)
   // are laid out.
-  "sDom": 'rft<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
+  'sDom': 'rft<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
 
-  "oLanguage": {
+  'oLanguage': {
     // Don't have an explicit label for the search field. Used the placeholder
     // created in fnInitComplete instead.
-    "sSearch": "",
+    'sSearch': '',
   },
 
-  "fnPreDrawCallback": function() {
+  'fnPreDrawCallback': function() {
     if(!this.customProcessingCallbackSet) {
       // Use blockui to provide a more obvious processing message the overlays
       // the entire table (this helps for long tables, where a simple processing
@@ -226,9 +226,9 @@ _.merge($.fn.dataTable.defaults, {
     }
   },
 
-  "fnInitComplete": function() {
-    // Add a placeholder instead of the "Search:" label to the filter
+  'fnInitComplete': function() {
+    // Add a placeholder instead of the 'Search:' label to the filter
     // input.
-    $('.dataTables_filter input').attr("placeholder", "Search...");
+    $('.dataTables_filter input').attr('placeholder', 'Search...');
   },
 });

@@ -7,14 +7,14 @@ Admin.AdminScopesFormController = Ember.ObjectController.extend({
       this.get('model').save().then(_.bind(function() {
         button.button('reset');
         $.pnotify({
-          type: "success",
-          title: "Saved",
-          text: "Successfully saved the admin scope '" + this.get('model').get('username') + "'",
+          type: 'success',
+          title: 'Saved',
+          text: 'Successfully saved the admin scope \'' + this.get('model').get('username') + '\'',
         });
 
         this.transitionTo('admin_scopes');
       }, this), function(response) {
-        var message = "<h3>Error</h3>";
+        var message = '<h3>Error</h3>';
         try {
           var errors = response.responseJSON.errors;
           for(var prop in errors) {

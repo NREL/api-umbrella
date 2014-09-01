@@ -6,14 +6,14 @@ Admin.AdminGroupsTableView = Ember.View.extend({
   didInsertElement: function() {
     this.$().DataTable({
       serverSide: true,
-      ajax: "/api-umbrella/v1/admin_groups.json",
+      ajax: '/api-umbrella/v1/admin_groups.json',
       pageLength: 50,
-      order: [[0, "asc"]],
+      order: [[0, 'asc']],
       columns: [
         {
-          data: "name",
-          title: "Name",
-          defaultContent: "-",
+          data: 'name',
+          title: 'Name',
+          defaultContent: '-',
           render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               var link = '#/admin_groups/' + data.id + '/edit';
@@ -24,14 +24,14 @@ Admin.AdminGroupsTableView = Ember.View.extend({
           }, this),
         },
         {
-          data: "scope_display_name",
-          title: "Scope",
-          defaultContent: "-",
+          data: 'scope_display_name',
+          title: 'Scope',
+          defaultContent: '-',
         },
         {
-          data: "access",
-          title: "Access",
-          defaultContent: "-",
+          data: 'access',
+          title: 'Access',
+          defaultContent: '-',
           render: function(access, type) {
             if(type === 'display' && access && access !== '-') {
               return access.join(', ');

@@ -10,7 +10,7 @@ Admin.StatsLogs.reopenClass({
     var promise = Ember.Deferred.create();
 
     $.ajax({
-      url: "/admin/stats/search.json",
+      url: '/admin/stats/search.json',
       data: params,
     }).done(function(data) {
       var stats = Admin.StatsLogs.create(data);

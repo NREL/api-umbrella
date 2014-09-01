@@ -10,9 +10,9 @@ Admin.AdminGroup = Ember.Model.extend({
   scope: Ember.belongsTo('Admin.AdminScope', { key: 'scope_id' }),
 });
 
-Admin.AdminGroup.url = "/api-umbrella/v1/admin_groups";
-Admin.AdminGroup.rootKey = "admin_group";
-Admin.AdminGroup.collectionKey = "data";
-Admin.AdminGroup.primaryKey = "id";
+Admin.AdminGroup.url = '/api-umbrella/v1/admin_groups';
+Admin.AdminGroup.rootKey = 'admin_group';
+Admin.AdminGroup.collectionKey = 'data';
+Admin.AdminGroup.primaryKey = 'id';
 Admin.AdminGroup.camelizeKeys = true;
 Admin.AdminGroup.adapter = Admin.APIUmbrellaRESTAdapter.create();

@@ -1,12 +1,12 @@
 Admin.ApiUsersFormController = Ember.ObjectController.extend({
   throttleByIpOptions: [
-    { id: false, name: "Rate limit by API key" },
-    { id: true, name: "Rate limit by IP address" },
+    { id: false, name: 'Rate limit by API key' },
+    { id: true, name: 'Rate limit by IP address' },
   ],
 
   enabledOptions: [
-    { id: true, name: "Enabled" },
-    { id: false, name: "Disabled" },
+    { id: true, name: 'Enabled' },
+    { id: false, name: 'Disabled' },
   ],
 
   actions: {
@@ -17,14 +17,14 @@ Admin.ApiUsersFormController = Ember.ObjectController.extend({
       this.get('model').save().then(_.bind(function() {
         button.button('reset');
         $.pnotify({
-          type: "success",
-          title: "Saved",
-          text: "Successfully saved the user '" + this.get('model').get('email') + "'",
+          type: 'success',
+          title: 'Saved',
+          text: 'Successfully saved the user \'' + this.get('model').get('email') + '\'',
         });
 
         this.transitionTo('api_users');
       }, this), function(response) {
-        var message = "<h3>Error</h3>";
+        var message = '<h3>Error</h3>';
         try {
           var errors = response.responseJSON.errors;
           _.each(errors, function(error) {

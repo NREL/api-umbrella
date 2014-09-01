@@ -8,5 +8,5 @@ Admin.ApiServer = Ember.Model.extend({
   }.property('host', 'port'),
 });
 
-Admin.ApiServer.primaryKey = "id";
+Admin.ApiServer.primaryKey = 'id';
 Admin.ApiServer.camelizeKeys = true;

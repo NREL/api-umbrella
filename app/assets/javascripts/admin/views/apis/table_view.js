@@ -14,18 +14,18 @@ Admin.ApisTableView = Ember.View.extend({
   didInsertElement: function() {
     this.set('table', this.$().DataTable({
       serverSide: true,
-      ajax: "/api-umbrella/v1/apis.json",
+      ajax: '/api-umbrella/v1/apis.json',
       pageLength: 50,
       rowCallback: function(row, data) {
-        $(row).data("id", data.id);
-        $(row).data("sort-order", data.sort_order);
+        $(row).data('id', data.id);
+        $(row).data('sort-order', data.sort_order);
       },
-      order: [[0, "asc"]],
+      order: [[0, 'asc']],
       columns: [
         {
-          data: "name",
-          title: "Name",
-          defaultContent: "-",
+          data: 'name',
+          title: 'Name',
+          defaultContent: '-',
           render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               var link = '#/apis/' + data.id + '/edit';
@@ -36,24 +36,24 @@ Admin.ApisTableView = Ember.View.extend({
           }, this),
         },
         {
-          data: "frontend_host",
-          title: "Host",
-          defaultContent: "-",
+          data: 'frontend_host',
+          title: 'Host',
+          defaultContent: '-',
         },
         {
-          data: "frontend_prefixes",
-          title: "Prefixes",
-          defaultContent: "-",
+          data: 'frontend_prefixes',
+          title: 'Prefixes',
+          defaultContent: '-',
         },
         {
-          data: "sort_order",
-          title: "Matching Order",
-          defaultContent: "-",
+          data: 'sort_order',
+          title: 'Matching Order',
+          defaultContent: '-',
           width: 130,
         },
         {
           data: null,
-          className: "reorder-handle",
+          className: 'reorder-handle',
           orderable: false,
           render: function() {
             return '<i class="fa fa-reorder"></i>';

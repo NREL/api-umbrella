@@ -6,14 +6,14 @@ Admin.AdminsTableView = Ember.View.extend({
   didInsertElement: function() {
     this.$().DataTable({
       serverSide: true,
-      ajax: "/api-umbrella/v1/admins.json",
+      ajax: '/api-umbrella/v1/admins.json',
       pageLength: 50,
-      order: [[0, "asc"]],
+      order: [[0, 'asc']],
       columns: [
         {
-          data: "username",
-          title: "Username",
-          defaultContent: "-",
+          data: 'username',
+          title: 'Username',
+          defaultContent: '-',
           render: _.bind(function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
               var link = '#/admins/' + data.id + '/edit';
@@ -24,20 +24,20 @@ Admin.AdminsTableView = Ember.View.extend({
           }, this),
         },
         {
-          data: "email",
-          title: "E-mail",
-          defaultContent: "-",
+          data: 'email',
+          title: 'E-mail',
+          defaultContent: '-',
         },
         {
-          data: "name",
-          title: "Name",
-          defaultContent: "-",
+          data: 'name',
+          title: 'Name',
+          defaultContent: '-',
         },
         {
-          data: "last_sign_in_at",
-          type: "date",
-          title: "Last Signed In",
-          defaultContent: "-",
+          data: 'last_sign_in_at',
+          type: 'date',
+          title: 'Last Signed In',
+          defaultContent: '-',
           render: function(time, type) {
             if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');
@@ -47,10 +47,10 @@ Admin.AdminsTableView = Ember.View.extend({
           },
         },
         {
-          data: "created_at",
-          type: "date",
-          title: "Created",
-          defaultContent: "-",
+          data: 'created_at',
+          type: 'date',
+          title: 'Created',
+          defaultContent: '-',
           render: function(time, type) {
             if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');

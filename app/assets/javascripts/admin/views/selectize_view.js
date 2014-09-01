@@ -30,7 +30,7 @@ Admin.SelectizeView = Ember.View.extend({
 
           // For new values, ensure the value is an available option in the
           // menu. This is to workaround the fact that we load our valid
-          // options on initial load from the global "apiUserExistingRoles"
+          // options on initial load from the global 'apiUserExistingRoles'
           // variable. But since new values might be added while operating
           // purely in client-side mode, we need to keep track of any new
           // options that should be available.

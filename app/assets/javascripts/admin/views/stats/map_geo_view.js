@@ -4,7 +4,7 @@ Admin.StatsMapGeoView = Ember.View.extend({
   chartOptions: {
     width: 640,
     colorAxis: {
-      colors: ["#B0DBFF", "#4682B4"],
+      colors: ['#B0DBFF', '#4682B4'],
     },
   },
 
@@ -24,7 +24,7 @@ Admin.StatsMapGeoView = Ember.View.extend({
       this.refreshData();
     }
 
-    $(window).on("resize", _.debounce(this.draw.bind(this), 100));
+    $(window).on('resize', _.debounce(this.draw.bind(this), 100));
   },
 
   handleRegionClick: function(region) {
@@ -53,7 +53,7 @@ Admin.StatsMapGeoView = Ember.View.extend({
       {id: 'startDate', label: 'Hits', type: 'number'},
     ];
 
-    if(this.get('model.region_field') === "request_ip_city") {
+    if(this.get('model.region_field') === 'request_ip_city') {
       this.chartData.cols.unshift({id: 'latitude', label: 'Latitude', type: 'number'},
         {id: 'longitude', label: 'Longitude', type: 'number'});
     }

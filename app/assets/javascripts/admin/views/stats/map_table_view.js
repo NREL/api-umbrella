@@ -5,14 +5,14 @@ Admin.StatsMapTableView = Ember.View.extend({
 
   didInsertElement: function() {
     this.$().dataTable({
-      "bFilter": false,
-      "aaSorting": [[1, "desc"]],
-      "aaData": this.get('model.regions'),
-      "aoColumns": [
+      'bFilter': false,
+      'aaSorting': [[1, 'desc']],
+      'aaData': this.get('model.regions'),
+      'aoColumns': [
         {
-          mData: "name",
-          sTitle: "Location",
-          sDefaultContent: "-",
+          mData: 'name',
+          sTitle: 'Location',
+          sDefaultContent: '-',
           mRender: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               var link, params;
@@ -33,9 +33,9 @@ Admin.StatsMapTableView = Ember.View.extend({
           }, this),
         },
         {
-          mData: "hits",
-          sTitle: "Hits",
-          sDefaultContent: "-",
+          mData: 'hits',
+          sTitle: 'Hits',
+          sDefaultContent: '-',
           mRender: function(number, type) {
             if(type === 'display' && number && number !== '-') {
               return numeral(number).format('0,0');

@@ -6,14 +6,14 @@ Admin.ApiUsersTableView = Ember.View.extend({
   didInsertElement: function() {
     this.$().dataTable({
       serverSide: true,
-      ajax: "/api-umbrella/v1/users.json",
+      ajax: '/api-umbrella/v1/users.json',
       pageLength: 50,
-      order: [[4, "desc"]],
+      order: [[4, 'desc']],
       columns: [
         {
-          data: "email",
-          title: "E-mail",
-          defaultContent: "-",
+          data: 'email',
+          title: 'E-mail',
+          defaultContent: '-',
           render: _.bind(function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
               var link = '#/api_users/' + data.id + '/edit';
@@ -24,25 +24,25 @@ Admin.ApiUsersTableView = Ember.View.extend({
           }, this),
         },
         {
-          data: "first_name",
-          title: "First Name",
-          defaultContent: "-",
+          data: 'first_name',
+          title: 'First Name',
+          defaultContent: '-',
         },
         {
-          data: "last_name",
-          title: "Last Name",
-          defaultContent: "-",
+          data: 'last_name',
+          title: 'Last Name',
+          defaultContent: '-',
         },
         {
-          data: "use_description",
-          title: "Purpose",
-          defaultContent: "-",
+          data: 'use_description',
+          title: 'Purpose',
+          defaultContent: '-',
         },
         {
-          data: "created_at",
-          type: "date",
-          title: "Created",
-          defaultContent: "-",
+          data: 'created_at',
+          type: 'date',
+          title: 'Created',
+          defaultContent: '-',
           render: function(time, type) {
             if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');
@@ -52,9 +52,9 @@ Admin.ApiUsersTableView = Ember.View.extend({
           },
         },
         {
-          data: "api_key_preview",
-          title: "API Key",
-          defaultContent: "-",
+          data: 'api_key_preview',
+          title: 'API Key',
+          defaultContent: '-',
           orderable: false,
         },
       ]

@@ -23,7 +23,7 @@ begin
       :sub => true,
       :undef => true,
       :unused => true,
-      :strict => true,
+      :strict => false,
       :trailing => true,
       :smarttabs => true,
     }

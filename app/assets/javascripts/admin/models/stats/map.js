@@ -8,7 +8,7 @@ Admin.StatsMap.reopenClass({
     var promise = Ember.Deferred.create();
 
     $.ajax({
-      url: "/admin/stats/map.json",
+      url: '/admin/stats/map.json',
       data: params,
     }).done(function(data) {
       var map = Admin.StatsMap.create(data);

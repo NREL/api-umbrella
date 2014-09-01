@@ -63,5 +63,5 @@ Admin.ApiRateLimit = Ember.Model.extend({
   },
 });
 
-Admin.ApiRateLimit.primaryKey = "id";
+Admin.ApiRateLimit.primaryKey = 'id';
 Admin.ApiRateLimit.camelizeKeys = true;

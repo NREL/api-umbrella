@@ -33,8 +33,8 @@
 
 $(document).ready(function() {
   // Use the default browser "beforeunload" dialog.
-  $.DirtyForms.dialog = false 
-  $(window).bind('beforeunload', function(e) {
+  $.DirtyForms.dialog = false;
+  $(window).bind('beforeunload', function() {
     if($.DirtyForms.isDirty()) {
       return $.DirtyForms.message;
     } else {
@@ -42,7 +42,7 @@ $(document).ready(function() {
     }
   });
 
-  $("form").dirtyForms();
+  $('form').dirtyForms();
 
   // Setup qTip defaults.
   $(document).on('click', 'a[rel=tooltip]', function(event) {
@@ -54,15 +54,15 @@ $(document).ready(function() {
         solo: true
       },
       hide: {
-        event: "unfocus"
+        event: 'unfocus'
       },
       style: {
         classes: 'qtip-bootstrap',
       },
       position: {
         viewport: true,
-        my: "bottom left",
-        at: "top center",
+        my: 'bottom left',
+        at: 'top center',
         adjust: {
           y: 2
         }
@@ -81,11 +81,11 @@ $(document).ready(function() {
         solo: true
       },
       hide: {
-        event: "unfocus"
+        event: 'unfocus'
       },
       content: {
-        text: function(event, api) {
-          var target = $(event.target).attr("href");
+        text: function(event) {
+          var target = $(event.target).attr('href');
           var content = $(target).html();
 
           return content;
@@ -96,8 +96,8 @@ $(document).ready(function() {
       },
       position: {
         viewport: false,
-        my: "top left",
-        at: "bottom center",
+        my: 'top left',
+        at: 'bottom center',
         adjust: {
           y: 2
         }

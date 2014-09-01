@@ -43,7 +43,7 @@ Admin.StatsQueryFormView = Ember.View.extend({
 
   updateInterval: function() {
     var interval = this.get('controller.query.params.interval');
-    $("#interval_buttons").find("button[value='" + interval + "']").button('toggle');
+    $('#interval_buttons').find('button[value="' + interval + '"]').button('toggle');
   }.observes('controller.query.params.interval'),
 
   updateDateRange: function() {
@@ -55,8 +55,8 @@ Admin.StatsQueryFormView = Ember.View.extend({
 
   handleDateRangeChange: function(start, end) {
     this.setProperties({
-      'controller.query.params.start': start.format("YYYY-MM-DD"),
-      'controller.query.params.end': end.format("YYYY-MM-DD"),
+      'controller.query.params.start': start.format('YYYY-MM-DD'),
+      'controller.query.params.end': end.format('YYYY-MM-DD'),
     });
   },
 

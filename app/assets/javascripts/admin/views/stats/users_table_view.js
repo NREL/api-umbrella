@@ -5,21 +5,21 @@ Admin.StatsUsersTableView = Ember.View.extend({
 
   didInsertElement: function() {
     this.$().dataTable({
-      "bFilter": false,
-      "bServerSide": true,
-      "sAjaxSource": "/admin/stats/users.json",
-      "fnServerParams": _.bind(function(aoData) {
+      'bFilter': false,
+      'bServerSide': true,
+      'sAjaxSource': '/admin/stats/users.json',
+      'fnServerParams': _.bind(function(aoData) {
         var query = this.get('controller.query.params');
         for(var key in query) {
           aoData.push({ name: key, value: query[key] });
         }
       }, this),
-      "aaSorting": [[4, "desc"]],
-      "aoColumns": [
+      'aaSorting': [[4, 'desc']],
+      'aoColumns': [
         {
-          mData: "email",
-          sTitle: "Email",
-          sDefaultContent: "-",
+          mData: 'email',
+          sTitle: 'Email',
+          sDefaultContent: '-',
           mRender: _.bind(function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
               var params = _.clone(this.get('controller.query.params'));
@@ -33,20 +33,20 @@ Admin.StatsUsersTableView = Ember.View.extend({
           }, this),
         },
         {
-          mData: "first_name",
-          sTitle: "First Name",
-          sDefaultContent: "-",
+          mData: 'first_name',
+          sTitle: 'First Name',
+          sDefaultContent: '-',
         },
         {
-          mData: "last_name",
-          sTitle: "Last Name",
-          sDefaultContent: "-",
+          mData: 'last_name',
+          sTitle: 'Last Name',
+          sDefaultContent: '-',
         },
         {
-          mData: "created_at",
-          sType: "date",
-          sTitle: "Signed Up",
-          sDefaultContent: "-",
+          mData: 'created_at',
+          sType: 'date',
+          sTitle: 'Signed Up',
+          sDefaultContent: '-',
           mRender: function(time, type) {
             if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');
@@ -54,9 +54,9 @@ Admin.StatsUsersTableView = Ember.View.extend({
           },
         },
         {
-          mData: "hits",
-          sTitle: "Hits",
-          sDefaultContent: "-",
+          mData: 'hits',
+          sTitle: 'Hits',
+          sDefaultContent: '-',
           mRender: function(number, type) {
             if(type === 'display' && number && number !== '-') {
               return numeral(number).format('0,0');
@@ -66,10 +66,10 @@ Admin.StatsUsersTableView = Ember.View.extend({
           },
         },
         {
-          mData: "last_request_at",
-          sType: "date",
-          sTitle: "Last Request",
-          sDefaultContent: "-",
+          mData: 'last_request_at',
+          sType: 'date',
+          sTitle: 'Last Request',
+          sDefaultContent: '-',
           mRender: function(time, type) {
             if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');
@@ -79,9 +79,9 @@ Admin.StatsUsersTableView = Ember.View.extend({
           },
         },
         {
-          mData: "use_description",
-          sTitle: "Use Description",
-          sDefaultContent: "-",
+          mData: 'use_description',
+          sTitle: 'Use Description',
+          sDefaultContent: '-',
         },
       ]
     });

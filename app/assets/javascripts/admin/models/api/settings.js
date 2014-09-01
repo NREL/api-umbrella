@@ -79,5 +79,5 @@ Admin.ApiSettings = Ember.Model.extend({
   }.property('rateLimitMode'),
 });
 
-Admin.ApiSettings.primaryKey = "id";
+Admin.ApiSettings.primaryKey = 'id';
 Admin.ApiSettings.camelizeKeys = true;
