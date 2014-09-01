@@ -17,8 +17,28 @@ module DeviseControllerHelpers
   end
 end
 
+module DeviseFeatureMacros
+  def login_admin
+    let(:current_admin) do
+      FactoryGirl.create(:admin)
+    end
+
+    before(:each) do
+      Warden.test_mode!
+      login_as(current_admin, :scope => :admin)
+    end
+
+    after(:each) do
+      Warden.test_reset!
+    end
+  end
+end
+
 RSpec.configure do |config|
   config.include Devise::TestHelpers, :type => :controller
   config.include DeviseControllerHelpers, :type => :controller
   config.extend DeviseControllerMacros, :type => :controller
+
+  config.include Warden::Test::Helpers, :type => :feature
+  config.extend DeviseFeatureMacros, :type => :feature
 end

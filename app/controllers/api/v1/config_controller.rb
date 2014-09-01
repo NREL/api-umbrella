@@ -8,7 +8,7 @@ class Api::V1::ConfigController < Api::V1::BaseController
   end
 
   def publish
-    active_config = ConfigVersion.active_config
+    active_config = ConfigVersion.active_config || {}
     new_config = active_config.deep_dup
     new_config["apis"] ||= []
 
@@ -36,6 +36,6 @@ class Api::V1::ConfigController < Api::V1::BaseController
     end
 
     @config_version = ConfigVersion.publish!(new_config)
-    respond_with(:api_v1, @config_version, :root => "config_version", :location => api_v1_config_pending_url)
+    respond_with(:api_v1, @config_version, :root => "config_version", :location => api_v1_config_pending_changes_url)
   end
 end
