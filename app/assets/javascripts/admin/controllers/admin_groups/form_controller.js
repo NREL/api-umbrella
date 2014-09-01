@@ -19,7 +19,7 @@ Admin.AdminGroupsFormController = Ember.ObjectController.extend({
 
       this.get('model').save().then(_.bind(function() {
         button.button('reset');
-        $.pnotify({
+        new PNotify({
           type: 'success',
           title: 'Saved',
           text: 'Successfully saved the admin group \'' + this.get('model').get('username') + '\'',

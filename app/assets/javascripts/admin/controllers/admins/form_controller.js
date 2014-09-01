@@ -10,7 +10,7 @@ Admin.AdminsFormController = Ember.ObjectController.extend({
 
       this.get('model').save().then(_.bind(function() {
         button.button('reset');
-        $.pnotify({
+        new PNotify({
           type: 'success',
           title: 'Saved',
           text: 'Successfully saved the admin \'' + this.get('model').get('username') + '\'',

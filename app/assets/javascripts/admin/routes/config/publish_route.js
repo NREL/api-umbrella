@@ -23,7 +23,7 @@ Admin.ConfigPublishRoute = Ember.Route.extend({
         data: form.serialize(),
       }).then(_.bind(function() {
         button.button('reset');
-        $.pnotify({
+        new PNotify({
           type: 'success',
           title: 'Published',
           text: 'Successfully published the configuration<br>Changes should be live in a few seconds...',

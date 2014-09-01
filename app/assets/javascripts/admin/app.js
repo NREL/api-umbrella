@@ -14,12 +14,19 @@
 // Set Bootbox defaults.
 bootbox.animate(false);
 
-// Pines Notify Defaults.
-$.pnotify.defaults.history = false;
-$.pnotify.defaults.width = '400px';
-$.pnotify.defaults.sticker = false;
-$.pnotify.defaults.animate_speed = 'fast';
-$.pnotify.defaults.icon = false;
+// PNotify Defaults.
+_.merge(PNotify.prototype.options, {
+  styling: 'bootstrap2',
+  width: '400px',
+  icon: false,
+  animate_speed: 'fast',
+  history: {
+    history: false
+  },
+  buttons: {
+    sticker: false
+  }
+});
 
 (function() {
   var versionParts = Ember.VERSION.split('.');

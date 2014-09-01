@@ -170,7 +170,7 @@ group :assets do
   gem "rails-assets-lodash", "~> 2.4.1"
   gem "rails-assets-moment", "~> 2.8.2"
   gem "rails-assets-numeral", "~> 1.5.3"
-  gem "rails-assets-pnotify", "~> 1.3.1"
+  gem "rails-assets-pnotify", "~> 2.0.1"
   gem "rails-assets-qtip2", "~> 2.2.0"
   gem "rails-assets-selectize", "~> 0.11.0"
   gem "rails-assets-spinjs", "~> 2.0.0"
