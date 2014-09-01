@@ -43,6 +43,7 @@ begin
       "jQuery",
       "moment",
       "numeral",
+      "PNotify",
       "Spinner",
       "webAdminAjaxApiKey",
     ]
