@@ -1,6 +1,6 @@
 Admin.ConfigPublishRoute = Ember.Route.extend({
   model: function() {
-    return ic.ajax.request('/api-umbrella/v1/config/pending');
+    return ic.ajax.request('/api-umbrella/v1/config/pending_changes');
   },
 
   setupController: function(controller, model) {

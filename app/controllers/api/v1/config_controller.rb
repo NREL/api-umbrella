@@ -1,9 +1,9 @@
 class Api::V1::ConfigController < Api::V1::BaseController
   respond_to :json
 
-  skip_after_filter :verify_authorized, :only => [:pending]
+  skip_after_filter :verify_authorized, :only => [:pending_changes]
 
-  def pending
+  def pending_changes
     @changes = ConfigVersion.pending_changes(pundit_user)
   end
 

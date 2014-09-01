@@ -74,7 +74,7 @@ class ConfigVersion
     }
 
     active_apis_by_id = {}
-    if(active_config.present? || active_config["apis"].present?)
+    if(active_config.present? && active_config["apis"].present?)
       active_config["apis"].each do |active_api|
         active_apis_by_id[active_api["_id"]] = active_api
       end

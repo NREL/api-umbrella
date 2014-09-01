@@ -2,24 +2,24 @@
 
 {{#if hasChanges}}
   <form id="publish_form">
-    {{#if model.apis.new}}
+    {{#if model.config.apis.new}}
       <fieldset>
-        <legend>{{model.apis.new.length}} New API Backends</legend>
-        {{render "config/publish_api" model.apis.new}}
+        <legend>{{model.config.apis.new.length}} New API Backends</legend>
+        {{render "config/publish_api" model.config.apis.new}}
       </fieldset>
     {{/if}}
 
-    {{#if model.apis.modified}}
+    {{#if model.config.apis.modified}}
       <fieldset>
-        <legend>{{model.apis.modified.length}} Modified API Backends</legend>
-        {{render "config/publish_api" model.apis.modified}}
+        <legend>{{model.config.apis.modified.length}} Modified API Backends</legend>
+        {{render "config/publish_api" model.config.apis.modified}}
       </fieldset>
     {{/if}}
 
-    {{#if model.apis.deleted}}
+    {{#if model.config.apis.deleted}}
       <fieldset>
-        <legend>{{model.apis.deleted.length}} Deleted API Backends</legend>
-        {{render "config/publish_api" model.apis.deleted}}
+        <legend>{{model.config.apis.deleted.length}} Deleted API Backends</legend>
+        {{render "config/publish_api" model.config.apis.deleted}}
       </fieldset>
     {{/if}}
 
