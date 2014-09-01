@@ -82,6 +82,7 @@ gem "childprocess", "~> 0.5.1"
 
 # Views/templates for APIs
 gem "rabl", "~> 0.11.0"
+gem "jbuilder", "~> 2.1.3"
 gem "csv_builder", "~> 2.1.1"
 
 # Country and state name lookups
@@ -150,6 +151,12 @@ group :assets do
   # Code editor (for syntax highlighting inside textareas)
   gem "rails-assets-ace-builds", "~> 1.1.6"
 
+  # Visual text diffs
+  gem "rails-assets-jsdiff", "~> 1.0.8"
+
+  # jQuery ajax calls wrapped in Ember promises
+  gem "rails-assets-ic-ajax", "~> 2.0.1"
+
   gem "rails-assets-bootbox", "~> 3.3.0"
   gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.12"
   gem "rails-assets-datatables", "~> 1.10.2"
@@ -191,6 +198,8 @@ group :development, :test do
 
   # Clean the database between tests
   gem "database_cleaner", "~> 1.3.0"
+
+  gem "jshintrb", "~> 0.2.4"
 end
 
 group :development do

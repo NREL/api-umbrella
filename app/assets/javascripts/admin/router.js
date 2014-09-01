@@ -24,6 +24,10 @@ Admin.Router.map(function() {
     this.route("edit", { path: "/:adminGroupId/edit" });
   });
 
+  this.resource("config", { path: "/config" }, function() {
+    this.route("publish");
+  });
+
   this.resource("stats", { path: "/stats" }, function() {
     this.route("logs", { path: "/logs/*query" });
     this.route("logsDefault", { path: "/logs" });

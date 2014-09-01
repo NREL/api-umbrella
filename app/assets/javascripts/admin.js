@@ -9,6 +9,8 @@
 //= require lodash/lodash.compat
 //= require datatables/jquery.dataTables.js
 //= require vendor/datatables-plugins/dataTables.bootstrap
+//= require jsdiff/diff
+//= require ic-ajax/dist/globals/main.js
 //= require ember-model
 //= require vendor/ember-easyForm
 //= require pnotify

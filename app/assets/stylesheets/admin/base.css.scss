@@ -455,3 +455,15 @@ td.reorder-handle {
   border-top: none;
   border-bottom: 1px solid $tableBorder;
 }
+
+.diff {
+  del {
+    text-decoration: none;
+    background: #fdd;
+  }
+
+  ins {
+    text-decoration: none;
+    background: #dfd;
+  }
+}

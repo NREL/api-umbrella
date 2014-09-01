@@ -26,6 +26,10 @@ ApiUmbrella::Application.routes.draw do
         resources :apis
         resources :users
         resource :contact, :only => [:create]
+
+        namespace :config do
+          get :pending, :action => :pending
+        end
       end
     end
   end
