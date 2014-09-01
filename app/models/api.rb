@@ -65,7 +65,7 @@ class Api
     :as => [:default, :admin]
 
   def self.sorted
-    order_by(:sort_order.asc, :created_at.desc)
+    order_by(:sort_order.asc)
   end
 
   def attributes_hash

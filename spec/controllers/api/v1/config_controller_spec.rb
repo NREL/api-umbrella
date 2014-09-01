@@ -7,12 +7,12 @@ describe Api::V1::ConfigController do
     @unauthorized_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_access)])
   end
 
-  describe "GET pending_changes" do
-    before(:each) do
-      Api.delete_all
-      ConfigVersion.delete_all
-    end
+  before(:each) do
+    Api.delete_all
+    ConfigVersion.delete_all
+  end
 
+  describe "GET pending_changes" do
     it "returns apis grouped into categories" do
       admin_token_auth(@admin)
       get :pending_changes, :format => "json"
@@ -289,5 +289,201 @@ describe Api::V1::ConfigController do
   end
 
   describe "POST publish" do
+    it "publishes changes when there was no pre-existing published config" do
+      ConfigVersion.count.should eql(0)
+
+      api = FactoryGirl.create(:api)
+      config = {
+        :apis => {
+          api.id => { :publish => "1" },
+        }
+      }
+
+      admin_token_auth(@admin)
+      post :publish, :format => "json", :config => config
+
+      ConfigVersion.count.should eql(1)
+      active_config = ConfigVersion.active_config
+      active_config["apis"].length.should eql(1)
+    end
+
+    it "publishes changes when there was a pre-existing published config" do
+      FactoryGirl.create(:api)
+      ConfigVersion.publish!(ConfigVersion.pending_config)
+      ConfigVersion.count.should eql(1)
+
+      api = FactoryGirl.create(:api)
+      config = {
+        :apis => {
+          api.id => { :publish => "1" },
+        }
+      }
+
+      admin_token_auth(@admin)
+      post :publish, :format => "json", :config => config
+
+      ConfigVersion.count.should eql(2)
+      active_config = ConfigVersion.active_config
+      active_config["apis"].length.should eql(2)
+    end
+
+    it "combines the newly published config and in sorted order" do
+      api1 = FactoryGirl.create(:api, :sort_order => 40)
+      api2 = FactoryGirl.create(:api, :sort_order => 15)
+      ConfigVersion.publish!(ConfigVersion.pending_config)
+      ConfigVersion.count.should eql(1)
+
+      api3 = FactoryGirl.create(:api, :sort_order => 90)
+      api4 = FactoryGirl.create(:api, :sort_order => 1)
+      api5 = FactoryGirl.create(:api, :sort_order => 50)
+      api6 = FactoryGirl.create(:api, :sort_order => 20)
+
+      config = {
+        :apis => {
+          api3.id => { :publish => "1" },
+          api4.id => { :publish => "1" },
+          api5.id => { :publish => "1" },
+          api6.id => { :publish => "1" },
+        }
+      }
+
+      admin_token_auth(@admin)
+      post :publish, :format => "json", :config => config
+
+      active_config = ConfigVersion.active_config
+      active_config["apis"].map { |api| api["_id"] }.should eql([
+        api4.id,
+        api2.id,
+        api6.id,
+        api1.id,
+        api5.id,
+        api3.id,
+      ])
+    end
+
+    it "only publishes the selected apis" do
+      api1 = FactoryGirl.create(:api, :name => "Before")
+      ConfigVersion.publish!(ConfigVersion.pending_config)
+
+      api1.update_attribute(:name, "After")
+      api2 = FactoryGirl.create(:api)
+      api3 = FactoryGirl.create(:api)
+
+      config = {
+        :apis => {
+          api2.id => { :publish => "1" },
+          api3.id => { :publish => "0" },
+        }
+      }
+
+      admin_token_auth(@admin)
+      post :publish, :format => "json", :config => config
+
+      active_config = ConfigVersion.active_config
+      active_config["apis"].map { |api| api["_id"] }.sort.should eql([
+        api1.id,
+        api2.id,
+      ].sort)
+
+      api1_config = active_config["apis"].detect { |api| api["_id"] == api1.id }
+      api1_config["name"].should eql("Before")
+    end
+
+    describe "admin permissions" do
+      before(:each) do
+        @api = FactoryGirl.create(:api)
+        @google_api = FactoryGirl.create(:google_api)
+        @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api)
+        @yahoo_api = FactoryGirl.create(:yahoo_api)
+      end
+
+      it "allows superusers to publish any api" do
+        config = {
+          :apis => {
+            @api.id => { :publish => "1" },
+            @google_api.id => { :publish => "1" },
+            @google_extra_url_match_api.id => { :publish => "1" },
+            @yahoo_api.id => { :publish => "1" },
+          }
+        }
+
+        admin_token_auth(@admin)
+        post :publish, :format => "json", :config => config
+
+        response.status.should eql(201)
+        active_config = ConfigVersion.active_config
+        active_config["apis"].length.should eql(4)
+        active_config["apis"].map { |api| api["_id"] }.sort.should eql([
+          @api.id,
+          @google_api.id,
+          @google_extra_url_match_api.id,
+          @yahoo_api.id,
+        ].sort)
+      end
+
+      it "allows limited admins to publish apis they have access to" do
+        config = {
+          :apis => {
+            @google_api.id => { :publish => "1" },
+          }
+        }
+
+        admin_token_auth(@google_admin)
+        post :publish, :format => "json", :config => config
+
+        response.status.should eql(201)
+        active_config = ConfigVersion.active_config
+        active_config["apis"].length.should eql(1)
+        active_config["apis"].first["_id"].should eql(@google_api.id)
+      end
+
+      it "forbids limited admins from publishing apis they do not have access to" do
+        config = {
+          :apis => {
+            @yahoo_api.id => { :publish => "1" },
+          }
+        }
+
+        admin_token_auth(@google_admin)
+        post :publish, :format => "json", :config => config
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+        ConfigVersion.active_config.should eql(nil)
+      end
+
+      it "forbids limited admins from publishing apis they only have partial access to" do
+        config = {
+          :apis => {
+            @google_extra_url_match_api.id => { :publish => "1" },
+          }
+        }
+
+        admin_token_auth(@google_admin)
+        post :publish, :format => "json", :config => config
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+        ConfigVersion.active_config.should eql(nil)
+      end
+
+      it "forbids admins with proper access" do
+        config = {
+          :apis => {
+            @google_api.id => { :publish => "1" },
+          }
+        }
+
+        admin_token_auth(@unauthorized_admin)
+        post :publish, :format => "json", :config => config
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+        ConfigVersion.active_config.should eql(nil)
+      end
+    end
   end
 end
