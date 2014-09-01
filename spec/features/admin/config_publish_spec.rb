@@ -66,6 +66,20 @@ describe "config publish", :js => true do
         checkbox[:checked].should eql(true)
       end
     end
+
+    it "refreshes the display when navigated away and back to" do
+      FactoryGirl.create(:api)
+      ConfigVersion.publish!(ConfigVersion.pending_config)
+
+      visit "/admin/#/config/publish"
+      page.should_not have_content("New API Backends")
+
+      visit "/admin/#/apis"
+
+      FactoryGirl.create(:api)
+      visit "/admin/#/config/publish"
+      page.should have_content("1 New API Backends")
+    end
   end
 
   describe "publish config changes" do
