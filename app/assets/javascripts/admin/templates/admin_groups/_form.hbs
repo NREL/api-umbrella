@@ -9,7 +9,6 @@
         <label>Scopes</label>
       </div>
       <div class="controls">
-        {{apiScopeIds}}
         {{view Admin.CheckboxListView checkedValuesBinding='apiScopeIds' contentBinding='apiScopeOptions'}}
       </div>
     </div>
@@ -19,7 +18,6 @@
         <label>Permissions</label>
       </div>
       <div class="controls">
-        {{permissionIds}}
         {{view Admin.CheckboxListView checkedValuesBinding='permissionIds' contentBinding='permissionOptions'}}
       </div>
     </div>
