@@ -21,8 +21,9 @@ ApiUmbrella::Application.routes.draw do
 
       namespace :v1 do
         resources :admin_groups
-        resources :admin_scopes
+        resources :admin_permissions, :only => [:index]
         resources :admins
+        resources :api_scopes
         resources :apis
         resources :users
         resource :contact, :only => [:create]

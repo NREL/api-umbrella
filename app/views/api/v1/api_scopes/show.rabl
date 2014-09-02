@@ -1,4 +1,4 @@
-object @admin_scope
+object @api_scope
 attributes :id,
            :name,
            :host,

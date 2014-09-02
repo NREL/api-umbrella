@@ -1,16 +1,11 @@
 Admin.AdminGroupsFormController = Ember.ObjectController.extend({
-  scopeOptions: function() {
-    return Admin.AdminScope.find();
+  apiScopeOptions: function() {
+    return Admin.ApiScope.find();
   }.property(),
 
-  accessOptions: [
-    { id: 'analytics', name: 'Analytics' },
-    { id: 'user_view', name: 'API Users - View' },
-    { id: 'user_manage', name: 'API Users - Manage' },
-    { id: 'admin_manage', name: 'Admin Accounts - View & Manage' },
-    { id: 'backend_manage', name: 'API Backend Configuration - View & Manage' },
-    { id: 'backend_publish', name: 'API Backend Configuration - Publish' },
-  ],
+  permissionOptions: function() {
+    return Admin.AdminPermission.find();
+  }.property(),
 
   actions: {
     submit: function() {

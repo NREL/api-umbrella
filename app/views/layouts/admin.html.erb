@@ -39,7 +39,8 @@
                   <% end %>
                   <% if(current_admin.can?("admin_manage")) %>
                     <li><%= link_to('<i class="fa fa-user"></i> Admin Accounts'.html_safe, '/admin/#/admins') %></li>
-                    <li><%= link_to('<i class="fa fa-user"></i> Admin Scopes'.html_safe, '/admin/#/admin_scopes') %></li>
+                    <li class="divider"></li>
+                    <li><%= link_to('<i class="fa fa-user"></i> API Scopes'.html_safe, '/admin/#/api_scopes') %></li>
                     <li><%= link_to('<i class="fa fa-user"></i> Admin Groups'.html_safe, '/admin/#/admin_groups') %></li>
                   <% end %>
                 </ul>

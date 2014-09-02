@@ -14,9 +14,9 @@ Admin.Router.map(function() {
     this.route('edit', { path: '/:adminId/edit' });
   });
 
-  this.resource('admin_scopes', { path: '/admin_scopes' }, function() {
+  this.resource('api_scopes', { path: '/api_scopes' }, function() {
     this.route('new');
-    this.route('edit', { path: '/:adminScopeId/edit' });
+    this.route('edit', { path: '/:apiScopeId/edit' });
   });
 
   this.resource('admin_groups', { path: '/admin_groups' }, function() {

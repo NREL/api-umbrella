@@ -1,4 +1,4 @@
-Admin.AdminScopesBaseRoute = Ember.Route.extend({
+Admin.ApiScopesBaseRoute = Ember.Route.extend({
   setupController: function(controller, model) {
     controller.set('model', model);
 

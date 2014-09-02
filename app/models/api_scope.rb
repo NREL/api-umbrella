@@ -1,4 +1,4 @@
-class AdminScope
+class ApiScope
   include Mongoid::Document
   include Mongoid::Timestamps
   include Mongoid::Paranoia

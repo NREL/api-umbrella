@@ -1,4 +1,4 @@
-class AdminScopePolicy < ApplicationPolicy
+class ApiScopePolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
       if(user.superuser?)

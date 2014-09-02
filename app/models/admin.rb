@@ -49,34 +49,40 @@ class Admin
     :group_ids,
     :as => [:admin]
 
-  def scopes
-    @scopes ||= groups.map { |group| group.scope }.compact.uniq
+  def api_scopes
+    @api_scopes ||= groups.map { |group| group.api_scopes }.flatten.compact.uniq
   end
 
-  def can?(access)
+  def can?(permission)
     allowed = false
 
     if(self.superuser?)
       allowed = true
     else
       allowed = self.groups.any? do |group|
-        group.can?(access)
+        group.can?(permission)
       end
     end
 
     allowed
   end
 
-  def can_any?(access_list)
-    [access_list].flatten.any? do |access|
-      self.can?(access)
+  def can_any?(permissions)
+    [permissions].flatten.compact.any? do |permission|
+      self.can?(permission)
     end
   end
 
-  def groups_with_access(access)
+  def groups_with_permission(permission)
     self.groups.select do |group|
-      group.can?(access)
+      group.can?(permission)
     end
+  end
+
+  def api_scopes_with_permission(permission)
+    self.groups_with_permission(permission).map do |group|
+      group.api_scopes
+    end.flatten.compact.uniq
   end
 
   def apply_omniauth(omniauth)

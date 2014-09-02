@@ -24,21 +24,27 @@ Admin.AdminGroupsTableView = Ember.View.extend({
           }, this),
         },
         {
-          data: 'scope_display_name',
-          title: 'Scope',
-          defaultContent: '-',
-        },
-        {
-          data: 'access',
-          title: 'Access',
-          defaultContent: '-',
-          render: function(access, type) {
-            if(type === 'display' && access && access !== '-') {
-              return access.join(', ');
+          data: 'api_scope_display_names',
+          title: 'API Scopes',
+          render: function(names, type) {
+            if(type === 'display' && names && names !== '-') {
+              return names.join('<br>');
             }
 
-            return access;
-          },
+            return names;
+          }
+        },
+        {
+          data: 'permission_display_names',
+          title: 'Access',
+          defaultContent: '-',
+          render: function(names, type) {
+            if(type === 'display' && names && names !== '-') {
+              return names.join('<br>');
+            }
+
+            return names;
+          }
         }
       ]
     });

@@ -1,4 +1,4 @@
-Admin.AdminScopesTableView = Ember.View.extend({
+Admin.ApiScopesTableView = Ember.View.extend({
   tagName: 'table',
 
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
@@ -6,7 +6,7 @@ Admin.AdminScopesTableView = Ember.View.extend({
   didInsertElement: function() {
     this.$().DataTable({
       serverSide: true,
-      ajax: '/api-umbrella/v1/admin_scopes.json',
+      ajax: '/api-umbrella/v1/api_scopes.json',
       pageLength: 50,
       order: [[0, 'asc']],
       columns: [
@@ -16,7 +16,7 @@ Admin.AdminScopesTableView = Ember.View.extend({
           defaultContent: '-',
           render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
-              var link = '#/admin_scopes/' + data.id + '/edit';
+              var link = '#/api_scopes/' + data.id + '/edit';
               return '<a href="' + link + '">' + _.escape(name) + '</a>';
             }
 

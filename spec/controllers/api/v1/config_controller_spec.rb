@@ -3,8 +3,8 @@ require 'spec_helper'
 describe Api::V1::ConfigController do
   before(:all) do
     @admin = FactoryGirl.create(:admin)
-    @google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_access)])
-    @unauthorized_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_access)])
+    @google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
+    @unauthorized_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
   end
 
   before(:each) do

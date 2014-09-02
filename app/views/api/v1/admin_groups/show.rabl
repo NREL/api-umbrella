@@ -1,7 +1,7 @@
 object @admin_group
 attributes :id,
            :name,
-           :scope_id,
+           :api_scope_ids,
            :access,
            :created_at,
            :updated_at

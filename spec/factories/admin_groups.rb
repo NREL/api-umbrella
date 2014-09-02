@@ -3,7 +3,7 @@
 FactoryGirl.define do
   factory :admin_group do
     name "Example"
-    access [
+    permission_ids [
       "analytics",
       "user_view",
       "user_manage",
@@ -12,32 +12,32 @@ FactoryGirl.define do
       "backend_publish",
     ]
 
-    trait :analytics_access do
-      access ["analytics"]
+    trait :analytics_permission do
+      permission_ids ["analytics"]
     end
 
-    trait :user_view_access do
-      access ["user_view"]
+    trait :user_view_permission do
+      permission_ids ["user_view"]
     end
 
-    trait :user_manage_access do
-      access ["user_manage"]
+    trait :user_manage_permission do
+      permission_ids ["user_manage"]
     end
 
-    trait :admin_manage_access do
-      access ["admin_manage"]
+    trait :admin_manage_permission do
+      permission_ids ["admin_manage"]
     end
 
-    trait :backend_manage_access do
-      access ["backend_manage"]
+    trait :backend_manage_permission do
+      permission_ids ["backend_manage"]
     end
 
-    trait :backend_publish_access do
-      access ["backend_publish"]
+    trait :backend_publish_permission do
+      permission_ids ["backend_publish"]
     end
 
     factory :google_admin_group do
-      scope { FactoryGirl.create(:google_admin_scope) }
+      api_scopes { [FactoryGirl.create(:google_api_scope)] }
     end
   end
 end

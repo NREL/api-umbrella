@@ -5,10 +5,10 @@ class ApiPolicy < ApplicationPolicy
         scope.all
       else
         query_scopes = []
-        user.groups_with_access("backend_manage").each do |group|
+        user.api_scopes_with_permission("backend_manage").each do |api_scope|
           query_scopes << {
-            :frontend_host => group.scope.host,
-            :"url_matches.frontend_prefix" => group.scope.path_prefix_matcher,
+            :frontend_host => api_scope.host,
+            :"url_matches.frontend_prefix" => api_scope.path_prefix_matcher,
           }
         end
 
@@ -17,15 +17,15 @@ class ApiPolicy < ApplicationPolicy
     end
   end
 
-  def show?(access = "backend_manage")
+  def show?(permission = "backend_manage")
     allowed = false
     if(user.superuser?)
       allowed = true
     else
-      user.groups_with_access(access).each do |group|
-        if(record.frontend_host == group.scope.host)
+      user.api_scopes_with_permission(permission).each do |api_scope|
+        if(record.frontend_host == api_scope.host)
           allowed = record.url_matches.all? do |url_match|
-            group.scope.path_prefix_matcher.match(url_match.frontend_prefix)
+            api_scope.path_prefix_matcher.match(url_match.frontend_prefix)
           end
         end
 

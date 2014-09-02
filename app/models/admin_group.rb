@@ -8,29 +8,29 @@ class AdminGroup
   # Fields
   field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :name, :type => String
-  field :access, :type => Array
 
   # Relations
-  belongs_to :scope, :class_name => "AdminScope"
+  has_and_belongs_to_many :api_scopes, :class_name => "ApiScope", :inverse_of => nil
+  has_and_belongs_to_many :permissions, :class_name => "AdminPermission", :inverse_of => nil
 
   # Validations
-  validate :validate_access
+  validate :validate_permissions
 
   # Mass assignment security
   attr_accessible :name,
-    :access,
-    :scope_id,
+    :permission_ids,
+    :api_scope_ids,
     :as => [:admin]
 
-  def can?(access_name)
-    access = self.access || []
-    access.include?(access_name.to_s)
+  def can?(permission)
+    permissions = self.permission_ids || []
+    permissions.include?(permission.to_s)
   end
 
   private
 
-  def validate_access
-    unknown_access = self.access - [
+  def validate_permissions
+    unknown_permissions = self.permission_ids - [
       "analytics",
       "user_view",
       "user_manage",
@@ -39,8 +39,8 @@ class AdminGroup
       "backend_publish",
     ]
 
-    if(unknown_access.any?)
-      errors.add(:access, "unknown access: #{unknown_access.inspect}")
+    if(unknown_permissions.any?)
+      errors.add(:permission_ids, "unknown permissions: #{unknown_permissions.inspect}")
     end
   end
 end

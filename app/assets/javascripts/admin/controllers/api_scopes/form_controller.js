@@ -1,4 +1,4 @@
-Admin.AdminScopesFormController = Ember.ObjectController.extend({
+Admin.ApiScopesFormController = Ember.ObjectController.extend({
   actions: {
     submit: function() {
       var button = $('#save_button');
@@ -9,10 +9,10 @@ Admin.AdminScopesFormController = Ember.ObjectController.extend({
         new PNotify({
           type: 'success',
           title: 'Saved',
-          text: 'Successfully saved the admin scope \'' + this.get('model').get('username') + '\'',
+          text: 'Successfully saved the API scope \'' + this.get('model').get('username') + '\'',
         });
 
-        this.transitionTo('admin_scopes');
+        this.transitionTo('api_scopes');
       }, this), function(response) {
         var message = '<h3>Error</h3>';
         try {
@@ -31,5 +31,5 @@ Admin.AdminScopesFormController = Ember.ObjectController.extend({
   },
 });
 
-Admin.AdminScopesEditController = Admin.AdminScopesFormController.extend();
-Admin.AdminScopesNewController = Admin.AdminScopesFormController.extend();
+Admin.ApiScopesEditController = Admin.ApiScopesFormController.extend();
+Admin.ApiScopesNewController = Admin.ApiScopesFormController.extend();

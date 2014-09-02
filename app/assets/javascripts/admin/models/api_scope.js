@@ -1,4 +1,4 @@
-Admin.AdminScope = Ember.Model.extend({
+Admin.ApiScope = Ember.Model.extend({
   id: Ember.attr(),
   name: Ember.attr(),
   host: Ember.attr(),
@@ -13,9 +13,9 @@ Admin.AdminScope = Ember.Model.extend({
   }.property('name', 'host', 'pathPrefix')
 });
 
-Admin.AdminScope.url = '/api-umbrella/v1/admin_scopes';
-Admin.AdminScope.rootKey = 'admin_scope';
-Admin.AdminScope.collectionKey = 'data';
-Admin.AdminScope.primaryKey = 'id';
-Admin.AdminScope.camelizeKeys = true;
-Admin.AdminScope.adapter = Admin.APIUmbrellaRESTAdapter.create();
+Admin.ApiScope.url = '/api-umbrella/v1/api_scopes';
+Admin.ApiScope.rootKey = 'api_scope';
+Admin.ApiScope.collectionKey = 'data';
+Admin.ApiScope.primaryKey = 'id';
+Admin.ApiScope.camelizeKeys = true;
+Admin.ApiScope.adapter = Admin.APIUmbrellaRESTAdapter.create();

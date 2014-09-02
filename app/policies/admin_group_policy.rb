@@ -4,12 +4,12 @@ class AdminGroupPolicy < ApplicationPolicy
       if(user.superuser?)
         scope.all
       else
-        scope_ids = []
-        user.groups_with_access("admin_manage").each do |group|
-          scope_ids << group.scope_id
+        api_scope_ids = []
+        user.api_scopes_with_permission("admin_manage").each do |api_scope|
+          api_scope_ids << api_scope.id
         end
 
-        scope.in(:scope_id => scope_ids)
+        scope.in(:api_scope_id => api_scope_ids)
       end
     end
   end
@@ -19,8 +19,11 @@ class AdminGroupPolicy < ApplicationPolicy
     if(user.superuser?)
       allowed = true
     else
-      user.groups_with_access("admin_manage").each do |current_user_group|
-        allowed = (current_user_group.scope_id == record.scope_id)
+      user.api_scopes_with_permission("admin_manage").each do |current_user_scope|
+        allowed = record.api_scopes.all? do |record_api_scope|
+          current_user_scope.id == record_api_scope.id
+        end
+
         break if(allowed)
       end
     end
