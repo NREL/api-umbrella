@@ -39,5 +39,9 @@ FactoryGirl.define do
     factory :google_admin_group do
       api_scopes { [FactoryGirl.create(:google_api_scope)] }
     end
+
+    factory :yahoo_admin_group do
+      api_scopes { [FactoryGirl.create(:yahoo_api_scope)] }
+    end
   end
 end

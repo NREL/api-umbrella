@@ -24,6 +24,8 @@ class Api::V1::AdminsController < Api::V1::BaseController
         { :_id => /#{params["search"]["value"]}/i },
       ])
     end
+
+    @admins = @admins.to_a.select { |admin| Pundit.policy!(pundit_user, admin).show? }
   end
 
   def show

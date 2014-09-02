@@ -4,7 +4,7 @@ describe Api::V1::ConfigController do
   before(:all) do
     @admin = FactoryGirl.create(:admin)
     @google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
-    @unauthorized_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
+    @unauthorized_google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
   end
 
   before(:each) do
@@ -278,7 +278,7 @@ describe Api::V1::ConfigController do
       end
 
       it "excludes all apis for admins without proper access" do
-        admin_token_auth(@unauthorized_admin)
+        admin_token_auth(@unauthorized_google_admin)
         get :pending_changes, :format => "json"
 
         data = MultiJson.load(response.body)
@@ -476,7 +476,7 @@ describe Api::V1::ConfigController do
           }
         }
 
-        admin_token_auth(@unauthorized_admin)
+        admin_token_auth(@unauthorized_google_admin)
         post :publish, :format => "json", :config => config
 
         response.status.should eql(403)

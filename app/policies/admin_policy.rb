@@ -10,7 +10,7 @@ class AdminPolicy < ApplicationPolicy
         end
 
         group_ids = AdminGroup.in(:api_scope_ids => api_scope_ids).map { |g| g.id }
-        scope.in(:group_id => group_ids)
+        scope.in(:group_ids => group_ids)
       end
     end
   end
@@ -20,13 +20,17 @@ class AdminPolicy < ApplicationPolicy
     if(user.superuser?)
       allowed = true
     else
+      current_user_scope_ids = []
       user.api_scopes_with_permission("admin_manage").each do |current_user_scope|
-        allowed = record.api_scopes.all? do |record_api_scope|
-          current_user_scope.id == record_api_scope.id
-        end
-
-        break if(allowed)
+        current_user_scope_ids << current_user_scope.id
       end
+
+      record_api_scope_ids = []
+      record.api_scopes.each do |record_api_scope|
+        record_api_scope_ids << record_api_scope.id
+      end
+
+      allowed = (record_api_scope_ids - current_user_scope_ids).empty?
     end
 
     allowed

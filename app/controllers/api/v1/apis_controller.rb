@@ -26,7 +26,7 @@ class Api::V1::ApisController < Api::V1::BaseController
       ])
     end
 
-    @apis = @apis.to_a.select { |api| ApiPolicy.new(pundit_user, api).show? }
+    @apis = @apis.to_a.select { |api| Pundit.policy!(pundit_user, api).show? }
   end
 
   def show

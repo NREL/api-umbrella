@@ -9,5 +9,9 @@ FactoryGirl.define do
     factory :google_api_scope do
       path_prefix "/google"
     end
+
+    factory :yahoo_api_scope do
+      path_prefix "/yahoo"
+    end
   end
 end

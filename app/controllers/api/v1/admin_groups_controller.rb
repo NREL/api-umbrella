@@ -5,7 +5,7 @@ class Api::V1::AdminGroupsController < Api::V1::BaseController
 
   def index
     @admin_groups = policy_scope(AdminGroup)
-    @admin_groups = @admin_groups.to_a.select { |group| AdminGroupPolicy.new(pundit_user, group).show? }
+    @admin_groups = @admin_groups.to_a.select { |group| Pundit.policy!(pundit_user, group).show? }
   end
 
   def show
