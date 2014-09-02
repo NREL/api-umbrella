@@ -467,3 +467,21 @@ td.reorder-handle {
     background: #dfd;
   }
 }
+
+.dropdown-menu {
+  .fa {
+    /* Make the icons a consistent width so the menu text lines up */
+    width: 16px;
+    text-align: center;
+  }
+}
+
+/* Pulled from Bootstrap 3. Remove once we upgrade */
+.dropdown-header {
+  display: block;
+  padding: 3px 20px;
+  font-size: 12px;
+  line-height: 1.42857143;
+  color: #777;
+  white-space: nowrap;
+}
