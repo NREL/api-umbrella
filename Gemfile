@@ -42,7 +42,7 @@ gem "mongoid_orderable", "~> 4.1.0"
 gem "uuidtools", "~> 2.1.4"
 
 # Database seeding
-gem "seed-fu", "~> 2.3.0"
+gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
 
 # Elasticsearch
 gem "elasticsearch", "~> 1.0.4"

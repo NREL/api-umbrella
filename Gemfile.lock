@@ -1,4 +1,12 @@
 GIT
+  remote: https://github.com/GUI/seed-fu.git
+  revision: 976b88e374f95f5a9ecc32a5409fef2e4c06303b
+  branch: mongoid
+  specs:
+    seed-fu (2.3.3)
+      activesupport (>= 3.1, < 4.2)
+
+GIT
   remote: https://github.com/Paxa/jshintrb.git
   revision: f7ece705fb8628ec13c2f880f9004483380810f3
   specs:
@@ -373,9 +381,6 @@ GEM
       railties (~> 3.2.0)
       sass (>= 3.1.10)
       tilt (~> 1.3)
-    seed-fu (2.3.3)
-      activerecord (>= 3.1, < 4.2)
-      activesupport (>= 3.1, < 4.2)
     settingslogic (2.0.9)
     simple_form (2.1.1)
       actionpack (~> 3.0)
@@ -507,7 +512,7 @@ DEPENDENCIES
   rubocop (~> 0.25.0)
   safe_yaml (~> 1.0.1)
   sass-rails (~> 3.2.6)
-  seed-fu (~> 2.3.0)
+  seed-fu!
   settingslogic (~> 2.0.9)
   simple_form (~> 2.1.1)
   sprockets-urlrewriter (~> 0.1.2)

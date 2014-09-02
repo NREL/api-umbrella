@@ -69,8 +69,11 @@ class ApiUser
 
   # Callbacks
   before_validation :normalize_terms_and_conditions
-  before_validation :generate_api_key, :on => :create
   after_save :handle_rate_limit_mode
+
+  # Ensure the api key is generated (even if validations are disabled)
+  before_validation :generate_api_key, :on => :create
+  before_create :generate_api_key
 
   # Nested attributes
   accepts_nested_attributes_for :settings
