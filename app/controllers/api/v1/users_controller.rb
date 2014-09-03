@@ -73,7 +73,6 @@ class Api::V1::UsersController < Api::V1::BaseController
       assign_options[:as] = :admin
     end
 
-    @api_user.no_domain_signup = true
     @api_user.assign_nested_attributes(params[:user], assign_options)
 
     if(@api_user.new_record? && @api_user.registration_source.blank?)

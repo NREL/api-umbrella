@@ -23,7 +23,7 @@ class ApiUser
   field :roles, :type => Array
 
   # Virtual fields
-  attr_accessor :terms_and_conditions, :no_domain_signup
+  attr_accessor :terms_and_conditions
 
   # Relations
   embeds_one :settings, :class_name => "Api::Settings"
@@ -53,12 +53,11 @@ class ApiUser
       :message => "Provide a valid email address.",
     }
   validates :website,
-    :presence => { :message => "Provide your website URL." },
     :format => {
       :with => /\w+\.\w+/,
-      :message => "Your website must be a valid URL in the form of http://data.gov",
+      :message => "Your website must be a valid URL in the form of http://example.com",
     },
-    :unless => lambda { |user| user.no_domain_signup }
+    :allow_blank => true
   validates :terms_and_conditions,
     :acceptance => {
       :message => "Check the box to agree to the terms and conditions.",
