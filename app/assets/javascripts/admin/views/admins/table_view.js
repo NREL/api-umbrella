@@ -34,6 +34,17 @@ Admin.AdminsTableView = Ember.View.extend({
           defaultContent: '-',
         },
         {
+          data: 'group_names',
+          title: 'Groups',
+          render: function(names, type) {
+            if(type === 'display' && names && names !== '-') {
+              return names.join('<br>');
+            }
+
+            return names;
+          }
+        },
+        {
           data: 'last_sign_in_at',
           type: 'date',
           title: 'Last Signed In',
