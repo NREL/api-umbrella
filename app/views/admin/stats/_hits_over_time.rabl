@@ -1,7 +1,7 @@
 object false
 
-node :interval_hits do
-  @result.interval_hits.map do |time, count|
+node :hits_over_time do
+  @result.hits_over_time.map do |time, count|
     {
       :c => [
         { :v => time , :f => formatted_interval_time(time) },

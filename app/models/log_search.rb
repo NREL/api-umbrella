@@ -43,7 +43,8 @@ class LogSearch
       :sort => [
         { :request_at => :desc },
       ],
-      :facets => {}
+      :facets => {},
+      :aggregations => {},
     }
 
     @query_options = {
@@ -143,14 +144,18 @@ class LogSearch
     }
   end
 
-  def facet_by_interval!
-    @query[:facets][:interval_hits] = {
+  def aggregate_by_interval!
+    @query[:aggregations][:hits_over_time] = {
       :date_histogram => {
         :field => "request_at",
         :interval => @interval,
-        :all_terms => true,
         :time_zone => Time.zone.name,
         :pre_zone_adjust_large_interval => true,
+        :min_doc_count => 0,
+        :extended_bounds => {
+          :min => @start_time.iso8601,
+          :max => @end_time.iso8601,
+        },
       },
     }
   end

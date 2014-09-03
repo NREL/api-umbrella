@@ -18,7 +18,7 @@ class Admin::StatsController < Admin::BaseController
 
     @search.search!(params[:search])
     @search.filter_by_date_range!
-    @search.facet_by_interval!
+    @search.aggregate_by_interval!
     @search.facet_by_users!(10)
     @search.facet_by_response_status!(10)
     @search.facet_by_response_content_type!(10)

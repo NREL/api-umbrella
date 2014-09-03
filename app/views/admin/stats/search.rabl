@@ -1,6 +1,6 @@
 object false
 
-extends "admin/stats/_interval_hits"
+extends "admin/stats/_hits_over_time"
 
 node :stats do
   {

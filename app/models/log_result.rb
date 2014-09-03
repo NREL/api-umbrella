@@ -18,32 +18,20 @@ class LogResult
     raw_result["facets"]
   end
 
-  def interval_hits
-    if(!@interval_hits && facets["interval_hits"])
-      @interval_hits = {}
+  def aggregations
+    raw_result["aggregations"]
+  end
 
-      # Default all interval points to 0 (so in case any are missing from the
-      # real data).
-      time = @search.start_time
-      case @search.interval
-      when "minute"
-        time = time.change(:sec => 0)
-      else
-        time = time.send(:"beginning_of_#{@search.interval}")
-      end
+  def hits_over_time
+    if(!@hits_over_time && aggregations["hits_over_time"])
+      @hits_over_time = {}
 
-      while(time <= @search.end_time)
-        @interval_hits[time.to_i * 1000] ||= 0
-        time += 1.send(:"#{@search.interval}")
-      end
-
-      # Overwrite the default 0 values with the real values.
-      facets["interval_hits"]["entries"].each do |entry|
-        @interval_hits[entry["time"]] = entry["count"]
+      aggregations["hits_over_time"]["buckets"].each do |bucket|
+        @hits_over_time[bucket["key"]] = bucket["doc_count"]
       end
     end
 
-    @interval_hits
+    @hits_over_time
   end
 
   def map_breadcrumbs
