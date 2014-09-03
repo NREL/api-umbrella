@@ -12,7 +12,7 @@
     <small>unique {{inflect "user" model.stats.total_users}}</small>
 
     {{view Admin.StatsFacetTableView
-       dataBinding='model.facets.users'
+       dataBinding='model.aggregations.users'
        facetTerm='user_email'
        toggleLabel='view top users'}}
   </div>
@@ -21,7 +21,7 @@
     <small>unique ip {{inflect "address" model.stats.total_ips}}</small>
 
     {{view Admin.StatsFacetTableView
-       dataBinding='model.facets.ips'
+       dataBinding='model.aggregations.ips'
        facetTerm='request_ip'
        toggleLabel='view top ips'}}
   </div>

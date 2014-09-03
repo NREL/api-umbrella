@@ -5,24 +5,15 @@ extends "admin/stats/_hits_over_time"
 node :stats do
   {
     :total_hits => @result.total,
-    :total_users => @result.facets["total_user_email"]["terms"].length,
-    :total_ips => @result.facets["total_request_ip"]["terms"].length,
-    :average_response_time => @result.facets["response_time_stats"]["mean"],
+    :total_users => @result.aggregations["unique_user_emails"]["value"],
+    :total_ips => @result.aggregations["unique_request_ips"]["value"],
+    :average_response_time => @result.aggregations["response_time_average"]["value"],
   }
 end
 
-node :facets do
+node :aggregations do
   {
-    :users => facet_result(:user_email),
-    :ips => facet_result(:request_ip),
-    :content_types => facet_result(:response_content_type),
+    :users => aggregation_result(:user_email),
+    :ips => aggregation_result(:request_ip),
   }
-end
-
-node :logs do
-  @result.documents.map do |log|
-    log["_source"].except("api_key", "_type", "_score", "_index").merge({
-      "request_url" => log["_source"]["request_url"].gsub(%r{^.*://[^/]*}, "")
-    })
-  end
 end

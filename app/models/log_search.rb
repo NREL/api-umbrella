@@ -77,6 +77,10 @@ class LogSearch
     @query[:query][:filtered][:filter][:bool][:must] << filter
   end
 
+  def search_type!(search_type)
+    @query_options[:search_type] = search_type
+  end
+
   def search!(query_string)
     if(query_string.present?)
       @query[:query][:filtered][:query] = {
@@ -238,34 +242,45 @@ class LogSearch
     }
   end
 
-  def facet_by_users!(size)
-    facet_by_term!(:user_email, size)
-    facet_by_term!(:user_email, 1_000_000, :facet_name => :total_user_email)
+  def aggregate_by_term!(term, size)
+    @query[:aggregations]["top_#{term.to_s.pluralize}"] = {
+      :terms => {
+        :field => term.to_s,
+        :size => size,
+        :shard_size => size * 4,
+      },
+    }
+
+    @query[:aggregations]["value_count_#{term.to_s.pluralize}"] = {
+      :value_count => {
+        :field => term.to_s,
+      },
+    }
+
+    @query[:aggregations]["missing_#{term.to_s.pluralize}"] = {
+      :missing => {
+        :field => term.to_s,
+      },
+    }
   end
 
-  def facet_by_response_status!(size)
-    facet_by_term!(:response_status, size)
-    facet_by_term!(:response_status, 1_000_000, :facet_name => :total_response_status)
+  def aggregate_by_cardinality!(term)
+    @query[:aggregations]["unique_#{term.to_s.pluralize}"] = {
+      :cardinality => {
+        :field => term.to_s,
+        :precision_threshold => 100,
+      },
+    }
   end
 
-  def facet_by_response_content_type!(size)
-    facet_by_term!(:response_content_type, size)
-    facet_by_term!(:response_content_type, 1_000_000, :facet_name => :total_response_content_type)
+  def aggregate_by_users!(size)
+    aggregate_by_term!(:user_email, size)
+    aggregate_by_cardinality!(:user_email)
   end
 
-  def facet_by_request_method!(size)
-    facet_by_term!(:request_method, size)
-    facet_by_term!(:request_method, 1_000_000, :facet_name => :total_request_method)
-  end
-
-  def facet_by_request_ip!(size)
-    facet_by_term!(:request_ip, size)
-    facet_by_term!(:request_ip, 1_000_000, :facet_name => :total_request_ip)
-  end
-
-  def facet_by_request_user_agent_family!(size)
-    facet_by_term!(:request_user_agent_family, size)
-    facet_by_term!(:request_user_agent_family, 1_000_000, :facet_name => :total_request_user_agent_family)
+  def aggregate_by_request_ip!(size)
+    aggregate_by_term!(:request_ip, size)
+    aggregate_by_cardinality!(:request_ip)
   end
 
   def facet_by_user_stats!(options = {})
@@ -279,9 +294,9 @@ class LogSearch
     }
   end
 
-  def facet_by_response_time_stats!
-    @query[:facets][:response_time_stats] = {
-      :statistical => {
+  def aggregate_by_response_time_average!
+    @query[:aggregations][:response_time_average] = {
+      :avg => {
         :field => :response_time,
       },
     }

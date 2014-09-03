@@ -13,20 +13,17 @@ class Admin::StatsController < Admin::BaseController
       :start_time => params[:start],
       :end_time => params[:end],
       :interval => params[:interval],
+      :search_type => "count",
     })
     policy_scope(@search)
 
     @search.search!(params[:search])
     @search.filter_by_date_range!
     @search.aggregate_by_interval!
-    @search.facet_by_users!(10)
-    @search.facet_by_response_status!(10)
-    @search.facet_by_response_content_type!(10)
-    @search.facet_by_request_method!(10)
-    @search.facet_by_request_ip!(10)
-    @search.facet_by_request_user_agent_family!(10)
-    @search.facet_by_response_time_stats!
-    @search.limit!(1)
+    @search.aggregate_by_users!(10)
+    @search.aggregate_by_request_ip!(10)
+    @search.aggregate_by_response_time_average!
+    @search.search_type!("count")
 
     @result = @search.result
   end
