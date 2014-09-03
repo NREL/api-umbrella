@@ -34,7 +34,9 @@ class LogSearch
             :match_all => {},
           },
           :filter => {
-            :and => [],
+            :bool => {
+              :must => [],
+            },
           },
         },
       },
@@ -60,6 +62,20 @@ class LogSearch
     @result = LogResult.new(self, raw_result)
   end
 
+  def permission_scope!(scopes)
+    filter = {
+      :bool => {
+        :should => []
+      },
+    }
+
+    scopes.each do |scope|
+      filter[:bool][:should] << scope
+    end
+
+    @query[:query][:filtered][:filter][:bool][:must] << filter
+  end
+
   def search!(query_string)
     if(query_string.present?)
       @query[:query][:filtered][:query] = {
@@ -83,7 +99,7 @@ class LogSearch
   end
 
   def filter_by_date_range!
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :range => {
         :request_at => {
           :from => @start_time.iso8601,
@@ -94,7 +110,7 @@ class LogSearch
   end
 
   def filter_by_request_path!(request_path)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => {
         :request_path => request_path,
       },
@@ -102,7 +118,7 @@ class LogSearch
   end
 
   def filter_by_api_key!(api_key)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => {
         :api_key => api_key,
       },
@@ -110,7 +126,7 @@ class LogSearch
   end
 
   def filter_by_user!(user_email)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => {
         :user => {
           :user_email => user_email,
@@ -120,7 +136,7 @@ class LogSearch
   end
 
   def filter_by_user_ids!(user_ids)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :terms => {
         :user_id => user_ids,
       },
@@ -166,7 +182,7 @@ class LogSearch
   end
 
   def facet_by_country_regions!(country)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
 
@@ -179,10 +195,10 @@ class LogSearch
   end
 
   def facet_by_us_state_cities!(country, state)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => { :request_ip_region => state },
     }
 
@@ -195,7 +211,7 @@ class LogSearch
   end
 
   def facet_by_country_cities!(country)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
 

@@ -14,6 +14,7 @@ class Admin::StatsController < Admin::BaseController
       :end_time => params[:end],
       :interval => params[:interval],
     })
+    policy_scope(@search)
 
     @search.search!(params[:search])
     @search.filter_by_date_range!
@@ -36,6 +37,7 @@ class Admin::StatsController < Admin::BaseController
       :end_time => params[:end],
       :interval => params[:interval],
     })
+    policy_scope(@search)
 
     offset = params["iDisplayStart"].to_i
     limit = params["iDisplayLength"].to_i
@@ -98,6 +100,7 @@ class Admin::StatsController < Admin::BaseController
       :start_time => params[:start],
       :end_time => params[:end],
     })
+    policy_scope(@search)
 
     offset = params["iDisplayStart"].to_i
     limit = params["iDisplayLength"].to_i
@@ -191,6 +194,7 @@ class Admin::StatsController < Admin::BaseController
       :end_time => params[:end],
       :region => params[:region],
     })
+    policy_scope(@search)
 
     @search.search!(params[:search])
     @search.filter_by_date_range!
