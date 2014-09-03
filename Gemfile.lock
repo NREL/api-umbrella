@@ -376,7 +376,7 @@ GEM
       ruby-progressbar (~> 1.4)
     ruby-progressbar (1.5.1)
     safe_yaml (1.0.3)
-    sass (3.4.2)
+    sass (3.4.1)
     sass-rails (3.2.6)
       railties (~> 3.2.0)
       sass (>= 3.1.10)
@@ -511,6 +511,7 @@ DEPENDENCIES
   rspec-rails (~> 2.99.0)
   rubocop (~> 0.25.0)
   safe_yaml (~> 1.0.1)
+  sass (= 3.4.1)
   sass-rails (~> 3.2.6)
   seed-fu!
   settingslogic (~> 2.0.9)

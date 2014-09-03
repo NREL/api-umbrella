@@ -122,6 +122,11 @@ gem "premailer-rails", "~> 1.7.0"
 group :assets do
   gem 'sass-rails', '~> 3.2.6'
 
+  # FIXME: Hold sass as 3.4.1. 3.4.2 seems to cause some weird issues, but
+  # should be fixed in the next verison:
+  # https://github.com/sass/sass/issues/1410
+  gem "sass", "3.4.1"
+
   # A Sass version of Twitter Bootstrap. This it the basis for our styles and
   # JavaScript components.
   gem "bootstrap-sass", "~> 2.3.2.2"
