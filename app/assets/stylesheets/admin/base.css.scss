@@ -104,7 +104,6 @@ textarea.fill {
 }
 
 #results_table {
-  overflow-x: auto;
 }
 
 #results_table .table th,
@@ -408,6 +407,11 @@ td.reorder-handle {
 }
 
 .qtip-wide {
+  max-width: 600px;
+}
+
+.qtip-forced-wide {
+  min-width: 400px;
   max-width: 600px;
 }
 

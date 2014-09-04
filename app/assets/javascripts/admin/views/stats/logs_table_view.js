@@ -14,6 +14,28 @@ Admin.LogsTableView = Ember.View.extend({
           aoData.push({ name: key, value: query[key] });
         }
       }, this),
+      'fnDrawCallback': _.bind(function() {
+        this.$().find('td').truncate({
+          width: 400,
+          addtitle: true,
+          addclass: 'truncated'
+        });
+
+        this.$().find('.truncated').qtip({
+          style: {
+            classes: 'qtip-bootstrap qtip-forced-wide',
+          },
+          hide: {
+            fixed: true,
+            delay: 200
+          },
+          position: {
+            viewport: false,
+            my: 'bottom center',
+            at: 'top center'
+          }
+        });
+      }, this),
       'aaSorting': [[0, 'desc']],
       'aoColumns': [
         {
