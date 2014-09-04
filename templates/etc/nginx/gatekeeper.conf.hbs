@@ -2,7 +2,7 @@
 # are all top-level.
 rewrite ^/api(/.*) $1 break;
 
-set $x_api_umbrella_uid $request_id;
+set $x_api_umbrella_uid $txid;
 set $router_name "web_router";
 access_log {{log_dir}}/router.log api_umbrella_log buffer=32k flush=10s;
 
@@ -22,7 +22,7 @@ access_log {{log_dir}}/router.log api_umbrella_log buffer=32k flush=10s;
 gzip off;
 gunzip off;
 
-proxy_set_header X-Api-Umbrella-UID $request_id;
+proxy_set_header X-Api-Umbrella-UID $txid;
 
 # Normalize the Accept-Encoding header to increase cache hit rates.
 # We're not currently using TrafficServer, but this is based on what it does by
