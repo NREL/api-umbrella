@@ -65,9 +65,9 @@ class LogResult
     unless @cities
       @cities = {}
 
-      @regions = facets["regions"]["terms"]
-      if(@search.query[:facets][:regions][:terms][:field] == "request_ip_city")
-        @city_names = @regions.map { |term| term["term"] }
+      @regions = aggregations["regions"]["buckets"]
+      if(@search.query[:aggregations][:regions][:terms][:field] == "request_ip_city")
+        @city_names = @regions.map { |bucket| bucket["key"] }
         @cities = {}
 
         if @city_names.any?
@@ -91,8 +91,14 @@ class LogResult
             :terms => { :city => @city_names },
           }
 
-          @search.server.index("api-umbrella").search({ :size => 500 }, query).documents.each do |result|
-            @cities[result["city"]] = result["_source"]["location"]
+          city_results = @search.client.search({
+            :index => "api-umbrella",
+            :size => 500,
+            :body => query,
+          })
+
+          city_results["hits"]["hits"].each do |result|
+            @cities[result["_source"]["city"]] = result["_source"]["location"]
           end
         end
       end

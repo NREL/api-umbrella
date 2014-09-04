@@ -41,35 +41,6 @@ module Admin::StatsHelper
     buckets
   end
 
-  def facet_result(facet_name)
-    facet = @result.facets[facet_name.to_s]
-
-    terms = facet["terms"]
-
-    if(facet["missing"] > 0)
-      if(terms.length < 10 || facet["missing"] >= terms.last["count"])
-        terms << {
-          "term" => "Missing / Unknown",
-          "count" => facet["missing"],
-        }
-      end
-    end
-
-    if(facet["other"] > 0)
-      terms << {
-        "term" => "Other",
-        "count" => facet["other"],
-      }
-    end
-
-    total = @result.total.to_f
-    terms.each do |term|
-      term["percent"] = ((term["count"] / total) * 100).round
-    end
-
-    terms
-  end
-
   def formatted_interval_time(time)
     time = Time.at(time / 1000).in_time_zone
 
@@ -97,11 +68,11 @@ module Admin::StatsHelper
     end
   end
 
-  def region_location_columns(term)
+  def region_location_columns(bucket)
     columns = []
 
-    if(@search.query[:facets][:regions][:terms][:field] == "request_ip_city")
-      city = term["term"]
+    if(@search.query[:aggregations][:regions][:terms][:field] == "request_ip_city")
+      city = bucket["key"]
       location = @result.cities[city]
 
       lat = nil
@@ -117,7 +88,7 @@ module Admin::StatsHelper
         { :v => city },
       ]
     else
-      columns << { :v => term["term"], :f => region_name(term["term"]) }
+      columns << { :v => bucket["key"], :f => region_name(bucket["key"]) }
     end
 
     columns

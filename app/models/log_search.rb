@@ -164,46 +164,51 @@ class LogSearch
     }
   end
 
-  def facet_by_region!
+  def aggregate_by_region!
     case(@region)
     when "world"
-      facet_by_country!
+      aggregate_by_country!
     when "US"
       @country = @region
-      facet_by_country_regions!(@region)
+      aggregate_by_country_regions!(@region)
     when /^(US)-([A-Z]{2})$/
       @country = Regexp.last_match[1]
       @state = Regexp.last_match[2]
-      facet_by_us_state_cities!(@country, @state)
+      aggregate_by_us_state_cities!(@country, @state)
     else
       @country = @region
-      facet_by_country_cities!(@region)
+      aggregate_by_country_cities!(@region)
     end
   end
 
-  def facet_by_country!
-    @query[:facets][:regions] = {
+  def aggregate_by_region_field!(field)
+    @query[:aggregations][:regions] = {
       :terms => {
-        :field => "request_ip_country",
-        :size => 250,
+        :field => field.to_s,
+        :size => 500,
+      },
+    }
+
+    @query[:aggregations][:missing_regions] = {
+      :missing => {
+        :field => field.to_s,
       },
     }
   end
 
-  def facet_by_country_regions!(country)
+  def aggregate_by_country!
+    aggregate_by_region_field!(:request_ip_country)
+  end
+
+  def aggregate_by_country_regions!(country)
     @query[:query][:filtered][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
 
-    @query[:facets][:regions] = {
-      :terms => {
-        :field => "request_ip_region",
-        :size => 250,
-      },
-    }
+    aggregate_by_region_field!(:request_ip_region)
   end
 
-  def facet_by_us_state_cities!(country, state)
+  def aggregate_by_us_state_cities!(country, state)
     @query[:query][:filtered][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
@@ -211,25 +216,15 @@ class LogSearch
       :term => { :request_ip_region => state },
     }
 
-    @query[:facets][:regions] = {
-      :terms => {
-        :field => "request_ip_city",
-        :size => 250,
-      },
-    }
+    aggregate_by_region_field!(:request_ip_city)
   end
 
-  def facet_by_country_cities!(country)
+  def aggregate_by_country_cities!(country)
     @query[:query][:filtered][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
 
-    @query[:facets][:regions] = {
-      :terms => {
-        :field => "request_ip_city",
-        :size => 250,
-      },
-    }
+    aggregate_by_region_field!(:request_ip_city)
   end
 
   def facet_by_term!(term, size, options = {})
@@ -242,32 +237,32 @@ class LogSearch
     }
   end
 
-  def aggregate_by_term!(term, size)
-    @query[:aggregations]["top_#{term.to_s.pluralize}"] = {
+  def aggregate_by_term!(field, size)
+    @query[:aggregations]["top_#{field.to_s.pluralize}"] = {
       :terms => {
-        :field => term.to_s,
+        :field => field.to_s,
         :size => size,
         :shard_size => size * 4,
       },
     }
 
-    @query[:aggregations]["value_count_#{term.to_s.pluralize}"] = {
+    @query[:aggregations]["value_count_#{field.to_s.pluralize}"] = {
       :value_count => {
-        :field => term.to_s,
+        :field => field.to_s,
       },
     }
 
-    @query[:aggregations]["missing_#{term.to_s.pluralize}"] = {
+    @query[:aggregations]["missing_#{field.to_s.pluralize}"] = {
       :missing => {
-        :field => term.to_s,
+        :field => field.to_s,
       },
     }
   end
 
-  def aggregate_by_cardinality!(term)
-    @query[:aggregations]["unique_#{term.to_s.pluralize}"] = {
+  def aggregate_by_cardinality!(field)
+    @query[:aggregations]["unique_#{field.to_s.pluralize}"] = {
       :cardinality => {
-        :field => term.to_s,
+        :field => field.to_s,
         :precision_threshold => 100,
       },
     }
