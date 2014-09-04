@@ -43,7 +43,6 @@ class LogSearch
       :sort => [
         { :request_at => :desc },
       ],
-      :facets => {},
       :aggregations => {},
     }
 
@@ -227,16 +226,6 @@ class LogSearch
     aggregate_by_region_field!(:request_ip_city)
   end
 
-  def facet_by_term!(term, size, options = {})
-    facet_name = options[:facet_name] || term
-    @query[:facets][facet_name.to_sym] = {
-      :terms => {
-        :field => term.to_s,
-        :size => size,
-      },
-    }
-  end
-
   def aggregate_by_term!(field, size)
     @query[:aggregations]["top_#{field.to_s.pluralize}"] = {
       :terms => {
@@ -278,14 +267,19 @@ class LogSearch
     aggregate_by_cardinality!(:request_ip)
   end
 
-  def facet_by_user_stats!(options = {})
-    @query[:facets][:user_stats] = {
-      :terms_stats => {
-        :key_field => :user_id,
-        :value_field => :request_at,
+  def aggregate_by_user_stats!(options = {})
+    @query[:aggregations][:user_stats] = {
+      :terms => {
+        :field => :user_id,
         :size => 0,
-        :order => "count",
       }.merge(options),
+      :aggregations => {
+        :last_request_at => {
+          :max => {
+            :field => :request_at,
+          },
+        },
+      },
     }
   end
 

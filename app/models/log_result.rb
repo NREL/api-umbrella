@@ -14,10 +14,6 @@ class LogResult
     raw_result["hits"]["hits"]
   end
 
-  def facets
-    raw_result["facets"]
-  end
-
   def aggregations
     raw_result["aggregations"]
   end
