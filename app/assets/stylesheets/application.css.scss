@@ -1,2 +1,11 @@
 @import "bootstrap";
 @import "bootstrap-responsive";
+
+body {
+  padding-top: 60px;
+}
+
+.container-fluid {
+  max-width: 1000px;
+  margin: 0px auto;
+}
