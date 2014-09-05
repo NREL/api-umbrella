@@ -9,15 +9,15 @@ Admin.StatsQueryFormView = Ember.View.extend({
       moment().endOf('day'),
     ],
     'Yesterday': [
-      moment().subtract('days', 1),
-      moment().subtract('days', 1).endOf('day'),
+      moment().subtract(1, 'days'),
+      moment().subtract(1, 'days').endOf('day'),
     ],
     'Last 7 Days': [
-      moment().subtract('days', 6),
+      moment().subtract(6, 'days'),
       moment().endOf('day'),
     ],
     'Last 30 Days': [
-      moment().subtract('days', 29).startOf('day'),
+      moment().subtract(29, 'days').startOf('day'),
       moment().endOf('day'),
     ],
     'This Month': [
@@ -25,8 +25,8 @@ Admin.StatsQueryFormView = Ember.View.extend({
       moment().endOf('month'),
     ],
     'Last Month': [
-      moment().subtract('month', 1).startOf('month'),
-      moment().subtract('month', 1).endOf('month'),
+      moment().subtract(1, 'month').startOf('month'),
+      moment().subtract(1, 'month').endOf('month'),
     ]
   },
 
