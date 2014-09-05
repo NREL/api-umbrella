@@ -2,7 +2,6 @@
 //= require jquery_ujs
 //= require bootstrap
 //= require ace-builds/src/ace
-//= require rails.validations
 //= require handlebars
 //= require ember
 //= require qtip2

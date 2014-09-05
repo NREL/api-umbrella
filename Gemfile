@@ -71,9 +71,6 @@ gem "jquery-rails", "~> 3.1.0"
 # Breadcrumbs
 gem "crummy", "~> 1.8.0"
 
-gem "client_side_validations", "~> 3.2.6"
-gem "client_side_validations-simple_form", "~> 2.1.0"
-
 # For creating friendly URL slugs.
 gem "babosa", "~> 0.3.11"
 
