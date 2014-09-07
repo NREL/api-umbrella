@@ -2,6 +2,9 @@
 //= require jquery_ujs
 //= require bootstrap
 //= require ace-builds/src/ace
+//= require ace-builds/src/mode-json
+//= require ace-builds/src/mode-xml
+//= require ace-builds/src/mode-yaml
 //= require handlebars
 //= require ember
 //= require qtip2
@@ -10,7 +13,7 @@
 //= require vendor/datatables-plugins/dataTables.bootstrap
 //= require jsdiff/diff
 //= require ic-ajax/dist/globals/main.js
-//= require ember-model
+//= require vendor/ember-model/ember-model.js
 //= require vendor/ember-easyForm
 //= require pnotify
 //= require bootbox

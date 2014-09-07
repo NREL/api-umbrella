@@ -32,7 +32,6 @@ begin
       "$",
       "ace",
       "Admin",
-      "apiUserExistingRoles",
       "bootbox",
       "Ember",
       "google",

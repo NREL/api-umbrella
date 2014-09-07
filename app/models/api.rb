@@ -74,7 +74,7 @@ class Api
 
   def as_json(options)
     options[:methods] ||= []
-    options[:methods] += [:required_roles_string, :error_data_yaml_strings, :headers_string]
+    options[:methods] += [:error_data_yaml_strings, :headers_string]
 
     super(options)
   end
@@ -108,5 +108,24 @@ class Api
     end
 
     true
+  end
+
+  def roles
+    roles = []
+
+    if(self.settings && self.settings.required_roles)
+      roles += self.settings.required_roles
+    end
+
+    if(self.sub_settings)
+      self.sub_settings.each do |sub|
+        if(sub.settings && sub.settings.required_roles)
+          roles += sub.settings.required_roles
+        end
+      end
+    end
+
+    roles.uniq!
+    roles
   end
 end

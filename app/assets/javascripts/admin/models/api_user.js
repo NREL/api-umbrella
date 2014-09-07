@@ -64,6 +64,12 @@ Admin.ApiUser = Ember.Model.extend({
 
     return rolesString;
   }.property('roles'),
+
+  didSaveRecord: function() {
+    // Clear the cached roles on save, so the list of available roles is always
+    // correct for subsequent form renderings in this current session.
+    Admin.ApiUserRole.clearCache();
+  },
 });
 
 Admin.ApiUser.url = '/api-umbrella/v1/users';

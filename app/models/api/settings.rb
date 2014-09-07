@@ -44,7 +44,6 @@ class Api::Settings
     :anonymous_rate_limit_behavior,
     :authenticated_rate_limit_behavior,
     :required_roles,
-    :required_roles_string,
     :allowed_ips,
     :allowed_referers,
     :error_templates,
@@ -52,28 +51,6 @@ class Api::Settings
     :headers_string,
     :rate_limits_attributes,
     :as => [:default, :admin]
-
-  def required_roles_string
-    unless @required_roles_string
-      @required_roles_string = ""
-      if self.required_roles.present?
-        @required_roles_string = self.required_roles.join(",")
-      end
-    end
-
-    @required_roles_string
-  end
-
-  def required_roles_string=(string)
-    @required_roles_string = string
-
-    roles = nil
-    if(string.present?)
-      roles = string.split(",").map { |role| role.strip }
-    end
-
-    self.required_roles = roles
-  end
 
   def headers_string
     unless @headers_string

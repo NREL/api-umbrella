@@ -96,6 +96,20 @@ class Admin
     end
   end
 
+  def disallowed_roles
+    unless @disallowed_roles
+      allowed_apis = ApiPolicy::Scope.new(self, Api.all).resolve(:any)
+      allowed_apis = allowed_apis.to_a.select { |api| Pundit.policy!(self, api).set_user_role? }
+
+      all_api_roles = Api.all.map { |api| api.roles }.flatten
+      allowed_api_roles = allowed_apis.map { |api| api.roles }.flatten
+
+      @disallowed_roles = all_api_roles - allowed_api_roles
+    end
+
+    @disallowed_roles
+  end
+
   private
 
   def generate_authentication_token

@@ -27,10 +27,29 @@ class ApiUserPolicy < ApplicationPolicy
   end
 
   def update?
-    show?
+    allowed = false
+    if(user.superuser?)
+      allowed = true
+    else
+      if(user.can?("user_manage"))
+        allowed = true
+      end
+
+      if(allowed && record.roles.present?)
+        allowed = record.roles.all? do |role|
+          ApiUserRolePolicy.new(user, role).show?
+        end
+      end
+    end
+
+    allowed
   end
 
   def create?
-    true
+    if(!user)
+      true
+    else
+      update?
+    end
   end
 end

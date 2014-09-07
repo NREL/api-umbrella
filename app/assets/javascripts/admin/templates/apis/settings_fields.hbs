@@ -10,7 +10,7 @@
   collection='disableApiKeyOptions'
   optionValuePath='content.id'
   optionLabelPath='content.name'}}
-{{#view Admin.SelectizeView valueBinding='requiredRolesString'}}
+{{#view Admin.SelectizeView valueBinding='requiredRolesString' contentBinding='roleOptions' optionValuePath='id' optionLabelPath='id'}}
   {{input requiredRolesString
     class='row-fluid'
     label='Required Roles'}}

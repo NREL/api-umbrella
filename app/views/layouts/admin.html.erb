@@ -5,7 +5,6 @@
     <title>API Umbrella Admin</title>
     <%= stylesheet_link_tag "admin" %>
     <%= javascript_tag do %>
-      apiUserExistingRoles = <%= ApiUser.existing_roles.map { |role| { :id => role, :title => role } }.to_json.html_safe %>;
       webAdminAjaxApiKey = <%= ApiUser.where(:email => 'web.admin.ajax@internal.apiumbrella').order_by(:created_at.asc).first.api_key.to_json.html_safe %>;
     <% end %>
     <%= javascript_include_tag "admin" %>
@@ -14,6 +13,21 @@
       google.load("visualization", "1", {packages:["corechart", "geochart"]});
     <% end %>
     <%= csrf_meta_tag %>
+    <% if(Rails.env.test?) %>
+      <style type="text/css">
+        /* Attempt to disable animations in test mode to improve the
+           reliability of some Capybara timing stuff without sleeping. Note
+           that we can't set the time to 0 completely or that breaks some stuff
+           with bootstrap: http://stackoverflow.com/a/13119950 */
+        * {
+          -webkit-transition-duration: 0.01s !important;
+          -moz-transition-duration: 0.01s !important;
+          -ms-transition-duration: 0.01s !important;
+          -o-transition-duration: 0.01s !important;
+          transition-duration: 0.01s !important;
+        }
+      </style>
+    <% end %>
   </head>
   <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">

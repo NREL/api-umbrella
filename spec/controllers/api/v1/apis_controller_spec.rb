@@ -5,9 +5,26 @@ describe Api::V1::ApisController do
     @admin = FactoryGirl.create(:admin)
     @google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
     @unauthorized_google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
+  end
 
-    @api = FactoryGirl.create(:api)
+  before(:each) do
+    Api.delete_all
+
+    @api = FactoryGirl.create(:api, {
+      :settings => FactoryGirl.attributes_for(:api_setting, {
+        :required_roles => [
+          "test-write",
+        ],
+      }),
+    })
     @google_api = FactoryGirl.create(:google_api)
+    @google2_api = FactoryGirl.create(:google_api, {
+      :settings => FactoryGirl.attributes_for(:api_setting, {
+        :required_roles => [
+          "google2-write",
+        ],
+      }),
+    })
     @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api)
     @yahoo_api = FactoryGirl.create(:yahoo_api)
   end
@@ -166,6 +183,215 @@ describe Api::V1::ApisController do
         end.to_not change { Api.count }
       end
     end
+
+    describe "admin role permissions" do
+      it "allows superuser admins to assign any roles" do
+        existing_roles = ApiUserRole.all
+        existing_roles.should include("test-write")
+        existing_roles.should include("google-write")
+        existing_roles.should include("yahoo-write")
+        existing_roles.should_not include("new-write")
+
+        admin_token_auth(@admin)
+        attributes = FactoryGirl.attributes_for(:api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "test-write",
+              "google-write",
+              "yahoo-write",
+              "new-write",
+              "new-write#{rand(999_999)}",
+            ],
+          }),
+          :sub_settings => [
+            FactoryGirl.attributes_for(:api_sub_setting, {
+              :settings => FactoryGirl.attributes_for(:api_setting, {
+                :required_roles => [
+                  "test-write",
+                  "google-write",
+                  "yahoo-write",
+                  "new-write",
+                  "new-write#{rand(999_999)}",
+                ],
+              })
+            }),
+          ],
+        })
+
+        expect do
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(201)
+          data = MultiJson.load(response.body)
+          data["api"]["settings"]["required_roles"].should eql(attributes[:settings][:required_roles])
+          data["api"]["sub_settings"][0]["settings"]["required_roles"].should eql(attributes[:sub_settings][0][:settings][:required_roles])
+        end.to change { Api.count }.by(1)
+      end
+
+      it "allows limited admins to assign any unused role" do
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "new-settings-role#{rand(999_999)}",
+            ],
+          }),
+          :sub_settings => [
+            FactoryGirl.attributes_for(:api_sub_setting, {
+              :settings => FactoryGirl.attributes_for(:api_setting, {
+                :required_roles => [
+                  "new-sub-settings-role#{rand(999_999)}",
+                ],
+              }),
+            }),
+          ],
+        })
+
+        expect do
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(201)
+          data = MultiJson.load(response.body)
+          data["api"]["settings"]["required_roles"].should eql(attributes[:settings][:required_roles])
+          data["api"]["sub_settings"][0]["settings"]["required_roles"].should eql(attributes[:sub_settings][0][:settings][:required_roles])
+        end.to change { Api.count }.by(1)
+      end
+
+      it "allows limited admins to assign an existing role that exists within its scope" do
+        existing_roles = ApiUserRole.all
+        existing_roles.should include("google-write")
+
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "google-write",
+            ],
+          }),
+          :sub_settings => [
+            FactoryGirl.attributes_for(:api_sub_setting, {
+              :settings => FactoryGirl.attributes_for(:api_setting, {
+                :required_roles => [
+                  "google-write",
+                ],
+              }),
+            }),
+          ],
+        })
+
+        expect do
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(201)
+          data = MultiJson.load(response.body)
+          data["api"]["name"].should eql(attributes[:name])
+        end.to change { Api.count }.by(1)
+      end
+
+      it "forbids limited admins from assigning an existing role that exists outside its scope at the settings level" do
+        existing_roles = ApiUserRole.all
+        existing_roles.should include("yahoo-write")
+
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "yahoo-write",
+            ],
+          }),
+        })
+
+        expect do
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(403)
+          data = MultiJson.load(response.body)
+          data.keys.should eql(["errors"])
+        end.to_not change { Api.count }
+      end
+
+      it "forbids limited admins from assigning an existing role that exists outside its scope at the sub-settings level" do
+        existing_roles = ApiUserRole.all
+        existing_roles.should include("yahoo-write")
+
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :sub_settings => [
+            FactoryGirl.attributes_for(:api_sub_setting, {
+              :settings => FactoryGirl.attributes_for(:api_setting, {
+                :required_roles => [
+                  "yahoo-write",
+                ],
+              }),
+            }),
+          ],
+        })
+
+        expect do
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(403)
+          data = MultiJson.load(response.body)
+          data.keys.should eql(["errors"])
+        end.to_not change { Api.count }
+      end
+
+      it "forbids limited admins from assigning an existing role that exists in an api the admin only has partial access to" do
+        existing_roles = ApiUserRole.all
+        existing_roles.should include("google-extra-write")
+
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :sub_settings => [
+            FactoryGirl.attributes_for(:api_sub_setting, {
+              :settings => FactoryGirl.attributes_for(:api_setting, {
+                :required_roles => [
+                  "google-extra-write",
+                ],
+              }),
+            }),
+          ],
+        })
+
+        expect do
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(403)
+          data = MultiJson.load(response.body)
+          data.keys.should eql(["errors"])
+        end.to_not change { Api.count }
+      end
+
+      it "forbids limited admins from assigning a new role beginning with 'api-umbrella'" do
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "api-umbrella#{rand(999_999)}",
+            ],
+          }),
+        })
+
+        expect do
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(403)
+          data = MultiJson.load(response.body)
+          data.keys.should eql(["errors"])
+        end.to_not change { Api.count }
+      end
+
+      it "allows superuser admins to assign a new role beginning with 'api-umbrella'" do
+        admin_token_auth(@admin)
+        attributes = FactoryGirl.attributes_for(:api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "api-umbrella#{rand(999_999)}",
+            ],
+          }),
+        })
+
+        expect do
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(201)
+          data = MultiJson.load(response.body)
+          data["api"]["name"].should eql(attributes[:name])
+        end.to change { Api.count }.by(1)
+      end
+    end
   end
 
   describe "PUT update" do
@@ -231,6 +457,204 @@ describe Api::V1::ApisController do
         data.keys.should eql(["errors"])
         @google_extra_url_match_api = Api.find(@google_extra_url_match_api.id)
         @google_extra_url_match_api.name.should_not eql(attributes["name"])
+      end
+    end
+
+    describe "admin role permissions" do
+      it "allows superuser admins to assign any roles" do
+        existing_roles = ApiUserRole.all
+        existing_roles.should include("test-write")
+        existing_roles.should include("google-write")
+        existing_roles.should include("yahoo-write")
+        existing_roles.should_not include("new-write")
+
+        admin_token_auth(@admin)
+        attributes = FactoryGirl.attributes_for(:api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "test-write",
+              "google-write",
+              "yahoo-write",
+              "new-write",
+              "new-write#{rand(999_999)}",
+            ],
+          }),
+          :sub_settings => [
+            FactoryGirl.attributes_for(:api_sub_setting, {
+              :settings => FactoryGirl.attributes_for(:api_setting, {
+                :required_roles => [
+                  "test-write",
+                  "google-write",
+                  "yahoo-write",
+                  "new-write",
+                  "new-write#{rand(999_999)}",
+                ],
+              })
+            }),
+          ],
+        })
+        put :update, :format => "json", :id => @api.id, :api => attributes
+
+        response.status.should eql(204)
+        @api = Api.find(@api.id)
+        @api.settings.required_roles.should eql(attributes[:settings][:required_roles])
+        @api.sub_settings[0].settings.required_roles.should eql(attributes[:sub_settings][0][:settings][:required_roles])
+      end
+
+      it "allows limited admins to assign any unused role" do
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "new-settings-role#{rand(999_999)}",
+            ],
+          }),
+          :sub_settings => [
+            FactoryGirl.attributes_for(:api_sub_setting, {
+              :settings => FactoryGirl.attributes_for(:api_setting, {
+                :required_roles => [
+                  "new-sub-settings-role#{rand(999_999)}",
+                ],
+              }),
+            }),
+          ],
+        })
+        put :update, :format => "json", :id => @google_api.id, :api => attributes
+
+        response.status.should eql(204)
+        @google_api = Api.find(@google_api.id)
+        @google_api.settings.required_roles.should eql(attributes[:settings][:required_roles])
+        @google_api.sub_settings[0].settings.required_roles.should eql(attributes[:sub_settings][0][:settings][:required_roles])
+      end
+
+      it "allows limited admins to assign an existing role that exists within its scope" do
+        existing_roles = ApiUserRole.all
+        existing_roles.should include("google2-write")
+
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "google2-write",
+            ],
+          }),
+          :sub_settings => [
+            FactoryGirl.attributes_for(:api_sub_setting, {
+              :settings => FactoryGirl.attributes_for(:api_setting, {
+                :required_roles => [
+                  "google2-write",
+                ],
+              }),
+            }),
+          ],
+        })
+        put :update, :format => "json", :id => @google_api.id, :api => attributes
+
+        response.status.should eql(204)
+        @google_api = Api.find(@google_api.id)
+        @google_api.settings.required_roles.should eql(attributes[:settings][:required_roles])
+        @google_api.sub_settings[0].settings.required_roles.should eql(attributes[:sub_settings][0][:settings][:required_roles])
+      end
+
+      it "forbids limited admins from assigning an existing role that exists outside its scope at the settings level" do
+        existing_roles = ApiUserRole.all
+        existing_roles.should include("yahoo-write")
+
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "yahoo-write",
+            ],
+          }),
+        })
+        put :update, :format => "json", :id => @google_api.id, :api => attributes
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+        @google_api = Api.find(@google_api.id)
+        @google_api.roles.should_not include("yahoo-write")
+      end
+
+      it "forbids limited admins from assigning an existing role that exists outside its scope at the sub-settings level" do
+        existing_roles = ApiUserRole.all
+        existing_roles.should include("yahoo-write")
+
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :sub_settings => [
+            FactoryGirl.attributes_for(:api_sub_setting, {
+              :settings => FactoryGirl.attributes_for(:api_setting, {
+                :required_roles => [
+                  "yahoo-write",
+                ],
+              }),
+            }),
+          ],
+        })
+        put :update, :format => "json", :id => @google_api.id, :api => attributes
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+        @google_api = Api.find(@google_api.id)
+        @google_api.roles.should_not include("yahoo-write")
+      end
+
+      it "forbids limited admins from assigning an existing role that exists in an api the admin only has partial access to" do
+        existing_roles = ApiUserRole.all
+        existing_roles.should include("google-extra-write")
+
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "google-extra-write",
+            ],
+          }),
+        })
+        put :update, :format => "json", :id => @google_api.id, :api => attributes
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+        @google_api = Api.find(@google_api.id)
+        @google_api.roles.should_not include("google-extra-write")
+      end
+
+      it "forbids limited admins from assigning a new role beginning with 'api-umbrella'" do
+        admin_token_auth(@google_admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "api-umbrella#{rand(999_999)}",
+            ],
+          }),
+        })
+        put :update, :format => "json", :id => @google_api.id, :api => attributes
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+        @google_api = Api.find(@google_api.id)
+        @google_api.roles.should_not include(attributes[:settings][:required_roles][0])
+      end
+
+      it "allows superuser admins to assign a new role beginning with 'api-umbrella'" do
+        admin_token_auth(@admin)
+        attributes = FactoryGirl.attributes_for(:google_api, {
+          :settings => FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "api-umbrella#{rand(999_999)}",
+            ],
+          }),
+        })
+        put :update, :format => "json", :id => @google_api.id, :api => attributes
+
+        response.status.should eql(204)
+        @google_api = Api.find(@google_api.id)
+        @google_api.settings.required_roles.should eql(attributes[:settings][:required_roles])
       end
     end
   end

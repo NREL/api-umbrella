@@ -35,6 +35,12 @@ Admin.Api = Ember.Model.extend({
   exampleOutgoingUrlRoot: function() {
     return 'http://' + (this.get('backendHost') || this.get('frontendHost') || '');
   }.property('backendHost'),
+
+  didSaveRecord: function() {
+    // Clear the cached roles on save, so the list of available roles is always
+    // correct for subsequent form renderings in this current session.
+    Admin.ApiUserRole.clearCache();
+  },
 });
 
 Admin.Api.url = '/api-umbrella/v1/apis';

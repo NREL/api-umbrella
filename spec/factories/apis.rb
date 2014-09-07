@@ -28,12 +28,32 @@ FactoryGirl.define do
         [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/google", :backend_prefix => "/")]
       end
 
+      sub_settings do
+        [
+          FactoryGirl.attributes_for(:api_sub_setting, {
+            :settings_attributes => FactoryGirl.attributes_for(:api_setting, {
+              :required_roles => [
+                "google-write",
+              ],
+            })
+          }),
+        ]
+      end
+
       factory :google_extra_url_match_api do
         url_matches do
           [
             FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/google", :backend_prefix => "/"),
             FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/extra", :backend_prefix => "/"),
           ]
+        end
+
+        settings do
+          FactoryGirl.attributes_for(:api_setting, {
+            :required_roles => [
+              "google-extra-write",
+            ],
+          })
         end
       end
     end
@@ -48,6 +68,18 @@ FactoryGirl.define do
 
       url_matches do
         [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/yahoo", :backend_prefix => "/")]
+      end
+
+      sub_settings do
+        [
+          FactoryGirl.attributes_for(:api_sub_setting, {
+            :settings_attributes => FactoryGirl.attributes_for(:api_setting, {
+              :required_roles => [
+                "yahoo-write",
+              ],
+            })
+          }),
+        ]
       end
     end
   end
