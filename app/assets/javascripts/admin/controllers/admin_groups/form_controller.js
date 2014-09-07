@@ -20,7 +20,7 @@ Admin.AdminGroupsFormController = Ember.ObjectController.extend({
           text: 'Successfully saved the admin group \'' + this.get('model').get('username') + '\'',
         });
 
-        this.transitionTo('admin_groups');
+        this.transitionToRoute('admin_groups');
       }, this), function(response) {
         var message = '<h3>Error</h3>';
         try {

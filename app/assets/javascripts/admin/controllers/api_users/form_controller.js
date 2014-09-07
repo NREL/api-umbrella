@@ -28,7 +28,7 @@ Admin.ApiUsersFormController = Ember.ObjectController.extend({
           text: 'Successfully saved the user \'' + this.get('model').get('email') + '\'',
         });
 
-        this.transitionTo('api_users');
+        this.transitionToRoute('api_users');
       }, this), function(response) {
         var message = '<h3>Error</h3>';
         try {

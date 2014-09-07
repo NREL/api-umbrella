@@ -30,7 +30,7 @@ Admin.ApisFormController = Ember.ObjectController.extend({
           text: 'Successfully saved the \'' + this.get('model').get('name') + '\' API',
         });
 
-        this.transitionTo('apis');
+        this.transitionToRoute('apis');
       }, this), function(response) {
         var message = '<h3>Error</h3>';
         try {
@@ -51,7 +51,7 @@ Admin.ApisFormController = Ember.ObjectController.extend({
       bootbox.confirm('Are you sure you want to delete this API backend?', _.bind(function(result) {
         if(result) {
           this.get('model').deleteRecord();
-          this.transitionTo('apis');
+          this.transitionToRoute('apis');
         }
       }, this));
     },

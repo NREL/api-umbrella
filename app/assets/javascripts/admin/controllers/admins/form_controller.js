@@ -16,7 +16,7 @@ Admin.AdminsFormController = Ember.ObjectController.extend({
           text: 'Successfully saved the admin \'' + this.get('model').get('username') + '\'',
         });
 
-        this.transitionTo('admins');
+        this.transitionToRoute('admins');
       }, this), function(response) {
         var message = '<h3>Error</h3>';
         try {

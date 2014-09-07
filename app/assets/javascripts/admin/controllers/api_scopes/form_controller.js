@@ -12,7 +12,7 @@ Admin.ApiScopesFormController = Ember.ObjectController.extend({
           text: 'Successfully saved the API scope \'' + this.get('model').get('username') + '\'',
         });
 
-        this.transitionTo('api_scopes');
+        this.transitionToRoute('api_scopes');
       }, this), function(response) {
         var message = '<h3>Error</h3>';
         try {
