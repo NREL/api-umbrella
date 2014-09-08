@@ -190,28 +190,26 @@ jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff 
 
 
 // Defaults for DataTables.
-_.merge($.fn.dataTable.defaults, {
+_.merge($.fn.DataTable.defaults, {
   // Don't show the DataTables processing message. We'll handle the processing
-  // message logic in fnInitComplete with blockui.
-  'bProcessing': false,
+  // message logic in initComplete with blockui.
+  processing: false,
 
   // Enable global searching.
-  'bFilter': true,
-
-  // Disable per-column searching.
-  'bSearchable': false,
+  searching: true,
 
   // Re-arrange how the table and surrounding fields (pagination, search, etc)
   // are laid out.
-  'sDom': 'rft<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
+  dom: 'rft<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
 
-  'oLanguage': {
-    // Don't have an explicit label for the search field. Used the placeholder
-    // created in fnInitComplete instead.
-    'sSearch': '',
+  language: {
+    // Don't have an explicit label for the search field. Use a placeholder
+    // instead.
+    search: '',
+    searchPlaceholder: 'Search...',
   },
 
-  'fnPreDrawCallback': function() {
+  preDrawCallback: function() {
     if(!this.customProcessingCallbackSet) {
       // Use blockui to provide a more obvious processing message the overlays
       // the entire table (this helps for long tables, where a simple processing
@@ -219,7 +217,7 @@ _.merge($.fn.dataTable.defaults, {
       //
       // Set this early on during pre-draw so that the processing message shows
       // up for the first load.
-      this.on('processing', _.bind(function(event, settings, processing) {
+      $(this).DataTable().on('processing', _.bind(function(event, settings, processing) {
         if(processing) {
           this.block({
             message: '<i class="fa fa-spinner fa-spin fa-lg"></i>',
@@ -231,11 +229,5 @@ _.merge($.fn.dataTable.defaults, {
 
       this.customProcessingCallbackSet = true;
     }
-  },
-
-  'fnInitComplete': function() {
-    // Add a placeholder instead of the 'Search:' label to the filter
-    // input.
-    $('.dataTables_filter input').attr('placeholder', 'Search...');
   },
 });
