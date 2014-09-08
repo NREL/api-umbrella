@@ -15,7 +15,6 @@ class LegacyPassApiKeys < Mongoid::Migration
 
       api.save!
     end
-
   end
 
   def self.down
