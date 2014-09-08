@@ -9,11 +9,155 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('request rewriting', function() {
-  describe('api key normaliztion', function() {
+  describe('api key stripping', function() {
     shared.runServer();
 
-    it('passes the api key in the header to the backend even if passed in via other means', function(done) {
-      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, function(error, response, body) {
+    it('strips the api key from the header', function(done) {
+      var options = {
+        headers: {
+          'X-Api-Key': this.apiKey,
+        }
+      };
+
+      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        should.not.exist(data.headers['x-api-key']);
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips the api key from the query string', function(done) {
+      request.get('http://localhost:9333/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.query.should.eql({ 'test': 'test' });
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips basic auth if api key was passed in as username', function(done) {
+      request.get('http://' + this.apiKey + ':@localhost:9333/info/', function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        should.not.exist(data.headers['authorization']);
+
+        done();
+      }.bind(this));
+    });
+
+    it('does not strip basic auth if the api key is passed via other means', function(done) {
+      request.get('http://foo:@localhost:9333/info/?api_key=' + this.apiKey, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        should.exist(data.headers['authorization']);
+
+        done();
+      }.bind(this));
+    });
+  });
+
+  describe('api key stripping when api keys are not required', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          settings: {
+            disable_api_key: true,
+          },
+        },
+      ],
+    });
+
+    it('strips the api key from the header', function(done) {
+      var options = {
+        headers: {
+          'X-Api-Key': this.apiKey,
+        }
+      };
+
+      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        should.not.exist(data.headers['x-api-key']);
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips the api key from the query string', function(done) {
+      request.get('http://localhost:9333/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.query.should.eql({ 'test': 'test' });
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips basic auth if api key was passed in as username despite not being required', function(done) {
+      request.get('http://' + this.apiKey + ':@localhost:9333/info/', function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        should.not.exist(data.headers['authorization']);
+
+        done();
+      }.bind(this));
+    });
+
+    // FIXME: This situation of a key being passed along in http basic auth
+    // even when not required currently triggers a 403 (since the gatekeeper
+    // assumes the username is a key which then isn't valid). I don't think
+    // this is the behavior we want, so need to figure out how to address this.
+    xit('does not strip basic auth if it contains non-api key auth', function(done) {
+      request.get('http://foo:@localhost:9333/info/', function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        console.info(data);
+        should.exist(data.headers['authorization']);
+
+        done();
+      }.bind(this));
+    });
+  });
+
+  describe('passing api key via header', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          settings: {
+            pass_api_key_header: true,
+          },
+        },
+      ],
+    });
+
+    it('keeps the api key in the header', function(done) {
+      var options = {
+        headers: {
+          'X-Api-Key': this.apiKey,
+        }
+      };
+
+      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+        response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.headers['x-api-key'].should.eql(this.apiKey);
 
@@ -21,13 +165,69 @@ describe('request rewriting', function() {
       }.bind(this));
     });
 
-    it('strips the api key from the query string if given', function(done) {
+    it('passes the api key in the header even if passed in via other means', function(done) {
       request.get('http://localhost:9333/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.headers['x-api-key'].should.eql(this.apiKey);
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips the api key from the query string', function(done) {
+      request.get('http://localhost:9333/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
+        response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.url.query.should.eql({ 'test': 'test' });
 
         done();
-      });
+      }.bind(this));
+    });
+  });
+
+  describe('passing api key via get query param', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          settings: {
+            pass_api_key_query_param: true,
+          },
+        },
+      ],
+    });
+
+    it('keeps the api key in the query string', function(done) {
+      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.url.query.api_key.should.eql(this.apiKey);
+
+        done();
+      }.bind(this));
+    });
+
+
+    it('passes the api key in the query string even if passed in via other means', function(done) {
+      var options = {
+        headers: {
+          'X-Api-Key': this.apiKey,
+        }
+      };
+
+      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.url.query.api_key.should.eql(this.apiKey);
+
+        done();
+      }.bind(this));
     });
   });
 

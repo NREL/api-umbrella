@@ -30,6 +30,7 @@
     "it": true,
     "shared": true,
     "should": true,
-    "redisClient": true
+    "redisClient": true,
+    "xit": true
   }
 }
