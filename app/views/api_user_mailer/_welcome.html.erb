@@ -8,11 +8,11 @@
 <ul>
   <li>Explore our <%= link_to("available Web services", doc_url) %>.</li>
   <li>Stay informed and tell us what you've built in our <%= link_to("community", community_url) %>.</li>
-  <li>Need more help? Reach us <%= link_to("@#{t("twitter_account")}", "http://twitter.com/#{t("twitter_account")}") %> or <%= link_to("contact us", contact_url) %>.</li>
+  <li>Need more help? Reach us <%= link_to("@#{t("twitter_account")}", "http://twitter.com/#{t("twitter_account")}") %> or <a href="<%= ApiUmbrellaConfig[:contact_url] %>">contact us</a>.</li>
 </ul>
 
 <div class="signup-footer">
-  <p>For additional support, please <%= link_to("contact us", contact_url) %>. When contacting us, please tell us what API you're accessing and provide the following account details so we can quickly find you:</p>
+  <p>For additional support, please <a href="<%= ApiUmbrellaConfig[:contact_url] %>">contact us</a>. When contacting us, please tell us what API you're accessing and provide the following account details so we can quickly find you:</p>
   Account Email: <%= @user.email %><br>
   Account ID: <%= @user.id %>
 </div>

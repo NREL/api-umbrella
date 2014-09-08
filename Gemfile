@@ -50,8 +50,13 @@ gem "elasticsearch", "~> 1.0.4"
 # OmniAuth-based authentication
 gem "devise", "~> 3.2.4"
 gem "omniauth", "~> 1.2.1"
+gem "omniauth-cas", "~> 1.0.4", :git => "https://github.com/dandorman/omniauth-cas.git", :branch => "bump-omniauth-version"
+gem "omniauth-facebook", "~> 2.0.0"
+gem "omniauth-github", "~> 1.1.2"
 gem "omniauth-google-oauth2", "~> 0.2.2"
+gem "omniauth-myusa", :git => "https://github.com/GSA-OCSIT/omniauth-myusa.git"
 gem "omniauth-persona", "~> 0.0.1"
+gem "omniauth-twitter", "~> 1.0.1"
 
 gem "pundit", "~> 0.3.0"
 
@@ -85,9 +90,6 @@ gem "csv_builder", "~> 2.1.1"
 # Country and state name lookups
 gem "countries", "~> 0.9.3"
 
-# Custom YAML config files
-gem "settingslogic", "~> 2.0.9"
-
 # Ember.js
 gem "ember-rails", "~> 0.15.0"
 gem "ember-source", "~> 1.7.0"
@@ -104,8 +106,8 @@ gem "psych", "~> 2.0.5", :platforms => [:ruby]
 # Use version from git so it doesn't automatically monkey-patch.
 gem "safe_yaml", "~> 1.0.1", :require => "safe_yaml/load"
 
-# Environment-specific configuration files.
-gem "rails_config", "~> 0.3.3"
+# YAML configuration files.
+gem "rails_config", "~> 0.4.2"
 
 # Delayed jobs and background tasks
 gem "delayed_job_mongoid", "~> 2.1.0"

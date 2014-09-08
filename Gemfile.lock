@@ -1,4 +1,12 @@
 GIT
+  remote: https://github.com/GSA-OCSIT/omniauth-myusa.git
+  revision: 0018f8de12c25d1e87e27a76c1aad430db086435
+  specs:
+    omniauth-myusa (0.0.3)
+      omniauth (~> 1.0)
+      omniauth-oauth2 (~> 1.0)
+
+GIT
   remote: https://github.com/GUI/seed-fu.git
   revision: 976b88e374f95f5a9ecc32a5409fef2e4c06303b
   branch: mongoid
@@ -14,6 +22,16 @@ GIT
       execjs
       multi_json (>= 1.3)
       rake
+
+GIT
+  remote: https://github.com/dandorman/omniauth-cas.git
+  revision: 83210ff52667c2c4574666dcfc9b577542fb595f
+  branch: bump-omniauth-version
+  specs:
+    omniauth-cas (1.0.4)
+      addressable (~> 2.3)
+      nokogiri (~> 1.5)
+      omniauth (~> 1.2.0)
 
 GEM
   remote: https://rubygems.org/
@@ -223,6 +241,7 @@ GEM
     nokogiri (1.6.3.1)
       mini_portile (= 0.6.0)
     nokogiri (1.6.3.1-java)
+    oauth (0.4.7)
     oauth2 (1.0.0)
       faraday (>= 0.8, < 0.10)
       jwt (~> 1.0)
@@ -233,9 +252,17 @@ GEM
     omniauth (1.2.2)
       hashie (>= 1.2, < 4)
       rack (~> 1.0)
+    omniauth-facebook (2.0.0)
+      omniauth-oauth2 (~> 1.2)
+    omniauth-github (1.1.2)
+      omniauth (~> 1.0)
+      omniauth-oauth2 (~> 1.1)
     omniauth-google-oauth2 (0.2.5)
       omniauth (> 1.0)
       omniauth-oauth2 (~> 1.1)
+    omniauth-oauth (1.0.1)
+      oauth
+      omniauth (~> 1.0)
     omniauth-oauth2 (1.2.0)
       faraday (>= 0.8, < 0.10)
       multi_json (~> 1.3)
@@ -245,6 +272,9 @@ GEM
       faraday
       multi_json
       omniauth (~> 1.0)
+    omniauth-twitter (1.0.1)
+      multi_json (~> 1.3)
+      omniauth-oauth (~> 1.0)
     origin (1.1.0)
     orm_adapter (0.5.0)
     parser (2.2.0.pre.4)
@@ -323,7 +353,7 @@ GEM
       rails-assets-sifter (~> 0.3.0)
     rails-assets-sifter (0.3.4)
     rails-assets-spinjs (2.0.1)
-    rails_config (0.3.4)
+    rails_config (0.4.2)
       activesupport (>= 3.0)
     railties (3.2.19)
       actionpack (= 3.2.19)
@@ -377,7 +407,6 @@ GEM
       railties (~> 3.2.0)
       sass (>= 3.1.10)
       tilt (~> 1.3)
-    settingslogic (2.0.9)
     simple_form (2.1.1)
       actionpack (~> 3.0)
       activemodel (~> 3.0)
@@ -469,8 +498,13 @@ DEPENDENCIES
   multi_json (~> 1.10.1)
   oj (~> 2.10.2)
   omniauth (~> 1.2.1)
+  omniauth-cas (~> 1.0.4)!
+  omniauth-facebook (~> 2.0.0)
+  omniauth-github (~> 1.1.2)
   omniauth-google-oauth2 (~> 0.2.2)
+  omniauth-myusa!
   omniauth-persona (~> 0.0.1)
+  omniauth-twitter (~> 1.0.1)
   poltergeist (~> 1.5.0)
   premailer-rails (~> 1.7.0)
   psych (~> 2.0.5)
@@ -500,7 +534,7 @@ DEPENDENCIES
   rails-assets-qtip2 (~> 2.2.0)
   rails-assets-selectize (~> 0.11.0)
   rails-assets-spinjs (~> 2.0.0)
-  rails_config (~> 0.3.3)
+  rails_config (~> 0.4.2)
   rspec-html-matchers (~> 0.5.0)
   rspec-rails (~> 2.99.0)
   rubocop (~> 0.25.0)
@@ -508,7 +542,6 @@ DEPENDENCIES
   sass (= 3.4.1)
   sass-rails (~> 3.2.6)
   seed-fu!
-  settingslogic (~> 2.0.9)
   simple_form (~> 2.1.1)
   sprockets-urlrewriter (~> 0.1.2)
   tabs_on_rails (~> 2.2.0)

@@ -1,12 +1,10 @@
-require "elasticsearch_config"
-
 class LogSearch
   attr_accessor :query, :query_options
   attr_reader :client, :start_time, :end_time, :interval, :region, :country, :state
 
   def initialize(options = {})
     @client = Elasticsearch::Client.new({
-      :hosts => ElasticsearchConfig.hosts.split(","),
+      :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
       :logger => Rails.logger
     })
 
