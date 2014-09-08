@@ -11,6 +11,8 @@ Admin.ApiSettings = Ember.Model.extend({
   rateLimitMode: Ember.attr(),
   anonymousRateLimitBehavior: Ember.attr(),
   authenticatedRateLimitBehavior: Ember.attr(),
+  passApiKeyHeader: Ember.attr(),
+  passApiKeyQueryParam: Ember.attr(),
   errorTemplates: Ember.attr(),
   errorDataYamlStrings: Ember.attr(),
 

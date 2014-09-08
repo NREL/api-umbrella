@@ -13,6 +13,8 @@ class Api::Settings
   field :rate_limit_mode, :type => String
   field :anonymous_rate_limit_behavior, :type => String
   field :authenticated_rate_limit_behavior, :type => String
+  field :pass_api_key_header, :type => Boolean
+  field :pass_api_key_query_param, :type => Boolean
   field :error_templates, :type => Hash
   field :error_data, :type => Hash
 
@@ -43,6 +45,8 @@ class Api::Settings
     :rate_limit_mode,
     :anonymous_rate_limit_behavior,
     :authenticated_rate_limit_behavior,
+    :pass_api_key_header,
+    :pass_api_key_query_param,
     :required_roles,
     :allowed_ips,
     :allowed_referers,
