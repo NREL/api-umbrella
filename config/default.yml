@@ -25,6 +25,21 @@ web:
     workers: 2
     min_threads: 2
     max_threads: 24
+  admin:
+    auth_strategies:
+      enabled:
+        - github
+        - google
+        - persona
+      facebook:
+        client_id:
+        client_secret:
+      github:
+        client_id:
+        client_secret:
+      google:
+        client_id:
+        client_secret:
 static_site:
   port: 51010
   dir: /vagrant/workspace/static-site

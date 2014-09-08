@@ -137,7 +137,7 @@ startsecs=3
 {{/if}}
 
 [program:web-puma]
-environment=MONGODB_URL="{{mongodb.url}}",ELASTICSEARCH_HOSTS="{{elasticsearch.hosts}}"
+environment=API_UMBRELLA_CONFIG="{{api_umbrella_config_runtime_file}}"
 directory={{web.dir}}
 command=bundle exec puma -q -e {{app_env}} -w {{web.puma.workers}} -t {{web.puma.min_threads}}:{{web.puma.max_threads}} -b unix://{{run_dir}}/web-puma.sock
 redirect_stderr=true
