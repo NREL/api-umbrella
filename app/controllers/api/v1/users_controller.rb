@@ -6,7 +6,7 @@ class Api::V1::UsersController < Api::V1::BaseController
   skip_after_filter :verify_authorized, :only => [:index, :create]
 
   def index
-    @api_users = policy_scope(ApiUser).order_by(new_datatables_sort)
+    @api_users = policy_scope(ApiUser).order_by(datatables_sort_array)
 
     if(params[:start].present?)
       @api_users = @api_users.skip(params["start"].to_i)

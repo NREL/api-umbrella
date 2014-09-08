@@ -4,7 +4,7 @@ class Api::V1::AdminsController < Api::V1::BaseController
   skip_after_filter :verify_authorized, :only => [:index]
 
   def index
-    @admins = policy_scope(Admin).order_by(new_datatables_sort)
+    @admins = policy_scope(Admin).order_by(datatables_sort_array)
 
     if(params[:start].present?)
       @admins = @admins.skip(params["start"].to_i)

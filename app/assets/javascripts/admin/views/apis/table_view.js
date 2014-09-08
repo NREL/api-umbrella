@@ -63,7 +63,7 @@ Admin.ApisTableView = Ember.View.extend({
     }));
 
     this.get('table')
-      .on('filter', _.bind(function(event, settings) {
+      .on('search', _.bind(function(event, settings) {
         // Disable reordering if the user tries to filter the table by anything
         // (otherwise, our reordering logic won't work, since it relies on the
         // neighboring rows).
@@ -73,7 +73,7 @@ Admin.ApisTableView = Ember.View.extend({
           }
         }
       }, this))
-      .on('sort', _.bind(function(event, settings) {
+      .on('order', _.bind(function(event, settings) {
         // Disable reordering if the user tries to sort the table by anything
         // other than the sort order (otherwise, our reordering logic won't
         // work, since it relies on the neighboring rows).
@@ -104,7 +104,7 @@ Admin.ApisTableView = Ember.View.extend({
             moveTo++;
           }
         } else {
-          var data = this.get('table').fnGetData();
+          var data = this.get('table').rows().data();
           var sortOrders = _.map(_.compact(_.pluck(data, 'sort_order')), function(order) { return parseInt(order, 10); });
           var minSortOrder = sortOrders.sort()[0];
           if(minSortOrder && minSortOrder > 1) {
@@ -120,24 +120,26 @@ Admin.ApisTableView = Ember.View.extend({
   handleReorderChange: function() {
     if(this.get('controller.reorderActive')) {
       this.$().addClass('reorder-active');
-      this.get('table').fnSort([[3, 'asc']]);
-      this.get('table').fnFilter('');
+      this.get('table')
+        .order([[3, 'asc']])
+        .search('')
+        .draw();
     } else {
       this.$().removeClass('reorder-active');
     }
   }.observes('controller.reorderActive'),
 
   saveReorder: function(id, moveTo) {
-    this.get('table').fnProcessingIndicator(true);
+    this.$().dataTable().fnProcessingIndicator(true);
     $.ajax({
       url: '/admin/apis/' + id + '/move_to.json',
       type: 'PUT',
       data: { move_to: moveTo },
     }).done(_.bind(function() {
-      this.get('table').fnDraw();
+      this.get('table').draw();
     }, this)).fail(_.bind(function() {
       bootbox.alert('An unexpected error occurred. Please try again.');
-      this.get('table').fnDraw();
+      this.get('table').draw();
     }, this));
   },
 });

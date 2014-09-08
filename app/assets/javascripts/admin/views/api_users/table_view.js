@@ -4,7 +4,7 @@ Admin.ApiUsersTableView = Ember.View.extend({
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
 
   didInsertElement: function() {
-    this.$().dataTable({
+    this.$().DataTable({
       serverSide: true,
       ajax: '/api-umbrella/v1/users.json',
       pageLength: 50,

@@ -201,6 +201,9 @@ group :development, :test do
   gem "database_cleaner", "~> 1.3.0"
 
   gem "jshintrb", "~> 0.2.4", :git => "https://github.com/Paxa/jshintrb.git"
+
+  # For testing drag and drop in capybara.
+  gem "rails-assets-jquery-simulate-ext", "~> 1.3.0"
 end
 
 group :development do

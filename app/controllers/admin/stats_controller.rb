@@ -30,14 +30,14 @@ class Admin::StatsController < Admin::BaseController
 
   def logs
     @search = LogSearch.new({
-      :start_time => params[:start],
-      :end_time => params[:end],
+      :start_time => params[:start_time],
+      :end_time => params[:end_time],
       :interval => params[:interval],
     })
     policy_scope(@search)
 
-    offset = params["iDisplayStart"].to_i
-    limit = params["iDisplayLength"].to_i
+    offset = params[:start].to_i
+    limit = params[:length].to_i
     if(request.format == "csv")
       limit = 500
     end
@@ -94,13 +94,13 @@ class Admin::StatsController < Admin::BaseController
 
   def users
     @search = LogSearch.new({
-      :start_time => params[:start],
-      :end_time => params[:end],
+      :start_time => params[:start_time],
+      :end_time => params[:end_time],
     })
     policy_scope(@search)
 
-    offset = params["iDisplayStart"].to_i
-    limit = params["iDisplayLength"].to_i
+    offset = params[:start].to_i
+    limit = params[:length].to_i
     if(request.format == "csv")
       limit = 100_000
     end

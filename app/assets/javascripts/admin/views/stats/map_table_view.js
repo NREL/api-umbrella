@@ -4,16 +4,16 @@ Admin.StatsMapTableView = Ember.View.extend({
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
 
   didInsertElement: function() {
-    this.$().dataTable({
-      'bFilter': false,
-      'aaSorting': [[1, 'desc']],
-      'aaData': this.get('model.regions'),
-      'aoColumns': [
+    this.$().DataTable({
+      searching: false,
+      order: [[1, 'desc']],
+      data: this.get('model.regions'),
+      columns: [
         {
-          mData: 'name',
-          sTitle: 'Location',
-          sDefaultContent: '-',
-          mRender: _.bind(function(name, type, data) {
+          data: 'name',
+          title: 'Location',
+          defaultContent: '-',
+          render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               var link, params;
               if(this.get('model.region_field') === 'request_ip_city') {
@@ -33,10 +33,10 @@ Admin.StatsMapTableView = Ember.View.extend({
           }, this),
         },
         {
-          mData: 'hits',
-          sTitle: 'Hits',
-          sDefaultContent: '-',
-          mRender: function(number, type) {
+          data: 'hits',
+          title: 'Hits',
+          defaultContent: '-',
+          render: function(number, type) {
             if(type === 'display' && number && number !== '-') {
               return numeral(number).format('0,0');
             }
@@ -49,8 +49,8 @@ Admin.StatsMapTableView = Ember.View.extend({
   },
 
   refreshData: function() {
-    var table = this.$().dataTable();
-    table.fnClearTable();
-    table.fnAddData(this.get('model.regions'));
+    var table = this.$().DataTable();
+    table.clear();
+    table.add(this.get('model.regions'));
   }.observes('model.regions'),
 });

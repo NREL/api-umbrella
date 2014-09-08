@@ -14,19 +14,8 @@
     <% end %>
     <%= csrf_meta_tag %>
     <% if(Rails.env.test?) %>
-      <style type="text/css">
-        /* Attempt to disable animations in test mode to improve the
-           reliability of some Capybara timing stuff without sleeping. Note
-           that we can't set the time to 0 completely or that breaks some stuff
-           with bootstrap: http://stackoverflow.com/a/13119950 */
-        * {
-          -webkit-transition-duration: 0.01s !important;
-          -moz-transition-duration: 0.01s !important;
-          -ms-transition-duration: 0.01s !important;
-          -o-transition-duration: 0.01s !important;
-          transition-duration: 0.01s !important;
-        }
-      </style>
+      <%= stylesheet_link_tag "admin_test" %>
+      <%= javascript_include_tag "admin_test" %>
     <% end %>
   </head>
   <body>

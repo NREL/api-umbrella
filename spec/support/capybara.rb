@@ -9,3 +9,23 @@ Capybara.register_driver :poltergeist do |app|
 end
 
 Capybara.javascript_driver = :poltergeist
+
+module CapybaraFeatureHelpers
+  def wait_for_ajax
+    Timeout.timeout(Capybara.default_wait_time) do
+      loop until finished_all_ajax_requests?
+    end
+  end
+
+  def finished_all_ajax_requests?
+    page.evaluate_script('jQuery.active').zero?
+  end
+
+  def wait_for_datatables_filter
+    sleep 1
+  end
+end
+
+RSpec.configure do |config|
+  config.include CapybaraFeatureHelpers, :type => :feature
+end
