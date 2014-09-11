@@ -5,9 +5,6 @@ rvm:
 services:
   - mongodb
   - elasticsearch
-before_script:
-  - cp config/mongoid.yml.deploy config/mongoid.yml
-  - cp config/elasticsearch.yml.deploy config/elasticsearch.yml
 script:
   - bundle exec rake
 notifications:
