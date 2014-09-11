@@ -5,6 +5,9 @@ FactoryGirl.define do
 
     factory :limited_admin do
       superuser false
+      group_ids do
+        FactoryGirl.create(:admin_group).id
+      end
     end
   end
 end

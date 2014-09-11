@@ -33,9 +33,9 @@ class Admin
 
   # Validations
   validates :username,
-    :presence => true
-  validates :username,
+    :presence => true,
     :uniqueness => true
+  validate :validate_superuser_or_groups
 
   # Callbacks
   before_validation :generate_authentication_token, :on => :create
@@ -122,6 +122,12 @@ class Admin
       end
 
       self.authentication_token = key
+    end
+  end
+
+  def validate_superuser_or_groups
+    if(!self.superuser? && self.groups.blank?)
+      self.errors.add(:groups, "must belong to at least one group or be a superuser")
     end
   end
 end

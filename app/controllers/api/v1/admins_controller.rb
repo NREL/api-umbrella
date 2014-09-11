@@ -35,15 +35,28 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
   def create
     @admin = Admin.new
-    authorize(@admin)
     save!
-    respond_with(:api_v1, @admin, :root => "admin")
+
+    respond_to do |format|
+      if(@admin.save)
+        format.json { render("show", :status => :created, :location => api_v1_admin_url(@admin)) }
+      else
+        format.json { render(:json => errors_response(@admin), :status => :unprocessable_entity) }
+      end
+    end
   end
 
   def update
     @admin = Admin.find(params[:id])
     save!
-    respond_with(:api_v1, @admin, :root => "admin")
+
+    respond_to do |format|
+      if(@admin.save)
+        format.json { render("show", :status => :ok, :location => api_v1_admin_url(@admin)) }
+      else
+        format.json { render(:json => errors_response(@admin), :status => :unprocessable_entity) }
+      end
+    end
   end
 
   private

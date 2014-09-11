@@ -19,6 +19,8 @@ class AdminPolicy < ApplicationPolicy
     allowed = false
     if(user.superuser?)
       allowed = true
+    elsif(record.superuser?)
+      allowed = false
     else
       current_user_scope_ids = []
       user.api_scopes_with_permission("admin_manage").each do |current_user_scope|
