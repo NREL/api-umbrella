@@ -5,6 +5,8 @@ en:
   omniauth_providers:
     cas: MAX.gov
     developer: dummy login (development only)
+    facebook: Facebook
+    github: GitHub
     google_oauth2: Google
     myusa: MyUSA
     persona: Persona

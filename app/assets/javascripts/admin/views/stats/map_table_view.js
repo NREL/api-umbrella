@@ -4,26 +4,26 @@ Admin.StatsMapTableView = Ember.View.extend({
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
 
   didInsertElement: function() {
-    this.$().dataTable({
-      "bFilter": false,
-      "aaSorting": [[1, "desc"]],
-      "aaData": this.get('model.regions'),
-      "aoColumns": [
+    this.$().DataTable({
+      searching: false,
+      order: [[1, 'desc']],
+      data: this.get('model.regions'),
+      columns: [
         {
-          mData: "name",
-          sTitle: "Location",
-          sDefaultContent: "-",
-          mRender: _.bind(function(name, type, data) {
+          data: 'name',
+          title: 'Location',
+          defaultContent: '-',
+          render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
-              var link;
+              var link, params;
               if(this.get('model.region_field') === 'request_ip_city') {
-                var params = _.clone(this.get('controller.query.params'));
+                params = _.clone(this.get('controller.query.params'));
                 params.search = 'request_ip_city:"' + data.id + '"';
-                var link = '#/stats/logs/' + $.param(params);
+                link = '#/stats/logs/' + $.param(params);
               } else {
-                var params = _.clone(this.get('controller.query.params'));
+                params = _.clone(this.get('controller.query.params'));
                 params.region = data.id;
-                var link = '#/stats/map/' + $.param(params);
+                link = '#/stats/map/' + $.param(params);
               }
 
               return '<a href="' + link + '">' + _.escape(name) + '</a>';
@@ -33,12 +33,12 @@ Admin.StatsMapTableView = Ember.View.extend({
           }, this),
         },
         {
-          mData: "hits",
-          sTitle: "Hits",
-          sDefaultContent: "-",
-          mRender: function(number, type) {
+          data: 'hits',
+          title: 'Hits',
+          defaultContent: '-',
+          render: function(number, type) {
             if(type === 'display' && number && number !== '-') {
-              return numeral(number).format('0,0')
+              return numeral(number).format('0,0');
             }
 
             return number;
@@ -49,8 +49,8 @@ Admin.StatsMapTableView = Ember.View.extend({
   },
 
   refreshData: function() {
-    var table = this.$().dataTable();
-    table.fnClearTable();
-    table.fnAddData(this.get('model.regions'));
+    var table = this.$().DataTable();
+    table.clear();
+    table.add(this.get('model.regions'));
   }.observes('model.regions'),
 });

@@ -3,6 +3,7 @@ Admin.Admin = Ember.Model.extend({
   username: Ember.attr(),
   email: Ember.attr(),
   name: Ember.attr(),
+  groupIds: Ember.attr(),
   signInCount: Ember.attr(),
   lastSignInAt: Ember.attr(),
   lastSignInIp: Ember.attr(),
@@ -12,11 +13,13 @@ Admin.Admin = Ember.Model.extend({
   updatedAt: Ember.attr(),
   creator: Ember.attr(),
   updater: Ember.attr(),
-})
 
-Admin.Admin.url = "/api-umbrella/v1/admins";
-Admin.Admin.rootKey = "admin";
-Admin.Admin.collectionKey = "admins";
-Admin.Admin.primaryKey = "id";
+  groups: Ember.hasMany('Admin.AdminGroup', { key: 'group_ids' }),
+});
+
+Admin.Admin.url = '/api-umbrella/v1/admins';
+Admin.Admin.rootKey = 'admin';
+Admin.Admin.collectionKey = 'data';
+Admin.Admin.primaryKey = 'id';
 Admin.Admin.camelizeKeys = true;
 Admin.Admin.adapter = Admin.APIUmbrellaRESTAdapter.create();

@@ -4,6 +4,7 @@ class Api
   include Mongoid::Document
   include Mongoid::Timestamps
   include Mongoid::Userstamp
+  include Mongoid::Paranoia
   include Mongoid::Delorean::Trackable
   include Mongoid::EmbeddedErrors
   include Mongoid::Orderable
@@ -64,12 +65,16 @@ class Api
     :as => [:default, :admin]
 
   def self.sorted
-    order_by(:sort_order.asc, :created_at.desc)
+    order_by(:sort_order.asc)
+  end
+
+  def attributes_hash
+    Hash[self.attributes]
   end
 
   def as_json(options)
     options[:methods] ||= []
-    options[:methods] += [:required_roles_string, :error_data_yaml_strings, :headers_string]
+    options[:methods] += [:error_data_yaml_strings, :headers_string]
 
     super(options)
   end
@@ -103,5 +108,24 @@ class Api
     end
 
     true
+  end
+
+  def roles
+    roles = []
+
+    if(self.settings && self.settings.required_roles)
+      roles += self.settings.required_roles
+    end
+
+    if(self.sub_settings)
+      self.sub_settings.each do |sub|
+        if(sub.settings && sub.settings.required_roles)
+          roles += sub.settings.required_roles
+        end
+      end
+    end
+
+    roles.uniq!
+    roles
   end
 end

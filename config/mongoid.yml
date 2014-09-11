@@ -1,7 +1,7 @@
 defaults: &defaults
   sessions:
     default:
-      uri: <%= ENV['MONGODB_URL'] || "mongodb://localhost:50217/api_umbrella_development" %>
+      uri: <%= ApiUmbrellaConfig[:mongodb][:url] %>
       options:
         safe: true
   options:

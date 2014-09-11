@@ -1,23 +1,23 @@
 object false
 
 node :region_field do
-  @search.query[:facets][:regions][:terms][:field]
+  @search.query[:aggregations][:regions][:terms][:field]
 end
 
 node :regions do
-  rows = @result.facets["regions"]["terms"].map do |term|
+  rows = @result.aggregations["regions"]["buckets"].map do |bucket|
     {
-      :id => term["term"],
-      :name => region_name(term["term"]),
-      :hits => term["count"],
+      :id => bucket["key"],
+      :name => region_name(bucket["key"]),
+      :hits => bucket["doc_count"],
     }
   end
 
-  if @result.facets["regions"]["missing"] > 0
+  if(@result.aggregations["missing_regions"]["doc_count"] > 0)
     rows << {
       :id => "missing",
       :name => "Unknown",
-      :hits => @result.facets["regions"]["missing"],
+      :hits => @result.aggregations["missing_regions"]["doc_count"],
     }
   end
 
@@ -25,10 +25,10 @@ node :regions do
 end
 
 node :map_regions do
-  @result.facets["regions"]["terms"].map do |term|
+  @result.aggregations["regions"]["buckets"].map do |bucket|
     {
-      :c => region_location_columns(term) + [
-        { :v => term["count"], :f => number_with_delimiter(term["count"]) },
+      :c => region_location_columns(bucket) + [
+        { :v => bucket["doc_count"], :f => number_with_delimiter(bucket["doc_count"]) },
       ]
     }
   end

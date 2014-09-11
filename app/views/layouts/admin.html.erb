@@ -5,7 +5,6 @@
     <title>API Umbrella Admin</title>
     <%= stylesheet_link_tag "admin" %>
     <%= javascript_tag do %>
-      apiUserExistingRoles = <%= ApiUser.existing_roles.map { |role| { :id => role, :title => role } }.to_json.html_safe %>;
       webAdminAjaxApiKey = <%= ApiUser.where(:email => 'web.admin.ajax@internal.apiumbrella').order_by(:created_at.asc).first.api_key.to_json.html_safe %>;
     <% end %>
     <%= javascript_include_tag "admin" %>
@@ -14,6 +13,10 @@
       google.load("visualization", "1", {packages:["corechart", "geochart"]});
     <% end %>
     <%= csrf_meta_tag %>
+    <% if(Rails.env.test?) %>
+      <%= stylesheet_link_tag "admin_test" %>
+      <%= javascript_include_tag "admin_test" %>
+    <% end %>
   </head>
   <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -22,26 +25,40 @@
           <span class="brand">API Umbrella</span>
           <%= tabs_tag(:builder => BootstrapNavbarTabBuilder, :link_current => true, :open_tabs => { :class => "nav" }) do |tab| %>
             <%= tab.home "Dashboard", admin_path, :class => "nav-home" %>
-            <%= tab.analytics('Analytics <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-analytics", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
-              <ul class="dropdown-menu">
-                <li><%= link_to('<i class="fa fa-signal"></i> Filter Logs'.html_safe, "/admin/#/stats/logs") %></li>
-                <li><%= link_to('<i class="fa fa-user"></i> By Users'.html_safe, "/admin/#/stats/users") %></li>
-                <li><%= link_to('<i class="fa fa-map-marker"></i> By Location'.html_safe, "/admin/#/stats/map") %></li>
-              </ul>
+            <% if(current_admin.can?("analytics")) %>
+              <%= tab.analytics('Analytics <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-analytics", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
+                <ul class="dropdown-menu">
+                  <li><%= link_to('<i class="fa fa-signal"></i> Filter Logs'.html_safe, "/admin/#/stats/logs") %></li>
+                  <li><%= link_to('<i class="fa fa-user"></i> By Users'.html_safe, "/admin/#/stats/users") %></li>
+                  <li><%= link_to('<i class="fa fa-map-marker"></i> By Location'.html_safe, "/admin/#/stats/map") %></li>
+                </ul>
+              <% end %>
             <% end %>
-            <%= tab.users('Users  <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-users", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
-              <ul class="dropdown-menu">
-                <li><%= link_to('<i class="fa fa-user"></i> API Users'.html_safe, "/admin/#/api_users") %></li>
-                <li><%= link_to('<i class="fa fa-user"></i> Admin Accounts'.html_safe, '/admin/#/admins') %></li>
-              </ul>
+            <% if(current_admin.can_any?(["user_view", "user_manage", "admin_manage"])) %>
+              <%= tab.users('Users  <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-users", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
+                <ul class="dropdown-menu">
+                  <% if(current_admin.can_any?(["user_view", "user_manage"])) %>
+                    <li><%= link_to('<i class="fa fa-user"></i> API Users'.html_safe, "/admin/#/api_users") %></li>
+                  <% end %>
+                  <% if(current_admin.can?("admin_manage")) %>
+                    <li><%= link_to('<i class="fa fa-user"></i> Admin Accounts'.html_safe, '/admin/#/admins') %></li>
+                    <li class="divider"></li>
+                    <li role="presentation" class="dropdown-header">Permissions Management</li>
+                    <li><%= link_to('<i class="fa fa-lock"></i> API Scopes'.html_safe, '/admin/#/api_scopes') %></li>
+                    <li><%= link_to('<i class="fa fa-group"></i> Admin Groups'.html_safe, '/admin/#/admin_groups') %></li>
+                  <% end %>
+                </ul>
+              <% end %>
             <% end %>
-            <%= tab.config('Configuration <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-config", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
-              <ul class="dropdown-menu">
-                <li><%= link_to('<i class="fa fa-gear"></i> API Backends'.html_safe, '/admin/#/apis') %></li>
-                <li><%= link_to('<i class="fa fa-upload"></i> Publish Changes'.html_safe, admin_config_publish_path) %></li>
-                <li class="divider"></li>
-                <li><%= link_to('<i class="fa fa-exchange"></i> Import/Export'.html_safe, admin_config_import_export_path) %></li>
-              </ul>
+            <% if(current_admin.can_any?(["backend_manage", "backend_publish"])) %>
+              <%= tab.config('Configuration <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-config", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
+                <ul class="dropdown-menu">
+                  <li><%= link_to('<i class="fa fa-gear"></i> API Backends'.html_safe, '/admin/#/apis') %></li>
+                  <li><%= link_to('<i class="fa fa-upload"></i> Publish Changes'.html_safe, '/admin/#/config/publish') %></li>
+                  <li class="divider"></li>
+                  <li><%= link_to('<i class="fa fa-exchange"></i> Import/Export'.html_safe, admin_config_import_export_path) %></li>
+                </ul>
+              <% end %>
             <% end %>
           <% end %>
 

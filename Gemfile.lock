@@ -1,3 +1,38 @@
+GIT
+  remote: https://github.com/GSA-OCSIT/omniauth-myusa.git
+  revision: 0018f8de12c25d1e87e27a76c1aad430db086435
+  specs:
+    omniauth-myusa (0.0.3)
+      omniauth (~> 1.0)
+      omniauth-oauth2 (~> 1.0)
+
+GIT
+  remote: https://github.com/GUI/seed-fu.git
+  revision: 976b88e374f95f5a9ecc32a5409fef2e4c06303b
+  branch: mongoid
+  specs:
+    seed-fu (2.3.3)
+      activesupport (>= 3.1, < 4.2)
+
+GIT
+  remote: https://github.com/Paxa/jshintrb.git
+  revision: f7ece705fb8628ec13c2f880f9004483380810f3
+  specs:
+    jshintrb (0.2.4)
+      execjs
+      multi_json (>= 1.3)
+      rake
+
+GIT
+  remote: https://github.com/dandorman/omniauth-cas.git
+  revision: 83210ff52667c2c4574666dcfc9b577542fb595f
+  branch: bump-omniauth-version
+  specs:
+    omniauth-cas (1.0.4)
+      addressable (~> 2.3)
+      nokogiri (~> 1.5)
+      omniauth (~> 1.2.0)
+
 GEM
   remote: https://rubygems.org/
   remote: https://rails-assets.org/
@@ -52,7 +87,7 @@ GEM
     capistrano-bundler (1.1.3)
       capistrano (~> 3.1)
       sshkit (~> 1.2)
-    capistrano-rails (1.1.1)
+    capistrano-rails (1.1.2)
       capistrano (~> 3.1)
       capistrano-bundler (~> 1.1)
     capybara (2.4.1)
@@ -64,10 +99,6 @@ GEM
     childprocess (0.5.3)
       ffi (~> 1.0, >= 1.0.11)
     chunky_png (1.3.1)
-    client_side_validations (3.2.6)
-    client_side_validations-simple_form (2.1.0)
-      client_side_validations (~> 3.2.5)
-      simple_form (~> 2.1.0)
     cliver (0.3.2)
     colorize (0.7.3)
     compass (1.0.1)
@@ -128,18 +159,18 @@ GEM
     elasticsearch-transport (1.0.4)
       faraday
       multi_json
-    ember-data-source (0.14)
+    ember-data-source (1.0.0.beta.9)
       ember-source
-    ember-rails (0.14.1)
+    ember-rails (0.15.0)
       active_model_serializers
       barber (>= 0.4.1)
-      ember-data-source
-      ember-source
+      ember-data-source (>= 1.0.0.beta.5)
+      ember-source (>= 1.1.0)
       execjs (>= 1.2)
-      handlebars-source
+      handlebars-source (> 1.0.0)
       jquery-rails (>= 1.0.17)
       railties (>= 3.1)
-    ember-source (1.4.0)
+    ember-source (1.7.0)
       handlebars-source (~> 1.0)
     erubis (2.7.0)
     execjs (2.2.1)
@@ -157,8 +188,11 @@ GEM
     hike (1.2.3)
     htmlentities (4.3.2)
     i18n (0.6.11)
+    jbuilder (2.1.3)
+      activesupport (>= 3.0.0, < 5)
+      multi_json (~> 1.2)
     journey (1.0.4)
-    jquery-rails (3.1.1)
+    jquery-rails (3.1.2)
       railties (>= 3.0, < 5.0)
       thor (>= 0.14, < 2.0)
     json (1.8.1)
@@ -207,6 +241,7 @@ GEM
     nokogiri (1.6.3.1)
       mini_portile (= 0.6.0)
     nokogiri (1.6.3.1-java)
+    oauth (0.4.7)
     oauth2 (1.0.0)
       faraday (>= 0.8, < 0.10)
       jwt (~> 1.0)
@@ -217,9 +252,17 @@ GEM
     omniauth (1.2.2)
       hashie (>= 1.2, < 4)
       rack (~> 1.0)
+    omniauth-facebook (2.0.0)
+      omniauth-oauth2 (~> 1.2)
+    omniauth-github (1.1.2)
+      omniauth (~> 1.0)
+      omniauth-oauth2 (~> 1.1)
     omniauth-google-oauth2 (0.2.5)
       omniauth (> 1.0)
       omniauth-oauth2 (~> 1.1)
+    omniauth-oauth (1.0.1)
+      oauth
+      omniauth (~> 1.0)
     omniauth-oauth2 (1.2.0)
       faraday (>= 0.8, < 0.10)
       multi_json (~> 1.3)
@@ -229,6 +272,9 @@ GEM
       faraday
       multi_json
       omniauth (~> 1.0)
+    omniauth-twitter (1.0.1)
+      multi_json (~> 1.3)
+      omniauth-oauth (~> 1.0)
     origin (1.1.0)
     orm_adapter (0.5.0)
     parser (2.2.0.pre.4)
@@ -252,6 +298,8 @@ GEM
       rack (>= 1.1, < 2.0)
     puma (2.9.0-java)
       rack (>= 1.1, < 2.0)
+    pundit (0.3.0)
+      activesupport (>= 3.0.0)
     rabl (0.11.0)
       activesupport (>= 2.3.14)
     rack (1.4.5)
@@ -280,21 +328,24 @@ GEM
     rails-assets-ember (1.7.0)
       rails-assets-handlebars (>= 1.0.0, < 2.0.0)
       rails-assets-jquery (>= 1.7.0, < 2.2.0)
-    rails-assets-ember-model (0.0.11)
-      rails-assets-ember (~> 1.0)
     rails-assets-fontawesome (4.2.0)
     rails-assets-handlebars (1.3.0)
     rails-assets-html5shiv (3.7.2)
-    rails-assets-inflection (1.4.0)
+    rails-assets-ic-ajax (2.0.1)
+      rails-assets-ember (>= 1.2, < 2)
+    rails-assets-inflection (1.4.1)
     rails-assets-jquery (1.11.1)
     rails-assets-jquery-bbq-deparam (1.2.1)
+    rails-assets-jquery-simulate-ext (1.3.0)
+      rails-assets-jquery (>= 1.7.0)
+    rails-assets-jsdiff (1.0.8)
     rails-assets-jstz-detect (1.0.5)
     rails-assets-livestampjs (1.1.2)
     rails-assets-lodash (2.4.1)
     rails-assets-microplugin (0.0.3)
     rails-assets-moment (2.8.2)
     rails-assets-numeral (1.5.3)
-    rails-assets-pnotify (1.3.1)
+    rails-assets-pnotify (2.0.1)
     rails-assets-qtip2 (2.2.0)
     rails-assets-selectize (0.11.0)
       rails-assets-jquery (>= 1.7.0)
@@ -302,7 +353,7 @@ GEM
       rails-assets-sifter (~> 0.3.0)
     rails-assets-sifter (0.3.4)
     rails-assets-spinjs (2.0.1)
-    rails_config (0.3.4)
+    rails_config (0.4.2)
       activesupport (>= 3.0)
     railties (3.2.19)
       actionpack (= 3.2.19)
@@ -356,10 +407,6 @@ GEM
       railties (~> 3.2.0)
       sass (>= 3.1.10)
       tilt (~> 1.3)
-    seed-fu (2.3.3)
-      activerecord (>= 3.1, < 4.2)
-      activesupport (>= 3.1, < 4.2)
-    settingslogic (2.0.9)
     simple_form (2.1.1)
       actionpack (~> 3.0)
       activemodel (~> 3.0)
@@ -421,8 +468,6 @@ DEPENDENCIES
   capistrano-rails (~> 1.1.1)
   capybara (~> 2.4.1)
   childprocess (~> 0.5.1)
-  client_side_validations (~> 3.2.6)
-  client_side_validations-simple_form (~> 2.1.0)
   compass-rails (~> 1.1.7)
   countries (~> 0.9.3)
   coveralls (~> 0.7.0)
@@ -435,10 +480,12 @@ DEPENDENCIES
   diffy (~> 3.0.3)
   dotenv-rails (~> 0.11.1)
   elasticsearch (~> 1.0.4)
-  ember-rails (~> 0.14.1)
-  ember-source (~> 1.4.0)
+  ember-rails (~> 0.15.0)
+  ember-source (~> 1.7.0)
   factory_girl_rails (~> 4.4.1)
+  jbuilder (~> 2.1.3)
   jquery-rails (~> 3.1.0)
+  jshintrb (~> 0.2.4)!
   kaminari (~> 0.15.1)
   kaminari-bootstrap (~> 0.1.3)
   mongoid (~> 3.1.6)
@@ -451,12 +498,18 @@ DEPENDENCIES
   multi_json (~> 1.10.1)
   oj (~> 2.10.2)
   omniauth (~> 1.2.1)
+  omniauth-cas (~> 1.0.4)!
+  omniauth-facebook (~> 2.0.0)
+  omniauth-github (~> 1.1.2)
   omniauth-google-oauth2 (~> 0.2.2)
+  omniauth-myusa!
   omniauth-persona (~> 0.0.1)
+  omniauth-twitter (~> 1.0.1)
   poltergeist (~> 1.5.0)
   premailer-rails (~> 1.7.0)
   psych (~> 2.0.5)
   puma (~> 2.9.0)
+  pundit (~> 0.3.0)
   rabl (~> 0.11.0)
   rack-timeout (~> 0.0.4)
   rails (~> 3.2.19)
@@ -464,29 +517,31 @@ DEPENDENCIES
   rails-assets-bootbox (~> 3.3.0)
   rails-assets-bootstrap-daterangepicker (~> 1.3.12)
   rails-assets-datatables (~> 1.10.2)
-  rails-assets-ember-model (~> 0.0.11)
   rails-assets-fontawesome (~> 4.2.0)
   rails-assets-html5shiv (~> 3.7.0)
+  rails-assets-ic-ajax (~> 2.0.1)
   rails-assets-inflection (~> 1.4.0)
   rails-assets-jquery (~> 1.11.0)
   rails-assets-jquery-bbq-deparam (~> 1.2.1)
+  rails-assets-jquery-simulate-ext (~> 1.3.0)
+  rails-assets-jsdiff (~> 1.0.8)
   rails-assets-jstz-detect (~> 1.0.5)
   rails-assets-livestampjs (~> 1.1.2)
   rails-assets-lodash (~> 2.4.1)
   rails-assets-moment (~> 2.8.2)
   rails-assets-numeral (~> 1.5.3)
-  rails-assets-pnotify (~> 1.3.1)
+  rails-assets-pnotify (~> 2.0.1)
   rails-assets-qtip2 (~> 2.2.0)
   rails-assets-selectize (~> 0.11.0)
   rails-assets-spinjs (~> 2.0.0)
-  rails_config (~> 0.3.3)
+  rails_config (~> 0.4.2)
   rspec-html-matchers (~> 0.5.0)
   rspec-rails (~> 2.99.0)
   rubocop (~> 0.25.0)
   safe_yaml (~> 1.0.1)
+  sass (= 3.4.1)
   sass-rails (~> 3.2.6)
-  seed-fu (~> 2.3.0)
-  settingslogic (~> 2.0.9)
+  seed-fu!
   simple_form (~> 2.1.1)
   sprockets-urlrewriter (~> 0.1.2)
   tabs_on_rails (~> 2.2.0)

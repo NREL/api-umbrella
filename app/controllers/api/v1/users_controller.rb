@@ -3,9 +3,33 @@ class Api::V1::UsersController < Api::V1::BaseController
 
   skip_before_filter :authenticate_admin!, :only => [:create]
   before_filter :authenicate_creator_api_key_role, :only => [:create]
+  skip_after_filter :verify_authorized, :only => [:index, :create]
+
+  def index
+    @api_users = policy_scope(ApiUser).order_by(datatables_sort_array)
+
+    if(params[:start].present?)
+      @api_users = @api_users.skip(params["start"].to_i)
+    end
+
+    if(params[:length].present?)
+      @api_users = @api_users.limit(params["length"].to_i)
+    end
+
+    if(params["search"] && params["search"]["value"].present?)
+      @api_users = @api_users.or([
+        { :first_name => /#{params["search"]["value"]}/i },
+        { :last_name => /#{params["search"]["value"]}/i },
+        { :email => /#{params["search"]["value"]}/i },
+        { :api_key => /#{params["search"]["value"]}/i },
+        { :_id => /#{params["search"]["value"]}/i },
+      ])
+    end
+  end
 
   def show
     @api_user = ApiUser.find(params[:id])
+    authorize(@api_user)
   end
 
   def create
@@ -49,12 +73,13 @@ class Api::V1::UsersController < Api::V1::BaseController
       assign_options[:as] = :admin
     end
 
-    @api_user.no_domain_signup = true
     @api_user.assign_nested_attributes(params[:user], assign_options)
 
     if(@api_user.new_record? && @api_user.registration_source.blank?)
       @api_user.registration_source = "api"
     end
+
+    authorize(@api_user)
   end
 
   # To create users, don't require an admin user, so the signup form can be

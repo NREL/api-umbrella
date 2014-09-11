@@ -17,6 +17,33 @@ end
 
 module ApiUmbrella
   class Application < Rails::Application
+    config.before_configuration do
+      if(ENV["API_UMBRELLA_CONFIG"])
+        ApiUmbrellaConfig.add_source!(ENV["API_UMBRELLA_CONFIG"])
+        ApiUmbrellaConfig.reload!
+      end
+
+      # Provide default config values for arrays when a real API Umbrella
+      # config file isn't passed in (via the API_UMBRELLA_CONFIG environment
+      # variable).
+      #
+      # Most defaults should be defined in config/settings.yml, but array
+      # values don't overwrite well with RailsConfig, so we'll define the array
+      # default values here. Revisit if RailsConfig addresses this so arrays
+      # can overwrite, rather than append:
+      # https://github.com/railsconfig/rails_config/issues/12
+      if(ApiUmbrellaConfig[:elasticsearch][:hosts].blank?)
+        ApiUmbrellaConfig[:elasticsearch][:hosts] = ["http://127.0.0.1:9200"]
+      end
+
+      if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].blank?)
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled] = [
+          "github",
+          "persona",
+        ]
+      end
+    end
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
@@ -38,6 +65,7 @@ module ApiUmbrella
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
+    config.i18n.enforce_available_locales = true
 
     # Configure the default encoding used in templates for Ruby 1.9.
     config.encoding = "utf-8"

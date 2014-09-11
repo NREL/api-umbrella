@@ -2,7 +2,7 @@ ApiUmbrella::Application.routes.draw do
   # Mount the API at both /api/ and /api-umbrella/ for backwards compatibility.
   %w(api api-umbrella).each do |path|
     namespace(:api, :path => path) do
-      resources :api_users, :path => "api-users", :only => [:show, :create] do
+      resources :api_users, :path => "api-users" do
         member do
           get "validate"
         end
@@ -15,15 +15,20 @@ ApiUmbrella::Application.routes.draw do
         end
       end
 
-      resource :hooks, :only => [] do
-        post "publish_static_site"
-      end
-
       namespace :v1 do
+        resources :admin_groups
+        resources :admin_permissions, :only => [:index]
+        resources :user_roles, :only => [:index]
         resources :admins
+        resources :api_scopes
         resources :apis
         resources :users
         resource :contact, :only => [:create]
+
+        namespace :config do
+          get :pending_changes
+          post :publish
+        end
       end
     end
   end
@@ -38,9 +43,7 @@ ApiUmbrella::Application.routes.draw do
   match "/admin" => "admin/base#empty"
 
   namespace :admin do
-    resources :admins, :only => [:index]
-    resources :api_users, :only => [:index]
-    resources :apis, :only => [:index] do
+    resources :apis, :only => [] do
       member do
         put "move_to"
       end

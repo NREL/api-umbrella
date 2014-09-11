@@ -37,7 +37,7 @@ Admin.StatsLogsRoute = Admin.StatsBaseRoute.extend({
         // 2 days maximum range
         if(range > 2 * 24 * 60 * 60) {
           valid = false;
-          bootbox.alert('Your date range is too large for viewing minutely data. Adjust your viewing interval or choose a date range to no more than 2 days.')
+          bootbox.alert('Your date range is too large for viewing minutely data. Adjust your viewing interval or choose a date range to no more than 2 days.');
         }
 
         break;
@@ -45,7 +45,7 @@ Admin.StatsLogsRoute = Admin.StatsBaseRoute.extend({
         // 31 day maximum range
         if(range > 31 * 24 * 60 * 60) {
           valid = false;
-          bootbox.alert('Your date range is too large for viewing hourly data. Adjust your viewing interval or choose a date range to no more than 31 days.')
+          bootbox.alert('Your date range is too large for viewing hourly data. Adjust your viewing interval or choose a date range to no more than 31 days.');
         }
 
         break;

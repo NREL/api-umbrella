@@ -1,1 +1,21 @@
-default_host: example.com
+# Provide default config values when a real API Umbrella config file isn't
+# passed in (via the API_UMBRELLA_CONFIG environment variable).
+
+elasticsearch:
+  hosts: []
+# Real default defined in config/application.rb:
+# hosts:
+#   - http://127.0.0.1:9200
+mongodb:
+  url: "mongodb://127.0.0.1:50217/api_umbrella_development"
+web:
+  admin:
+    auth_strategies:
+      enabled: []
+# Real default defined in config/application.rb:
+#     enabled:
+#       - github
+#       - persona
+      github:
+        client_id:
+        client_secret:

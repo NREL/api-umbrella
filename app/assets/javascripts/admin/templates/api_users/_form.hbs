@@ -75,7 +75,7 @@
   <fieldset class="form-horizontal">
     <legend>Permissions</legend>
 
-    {{#view Admin.SelectizeView valueBinding='rolesString'}}
+    {{#view Admin.SelectizeView valueBinding='rolesString' contentBinding='roleOptions' optionValuePath='id' optionLabelPath='id'}}
       {{input rolesString
         class='row-fluid'
         label='Roles'}}

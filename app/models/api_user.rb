@@ -4,6 +4,7 @@ class ApiUser
   include Mongoid::Document
   include Mongoid::Timestamps
   include Mongoid::Userstamp
+  include Mongoid::Paranoia
   include Mongoid::Delorean::Trackable
   include Mongoid::EmbeddedErrors
   include ApiUmbrella::AttributifyData
@@ -22,7 +23,7 @@ class ApiUser
   field :roles, :type => Array
 
   # Virtual fields
-  attr_accessor :terms_and_conditions, :no_domain_signup
+  attr_accessor :terms_and_conditions
 
   # Relations
   embeds_one :settings, :class_name => "Api::Settings"
@@ -52,12 +53,11 @@ class ApiUser
       :message => "Provide a valid email address.",
     }
   validates :website,
-    :presence => { :message => "Provide your website URL." },
     :format => {
       :with => /\w+\.\w+/,
-      :message => "Your website must be a valid URL in the form of http://data.gov",
+      :message => "Your website must be a valid URL in the form of http://example.com",
     },
-    :unless => lambda { |user| user.no_domain_signup }
+    :allow_blank => true
   validates :terms_and_conditions,
     :acceptance => {
       :message => "Check the box to agree to the terms and conditions.",
@@ -68,8 +68,11 @@ class ApiUser
 
   # Callbacks
   before_validation :normalize_terms_and_conditions
-  before_validation :generate_api_key, :on => :create
   after_save :handle_rate_limit_mode
+
+  # Ensure the api key is generated (even if validations are disabled)
+  before_validation :generate_api_key, :on => :create
+  before_create :generate_api_key
 
   # Nested attributes
   accepts_nested_attributes_for :settings
@@ -100,28 +103,6 @@ class ApiUser
     else
       super
     end
-  end
-
-  def self.existing_roles
-    existing_roles = ApiUser.distinct(:roles)
-
-    Api.all.each do |api|
-      if(api.settings && api.settings.required_roles)
-        existing_roles += api.settings.required_roles
-      end
-
-      if(api.sub_settings)
-        api.sub_settings.each do |sub|
-          if(sub.settings && sub.settings.required_roles)
-            existing_roles += sub.settings.required_roles
-          end
-        end
-      end
-    end
-
-    existing_roles.uniq!
-
-    existing_roles
   end
 
   def as_json(*args)

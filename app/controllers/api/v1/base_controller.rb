@@ -6,6 +6,10 @@ class Api::V1::BaseController < ApplicationController
   # session (so this API can be used from within the web admin tool).
   before_filter :authenticate_admin!
 
+  after_filter :verify_authorized
+
+  rescue_from Pundit::NotAuthorizedError, :with => :user_not_authorized
+
   private
 
   def authenticate_admin_from_token!
@@ -29,6 +33,10 @@ class Api::V1::BaseController < ApplicationController
         end
       end
     end
+  end
+
+  def user_not_authorized
+    render(:json => { :errors => ["You are not authorized to perform this action"] }, :status => :forbidden)
   end
 
   def errors_response(record)

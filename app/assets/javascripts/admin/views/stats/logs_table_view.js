@@ -4,24 +4,50 @@ Admin.LogsTableView = Ember.View.extend({
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
 
   didInsertElement: function() {
-    this.$().dataTable({
-      "bFilter": false,
-      "bServerSide": true,
-      "sAjaxSource": "/admin/stats/logs.json",
-      "fnServerParams": _.bind(function(aoData) {
-        var query = this.get('controller.query.params');
-        for(var key in query) {
-          aoData.push({ name: key, value: query[key] });
-        }
+    this.$().DataTable({
+      searching: false,
+      serverSide: true,
+      ajax: {
+        url: '/admin/stats/logs.json',
+        data: _.bind(function(data) {
+          var query = this.get('controller.query.params');
+          return _.extend({}, query, data, {
+            search: query.search,
+            start_time: query.start,
+            end_time: query.end,
+          });
+        }, this)
+      },
+      drawCallback: _.bind(function() {
+        this.$().find('td').truncate({
+          width: 400,
+          addtitle: true,
+          addclass: 'truncated'
+        });
+
+        this.$().find('.truncated').qtip({
+          style: {
+            classes: 'qtip-bootstrap qtip-forced-wide',
+          },
+          hide: {
+            fixed: true,
+            delay: 200
+          },
+          position: {
+            viewport: false,
+            my: 'bottom center',
+            at: 'top center'
+          }
+        });
       }, this),
-      "aaSorting": [[0, "desc"]],
-      "aoColumns": [
+      order: [[0, 'desc']],
+      columns: [
         {
-          mData: "request_at",
-          sType: "date",
-          sTitle: "Time",
-          sDefaultContent: "-",
-          mRender: function(time, type) {
+          data: 'request_at',
+          type: 'date',
+          title: 'Time',
+          defaultContent: '-',
+          render: function(time, type) {
             if(type === 'display' && time && time !== '-') {
               return moment(time).format('YYYY-MM-DD HH:mm:ss');
             }
@@ -30,25 +56,25 @@ Admin.LogsTableView = Ember.View.extend({
           },
         },
         {
-          mData: "request_method",
-          sTitle: "Method",
-          sDefaultContent: "-",
+          data: 'request_method',
+          title: 'Method',
+          defaultContent: '-',
         },
         {
-          mData: "request_host",
-          sTitle: "Host",
-          sDefaultContent: "-",
+          data: 'request_host',
+          title: 'Host',
+          defaultContent: '-',
         },
         {
-          mData: "request_url",
-          sTitle: "URL",
-          sDefaultContent: "-",
+          data: 'request_url',
+          title: 'URL',
+          defaultContent: '-',
         },
         {
-          mData: "user_email",
-          sTitle: "User",
-          sDefaultContent: "-",
-          mRender: _.bind(function(email, type, data) {
+          data: 'user_email',
+          title: 'User',
+          defaultContent: '-',
+          render: _.bind(function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
               var params = _.clone(this.get('controller.query.params'));
               params.search = _.compact([params.search, 'user_id:"' + data.user_id + '"']).join(' AND ');
@@ -61,62 +87,62 @@ Admin.LogsTableView = Ember.View.extend({
           }, this),
         },
         {
-          mData: "request_ip",
-          sTitle: "IP Address",
-          sDefaultContent: "-",
+          data: 'request_ip',
+          title: 'IP Address',
+          defaultContent: '-',
         },
         {
-          mData: "request_ip_country",
-          sTitle: "Country",
-          sDefaultContent: "-",
+          data: 'request_ip_country',
+          title: 'Country',
+          defaultContent: '-',
         },
         {
-          mData: "request_ip_region",
-          sTitle: "State",
-          sDefaultContent: "-",
+          data: 'request_ip_region',
+          title: 'State',
+          defaultContent: '-',
         },
         {
-          mData: "request_ip_city",
-          sTitle: "City",
-          sDefaultContent: "-",
+          data: 'request_ip_city',
+          title: 'City',
+          defaultContent: '-',
         },
         {
-          mData: "response_status",
-          sTitle: "Status",
-          sDefaultContent: "-",
+          data: 'response_status',
+          title: 'Status',
+          defaultContent: '-',
         },
         {
-          mData: "response_time",
-          sTitle: "Response Time",
-          sDefaultContent: "-",
-          mRender: function(time, type) {
+          data: 'response_time',
+          title: 'Response Time',
+          defaultContent: '-',
+          render: function(time, type) {
             if(type === 'display' && time && time !== '-') {
-              return time = time + ' ms';
+              return time + ' ms';
             }
 
             return time;
           },
         },
         {
-          mData: "response_content_type",
-          sTitle: "Content Type",
-          sDefaultContent: "-",
+          data: 'response_content_type',
+          title: 'Content Type',
+          defaultContent: '-',
         },
         {
-          mData: "request_accept_encoding",
-          sTitle: "Accept Encoding",
-          sDefaultContent: "-",
+          data: 'request_accept_encoding',
+          title: 'Accept Encoding',
+          defaultContent: '-',
         },
         {
-          mData: "request_user_agent",
-          sTitle: "User Agent",
-          sDefaultContent: "-",
+          data: 'request_user_agent',
+          title: 'User Agent',
+          defaultContent: '-',
         },
       ]
     });
   },
 
   refreshData: function() {
-    this.$().dataTable().fnDraw();
+    this.$().DataTable().draw();
   }.observes('controller.query.params.search', 'controller.query.params.start', 'controller.query.params.end'),
 });

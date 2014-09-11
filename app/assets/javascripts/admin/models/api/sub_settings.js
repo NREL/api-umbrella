@@ -23,5 +23,5 @@ Admin.ApiSubSettings = Ember.Model.extend({
   },
 });
 
-Admin.ApiSubSettings.primaryKey = "id";
+Admin.ApiSubSettings.primaryKey = 'id';
 Admin.ApiSubSettings.camelizeKeys = true;

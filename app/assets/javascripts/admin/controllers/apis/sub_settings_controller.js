@@ -1,6 +1,6 @@
 Admin.ApisSubSettingsController = Admin.ApisSortableController.extend({
   actions: {
-    reorderSubSettings: function(event) {
+    reorderSubSettings: function() {
       this.reorderCollection('sub_settings');
     },
   },

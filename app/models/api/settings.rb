@@ -13,6 +13,8 @@ class Api::Settings
   field :rate_limit_mode, :type => String
   field :anonymous_rate_limit_behavior, :type => String
   field :authenticated_rate_limit_behavior, :type => String
+  field :pass_api_key_header, :type => Boolean
+  field :pass_api_key_query_param, :type => Boolean
   field :error_templates, :type => Hash
   field :error_data, :type => Hash
 
@@ -43,8 +45,9 @@ class Api::Settings
     :rate_limit_mode,
     :anonymous_rate_limit_behavior,
     :authenticated_rate_limit_behavior,
+    :pass_api_key_header,
+    :pass_api_key_query_param,
     :required_roles,
-    :required_roles_string,
     :allowed_ips,
     :allowed_referers,
     :error_templates,
@@ -52,28 +55,6 @@ class Api::Settings
     :headers_string,
     :rate_limits_attributes,
     :as => [:default, :admin]
-
-  def required_roles_string
-    unless @required_roles_string
-      @required_roles_string = ""
-      if self.required_roles.present?
-        @required_roles_string = self.required_roles.join(",")
-      end
-    end
-
-    @required_roles_string
-  end
-
-  def required_roles_string=(string)
-    @required_roles_string = string
-
-    roles = nil
-    if(string.present?)
-      roles = string.split(",").map { |role| role.strip }
-    end
-
-    self.required_roles = roles
-  end
 
   def headers_string
     unless @headers_string

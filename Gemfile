@@ -42,7 +42,7 @@ gem "mongoid_orderable", "~> 4.1.0"
 gem "uuidtools", "~> 2.1.4"
 
 # Database seeding
-gem "seed-fu", "~> 2.3.0"
+gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
 
 # Elasticsearch
 gem "elasticsearch", "~> 1.0.4"
@@ -50,8 +50,15 @@ gem "elasticsearch", "~> 1.0.4"
 # OmniAuth-based authentication
 gem "devise", "~> 3.2.4"
 gem "omniauth", "~> 1.2.1"
+gem "omniauth-cas", "~> 1.0.4", :git => "https://github.com/dandorman/omniauth-cas.git", :branch => "bump-omniauth-version"
+gem "omniauth-facebook", "~> 2.0.0"
+gem "omniauth-github", "~> 1.1.2"
 gem "omniauth-google-oauth2", "~> 0.2.2"
+gem "omniauth-myusa", :git => "https://github.com/GSA-OCSIT/omniauth-myusa.git"
 gem "omniauth-persona", "~> 0.0.1"
+gem "omniauth-twitter", "~> 1.0.1"
+
+gem "pundit", "~> 0.3.0"
 
 # Form layout and display
 gem "simple_form", "~> 2.1.1"
@@ -69,9 +76,6 @@ gem "jquery-rails", "~> 3.1.0"
 # Breadcrumbs
 gem "crummy", "~> 1.8.0"
 
-gem "client_side_validations", "~> 3.2.6"
-gem "client_side_validations-simple_form", "~> 2.1.0"
-
 # For creating friendly URL slugs.
 gem "babosa", "~> 0.3.11"
 
@@ -80,17 +84,15 @@ gem "childprocess", "~> 0.5.1"
 
 # Views/templates for APIs
 gem "rabl", "~> 0.11.0"
+gem "jbuilder", "~> 2.1.3"
 gem "csv_builder", "~> 2.1.1"
 
 # Country and state name lookups
 gem "countries", "~> 0.9.3"
 
-# Custom YAML config files
-gem "settingslogic", "~> 2.0.9"
-
 # Ember.js
-gem "ember-rails", "~> 0.14.1"
-gem "ember-source", "~> 1.4.0"
+gem "ember-rails", "~> 0.15.0"
+gem "ember-source", "~> 1.7.0"
 
 # HTML diffs
 gem "diffy", "~> 3.0.3"
@@ -104,8 +106,8 @@ gem "psych", "~> 2.0.5", :platforms => [:ruby]
 # Use version from git so it doesn't automatically monkey-patch.
 gem "safe_yaml", "~> 1.0.1", :require => "safe_yaml/load"
 
-# Environment-specific configuration files.
-gem "rails_config", "~> 0.3.3"
+# YAML configuration files.
+gem "rails_config", "~> 0.4.2"
 
 # Delayed jobs and background tasks
 gem "delayed_job_mongoid", "~> 2.1.0"
@@ -118,6 +120,11 @@ gem "premailer-rails", "~> 1.7.0"
 # in production environments by default.
 group :assets do
   gem 'sass-rails', '~> 3.2.6'
+
+  # FIXME: Hold sass as 3.4.1. 3.4.2 seems to cause some weird issues, but
+  # should be fixed in the next verison:
+  # https://github.com/sass/sass/issues/1410
+  gem "sass", "3.4.1"
 
   # A Sass version of Twitter Bootstrap. This it the basis for our styles and
   # JavaScript components.
@@ -148,10 +155,15 @@ group :assets do
   # Code editor (for syntax highlighting inside textareas)
   gem "rails-assets-ace-builds", "~> 1.1.6"
 
+  # Visual text diffs
+  gem "rails-assets-jsdiff", "~> 1.0.8"
+
+  # jQuery ajax calls wrapped in Ember promises
+  gem "rails-assets-ic-ajax", "~> 2.0.1"
+
   gem "rails-assets-bootbox", "~> 3.3.0"
   gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.12"
   gem "rails-assets-datatables", "~> 1.10.2"
-  gem "rails-assets-ember-model", "~> 0.0.11"
   gem "rails-assets-html5shiv", "~> 3.7.0"
   gem "rails-assets-inflection", "~> 1.4.0"
   gem "rails-assets-jquery", "~> 1.11.0"
@@ -161,7 +173,7 @@ group :assets do
   gem "rails-assets-lodash", "~> 2.4.1"
   gem "rails-assets-moment", "~> 2.8.2"
   gem "rails-assets-numeral", "~> 1.5.3"
-  gem "rails-assets-pnotify", "~> 1.3.1"
+  gem "rails-assets-pnotify", "~> 2.0.1"
   gem "rails-assets-qtip2", "~> 2.2.0"
   gem "rails-assets-selectize", "~> 0.11.0"
   gem "rails-assets-spinjs", "~> 2.0.0"
@@ -189,6 +201,11 @@ group :development, :test do
 
   # Clean the database between tests
   gem "database_cleaner", "~> 1.3.0"
+
+  gem "jshintrb", "~> 0.2.4", :git => "https://github.com/Paxa/jshintrb.git"
+
+  # For testing drag and drop in capybara.
+  gem "rails-assets-jquery-simulate-ext", "~> 1.3.0"
 end
 
 group :development do

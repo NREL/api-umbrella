@@ -20,6 +20,6 @@ Admin.BooleanRadioButtonView = Ember.View.extend({
   },
 
   checked: function() {
-    return !!this.get('selection');   
+    return !!this.get('selection');
   }.property()
 });

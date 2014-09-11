@@ -1,3 +1,3 @@
 RailsConfig.setup do |config|
-  config.const_name = "ConfigSettings"
+  config.const_name = "ApiUmbrellaConfig"
 end

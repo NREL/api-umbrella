@@ -7,14 +7,14 @@ Admin.ApisFormController = Ember.ObjectController.extend({
   ],
 
   backendProtocolOptions: [
-    { id: "http", name: "http" },
-    { id: "https", name: "https" },
+    { id: 'http', name: 'http' },
+    { id: 'https', name: 'https' },
   ],
 
   balanceAlgorithmOptions: [
-    { id: "least_conn", name: "Least Connections" },
-    { id: "round_robin", name: "Round Robin" },
-    { id: "ip_hash", name: "Source IP Hash" },
+    { id: 'least_conn', name: 'Least Connections' },
+    { id: 'round_robin', name: 'Round Robin' },
+    { id: 'ip_hash', name: 'Source IP Hash' },
   ],
 
   actions: {
@@ -22,17 +22,17 @@ Admin.ApisFormController = Ember.ObjectController.extend({
       var button = $('#save_button');
       button.button('loading');
 
-      this.get('model').save().then(_.bind(function() {;
+      this.get('model').save().then(_.bind(function() {
         button.button('reset');
-        $.pnotify({
-          type: "success",
-          title: "Saved",
-          text: "Successfully saved the '" + this.get('model').get('name') + "' API",
+        new PNotify({
+          type: 'success',
+          title: 'Saved',
+          text: 'Successfully saved the \'' + this.get('model').get('name') + '\' API',
         });
 
-        this.transitionTo('apis');
+        this.transitionToRoute('apis');
       }, this), function(response) {
-        var message = "<h3>Error</h3>";
+        var message = '<h3>Error</h3>';
         try {
           var errors = response.responseJSON.errors;
           for(var prop in errors) {
@@ -43,7 +43,7 @@ Admin.ApisFormController = Ember.ObjectController.extend({
         }
 
         button.button('reset');
-        bootbox.alert(message); 
+        bootbox.alert(message);
       });
     },
 
@@ -51,19 +51,19 @@ Admin.ApisFormController = Ember.ObjectController.extend({
       bootbox.confirm('Are you sure you want to delete this API backend?', _.bind(function(result) {
         if(result) {
           this.get('model').deleteRecord();
-          this.transitionTo('apis');
+          this.transitionToRoute('apis');
         }
       }, this));
     },
 
     addServer: function() {
       this.get('controllers.apis_server_form').add(this.get('model'), 'servers');
-      this.send('openModal', "apis/server_form");
+      this.send('openModal', 'apis/server_form');
     },
 
     editServer: function(server) {
       this.get('controllers.apis_server_form').edit(this.get('model'), 'servers', server);
-      this.send('openModal', "apis/server_form");
+      this.send('openModal', 'apis/server_form');
     },
 
     deleteServer: function(server) {
@@ -72,12 +72,12 @@ Admin.ApisFormController = Ember.ObjectController.extend({
 
     addUrlMatch: function() {
       this.get('controllers.apis_url_match_form').add(this.get('model'), 'urlMatches');
-      this.send('openModal', "apis/url_match_form");
+      this.send('openModal', 'apis/url_match_form');
     },
 
     editUrlMatch: function(urlMatch) {
       this.get('controllers.apis_url_match_form').edit(this.get('model'), 'urlMatches', urlMatch);
-      this.send('openModal', "apis/url_match_form");
+      this.send('openModal', 'apis/url_match_form');
     },
 
     deleteUrlMatch: function(urlMatch) {
@@ -86,12 +86,12 @@ Admin.ApisFormController = Ember.ObjectController.extend({
 
     addSubSettings: function() {
       this.get('controllers.apis_sub_settings_form').add(this.get('model'), 'subSettings');
-      this.send('openModal', "apis/sub_settings_form");
+      this.send('openModal', 'apis/sub_settings_form');
     },
 
     editSubSettings: function(subSettings) {
       this.get('controllers.apis_sub_settings_form').edit(this.get('model'), 'subSettings', subSettings);
-      this.send('openModal', "apis/sub_settings_form");
+      this.send('openModal', 'apis/sub_settings_form');
     },
 
     deleteSubSettings: function(subSettings) {
@@ -100,12 +100,12 @@ Admin.ApisFormController = Ember.ObjectController.extend({
 
     addRewrite: function() {
       this.get('controllers.apis_rewrite_form').add(this.get('model'), 'rewrites');
-      this.send('openModal', "apis/rewrite_form");
+      this.send('openModal', 'apis/rewrite_form');
     },
 
     editRewrite: function(rewrite) {
       this.get('controllers.apis_rewrite_form').edit(this.get('model'), 'rewrites', rewrite);
-      this.send('openModal', "apis/rewrite_form");
+      this.send('openModal', 'apis/rewrite_form');
     },
 
     deleteRewrite: function(rewrite) {

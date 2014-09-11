@@ -1,20 +1,24 @@
 Admin.AdminsFormController = Ember.ObjectController.extend({
+  groupOptions: function() {
+    return Admin.AdminGroup.find();
+  }.property(),
+
   actions: {
     submit: function() {
       var button = $('#save_button');
       button.button('loading');
 
-      this.get('model').save().then(_.bind(function() {;
+      this.get('model').save().then(_.bind(function() {
         button.button('reset');
-        $.pnotify({
-          type: "success",
-          title: "Saved",
-          text: "Successfully saved the admin '" + this.get('model').get('username') + "'",
+        new PNotify({
+          type: 'success',
+          title: 'Saved',
+          text: 'Successfully saved the admin \'' + this.get('model').get('username') + '\'',
         });
 
-        this.transitionTo('admins');
+        this.transitionToRoute('admins');
       }, this), function(response) {
-        var message = "<h3>Error</h3>";
+        var message = '<h3>Error</h3>';
         try {
           var errors = response.responseJSON.errors;
           for(var prop in errors) {

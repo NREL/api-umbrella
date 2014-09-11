@@ -1,6 +1,7 @@
 class Api::V1::ContactsController < Api::V1::BaseController
   skip_before_filter :authenticate_admin!, :only => [:create]
   before_filter :authenicate_contact_api_key_role, :only => [:create]
+  skip_after_filter :verify_authorized
 
   def create
     @contact = Contact.new(params[:contact])

@@ -2,11 +2,11 @@ Admin.StatsIntervalChartView = Ember.View.extend({
   data: [],
 
   chartOptions: {
-    focusTarget: "category",
-    width: "100%",
+    focusTarget: 'category',
+    width: '100%',
     chartArea: {
-      width: "95%",
-      height: "88%",
+      width: '95%',
+      height: '88%',
       top: 0,
     },
     fontSize: 12,
@@ -19,13 +19,13 @@ Admin.StatsIntervalChartView = Ember.View.extend({
       textStyle: {
         fontSize: 11,
       },
-      textPosition: "in",
+      textPosition: 'in',
     },
     hAxis: {
-      format: "MMM d",
-      baselineColor: "transparent",
+      format: 'MMM d',
+      baselineColor: 'transparent',
       gridlines: {
-        color: "transparent",
+        color: 'transparent',
       },
     },
     legend: {
@@ -50,7 +50,7 @@ Admin.StatsIntervalChartView = Ember.View.extend({
       this.refreshData();
     }
 
-    $(window).on("resize", _.debounce(this.draw.bind(this), 100));
+    $(window).on('resize', _.debounce(this.draw.bind(this), 100));
   },
 
   refreshData: function() {
@@ -60,11 +60,11 @@ Admin.StatsIntervalChartView = Ember.View.extend({
     }
 
     if(this.chartData.rows.length < 100) {
-      this.chartOptions.pointSize = 8
-      this.chartOptions.lineWidth = 4
+      this.chartOptions.pointSize = 8;
+      this.chartOptions.lineWidth = 4;
     } else {
-      this.chartOptions.pointSize = 0
-      this.chartOptions.lineWidth = 3
+      this.chartOptions.pointSize = 0;
+      this.chartOptions.lineWidth = 3;
     }
 
     // Show hours on the axis when viewing minutely date.

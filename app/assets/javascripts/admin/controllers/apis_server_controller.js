@@ -1,3 +1,3 @@
 Admin.ApisServerController = Ember.Controller.extend({
-  title: "HELLO"
+  title: 'HELLO'
 });

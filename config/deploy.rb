@@ -35,6 +35,8 @@ set :ssh_options, {
   :forward_agent => true,
 }
 
+set :assets_prefix, "web-assets"
+
 namespace :deploy do
 
   desc "Restart application"

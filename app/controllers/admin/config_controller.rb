@@ -5,25 +5,11 @@ class Admin::ConfigController < Admin::BaseController
 
   helper_method :simplify_import_data
 
-  def show
-    if(ConfigVersion.needs_publishing?)
-      @published_config = self.class.prettify_data(ConfigVersion.last_config)
-      @new_config = self.class.prettify_data(ConfigVersion.current_config)
-    end
-  end
-
-  def create
-    ConfigVersion.publish!
-
-    flash[:success] = "Successfully published configuration... Changes should be live in a few seconds..."
-    redirect_to(admin_config_publish_path)
-  end
-
   def import_export
   end
 
   def export
-    @published_config = self.class.pretty_dump(ConfigVersion.last_config)
+    @published_config = self.class.pretty_dump(ConfigVersion.active_config)
 
     respond_to do |format|
       if(params[:download] == "true")
@@ -128,7 +114,7 @@ class Admin::ConfigController < Admin::BaseController
       return false
     end
 
-    @local = self.class.prettify_data(ConfigVersion.current_config)
+    @local = self.class.prettify_data(ConfigVersion.pending_config)
 
     @local["apis"] ||= []
     @uploaded["apis"] ||= []

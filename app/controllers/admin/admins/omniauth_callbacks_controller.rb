@@ -2,17 +2,40 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
   # For the developer strategy, simply find or create a new admin account with
   # whatever login details they give. This is not for use on production.
   def developer
-    unless Rails.env.development?
-      raise "The developer OmniAuth strategy should not be used outside of development."
+    unless(%w(development test).include?(Rails.env))
+      raise "The developer OmniAuth strategy should not be used outside of development or test."
     end
 
     omniauth = env["omniauth.auth"]
     @admin = Admin.where(:username => omniauth["uid"]).first
-    @admin ||= Admin.new(:username => omniauth["uid"])
+    @admin ||= Admin.new({ :username => omniauth["uid"], :superuser => true }, :without_protection => true)
     @admin.apply_omniauth(omniauth)
     @admin.save!
     sign_in(:admin, @admin)
     redirect_to admin_path
+  end
+
+  def cas
+    @email = env["omniauth.auth"]["uid"]
+    login
+  end
+
+  def facebook
+    if(env["omniauth.auth"]["info"]["verified"])
+      @email = env["omniauth.auth"]["info"]["email"]
+    end
+
+    login
+  end
+
+  def github
+    emails = env["omniauth.auth"]["extra"]["raw_info"]["emails"]
+    primary = emails.select { |email| email["primary"] && email["email"] == env["omniauth.auth"]["info"]["email"] }
+    if(primary && primary["verified"])
+      @email = env["omniauth.auth"]["info"]["email"]
+    end
+
+    login
   end
 
   def google_oauth2
@@ -20,6 +43,11 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
       @email = env["omniauth.auth"]["info"]["email"]
     end
 
+    login
+  end
+
+  def myusa
+    @email = env["omniauth.auth"]["info"]["email"]
     login
   end
 
@@ -43,7 +71,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
       sign_in_and_redirect(:admin, @admin)
     else
-      flash[:error] = %(The account for '#{@email}' is not authorized to access the admin. Please <a href="#{contact_path}">contact us</a> for further assistance.).html_safe
+      flash[:error] = %(The account for '#{@email}' is not authorized to access the admin. Please <a href="#{ApiUmbrellaConfig[:contact_url]}">contact us</a> for further assistance.).html_safe
 
       redirect_to new_admin_session_path
     end
