@@ -10,6 +10,10 @@ end
 
 Capybara.javascript_driver = :poltergeist
 
+# Set a longer timeout for places like TravisCI where things can sometimes be
+# slower.
+Capybara.default_wait_time = 15
+
 module CapybaraFeatureHelpers
   def wait_for_ajax
     Timeout.timeout(Capybara.default_wait_time) do
