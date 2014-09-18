@@ -1,4 +1,9 @@
 app_env: development
+services:
+  - general_db
+  - log_db
+  - router
+  - web
 http_port: 9000
 https_port: 9001
 etc_dir: /opt/api-umbrella/etc

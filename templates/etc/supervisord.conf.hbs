@@ -25,6 +25,7 @@ supervisor.ctl_factory = supervisorserialrestart.controllerplugin:make_serialres
 [supervisorctl]
 serverurl=unix://{{run_dir}}/supervisor.sock
 
+{{#if service_general_db_enabled}}
 [program:mongod]
 command=mongod --config {{etc_dir}}/mongod.conf
 redirect_stderr=true
@@ -32,7 +33,9 @@ stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
+{{/if}}
 
+{{#if service_log_db_enabled}}
 [program:elasticsearch]
 environment=ES_INCLUDE="{{etc_dir}}/elasticsearch/elasticsearch-env.sh"
 command=elasticsearch
@@ -41,7 +44,9 @@ stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
+{{/if}}
 
+{{#if service_router_enabled}}
 [program:redis]
 command=redis-server {{etc_dir}}/redis.conf
 redirect_stderr=true
@@ -124,7 +129,9 @@ stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
+{{/if}}
 
+{{#if service_web_enabled}}
 {{#if development_env}}
 [program:static-site]
 directory={{static_site.dir}}
@@ -153,3 +160,4 @@ stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
+{{/if}}
