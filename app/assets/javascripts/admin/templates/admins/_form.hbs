@@ -47,14 +47,16 @@
       </div>
     </div>
 
-    <div class="control-group">
-      <div class="controls">
-        <label class="checkbox">
-          {{view Ember.Checkbox checkedBinding='superuser'}}
-          Superuser
-        </label>
+    {{#if currentAdmin.superuser}}
+      <div class="control-group">
+        <div class="controls">
+          <label class="checkbox">
+            {{view Ember.Checkbox checkedBinding='superuser'}}
+            Superuser
+          </label>
+        </div>
       </div>
-    </div>
+    {{/if}}
 
   </fieldset>
 

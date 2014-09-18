@@ -33,6 +33,7 @@ begin
       "ace",
       "Admin",
       "bootbox",
+      "currentAdmin",
       "Ember",
       "google",
       "ic",

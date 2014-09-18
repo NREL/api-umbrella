@@ -3,6 +3,10 @@ Admin.AdminsFormController = Ember.ObjectController.extend({
     return Admin.AdminGroup.find();
   }.property(),
 
+  currentAdmin: function() {
+    return currentAdmin;
+  }.property(),
+
   actions: {
     submit: function() {
       var button = $('#save_button');

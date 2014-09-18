@@ -19,13 +19,11 @@ end
 
 module DeviseFeatureMacros
   def login_admin
-    let(:current_admin) do
-      FactoryGirl.create(:admin)
-    end
-
     before(:each) do
+      admin = if(defined?(current_admin)) then current_admin else FactoryGirl.create(:admin) end
+
       Warden.test_mode!
-      login_as(current_admin, :scope => :admin)
+      login_as(admin, :scope => :admin)
     end
 
     after(:each) do

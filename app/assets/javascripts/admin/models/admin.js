@@ -3,6 +3,7 @@ Admin.Admin = Ember.Model.extend({
   username: Ember.attr(),
   email: Ember.attr(),
   name: Ember.attr(),
+  superuser: Ember.attr(),
   groupIds: Ember.attr(),
   signInCount: Ember.attr(),
   lastSignInAt: Ember.attr(),
