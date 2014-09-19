@@ -1,4 +1,8 @@
-proxy_set_header Host $host:$server_port;
+if ($proxy_host_header = '') {
+  set $proxy_host_header "$host:$server_port";
+}
+
+proxy_set_header Host $proxy_host_header;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
 # Proxy over HTTP 1.1 so keepalive connections to the backend are supported.

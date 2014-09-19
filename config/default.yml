@@ -26,6 +26,7 @@ varnish:
     host: localhost
     port: 50100
 web:
+  host: 127.0.0.1
   port: 51000
   dir: /vagrant/workspace/web
   puma:
@@ -49,7 +50,9 @@ web:
         client_id:
         client_secret:
 static_site:
+  host: 127.0.0.1
   port: 51010
+  host_header:
   dir: /vagrant/workspace/static-site
 router:
   api_backends:

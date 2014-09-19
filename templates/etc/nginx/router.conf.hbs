@@ -80,12 +80,12 @@ http {
   gzip_vary on;
 
   upstream api_umbrella_web_backend {
-    server 127.0.0.1:{{web.port}};
+    server {{web.host}}:{{web.port}};
     keepalive 10;
   }
 
   upstream api_umbrella_static_site_backend {
-    server 127.0.0.1:{{static_site.port}};
+    server {{static_site.host}}:{{static_site.port}};
     keepalive 10;
   }
 
@@ -144,11 +144,16 @@ http {
     # Route the docs and other static pages to the Rails web app. This may
     # change, so that's why we're treating it separately.
     location ~* ^/(|about|assets|community|contact|doc|docs|favicon\.ico|images|robots.txt|signup|static|__middleman|__rack)(/|$) {
+      {{#if ../static_site.host_header}}
+      set $proxy_host_header "{{../../static_site.host_header}}";
+      {{/if}}
+      include ./frontend_proxy_header_defaults.conf;
       proxy_pass http://api_umbrella_static_site_backend;
     }
 
     # Route the dynamic portions of the site to the Rails web app.
     location ~* ^/(admin|admins|web-assets)(/|$) {
+      include ./frontend_proxy_header_defaults.conf;
       proxy_pass http://api_umbrella_web_backend;
     }
 
