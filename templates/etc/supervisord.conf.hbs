@@ -28,6 +28,7 @@ serverurl=unix://{{run_dir}}/supervisor.sock
 {{#if service_general_db_enabled}}
 [program:mongod]
 command=mongod --config {{etc_dir}}/mongod.conf
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -39,6 +40,7 @@ startsecs=3
 [program:elasticsearch]
 environment=ES_INCLUDE="{{etc_dir}}/elasticsearch/elasticsearch-env.sh"
 command=elasticsearch
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -49,6 +51,7 @@ startsecs=3
 {{#if service_router_enabled}}
 [program:redis]
 command=redis-server {{etc_dir}}/redis.conf
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -56,7 +59,9 @@ logfile_maxbytes=0
 startsecs=3
 
 [program:varnishd]
+environment=CCACHE_DIR="{{run_dir}}/varnish/.ccache"
 command=varnishd -F -a :{{varnish.port}} -f {{etc_dir}}/varnish.vcl -t 0 -n {{run_dir}}/varnish/api-umbrella -p http_gzip_support=off
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -65,6 +70,7 @@ startsecs=3
 
 [program:varnishlog]
 command=varnishlog -a -w {{log_dir}}/varnish.log -n {{run_dir}}/varnish/api-umbrella
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -73,13 +79,14 @@ startsecs=3
 
 [program:varnishncsa]
 command=varnishncsa -a -w {{log_dir}}/varnishncsa.log -n {{run_dir}}/varnish/api-umbrella
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
 
-[program:nginx-router]
+[program:router-nginx]
 command=nginx -c {{etc_dir}}/nginx/router.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
@@ -92,6 +99,7 @@ numprocs=4
 process_name=%(program_name)s_50%(process_num)03d
 environment=NODE_LOG_DIR="{{log_dir}}",NODE_ENV="{{app_env}}"
 command=api-umbrella-gatekeeper {{api_umbrella_config_args}} -p 50%(process_num)03d
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s_50%(process_num)03d.log
 stderr_logfile=NONE
@@ -100,6 +108,7 @@ startsecs=3
 
 [program:config-reloader]
 command=api-umbrella-config-reloader {{api_umbrella_config_args}}
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -108,6 +117,7 @@ startsecs=3
 
 [program:router-log-listener]
 command=api-umbrella-router-log-listener {{api_umbrella_config_args}}
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -116,6 +126,7 @@ startsecs=3
 
 [program:log-processor]
 command=api-umbrella-log-processor {{api_umbrella_config_args}}
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -124,6 +135,7 @@ startsecs=3
 
 [program:distributed-rate-limits-sync]
 command=api-umbrella-distributed-rate-limits-sync {{api_umbrella_config_args}}
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -136,6 +148,7 @@ startsecs=3
 [program:static-site]
 directory={{static_site.dir}}
 command=bundle exec middleman server -p {{static_site.port}} --verbose
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -147,6 +160,7 @@ startsecs=3
 environment=API_UMBRELLA_CONFIG="{{api_umbrella_config_runtime_file}}"
 directory={{web.dir}}
 command=bundle exec puma -q -e {{app_env}} -w {{web.puma.workers}} -t {{web.puma.min_threads}}:{{web.puma.max_threads}} -b unix://{{run_dir}}/web-puma.sock
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
@@ -155,6 +169,7 @@ startsecs=3
 
 [program:web-nginx]
 command=nginx -c {{etc_dir}}/nginx/web.conf
+{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE

@@ -2,7 +2,11 @@ worker_processes {{nginx.workers}};
 
 daemon off;
 
-pid /tmp/api_umbrella_nginx_router.pid;
+{{#if user}}
+user {{user}} {{group}};
+{{/if}}
+
+pid {{run_dir}}/router-nginx.pid;
 
 events {
   worker_connections 1024;
@@ -14,11 +18,11 @@ http {
   error_log {{log_dir}}/router_error.log;
   access_log {{log_dir}}/router_access.log combined buffer=32k flush=10s;
 
-  client_body_temp_path /tmp/nginx_client_body_temp;
-  proxy_temp_path /tmp/nginx_proxy_temp;
-  fastcgi_temp_path /tmp/nginx_fastcgi_temp;
-  uwsgi_temp_path /tmp/nginx_uwsgi_temp;
-  scgi_temp_path /tmp/nginx_scgi_temp;
+  client_body_temp_path {{tmp_dir}}/router-nginx-client_body_temp;
+  proxy_temp_path {{tmp_dir}}/router-nginx-proxy_temp;
+  fastcgi_temp_path {{tmp_dir}}/router-nginx-fastcgi_temp;
+  uwsgi_temp_path {{tmp_dir}}/router-nginx-uwsgi_temp;
+  scgi_temp_path {{tmp_dir}}/router-nginx-scgi_temp;
   server_tokens off;
 
   log_format api_umbrella_log '"$x_api_umbrella_uid","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent","$http_referer","$http_x_api_key","$remote_user"';

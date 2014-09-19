@@ -1,9 +1,12 @@
 app_env: test
+user:
+group:
 http_port: 9080
 https_port: 9081
 etc_dir: /tmp/api-umbrella-test/etc
 log_dir: /tmp/api-umbrella-test/var/log
 run_dir: /tmp/api-umbrella-test/var/run
+tmp_dir: /tmp/api-umbrella-test/var/tmp
 db_dir: /tmp/api-umbrella-test/var/db
 redis:
   host: 127.0.0.1

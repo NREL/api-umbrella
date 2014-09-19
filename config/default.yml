@@ -4,11 +4,14 @@ services:
   - log_db
   - router
   - web
-http_port: 9000
-https_port: 9001
+user: api-umbrella
+group: api-umbrella
+http_port: 80
+https_port: 443
 etc_dir: /opt/api-umbrella/etc
 log_dir: /opt/api-umbrella/var/log
 run_dir: /opt/api-umbrella/var/run
+tmp_dir: /opt/api-umbrella/var/tmp
 db_dir: /opt/api-umbrella/var/db
 redis:
   host: 127.0.0.1
