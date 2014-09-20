@@ -84,7 +84,7 @@
     "api-umbrella-gatekeeper": {
       "version": "0.1.0",
       "from": "api-umbrella-gatekeeper@git+https://github.com/NREL/api-umbrella-gatekeeper#config",
-      "resolved": "git+https://github.com/NREL/api-umbrella-gatekeeper#4f762f212bc4100908110e3d403f8b3e39109390",
+      "resolved": "git+https://github.com/NREL/api-umbrella-gatekeeper#741181b5ab83314ee4ee711c928047f1c89bd987",
       "dependencies": {
         "addr": {
           "version": "1.0.0",
