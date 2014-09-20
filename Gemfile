@@ -12,6 +12,9 @@ gem "dotenv-rails", "~> 0.11.1"
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.0.4"
 
+# For proxying HTTP requests to password-protected places for admins.
+gem "rack-proxy", "~> 0.5.16"
+
 # JSON handling
 gem "multi_json", "~> 1.10.1"
 gem "oj", "~> 2.10.2", :platforms => [:ruby]

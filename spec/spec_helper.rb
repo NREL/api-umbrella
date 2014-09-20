@@ -30,5 +30,8 @@ RSpec.configure do |config|
 
   config.infer_spec_type_from_file_location!
 
+  # Don't filter backtraces
+  config.backtrace_exclusion_patterns = []
+
   config.render_views
 end

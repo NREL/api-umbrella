@@ -1,3 +1,5 @@
+require "api_umbrella/elasticsearch_proxy"
+
 ApiUmbrella::Application.routes.draw do
   # Mount the API at both /api/ and /api-umbrella/ for backwards compatibility.
   %w(api api-umbrella).each do |path|
@@ -71,5 +73,9 @@ ApiUmbrella::Application.routes.draw do
     resources :api_users do
       get "page/:page", :action => :index, :on => :collection
     end
+  end
+
+  authenticate :admin, lambda { |admin| admin.superuser? } do
+    mount ApiUmbrella::ElasticsearchProxy.new, :at => ApiUmbrella::ElasticsearchProxy::PREFIX
   end
 end
