@@ -45,7 +45,7 @@
     "redis": "0.12.1",
     "route-pattern": "0.0.6",
     "traverse": "0.6.6",
-    "urlsafe-base64": "0.0.2"
+    "unik": "0.1.0"
   },
   "devDependencies": {
     "basic-auth-connect": "1.0.0",
