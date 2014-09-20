@@ -78,7 +78,7 @@ describe('logging', function() {
         },
       });
 
-      request.get('http://localhost:9080/logging-example/', options, function(error, response) {
+      request.get('http://localhost:9080/logging-example/foo/bar/', options, function(error, response) {
         response.statusCode.should.eql(200);
 
         waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
@@ -111,12 +111,12 @@ describe('logging', function() {
             // keepalive support that way.
             //'request_connection',
             'request_content_type',
+            'request_hierarchy',
             'request_host',
             'request_ip',
             'request_method',
             'request_origin',
             'request_path',
-            'request_path_hierarchy',
             'request_query',
             'request_referer',
             'request_scheme',
@@ -147,19 +147,24 @@ describe('logging', function() {
           record.request_at.should.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ$/);
           record.request_basic_auth_username.should.eql('basic-auth-username-example');
           record.request_content_type.should.eql('application/x-www-form-urlencoded');
+          record.request_hierarchy.should.eql([
+            '0/localhost/',
+            '1/localhost/logging-example/',
+            '2/localhost/logging-example/foo/',
+            '3/localhost/logging-example/foo/bar',
+          ]);
           record.request_host.should.eql('localhost');
           record.request_ip.should.eql('127.0.0.1');
           record.request_method.should.eql('GET');
           record.request_origin.should.eql('http://foo.example');
-          record.request_path.should.eql('/logging-example/');
-          record.request_path_hierarchy.should.eql('/logging-example/');
+          record.request_path.should.eql('/logging-example/foo/bar/');
           record.request_query.should.eql({
             'unique_query_id': this.uniqueQueryId,
           });
           record.request_referer.should.eql('http://example.com');
           record.request_scheme.should.eql('http');
           (typeof record.request_size).should.eql('number');
-          record.request_url.should.eql('http://localhost:9080/logging-example/?unique_query_id=' + this.uniqueQueryId);
+          record.request_url.should.eql('http://localhost:9080/logging-example/foo/bar/?unique_query_id=' + this.uniqueQueryId);
           record.request_user_agent.should.eql('curl/7.37.1');
           record.request_user_agent_family.should.eql('cURL');
           record.request_user_agent_type.should.eql('Library');
