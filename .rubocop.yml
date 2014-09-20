@@ -102,6 +102,9 @@ Style/SpaceAfterControlKeyword:
 Style/StringLiterals:
   Enabled: false
 
+Style/SymbolProc:
+  Enabled: false
+
 Style/TrailingComma:
   Enabled: false
 

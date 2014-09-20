@@ -30,7 +30,7 @@ gem "mongoid_userstamp", "~> 0.3.2"
 
 # Versioning for mongoid
 # This git branch fixes embeds_one functionality.
-gem "mongoid_delorean", "~> 1.2.1"
+gem "mongoid_delorean", "~> 1.3.0"
 
 # Display deeply nested validation errors on embedded documents.
 gem "mongoid-embedded-errors", "~> 2.0.1"
@@ -117,17 +117,13 @@ gem "delayed_job_mongoid", "~> 2.1.0"
 gem "daemons", "~> 1.1.9"
 
 # HTML email styling
-gem "premailer-rails", "~> 1.7.0"
+gem "premailer-rails", "~> 1.8.0"
 
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
   gem 'sass-rails', '~> 3.2.6'
-
-  # FIXME: Hold sass as 3.4.1. 3.4.2 seems to cause some weird issues, but
-  # should be fixed in the next verison:
-  # https://github.com/sass/sass/issues/1410
-  gem "sass", "3.4.1"
+  gem "sass", "3.4.5"
 
   # A Sass version of Twitter Bootstrap. This it the basis for our styles and
   # JavaScript components.
@@ -191,7 +187,7 @@ group :development, :test do
   gem "rspec-html-matchers", "~> 0.5.0"
 
   # Ruby lint/style checker
-  gem "rubocop", "~> 0.25.0", :require => false
+  gem "rubocop", "~> 0.26.1", :require => false
 
   # Code coverage testing
   gem "coveralls", "~> 0.7.0", :require => false
