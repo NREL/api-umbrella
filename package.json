@@ -6,7 +6,7 @@
   "author": "Nick Muerdter <nick.muerdter@nrel.gov>",
   "bin": {
     "api-umbrella-config-reloader": "./bin/api-umbrella-config-reloader",
-    "api-umbrella-ctl": "./bin/api-umbrella-ctl",
+    "api-umbrella": "./bin/api-umbrella",
     "api-umbrella-log-processor": "./bin/api-umbrella-log-processor",
     "api-umbrella-router-log-listener": "./bin/api-umbrella-router-log-listener"
   },

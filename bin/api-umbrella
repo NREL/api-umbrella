@@ -2,6 +2,8 @@
 'use strict';
 
 var _ = require('lodash'),
+    async = require('async'),
+    clc = require('cli-color'),
     forever = require('forever'),
     parser = require('nomnom');
 
@@ -78,30 +80,42 @@ var tasks = {
     });
   },
 
-  stop: function() {
+  stop: function(callback) {
+    process.stdout.write('Stopping api-umbrella...');
+
     forever.list(false, function(error, processes) {
       if(processes && processes.length > 0) {
-        forever.stopAll();
+        forever.stopAll().on('stopAll', function() {
+          console.info(' [  ' + clc.green('OK') + '  ]');
+          if(callback && _.isFunction(callback)) {
+            callback();
+          }
+        });
       } else {
-        console.info('api-umbrella is already stopped');
+        console.info(' [' + clc.red('FAIL') + '] (api-umbrella is already stopped)');
+
+        if(callback && _.isFunction(callback)) {
+          callback();
+        } else {
+          process.exit(1);
+        }
       }
     });
   },
 
   restart: function() {
-    forever.list(false, function(error, processes) {
-      if(processes && processes.length > 0) {
-        forever.restartAll();
-      } else {
-        tasks.start();
-      }
-    });
+    tasks.stop(tasks.start);
   },
 
   reload: function() {
+    process.stdout.write('Reloading api-umbrella...');
+
     forever.list(false, function(error, processes) {
-      processes.forEach(function(proc) {
+      async.eachSeries(processes, function(proc, callback) {
         process.kill(proc.pid, 'SIGHUP');
+        callback();
+      }, function() {
+        console.info(' [  ' + clc.green('OK') + '  ]');
       });
     });
   },
