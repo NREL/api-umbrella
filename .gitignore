@@ -17,17 +17,6 @@
 /REVISION
 /config/deployed.yml
 
-# Ignore files generated from templates
-/config/nginx/public_defaults.conf
-/config/nginx/site.conf
-/config/nginx/ssl_terminator.conf
-/config/supervisor/gatekeeper.conf
-
 # Ignore node generated file
-/config/gatekeeper/nginx.conf
-/config/gatekeeper/runtime.json
-/config/gatekeeper/runtime.yml*
-
-# Ignore log files
-/log/*.log
-/log/gatekeeper/*.log
+/config/runtime.*
+/test/config/runtime.*

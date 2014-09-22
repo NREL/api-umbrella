@@ -1,0 +1,47 @@
+worker_processes {{nginx.workers}};
+
+daemon off;
+
+pid {{run_dir}}/web-nginx.pid;
+
+events {
+  worker_connections 1024;
+}
+
+error_log stderr;
+
+http {
+  error_log {{log_dir}}/web_error.log;
+  access_log {{log_dir}}/web_access.log combined buffer=32k flush=10s;
+
+  server_tokens off;
+
+  client_body_temp_path {{tmp_dir}}/web-nginx-client_body_temp;
+  proxy_temp_path {{tmp_dir}}/web-nginx-proxy_temp;
+  fastcgi_temp_path {{tmp_dir}}/web-nginx-fastcgi_temp;
+  uwsgi_temp_path {{tmp_dir}}/web-nginx-uwsgi_temp;
+  scgi_temp_path {{tmp_dir}}/web-nginx-scgi_temp;
+
+  upstream puma {
+    server unix://{{run_dir}}/web-puma.sock;
+  }
+
+  server {
+    listen {{web.port}};
+    server_name _;
+
+    root {{web.dir}}/public;
+
+    # Allow for larger request bodies to allow for huge documentation pages.
+    client_max_body_size 10m;
+
+    # Serve non-static resources with Torquebox.
+    try_files $uri/index.html $uri.html $uri @app;
+    location @app {
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+
+      proxy_pass http://puma;
+    }
+  }
+}

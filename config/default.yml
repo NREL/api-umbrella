@@ -1,0 +1,192 @@
+app_env: development
+services:
+  - general_db
+  - log_db
+  - router
+  - web
+user: api-umbrella
+group: api-umbrella
+http_port: 80
+https_port: 443
+etc_dir: /opt/api-umbrella/etc
+log_dir: /opt/api-umbrella/var/log
+run_dir: /opt/api-umbrella/var/run
+tmp_dir: /opt/api-umbrella/var/tmp
+db_dir: /opt/api-umbrella/var/db
+redis:
+  host: 127.0.0.1
+  port: 50379
+nginx:
+  workers: 4
+gatekeeper:
+  workers: 4
+varnish:
+  port: 51700
+  backend:
+    host: localhost
+    port: 50100
+web:
+  host: 127.0.0.1
+  port: 51000
+  dir: /vagrant/workspace/web
+  puma:
+    bind: "unix:///opt/api-umbrella/var/run/puma.sock"
+    workers: 2
+    min_threads: 2
+    max_threads: 24
+  admin:
+    auth_strategies:
+      enabled:
+        - github
+        - google
+        - persona
+      facebook:
+        client_id:
+        client_secret:
+      github:
+        client_id:
+        client_secret:
+      google:
+        client_id:
+        client_secret:
+static_site:
+  host: 127.0.0.1
+  port: 51010
+  host_header:
+  dir: /vagrant/workspace/static-site
+router:
+  api_backends:
+    port: 50100
+hosts:
+  - hostname: api.vagrant
+    ssl_cert: /etc/ssl/certs/vagrant.crt
+    ssl_cert_key: /etc/ssl/certs/vagrant.key
+  - hostname: localhost
+    ssl_cert: /etc/ssl/certs/vagrant.crt
+    ssl_cert_key: /etc/ssl/certs/vagrant.key
+mongodb:
+  url: "mongodb://127.0.0.1:50217/api_umbrella_development"
+  options:
+    server:
+      socketOptions:
+        keepAlive: 500
+    replset:
+      socketOptions:
+        keepAlive: 500
+  embedded_server_config:
+    port: 50217
+elasticsearch:
+  hosts:
+    - "http://127.0.0.1:50200"
+  embedded_server_config:
+    http_port: 50200
+    transport_tcp_port: 50300
+trustedProxies:
+  - 127.0.0.1
+proxy:
+  host: 127.0.0.1
+  port: 4000
+  target: "127.0.0.1:51700"
+  apiKeyMethods:
+    - header
+    - getParam
+    - basicAuthUsername
+log_template_version: v1
+logProcessor:
+  workers: 1
+routerLogListener:
+  workers: 1
+router_global_rate_limits:
+  ip_rate: "100r/s"
+  ip_burst: 200
+  ip_rate_size: 8m
+  ip_connections: 50
+  ip_connections_size: 5m
+strip_cookies:
+  - ^__utm.*$
+  - ^_ga$
+  - ^is_returning$
+default_host: localhost
+apiSettings:
+  rate_limits:
+    - duration: 1000
+      accuracy: 500
+      limit_by: ip
+      limit: 50
+      distributed: false
+    - duration: 1000
+      accuracy: 500
+      limit_by: apiKey
+      limit: 20
+      distributed: false
+    - duration: 15000
+      accuracy: 1000
+      limit_by: ip
+      limit: 250
+      distributed: true
+    - duration: 15000
+      accuracy: 1000
+      limit_by: apiKey
+      limit: 150
+      distributed: true
+    - duration: 3600000
+      accuracy: 60000
+      limit_by: apiKey
+      limit: 1000
+      distributed: true
+      response_headers: true
+  error_templates:
+    json: |
+      {
+        "error": {
+          "code": {{code}},
+          "message": {{message}}
+        }
+      }
+    xml: |
+      <?xml version="1.0" encoding="UTF-8"?>
+      <response>
+        <error>
+          <code>{{code}}</code>
+          <message>{{message}}</message>
+        </error>
+      </response>
+    csv: |
+      Error Code,Error Message
+      {{code}},{{message}}
+    html: |
+      <html>
+        <body>
+          <h1>{{code}}</h1>
+          <p>{{message}}</p>
+        </body>
+      </html>
+  error_data:
+    not_found:
+      status_code: 404
+      code: NOT_FOUND
+      message: The requested URL was not found on this server.
+    api_key_missing:
+      status_code: 403
+      code: API_KEY_MISSING
+      message: No api_key was supplied. Get one at {{baseUrl}}
+    api_key_invalid:
+      status_code: 403
+      code: API_KEY_INVALID
+      message: An invalid api_key was supplied. Get one at {{baseUrl}}
+    api_key_disabled:
+      status_code: 403
+      code: API_KEY_DISABLED
+      message: The api_key supplied has been disabled. Contact us at {{baseUrl}}/contact for assistance
+    api_key_unauthorized:
+      status_code: 403
+      code: API_KEY_UNAUTHORIZED
+      message: The api_key supplied is not authorized to access the given service. Contact us at {{baseUrl}}/contact for assistance
+    over_rate_limit:
+      status_code: 429
+      code: OVER_RATE_LIMIT
+      message: You have exceeded your rate limit. Try again later or contact us at {{baseUrl}}/contact for assistance
+    internal_server_error:
+      status_code: 500
+      code: INTERNAL_SERVER_ERROR
+      message: An unexpected error has occurred. Try again later or contact us at {{baseUrl}}/contact for assistance

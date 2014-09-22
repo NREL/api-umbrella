@@ -1,13 +1,27 @@
+vcl 4.0;
+
 import std;
 
 backend default {
-  .host = "localhost";
-  .port = "50100";
-  .first_byte_timeout = 60s;
+  .host = "{{varnish.backend.host}}";
+  .port = "{{varnish.backend.port}}";
+
+  # Define a timeout in Varnish longer than the 60 second timeout defined in
+  # nginx. This works around the issue of Varnish sending a second request to
+  # the backend when the backend times out:
+  #
+  # https://www.varnish-cache.org/lists/pipermail/varnish-misc/2010-December/019538.html
+  # https://www.varnish-cache.org/lists/pipermail/varnish-dev/2012-November/007378.html
+  #
+  # It sidesteps this issue by ensuring that nginx terminates the incoming
+  # request before Varnish times out. Once Varnish does time out, then the
+  # incoming request has been terminated, which seems to prevent Varnish from
+  # trying the request a second time.
+  .first_byte_timeout = 65s;
 }
 
 acl internal_networks {
-    "localhost";
+  "localhost";
 }
 
 sub vcl_recv {
@@ -28,13 +42,13 @@ sub vcl_recv {
 
   # Remove the cookie if it's now empty, so simple stats cookies don't prevent caching.
   if(req.http.Cookie == "") {
-    remove req.http.Cookie;
+    unset req.http.Cookie;
   }
 
   # Remove the cookie for all static files, so they can always be returned from
   # the cache, even if the user has other cookies set.
   if(req.url ~ "\.(html|js|css|png|gif|jpg|jpeg)$") {
-    remove req.http.Cookie;
+    unset req.http.Cookie;
   }
 
   # Allow internal connections to bypass the cache for testing/debug purposes.
@@ -64,7 +78,7 @@ sub vcl_hash {
   }
 }
 
-sub vcl_fetch {
+sub vcl_backend_response {
   # Don't cache error pages.
   #
   # (While it might be tempting to cache error pages, this stemmed from a
@@ -78,26 +92,40 @@ sub vcl_fetch {
     }
   }
 
+  # Don't cache responses with WWW-Authenticate headers.
+  # This is a more appropriate default:
+  # https://docs.trafficserver.apache.org/en/latest/admin/http-proxy-caching.en.html#configuring-traffic-server-to-ignore-www-authenticate-headers
+  if(beresp.http.WWW-Authenticate) {
+    set beresp.ttl = 0s;
+  }
+
   # Parse cache control headers out of the custom Surrogate-Control header.
   # This header controls only Varnish, and is not passed onto the end-user.
   # This allows for independant control of how the end-user should cache things
   # (Cache-Control) and how Varnish should cache things (Surrogate-Control).
   if(beresp.http.Surrogate-Control) {
+    #set beresp.http.X-Api-Umbrella-Orig-Cache-Control = beresp.http.Cache-Control;
+    #set beresp.http.Cache-Control = beresp.http.Surrogate-Control;
+
     # Parse the max-age from the Surrogate-Control header and set the
     # response's TTL to this value.
-    set beresp.http.surrogate_max_age = regsub(beresp.http.Surrogate-Control, "max-age\s*=\s*(\d+)", "\1s");
-    if(beresp.http.surrogate_max_age ~ "^\d+s$") {
-      set beresp.ttl = std.duration(beresp.http.surrogate_max_age, 0s);
+    set beresp.http.X-Surrogate-Control-Max-Age-Duration = regsub(beresp.http.Surrogate-Control, "max-age\s*=\s*(\d+)", "\1s");
+    if(beresp.http.X-Surrogate-Control-Max-Age-Duration ~ "^\d+s$") {
+      set beresp.ttl = std.duration(beresp.http.X-Surrogate-Control-Max-Age-Duration, 0s);
     }
 
     # Remove temp variable.
-    unset beresp.http.surrogate_max_age;
-
-    # Remove the Surrogate-Control header which is intended for internal
-    # Varnish use only.
-    unset beresp.http.Surrogate-Control;
+    unset beresp.http.X-Surrogate-Control-Max-Age-Duration;
   }
 
   # Allow for streaming responses.
   set beresp.do_stream = true;
+}
+
+sub vcl_deliver {
+  if(resp.http.Surrogate-Control) {
+    #set resp.http.Cache-Control = resp.http.X-Api-Umbrella-Orig-Cache-Control;
+    #unset resp.http.X-Api-Umbrella-Orig-Cache-Control;
+    unset resp.http.Surrogate-Control;
+  }
 }

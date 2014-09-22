@@ -1,36 +1,83 @@
-apiUmbrella:
-  mongodb: "mongodb://127.0.0.1:27017/api_umbrella_test"
-  redis:
-    host: 127.0.0.1
-    port: 9736
-  nginx:
-    frontend_port: 9332
-    backend_port: 9335
-  proxy:
-    port: 9333
-    target: "127.0.0.1:9334"
-    rateLimits: []
-  varnish:
-    port: 9334
-  apis: 
-    - _id: down
-      frontend_host: localhost
-      backend_host: localhost
-      servers:
-        - host: 127.0.0.1
-          port: 9445
-      url_matches:
-        - frontend_prefix: /down
-          backend_prefix: /down
-    - _id: example
-      frontend_host: localhost
-      backend_host: localhost
-      servers:
-        - host: 127.0.0.1
-          port: 9444
-      url_matches:
-        - frontend_prefix: /
-          backend_prefix: /
+app_env: test
+user:
+group:
+http_port: 9080
+https_port: 9081
+etc_dir: /tmp/api-umbrella-test/etc
+log_dir: /tmp/api-umbrella-test/var/log
+run_dir: /tmp/api-umbrella-test/var/run
+tmp_dir: /tmp/api-umbrella-test/var/tmp
+db_dir: /tmp/api-umbrella-test/var/db
+redis:
+  host: 127.0.0.1
+  port: 9900
+mongodb:
+  url: "mongodb://127.0.0.1:9901/api_umbrella_test"
+  embedded_server_config:
+    port: 9901
+elasticsearch:
+  hosts:
+    - "http://127.0.0.1:9902"
+  embedded_server_config:
+    http_port: 9902
+    transport_tcp_port: 9903
+apis:
+  - _id: down
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9450
+    url_matches:
+      - frontend_prefix: /down
+        backend_prefix: /down
+  - _id: keepalive
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9445
+    url_matches:
+      - frontend_prefix: /keepalive9445/
+        backend_prefix: /keepalive9445/
+    rate_limit_mode: unlimited
+  - _id: keepalive2
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9446
+    url_matches:
+      - frontend_prefix: /keepalive9446/
+        backend_prefix: /keepalive9446/
+    rate_limit_mode: unlimited
+    keepalive_connections: 3
+  - _id: keepalive3
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9447
+    url_matches:
+      - frontend_prefix: /keepalive9447/
+        backend_prefix: /keepalive9447/
+    rate_limit_mode: unlimited
+  - _id: example
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /
+        backend_prefix: /
+
+# This is the config for redis-convoy. We're using their defaults, but the
+# defaults go away when in their test environment. So redefine them here.
 convoy:
   keys:
     prefix: "cv:"
+    logTTL: 86400,
+		queued: queued
+		processing: processing
+		failed: failed

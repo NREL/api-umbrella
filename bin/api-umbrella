@@ -1,0 +1,174 @@
+#!/opt/api-umbrella/embedded/bin/node
+'use strict';
+
+var _ = require('lodash'),
+    async = require('async'),
+    clc = require('cli-color'),
+    forever = require('forever'),
+    parser = require('nomnom');
+
+var tasks = {
+  run: function(options) {
+    var router = require('../lib/router');
+    router.run(options);
+  },
+
+  start: function() {
+    var fs = require('fs'),
+        mkdirp = require('mkdirp'),
+        path = require('path'),
+        Tail = require('always-tail');
+
+    var started = false;
+
+    function exit(error) {
+      if(error) {
+        console.error(error.stack);
+      }
+
+      if(!started) {
+        forever.stopAll();
+        setTimeout(function() {
+          process.exit(1);
+        }, 2000);
+      }
+    }
+
+    process.on('SIGINT', exit);
+    process.on('uncaughtException', exit);
+
+    forever.list(false, function(error, processes) {
+      if(processes && processes.length > 0) {
+        console.error('api-umbrella is already started');
+        process.exit(1);
+      } else {
+        var daemonDir = path.join(process.env['HOME'], '.api-umbrella');
+        var daemonLog = path.join(daemonDir, 'server.log');
+        var daemonPid = path.join(daemonDir, 'server.pid');
+
+        mkdirp.sync(daemonDir);
+
+        // Make sure the file exists, or the Tail module will die.
+        var fd = fs.openSync(daemonLog, 'w');
+        fs.closeSync(fd);
+
+        var tail = new Tail(daemonLog, '', { interval: 100 });
+        var buffer = '';
+        tail.on('line', function(chunk) {
+          process.stdout.write(chunk);
+          buffer += chunk;
+          if(/Starting api-umbrella.*OK.*\]/.test(buffer)) {
+            process.stdout.write('\n');
+            started = true;
+            process.exit(0);
+          }
+        });
+        tail.watch();
+
+        // Pass along any command line args to the "run" command.
+        var runArgs = ['run'];
+        runArgs = runArgs.concat(process.argv.slice(3));
+
+        // Call the "run" command, but just start it in the background.
+        forever.startDaemon(__filename, {
+          silent: false,
+          pidFile: daemonPid,
+          options: runArgs,
+          logFile: daemonLog,
+        });
+      }
+    });
+  },
+
+  stop: function(callback) {
+    process.stdout.write('Stopping api-umbrella...');
+
+    forever.list(false, function(error, processes) {
+      if(processes && processes.length > 0) {
+        forever.stopAll().on('stopAll', function() {
+          console.info(' [  ' + clc.green('OK') + '  ]');
+          if(callback && _.isFunction(callback)) {
+            callback();
+          }
+        });
+      } else {
+        console.info(' [' + clc.red('FAIL') + '] (api-umbrella is already stopped)');
+
+        if(callback && _.isFunction(callback)) {
+          callback();
+        } else {
+          process.exit(1);
+        }
+      }
+    });
+  },
+
+  restart: function() {
+    tasks.stop(tasks.start);
+  },
+
+  reload: function() {
+    process.stdout.write('Reloading api-umbrella...');
+
+    forever.list(false, function(error, processes) {
+      async.eachSeries(processes, function(proc, callback) {
+        process.kill(proc.pid, 'SIGHUP');
+        callback();
+      }, function() {
+        console.info(' [  ' + clc.green('OK') + '  ]');
+      });
+    });
+  },
+
+  status: function() {
+    forever.list(false, function(error, processes) {
+      var pids = _.pluck(processes, 'pid');
+      if(processes && processes.length > 0) {
+        console.info('api-umbrella (pid ' + pids.join(', ') + ') is running');
+      } else {
+        console.error('api-umbrella is stopped');
+        process.exit(1);
+      }
+    });
+  },
+};
+
+parser.command('run')
+  .help('Run the API Umbrella server in the foreground')
+  .option('config', {
+    abbr: 'c',
+    metavar: 'FILE',
+    default: ['/etc/api-umbrella/api-umbrella.yml'],
+    list: true,
+    help: 'Conifg file to use (include multiple times for multiple files)',
+  })
+  .callback(tasks.run);
+
+parser.command('start')
+  .help('Start the API Umbrella server')
+  .option('config', {
+    abbr: 'c',
+    metavar: 'FILE',
+    default: ['/etc/api-umbrella/api-umbrella.yml'],
+    list: true,
+    help: 'Conifg file to use (include multiple times for multiple files)',
+  })
+  .callback(tasks.start);
+
+parser.command('stop')
+  .help('Stop the API Umbrella server')
+  .callback(tasks.stop);
+
+parser.command('restart')
+  .help('Restart the API Umbrella server')
+  .callback(tasks.restart);
+
+parser.command('reload')
+  .help('Reload the configuration of the API Umbrella server')
+  .callback(tasks.reload);
+
+parser.command('status')
+  .help('Show the status of the API Umbrella server')
+  .callback(tasks.status);
+
+parser.parse();

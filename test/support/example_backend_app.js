@@ -1,19 +1,42 @@
 'use strict';
 
-var express = require('express'),
-    url = require('url');
+var bodyParser = require('body-parser'),
+    compression = require('compression'),
+    express = require('express'),
+    fs = require('fs'),
+    multer = require('multer'),
+    path = require('path'),
+    randomstring = require('randomstring'),
+    url = require('url'),
+    zlib = require('zlib');
+
+global.backendCallCounts = {};
+
+function incrementCachableCallCount(id) {
+  global.backendCallCounts[id] = global.backendCallCounts[id] || 0;
+  global.backendCallCounts[id]++;
+}
+
+function uniqueOutput() {
+  return process.hrtime().join('-') + '-' + Math.random();
+}
 
 var app = express();
-app.use(express.bodyParser());
 
-app.use(function(req, res, next) {
-  next();
-});
+app.use(bodyParser.raw());
+app.use(multer({
+  dest: path.resolve(__dirname, '../tmp'),
+  onFileUploadComplete: function(file) {
+    fs.unlinkSync(file.path);
+  },
+}));
 
 app.all('/info/*', function(req, res) {
+  res.set('X-Received-Method', req.method);
   res.json({
+    method: req.method,
     headers: req.headers,
-    url: url.parse(req.protocol + '://' + req.host + req.url, true),
+    url: url.parse(req.protocol + '://' + req.hostname + req.url, true),
   });
 });
 
@@ -58,14 +81,58 @@ app.post('/receive_chunks', function(req, res) {
   });
 });
 
-app.get('/delay/:milliseconds', function(req, res) {
+app.get('/compressible/:size', function(req, res) {
+  var size = parseInt(req.params.size);
+  var contentType = (req.query.content_type === undefined) ? 'text/plain' : req.query.content_type;
+  res.set('Content-Type', contentType);
+  res.set('Content-Length', size);
+  res.end(randomstring.generate(size));
+});
+
+app.get('/compressible-chunked/:chunks/:size', function(req, res) {
+  var contentType = (req.query.content_type === undefined) ? 'text/plain' : req.query.content_type;
+  var chunks = parseInt(req.params.chunks);
+  var size = parseInt(req.params.size);
+
+  res.set('Content-Type', contentType);
+  setTimeout(function() {
+    for(var i = 0; i < chunks; i++) {
+      res.write(randomstring.generate(size));
+    }
+    res.end();
+  }, 50);
+});
+
+app.get('/compressible-delayed-chunked/:size', function(req, res) {
+  var size = parseInt(req.params.size);
+  res.set('Content-Type', 'text/plain');
+  res.write(randomstring.generate(size));
+  setTimeout(function() {
+    res.write(randomstring.generate(size));
+    setTimeout(function() {
+      res.write(randomstring.generate(size));
+      res.end();
+    }, 500);
+  }, 500);
+});
+
+app.get('/compressible-pre-gzip', function(req, res) {
+  res.set('Content-Type', 'text/plain');
+  res.set('Content-Encoding', 'gzip');
+  res.set('Vary', 'Accept-Encoding');
+  zlib.gzip('Hello Small World', function(error, data) {
+    res.end(data);
+  });
+});
+
+app.all('/delay/:milliseconds', function(req, res) {
   var time = parseInt(req.params.milliseconds);
   setTimeout(function() {
     res.end('done');
   }, time);
 });
 
-app.get('/delays/:delay1/:delay2', function(req, res) {
+app.all('/delays/:delay1/:delay2', function(req, res) {
   var delay1 = parseInt(req.params.delay1);
   var delay2 = parseInt(req.params.delay2);
 
@@ -78,4 +145,194 @@ app.get('/delays/:delay1/:delay2', function(req, res) {
   }, delay2);
 });
 
-app.listen(9444);
+app.get('/timeout', function(req, res) {
+  incrementCachableCallCount('get-timeout');
+  setTimeout(function() {
+    res.end('done');
+  }, 70000);
+});
+
+app.post('/timeout', function(req, res) {
+  incrementCachableCallCount('post-timeout');
+  setTimeout(function() {
+    res.end('done');
+  }, 70000);
+});
+
+app.get('/between-varnish-timeout', function(req, res) {
+  incrementCachableCallCount('post-between-varnish-timeout');
+  setTimeout(function() {
+    res.end('done');
+  }, 62500);
+});
+
+app.all('/cacheable-but-not/:id', function(req, res) {
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-thundering-herd/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+
+  setTimeout(function() {
+    res.set('Cache-Control', 'max-age=60');
+    res.end(uniqueOutput());
+  }, 1000);
+});
+
+app.all('/cacheable-but-no-explicit-cache-thundering-herd/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+
+  setTimeout(function() {
+    res.set('Cache-Control', 'max-age=0, private, must-revalidate');
+    res.end(uniqueOutput());
+  }, 1000);
+});
+
+app.all('/cacheable-but-cache-forbidden-thundering-herd/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+
+  setTimeout(function() {
+    res.set('Cache-Control', 'max-age=0, private, must-revalidate');
+    res.end(uniqueOutput());
+  }, 1000);
+});
+
+app.all('/cacheable-cache-control-max-age/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('X-Unique-Output', uniqueOutput());
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-cache-control-s-maxage/:id', function(req, res) {
+  res.set('Cache-Control', 's-maxage=60');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-cache-control-case-insensitive/:id', function(req, res) {
+  res.set('CAcHE-cONTROL', 'max-age=60');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-expires/:id', function(req, res) {
+  res.set('Expires', new Date(Date.now() + 60000).toUTCString());
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-expires-0/:id', function(req, res) {
+  res.set('Expires', '0');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-expires-past/:id', function(req, res) {
+  res.set('Expires', new Date(Date.now() - 60000).toUTCString());
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-set-cookie/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Set-Cookie', 'foo=bar');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-www-authenticate/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('WWW-Authenticate', 'Basic');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-surrogate-control-max-age/:id', function(req, res) {
+  res.set('Surrogate-Control', 'max-age=60');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-surrogate-control-case-insensitive/:id', function(req, res) {
+  res.set('SURrOGATE-CONtROL', 'max-age=60');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-surrogate-control-and-cache-control/:id', function(req, res) {
+  res.set('Surrogate-Control', 'max-age=60');
+  res.set('Cache-Control', 'max-age=0, private, must-revalidate');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-dynamic/*', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-compressible/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/cacheable-pre-gzip/:id', compression(), function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/cacheable-vary-accept-encoding/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Vary', 'Accept-Encoding');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/cacheable-pre-gzip-multiple-vary/:id', compression(), function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Vary', 'X-Foo,Accept-Encoding,Accept');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/cacheable-vary-accept-encoding-multiple/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Vary', 'X-Foo,Accept-Encoding,Accept');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/cacheable-vary-x-custom/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Vary', 'X-Custom');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-vary-accept-encoding-accept-separate/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Vary', 'Accept-Encoding');
+  res.set('Vary', 'Accept');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-multiple-vary/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Vary', 'X-Foo,Accept-Language,Accept');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-multiple-vary-with-accept-encoding/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Vary', 'X-Foo,Accept-Language,Accept-Encoding,Accept');
+  res.end(uniqueOutput() + randomstring.generate(1500));
+});
+
+app.all('/logging-example/*', function(req, res) {
+  res.set('Age', '20');
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Content-Type', 'text/plain');
+  res.set('Expires', new Date(Date.now() + 60000).toUTCString());
+  res.set('Content-Length', 5);
+  res.end('hello');
+});
+
+var server = app.listen(9444);
+
+server.on('error', function(error) {
+  console.error('Failed to start example backend app:', error);
+  process.exit(1);
+});

@@ -1,8 +1,7 @@
-source 'http://rubygems.org'
+source "https://rubygems.org"
 
 group :development do
   # Deployment
-  gem "capistrano", "~> 2.15.5"
-  gem "capistrano-ext"
-  gem "capistrano_nrel_ext", :git => "https://github.com/NREL/capistrano_nrel_ext.git"
+  gem "capistrano", "~> 3.2.1"
+  gem "capistrano-npm", "~> 1.0.0"
 end
