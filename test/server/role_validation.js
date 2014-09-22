@@ -2,6 +2,8 @@
 
 require('../test_helper');
 
+var Factory = require('factory-lady');
+
 describe('ApiUmbrellaGatekeper', function() {
   shared.runServer({
     apis: [

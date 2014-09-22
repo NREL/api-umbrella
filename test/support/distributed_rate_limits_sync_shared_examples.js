@@ -3,23 +3,42 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    config = require('../../lib/config'),
-    DistributedRateLimitsSync = require('../../lib/distributed_rate_limits_sync').DistributedRateLimitsSync;
+    apiUmbrellaConfig = require('api-umbrella-config'),
+    distributedRateLimitSync = require('../../lib/distributed_rate_limits_sync'),
+    fs = require('fs'),
+    path = require('path'),
+    yaml = require('js-yaml');
 
 _.merge(global.shared, {
   runDistributedRateLimitsSync: function(configOverrides) {
     beforeEach(function(done) {
-      config.reset();
+      var overridesPath = path.resolve(__dirname, '../config/overrides.yml');
+      fs.writeFileSync(overridesPath, yaml.dump(configOverrides || {}));
 
-      if(configOverrides) {
-        config.updateRuntime({ apiUmbrella: configOverrides });
-      }
+      apiUmbrellaConfig.loader({
+        paths: [
+          path.resolve(__dirname, '../../config/default.yml'),
+          path.resolve(__dirname, '../config/test.yml'),
+        ],
+        overrides: configOverrides,
+      }, function(error, loader) {
+        this.loader = loader;
+        done(error);
+      }.bind(this));
+    });
 
-      this.distributedRateLimitsSync = new DistributedRateLimitsSync(done);
+    beforeEach(function(done) {
+      this.sync = distributedRateLimitSync.start({
+        config: this.loader.runtimeFile,
+      }, done);
     });
 
     afterEach(function(done) {
-      this.distributedRateLimitsSync.close(done);
+      this.loader.close(done);
+    });
+
+    afterEach(function(done) {
+      this.sync.close(done);
     });
   },
 });

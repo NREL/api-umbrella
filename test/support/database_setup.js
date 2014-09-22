@@ -2,18 +2,21 @@
 
 require('../test_helper');
 
-var async = require('async'),
-    config = require('../../lib/config'),
+var apiUmbrellaConfig = require('api-umbrella-config'),
+    async = require('async'),
     forever = require('forever-monitor'),
     fs = require('fs'),
+    mongoose = require('mongoose'),
     path = require('path'),
     redis = require('redis'),
     net = require('net');
 
-mongoose.testConnection = mongoose.createConnection(config.get('mongodb'), config.get('mongodb_options'));
+var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
+
+mongoose.testConnection = mongoose.createConnection(config.get('mongodb.url'), config.get('mongodb.options'));
 
 // Drop the mongodb database.
-before(function(done) {
+before(function mongoOpen(done) {
   mongoose.testConnection.on('connected', function() {
     // Drop the whole database, since that properly blocks for any active
     // connections. The database will get re-created on demand.
@@ -29,7 +32,7 @@ before(function(done) {
 // person's local usage of any random database on the main redis instance.
 var redisServer;
 var redisPidFile = path.resolve(__dirname, '../tmp/redis.pid');
-before(function(done) {
+before(function redisStart(done) {
   if(fs.existsSync(redisPidFile)) {
     var pid = fs.readFileSync(redisPidFile);
     if(pid) {
@@ -82,21 +85,21 @@ before(function(done) {
 });
 
 // Wipe the redis data.
-before(function(done) {
-  global.redisClient = redis.createClient(config.get('redis'));
+before(function redisOpen(done) {
+  global.redisClient = redis.createClient(config.get('redis.port'), config.get('redis.host'));
   global.redisClient.flushdb(function() {
     done();
   });
 });
 
 // Close the mongo connection cleanly after each run.
-after(function(done) {
+after(function mongoClose(done) {
   mongoose.testConnection.close(function() {
     done();
   });
 });
 
-after(function(done) {
+after(function redisClose(done) {
   global.redisClient.quit(function() {
     if(redisServer.running) {
       redisServer.on('exit', function() {

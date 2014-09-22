@@ -26,13 +26,11 @@
     "before": true,
     "beforeEach": true,
     "describe": true,
-    "Factory": true,
     "gatekeeper": true,
     "it": true,
-    "mongoose": true,
     "shared": true,
     "should": true,
     "redisClient": true,
-    "request": true
+    "xit": true
   }
 }

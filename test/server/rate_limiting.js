@@ -4,9 +4,12 @@ require('../test_helper');
 
 var _ = require('lodash'),
     async = require('async'),
-    config = require('../../lib/config'),
+    Factory = require('factory-lady'),
+    fs = require('fs'),
     ippp = require('ipplusplus'),
-    timekeeper = require('timekeeper');
+    request = require('request'),
+    timekeeper = require('timekeeper'),
+    yaml = require('js-yaml');
 
 describe('ApiUmbrellaGatekeper', function() {
   describe('rate limiting', function() {
@@ -146,8 +149,8 @@ describe('ApiUmbrellaGatekeper', function() {
             asyncCallback(null);
           });
         }, function() {
-          this.ipAddress = ippp.next(this.ipAddress);
-          options.headers['X-Forwarded-For'] = this.ipAddress;
+          global.autoIncrementingIpAddress = ippp.next(global.autoIncrementingIpAddress);
+          options.headers['X-Forwarded-For'] = global.autoIncrementingIpAddress;
 
           request.get('http://localhost:9333' + path, options, function(error, response) {
             response.statusCode.should.eql(200);
@@ -251,6 +254,8 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       it('allows rate limits to be changed live', function(done) {
+        var config = require('api-umbrella-config').global();
+
         var url = 'http://localhost:9333/hello?api_key=' + this.apiKey;
         request.get(url, function(error, response) {
           response.headers['x-ratelimit-limit'].should.eql('10');
@@ -258,9 +263,8 @@ describe('ApiUmbrellaGatekeper', function() {
           var apiSettings = config.get('apiSettings');
           apiSettings.rate_limits[0].limit = 70;
 
-          config.updateRuntime({
-            apiSettings: apiSettings,
-          });
+          fs.writeFileSync(config.path, yaml.dump(config.getAll()));
+          config.reload();
 
           request.get(url, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql('70');
@@ -731,6 +735,8 @@ describe('ApiUmbrellaGatekeper', function() {
 
       describe('changing rate limits', function() {
         it('allows rate limits to be changed live', function(done) {
+          var config = require('api-umbrella-config').global();
+
           var url = 'http://localhost:9333/info/lower/?api_key=' + this.apiKey;
           request.get(url, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql('3');
@@ -738,9 +744,8 @@ describe('ApiUmbrellaGatekeper', function() {
             var apis = config.get('apis');
             apis[0].settings.rate_limits[0].limit = 80;
 
-            config.updateRuntime({
-              apis: apis,
-            });
+            fs.writeFileSync(config.path, yaml.dump(config.getAll()));
+            config.reload();
 
             request.get(url, function(error, response) {
               response.headers['x-ratelimit-limit'].should.eql('80');

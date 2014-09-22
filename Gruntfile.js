@@ -28,7 +28,7 @@ module.exports = function(grunt) {
           // Force colors for the output of mutliTest
           colors: true,
 
-          require: 'test/support/blanket'
+          //require: 'test/support/blanket'
         },
         src: ['test/**/*.js']
       },
@@ -69,7 +69,7 @@ module.exports = function(grunt) {
         exec = require('child_process').exec;
 
     async.timesSeries(100, function(index, next) {
-      process.stdout.write('Run ' + index + ' ');
+      process.stdout.write('Run ' + (index + 1) + ' ');
       var progress = setInterval(function() {
         process.stdout.write('.');
       }, 500);
@@ -94,11 +94,11 @@ module.exports = function(grunt) {
 
   grunt.registerTask('cleanup_logs', 'Re-process any failed or stuck log jobs', function() {
     var async = require('async'),
-        config = require('./lib/config'),
+        config = require('api-umbrella-config'),
         redis = require('redis');
 
     var done = this.async();
-    var redisClient = redis.createClient(config.get('redis'));
+    var redisClient = redis.createClient(config.get('redis.port'), config.get('redis.host'));
 
     var queues = ['cv:log_queue:processing', 'cv:log_queue:failed'];
     async.eachSeries(queues, function(queue, queueCallback) {

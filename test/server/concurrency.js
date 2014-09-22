@@ -2,7 +2,8 @@
 
 require('../test_helper');
 
-var async = require('async');
+var async = require('async'),
+    request = require('request');
 
 describe('proxy concurrency', function() {
   shared.runServer();

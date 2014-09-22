@@ -2,6 +2,8 @@
 
 require('../test_helper');
 
+var request = require('request');
+
 describe('ApiUmbrellaGatekeper', function() {
   describe('api matching', function() {
     describe('host matching', function() {

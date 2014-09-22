@@ -3,12 +3,18 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    config = require('../../lib/config'),
+    apiUmbrellaConfig = require('api-umbrella-config'),
     csv = require('csv'),
+    Factory = require('factory-lady'),
+    fs = require('fs'),
     ippp = require('ipplusplus'),
-    xml2js = require('xml2js');
+    path = require('path'),
+    request = require('request'),
+    xml2js = require('xml2js'),
+    yaml = require('js-yaml');
 
 global.backendCalled = false;
+global.autoIncrementingIpAddress = '10.0.0.0';
 
 _.merge(global.shared, {
   buildRequestOptions: function(path, apiKey, options) {
@@ -20,11 +26,24 @@ _.merge(global.shared, {
 
   runServer: function(configOverrides) {
     beforeEach(function(done) {
-      if(!this.ipAddress) {
-        this.ipAddress = '10.0.0.1';
-      } else {
-        this.ipAddress = ippp.next(this.ipAddress);
-      }
+      var overridesPath = path.resolve(__dirname, '../config/overrides.yml');
+      fs.writeFileSync(overridesPath, yaml.dump(configOverrides || {}));
+
+      apiUmbrellaConfig.loader({
+        paths: [
+          path.resolve(__dirname, '../../config/default.yml'),
+          path.resolve(__dirname, '../config/test.yml'),
+        ],
+        overrides: configOverrides,
+      }, function(error, loader) {
+        this.loader = loader;
+        done(error);
+      }.bind(this));
+    });
+
+    beforeEach(function(done) {
+      global.autoIncrementingIpAddress = ippp.next(global.autoIncrementingIpAddress);
+      this.ipAddress = global.autoIncrementingIpAddress;
 
       Factory.create('api_user', function(user) {
         this.user = user;
@@ -36,13 +55,13 @@ _.merge(global.shared, {
     beforeEach(function(done) {
       backendCalled = false;
 
-      config.reset();
+      this.gatekeeper = gatekeeper.start({
+        config: this.loader.runtimeFile,
+      }, done);
+    });
 
-      if(configOverrides) {
-        config.updateRuntime({ apiUmbrella: configOverrides });
-      }
-
-      this.gatekeeper = gatekeeper.start({}, done);
+    afterEach(function(done) {
+      this.loader.close(done);
     });
 
     afterEach(function(done) {

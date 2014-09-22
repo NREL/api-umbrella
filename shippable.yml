@@ -8,3 +8,7 @@ services:
 script:
   - npm test
   - ./node_modules/.bin/grunt shell:coveralls
+notifications:
+  email:
+    on_success: change
+    on_failure: always

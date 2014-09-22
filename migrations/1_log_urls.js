@@ -1,7 +1,7 @@
 'use strict';
 
 var async = require('async'),
-    config = require('../lib/config'),
+    config = require('api-umbrella-config'),
     elasticSearchConnect = require('../lib/elasticsearch_connect'),
     logCleaner = require('../lib/log_processor/cleaner'),
     moment = require('moment'),
@@ -45,7 +45,7 @@ exports.migrate = function(client, done) {
 
         logCleaner.url(hit._source);
         logCleaner.user(hit._source, { force: true }, function() {
-          var index = hit._index.replace(/api-umbrella-logs-/, 'api-umbrella-logs-v1-' + config.environment + '-');
+          var index = hit._index.replace(/api-umbrella-logs-/, 'api-umbrella-logs-v1-' + config.get('environment') + '-');
           indexes[hit._index] = index;
 
           bulkCommands.push({

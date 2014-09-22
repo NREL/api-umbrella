@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+
+var gatekeeper = require('../lib/gatekeeper'),
+    nomnom = require('nomnom');
+
+var options = nomnom
+  .option('config', {
+    abbr: 'c',
+    metavar: 'FILE',
+    default: ['/etc/api-umbrella/api-umbrella.yml'],
+    help: 'Conifg file to use (include multiple times for multiple files)',
+  })
+  .option('port', {
+    abbr: 'p',
+    default: 50000,
+    help: 'Port to listen on',
+  })
+  .parse();
+
+gatekeeper.start(options);

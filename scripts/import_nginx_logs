@@ -4,7 +4,7 @@
 var _ = require('lodash'),
     async = require('async'),
     crypto = require('crypto'),
-    config = require('../lib/config'),
+    config = require('api-umbrella-config'),
     csv = require('csv'),
     elasticsearch = require('elasticsearch'),
     fs = require('fs'),
@@ -47,7 +47,7 @@ _.extend(MigrateLogs.prototype, {
   },
 
   connectMongo: function(asyncSeriesCallback) {
-    MongoClient.connect(config.get('mongodb'), this.handleConnectMongo.bind(this, asyncSeriesCallback));
+    MongoClient.connect(config.get('mongodb.url'), this.handleConnectMongo.bind(this, asyncSeriesCallback));
   },
 
   handleConnectMongo: function(asyncSeriesCallback, error, db) {
@@ -134,7 +134,7 @@ _.extend(MigrateLogs.prototype, {
 
     logCleaner(this.elasticSearch, combined);
 
-    var index = 'api-umbrella-logs-write-' + config.environment + '-' + moment(combined.request_at).format('YYYY-MM');
+    var index = 'api-umbrella-logs-write-' + config.get('environment') + '-' + moment(combined.request_at).format('YYYY-MM');
     this.elasticSearch.get(index, 'log', id, function(error, response) {
       var result = JSON.parse(response);
       if(result.exists) {

@@ -4,6 +4,7 @@ require('../test_helper');
 
 var async = require('async'),
     moment = require('moment'),
+    mongoose = require('mongoose'),
     rateLimitModel = require('../../lib/models/rate_limit_model');
 
 describe('distributed rate limit sync', function() {
@@ -233,9 +234,9 @@ describe('distributed rate limit sync', function() {
             limit.should.eql('99');
             done();
           });
-        }, this.distributedRateLimitsSync.syncEvery + 50);
+        }, this.sync.syncEvery + 50);
       }.bind(this));
-    }.bind(this), this.distributedRateLimitsSync.syncEvery + 50);
+    }.bind(this), this.sync.syncEvery + 50);
   });
 
   it('polling continues when no data is present on a polling cycle', function(done) {
@@ -261,7 +262,7 @@ describe('distributed rate limit sync', function() {
 
         // Wait long enough to to hit a polling cycle outside the 2 second
         // buffer.
-        var wait = this.distributedRateLimitsSync.syncBuffer + this.distributedRateLimitsSync.syncEvery + 50;
+        var wait = this.sync.syncBuffer + this.sync.syncEvery + 50;
         setTimeout(function() {
           distributed.count = 99;
           distributed.updated_at = new Date();
@@ -272,10 +273,10 @@ describe('distributed rate limit sync', function() {
               limit.should.eql('99');
               done();
             });
-          }, this.distributedRateLimitsSync.syncEvery + 50);
+          }, this.sync.syncEvery + 50);
         }.bind(this), wait);
       }.bind(this));
-    }.bind(this), this.distributedRateLimitsSync.syncEvery + 50);
+    }.bind(this), this.sync.syncEvery + 50);
   });
 
 
@@ -309,8 +310,8 @@ describe('distributed rate limit sync', function() {
             limit.should.eql('13');
             done();
           });
-        }, this.distributedRateLimitsSync.syncEvery + 50);
+        }, this.sync.syncEvery + 50);
       }.bind(this));
-    }.bind(this), this.distributedRateLimitsSync.syncEvery + 50);
+    }.bind(this), this.sync.syncEvery + 50);
   });
 });

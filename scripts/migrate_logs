@@ -3,7 +3,7 @@
 
 var _ = require('lodash'),
     async = require('async'),
-    config = require('../lib/config'),
+    config = require('api-umbrella-config'),
     crypto = require('crypto'),
     elasticsearch = require('elasticsearch'),
     logCleaner = require('../lib/log_processor/cleaner'),
@@ -85,7 +85,7 @@ _.extend(MigrateLogs.prototype, {
 
     this.chunkStartTime = moment(this.startTime).subtract('hours', 1);
     async.whilst(function() {
-      var chunkEndTime = moment(this.chunkStartTime).add('hours', 1);
+      var chunkEndTime = moment(this.chunkStartTime).add(1, 'hours');
       return chunkEndTime.isAfter(this.endTime);
     }.bind(this), this.setupAliases.bind(this), function(error) {
       asyncSeriesCallback(error);
@@ -93,9 +93,9 @@ _.extend(MigrateLogs.prototype, {
   },
 
   setupAliases: function(asyncWhilstCallback) {
-    var chunkEndTime = moment(this.chunkStartTime).add('hours', 1);
+    var chunkEndTime = moment(this.chunkStartTime).add(1, 'hours');
 
-    var env = config.environment;
+    var env = config.get('environment');
     var start = this.chunkStartTime.format('YYYY-MM');
     var end = chunkEndTime.format('YYYY-MM');
 
@@ -201,7 +201,7 @@ _.extend(MigrateLogs.prototype, {
       asyncWhilstCallback(null);
       /*
       var optimizeTimerStart = Date.now();
-      var index = 'api-umbrella-logs-write-' + config.environment + '-' + chunkEndTime.format('YYYY-MM');
+      var index = 'api-umbrella-logs-write-' + config.get('environment') + '-' + chunkEndTime.format('YYYY-MM');
       console.info('== Optimizing ' + index + ' ==');
       this.elasticSearch.indices.optimize({
         index: index,
@@ -273,7 +273,7 @@ _.extend(MigrateLogs.prototype, {
       //var uid = log['request_url'] + log['requested_at'];
       commands.push({
         'index': {
-          '_index': 'api-umbrella-logs-write-' + config.environment + '-' + moment.utc(log.request_at).format('YYYY-MM'),
+          '_index': 'api-umbrella-logs-write-' + config.get('environment') + '-' + moment.utc(log.request_at).format('YYYY-MM'),
           '_type': 'log',
           '_id': URLSafeBase64.encode(crypto.createHash('sha256').update(uid).digest('base64')),
         },
