@@ -1,0 +1,39 @@
+<h1>Publish Configuration Changes</h1>
+
+{{#if hasChanges}}
+  <form id="publish_form">
+    {{#if model.config.apis.new}}
+      <fieldset>
+        <legend>{{model.config.apis.new.length}} New API Backends</legend>
+        {{render "config/publish_api" model.config.apis.new}}
+      </fieldset>
+    {{/if}}
+
+    {{#if model.config.apis.modified}}
+      <fieldset>
+        <legend>{{model.config.apis.modified.length}} Modified API Backends</legend>
+        {{render "config/publish_api" model.config.apis.modified}}
+      </fieldset>
+    {{/if}}
+
+    {{#if model.config.apis.deleted}}
+      <fieldset>
+        <legend>{{model.config.apis.deleted.length}} Deleted API Backends</legend>
+        {{render "config/publish_api" model.config.apis.deleted}}
+      </fieldset>
+    {{/if}}
+
+    <div class="text-center">
+      <button type="submit" {{action 'publish'}} id="publish_button" class="btn btn-large btn-primary" data-loading-text="<i class='fa fa-refresh fa-spin'></i> Publishing...">Publish</button>
+    </div>
+  </form>
+{{else}}
+  <div class="row-fluid">
+    <div class="span4 offset4">
+      <div class="alert alert-success text-center">
+        <big>Published configuration is up to date</big><br>
+        <small><em>Recently published changes should be live within a few seconds</em></small>
+      </div>
+    </div>
+  </div>
+{{/if}}

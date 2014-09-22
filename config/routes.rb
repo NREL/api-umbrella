@@ -1,30 +1,10 @@
+require "api_umbrella/elasticsearch_proxy"
+
 ApiUmbrella::Application.routes.draw do
-
-  get "/doc/api-key" => "pages#api_key", :as => :doc_api_key
-  get "/doc/errors" => "pages#errors"
-  get "/doc/rate-limits" => "pages#rate_limits", :as => :doc_rate_limits
-
-  get "/doc" => "api_doc_collections#index"
-  get "/doc/api/:path" => "api_doc_services#show", :as => :api_doc_service, :constraints => { :path => /.*/ }
-  get "/doc/:slug" => "api_doc_collections#show", :as => :api_doc_collection
-
-  get "/community" => "pages#community"
-
-  resource :account, :only => [:create] do
-    get "terms", :on => :collection
-  end
-
-  get "/signup" => "accounts#new"
-
-  get "/contact" => "contacts#new"
-  post "/contact" => "contacts#create"
-
-  root :to => "pages#home"
-
   # Mount the API at both /api/ and /api-umbrella/ for backwards compatibility.
   %w(api api-umbrella).each do |path|
     namespace(:api, :path => path) do
-      resources :api_users, :path => "api-users", :only => [:show, :create] do
+      resources :api_users, :path => "api-users" do
         member do
           get "validate"
         end
@@ -37,15 +17,20 @@ ApiUmbrella::Application.routes.draw do
         end
       end
 
-      resource :hooks, :only => [] do
-        post "publish_static_site"
-      end
-
       namespace :v1 do
+        resources :admin_groups
+        resources :admin_permissions, :only => [:index]
+        resources :user_roles, :only => [:index]
         resources :admins
+        resources :api_scopes
         resources :apis
         resources :users
         resource :contact, :only => [:create]
+
+        namespace :config do
+          get :pending_changes
+          post :publish
+        end
       end
     end
   end
@@ -60,9 +45,7 @@ ApiUmbrella::Application.routes.draw do
   match "/admin" => "admin/base#empty"
 
   namespace :admin do
-    resources :admins, :only => [:index]
-    resources :api_users, :only => [:index]
-    resources :apis, :only => [:index] do
+    resources :apis, :only => [] do
       member do
         put "move_to"
       end
@@ -87,16 +70,12 @@ ApiUmbrella::Application.routes.draw do
       post "import"
     end
 
-    resources :api_doc_services do
-      get "page/:page", :action => :index, :on => :collection
-    end
-
-    resources :api_doc_collections do
-      get "page/:page", :action => :index, :on => :collection
-    end
-
     resources :api_users do
       get "page/:page", :action => :index, :on => :collection
     end
+  end
+
+  authenticate :admin, lambda { |admin| admin.superuser? } do
+    mount ApiUmbrella::ElasticsearchProxy.new, :at => ApiUmbrella::ElasticsearchProxy::PREFIX
   end
 end

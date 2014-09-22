@@ -1,13 +1,19 @@
+//= require jquery/jquery.js
 //= require jquery_ujs
 //= require bootstrap
-//= require rails.validations
+//= require ace-builds/src/ace
+//= require ace-builds/src/mode-json
+//= require ace-builds/src/mode-xml
+//= require ace-builds/src/mode-yaml
 //= require handlebars
 //= require ember
 //= require qtip2
 //= require lodash/lodash.compat
-//= require vendor/DataTables/media/js/jquery.dataTables
-//= require vendor/DataTables-Plugins/integration/bootstrap/2/dataTables.bootstrap
-//= require ember-model
+//= require datatables/jquery.dataTables.js
+//= require vendor/datatables-plugins/dataTables.bootstrap
+//= require jsdiff/diff
+//= require ic-ajax/dist/globals/main.js
+//= require vendor/ember-model/ember-model.js
 //= require vendor/ember-easyForm
 //= require pnotify
 //= require bootbox
@@ -24,14 +30,14 @@
 //= require vendor/jquery.blockUI
 //= require spinjs
 //= require vendor/dirtyforms/jquery.dirtyforms
-//= require vendor/dirtyforms/helpers/ckeditor
+//= require vendor/jquery.truncate
 //= require admin/app
 //= require_self
 
 $(document).ready(function() {
   // Use the default browser "beforeunload" dialog.
-  $.DirtyForms.dialog = false 
-  $(window).bind('beforeunload', function(e) {
+  $.DirtyForms.dialog = false;
+  $(window).bind('beforeunload', function() {
     if($.DirtyForms.isDirty()) {
       return $.DirtyForms.message;
     } else {
@@ -39,7 +45,7 @@ $(document).ready(function() {
     }
   });
 
-  $("form").dirtyForms();
+  $('form').dirtyForms();
 
   // Setup qTip defaults.
   $(document).on('click', 'a[rel=tooltip]', function(event) {
@@ -51,15 +57,15 @@ $(document).ready(function() {
         solo: true
       },
       hide: {
-        event: "unfocus"
+        event: 'unfocus'
       },
       style: {
         classes: 'qtip-bootstrap',
       },
       position: {
         viewport: true,
-        my: "bottom left",
-        at: "top center",
+        my: 'bottom left',
+        at: 'top center',
         adjust: {
           y: 2
         }
@@ -78,11 +84,11 @@ $(document).ready(function() {
         solo: true
       },
       hide: {
-        event: "unfocus"
+        event: 'unfocus'
       },
       content: {
-        text: function(event, api) {
-          var target = $(event.target).attr("href");
+        text: function(event) {
+          var target = $(event.target).attr('href');
           var content = $(target).html();
 
           return content;
@@ -93,8 +99,8 @@ $(document).ready(function() {
       },
       position: {
         viewport: false,
-        my: "top left",
-        at: "bottom center",
+        my: 'top left',
+        at: 'bottom center',
         adjust: {
           y: 2
         }

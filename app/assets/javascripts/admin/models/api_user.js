@@ -64,11 +64,17 @@ Admin.ApiUser = Ember.Model.extend({
 
     return rolesString;
   }.property('roles'),
-})
 
-Admin.ApiUser.url = "/api-umbrella/v1/users";
-Admin.ApiUser.rootKey = "user";
-Admin.ApiUser.collectionKey = "users";
-Admin.ApiUser.primaryKey = "id";
+  didSaveRecord: function() {
+    // Clear the cached roles on save, so the list of available roles is always
+    // correct for subsequent form renderings in this current session.
+    Admin.ApiUserRole.clearCache();
+  },
+});
+
+Admin.ApiUser.url = '/api-umbrella/v1/users';
+Admin.ApiUser.rootKey = 'user';
+Admin.ApiUser.collectionKey = 'data';
+Admin.ApiUser.primaryKey = 'id';
 Admin.ApiUser.camelizeKeys = true;
 Admin.ApiUser.adapter = Admin.APIUmbrellaRESTAdapter.create();

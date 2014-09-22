@@ -1,16 +1,23 @@
 source "https://rubygems.org"
 source "https://rails-assets.org"
 
-gem "rails", "~> 3.2.18"
-
-# Environment specific configuration
-gem "dotenv-rails", "~> 0.10.0"
+gem "rails", "~> 3.2.19"
 
 # Rails app server
-gem "torquebox", "~> 3.0.1", :platforms => [:jruby]
+gem "puma", "~> 2.9.0"
+
+# Environment specific configuration
+gem "dotenv-rails", "~> 0.11.1"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.0.4"
+
+# For proxying HTTP requests to password-protected places for admins.
+gem "rack-proxy", "~> 0.5.16"
+
+# JSON handling
+gem "multi_json", "~> 1.10.1"
+gem "oj", "~> 2.10.2", :platforms => [:ruby]
 
 # MongoDB
 gem "mongoid", "~> 3.1.6"
@@ -23,7 +30,7 @@ gem "mongoid_userstamp", "~> 0.3.2"
 
 # Versioning for mongoid
 # This git branch fixes embeds_one functionality.
-gem "mongoid_delorean", "~> 1.2.1"
+gem "mongoid_delorean", "~> 1.3.0"
 
 # Display deeply nested validation errors on embedded documents.
 gem "mongoid-embedded-errors", "~> 2.0.1"
@@ -38,16 +45,23 @@ gem "mongoid_orderable", "~> 4.1.0"
 gem "uuidtools", "~> 2.1.4"
 
 # Database seeding
-gem "seed-fu", "~> 2.3.0"
+gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
 
 # Elasticsearch
-gem "stretcher", "~> 1.21.1"
+gem "elasticsearch", "~> 1.0.4"
 
 # OmniAuth-based authentication
 gem "devise", "~> 3.2.4"
 gem "omniauth", "~> 1.2.1"
+gem "omniauth-cas", "~> 1.0.4", :git => "https://github.com/dandorman/omniauth-cas.git", :branch => "bump-omniauth-version"
+gem "omniauth-facebook", "~> 2.0.0"
+gem "omniauth-github", "~> 1.1.2"
 gem "omniauth-google-oauth2", "~> 0.2.2"
+gem "omniauth-myusa", :git => "https://github.com/GSA-OCSIT/omniauth-myusa.git"
 gem "omniauth-persona", "~> 0.0.1"
+gem "omniauth-twitter", "~> 1.0.1"
+
+gem "pundit", "~> 0.3.0"
 
 # Form layout and display
 gem "simple_form", "~> 2.1.1"
@@ -65,11 +79,6 @@ gem "jquery-rails", "~> 3.1.0"
 # Breadcrumbs
 gem "crummy", "~> 1.8.0"
 
-gem "client_side_validations", "~> 3.2.6"
-gem "client_side_validations-simple_form", "~> 2.1.0"
-
-gem "nokogiri", "~> 1.6.1"
-
 # For creating friendly URL slugs.
 gem "babosa", "~> 0.3.11"
 
@@ -77,18 +86,16 @@ gem "babosa", "~> 0.3.11"
 gem "childprocess", "~> 0.5.1"
 
 # Views/templates for APIs
-gem "rabl", "~> 0.9.3"
+gem "rabl", "~> 0.11.0"
+gem "jbuilder", "~> 2.1.3"
 gem "csv_builder", "~> 2.1.1"
 
 # Country and state name lookups
 gem "countries", "~> 0.9.3"
 
-# Custom YAML config files
-gem "settingslogic", "~> 2.0.9"
-
 # Ember.js
-gem "ember-rails", "~> 0.14.1"
-gem "ember-source", "~> 1.4.0"
+gem "ember-rails", "~> 0.15.0"
+gem "ember-source", "~> 1.7.0"
 
 # HTML diffs
 gem "diffy", "~> 3.0.3"
@@ -96,26 +103,27 @@ gem "diffy", "~> 3.0.3"
 # Use a newer version of Psych for YAML. The newer gem version does a better
 # job of making multi-line strings and strings with colons in them more human
 # readable.
-gem "psych", "~> 2.0.4", :platforms => [:ruby]
+gem "psych", "~> 2.0.5", :platforms => [:ruby]
 
 # For user-inputted YAML.
 # Use version from git so it doesn't automatically monkey-patch.
 gem "safe_yaml", "~> 1.0.1", :require => "safe_yaml/load"
 
-# Environment-specific configuration files.
-gem "rails_config", "~> 0.3.3"
+# YAML configuration files.
+gem "rails_config", "~> 0.4.2"
 
 # Delayed jobs and background tasks
-gem "delayed_job_mongoid", "~> 2.0.0"
+gem "delayed_job_mongoid", "~> 2.1.0"
 gem "daemons", "~> 1.1.9"
 
 # HTML email styling
-gem "premailer-rails", "~> 1.7.0"
+gem "premailer-rails", "~> 1.8.0"
 
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
   gem 'sass-rails', '~> 3.2.6'
+  gem "sass", "3.4.5"
 
   # A Sass version of Twitter Bootstrap. This it the basis for our styles and
   # JavaScript components.
@@ -136,30 +144,37 @@ group :assets do
   gem "sprockets-urlrewriter", "~> 0.1.2"
 
   # Faster asset precompilation and caching.
-  #
-  # This fork allows cleaning expired assets at the same time as precompiling,
-  # so two rake tasks aren't necessary during our cap deploys. This saves
-  # significant time under JRuby. Hopefully it'll be merged into the main gem.
-  gem "turbo-sprockets-rails3", :git => "https://github.com/GUI/turbo-sprockets-rails3.git"
+  # This specific version contains the CLEAN_EXPIRED_ASSETS option to speed up
+  # deployments by combining two tasks into one (particularly under JRuby).
+  gem "turbo-sprockets-rails3", "0.3.13"
 
-  # Improve PNG speed for image sprite generation
-  gem "oily_png", "~> 1.1.1", :platforms => [:ruby]
+  # Icons
+  gem "rails-assets-fontawesome", "~> 4.2.0"
+
+  # Code editor (for syntax highlighting inside textareas)
+  gem "rails-assets-ace-builds", "~> 1.1.6"
+
+  # Visual text diffs
+  gem "rails-assets-jsdiff", "~> 1.0.8"
+
+  # jQuery ajax calls wrapped in Ember promises
+  gem "rails-assets-ic-ajax", "~> 2.0.1"
 
   gem "rails-assets-bootbox", "~> 3.3.0"
-  gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.4"
-  gem "rails-assets-ember-model", "~> 0.0.11"
+  gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.12"
+  gem "rails-assets-datatables", "~> 1.10.2"
   gem "rails-assets-html5shiv", "~> 3.7.0"
-  gem "rails-assets-inflection", "~> 1.3.5"
+  gem "rails-assets-inflection", "~> 1.4.0"
   gem "rails-assets-jquery", "~> 1.11.0"
   gem "rails-assets-jquery-bbq-deparam", "~> 1.2.1"
   gem "rails-assets-jstz-detect", "~> 1.0.5"
   gem "rails-assets-livestampjs", "~> 1.1.2"
   gem "rails-assets-lodash", "~> 2.4.1"
-  gem "rails-assets-moment", "~> 2.5.1"
+  gem "rails-assets-moment", "~> 2.8.2"
   gem "rails-assets-numeral", "~> 1.5.3"
-  gem "rails-assets-pnotify", "~> 1.3.1"
+  gem "rails-assets-pnotify", "~> 2.0.1"
   gem "rails-assets-qtip2", "~> 2.2.0"
-  gem "rails-assets-selectize", "~> 0.9.0"
+  gem "rails-assets-selectize", "~> 0.11.0"
   gem "rails-assets-spinjs", "~> 2.0.0"
 end
 
@@ -167,39 +182,35 @@ end
 # put test-only gems in this group so their generators
 # and rake tasks are available in development mode:
 group :development, :test do
-  gem "rspec-rails", "~> 2.14.2"
+  gem "rspec-rails", "~> 2.99.0"
   gem "factory_girl_rails", "~> 4.4.1"
   gem "rspec-html-matchers", "~> 0.5.0"
 
   # Ruby lint/style checker
-  gem "rubocop", "~> 0.24.1", :require => false
+  gem "rubocop", "~> 0.26.1", :require => false
 
   # Code coverage testing
   gem "coveralls", "~> 0.7.0", :require => false
 
   # Real browser testing
-  gem "capybara", "~> 2.2.1"
+  gem "capybara", "~> 2.4.1"
 
   # Headless webkit for capybara
   gem "poltergeist", "~> 1.5.0"
 
   # Clean the database between tests
-  gem "database_cleaner", "~> 1.2.0"
+  gem "database_cleaner", "~> 1.3.0"
+
+  gem "jshintrb", "~> 0.2.4", :git => "https://github.com/Paxa/jshintrb.git"
+
+  # For testing drag and drop in capybara.
+  gem "rails-assets-jquery-simulate-ext", "~> 1.3.0"
 end
 
 group :development do
   # Deployment
-  gem "capistrano", "~> 2.15.5"
-  gem "capistrano-ext", "~> 1.2.1"
-  gem "capistrano_nrel_ext", :git => "https://github.com/NREL/capistrano_nrel_ext.git"
-
-  gem "torquebox-server", "~> 3.0.1", :platforms => [:jruby]
-
-  gem "yajl-ruby", "~> 1.2.0", :require => false, :platforms => [:ruby]
-  gem "oj", "~> 2.6.1", :require => false, :platforms => [:ruby]
+  gem "capistrano", "~> 3.2.1"
+  gem "capistrano-rails", "~> 1.1.1"
 
   gem "awesome_print", "~> 1.2.0"
-
-  gem "yard", "~> 0.8.7", :require => false
-  gem "kramdown", "~> 1.3.3", :require => false
 end

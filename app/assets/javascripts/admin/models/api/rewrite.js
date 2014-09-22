@@ -7,5 +7,5 @@ Admin.ApiRewrite = Ember.Model.extend({
   backendReplacement: Ember.attr(),
 });
 
-Admin.ApiRewrite.primaryKey = "id";
+Admin.ApiRewrite.primaryKey = 'id';
 Admin.ApiRewrite.camelizeKeys = true;

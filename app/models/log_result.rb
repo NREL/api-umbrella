@@ -7,43 +7,27 @@ class LogResult
   end
 
   def total
-    raw_result.total
+    raw_result["hits"]["total"]
   end
 
   def documents
-    raw_result.documents
+    raw_result["hits"]["hits"]
   end
 
-  def facets
-    raw_result.raw_plain["facets"]
+  def aggregations
+    raw_result["aggregations"]
   end
 
-  def interval_hits
-    if(!@interval_hits && facets["interval_hits"])
-      @interval_hits = {}
+  def hits_over_time
+    if(!@hits_over_time && aggregations["hits_over_time"])
+      @hits_over_time = {}
 
-      # Default all interval points to 0 (so in case any are missing from the
-      # real data).
-      time = @search.start_time
-      case @search.interval
-      when "minute"
-        time = time.change(:sec => 0)
-      else
-        time = time.send(:"beginning_of_#{@search.interval}")
-      end
-
-      while(time <= @search.end_time)
-        @interval_hits[time.to_i * 1000] ||= 0
-        time += 1.send(:"#{@search.interval}")
-      end
-
-      # Overwrite the default 0 values with the real values.
-      facets["interval_hits"]["entries"].each do |entry|
-        @interval_hits[entry["time"]] = entry["count"]
+      aggregations["hits_over_time"]["buckets"].each do |bucket|
+        @hits_over_time[bucket["key"]] = bucket["doc_count"]
       end
     end
 
-    @interval_hits
+    @hits_over_time
   end
 
   def map_breadcrumbs
@@ -77,9 +61,9 @@ class LogResult
     unless @cities
       @cities = {}
 
-      @regions = facets["regions"]["terms"]
-      if(@search.query[:facets][:regions][:terms][:field] == "request_ip_city")
-        @city_names = @regions.map { |term| term["term"] }
+      @regions = aggregations["regions"]["buckets"]
+      if(@search.query[:aggregations][:regions][:terms][:field] == "request_ip_city")
+        @city_names = @regions.map { |bucket| bucket["key"] }
         @cities = {}
 
         if @city_names.any?
@@ -103,8 +87,14 @@ class LogResult
             :terms => { :city => @city_names },
           }
 
-          @search.server.index("api-umbrella").search({ :size => 500 }, query).documents.each do |result|
-            @cities[result["city"]] = result["location"]
+          city_results = @search.client.search({
+            :index => "api-umbrella",
+            :size => 500,
+            :body => query,
+          })
+
+          city_results["hits"]["hits"].each do |result|
+            @cities[result["_source"]["city"]] = result["_source"]["location"]
           end
         end
       end

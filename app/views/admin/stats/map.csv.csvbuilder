@@ -3,16 +3,16 @@ csv << [
   "Hits",
 ]
 
-@result.facets["regions"]["terms"].each do |term|
+@result.aggregations["regions"]["buckets"].each do |bucket|
   csv << [
-    region_name(term["term"]),
-    term["count"],
+    region_name(bucket["key"]),
+    bucket["doc_count"],
   ]
 end
 
-if(@result.facets["regions"]["missing"] > 0)
+if(@result.aggregations["missing_regions"]["doc_count"] > 0)
   csv << [
     "Unknown",
-    @result.facets["regions"]["missing"],
+    @result.aggregations["missing_regions"]["doc_count"],
   ]
 end

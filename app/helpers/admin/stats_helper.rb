@@ -1,31 +1,44 @@
 module Admin::StatsHelper
-  def facet_result(facet_name)
-    facet = @result.facets[facet_name.to_s]
+  def aggregation_result(aggregation_name)
+    name = aggregation_name.to_s.pluralize
 
-    terms = facet["terms"]
+    buckets = []
+    top_buckets = @result.aggregations["top_#{name}"]["buckets"]
+    with_value_count = @result.aggregations["value_count_#{name}"]["value"]
+    missing_count = @result.aggregations["missing_#{name}"]["doc_count"]
 
-    if(facet["missing"] > 0)
-      if(terms.length < 10 || facet["missing"] >= terms.last["count"])
-        terms << {
-          "term" => "Missing / Unknown",
-          "count" => facet["missing"],
+    other_hits = with_value_count
+    top_buckets.each do |bucket|
+      other_hits -= bucket["doc_count"]
+
+      buckets << {
+        "key" => bucket["key"],
+        "count" => bucket["doc_count"],
+      }
+    end
+
+    if(missing_count > 0)
+      if(buckets.length < 10 || missing_count >= buckets.last["count"])
+        buckets << {
+          "key" => "Missing / Unknown",
+          "count" => missing_count,
         }
       end
     end
 
-    if(facet["other"] > 0)
-      terms << {
-        "term" => "Other",
-        "count" => facet["other"],
+    total = with_value_count.to_f + missing_count
+    buckets.each do |bucket|
+      bucket["percent"] = ((bucket["count"] / total) * 100).round
+    end
+
+    if(other_hits > 0)
+      buckets << {
+        "key" => "Other",
+        "count" => other_hits,
       }
     end
 
-    total = @result.total.to_f
-    terms.each do |term|
-      term["percent"] = ((term["count"] / total) * 100).round
-    end
-
-    terms
+    buckets
   end
 
   def formatted_interval_time(time)
@@ -55,11 +68,11 @@ module Admin::StatsHelper
     end
   end
 
-  def region_location_columns(term)
+  def region_location_columns(bucket)
     columns = []
 
-    if(@search.query[:facets][:regions][:terms][:field] == "request_ip_city")
-      city = term["term"]
+    if(@search.query[:aggregations][:regions][:terms][:field] == "request_ip_city")
+      city = bucket["key"]
       location = @result.cities[city]
 
       lat = nil
@@ -75,7 +88,7 @@ module Admin::StatsHelper
         { :v => city },
       ]
     else
-      columns << { :v => term["term"], :f => region_name(term["term"]) }
+      columns << { :v => bucket["key"], :f => region_name(bucket["key"]) }
     end
 
     columns

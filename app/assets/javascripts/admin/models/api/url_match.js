@@ -9,5 +9,5 @@ Admin.ApiUrlMatch = Ember.Model.extend({
   }.property('backendPrefix', 'frontendPrefix'),
 });
 
-Admin.ApiUrlMatch.primaryKey = "id";
+Admin.ApiUrlMatch.primaryKey = 'id';
 Admin.ApiUrlMatch.camelizeKeys = true;

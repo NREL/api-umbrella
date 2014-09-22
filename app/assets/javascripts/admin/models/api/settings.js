@@ -5,12 +5,14 @@ Admin.ApiSettings = Ember.Model.extend({
   httpBasicAuth: Ember.attr(),
   requireHttps: Ember.attr(),
   disableApiKey: Ember.attr(),
-  requiredRolesString: Ember.attr(),
+  requiredRoles: Ember.attr(),
   allowedIps: Ember.attr(),
   allowedReferers: Ember.attr(),
   rateLimitMode: Ember.attr(),
   anonymousRateLimitBehavior: Ember.attr(),
   authenticatedRateLimitBehavior: Ember.attr(),
+  passApiKeyHeader: Ember.attr(),
+  passApiKeyQueryParam: Ember.attr(),
   errorTemplates: Ember.attr(),
   errorDataYamlStrings: Ember.attr(),
 
@@ -41,6 +43,22 @@ Admin.ApiSettings = Ember.Model.extend({
       this.set('errorDataYamlStrings', {});
     }
   },
+
+  requiredRolesString: function(key, value) {
+    // Setter
+    if(arguments.length > 1) {
+      var roles = value.split(',');
+      this.set('requiredRoles', roles);
+    }
+
+    // Getter
+    var rolesString = '';
+    if(this.get('requiredRoles')) {
+      rolesString = this.get('requiredRoles').join(',');
+    }
+
+    return rolesString;
+  }.property('requiredRoles'),
 
   allowedIpsString: function(key, value) {
     // Setter
@@ -79,5 +97,5 @@ Admin.ApiSettings = Ember.Model.extend({
   }.property('rateLimitMode'),
 });
 
-Admin.ApiSettings.primaryKey = "id";
+Admin.ApiSettings.primaryKey = 'id';
 Admin.ApiSettings.camelizeKeys = true;

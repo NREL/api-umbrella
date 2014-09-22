@@ -3,6 +3,6 @@ Admin.HideModalView = Ember.View.extend({
   },
 
   didInsertElement: function() {
-    $(".modal").modal("hide");
+    $('.modal').modal('hide');
   }
 });

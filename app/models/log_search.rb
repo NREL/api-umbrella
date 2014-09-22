@@ -1,11 +1,12 @@
-require "elasticsearch_config"
-
 class LogSearch
   attr_accessor :query, :query_options
-  attr_reader :server, :start_time, :end_time, :interval, :region, :country, :state
+  attr_reader :client, :start_time, :end_time, :interval, :region, :country, :state
 
   def initialize(options = {})
-    @server = Stretcher::Server.new(ElasticsearchConfig.server, :logger => Rails.logger)
+    @client = Elasticsearch::Client.new({
+      :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
+      :logger => Rails.logger
+    })
 
     @start_time = options[:start_time]
     unless(@start_time.kind_of?(Time))
@@ -31,26 +32,50 @@ class LogSearch
             :match_all => {},
           },
           :filter => {
-            :and => [],
+            :bool => {
+              :must => [],
+            },
           },
         },
       },
       :sort => [
         { :request_at => :desc },
       ],
-      :facets => {}
+      :aggregations => {},
     }
 
     @query_options = {
       :size => 0,
-      :ignore_indices => "missing",
+      :ignore_unavailable => "missing",
+      :allow_no_indices => true,
     }
   end
 
   def result
-    raw_result = @server.index(indexes.join(",")).search(@query_options, @query)
+    raw_result = @client.search(@query_options.merge({
+      :index => indexes.join(","),
+      :body => @query,
+    }))
 
     @result = LogResult.new(self, raw_result)
+  end
+
+  def permission_scope!(scopes)
+    filter = {
+      :bool => {
+        :should => []
+      },
+    }
+
+    scopes.each do |scope|
+      filter[:bool][:should] << scope
+    end
+
+    @query[:query][:filtered][:filter][:bool][:must] << filter
+  end
+
+  def search_type!(search_type)
+    @query_options[:search_type] = search_type
   end
 
   def search!(query_string)
@@ -76,7 +101,7 @@ class LogSearch
   end
 
   def filter_by_date_range!
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :range => {
         :request_at => {
           :from => @start_time.iso8601,
@@ -87,7 +112,7 @@ class LogSearch
   end
 
   def filter_by_request_path!(request_path)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => {
         :request_path => request_path,
       },
@@ -95,7 +120,7 @@ class LogSearch
   end
 
   def filter_by_api_key!(api_key)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => {
         :api_key => api_key,
       },
@@ -103,7 +128,7 @@ class LogSearch
   end
 
   def filter_by_user!(user_email)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => {
         :user => {
           :user_email => user_email,
@@ -113,147 +138,152 @@ class LogSearch
   end
 
   def filter_by_user_ids!(user_ids)
-    @query[:query][:filtered][:filter][:and] << {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :terms => {
         :user_id => user_ids,
       },
     }
   end
 
-  def facet_by_interval!
-    @query[:facets][:interval_hits] = {
+  def aggregate_by_interval!
+    @query[:aggregations][:hits_over_time] = {
       :date_histogram => {
         :field => "request_at",
         :interval => @interval,
-        :all_terms => true,
         :time_zone => Time.zone.name,
         :pre_zone_adjust_large_interval => true,
+        :min_doc_count => 0,
+        :extended_bounds => {
+          :min => @start_time.iso8601,
+          :max => @end_time.iso8601,
+        },
       },
     }
   end
 
-  def facet_by_region!
+  def aggregate_by_region!
     case(@region)
     when "world"
-      facet_by_country!
+      aggregate_by_country!
     when "US"
       @country = @region
-      facet_by_country_regions!(@region)
+      aggregate_by_country_regions!(@region)
     when /^(US)-([A-Z]{2})$/
       @country = Regexp.last_match[1]
       @state = Regexp.last_match[2]
-      facet_by_us_state_cities!(@country, @state)
+      aggregate_by_us_state_cities!(@country, @state)
     else
       @country = @region
-      facet_by_country_cities!(@region)
+      aggregate_by_country_cities!(@region)
     end
   end
 
-  def facet_by_country!
-    @query[:facets][:regions] = {
+  def aggregate_by_region_field!(field)
+    @query[:aggregations][:regions] = {
       :terms => {
-        :field => "request_ip_country",
-        :size => 250,
+        :field => field.to_s,
+        :size => 500,
+      },
+    }
+
+    @query[:aggregations][:missing_regions] = {
+      :missing => {
+        :field => field.to_s,
       },
     }
   end
 
-  def facet_by_country_regions!(country)
-    @query[:query][:filtered][:filter][:and] << {
-      :term => { :request_ip_country => country },
-    }
-
-    @query[:facets][:regions] = {
-      :terms => {
-        :field => "request_ip_region",
-        :size => 250,
-      },
-    }
+  def aggregate_by_country!
+    aggregate_by_region_field!(:request_ip_country)
   end
 
-  def facet_by_us_state_cities!(country, state)
-    @query[:query][:filtered][:filter][:and] << {
+  def aggregate_by_country_regions!(country)
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
-    @query[:query][:filtered][:filter][:and] << {
+
+    aggregate_by_region_field!(:request_ip_region)
+  end
+
+  def aggregate_by_us_state_cities!(country, state)
+    @query[:query][:filtered][:filter][:bool][:must] << {
+      :term => { :request_ip_country => country },
+    }
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => { :request_ip_region => state },
     }
 
-    @query[:facets][:regions] = {
-      :terms => {
-        :field => "request_ip_city",
-        :size => 250,
-      },
-    }
+    aggregate_by_region_field!(:request_ip_city)
   end
 
-  def facet_by_country_cities!(country)
-    @query[:query][:filtered][:filter][:and] << {
+  def aggregate_by_country_cities!(country)
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :term => { :request_ip_country => country },
     }
 
-    @query[:facets][:regions] = {
-      :terms => {
-        :field => "request_ip_city",
-        :size => 250,
-      },
-    }
+    aggregate_by_region_field!(:request_ip_city)
   end
 
-  def facet_by_term!(term, size, options = {})
-    facet_name = options[:facet_name] || term
-    @query[:facets][facet_name.to_sym] = {
+  def aggregate_by_term!(field, size)
+    @query[:aggregations]["top_#{field.to_s.pluralize}"] = {
       :terms => {
-        :field => term.to_s,
+        :field => field.to_s,
         :size => size,
+        :shard_size => size * 4,
+      },
+    }
+
+    @query[:aggregations]["value_count_#{field.to_s.pluralize}"] = {
+      :value_count => {
+        :field => field.to_s,
+      },
+    }
+
+    @query[:aggregations]["missing_#{field.to_s.pluralize}"] = {
+      :missing => {
+        :field => field.to_s,
       },
     }
   end
 
-  def facet_by_users!(size)
-    facet_by_term!(:user_email, size)
-    facet_by_term!(:user_email, 1_000_000, :facet_name => :total_user_email)
-  end
-
-  def facet_by_response_status!(size)
-    facet_by_term!(:response_status, size)
-    facet_by_term!(:response_status, 1_000_000, :facet_name => :total_response_status)
-  end
-
-  def facet_by_response_content_type!(size)
-    facet_by_term!(:response_content_type, size)
-    facet_by_term!(:response_content_type, 1_000_000, :facet_name => :total_response_content_type)
-  end
-
-  def facet_by_request_method!(size)
-    facet_by_term!(:request_method, size)
-    facet_by_term!(:request_method, 1_000_000, :facet_name => :total_request_method)
-  end
-
-  def facet_by_request_ip!(size)
-    facet_by_term!(:request_ip, size)
-    facet_by_term!(:request_ip, 1_000_000, :facet_name => :total_request_ip)
-  end
-
-  def facet_by_request_user_agent_family!(size)
-    facet_by_term!(:request_user_agent_family, size)
-    facet_by_term!(:request_user_agent_family, 1_000_000, :facet_name => :total_request_user_agent_family)
-  end
-
-  def facet_by_user_stats!(options = {})
-    @query[:facets][:user_stats] = {
-      :terms_stats => {
-        :key_field => :user_id,
-        :value_field => :request_at,
-        :size => 0,
-        :order => "count",
-      }.merge(options),
+  def aggregate_by_cardinality!(field)
+    @query[:aggregations]["unique_#{field.to_s.pluralize}"] = {
+      :cardinality => {
+        :field => field.to_s,
+        :precision_threshold => 100,
+      },
     }
   end
 
-  def facet_by_response_time_stats!
-    @query[:facets][:response_time_stats] = {
-      :statistical => {
+  def aggregate_by_users!(size)
+    aggregate_by_term!(:user_email, size)
+    aggregate_by_cardinality!(:user_email)
+  end
+
+  def aggregate_by_request_ip!(size)
+    aggregate_by_term!(:request_ip, size)
+    aggregate_by_cardinality!(:request_ip)
+  end
+
+  def aggregate_by_user_stats!(options = {})
+    @query[:aggregations][:user_stats] = {
+      :terms => {
+        :field => :user_id,
+        :size => 0,
+      }.merge(options),
+      :aggregations => {
+        :last_request_at => {
+          :max => {
+            :field => :request_at,
+          },
+        },
+      },
+    }
+  end
+
+  def aggregate_by_response_time_average!
+    @query[:aggregations][:response_time_average] = {
+      :avg => {
         :field => :response_time,
       },
     }

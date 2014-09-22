@@ -1,13 +1,9 @@
 language: ruby
 rvm:
-  - 1.9.3
   - 2.1.2
 services:
   - mongodb
   - elasticsearch
-before_script:
-  - cp config/mongoid.yml.deploy config/mongoid.yml
-  - cp config/elasticsearch.yml.deploy config/elasticsearch.yml
 script:
   - bundle exec rake
 notifications:

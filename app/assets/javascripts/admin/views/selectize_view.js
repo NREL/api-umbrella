@@ -1,13 +1,15 @@
 Admin.SelectizeView = Ember.View.extend({
+  defaultOptions: [],
+
   didInsertElement: function() {
     this.$input = this.$().find('input').selectize({
       plugins: ['restore_on_backspace', 'remove_button'],
       delimiter: ',',
-      options: apiUserExistingRoles,
+      options: this.get('defaultOptions'),
       valueField: 'id',
-      labelField: 'title',
-      searchField: 'title',
-      sortField: 'title',
+      labelField: 'label',
+      searchField: 'label',
+      sortField: 'label',
       onChange: _.bind(this.handleSelectizeChange, this),
       create: true,
 
@@ -18,33 +20,45 @@ Admin.SelectizeView = Ember.View.extend({
     this.selectize = this.$input[0].selectize;
   },
 
+  defaultOptionsDidChange: function() {
+    this.set('defaultOptions', this.get('content').map(_.bind(function(item) {
+      return {
+        id: item.get(this.get('optionValuePath')),
+        label: item.get(this.get('optionLabelPath')),
+      };
+    }, this)));
+
+    if(this.selectize) {
+      this.get('defaultOptions').forEach(_.bind(function(option) {
+        this.selectize.addOption(option);
+      }, this));
+
+      this.selectize.refreshOptions(false);
+    }
+  }.observes('content.@each').on('init'),
+
   // Sync the selectize input with the value binding if the value changes
   // externally.
   valueDidChange: function() {
     if(this.selectize) {
       var valueString = this.get('value');
-      if(valueString != this.selectize.getValue()) {
+      if(valueString !== this.selectize.getValue()) {
         var values = valueString;
         if(values) {
-          values = values.split(',');
+          values = _.uniq(values.split(','));
 
-          // For new values, ensure the value is an available option in the
-          // menu. This is to workaround the fact that we load our valid
-          // options on initial load from the global "apiUserExistingRoles"
-          // variable. But since new values might be added while operating
-          // purely in client-side mode, we need to keep track of any new
-          // options that should be available.
+          // Ensure the selected value is available as an option in the menu.
+          // This takes into account the fact that the default options may not
+          // be loaded yet, or they may not contain this specific option.
           for(var i = 0; i < values.length; i++) {
             var option = {
               id: values[i],
-              title: values[i],
+              label: values[i],
             };
 
-            apiUserExistingRoles.push(option);
             this.selectize.addOption(option);
           }
 
-          _.uniq(apiUserExistingRoles);
           this.selectize.refreshOptions(false);
         }
 

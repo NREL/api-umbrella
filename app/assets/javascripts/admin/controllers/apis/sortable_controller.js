@@ -34,7 +34,7 @@ Admin.ApisSortableController = Ember.ArrayController.extend({
         });
         return ui;
       },
-      stop: function(event, ui) {
+      stop: function() {
         var indexes = {};
         $(this).find('tr').each(function(index) {
           indexes[$(this).data('id')] = index;

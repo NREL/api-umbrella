@@ -4,7 +4,7 @@ Admin.StatsMapGeoView = Ember.View.extend({
   chartOptions: {
     width: 640,
     colorAxis: {
-      colors: ["#B0DBFF", "#4682B4"],
+      colors: ['#B0DBFF', '#4682B4'],
     },
   },
 
@@ -24,18 +24,18 @@ Admin.StatsMapGeoView = Ember.View.extend({
       this.refreshData();
     }
 
-    $(window).on("resize", _.debounce(this.draw.bind(this), 100));
+    $(window).on('resize', _.debounce(this.draw.bind(this), 100));
   },
 
   handleRegionClick: function(region) {
     this.set('controller.query.params.region', region.region);
   },
 
-  handleCityClick: function(city) {
+  handleCityClick: function() {
     if(this.get('model.region_field') === 'request_ip_city') {
       var selection = this.chart.getSelection();
       if(selection) {
-        var rowIndex = selection[0].row
+        var rowIndex = selection[0].row;
         var region = this.dataTable.getValue(rowIndex, 2);
 
         var params = _.clone(this.get('controller.query.params'));
@@ -53,7 +53,7 @@ Admin.StatsMapGeoView = Ember.View.extend({
       {id: 'startDate', label: 'Hits', type: 'number'},
     ];
 
-    if(this.get('model.region_field') == "request_ip_city") {
+    if(this.get('model.region_field') === 'request_ip_city') {
       this.chartData.cols.unshift({id: 'latitude', label: 'Latitude', type: 'number'},
         {id: 'longitude', label: 'Longitude', type: 'number'});
     }
@@ -65,7 +65,7 @@ Admin.StatsMapGeoView = Ember.View.extend({
       this.chartOptions.resolution = 'countries';
     }
 
-    if(this.chartOptions.region == 'world' || this.chartOptions.region == 'US') {
+    if(this.chartOptions.region === 'world' || this.chartOptions.region === 'US') {
       this.chartOptions.displayMode = 'regions';
     } else {
       this.chartOptions.displayMode = 'markers';

@@ -10,7 +10,7 @@
   <tbody>
     {{#each view.data}}
       <tr>
-        <td>{{#link-to 'stats.logs' linkQuery}}{{term}}{{/link-to}}</td>
+        <td>{{#link-to 'stats.logs' linkQuery}}{{key}}{{/link-to}}</td>
         <td class="value">{{formatNumber count}}</td>
         <td class="value">{{percent}}%</td>
       </tr>

@@ -35,11 +35,17 @@ Admin.Api = Ember.Model.extend({
   exampleOutgoingUrlRoot: function() {
     return 'http://' + (this.get('backendHost') || this.get('frontendHost') || '');
   }.property('backendHost'),
-})
 
-Admin.Api.url = "/api-umbrella/v1/apis";
-Admin.Api.rootKey = "api";
-Admin.Api.collectionKey = "apis";
-Admin.Api.primaryKey = "id";
+  didSaveRecord: function() {
+    // Clear the cached roles on save, so the list of available roles is always
+    // correct for subsequent form renderings in this current session.
+    Admin.ApiUserRole.clearCache();
+  },
+});
+
+Admin.Api.url = '/api-umbrella/v1/apis';
+Admin.Api.rootKey = 'api';
+Admin.Api.collectionKey = 'data';
+Admin.Api.primaryKey = 'id';
 Admin.Api.camelizeKeys = true;
 Admin.Api.adapter = Admin.APIUmbrellaRESTAdapter.create();

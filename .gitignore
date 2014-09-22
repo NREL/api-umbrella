@@ -17,12 +17,6 @@
 /REVISION
 /config/deployed.yml
 
-# Ignore files generated from templates
-/config/elasticsearch.yml
-/config/mongoid.yml
-/config/nginx/site.conf
-/config/supervisor/delayed_job.conf
-
 # Ignore log directory
 /log
 

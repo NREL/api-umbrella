@@ -13,32 +13,31 @@ class Admin::StatsController < Admin::BaseController
       :start_time => params[:start],
       :end_time => params[:end],
       :interval => params[:interval],
+      :search_type => "count",
     })
+    policy_scope(@search)
 
     @search.search!(params[:search])
     @search.filter_by_date_range!
-    @search.facet_by_interval!
-    @search.facet_by_users!(10)
-    @search.facet_by_response_status!(10)
-    @search.facet_by_response_content_type!(10)
-    @search.facet_by_request_method!(10)
-    @search.facet_by_request_ip!(10)
-    @search.facet_by_request_user_agent_family!(10)
-    @search.facet_by_response_time_stats!
-    @search.limit!(1)
+    @search.aggregate_by_interval!
+    @search.aggregate_by_users!(10)
+    @search.aggregate_by_request_ip!(10)
+    @search.aggregate_by_response_time_average!
+    @search.search_type!("count")
 
     @result = @search.result
   end
 
   def logs
     @search = LogSearch.new({
-      :start_time => params[:start],
-      :end_time => params[:end],
+      :start_time => params[:start_time],
+      :end_time => params[:end_time],
       :interval => params[:interval],
     })
+    policy_scope(@search)
 
-    offset = params["iDisplayStart"].to_i
-    limit = params["iDisplayLength"].to_i
+    offset = params[:start].to_i
+    limit = params[:length].to_i
     if(request.format == "csv")
       limit = 500
     end
@@ -95,12 +94,13 @@ class Admin::StatsController < Admin::BaseController
 
   def users
     @search = LogSearch.new({
-      :start_time => params[:start],
-      :end_time => params[:end],
+      :start_time => params[:start_time],
+      :end_time => params[:end_time],
     })
+    policy_scope(@search)
 
-    offset = params["iDisplayStart"].to_i
-    limit = params["iDisplayLength"].to_i
+    offset = params[:start].to_i
+    limit = params[:length].to_i
     if(request.format == "csv")
       limit = 100_000
     end
@@ -112,65 +112,64 @@ class Admin::StatsController < Admin::BaseController
     # If we're sorting by hits or last request date, then we can perform the
     # sorting directly in the elasticsearch query. Otherwise, for user-based
     # field, we'll need to defer sorting until we have all the results in ruby.
-    facet_options = {}
+    aggregation_options = {}
     if sort
       case(sort_field)
       when "hits"
-        facet_options[:order] = "count"
+        aggregation_options[:order] = {
+          "_count" => sort_direction,
+        }
       when "last_request_at"
-        facet_options[:order] = "max"
-      end
-
-      if(facet_options[:order] && sort_direction == "asc")
-        facet_options[:order] = "reverse_#{facet_options[:order]}"
+        aggregation_options[:order] = {
+          "last_request_at" => sort_direction,
+        }
       end
     end
 
     @search.search!(params[:search])
     @search.filter_by_date_range!
-    @search.facet_by_user_stats!(facet_options)
+    @search.aggregate_by_user_stats!(aggregation_options)
 
     @result = @search.result
-    @total = @result.facets["user_stats"]["terms"].length
-
-    terms = @result.facets["user_stats"]["terms"]
+    buckets = @result.aggregations["user_stats"]["buckets"]
+    @total = buckets.length
 
     # If we were sorting by one of the facet fields, then the sorting has
     # already been done by elasticsearch. We can improve the performance by
     # going ahead and truncating the results to the specified page.
-    if(facet_options[:order])
-      terms = terms.slice(offset, limit)
+    if(aggregation_options[:order])
+      buckets = buckets.slice(offset, limit)
     end
 
-    user_ids = terms.map { |term| if(term) then term["term"] else nil end }
+    user_ids = buckets.map { |bucket| if(bucket) then bucket["key"] else nil end }
     users_by_id = ApiUser.where(:_id.in => user_ids).all.to_a.group_by { |user| user.id.to_s }
 
     # Build up the results, combining the stats facet information with the user
     # details.
     @user_data = []
-    terms.map do |term|
+    buckets.map do |bucket|
       user = {}
-      if(users_by_id[term["term"]])
-        user = users_by_id[term["term"]].first.attributes
+      if(users_by_id[bucket["key"]])
+        user = users_by_id[bucket["key"]].first.attributes
       end
 
       @user_data << {
-        :id => term["term"],
+        :id => bucket["key"],
         :email => user["email"],
         :first_name => user["first_name"],
         :last_name => user["last_name"],
         :website => user["website"],
         :registration_source => user["registration_source"],
         :created_at => user["created_at"],
-        :hits => term["count"],
-        :last_request_at => Time.at(term["max"] / 1000),
+        :hits => bucket["doc_count"],
+        :last_request_at => Time.at(bucket["last_request_at"]["value"] / 1000),
         :use_description => user["use_description"],
       }
     end
 
     # If sorting was on any of the user fields, now that we have a full result
     # set now we can manually sort and paginate.
-    if(!facet_options[:order])
+    if(!aggregation_options[:order])
       @user_data.sort_by! { |user| user[:"#{sort_field}"].to_s }
       if(sort_direction == "desc")
         @user_data.reverse!
@@ -191,10 +190,11 @@ class Admin::StatsController < Admin::BaseController
       :end_time => params[:end],
       :region => params[:region],
     })
+    policy_scope(@search)
 
     @search.search!(params[:search])
     @search.filter_by_date_range!
-    @search.facet_by_region!
+    @search.aggregate_by_region!
 
     @result = @search.result
 

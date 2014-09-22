@@ -235,12 +235,41 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', :scope => 'user,public_repo'
 
-  config.omniauth :google_oauth2,
-    ENV["GOOGLE_OAUTH_CLIENT_ID"],
-    ENV["GOOGLE_OAUTH_CLIENT_SECRET"],
-    :scope => "userinfo.email"
-
-  config.omniauth :persona
+  ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].each do |strategy|
+    case(strategy)
+    when "facebook"
+      config.omniauth :facebook,
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_id],
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_secret],
+        :scope => "email"
+    when "github"
+      config.omniauth :github,
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:github][:client_id],
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:github][:client_secret],
+        :scope => "user:email"
+    when "google"
+      config.omniauth :google_oauth2,
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:google][:client_id],
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:google][:client_secret],
+        :scope => "userinfo.email"
+    when "max.gov"
+      config.omniauth :cas,
+        :host => "login.max.gov",
+        :login_url => "/cas/login",
+        :service_validate_url => "/cas/serviceValidate",
+        :logout_url => "/cas/logout",
+        :ssl => true
+    when "myusa"
+      config.omniauth :myusa,
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:myusa][:client_id],
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:myusa][:client_secret],
+        :scope => "profile.email"
+    when "persona"
+      config.omniauth :persona
+    else
+      raise "Unknown authentication strategy enabled in config: #{strategy.inspect}"
+    end
+  end
 
   if(%w(development test).include?(Rails.env))
     config.omniauth :developer,

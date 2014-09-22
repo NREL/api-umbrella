@@ -14,19 +14,26 @@
 // Set Bootbox defaults.
 bootbox.animate(false);
 
-// Pines Notify Defaults.
-$.pnotify.defaults.history = false;
-$.pnotify.defaults.width = '400px';
-$.pnotify.defaults.sticker = false;
-$.pnotify.defaults.animate_speed = 'fast';
-$.pnotify.defaults.icon = false;
+// PNotify Defaults.
+_.merge(PNotify.prototype.options, {
+  styling: 'bootstrap2',
+  width: '400px',
+  icon: false,
+  animate_speed: 'fast',
+  history: {
+    history: false
+  },
+  buttons: {
+    sticker: false
+  }
+});
 
 (function() {
   var versionParts = Ember.VERSION.split('.');
-  var major = parseInt(versionParts[0]);
-  var minor = parseInt(versionParts[1]);
-  var patch = parseInt(versionParts[2]);
-  if(major > 1 || (major == 1 && (minor > 1 || patch > 2))) {
+  var major = parseInt(versionParts[0], 10);
+  var minor = parseInt(versionParts[1], 10);
+  var patch = parseInt(versionParts[2], 10);
+  if(major > 1 || (major === 1 && (minor > 1 || patch > 2))) {
     Ember.Logger.warn('WARNING: New Ember version detected. URL hash monkey patch possibly no longer needed or broken. Check for compatibility.');
   }
 
@@ -71,17 +78,17 @@ $.pnotify.defaults.icon = false;
   });
 })();
 
-Admin = Ember.Application.create({
+window.Admin = Ember.Application.create({
   LOG_TRANSITIONS: true,
   LOG_TRANSITIONS_INTERNAL: true,
 
-  rootElement: "#content"
+  rootElement: '#content'
 });
 
 Ember.EasyForm.Tooltip = Ember.EasyForm.BaseView.extend({
   tagName: 'a',
   attributeBindings: ['title', 'rel'],
-  template: Ember.Handlebars.compile('<i class="icon-question-sign"></i>'),
+  template: Ember.Handlebars.compile('<i class="fa fa-question-circle"></i>'),
   rel: 'tooltip',
 });
 
@@ -101,8 +108,8 @@ Ember.Handlebars.helper('formatNumber', function(number) {
   return numeral(number).format('0,0');
 });
 
-Ember.Handlebars.helper('pluralize', function(word, number) {
-  return (number == 1) ? word : inflection.pluralize(word);
+Ember.Handlebars.helper('inflect', function(word, number) {
+  return inflection.inflect(word, number);
 });
 
 Ember.Handlebars.registerHelper('tooltip-field', function(property, options) {
@@ -130,6 +137,7 @@ Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
     this.editor.setShowPrintMargin(false);
     this.editor.setHighlightActiveLine(false);
     this.editor.getSession().setUseWorker(false);
+    this.editor.getSession().setTabSize(2);
     this.editor.getSession().setMode('ace/mode/' + this.$().data('ace-mode'));
     this.editor.getSession().setValue(this.$().val());
 
@@ -164,11 +172,16 @@ Admin.APIUmbrellaRESTAdapter = Ember.RESTAdapter.extend({
   }
 });
 
+$.ajaxPrefilter(function(options) {
+  options.headers = options.headers || {};
+  options.headers['X-Api-Key'] = webAdminAjaxApiKey;
+});
+
 // DataTables plugin to programmatically show the processing indidicator.
 // https://datatables.net/plug-ins/api#fnProcessingIndicator
 jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff )
 {
-  if( typeof(onoff) == 'undefined' )
+  if( typeof(onoff) === 'undefined' )
   {
     onoff=true;
   }
@@ -177,28 +190,26 @@ jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff 
 
 
 // Defaults for DataTables.
-_.merge($.fn.dataTable.defaults, {
+_.merge($.fn.DataTable.defaults, {
   // Don't show the DataTables processing message. We'll handle the processing
-  // message logic in fnInitComplete with blockui.
-  "bProcessing": false,
+  // message logic in initComplete with blockui.
+  processing: false,
 
   // Enable global searching.
-  "bFilter": true,
-
-  // Disable per-column searching.
-  "bSearchable": false,
+  searching: true,
 
   // Re-arrange how the table and surrounding fields (pagination, search, etc)
   // are laid out.
-  "sDom": 'rft<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
+  dom: 'rft<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
 
-  "oLanguage": {
-    // Don't have an explicit label for the search field. Used the placeholder
-    // created in fnInitComplete instead.
-    "sSearch": "",
+  language: {
+    // Don't have an explicit label for the search field. Use a placeholder
+    // instead.
+    search: '',
+    searchPlaceholder: 'Search...',
   },
 
-  "fnPreDrawCallback": function() {
+  preDrawCallback: function() {
     if(!this.customProcessingCallbackSet) {
       // Use blockui to provide a more obvious processing message the overlays
       // the entire table (this helps for long tables, where a simple processing
@@ -206,10 +217,10 @@ _.merge($.fn.dataTable.defaults, {
       //
       // Set this early on during pre-draw so that the processing message shows
       // up for the first load.
-      this.on('processing', _.bind(function(event, settings, processing) {
+      $(this).DataTable().on('processing', _.bind(function(event, settings, processing) {
         if(processing) {
           this.block({
-            message: '<i class="icon-spinner icon-spin icon-large"></i>',
+            message: '<i class="fa fa-spinner fa-spin fa-lg"></i>',
           });
         } else {
           this.unblock();
@@ -218,11 +229,5 @@ _.merge($.fn.dataTable.defaults, {
 
       this.customProcessingCallbackSet = true;
     }
-  },
-
-  "fnInitComplete": function() {
-    // Add a placeholder instead of the "Search:" label to the filter
-    // input.
-    $('.dataTables_filter input').attr("placeholder", "Search...");
   },
 });

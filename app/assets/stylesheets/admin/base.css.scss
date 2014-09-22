@@ -104,7 +104,6 @@ textarea.fill {
 }
 
 #results_table {
-  overflow-x: auto;
 }
 
 #results_table .table th,
@@ -284,9 +283,7 @@ fieldset .table {
 }
 
 a {
-  [class^="icon-"],
-  [class*=" icon-"] {
-    display: inline-block;
+  .fa {
     text-decoration: none;
     margin-right: 3px;
   }
@@ -331,12 +328,13 @@ legend a:hover {
   text-decoration: none;
 }
 
-a[data-toggle='collapse'] .icon-caret-down:before {
+a[data-toggle='collapse'] .fa-caret-down:before {
+  display: block;
   width: 16px;
   text-align: center;
 }
 
-a[data-toggle='collapse'].collapsed .icon-caret-down:before {
+a[data-toggle='collapse'].collapsed .fa-caret-down:before {
   content: "\f0da";
 }
 
@@ -412,6 +410,11 @@ td.reorder-handle {
   max-width: 600px;
 }
 
+.qtip-forced-wide {
+  min-width: 400px;
+  max-width: 600px;
+}
+
 .query-syntax-help .example {
   text-align: right;
 }
@@ -455,4 +458,34 @@ td.reorder-handle {
 .table tr.line-bottom td {
   border-top: none;
   border-bottom: 1px solid $tableBorder;
+}
+
+.diff {
+  del {
+    text-decoration: none;
+    background: #fdd;
+  }
+
+  ins {
+    text-decoration: none;
+    background: #dfd;
+  }
+}
+
+.dropdown-menu {
+  .fa {
+    /* Make the icons a consistent width so the menu text lines up */
+    width: 16px;
+    text-align: center;
+  }
+}
+
+/* Pulled from Bootstrap 3. Remove once we upgrade */
+.dropdown-header {
+  display: block;
+  padding: 3px 20px;
+  font-size: 12px;
+  line-height: 1.42857143;
+  color: #777;
+  white-space: nowrap;
 }
