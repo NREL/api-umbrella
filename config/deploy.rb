@@ -3,7 +3,7 @@ lock "3.2.1"
 
 set :application, "router"
 set :repo_url, "https://github.com/NREL/api-umbrella-router.git"
-set :branch, "config"
+set :branch, "master"
 
 # Default deploy_to directory is /var/www/my_app
 set :deploy_to, "/opt/api-umbrella/embedded/apps/router"
