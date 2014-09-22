@@ -2,6 +2,8 @@
 
 API Umbrella Gatekeeper is a custom reverse proxy that sits in front of your APIs and efficiently validates incoming requests. It is part of the [API Umbrella](http://github.com/NREL/api-umbrella) project. API Umbrella Gatekeeper is written in Node.js.
 
+Issues for this project are [maintained here](https://github.com/NREL/api-umbrella/issues).  
+
 ## Overview
 
 The basic aim of the Gatekeeper is to handle API keys, throttle requests, gather analytics, and optionally rewrite requests before passing incoming requests to your actual APIs.
