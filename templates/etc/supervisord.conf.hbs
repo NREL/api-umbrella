@@ -108,7 +108,6 @@ startsecs=3
 
 [program:config-reloader]
 command=api-umbrella-config-reloader {{api_umbrella_config_args}}
-{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
