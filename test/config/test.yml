@@ -71,6 +71,63 @@ apis:
     url_matches:
       - frontend_prefix: /
         backend_prefix: /
+  - _id: config-reloader-example-api
+    servers:
+      - host: example.com
+        port: 80
+  - _id: config-reloader-example-ip-api
+    servers:
+      - host: 8.8.8.8
+        port: 80
+  - _id: config-reloader-invalid-api
+    servers:
+      - host: foo.blah
+        port: 80
+  - _id: config-reloader-once-valid-api
+    servers:
+      - host: once-valid.blah
+        port: 80
+  - _id: config-reloader-once-valid-use-recent-api
+    servers:
+      - host: once-valid.akamai.com
+        port: 80
+  - _id: config-reloader-cached-api
+    servers:
+      - host: google.com
+        port: 80
+  - _id: config-reloader-localhost-api
+    servers:
+      - host: localhost
+        port: 80
+  - _id: config-reloader-dont-cache-recent-api
+    servers:
+      - host: api.data.gov
+        port: 80
+  - _id: config-reloader-use-recent-cname-api
+    servers:
+      - host: www.akamai.com
+        port: 80
+  - _id: config-reloader-use-recent-domain-api
+    servers:
+      - host: yahoo.com
+        port: 80
+  - _id: config-reloader-use-recent-expired-api
+    servers:
+      - host: blogs.akamai.com
+        port: 80
+  - _id: config-reloader-use-uncached-incrementing-api
+    servers:
+      - host: uncached-incrementing.blah
+        port: 80
+  - _id: config-reloader-use-uncached-alternating-api
+    servers:
+      - host: uncached-alternating.blah
+        port: 80
+dns_resolver:
+  minimum_ttl: 0.1
+  ignore_ttl_domains:
+    - "akamaiedge\\.net$"
+    - "yahoo\\.com"
 
 # This is the config for redis-convoy. We're using their defaults, but the
 # defaults go away when in their test environment. So redefine them here.

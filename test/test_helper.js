@@ -21,3 +21,4 @@ require('./support/keepalive_test_backend_app');
 global.shared = {};
 
 require('./support/helper_functions');
+require('./support/config_reloader_shared_examples');

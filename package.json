@@ -59,6 +59,7 @@
     "grunt-cli": "0.1.13",
     "grunt-contrib-jshint": "0.10.0",
     "grunt-mocha-test": "0.12.0",
+    "ipplusplus": "0.0.2",
     "jshint-stylish": "1.0.0",
     "randomstring": "1.0.3",
     "request": "2.44.0",
