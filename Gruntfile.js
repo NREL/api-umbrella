@@ -12,6 +12,7 @@ module.exports = function(grunt) {
       all: [
         '*.js',
         'lib/**/*.js',
+        'migrations/**/*.js',
         'bin/*',
         'test/**/*.js',
       ],
