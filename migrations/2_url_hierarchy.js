@@ -1,16 +1,13 @@
 'use strict';
 
 var async = require('async'),
-    config = require('api-umbrella-config').global(),
     elasticSearchConnect = require('../lib/elasticsearch_connect'),
-    logCleaner = require('../lib/log_processor/cleaner'),
-    moment = require('moment');
+    logCleaner = require('../lib/log_processor/cleaner');
 
 exports.migrate = function(client, done) {
   console.info('migrate!');
   elasticSearchConnect(function(error, elasticSearch) {
     var count = 0;
-    var indexes = {};
 
     console.info('search!');
     elasticSearch.search({
