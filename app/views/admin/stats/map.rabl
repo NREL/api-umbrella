@@ -7,7 +7,7 @@ end
 node :regions do
   rows = @result.aggregations["regions"]["buckets"].map do |bucket|
     {
-      :id => bucket["key"],
+      :id => region_id(bucket["key"]),
       :name => region_name(bucket["key"]),
       :hits => bucket["doc_count"],
     }

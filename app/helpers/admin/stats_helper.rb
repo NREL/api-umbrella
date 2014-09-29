@@ -67,6 +67,14 @@ module Admin::StatsHelper
     columns
   end
 
+  def region_id(id)
+    if(params[:region] == "US")
+      id = "US-#{id}"
+    end
+
+    id
+  end
+
   def region_name(code)
     name = code
     case(params[:region])
