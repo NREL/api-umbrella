@@ -163,7 +163,7 @@ class LogSearch
     @query[:aggregations][:top_path_hits_over_time] = {
       :terms => {
         :field => "request_hierarchy",
-        :size => 2,
+        :size => 10,
         :include => "^#{Regexp.escape(prefix)}.*",
       },
       :aggregations => {
