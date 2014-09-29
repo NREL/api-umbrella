@@ -51,6 +51,6 @@ Admin.StatsMapTableView = Ember.View.extend({
   refreshData: function() {
     var table = this.$().DataTable();
     table.clear();
-    table.add(this.get('model.regions'));
+    table.rows.add(this.get('model.regions')).draw();
   }.observes('model.regions'),
 });
