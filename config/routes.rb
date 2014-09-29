@@ -27,6 +27,12 @@ ApiUmbrella::Application.routes.draw do
         resources :users
         resource :contact, :only => [:create]
 
+        resources :analytics do
+          collection do
+            get "drilldown"
+          end
+        end
+
         namespace :config do
           get :pending_changes
           post :publish

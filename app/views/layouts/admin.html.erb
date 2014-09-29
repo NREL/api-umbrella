@@ -29,6 +29,7 @@
             <% if(current_admin.can?("analytics")) %>
               <%= tab.analytics('Analytics <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-analytics", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
                 <ul class="dropdown-menu">
+                  <li><%= link_to('<i class="fa fa-sitemap"></i> API Drilldown'.html_safe, "/admin/#/stats/drilldown") %></li>
                   <li><%= link_to('<i class="fa fa-signal"></i> Filter Logs'.html_safe, "/admin/#/stats/logs") %></li>
                   <li><%= link_to('<i class="fa fa-user"></i> By Users'.html_safe, "/admin/#/stats/users") %></li>
                   <li><%= link_to('<i class="fa fa-map-marker"></i> By Location'.html_safe, "/admin/#/stats/map") %></li>

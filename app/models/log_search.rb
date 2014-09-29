@@ -145,6 +145,60 @@ class LogSearch
     }
   end
 
+  def aggregate_by_drilldown!(prefix)
+    @query[:query][:filtered][:filter][:bool][:must] <<                 {
+      :prefix => {
+        :request_hierarchy => prefix,
+      },
+    }
+
+    @query[:aggregations][:drilldown] = {
+      :terms => {
+        :field => "request_hierarchy",
+        :size => 500,
+        :include => "^#{Regexp.escape(prefix)}.*",
+      },
+    }
+
+    @query[:aggregations][:top_path_hits_over_time] = {
+      :terms => {
+        :field => "request_hierarchy",
+        :size => 2,
+        :include => "^#{Regexp.escape(prefix)}.*",
+      },
+      :aggregations => {
+        :drilldown_over_time => {
+          :date_histogram => {
+            :field => "request_at",
+            :interval => @interval,
+            :time_zone => Time.zone.name,
+            :pre_zone_adjust_large_interval => true,
+            :min_doc_count => 0,
+            :extended_bounds => {
+              :min => @start_time.iso8601,
+              :max => @end_time.iso8601,
+            },
+          },
+        },
+      },
+    }
+
+    @query[:aggregations][:hits_over_time] = {
+      :date_histogram => {
+        :field => "request_at",
+        :interval => @interval,
+        :time_zone => Time.zone.name,
+        :pre_zone_adjust_large_interval => true,
+        :min_doc_count => 0,
+        :extended_bounds => {
+          :min => @start_time.iso8601,
+          :max => @end_time.iso8601,
+        },
+      },
+    }
+
+  end
+
   def aggregate_by_interval!
     @query[:aggregations][:hits_over_time] = {
       :date_histogram => {

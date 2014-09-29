@@ -30,6 +30,31 @@ class LogResult
     @hits_over_time
   end
 
+  def drilldown
+    if(!@drilldown && aggregations["drilldown"])
+      @drilldown = []
+
+      aggregations["drilldown"]["buckets"].each do |bucket|
+        depth, path = bucket["key"].split("/", 2)
+        terminal = !path.end_with?("/")
+
+        depth = depth.to_i
+        descendent_depth = depth + 1
+        descendent_prefix = File.join(descendent_depth.to_s, path)
+
+        @drilldown << {
+          :depth => depth,
+          :path => path,
+          :terminal => terminal,
+          :descendent_prefix => descendent_prefix,
+          :hits => bucket["doc_count"],
+        }
+      end
+    end
+
+    @drilldown
+  end
+
   def map_breadcrumbs
     if(!@map_breadcrumbs && @search.region)
       @map_breadcrumbs = []

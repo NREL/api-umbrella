@@ -1,0 +1,20 @@
+{{view Admin.StatsQueryFormView enableInterval=true}}
+
+{{view Admin.StatsDrilldownChartView dataBinding='metadata.hits_over_time'}}
+
+{{#each breadcrumbs}}
+  {{#if linkQuery}}
+    {{#link-to 'stats.drilldown' linkQuery}}{{name}}{{/link-to}} /
+  {{else}}
+    {{name}}
+  {{/if}}
+{{/each}}
+
+<div id="results_table">
+  {{view Admin.StatsDrilldownTableView modelBinding='model'}}
+</div>
+<div class="results-table-actions">
+  <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
+</div>
+
+{{view Admin.LoadingOverlayView isLoadingBinding='controllers.application.isLoading'}}

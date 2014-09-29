@@ -29,6 +29,9 @@ Admin.Router.map(function() {
   });
 
   this.resource('stats', { path: '/stats' }, function() {
+    this.route('drilldown', { path: '/drilldown/*query' });
+    this.route('drilldownDefault', { path: '/drilldown' });
+
     this.route('logs', { path: '/logs/*query' });
     this.route('logsDefault', { path: '/logs' });
 

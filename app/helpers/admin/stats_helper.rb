@@ -41,33 +41,6 @@ module Admin::StatsHelper
     buckets
   end
 
-  def formatted_interval_time(time)
-    time = Time.at(time / 1000).in_time_zone
-
-    case @search.interval
-    when "minute"
-      time.strftime("%a, %b %-d, %Y %-I:%0M%P %Z")
-    when "hour"
-      time.strftime("%a, %b %-d, %Y %-I:%0M%P %Z")
-    when "day"
-      time.strftime("%a, %b %-d, %Y")
-    when "week"
-      end_of_week = time.end_of_week
-      if(end_of_week > @search.end_time)
-        end_of_week = @search.end_time
-      end
-
-      "#{time.strftime("%b %-d, %Y")} - #{end_of_week.strftime("%b %-d, %Y")}"
-    when "month"
-      end_of_month = time.end_of_month
-      if(end_of_month > @search.end_time)
-        end_of_month = @search.end_time
-      end
-
-      "#{time.strftime("%b %-d, %Y")} - #{end_of_month.strftime("%b %-d, %Y")}"
-    end
-  end
-
   def region_location_columns(bucket)
     columns = []
 
