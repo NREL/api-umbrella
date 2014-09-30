@@ -2,7 +2,7 @@ Admin.StatsDrilldownController = Admin.StatsBaseController.extend({
   breadcrumbs: function() {
     var crumbs = [];
 
-    var data = this.get('model.metadata.breadcrumbs');
+    var data = this.get('model.breadcrumbs');
     for(var i = 0; i < data.length; i++) {
       var crumb = { name: data[i].crumb };
 
@@ -20,11 +20,11 @@ Admin.StatsDrilldownController = Admin.StatsBaseController.extend({
     }
 
     return crumbs;
-  }.property('model.metadata.breadcrumb'),
+  }.property('model.breadcrumbs'),
 
   downloadUrl: function() {
-    return '/admin/stats/map.csv?' + $.param(this.get('query.params'));
-  }.property('query.params', 'query.params.search', 'query.params.start', 'query.params.end'),
+    return '/api-umbrella/v1/analytics/drilldown.csv?' + $.param(this.get('query.params')) + '&api_key=' + webAdminAjaxApiKey;
+  }.property('query.params', 'query.params.search', 'query.params.start', 'query.params.end', 'query.params.prefix'),
 });
 
 Admin.StatsDrilldownDefaultController = Admin.StatsDrilldownController.extend({

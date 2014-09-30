@@ -145,18 +145,20 @@ class LogSearch
     }
   end
 
-  def aggregate_by_drilldown!(prefix)
-    @query[:query][:filtered][:filter][:bool][:must] <<                 {
-      :prefix => {
-        :request_hierarchy => prefix,
-      },
-    }
-
+  def aggregate_by_drilldown!(prefix, size = 0)
     @query[:aggregations][:drilldown] = {
       :terms => {
         :field => "request_hierarchy",
-        :size => 500,
+        :size => size,
         :include => "^#{Regexp.escape(prefix)}.*",
+      },
+    }
+  end
+
+  def aggregate_by_drilldown_over_time!(prefix)
+    @query[:query][:filtered][:filter][:bool][:must] <<                 {
+      :prefix => {
+        :request_hierarchy => prefix,
       },
     }
 
@@ -196,7 +198,6 @@ class LogSearch
         },
       },
     }
-
   end
 
   def aggregate_by_interval!
