@@ -60,8 +60,7 @@ startsecs=3
 
 [program:varnishd]
 environment=CCACHE_DIR="{{run_dir}}/varnish/.ccache"
-command=varnishd -F -a :{{varnish.port}} -f {{etc_dir}}/varnish.vcl -t 0 -n {{run_dir}}/varnish/api-umbrella -p http_gzip_support=off
-{{supervisor_conditional_user}}
+command=varnishd -F -a :{{varnish.port}} -f {{etc_dir}}/varnish.vcl -t 0 -n {{run_dir}}/varnish/api-umbrella {{#if user}}-u {{user}}{{/if}} {{#if group}}-g {{group}}{{/if}} -p 'http_gzip_support=off' -p 'cc_command=exec pcc -std=gnu99 -g -O2 -Wall -Werror -Wno-error=unused-result -pthread -fpic -shared -Wl,-x -o %%o %%s'
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
