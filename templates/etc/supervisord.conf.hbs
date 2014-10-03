@@ -168,7 +168,6 @@ startsecs=3
 
 [program:web-nginx]
 command=nginx -c {{etc_dir}}/nginx/web.conf
-{{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE

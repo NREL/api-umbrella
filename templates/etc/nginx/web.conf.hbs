@@ -2,6 +2,10 @@ worker_processes {{nginx.workers}};
 
 daemon off;
 
+{{#if user}}
+user {{user}} {{group}};
+{{/if}}
+
 pid {{run_dir}}/web-nginx.pid;
 
 events {
