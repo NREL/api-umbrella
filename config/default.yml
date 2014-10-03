@@ -59,6 +59,7 @@ router:
     port: 50100
 hosts:
   - hostname: localhost
+    default: true
 mongodb:
   url: "mongodb://127.0.0.1:50217/api_umbrella_development"
   options:
