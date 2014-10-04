@@ -11,6 +11,7 @@ module.exports = function(grunt) {
       },
       all: [
         '*.js',
+        '.eastrc',
         'lib/**/*.js',
         'migrations/**/*.js',
         'bin/*',

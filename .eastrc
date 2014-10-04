@@ -1,4 +1,6 @@
-{
-  "adapter": "../../../lib/east_api_umbrella_mongo",
-  "timeout": 604800000
+var path = require('path');
+
+module.exports = {
+  dir: path.resolve(__dirname, './migrations'),
+  adapter: path.resolve(__dirname, './lib/east_api_umbrella_mongo'),
 }
