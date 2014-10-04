@@ -7,7 +7,9 @@ class ConfigVersion
   field :config, :type => Hash
 
   # Indexes
-  index({ :version => 1 }, { :unique => true })
+  # This model's indexes are managed by the Mongoose model inside the
+  # api-umbrella-config project.
+  # index({ :version => 1 }, { :unique => true })
 
   def self.publish!(config)
     self.create!({

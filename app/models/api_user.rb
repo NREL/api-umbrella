@@ -29,7 +29,9 @@ class ApiUser
   embeds_one :settings, :class_name => "Api::Settings"
 
   # Indexes
-  index({ :api_key => 1 }, { :unique => true })
+  # This model's indexes are managed by the Mongoose model inside the
+  # api-umbrella-gatekeeper project.
+  # index({ :api_key => 1 }, { :unique => true })
 
   # Validations
   #
