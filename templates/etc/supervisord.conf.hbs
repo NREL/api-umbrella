@@ -145,6 +145,7 @@ startsecs=3
 {{#if service_web_enabled}}
 {{#if development_env}}
 [program:static-site]
+environment=DOTENV_PATH="{{etc_dir}}/static_site_env",BUILD_DIR="{{static_site.build_dir}}"
 directory={{static_site.dir}}
 command=bundle exec middleman server -p {{static_site.port}} --verbose
 {{supervisor_conditional_user}}

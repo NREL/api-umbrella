@@ -212,7 +212,7 @@ http {
     listen {{static_site.port}};
     server_name _;
 
-    root {{static_site.dir}}/build;
+    root {{static_site.build_dir}};
   }
   {{/unless}}
 
