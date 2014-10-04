@@ -6,7 +6,7 @@ var async = require('async'),
 
 exports.migrate = function(client, done) {
   console.info('migrate!');
-  elasticSearchConnect(function(error, elasticSearch) {
+  elasticSearchConnect(function(error, elasticSearch, elasticSearchConnection) {
     var count = 0;
 
     console.info('search!');
@@ -62,6 +62,7 @@ exports.migrate = function(client, done) {
           elasticSearch.bulk({ body: bulkCommands }, function(error) {
             if(error) {
               console.error('INDEX ERROR', error);
+              elasticSearchConnection.close();
               done(error);
             }
 
@@ -70,11 +71,17 @@ exports.migrate = function(client, done) {
             if(count < response.hits.total) {
               continueScroll();
             } else {
+              elasticSearchConnection.close();
               done();
             }
           });
         } else {
-          continueScroll();
+          if(count < response.hits.total) {
+            continueScroll();
+          } else {
+            elasticSearchConnection.close();
+            done();
+          }
         }
       });
     });

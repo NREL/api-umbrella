@@ -1,11 +1,11 @@
 'use strict';
 
 var async = require('async'),
-    config = require('api-umbrella-config'),
     elasticSearchConnect = require('../lib/elasticsearch_connect'),
     logCleaner = require('../lib/log_processor/cleaner'),
     moment = require('moment'),
-    mongoConnect = require('../lib/mongo_connect');
+    mongoConnect = require('../lib/mongo_connect'),
+    mongoose = require('mongoose');
 
 exports.migrate = function(client, done) {
   console.info('migrate!');
@@ -13,7 +13,8 @@ exports.migrate = function(client, done) {
     mongoConnect,
     elasticSearchConnect,
   ], function(error, results) {
-    var elasticSearch = results[1];
+    var elasticSearch = results[1][0];
+    var elasticSearchConnection = results[1][1];
 
     var count = 0;
     var indexes = {};
@@ -45,7 +46,7 @@ exports.migrate = function(client, done) {
 
         logCleaner.url(hit._source);
         logCleaner.user(hit._source, { force: true }, function() {
-          var index = hit._index.replace(/api-umbrella-logs-/, 'api-umbrella-logs-v1-' + config.get('environment') + '-');
+          var index = hit._index.replace(/api-umbrella-logs-/, 'api-umbrella-logs-v1-');
           indexes[hit._index] = index;
 
           bulkCommands.push({
@@ -61,42 +62,45 @@ exports.migrate = function(client, done) {
           callback(null);
         });
       }, function() {
-        elasticSearch.bulk({ body: bulkCommands }, function(error) {
-          if(error) {
-            console.error('INDEX ERROR', error);
-          }
+        function continueScroll() {
+          elasticSearch.scroll({
+            scrollId: response._scroll_id,
+            scroll: '5m'
+          }, getMoreUntilDone);
+        }
 
-          console.info('Indexed ' + count + ' of ' + response.hits.total);
-
+        if(bulkCommands.length === 0) {
           if(count < response.hits.total) {
-            elasticSearch.scroll({
-              scrollId: response._scroll_id,
-              scroll: '5m'
-            }, getMoreUntilDone);
+            continueScroll();
           } else {
-            console.info('Sanity checks...');
-            // Sleep to let the bulk indexing catch-up. Otherwise, the counts
-            // on the new index can be off it seems.
-            setTimeout(function() {
-              async.eachSeries(Object.keys(indexes), function(oldIndex, callback) {
-                var newIndex = indexes[oldIndex];
+            mongoose.disconnect();
+            elasticSearchConnection.close();
+            done();
+          }
+        } else {
+          elasticSearch.bulk({ body: bulkCommands }, function(error) {
+            if(error) {
+              console.error('INDEX ERROR', error);
+              done(error);
+            }
 
-                elasticSearch.search({
-                  index: oldIndex,
-                  size: 1,
-                  ignoreIndices: 'missing',
-                  body: {
-                    sort: [{ request_at: 'desc' }],
-                    query: {
-                      match_all: {},
-                    },
-                  },
-                }, function(error, oldResponse) {
-                  var oldTotal = oldResponse.hits.total;
-                  var oldLastTime = oldResponse.hits.hits[0]._source.request_at;
+            console.info('Indexed ' + count + ' of ' + response.hits.total);
+
+            if(count < response.hits.total) {
+              elasticSearch.scroll({
+                scrollId: response._scroll_id,
+                scroll: '5m'
+              }, getMoreUntilDone);
+            } else {
+              console.info('Sanity checks...');
+              // Sleep to let the bulk indexing catch-up. Otherwise, the counts
+              // on the new index can be off it seems.
+              setTimeout(function() {
+                async.eachSeries(Object.keys(indexes), function(oldIndex, callback) {
+                  var newIndex = indexes[oldIndex];
 
                   elasticSearch.search({
-                    index: newIndex,
+                    index: oldIndex,
                     size: 1,
                     ignoreIndices: 'missing',
                     body: {
@@ -105,72 +109,89 @@ exports.migrate = function(client, done) {
                         match_all: {},
                       },
                     },
-                  }, function(error, newResponse) {
-                    var newTotal = newResponse.hits.total;
-                    var newLastTime = newResponse.hits.hits[0]._source.request_at;
-                    var deleteIndex = false;
+                  }, function(error, oldResponse) {
+                    var oldTotal = oldResponse.hits.total;
+                    var oldLastTime = oldResponse.hits.hits[0]._source.request_at;
 
-                    if(oldTotal === newTotal && oldLastTime && oldLastTime === newLastTime) {
-                      console.info(oldIndex + ' and ' + newIndex + ' match (' + newTotal + ' records - last record: ' + newLastTime + ')');
-                      deleteIndex = true;
-                    } else {
-                      console.info('WARNING: ' + oldIndex + ' and ' + newIndex + ' DO NOT match (' + oldTotal + ' vs ' + newTotal + ' records)');
-                      var todayIndex = 'api-umbrella-logs-' + moment().utc().format('YYYY-MM');
-                      if(oldIndex === todayIndex && newTotal > oldTotal) {
-                        console.info('  Continuing because it is the current month');
+                    elasticSearch.search({
+                      index: newIndex,
+                      size: 1,
+                      ignoreIndices: 'missing',
+                      body: {
+                        sort: [{ request_at: 'desc' }],
+                        query: {
+                          match_all: {},
+                        },
+                      },
+                    }, function(error, newResponse) {
+                      var newTotal = newResponse.hits.total;
+                      var newLastTime = newResponse.hits.hits[0]._source.request_at;
+                      var deleteIndex = false;
+
+                      if(oldTotal === newTotal && oldLastTime && oldLastTime === newLastTime) {
+                        console.info(oldIndex + ' and ' + newIndex + ' match (' + newTotal + ' records - last record: ' + newLastTime + ')');
                         deleteIndex = true;
+                      } else {
+                        console.info('WARNING: ' + oldIndex + ' and ' + newIndex + ' DO NOT match (' + oldTotal + ' vs ' + newTotal + ' records)');
+                        var todayIndex = 'api-umbrella-logs-' + moment().utc().format('YYYY-MM');
+                        if(oldIndex === todayIndex && newTotal > oldTotal) {
+                          console.info('  Continuing because it is the current month');
+                          deleteIndex = true;
+                        }
                       }
-                    }
 
-                    if(deleteIndex) {
-                      elasticSearch.indices.delete({
-                        index: oldIndex,
-                      }, function(error) {
-                        if(error && false) {
-                          console.info('DELETE INDEX ERROR: ', error);
-                          callback(null);
-                        } else {
-                          var readIndex = newIndex.replace(/-v1-/, '-');
-                          var writeIndex = newIndex.replace(/v1/, 'write');
-                          elasticSearch.indices.updateAliases({
-                            body: {
-                              actions: [
-                                { add: { index: newIndex, alias: readIndex } },
-                                { add: { index: newIndex, alias: writeIndex } },
-                              ],
-                            },
-                          }, function(error) {
-                            if(error) {
-                              console.info('UPDATE ALIAS ERROR: ', error);
-                            }
-
-                            console.info('Optimizing ', newIndex);
-                            elasticSearch.indices.optimize({
-                              index: newIndex,
-                              maxNumSegments: 1,
+                      if(deleteIndex) {
+                        elasticSearch.indices.delete({
+                          index: oldIndex,
+                        }, function(error) {
+                          if(error && false) {
+                            console.info('DELETE INDEX ERROR: ', error);
+                            callback(null);
+                          } else {
+                            var readIndex = newIndex.replace(/-v1-/, '-');
+                            var writeIndex = newIndex.replace(/v1/, 'write');
+                            elasticSearch.indices.updateAliases({
+                              body: {
+                                actions: [
+                                  { add: { index: newIndex, alias: readIndex } },
+                                  { add: { index: newIndex, alias: writeIndex } },
+                                ],
+                              },
                             }, function(error) {
                               if(error) {
-                                console.info('OPTIMIZE ALIAS ERROR: ', error);
+                                console.info('UPDATE ALIAS ERROR: ', error);
                               }
 
-                              console.info('Finished optimizing');
-                              callback(null);
+                              console.info('Optimizing ', newIndex);
+                              elasticSearch.indices.optimize({
+                                index: newIndex,
+                                maxNumSegments: 1,
+                              }, function(error) {
+                                if(error) {
+                                  console.info('OPTIMIZE ALIAS ERROR: ', error);
+                                }
+
+                                console.info('Finished optimizing');
+                                callback(null);
+                              });
                             });
-                          });
-                        }
-                      });
-                    } else {
-                      callback(null);
-                    }
+                          }
+                        });
+                      } else {
+                        callback(null);
+                      }
+                    });
                   });
+                }, function() {
+                  console.info('Finished');
+                  mongoose.disconnect();
+                  elasticSearchConnection.close();
+                  done();
                 });
-              }, function() {
-                console.info('Finished');
-                done();
-              });
-            }, 5000);
-          }
-        });
+              }, 5000);
+            }
+          });
+        }
       });
     });
   });
