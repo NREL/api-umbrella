@@ -10,7 +10,7 @@ exports.migrate = function(client, done) {
     elasticSearch.indices.getAliases({}, function(error, aliasResponse) {
       elasticSearch.indices.status({}, function(error, statusResponse) {
         var indexNames = _.keys(aliasResponse);
-        var aliasNames = _.flatten(_.map(aliasResponse, function(index) { return _.keys(index.aliases) }));
+        var aliasNames = _.flatten(_.map(aliasResponse, function(index) { return _.keys(index.aliases); }));
         console.info(indexNames);
         console.info(aliasNames);
 
