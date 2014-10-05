@@ -141,7 +141,7 @@ http {
 
     # Force certain content to HTTPS-only.
     if ($ssl_status = "off_required") {
-      rewrite ^ https://$host:{{../../https_port}}$request_uri? permanent;
+      rewrite ^ https://$host:{{../https_port}}$request_uri? permanent;
     }
 
     # Route the docs and other static pages to the Rails web app. This may
@@ -211,6 +211,7 @@ http {
   server {
     listen {{static_site.port}};
     server_name _;
+    port_in_redirect off;
 
     root {{static_site.build_dir}};
   }
