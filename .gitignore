@@ -20,3 +20,6 @@
 # Ignore node generated file
 /config/runtime.*
 /test/config/runtime.*
+
+# Ignore local config overrides
+/config/default.local.yml
