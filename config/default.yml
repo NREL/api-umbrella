@@ -1,4 +1,4 @@
-app_env: development
+app_env: production
 services:
   - general_db
   - log_db
@@ -29,6 +29,8 @@ web:
   host: 127.0.0.1
   port: 51000
   dir: /opt/api-umbrella/embedded/apps/web/current
+  rails_secret_token:
+  devise_secret_key:
   puma:
     bind: "unix:///opt/api-umbrella/var/run/puma.sock"
     workers: 2
