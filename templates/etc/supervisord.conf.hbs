@@ -33,7 +33,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=10
 {{/if}}
 
 {{#if service_log_db_enabled}}
@@ -45,7 +45,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=10
 {{/if}}
 
 {{#if service_router_enabled}}
@@ -56,7 +56,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=5
 
 [program:varnishd]
 environment=CCACHE_DIR="{{run_dir}}/varnish/.ccache"
@@ -66,7 +66,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=5
 
 [program:varnishlog]
 command=varnishlog -a -w {{log_dir}}/varnish.log -n {{run_dir}}/varnish/api-umbrella
@@ -75,7 +75,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=5
 
 [program:varnishncsa]
 command=varnishncsa -a -w {{log_dir}}/varnishncsa.log -n {{run_dir}}/varnish/api-umbrella
@@ -84,7 +84,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=5
 
 [program:router-nginx]
 command=nginx -c {{etc_dir}}/nginx/router.conf
@@ -92,7 +92,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=5
 
 [program:gatekeeper]
 numprocs=4
@@ -104,7 +104,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s_50%(process_num)03d.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=5
 
 [program:config-reloader]
 command=api-umbrella-config-reloader {{api_umbrella_config_args}}
@@ -112,7 +112,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=10
 
 [program:router-log-listener]
 command=api-umbrella-router-log-listener {{api_umbrella_config_args}}
@@ -121,7 +121,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=10
 
 [program:log-processor]
 command=api-umbrella-log-processor {{api_umbrella_config_args}}
@@ -130,7 +130,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=10
 
 [program:distributed-rate-limits-sync]
 command=api-umbrella-distributed-rate-limits-sync {{api_umbrella_config_args}}
@@ -139,7 +139,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=5
 {{/if}}
 
 {{#if service_web_enabled}}
@@ -153,7 +153,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=10
 {{/if}}
 
 [program:web-puma]
@@ -165,7 +165,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=10
 
 [program:web-nginx]
 command=nginx -c {{etc_dir}}/nginx/web.conf
@@ -173,5 +173,5 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=3
+startsecs=5
 {{/if}}
