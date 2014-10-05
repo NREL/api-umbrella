@@ -26,6 +26,8 @@ http {
   uwsgi_temp_path {{tmp_dir}}/web-nginx-uwsgi_temp;
   scgi_temp_path {{tmp_dir}}/web-nginx-scgi_temp;
 
+  include ./mime.conf;
+
   upstream puma {
     server unix://{{run_dir}}/web-puma.sock;
   }
