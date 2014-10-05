@@ -37,6 +37,7 @@ web:
     min_threads: 2
     max_threads: 24
   admin:
+    initial_superusers: []
     auth_strategies:
       enabled:
         - github
