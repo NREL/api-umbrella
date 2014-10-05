@@ -235,6 +235,11 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', :scope => 'user,public_repo'
 
+  if(%w(development test).include?(Rails.env))
+    config.omniauth :developer,
+      :fields => [:email]
+  end
+
   ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].each do |strategy|
     case(strategy)
     when "facebook"
@@ -269,11 +274,6 @@ Devise.setup do |config|
     else
       raise "Unknown authentication strategy enabled in config: #{strategy.inspect}"
     end
-  end
-
-  if(%w(development test).include?(Rails.env))
-    config.omniauth :developer,
-      :fields => [:email]
   end
 
   # ==> Warden configuration

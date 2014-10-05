@@ -29,7 +29,9 @@ class Admin
   has_and_belongs_to_many :groups, :class_name => "AdminGroup", :inverse_of => nil
 
   # Indexes
-  index({ :username => 1 }, { :unique => true })
+  # This model's indexes are managed by the Mongoose model inside the
+  # api-umbrella-router project.
+  # index({ :username => 1 }, { :unique => true })
 
   # Validations
   validates :username,
