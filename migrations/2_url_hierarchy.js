@@ -78,7 +78,7 @@ exports.migrate = function(client, done) {
               done(error);
             }
 
-            console.info('Indexed ' + count + ' of ' + response.hits.total + '(' + bulkCommands.length / 2 + ' records indexed in ' + elapsedTime[0] + ' seconds)');
+            console.info((new Date()).toISOString() + ' Indexed ' + count + ' of ' + response.hits.total + ' (' + bulkCommands.length / 2 + ' records indexed in ' + elapsedTime[0] + ' seconds)');
 
             if(count < response.hits.total) {
               continueScroll();
