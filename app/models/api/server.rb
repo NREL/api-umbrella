@@ -16,7 +16,7 @@ class Api::Server
     :presence => true
   validates :port,
     :inclusion => { :in => 0..65_535 }
-  validate :validate_host_resolves
+  validate :validate_host_resolves, :on => :create
 
   # Mass assignment security
   attr_accessible :host,
