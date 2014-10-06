@@ -16,7 +16,8 @@ redis:
 mongodb:
   url: "mongodb://127.0.0.1:9901/api_umbrella_test"
   embedded_server_config:
-    port: 9901
+    net:
+      port: 9901
 elasticsearch:
   hosts:
     - "http://127.0.0.1:9902"

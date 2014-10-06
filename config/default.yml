@@ -73,7 +73,14 @@ mongodb:
       socketOptions:
         keepAlive: 500
   embedded_server_config:
-    port: 50217
+    systemLog:
+      destination: file
+      logAppend: true
+      quiet: true
+    processManagement:
+      fork: false
+    net:
+      port: 50217
 elasticsearch:
   hosts:
     - "http://127.0.0.1:50200"
