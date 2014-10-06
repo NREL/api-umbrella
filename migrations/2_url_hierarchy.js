@@ -8,19 +8,29 @@ exports.migrate = function(client, done) {
   console.info('migrate!');
   elasticSearchConnect(function(error, elasticSearch, elasticSearchConnection) {
     var count = 0;
+    var startTime;
 
     console.info('search!');
     elasticSearch.search({
       index: 'api-umbrella-logs-v1-*',
       search_type: 'scan',
       scroll: '5m',
-      size: 1000,
+      size: 250,
       body: {
         query: {
           match_all: {},
         },
+        filter: {
+          not: {
+            exists: {
+              field: "request_hierarchy",
+            },
+          },
+        },
       },
     }, function getMoreUntilDone(error, response) {
+      startTime = process.hrtime();
+
       if(error) {
         done(error);
       }
@@ -60,13 +70,15 @@ exports.migrate = function(client, done) {
 
         if(bulkCommands.length > 0) {
           elasticSearch.bulk({ body: bulkCommands, requestTimeout: 120000 }, function(error) {
+            var elapsedTime = process.hrtime(startTime);
+
             if(error) {
               console.error('INDEX ERROR', error);
               elasticSearchConnection.close();
               done(error);
             }
 
-            console.info('Indexed ' + count + ' of ' + response.hits.total);
+            console.info('Indexed ' + count + ' of ' + response.hits.total + '(' + bulkCommands.length / 2 + ' records indexed in ' + elapsedTime[0] + ' seconds)');
 
             if(count < response.hits.total) {
               continueScroll();
@@ -76,6 +88,7 @@ exports.migrate = function(client, done) {
             }
           });
         } else {
+          console.info('Skipping ' + count + ' of ' + response.hits.total);
           if(count < response.hits.total) {
             continueScroll();
           } else {
