@@ -90,6 +90,8 @@ elasticsearch:
     transport:
       tcp:
         port: 50300
+    cluster:
+      name: api-umbrella
     indices:
       fielddata:
         cache:
