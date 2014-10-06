@@ -42,7 +42,7 @@ var tasks = {
         console.error('api-umbrella is already started');
         process.exit(1);
       } else {
-        var daemonDir = path.join(process.env['HOME'], '.api-umbrella');
+        var daemonDir = path.join(process.env['HOME'] || '/opt/api-umbrella', '.api-umbrella');
         var daemonLog = path.join(daemonDir, 'server.log');
         var daemonPid = path.join(daemonDir, 'server.pid');
 
