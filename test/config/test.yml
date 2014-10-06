@@ -21,8 +21,11 @@ elasticsearch:
   hosts:
     - "http://127.0.0.1:9902"
   embedded_server_config:
-    http_port: 9902
-    transport_tcp_port: 9903
+    http:
+      port: 9902
+    transport:
+      tcp:
+        port: 9903
 apis:
   - _id: down
     frontend_host: localhost

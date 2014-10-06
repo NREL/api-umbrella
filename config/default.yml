@@ -78,8 +78,16 @@ elasticsearch:
   hosts:
     - "http://127.0.0.1:50200"
   embedded_server_config:
-    http_port: 50200
-    transport_tcp_port: 50300
+    http:
+      port: 50200
+    transport:
+      tcp:
+        port: 50300
+    indices:
+      fielddata:
+        cache:
+          size: 60%
+          expire: 10m
 trustedProxies:
   - 127.0.0.1
 proxy:
