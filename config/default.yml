@@ -99,8 +99,10 @@ elasticsearch:
     indices:
       fielddata:
         cache:
-          size: 60%
-          expire: 10m
+          size: 40%
+      breaker:
+        fielddata:
+          limit: 60%
 trustedProxies:
   - 127.0.0.1
 proxy:

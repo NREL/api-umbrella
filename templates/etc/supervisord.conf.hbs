@@ -38,7 +38,7 @@ startsecs=10
 
 {{#if service_log_db_enabled}}
 [program:elasticsearch]
-environment=ES_INCLUDE="{{etc_dir}}/elasticsearch/elasticsearch-env.sh"
+environment=ES_JAVA_OPTS="-Des.default.path.conf={{etc_dir}}/elasticsearch",ES_HEAP_SIZE="{{elasticsearch.embedded_server_env.heap_size}}"
 command=elasticsearch
 {{supervisor_conditional_user}}
 redirect_stderr=true
