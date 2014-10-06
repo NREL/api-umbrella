@@ -59,7 +59,7 @@ exports.migrate = function(client, done) {
         }
 
         if(bulkCommands.length > 0) {
-          elasticSearch.bulk({ body: bulkCommands }, function(error) {
+          elasticSearch.bulk({ body: bulkCommands, requestTimeout: 120000 }, function(error) {
             if(error) {
               console.error('INDEX ERROR', error);
               elasticSearchConnection.close();

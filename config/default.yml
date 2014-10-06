@@ -6,6 +6,8 @@ services:
   - web
 user: api-umbrella
 group: api-umbrella
+rlimits:
+  nofile: 100000
 http_port: 80
 https_port: 443
 etc_dir: /opt/api-umbrella/etc
@@ -84,6 +86,8 @@ mongodb:
 elasticsearch:
   hosts:
     - "http://127.0.0.1:50200"
+  embedded_server_env:
+    heap_size: 512m
   embedded_server_config:
     http:
       port: 50200
