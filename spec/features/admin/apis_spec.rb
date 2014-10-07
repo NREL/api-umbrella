@@ -20,8 +20,10 @@ describe "apis", :js => true do
 
       all("tbody td.reorder-handle").length.should eql(0)
       click_button "Reorder"
+      sleep 2
       all("tbody td.reorder-handle").length.should eql(4)
       click_button "Done"
+      sleep 2
       all("tbody td.reorder-handle").length.should eql(0)
     end
 
@@ -61,8 +63,10 @@ describe "apis", :js => true do
     it "exits reorder mode when an order is applied after entering reorder mode" do
       visit "/admin/#/apis"
       click_button "Reorder"
+      sleep 2
       all("tbody td.reorder-handle").length.should eql(4)
       find("thead tr:first-child").click
+      sleep 2
       all("tbody td.reorder-handle").length.should eql(0)
     end
 
