@@ -50,10 +50,11 @@ describe "apis", :js => true do
     it "exits reorder mode when a filter is applied after entering reorder mode" do
       visit "/admin/#/apis"
       click_button "Reorder"
+      sleep 2
       all("tbody td.reorder-handle").length.should eql(4)
       find(".dataTables_filter input").set("testing-fi")
       wait_for_datatables_filter
-      sleep 1
+      sleep 2
       all("tbody td.reorder-handle").length.should eql(0)
     end
 

@@ -78,6 +78,7 @@ describe "roles", :js => true do
 
       find("a", :text => /Sub-URL Request Settings/).click
       find("button", :text => /Add URL Settings/).click
+      sleep 2
       find(".modal .selectize-input").click
       page.should have_content("test-new-user-role")
     end
