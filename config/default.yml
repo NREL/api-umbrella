@@ -22,6 +22,7 @@ nginx:
   workers: 4
 gatekeeper:
   workers: 4
+  default_frontend_host:
 varnish:
   port: 51700
   backend:
@@ -65,6 +66,9 @@ router:
 hosts:
   - hostname: localhost
     default: true
+dns_resolver:
+  minimum_ttl: 40
+  ignore_ttl_domains: []
 mongodb:
   url: "mongodb://127.0.0.1:50217/api_umbrella"
   options:
