@@ -42,7 +42,7 @@ describe "apis", :js => true do
       names = all("tbody td:first-child").map { |cell| cell.text }
       names.should eql(["API A", "API B", "API C", "API testing-filter"])
       click_button "Reorder"
-      sleep 1
+      sleep 3
       names = all("tbody td:first-child").map { |cell| cell.text }
       names.should eql(["API B", "API C", "API A", "API testing-filter"])
     end
