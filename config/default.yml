@@ -16,30 +16,14 @@ elasticsearch:
       port: 9200
 trustedProxies:
   - 127.0.0.1
-proxy:
+gatekeeper:
   host: 127.0.0.1
-  port: 4000
+  starting_port: 4000
   target: "127.0.0.1:6081"
-  apiKeyMethods:
+  api_key_methods:
     - header
     - getParam
     - basicAuthUsername
-dns_resolver:
-  minimum_ttl: 40
-  ignore_ttl_domains:
-    - "akamaiedge\\.net$"
-    - "akamaiedge-staging\\.net$"
-    - "herokuapp\\.com$"
-    - "httpbin\\.org$"
-log_template_version: v1
-logProcessor:
-  workers: 1
-routerLogListener:
-  workers: 1
-router_global_rate_limits:
-  ip_rate: "100r/s"
-  ip_burst: 100
-  ip_connections: 50
 strip_cookies:
   - ^__utm.*$
   - ^_ga$

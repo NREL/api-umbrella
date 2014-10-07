@@ -3,7 +3,6 @@
 
 var _ = require('lodash'),
     async = require('async'),
-    config = require('api-umbrella-config'),
     elasticSearchConnect = require('../lib/elasticsearch_connect'),
     moment = require('moment'),
     mongoConnect = require('../lib/mongo_connect'),

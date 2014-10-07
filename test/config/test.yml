@@ -3,20 +3,12 @@ mongodb:
 redis:
   host: 127.0.0.1
   port: 9736
-proxy:
-  port: 9333
+gatekeeper:
+  starting_port: 9333
   target: "localhost:9444"
-  rateLimits: []
-haproxyLogListener:
-  port: 9334
 apis:
   - frontend_host: localhost
     backend_host: localhost
     url_matches:
       - frontend_prefix: /
         backend_prefix: /
-dns_resolver:
-  minimum_ttl: 0.1
-  ignore_ttl_domains:
-    - "akamaiedge\\.net$"
-    - "yahoo\\.com"
