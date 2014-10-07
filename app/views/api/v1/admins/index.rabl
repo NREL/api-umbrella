@@ -1,8 +1,8 @@
 object false
 
 node(:draw) { params[:draw].to_i }
-node(:recordsTotal) { @admins.count }
-node(:recordsFiltered) { @admins.count }
+node(:recordsTotal) { @admins_count }
+node(:recordsFiltered) { @admins_count }
 node :data do
   @admins.map do |admin|
     data = admin.serializable_hash(:force_except => [:authentication_token])

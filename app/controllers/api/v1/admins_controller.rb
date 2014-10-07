@@ -25,6 +25,7 @@ class Api::V1::AdminsController < Api::V1::BaseController
       ])
     end
 
+    @admins_count = @admins.count
     @admins = @admins.to_a.select { |admin| Pundit.policy!(pundit_user, admin).show? }
   end
 

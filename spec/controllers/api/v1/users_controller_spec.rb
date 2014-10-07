@@ -197,9 +197,26 @@ describe Api::V1::UsersController do
     end
   end
 
+  describe "GET index" do
+    it "paginates results" do
+      FactoryGirl.create_list(:api_user, 10)
+
+      user_count = ApiUser.count
+      user_count.should be >= 10
+
+      admin_token_auth(@admin)
+      get :index, :format => "json", :length => 2
+
+      data = MultiJson.load(response.body)
+      data["recordsTotal"].should eql(user_count)
+      data["recordsFiltered"].should eql(user_count)
+      data["data"].length.should eql(2)
+    end
+  end
+
   describe "GET show" do
     before(:each) do
-      @api_user = FactoryGirl.create(:api_user)
+      @api_user = FactoryGirl.create(:api_user, :created_by => @admin.id)
     end
 
     let(:params) do
@@ -220,6 +237,8 @@ describe Api::V1::UsersController do
       ])
 
       expected_keys = [
+        "api_key",
+        "api_key_hides_at",
         "api_key_preview",
         "created_at",
         "creator",
@@ -242,6 +261,42 @@ describe Api::V1::UsersController do
       end
 
       data["user"].keys.sort.should eql(expected_keys.sort)
+    end
+
+    it "includes the full api key for newly created records by the current admin" do
+      @api_user = FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now)
+
+      admin_token_auth(@admin)
+      get :show, params
+
+      data = MultiJson.load(response.body)
+      data["user"]["api_key"].should eql(@api_user.api_key)
+      data["user"]["api_key_hides_at"].should eql((@api_user.created_at + 10.minutes).iso8601)
+      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0,6]}...")
+    end
+
+    it "omits the full api key for older records created by the current admin" do
+      @api_user = FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => (Time.now - 11.minutes))
+
+      admin_token_auth(@admin)
+      get :show, params
+
+      data = MultiJson.load(response.body)
+      data["user"].keys.should_not include("api_key")
+      data["user"].keys.should_not include("api_key_hides_at")
+      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0,6]}...")
+    end
+
+    it "omits the full api key newly created records by another admin" do
+      @api_user = FactoryGirl.create(:api_user, :created_by => @google_admin.id, :created_at => Time.now)
+
+      admin_token_auth(@admin)
+      get :show, params
+
+      data = MultiJson.load(response.body)
+      data["user"].keys.should_not include("api_key")
+      data["user"].keys.should_not include("api_key_hides_at")
+      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0,6]}...")
     end
   end
 

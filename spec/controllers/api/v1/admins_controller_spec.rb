@@ -170,6 +170,19 @@ describe Api::V1::AdminsController do
   end
 
   describe "GET index" do
+    it "paginates results" do
+      admin_token_auth(@admin)
+      get :index, :format => "json", :length => 2
+
+      admin_count = Admin.count
+      admin_count.should be > 2
+
+      data = MultiJson.load(response.body)
+      data["recordsTotal"].should eql(admin_count)
+      data["recordsFiltered"].should eql(admin_count)
+      data["data"].length.should eql(2)
+    end
+
     describe "admin permissions" do
       it "includes all admins for superuser admins" do
         admin_token_auth(@admin)
