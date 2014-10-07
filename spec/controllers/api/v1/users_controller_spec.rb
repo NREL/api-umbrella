@@ -272,7 +272,7 @@ describe Api::V1::UsersController do
       data = MultiJson.load(response.body)
       data["user"]["api_key"].should eql(@api_user.api_key)
       data["user"]["api_key_hides_at"].should eql((@api_user.created_at + 10.minutes).iso8601)
-      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0,6]}...")
+      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0, 6]}...")
     end
 
     it "omits the full api key for older records created by the current admin" do
@@ -284,7 +284,7 @@ describe Api::V1::UsersController do
       data = MultiJson.load(response.body)
       data["user"].keys.should_not include("api_key")
       data["user"].keys.should_not include("api_key_hides_at")
-      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0,6]}...")
+      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0, 6]}...")
     end
 
     it "omits the full api key newly created records by another admin" do
@@ -296,7 +296,7 @@ describe Api::V1::UsersController do
       data = MultiJson.load(response.body)
       data["user"].keys.should_not include("api_key")
       data["user"].keys.should_not include("api_key_hides_at")
-      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0,6]}...")
+      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0, 6]}...")
     end
   end
 

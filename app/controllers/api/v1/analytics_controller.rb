@@ -31,8 +31,7 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
           :prefix => "0/",
         ]
 
-        depth, path = params[:prefix].split("/", 2)
-        depth = depth.to_i
+        path = params[:prefix].split("/", 2)[1]
         parents = path.split("/")
         parents.each_with_index do |parent, index|
           @breadcrumbs << {
@@ -59,7 +58,7 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
         has_other_hits = false
         @result.aggregations["hits_over_time"]["buckets"].each_with_index do |total_bucket, index|
           cells = [
-            { :v => total_bucket["key"] , :f => formatted_interval_time(total_bucket["key"]) },
+            { :v => total_bucket["key"], :f => formatted_interval_time(total_bucket["key"]) },
           ]
 
           path_total_hits = 0
