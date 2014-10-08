@@ -12,21 +12,29 @@ static_site:
   build_dir: /tmp/api-umbrella-test/static_site_build
 redis:
   host: 127.0.0.1
-  port: 9900
+  port: 13000
+gatekeeper:
+  starting_port: 13050
+varnish:
+  port: 13010
+  backend:
+    port: 13011
+web:
+  port: 13012
 mongodb:
-  url: "mongodb://127.0.0.1:9901/api_umbrella_test"
+  url: "mongodb://127.0.0.1:13001/api_umbrella_test"
   embedded_server_config:
     net:
-      port: 9901
+      port: 13001
 elasticsearch:
   hosts:
-    - "http://127.0.0.1:9902"
+    - "http://127.0.0.1:13002"
   embedded_server_config:
     http:
-      port: 9902
+      port: 13002
     transport:
       tcp:
-        port: 9903
+        port: 13003
 apis:
   - _id: down
     frontend_host: localhost

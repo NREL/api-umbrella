@@ -94,17 +94,20 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
 
-[program:gatekeeper]
-numprocs=4
-process_name=%(program_name)s_50%(process_num)03d
-environment=NODE_LOG_DIR="{{log_dir}}",NODE_ENV="{{app_env}}"
-command=api-umbrella-gatekeeper {{api_umbrella_config_args}} -p 50%(process_num)03d
-{{supervisor_conditional_user}}
+{{#each gatekeeper_ports}}
+[program:gatekeeper_{{.}}]
+environment=NODE_LOG_DIR="{{../log_dir}}",NODE_ENV="{{../app_env}}"
+command=api-umbrella-gatekeeper {{../api_umbrella_config_args}} -p {{.}}
+{{../supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s_50%(process_num)03d.log
+stdout_logfile={{../log_dir}}/supervisor/%(program_name)s_{{.}}.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+{{/each}}
+
+[group:gatekeeper]
+programs={{gatekeeper_supervisor_process_names}}
 
 [program:config-reloader]
 command=api-umbrella-config-reloader {{api_umbrella_config_args}}

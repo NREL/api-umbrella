@@ -17,20 +17,37 @@ tmp_dir: /opt/api-umbrella/var/tmp
 db_dir: /opt/api-umbrella/var/db
 redis:
   host: 127.0.0.1
-  port: 50379
+  port: 14000
 nginx:
   workers: 4
 gatekeeper:
   workers: 4
+  host: 127.0.0.1
+  starting_port: 14050
   default_frontend_host:
+  api_key_methods:
+    - header
+    - getParam
+    - basicAuthUsername
+  target: "127.0.0.1:14010"
+proxy:
+  workers: 4
+  host: 127.0.0.1
+  starting_port: 14050
+  default_frontend_host:
+  apiKeyMethods:
+    - header
+    - getParam
+    - basicAuthUsername
+  target: "127.0.0.1:14010"
 varnish:
-  port: 51700
+  port: 14010
   backend:
     host: localhost
-    port: 50100
+    port: 14011
 web:
   host: 127.0.0.1
-  port: 51000
+  port: 14012
   dir: /opt/api-umbrella/embedded/apps/web/current
   rails_secret_token:
   devise_secret_key:
@@ -57,12 +74,12 @@ web:
         client_secret:
 static_site:
   host: 127.0.0.1
-  port: 51010
+  port: 14013
   host_header:
   dir: /opt/api-umbrella/embedded/apps/static-site/current
 router:
   api_backends:
-    port: 50100
+    port: 14011
 hosts:
   - hostname: localhost
     default: true
@@ -70,7 +87,7 @@ dns_resolver:
   minimum_ttl: 40
   ignore_ttl_domains: []
 mongodb:
-  url: "mongodb://127.0.0.1:50217/api_umbrella"
+  url: "mongodb://127.0.0.1:14001/api_umbrella"
   options:
     server:
       socketOptions:
@@ -86,18 +103,18 @@ mongodb:
     processManagement:
       fork: false
     net:
-      port: 50217
+      port: 14001
 elasticsearch:
   hosts:
-    - "http://127.0.0.1:50200"
+    - "http://127.0.0.1:14002"
   embedded_server_env:
     heap_size: 512m
   embedded_server_config:
     http:
-      port: 50200
+      port: 14002
     transport:
       tcp:
-        port: 50300
+        port: 14003
     cluster:
       name: api-umbrella
     indices:
@@ -109,14 +126,6 @@ elasticsearch:
           limit: 60%
 trustedProxies:
   - 127.0.0.1
-proxy:
-  host: 127.0.0.1
-  port: 4000
-  target: "127.0.0.1:51700"
-  apiKeyMethods:
-    - header
-    - getParam
-    - basicAuthUsername
 log_template_version: v1
 logProcessor:
   workers: 1
