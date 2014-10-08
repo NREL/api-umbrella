@@ -94,10 +94,10 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
 
-{{#each gatekeeper_ports}}
-[program:gatekeeper_{{.}}]
+{{#each gatekeeper_hosts}}
+[program:{{process_name}}]
 environment=NODE_LOG_DIR="{{../log_dir}}",NODE_ENV="{{../app_env}}"
-command=api-umbrella-gatekeeper {{../api_umbrella_config_args}} -p {{.}}
+command=api-umbrella-gatekeeper {{../api_umbrella_config_args}} -p {{port}}
 {{../supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{../log_dir}}/supervisor/%(program_name)s.log

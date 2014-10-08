@@ -101,7 +101,7 @@ http {
     # cases of error, timeout and invalid_header are always considered
     # unsuccessful attempts, even if they are not specified in the directive."
     {{#each gatekeeper_hosts}}
-    server {{.}} max_fails=0;
+    server {{host}} max_fails=0;
     {{/each}}
     keepalive 10;
   }
