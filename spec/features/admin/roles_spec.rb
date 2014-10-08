@@ -70,6 +70,7 @@ describe "roles", :js => true do
 
       page.should have_content("Successfully saved the user")
 
+      sleep 2
       visit "/admin/#/apis/new"
 
       sleep 2
