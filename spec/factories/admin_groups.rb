@@ -2,7 +2,7 @@
 
 FactoryGirl.define do
   factory :admin_group do
-    name "Example"
+    sequence(:name) { |n| "Example#{n}" }
     permission_ids [
       "analytics",
       "user_view",
