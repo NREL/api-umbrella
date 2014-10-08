@@ -4,7 +4,27 @@ class Api::V1::AdminGroupsController < Api::V1::BaseController
   skip_after_filter :verify_authorized, :only => [:index]
 
   def index
-    @admin_groups = policy_scope(AdminGroup)
+    @admin_groups = policy_scope(AdminGroup).order_by(datatables_sort_array)
+
+    if(params[:order].blank?)
+      @admin_groups = @admin_groups.order_by(:name.asc)
+    end
+
+    if(params[:start].present?)
+      @admin_groups = @admin_groups.skip(params[:start].to_i)
+    end
+
+    if(params[:length].present?)
+      @admin_groups = @admin_groups.limit(params[:length].to_i)
+    end
+
+    if(params[:search] && params[:search][:value].present?)
+      @admin_groups = @admin_groups.or([
+        { :name => /#{params[:search][:value]}/i },
+      ])
+    end
+
+    @admin_groups_count = @admin_groups.count
     @admin_groups = @admin_groups.to_a.select { |group| Pundit.policy!(pundit_user, group).show? }
   end
 

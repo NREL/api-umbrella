@@ -4,7 +4,27 @@ class Api::V1::ApiScopesController < Api::V1::BaseController
   skip_after_filter :verify_authorized, :only => [:index]
 
   def index
-    @api_scopes = policy_scope(ApiScope)
+    @api_scopes = policy_scope(ApiScope).order_by(datatables_sort_array)
+
+    if(params[:order].blank?)
+      @api_scopes = @api_scopes.order_by(:name.asc)
+    end
+
+    if(params[:start].present?)
+      @api_scopes = @api_scopes.skip(params[:start].to_i)
+    end
+
+    if(params[:length].present?)
+      @api_scopes = @api_scopes.limit(params[:length].to_i)
+    end
+
+    if(params[:search] && params[:search][:value].present?)
+      @api_scopes = @api_scopes.or([
+        { :name => /#{params[:search][:value]}/i },
+        { :host => /#{params[:search][:value]}/i },
+        { :path_prefix => /#{params[:search][:value]}/i },
+      ])
+    end
   end
 
   def show

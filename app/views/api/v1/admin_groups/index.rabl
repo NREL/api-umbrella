@@ -1,8 +1,8 @@
 object false
 
 node(:draw) { params[:draw].to_i }
-node(:recordsTotal) { @admin_groups.count }
-node(:recordsFiltered) { @admin_groups.count }
+node(:recordsTotal) { @admin_groups_count }
+node(:recordsFiltered) { @admin_groups_count }
 node :data do
   @admin_groups.map do |admin_group|
     data = admin_group.serializable_hash
