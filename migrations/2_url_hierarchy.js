@@ -33,7 +33,7 @@ exports.migrate = function(client, done) {
             filter: {
               not: {
                 exists: {
-                  field: "request_hierarchy",
+                  field: 'request_hierarchy',
                 },
               },
             },
