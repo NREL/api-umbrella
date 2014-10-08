@@ -28,8 +28,13 @@ describe('logging', function() {
     }.bind(this));
   });
 
-  function waitForLog(uniqueQueryId, done) {
+  function waitForLog(uniqueQueryId, timeout, done) {
     var response;
+    var timedOut = false;
+    setTimeout(function() {
+      timedOut = true;
+    }, timeout);
+
     async.doWhilst(function(callback) {
       global.elasticsearch.search({
         q: 'request_query.unique_query_id:"' + uniqueQueryId + '"',
@@ -46,8 +51,11 @@ describe('logging', function() {
         }
       });
     }, function() {
-      return !response;
+      return (!response && !timedOut);
     }, function(error) {
+      should.not.exist(error);
+      should.exist(response);
+
       response.hits.total.should.eql(1);
       var hit = response.hits.hits[0];
       var record = hit._source;
@@ -81,7 +89,7 @@ describe('logging', function() {
       request.get('http://localhost:9080/logging-example/foo/bar/', options, function(error, response) {
         response.statusCode.should.eql(200);
 
-        waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        waitForLog(this.uniqueQueryId, 44000, function(error, response, hit, record) {
           var fields = _.keys(record).sort();
 
           // Varnish randomly turns some non-chunked responses into chunked
@@ -204,7 +212,7 @@ describe('logging', function() {
       request.get('http://localhost:9080/compressible-chunked/10/1000', options, function(error, response) {
         response.statusCode.should.eql(200);
 
-        waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        waitForLog(this.uniqueQueryId, 44000, function(error, response, hit, record) {
           record.response_content_encoding.should.eql('gzip');
           record.response_transfer_encoding.should.eql('chunked');
 
