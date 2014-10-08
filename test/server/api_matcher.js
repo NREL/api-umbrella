@@ -8,6 +8,9 @@ describe('ApiUmbrellaGatekeper', function() {
   describe('api matching', function() {
     describe('host matching', function() {
       shared.runServer({
+        gatekeeper: {
+          default_frontend_host: 'default-host-config.example.com',
+        },
         apis: [
           {
             'frontend_host': 'localhost:7777',
@@ -15,8 +18,8 @@ describe('ApiUmbrellaGatekeper', function() {
             '_id': 'localhost-non-matching-port',
             'url_matches': [
               {
-                'frontend_prefix': '/info/',
-                'backend_prefix': '/info/'
+                'frontend_prefix': '/info/matching/',
+                'backend_prefix': '/info/matching/'
               }
             ]
           },
@@ -26,8 +29,8 @@ describe('ApiUmbrellaGatekeper', function() {
             '_id': 'localhost-with-port',
             'url_matches': [
               {
-                'frontend_prefix': '/info/',
-                'backend_prefix': '/info/'
+                'frontend_prefix': '/info/matching/',
+                'backend_prefix': '/info/matching/'
               }
             ]
           },
@@ -37,8 +40,8 @@ describe('ApiUmbrellaGatekeper', function() {
             '_id': 'localhost-default-port',
             'url_matches': [
               {
-                'frontend_prefix': '/info/',
-                'backend_prefix': '/info/'
+                'frontend_prefix': '/info/matching/',
+                'backend_prefix': '/info/matching/'
               }
             ]
           },
@@ -48,8 +51,8 @@ describe('ApiUmbrellaGatekeper', function() {
             '_id': 'localhost-ssl-port',
             'url_matches': [
               {
-                'frontend_prefix': '/info/',
-                'backend_prefix': '/info/'
+                'frontend_prefix': '/info/matching/',
+                'backend_prefix': '/info/matching/'
               }
             ]
           },
@@ -59,8 +62,8 @@ describe('ApiUmbrellaGatekeper', function() {
             '_id': 'fallback-no-port',
             'url_matches': [
               {
-                'frontend_prefix': '/info/',
-                'backend_prefix': '/info/'
+                'frontend_prefix': '/info/matching/',
+                'backend_prefix': '/info/matching/'
               }
             ]
           },
@@ -70,16 +73,50 @@ describe('ApiUmbrellaGatekeper', function() {
             '_id': 'fallback-no-port',
             'url_matches': [
               {
-                'frontend_prefix': '/info/',
-                'backend_prefix': '/info/'
+                'frontend_prefix': '/info/matching/',
+                'backend_prefix': '/info/matching/'
               }
             ]
           },
+          {
+            'frontend_host': '*',
+            'backend_host': 'example.com',
+            '_id': 'wildcard',
+            'url_matches': [
+              {
+                'frontend_prefix': '/info/wildcard/',
+                'backend_prefix': '/info/wildcard/'
+              }
+            ]
+          },
+          {
+            'frontend_host': 'wildcard-coexist.example.com',
+            'backend_host': 'example.com',
+            '_id': 'host-over-wildcard',
+            'url_matches': [
+              {
+                'frontend_prefix': '/info/wildcard-coexist/',
+                'backend_prefix': '/info/wildcard-coexist/'
+              }
+            ]
+          },
+          {
+            'frontend_host': 'default-host-config.example.com',
+            'backend_host': 'example.com',
+            '_id': 'default-host-config',
+            'url_matches': [
+              {
+                'frontend_prefix': '/info/default-host-config/',
+                'backend_prefix': '/info/default-host-config/'
+              }
+            ]
+          },
+
         ],
       });
 
       it('uses full host with port to find the matching api', function(done) {
-        var opts = shared.buildRequestOptions('/info/', this.apiKey);
+        var opts = shared.buildRequestOptions('/info/matching/', this.apiKey);
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
           data.headers['x-api-umbrella-backend-id'].should.eql('localhost-with-port');
@@ -88,7 +125,7 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       it('prefers the host header', function(done) {
-        var opts = shared.buildRequestOptions('/info/', this.apiKey, {
+        var opts = shared.buildRequestOptions('/info/matching/', this.apiKey, {
           headers: {
             'Host': 'localhost:80',
           },
@@ -102,7 +139,7 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       it('fills in host headers with missing ports with defaults', function(done) {
-        var opts = shared.buildRequestOptions('/info/', this.apiKey, {
+        var opts = shared.buildRequestOptions('/info/matching/', this.apiKey, {
           headers: {
             'Host': 'localhost',
           },
@@ -116,7 +153,7 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       it('determines the default ports based on the protocol', function(done) {
-        var opts = shared.buildRequestOptions('/info/', this.apiKey, {
+        var opts = shared.buildRequestOptions('/info/matching/', this.apiKey, {
           headers: {
             'Host': 'localhost',
             'X-Forwarded-Proto': 'https',
@@ -131,7 +168,7 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       it('falls back to the hostname when using a standard port', function(done) {
-        var opts = shared.buildRequestOptions('/info/', this.apiKey, {
+        var opts = shared.buildRequestOptions('/info/matching/', this.apiKey, {
           headers: {
             'Host': 'fallback.example.com:80',
           },
@@ -145,7 +182,7 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       it('falls back to the hostname when using a non-standard port', function(done) {
-        var opts = shared.buildRequestOptions('/info/', this.apiKey, {
+        var opts = shared.buildRequestOptions('/info/matching/', this.apiKey, {
           headers: {
             'Host': 'fallback.example.com:123',
           },
@@ -158,8 +195,50 @@ describe('ApiUmbrellaGatekeper', function() {
         });
       });
 
+      it('falls back to wildcard hostnames if no other hostname matches', function(done) {
+        var opts = shared.buildRequestOptions('/info/wildcard/', this.apiKey, {
+          headers: {
+            'Host': 'google.com:789',
+          },
+        });
+
+        request.get(opts, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.headers['x-api-umbrella-backend-id'].should.eql('wildcard');
+          done();
+        });
+      });
+
+      it('can still fallback to wildcard apis even if a matching host is present for other apis', function(done) {
+        var opts = shared.buildRequestOptions('/info/wildcard/', this.apiKey, {
+          headers: {
+            'Host': 'wildcard-coexist.example.com',
+          },
+        });
+
+        request.get(opts, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.headers['x-api-umbrella-backend-id'].should.eql('wildcard');
+          done();
+        });
+      });
+
+      it('allows a configurable default host to fallback to', function(done) {
+        var opts = shared.buildRequestOptions('/info/default-host-config/', this.apiKey, {
+          headers: {
+            'Host': 'google.com:890',
+          },
+        });
+
+        request.get(opts, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.headers['x-api-umbrella-backend-id'].should.eql('default-host-config');
+          done();
+        });
+      });
+
       describe('non-matching host', function() {
-        shared.itBehavesLikeGatekeeperBlocked('/info/', 404, 'NOT_FOUND', {
+        shared.itBehavesLikeGatekeeperBlocked('/info/matching/', 404, 'NOT_FOUND', {
           headers: {
             'Host': 'unmatched.example.com',
           },
