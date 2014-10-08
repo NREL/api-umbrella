@@ -10,7 +10,7 @@ global.request = request;
 global.Factory = Factory;
 global.mongoose = mongoose;
 
-require('./support/processes');
+require('./support/start_processes');
 
 require('./support/chai');
 require('./support/database_setup');
@@ -22,3 +22,8 @@ global.shared = {};
 
 require('./support/helper_functions');
 require('./support/config_reloader_shared_examples');
+
+// Make sure this require stays at the bottom, so stopping the api-umbrella
+// processes is the last callback to be performed (so other callbacks have an
+// opportunity to gracefully close connections).
+require('./support/stop_processes');

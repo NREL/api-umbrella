@@ -14,9 +14,3 @@ before(function startProcesses(done) {
 
   this.router = router.run(options, done);
 });
-
-after(function stopProcesses(done) {
-  if(this.router) {
-    this.router.stop(done);
-  }
-});
