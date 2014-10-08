@@ -46,7 +46,9 @@
                     <li><%= link_to('<i class="fa fa-user"></i> Admin Accounts'.html_safe, '/admin/#/admins') %></li>
                     <li class="divider"></li>
                     <li role="presentation" class="dropdown-header">Permissions Management</li>
-                    <li><%= link_to('<i class="fa fa-lock"></i> API Scopes'.html_safe, '/admin/#/api_scopes') %></li>
+                    <% if(current_admin.superuser?) %>
+                      <li><%= link_to('<i class="fa fa-lock"></i> API Scopes'.html_safe, '/admin/#/api_scopes') %></li>
+                    <% end %>
                     <li><%= link_to('<i class="fa fa-group"></i> Admin Groups'.html_safe, '/admin/#/admin_groups') %></li>
                   <% end %>
                 </ul>
