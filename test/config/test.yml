@@ -15,12 +15,16 @@ redis:
   port: 13000
 gatekeeper:
   starting_port: 13050
+  target: "127.0.0.1:13010"
 varnish:
   port: 13010
   backend:
     port: 13011
 web:
   port: 13012
+router:
+  api_backends:
+    port: 13011
 mongodb:
   url: "mongodb://127.0.0.1:13001/api_umbrella_test"
   embedded_server_config:

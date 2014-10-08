@@ -30,16 +30,6 @@ gatekeeper:
     - getParam
     - basicAuthUsername
   target: "127.0.0.1:14010"
-proxy:
-  workers: 4
-  host: 127.0.0.1
-  starting_port: 14050
-  default_frontend_host:
-  apiKeyMethods:
-    - header
-    - getParam
-    - basicAuthUsername
-  target: "127.0.0.1:14010"
 varnish:
   port: 14010
   backend:
