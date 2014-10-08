@@ -72,13 +72,13 @@ describe "roles", :js => true do
 
       visit "/admin/#/apis/new"
 
+      sleep 2
       find("a", :text => /Global Request Settings/).click
       find(".selectize-input").click
       page.should have_content("test-new-user-role")
 
       find("a", :text => /Sub-URL Request Settings/).click
       find("button", :text => /Add URL Settings/).click
-      sleep 2
       find(".modal .selectize-input").click
       page.should have_content("test-new-user-role")
     end
