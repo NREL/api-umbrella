@@ -7,7 +7,7 @@ node :data do
   @admins.map do |admin|
     data = admin.serializable_hash(:force_except => [:authentication_token])
     data.merge!({
-      "group_names" => admin.groups.map { |group| group.name },
+      "group_names" => admin.group_names,
     })
 
     data

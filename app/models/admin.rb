@@ -51,6 +51,17 @@ class Admin
     :group_ids,
     :as => [:admin]
 
+  def group_names
+    unless @group_names
+      @group_names = self.groups.map { |group| group.name }
+      if(self.superuser?)
+        @group_names << "Superuser"
+      end
+    end
+
+    @group_names
+  end
+
   def api_scopes
     @api_scopes ||= groups.map { |group| group.api_scopes }.flatten.compact.uniq
   end
