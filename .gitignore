@@ -7,4 +7,5 @@
 /test/config/overrides.yml
 /test/config/runtime.json
 /test/config/runtime.yml*
+/test/log/*
 /test/tmp/*
