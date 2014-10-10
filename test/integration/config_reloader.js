@@ -9,6 +9,7 @@ var _ = require('lodash'),
     DnsResolver = require('../../lib/config_reloader/dns_resolver').DnsResolver,
     ipaddr = require('ipaddr.js'),
     ippp = require('ipplusplus'),
+    logger = require('../../lib/logger'),
     moment = require('moment'),
     sinon = require('sinon');
 
@@ -20,22 +21,8 @@ describe('config reloader', function() {
     // Stub the DNS lookups since these can be unpredictably slow depending on
     // your DNS provider and network connection.
     before(function() {
-      // FIXME: Stub console.log/error to quiet output from the config reloader
-      // classes. Yes, this is a bad idea. This whole config reloader test file
-      // really needs to be redone in a more "integrationy" way, or done
-      // differently. This was pulled from the test suite from when this lived
-      // in the gatekeeper project, but doesn't really jive with how the router
-      // tests are run.
-      this.consoleInfoStub = sinon.stub(console, 'info', function() {
-        // Quiet
-      });
-
-      this.consoleErrorStub = sinon.stub(console, 'error', function() {
-        // Quiet
-      });
-
       this.reloadNginxStub = sinon.stub(ConfigReloaderWorker.prototype, 'reloadNginx', function(writeConfigsCallback) {
-        console.info('Reloading nginx (stub)...');
+        logger.info('Reloading nginx (stub)...');
 
         if(writeConfigsCallback) {
           writeConfigsCallback(null);
@@ -235,8 +222,6 @@ describe('config reloader', function() {
     });
 
     after(function() {
-      this.consoleInfoStub.restore();
-      this.consoleErrorStub.restore();
       this.reloadNginxStub.restore();
       this.dnsRequestSend.restore();
       this.dnsLookupStub.restore();
