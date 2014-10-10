@@ -14,8 +14,6 @@ elasticsearch:
   hosts:
     - host: 127.0.0.1
       port: 9200
-trustedProxies:
-  - 127.0.0.1
 gatekeeper:
   host: 127.0.0.1
   starting_port: 4000
@@ -24,6 +22,9 @@ gatekeeper:
     - header
     - getParam
     - basicAuthUsername
+router:
+  trusted_proxies:
+    - 127.0.0.1
 strip_cookies:
   - ^__utm.*$
   - ^_ga$
