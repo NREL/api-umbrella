@@ -16,7 +16,7 @@ describe('request logging', function() {
     function headers(scope, overrides) {
       var headersObj = _.extend({
         'X-Api-Key': scope.apiKey,
-        'X-Api-Umbrella-Uid': _.uniqueId(),
+        'X-Api-Umbrella-Request-ID': _.uniqueId(),
       }, overrides);
 
       return headersObj;
@@ -32,14 +32,14 @@ describe('request logging', function() {
       });
     });
 
-    it('uses the x-api-umbrella-uid header to uniquely identify the request', function(done) {
+    it('uses the x-api-umbrella-request-id header to uniquely identify the request', function(done) {
       var options = { headers: headers(this, headerOverrides) };
 
       spy.reset();
       request.get('http://localhost:9333' + path, options, function() {
         var call = spy.getCall(0);
         var uid = call.args[0];
-        uid.should.eql(options.headers['X-Api-Umbrella-Uid']);
+        uid.should.eql(options.headers['X-Api-Umbrella-Request-ID']);
         done();
       });
     });
@@ -108,7 +108,7 @@ describe('request logging', function() {
       var options = {
         headers: {
           'X-Api-Key': this.apiKey,
-          'X-Api-Umbrella-Uid': _.uniqueId(),
+          'X-Api-Umbrella-Request-ID': _.uniqueId(),
           'Accept': 'text/plain',
           'Accept-Encoding': 'gzip,deflate',
           'Connection': 'keep-alive',
@@ -163,7 +163,7 @@ describe('request logging', function() {
       var options = {
         headers: {
           'X-Api-Key': 'INVALID_KEY',
-          'X-Api-Umbrella-Uid': _.uniqueId(),
+          'X-Api-Umbrella-Request-ID': _.uniqueId(),
         },
       };
 
