@@ -70,6 +70,12 @@ static_site:
 router:
   api_backends:
     port: 14011
+  global_rate_limits:
+    ip_rate: "100r/s"
+    ip_burst: 200
+    ip_rate_size: 8m
+    ip_connections: 50
+    ip_connections_size: 5m
 hosts:
   - hostname: localhost
     default: true
@@ -117,16 +123,6 @@ elasticsearch:
 trustedProxies:
   - 127.0.0.1
 log_template_version: v1
-logProcessor:
-  workers: 1
-routerLogListener:
-  workers: 1
-router_global_rate_limits:
-  ip_rate: "100r/s"
-  ip_burst: 200
-  ip_rate_size: 8m
-  ip_connections: 50
-  ip_connections_size: 5m
 strip_cookies:
   - ^__utm.*$
   - ^_ga$

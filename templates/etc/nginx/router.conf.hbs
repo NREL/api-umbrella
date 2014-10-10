@@ -54,7 +54,7 @@ http {
   {{/if}}
 
   # Limit the number of simultaneous connections per IP address.
-  limit_conn_zone $connection_limit_by zone=api_umbrella_conn_addr_zone:{{router_global_rate_limits.ip_connections_size}};
+  limit_conn_zone $connection_limit_by zone=api_umbrella_conn_addr_zone:{{router.global_rate_limits.ip_connections_size}};
   limit_conn_status {{apiSettings.error_data.over_rate_limit.status_code}};
 
   # Rate limits per IP address.
@@ -63,7 +63,7 @@ http {
   # provided by the API Umbrella Gatekeeper, so this limit should be higher than
   # the Gatekeeper's limits. This just provides an extra line of simple defense
   # against misbehaving clients from overloading the Gatekeeper.
-  limit_req_zone $rate_limit_by zone=api_umbrella_req_addr_zone:{{router_global_rate_limits.ip_rate_size}} rate={{router_global_rate_limits.ip_rate}};
+  limit_req_zone $rate_limit_by zone=api_umbrella_req_addr_zone:{{router.global_rate_limits.ip_rate_size}} rate={{router.global_rate_limits.ip_rate}};
   limit_req_status {{apiSettings.error_data.over_rate_limit.status_code}};
 
   # Allow any sized uploads to backends.
