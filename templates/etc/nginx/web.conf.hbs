@@ -27,6 +27,7 @@ http {
   scgi_temp_path {{tmp_dir}}/web-nginx-scgi_temp;
 
   include ./mime.conf;
+  include ./realip.conf;
 
   upstream puma {
     server unix://{{run_dir}}/web-puma.sock;

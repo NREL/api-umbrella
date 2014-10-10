@@ -25,6 +25,9 @@ web:
 router:
   api_backends:
     port: 13011
+  trusted_proxies:
+    - 192.168.12.0/23
+    - 10.10.10.10
 mongodb:
   url: "mongodb://127.0.0.1:13001/api_umbrella_test"
   embedded_server_config:

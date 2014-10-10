@@ -79,6 +79,7 @@ describe('logging', function() {
           'Origin': 'http://foo.example',
           'User-Agent': 'curl/7.37.1',
           'Referer': 'http://example.com',
+          'X-Forwarded-For': '1.2.3.4, 4.5.6.7, 10.10.10.11, 10.10.10.10, 192.168.12.0, 192.168.13.255',
         },
         auth: {
           user: 'basic-auth-username-example',
@@ -162,7 +163,7 @@ describe('logging', function() {
             '3/localhost/logging-example/foo/bar',
           ]);
           record.request_host.should.eql('localhost');
-          record.request_ip.should.eql('127.0.0.1');
+          record.request_ip.should.eql('10.10.10.11');
           record.request_method.should.eql('GET');
           record.request_origin.should.eql('http://foo.example');
           record.request_path.should.eql('/logging-example/foo/bar/');
