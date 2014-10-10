@@ -70,6 +70,7 @@ static_site:
 router:
   api_backends:
     port: 14011
+  trusted_proxies: []
   global_rate_limits:
     ip_rate: "100r/s"
     ip_burst: 200
@@ -120,8 +121,6 @@ elasticsearch:
       breaker:
         fielddata:
           limit: 60%
-trustedProxies:
-  - 127.0.0.1
 log_template_version: v1
 strip_cookies:
   - ^__utm.*$
