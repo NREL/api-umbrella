@@ -3,14 +3,21 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    ProxyLogger = require('../../lib/gatekeeper/logger').Logger,
     request = require('request'),
     sinon = require('sinon');
 
-var spy = sinon.spy(ProxyLogger.prototype, 'push');
-
 describe('request logging', function() {
   shared.runServer();
+
+  before(function() {
+    var ProxyLogger = require('../../lib/gatekeeper/logger').Logger;
+    this.loggerPushSpy = sinon.spy(ProxyLogger.prototype, 'push');
+  });
+
+  after(function() {
+    var ProxyLogger = require('../../lib/gatekeeper/logger').Logger;
+    ProxyLogger.prototype.push.restore();
+  });
 
   function itBehavesLikeALoggedRequest(path, headerOverrides) {
     function headers(scope, overrides) {
@@ -25,43 +32,43 @@ describe('request logging', function() {
     it('sends request data for logging', function(done) {
       var options = { headers: headers(this, headerOverrides) };
 
-      spy.reset();
+      this.loggerPushSpy.reset();
       request.get('http://localhost:9333' + path, options, function() {
-        spy.callCount.should.eql(1);
+        this.loggerPushSpy.callCount.should.eql(1);
         done();
-      });
+      }.bind(this));
     });
 
     it('uses the x-api-umbrella-request-id header to uniquely identify the request', function(done) {
       var options = { headers: headers(this, headerOverrides) };
 
-      spy.reset();
+      this.loggerPushSpy.reset();
       request.get('http://localhost:9333' + path, options, function() {
-        var call = spy.getCall(0);
+        var call = this.loggerPushSpy.getCall(0);
         var uid = call.args[0];
         uid.should.eql(options.headers['X-Api-Umbrella-Request-ID']);
         done();
-      });
+      }.bind(this));
     });
 
     it('indicates that the proxy is the soruce of this log data', function(done) {
       var options = { headers: headers(this, headerOverrides) };
 
-      spy.reset();
+      this.loggerPushSpy.reset();
       request.get('http://localhost:9333' + path, options, function() {
-        var call = spy.getCall(0);
+        var call = this.loggerPushSpy.getCall(0);
         var source = call.args[1];
         source.should.eql('proxy');
         done();
-      });
+      }.bind(this));
     });
 
     it('serializes the expected data as JSON for logging', function(done) {
       var options = { headers: headers(this, headerOverrides) };
 
-      spy.reset();
+      this.loggerPushSpy.reset();
       request.get('http://localhost:9333' + path, options, function() {
-        var call = spy.getCall(0);
+        var call = this.loggerPushSpy.getCall(0);
         var data = JSON.parse(call.args[2]);
 
         var knownKeys = [
@@ -97,7 +104,7 @@ describe('request logging', function() {
         _.difference(gotKeys, knownKeys).should.eql([]);
 
         done();
-      });
+      }.bind(this));
     });
   }
 
@@ -119,9 +126,9 @@ describe('request logging', function() {
         },
       };
 
-      spy.reset();
+      this.loggerPushSpy.reset();
       request.get('http://foo:bar@localhost:9333/hello?foo=bar&hello', options, function() {
-        var call = spy.getCall(0);
+        var call = this.loggerPushSpy.getCall(0);
         var data = JSON.parse(call.args[2]);
         var date = new Date(data.request_at);
 
@@ -167,9 +174,9 @@ describe('request logging', function() {
         },
       };
 
-      spy.reset();
+      this.loggerPushSpy.reset();
       request.get('http://localhost:9333/hello?foo=bar&hello', options, function() {
-        var call = spy.getCall(0);
+        var call = this.loggerPushSpy.getCall(0);
         var data = JSON.parse(call.args[2]);
         var date = new Date(data.request_at);
 
@@ -195,6 +202,5 @@ describe('request logging', function() {
         done();
       }.bind(this));
     });
-
   });
 });

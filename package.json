@@ -37,6 +37,7 @@
     "object-extend": "0.5.0",
     "proxy-addr": "1.0.3",
     "redis": "0.12.1",
+    "rollbar": "0.4.0",
     "route-pattern": "0.0.6",
     "simpleflake": "0.1.3"
   },
