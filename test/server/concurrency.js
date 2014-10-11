@@ -18,7 +18,11 @@ describe('proxy concurrency', function() {
       var randomInput = Math.random().toString();
       var url =  urlBase + '&input=' + randomInput;
 
-      request.get(url, function(error, response, body) {
+      request.get(url, {
+        agentOptions: {
+          maxSockets: 500,
+        },
+      }, function(error, response, body) {
         next(null, {
           input: randomInput,
           output: body,

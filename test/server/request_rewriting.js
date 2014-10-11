@@ -939,6 +939,8 @@ describe('request rewriting', function() {
         method: 'OPTIONS',
         url: 'http://localhost:9333/info/?test=test&api_key=' + this.apiKey,
       }, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         should.not.exist(data.headers['transfer-encoding']);
         done();
@@ -956,6 +958,8 @@ describe('request rewriting', function() {
         },
         data: 'test',
       }, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.headers['transfer-encoding'].should.eql('chunked');
         done();
