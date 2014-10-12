@@ -651,8 +651,6 @@ describe('proxying', function() {
         request.get('http://localhost:9080/compressible-chunked/1/' + size, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           response.headers['content-encoding'].should.eql('gzip');
-          response.headers['transfer-encoding'].should.eql('chunked');
-          should.not.exist(response.headers['content-length']);
           body.toString().length.should.eql(size);
           callback();
         });
@@ -806,61 +804,113 @@ describe('proxying', function() {
         }, done);
       });
     });
+  });
 
+  describe('chunked response behavior', function() {
     // TODO: Ideally when a backend returns a non-chunked response it would be
     // returned to the client as non-chunked, but Varnish appears to sometimes
     // randomly change non-chunked responses into chunked responses.
     // Update if Varnish's behavior changes:
     // https://www.varnish-cache.org/trac/ticket/1506
-    xdescribe('consistently', function() {
-      [true, false].forEach(function(gzipEnabled) {
-        describe('gzip enabled: ' + gzipEnabled, function() {
-          it('returns small non-chunked responses', function(done) {
-            this.timeout(5000);
-            async.timesSeries(50, function(index, callback) {
-              var options = _.merge({}, this.options, { gzip: gzipEnabled });
-              request.get('http://localhost:9080/compressible/10', options, function(error, response) {
-                response.statusCode.should.eql(200);
-                should.not.exist(response.headers['transfer-encoding']);
-                callback();
-              });
-            }.bind(this), done);
-          });
+    //
+    // So for now, we're simply testing to ensure that the majority of
+    // chunked/non-chunked responses get returned as expected. So these test
+    // aren't exactly precise, but ensure we're testing the basic chunking
+    // behavior.
+    //
+    // Note, Varnish seems to vary more in whether it decides to chunk or not
+    // chunk responses based on available system memory and resources (I've
+    // noticed when lower on memory, it consistently decides to turn chunked
+    // responses into non-chunked responses). So if these tests fail, consider
+    // system resources, or we might end up disabling these altogether.
+    function countChunkedResponses(options, count, size, done) {
+      var chunkedCount = 0;
+      var nonChunkedCount = 0;
 
-          it('returns larger non-chunked responses', function(done) {
-            this.timeout(5000);
-            async.timesSeries(50, function(index, callback) {
-              var options = _.merge({}, this.options, { gzip: gzipEnabled });
-              request.get('http://localhost:9080/compressible/10000', options, function(error, response) {
-                response.statusCode.should.eql(200);
-                should.not.exist(response.headers['transfer-encoding']);
-                callback();
-              });
-            }.bind(this), done);
-          });
+      var requests = _.times(count, function(index) { return index; });
+      async.eachLimit(requests, 10, function(index, callback) {
+        request(options, function(error, response, body) {
+          response.statusCode.should.eql(200);
 
-          it('returns small chunked responses', function(done) {
-            this.timeout(5000);
-            async.timesSeries(50, function(index, callback) {
-              var options = _.merge({}, this.options, { gzip: gzipEnabled });
-              request.get('http://localhost:9080/compressible-chunked/1/500', options, function(error, response) {
-                response.statusCode.should.eql(200);
-                response.headers['transfer-encoding'].should.eql('chunked');
-                callback();
-              });
-            }.bind(this), done);
-          });
+          if(response.headers['transfer-encoding']) {
+            response.headers['transfer-encoding'].should.eql('chunked');
+            should.not.exist(response.headers['content-length']);
+            chunkedCount++;
+          } else {
+            should.not.exist(response.headers['transfer-encoding']);
+            should.exist(response.headers['content-length']);
+            nonChunkedCount++;
+          }
 
-          it('returns larger chunked responses', function(done) {
+          body.toString().length.should.eql(size);
+
+          callback();
+        });
+      }, function() {
+        done({
+          chunked: chunkedCount,
+          nonChunked: nonChunkedCount,
+          total: chunkedCount + nonChunkedCount,
+        });
+      });
+    }
+
+    [true, false].forEach(function(gzipEnabled) {
+      describe('gzip enabled: ' + gzipEnabled, function() {
+        beforeEach(function() {
+          _.merge(this.options, { gzip: gzipEnabled });
+        });
+
+        it('returns small non-chunked responses', function(done) {
+          this.timeout(5000);
+          _.merge(this.options, { url: 'http://localhost:9080/compressible/10' });
+          countChunkedResponses(this.options, 50, 10, function(counts) {
+            counts.total.should.eql(50);
+            counts.nonChunked.should.be.greaterThan(25);
+            done();
+          });
+        });
+
+        // nginx's gzipping chunks responses, even if they weren't before.
+        if(gzipEnabled) {
+          it('returns larger non-chunked responses as chunked when gzip is enabled', function(done) {
             this.timeout(5000);
-            async.timesSeries(50, function(index, callback) {
-              var options = _.merge({}, this.options, { gzip: gzipEnabled });
-              request.get('http://localhost:9080/compressible-chunked/5/2000', options, function(error, response) {
-                response.statusCode.should.eql(200);
-                response.headers['transfer-encoding'].should.eql('chunked');
-                callback();
-              });
-            }.bind(this), done);
+            _.merge(this.options, { url: 'http://localhost:9080/compressible/100000' });
+            countChunkedResponses(this.options, 50, 100000, function(counts) {
+              counts.total.should.eql(50);
+              counts.chunked.should.be.greaterThan(25);
+              done();
+            });
+          });
+        } else {
+          it('returns larger non-chunked responses as non-chunked when gzip is disabled', function(done) {
+            this.timeout(5000);
+            _.merge(this.options, { url: 'http://localhost:9080/compressible/10000' });
+            countChunkedResponses(this.options, 50, 10000, function(counts) {
+              counts.total.should.eql(50);
+              counts.nonChunked.should.be.greaterThan(25);
+              done();
+            });
+          });
+        }
+
+        it('returns small chunked responses', function(done) {
+          this.timeout(5000);
+          _.merge(this.options, { url: 'http://localhost:9080/compressible-chunked/1/500' });
+          countChunkedResponses(this.options, 50, 500, function(counts) {
+            counts.total.should.eql(50);
+            counts.chunked.should.be.greaterThan(25);
+            done();
+          });
+        });
+
+        it('returns larger chunked responses', function(done) {
+          this.timeout(5000);
+          _.merge(this.options, { url: 'http://localhost:9080/compressible-chunked/50/2000' });
+          countChunkedResponses(this.options, 50, 100000, function(counts) {
+            counts.total.should.eql(50);
+            counts.chunked.should.be.greaterThan(25);
+            done();
           });
         });
       });
