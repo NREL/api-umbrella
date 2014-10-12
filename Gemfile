@@ -21,6 +21,7 @@ gem "rack-proxy", "~> 0.5.16"
 # JSON handling
 gem "multi_json", "~> 1.10.1"
 gem "oj", "~> 2.10.3", :platforms => [:ruby]
+gem "oj_mimic_json", "~> 1.0.1", :platforms => [:ruby]
 
 # MongoDB
 gem "mongoid", "~> 3.1.6"
