@@ -80,10 +80,6 @@
     </nav>
 
     <div id="content" class="container-fluid">
-      <% if crumbs.length > 1 %>
-        <%= render("layouts/breadcrumbs") %>
-      <% end %>
-
       <% flash.each do |flash_type, message| %>
         <div class="alert alert-<%= flash_type %>">
           <%= message %>

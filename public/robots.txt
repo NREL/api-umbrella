@@ -1,4 +1,0 @@
-User-agent: *
-
-# Don't index popups
-Disallow: /account/terms

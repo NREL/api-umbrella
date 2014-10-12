@@ -10,7 +10,7 @@ gem "puma", "~> 2.9.0"
 gem "rollbar", "~> 1.1.0", :require => false
 
 # Environment specific configuration
-gem "dotenv-rails", "~> 0.11.1"
+gem "dotenv-rails", "~> 1.0.1"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.0.4"
@@ -20,19 +20,15 @@ gem "rack-proxy", "~> 0.5.16"
 
 # JSON handling
 gem "multi_json", "~> 1.10.1"
-gem "oj", "~> 2.10.2", :platforms => [:ruby]
+gem "oj", "~> 2.10.3", :platforms => [:ruby]
 
 # MongoDB
 gem "mongoid", "~> 3.1.6"
-
-# Structure trees of mongoid documents
-gem "mongoid-tree", "~> 1.0.4", :require => "mongoid/tree"
 
 # Created/updated userstamping
 gem "mongoid_userstamp", "~> 0.3.2"
 
 # Versioning for mongoid
-# This git branch fixes embeds_one functionality.
 gem "mongoid_delorean", "~> 1.3.0"
 
 # Display deeply nested validation errors on embedded documents.
@@ -41,22 +37,24 @@ gem "mongoid-embedded-errors", "~> 2.0.1"
 # Data migrations
 gem "mongoid_rails_migrations", "~> 1.0.1"
 
-# Data migrations
+# Orderable database items
 gem "mongoid_orderable", "~> 4.1.0"
 
 # Generate UUIDs
 gem "uuidtools", "~> 2.1.4"
 
 # Database seeding
+# This branch adds mongoid compatibility:
+# https://github.com/mbleigh/seed-fu/pull/80
 gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
 
 # Elasticsearch
 gem "elasticsearch", "~> 1.0.4"
 
 # OmniAuth-based authentication
-gem "devise", "~> 3.2.4"
+gem "devise", "~> 3.4.0"
 gem "omniauth", "~> 1.2.1"
-gem "omniauth-cas", "~> 1.0.4", :git => "https://github.com/dandorman/omniauth-cas.git", :branch => "bump-omniauth-version"
+gem "omniauth-cas", "~> 1.1.0"
 gem "omniauth-facebook", "~> 2.0.0"
 gem "omniauth-github", "~> 1.1.2"
 gem "omniauth-google-oauth2", "~> 0.2.2"
@@ -64,13 +62,11 @@ gem "omniauth-myusa", :git => "https://github.com/GSA-OCSIT/omniauth-myusa.git"
 gem "omniauth-persona", "~> 0.0.1"
 gem "omniauth-twitter", "~> 1.0.1"
 
+# Authorization
 gem "pundit", "~> 0.3.0"
 
-# Form layout and display
-gem "simple_form", "~> 2.1.1"
-
 # Pagination
-gem "kaminari", "~> 0.15.1"
+gem "kaminari", "~> 0.16.1"
 gem "kaminari-bootstrap", "~> 0.1.3"
 
 # Navigation links
@@ -79,18 +75,9 @@ gem "tabs_on_rails", "~> 2.2.0"
 # Unobtrusive javascript for Rails helpers (things like delete links).
 gem "jquery-rails", "~> 3.1.0"
 
-# Breadcrumbs
-gem "crummy", "~> 1.8.0"
-
-# For creating friendly URL slugs.
-gem "babosa", "~> 0.3.11"
-
-# For running the python pygmentize program
-gem "childprocess", "~> 0.5.1"
-
 # Views/templates for APIs
 gem "rabl", "~> 0.11.0"
-gem "jbuilder", "~> 2.1.3"
+gem "jbuilder", "~> 2.2.2"
 gem "csv_builder", "~> 2.1.1"
 
 # Country and state name lookups
@@ -109,8 +96,7 @@ gem "diffy", "~> 3.0.3"
 gem "psych", "~> 2.0.5", :platforms => [:ruby]
 
 # For user-inputted YAML.
-# Use version from git so it doesn't automatically monkey-patch.
-gem "safe_yaml", "~> 1.0.1", :require => "safe_yaml/load"
+gem "safe_yaml", "~> 1.0.4", :require => "safe_yaml/load"
 
 # YAML configuration files.
 gem "rails_config", "~> 0.4.2"
@@ -133,7 +119,7 @@ group :assets do
   gem "bootstrap-sass", "~> 2.3.2.2"
 
   # Sass utilities and automatic image spirtes
-  gem "compass-rails", "~> 1.1.7"
+  gem "compass-rails", "~> 2.0.1"
 
   # See https://github.com/sstephenson/execjs#readme for more supported runtimes
   gem 'therubyracer', "~> 0.12.1", :platforms => :ruby
@@ -155,7 +141,7 @@ group :assets do
   gem "rails-assets-fontawesome", "~> 4.2.0"
 
   # Code editor (for syntax highlighting inside textareas)
-  gem "rails-assets-ace-builds", "~> 1.1.6"
+  gem "rails-assets-ace-builds", "~> 1.1.7"
 
   # Visual text diffs
   gem "rails-assets-jsdiff", "~> 1.0.8"
@@ -177,7 +163,7 @@ group :assets do
   gem "rails-assets-numeral", "~> 1.5.3"
   gem "rails-assets-pnotify", "~> 2.0.1"
   gem "rails-assets-qtip2", "~> 2.2.0"
-  gem "rails-assets-selectize", "~> 0.11.0"
+  gem "rails-assets-selectize", "~> 0.11.2"
   gem "rails-assets-spinjs", "~> 2.0.0"
 end
 
@@ -196,7 +182,7 @@ group :development, :test do
   gem "coveralls", "~> 0.7.0", :require => false
 
   # Real browser testing
-  gem "capybara", "~> 2.4.1"
+  gem "capybara", "~> 2.4.3"
 
   # Headless webkit for capybara
   gem "poltergeist", "~> 1.5.0"
@@ -204,6 +190,8 @@ group :development, :test do
   # Clean the database between tests
   gem "database_cleaner", "~> 1.3.0"
 
+  # JavaScript lint/style checker
+  # This git fork contains a newer version of the underlying jshint library.
   gem "jshintrb", "~> 0.2.4", :git => "https://github.com/Paxa/jshintrb.git"
 
   # For testing drag and drop in capybara.
