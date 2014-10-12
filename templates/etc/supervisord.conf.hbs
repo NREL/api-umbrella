@@ -68,15 +68,6 @@ stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
 
-[program:varnishlog]
-command=varnishlog -a -w {{log_dir}}/varnish.log -n {{run_dir}}/varnish/api-umbrella
-{{supervisor_conditional_user}}
-redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
-stderr_logfile=NONE
-logfile_maxbytes=0
-startsecs=5
-
 [program:varnishncsa]
 command=varnishncsa -a -w {{log_dir}}/varnishncsa.log -n {{run_dir}}/varnish/api-umbrella
 {{supervisor_conditional_user}}
