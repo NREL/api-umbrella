@@ -6,6 +6,9 @@ gem "rails", "~> 3.2.19"
 # Rails app server
 gem "puma", "~> 2.9.0"
 
+# Error notification service (optional)
+gem "rollbar", "~> 1.1.0", :require => false
+
 # Environment specific configuration
 gem "dotenv-rails", "~> 0.11.1"
 
