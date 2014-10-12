@@ -5,6 +5,10 @@ Admin.Api = Ember.Model.extend({
   frontendHost: Ember.attr(),
   backendHost: Ember.attr(),
   balanceAlgorithm: Ember.attr(),
+  createdAt: Ember.attr(),
+  updatedAt: Ember.attr(),
+  creator: Ember.attr(),
+  updater: Ember.attr(),
 
   servers: Ember.hasMany('Admin.ApiServer', { key: 'servers', embedded: true }),
   urlMatches: Ember.hasMany('Admin.ApiUrlMatch', { key: 'url_matches', embedded: true }),

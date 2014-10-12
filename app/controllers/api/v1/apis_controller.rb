@@ -32,7 +32,6 @@ class Api::V1::ApisController < Api::V1::BaseController
   def show
     @api = Api.find(params[:id])
     authorize(@api)
-    respond_with(:api_v1, @api, :root => "api")
   end
 
   def create

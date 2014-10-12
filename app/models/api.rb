@@ -17,9 +17,6 @@ class Api
   field :backend_protocol, :type => String
   field :frontend_host, :type => String
   field :backend_host, :type => String
-  field :append_query_string, :type => String
-  field :require_https, :type => Boolean
-  field :required_roles, :type => Array
   field :balance_algorithm, :type => String
 
   # Relations
