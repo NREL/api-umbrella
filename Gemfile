@@ -109,6 +109,11 @@ gem "daemons", "~> 1.1.9"
 # HTML email styling
 gem "premailer-rails", "~> 1.8.0"
 
+group :production, :staging do
+  # Log to stdout instead of file
+  gem "rails_stdout_logging", "~> 0.0.3"
+end
+
 # Gems used only for assets and not required
 # in production environments by default.
 group :assets do
