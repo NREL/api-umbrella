@@ -5,7 +5,7 @@ class ContactMailer < ActionMailer::Base
     @contact = contact
 
     mail :from => contact.email,
-      :subject => "#{t("site_name")} Contact Message from #{contact.email}",
-      :to => ENV["CONTACT_EMAIL"]
+      :subject => "#{ApiUmbrellaConfig[:site_name]} Contact Message from #{contact.email}",
+      :to => ApiUmbrellaConfig[:web][:contact_form_email]
   end
 end

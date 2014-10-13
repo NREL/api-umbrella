@@ -131,7 +131,11 @@ module ApiUmbrella
 
     config.action_mailer.raise_delivery_errors = true
     config.action_mailer.default_url_options = {
-      :host => 'example.com',
+      :host => ApiUmbrellaConfig[:default_host],
     }
+
+    if(ApiUmbrellaConfig[:web] && ApiUmbrellaConfig[:web][:mailer] && ApiUmbrellaConfig[:web][:mailer][:smtp_settings])
+      config.action_mailer.smtp_settings = ApiUmbrellaConfig[:web][:mailer][:smtp_settings]
+    end
   end
 end
