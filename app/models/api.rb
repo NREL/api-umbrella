@@ -73,7 +73,17 @@ class Api
     options[:methods] ||= []
     options[:methods] += [:error_data_yaml_strings, :headers_string]
 
-    super(options)
+    json = super(options)
+
+    json["api"]["creator"] = {
+      "username" => (self.creator.username if(self.creator))
+    }
+
+    json["api"]["updater"] = {
+      "username" => (self.updater.username if(self.updater))
+    }
+
+    json
   end
 
   # After the API is saved, clear out any left-over rate_limits for settings
