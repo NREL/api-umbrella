@@ -168,4 +168,15 @@ stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+
+[program:web-delayed-job]
+environment=API_UMBRELLA_CONFIG="{{api_umbrella_config_runtime_file}}"
+directory={{web.dir}}
+command=bundle exec ./script/delayed_job run --queues=mailers
+{{supervisor_conditional_user}}
+redirect_stderr=true
+stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stderr_logfile=NONE
+logfile_maxbytes=0
+startsecs=20
 {{/if}}

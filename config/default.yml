@@ -127,6 +127,7 @@ strip_cookies:
   - ^_ga$
   - ^is_returning$
 default_host: localhost
+site_name: API Umbrella
 apiSettings:
   rate_limits:
     - duration: 1000
