@@ -39,7 +39,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
   end
 
   def google_oauth2
-    if(env["omniauth.auth"]["extra"]["raw_info"]["verified_email"])
+    if(env["omniauth.auth"]["extra"]["raw_info"]["email_verified"])
       @email = env["omniauth.auth"]["info"]["email"]
     end
 
