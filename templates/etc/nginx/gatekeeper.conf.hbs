@@ -1,7 +1,3 @@
-# Remove the legacy /api/ prefix from all API urls. Now we assume API URLs
-# are all top-level.
-rewrite ^/api(/.*) $1 break;
-
 set $x_api_umbrella_request_id $txid;
 set $router_name "web_router";
 access_log {{log_dir}}/router.log api_umbrella_log buffer=32k flush=10s;
@@ -29,5 +25,9 @@ proxy_set_header X-Api-Umbrella-Request-ID $txid;
 # default:
 # https://docs.trafficserver.apache.org/en/latest/reference/configuration/records.config.en.html?highlight=gzip#proxy-config-http-normalize-ae-gzip 
 proxy_set_header Accept-Encoding $normalized_accept_encoding;
+
+# Remove the legacy /api/ prefix from all API urls. Now we assume API URLs
+# are all top-level.
+rewrite ^/api(/.*) $1 break;
 
 proxy_pass http://api_umbrella_gatekeeper_backends;
