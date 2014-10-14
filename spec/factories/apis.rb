@@ -16,6 +16,12 @@ FactoryGirl.define do
       [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/example", :backend_prefix => "/")]
     end
 
+    factory :api_with_settings do
+      settings do
+        FactoryGirl.attributes_for(:api_setting)
+      end
+    end
+
     factory :google_api do
       sequence(:name) { |n| "Google #{n}" }
       backend_host "google.com"

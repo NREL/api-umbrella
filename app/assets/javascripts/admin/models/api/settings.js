@@ -36,11 +36,11 @@ Admin.ApiSettings = Ember.Model.extend({
     // Make sure at least an empty object exists so the form builder can dive
     // into this section even when there's no pre-existing data.
     if(!this.get('errorTemplates')) {
-      this.set('errorTemplates', {});
+      this.set('errorTemplates', Ember.Object.create({}));
     }
 
     if(!this.get('errorDataYamlStrings')) {
-      this.set('errorDataYamlStrings', {});
+      this.set('errorDataYamlStrings', Ember.Object.create({}));
     }
   },
 

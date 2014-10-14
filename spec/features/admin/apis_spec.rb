@@ -91,4 +91,62 @@ describe "apis", :js => true do
       names.should eql(["API A", "API B", "API C", "API testing-filter"])
     end
   end
+
+  describe "saving" do
+    before(:each) do
+      @api = FactoryGirl.create(:api_with_settings, :name => "Save Test API")
+    end
+
+    it "saves the record when only the nested object attributes contain changes" do
+      @api.settings.error_data.should eql(nil)
+
+      visit "/admin/#/apis"
+      click_link "Save Test API"
+
+      find_field("Name").value.should eql("Save Test API")
+      page.save_screenshot('screenshot1.png')
+
+      find("a", :text => /Advanced Settings/).click
+      page.execute_script %{
+        ace.edit($('[data-form-property=api_key_missing]')[0]).setValue('hello1: foo\\nhello2: bar');
+      }
+
+      page.save_screenshot('screenshot2.png')
+      click_button("Save")
+      page.save_screenshot('screenshot3.png')
+      page.should have_content("Successfully saved")
+
+      @api = Api.find(@api.id)
+      @api.settings.error_data.should eql({
+        "api_key_missing" => {
+          "hello1" => "foo",
+          "hello2" => "bar",
+        }
+      })
+    end
+  end
+
+  describe "loading" do
+    before(:each) do
+      @api = FactoryGirl.create(:api_with_settings, :name => "Test Load API", :frontend_host => "example1.com")
+    end
+
+    it "loads the record from the server each time the form opens, even if the data is pre-cached" do
+      visit "/admin/#/apis"
+      page.should have_content("Add API Backend")
+
+      click_link "Test Load API"
+      find_field("Frontend Host").value.should eql("example1.com")
+
+      find("nav a", :text => /Configuration/).click
+      find("nav a", :text => /API Backends/).click
+      page.should have_content("Add API Backend")
+
+      @api.frontend_host = "example2.com"
+      @api.save!
+
+      click_link "Test Load API"
+      find_field("Frontend Host").value.should eql("example2.com")
+    end
+  end
 end

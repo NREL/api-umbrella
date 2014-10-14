@@ -130,22 +130,26 @@ Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
 
     var aceId = this.elementId + '_ace';
     this.$().hide();
-    this.$().before('<div id="' + aceId + '" class="span12"></div>');
+    this.$().before('<div id="' + aceId + '" data-form-property="' + this.property + '" class="span12"></div>');
 
     this.editor = ace.edit(aceId);
-    this.editor.setTheme('ace/theme/textmate');
-    this.editor.setShowPrintMargin(false);
-    this.editor.setHighlightActiveLine(false);
-    this.editor.getSession().setUseWorker(false);
-    this.editor.getSession().setTabSize(2);
-    this.editor.getSession().setMode('ace/mode/' + this.$().data('ace-mode'));
-    this.editor.getSession().setValue(this.$().val());
 
+    var editor = this.editor;
+    var session = this.editor.getSession();
     var element = this.$();
-    this.$().closest('form').submit(_.bind(function() {
-      element.val(this.editor.getSession().getValue());
+
+    editor.setTheme('ace/theme/textmate');
+    editor.setShowPrintMargin(false);
+    editor.setHighlightActiveLine(false);
+    session.setUseWorker(false);
+    session.setTabSize(2);
+    session.setMode('ace/mode/' + this.$().data('ace-mode'));
+    session.setValue(this.$().val());
+
+    session.on('change', function() {
+      element.val(session.getValue());
       element.trigger('change');
-    }, this));
+    });
   },
 }));
 
