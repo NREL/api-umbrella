@@ -118,14 +118,19 @@ end
 # in production environments by default.
 group :assets do
   gem 'sass-rails', '~> 3.2.6'
-  gem "sass", "3.4.5"
+
+  # Hold at sass 3.2, since newer versions lead to weird sprockets errors.
+  # Apparently fixed in newer versions of sprockets, but not the version Rails
+  # 3.2 uses:
+  # https://github.com/sass/sass/issues/1144
+  gem "sass", "~> 3.2.19"
 
   # A Sass version of Twitter Bootstrap. This it the basis for our styles and
   # JavaScript components.
   gem "bootstrap-sass", "~> 2.3.2.2"
 
   # Sass utilities and automatic image spirtes
-  gem "compass-rails", "~> 2.0.1"
+  gem "compass-rails", "~> 1.1.7"
 
   # See https://github.com/sstephenson/execjs#readme for more supported runtimes
   gem 'therubyracer', "~> 0.12.1", :platforms => :ruby
