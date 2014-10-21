@@ -57,6 +57,21 @@ describe('request rewriting', function() {
         done();
       }.bind(this));
     });
+
+    it('strips the api key from the query string even if the query string contains invalid encoded params', function(done) {
+      request.get('http://localhost:9333/info/?test=foo%26%20bar&url=%ED%A1%BC&api_key=' + this.apiKey, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        Object.keys(data.url.query).sort().should.eql([
+          'test',
+          'url',
+        ]);
+        data.url.query.test.should.eql('foo& bar');
+        (new Buffer(data.url.query.url)).toString('base64').should.eql('77+9');
+
+        done();
+      }.bind(this));
+    });
   });
 
   describe('api key stripping when api keys are not required', function() {

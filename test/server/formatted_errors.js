@@ -57,6 +57,14 @@ describe('formatted error responses', function() {
         done();
       });
     });
+
+    it('uses the path extension even if the url contains invalid query params', function(done) {
+      var options = { headers: { 'Accept': 'application/json' } };
+      request.get('http://localhost:9333/hello.xml?format=json&test=test&url=%ED%A1%BC', options, function(error, response, body) {
+        body.should.include('<code>API_KEY_MISSING</code>');
+        done();
+      });
+    });
   });
 
   describe('data variables', function() {
