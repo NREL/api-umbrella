@@ -164,7 +164,20 @@ var tasks = {
       });
     });
   },
+
+  version: function() {
+    var packageInfo = require('../package.json');
+    console.info('version ' + packageInfo.version);
+    process.exit(0);
+  },
 };
+
+parser.option('version', {
+  flag: true,
+  abbr: 'v',
+  help: 'Print version and exit',
+  callback: tasks.version,
+});
 
 parser.command('run')
   .help('Run the API Umbrella server in the foreground')
