@@ -28,6 +28,9 @@ router:
   trusted_proxies:
     - 192.168.12.0/23
     - 10.10.10.10
+supervisord:
+  inet_http_server:
+    port: 13004
 mongodb:
   url: "mongodb://127.0.0.1:13001/api_umbrella_test"
   embedded_server_config:

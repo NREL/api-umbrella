@@ -2,7 +2,7 @@
 file={{run_dir}}/supervisor.sock
 
 [inet_http_server]
-port=*:9009
+port={{supervisord.inet_http_server.host}}:{{supervisord.inet_http_server.port}}
 
 [supervisord]
 pidfile={{run_dir}}/supervisord.pid

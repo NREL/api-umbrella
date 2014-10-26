@@ -77,6 +77,10 @@ router:
     ip_rate_size: 8m
     ip_connections: 50
     ip_connections_size: 5m
+supervisord:
+  inet_http_server:
+    host: 127.0.0.1
+    port: 14004
 hosts:
   - hostname: localhost
     default: true
