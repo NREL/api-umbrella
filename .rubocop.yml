@@ -3,6 +3,7 @@ AllCops:
     - tmp/**/*
     - vendor/**/*
     - config/compass.rb
+    - public/web-assets/**/*
   RunRailsCops: true
 
 Lint/LiteralInInterpolation:
