@@ -2,7 +2,17 @@
 
 require('./support/env');
 
-var gatekeeper = require('../lib/gatekeeper');
+var fs = require('fs'),
+    gatekeeper = require('../lib/gatekeeper'),
+    path = require('path');
+
+if(!fs.existsSync(path.resolve(__dirname, './log'))) {
+  fs.mkdirSync(path.resolve(__dirname, './log'));
+}
+
+if(!fs.existsSync(path.resolve(__dirname, './tmp'))) {
+  fs.mkdirSync(path.resolve(__dirname, './tmp'));
+}
 
 global.gatekeeper = gatekeeper;
 
