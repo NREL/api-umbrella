@@ -47,11 +47,27 @@ before(function redisStart(done) {
     pidFile: redisPidFile,
   });
 
+  var redisOutput = '';
+  redisServer.on('stderr', function(data) {
+    redisOutput += data.toString();
+  });
+
+  redisServer.on('stdout', function(data) {
+    redisOutput += data.toString();
+  });
+
   // Make sure the redis-server process doesn't just quickly die on startup
   // (for example, if the port is already in use).
   var exitListener = function () {
-    console.error('\nFailed to start redis server:');
-    process.exit(1);
+    // Delay exiting, so stdout/stderr can be captured and displayed. I think
+    // this is an odd-bug with forever-monitor, where the output gets weird on
+    // immediate exits. Possibly related to similar oddities seen when trying
+    // to use log files: https://github.com/nodejitsu/forever-monitor/issues/36
+    setTimeout(function() {
+      console.error('\nFailed to start redis server:');
+      console.error(redisOutput);
+      process.exit(1);
+    }, 250);
   };
   redisServer.on('exit', exitListener);
 
