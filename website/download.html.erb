@@ -36,7 +36,7 @@ header: Download
 sudo apt-get install gcc
 sudo dpkg -i <%= File.basename(package) %>
 <% else %>
-sudo rpm -i <%= File.basename(package) %>
+sudo yum install <%= File.basename(package) %>
 <% end %></pre>
 
       <p>Open the configuration file for editing:</p>
