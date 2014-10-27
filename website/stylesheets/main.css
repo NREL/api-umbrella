@@ -2,7 +2,7 @@ body {
   font-family: "Lato";
   font-weight: 300;
   font-size: 16px;
-  color: #555;
+  color: #444;
 
   -webkit-font-smoothing: antialiased;
   -webkit-overflow-scrolling: touch;
@@ -53,17 +53,50 @@ header {
 
 #headerwrap {
   padding: 28px 0px;
+  text-align: center;
+}
+
+#headerwrap .btn-lg {
+  background-color: transparent;
+  color: #fff;
+  font-weight: bold;
+  border: 1px solid #fff;
+  font-size: 24px;
+}
+
+#headerwrap .btn-lg:hover {
+  background-color: #fff;
+  color: #f1715e;
+}
+
+#headerwrap .actions {
+  margin: 20px 0px;
+}
+
+#headerwrap .actions .fa {
+  margin-right: 8px;
 }
 
 #headerwrap .details {
-  margin-top: 12px;
-  text-align: center;
+  margin: 30px 0px;
   line-height: 100%;
   font-size: 20px;
 }
 
+#headerwrap .links {
+  margin-top: 30px;
+}
+
+#headerwrap .links .fa {
+  margin-right: 2px;
+}
+
+#headerwrap a {
+  color: #fff;
+}
+
 #headerwrap h1 {
-	margin-top: 0px;
+  margin: 0px;
 	color: white;
 	font-size: 70px;
   -webkit-box-shadow: none;
@@ -74,7 +107,7 @@ header {
 #headerwrap h3 {
 	color: white;
 	font-size: 30px;
-  margin: 8px 0px 32px 0px;
+  margin: 0px;
 }
 #headerwrap h4 {
   color: #fff;
@@ -197,4 +230,13 @@ nav li {
 
 nav li.active {
   border-color: #f1715e;
+}
+
+.platform-download {
+  margin-top: 20px;
+
+}
+
+.platform-download p {
+  font-size: 18px;
 }

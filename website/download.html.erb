@@ -1,0 +1,77 @@
+---
+title: Download - API Umbrella
+header: Download
+---
+
+<div class="container">
+  <h3>I want to install API Umbrella on</h3>
+  <div class="btn-group">
+    <button type="button" class="btn btn-default btn-lg dropdown-toggle" data-toggle="dropdown">
+      Choose an OS <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" role="menu">
+      <li><a href="#ubuntu1204">Ubuntu 12.04</a></li>
+      <li><a href="#ubuntu1404">Ubuntu 14.04</a></li>
+      <li><a href="#debian7">Debian 7</a></li>
+      <li><a href="#el6">Enterprise Linux 6 (CentOS/RedHat/Oracle/Scientific Linux)</a></li>
+      <li><a href="#el7">Enterprise Linux 7 (CentOS/RedHat/Oracle/Scientific Linux)</a></li>
+    </ul>
+  </div>
+
+  <%
+  packages = {
+    "ubuntu1204" => "ubuntu/12.04/api-umbrella-0.6.0-1_amd64.deb",
+    "ubuntu1404" => "ubuntu/14.04/api-umbrella-0.6.0-1_amd64.deb",
+    "debian7" => "debian/7/api-umbrella-0.6.0-1_amd64.deb",
+    "el6" => "el/6/api-umbrella-0.6.0-1.el6.x86_64.rpm",
+    "el7" => "el/7/api-umbrella-0.6.0-1.el7.x86_64.rpm",
+  }
+  %>
+
+  <% packages.each do |id, package| %>
+    <div id="<%= id %>" class="platform-download" style="display: none;">
+      <p>Download and install the package:</p>
+      <pre>wget https://developer.nrel.gov/downloads/api-umbrella/<%= package %>
+<% if(File.extname(package) == ".deb") %>
+sudo dpkg -i <%= File.basename(package) %>
+<% else %>
+sudo rpm -i <%= File.basename(package) %>
+<% end %></pre>
+
+      <p>Open the configuration file for editing:</p>
+      <pre>sudo -e /etc/api-umbrella/api-umbrella.yml</pre>
+
+      <p>In the config file, define an e-mail address for your first admin account:</p>
+
+      <pre>web:
+  admin:
+    initial_superusers:
+      - your.email@example.com</pre>
+
+      <p>Start API Umbrella:</p>
+      <pre>sudo /etc/init.d/api-umbrella start</pre>
+
+      <p>Browse to your server's hostname. You should land on the default homepage:</p>
+
+      <%= image_tag("../../images/default_homepage.png", :alt => "Default API Umbrella homepage", :class => "img-responsive img-center") %>
+
+      <p>Congrats! You're now up and running with API Umbrella. There are a variety of things you can do to start using the platform. For a quick tutorial, see <%= link_to("getting started", "/docs/getting-started.html") %>.
+
+      <p><em>Problems? Open an <a href="https://github.com/NREL/api-umbrella/issues">issue</a>.</em></p>
+    </div>
+  <% end %>
+</div>
+
+<script type="text/javascript">
+  $(".dropdown-menu li a").click(function(){
+    var selected = $(this).text();
+    $(this).parents('.btn-group').find('.dropdown-toggle').html(selected + ' <span class="caret"></span>');
+
+    var current = $(this).attr('href');
+    $('.platform-download').hide();
+    $(current).show();
+
+    $(this).dropdown('toggle');
+    return false;
+  });
+</script>

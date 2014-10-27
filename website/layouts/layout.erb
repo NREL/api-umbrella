@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title><%= current_page.data.title || "API Umbrella" %></title>
     <%= stylesheet_link_tag "all" %>
+    <%= javascript_include_tag "all" %>
     <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
     <link href="http://fonts.googleapis.com/css?family=Raleway:400,300,700" rel="stylesheet" type="text/css">
 
@@ -33,6 +34,7 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="<%= "active" if(current_page.url == "/") %>"><%= link_to("Home", "/index.html", :relative => true) %></li>
+            <li class="<%= "active" if(current_page.url =~ %r{^/download/}) %>"><%= link_to("Download", "/download.html", :relative => true) %></li>
             <li class="<%= "active" if(current_page.url =~ %r{^/docs/}) %>"><%= link_to("Documentation", "/docs/architecture.html", :relative => true) %></li>
           </ul>
         </div>
@@ -52,7 +54,5 @@
     <div style="text-align: center; font-style: italic; padding: 2em 0.5em;">
       <a href="https://github.com/NREL/api-umbrella/blob/master/website<%= current_page.source_file.gsub(current_page.app.source_dir, '') %>">Help Improve this Content</a>
     </div>
-
-    <%= javascript_include_tag "all" %>
   </body>
 </html>
