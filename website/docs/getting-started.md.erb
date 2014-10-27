@@ -9,9 +9,9 @@ header: Documentation
 
 A web admin is available to perform basic tasks:
 
-[http://localhost:8080/admin/](http://localhost:8080/admin/)
+`https://your-api-umbrella-host/admin/`
 
-While in your local development environment, you can choose the dummy login option to login using any e-mail address (no password required).
+During the <%= link_to("install", "/download.html") %>, you should have defined the `web.admin.initial_superusers` setting in the `/etc/api-umbrella/api-umbrella.yml` config file. You should now be able to login to to the admin using an account tied to the e-mail address you defined ([Mozilla Persona](https://login.persona.org/about) is the only option that will work without additional configuration, but it's has a quick signup if you don't already have an account).
 
 ### Add API Backends
 
@@ -19,7 +19,7 @@ Out of the box, API Umbrella doesn't know about any APIs. You must first configu
 
 In this example, we'll proxy to Google's Geocoding API (but you'll more likely be proxying to your own web services).
 
-**Step 1:** Login to the [web admin](http://localhost:8080/admin/) and navigate to the "API Backends" section under the "Configuration" menu.
+**Step 1:** Login to the [web admin](http://your-api-umbrella-host/admin/) and navigate to the "API Backends" section under the "Configuration" menu.
 
 **Step 2:** Add a new backend:
 
@@ -33,7 +33,7 @@ Google's API should now be available through the API Umbrella proxy.
 
 On your local environment, visit the signup form:
 
-[http://localhost:8080/signup](http://localhost:8080/signup)
+`https://your-api-umbrella-host/signup/`
 
 Signup to receive your own unique API key for your development environment.
 
@@ -41,22 +41,18 @@ Signup to receive your own unique API key for your development environment.
 
 Assuming you added the Google Geocoding example as an API backend, you should now be able to make a request to Google's Geocoding API proxied through your local API Umbrella instance:
 
-`http://localhost:8080/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=**YOUR_KEY_HERE**`
+`http://your-api-umbrella-host/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=**YOUR_KEY_HERE**`
 
 You can see how API Umbrella layers its authentication on top of existing APIs by making a request using an invalid key:
 
-[http://localhost:8080/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY](http://localhost:8080/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY)
+
+`http://your-api-umbrella-host/google/maps/api/geocode/json?address=Golden,+CO&sensor=false&api_key=INVALID_KEY`
 
 ### View Analytics
 
-Login to the [web admin](http://localhost:8080/admin/). Navigate to the "Filter Logs" section under the "Analytics" menu. As you make API requests against your API Umbrella server, the requests should start to show up here (there may be a 30 second delay before the requests show up in the analytics).
+Login to the [web admin](http://your-api-umbrella-host/admin/). Navigate to the "Filter Logs" section under the "Analytics" menu. As you make API requests against your API Umbrella server, the requests should start to show up here (there may be a 30 second delay before the requests show up in the analytics).
 
 <%= link_to(image_tag("../../images/docs/analytics.png", :alt => "Analytics", :class => "img-responsive"), "/images/docs/analytics.png", :relative => true, :class => "image-link-no2x") %>
-
-
-### Write API documentation
-
-Login to the [web admin](http://localhost:8080/admin/) and create documentation for individual web services and organize them into hierarchical collections. As documentation and collections are added, they will show up in the [documentation section](http://localhost:8080/doc) of the frontend.
 
 
 ### Roles
