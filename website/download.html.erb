@@ -33,6 +33,7 @@ header: Download
       <p>Download and install the package:</p>
       <pre>wget https://developer.nrel.gov/downloads/api-umbrella/<%= package %>
 <% if(File.extname(package) == ".deb") %>
+sudo apt-get install gcc
 sudo dpkg -i <%= File.basename(package) %>
 <% else %>
 sudo rpm -i <%= File.basename(package) %>
