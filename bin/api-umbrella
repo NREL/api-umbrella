@@ -1,6 +1,15 @@
 #!/opt/api-umbrella/embedded/bin/node
 'use strict';
 
+var mkdirp = require('mkdirp'),
+    path = require('path'),
+    posix = require('posix');
+
+process.env.FOREVER_ROOT = path.join('/opt/api-umbrella/var/run/forever');
+if(posix.geteuid() === 0) {
+  mkdirp.sync(process.env.FOREVER_ROOT);
+}
+
 var _ = require('lodash'),
     async = require('async'),
     clc = require('cli-color'),
@@ -15,8 +24,7 @@ var tasks = {
 
   start: function() {
     var fs = require('fs'),
-        mkdirp = require('mkdirp'),
-        path = require('path'),
+        fsExtra = require('fs-extra'),
         Tail = require('always-tail');
 
     var started = false;
@@ -42,11 +50,25 @@ var tasks = {
         console.error('api-umbrella is already started');
         process.exit(1);
       } else {
-        var daemonDir = path.join(process.env['HOME'] || '/opt/api-umbrella', '.api-umbrella');
-        var daemonLog = path.join(daemonDir, 'server.log');
-        var daemonPid = path.join(daemonDir, 'server.pid');
+        var daemonDir = '/opt/api-umbrella/var';
+        var daemonLog = path.join(daemonDir, 'log/daemon.log');
+        var daemonPid = path.join(daemonDir, 'run/daemon.pid');
 
-        mkdirp.sync(daemonDir);
+        // Create intermediate directories and ensure the files/dirs are
+        // writable.
+        try {
+          fsExtra.ensureFileSync(daemonLog);
+        } catch(e) {
+          console.error('ERROR: Could not open ' + daemonLog + ' for writing');
+          process.exit(1);
+        }
+
+        try {
+          fsExtra.ensureFileSync(daemonPid);
+        } catch(e) {
+          console.error('ERROR: Could not open ' + daemonPid + ' for writing');
+          process.exit(1);
+        }
 
         // Make sure the file exists, or the Tail module will die.
         var fd = fs.openSync(daemonLog, 'w');
