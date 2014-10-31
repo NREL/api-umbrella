@@ -98,15 +98,13 @@ var tasks = {
           options: runArgs,
           logFile: daemonLog,
           minUptime: 10000,
-          // Only make 1 retry attempt at starting up the process. Ideally,
-          // this should disallow retrys altogether, since this process is
-          // really spinning up supervisord, which should manage it's own stuff
-          // (and we don't want multiple processes fighting to constantly spin
-          // things up if we really want to kill the process). However, on
-          // initial installs, there seems to be some funky race conditions on
-          // the first setup, where a second start attempt will fix things. So
-          // until that gets sorted, we'll allow the 1 retry.
-          max: 2,
+          // Do not try to retry starting up the process. This process is only
+          // spinning up supervisord, which should manage it's own stuff (and
+          // we don't want multiple processes fighting to constantly spin
+          // things up if we really want to kill the process). We're just using
+          // forever here since it provides a nicer interface to starting /
+          // stopping / checking the status of a process.
+          max: 1,
         });
       }
     });
