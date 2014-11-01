@@ -8,6 +8,7 @@ user: api-umbrella
 group: api-umbrella
 rlimits:
   nofile: 100000
+  nproc: 20000
 http_port: 80
 https_port: 443
 etc_dir: /opt/api-umbrella/etc
@@ -20,6 +21,7 @@ redis:
   port: 14000
 nginx:
   workers: 4
+  worker_connections: 8192
 gatekeeper:
   workers: 4
   host: 127.0.0.1

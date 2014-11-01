@@ -9,7 +9,7 @@ user {{user}} {{group}};
 pid {{run_dir}}/router-nginx.pid;
 
 events {
-  worker_connections 1024;
+  worker_connections {{nginx.worker_connections}};
 }
 
 error_log stderr;
