@@ -19,12 +19,11 @@ var express = require('express');
   });
 
   app.get('/keepalive' + port + '/connections', function(req, res) {
-    var connections = { start: { connections: openConnections, requests: openRequests } };
+    var connections = { connections: openConnections, requests: openRequests };
+
+    // Delay sending the response so we can ensure that multiple concurrent
+    // requests get opened up.
     setTimeout(function() {
-      connections.end = {
-        connections: openConnections,
-        requests: openRequests,
-      };
       res.json(connections);
     }, 50);
   });

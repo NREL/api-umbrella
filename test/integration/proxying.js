@@ -293,8 +293,8 @@ describe('proxying', function() {
   });
 
   describe('server-side keep alive', function() {
-    it('keeps 10 idle keepalive connections opened to the backend', function(done) {
-      this.timeout(5000);
+    it('keeps 10 idle keepalive connections (per nginx worker) opened to the backend', function(done) {
+      this.timeout(10000);
 
       var options = _.merge({}, this.options, {
         headers: {
@@ -304,8 +304,8 @@ describe('proxying', function() {
 
       // Open a bunch of concurrent connections first, and then inspect the
       // number of number of connections still active afterwards.
-      async.times(100, function(index, callback) {
-        request.get('http://localhost:9080/keepalive9445/connections', options, function(error, response) {
+      async.times(400, function(index, callback) {
+        request.get('http://localhost:9080/keepalive9445/connections?index=' + index, options, function(error, response) {
           response.statusCode.should.eql(200);
           callback(error);
         });
@@ -315,27 +315,24 @@ describe('proxying', function() {
             response.statusCode.should.eql(200);
 
             var data = JSON.parse(body);
-            data.start.requests.should.eql(1);
-            data.end.requests.should.eql(1);
+            data.requests.should.eql(1);
 
-            // The number of active connections afterwards should be 10 (and it
-            // usually is), but sometimes some extra connections (usually
-            // double the real keepalive number) seem to stick around for a
-            // couple minutes. Since we're mainly interested in ensuring some
-            // unused connections are being kept open, we'll loosen our count
-            // checks a bit.
-            data.start.connections.should.be.gte(10);
-            data.start.connections.should.be.lte(22);
-            data.end.connections.should.eql(data.start.connections);
+            // The number of active connections afterwards should be between 10
+            // and 40 (10 * number of nginx worker processes). This ambiguity
+            // is because we may not have exercised all the individual nginx
+            // workers. Since we're mainly interested in ensuring some unused
+            // connections are being kept open, we'll loosen our count checks.
+            data.connections.should.be.gte(10);
+            data.connections.should.be.lte(10 * 4);
 
             done();
           });
-        }.bind(this), 500);
+        }.bind(this), 50);
       }.bind(this));
     });
 
-    it('allows the number of idle backend keepalive connections to be configured', function(done) {
-      this.timeout(5000);
+    it('allows the number of idle backend keepalive connections (per nginx worker) to be configured', function(done) {
+      this.timeout(10000);
 
       var options = _.merge({}, this.options, {
         headers: {
@@ -345,8 +342,8 @@ describe('proxying', function() {
 
       // Open a bunch of concurrent connections first, and then inspect the
       // number of number of connections still active afterwards.
-      async.times(100, function(index, callback) {
-        request.get('http://localhost:9080/keepalive9446/connections', options, function(error, response) {
+      async.times(400, function(index, callback) {
+        request.get('http://localhost:9080/keepalive9446/connections?index=' + index, options, function(error, response) {
           response.statusCode.should.eql(200);
           callback(error);
         });
@@ -356,27 +353,27 @@ describe('proxying', function() {
             response.statusCode.should.eql(200);
 
             var data = JSON.parse(body);
-            data.start.requests.should.eql(1);
-            data.end.requests.should.eql(1);
+            data.requests.should.eql(1);
 
-            // The number of active connections afterwards should be 10 (and it
-            // usually is), but sometimes some extra connections (usually
-            // double the real keepalive number) seem to stick around for a
-            // couple minutes. Since we're mainly interested in ensuring some
-            // unused connections are being kept open, we'll loosen our count
-            // checks a bit.
-            data.start.connections.should.be.gte(3);
-            data.start.connections.should.be.lte(8);
-            data.end.connections.should.eql(data.start.connections);
+            // The number of active connections afterwards for this specific
+            // API should be between 2 and 8 (2 * number of nginx worker
+            // processes).
+            data.connections.should.be.gte(2);
+            data.connections.should.be.lte(2 * 4);
+
+            // Given the ambiguity of the connection ranges, make an explicit
+            // check to ensure this test remains below the default 10 keepalive
+            // connections.
+            data.connections.should.be.lt(10);
 
             done();
           });
-        }.bind(this), 500);
+        }.bind(this), 50);
       }.bind(this));
     });
 
     it('allows the number of concurrent connections to execeed the number of keepalive connections', function(done) {
-      this.timeout(5000);
+      this.timeout(10000);
 
       var options = _.merge({}, this.options, {
         headers: {
@@ -386,31 +383,31 @@ describe('proxying', function() {
 
       var maxConnections = 0;
       var maxRequests = 0;
-      async.times(200, function(index, callback) {
-        request.get('http://localhost:9080/keepalive9447/connections', options, function(error, response, body) {
+      async.times(400, function(index, callback) {
+        request.get('http://localhost:9080/keepalive9447/connections?index=' + index, options, function(error, response, body) {
           response.statusCode.should.eql(200);
 
           var data = JSON.parse(body);
 
-          if(data.start.connections > maxConnections) {
-            maxConnections = data.start.connections;
+          if(data.connections > maxConnections) {
+            maxConnections = data.connections;
           }
 
-          if(data.start.requests > maxRequests) {
-            maxRequests = data.start.requests;
+          if(data.requests > maxRequests) {
+            maxRequests = data.requests;
           }
 
           callback(error);
         });
       }.bind(this), function() {
-        // We sent 200 concurrent requests, but the number of concurrent
+        // We sent 400 concurrent requests, but the number of concurrent
         // requests to the backend will likely be lower, since we're testing
         // the full stack, and the requests have to go through multiple layers
         // (the gatekeeper, caching, etc) which may lower absolute concurrency.
         // But all we're really trying to test here is that this does increase
-        // above the 10 keepalived connections.
-        maxRequests.should.be.greaterThan(20);
-        maxConnections.should.be.greaterThan(20);
+        // above the default of 40 keepalive connections per backend.
+        maxRequests.should.be.greaterThan(40);
+        maxConnections.should.be.greaterThan(40);
 
         done();
       });

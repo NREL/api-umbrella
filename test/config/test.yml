@@ -55,7 +55,7 @@ apis:
     url_matches:
       - frontend_prefix: /down
         backend_prefix: /down
-  - _id: keepalive
+  - _id: keepalive9445
     frontend_host: localhost
     backend_host: localhost
     servers:
@@ -65,7 +65,7 @@ apis:
       - frontend_prefix: /keepalive9445/
         backend_prefix: /keepalive9445/
     rate_limit_mode: unlimited
-  - _id: keepalive2
+  - _id: keepalive9446
     frontend_host: localhost
     backend_host: localhost
     servers:
@@ -75,8 +75,8 @@ apis:
       - frontend_prefix: /keepalive9446/
         backend_prefix: /keepalive9446/
     rate_limit_mode: unlimited
-    keepalive_connections: 3
-  - _id: keepalive3
+    keepalive_connections: 2
+  - _id: keepalive9447
     frontend_host: localhost
     backend_host: localhost
     servers:
