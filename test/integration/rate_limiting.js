@@ -136,7 +136,7 @@ describe('rate limiting', function() {
             var successes = _.filter(responseCodes, function(code) { return code === 200; });
             var overLimits = _.filter(responseCodes, function(code) { return code === 429; });
 
-            responseCodes.length.should.eql(220);
+            responseCodes.length.should.eql(250);
 
             // The burst handling seems a bit fuzzy (or we're not making
             // requests fast enough), so it's not a hard 200 requests where we
