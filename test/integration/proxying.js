@@ -294,7 +294,7 @@ describe('proxying', function() {
 
   describe('server-side keep alive', function() {
     it('keeps 10 idle keepalive connections (per nginx worker) opened to the backend', function(done) {
-      this.timeout(10000);
+      this.timeout(30000);
 
       var options = _.merge({}, this.options, {
         headers: {
@@ -332,7 +332,7 @@ describe('proxying', function() {
     });
 
     it('allows the number of idle backend keepalive connections (per nginx worker) to be configured', function(done) {
-      this.timeout(10000);
+      this.timeout(30000);
 
       var options = _.merge({}, this.options, {
         headers: {
@@ -373,7 +373,7 @@ describe('proxying', function() {
     });
 
     it('allows the number of concurrent connections to execeed the number of keepalive connections', function(done) {
-      this.timeout(10000);
+      this.timeout(30000);
 
       var options = _.merge({}, this.options, {
         headers: {
