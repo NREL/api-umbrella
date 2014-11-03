@@ -25,7 +25,67 @@ http {
   scgi_temp_path {{tmp_dir}}/router-nginx-scgi_temp;
   server_tokens off;
 
-  log_format api_umbrella_log '"$x_api_umbrella_request_id","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent","$http_referer","$http_x_api_key","$remote_user"';
+  # Log format for gathering the primary analytics.
+  #
+  # Note: This is manually constructed JSON to make dealing with it more sane
+  # than a bunch of unnamed columns. nginx will escape quotes in values, so
+  # this is safe, but you have to do manually deal with those escape sequences
+  # before you can actually parse as JSON. See router_log_listener's handling
+  # for more details.
+  log_format api_umbrella_initial_router_log '{'
+    '"id":"$x_api_umbrella_request_id",'
+    '"source":"$router_name",'
+    '"req_accept":"$http_accept",'
+    '"req_accept_encoding":"$http_accept_encoding",'
+    '"req_api_key_header":"$http_x_api_key",'
+    '"req_api_key_query":"$arg_api_key",'
+    '"req_at_msec":"$msec",'
+    '"req_basic_auth_username":"$remote_user",'
+    '"req_connection":"$http_connection",'
+    '"req_content_type":"$http_content_type",'
+    '"req_host":"$http_host",'
+    '"req_host1":"$host",'
+    '"req_host2":"$hostname",'
+    '"req_ip":"$remote_addr",'
+    '"req_method":"$request_method",'
+    '"req_origin":"$http_origin",'
+    '"req_port":"$server_port",'
+    '"req_referer":"$http_referer",'
+    '"req_scheme":"$scheme",'
+    '"req_size":"$request_length",'
+    '"req_uri":"$request_uri",'
+    '"req_user_agent":"$http_user_agent",'
+    '"res_age":"$sent_http_age",'
+    '"res_content_encoding":"$sent_http_content_encoding",'
+    '"res_content_length":"$sent_http_content_length",'
+    '"res_content_type":"$sent_http_content_type",'
+    '"res_server":"$upstream_http_server",'
+    '"res_size":"$bytes_sent",'
+    '"res_status":"$status",'
+    '"res_time":"$request_time",'
+    '"res_time_backend":"$upstream_response_time",'
+    '"res_transfer_encoding":"$sent_http_transfer_encoding",'
+
+    # These fields aren't technically used for our analytics gathering, but are
+    # useful to have in files for grepping/debugging.
+    '"req_at":"$time_iso8601"'
+  '}';
+
+  # Log format for gathering timer analytics from the backend router.
+  log_format api_umbrella_api_backend_router_log '{'
+    '"id":"$x_api_umbrella_request_id",'
+    '"source":"$router_name",'
+    '"res_time":"$request_time",'
+    '"res_time_backend":"$upstream_response_time",'
+
+    # These fields aren't technically used for our analytics gathering, but are
+    # useful to have in files for grepping/debugging.
+    '"req_at":"$time_iso8601",'
+    '"req_host":"$http_host",'
+    '"req_uri":"$request_uri"'
+  '}';
+
+# "$x_api_umbrella_request_id","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent","$http_referer","$http_x_api_key","$remote_user"';
 
   include ./mime.conf;
   include ./realip.conf;
@@ -231,8 +291,9 @@ http {
     server_name _;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
-    set $router_name "api_router";
-    access_log {{log_dir}}/router.log api_umbrella_log buffer=32k flush=10s;
+    set $router_name "api_backend_router";
+    access_log {{log_dir}}/router.log api_umbrella_api_backend_router_log buffer=32k flush=10s;
+    access_log syslog:server=127.0.0.1:{{router.log_listener.port}} api_umbrella_api_backend_router_log;
 
     # Enable keep alive connections to the backend servers.
     proxy_http_version 1.1;
