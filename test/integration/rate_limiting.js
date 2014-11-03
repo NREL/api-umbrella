@@ -128,7 +128,7 @@ describe('rate limiting', function() {
 
         // Delay to allow the per-second rate limit to clear.
         setTimeout(function() {
-          async.times(220, function(index, callback) {
+          async.times(250, function(index, callback) {
             request.get('http://localhost:9080/info/', this.options, function(error, response) {
               callback(error, response.statusCode);
             });
@@ -144,10 +144,10 @@ describe('rate limiting', function() {
             // generally start returning 429 errors for some requests once
             // we're over 200 requests.
             successes.length.should.be.gte(200);
-            successes.length.should.be.lte(215);
+            successes.length.should.be.lte(225);
             overLimits.length.should.be.gte(1);
-            overLimits.length.should.be.lte(20);
-            (successes.length + overLimits.length).should.eql(220);
+            overLimits.length.should.be.lte(50);
+            (successes.length + overLimits.length).should.eql(250);
 
             done();
           });
