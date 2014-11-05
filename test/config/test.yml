@@ -14,6 +14,8 @@ redis:
   port: 13000
 beanstalkd:
   port: 13005
+dnsmasq:
+  port: 14007
 gatekeeper:
   starting_port: 13050
   target: "127.0.0.1:13010"

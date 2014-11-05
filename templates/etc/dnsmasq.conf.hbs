@@ -1,0 +1,11 @@
+listen-address=127.0.0.1
+port={{dnsmasq.port}}
+
+keep-in-foreground
+pid-file={{run_dir}}/dnsmasq.pid
+
+log-queries
+log-facility={{log_dir}}/dnsmasq.log
+log-async=25
+
+cache-size=500

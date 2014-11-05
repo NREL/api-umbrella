@@ -7,6 +7,11 @@
 
     {{#each servers}}
       server {{ip}}:{{port}}; # {{host}}
+      {{#if isIp}}
+        # server {{host}}:{{port}};
+      {{else}}
+        # jdomain {{host}} port={{port}} retry_off;
+      {{/if}}
     {{/each}}
 
     {{#if keepalive_connections}}

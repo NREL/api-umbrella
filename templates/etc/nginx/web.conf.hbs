@@ -35,6 +35,7 @@ http {
 
   server {
     listen {{web.port}};
+    listen [::]:{{web.port}};
     server_name _;
 
     root {{web.dir}}/public;
