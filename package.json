@@ -70,6 +70,7 @@
     "multer": "0.1.4",
     "mversion": "1.6.0",
     "randomstring": "1.0.3",
+    "rimraf": "2.2.8",
     "sinon": "1.10.3",
     "stream-tk": "0.3.1",
     "temp": "0.8.1"

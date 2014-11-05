@@ -33,12 +33,21 @@ describe('logging', function() {
     }.bind(this));
   });
 
-  function waitForLog(uniqueQueryId, timeout, done) {
+  function waitForLog(uniqueQueryId, options, done) {
+    if(!done && _.isFunction(options)) {
+      done = options;
+      options = null;
+    }
+
+    options = options || {};
+    options.timeout = options.timeout || 3500
+    options.minCount = options.minCount || 1;
+
     var response;
     var timedOut = false;
     setTimeout(function() {
       timedOut = true;
-    }, timeout);
+    }, options.timeout);
 
     async.doWhilst(function(callback) {
       global.elasticsearch.search({
@@ -47,7 +56,7 @@ describe('logging', function() {
         if(error) {
           callback(error);
         } else {
-          if(res && res.hits && res.hits.total > 0) {
+          if(res && res.hits && res.hits.total >= options.minCount) {
             response = res;
             callback();
           } else {
@@ -66,7 +75,7 @@ describe('logging', function() {
         return done('Error fetching log for request_query.unique_query_id:' + uniqueQueryId + ': ' + error);
       }
 
-      if(!response || response.hits.total !== 1) {
+      if(!response || (options.minCount == 1 && response.hits.total !== 1)) {
         return done('Unexpected log response for ' + uniqueQueryId + ': ' + response);
       }
 
@@ -118,7 +127,7 @@ describe('logging', function() {
 
 
   it('logs all the expected response fileds (for a non-chunked, non-gzipped response)', function(done) {
-    this.timeout(5000);
+    this.timeout(4500);
     var options = _.merge({}, this.options, {
       headers: {
         'Accept': 'text/plain; q=0.5, text/html',
@@ -142,7 +151,7 @@ describe('logging', function() {
     request.get(requestUrl, options, function(error, response) {
       response.statusCode.should.eql(200);
 
-      waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         var fields = _.keys(record).sort();
 
         // Varnish randomly turns some non-chunked responses into chunked
@@ -253,7 +262,7 @@ describe('logging', function() {
   });
 
   it('logs the extra expected fields for chunked or gzip responses', function(done) {
-    this.timeout(5000);
+    this.timeout(4500);
     var options = _.merge({}, this.options, {
       gzip: true,
     });
@@ -261,7 +270,7 @@ describe('logging', function() {
     request.get('http://localhost:9080/compressible-chunked/10/1000', options, function(error, response) {
       response.statusCode.should.eql(200);
 
-      waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.response_content_encoding.should.eql('gzip');
         record.response_transfer_encoding.should.eql('chunked');
@@ -272,7 +281,7 @@ describe('logging', function() {
   });
 
   it('logs the accept-encoding header prior to normalization', function(done) {
-    this.timeout(5000);
+    this.timeout(4500);
     var options = _.merge({}, this.options, {
       headers: {
         'Accept-Encoding': 'compress, gzip',
@@ -281,7 +290,7 @@ describe('logging', function() {
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
       response.statusCode.should.eql(200);
-      waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.request_accept_encoding.should.eql('compress, gzip');
         done();
@@ -290,7 +299,7 @@ describe('logging', function() {
   });
 
   it('logs the external connection header and not the one used internally', function(done) {
-    this.timeout(5000);
+    this.timeout(4500);
     var options = _.merge({}, this.options, {
       headers: {
         'Connection': 'close',
@@ -299,7 +308,7 @@ describe('logging', function() {
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
       response.statusCode.should.eql(200);
-      waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.request_connection.should.eql('close');
         done();
@@ -308,7 +317,7 @@ describe('logging', function() {
   });
 
   it('logs headers that contain quotes (to account for json escaping in nginx logs)', function(done) {
-    this.timeout(5000);
+    this.timeout(4500);
     var options = _.merge({}, this.options, {
       headers: {
         'Referer': 'http://example.com/"foo\'bar',
@@ -318,7 +327,7 @@ describe('logging', function() {
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
       response.statusCode.should.eql(200);
-      waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.request_referer.should.eql('http://example.com/"foo\'bar');
         record.request_content_type.should.eql('text""plain\'\\x22');
@@ -328,7 +337,7 @@ describe('logging', function() {
   });
 
   it('logs headers that contain special characters', function(done) {
-    this.timeout(5000);
+    this.timeout(4500);
     var options = _.merge({}, this.options, {
       headers: {
         'Referer': 'http://example.com/!\\*^%#[]',
@@ -337,14 +346,13 @@ describe('logging', function() {
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
       response.statusCode.should.eql(200);
-      waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.request_referer.should.eql('http://example.com/!\\*^%#[]');
         done();
       }.bind(this));
     }.bind(this));
   });
-
 
   it('logs requests that exceed the nginx-level rate limits', function(done) {
     this.timeout(10000);
@@ -371,7 +379,7 @@ describe('logging', function() {
       overLimits.length.should.be.gte(1);
 
       async.each(results, function(result, callback) {
-        waitForLog(result.uniqueQueryId, 4000, function(error, response, hit, record) {
+        waitForLog(result.uniqueQueryId, function(error, response, hit, record) {
           should.not.exist(error);
           itLogsBaseFields(record, result.uniqueQueryId, this.user);
           callback();
@@ -385,7 +393,7 @@ describe('logging', function() {
     request.get('http://localhost:9080/delay/65000', this.options, function(error, response) {
       response.statusCode.should.eql(504);
 
-      waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.response_status.should.eql(504);
         itLogsBaseFields(record, this.uniqueQueryId, this.user);
@@ -396,13 +404,13 @@ describe('logging', function() {
   });
 
   it('logs requests that are canceled before completing', function(done) {
-    this.timeout(5000);
+    this.timeout(4500);
     var options = _.merge({}, this.options, {
       timeout: 500,
     });
 
     request.get('http://localhost:9080/delay/2000', options, function() {
-      waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.response_status.should.eql(499);
         itLogsBaseFields(record, this.uniqueQueryId, this.user);
@@ -411,8 +419,39 @@ describe('logging', function() {
     }.bind(this));
   });
 
+  it('logs requests that are cached', function(done) {
+    this.timeout(10000);
+
+    async.timesSeries(3, function(index, callback) {
+      request.get('http://localhost:9080/cacheable-expires/test', this.options, function(error, response) {
+        setTimeout(function() {
+          callback(error);
+        }, 1050);
+      });
+    }.bind(this), function(error) {
+      waitForLog(this.uniqueQueryId, { minCount: 3 }, function(error, response) {
+        should.not.exist(error);
+
+        var cachedHits = 0;
+        async.eachSeries(response.hits.hits, function(hit, callback) {
+          var record = hit._source;
+          record.response_status.should.eql(200);
+          record.response_age.should.be.a('number');
+          if(record.response_age >= 1) {
+            cachedHits++;
+          }
+          itLogsBaseFields(record, this.uniqueQueryId, this.user);
+          callback();
+        }.bind(this), function() {
+          cachedHits.should.eql(2);
+          done();
+        });
+      }.bind(this));
+    }.bind(this), done);
+  });
+
   it('logs requests denied by the gatekeeper', function(done) {
-    this.timeout(5000);
+    this.timeout(4500);
     var options = _.merge({}, this.options, {
       headers: {
         'X-Api-Key': 'INVALID_KEY',
@@ -422,7 +461,7 @@ describe('logging', function() {
     request.get('http://localhost:9080/info/', options, function(error, response) {
       response.statusCode.should.eql(403);
 
-      waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.response_status.should.eql(403);
         itLogsBaseFields(record, this.uniqueQueryId);
@@ -438,11 +477,11 @@ describe('logging', function() {
   });
 
   it('logs requests when the api backend is down', function(done) {
-    this.timeout(5000);
+    this.timeout(4500);
     request.get('http://localhost:9080/down', this.options, function(error, response) {
       response.statusCode.should.eql(502);
 
-      waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.response_status.should.eql(502);
         itLogsBaseFields(record, this.uniqueQueryId, this.user);
@@ -486,11 +525,11 @@ describe('logging', function() {
     });
 
     it('still logs failed requests', function(done) {
-      this.timeout(5000);
+      this.timeout(4500);
       request.get('http://localhost:9080/info/', this.options, function(error, response) {
         response.statusCode.should.eql(502);
 
-        waitForLog(this.uniqueQueryId, 4000, function(error, response, hit, record) {
+        waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
           should.not.exist(error);
           record.response_status.should.eql(502);
           itLogsBaseFields(record, this.uniqueQueryId, this.user);
