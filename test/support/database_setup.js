@@ -2,7 +2,8 @@
 
 require('../test_helper');
 
-var apiUmbrellaConfig = require('api-umbrella-config'),
+var _ = require('lodash'),
+    apiUmbrellaConfig = require('api-umbrella-config'),
     elasticsearch = require('elasticsearch'),
     mongoose = require('mongoose'),
     path = require('path'),
@@ -33,7 +34,10 @@ before(function redisOpen(done) {
 before(function elasticsearchOpen(done) {
   this.timeout(10000);
 
-  global.elasticsearch = new elasticsearch.Client(config.get('elasticsearch'));
+  // elasticsearch mutates the client config, so always work off a clone:
+  // https://github.com/elasticsearch/elasticsearch-js/issues/33
+  var clientConfig = _.cloneDeep(config.get('elasticsearch'));
+  global.elasticsearch = new elasticsearch.Client(clientConfig);
   global.elasticsearch.deleteByQuery({
     index: 'api-umbrella-logs-*',
     allowNoIndices: true,
