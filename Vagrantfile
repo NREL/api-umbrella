@@ -1,17 +1,43 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.configure("2") do |config|
-  box_arch = if(RUBY_PLATFORM =~ /64/) then "x86_64" else "i386" end
-  is_windows = (RUBY_PLATFORM =~ /mswin|mingw|cygwin/)
+plugins = { "vagrant-omnibus" => nil, "vagrant-librarian-chef" => nil }
 
+plugins.each do |plugin, version|
+  unless(Vagrant.has_plugin?(plugin))
+    error = "The '#{plugin}' plugin is not installed. Try running:\n"
+    error << "vagrant plugin install #{plugin}"
+    error << " --plugin-version #{version}" if(version)
+    raise error
+  end
+end
+
+# Allow picking a different Vagrant base box:
+# API_UMBRELLA_VAGRANT_BOX="chef/debian-7.4" vagrant up
+BOX = ENV["API_UMBRELLA_VAGRANT_BOX"] || "nrel/CentOS-6.5-x86_64"
+
+# Allow adjusting the memory and cores when starting the VM:
+MEMORY = (ENV["API_UMBRELLA_VAGRANT_MEMORY"] || "2048").to_i
+CORES = (ENV["API_UMBRELLA_VAGRANT_CORES"] || "2").to_i
+
+# Allow a different IP
+IP = ENV["API_UMBRELLA_VAGRANT_IP"] || "10.10.33.2"
+
+# Allow customizing vagrant port forwarding.
+FORWARD = ENV["API_UMBRELLA_VAGRANT_FORWARD"] || "true"
+FORWARD_PORT = (ENV["API_UMBRELLA_VAGRANT_FORWARD_PORT"] || "9080").to_i
+FORWARD_HTTPS_PORT = (ENV["API_UMBRELLA_VAGRANT_FORWARD_HTTPS_PORT"] || "9443").to_i
+
+# Adjust Vagrant behavior if running on a Windows host.
+IS_WINDOWS = (RUBY_PLATFORM =~ /mswin|mingw|cygwin/)
+
+Vagrant.configure("2") do |config|
   # All Vagrant configuration is done here. The most common configuration
   # options are documented and commented below. For a complete reference,
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = "nrel/CentOS-6.5-#{box_arch}"
-  config.vm.box_version = ">= 1.2.0, < 2.0.0"
+  config.vm.box = BOX
 
   # Boot with a GUI so you can see the screen. (Default is headless)
   # config.vm.boot_mode = :gui
@@ -22,11 +48,14 @@ Vagrant.configure("2") do |config|
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
-  config.vm.network :forwarded_port, guest: 80, host: 8080
+  if FORWARD == "true"
+    config.vm.network :forwarded_port, :guest => 80, :host => FORWARD_PORT
+    config.vm.network :forwarded_port, :guest => 443, :host => FORWARD_HTTPS_PORT
+  end
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  config.vm.network :private_network, ip: "10.10.10.2"
+  config.vm.network :private_network, :ip => IP
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -37,55 +66,39 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder ".", "/vagrant", :nfs => !is_windows
+  config.vm.synced_folder ".", "/vagrant", :nfs => !IS_WINDOWS
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
   config.vm.provider :virtualbox do |vb|
     # Adjust memory used by the VM.
-    vb.customize ["modifyvm", :id, "--memory", 2048]
-    vb.customize ["modifyvm", :id, "--cpus", 2]
+    vb.customize ["modifyvm", :id, "--memory", MEMORY]
+    vb.customize ["modifyvm", :id, "--cpus", CORES]
+
+    if(CORES > 1)
+      #vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    end
   end
-
-  # The path to the Berksfile to use with Vagrant Berkshelf
-  # config.berkshelf.berksfile_path = "./Berksfile"
-
-  # Enabling the Berkshelf plugin. To enable this globally, add this configuration
-  # option to your ~/.vagrant.d/Vagrantfile file
-  config.berkshelf.enabled = true
-
-  # An array of symbols representing groups of cookbook described in the Vagrantfile
-  # to exclusively install and copy to Vagrant's shelf.
-  # config.berkshelf.only = []
-
-  # An array of symbols representing groups of cookbook described in the Vagrantfile
-  # to skip installing and copying to Vagrant's shelf.
-  # config.berkshelf.except = []
-
-  # Our site's nginx config files resides on the /vagrant share. Since this
-  # isn't mounted at boot time, always restart things after the server and
-  # shares are completely up.
-  config.vm.provision :shell, :inline => "if [ -f /etc/init.d/nginx ]; then /etc/init.d/nginx restart; fi"
-  config.vm.provision :shell, :inline => "mkdir -p /srv/sites && chown vagrant /srv/sites"
 
   # Use the user's local SSH keys for git access.
   config.ssh.forward_agent = true
+
+  # Use the chef-librarian plugin to install chef cookbooks and dependencies.
+  config.librarian_chef.enabled = true
+  config.librarian_chef.cheffile_dir = "chef"
+
+  # Install chef via the vagrant-omnibus plugin.
+  config.omnibus.chef_version = "11.16.4"
 
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
   # path, and data_bags path (all relative to this Vagrantfile), and adding
   # some recipes and/or roles.
   config.vm.provision :chef_solo do |chef|
-    chef.roles_path = "chef/roles"
-    chef.data_bags_path = "chef/data_bags"
+    chef.cookbooks_path = "chef/cookbooks"
     chef.formatter = "doc"
 
     chef.run_list = [
-      "role[vagrant]",
-      "role[base_development]",
-      "recipe[api-umbrella::db]",
-      "recipe[api-umbrella::log]",
-      "recipe[api-umbrella::router]",
-      "recipe[api-umbrella::web]",
+      "recipe[api-umbrella::development]",
     ]
   end
 end
