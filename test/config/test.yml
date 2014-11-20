@@ -9,6 +9,7 @@ run_dir: /tmp/api-umbrella-test/var/run
 tmp_dir: /tmp/api-umbrella-test/var/tmp
 db_dir: /tmp/api-umbrella-test/var/db
 static_site:
+  port: 13013
   build_dir: /tmp/api-umbrella-test/static_site_build
 redis:
   host: 127.0.0.1
