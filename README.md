@@ -21,6 +21,10 @@ Binary packages are available for [download](http://nrel.github.io/api-umbrella/
 
 Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](http://nrel.github.io/api-umbrella/docs/getting-started/).
 
+## API Umbrella Development
+
+Are you interested in working on the code behind API Umbrella? See our [development setup guide](http://nrel.github.io/api-umbrella/docs/development-setup/) to see how you can get a local development environment setup.
+
 ## Who's using API Umbrella?
 
 * [api.data.gov](http://api.data.gov/)
