@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Development Setup - Documentation - API Umbrella</title>
+    <link href="../../stylesheets/all-8b470dcc.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="../../javascripts/all-6999930c.js" type="text/javascript"></script>
+    <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Raleway:400,300,700" rel="stylesheet" type="text/css">
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-42866857-2', 'nrel.github.io');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+  <body class="docs docs_development-setup docs_development-setup_index">
+    <div id="navigation" class="navbar navbar-default">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#"><i class="fa fa-umbrella"></i> <b>API Umbrella</b></a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class=""><a href="../../">Home</a></li>
+            <li class=""><a href="../../download/">Download</a></li>
+            <li class="active"><a href="../architecture/">Documentation</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    
+      <header>
+        <div class="container">
+          <h1>Documentation</h1>
+        </div>
+      </header>
+    
+
+      <div class="container">
+    <div class="row">
+      <nav class="col-md-3">
+        <ul>
+  <li class="">
+    <a href="../architecture/">Architecture</a>
+  </li>
+  <li class="">
+    <a href="../getting-started/">Getting Started</a>
+  </li>
+  <li class="">
+    <a href="../api-keys/">API Keys</a>
+  </li>
+  <li class="">
+    <a href="../backend-headers/">Backend HTTP Headers</a>
+  </li>
+  <li class="">
+    <a href="../caching/">Caching</a>
+  </li>
+</ul>
+
+<hr>
+
+<div class="nav-section">Programmers' Guide</div>
+<ul>
+  <li class="active">
+    <a href="./">Development Setup</a>
+  </li>
+</ul>
+
+      </nav>
+      <div class="col-md-9">
+        <h2 id="development-setup">Development Setup</h2>
+
+<p>The easiest way to get started with API Umbrella development is to use <a href="http://vagrantup.com/">Vagrant</a> to setup a local development environment.</p>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<ul>
+  <li><a href="https://www.virtualbox.org/wiki/Downloads">VirtualBox 4.3.x</a></li>
+  <li><a href="https://www.vagrantup.com/downloads.html">Vagrant 1.6.x</a></li>
+  <li>NFS: For Mac OS X or Linux host machines only:
+    <ul>
+      <li>Mac OS X: Already installed and running</li>
+      <li>Ubuntu: <code>sudo apt-get install nfs-kernel-server nfs-common portmap</code></li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="setup">Setup</h3>
+
+<p>After installing VirtualBox and Vagrant, follow these steps:</p>
+
+<pre class="highlight shell"><span class="c"># Install the required Vagrant plugins</span>
+<span class="gp">$ </span>vagrant plugin install vagrant-omnibus
+<span class="gp">$ </span>vagrant plugin install vagrant-librarian-chef
+
+<span class="c"># Get the code and spinup your development VM</span>
+<span class="gp">$ </span>git clone https://github.com/NREL/api-umbrella.git
+<span class="gp">$ </span><span class="nb">cd </span>api-umbrella
+<span class="gp">$ </span>vagrant up <span class="c"># This step may take 5-10 minutes the first time</span>
+</pre>
+<p>Assuming all goes smoothly, you should be able to see the homepage at <a href="http://10.10.33.2/">http://10.10.33.2/</a>. Run into problems? Open an <a href="https://github.com/NREL/api-umbrella/issues">issue</a>.</p>
+
+<h3 id="directory-structure">Directory Structure</h3>
+
+<p>After running the setup above, you will have the following working directories where you can modify the code:</p>
+
+<ul>
+  <li><code>workspace/gatekeeper</code>: The custom reverse proxy where API requests are validated before being allowed to the underlying API backend.</li>
+  <li><code>workspace/router</code>: Responsible for configuring, starting, and connecting all the server processes.</li>
+  <li><code>workspace/static-site</code>: Provides the public-facing website. This is an example app that uses <a href="http://middlemanapp.com">Middleman</a> and can be hosted somewhere like GitHub pages. Alternatively, this can be replaced with your own website component.</li>
+  <li><code>workspace/web</code>: Provides the admin tool and APIs.</li>
+</ul>
+
+<p>For more details on how these components fit together, see the <a href="../architecture/">architecture diagrams</a>.</p>
+
+<h3 id="making-code-changes">Making Code Changes</h3>
+
+<p>This development VM runs the various components in "development" mode, which typically means any code changes you make will immediately be reflected. However, this does mean this development VM will run API Umbrella slower than in production.</p>
+
+<p>While you can typically edit files and see your changes, for certain types of application changes, you may need to restart the server processes. There are two ways to restart things if needed:</p>
+
+<pre class="highlight shell"><span class="c"># These commands must be executed *inside* your Vagrant VM:</span>
+<span class="gp">$ </span>vagrant ssh
+
+<span class="c"># Quick: This should restart most server processes you'll need as a developer,</span>
+<span class="c"># but this doesn't restart everything:</span>
+<span class="gp">$ </span>sudo /etc/init.d/api-umbrella reload
+
+<span class="c"># Slow: Restarts everything:</span>
+<span class="gp">$ </span>sudo /etc/init.d/api-umbrella restart
+</pre>
+<h3 id="customizing-your-vm">Customizing Your VM</h3>
+
+<p>The following environment variables can be set prior to running <code>vagrant up</code> if you wish to tune the local VM (for example, to give it more or less memory, pick a different IP address, or use a different base box):</p>
+
+<pre class="highlight plaintext">API_UMBRELLA_VAGRANT_BOX=nrel/CentOS-6.5-x86_64
+API_UMBRELLA_VAGRANT_MEMORY=2048
+API_UMBRELLA_VAGRANT_CORES=2
+API_UMBRELLA_VAGRANT_IP=10.10.33.2
+API_UMBRELLA_VAGRANT_NFS=true
+</pre>
+      </div>
+    </div>
+  </div>
+
+
+    <div style="text-align: center; font-style: italic; padding: 2em 0.5em;">
+      <a href="https://github.com/NREL/api-umbrella/blob/master/website/docs/development-setup.md.erb">Help Improve this Content</a>
+    </div>
+  </body>
+</html>
