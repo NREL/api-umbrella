@@ -1,13 +1,13 @@
 source "https://rubygems.org"
 source "https://rails-assets.org"
 
-gem "rails", "~> 3.2.19"
+gem "rails", "~> 3.2.21"
 
 # Rails app server
 gem "puma", "~> 2.9.0"
 
 # Error notification service (optional)
-gem "rollbar", "~> 1.1.0", :require => false
+gem "rollbar", "~> 1.2.9", :require => false
 
 # Environment specific configuration
 gem "dotenv-rails", "~> 1.0.1"
