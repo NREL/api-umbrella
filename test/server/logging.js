@@ -9,12 +9,12 @@ var _ = require('lodash'),
 describe('request logging', function() {
   shared.runServer();
 
-  before(function() {
+  before(function setupLoggerSpy() {
     var ProxyLogger = require('../../lib/gatekeeper/logger').Logger;
     this.loggerPushSpy = sinon.spy(ProxyLogger.prototype, 'push');
   });
 
-  after(function() {
+  after(function destroyLoggerSpy() {
     var ProxyLogger = require('../../lib/gatekeeper/logger').Logger;
     ProxyLogger.prototype.push.restore();
   });

@@ -10,7 +10,7 @@ describe('api key validation', function() {
     shared.runServer();
 
     describe('no api key supplied', function() {
-      beforeEach(function() {
+      beforeEach(function setupApiUser() {
         this.apiKey = null;
       });
 
@@ -18,7 +18,7 @@ describe('api key validation', function() {
     });
 
     describe('empty api key supplied', function() {
-      beforeEach(function() {
+      beforeEach(function setupApiUser() {
         this.apiKey = '';
       });
 
@@ -26,7 +26,7 @@ describe('api key validation', function() {
     });
 
     describe('invalid api key supplied', function() {
-      beforeEach(function() {
+      beforeEach(function setupApiUser() {
         this.apiKey = 'invalid';
       });
 
@@ -34,7 +34,7 @@ describe('api key validation', function() {
     });
 
     describe('disabled api key supplied', function() {
-      beforeEach(function(done) {
+      beforeEach(function setupApiUser(done) {
         Factory.create('api_user', { disabled_at: new Date() }, function(user) {
           this.apiKey = user.api_key;
           done();

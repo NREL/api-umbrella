@@ -25,7 +25,7 @@ _.merge(global.shared, {
   },
 
   runServer: function(configOverrides) {
-    beforeEach(function(done) {
+    beforeEach(function startConfigLoader(done) {
       var overridesPath = path.resolve(__dirname, '../config/overrides.yml');
       fs.writeFileSync(overridesPath, yaml.dump(configOverrides || {}));
 
@@ -41,7 +41,7 @@ _.merge(global.shared, {
       }.bind(this));
     });
 
-    beforeEach(function(done) {
+    beforeEach(function createDefaultApiUser(done) {
       global.autoIncrementingIpAddress = ippp.next(global.autoIncrementingIpAddress);
       this.ipAddress = global.autoIncrementingIpAddress;
 
@@ -52,7 +52,7 @@ _.merge(global.shared, {
       }.bind(this));
     });
 
-    beforeEach(function(done) {
+    beforeEach(function startGatekeeper(done) {
       backendCalled = false;
 
       this.gatekeeper = gatekeeper.start({
@@ -60,11 +60,11 @@ _.merge(global.shared, {
       }, done);
     });
 
-    afterEach(function(done) {
+    afterEach(function stopConfigLoader(done) {
       this.loader.close(done);
     });
 
-    afterEach(function(done) {
+    afterEach(function stopGatekeeper(done) {
       this.gatekeeper.close(done);
     });
   },

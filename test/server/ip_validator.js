@@ -160,7 +160,7 @@ describe('ip validation', function() {
   });
 
   describe('user specific ip limitations', function() {
-    beforeEach(function(done) {
+    beforeEach(function setupApiUser(done) {
       Factory.create('api_user', {
         settings: {
           allowed_ips: [
@@ -207,7 +207,7 @@ describe('ip validation', function() {
     });
 
     describe('no ip restrictions with empty ip list', function() {
-      beforeEach(function(done) {
+      beforeEach(function setupApiUser(done) {
         Factory.create('api_user', {
           settings: {
             allowed_ips: [],

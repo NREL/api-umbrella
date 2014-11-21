@@ -11,7 +11,7 @@ var _ = require('lodash'),
 
 _.merge(global.shared, {
   runDistributedRateLimitsSync: function(configOverrides) {
-    beforeEach(function(done) {
+    beforeEach(function startConfigLoader(done) {
       var overridesPath = path.resolve(__dirname, '../config/overrides.yml');
       fs.writeFileSync(overridesPath, yaml.dump(configOverrides || {}));
 
@@ -27,17 +27,17 @@ _.merge(global.shared, {
       }.bind(this));
     });
 
-    beforeEach(function(done) {
+    beforeEach(function startSync(done) {
       this.sync = distributedRateLimitSync.start({
         config: this.loader.runtimeFile,
       }, done);
     });
 
-    afterEach(function(done) {
+    afterEach(function stopConfigLoader(done) {
       this.loader.close(done);
     });
 
-    afterEach(function(done) {
+    afterEach(function stopSync(done) {
       this.sync.close(done);
     });
   },
