@@ -1,0 +1,70 @@
+---
+title: Development Setup - Documentation - API Umbrella
+header: Documentation
+---
+
+## Development Setup
+
+The easiest way to get started with API Umbrella development is to use [Vagrant](http://vagrantup.com/) to setup a local development environment.
+
+### Prerequisites
+
+- [VirtualBox 4.3.x](https://www.virtualbox.org/wiki/Downloads)
+- [Vagrant 1.6.x](https://www.vagrantup.com/downloads.html)
+
+### Setup
+
+After installing VirtualBox and Vagrant, follow these steps:
+
+```sh
+# Install the required Vagrant plugins
+$ vagrant plugin install vagrant-omnibus
+$ vagrant plugin install vagrant-librarian-chef
+
+# Get the code and spinup your development VM
+$ git clone https://github.com/NREL/api-umbrella.git
+$ cd api-umbrella
+$ vagrant up # This step may take 5-10 minutes the first time
+```
+
+Assuming all goes smoothly, you should be able to see the homepage at [http://10.10.33.2/](http://10.10.33.2/). Run into problems? Open an [issue](https://github.com/NREL/api-umbrella/issues).
+
+### Directory Structure
+
+After running the setup above, you will have the following working directories where you can modify the code:
+
+- `workspace/gatekeeper`: The custom reverse proxy where API requests are validated before being allowed to the underlying API backend.
+- `workspace/router`: Responsible for configuring, starting, and connecting all the server processes.
+- `workspace/static-site`: Provides the public-facing website. This is an example app that uses [Middleman](http://middlemanapp.com) and can be hosted somewhere like GitHub pages. Alternatively, this can be replaced with your own website component.
+- `workspace/web`: Provides the admin tool and APIs.
+
+For more details on how these components fit together, see the <%= link_to("architecture diagrams", "/docs/architecture.html", :relative => true) %>.
+
+### Making Code Changes
+
+This development VM runs the various components in "development" mode, which typically means any code changes you make will immediately be reflected. However, this does mean this development VM will run API Umbrella slower than in production.
+
+While you can typically edit files and see your changes, for certain types of application changes, you may need to restart the server processes. There are two ways to restart things if needed:
+
+```sh
+# These commands must be executed *inside* your Vagrant VM:
+$ vagrant ssh
+
+# Quick: This should restart most server processes you'll need as a developer,
+# but this doesn't restart everything:
+$ sudo /etc/init.d/api-umbrella reload
+
+# Slow: Restarts everything:
+$ sudo /etc/init.d/api-umbrella restart
+```
+
+### Customizing Your VM
+
+The following environment variables can be set prior to running `vagrant up` if you wish to tune the local VM (for example, to give it more or less memory, pick a different IP address, or use a different base box):
+
+```
+API_UMBRELLA_VAGRANT_BOX=nrel/CentOS-6.5-x86_64
+API_UMBRELLA_VAGRANT_MEMORY=2048
+API_UMBRELLA_VAGRANT_CORES=2
+API_UMBRELLA_VAGRANT_IP=10.10.33.2
+```

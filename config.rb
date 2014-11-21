@@ -83,3 +83,5 @@ set :markdown, {
 }
 
 ignore "docs/admin-api.blueprint.md"
+ignore "chef/*"
+ignore "workspace/*"

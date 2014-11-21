@@ -232,9 +232,14 @@ nav li.active {
   border-color: #f1715e;
 }
 
+nav .nav-section {
+  text-transform: uppercase;
+  color: #444;
+  font-size: 13px;
+}
+
 .platform-download {
   margin-top: 20px;
-
 }
 
 .platform-download p {
