@@ -11,6 +11,9 @@ The easiest way to get started with API Umbrella development is to use [Vagrant]
 
 - [VirtualBox 4.3.x](https://www.virtualbox.org/wiki/Downloads)
 - [Vagrant 1.6.x](https://www.vagrantup.com/downloads.html)
+- NFS: For Mac OS X or Linux host machines only:
+  - Mac OS X: Already installed and running
+  - Ubuntu: `sudo apt-get install nfs-kernel-server nfs-common portmap`
 
 ### Setup
 
@@ -67,4 +70,5 @@ API_UMBRELLA_VAGRANT_BOX=nrel/CentOS-6.5-x86_64
 API_UMBRELLA_VAGRANT_MEMORY=2048
 API_UMBRELLA_VAGRANT_CORES=2
 API_UMBRELLA_VAGRANT_IP=10.10.33.2
+API_UMBRELLA_VAGRANT_NFS=true
 ```

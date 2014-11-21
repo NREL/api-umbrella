@@ -23,8 +23,12 @@ CORES = (ENV["API_UMBRELLA_VAGRANT_CORES"] || "2").to_i
 # Allow a different IP
 IP = ENV["API_UMBRELLA_VAGRANT_IP"] || "10.10.33.2"
 
-# Adjust Vagrant behavior if running on a Windows host.
-IS_WINDOWS = (RUBY_PLATFORM =~ /mswin|mingw|cygwin/)
+# Allow NFS file sharing to be disabled
+if(Vagrant::Util::Platform.windows?)
+  NFS = false
+else
+  NFS = (ENV["API_UMBRELLA_VAGRANT_NFS"] || "true") == "true"
+end
 
 Vagrant.configure("2") do |config|
   # All Vagrant configuration is done here. The most common configuration
@@ -53,7 +57,7 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder ".", "/vagrant", :nfs => !IS_WINDOWS
+  config.vm.synced_folder ".", "/vagrant", :nfs => NFS
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
