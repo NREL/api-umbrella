@@ -61,10 +61,6 @@ Vagrant.configure("2") do |config|
     # Adjust memory used by the VM.
     vb.customize ["modifyvm", :id, "--memory", MEMORY]
     vb.customize ["modifyvm", :id, "--cpus", CORES]
-
-    if(CORES > 1)
-      #vb.customize ["modifyvm", :id, "--ioapic", "on"]
-    end
   end
 
   # Use the user's local SSH keys for git access.
