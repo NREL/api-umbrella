@@ -23,11 +23,6 @@ CORES = (ENV["API_UMBRELLA_VAGRANT_CORES"] || "2").to_i
 # Allow a different IP
 IP = ENV["API_UMBRELLA_VAGRANT_IP"] || "10.10.33.2"
 
-# Allow customizing vagrant port forwarding.
-FORWARD = ENV["API_UMBRELLA_VAGRANT_FORWARD"] || "true"
-FORWARD_PORT = (ENV["API_UMBRELLA_VAGRANT_FORWARD_PORT"] || "9080").to_i
-FORWARD_HTTPS_PORT = (ENV["API_UMBRELLA_VAGRANT_FORWARD_HTTPS_PORT"] || "9443").to_i
-
 # Adjust Vagrant behavior if running on a Windows host.
 IS_WINDOWS = (RUBY_PLATFORM =~ /mswin|mingw|cygwin/)
 
@@ -44,14 +39,6 @@ Vagrant.configure("2") do |config|
 
   # Assign a hostname unique to this project.
   config.vm.hostname = "api.vagrant"
-
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
-  if FORWARD == "true"
-    config.vm.network :forwarded_port, :guest => 80, :host => FORWARD_PORT
-    config.vm.network :forwarded_port, :guest => 443, :host => FORWARD_HTTPS_PORT
-  end
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
