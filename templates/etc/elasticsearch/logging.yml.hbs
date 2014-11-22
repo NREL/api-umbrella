@@ -1,6 +1,6 @@
 # you can override this using by setting a system property, for example -Des.logger.level=DEBUG
 es.logger.level: INFO
-rootLogger: ${es.logger.level}, console, file
+rootLogger: ${es.logger.level}, console
 logger:
   # log action execution errors for easier debugging
   action: DEBUG
@@ -33,14 +33,14 @@ appender:
 
   index_search_slow_log_file:
     type: file
-    file: ${path.logs}/${cluster.name}_index_search_slowlog.log
+    file: ${path.logs}/elasticsearch-index-search-slowlog.log
     layout:
       type: pattern
       conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
 
   index_indexing_slow_log_file:
     type: file
-    file: ${path.logs}/${cluster.name}_index_indexing_slowlog.log
+    file: ${path.logs}/elasticsearch-index-indexing-slowlog.log
     layout:
       type: pattern
       conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"

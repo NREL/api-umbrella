@@ -95,7 +95,7 @@ var tasks = {
         forever.startDaemon(__filename, {
           silent: false,
           pidFile: daemonPid,
-          options: runArgs,
+          args: runArgs,
           logFile: daemonLog,
           minUptime: 10000,
           // Do not try to retry starting up the process. This process is only

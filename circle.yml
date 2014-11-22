@@ -1,0 +1,13 @@
+dependencies:
+  cache_directories:
+    - ci_cache
+    - node_modules
+  pre:
+    - mkdir -p ci_cache
+    - if [[ ! -e ci_cache/api-umbrella_0.6.0-1_amd64.deb ]]; then wget -P ci_cache https://developer.nrel.gov/downloads/api-umbrella/ubuntu/12.04/api-umbrella_0.6.0-1_amd64.deb; fi
+    - sudo dpkg -i ci_cache/api-umbrella_0.6.0-1_amd64.deb
+  override:
+    - env PATH=/opt/api-umbrella/embedded/bin:$PATH npm install
+test:
+  override:
+    - env PATH=/opt/api-umbrella/embedded/bin:$PATH ./node_modules/.bin/grunt

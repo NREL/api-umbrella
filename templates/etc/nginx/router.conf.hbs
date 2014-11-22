@@ -15,8 +15,8 @@ events {
 error_log stderr;
 
 http {
-  error_log {{log_dir}}/router_error.log;
-  access_log {{log_dir}}/router_access.log combined buffer=32k flush=10s;
+  error_log {{log_dir}}/router-error.log;
+  access_log {{log_dir}}/router-access.log combined buffer=32k flush=10s;
 
   client_body_temp_path {{tmp_dir}}/router-nginx-client_body_temp;
   proxy_temp_path {{tmp_dir}}/router-nginx-proxy_temp;

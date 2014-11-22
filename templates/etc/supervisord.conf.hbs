@@ -6,9 +6,9 @@ port={{supervisord.inet_http_server.host}}:{{supervisord.inet_http_server.port}}
 
 [supervisord]
 pidfile={{run_dir}}/supervisord.pid
-logfile={{log_dir}}/supervisor/supervisord.log
+logfile={{log_dir}}/supervisord.log
 logfile_maxbytes=0
-childlogdir={{log_dir}}/supervisor
+childlogdir={{log_dir}}
 
 [rpcinterface:supervisor]
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
@@ -30,7 +30,7 @@ serverurl=unix://{{run_dir}}/supervisor.sock
 command=mongod --config {{etc_dir}}/mongod.conf
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
@@ -42,7 +42,7 @@ environment=ES_JAVA_OPTS="-Des.default.path.conf={{etc_dir}}/elasticsearch",ES_H
 command=elasticsearch
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
@@ -62,7 +62,7 @@ startsecs=5
 command=redis-server {{etc_dir}}/redis.conf
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
@@ -81,7 +81,7 @@ environment=CCACHE_DIR="{{run_dir}}/varnish/.ccache"
 command=varnishd -F -a :{{varnish.port}} -f {{etc_dir}}/varnish.vcl -t 0 -n {{run_dir}}/varnish/api-umbrella -p http_gzip_support=off
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
@@ -90,7 +90,7 @@ startsecs=5
 command=varnishncsa -a -w {{log_dir}}/varnishncsa.log -n {{run_dir}}/varnish/api-umbrella
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
@@ -98,7 +98,7 @@ startsecs=5
 [program:router-nginx]
 command=nginx -c {{etc_dir}}/nginx/router.conf
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
@@ -109,7 +109,7 @@ environment=NODE_LOG_DIR="{{../log_dir}}",NODE_ENV="{{../app_env}}"
 command=api-umbrella-gatekeeper {{../api_umbrella_config_args}} -p {{port}}
 {{../supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{../log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{../log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
@@ -121,7 +121,7 @@ programs={{gatekeeper_supervisor_process_names}}
 [program:config-reloader]
 command=api-umbrella-config-reloader {{api_umbrella_config_args}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
@@ -130,7 +130,7 @@ startsecs=10
 command=api-umbrella-router-log-listener {{api_umbrella_config_args}}
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
@@ -139,7 +139,7 @@ startsecs=10
 command=api-umbrella-log-processor {{api_umbrella_config_args}}
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
@@ -148,7 +148,7 @@ startsecs=10
 command=api-umbrella-distributed-rate-limits-sync {{api_umbrella_config_args}}
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
@@ -162,7 +162,7 @@ directory={{static_site.dir}}
 command=bundle exec middleman server -p {{static_site.port}} --verbose
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
@@ -174,7 +174,7 @@ directory={{web.dir}}
 command=bundle exec puma -q -e {{app_env}} -w {{web.puma.workers}} -t {{web.puma.min_threads}}:{{web.puma.max_threads}} -b unix://{{run_dir}}/web-puma.sock
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
@@ -182,7 +182,7 @@ startsecs=10
 [program:web-nginx]
 command=nginx -c {{etc_dir}}/nginx/web.conf
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
@@ -193,7 +193,7 @@ directory={{web.dir}}
 command=bundle exec ./script/delayed_job --pid-dir={{run_dir}} --queues=mailers run
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/supervisor/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=20
