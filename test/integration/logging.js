@@ -40,7 +40,7 @@ describe('logging', function() {
     }
 
     options = options || {};
-    options.timeout = options.timeout || 3500
+    options.timeout = options.timeout || 3500;
     options.minCount = options.minCount || 1;
 
     var response;
@@ -75,7 +75,7 @@ describe('logging', function() {
         return done('Error fetching log for request_query.unique_query_id:' + uniqueQueryId + ': ' + error);
       }
 
-      if(!response || (options.minCount == 1 && response.hits.total !== 1)) {
+      if(!response || (options.minCount === 1 && response.hits.total !== 1)) {
         return done('Unexpected log response for ' + uniqueQueryId + ': ' + response);
       }
 
@@ -423,12 +423,12 @@ describe('logging', function() {
     this.timeout(10000);
 
     async.timesSeries(3, function(index, callback) {
-      request.get('http://localhost:9080/cacheable-expires/test', this.options, function(error, response) {
+      request.get('http://localhost:9080/cacheable-expires/test', this.options, function(error) {
         setTimeout(function() {
           callback(error);
         }, 1050);
       });
-    }.bind(this), function(error) {
+    }.bind(this), function() {
       waitForLog(this.uniqueQueryId, { minCount: 3 }, function(error, response) {
         should.not.exist(error);
 
