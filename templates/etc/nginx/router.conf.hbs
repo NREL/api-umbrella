@@ -25,8 +25,8 @@ http {
   scgi_temp_path {{tmp_dir}}/router-nginx-scgi_temp;
   server_tokens off;
 
-  #resolver 127.0.0.1:{{dnsmasq.port}};
-  #resolver_timeout 12s;
+  resolver 127.0.0.1:{{dnsmasq.port}};
+  resolver_timeout 12s;
 
   # Log format for gathering the primary analytics.
   #
