@@ -773,7 +773,7 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       describe('ip based limits', function() {
-        beforeEach(function(done) {
+        beforeEach(function setupApiUser(done) {
           Factory.create('api_user', { throttle_by_ip: true }, function(user) {
             this.apiKey = user.api_key;
             done();
@@ -784,7 +784,7 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       describe('unlimited rate limits', function() {
-        beforeEach(function(done) {
+        beforeEach(function setupApiUser(done) {
           Factory.create('api_user', {
             settings: {
               rate_limit_mode: 'unlimited'
@@ -799,7 +799,7 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       describe('custom rate limits', function() {
-        beforeEach(function(done) {
+        beforeEach(function setupApiUser(done) {
           Factory.create('api_user', {
             settings: {
               rate_limits: [

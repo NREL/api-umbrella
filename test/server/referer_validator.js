@@ -150,7 +150,7 @@ describe('referer validation', function() {
   });
 
   describe('user specific referer limitations', function() {
-    beforeEach(function(done) {
+    beforeEach(function setupApiUser(done) {
       Factory.create('api_user', {
         settings: {
           allowed_referers: [
@@ -206,7 +206,7 @@ describe('referer validation', function() {
     });
 
     describe('no referer restrictions with empty referer list', function() {
-      beforeEach(function(done) {
+      beforeEach(function setupApiUser(done) {
         Factory.create('api_user', {
           settings: {
             allowed_referers: [],

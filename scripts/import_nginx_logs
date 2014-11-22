@@ -2,16 +2,17 @@
 'use strict';
 
 var _ = require('lodash'),
+    ApiUser = require('../lib/models/api_user'),
     async = require('async'),
     crypto = require('crypto'),
-    config = require('api-umbrella-config'),
+    config = require('../lib/config'),
     csv = require('csv'),
     elasticsearch = require('elasticsearch'),
     fs = require('fs'),
     logCleaner = require('../lib/log_processor/cleaner'),
     mime = require('mime'),
     moment = require('moment'),
-    MongoClient = require('mongodb').MongoClient,
+    mongoConnect = require('../lib/mongo_connect'),
     url = require('url'),
     URLSafeBase64 = require('urlsafe-base64');
 
@@ -23,55 +24,60 @@ _.extend(MigrateLogs.prototype, {
   users: {},
 
   initialize: function() {
-    console.info(process.argv);
-    this.logPath = process.argv[2];
-    if(!this.logPath) {
+    this.logPaths = process.argv.slice(2);
+    console.info(this.logPaths);
+    if(!this.logPaths || this.logPaths.length === 0) {
       console.info('Path to router.log must be given');
-      process.exit(1);
-    } else if(!fs.existsSync(this.logPath)) {
-      console.info('Log file does not exist: ' + this.logPath);
       process.exit(1);
     }
 
-    this.elasticSearch = new elasticsearch.Client(config.get('elasticsearch'));
+    this.logPaths.forEach(function(logPath) {
+      if(!fs.existsSync(logPath)) {
+        console.info('Log file does not exist: ' + logPath);
+        process.exit(1);
+      }
+    });
+
+    this.elasticSearch = new elasticsearch.Client(_.cloneDeep(config.get('elasticsearch')));
+    this.elasticSearchLogCleaner = new elasticsearch.Client(_.cloneDeep(config.get('elasticsearch')));
 
     async.series([
-      this.connectMongo.bind(this),
+      mongoConnect.bind(this),
       this.fetchUsers.bind(this),
       this.migrate.bind(this),
     ], function(error) {
       if(error) {
         console.info(error);
+        process.exit(1);
       }
+
+      console.info('Finished processing all files');
+      process.exit(0);
     });
   },
 
-  connectMongo: function(asyncSeriesCallback) {
-    MongoClient.connect(config.get('mongodb.url'), this.handleConnectMongo.bind(this, asyncSeriesCallback));
-  },
-
-  handleConnectMongo: function(asyncSeriesCallback, error, db) {
-    if(!error) {
-      this.mongo = db;
-      asyncSeriesCallback(null);
-    } else {
-      asyncSeriesCallback(error);
-    }
-  },
-
   fetchUsers: function(asyncSeriesCallback) {
-    var mongoUsers = this.mongo.collection('api_users');
-    mongoUsers.find().each(function(error, user) {
-      if(user !== null) {
+    ApiUser.find(function(error, users) {
+      users.forEach(function(user) {
         this.users[user.api_key] = user;
-      } else {
-        asyncSeriesCallback(null);
-      }
+      }.bind(this));
+
+      asyncSeriesCallback(null);
     }.bind(this));
   },
 
-  migrate: function() {
-    csv().from.path(this.logPath).transform(this.handleRows.bind(this));
+  migrate: function(asyncSeriesCallback) {
+    async.eachSeries(this.logPaths, function(path, next) {
+      console.info('Begin processing for ' + path);
+
+      this.processQueue = async.queue(this.processRow.bind(this), 1);
+      this.processQueue.drain = function() {
+        console.info('Finished processing all items for ' + path);
+        next();
+      };
+
+      csv().from.path(path).transform(this.handleRows.bind(this));
+    }.bind(this), asyncSeriesCallback);
   },
 
   handleRows: function(row) {
@@ -132,18 +138,47 @@ _.extend(MigrateLogs.prototype, {
       }
     }
 
-    logCleaner(this.elasticSearch, combined);
+    this.processQueue.push({
+      id: id,
+      uid: uid,
+      combined: combined,
+    });
+  },
 
-    var index = 'api-umbrella-logs-write-' + moment(combined.request_at).format('YYYY-MM');
-    this.elasticSearch.get(index, 'log', id, function(error, response) {
-      var result = JSON.parse(response);
+  processRow: function(task, next) {
+    var id = task.id;
+    var uid = task.uid;
+    var combined = task.combined;
+
+    async.waterfall([
+      this.cleanRow.bind(this, id, uid, combined),
+      this.indexRow.bind(this),
+    ], next);
+  },
+
+  cleanRow: function(id, uid, combined, callback) {
+    // console.time('log-cleaner-' + uid);
+    logCleaner.all(this.elasticSearchLogCleaner, combined, function(error, combined) {
+      // console.timeEnd('log-cleaner-' + uid);
+      callback(error, id, uid, combined);
+    }.bind(this));
+  },
+
+  indexRow: function(id, uid, combined, callback) {
+    var index = 'api-umbrella-logs-write-' + config.environment + '-' + moment(combined.request_at).format('YYYY-MM');
+
+    // console.time('elasticsearch-fetch-' + uid);
+    this.elasticSearch.get({ index: index, type: 'log', id: id }, function(error, result) {
+      // console.timeEnd('elasticsearch-fetch-' + uid);
+      if(error && !result) { console.error(error); }
+
       if(result.exists) {
         var existing = result._source;
         var update = {};
         for(var key in combined) {
           var newValue = combined[key];
           var existingValue = existing[key];
-          if(key === 'request_ip_location') {
+          if(key === 'request_ip_location' || newValue === '-') {
             break;
           }
 
@@ -161,24 +196,29 @@ _.extend(MigrateLogs.prototype, {
         if(Object.keys(update).length > 0) {
           console.info(id + ' - ' + uid + ' - ' + combined.request_at + ' - Updating with new attributes ' + JSON.stringify(update) + ' - ' + JSON.stringify(existing));
 
-          this.elasticSearch.update(index, 'log', id, { doc: update }, function(error) {
+          this.elasticSearch.update({ index: index, type: 'log', id: id, body: { doc: update } }, function(error) {
             if(error) {
               console.info('  ERROR: ' + error);
             } else {
-              console.info('  Updated');
+              // console.info('  Updated');
             }
+
+            callback(error);
           });
         } else {
           console.info(id + ' - ' + uid + ' - ' + combined.request_at + ' - Skipping, already exists ' + combined.request_url);
+          callback();
         }
       } else {
         console.info(id + ' - ' + combined.request_at + ' - Indexing, missing');
-        this.elasticSearch.index(index, 'log', combined, id, function(error) {
+        this.elasticSearch.index({ index: index, type: 'log', id: id, body: combined }, function(error) {
           if(error) {
             console.info('  ERROR: ' + error);
           } else {
-            console.info('  Indexed');
+            // console.info('  Indexed');
           }
+
+          callback(error);
         });
       }
     }.bind(this));

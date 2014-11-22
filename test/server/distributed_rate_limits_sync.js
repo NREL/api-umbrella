@@ -63,7 +63,7 @@ describe('distributed rate limit sync', function() {
     ],
   };
 
-  before(function(done) {
+  before(function setupDefaultRateLimits(done) {
     this.bucketDate = moment().startOf('minute').toDate();
 
     var options = configOptions.apiSettings.rate_limits[0];

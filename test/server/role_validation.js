@@ -44,7 +44,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
   describe('role validation', function() {
     describe('unauthorized api_key with null roles', function() {
-      beforeEach(function(done) {
+      beforeEach(function setupApiUser(done) {
         Factory.create('api_user', { roles: null }, function(user) {
           this.apiKey = user.api_key;
           done();
@@ -55,7 +55,7 @@ describe('ApiUmbrellaGatekeper', function() {
     });
 
     describe('unauthorized api_key with empty roles', function() {
-      beforeEach(function(done) {
+      beforeEach(function setupApiUser(done) {
         Factory.create('api_user', { roles: null }, function(user) {
           this.apiKey = user.api_key;
           done();
@@ -66,7 +66,7 @@ describe('ApiUmbrellaGatekeper', function() {
     });
 
     describe('unauthorized api_key with other roles', function() {
-      beforeEach(function(done) {
+      beforeEach(function setupApiUser(done) {
         Factory.create('api_user', { roles: ['something', 'else'] }, function(user) {
           this.apiKey = user.api_key;
           done();
@@ -77,7 +77,7 @@ describe('ApiUmbrellaGatekeper', function() {
     });
 
     describe('authorized api_key with one of the appropriate role', function() {
-      beforeEach(function(done) {
+      beforeEach(function setupApiUser(done) {
         Factory.create('api_user', { roles: ['private'] }, function(user) {
           this.apiKey = user.api_key;
           done();
@@ -88,7 +88,7 @@ describe('ApiUmbrellaGatekeper', function() {
     });
 
     describe('api_key with admin roles is authorized automatically', function() {
-      beforeEach(function(done) {
+      beforeEach(function setupApiUser(done) {
         Factory.create('api_user', { roles: ['admin'] }, function(user) {
           this.apiKey = user.api_key;
           done();
@@ -100,7 +100,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
     describe('sub-url with different role requirements', function() {
       describe('unauthorized api_key with other roles', function() {
-        beforeEach(function(done) {
+        beforeEach(function setupApiUser(done) {
           Factory.create('api_user', { roles: ['restricted'] }, function(user) {
             this.apiKey = user.api_key;
             done();
@@ -111,7 +111,7 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       describe('authorized api_key with the appropriate role', function() {
-        beforeEach(function(done) {
+        beforeEach(function setupApiUser(done) {
           Factory.create('api_user', { roles: ['sub'] }, function(user) {
             this.apiKey = user.api_key;
             done();
@@ -123,7 +123,7 @@ describe('ApiUmbrellaGatekeper', function() {
     });
 
     describe('non-matching path', function() {
-      beforeEach(function(done) {
+      beforeEach(function setupApiUser(done) {
         Factory.create('api_user', { roles: null }, function(user) {
           this.apiKey = user.api_key;
           done();
