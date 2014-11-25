@@ -1,24 +1,41 @@
 # API Umbrella Web
 
-API Umbrella Web provides the website frontend and web admin tool for the [API Umbrella](http://github.com/NREL/api-umbrella) project. API Umbrella Web is a Ruby on Rails web application.
+API Umbrella Web provides the website frontend and web admin tool for the [API Umbrella](http://github.com/NREL/api-umbrella) project. API Umbrella Web is a [Ruby on Rails](http://rubyonrails.org) web application.
 
-Issues for this project are [maintained here](https://github.com/NREL/api-umbrella/issues).  
+Please submit any issues to the [primary API Umbrella issue tracker](https://github.com/NREL/api-umbrella/issues).  
 
 ## Usage
 
-See [Running API Umbrella]() for setup instructions.
+To get started, check out the [getting started docs](http://nrel.github.io/api-umbrella/docs/getting-started/).
 
 ## Features
 
 *TODO: Finish documenting*
 
 ### API Key Signup
+Users can sign up for API keys through the front end, by visiting `yourdomain.com/signup`. They will be asked for the following information:
+
+* First name *(required)*
+* Last name *(required)*
+* email *(required)*
+* How will you use the APIs? *(optional)*
+
+Users will also be required to agree with the site *terms & conditions*, as defined to your needs. No default terms and conditions are provided with API Umbrella.
 
 ### An API for API Umbrella
 
 ### Documentation
+Documentation is a work in progress, and can be found in multiple locations:
+* [Primary API Umbrella documentation](http://nrel.github.io/api-umbrella/docs/)
+* [API Umbrella wiki](https://github.com/NREL/api-umbrella/wiki)
 
 ### Admin
+The admin section is where you can perform multiple tasks including:
+* Configuring APIs
+* Viewing analytics
+* Setting up users and access control
+* Publishing your changes
+* Importing and exporting settings
 
 ## License
 
