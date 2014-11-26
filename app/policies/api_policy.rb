@@ -69,14 +69,12 @@ class ApiPolicy < ApplicationPolicy
         api_scopes = user.api_scopes_with_permission(permission)
       end
 
-      api_scopes.each do |api_scope|
-        if(record.frontend_host == api_scope.host)
-          allowed = record.url_matches.all? do |url_match|
-            api_scope.path_prefix_matcher.match(url_match.frontend_prefix)
+      if(record.url_matches.present?)
+        allowed = record.url_matches.all? do |url_match|
+          api_scopes.any? do |api_scope|
+            (record.frontend_host == api_scope.host && api_scope.path_prefix_matcher.match(url_match.frontend_prefix))
           end
         end
-
-        break if(allowed)
       end
     end
 

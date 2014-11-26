@@ -88,5 +88,28 @@ FactoryGirl.define do
         ]
       end
     end
+
+    factory :bing_api do
+      sequence(:name) { |n| "Bing #{n}" }
+      backend_host "bing.com"
+
+      servers do
+        [FactoryGirl.attributes_for(:api_server, :host => "bing.com", :port => 80)]
+      end
+
+      url_matches do
+        [
+          FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/bing/search", :backend_prefix => "/"),
+          FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/bing/images", :backend_prefix => "/"),
+          FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/bing/maps", :backend_prefix => "/"),
+        ]
+      end
+
+      factory :bing_search_api do
+        url_matches do
+          [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/bing/search", :backend_prefix => "/")]
+        end
+      end
+    end
   end
 end

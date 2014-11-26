@@ -5,6 +5,9 @@ describe Api::V1::ApisController do
     @admin = FactoryGirl.create(:admin)
     @google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
     @unauthorized_google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
+    @bing_single_all_scope_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:bing_admin_group_single_all_scope, :backend_manage_permission)])
+    @bing_single_restricted_scope_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:bing_admin_group_single_restricted_scope, :backend_manage_permission)])
+    @bing_multi_scope_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:bing_admin_group_multi_scope, :backend_manage_permission)])
   end
 
   before(:each) do
@@ -27,6 +30,11 @@ describe Api::V1::ApisController do
     })
     @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api)
     @yahoo_api = FactoryGirl.create(:yahoo_api)
+    @bing_api = FactoryGirl.create(:bing_api)
+    @bing_search_api = FactoryGirl.create(:bing_search_api)
+    @empty_url_prefixes_api = FactoryGirl.create(:google_api, {
+      :url_matches => [],
+    })
   end
 
   describe "GET index" do
@@ -50,10 +58,15 @@ describe Api::V1::ApisController do
 
         data = MultiJson.load(response.body)
         api_ids = data["data"].map { |api| api["id"] }
+        api_ids.length.should eql(8)
         api_ids.should include(@api.id)
         api_ids.should include(@google_api.id)
+        api_ids.should include(@google2_api.id)
         api_ids.should include(@google_extra_url_match_api.id)
         api_ids.should include(@yahoo_api.id)
+        api_ids.should include(@bing_api.id)
+        api_ids.should include(@bing_search_api.id)
+        api_ids.should include(@empty_url_prefixes_api.id)
       end
 
       it "includes apis the admin has access to" do
@@ -90,6 +103,39 @@ describe Api::V1::ApisController do
         data = MultiJson.load(response.body)
         data["data"].length.should eql(0)
       end
+
+      it "grants access to apis for any apis falling under the prefix of the scope" do
+        admin_token_auth(@bing_single_all_scope_admin)
+        get :index, :format => "json"
+
+        data = MultiJson.load(response.body)
+        api_ids = data["data"].map { |api| api["id"] }
+        api_ids.length.should eql(2)
+        api_ids.should include(@bing_api.id)
+        api_ids.should include(@bing_search_api.id)
+      end
+
+      it "grants access to apis with multiple prefixes when the admin has permissions to each prefix via separate scopes and groups" do
+        admin_token_auth(@bing_multi_scope_admin)
+        get :index, :format => "json"
+
+        data = MultiJson.load(response.body)
+        api_ids = data["data"].map { |api| api["id"] }
+        api_ids.length.should eql(2)
+        api_ids.should include(@bing_api.id)
+        api_ids.should include(@bing_search_api.id)
+      end
+
+      it "only grants access to apis when the admin has permission to all of the url prefixes" do
+        admin_token_auth(@bing_single_restricted_scope_admin)
+        get :index, :format => "json"
+
+        data = MultiJson.load(response.body)
+        api_ids = data["data"].map { |api| api["id"] }
+        api_ids.should_not include(@bing_api.id)
+        api_ids.length.should eql(1)
+        api_ids.should include(@bing_search_api.id)
+      end
     end
   end
 
@@ -104,7 +150,7 @@ describe Api::V1::ApisController do
         data["api"]["id"].should eql(@api.id)
       end
 
-      it "allows admins to create apis within the scope it has access to" do
+      it "allows admins to view apis within the scope it has access to" do
         admin_token_auth(@google_admin)
         get :show, :format => "json", :id => @google_api.id
 
@@ -113,7 +159,7 @@ describe Api::V1::ApisController do
         data["api"]["id"].should eql(@google_api.id)
       end
 
-      it "prevents admins from creating apis outside the scope it has access to" do
+      it "prevents admins from viewing apis outside the scope it has access to" do
         admin_token_auth(@google_admin)
         get :show, :format => "json", :id => @google_extra_url_match_api.id
 
@@ -125,6 +171,15 @@ describe Api::V1::ApisController do
       it "forbids admins without proper access" do
         admin_token_auth(@unauthorized_google_admin)
         get :show, :format => "json", :id => @google_api.id
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+      end
+
+      it "prevents limited admins from viewing incomplete apis without url prefixes" do
+        admin_token_auth(@google_admin)
+        get :show, :format => "json", :id => @empty_url_prefixes_api.id
 
         response.status.should eql(403)
         data = MultiJson.load(response.body)

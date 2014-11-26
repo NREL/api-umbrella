@@ -13,5 +13,21 @@ FactoryGirl.define do
     factory :yahoo_api_scope do
       path_prefix "/yahoo"
     end
+
+    factory :bing_all_api_scope do
+      path_prefix "/bing"
+    end
+
+    factory :bing_search_api_scope do
+      path_prefix "/bing/search"
+    end
+
+    factory :bing_images_api_scope do
+      path_prefix "/bing/images"
+    end
+
+    factory :bing_maps_api_scope do
+      path_prefix "/bing/maps"
+    end
   end
 end

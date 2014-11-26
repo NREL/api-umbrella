@@ -43,5 +43,23 @@ FactoryGirl.define do
     factory :yahoo_admin_group do
       api_scopes { [FactoryGirl.create(:yahoo_api_scope)] }
     end
+
+    factory :bing_admin_group_single_all_scope do
+      api_scopes { [FactoryGirl.create(:bing_all_api_scope)] }
+    end
+
+    factory :bing_admin_group_single_restricted_scope do
+      api_scopes { [FactoryGirl.create(:bing_search_api_scope)] }
+    end
+
+    factory :bing_admin_group_multi_scope do
+      api_scopes do
+        [
+          FactoryGirl.create(:bing_search_api_scope),
+          FactoryGirl.create(:bing_images_api_scope),
+          FactoryGirl.create(:bing_maps_api_scope),
+        ]
+      end
+    end
   end
 end
