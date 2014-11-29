@@ -36,6 +36,7 @@ app.all('/info/*', function(req, res) {
   res.json({
     method: req.method,
     headers: req.headers,
+    local_interface_ip: req.socket.localAddress,
     url: url.parse(req.protocol + '://' + req.hostname + req.url, true),
   });
 });
@@ -330,9 +331,11 @@ app.all('/logging-example/*', function(req, res) {
   res.end('hello');
 });
 
-var server = app.listen(9444);
-
-server.on('error', function(error) {
-  console.error('Failed to start example backend app:', error);
-  process.exit(1);
+// Listen on all interfaces on both IPv4 and IPv6
+['0.0.0.0', '::1'].forEach(function(host) {
+  var server = app.listen(9444, host);
+  server.on('error', function(error) {
+    console.error('Failed to start example backend app:', error);
+    process.exit(1);
+  });
 });

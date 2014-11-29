@@ -1,0 +1,10 @@
+server:
+  port: 13100
+  interface: 127.0.0.1
+  do-daemonize: no
+  chroot: ""
+  username: ""
+  logfile: ""
+  log-queries: yes
+  local-zone: "." static
+  include: {{etc_dir}}/test_env/unbound/active_test.conf

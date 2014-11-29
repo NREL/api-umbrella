@@ -92,6 +92,105 @@ apis:
       - frontend_prefix: /keepalive9447/
         backend_prefix: /keepalive9447/
     rate_limit_mode: unlimited
+  - _id: dns-ipv4
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/ipv4/
+        backend_prefix: /
+  - _id: dns-ipv6
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: "::1"
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/ipv6/
+        backend_prefix: /
+  - _id: dns-localhost
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: localhost
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/localhost/
+        backend_prefix: /
+  - _id: dns-valid-hostname
+    frontend_host: localhost
+    backend_host: httpbin.org
+    servers:
+      - host: httpbin.org
+        port: 80
+    url_matches:
+      - frontend_prefix: /dns/valid-hostname/
+        backend_prefix: /
+  - _id: dns-invalid-hostname
+    frontend_host: localhost
+    backend_host: httpbin.org
+    servers:
+      - host: invalid.ooga
+        port: 80
+    url_matches:
+      - frontend_prefix: /dns/invalid-hostname/
+        backend_prefix: /
+  - _id: dns-invalid-hostname-begins-resolving
+    frontend_host: localhost
+    backend_host: httpbin.org
+    servers:
+      - host: invalid-hostname-begins-resolving.ooga
+        port: 80
+    url_matches:
+      - frontend_prefix: /dns/invalid-hostname-begins-resolving/
+        backend_prefix: /
+  - _id: dns-refresh-after-ttl-expires
+    frontend_host: localhost
+    backend_host: httpbin.org
+    servers:
+      - host: refresh-after-ttl-expires.ooga
+        port: 80
+    url_matches:
+      - frontend_prefix: /dns/refresh-after-ttl-expires/
+        backend_prefix: /
+  - _id: dns-down-after-ttl-expires
+    frontend_host: localhost
+    backend_host: httpbin.org
+    servers:
+      - host: down-after-ttl-expires.ooga
+        port: 80
+    url_matches:
+      - frontend_prefix: /dns/down-after-ttl-expires/
+        backend_prefix: /
+  - _id: dns-ongoing-changes
+    frontend_host: localhost
+    backend_host: httpbin.org
+    servers:
+      - host: ongoing-changes.ooga
+        port: 80
+    url_matches:
+      - frontend_prefix: /dns/ongoing-changes/
+        backend_prefix: /
+  - _id: dns-multiple-ips
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: multiple-ips.ooga
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/multiple-ips/
+        backend_prefix: /
+  - _id: dns-no-drops-during-changes
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: no-drops-during-changes.ooga
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/no-drops-during-changes/
+        backend_prefix: /
   - _id: example
     frontend_host: localhost
     backend_host: localhost
@@ -101,58 +200,6 @@ apis:
     url_matches:
       - frontend_prefix: /
         backend_prefix: /
-  - _id: config-reloader-example-api
-    servers:
-      - host: example.com
-        port: 80
-  - _id: config-reloader-example-ip-api
-    servers:
-      - host: 8.8.8.8
-        port: 80
-  - _id: config-reloader-invalid-api
-    servers:
-      - host: foo.blah
-        port: 80
-  - _id: config-reloader-once-valid-api
-    servers:
-      - host: once-valid.blah
-        port: 80
-  - _id: config-reloader-once-valid-use-recent-api
-    servers:
-      - host: once-valid.akamai.com
-        port: 80
-  - _id: config-reloader-cached-api
-    servers:
-      - host: google.com
-        port: 80
-  - _id: config-reloader-localhost-api
-    servers:
-      - host: localhost
-        port: 80
-  - _id: config-reloader-dont-cache-recent-api
-    servers:
-      - host: api.data.gov
-        port: 80
-  - _id: config-reloader-use-recent-cname-api
-    servers:
-      - host: www.akamai.com
-        port: 80
-  - _id: config-reloader-use-recent-domain-api
-    servers:
-      - host: yahoo.com
-        port: 80
-  - _id: config-reloader-use-recent-expired-api
-    servers:
-      - host: blogs.akamai.com
-        port: 80
-  - _id: config-reloader-use-uncached-incrementing-api
-    servers:
-      - host: uncached-incrementing.blah
-        port: 80
-  - _id: config-reloader-use-uncached-alternating-api
-    servers:
-      - host: uncached-alternating.blah
-        port: 80
 dns_resolver:
   minimum_ttl: 0.1
   ignore_ttl_domains:
