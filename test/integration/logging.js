@@ -3,13 +3,45 @@
 require('../test_helper');
 
 var _ = require('lodash'),
+    apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
     execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
+    mkdirp = require('mkdirp'),
+    path = require('path'),
     processEnv = require('../../lib/process_env'),
-    request = require('request');
+    request = require('request'),
+    rimraf = require('rimraf');
+
+var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 describe('logging', function() {
+  // Clear all the queued beanstalk jobs before running these logging tests, so
+  // we ensure we don't have a big backlog of logs to process from tests that
+  // ran before this suite. This ensures we're testing the logging specific
+  // functionality with a fresh-slate and it's performance won't be impacted by
+  // previous tests.
+  before(function clearBeanstalkData(done) {
+    this.timeout(10000);
+
+    var configPath = processEnv.supervisordConfigPath();
+    var execOpts = {
+      env: processEnv.env(),
+    };
+
+    // Beanstalk doesn't have a super easy way to delete all jobs (without
+    // peeking and deleting records one at a time), so let's stop beanstalk,
+    // wipe the directory, and start it back up.
+    execFile('supervisorctl', ['-c', configPath, 'stop', 'beanstalkd'], execOpts, function(error) {
+      if(error) { return done(error); }
+
+      rimraf.sync(path.join(config.get('db_dir'), 'beanstalkd'));
+      mkdirp.sync(path.join(config.get('db_dir'), 'beanstalkd'));
+
+      execFile('supervisorctl', ['-c', configPath, 'start', 'beanstalkd'], execOpts, done);
+    });
+  });
+
   beforeEach(function(done) {
     this.uniqueQueryId = process.hrtime().join('-') + '-' + Math.random();
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
