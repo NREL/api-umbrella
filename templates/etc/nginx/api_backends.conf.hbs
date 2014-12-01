@@ -10,11 +10,9 @@
     {{/if}}
 
     {{#each servers}}
-      {{#if is_ip}}
-        server {{nginx_host}}:{{port}};
-      {{else}}
-        dynamic_server {{nginx_host}}:{{port}};
-      {{/if}}
+      {{#each nginx_servers}}
+        server {{.}};
+      {{/each}}
     {{/each}}
   }
 {{/each}}

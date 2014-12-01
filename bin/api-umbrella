@@ -25,7 +25,7 @@ var tasks = {
   start: function() {
     var fs = require('fs'),
         fsExtra = require('fs-extra'),
-        Tail = require('always-tail');
+        Tail = require('tail').Tail;
 
     var started = false;
 
@@ -74,7 +74,7 @@ var tasks = {
         var fd = fs.openSync(daemonLog, 'w');
         fs.closeSync(fd);
 
-        var tail = new Tail(daemonLog, '', { interval: 100 });
+        var tail = new Tail(daemonLog, '');
         var buffer = '';
         tail.on('line', function(chunk) {
           process.stdout.write(chunk);

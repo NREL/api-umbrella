@@ -5,37 +5,64 @@ require('../test_helper');
 var _ = require('lodash'),
     apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
-    dns = require('dns'),
     execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
     fs = require('fs'),
     ipaddr = require('ipaddr.js'),
     path = require('path'),
     processEnv = require('../../lib/process_env'),
-    request = require('request');
+    request = require('request'),
+    Tail = require('tail').Tail;
 
 var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 describe('dns backend resolving', function() {
-  function setDnsRecords(records, delay, callback) {
+  function setDnsRecords(records, options, callback) {
+    // Write the unbound config file.
     var configContent = '';
     records.forEach(function(record) {
       configContent += 'local-data: "' + record + '"\n';
     });
-
     fs.writeFileSync(path.join(config.get('etc_dir'), 'test_env/unbound/active_test.conf'), configContent);
 
+    if(options.wait) {
+      // Detect when the DNS changes have actually been read-in and nginx has
+      // been reloaded by tailing the log file.
+      var logFile = path.join(config.get('log_dir'), 'config-reloader.log');
+      var logTail;
+      var logTailTimeout = setTimeout(function() {
+        if(logTail) { logTail.unwatch(); }
+        callback('nginx reload not detected in log file ' + logFile);
+      }, 5000);
+      logTail = new Tail(logFile);
+      logTail.on('line', function(line) {
+        if(_.contains(line, 'nginx reload signal sent')) {
+          clearTimeout(logTailTimeout);
+          logTail.unwatch();
+
+          // Wait another 250ms before calling the callback, since we just know
+          // when the nginx reload signal is sent, but it takes nginx a little
+          // while to actually reload the processes.
+          setTimeout(callback, 250);
+        }
+      });
+    }
+
+    // Reload unbound to read the new config file.
     var configPath = processEnv.supervisordConfigPath();
     var execOpts = {
       env: processEnv.env(),
     };
-
     execFile('supervisorctl', ['-c', configPath, 'kill', 'HUP', 'test-env-unbound'], execOpts, function(error, stdout, stderr) {
       if(error) {
+        clearTimeout(logTailTimeout);
+        logTail.unwatch();
         return callback('Error reloading unbound: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
       }
 
-      setTimeout(callback, delay);
+      if(!options.wait) {
+        callback();
+      }
     });
   }
 
@@ -47,29 +74,6 @@ describe('dns backend resolving', function() {
       '127.0.0.4',
       '127.0.0.5',
     ];
-  });
-
-  before(function resolveHostnames(done) {
-    this.timeout(5000);
-
-    var hosts = [
-      'httpbin.org',
-      'use.opendns.com',
-      'google.com',
-      'yahoo.com',
-      'bing.com',
-      'amazon.com',
-      'twitter.com',
-      'github.com',
-    ];
-
-    this.ips = {};
-    async.eachLimit(hosts, 3, function(host, next) {
-      dns.lookup(host, function(error, ip) {
-        this.ips[host] = ip;
-        next();
-      }.bind(this));
-    }.bind(this), done);
   });
 
   beforeEach(function(done) {
@@ -116,8 +120,11 @@ describe('dns backend resolving', function() {
     });
   });
 
-  it('responds successfully when a valid hostname is given', function(done) {
-    request.get('http://localhost:9080/dns/valid-hostname/html', this.options, function(error, response, body) {
+  it('responds successfully when a valid external hostname (httpbin.org) is given', function(done) {
+    // Increase timeout in case external httpbin.org site is slow.
+    this.timeout(10000);
+
+    request.get('http://localhost:9080/dns/valid-external-hostname/html', this.options, function(error, response, body) {
       should.not.exist(error);
       response.statusCode.should.eql(200);
       body.should.contain('Moby-Dick');
@@ -139,13 +146,13 @@ describe('dns backend resolving', function() {
       should.not.exist(error);
       response.statusCode.should.eql(502);
 
-      setDnsRecords(['invalid-hostname-begins-resolving.ooga 60 A ' + this.ips['httpbin.org']], 2100, function(error) {
+      setDnsRecords(['invalid-hostname-begins-resolving.ooga 60 A 127.0.0.1'], { wait: true }, function(error) {
         should.not.exist(error);
-        request.get('http://localhost:9080/dns/invalid-hostname-begins-resolving/html', this.options, function(error, response, body) {
+        request.get('http://localhost:9080/dns/invalid-hostname-begins-resolving/info/', this.options, function(error, response, body) {
           should.not.exist(error);
           response.statusCode.should.eql(200);
-          body.should.contain('Moby-Dick');
-
+          var data = JSON.parse(body);
+          data.local_interface_ip.should.eql('127.0.0.1');
           done();
         }.bind(this));
       }.bind(this));
@@ -155,29 +162,33 @@ describe('dns backend resolving', function() {
   it('refreshes the IP after the domain\'s TTL expires', function(done) {
     this.timeout(20000);
 
-    setDnsRecords(['refresh-after-ttl-expires.ooga 8 A ' + this.ips['httpbin.org']], 2100, function(error) {
+    setDnsRecords(['refresh-after-ttl-expires.ooga 8 A 127.0.0.1'], { wait: true }, function(error) {
       should.not.exist(error);
-      request.get('http://localhost:9080/dns/refresh-after-ttl-expires/', this.options, function(error, response, body) {
+      request.get('http://localhost:9080/dns/refresh-after-ttl-expires/info/', this.options, function(error, response, body) {
         should.not.exist(error);
         response.statusCode.should.eql(200);
-        body.should.contain('httpbin.org');
+        var data = JSON.parse(body);
+        data.local_interface_ip.should.eql('127.0.0.1');
 
-        setDnsRecords(['refresh-after-ttl-expires.ooga 8 A ' + this.ips['use.opendns.com']], 0, function(error) {
+        setDnsRecords(['refresh-after-ttl-expires.ooga 8 A 127.0.0.2'], { wait: false }, function(error) {
           should.not.exist(error);
           async.timesSeries(5, function(index, next) {
-            request.get('http://localhost:9080/dns/refresh-after-ttl-expires/', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/dns/refresh-after-ttl-expires/info/', this.options, function(error, response, body) {
               should.not.exist(error);
               response.statusCode.should.eql(200);
-              body.should.contain('httpbin.org');
+              var data = JSON.parse(body);
+              data.local_interface_ip.should.eql('127.0.0.1');
 
               setTimeout(next, 1000);
             }.bind(this));
           }.bind(this), function() {
             setTimeout(function() {
-              request.get('http://localhost:9080/dns/refresh-after-ttl-expires/', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/dns/refresh-after-ttl-expires/info/', this.options, function(error, response, body) {
                 should.not.exist(error);
                 response.statusCode.should.eql(200);
-                body.should.contain('OpenDNS');
+                var data = JSON.parse(body);
+                data.local_interface_ip.should.eql('127.0.0.2');
+
                 done();
               }.bind(this));
             }.bind(this), 4000);
@@ -190,20 +201,22 @@ describe('dns backend resolving', function() {
   it('takes a host down if it fails to resolve after the TTL expires', function(done) {
     this.timeout(20000);
 
-    setDnsRecords(['down-after-ttl-expires.ooga 8 A ' + this.ips['httpbin.org']], 2100, function(error) {
+    setDnsRecords(['down-after-ttl-expires.ooga 8 A 127.0.0.1'], { wait: true }, function(error) {
       should.not.exist(error);
-      request.get('http://localhost:9080/dns/down-after-ttl-expires/', this.options, function(error, response, body) {
+      request.get('http://localhost:9080/dns/down-after-ttl-expires/info/', this.options, function(error, response, body) {
         should.not.exist(error);
         response.statusCode.should.eql(200);
-        body.should.contain('httpbin.org');
+        var data = JSON.parse(body);
+        data.local_interface_ip.should.eql('127.0.0.1');
 
-        setDnsRecords([], 0, function(error) {
+        setDnsRecords([], { wait: false }, function(error) {
           should.not.exist(error);
           async.timesSeries(5, function(index, next) {
-            request.get('http://localhost:9080/dns/down-after-ttl-expires/', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/dns/down-after-ttl-expires/info/', this.options, function(error, response, body) {
               should.not.exist(error);
               response.statusCode.should.eql(200);
-              body.should.contain('httpbin.org');
+              var data = JSON.parse(body);
+              data.local_interface_ip.should.eql('127.0.0.1');
 
               setTimeout(next, 1000);
             }.bind(this));
@@ -226,45 +239,49 @@ describe('dns backend resolving', function() {
 
     async.series([
       function(next) {
-        setDnsRecords(['ongoing-changes.ooga 1 A ' + this.ips['httpbin.org']], 2100, function(error) {
+        setDnsRecords(['ongoing-changes.ooga 1 A 127.0.0.1'], { wait: true }, function(error) {
           should.not.exist(error);
-          request.get('http://localhost:9080/dns/ongoing-changes/', this.options, function(error, response, body) {
+          request.get('http://localhost:9080/dns/ongoing-changes/info/', this.options, function(error, response, body) {
             should.not.exist(error);
             response.statusCode.should.eql(200);
-            body.should.contain('httpbin.org');
+            var data = JSON.parse(body);
+            data.local_interface_ip.should.eql('127.0.0.1');
             next();
           });
         }.bind(this));
       }.bind(this),
       function(next) {
-        setDnsRecords(['ongoing-changes.ooga 1 A ' + this.ips['use.opendns.com']], 2100, function(error) {
+        setDnsRecords(['ongoing-changes.ooga 1 A 127.0.0.2'], { wait: true }, function(error) {
           should.not.exist(error);
-          request.get('http://localhost:9080/dns/ongoing-changes/', this.options, function(error, response, body) {
+          request.get('http://localhost:9080/dns/ongoing-changes/info/', this.options, function(error, response, body) {
             should.not.exist(error);
             response.statusCode.should.eql(200);
-            body.should.contain('OpenDNS');
+            var data = JSON.parse(body);
+            data.local_interface_ip.should.eql('127.0.0.2');
             next();
           });
         }.bind(this));
       }.bind(this),
       function(next) {
-        setDnsRecords(['ongoing-changes.ooga 1 A ' + this.ips['google.com']], 2100, function(error) {
+        setDnsRecords(['ongoing-changes.ooga 1 A 127.0.0.3'], { wait: true }, function(error) {
           should.not.exist(error);
-          request.get('http://localhost:9080/dns/ongoing-changes/', this.options, function(error, response, body) {
+          request.get('http://localhost:9080/dns/ongoing-changes/info/', this.options, function(error, response, body) {
             should.not.exist(error);
-            response.statusCode.should.eql(302);
-            body.should.contain('google');
+            response.statusCode.should.eql(200);
+            var data = JSON.parse(body);
+            data.local_interface_ip.should.eql('127.0.0.3');
             next();
           });
         }.bind(this));
       }.bind(this),
       function(next) {
-        setDnsRecords(['ongoing-changes.ooga 1 A ' + this.ips['yahoo.com']], 2100, function(error) {
+        setDnsRecords(['ongoing-changes.ooga 1 A 127.0.0.4'], { wait: true }, function(error) {
           should.not.exist(error);
-          request.get('http://localhost:9080/dns/ongoing-changes/', this.options, function(error, response, body) {
+          request.get('http://localhost:9080/dns/ongoing-changes/info/', this.options, function(error, response, body) {
             should.not.exist(error);
-            response.statusCode.should.eql(404);
-            body.should.contain('yahoo');
+            response.statusCode.should.eql(200);
+            var data = JSON.parse(body);
+            data.local_interface_ip.should.eql('127.0.0.4');
             next();
           });
         }.bind(this));
@@ -280,21 +297,38 @@ describe('dns backend resolving', function() {
       return 'multiple-ips.ooga 60 ' + type + ' ' + ip;
     });
 
-    setDnsRecords(dnsRecords, 2100, function(error) {
+    var responseCodes = {};
+    var seenLocalInterfaceIps = {};
+
+    setDnsRecords(dnsRecords, { wait: true }, function(error) {
       should.not.exist(error);
-      async.times(250, function(index, next) {
+
+      async.times(250, function(index, timesCallback) {
         request.get('http://localhost:9080/dns/multiple-ips/info/', this.options, function(error, response, body) {
-          should.not.exist(error);
-          response.statusCode.should.eql(200);
-          var data = JSON.parse(body);
-          next(error, data.local_interface_ip);
+          if(!error) {
+            responseCodes[response.statusCode] = responseCodes[response.statusCode] || 0;
+            responseCodes[response.statusCode]++;
+
+            if(response.statusCode === 200) {
+              var data = JSON.parse(body);
+              seenLocalInterfaceIps[data.local_interface_ip] = seenLocalInterfaceIps[data.local_interface_ip] || 0;
+              seenLocalInterfaceIps[data.local_interface_ip]++;
+            }
+          }
+
+          timesCallback(error);
         });
-      }.bind(this), function(error, seenLocalInterfaceIps) {
-        seenLocalInterfaceIps.length.should.eql(250);
+      }.bind(this), function(error) {
+        should.not.exist(error);
+
+        // Ensure that all the responses were successful.
+        _.keys(responseCodes).should.eql(['200']);
+        responseCodes['200'].should.eql(250);
 
         // Make sure all the different loopback IPs defined for this hostname
         // were actually used.
-        _.uniq(seenLocalInterfaceIps).sort().should.eql(this.localInterfaceIps.sort());
+        _.uniq(_.keys(seenLocalInterfaceIps)).sort().should.eql(this.localInterfaceIps.sort());
+
         done();
       }.bind(this));
     }.bind(this));
@@ -309,7 +343,7 @@ describe('dns backend resolving', function() {
     var responseCodes = {};
     var seenLocalInterfaceIps = {};
 
-    setDnsRecords(['no-drops-during-changes.ooga 1 A 127.0.0.1'], 2100, function(error) {
+    setDnsRecords(['no-drops-during-changes.ooga 1 A 127.0.0.1'], { wait: true }, function(error) {
       should.not.exist(error);
 
       // Setup 25 parallel tasks to make requests in parallel.
@@ -317,10 +351,7 @@ describe('dns backend resolving', function() {
       _.times(25, function() {
         tasks.push(function(parallelCallback) {
           async.whilst(function() { return runTests; }, function(whilstCallback) {
-            this.options.headers['X-Api-Umbrella-Backend-Scheme'] = 'http';
-            this.options.headers['X-Api-Umbrella-Backend-Id'] = 'dns-no-drops-during-changes';
-            request.get('http://localhost:13011/info/', this.options, function(error, response, body) {
-            //request.get('http://localhost:9080/dns/no-drops-during-changes/info/', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/dns/no-drops-during-changes/info/', this.options, function(error, response, body) {
               if(!error) {
                 // For each request, keep track of the response code and the
                 // local interface IP address this request hit.
@@ -365,7 +396,7 @@ describe('dns backend resolving', function() {
 
         var type = (ipaddr.IPv6.isValid(randomIp)) ? 'AAAA' : 'A';
         var record = 'no-drops-during-changes.ooga ' + randomTtl + ' ' + type + ' ' + randomIp;
-        setDnsRecords([record], 0, function(error) {
+        setDnsRecords([record], { wait: false }, function(error) {
           should.not.exist(error);
 
           // Change the DNS again in less than a second.

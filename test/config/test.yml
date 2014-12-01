@@ -119,57 +119,57 @@ apis:
     url_matches:
       - frontend_prefix: /dns/localhost/
         backend_prefix: /
-  - _id: dns-valid-hostname
+  - _id: dns-valid-external-hostname
     frontend_host: localhost
     backend_host: httpbin.org
     servers:
       - host: httpbin.org
         port: 80
     url_matches:
-      - frontend_prefix: /dns/valid-hostname/
+      - frontend_prefix: /dns/valid-external-hostname/
         backend_prefix: /
   - _id: dns-invalid-hostname
     frontend_host: localhost
-    backend_host: httpbin.org
+    backend_host: invalid.ooga
     servers:
       - host: invalid.ooga
-        port: 80
+        port: 9444
     url_matches:
       - frontend_prefix: /dns/invalid-hostname/
         backend_prefix: /
   - _id: dns-invalid-hostname-begins-resolving
     frontend_host: localhost
-    backend_host: httpbin.org
+    backend_host: invalid-hostname-begins-resolving.ooga
     servers:
       - host: invalid-hostname-begins-resolving.ooga
-        port: 80
+        port: 9444
     url_matches:
       - frontend_prefix: /dns/invalid-hostname-begins-resolving/
         backend_prefix: /
   - _id: dns-refresh-after-ttl-expires
     frontend_host: localhost
-    backend_host: httpbin.org
+    backend_host: refresh-after-ttl-expires.ooga
     servers:
       - host: refresh-after-ttl-expires.ooga
-        port: 80
+        port: 9444
     url_matches:
       - frontend_prefix: /dns/refresh-after-ttl-expires/
         backend_prefix: /
   - _id: dns-down-after-ttl-expires
     frontend_host: localhost
-    backend_host: httpbin.org
+    backend_host: down-after-ttl-expires.ooga
     servers:
       - host: down-after-ttl-expires.ooga
-        port: 80
+        port: 9444
     url_matches:
       - frontend_prefix: /dns/down-after-ttl-expires/
         backend_prefix: /
   - _id: dns-ongoing-changes
     frontend_host: localhost
-    backend_host: httpbin.org
+    backend_host: ongoing-changes.ooga
     servers:
       - host: ongoing-changes.ooga
-        port: 80
+        port: 9444
     url_matches:
       - frontend_prefix: /dns/ongoing-changes/
         backend_prefix: /
@@ -201,11 +201,8 @@ apis:
       - frontend_prefix: /
         backend_prefix: /
 dns_resolver:
-  minimum_ttl: 0.1
-  ignore_ttl_domains:
-    - "akamaiedge\\.net$"
-    - "yahoo\\.com"
-
+  minimum_ttl: 1
+  reload_buffer_time: 0.1
 # This is the config for redis-convoy. We're using their defaults, but the
 # defaults go away when in their test environment. So redefine them here.
 convoy:

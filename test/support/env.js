@@ -4,7 +4,6 @@ var path = require('path');
 
 process.env.NODE_ENV = 'test';
 process.env.API_UMBRELLA_LOG_LEVEL = 'debug';
-process.env.API_UMBRELLA_LOG_PATH = path.resolve(__dirname, '../log/test.log');
 
 // redis-convoy uses the config module and requires a bit more setup when in
 // the test environment (the defaults don't get loaded if NODE_ENV=test.
