@@ -1,11 +1,10 @@
 'use strict';
 
-var path = require('path');
+var apiUmbrellaConfig = require('api-umbrella-config'),
+    path = require('path');
+
+var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 process.env.NODE_ENV = 'test';
 process.env.API_UMBRELLA_LOG_LEVEL = 'debug';
-
-// redis-convoy uses the config module and requires a bit more setup when in
-// the test environment (the defaults don't get loaded if NODE_ENV=test.
-process.env.NODE_CONFIG_DIR = path.resolve(__dirname, '../config');
-process.env.NODE_RUNTIME_CONFIG_DIR = process.env.NODE_CONFIG_DIR;
+process.env.API_UMBRELLA_LOG_PATH = path.join(config.get('log_dir'), 'test.log');

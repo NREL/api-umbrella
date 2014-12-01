@@ -4,6 +4,7 @@ dependencies:
     - node_modules
   pre:
     - mkdir -p ci_cache
+    - find ci_cache -maxdepth 1 -name 'api-umbrella*.deb' -not -name 'api-umbrella_0.6.0-1_amd64.deb' -exec rm -f {} \;
     - if [[ ! -e ci_cache/api-umbrella_0.6.0-1_amd64.deb ]]; then wget -P ci_cache https://developer.nrel.gov/downloads/api-umbrella/ubuntu/12.04/api-umbrella_0.6.0-1_amd64.deb; fi
     - sudo dpkg -i ci_cache/api-umbrella_0.6.0-1_amd64.deb
   override:
