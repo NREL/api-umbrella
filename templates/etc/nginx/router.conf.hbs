@@ -82,7 +82,8 @@ http {
     # useful to have in files for grepping/debugging.
     '"req_at":"$time_iso8601",'
     '"req_host":"$http_host",'
-    '"req_uri":"$request_uri"'
+    '"req_uri":"$request_uri",'
+    '"res_status":"$status"'
   '}';
 
 # "$x_api_umbrella_request_id","$router_name","$time_iso8601","$msec","$request_time","$upstream_response_time","$request_length","$bytes_sent","$status","$remote_addr","$request_method","$scheme","$http_host","$server_port","$request_uri","$http_user_agent","$http_referer","$http_x_api_key","$remote_user"';
