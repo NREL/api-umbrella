@@ -85,7 +85,7 @@ redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
-startsecs=5
+startsecs=3
 
 [program:varnishd]
 environment=CCACHE_DIR="{{run_dir}}/varnish/.ccache"

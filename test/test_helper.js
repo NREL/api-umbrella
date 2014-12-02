@@ -1,5 +1,12 @@
 'use strict';
 
+// As a very first step, blow away the default test directory, so we have a
+// fresh test directory, clean logs, etc. on every run.
+var mkdirp = require('mkdirp'),
+    rimraf = require('rimraf');
+rimraf.sync('/tmp/api-umbrella-test');
+mkdirp.sync('/tmp/api-umbrella-test/var/log');
+
 require('./support/env');
 
 var request = require('request'),
