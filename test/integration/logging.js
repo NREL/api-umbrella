@@ -425,7 +425,7 @@ describe('logging', function() {
     request.get('http://localhost:9080/delay/65000', this.options, function(error, response) {
       response.statusCode.should.eql(504);
 
-      waitForLog(this.uniqueQueryId, { wait: 10000 }, function(error, response, hit, record) {
+      waitForLog(this.uniqueQueryId, { timeout: 10000 }, function(error, response, hit, record) {
         should.not.exist(error);
         record.response_status.should.eql(504);
         itLogsBaseFields(record, this.uniqueQueryId, this.user);
