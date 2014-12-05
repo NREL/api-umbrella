@@ -1,4 +1,4 @@
-Admin.NestedFormController = Ember.ObjectController.extend({
+Admin.NestedFormController = Ember.ObjectController.extend(Ember.Evented, {
   needs: ['modal'],
 
   titleBase: null,
@@ -32,6 +32,7 @@ Admin.NestedFormController = Ember.ObjectController.extend({
   actions: {
     ok: function() {
       this.send('closeModal');
+      this.trigger('closeOk');
     },
 
     cancel: function() {
