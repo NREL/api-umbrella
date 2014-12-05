@@ -8,7 +8,7 @@
       webAdminAjaxApiKey = <%= ApiUser.where(:email => 'web.admin.ajax@internal.apiumbrella').order_by(:created_at.asc).first.api_key.to_json.html_safe %>;
       currentAdmin = <%= current_admin.attributes.slice("username", "superuser").to_json.html_safe %>
     <% end %>
-    <link href='http://fonts.googleapis.com/css?family=Oswald:400,700' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Oswald:400,700' rel='stylesheet' type='text/css'>
     <%= javascript_include_tag "admin" %>
     <%= javascript_include_tag "//www.google.com/jsapi" %>
     <%= javascript_tag do %>
