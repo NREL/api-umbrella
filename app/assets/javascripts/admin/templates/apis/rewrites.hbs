@@ -1,16 +1,16 @@
-{{#if model}}
-  <table id="rewrites" class="table table-striped table-condensed">
-    <thead>
-      <tr>
-        <th style="width: 110px;">Matching Type</th>
-        <th style="width: 110px;">HTTP Method</th>
-        <th>From</th>
-        <th>To</th>
-        <th></th>
-        <th class="reorder-handle"></th>
-      </tr>
-    </thead>
-    <tbody>
+<table id="rewrites" class="table table-striped table-condensed">
+  <thead>
+    <tr>
+      <th style="width: 110px;">Matching Type</th>
+      <th style="width: 110px;">HTTP Method</th>
+      <th>From</th>
+      <th>To</th>
+      <th></th>
+      <th class="reorder-handle"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#if model}}
       {{#each}}
         <tr data-id="{{unbound id}}">
           <td>{{matcherType}}</td>
@@ -24,9 +24,11 @@
           <td class="reorder-handle"><i class="fa fa-reorder"></i></td>
         </tr>
       {{/each}}
-    </tbody>
-  </table>
-{{/if}}
+    {{else}}
+      <tr class="empty"><td colspan="6">No request rewrites have been added yet. Click "Add Rewrite" below to get started.</td></tr>
+    {{/if}}
+  </tbody>
+</table>
 <div class="row-fluid">
   <div class="span6">
     <button type="button" class="btn btn-mini" {{action 'addRewrite'}}><i class="fa fa-plus-circle"></i> Add Rewrite</button>

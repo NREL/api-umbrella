@@ -244,12 +244,31 @@ div.dataTables_filter {
 }
 
 fieldset {
-  margin: 24px 0px;
+  margin: 12px 0px 32px 0px;
+  padding: 6px 0px 6px 12px;
+}
+
+fieldset.collapsible {
+  margin-bottom: 12px;
+
+  .collapse.in {
+    margin-bottom: 24px;
+  }
 }
 
 legend {
+  font-family: 'Oswald', sans-serif;
   margin-bottom: 2px;
-  line-height: 26px;
+  border-bottom-width: 1px;
+  border-color: #999;
+  margin-left: -12px;
+  padding: 6px 10px 3px 2px;
+  line-height: 22px;
+  background-color: #fff;
+}
+
+legend a {
+  display: block;
 }
 
 .fieldset-note {
@@ -451,6 +470,13 @@ td.reorder-handle {
     padding-top: 2px;
     padding-bottom: 2px;
   }
+}
+
+.table tr.empty td {
+  text-align: center;
+  font-size: 12px;
+  font-style: italic;
+  color: #555;
 }
 
 .table th.text-center,
