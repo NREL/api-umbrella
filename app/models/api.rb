@@ -37,6 +37,11 @@ class Api
     :presence => true
   validates :balance_algorithm,
     :inclusion => { :in => %w(round_robin least_conn ip_hash) }
+  validates_each :servers, :url_matches do |record, attr, value|
+    if(value.blank?)
+      record.errors.add(:base, "must have at least one #{attr}")
+    end
+  end
 
   orderable :column => :sort_order
 
