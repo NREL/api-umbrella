@@ -192,6 +192,9 @@ group :development, :test do
   gem "factory_girl_rails", "~> 4.4.1"
   gem "rspec-html-matchers", "~> 0.5.0"
 
+  # Rspec formatter - Prints overall progress and error details as they happen.
+  gem "fuubar", "~> 1.3.3"
+
   # Ruby lint/style checker
   gem "rubocop", "~> 0.26.1", :require => false
 
