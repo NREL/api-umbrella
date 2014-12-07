@@ -104,16 +104,13 @@ describe "apis", :js => true do
       click_link "Save Test API"
 
       find_field("Name").value.should eql("Save Test API")
-      page.save_screenshot('screenshot1.png')
 
       find("a", :text => /Advanced Settings/).click
       page.execute_script %{
         ace.edit($('[data-form-property=api_key_missing]')[0]).setValue('hello1: foo\\nhello2: bar');
       }
 
-      page.save_screenshot('screenshot2.png')
       click_button("Save")
-      page.save_screenshot('screenshot3.png')
       page.should have_content("Successfully saved")
 
       @api = Api.find(@api.id)
