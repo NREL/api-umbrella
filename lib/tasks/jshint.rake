@@ -44,6 +44,7 @@ begin
       "moment",
       "numeral",
       "PNotify",
+      "polyglot",
       "Spinner",
       "webAdminAjaxApiKey",
     ]

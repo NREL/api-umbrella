@@ -94,6 +94,9 @@ Style/RaiseArgs:
 Style/RedundantSelf:
   Enabled: false
 
+Style/RegexpLiteral:
+  Enabled: false
+
 Style/SignalException:
   Enabled: false
 

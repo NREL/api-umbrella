@@ -280,7 +280,7 @@ Ember.EasyForm.Form.reopen({
         // On validation failure, set the errors for error-messages display and
         // scroll to the error messages display.
         this.set('context.model.clientErrors', this.get('context.model.errors'));
-        $.scrollTo("#error_messages", { offset: -50, duration: 200 });
+        $.scrollTo('#error_messages', { offset: -50, duration: 200 });
 
         // Display all the inline errors for at least the top-level model
         // (note, this doesn't currently propagate to embedded models/forms).
@@ -322,7 +322,7 @@ Admin.Save = Ember.Mixin.create({
       }
 
       button.button('reset');
-      $.scrollTo("#error_messages", { offset: -50, duration: 200 });
+      $.scrollTo('#error_messages', { offset: -50, duration: 200 });
     }, this));
   },
 });
