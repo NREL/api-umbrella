@@ -19,7 +19,14 @@ Admin.ApiUsersFormController = Ember.ObjectController.extend(Admin.Save, {
     submit: function() {
       this.save({
         transitionToRoute: 'api_users',
-        message: 'Successfully saved the user "' + this.get('model.email') + '"',
+        message: function(model) {
+          var message = 'Successfully saved the user "' + model.get('email') + '"';
+          if(model.get('apiKey')) {
+            message += '<br>API Key: <code>' + model.get('apiKey') + '</code>';
+          }
+
+          return message;
+        },
       });
     },
   },
