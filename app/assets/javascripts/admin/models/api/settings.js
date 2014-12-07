@@ -47,7 +47,8 @@ Admin.ApiSettings = Ember.Model.extend({
   requiredRolesString: function(key, value) {
     // Setter
     if(arguments.length > 1) {
-      var roles = value.split(',');
+      var roles = _.compact(value.split(','));
+      if(roles.length === 0) { roles = null; }
       this.set('requiredRoles', roles);
     }
 
@@ -63,7 +64,8 @@ Admin.ApiSettings = Ember.Model.extend({
   allowedIpsString: function(key, value) {
     // Setter
     if(arguments.length > 1) {
-      var ips = value.split(/[\r\n]+/);
+      var ips = _.compact(value.split(/[\r\n]+/));
+      if(ips.length === 0) { ips = null; }
       this.set('allowedIps', ips);
     }
 
@@ -79,7 +81,8 @@ Admin.ApiSettings = Ember.Model.extend({
   allowedReferersString: function(key, value) {
     // Setter
     if(arguments.length > 1) {
-      var referers = value.split(/[\r\n]+/);
+      var referers = _.compact(value.split(/[\r\n]+/));
+      if(referers.length === 0) { referers = null; }
       this.set('allowedReferers', referers);
     }
 

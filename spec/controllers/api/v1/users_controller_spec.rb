@@ -398,7 +398,6 @@ describe Api::V1::UsersController do
       data = MultiJson.load(response.body)
       data["user"]["registration_source"].should eql("whatever")
     end
-
   end
 
   describe "PUT update" do

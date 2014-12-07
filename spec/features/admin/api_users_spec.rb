@@ -27,7 +27,7 @@ describe "api users form", :js => true do
       click_button("Save")
 
       page.should have_content("Successfully saved the user")
-      user = ApiUser.order_by(:created_at.asc).last
+      user.reload
       user.last_name.should eql("Updated")
       page.should have_content(user.api_key)
     end
@@ -36,13 +36,115 @@ describe "api users form", :js => true do
       user = FactoryGirl.create(:api_user, :created_by => @current_admin.id, :created_at => Time.now - 15.minutes)
       visit "/admin/#/api_users/#{user.id}/edit"
 
-      fill_in "Last Name", :with => "Updated"
+      fill_in "Last Name", :with => "Updated2"
+      click_button("Save")
+
+      page.should have_content("Successfully saved the user")
+      user.reload
+      user.last_name.should eql("Updated2")
+      page.should_not have_content(user.api_key)
+    end
+  end
+
+  describe "allowed ips input" do
+    it "saves an empty input as nil" do
+      visit "/admin/#/api_users/new"
+
+      fill_in "E-mail", :with => "example@example.com"
+      fill_in "First Name", :with => "John"
+      fill_in "Last Name", :with => "Doe"
+      check "User agrees to the terms and conditions"
       click_button("Save")
 
       page.should have_content("Successfully saved the user")
       user = ApiUser.order_by(:created_at.asc).last
-      user.last_name.should eql("Updated")
-      page.should_not have_content("API Key: #{user.api_key}")
+      user.settings.allowed_ips.should eql(nil)
+    end
+
+    it "saves multiple lines (omitting blank lines) as an array" do
+      visit "/admin/#/api_users/new"
+
+      fill_in "E-mail", :with => "example@example.com"
+      fill_in "First Name", :with => "John"
+      fill_in "Last Name", :with => "Doe"
+      check "User agrees to the terms and conditions"
+      fill_in "Restrict Access to IPs", :with => "10.0.0.0/8\n\n\n\n127.0.0.1"
+      click_button("Save")
+
+      page.should have_content("Successfully saved the user")
+      user = ApiUser.order_by(:created_at.asc).last
+      user.settings.allowed_ips.should eql(["10.0.0.0/8", "127.0.0.1"])
+    end
+
+    it "displays an existing array as multiple lines" do
+      user = FactoryGirl.create(:api_user, :settings => { :allowed_ips => ["10.0.0.0/24", "10.2.2.2"] })
+      visit "/admin/#/api_users/#{user.id}/edit"
+
+      find_field("Restrict Access to IPs").value.should eql("10.0.0.0/24\n10.2.2.2")
+    end
+
+    it "nullifies an existing array when an empty input is saved" do
+      user = FactoryGirl.create(:api_user, :settings => { :allowed_ips => ["10.0.0.0/24", "10.2.2.2"] })
+      visit "/admin/#/api_users/#{user.id}/edit"
+
+      find_field("Restrict Access to IPs").value.should eql("10.0.0.0/24\n10.2.2.2")
+      fill_in "Restrict Access to IPs", :with => ""
+      click_button("Save")
+
+      page.should have_content("Successfully saved the user")
+      user.reload
+      user.settings.allowed_ips.should eql(nil)
+    end
+  end
+
+  describe "allowed referers input" do
+    it "saves an empty input as nil" do
+      visit "/admin/#/api_users/new"
+
+      fill_in "E-mail", :with => "example@example.com"
+      fill_in "First Name", :with => "John"
+      fill_in "Last Name", :with => "Doe"
+      check "User agrees to the terms and conditions"
+      click_button("Save")
+
+      page.should have_content("Successfully saved the user")
+      user = ApiUser.order_by(:created_at.asc).last
+      user.settings.allowed_referers.should eql(nil)
+    end
+
+    it "saves multiple lines (omitting blank lines) as an array" do
+      visit "/admin/#/api_users/new"
+
+      fill_in "E-mail", :with => "example@example.com"
+      fill_in "First Name", :with => "John"
+      fill_in "Last Name", :with => "Doe"
+      check "User agrees to the terms and conditions"
+      fill_in "Restrict Access to HTTP Referers", :with => "*.example.com/*\n\n\n\nhttp://google.com/*"
+      click_button("Save")
+
+      page.should have_content("Successfully saved the user")
+      user = ApiUser.order_by(:created_at.asc).last
+      user.settings.allowed_referers.should eql(["*.example.com/*", "http://google.com/*"])
+    end
+
+    it "displays an existing array as multiple lines" do
+      user = FactoryGirl.create(:api_user, :settings => { :allowed_referers => ["*.example.com/*", "http://google.com/*"] })
+      visit "/admin/#/api_users/#{user.id}/edit"
+
+      find_field("Restrict Access to HTTP Referers").value.should eql("*.example.com/*\nhttp://google.com/*")
+    end
+
+    it "nullifies an existing array when an empty input is saved" do
+      user = FactoryGirl.create(:api_user, :settings => { :allowed_referers => ["*.example.com/*", "http://google.com/*"] })
+      visit "/admin/#/api_users/#{user.id}/edit"
+
+      find_field("Restrict Access to HTTP Referers").value.should eql("*.example.com/*\nhttp://google.com/*")
+      fill_in "Restrict Access to HTTP Referers", :with => ""
+      click_button("Save")
+
+      page.should have_content("Successfully saved the user")
+      user.reload
+      user.settings.allowed_referers.should eql(nil)
     end
   end
 end
