@@ -19,7 +19,6 @@ Ember.Validations = Ember.Namespace.create({
 (function() {
 Ember.Validations.messages = {
   render: function(attribute, context) {
-  console.info('T: ', attribute, context);
     if (Ember.I18n) {
       return Ember.I18n.t('errors.' + attribute, context);
     } else {
