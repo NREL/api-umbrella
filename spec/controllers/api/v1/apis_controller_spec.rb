@@ -32,9 +32,10 @@ describe Api::V1::ApisController do
     @yahoo_api = FactoryGirl.create(:yahoo_api)
     @bing_api = FactoryGirl.create(:bing_api)
     @bing_search_api = FactoryGirl.create(:bing_search_api)
-    @empty_url_prefixes_api = FactoryGirl.create(:google_api, {
+    @empty_url_prefixes_api = FactoryGirl.build(:google_api, {
       :url_matches => [],
     })
+    @empty_url_prefixes_api.save!(:validate => false)
   end
 
   describe "GET index" do
