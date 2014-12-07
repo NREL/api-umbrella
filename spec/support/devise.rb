@@ -33,11 +33,14 @@ module DeviseFeatureMacros
       # page once before any tests and that seems to fix the issue. We should
       # revisit sometime to try to figure out if this is a Capybara/poltergeist
       # issue or something with our app.
+      #
+      # rubocop:disable Style/GlobalVars
       unless($admin_loaded_once)
         visit "/admin/"
         page.should have_content("API Umbrella")
         $admin_loaded_once = true
       end
+      # rubocop:enable Style/GlobalVars
     end
 
     after(:each) do
