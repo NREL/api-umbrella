@@ -23,14 +23,14 @@ Admin.Api = Ember.Model.extend(Ember.Validations.Mixin, {
     frontendHost: {
       presence: true,
       format: {
-        with: /^[a-zA-Z0-9-.]+(\.|$)/,
+        with: CommonValidations.host_format,
         message: polyglot.t('errors.messages.invalid_host_format'),
       },
     },
     backendHost: {
       presence: true,
       format: {
-        with: /^[a-zA-Z0-9-.]+(\.|$)/,
+        with: CommonValidations.host_format,
         message: polyglot.t('errors.messages.invalid_host_format'),
       },
     },

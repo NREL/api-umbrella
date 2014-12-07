@@ -1,4 +1,5 @@
 require "api_umbrella/attributify_data"
+require "common_validations"
 
 class Api
   include Mongoid::Document
@@ -34,13 +35,13 @@ class Api
   validates :frontend_host,
     :presence => true,
     :format => {
-      :with => %r{^[a-zA-Z0-9-.]+(\.|$)},
+      :with => CommonValidations::HOST_FORMAT,
       :message => :invalid_host_format,
     }
   validates :backend_host,
     :presence => true,
     :format => {
-      :with => %r{^[a-zA-Z0-9-.]+(\.|$)},
+      :with => CommonValidations::HOST_FORMAT,
       :message => :invalid_host_format,
     }
   validates :balance_algorithm,

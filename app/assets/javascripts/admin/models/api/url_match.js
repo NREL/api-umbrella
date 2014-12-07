@@ -8,14 +8,14 @@ Admin.ApiUrlMatch = Ember.Model.extend(Ember.Validations.Mixin,{
     frontendPrefix: {
       presence: true,
       format: {
-        with: /^\//,
+        with: CommonValidations.url_prefix_format,
         message: polyglot.t('errors.messages.invalid_url_prefix_format'),
       },
     },
     backendPrefix: {
       presence: true,
       format: {
-        with: /^\//,
+        with: CommonValidations.url_prefix_format,
         message: polyglot.t('errors.messages.invalid_url_prefix_format'),
       },
     },

@@ -1,3 +1,5 @@
+require "common_validations"
+
 class Api::UrlMatch
   include Mongoid::Document
 
@@ -13,13 +15,13 @@ class Api::UrlMatch
   validates :frontend_prefix,
     :presence => true,
     :format => {
-      :with => %r{^/},
+      :with => CommonValidations::URL_PREFIX_FORMAT,
       :message => :invalid_url_prefix_format,
     }
   validates :backend_prefix,
     :presence => true,
     :format => {
-      :with => %r{^/},
+      :with => CommonValidations::URL_PREFIX_FORMAT,
       :message => :invalid_url_prefix_format,
     }
 

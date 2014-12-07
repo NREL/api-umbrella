@@ -1,4 +1,5 @@
 //= require_self
+//= require ./common_validations
 //= require_tree ./models
 //= require ./controllers/apis/nested_form_controller
 //= require ./controllers/apis/sortable_controller

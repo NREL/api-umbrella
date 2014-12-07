@@ -1,3 +1,4 @@
+require "common_validations"
 require "resolv"
 
 class Api::Server
@@ -15,7 +16,7 @@ class Api::Server
   validates :host,
     :presence => true,
     :format => {
-      :with => %r{^[a-zA-Z0-9-.]+(\.|$)},
+      :with => CommonValidations::HOST_FORMAT,
       :message => :invalid_host_format,
     }
   validates :port,

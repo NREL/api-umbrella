@@ -33,6 +33,7 @@ begin
       "ace",
       "Admin",
       "bootbox",
+      "CommonValidations",
       "currentAdmin",
       "Ember",
       "google",
