@@ -2,6 +2,7 @@
 //= require_tree ./models
 //= require ./controllers/apis/nested_form_controller
 //= require ./controllers/apis/sortable_controller
+//= require_tree ./components
 //= require_tree ./controllers
 //= require_tree ./views
 //= require_tree ./helpers
@@ -112,6 +113,11 @@ Ember.Handlebars.helper('inflect', function(word, number) {
   return inflection.inflect(word, number);
 });
 
+// i18n helper via polyglot library
+Ember.Handlebars.registerHelper('t', function(property, options) {
+  return polyglot.t(property, options.hash);
+});
+
 Ember.Handlebars.registerHelper('tooltip-field', function(property, options) {
   options = Ember.EasyForm.processOptions(property, options);
   options.hash.viewName = 'tooltip-field-'+options.data.view.elementId;
@@ -156,7 +162,7 @@ Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
 Ember.EasyForm.Config.registerWrapper('default', {
   formClass: '',
   fieldErrorClass: 'error',
-  errorClass: 'help-inline',
+  errorClass: 'help-block',
   hintClass: 'help-block',
   inputClass: 'control-group',
   wrapControls: true,
@@ -233,5 +239,90 @@ _.merge($.fn.DataTable.defaults, {
 
       this.customProcessingCallbackSet = true;
     }
+  },
+});
+
+Ember.EasyForm.Input.reopen({
+  // Observe the "showAllValidationErrors" property and show all the inline
+  // input validations when this gets set to true. This allows us to show all
+  // the invalid fields on the page without actually visiting each input field
+  // (useful on form submits). This is a bit of a workaround since
+  // ember-easyForm doesn't currently support this:
+  // https://github.com/dockyard/ember-easyForm/issues/146
+  // https://github.com/dockyard/ember-easyForm/pull/143
+  showAllValidationErrorsOnModelChange: function() {
+    if(this.get('context.showAllValidationErrors') === true) {
+      this.set('hasFocusedOut', true);
+      this.set('canShowValidationError', true);
+    } else {
+      this.showValidationError();
+    }
+  }.observes('context.showAllValidationErrors'),
+});
+
+Ember.EasyForm.Form.reopen({
+  submit: function(event) {
+    if (event) {
+      event.preventDefault();
+    }
+
+    if(!this.get('context.model.validate')) {
+      this.get('controller').send(this.get('action'));
+    } else {
+      // Reset the error objects used for error-messages display before each
+      // submit, so the messages reflect the new validations.
+      this.set('context.model.clientErrors', {});
+      this.set('context.model.serverErrors', {});
+
+      this.get('context.model').validate().then(_.bind(function() {
+        this.get('controller').send(this.get('action'));
+      }, this)).catch(_.bind(function() {
+        // On validation failure, set the errors for error-messages display and
+        // scroll to the error messages display.
+        this.set('context.model.clientErrors', this.get('context.model.errors'));
+        $.scrollTo("#error_messages", { offset: -50, duration: 200 });
+
+        // Display all the inline errors for at least the top-level model
+        // (note, this doesn't currently propagate to embedded models/forms).
+        this.set('context.model.showAllValidationErrors', true);
+      }, this));
+    }
+  },
+});
+
+// A mixin that provides the default ajax save behavior for our forms.
+Admin.Save = Ember.Mixin.create({
+  save: function(options) {
+    var button = $('#save_button');
+    button.button('loading');
+
+    // Force dirty to force save (ember-model's dirty tracking fails to
+    // account for changes in nested, non-association objects:
+    // http://git.io/sbS1mg This is mainly for ApiSettings's errorTemplates
+    // and errorDataYamlStrings, but we've seen enough funkiness elsewhere,
+    // it seems worth disabling for now).
+    this.set('model.isDirty', true);
+
+    this.get('model').save().then(_.bind(function() {
+      button.button('reset');
+      new PNotify({
+        type: 'success',
+        title: 'Saved',
+        text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
+      });
+
+      this.transitionToRoute(options.transitionToRoute);
+    }, this), _.bind(function(response) {
+      // Set the errors from the server response on a "serverErrors" property
+      // for the error-messages component display.
+      try {
+        this.set('model.serverErrors', response.responseJSON.errors);
+      } catch(e) {
+        this.set('model.serverErrors', response.responseText);
+      }
+
+      button.button('reset');
+      $.scrollTo("#error_messages", { offset: -50, duration: 200 });
+    }, this));
   },
 });

@@ -148,6 +148,12 @@ group :assets do
   # deployments by combining two tasks into one (particularly under JRuby).
   gem "turbo-sprockets-rails3", "0.3.13"
 
+  # Client-side translations
+  gem "rails-assets-polyglot", "~> 0.4.1"
+
+  # Smooth scrolling to content
+  gem "rails-assets-jquery.scrollTo", "~> 1.4.14"
+
   # Icons
   gem "rails-assets-fontawesome", "~> 4.2.0"
 

@@ -1,4 +1,4 @@
-Admin.Api = Ember.Model.extend({
+Admin.Api = Ember.Model.extend(Ember.Validations.Mixin, {
   name: Ember.attr(),
   sortOrder: Ember.attr(Number),
   backendProtocol: Ember.attr(),
@@ -15,6 +15,26 @@ Admin.Api = Ember.Model.extend({
   settings: Ember.belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
   subSettings: Ember.hasMany('Admin.ApiSubSettings', { key: 'sub_settings', embedded: true }),
   rewrites: Ember.hasMany('Admin.ApiRewrite', { key: 'rewrites', embedded: true }),
+
+  validations: {
+    name: {
+      presence: true,
+    },
+    frontendHost: {
+      presence: true,
+      format: {
+        with: /^[a-zA-Z0-9-.]+(\.|$)/,
+        message: polyglot.t('errors.messages.invalid_host_format'),
+      },
+    },
+    backendHost: {
+      presence: true,
+      format: {
+        with: /^[a-zA-Z0-9-.]+(\.|$)/,
+        message: polyglot.t('errors.messages.invalid_host_format'),
+      },
+    },
+  },
 
   init: function() {
     this._super();

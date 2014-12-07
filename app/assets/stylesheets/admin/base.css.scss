@@ -281,6 +281,21 @@ fieldset .table {
   margin-bottom: 4px;
 }
 
+.control-group.error .help-block {
+  margin-top: -8px;
+  font-style: italic;
+}
+
+.error-messages {
+  h4 {
+    margin-bottom: 4px;
+  }
+
+  ul {
+    margin-bottom: 0px;
+  }
+}
+
 .arrow {
   margin-top: 24px;
   text-align: center;

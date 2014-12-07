@@ -8,3 +8,63 @@ en:
     google_oauth2: Google
     myusa: MyUSA
     persona: Persona
+  errors:
+    messages:
+      invalid_host_format: must be in the format of "example.com"
+      invalid_url_prefix_format: must start with "/"
+  mongoid:
+    attributes:
+      api:
+        backend_host: Backend Host
+        backend_protocol: Backend Protocol
+        frontend_host: Frontend Host
+        name: Name
+      api/server:
+        host: Backend server host
+        port: Port
+      api/settings:
+        append_query_string: Append Query String Parameters
+        http_basic_auth: Set Headers
+        require_https: HTTPS Requirements
+        disable_api_key: API Key Checks
+        allowed_ips: Restrict Access to IPs
+        allowed_referers: Restrict Access to HTTP Referers
+        rate_limit_mode: Rate Limit
+        anonymous_rate_limit_behavior:
+        authenticated_rate_limit_behavior:
+        pass_api_key_header:
+        pass_api_key_query_param:
+        error_templates: Error Templates
+        error_data: Error Data
+      api/url_match:
+        backend_prefix: Backend Prefix
+        frontend_prefix: Frontend Prefix
+  admin:
+    errors:
+      host_format: Must be in the format of "example.com"
+    edit: Edit
+    remove: Remove
+    reorder: Reorder
+    api:
+      servers:
+        legend: Backend
+        server: Server
+        note: Define the server where the API is hosted. Multiple servers can be defined to perform load balancing.
+        empty_list: No backend servers have been added yet. Click "%{add}" below to get started.
+        add: Add Server
+      host:
+        legend: Host
+        note: Define the host that we will listen for, and then the host the API backend is listening for.
+      url_matches:
+        legend: Matching URL Prefixes
+        note: What URL prefixes should be routed to this backend?
+        empty_list: No URL prefix matches have been added yet. Click "%{add}" below to get started.
+        add: Add URL Prefix
+      rewrites:
+        legend: Advanced Requests Rewriting
+        note: Modify the incoming request's URL or headers before passing it to the backend.
+        empty_list: No request rewrites have been added yet. Click "%{add}" below to get started.
+        add: Add Rewrite
+      sub_settings:
+        legend: Sub-URL Request Settings
+        note: Change settings for specific sub-URLs within this API.

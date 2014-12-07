@@ -31,8 +31,25 @@ Admin.NestedFormController = Ember.ObjectController.extend(Ember.Evented, {
 
   actions: {
     ok: function() {
-      this.send('closeModal');
-      this.trigger('closeOk');
+      var model = this.get('model');
+
+      // Validate the nested model (if supported) before allowing the modal to
+      // close.
+      if(model.validate) {
+        model.validate().then(_.bind(function() {
+          this.send('closeModal');
+
+          // Fire a "closeOk" event other things can listen for to determine
+          // when the form content inside the modal may have successfully
+          // changed.
+          this.trigger('closeOk');
+        }, this)).catch(function() {
+          model.set('showAllValidationErrors', true);
+        });
+      } else {
+        this.send('closeModal');
+        this.trigger('closeOk');
+      }
     },
 
     cancel: function() {

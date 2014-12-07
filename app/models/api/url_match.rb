@@ -9,6 +9,20 @@ class Api::UrlMatch
   # Relations
   embedded_in :api
 
+  # Validations
+  validates :frontend_prefix,
+    :presence => true,
+    :format => {
+      :with => %r{^/},
+      :message => :invalid_url_prefix_format,
+    }
+  validates :backend_prefix,
+    :presence => true,
+    :format => {
+      :with => %r{^/},
+      :message => :invalid_url_prefix_format,
+    }
+
   # Mass assignment security
   attr_accessible :frontend_prefix,
     :backend_prefix,

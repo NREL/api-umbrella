@@ -15,8 +15,10 @@
 //= require ic-ajax/dist/globals/main.js
 //= require vendor/ember-model/ember-model.js
 //= require vendor/ember-easyForm
+//= require vendor/ember-validations
 //= require pnotify
 //= require bootbox
+//= require jquery.scrollTo
 //= require vendor/jquery-ui-1.10.3.custom
 //= require jquery-bbq-deparam
 //= require selectize/standalone/selectize

@@ -32,9 +32,17 @@ class Api
   validates :backend_protocol,
     :inclusion => { :in => %w(http https) }
   validates :frontend_host,
-    :presence => true
+    :presence => true,
+    :format => {
+      :with => %r{^[a-zA-Z0-9-.]+(\.|$)},
+      :message => :invalid_host_format,
+    }
   validates :backend_host,
-    :presence => true
+    :presence => true,
+    :format => {
+      :with => %r{^[a-zA-Z0-9-.]+(\.|$)},
+      :message => :invalid_host_format,
+    }
   validates :balance_algorithm,
     :inclusion => { :in => %w(round_robin least_conn ip_hash) }
   validates_each :servers, :url_matches do |record, attr, value|

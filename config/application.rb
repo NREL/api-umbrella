@@ -42,6 +42,8 @@ module ApiUmbrella
           "persona",
         ]
       end
+
+      require "js_locale_helper"
     end
 
     # Settings in config/environments/* take precedence over those specified here.
@@ -92,6 +94,11 @@ module ApiUmbrella
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+
+    # Include the config/locales directory on the asset path so that the locale
+    # YAML files can be setup as "depend_on" dependencies inside assets (for
+    # use with JsLocaleHelper).
+    config.assets.paths += %W(#{config.root}/config/locales)
 
     # Choose the compressors to use
     config.assets.js_compressor  = :uglifier

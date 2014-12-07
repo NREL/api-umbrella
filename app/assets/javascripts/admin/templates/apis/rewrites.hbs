@@ -18,24 +18,24 @@
           <td>{{frontendMatcher}}</td>
           <td>{{backendReplacement}}</td>
           <td class="table-row-actions">
-            <a href="#" {{action 'editRewrite' this}}><i class="fa fa-pencil"></i>Edit</a>
-            <a href="#" class="remove-action" {{action 'deleteRewrite' this}}><i class="fa fa-times"></i>Remove</a>
+            <a href="#" {{action 'editRewrite' this}}><i class="fa fa-pencil"></i>{{t 'admin.edit'}}</a>
+            <a href="#" class="remove-action" {{action 'deleteRewrite' this}}><i class="fa fa-times"></i>{{t 'admin.remove'}}</a>
           </td>
           <td class="reorder-handle"><i class="fa fa-reorder"></i></td>
         </tr>
       {{/each}}
     {{else}}
-      <tr class="empty"><td colspan="6">No request rewrites have been added yet. Click "Add Rewrite" below to get started.</td></tr>
+      <tr class="empty"><td colspan="6">{{t 'admin.api.rewrites.empty_list' add=(t 'admin.api.rewrites.add')}}</td></tr>
     {{/if}}
   </tbody>
 </table>
 <div class="row-fluid">
   <div class="span6">
-    <button type="button" class="btn btn-mini" {{action 'addRewrite'}}><i class="fa fa-plus-circle"></i> Add Rewrite</button>
+    <button type="button" class="btn btn-mini" {{action 'addRewrite'}}><i class="fa fa-plus-circle"></i> {{t 'admin.api.rewrites.add'}}</button>
   </div>
   <div class="span6 text-right">
     {{#if reorderable}}
-      <button type="button" id="rewrites_reorder" class="btn btn-mini" {{action 'reorderRewrites'}}><i class="fa fa-reorder"></i> <span class="reorder-button-text">Reorder</span></button>
+      <button type="button" id="rewrites_reorder" class="btn btn-mini" {{action 'reorderRewrites'}}><i class="fa fa-reorder"></i> <span class="reorder-button-text">{{t 'admin.reorder'}}</span></button>
     {{/if}}
   </div>
 </div>

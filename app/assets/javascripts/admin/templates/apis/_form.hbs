@@ -1,10 +1,15 @@
+{{error-messages model=model}}
+
 {{#form-for model}}
-  {{input name inputConfig='class:span6'}}
+  {{input name
+    label=(t 'mongoid.attributes.api.name')
+    inputConfig='class:span6'}}
 
   <fieldset>
-    <legend>Backend</legend>
-    <p class="fieldset-note">Define the server where the API is hosted. Multiple servers can be defined to perform load balancing.</p>
+    <legend>{{t 'admin.api.servers.legend'}}</legend>
+    <p class="fieldset-note">{{t 'admin.api.servers.note'}}</p>
     {{input backendProtocol as='select'
+      label=(t 'mongoid.attributes.api.backend_protocol')
       value='backendProtocol'
       collection='backendProtocolOptions'
       optionValuePath='content.id'
@@ -13,7 +18,7 @@
     <table class="table table-striped table-condensed">
       <thead>
         <tr>
-          <th>Server</th>
+          <th>{{t 'admin.api.servers.server'}}</th>
           <th></th>
         </tr>
       </thead>
@@ -23,22 +28,22 @@
             <tr>
               <td>{{../backendProtocol}}://{{hostWithPort}}</td>
               <td class="table-row-actions">
-                <a href="#" {{action 'editServer' this}}><i class="fa fa-pencil"></i>Edit</a>
-                <a href="#" class="remove-action" {{action 'deleteServer' this}}><i class="fa fa-times"></i>Remove</a>
+                <a href="#" {{action 'editServer' this}}><i class="fa fa-pencil"></i>{{t 'admin.edit'}}</a>
+                <a href="#" class="remove-action" {{action 'deleteServer' this}}><i class="fa fa-times"></i>{{t 'admin.remove'}}</a>
               </td>
             </tr>
           {{/each}}
         {{else}}
-          <tr class="empty"><td colspan="2">No backend servers have been added yet. Click "Add Server" below to get started.</td></tr>
+          <tr class="empty"><td colspan="2">{{t 'admin.api.servers.empty_list' add=(t 'admin.api.servers.add')}}</td></tr>
         {{/if}}
       </tbody>
     </table>
-    <button type="button" class="btn btn-mini" {{action 'addServer'}}><i class="fa fa-plus-circle"></i> Add Server</button>
+    <button type="button" class="btn btn-mini" {{action 'addServer'}}><i class="fa fa-plus-circle"></i> {{t 'admin.api.servers.add'}}</button>
   </fieldset>
 
   <fieldset>
-    <legend>Host</legend>
-    <p class="fieldset-note">Define the host that we will listen for, and then the host the API backend is listening for.</p>
+    <legend>{{t 'admin.api.host.legend'}}</legend>
+    <p class="fieldset-note">{{t 'admin.api.host.note'}}</p>
     <div class="row-fluid">
       <div class="span5">
         {{input frontendHost
@@ -59,8 +64,8 @@
   </fieldset>
 
   <fieldset>
-    <legend>Matching URL Prefixes</legend>
-    <p class="fieldset-note">What URL prefixes on api.data.gov should be routed to this backend?</p>
+    <legend>{{t 'admin.api.url_matches.legend'}}</legend>
+    <p class="fieldset-note">{{t 'admin.api.url_matches.note'}}</p>
     {{render 'apis/url_matches' urlMatches}}
   </fieldset>
 
@@ -90,17 +95,17 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="fa fa-caret-down"></i> Sub-URL Request Settings</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="fa fa-caret-down"></i> {{t 'admin.api.sub_settings.legend'}}</a></legend>
     <div id="sub_settings" class="collapse">
-      <p class="fieldset-note">Change settings for specific sub-URLs within this API.</p>
+      <p class="fieldset-note">{{t 'admin.api.sub_settings.note'}}</p>
       {{render 'apis/sub_settings' subSettings}}
     </div>
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites"><i class="fa fa-caret-down"></i> Advanced Requests Rewriting</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites"><i class="fa fa-caret-down"></i> {{t 'admin.api.rewrites.legend'}}</a></legend>
     <div id="rewrites" class="collapse">
-      <p class="fieldset-note">Modify the incoming request's URL or headers before passing it to the backend.</p>
+      <p class="fieldset-note">{{t 'admin.api.rewrites.note'}}</p>
       {{render 'apis/rewrites' rewrites}}
     </div>
   </fieldset>

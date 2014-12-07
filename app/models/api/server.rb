@@ -13,8 +13,13 @@ class Api::Server
 
   # Validations
   validates :host,
-    :presence => true
+    :presence => true,
+    :format => {
+      :with => %r{^[a-zA-Z0-9-.]+(\.|$)},
+      :message => :invalid_host_format,
+    }
   validates :port,
+    :presence => true,
     :inclusion => { :in => 0..65_535 }
   validate :validate_host_resolves, :on => :create
 

@@ -1,8 +1,25 @@
-Admin.ApiUrlMatch = Ember.Model.extend({
+Admin.ApiUrlMatch = Ember.Model.extend(Ember.Validations.Mixin,{
   id: Ember.attr(),
   sortOrder: Ember.attr(Number),
   frontendPrefix: Ember.attr(),
   backendPrefix: Ember.attr(),
+
+  validations: {
+    frontendPrefix: {
+      presence: true,
+      format: {
+        with: /^\//,
+        message: polyglot.t('errors.messages.invalid_url_prefix_format'),
+      },
+    },
+    backendPrefix: {
+      presence: true,
+      format: {
+        with: /^\//,
+        message: polyglot.t('errors.messages.invalid_url_prefix_format'),
+      },
+    },
+  },
 
   backendPrefixWithDefault: function() {
     return this.get('backendPrefix') || this.get('frontendPrefix');
