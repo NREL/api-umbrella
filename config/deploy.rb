@@ -34,6 +34,9 @@ fetch(:default_env).merge!({
   "PATH" => "/opt/api-umbrella/bin:/opt/api-umbrella/embedded/bin:$PATH",
 })
 
+# Default value for keep_releases is 5
+set :keep_releases, 15
+
 set :ssh_options, {
   :forward_agent => true,
 }
@@ -42,7 +45,7 @@ namespace :deploy do
   desc "Restart application"
   task :restart do
     on roles(:app), :in => :sequence, :wait => 5 do
-      execute "api-umbrella" "reload" "--router"
+      execute :sudo, "api-umbrella reload --router"
     end
   end
 

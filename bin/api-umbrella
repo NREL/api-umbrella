@@ -161,6 +161,7 @@ var tasks = {
           return process.exit(1);
         } else {
           console.info(' [  ' + clc.green('OK') + '  ]');
+          return process.exit(0);
         }
       });
     });
