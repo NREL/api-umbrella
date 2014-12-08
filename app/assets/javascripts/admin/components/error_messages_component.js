@@ -10,11 +10,18 @@ Admin.ErrorMessagesComponent = Ember.Component.extend({
         messages.push(serverErrors);
       } else if(_.isArray(serverErrors)) {
         _.each(serverErrors, function(serverError) {
-          if(!errors[serverError.field]) {
-            errors[serverError.field] = [];
+          var field = 'base';
+          var message = serverError;
+          if(_.isObject(serverError)) {
+            field = serverError.field;
+            message = serverError.message;
           }
 
-          errors[serverError.field].push(serverError.message);
+          if(!errors[field]) {
+            errors[field] = [];
+          }
+
+          errors[field].push(message);
         });
       } else {
         errors = _.merge(errors, serverErrors);
