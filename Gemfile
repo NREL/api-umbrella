@@ -7,12 +7,14 @@ gem "rails", "~> 3.2.21"
 gem "puma", "~> 2.10.2"
 
 # Error notification service (optional)
-gem "rollbar", "~> 1.2.9", :require => false
+gem "rollbar", "~> 1.2.13", :require => false
 
 # Environment specific configuration
 gem "dotenv-rails", "~> 1.0.2"
 
 # Abort requests that take too long
+# Don't upgrade to 0.1 yet, since it causes issues with Capybara test:
+# https://github.com/heroku/rack-timeout/issues/55
 gem "rack-timeout", "~> 0.0.4"
 
 # For proxying HTTP requests to password-protected places for admins.
@@ -20,13 +22,15 @@ gem "rack-proxy", "~> 0.5.16"
 
 # JSON handling
 gem "multi_json", "~> 1.10.1"
-gem "oj", "~> 2.10.3", :platforms => [:ruby]
+gem "oj", "~> 2.11.1", :platforms => [:ruby]
 gem "oj_mimic_json", "~> 1.0.1", :platforms => [:ruby]
 
 # MongoDB
 gem "mongoid", "~> 3.1.6"
 
 # Created/updated userstamping
+# Hold on the 0.3 release until we tackle the migration necessary for 0.4:
+# https://github.com/tbpro/mongoid_userstamp/blob/master/CHANGELOG.md#040---2014-02-24
 gem "mongoid_userstamp", "~> 0.3.2"
 
 # Versioning for mongoid
@@ -68,7 +72,7 @@ gem "pundit", "~> 0.3.0"
 
 # Pagination
 gem "kaminari", "~> 0.16.1"
-gem "kaminari-bootstrap", "~> 0.1.3"
+gem "kaminari-bootstrap", "~> 0.1.3" # Hold at bootstrap 2 version
 
 # Navigation links
 gem "tabs_on_rails", "~> 2.2.0"
@@ -77,9 +81,17 @@ gem "tabs_on_rails", "~> 2.2.0"
 gem "jquery-rails", "~> 3.1.0"
 
 # Views/templates for APIs
-gem "rabl", "~> 0.11.0"
+gem "rabl", "~> 0.11.5"
 gem "jbuilder", "~> 2.2.2"
 gem "csv_builder", "~> 2.1.1"
+
+# We're not using this ourselves, but if it gets updated to 0.9.1 it seems to
+# break various things in our responses. I think the 0.9.1 release might be
+# slightly busted based on these reports:
+# https://github.com/rails-api/active_model_serializers/issues/747
+# https://github.com/rails-api/active_model_serializers/issues/746
+# Lock to 0.9.0 for now.
+gem "active_model_serializers", "0.9.0"
 
 # Country and state name lookups
 gem "countries", "~> 0.9.3"
@@ -94,7 +106,7 @@ gem "diffy", "~> 3.0.3"
 # Use a newer version of Psych for YAML. The newer gem version does a better
 # job of making multi-line strings and strings with colons in them more human
 # readable.
-gem "psych", "~> 2.0.5", :platforms => [:ruby]
+gem "psych", "~> 2.0.8", :platforms => [:ruby]
 
 # For user-inputted YAML.
 gem "safe_yaml", "~> 1.0.4", :require => "safe_yaml/load"
@@ -196,7 +208,7 @@ group :development, :test do
   gem "fuubar", "~> 1.3.3"
 
   # Ruby lint/style checker
-  gem "rubocop", "~> 0.26.1", :require => false
+  gem "rubocop", "~> 0.27.1", :require => false
 
   # Code coverage testing
   gem "coveralls", "~> 0.7.0", :require => false

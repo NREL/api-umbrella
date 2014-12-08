@@ -15,6 +15,9 @@ Lint/UnusedBlockArgument:
 Lint/UnusedMethodArgument:
   Enabled: false
 
+Metrics/AbcSize:
+  Enabled: false
+
 Metrics/BlockNesting:
   Enabled: false
 
@@ -104,6 +107,9 @@ Style/SpaceAfterControlKeyword:
   Enabled: false
 
 Style/StringLiterals:
+  Enabled: false
+
+Style/StringLiteralsInInterpolation:
   Enabled: false
 
 Style/SymbolProc:
