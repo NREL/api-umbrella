@@ -3,6 +3,8 @@ class ApiUserRolePolicy < ApplicationPolicy
     allowed = false
     if(user.superuser?)
       allowed = true
+    elsif(record == "api-umbrella-key-creator")
+      allowed = true
     elsif(record.start_with?("api-umbrella"))
       allowed = false
     else

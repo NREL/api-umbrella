@@ -163,7 +163,24 @@ describe Api::V1::UsersController do
       end.to_not change { ApiUser.count }
     end
 
-    it "forbids limited admins from assigning a new role beginning with 'api-umbrella'" do
+    it "allows limited admins to assign the 'api-umbrella-key-creator' role" do
+      admin_token_auth(@google_admin)
+      attributes = FactoryGirl.attributes_for(:api_user, {
+        :roles => [
+          "api-umbrella-key-creator",
+        ],
+      })
+
+      expect do
+        send(method, action, params.merge(:user => attributes))
+        response.status.should eql(success_response_status)
+        data = MultiJson.load(response.body)
+        user = ApiUser.find(data["user"]["id"])
+        user.roles.should eql(attributes[:roles])
+      end.to change { ApiUser.count }.by(success_record_change_count)
+    end
+
+    it "forbids limited admins from assigning other new roles beginning with 'api-umbrella'" do
       admin_token_auth(@google_admin)
       attributes = FactoryGirl.attributes_for(:api_user, {
         :roles => [
@@ -179,7 +196,7 @@ describe Api::V1::UsersController do
       end.to_not change { ApiUser.count }
     end
 
-    it "allows superuser admins to assign a new role beginning with 'api-umbrella'" do
+    it "allows superuser admins to assign other new roles beginning with 'api-umbrella'" do
       admin_token_auth(@admin)
       attributes = FactoryGirl.attributes_for(:api_user, {
         :roles => [
