@@ -15,6 +15,7 @@
 
 # Ignore Capistrano files
 /REVISION
+/.capistrano
 /config/deployed.yml
 
 # Ignore log directory

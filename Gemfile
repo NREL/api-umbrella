@@ -10,7 +10,7 @@ gem "puma", "~> 2.9.0"
 gem "rollbar", "~> 1.2.9", :require => false
 
 # Environment specific configuration
-gem "dotenv-rails", "~> 1.0.1"
+gem "dotenv-rails", "~> 1.0.2"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.0.4"
@@ -220,8 +220,8 @@ end
 
 group :development do
   # Deployment
-  gem "capistrano", "~> 3.2.1"
-  gem "capistrano-rails", "~> 1.1.1"
+  gem "capistrano", "~> 3.3.3"
+  gem "capistrano-rails", "~> 1.1.2"
 
   gem "awesome_print", "~> 1.2.0"
 end
