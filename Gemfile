@@ -4,7 +4,7 @@ source "https://rails-assets.org"
 gem "rails", "~> 3.2.21"
 
 # Rails app server
-gem "puma", "~> 2.9.0"
+gem "puma", "~> 2.10.2"
 
 # Error notification service (optional)
 gem "rollbar", "~> 1.2.9", :require => false
