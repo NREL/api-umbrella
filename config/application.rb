@@ -126,6 +126,7 @@ module ApiUmbrella
     config.assets.precompile += %w(
       admin.css
       admin.js
+      admin/locales/en.js
       admin/stats.js
       ie_lt_9.js
     )
