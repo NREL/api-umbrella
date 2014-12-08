@@ -153,7 +153,7 @@ startsecs=10
 [program:web-puma]
 environment=API_UMBRELLA_CONFIG="{{api_umbrella_config_runtime_file}}"
 directory={{web.dir}}
-command=bundle exec puma -q --dir {{web.dir}} -e {{app_env}} -w {{web.puma.workers}} -t {{web.puma.min_threads}}:{{web.puma.max_threads}} -b unix://{{run_dir}}/web-puma.sock
+command=bundle exec puma -q --dir {{web.dir}} --prune-bundler -e {{app_env}} -w {{web.puma.workers}} -t {{web.puma.min_threads}}:{{web.puma.max_threads}} -b unix://{{run_dir}}/web-puma.sock
 {{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
