@@ -293,6 +293,21 @@ fieldset .table {
 
   ul {
     margin-bottom: 0px;
+
+    ul {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+  }
+
+  li {
+    p {
+      margin: 10px 0px 0px 0px;
+    }
+
+    p:first-child {
+      margin: 0px;
+    }
   }
 }
 

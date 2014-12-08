@@ -238,6 +238,23 @@ describe Api::V1::ApisController do
           data.keys.should eql(["errors"])
         end.to_not change { Api.count }
       end
+
+      it "returns a list of scopes the admin does have access to in the error response" do
+        admin_token_auth(@bing_multi_scope_admin)
+        attributes = FactoryGirl.attributes_for(:google_api)
+
+        expect do
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(403)
+          data = MultiJson.load(response.body)
+          data["errors"].should eql([
+            {
+              "code" => "FORBIDDEN",
+              "message" => "You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n- localhost/bing/images\n- localhost/bing/maps\n- localhost/bing/search\n\nContact your API Umbrella administrator if you need access to new APIs.",
+            }
+          ])
+        end.to_not change { Api.count }
+      end
     end
 
     describe "admin role permissions" do

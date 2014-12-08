@@ -178,6 +178,9 @@ group :assets do
   # jQuery ajax calls wrapped in Ember promises
   gem "rails-assets-ic-ajax", "~> 2.0.1"
 
+  # For Markdown parsing
+  gem "rails-assets-marked", "~> 0.3.2"
+
   gem "rails-assets-bootbox", "~> 3.3.0"
   gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.12"
   gem "rails-assets-datatables", "~> 1.10.2"

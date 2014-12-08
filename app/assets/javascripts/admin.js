@@ -16,6 +16,7 @@
 //= require vendor/ember-model/ember-model.js
 //= require vendor/ember-easyForm
 //= require vendor/ember-validations
+//= require marked
 //= require pnotify
 //= require bootbox
 //= require jquery.scrollTo

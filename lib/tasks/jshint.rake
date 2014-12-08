@@ -42,6 +42,7 @@ begin
       "JsDiff",
       "jstz",
       "jQuery",
+      "marked",
       "moment",
       "numeral",
       "PNotify",

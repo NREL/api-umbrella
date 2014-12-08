@@ -13,7 +13,10 @@ Admin.ErrorMessagesComponent = Ember.Component.extend({
           var field = 'base';
           var message = serverError;
           if(_.isObject(serverError)) {
-            field = serverError.field;
+            if(serverError.field) {
+              field = serverError.field;
+            }
+
             message = serverError.message;
           }
 
@@ -36,7 +39,7 @@ Admin.ErrorMessagesComponent = Ember.Component.extend({
         }
         message += attrError;
 
-        messages.push(message);
+        messages.push(marked(message));
       });
     });
 

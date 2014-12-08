@@ -35,8 +35,25 @@ class Api::V1::BaseController < ApplicationController
     end
   end
 
-  def user_not_authorized
-    render(:json => { :errors => ["You are not authorized to perform this action"] }, :status => :forbidden)
+  def user_not_authorized(exception)
+    authorized_scopes_list = []
+    if(current_admin)
+      scopes = current_admin.api_scopes
+      if(scopes.present?)
+        scopes.each do |scope|
+          authorized_scopes_list << "- #{scope.host}#{scope.path_prefix}"
+        end
+      end
+    end
+
+    message = I18n.t("errors.messages.admin_not_authorized", :authorized_scopes_list => authorized_scopes_list.sort.join("\n"))
+
+    render(:json => {
+      :errors => [{
+        :code => "FORBIDDEN",
+        :message => message,
+      }],
+    }, :status => :forbidden)
   end
 
   def errors_response(record)
