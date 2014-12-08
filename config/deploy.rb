@@ -1,5 +1,8 @@
-# config valid only for Capistrano 3.1
-lock "3.2.1"
+require "dotenv"
+Dotenv.load
+
+# config valid only for current version of Capistrano
+lock "3.3.3"
 
 set :application, "router"
 set :repo_url, "https://github.com/NREL/api-umbrella-router.git"
