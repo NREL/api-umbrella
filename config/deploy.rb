@@ -32,6 +32,12 @@ set :linked_dirs, %w(bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public
 # Default value for default_env is {}
 fetch(:default_env).merge!({
   "PATH" => "/opt/api-umbrella/bin:/opt/api-umbrella/embedded/bin:$PATH",
+
+  # The real secret tokens are read from the api-umbrella config file when the
+  # web app is started. But for rake task purposes (like asset precompilation
+  # where these don't matter), just set some dummy values during deploy.
+  "RAILS_SECRET_TOKEN" => "TEMP",
+  "DEVISE_SECRET_KEY" => "TEMP",
 })
 
 # Default value for keep_releases is 5
