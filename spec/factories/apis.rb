@@ -9,7 +9,7 @@ FactoryGirl.define do
     balance_algorithm "least_conn"
 
     servers do
-      [FactoryGirl.attributes_for(:api_server, :host => "example.com", :port => 80)]
+      [FactoryGirl.attributes_for(:api_server, :host => "example.com")]
     end
 
     url_matches do
@@ -27,7 +27,7 @@ FactoryGirl.define do
       backend_host "google.com"
 
       servers do
-        [FactoryGirl.attributes_for(:api_server, :host => "google.com", :port => 80)]
+        [FactoryGirl.attributes_for(:api_server, :host => "google.com")]
       end
 
       url_matches do
@@ -69,7 +69,7 @@ FactoryGirl.define do
       backend_host "yahoo.com"
 
       servers do
-        [FactoryGirl.attributes_for(:api_server, :host => "yahoo.com", :port => 80)]
+        [FactoryGirl.attributes_for(:api_server, :host => "yahoo.com")]
       end
 
       url_matches do
@@ -94,7 +94,7 @@ FactoryGirl.define do
       backend_host "bing.com"
 
       servers do
-        [FactoryGirl.attributes_for(:api_server, :host => "bing.com", :port => 80)]
+        [FactoryGirl.attributes_for(:api_server, :host => "bing.com")]
       end
 
       url_matches do
