@@ -9,12 +9,12 @@ class LogSearchPolicy < ApplicationPolicy
               :must => [
                 {
                   :term => {
-                    :request_host => api_scope.host,
+                    :request_host => api_scope.host.downcase,
                   },
                 },
                 {
                   :prefix => {
-                    :request_path => api_scope.path_prefix,
+                    :request_path => api_scope.path_prefix.downcase,
                   },
                 }
               ],
