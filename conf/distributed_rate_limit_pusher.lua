@@ -3,12 +3,13 @@ local _M = {}
 local rocks = require "luarocks.loader"
 local cmsgpack = require "cmsgpack"
 local cjson = require "cjson"
+local mongol = require "resty-mongol"
 local mp = require "MessagePack"
 local std_table = require "std.table"
 local utils = require "utils"
 local inspect = require "inspect"
 local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
-local bson = require "resty.mongol.bson"
+local bson = require "resty-mongol.bson"
 
 local delay = 0.05  -- in seconds
 local new_timer = ngx.timer.at
@@ -50,9 +51,7 @@ check = function(premature)
   if not premature then
     local data = distributed_rate_limit_queue.fetch()
     if not std_table.empty(data) then
-      local mongol = require "resty.mongol"
-
-      local conn = mongol:new()
+      local conn = mongol()
       conn:set_timeout(1000)
 
       local ok, err = conn:connect("127.0.0.1", 14001)

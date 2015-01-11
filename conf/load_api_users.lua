@@ -3,6 +3,7 @@ local _M = {}
 local rocks = require "luarocks.loader"
 local cmsgpack = require "cmsgpack"
 local cjson = require "cjson"
+local mongol = require "resty-mongol"
 local mp = require "MessagePack"
 local std_table = require "std.table"
 local utils = require "utils"
@@ -30,9 +31,7 @@ check = function(premature)
     local elapsed, err = lock:lock("load_api_users")
 
     if not err then
-      local mongol = require "resty.mongol"
-
-      local conn = mongol:new()
+      local conn = mongol()
       conn:set_timeout(1000)
 
       local ok, err = conn:connect("127.0.0.1", 14001)

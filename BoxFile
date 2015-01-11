@@ -1,0 +1,9 @@
+https://raw.githubusercontent.com/GUI/resty-mongol/fix-tests-rock/resty-mongol-0.8-4.rockspec
+inspect
+lua-cmsgpack
+luarocks
+lustache
+lyaml
+moses
+penlight
+stdlib

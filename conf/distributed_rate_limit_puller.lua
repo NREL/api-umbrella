@@ -3,13 +3,14 @@ local _M = {}
 local rocks = require "luarocks.loader"
 local cmsgpack = require "cmsgpack"
 local cjson = require "cjson"
+local mongol = require "resty-mongol"
 local moses = require "moses"
 local mp = require "MessagePack"
 local std_table = require "std.table"
 local utils = require "utils"
 local inspect = require "inspect"
 local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
-local bson = require "resty.mongol.bson"
+local bson = require "resty-mongol.bson"
 local lock = require "resty.lock"
 local lock = lock:new("my_locks", {
   ["timeout"] = 0,
@@ -28,9 +29,7 @@ check = function(premature)
     local elapsed, err = lock:lock("distributed_rate_limit_puller")
 
     if not err then
-      local mongol = require "resty.mongol"
-
-      local conn = mongol:new()
+      local conn = mongol()
       conn:set_timeout(1000)
 
       local ok, err = conn:connect("127.0.0.1", 14001)

@@ -1,3 +1,4 @@
+/.moonbox
 /log/*
 /node_modules
 /config/nginx.conf
