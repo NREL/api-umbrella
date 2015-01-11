@@ -3,6 +3,8 @@ local _M = {}
 local lrucache = require "resty.lrucache.pureffi"
 local utils = require "utils"
 
+local get_packed = utils.get_packed
+
 local cache = lrucache.new(500)
 
 function _M.get(api_key)
@@ -11,7 +13,7 @@ function _M.get(api_key)
     return user
   end
 
-  user = utils.get_packed(ngx.shared.api_users, api_key)
+  user = get_packed(ngx.shared.api_users, api_key)
   cache:set(api_key, user)
   return user
 end

@@ -1,10 +1,15 @@
-local moses = require "moses"
 local inspect = require "inspect"
-local utils = require "utils"
-local std_string = require "std.string"
+local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
+local types = require "pl.types"
+local utils = require "utils"
 
-local pass_api_key = function(user, settings)
+local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
+local is_empty = types.is_empty
+local split = plutils.split
+local strip = stringx.strip
+
+local function pass_api_key(user, settings)
   -- DEPRECATED: We don't want to pass api keys to backends for security
   -- reasons. Instead, we want to only pass the X-Api-User-Id for identifying
   -- the user. But for legacy purposes, we still support passing api keys to
@@ -23,8 +28,8 @@ local pass_api_key = function(user, settings)
   -- caching, but again, for legacy purposes, we support passing it this way
   -- for specific backends.
   local pass_api_key_query_param = settings["pass_api_key_query_param"]
-  local arg_api_key = ngx.var.arg_api_key
-  if pass_api_key_query_param and user then
+  local arg_api_key = ngx.ctx.arg_api_key
+  if pass_api_key_query_param and arg_api_key and user then
     if arg_api_key ~= user["api_key"] then
       local args = ngx.req.get_uri_args() or {}
       args["api_key"] = user["api_key"]
@@ -41,12 +46,12 @@ local pass_api_key = function(user, settings)
   -- Never pass along basic auth if it's how the api key was passed in
   -- (otherwise, we don't want to touch the basic auth and pass along
   -- whatever it contains)..
-  if user and ngx.var.remote_user == user["api_key"] then
+  if user and ngx.ctx.remote_user == user["api_key"] then
     ngx.req.clear_header("Authorization")
   end
 end
 
-local set_user_id_header = function(user)
+local function set_user_id_header(user)
   if user then
     ngx.req.set_header("X-Api-User-Id", user["id"])
   else
@@ -54,24 +59,23 @@ local set_user_id_header = function(user)
   end
 end
 
-local set_roles_header = function(user)
+local function set_roles_header(user)
   if user and user["roles"] then
-    ngx.req.set_header("X-Api-Roles", moses.concat(user["roles"], ","))
+    ngx.req.set_header("X-Api-Roles", table.concat(user["roles"], ","))
   else
     ngx.req.clear_header("X-Api-Roles")
   end
 end
 
-local append_query_string = function(settings)
-  if settings["append_query_string"] then
+local function append_query_string(settings)
+  if settings["_append_query_args"] then
     local args = ngx.req.get_uri_args() or {}
-    local append_args = ngx.decode_args(settings["append_query_string"])
-    utils.deep_merge_overwrite_arrays(args, append_args)
+    deep_merge_overwrite_arrays(args, settings["_append_query_args"])
     ngx.req.set_uri_args(args)
   end
 end
 
-local set_headers = function(settings)
+local function set_headers(settings)
   if settings["headers"] then
     for _, header in ipairs(settings["headers"]) do
       ngx.req.set_header(header["key"], header["value"])
@@ -79,45 +83,46 @@ local set_headers = function(settings)
   end
 end
 
-local set_http_basic_auth = function(settings)
-  if settings["http_basic_auth"] then
-    local auth = "Basic " .. ngx.encode_base64(settings["http_basic_auth"])
-    ngx.req.set_header("Authorization", auth)
+local function set_http_basic_auth(settings)
+  if settings["_http_basic_auth_header"] then
+    ngx.req.set_header("Authorization", settings["_http_basic_auth_header"])
   end
 end
 
-local strip_cookies = function(settings)
+local function strip_cookies(settings)
   local cookie_header = ngx.var.http_cookie
+  if not cookie_header then return end
+
   local strips = config["strip_cookies"]
-  if cookie_header and strips then
-    local cookies = std_string.split(cookie_header, "; *")
-    local kept_cookies = {}
+  if not strips then return end
 
-    for _, cookie in ipairs(cookies) do
-      local cookie_name = string.match(cookie, "(.-)=")
-      local remove_cookie = false
+  local cookies = split(cookie_header, "; *")
+  local kept_cookies = {}
 
-      if cookie_name then
-        cookie_name = stringx.strip(cookie_name)
-        for _, strip_regex in ipairs(strips) do
-          local matches, err = ngx.re.match(cookie_name, strip_regex, "i")
-          if matches then
-            remove_cookie = true
-            break
-          end
+  for _, cookie in ipairs(cookies) do
+    local cookie_name = string.match(cookie, "(.-)=")
+    local remove_cookie = false
+
+    if cookie_name then
+      cookie_name = strip(cookie_name)
+      for _, strip_regex in ipairs(strips) do
+        local matches, err = ngx.re.match(cookie_name, strip_regex, "io")
+        if matches then
+          remove_cookie = true
+          break
         end
       end
-
-      if not remove_cookie then
-        table.insert(kept_cookies, cookie)
-      end
     end
 
-    if moses.isEmpty(kept_cookies) then
-      ngx.req.clear_header("Cookie")
-    else
-      ngx.req.set_header("Cookie", moses.concat(kept_cookies, "; "))
+    if not remove_cookie then
+      table.insert(kept_cookies, cookie)
     end
+  end
+
+  if is_empty(kept_cookies) then
+    ngx.req.clear_header("Cookie")
+  else
+    ngx.req.set_header("Cookie", table.concat(kept_cookies, "; "))
   end
 end
 

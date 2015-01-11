@@ -1,9 +1,5 @@
-local moses = require "moses"
 local inspect = require "inspect"
 local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
-
-function blah()
-end
 
 return function(settings, user)
   if settings["rate_limit_mode"] == "unlimited" then
@@ -16,7 +12,7 @@ return function(settings, user)
     if limit["limit_by"] == "apiKey" then
       key = key .. user["api_key"]
     elseif limit["limit_by"] == "ip" then
-      key = key .. ngx.var.remote_addr
+      key = key .. ngx.ctx.remote_addr
     else
       ngx.log(ngx.ERR, "stats unknown limit by")
     end

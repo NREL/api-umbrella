@@ -1,18 +1,16 @@
 local _M = {}
 
-local rocks = require "luarocks.loader"
-local cmsgpack = require "cmsgpack"
-local cjson = require "cjson"
 local api_store = require "api_store"
-local mongol = require "resty-mongol"
-local moses = require "moses"
-local mp = require "MessagePack"
-local inspect = require "inspect"
-local std_table = require "std.table"
 local bson = require "resty-mongol.bson"
-local utils = require "utils"
-local plutils = require "pl.utils"
+local inspect = require "inspect"
 local lock = require "resty.lock"
+local mongol = require "resty-mongol"
+local utils = require "utils"
+
+local cache_computed_settings = utils.cache_computed_settings
+local get_utc_date = bson.get_utc_date
+local set_packed = utils.set_packed
+
 local lock = lock:new("my_locks", {
   ["timeout"] = 0,
 })
@@ -22,18 +20,14 @@ local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
 
-local set_apis = function(apis)
+local function set_apis(apis)
   local data = {
     ["apis"] = {},
     ["ids_by_host"] = {},
   }
 
   for _, api in ipairs(apis) do
-    if api["url_matches"] then
-      for _, url_match in ipairs(api["url_matches"]) do
-        url_match["frontend_prefix_matcher"] = "^" .. plutils.escape(url_match.frontend_prefix)
-      end
-    end
+    cache_computed_settings(api)
 
     local api_id = api["_id"]
     data["apis"][api_id] = api
@@ -45,7 +39,7 @@ local set_apis = function(apis)
     table.insert(data["ids_by_host"][host], api_id)
   end
 
-  utils.set_packed(ngx.shared.apis, "packed_data", data)
+  set_packed(ngx.shared.apis, "packed_data", data)
 end
 
 local check
@@ -75,7 +69,7 @@ check = function(premature)
       local query = {
         ["$query"] = {
           version = {
-            ["$gt"] = bson.get_utc_date(last_fetched_version),
+            ["$gt"] = get_utc_date(last_fetched_version),
           },
         },
         ["$orderby"] = {

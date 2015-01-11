@@ -1,17 +1,15 @@
 local _M = {}
 
-local rocks = require "luarocks.loader"
-local cmsgpack = require "cmsgpack"
-local cjson = require "cjson"
-local mongol = require "resty-mongol"
-local moses = require "moses"
-local mp = require "MessagePack"
-local std_table = require "std.table"
-local utils = require "utils"
-local inspect = require "inspect"
-local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
 local bson = require "resty-mongol.bson"
+local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
+local inspect = require "inspect"
 local lock = require "resty.lock"
+local mongol = require "resty-mongol"
+local types = require "pl.types"
+
+local get_utc_date = bson.get_utc_date
+local is_empty = types.is_empty
+
 local lock = lock:new("my_locks", {
   ["timeout"] = 0,
 })
@@ -46,10 +44,10 @@ check = function(premature)
         {
           ["$match"] = {
             updated_at = {
-              ["$gt"] = bson.get_utc_date(last_fetched_time),
+              ["$gt"] = get_utc_date(last_fetched_time),
             },
             expire_at = {
-              ["$gte"] = bson.get_utc_date(ngx.now() * 1000),
+              ["$gte"] = get_utc_date(ngx.now() * 1000),
             },
           },
         },
@@ -66,7 +64,7 @@ check = function(premature)
         --table.insert(recent_ids, v["_id"])
       --end
 
-      if not moses.isEmpty(recent_ids) then
+      if not is_empty(recent_ids) then
         local pipeline = {
           {
             ["$match"] = {
@@ -74,7 +72,7 @@ check = function(premature)
                 ["$in"] = recent_ids,
               },
               expire_at = {
-                ["$gte"] = bson.get_utc_date(ngx.now() * 1000),
+                ["$gte"] = get_utc_date(ngx.now() * 1000),
               },
             },
           },

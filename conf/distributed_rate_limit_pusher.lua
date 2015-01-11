@@ -1,22 +1,21 @@
 local _M = {}
 
-local rocks = require "luarocks.loader"
-local cmsgpack = require "cmsgpack"
-local cjson = require "cjson"
-local mongol = require "resty-mongol"
-local mp = require "MessagePack"
-local std_table = require "std.table"
-local utils = require "utils"
-local inspect = require "inspect"
-local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
 local bson = require "resty-mongol.bson"
+local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
+local inspect = require "inspect"
+local mongol = require "resty-mongol"
+local types = require "pl.types"
+local utils = require "utils"
+
+local get_utc_date = bson.get_utc_date
+local is_empty = types.is_empty
 
 local delay = 0.05  -- in seconds
 local new_timer = ngx.timer.at
 
 local indexes_created = false
 
-function create_indexes(db)
+local function create_indexes(db)
   if not indexes_created then
     local col = db:get_col("system.indexes")
     local docs = {
@@ -50,7 +49,7 @@ local check
 check = function(premature)
   if not premature then
     local data = distributed_rate_limit_queue.fetch()
-    if not std_table.empty(data) then
+    if not is_empty(data) then
       local conn = mongol()
       conn:set_timeout(1000)
 
@@ -82,7 +81,7 @@ check = function(premature)
 
         if expire_at and expire_at > 0 then
           update["$setOnInsert"] = {
-            expire_at = bson.get_utc_date(expire_at),
+            expire_at = get_utc_date(expire_at),
           }
         end
 

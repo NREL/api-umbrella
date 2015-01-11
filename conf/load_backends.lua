@@ -1,14 +1,10 @@
 local _M = {}
 
-local rocks = require "luarocks.loader"
-local cmsgpack = require "cmsgpack"
 local api_store = require "api_store"
-local moses = require "moses"
 local dyups = require "ngx.dyups"
-local std_table = require "std.table"
-local lock = require "resty.lock"
-local utils = require "utils"
 local inspect = require "inspect"
+local lock = require "resty.lock"
+
 local lock = lock:new("my_locks", {
   ["timeout"] = 0,
 })

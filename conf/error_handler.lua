@@ -1,13 +1,13 @@
-local lyaml = require "lyaml"
-local cjson = require "cjson"
-local lustache = require "lustache"
-local moses = require "moses"
 local inspect = require "inspect"
-local utils = require "utils"
+local lustache = require "lustache"
 local path = require "pl.path"
 local stringx = require "pl.stringx"
-local log = ngx.log
-local ERR = ngx.ERR
+local tablex = require "pl.tablex"
+local utils = require "utils"
+
+local deepcopy = tablex.deepcopy
+local extension = path.extension
+local strip = stringx.strip
 
 local supported_formats = {
   ["json"] = "application/json",
@@ -16,10 +16,10 @@ local supported_formats = {
   ["html"] = "text/html",
 }
 
-local request_format = function()
-  local request_path = ngx.var.uri
+local function request_format()
+  local request_path = ngx.ctx.uri
   if request_path then
-    local format = path.extension(request_path)
+    local format = extension(request_path)
     if format then
       format = string.sub(format, 2)
       if supported_formats[format] then
@@ -41,7 +41,7 @@ local request_format = function()
   return "json"
 end
 
-local render_template = function(template, data, strip_whitespace)
+local function render_template(template, data, strip_whitespace)
   -- Disable Mustache HTML escaping by automatically turning all "{{var}}"
   -- references into unescaped "{{{var}}}" references. Since we're returning
   -- non-HTML errors, we don't want escaping. This lets us be a little lazy
@@ -53,7 +53,7 @@ local render_template = function(template, data, strip_whitespace)
     -- Strip leading and trailing whitespace from template, since it's easy to
     -- introduce in multi-line templates and XML doesn't like if there's any
     -- leading space before the XML declaration.
-    template = stringx.strip(template)
+    template = strip(template)
   end
 
   return lustache:render(template, data)
@@ -64,9 +64,9 @@ return function(err)
 
   local format = request_format()
 
-  local data = moses.clone(settings["error_data"][err])
+  local data = deepcopy(settings["error_data"][err])
   if not data then
-    data = moses.clone(settings["error_data"]["internal_server_error"])
+    data = deepcopy(settings["error_data"]["internal_server_error"])
   end
 
   data["message"] = render_template(data["message"], {

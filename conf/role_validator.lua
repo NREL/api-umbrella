@@ -1,15 +1,23 @@
-local moses = require "moses"
 local inspect = require "inspect"
+local types = require "pl.types"
+
+local is_empty = types.is_empty
 
 return function(settings, user)
   local required_roles = settings["required_roles"]
 
-  local authenticated = true
-  if not moses.isEmpty(required_roles) then
-    authenticated = false
+  -- If this API doesn't require any roles, no need to check anything, so
+  -- continue on.
+  if is_empty(required_roles) then
+    return nil
+  end
 
+  local authenticated = false
+  if user then
+    -- Check to see if the user has any of the required roles, or the special
+    -- "admin" role.
     local user_roles = user["roles"]
-    if user_roles then
+    if not is_empty(user_roles) then
       if user_roles["admin"] then
         authenticated = true
       else

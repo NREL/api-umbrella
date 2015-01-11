@@ -1,18 +1,21 @@
 local _M = {}
 
-local rocks = require "luarocks.loader"
-local cmsgpack = require "cmsgpack"
-local cjson = require "cjson"
-local mongol = require "resty-mongol"
-local mp = require "MessagePack"
-local std_table = require "std.table"
-local utils = require "utils"
 local inspect = require "inspect"
 local lock = require "resty.lock"
+local mongol = require "resty-mongol"
+local std_table = require "std.table"
+local types = require "pl.types"
+local utils = require "utils"
+
+local cache_computed_settings = utils.cache_computed_settings
+local clone_select = std_table.clone_select
+local invert = std_table.invert
+local is_empty = types.is_empty
+local set_packed = utils.set_packed
+
 local lock = lock:new("my_locks", {
   ["timeout"] = 0,
 })
-
 
 local api_users = ngx.shared.api_users
 
@@ -44,7 +47,7 @@ check = function(premature)
 
       local r = col:find({})
       for i , v in r:pairs() do
-        local user = std_table.clone_select(v, {
+        local user = clone_select(v, {
           "disabled_at",
           "throttle_by_ip",
         })
@@ -55,7 +58,7 @@ check = function(premature)
         -- lookups (so we can just check if the key exists, rather than
         -- looping over each value).
         if v["roles"] then
-          user["roles"] = std_table.invert(v["roles"])
+          user["roles"] = invert(v["roles"])
         end
 
         if user["throttle_by_ip"] == false then
@@ -63,19 +66,21 @@ check = function(premature)
         end
 
         if v["settings"] then
-          user["settings"] = std_table.clone_select(v["settings"], {
+          user["settings"] = clone_select(v["settings"], {
             "allowed_ips",
             "allowed_referers",
             "rate_limit_mode",
             "rate_limits",
           })
 
-          if std_table.empty(user["settings"]) then
+          if is_empty(user["settings"]) then
             user["settings"] = nil
+          else
+            cache_computed_settings(user["settings"])
           end
         end
 
-        utils.set_packed(api_users, v["api_key"], user)
+        set_packed(api_users, v["api_key"], user)
       end
 
       conn:set_keepalive(10000, 5)

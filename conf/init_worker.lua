@@ -1,3 +1,9 @@
+local iputils = require "resty.iputils"
+
+-- Cache IP to binary lookup results (used internally in ip_in_cidr). Cache the
+-- last 1,000 IPs seen (around 256KB memory per worker).
+iputils.enable_lrucache(1000)
+
 local load_apis = require "load_apis"
 load_apis.spawn()
 

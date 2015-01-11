@@ -1,9 +1,8 @@
 local _M = {}
 
 local lyaml = require "lyaml"
-local cjson = require "cjson"
-local moses = require "moses"
 local utils = require "pl.utils"
+
 local log = ngx.log
 local ERR = ngx.ERR
 

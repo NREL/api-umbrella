@@ -1,58 +1,67 @@
 local api_store = require "api_store"
-local moses = require "moses"
 local inspect = require "inspect"
-local utils = require "utils"
 local stringx = require "pl.stringx"
+local types = require "pl.types"
+local utils = require "utils"
 
-local apis_for_request_host = function()
+local apis_for_host = api_store.for_host
+local append_array = utils.append_array
+local gsub = string.gsub
+local is_empty = types.is_empty
+local startswith = stringx.startswith
+
+local function apis_for_request_host()
   -- Find APIs matching the exact host.
-  local host = ngx.var.http_x_forwarded_host or ngx.var.host
-  local apis = api_store.for_host(host) or {}
+  local host = ngx.ctx.host
+  local apis = apis_for_host(host) or {}
 
   -- Append APIs matching the host with or without the port.
   local port_matches = string.match(host, "(.+):")
   if port_matches then
     local host_without_port = port_matches[1]
-    local apis_without_port = api_store.for_host(host_without_port)
+    local apis_without_port = apis_for_host(host_without_port)
     if apis_without_port then
-      apis = moses.append(apis, apis_without_port)
+      append_array(apis, apis_without_port)
     end
   else
-    local protocol = ngx.var.http_x_forwarded_proto or ngx.var.scheme
+    local protocol = ngx.ctx.protocol
     local port = (protocol == "https") and "443" or "80"
     local host_with_default_port = host .. ":" .. port
-    local apis_with_port = api_store.for_host(host_with_default_port)
+    local apis_with_port = apis_for_host(host_with_default_port)
     if apis_with_port then
-      apis = moses.append(apis, apis_with_port)
+      append_array(apis, apis_with_port)
     end
   end
 
   -- If no APIs have been found, use the optional "default_frontend_host"
   -- configuration to lookup the host.
   local default_host = config["gatekeeper"]["default_frontend_host"]
-  if moses.isEmpty(apis) and default_host then
-    local default_apis = api_store.for_host(default_host)
+  if is_empty(apis) and default_host then
+    local default_apis = apis_for_host(default_host)
     if default_apis then
       apis = default_apis
     end
   end
 
   -- Finally, append wildcard hosts.
-  local wildcard_apis = api_store.for_host("*")
+  local wildcard_apis = apis_for_host("*")
   if wildcard_apis then
-    apis = moses.append(apis, wildcard_apis)
+    append_array(apis, wildcard_apis)
   end
 
   return apis
 end
 
-local match_api = function(request_path)
+local function match_api(request_path)
+  -- Find the API backends that match this host.
   local apis = apis_for_request_host()
 
+  -- Search through each API backend for the first that matches the URL path
+  -- prefix.
   for _, api in ipairs(apis) do
     if api["url_matches"] then
       for _, url_match in ipairs(api["url_matches"]) do
-        if stringx.startswith(request_path, url_match.frontend_prefix) then
+        if startswith(request_path, url_match.frontend_prefix) then
           return api, url_match
         end
       end
@@ -61,12 +70,12 @@ local match_api = function(request_path)
 end
 
 return function(user)
-  local request_path = ngx.var.uri
+  local request_path = ngx.ctx.uri
   local api, url_match = match_api(request_path)
 
   if api and url_match then
     -- Rewrite the URL prefix path.
-    new_path = string.gsub(request_path, url_match["frontend_prefix_matcher"], url_match["backend_prefix"], 1)
+    new_path = gsub(request_path, url_match["_frontend_prefix_matcher"], url_match["backend_prefix"], 1)
     if new_path ~= request_path then
       ngx.req.set_uri(new_path)
     end
