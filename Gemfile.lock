@@ -8,11 +8,11 @@ GIT
 
 GIT
   remote: https://github.com/GUI/seed-fu.git
-  revision: 976b88e374f95f5a9ecc32a5409fef2e4c06303b
+  revision: 616758da2962b5870869a35a374ee6c890a7b33b
   branch: mongoid
   specs:
-    seed-fu (2.3.3)
-      activesupport (>= 3.1, < 4.2)
+    seed-fu (2.3.4)
+      activesupport (>= 3.1, <= 4.2)
 
 GIT
   remote: https://github.com/Paxa/jshintrb.git
@@ -170,7 +170,7 @@ GEM
     hashie (3.3.2)
     hike (1.2.3)
     htmlentities (4.3.2)
-    i18n (0.6.11)
+    i18n (0.7.0)
     jbuilder (2.2.5)
       activesupport (>= 3.0.0, < 5)
       multi_json (~> 1.2)
