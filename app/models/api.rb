@@ -35,7 +35,7 @@ class Api
   validates :frontend_host,
     :presence => true,
     :format => {
-      :with => CommonValidations::HOST_FORMAT,
+      :with => CommonValidations::FRONTEND_HOST_FORMAT,
       :message => :invalid_host_format,
     }
   validates :backend_host,

@@ -23,7 +23,7 @@ Admin.Api = Ember.Model.extend(Ember.Validations.Mixin, {
     frontendHost: {
       presence: true,
       format: {
-        with: CommonValidations.host_format,
+        with: CommonValidations.frontend_host_format,
         message: polyglot.t('errors.messages.invalid_host_format'),
       },
     },
