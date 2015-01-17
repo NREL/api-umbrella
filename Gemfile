@@ -7,7 +7,7 @@ gem "rails", "~> 3.2.21"
 gem "puma", "~> 2.10.2"
 
 # Error notification service (optional)
-gem "rollbar", "~> 1.2.13"
+gem "rollbar", "~> 1.4.0"
 
 # Environment specific configuration
 gem "dotenv-rails", "~> 1.0.2"
