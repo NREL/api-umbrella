@@ -7,6 +7,9 @@ general:
       - gh-pages
 compile:
   override:
+    # Don't perform a normal "middleman build" that Circle infers. We'll run
+    # our own rake tasks.
+    - /bin/true
 test:
   override:
     # Only run the build task for branches. Master will both build and deploy
