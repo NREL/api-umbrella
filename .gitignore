@@ -20,7 +20,6 @@
 # Ignore the build directory for the website
 /build
 
-# Ignore Shippable items, so the GitHub pages publish task can work. 
-/shippable*
-/run_*
-/Build*.tar.gz
+# Ignore Circle CI items, so the GitHub pages publish task can work. 
+/.ruby-version
+/vendor

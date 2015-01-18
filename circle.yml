@@ -5,6 +5,8 @@ general:
   branches:
     ignore:
       - gh-pages
+compile:
+  override:
 test:
   override:
     # Only run the build task for branches. Master will both build and deploy
