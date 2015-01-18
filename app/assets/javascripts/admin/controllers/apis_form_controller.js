@@ -21,7 +21,7 @@ Admin.ApisFormController = Ember.ObjectController.extend(Admin.Save, {
     submit: function() {
       this.save({
         transitionToRoute: 'apis',
-        message: 'Successfully saved the admin group "' + this.get('model.name') + '" API',
+        message: 'Successfully saved the "' + this.get('model.name') + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
 
