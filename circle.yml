@@ -20,4 +20,5 @@ deployment:
   production:
     branch: master
     commands:
+      - git config --global user.email "no-reply@circleci.com" && git config --global user.name "Circle CI Build Bot"
       - bundle exec rake publish
