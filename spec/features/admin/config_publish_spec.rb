@@ -55,7 +55,18 @@ describe "config publish", :js => true do
       find(".config-diff ins").text.should eql("After")
     end
 
-    it "selects all apis for publishing by default" do
+    it "selects the api for publishing by default if there is only one pending API" do
+      FactoryGirl.create(:api)
+
+      visit "/admin/#/config/publish"
+      checkboxes = all("input[type=checkbox][name*=publish]")
+      checkboxes.length.should eql(1)
+      checkboxes.each do |checkbox|
+        checkbox[:checked].should eql(true)
+      end
+    end
+
+    it "selects no apis for publishing by default if there is more than one pending API" do
       FactoryGirl.create(:api)
       FactoryGirl.create(:api)
 
@@ -63,7 +74,7 @@ describe "config publish", :js => true do
       checkboxes = all("input[type=checkbox][name*=publish]")
       checkboxes.length.should eql(2)
       checkboxes.each do |checkbox|
-        checkbox[:checked].should eql(true)
+        checkbox[:checked].should eql(false)
       end
     end
 
@@ -79,6 +90,36 @@ describe "config publish", :js => true do
       FactoryGirl.create(:api)
       visit "/admin/#/config/publish"
       page.should have_content("1 New API Backends")
+    end
+
+    it "provides a check/uncheck all link" do
+      FactoryGirl.create(:api)
+      FactoryGirl.create(:api)
+
+      visit "/admin/#/config/publish"
+
+      page.should have_content("Check all")
+      click_link("Check all")
+      checkboxes = all("input[type=checkbox][name*=publish]")
+      checkboxes.each do |checkbox|
+        checkbox[:checked].should eql(true)
+      end
+
+      page.should have_content("Uncheck all")
+      click_link("Uncheck all")
+      checkboxes = all("input[type=checkbox][name*=publish]")
+      checkboxes.each do |checkbox|
+        checkbox[:checked].should eql(false)
+      end
+
+      page.should have_content("Check all")
+      checkboxes = all("input[type=checkbox][name*=publish]")
+      checkboxes[0].click
+      page.should have_content("Check all")
+      checkboxes[1].click
+      page.should have_content("Uncheck all")
+      checkboxes[1].click
+      page.should have_content("Check all")
     end
   end
 
@@ -109,14 +150,14 @@ describe "config publish", :js => true do
       api2 = FactoryGirl.create(:api)
 
       visit "/admin/#/config/publish"
-      uncheck("config[apis][#{api1.id}][publish]")
+      check("config[apis][#{api1.id}][publish]")
       click_button("Publish")
 
       page.should_not have_content("Published configuration is up to date")
       page.should have_content("1 New API Backends")
       active_config = ConfigVersion.active_config
       active_config["apis"].length.should eql(1)
-      active_config["apis"].first["_id"].should eql(api2.id)
+      active_config["apis"].first["_id"].should eql(api1.id)
     end
   end
 end

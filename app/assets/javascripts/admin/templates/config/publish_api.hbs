@@ -14,7 +14,7 @@
             <input type="hidden" name="config[apis][{{unbound id}}][active_version]" {{bind-attr value='active.version'}} />
             <input type="hidden" name="config[apis][{{unbound id}}][pending_version]" {{bind-attr value='pending.version'}} />
             <input type="hidden" name="config[apis][{{unbound id}}][publish]" value="0" />
-            <input type="checkbox" name="config[apis][{{unbound id}}][publish]" value="1" checked="checked" />
+            <input type="checkbox" name="config[apis][{{unbound id}}][publish]" value="1" />
           </td>
           <td>{{name}}<br><small><a href="#" {{action 'toggleConfigDiff' id target='view'}}>View Config Differences</a></small></td>
         </tr>

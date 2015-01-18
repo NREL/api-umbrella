@@ -51,6 +51,8 @@ en:
     edit: Edit
     remove: Remove
     reorder: Reorder
+    check_all: Check all
+    uncheck_all: Uncheck all
     api:
       servers:
         legend: Backend
