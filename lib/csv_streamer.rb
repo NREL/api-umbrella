@@ -15,7 +15,7 @@ class CsvStreamer
       @buffer << @headers
     end
 
-    while scroll = @client.scroll(:scroll_id => @scroll_id, :scroll => "10m") do
+    while(scroll = @client.scroll(:scroll_id => @scroll_id, :scroll => "10m")) # rubocop:disable Lint/LiteralInCondition
       @scroll_id = scroll["_scroll_id"]
       hits = scroll["hits"]["hits"]
 

@@ -6,7 +6,7 @@ describe Admin::StatsController do
   before(:each) do
     begin
       LogItem.gateway.client.indices.delete :index => LogItem.index_name
-    rescue Elasticsearch::Transport::Transport::Errors::NotFound
+    rescue Elasticsearch::Transport::Transport::Errors::NotFound # rubocop:disable Lint/HandleExceptions
     end
   end
 
