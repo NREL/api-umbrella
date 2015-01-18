@@ -23,6 +23,15 @@ GIT
       multi_json (>= 1.3)
       rake
 
+GIT
+  remote: https://github.com/riking/omniauth-github.git
+  revision: 8d1f8b665501dd27bae941ea8e128597b7e8edea
+  branch: all_emails
+  specs:
+    omniauth-github (1.1.2)
+      omniauth (~> 1.0)
+      omniauth-oauth2 (~> 1.1)
+
 GEM
   remote: https://rubygems.org/
   remote: https://rails-assets.org/
@@ -180,7 +189,7 @@ GEM
     factory_girl_rails (4.4.1)
       factory_girl (~> 4.4.0)
       railties (>= 3.0.0)
-    faraday (0.9.0)
+    faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     fssm (0.2.10)
     fuubar (1.3.3)
@@ -260,9 +269,6 @@ GEM
       omniauth (~> 1.2.0)
     omniauth-facebook (2.0.0)
       omniauth-oauth2 (~> 1.2)
-    omniauth-github (1.1.2)
-      omniauth (~> 1.0)
-      omniauth-oauth2 (~> 1.1)
     omniauth-google-oauth2 (0.2.6)
       omniauth (> 1.0)
       omniauth-oauth2 (~> 1.1)
@@ -524,7 +530,7 @@ DEPENDENCIES
   omniauth (~> 1.2.1)
   omniauth-cas (~> 1.1.0)
   omniauth-facebook (~> 2.0.0)
-  omniauth-github (~> 1.1.2)
+  omniauth-github!
   omniauth-google-oauth2 (~> 0.2.2)
   omniauth-myusa!
   omniauth-persona (~> 0.0.1)

@@ -16,7 +16,22 @@ web:
 #     enabled:
 #       - github
 #       - persona
+      facebook:
+        client_id:
+        client_secret:
       github:
+        client_id:
+        client_secret:
+      google:
+        client_id:
+        client_secret:
+      max.gov:
+        client_id:
+        client_secret:
+      myusa:
+        client_id:
+        client_secret:
+      persona:
         client_id:
         client_secret:
   mailer:

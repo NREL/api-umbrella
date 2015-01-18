@@ -6,7 +6,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
       raise "The developer OmniAuth strategy should not be used outside of development or test."
     end
 
-    omniauth = env["omniauth.auth"]
+    omniauth = request.env["omniauth.auth"]
     @admin = Admin.where(:username => omniauth["uid"]).first
     @admin ||= Admin.new({ :username => omniauth["uid"], :superuser => true }, :without_protection => true)
     @admin.apply_omniauth(omniauth)
@@ -16,43 +16,41 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
   end
 
   def cas
-    @email = env["omniauth.auth"]["uid"]
+    @email = request.env["omniauth.auth"]["uid"]
     login
   end
 
   def facebook
-    if(env["omniauth.auth"]["info"]["verified"])
-      @email = env["omniauth.auth"]["info"]["email"]
+    if(request.env["omniauth.auth"]["info"]["verified"])
+      @email = request.env["omniauth.auth"]["info"]["email"]
     end
 
     login
   end
 
   def github
-    emails = env["omniauth.auth"]["extra"]["raw_info"]["emails"]
-    primary = emails.select { |email| email["primary"] && email["email"] == env["omniauth.auth"]["info"]["email"] }
-    if(primary && primary["verified"])
-      @email = env["omniauth.auth"]["info"]["email"]
+    if(request.env["omniauth.auth"]["info"]["email_verified"])
+      @email = request.env["omniauth.auth"]["info"]["email"]
     end
 
     login
   end
 
   def google_oauth2
-    if(env["omniauth.auth"]["extra"]["raw_info"]["email_verified"])
-      @email = env["omniauth.auth"]["info"]["email"]
+    if(request.env["omniauth.auth"]["extra"]["raw_info"]["email_verified"])
+      @email = request.env["omniauth.auth"]["info"]["email"]
     end
 
     login
   end
 
   def myusa
-    @email = env["omniauth.auth"]["info"]["email"]
+    @email = request.env["omniauth.auth"]["info"]["email"]
     login
   end
 
   def persona
-    @email = env["omniauth.auth"]["info"]["email"]
+    @email = request.env["omniauth.auth"]["info"]["email"]
     login
   end
 
@@ -60,13 +58,21 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
   def login
     if @email.present?
-      @admin = Admin.where(:username => @email).first
+      @admin = Admin.where(:username => @email.downcase).first
     end
 
     if @admin
-      @admin.last_sign_in_provider = env["omniauth.auth"]["provider"]
-      @admin.email = env["omniauth.auth"]["info"]["email"]
-      @admin.name = env["omniauth.auth"]["info"]["name"]
+      @admin.last_sign_in_provider = request.env["omniauth.auth"]["provider"]
+      if request.env["omniauth.auth"]["info"].present?
+        if request.env["omniauth.auth"]["info"]["email"].present?
+          @admin.email = request.env["omniauth.auth"]["info"]["email"]
+        end
+
+        if request.env["omniauth.auth"]["info"]["name"].present?
+          @admin.name = request.env["omniauth.auth"]["info"]["name"]
+        end
+      end
+
       @admin.save!
 
       sign_in_and_redirect(:admin, @admin)

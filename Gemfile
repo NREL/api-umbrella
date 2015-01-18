@@ -61,7 +61,9 @@ gem "devise", "~> 3.4.0"
 gem "omniauth", "~> 1.2.1"
 gem "omniauth-cas", "~> 1.1.0"
 gem "omniauth-facebook", "~> 2.0.0"
-gem "omniauth-github", "~> 1.1.2"
+# Patched omniauth-github for e-mail verification:
+# https://github.com/intridea/omniauth-github/pull/41
+gem "omniauth-github", :git => "https://github.com/riking/omniauth-github.git", :branch => "all_emails"
 gem "omniauth-google-oauth2", "~> 0.2.2"
 gem "omniauth-myusa", :git => "https://github.com/GSA-OCSIT/omniauth-myusa.git"
 gem "omniauth-persona", "~> 0.0.1"
