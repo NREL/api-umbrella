@@ -46,7 +46,7 @@ describe Api::V1::ConfigController do
 
         data = MultiJson.load(response.body)
         api_data = data["config"]["apis"]["new"].first
-        %w(version created_by created_at updated_at updated_by).each do |field|
+        %w(_id version created_by created_at updated_at updated_by).each do |field|
           api_data["pending"][field].present?.should eql(true)
           api_data["pending_yaml"].should_not include(field)
         end
@@ -62,20 +62,17 @@ describe Api::V1::ConfigController do
         yaml_lines = api_data["pending_yaml"].split("\n")
         yaml_keys = yaml_lines.map { |line| line.gsub(/:.*/, "") }
         yaml_keys.should eql([
-          "_id",
           "backend_host",
           "backend_protocol",
           "balance_algorithm",
           "frontend_host",
           "name",
           "servers",
-          "- _id",
-          "  host",
+          "- host",
           "  port",
           "sort_order",
           "url_matches",
-          "- _id",
-          "  backend_prefix",
+          "- backend_prefix",
           "  frontend_prefix",
         ])
       end
@@ -109,7 +106,7 @@ describe Api::V1::ConfigController do
         api_data["id"].should eql(@api.id)
         api_data["name"].should eql(@api.name)
         api_data["active"]["_id"].should eql(@api.id)
-        api_data["active_yaml"].should include("_id: #{@api.id}")
+        api_data["active_yaml"].should include("name: #{@api.name}")
         api_data["pending"].should eql(nil)
         api_data["pending_yaml"].should eql("")
       end
@@ -142,9 +139,9 @@ describe Api::V1::ConfigController do
         api_data["id"].should eql(@api.id)
         api_data["name"].should eql(@api.name)
         api_data["active"]["_id"].should eql(@api.id)
-        api_data["active_yaml"].should include("_id: #{@api.id}")
+        api_data["active_yaml"].should include("name: #{@api.name}")
         api_data["pending"]["_id"].should eql(@api.id)
-        api_data["pending_yaml"].should include("_id: #{@api.id}")
+        api_data["pending_yaml"].should include("name: #{@api.name}")
       end
     end
 
@@ -224,7 +221,7 @@ describe Api::V1::ConfigController do
         api_data["active"].should eql(nil)
         api_data["active_yaml"].should eql("")
         api_data["pending"]["_id"].should eql(@api.id)
-        api_data["pending_yaml"].should include("_id: #{@api.id}")
+        api_data["pending_yaml"].should include("name: #{@api.name}")
       end
     end
 

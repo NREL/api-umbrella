@@ -128,12 +128,26 @@ class ConfigVersion
     changes
   end
 
-  def self.api_for_comparison(data)
-    # Don't look at timestamp/userstamp/versioning fields when comparing the
-    # data to import, since these are likely to differ even if the data is
-    # really the same (since these depend on when the import was actually
-    # performed).
-    data.except(*%w(version created_by created_at updated_at updated_by)) if(data)
+  def self.api_for_comparison(object)
+    duplicate = if(object.duplicable?) then object.dup else object end
+
+    if(duplicate.kind_of?(Hash))
+      # Don't look at timestamp/userstamp/versioning fields when comparing the
+      # data to import, since these are likely to differ even if the data is
+      # really the same (since these depend on when the import was actually
+      # performed).
+      duplicate.except!(*%w(version created_by created_at updated_at updated_by _id))
+
+      duplicate.each do |key, value|
+        duplicate[key] = api_for_comparison(value)
+      end
+    elsif(duplicate.kind_of?(Array))
+      duplicate.map! do |item|
+        api_for_comparison(item)
+      end
+    end
+
+    duplicate
   end
 
   def self.pretty_dump(data)
