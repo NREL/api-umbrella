@@ -147,7 +147,7 @@ describe "config publish", :js => true do
 
     it "publishes only the selected changes" do
       api1 = FactoryGirl.create(:api)
-      api2 = FactoryGirl.create(:api)
+      FactoryGirl.create(:api)
 
       visit "/admin/#/config/publish"
       check("config[apis][#{api1.id}][publish]")
