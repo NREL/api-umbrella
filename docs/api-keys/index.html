@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>API Keys - Documentation - API Umbrella</title>
-    <link href="../../stylesheets/all-8b470dcc.css" media="screen" rel="stylesheet" type="text/css" />
-    <script src="../../javascripts/all-6999930c.js" type="text/javascript"></script>
+    <link href="../../stylesheets/all-92746e79.css" rel="stylesheet" type="text/css" />
+    <script src="../../javascripts/all-992d4073.js" type="text/javascript"></script>
     <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
     <link href="http://fonts.googleapis.com/css?family=Raleway:400,300,700" rel="stylesheet" type="text/css">
 
@@ -41,13 +41,11 @@
       </div>
     </div>
 
-    
       <header>
         <div class="container">
           <h1>Documentation</h1>
         </div>
       </header>
-    
 
       <div class="container">
     <div class="row">
@@ -67,6 +65,9 @@
   </li>
   <li class="">
     <a href="../caching/">Caching</a>
+  </li>
+  <li class="">
+    <a href="../smtp-configuration/">SMTP Configuration</a>
   </li>
 </ul>
 
@@ -89,22 +90,25 @@
 
 <p>Pass the API key into the <code>X-Api-Key</code> header:</p>
 
-<pre class="highlight shell">curl -H <span class="s1">'X-Api-Key: DEMO_KEY'</span> <span class="s1">'http://example.com/api'</span>
-</pre>
+<pre class="highlight shell"><code>curl -H <span class="s1">'X-Api-Key: DEMO_KEY'</span> <span class="s1">'http://example.com/api'</span>
+</code></pre>
+
 <h3 id="get-query-param">GET Query Param</h3>
 
 <p>Pass the API key into the <code>api_key</code> GET query string parameter:</p>
 
-<pre class="highlight shell">curl <span class="s1">'http://example.com/api?api_key=DEMO_KEY'</span>
-</pre>
+<pre class="highlight shell"><code>curl <span class="s1">'http://example.com/api?api_key=DEMO_KEY'</span>
+</code></pre>
+
 <p><em>Note:</em> The GET query parameter may be used for non-GET requests (such as POST and PUT).</p>
 
 <h3 id="http-basic-auth-username">HTTP Basic Auth Username</h3>
 
 <p>As an alternative, pass the API key as the username (with an empty password) using HTTP basic authentication:</p>
 
-<pre class="highlight shell">curl <span class="s1">'http://DEMO_KEY@example.com/api'</span>
-</pre>
+<pre class="highlight shell"><code>curl <span class="s1">'http://DEMO_KEY@example.com/api'</span>
+</code></pre>
+
       </div>
     </div>
   </div>
