@@ -5,8 +5,8 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
 
   def drilldown
     @search = LogSearch.new({
-      :start_time => params[:start],
-      :end_time => params[:end],
+      :start_time => params[:start_at],
+      :end_time => params[:end_at],
       :interval => params[:interval],
     })
     policy_scope(@search)

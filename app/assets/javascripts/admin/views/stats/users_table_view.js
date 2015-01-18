@@ -11,11 +11,7 @@ Admin.StatsUsersTableView = Ember.View.extend({
         url: '/admin/stats/users.json',
         data: _.bind(function(data) {
           var query = this.get('controller.query.params');
-          return _.extend({}, query, data, {
-            search: query.search,
-            start_time: query.start,
-            end_time: query.end,
-          });
+          return _.extend({}, data, query);
         }, this)
       },
       order: [[4, 'desc']],
@@ -93,5 +89,5 @@ Admin.StatsUsersTableView = Ember.View.extend({
 
   refreshData: function() {
     this.$().DataTable().draw();
-  }.observes('controller.query.params.search', 'controller.query.params.start', 'controller.query.params.end'),
+  }.observes('controller.query.params.search', 'controller.query.params.start_at', 'controller.query.params.end_at'),
 });

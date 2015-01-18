@@ -1,8 +1,9 @@
 Admin.StatsBaseRoute = Ember.Route.extend({
   defaultQueryParams: {
     tz: jstz.determine().name(),
-    start: moment().subtract(29, 'days').format('YYYY-MM-DD'),
-    end: moment().format('YYYY-MM-DD'),
+    search: '',
+    start_at: moment().subtract(29, 'days').format('YYYY-MM-DD'),
+    end_at: moment().format('YYYY-MM-DD'),
   },
 
   model: function(params) {
@@ -68,7 +69,7 @@ Admin.StatsBaseRoute = Ember.Route.extend({
         this.transitionTo('stats.logs', $.param(newQueryParams));
       }
     }
-  }.observes('query.params.search', 'query.params.interval', 'query.params.start', 'query.params.end'),
+  }.observes('query.params.search', 'query.params.interval', 'query.params.start_at', 'query.params.end_at'),
 
   actions: {
     error: function() {

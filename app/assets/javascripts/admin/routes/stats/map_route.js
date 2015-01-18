@@ -18,7 +18,7 @@ Admin.StatsMapRoute = Admin.StatsBaseRoute.extend({
         this.transitionTo('stats.map', $.param(newQueryParams));
       }
     }
-  }.observes('query.params.search', 'query.params.start', 'query.params.end', 'query.params.region'),
+  }.observes('query.params.search', 'query.params.start_at', 'query.params.end_at', 'query.params.region'),
 });
 
 Admin.StatsMapDefaultRoute = Admin.StatsMapRoute.extend({

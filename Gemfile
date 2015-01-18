@@ -54,7 +54,7 @@ gem "uuidtools", "~> 2.1.4"
 gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
 
 # Elasticsearch
-gem "elasticsearch", "~> 1.0.4"
+gem "elasticsearch", "~> 1.0.6"
 
 # OmniAuth-based authentication
 gem "devise", "~> 3.4.0"
@@ -231,6 +231,12 @@ group :development, :test do
 
   # For testing drag and drop in capybara.
   gem "rails-assets-jquery-simulate-ext", "~> 1.3.0"
+
+  # For creating test data in elasticsearch.
+  gem "elasticsearch-persistence", "~> 0.1.6"
+
+  # For parsing URLs in tests.
+  gem "addressable", "~> 2.3.6"
 end
 
 group :development do

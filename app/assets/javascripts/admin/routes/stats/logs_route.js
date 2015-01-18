@@ -22,14 +22,14 @@ Admin.StatsLogsRoute = Admin.StatsBaseRoute.extend({
         this.transitionTo('stats.logs', $.param(newQueryParams));
       }
     }
-  }.observes('query.params.search', 'query.params.interval', 'query.params.start', 'query.params.end'),
+  }.observes('query.params.search', 'query.params.interval', 'query.params.start_at', 'query.params.end_at'),
 
   validateOptions: function() {
     var valid = true;
 
     var interval = this.get('query.params.interval');
-    var start = moment(this.get('query.params.start'));
-    var end = moment(this.get('query.params.end'));
+    var start = moment(this.get('query.params.start_at'));
+    var end = moment(this.get('query.params.end_at'));
 
     var range = end.unix() - start.unix();
     switch(interval) {

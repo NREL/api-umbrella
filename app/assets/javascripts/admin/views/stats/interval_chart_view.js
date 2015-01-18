@@ -79,8 +79,8 @@ Admin.StatsIntervalChartView = Ember.View.extend({
 
     // Show hours on the axis when viewing less than 2 days of hourly data.
     if(this.get('controller.query.params.interval') === 'hour') {
-      var start = moment(this.get('controller.query.params.start'));
-      var end = moment(this.get('controller.query.params.end'));
+      var start = moment(this.get('controller.query.params.start_at'));
+      var end = moment(this.get('controller.query.params.end_at'));
       var maxDuration = 2 * 24 * 60 * 60; // 2 days
       if(end.unix() - start.unix() <= maxDuration) {
         this.chartOptions.hAxis.format = 'MMM d h a';

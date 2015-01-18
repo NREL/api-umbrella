@@ -11,11 +11,7 @@ Admin.LogsTableView = Ember.View.extend({
         url: '/admin/stats/logs.json',
         data: _.bind(function(data) {
           var query = this.get('controller.query.params');
-          return _.extend({}, query, data, {
-            search: query.search,
-            start_time: query.start,
-            end_time: query.end,
-          });
+          return _.extend({}, data, query);
         }, this)
       },
       drawCallback: _.bind(function() {
@@ -144,5 +140,5 @@ Admin.LogsTableView = Ember.View.extend({
 
   refreshData: function() {
     this.$().DataTable().draw();
-  }.observes('controller.query.params.search', 'controller.query.params.start', 'controller.query.params.end'),
+  }.observes('controller.query.params.search', 'controller.query.params.start_at', 'controller.query.params.end_at'),
 });

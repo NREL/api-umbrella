@@ -10,8 +10,8 @@ class Admin::StatsController < Admin::BaseController
 
   def search
     @search = LogSearch.new({
-      :start_time => params[:start],
-      :end_time => params[:end],
+      :start_time => params[:start_at],
+      :end_time => params[:end_at],
       :interval => params[:interval],
       :search_type => "count",
     })
@@ -30,8 +30,8 @@ class Admin::StatsController < Admin::BaseController
 
   def logs
     @search = LogSearch.new({
-      :start_time => params[:start_time],
-      :end_time => params[:end_time],
+      :start_time => params[:start_at],
+      :end_time => params[:end_at],
       :interval => params[:interval],
     })
     policy_scope(@search)
@@ -66,11 +66,11 @@ class Admin::StatsController < Admin::BaseController
         # http://stackoverflow.com/a/10252798/222487
         response.headers["Last-Modified"] = Time.now.httpdate
 
-        scroll_id = @result.raw_result.raw_plain["_scroll_id"]
+        scroll_id = @result.raw_result["_scroll_id"]
         headers = ["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Response Time", "Content Type", "Accept Encoding", "User Agent"]
 
         send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.strftime("%b %-e %Y")}).#{params[:format]}")
-        self.response_body = CsvStreamer.new(scroll_id, headers) do |row|
+        self.response_body = CsvStreamer.new(@search.client, scroll_id, headers) do |row|
           [
             Time.parse(row["request_at"]).utc.strftime("%Y-%m-%d %H:%M:%S"),
             row["request_method"],
@@ -94,8 +94,8 @@ class Admin::StatsController < Admin::BaseController
 
   def users
     @search = LogSearch.new({
-      :start_time => params[:start_time],
-      :end_time => params[:end_time],
+      :start_time => params[:start_at],
+      :end_time => params[:end_at],
     })
     policy_scope(@search)
 
@@ -186,8 +186,8 @@ class Admin::StatsController < Admin::BaseController
 
   def map
     @search = LogSearch.new({
-      :start_time => params[:start],
-      :end_time => params[:end],
+      :start_time => params[:start_at],
+      :end_time => params[:end_at],
       :region => params[:region],
     })
     policy_scope(@search)

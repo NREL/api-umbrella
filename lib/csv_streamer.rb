@@ -1,8 +1,8 @@
 require "csv"
 
 class CsvStreamer
-  def initialize(scroll_id, headers = [], &row_block)
-    @server = Stretcher::Server.new(ElasticsearchConfig.server, :logger => Rails.logger)
+  def initialize(client, scroll_id, headers = [], &row_block)
+    @client = client
     @scroll_id = scroll_id
     @headers = headers
     @row_block = row_block
@@ -15,9 +15,7 @@ class CsvStreamer
       @buffer << @headers
     end
 
-    while(true) # rubocop:disable Lint/LiteralInCondition
-      # Fetch this batch from elasticsearch.
-      scroll = @server.request(:get, "_search/scroll", { :scroll => "10m", :scroll_id => @scroll_id }, nil, {}, :mashify => false)
+    while scroll = @client.scroll(:scroll_id => @scroll_id, :scroll => "10m") do
       @scroll_id = scroll["_scroll_id"]
       hits = scroll["hits"]["hits"]
 

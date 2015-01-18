@@ -36,8 +36,8 @@ Admin.StatsQueryFormView = Ember.View.extend({
 
     $('#reportrange').daterangepicker({
       ranges: this.datePickerRanges,
-      startDate: moment(this.get('controller.query.params.start'), 'YYYY-MM-DD'),
-      endDate: moment(this.get('controller.query.params.end'), 'YYYY-MM-DD'),
+      startDate: moment(this.get('controller.query.params.start_at'), 'YYYY-MM-DD'),
+      endDate: moment(this.get('controller.query.params.end_at'), 'YYYY-MM-DD'),
     }, _.bind(this.handleDateRangeChange, this));
   },
 
@@ -47,16 +47,16 @@ Admin.StatsQueryFormView = Ember.View.extend({
   }.observes('controller.query.params.interval'),
 
   updateDateRange: function() {
-    var start = moment(this.get('controller.query.params.start'));
-    var end = moment(this.get('controller.query.params.end'));
+    var start = moment(this.get('controller.query.params.start_at'));
+    var end = moment(this.get('controller.query.params.end_at'));
 
     $('#reportrange span.text').html(start.format('MMM D, YYYY') + ' - ' + end.format('MMM D, YYYY'));
-  }.observes('controller.query.params.start', 'controller.query.params.end'),
+  }.observes('controller.query.params.start_at', 'controller.query.params.end_at'),
 
   handleDateRangeChange: function(start, end) {
     this.setProperties({
-      'controller.query.params.start': start.format('YYYY-MM-DD'),
-      'controller.query.params.end': end.format('YYYY-MM-DD'),
+      'controller.query.params.start_at': start.format('YYYY-MM-DD'),
+      'controller.query.params.end_at': end.format('YYYY-MM-DD'),
     });
   },
 
