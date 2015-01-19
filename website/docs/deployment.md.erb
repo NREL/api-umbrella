@@ -1,0 +1,114 @@
+---
+title: Deployment - Documentation - API Umbrella
+header: Deployment
+---
+
+## Deploying From Git
+
+API Umbrella should be installed onto servers using the <%= link_to("download packages", "/download.html") %>. However, if you want to deploy more recent updates from master (or your own forked changes) to the [api-umbrella-router](https://github.com/NREL/api-umbrella-router) or [api-umbrella-web](https://github.com/NREL/api-umbrella-web) components, then newer versions of those components can be deployed on top of a package-based installation. Deployments are automated through [Capistrano](http://capistranorb.com).
+
+### Prerequisites
+
+In order to run the deployment scripts, your local computer (or wherever you're deploying from) must have:
+
+- git
+- Ruby 1.9+
+- Ruby Bundler
+
+If you have trouble getting any of these setup locally, you can also run deployments from the <%= link_to("development virtual machine", "/docs/development-setup.html", :relative => true) %>, which includes these dependencies.
+
+### First-Time Server Setup
+
+On each server you wish to deploy to, you must setup SSH keys so that you can deploy as the `api-umbrella-deploy` user (this user is automatically created as part of the package installation). These steps only need to be performed once per server.
+
+#### Pre API Umbrella Version 0.7
+
+- For API Umbrella installations prior to version 0.7 (currently unreleased), some adjustment need to be made on each server to the `api-umbrella-deploy` account that was created during installation. Follow these steps once on each server where you have installed API Umbrella v0.6 or less:
+
+  ```sh
+  $ sudo usermod -d /home/api-umbrella-deploy -s /bin/bash api-umbrella-deploy
+  $ sudo mkdir -p /home/api-umbrella-deploy/.ssh
+  $ sudo touch /home/api-umbrella-deploy/.ssh/authorized_keys
+  $ sudo chown -R api-umbrella-deploy:api-umbrella-deploy /home/api-umbrella-deploy
+  $ sudo chmod 700 /home/api-umbrella-deploy /home/api-umbrella-deploy/.ssh
+  $ sudo chmod 600 /home/api-umbrella-deploy/.ssh/authorized_keys
+  ```
+
+#### On Your Computer
+
+- Ensure you have SSH keys: You must have SSH keys setup on your local computer (or wherever you're deploying from). If you do not have SSH keys, see steps 1 & 2 from GitHub's [Generating SSH keys](https://help.github.com/articles/generating-ssh-keys/) guide for instructions.
+- Copy your public key: Copy the contents of your public key (often at `~/.ssh/id_rsa.pub`). For more tips on copying, or alternative locations for your public key, see step 3 from GitHub's [Generating SSH keys](https://help.github.com/articles/generating-ssh-keys/#step-3-add-your-ssh-key-to-your-account) guide.
+
+#### On Each Server
+
+- With your public SSH key in hand from your own computer, follow these steps on each server, replacing `YOUR_PUBLIC_KEY` as appropriate:
+
+  ```sh
+  $ echo "YOUR_PUBLIC_KEY" | sudo tee --append /home/api-umbrella-deploy/.ssh/authorized_keys
+  ```
+
+### Deploying api-umbrella-router
+
+- First-time setup:
+  - Check out the [api-umbrella-router](https://github.com/NREL/api-umbrella-router) repository from git:
+
+    ```sh
+    $ git clone https://github.com/NREL/api-umbrella-router.git router
+    ```
+
+  - Install the deployment dependencies:
+
+    ```sh
+    $ cd router
+    $ bundle install
+    ```
+
+  - Define your destination servers: Add a `.env` file inside the `router` directory defining the servers to deploy to for the "staging" or "production" environments:
+
+    ```
+    API_UMBRELLA_STAGING_ROUTER_SERVERS="10.0.0.1,10.0.0.2"
+    API_UMBRELLA_PRODUCTION_ROUTER_SERVERS="10.0.10.1,10.0.10.2"
+    ```
+
+    Servers can be defined using hostnames or IP address. Multiple servers can be comma-delimited. In this example there are two staging servers (`10.0.0.1` and `10.0.0.2`), and two production servers (`10.0.10.1` and `10.0.10.2`).
+
+- Deploy to either the "staging" or "production" environments:
+
+  ```sh
+  $ cd router
+  $ bundle exec cap staging deploy
+  $ bundle exec cap production deploy
+  ```
+
+### Deploying api-umbrella-web
+
+- First-time setup:
+  - Check out the [api-umbrella-web](https://github.com/NREL/api-umbrella-web) repository from git:
+
+    ```sh
+    $ git clone https://github.com/NREL/api-umbrella-web.git web
+    ```
+
+  - Install the deployment dependencies:
+
+    ```sh
+    $ cd web
+    $ bundle install
+    ```
+
+  - Define your destination servers: Add a `.env` file inside the `web` directory defining the servers to deploy to for the "staging" or "production" environments:
+
+    ```
+    API_UMBRELLA_STAGING_WEB_SERVERS="10.0.0.1,10.0.0.2"
+    API_UMBRELLA_PRODUCTION_WEB_SERVERS="10.0.10.1,10.0.10.2"
+    ```
+
+    Servers can be defined using hostnames or IP address. Multiple servers can be comma-delimited. In this example there are two staging servers (`10.0.0.1` and `10.0.0.2`), and two production servers (`10.0.10.1` and `10.0.10.2`).
+
+- Deploy to either the "staging" or "production" environments:
+
+  ```sh
+  $ cd web
+  $ bundle exec cap staging deploy
+  $ bundle exec cap production deploy
+  ```
