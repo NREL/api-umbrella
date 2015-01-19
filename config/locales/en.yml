@@ -53,6 +53,25 @@ en:
     reorder: Reorder
     check_all: Check all
     uncheck_all: Uncheck all
+    nav:
+      admin_accounts: Admin Accounts
+      admin_groups: Admin Groups
+      analytics: Analytics
+      api_backends: API Backends
+      api_drilldown: API Drilldown
+      api_scopes: API Scopes
+      api_users: API Users
+      by_location: By Location
+      by_users: By Users
+      configuration: Configuration
+      dashboard: Dashboard
+      filter_logs: Filter Logs
+      import_export: Import/Export
+      logout: Logout
+      my_account: My Account
+      permissions_management: Permissions Management
+      publish_changes: Publish Changes
+      users: Users
     api:
       servers:
         legend: Backend

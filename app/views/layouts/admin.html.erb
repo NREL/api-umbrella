@@ -27,42 +27,42 @@
         <div class="container-fluid">
           <span class="brand">API Umbrella</span>
           <%= tabs_tag(:builder => BootstrapNavbarTabBuilder, :link_current => true, :open_tabs => { :class => "nav" }) do |tab| %>
-            <%= tab.home "Dashboard", admin_path, :class => "nav-home" %>
+            <%= tab.home t("admin.nav.dashboard"), admin_path, :class => "nav-home" %>
             <% if(current_admin.can?("analytics")) %>
-              <%= tab.analytics('Analytics <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-analytics", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
+              <%= tab.analytics(%(#{t("admin.nav.analytics")} <b class="caret"></b>).html_safe, "#", :class => "dropdown nav-analytics", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
                 <ul class="dropdown-menu">
-                  <li><%= link_to('<i class="fa fa-sitemap"></i> API Drilldown'.html_safe, "/admin/#/stats/drilldown") %></li>
-                  <li><%= link_to('<i class="fa fa-signal"></i> Filter Logs'.html_safe, "/admin/#/stats/logs") %></li>
-                  <li><%= link_to('<i class="fa fa-user"></i> By Users'.html_safe, "/admin/#/stats/users") %></li>
-                  <li><%= link_to('<i class="fa fa-map-marker"></i> By Location'.html_safe, "/admin/#/stats/map") %></li>
+                  <li><%= link_to(%(<i class="fa fa-sitemap"></i> #{t("admin.nav.api_drilldown")}).html_safe, "/admin/#/stats/drilldown") %></li>
+                  <li><%= link_to(%(<i class="fa fa-signal"></i> #{t("admin.nav.filter_logs")}).html_safe, "/admin/#/stats/logs") %></li>
+                  <li><%= link_to(%(<i class="fa fa-user"></i> #{t("admin.nav.by_users")}).html_safe, "/admin/#/stats/users") %></li>
+                  <li><%= link_to(%(<i class="fa fa-map-marker"></i> #{t("admin.nav.by_location")}).html_safe, "/admin/#/stats/map") %></li>
                 </ul>
               <% end %>
             <% end %>
             <% if(current_admin.can_any?(["user_view", "user_manage", "admin_manage"])) %>
-              <%= tab.users('Users  <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-users", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
+              <%= tab.users(%(#{t("admin.nav.users")} <b class="caret"></b>).html_safe, "#", :class => "dropdown nav-users", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
                 <ul class="dropdown-menu">
                   <% if(current_admin.can_any?(["user_view", "user_manage"])) %>
-                    <li><%= link_to('<i class="fa fa-user"></i> API Users'.html_safe, "/admin/#/api_users") %></li>
+                    <li><%= link_to(%(<i class="fa fa-user"></i> #{t("admin.nav.api_users")}).html_safe, "/admin/#/api_users") %></li>
                   <% end %>
                   <% if(current_admin.can?("admin_manage")) %>
-                    <li><%= link_to('<i class="fa fa-user"></i> Admin Accounts'.html_safe, '/admin/#/admins') %></li>
+                    <li><%= link_to(%(<i class="fa fa-user"></i> #{t("admin.nav.admin_accounts")}).html_safe, '/admin/#/admins') %></li>
                     <li class="divider"></li>
-                    <li role="presentation" class="dropdown-header">Permissions Management</li>
+                    <li role="presentation" class="dropdown-header"><%= t("admin.nav.permissions_management") %></li>
                     <% if(current_admin.superuser?) %>
-                      <li><%= link_to('<i class="fa fa-lock"></i> API Scopes'.html_safe, '/admin/#/api_scopes') %></li>
+                      <li><%= link_to(%(<i class="fa fa-lock"></i> #{t("admin.nav.api_scopes")}).html_safe, '/admin/#/api_scopes') %></li>
                     <% end %>
-                    <li><%= link_to('<i class="fa fa-group"></i> Admin Groups'.html_safe, '/admin/#/admin_groups') %></li>
+                    <li><%= link_to(%(<i class="fa fa-group"></i> #{t("admin.nav.admin_groups")}).html_safe, '/admin/#/admin_groups') %></li>
                   <% end %>
                 </ul>
               <% end %>
             <% end %>
             <% if(current_admin.can_any?(["backend_manage", "backend_publish"])) %>
-              <%= tab.config('Configuration <b class="caret"></b>'.html_safe, "#", :class => "dropdown nav-config", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
+              <%= tab.config(%(#{t("admin.nav.configuration")} <b class="caret"></b>).html_safe, "#", :class => "dropdown nav-config", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
                 <ul class="dropdown-menu">
-                  <li><%= link_to('<i class="fa fa-gear"></i> API Backends'.html_safe, '/admin/#/apis') %></li>
-                  <li><%= link_to('<i class="fa fa-upload"></i> Publish Changes'.html_safe, '/admin/#/config/publish') %></li>
+                  <li><%= link_to(%(<i class="fa fa-gear"></i> #{t("admin.nav.api_backends")}).html_safe, '/admin/#/apis') %></li>
+                  <li><%= link_to(%(<i class="fa fa-upload"></i> #{t("admin.nav.publish_changes")}).html_safe, '/admin/#/config/publish') %></li>
                   <li class="divider"></li>
-                  <li><%= link_to('<i class="fa fa-exchange"></i> Import/Export'.html_safe, admin_config_import_export_path) %></li>
+                  <li><%= link_to(%(<i class="fa fa-exchange"></i> #{t("admin.nav.import_export")}).html_safe, admin_config_import_export_path) %></li>
                 </ul>
               <% end %>
             <% end %>
@@ -72,8 +72,8 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-gear"></i> <b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><%= link_to("My Account", "/admin/#/admins/#{current_admin.id}/edit") %></li>
-                <li><%= link_to("Logout", destroy_admin_session_path) %></li>
+                <li><%= link_to(t("admin.nav.my_account"), "/admin/#/admins/#{current_admin.id}/edit") %></li>
+                <li><%= link_to(t("admin.nav.logout"), destroy_admin_session_path) %></li>
               </ul>
             </li>
           </ul>
