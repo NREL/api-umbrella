@@ -36,6 +36,7 @@
     "geoip-lite": "1.1.4",
     "ipaddr.js": "0.1.5",
     "js-yaml": "3.2.3",
+    "kexec": "0.2.0",
     "lodash": "2.4.1",
     "mkdirp": "0.5.0",
     "moment": "2.8.4",
