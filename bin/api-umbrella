@@ -1,4 +1,5 @@
 #!/opt/api-umbrella/embedded/bin/node
+// vi:syntax=javascript
 'use strict';
 
 var mkdirp = require('mkdirp'),
@@ -137,7 +138,7 @@ var tasks = {
     tasks.stop(tasks.start);
   },
 
-  reload: function() {
+  reload: function(options) {
     process.stdout.write('Reloading api-umbrella...');
 
     forever.list(false, function(error, processes) {
@@ -146,11 +147,22 @@ var tasks = {
         return process.exit(1);
       }
 
-      async.eachSeries(processes, function(proc, callback) {
-        process.kill(proc.pid, 'SIGHUP');
-        callback();
-      }, function() {
-        console.info(' [  ' + clc.green('OK') + '  ]');
+      var apiUmbrellaConfig = require('api-umbrella-config');
+      apiUmbrellaConfig.setGlobal('/opt/api-umbrella/var/run/runtime_config.yml');
+
+      var daemonDir = '/opt/api-umbrella/var';
+      var daemonLog = path.join(daemonDir, 'log/daemon.log');
+      process.env.API_UMBRELLA_LOG_PATH = daemonLog;
+
+      var reload = require('../lib/reload');
+      reload(_.pick(options, ['router', 'web']), function(error) {
+        if(error) {
+          console.info(' [' + clc.red('FAIL') + ']');
+          return process.exit(1);
+        } else {
+          console.info(' [  ' + clc.green('OK') + '  ]');
+          return process.exit(0);
+        }
       });
     });
   },
@@ -165,6 +177,18 @@ var tasks = {
         process.exit(1);
       }
     });
+  },
+
+  ctl: function() {
+    var apiUmbrellaConfig = require('api-umbrella-config');
+    apiUmbrellaConfig.setGlobal('/opt/api-umbrella/var/run/runtime_config.yml');
+    var kexec = require('kexec'),
+        processEnv = require('../lib/process_env');
+
+    var configPath = processEnv.supervisordConfigPath();
+
+    _.extend(process.env, processEnv.env());
+    kexec('supervisorctl', ['-c', configPath]);
   },
 
   reopenLogs: function() {
@@ -231,11 +255,25 @@ parser.command('restart')
 
 parser.command('reload')
   .help('Reload the configuration of the API Umbrella server')
+  .option('router', {
+    abbr: 'r',
+    flag: true,
+    help: 'Reload only the router processes',
+  })
+  .option('web', {
+    abbr: 'w',
+    flag: true,
+    help: 'Reload only the web processes',
+  })
   .callback(tasks.reload);
 
 parser.command('status')
   .help('Show the status of the API Umbrella server')
   .callback(tasks.status);
+
+parser.command('ctl')
+  .help('Control the processes running under API Umbrella')
+  .callback(tasks.ctl);
 
 parser.command('reopen-logs')
   .help('Close and reopen log files in use')
