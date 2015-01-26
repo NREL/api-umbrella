@@ -15,7 +15,6 @@
 
 # Ignore Capistrano files
 /REVISION
-/.capistrano
 /config/deployed.yml
 
 # Ignore node generated file
