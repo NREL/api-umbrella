@@ -141,28 +141,30 @@ var tasks = {
   reload: function(options) {
     process.stdout.write('Reloading api-umbrella...');
 
+    var fs = require('fs'),
+        os = require('os');
+
+    // A kludgey workaround for instructing the master process which processes
+    // to reload (just the router, just the web, or everything). A better
+    // option might involve a socket, but for now, we'll just use the SIGHUP
+    // signal in combination with this file.
+    if(options) {
+      var reloadOptions = _.pick(options, ['router', 'web']);
+      var reloadOptionsPath = path.join(os.tmpdir(), 'api-umbrella-reload-options.json');
+      fs.writeFileSync(reloadOptionsPath, JSON.stringify(reloadOptions));
+    }
+
     forever.list(false, function(error, processes) {
       if(error || !processes) {
         console.info(' [' + clc.red('FAIL') + '] (is api-umbrella running?)');
         return process.exit(1);
       }
 
-      var apiUmbrellaConfig = require('api-umbrella-config');
-      apiUmbrellaConfig.setGlobal('/opt/api-umbrella/var/run/runtime_config.yml');
-
-      var daemonDir = '/opt/api-umbrella/var';
-      var daemonLog = path.join(daemonDir, 'log/daemon.log');
-      process.env.API_UMBRELLA_LOG_PATH = daemonLog;
-
-      var reload = require('../lib/reload');
-      reload(_.pick(options, ['router', 'web']), function(error) {
-        if(error) {
-          console.info(' [' + clc.red('FAIL') + ']');
-          return process.exit(1);
-        } else {
-          console.info(' [  ' + clc.green('OK') + '  ]');
-          return process.exit(0);
-        }
+      async.eachSeries(processes, function(proc, callback) {
+        process.kill(proc.pid, 'SIGHUP');
+        callback();
+      }, function() {
+        console.info(' [  ' + clc.green('OK') + '  ]');
       });
     });
   },
