@@ -246,7 +246,7 @@ end
 
 group :development do
   # Deployment
-  gem "capistrano", "~> 3.3.3"
+  gem "capistrano", "~> 3.3.5"
   gem "capistrano-rails", "~> 1.1.2"
 
   gem "awesome_print", "~> 1.2.0"
