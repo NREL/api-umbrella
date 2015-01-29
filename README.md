@@ -1,7 +1,7 @@
 # API Umbrella Gatekeeper (LUA)
 
 API Umbrella Gatekeeper is the custom reverse proxy that's used in [API Umbrella](http://github.com/NREL/api-umbrella). 
-*This version is for development only, and is written in Lua [More informations](https://github.com/NREL/api-umbrella/issues/56)*
+*This version is for development only, and is written in Lua [More informations](https://github.com/NREL/api-umbrella/issues/86)*
 
 Issues for this project are [maintained here](https://github.com/NREL/api-umbrella/issues).  
 
