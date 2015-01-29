@@ -15,10 +15,6 @@ In the API Umbrella stack, the Gatekeeper is represented below:
 [request] ==> [load balancer] ==> [GATEKEEPER] ==> [cache] ==> [load balancer] => [api backend]
 ```
 
-## Usage
-
-See [Running API Umbrella](https://github.com/NREL/api-umbrella#running-api-umbrella) for setup instructions.
-
 ## Features
 
 ### API Key Validation
