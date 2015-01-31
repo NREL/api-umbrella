@@ -9,6 +9,7 @@ var _ = require('lodash'),
     csv = require('csv'),
     elasticsearch = require('elasticsearch'),
     fs = require('fs'),
+    zlib = require('zlib'),
     logCleaner = require('../lib/log_processor/cleaner'),
     mime = require('mime'),
     moment = require('moment'),
@@ -67,6 +68,8 @@ _.extend(MigrateLogs.prototype, {
   },
 
   migrate: function(asyncSeriesCallback) {
+    var gunzip = zlib.createGunzip();
+
     async.eachSeries(this.logPaths, function(path, next) {
       console.info('Begin processing for ' + path);
 
@@ -76,7 +79,13 @@ _.extend(MigrateLogs.prototype, {
         next();
       };
 
-      csv().from.path(path).transform(this.handleRows.bind(this));
+
+      var stream = fs.createReadStream(path);
+      if(/\.gz$/.test(path)) {
+        stream = stream.pipe(gunzip);
+      }
+
+      csv().from.stream(stream).transform(this.handleRows.bind(this));
     }.bind(this), asyncSeriesCallback);
   },
 
