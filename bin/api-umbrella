@@ -80,7 +80,7 @@ var tasks = {
         tail.on('line', function(chunk) {
           process.stdout.write(chunk);
           buffer += chunk;
-          if(/Starting api-umbrella.*OK.*\]/.test(buffer)) {
+          if(/Starting api-umbrella[\s\S]*OK.*\]/.test(buffer)) {
             process.stdout.write('\n');
             started = true;
             process.exit(0);
@@ -93,7 +93,7 @@ var tasks = {
         runArgs = runArgs.concat(process.argv.slice(3));
 
         // Call the "run" command, but just start it in the background.
-        forever.startDaemon(__filename, {
+        var monitor = forever.startDaemon(__filename, {
           silent: false,
           pidFile: daemonPid,
           args: runArgs,
@@ -106,6 +106,10 @@ var tasks = {
           // forever here since it provides a nicer interface to starting /
           // stopping / checking the status of a process.
           max: 1,
+        });
+
+        monitor.on('exit', function(code) {
+          process.exit(code);
         });
       }
     });
