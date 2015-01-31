@@ -97,7 +97,7 @@ startsecs=5
 {{#each gatekeeper_hosts}}
 [program:{{process_name}}]
 environment=NODE_LOG_DIR="{{../log_dir}}",NODE_ENV="{{../app_env}}"
-command=api-umbrella-gatekeeper {{../api_umbrella_config_args}} -p {{port}}
+command={{../router.dir}}/node_modules/.bin/api-umbrella-gatekeeper {{../api_umbrella_config_args}} -p {{port}}
 {{../supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{../log_dir}}/%(program_name)s.log
@@ -110,7 +110,7 @@ startsecs=5
 programs={{gatekeeper_supervisor_process_names}}
 
 [program:config-reloader]
-command=api-umbrella-config-reloader {{api_umbrella_config_args}}
+command={{router.dir}}/bin/api-umbrella-config-reloader {{api_umbrella_config_args}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
@@ -118,7 +118,7 @@ logfile_maxbytes=0
 startsecs=10
 
 [program:router-log-listener]
-command=api-umbrella-router-log-listener {{api_umbrella_config_args}}
+command={{router.dir}}/bin/api-umbrella-router-log-listener {{api_umbrella_config_args}}
 {{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
@@ -127,7 +127,7 @@ logfile_maxbytes=0
 startsecs=10
 
 [program:log-processor]
-command=api-umbrella-log-processor {{api_umbrella_config_args}}
+command={{router.dir}}/bin/api-umbrella-log-processor {{api_umbrella_config_args}}
 {{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
@@ -136,7 +136,7 @@ logfile_maxbytes=0
 startsecs=10
 
 [program:distributed-rate-limits-sync]
-command=api-umbrella-distributed-rate-limits-sync {{api_umbrella_config_args}}
+command={{router.dir}}/node_modules/.bin/api-umbrella-distributed-rate-limits-sync {{api_umbrella_config_args}}
 {{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
