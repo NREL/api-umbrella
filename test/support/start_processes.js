@@ -21,7 +21,10 @@ before(function startProcesses(done) {
   this.timeout(180000);
 
   var options = {
-    config: [path.resolve(__dirname, '../config/test.yml')],
+    config: [
+      path.resolve(__dirname, '../config/test.yml'),
+      '/tmp/api-umbrella-test.yml',
+    ],
   };
 
   this.router = router.run(options, done);
