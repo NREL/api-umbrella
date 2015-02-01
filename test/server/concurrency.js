@@ -31,7 +31,7 @@ describe('proxy concurrency', function() {
     }, function(error, requests) {
       for(var i = 0; i < requests.length; i++) {
         var request = requests[i];
-        request.input.should.eql(request.output);
+        request.output.should.eql(request.input);
       }
 
       done();
