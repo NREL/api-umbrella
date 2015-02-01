@@ -151,6 +151,7 @@ describe('distributed rate limit sync', function() {
 
   it('sets new rate limits to the distributed value', function(done) {
     redisClient.get('apiKey:3000000:NEW:' + this.bucketDate.toISOString(), function(error, limit) {
+      should.not.exist(error);
       limit.should.eql('143');
       done();
     });
@@ -158,6 +159,7 @@ describe('distributed rate limit sync', function() {
 
   it('increases existing rate limits to match the distributed value', function(done) {
     redisClient.get('apiKey:3000000:EXISTING:' + this.bucketDate.toISOString(), function(error, limit) {
+      should.not.exist(error);
       limit.should.eql('99');
       done();
     });
@@ -165,6 +167,7 @@ describe('distributed rate limit sync', function() {
 
   it('ignores rate limits when the distributed value is lower', function(done) {
     redisClient.get('apiKey:3000000:LOWER:' + this.bucketDate.toISOString(), function(error, limit) {
+      should.not.exist(error);
       limit.should.eql('80');
       done();
     });
@@ -172,6 +175,7 @@ describe('distributed rate limit sync', function() {
 
   it('ignores non-distributed rate limits', function(done) {
     redisClient.get('apiKey:720000:LOCAL:' + this.bucketDate.toISOString(), function(error, limit) {
+      should.not.exist(error);
       limit.should.eql('47');
       done();
     });
@@ -179,6 +183,7 @@ describe('distributed rate limit sync', function() {
 
   it('syncs api-specific rate limits', function(done) {
     redisClient.get('apiKey:2700000:API:' + this.bucketDate.toISOString(), function(error, limit) {
+      should.not.exist(error);
       limit.should.eql('133');
       done();
     });
@@ -186,6 +191,7 @@ describe('distributed rate limit sync', function() {
 
   it('syncs api-specific sub settings rate limits', function(done) {
     redisClient.get('apiKey:2880000:API_SUB_SETTINGS:' + this.bucketDate.toISOString(), function(error, limit) {
+      should.not.exist(error);
       limit.should.eql('38');
       done();
     });
@@ -194,6 +200,7 @@ describe('distributed rate limit sync', function() {
   it('initially performs a sync for the entire duration on start', function(done) {
     var bucketDate = new Date(this.bucketDate - 49 * 60 * 1000); // 49min ago
     redisClient.get('apiKey:3000000:OLD:' + bucketDate.toISOString(), function(error, limit) {
+      should.not.exist(error);
       limit.should.eql('97');
       done();
     });
@@ -201,6 +208,7 @@ describe('distributed rate limit sync', function() {
 
   it('does not sync distributed rate limits outside the duration on start', function(done) {
     redisClient.keys('apiKey:3000000:TOO_OLD:*', function(error, keys) {
+      should.not.exist(error);
       keys.length.should.eql(0);
       done();
     });
@@ -220,23 +228,27 @@ describe('distributed rate limit sync', function() {
       count: 76,
     });
 
-    distributed.save();
-    setTimeout(function() {
-      redisClient.get('apiKey:3000000:AFTER:' + bucketDate.toISOString(), function(error, limit) {
-        limit.should.eql('76');
+    distributed.save(function(error) {
+      should.not.exist(error);
+      setTimeout(function() {
+        redisClient.get('apiKey:3000000:AFTER:' + bucketDate.toISOString(), function(error, limit) {
+          should.not.exist(error);
+          limit.should.eql('76');
 
-        distributed.count = 99;
-        distributed.updated_at = new Date();
-        distributed.save();
-
-        setTimeout(function() {
-          redisClient.get('apiKey:3000000:AFTER:' + bucketDate.toISOString(), function(error, limit) {
-            limit.should.eql('99');
-            done();
-          });
-        }, this.sync.syncEvery + 50);
-      }.bind(this));
-    }.bind(this), this.sync.syncEvery + 50);
+          distributed.count = 99;
+          distributed.updated_at = new Date();
+          distributed.save(function() {
+            setTimeout(function() {
+              redisClient.get('apiKey:3000000:AFTER:' + bucketDate.toISOString(), function(error, limit) {
+                should.not.exist(error);
+                limit.should.eql('99');
+                done();
+              });
+            }, this.sync.syncEvery + 100);
+          }.bind(this));
+        }.bind(this));
+      }.bind(this), this.sync.syncEvery + 100);
+    }.bind(this));
   });
 
   it('polling continues when no data is present on a polling cycle', function(done) {
@@ -255,28 +267,33 @@ describe('distributed rate limit sync', function() {
       count: 76,
     });
 
-    distributed.save();
-    setTimeout(function() {
-      redisClient.get('apiKey:3000000:POLL:' + bucketDate.toISOString(), function(error, limit) {
-        limit.should.eql('76');
+    distributed.save(function(error) {
+      should.not.exist(error);
+      setTimeout(function() {
+        redisClient.get('apiKey:3000000:POLL:' + bucketDate.toISOString(), function(error, limit) {
+          should.not.exist(error);
+          limit.should.eql('76');
 
-        // Wait long enough to to hit a polling cycle outside the 2 second
-        // buffer.
-        var wait = this.sync.syncBuffer + this.sync.syncEvery + 50;
-        setTimeout(function() {
-          distributed.count = 99;
-          distributed.updated_at = new Date();
-          distributed.save();
-
+          // Wait long enough to to hit a polling cycle outside the 2 second
+          // buffer.
+          var wait = this.sync.syncBuffer + this.sync.syncEvery + 100;
           setTimeout(function() {
-            redisClient.get('apiKey:3000000:POLL:' + bucketDate.toISOString(), function(error, limit) {
-              limit.should.eql('99');
-              done();
-            });
-          }, this.sync.syncEvery + 50);
-        }.bind(this), wait);
-      }.bind(this));
-    }.bind(this), this.sync.syncEvery + 50);
+            distributed.count = 99;
+            distributed.updated_at = new Date();
+            distributed.save(function(error) {
+              should.not.exist(error);
+              setTimeout(function() {
+                redisClient.get('apiKey:3000000:POLL:' + bucketDate.toISOString(), function(error, limit) {
+                  should.not.exist(error);
+                  limit.should.eql('99');
+                  done();
+                });
+              }, this.sync.syncEvery + 100);
+            }.bind(this));
+          }.bind(this), wait);
+        }.bind(this));
+      }.bind(this), this.sync.syncEvery + 100);
+    }.bind(this));
   });
 
 
@@ -296,22 +313,27 @@ describe('distributed rate limit sync', function() {
       count: 13,
     });
 
-    distributed.save();
-    setTimeout(function() {
-      redisClient.get('apiKey:3000000:BUFFER:' + bucketDate.toISOString(), function(error, limit) {
-        limit.should.eql('13');
+    distributed.save(function(error) {
+      setTimeout(function() {
+        should.not.exist(error);
+        redisClient.get('apiKey:3000000:BUFFER:' + bucketDate.toISOString(), function(error, limit) {
+          should.not.exist(error);
+          limit.should.eql('13');
 
-        distributed.count = 88;
-        distributed.updated_at = new Date() - 2600;
-        distributed.save();
-
-        setTimeout(function() {
-          redisClient.get('apiKey:3000000:BUFFER:' + bucketDate.toISOString(), function(error, limit) {
-            limit.should.eql('13');
-            done();
-          });
-        }, this.sync.syncEvery + 50);
-      }.bind(this));
-    }.bind(this), this.sync.syncEvery + 50);
+          distributed.count = 88;
+          distributed.updated_at = new Date() - 2600;
+          distributed.save(function(error) {
+            should.not.exist(error);
+            setTimeout(function() {
+              redisClient.get('apiKey:3000000:BUFFER:' + bucketDate.toISOString(), function(error, limit) {
+                should.not.exist(error);
+                limit.should.eql('13');
+                done();
+              });
+            }, this.sync.syncEvery + 100);
+          }.bind(this));
+        }.bind(this));
+      }.bind(this), this.sync.syncEvery + 100);
+    }.bind(this));
   });
 });

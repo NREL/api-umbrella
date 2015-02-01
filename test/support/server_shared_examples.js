@@ -26,6 +26,7 @@ _.merge(global.shared, {
 
   runServer: function(configOverrides) {
     beforeEach(function startConfigLoader(done) {
+      this.timeout(5000);
       var overridesPath = path.resolve(__dirname, '../config/overrides.yml');
       fs.writeFileSync(overridesPath, yaml.dump(configOverrides || {}));
 
@@ -61,11 +62,15 @@ _.merge(global.shared, {
     });
 
     afterEach(function stopConfigLoader(done) {
-      this.loader.close(done);
+      if(this.loader) {
+        this.loader.close(done);
+      }
     });
 
     afterEach(function stopGatekeeper(done) {
-      this.gatekeeper.close(done);
+      if(this.gatekeeper) {
+        this.gatekeeper.close(done);
+      }
     });
   },
 
