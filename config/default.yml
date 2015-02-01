@@ -19,6 +19,9 @@ db_dir: /opt/api-umbrella/var/db
 redis:
   host: 127.0.0.1
   port: 14000
+beanstalkd:
+  host: 127.0.0.1
+  port: 14005
 nginx:
   workers: 4
   worker_connections: 8192
@@ -80,6 +83,8 @@ router:
     ip_rate_size: 8m
     ip_connections: 50
     ip_connections_size: 5m
+  log_listener:
+    port: 14006
 supervisord:
   inet_http_server:
     host: 127.0.0.1

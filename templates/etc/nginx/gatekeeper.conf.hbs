@@ -1,9 +1,10 @@
 set $x_api_umbrella_request_id $txid;
-set $router_name "web_router";
-access_log {{log_dir}}/router.log api_umbrella_log buffer=32k flush=10s;
+set $router_name "initial_router";
+access_log {{log_dir}}/router.log api_umbrella_initial_router_log buffer=32k flush=10s;
+access_log syslog:server=127.0.0.1:{{router.log_listener.port}} api_umbrella_initial_router_log;
 
-# Disable gzip for APIs at this front-most "web_router" proxy. Our assumption
-# is that gzip has already been handled by the "api_router".
+# Disable gzip for APIs at this front-most "initial_router" proxy. Our assumption
+# is that gzip has already been handled by the "api_backend_router".
 #
 # This is mainly disabled due to Varnish randomly turning non-chunked responses
 # into chunked responses: https://www.varnish-cache.org/trac/ticket/1506
@@ -13,8 +14,8 @@ access_log {{log_dir}}/router.log api_umbrella_log buffer=32k flush=10s;
 #
 # This does mean that no gatekeeper error responses will ever get gzipped (over
 # rate limit errors, invalid api key errors, etc), since those never interact
-# with the "api_router" proxy. So this might be worth revisiting if Varnish
-# fixes that issue.
+# with the "api_backend_router" proxy. So this might be worth revisiting if
+# Varnish fixes that issue.
 gzip off;
 gunzip off;
 
