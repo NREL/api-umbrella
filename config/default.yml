@@ -22,6 +22,8 @@ redis:
 beanstalkd:
   host: 127.0.0.1
   port: 14005
+dnsmasq:
+  port: 14007
 nginx:
   workers: 4
   worker_connections: 8192
@@ -38,7 +40,7 @@ gatekeeper:
 varnish:
   port: 14010
   backend:
-    host: localhost
+    host: 127.0.0.1
     port: 14011
 web:
   host: 127.0.0.1
@@ -94,7 +96,7 @@ hosts:
     default: true
 dns_resolver:
   minimum_ttl: 40
-  ignore_ttl_domains: []
+  reload_buffer_time: 15
 mongodb:
   url: "mongodb://127.0.0.1:14001/api_umbrella"
   options:

@@ -5,12 +5,14 @@
       {{balance_algorithm}};
     {{/unless}}
 
-    {{#each servers}}
-      server {{ip}}:{{port}}; # {{host}}
-    {{/each}}
-
     {{#if keepalive_connections}}
       keepalive {{keepalive_connections}};
     {{/if}}
+
+    {{#each servers}}
+      {{#each nginx_servers}}
+        server {{.}};
+      {{/each}}
+    {{/each}}
   }
 {{/each}}

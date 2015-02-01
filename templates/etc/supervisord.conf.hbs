@@ -49,6 +49,26 @@ startsecs=10
 {{/if}}
 
 {{#if service_router_enabled}}
+[program:dnsmasq]
+command=dnsmasq -C {{etc_dir}}/dnsmasq.conf
+{{supervisor_conditional_user}}
+redirect_stderr=true
+stdout_logfile={{log_dir}}/%(program_name)s.log
+stderr_logfile=NONE
+logfile_maxbytes=0
+startsecs=5
+
+{{#if test_env}}
+[program:test-env-unbound]
+command=unbound -c {{etc_dir}}/test_env/unbound/unbound.conf
+{{supervisor_conditional_user}}
+redirect_stderr=true
+stdout_logfile={{log_dir}}/%(program_name)s.log
+stderr_logfile=NONE
+logfile_maxbytes=0
+startsecs=5
+{{/if}}
+
 [program:redis]
 command=redis-server {{etc_dir}}/redis.conf
 {{supervisor_conditional_user}}

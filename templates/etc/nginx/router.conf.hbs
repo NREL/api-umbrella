@@ -25,6 +25,9 @@ http {
   scgi_temp_path {{tmp_dir}}/router-nginx-scgi_temp;
   server_tokens off;
 
+  resolver 127.0.0.1:{{dnsmasq.port}};
+  resolver_timeout 12s;
+
   # Log format for gathering the primary analytics.
   #
   # Note: This is manually constructed JSON to make dealing with it more sane
@@ -168,9 +171,11 @@ http {
   # Primary host. Serves up both APIs and web content.
   server {
     listen {{../http_port}}{{#if default}} default_server{{/if}};
+    #listen [::]:{{../http_port}}{{#if default}} default_server{{/if}};
     server_name {{hostname}};
 
     listen {{../https_port}} ssl{{#if default}} default_server{{/if}};
+    #listen [::]:{{../https_port}} ssl{{#if default}} default_server{{/if}};
     {{#if ssl_cert}}
     ssl_certificate {{ssl_cert}};
     ssl_certificate_key {{ssl_cert_key}};
@@ -218,6 +223,11 @@ http {
       proxy_pass http://api_umbrella_web_backend;
     }
 
+    #location ~* ^/proxy/(.*) {
+    #  proxy_pass http://$1;
+    #}
+
+
     # Route all other requests as APIs going through the API Umbrella Gatekeeper.
     location / {
       include ./frontend_proxy_header_defaults.conf;
@@ -230,10 +240,12 @@ http {
   # Secondary host. Serves up only API traffic (no web page content).
   server {
     listen {{http_port}};
+    #listen [::]:{{http_port}};
     server_name {{hostname}};
 
     {{#if ssl_cert}}
     listen {{../../https_port}} ssl;
+    #listen [::]:{{../../https_port}} ssl;
     ssl_certificate {{ssl_cert}};
     ssl_certificate_key {{ssl_cert_key}};
     {{/if}}
@@ -253,6 +265,7 @@ http {
   # Like secondary hosts, but minus HTTPS (since we don't know the domain).
   server {
     listen {{http_port}} default_server;
+    #listen [::]:{{http_port}} default_server;
     server_name _;
 
     include ./frontend_defaults.conf;
@@ -268,6 +281,7 @@ http {
   {{#unless development_env}}
   server {
     listen {{static_site.port}};
+    #listen [::]:{{static_site.port}};
     server_name _;
     port_in_redirect off;
 
@@ -285,6 +299,7 @@ http {
 
   server {
     listen {{router.api_backends.port}};
+    #listen [::]:{{router.api_backends.port}};
     server_name _;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;

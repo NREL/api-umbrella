@@ -100,7 +100,7 @@ describe('logging', function() {
       return (!response && !timedOut);
     }, function(error) {
       if(timedOut) {
-        return done('Timed out fetching log for request_query.unique_query_id:' + uniqueQueryId);
+        return done((new Date()) + ': Timed out fetching log for request_query.unique_query_id:' + uniqueQueryId);
       }
 
       if(error) {
