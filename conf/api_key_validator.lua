@@ -1,6 +1,9 @@
 local user_store = require "user_store"
+local inspect = require "inspect"
+local types = require "pl.types"
 
 local get_user = user_store.get
+local is_empty = types.is_empty
 
 local function resolve_api_key()
   local api_key_methods = config["gatekeeper"]["api_key_methods"]
@@ -15,7 +18,7 @@ local function resolve_api_key()
       api_key = ngx.ctx.remote_user
     end
 
-    if api_key then
+    if not is_empty(api_key) then
       break
     end
   end
@@ -26,8 +29,12 @@ end
 return function(settings)
   -- Find the API key in the header, query string, or HTTP auth.
   local api_key = resolve_api_key()
-  if not api_key then
-    return nil, "api_key_missing"
+  if is_empty(api_key) then
+    if settings and settings.disable_api_key then
+      return nil
+    else
+      return nil, "api_key_missing"
+    end
   end
 
   -- Look for the api key in the user database.

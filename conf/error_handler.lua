@@ -1,12 +1,14 @@
 local inspect = require "inspect"
 local lustache = require "lustache"
 local path = require "pl.path"
+local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
 local utils = require "utils"
 
 local deepcopy = tablex.deepcopy
 local extension = path.extension
+local split = plutils.split
 local strip = stringx.strip
 
 local supported_formats = {
@@ -15,6 +17,16 @@ local supported_formats = {
   ["csv"] = "text/csv",
   ["html"] = "text/html",
 }
+
+local supported_media_types = {}
+for format, media_type in pairs(supported_formats) do
+  local media_type_parts = split(media_type, "/")
+  table.insert(supported_media_types, {
+    format = format,
+    media_type = media_type_parts[1],
+    media_subtype = media_type_parts[2],
+  })
+end
 
 local function request_format()
   local request_path = ngx.ctx.uri
@@ -38,10 +50,18 @@ local function request_format()
   -- TODO: Implement Accept header negotiation. Possibly modify something like:
   -- https://github.com/fghibellini/nginx-http-accept-lang/blob/master/lang.lua
 
+  local accept_header = ngx.var.http_accept
+  if accept_header then
+    local format = utils.parse_accept(accept_header, supported_media_types)
+    if format then
+      return format
+    end
+  end
+
   return "json"
 end
 
-local function render_template(template, data, strip_whitespace)
+local function render_template(template, data, format, strip_whitespace)
   -- Disable Mustache HTML escaping by automatically turning all "{{var}}"
   -- references into unescaped "{{{var}}}" references. Since we're returning
   -- non-HTML errors, we don't want escaping. This lets us be a little lazy
@@ -56,11 +76,27 @@ local function render_template(template, data, strip_whitespace)
     template = strip(template)
   end
 
-  return lustache:render(template, data)
+  if format == "json" then
+    for key, value in pairs(data) do
+      data[key] = ndk.set_var.set_quote_json_str(value)
+    end
+  elseif format == "csv" then
+    -- TODO: Implement CSV escaping
+  end
+
+  local ok, output = pcall(lustache.render, lustache, template, data)
+  if ok then
+    return output
+  else
+    ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. inspect(output))
+    return nil, "template error"
+  end
 end
 
-return function(err)
-  local settings = config["apiSettings"]
+return function(err, settings)
+  if not settings then
+    settings = config["apiSettings"]
+  end
 
   local format = request_format()
 
@@ -79,15 +115,22 @@ return function(err)
   end
 
   local template = settings["error_templates"][format]
-  local output = render_template(template, data, true)
+  local output, err = render_template(template, data, format, true)
 
   -- Allow all errors to be loaded over CORS (in case any underlying APIs are
   -- expected to be accessed over CORS then we want to make sure errors are
   -- also allowed via CORS).
   ngx.header["Access-Control-Allow-Origin"] = "*"
 
-  ngx.status = status_code
-  ngx.header.content_type = supported_formats[format]
-  ngx.say(output)
-  return ngx.exit(ngx.HTTP_OK)
+  if not err then
+    ngx.status = status_code
+    ngx.header.content_type = supported_formats[format]
+    ngx.print(output)
+    return ngx.exit(ngx.HTTP_OK)
+  else
+    ngx.status = 500
+    ngx.header.content_type = "text/plain"
+    ngx.print("Internal Server Error")
+    return ngx.exit(ngx.HTTP_OK)
+  end
 end

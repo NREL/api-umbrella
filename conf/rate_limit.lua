@@ -8,10 +8,15 @@ return function(settings, user)
 
   local limits = settings["rate_limits"]
   for _, limit in ipairs(limits) do
+    local limit_by = limit["limit_by"]
+    if not user or user.throttle_by_ip then
+      limit_by = "ip"
+    end
+
     local key = limit["limit_by"] .. "-" .. limit["duration"] .. "-"
-    if limit["limit_by"] == "apiKey" then
+    if limit_by == "apiKey" then
       key = key .. user["api_key"]
-    elseif limit["limit_by"] == "ip" then
+    elseif limit_by == "ip" then
       key = key .. ngx.ctx.remote_addr
     else
       ngx.log(ngx.ERR, "stats unknown limit by")

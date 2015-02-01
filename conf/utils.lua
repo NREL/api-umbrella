@@ -1,14 +1,18 @@
 local _M = {}
 
 local cmsgpack = require "cmsgpack"
+local inspect = require "inspect"
 local iputils = require "resty.iputils"
 local plutils = require "pl.utils"
+local stringx = require "pl.stringx"
 local types = require "pl.types"
 
 local escape = plutils.escape
 local is_empty = types.is_empty
 local pack = cmsgpack.pack
 local parse_cidrs = iputils.parse_cidrs
+local split = plutils.split
+local strip = stringx.strip
 local unpack = cmsgpack.unpack
 
 -- Determine if the table is an array.
@@ -51,7 +55,9 @@ function _M.base_url()
 
   local base = protocol .. "://" .. host
   if (protocol == "http" and port ~= "80") or (protocol == "https" and port ~= "443") then
-    base = base .. ":" .. port
+    if not host:find(":" .. port .. "$") then
+      base = base .. ":" .. port
+    end
   end
 
   return base
@@ -69,12 +75,16 @@ function _M.set_packed(dict, key, value)
 end
 
 function _M.deep_merge_overwrite_arrays(dest, src)
+  if not src then
+    return dest
+  end
+
   for key, value in pairs(src) do
     if type(value) == "table" and type(dest[key]) == "table" then
       if _M.is_array(value) then
         dest[key] = value
       else
-        merge(dest[key], src[key])
+        _M.deep_merge_overwrite_arrays(dest[key], src[key])
       end
     else
       dest[key] = value
@@ -118,6 +128,89 @@ function _M.cache_computed_settings(settings)
   if settings["http_basic_auth"] then
     settings["_http_basic_auth_header"] = "Basic " .. ngx.encode_base64(settings["http_basic_auth"])
     settings["http_basic_auth"] = nil
+  end
+
+  if settings["sub_settings"] then
+    for _, sub_settings in ipairs(settings["sub_settings"]) do
+      if sub_settings["http_method"] then
+        sub_settings["http_method"] = string.lower(sub_settings["http_method"])
+      end
+
+      if sub_settings["settings"] then
+        _M.cache_computed_settings(sub_settings["settings"])
+      end
+    end
+  end
+end
+
+function _M.parse_accept(header, supported_media_types)
+  if not header then
+    return nil
+  end
+
+  local accepts = {}
+  local accept_header = split(header, ",")
+  for _, accept_string in ipairs(accept_header) do
+    local parts = split(accept_string, ";", 2)
+    local media = parts[1]
+    local params = parts[2]
+    if params then
+      params = split(params, ";")
+    end
+
+    local media_parts = split(media, "/")
+    local media_type = strip(media_parts[1] or "")
+    local media_subtype = strip(media_parts[2] or "")
+
+    local q = 1
+    for _, param in ipairs(params) do
+      local param_parts = split(param, "=")
+      local param_key = strip(param_parts[1] or "")
+      local param_value = strip(param_parts[2] or "")
+      if param_key == "q" then
+        q = tonumber(param_value)
+      end
+    end
+
+    if q == 0 then
+      break
+    end
+
+    local accept = {
+      media_type = media_type,
+      media_subtype = media_subtype,
+      q = q,
+    }
+
+    table.insert(accepts, accept)
+  end
+
+  table.sort(accepts, function(a, b)
+    if a.q < b.q then
+      return false
+    elseif a.q > b.q then
+      return true
+    elseif (a.media_type == "*" and b.media_type ~= "*") or (a.media_subtype == "*" and b.media_subtype ~= "*") then
+      return false
+    elseif (a.media_type ~= "*" and b.media_type == "*") or (a.media_subtype ~= "*" and b.media_subtype == "*") then
+      return true
+    else
+      return true
+    end
+  end)
+
+  for _, supported in ipairs(supported_media_types) do
+    for _, accept in ipairs(accepts) do
+      if accept.media_type == supported.media_type and accept.media_subtype == supported.media_subtype then
+        return supported.format
+      elseif accept.media_type == supported.media_type and accept.media_subtype == "*" then
+        return supported.format
+      elseif accept.media_type == "*" and accept.media_subtype == "*" then
+        return supported.format
+      else
+        return nil
+      end
+    end
   end
 end
 

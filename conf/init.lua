@@ -2,6 +2,8 @@ DEBUG = false
 
 local load_config = require "load_config"
 config = load_config.parse()
+config_version = ngx.now()
+ngx.shared.apis:set("config_version", config_version)
 
 local unistd = require "posix.unistd"
 local utsname = require "posix.sys.utsname"

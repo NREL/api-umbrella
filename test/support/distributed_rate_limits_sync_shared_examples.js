@@ -4,7 +4,6 @@ require('../test_helper');
 
 var _ = require('lodash'),
     apiUmbrellaConfig = require('api-umbrella-config'),
-    distributedRateLimitSync = require('../../lib/distributed_rate_limits_sync'),
     fs = require('fs'),
     path = require('path'),
     yaml = require('js-yaml');

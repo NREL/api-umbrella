@@ -3,13 +3,15 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    apiUmbrellaConfig = require('api-umbrella-config'),
     csv = require('csv'),
+    execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
     fs = require('fs'),
     ippp = require('ipplusplus'),
+    mergeOverwriteArrays = require('object-extend'),
     path = require('path'),
     request = require('request'),
+    uuid = require('node-uuid'),
     xml2js = require('xml2js'),
     yaml = require('js-yaml');
 
@@ -25,20 +27,49 @@ _.merge(global.shared, {
   },
 
   runServer: function(configOverrides) {
-    beforeEach(function startConfigLoader(done) {
-      var overridesPath = path.resolve(__dirname, '../config/overrides.yml');
-      fs.writeFileSync(overridesPath, yaml.dump(configOverrides || {}));
+    before(function setupConfig(done) {
+      var paths = [
+        path.resolve(__dirname, '../../config/default.yml'),
+        path.resolve(__dirname, '../config/test.yml'),
+      ];
 
-      apiUmbrellaConfig.loader({
-        paths: [
-          path.resolve(__dirname, '../../config/default.yml'),
-          path.resolve(__dirname, '../config/test.yml'),
-        ],
-        overrides: configOverrides,
-      }, function(error, loader) {
-        this.loader = loader;
-        done(error);
-      }.bind(this));
+      var config = {};
+      paths.forEach(function(path) {
+        var data = fs.readFileSync(path);
+        var values = yaml.safeLoad(data.toString());
+
+        mergeOverwriteArrays(config, values);
+      });
+
+      if(configOverrides) {
+        mergeOverwriteArrays(config, configOverrides);
+      }
+
+      if(config.apis) {
+        config.apis.forEach(function(api) {
+          if(!api._id) {
+            api._id = uuid.v4();
+          }
+
+          if(!api.servers) {
+            api.servers = [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              }
+            ];
+          }
+        });
+      }
+
+      fs.writeFileSync('/tmp/runtime_config_test.yml', yaml.dump(config));
+      done();
+    });
+
+    before(function reloadNginx(done) {
+      execFile('pkill', ['-HUP', '-f', 'nginx: master'], function() {
+        setTimeout(done, 1500);
+      });
     });
 
     beforeEach(function createDefaultApiUser(done) {
@@ -52,20 +83,9 @@ _.merge(global.shared, {
       }.bind(this));
     });
 
-    beforeEach(function startGatekeeper(done) {
+    beforeEach(function resetBackendCalled(done) {
       backendCalled = false;
-
-      this.gatekeeper = gatekeeper.start({
-        config: this.loader.runtimeFile,
-      }, done);
-    });
-
-    afterEach(function stopConfigLoader(done) {
-      this.loader.close(done);
-    });
-
-    afterEach(function stopGatekeeper(done) {
-      this.gatekeeper.close(done);
+      done();
     });
   },
 

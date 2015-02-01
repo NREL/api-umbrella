@@ -1,6 +1,7 @@
 local _M = {}
 
 local inspect = require "inspect"
+local bson = require "resty-mongol.bson"
 local lock = require "resty.lock"
 local mongol = require "resty-mongol"
 local std_table = require "std.table"
@@ -9,6 +10,7 @@ local utils = require "utils"
 
 local cache_computed_settings = utils.cache_computed_settings
 local clone_select = std_table.clone_select
+local get_utc_date = bson.get_utc_date
 local invert = std_table.invert
 local is_empty = types.is_empty
 local set_packed = utils.set_packed
@@ -19,7 +21,7 @@ local lock = lock:new("my_locks", {
 
 local api_users = ngx.shared.api_users
 
-local delay = 3  -- in seconds
+local delay = 0.01 -- in seconds
 local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
@@ -37,16 +39,27 @@ check = function(premature)
       local conn = mongol()
       conn:set_timeout(1000)
 
-      local ok, err = conn:connect("127.0.0.1", 14001)
+      local ok, err = conn:connect("127.0.0.1", 27017)
       if not ok then
         log(ERR, "connect failed: "..err)
       end
 
-      local db = conn:new_db_handle("api_umbrella")
+      local db = conn:new_db_handle("api_umbrella_test")
       local col = db:get_col("api_users")
 
-      local r = col:find({})
+      local last_fetched_time = api_users:get("last_updated_at") or 0
+
+      local r = col:find({
+        updated_at = {
+          ["$gt"] = get_utc_date(last_fetched_time),
+        },
+      })
+      r:sort({ updated_at = -1 })
       for i , v in r:pairs() do
+        if i == 1 then
+          api_users:set("last_updated_at", v["updated_at"])
+        end
+
         local user = clone_select(v, {
           "disabled_at",
           "throttle_by_ip",

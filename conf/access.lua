@@ -15,7 +15,7 @@ local ngx_var = ngx.var
 -- so they don't allocate duplicate memory during the request, and since
 -- ngx.var lookups are apparently somewhat expensive.
 ngx.ctx.arg_api_key = ngx_var.arg_api_key
-ngx.ctx.host = ngx_var.http_x_forwarded_host or ngx_var.host
+ngx.ctx.host = ngx_var.http_x_forwarded_host or ngx_var.http_host or ngx_var.host
 ngx.ctx.http_x_api_key = ngx_var.http_x_api_key
 ngx.ctx.port = ngx_var.http_x_forwarded_port or ngx_var.server_port
 ngx.ctx.protocol = ngx_var.http_x_forwarded_proto or ngx_var.scheme
@@ -33,50 +33,50 @@ end
 -- Fetch the settings from the matched API.
 local settings, err = api_settings(api)
 if err then
-  return error_handler(err)
+  return error_handler(err, settings)
 end
 
 -- Validate the API key that's passed in, if this API requires API keys.
 local user, err = api_key_validator(settings)
 if err then
-  return error_handler(err)
+  return error_handler(err, settings)
 end
 
 -- Fetch and merge any user-specific settings.
 local err = user_settings(settings, user)
 if err then
-  return error_handler(err)
+  return error_handler(err, settings)
 end
 
 -- If this API requires roles, verify that the user has those.
 local err = role_validator(settings, user)
 if err then
-  return error_handler(err)
+  return error_handler(err, settings)
 end
 
 -- If this API or user requires the traffic come from certain IP addresses,
 -- verify those.
 local err = ip_validator(settings, user)
 if err then
-  return error_handler(err)
+  return error_handler(err, settings)
 end
 
 -- If this API or user requires the traffic come from certain HTTP referers,
 -- verify those.
 local err = referer_validator(settings, user)
 if err then
-  return error_handler(err)
+  return error_handler(err, settings)
 end
 
 -- If we've gotten this far, it means the user is authorized to access this
 -- API, so apply the rate limits for this user and API.
 local err = rate_limit(settings, user)
 if err then
-  return error_handler(err)
+  return error_handler(err, settings)
 end
 
 -- Perform any request rewriting.
 local err = rewrite_request(user, api, settings)
 if err then
-  return error_handler(err)
+  return error_handler(err, settings)
 end

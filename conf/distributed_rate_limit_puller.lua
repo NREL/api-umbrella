@@ -22,7 +22,7 @@ check = function(premature)
   if not premature then
     local ok, err = lock:unlock()
     if not ok then
-      --log(ERR, "failed to unlock: ", err)
+      --ngx.log(ngx.ERR, "failed to unlock: ", err)
     end
     local elapsed, err = lock:lock("distributed_rate_limit_puller")
 
@@ -30,12 +30,12 @@ check = function(premature)
       local conn = mongol()
       conn:set_timeout(1000)
 
-      local ok, err = conn:connect("127.0.0.1", 14001)
+      local ok, err = conn:connect("127.0.0.1", 27017)
       if not ok then
-        log(ERR, "connect failed: "..err)
+        ngx.log(ngx.ERR, "connect failed: "..err)
       end
 
-      local db = conn:new_db_handle("api_umbrella")
+      local db = conn:new_db_handle("api_umbrella_test")
       local col = db:get_col("rate_limits")
 
       local last_fetched_time = ngx.shared.stats:get("distributed_last_updated_at") or 0
@@ -121,7 +121,7 @@ check = function(premature)
 
     local ok, err = new_timer(delay, check)
     if not ok then
-      log(ERR, "failed to create timer: ", err)
+      ngx.log(ngx.ERR, "failed to create timer: ", err)
       return
     end
   end
@@ -130,7 +130,7 @@ end
 function _M.spawn()
   local ok, err = new_timer(0, check)
   if not ok then
-    log(ERR, "failed to create timer: ", err)
+    ngx.log(ngx.ERR, "failed to create timer: ", err)
     return
   end
 end

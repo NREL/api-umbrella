@@ -53,12 +53,12 @@ check = function(premature)
       local conn = mongol()
       conn:set_timeout(1000)
 
-      local ok, err = conn:connect("127.0.0.1", 14001)
+      local ok, err = conn:connect("127.0.0.1", 27017)
       if not ok then
         log(ERR, "connect failed: "..err)
       end
 
-      local db = conn:new_db_handle("api_umbrella")
+      local db = conn:new_db_handle("api_umbrella_test")
       create_indexes(db)
 
       local col = db:get_col("rate_limits")

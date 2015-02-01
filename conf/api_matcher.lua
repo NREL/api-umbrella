@@ -16,9 +16,8 @@ local function apis_for_request_host()
   local apis = apis_for_host(host) or {}
 
   -- Append APIs matching the host with or without the port.
-  local port_matches = string.match(host, "(.+):")
-  if port_matches then
-    local host_without_port = port_matches[1]
+  local host_without_port = string.match(host, "(.+):")
+  if host_without_port then
     local apis_without_port = apis_for_host(host_without_port)
     if apis_without_port then
       append_array(apis, apis_without_port)

@@ -5,16 +5,20 @@ local iputils = require "resty.iputils"
 iputils.enable_lrucache(1000)
 
 local load_apis = require "load_apis"
-load_apis.spawn()
-
 local load_backends = require "load_backends"
-load_backends.spawn()
-
 local load_api_users = require "load_api_users"
-load_api_users.spawn()
-
 local distributed_rate_limit_puller = require "distributed_rate_limit_puller"
-distributed_rate_limit_puller.spawn()
-
 local distributed_rate_limit_pusher = require "distributed_rate_limit_pusher"
+
+load_apis.init()
+load_backends.init()
+
+load_apis.spawn()
+load_backends.spawn()
+load_api_users.spawn()
+distributed_rate_limit_puller.spawn()
 distributed_rate_limit_pusher.spawn()
+
+local dyups = require "ngx.dyups"
+local inspect = require "inspect"
+local status, rv = dyups.update("test", [[server 127.0.0.1:8088;]]);

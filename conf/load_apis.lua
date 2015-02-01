@@ -5,17 +5,21 @@ local bson = require "resty-mongol.bson"
 local inspect = require "inspect"
 local lock = require "resty.lock"
 local mongol = require "resty-mongol"
+local tablex = require "pl.tablex"
 local utils = require "utils"
 
+local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings
+local deepcopy = tablex.deepcopy
 local get_utc_date = bson.get_utc_date
+local get_packed = utils.set_packed
 local set_packed = utils.set_packed
 
 local lock = lock:new("my_locks", {
   ["timeout"] = 0,
 })
 
-local delay = 3  -- in seconds
+local delay = 0.05  -- in seconds
 local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
@@ -28,6 +32,10 @@ local function set_apis(apis)
 
   for _, api in ipairs(apis) do
     cache_computed_settings(api)
+
+    if not api["_id"] then
+      api["_id"] = ndk.set_var.set_secure_random_alphanum(32)
+    end
 
     local api_id = api["_id"]
     data["apis"][api_id] = api
@@ -57,12 +65,12 @@ check = function(premature)
       local conn = mongol()
       conn:set_timeout(1000)
 
-      local ok, err = conn:connect("127.0.0.1", 14001)
+      local ok, err = conn:connect("127.0.0.1", 27017)
       if not ok then
         log(ERR, "connect failed: "..err)
       end
 
-      local db = conn:new_db_handle("api_umbrella")
+      local db = conn:new_db_handle("api_umbrella_test")
       local col = db:get_col("config_versions")
 
       local last_fetched_version = ngx.shared.apis:get("version") or 0
@@ -79,15 +87,12 @@ check = function(premature)
       local v = col:find_one(query)
       if v and v["config"] and v["config"]["apis"] then
         local apis = config["internal_apis"] or {}
-        if v["config"]["apis"] then
-          for _, api in ipairs(v["config"]["apis"]) do
-            table.insert(apis, api)
-          end
-        end
+        append_array(apis, config["apis"] or {})
+        append_array(apis, v["config"]["apis"])
 
         ngx.log(ngx.ERR, inspect(v["config"]["apis"]))
         set_apis(apis)
-        ngx.shared.apis:set("version", v["version"])
+        ngx.shared.apis:set("version", ngx.now())
       end
 
       conn:set_keepalive(10000, 5)
@@ -102,15 +107,26 @@ check = function(premature)
 end
 
 function _M.spawn()
-  local apis = config["internal_apis"]
-  set_apis(apis)
-  ngx.shared.apis:set("version", 0)
-
   local ok, err = new_timer(0, check)
   if not ok then
     log(ERR, "failed to create timer: ", err)
     return
   end
+end
+
+function _M.init()
+  local config_apis = deepcopy(config["internal_apis"] or {})
+  append_array(config_apis, config["apis"] or {})
+  set_packed(ngx.shared.apis, "packed_config_apis", config_apis)
+
+  local db_apis = get_packed(ngx.shared.apis, "packed_db_apis") or {}
+
+  local all_apis = {}
+  append_array(all_apis, config_apis)
+  append_array(all_apis, db_apis)
+
+  set_apis(all_apis)
+  api_store.update_worker_cache()
 end
 
 return _M

@@ -19,8 +19,8 @@ return function(api)
     local request_method = string.lower(ngx.var.request_method)
     local request_uri = ngx.var.request_uri
     for _, sub_settings in ipairs(api["sub_settings"]) do
-      if sub_settings.http_method == "any" or sub_settings.http_method == request_method then
-        local match, err = ngx.re.match(request_uri, sub_settings.regex, "io")
+      if sub_settings["http_method"] == "any" or sub_settings["http_method"] == request_method then
+        local match, err = ngx.re.match(request_uri, sub_settings["regex"], "io")
         if match then
           deep_merge_overwrite_arrays(settings, sub_settings["settings"])
           break
