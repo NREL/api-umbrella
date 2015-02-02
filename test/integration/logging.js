@@ -72,7 +72,7 @@ describe('logging', function() {
     }
 
     options = options || {};
-    options.timeout = options.timeout || 3500;
+    options.timeout = options.timeout || 8500;
     options.minCount = options.minCount || 1;
 
     var response;
