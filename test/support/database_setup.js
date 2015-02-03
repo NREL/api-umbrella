@@ -15,15 +15,17 @@ var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'
 
 mongoose.testConnection = mongoose.createConnection(config.get('mongodb.url'), config.get('mongodb.options'));
 
-// Drop the mongodb database.
 before(function mongoOpen(done) {
-  mongoose.testConnection.on('connected', function() {
-    // Drop the whole database, since that properly blocks for any active
-    // connections. The database will get re-created on demand.
-    mongoose.testConnection.db.dropDatabase(function() {
-      done();
-    });
-  });
+  mongoose.testConnection.on('connected', done);
+});
+
+before(function mongoDropDatabase(done) {
+  this.timeout(5000);
+
+  // Drop the whole database, since that properly blocks for any active
+  // connections. The database will get re-created on demand. If this times
+  // out, it's likely because there are active connections.
+  mongoose.testConnection.db.dropDatabase(done);
 });
 
 // Spin up a new redis-server for running the test suite. Multiple database on
@@ -116,16 +118,18 @@ after(function mongoClose(done) {
 });
 
 after(function redisClose(done) {
-  global.redisClient.quit(function() {
-    if(redisServer.running) {
-      redisServer.on('exit', function() {
-        done();
-      });
+  if(global.redisClient) {
+    global.redisClient.quit(function() {
+      if(redisServer.running) {
+        redisServer.on('exit', function() {
+          done();
+        });
 
-      redisServer.stop();
-      fs.unlinkSync(redisPidFile);
-    } else {
-      done();
-    }
-  });
+        redisServer.stop();
+        fs.unlinkSync(redisPidFile);
+      } else {
+        done();
+      }
+    });
+  }
 });

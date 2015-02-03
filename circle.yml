@@ -1,0 +1,7 @@
+dependencies:
+  cache_directories:
+    - node_modules
+test:
+  override:
+    - npm test
+    - ./node_modules/.bin/grunt shell:coveralls
