@@ -630,6 +630,9 @@ describe('request rewriting', function() {
             headers: [
               { key: 'X-Dynamic', value: '({{headers.x-dynamic-source}}-{{headers.x-dynamic-source}})' },
               { key: 'X-Dynamic-Missing', value: '{{headers.x-missing}}' },
+              { key: 'X-Dynamic-Default-Absent', value: '{{#if headers.x-missing}}{{headers.x-missing}}{{else}}default{{/if}}' },
+              { key: 'X-Dynamic-Default-Present', value: '{{#if headers.x-dynamic-source}}{{headers.x-dynamic-source}}{{else}}static{{/if}}' },
+
             ],
           },
           sub_settings: [
@@ -666,6 +669,8 @@ describe('request rewriting', function() {
             'x-dynamic': '(dynamic-dynamic)',
             'x-dynamic-source': 'dynamic',
             // x-dynamic-missing is not set
+            'x-dynamic-default-absent': 'default',
+            'x-dynamic-default-present': 'dynamic',            
           });
 
           done();
