@@ -6,6 +6,10 @@ backend default {
   .host = "{{varnish.backend.host}}";
   .port = "{{varnish.backend.port}}";
 
+  # Increase the connect timeout to help prevent possible 503 errors if the
+  # nginx backend is reloading.
+  .connect_timeout = 10s;
+
   # Define a timeout in Varnish longer than the 60 second timeout defined in
   # nginx. This works around the issue of Varnish sending a second request to
   # the backend when the backend times out:

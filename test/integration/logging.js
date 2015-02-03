@@ -299,7 +299,7 @@ describe('logging', function() {
       gzip: true,
     });
 
-    request.get('http://localhost:9080/compressible-chunked/10/1000', options, function(error, response) {
+    request.get('http://localhost:9080/compressible-delayed-chunked/5', options, function(error, response) {
       response.statusCode.should.eql(200);
 
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {

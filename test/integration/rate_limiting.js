@@ -41,10 +41,14 @@ describe('rate limiting', function() {
 
         async.times(50, function(index, callback) {
           request.get('http://localhost:9080/delay/2000', this.options, function(error, response) {
-            response.statusCode.should.eql(200);
-            callback(error);
+            callback(error, response.statusCode);
           });
-        }.bind(this), done);
+        }.bind(this), function(error, responseCodes) {
+          should.not.exist(error);
+          responseCodes.length.should.eql(50);
+          _.uniq(responseCodes).should.eql([200]);
+          done();
+        });
       });
 
       it('returns 429 over rate limit error when concurrent connections from a single IP exceeds 50', function(done) {
@@ -55,6 +59,7 @@ describe('rate limiting', function() {
             callback(error, response.statusCode);
           });
         }.bind(this), function(error, responseCodes) {
+          should.not.exist(error);
           var successes = _.filter(responseCodes, function(code) { return code === 200; });
           var overLimits = _.filter(responseCodes, function(code) { return code === 429; });
 
@@ -77,10 +82,14 @@ describe('rate limiting', function() {
 
         async.times(110, function(index, callback) {
           request.get('http://localhost:9080/delay/5000', options, function(error, response) {
-            response.statusCode.should.eql(200);
-            callback(error);
+            callback(error, response.statusCode);
           });
-        }.bind(this), done);
+        }.bind(this), function(error, responseCodes) {
+          should.not.exist(error);
+          responseCodes.length.should.eql(110);
+          _.uniq(responseCodes).should.eql([200]);
+          done();
+        });
       });
     });
 
@@ -102,10 +111,14 @@ describe('rate limiting', function() {
         setTimeout(function() {
           async.times(100, function(index, callback) {
             request.get('http://localhost:9080/info/', this.options, function(error, response) {
-              response.statusCode.should.eql(200);
-              callback(error);
+              callback(error, response.statusCode);
             });
-          }.bind(this), done);
+          }.bind(this), function(error, responseCodes) {
+            should.not.exist(error);
+            responseCodes.length.should.eql(100);
+            _.uniq(responseCodes).should.eql([200]);
+            done();
+          });
         }.bind(this), 1501);
       });
 
@@ -116,10 +129,14 @@ describe('rate limiting', function() {
         setTimeout(function() {
           async.times(200, function(index, callback) {
             request.get('http://localhost:9080/info/', this.options, function(error, response) {
-              response.statusCode.should.eql(200);
-              callback(error);
+              callback(error, response.statusCode);
             });
-          }.bind(this), done);
+          }.bind(this), function(error, responseCodes) {
+            should.not.exist(error);
+            responseCodes.length.should.eql(200);
+            _.uniq(responseCodes).should.eql([200]);
+            done();
+          });
         }.bind(this), 1501);
       });
 
@@ -133,6 +150,7 @@ describe('rate limiting', function() {
               callback(error, response.statusCode);
             });
           }.bind(this), function(error, responseCodes) {
+            should.not.exist(error);
             var successes = _.filter(responseCodes, function(code) { return code === 200; });
             var overLimits = _.filter(responseCodes, function(code) { return code === 429; });
 
@@ -167,10 +185,14 @@ describe('rate limiting', function() {
         setTimeout(function() {
           async.times(310, function(index, callback) {
             request.get('http://localhost:9080/info/', options, function(error, response) {
-              response.statusCode.should.eql(200);
-              callback(error);
+              callback(error, response.statusCode);
             });
-          }.bind(this), done);
+          }.bind(this), function(error, responseCodes) {
+            should.not.exist(error);
+            responseCodes.length.should.eql(310);
+            _.uniq(responseCodes).should.eql([200]);
+            done();
+          });
         }.bind(this), 1501);
       });
     });

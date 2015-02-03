@@ -202,4 +202,4 @@ apis:
         backend_prefix: /
 dns_resolver:
   minimum_ttl: 1
-  reload_buffer_time: 0.1
+  reload_buffer_time: 1

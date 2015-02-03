@@ -96,7 +96,7 @@ hosts:
     default: true
 dns_resolver:
   minimum_ttl: 40
-  reload_buffer_time: 15
+  reload_buffer_time: 40
 mongodb:
   url: "mongodb://127.0.0.1:14001/api_umbrella"
   options:

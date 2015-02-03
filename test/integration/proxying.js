@@ -306,10 +306,13 @@ describe('proxying', function() {
       // number of number of connections still active afterwards.
       async.times(400, function(index, callback) {
         request.get('http://localhost:9080/keepalive9445/connections?index=' + index, options, function(error, response) {
-          response.statusCode.should.eql(200);
-          callback(error);
+          callback(error, response.statusCode);
         });
-      }.bind(this), function() {
+      }.bind(this), function(error, responseCodes) {
+        should.not.exist(error);
+        responseCodes.length.should.eql(400);
+        _.uniq(responseCodes).should.eql([200]);
+
         setTimeout(function() {
           request.get('http://localhost:9080/keepalive9445/connections', options, function(error, response, body) {
             response.statusCode.should.eql(200);
@@ -344,10 +347,13 @@ describe('proxying', function() {
       // number of number of connections still active afterwards.
       async.times(400, function(index, callback) {
         request.get('http://localhost:9080/keepalive9446/connections?index=' + index, options, function(error, response) {
-          response.statusCode.should.eql(200);
-          callback(error);
+          callback(error, response.statusCode);
         });
-      }.bind(this), function() {
+      }.bind(this), function(error, responseCodes) {
+        should.not.exist(error);
+        responseCodes.length.should.eql(400);
+        _.uniq(responseCodes).should.eql([200]);
+
         setTimeout(function() {
           request.get('http://localhost:9080/keepalive9446/connections', options, function(error, response, body) {
             response.statusCode.should.eql(200);
@@ -385,8 +391,6 @@ describe('proxying', function() {
       var maxRequests = 0;
       async.times(400, function(index, callback) {
         request.get('http://localhost:9080/keepalive9447/connections?index=' + index, options, function(error, response, body) {
-          response.statusCode.should.eql(200);
-
           var data = JSON.parse(body);
 
           if(data.connections > maxConnections) {
@@ -397,9 +401,13 @@ describe('proxying', function() {
             maxRequests = data.requests;
           }
 
-          callback(error);
+          callback(error, response.statusCode);
         });
-      }.bind(this), function() {
+      }.bind(this), function(error, responseCodes) {
+        should.not.exist(error);
+        responseCodes.length.should.eql(400);
+        _.uniq(responseCodes).should.eql([200]);
+
         // We sent 400 concurrent requests, but the number of concurrent
         // requests to the backend will likely be lower, since we're testing
         // the full stack, and the requests have to go through multiple layers
@@ -644,14 +652,22 @@ describe('proxying', function() {
       // this problem reproducible. So test everything from 252850 - 253850
       // bytes.
       var sizes = _.times(1000, function(index) { return index + 252850; });
+      var results = [];
       async.eachLimit(sizes, 100, function(size, callback) {
         request.get('http://localhost:9080/compressible-chunked/1/' + size, options, function(error, response, body) {
-          response.statusCode.should.eql(200);
-          response.headers['content-encoding'].should.eql('gzip');
-          body.toString().length.should.eql(size);
-          callback();
+          results.push({ size: size, body: body, headers: response.headers, responseCode: response.statusCode });
+          callback(error);
         });
-      }.bind(this), done);
+      }.bind(this), function(error) {
+        should.not.exist(error);
+        results.forEach(function(result) {
+          result.responseCode.should.eql(200);
+          result.headers['content-encoding'].should.eql('gzip');
+          result.body.toString().length.should.eql(result.size);
+        });
+
+        done();
+      });
     });
 
     // Normalize the Accept-Encoding header to maximize caching:
@@ -825,25 +841,30 @@ describe('proxying', function() {
       var nonChunkedCount = 0;
 
       var requests = _.times(count, function(index) { return index; });
+      var results = [];
       async.eachLimit(requests, 10, function(index, callback) {
         request(options, function(error, response, body) {
-          response.statusCode.should.eql(200);
+          results.push({ body: body, headers: response.headers, responseCode: response.statusCode });
+          callback(error);
+        });
+      }, function(error) {
+        should.not.exist(error);
+        results.forEach(function(result) {
+          result.responseCode.should.eql(200);
 
-          if(response.headers['transfer-encoding']) {
-            response.headers['transfer-encoding'].should.eql('chunked');
-            should.not.exist(response.headers['content-length']);
+          if(result.headers['transfer-encoding']) {
+            result.headers['transfer-encoding'].should.eql('chunked');
+            should.not.exist(result.headers['content-length']);
             chunkedCount++;
           } else {
-            should.not.exist(response.headers['transfer-encoding']);
-            should.exist(response.headers['content-length']);
+            should.not.exist(result.headers['transfer-encoding']);
+            should.exist(result.headers['content-length']);
             nonChunkedCount++;
           }
 
-          body.toString().length.should.eql(size);
-
-          callback();
+          result.body.toString().length.should.eql(size);
         });
-      }, function() {
+
         done({
           chunked: chunkedCount,
           nonChunked: nonChunkedCount,
@@ -1097,10 +1118,15 @@ describe('proxying', function() {
           }, function() {
             async.times(50, function(index, timesCallback) {
               request.get('http://localhost:9080/info/', options, function(error, response) {
-                response.statusCode.should.eql(200);
-                timesCallback(error);
+                timesCallback(error, response.statusCode);
               });
-            }.bind(this), callback);
+            }.bind(this), function(error, responseCodes) {
+              should.not.exist(error);
+              responseCodes.length.should.eql(50);
+              _.uniq(responseCodes).should.eql([200]);
+
+              callback(error);
+            });
           });
         },
       ], done);

@@ -104,13 +104,18 @@ describe('caching', function() {
 
     async.times(50, function(index, callback) {
       request(url, options, function(error, response, body) {
-        response.statusCode.should.eql(200);
-        callback(null, body);
+        callback(error, { body: body, responseCode: response.statusCode });
       });
-    }, function(error, bodies) {
+    }, function(error, results) {
+      results.length.should.eql(50);
+
+      var responseCodes = _.pluck(results, 'responseCode');
+      var bodies = _.pluck(results, 'body');
+
       should.exist(global.backendCallCounts[id]);
       global.backendCallCounts[id].should.eql(50);
       bodies.length.should.eql(50);
+      _.uniq(responseCodes).should.eql([200]);
       _.uniq(bodies).length.should.eql(50);
       done();
     });
@@ -125,13 +130,18 @@ describe('caching', function() {
 
     async.times(50, function(index, callback) {
       request(url, options, function(error, response, body) {
-        response.statusCode.should.eql(200);
-        callback(null, body);
+        callback(error, { body: body, responseCode: response.statusCode });
       });
-    }, function(error, bodies) {
+    }, function(error, results) {
+      should.not.exist(error);
+      results.length.should.eql(50);
+
+      var responseCodes = _.pluck(results, 'responseCode');
+      var bodies = _.pluck(results, 'body');
+
       should.exist(global.backendCallCounts[id]);
       global.backendCallCounts[id].should.eql(1);
-      bodies.length.should.eql(50);
+      _.uniq(responseCodes).should.eql([200]);
       _.uniq(bodies).length.should.eql(1);
       done();
     });

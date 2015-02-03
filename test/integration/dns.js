@@ -40,10 +40,10 @@ describe('dns backend resolving', function() {
           clearTimeout(logTailTimeout);
           logTail.unwatch();
 
-          // Wait another 250ms before calling the callback, since we just know
+          // Wait another 1.5s before calling the callback, since we just know
           // when the nginx reload signal is sent, but it takes nginx a little
           // while to actually reload the processes.
-          setTimeout(callback, 250);
+          setTimeout(callback, 1500);
         }
       });
     }
@@ -74,6 +74,17 @@ describe('dns backend resolving', function() {
       '127.0.0.4',
       '127.0.0.5',
     ];
+  });
+
+  after(function clearDnsRecords(done) {
+    this.timeout(5000);
+
+    // Remove any custom DNS entries to prevent rapid reloads (for short TTL
+    // records) after these DNS tests finish.
+    setDnsRecords([], { wait: true }, function(error) {
+      should.not.exist(error);
+      done();
+    });
   });
 
   beforeEach(function(done) {
@@ -141,7 +152,8 @@ describe('dns backend resolving', function() {
   });
 
   it('brings a host up if a previously invalid hostname begins resolving', function(done) {
-    this.timeout(10000);
+    this.timeout(12000);
+
     request.get('http://localhost:9080/dns/invalid-hostname-begins-resolving/html', this.options, function(error, response) {
       should.not.exist(error);
       response.statusCode.should.eql(502);
@@ -160,7 +172,7 @@ describe('dns backend resolving', function() {
   });
 
   it('refreshes the IP after the domain\'s TTL expires', function(done) {
-    this.timeout(20000);
+    this.timeout(25000);
 
     setDnsRecords(['refresh-after-ttl-expires.ooga 8 A 127.0.0.1'], { wait: true }, function(error) {
       should.not.exist(error);
@@ -199,7 +211,7 @@ describe('dns backend resolving', function() {
   });
 
   it('takes a host down if it fails to resolve after the TTL expires', function(done) {
-    this.timeout(20000);
+    this.timeout(25000);
 
     setDnsRecords(['down-after-ttl-expires.ooga 8 A 127.0.0.1'], { wait: true }, function(error) {
       should.not.exist(error);
@@ -235,7 +247,7 @@ describe('dns backend resolving', function() {
   });
 
   it('handles ongoing changes to the domain', function(done) {
-    this.timeout(20000);
+    this.timeout(25000);
 
     async.series([
       function(next) {
@@ -290,7 +302,7 @@ describe('dns backend resolving', function() {
   });
 
   it('load balances between multiple servers when the domain resolves to multiple IPs', function(done) {
-    this.timeout(10000);
+    this.timeout(15000);
 
     var dnsRecords = _.map(this.localInterfaceIps, function(ip) {
       var type = (ipaddr.IPv6.isValid(ip)) ? 'AAAA' : 'A';
@@ -335,7 +347,7 @@ describe('dns backend resolving', function() {
   });
 
   it('handles ip changes without dropping any connections', function(done) {
-    this.timeout(30000);
+    this.timeout(35000);
 
     var runTests = true;
     setTimeout(function() { runTests = false; }, 20000);
@@ -371,6 +383,7 @@ describe('dns backend resolving', function() {
         }.bind(this));
       }.bind(this));
 
+      var runningTests = true;
       async.parallel(tasks, function(error) {
         should.not.exist(error);
 
@@ -382,12 +395,14 @@ describe('dns backend resolving', function() {
         // randomness of this test, we'll just ensure we saw at least a
         // couple).
         _.uniq(_.keys(seenLocalInterfaceIps)).length.should.be.gte(2);
+
+        runningTests = false;
         done();
       }.bind(this));
 
       // While the requests are being made in parallel, change the DNS for this
       // domain.
-      async.whilst(function() { return true; }, function(whilstCallback) {
+      async.whilst(function() { return runningTests; }, function(whilstCallback) {
         // Use a random local IP to trigger change.
         var randomIp = _.sample(this.localInterfaceIps);
 

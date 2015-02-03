@@ -54,7 +54,7 @@ module.exports = function(grunt) {
       process.stdout.write('Run ' + (index + 1) + ' ');
       var progress = setInterval(function() {
         process.stdout.write('.');
-      }, 2000);
+      }, 5000);
 
       var startTime = process.hrtime();
       exec('./node_modules/grunt-cli/bin/grunt 2>&1', function(error, stdout) {
