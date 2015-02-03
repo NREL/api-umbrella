@@ -596,6 +596,7 @@ describe('request rewriting', function() {
           done();
         });
       });
+
     });
 
     describe('sub-url match', function() {
@@ -611,6 +612,89 @@ describe('request rewriting', function() {
       });
     });
   });
+
+
+  describe('setting dynamic headers', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          settings: {
+            headers: [
+              { key: 'X-Dynamic', value: '({{headers.x-dynamic-source}}-{{headers.x-dynamic-source}})' },
+              { key: 'X-Dynamic-Missing', value: '{{headers.x-missing}}' },
+            ],
+          },
+          sub_settings: [
+            {
+              http_method: 'any',
+              regex: '^/info/sub',
+              settings: {
+                headers: [
+                  { key: 'X-Dynamic-Sub', value: '{{headers.x-dynamic-source}}' },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    function stripStandardHeaders(headers) {
+      return _.omit(headers, 'host', 'connection', 'x-api-umbrella-backend-scheme', 'x-api-umbrella-backend-id', 'x-api-key', 'x-api-user-id');
+    }
+
+    describe('default', function() {
+
+      it('evaluates dynamic headers', function(done) {
+        var options = {
+          headers: {
+            'x-dynamic-source': 'dynamic'
+          },
+        };
+
+        request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+          var data = JSON.parse(body);
+          stripStandardHeaders(data.headers).should.eql({
+            'x-dynamic': '(dynamic-dynamic)',
+            'x-dynamic-source': 'dynamic',
+            // x-dynamic-missing is not set
+          });
+
+          done();
+        });
+      });
+
+    });
+
+    describe('sub-url match', function() {
+      it('evaluates sub-url dynamic headers', function(done) {
+        var options = {
+          headers: {
+            'x-dynamic-source': 'dynamic'
+          },
+        };
+
+        request.get('http://localhost:9333/info/sub/?api_key=' + this.apiKey, options, function(error, response, body) {
+          var data = JSON.parse(body);
+          stripStandardHeaders(data.headers).should.eql({
+            'x-dynamic-sub': 'dynamic',
+            'x-dynamic-source': 'dynamic'
+          });
+
+          done();
+        });
+      });
+    });
+  });
+
 
   describe('http basic auth', function() {
     shared.runServer({
