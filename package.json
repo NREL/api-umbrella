@@ -1,7 +1,7 @@
 {
   "name": "api-umbrella-gatekeeper",
   "description": "A custom reverse proxy to control access to your APIs. Performs API key validation, request rate limiting, and gathers analytics.",
-  "version": "0.2.5",
+  "version": "0.7.0-pre1",
   "engines": ">= 0.8.0",
   "author": "Nick Muerdter <nick.muerdter@nrel.gov>",
   "main": "./lib/api-umbrella-gatekeeper",
