@@ -68,9 +68,8 @@ _.extend(MigrateLogs.prototype, {
   },
 
   migrate: function(asyncSeriesCallback) {
-    var gunzip = zlib.createGunzip();
-
     async.eachSeries(this.logPaths, function(path, next) {
+      var gunzip = zlib.createGunzip();
       console.info('Begin processing for ' + path);
 
       this.processQueue = async.queue(this.processRow.bind(this), 1);
@@ -85,7 +84,13 @@ _.extend(MigrateLogs.prototype, {
         stream = stream.pipe(gunzip);
       }
 
-      csv().from.stream(stream).transform(this.handleRows.bind(this));
+      csv()
+        .from
+        .stream(stream)
+        .transform(this.handleRows.bind(this))
+        .on('error', function(error) {
+          console.info('CSV PARSING ERROR: ', error);
+        });
     }.bind(this), asyncSeriesCallback);
   },
 
