@@ -71,6 +71,8 @@ var tasks = {
           process.exit(1);
         }
 
+        var monitor;
+
         // Make sure the file exists, or the Tail module will die.
         var fd = fs.openSync(daemonLog, 'w');
         fs.closeSync(fd);
@@ -82,8 +84,22 @@ var tasks = {
           buffer += chunk;
           if(/Starting api-umbrella[\s\S]*OK.*\]/.test(buffer)) {
             process.stdout.write('\n');
-            started = true;
-            process.exit(0);
+
+            // If the output indicates failure, make sure to kill the forever
+            // monitor, since it won't automatically stop even if the process
+            // it's supervising exits. All of this forever business should
+            // probably be resivisted, because it's become less than ideal for
+            // what we're actually trying to do.
+            if(/(FAIL|Stopping|Failed)/.test(buffer)) {
+              if(monitor) {
+                monitor.kill();
+              }
+
+              process.exit(1);
+            } else {
+              started = true;
+              process.exit(0);
+            }
           }
         });
         tail.watch();
@@ -93,7 +109,7 @@ var tasks = {
         runArgs = runArgs.concat(process.argv.slice(3));
 
         // Call the "run" command, but just start it in the background.
-        var monitor = forever.startDaemon(__filename, {
+        monitor = forever.startDaemon(__filename, {
           silent: false,
           pidFile: daemonPid,
           args: runArgs,
