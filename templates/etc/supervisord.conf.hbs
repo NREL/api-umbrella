@@ -53,7 +53,7 @@ startsecs=10
 command=dnsmasq -C {{etc_dir}}/dnsmasq.conf
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
@@ -63,7 +63,7 @@ startsecs=5
 command=unbound -c {{etc_dir}}/test_env/unbound/unbound.conf
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/%(program_name)s.log
+stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
