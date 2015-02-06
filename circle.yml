@@ -3,10 +3,12 @@ machine:
     version: 2.1.3
 dependencies:
   cache_directories:
-    - elasticsearch-1.3.6
+    - ci_cache
   post:
-    - if [[ ! -e elasticsearch-1.3.6 ]]; then wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.3.6.tar.gz && tar -xvf elasticsearch-1.3.6.tar.gz; fi
-    - elasticsearch-1.3.6/bin/elasticsearch: {background: true}
+    - mkdir -p ci_cache
+    - find ci_cache -maxdepth 1 -name 'elasticsearch*' -not -name 'elasticsearch-1.4.2' -exec rm -rf {} \;
+    - if [[ ! -e ci_cache/elasticsearch-1.4.2 ]]; then cd ci_cache; wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.4.2.tar.gz && tar -xvf elasticsearch-1.4.2.tar.gz; rm elasticsearch-1.4.2.tar.gz; fi
+    - ci_cache/elasticsearch-1.4.2/bin/elasticsearch: {background: true}
 test:
   override:
     - bundle exec rake
