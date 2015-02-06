@@ -52,10 +52,19 @@ class LogSearch
   end
 
   def result
-    raw_result = @client.search(@query_options.merge({
+    query_options = @query_options.merge({
       :index => indexes.join(","),
       :body => @query,
-    }))
+    })
+
+    # Starting in ElasticSearch 1.4, we need to explicitly remove the
+    # aggregations if there aren't actually any present for scroll queries to
+    # work.
+    if query_options[:body][:aggregations] && query_options[:body][:aggregations].blank?
+      query_options[:body].delete(:aggregations)
+    end
+
+    raw_result = @client.search(query_options)
 
     @result = LogResult.new(self, raw_result)
   end
