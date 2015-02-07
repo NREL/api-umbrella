@@ -61,7 +61,8 @@ local function do_check()
       "throttle_by_ip",
     })
 
-    user["id"] = v["_id"]
+    -- Ensure IDs get stored as strings, even if Mongo ObjectIds are in use.
+    user["id"] = tostring(v["_id"])
 
     -- Invert the array of roles into a hashy table for more optimized
     -- lookups (so we can just check if the key exists, rather than
