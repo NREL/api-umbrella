@@ -7,6 +7,10 @@ var _ = require('lodash'),
     express = require('express'),
     url = require('url');
 
+// Ensure that url.parse(str, true) gets handled safely anywhere subsequently
+// in this app.
+require('./safe_url_parse');
+
 var app = express();
 app.use(bodyParser.raw());
 
