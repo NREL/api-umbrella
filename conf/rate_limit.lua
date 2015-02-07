@@ -40,7 +40,7 @@ return function(settings, user)
     local remaining = limit["limit"] - count
     ngx.header["X-RateLimit-Limit"] = limit["limit"]
     ngx.header["X-RateLimit-Remaining"] = remaining
-    if remaining <= 0 then
+    if remaining < 0 then
       return "over_rate_limit"
     end
   end
