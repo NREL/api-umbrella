@@ -45,58 +45,71 @@ local function create_indexes(db)
   end
 end
 
-local check
-check = function(premature)
-  if not premature then
-    local data = distributed_rate_limit_queue.fetch()
-    if not is_empty(data) then
-      local conn = mongol()
-      conn:set_timeout(1000)
+local function do_check()
+  local data = distributed_rate_limit_queue.fetch()
+  if is_empty(data) then
+    return
+  end
 
-      local ok, err = conn:connect("127.0.0.1", 27017)
-      if not ok then
-        log(ERR, "connect failed: "..err)
-      end
+  local conn = mongol()
+  conn:set_timeout(1000)
 
-      local db = conn:new_db_handle("api_umbrella_test")
-      create_indexes(db)
+  local ok, err = conn:connect("127.0.0.1", 27017)
+  if not ok then
+    log(ERR, "connect failed: "..err)
+  end
 
-      local col = db:get_col("rate_limits")
+  local db = conn:new_db_handle("api_umbrella_test")
+  create_indexes(db)
 
-      for key, expire_at in pairs(data) do
-        local selector = {
-          _id = {
-            key = key,
-            node = MASTER_NODE_ID,
-          },
-        }
-        local update = {
-          ["$currentDate"] = {
-            updated_at = true,
-          },
-          ["$inc"] = {
-            count = 1,
-          },
-        }
+  local col = db:get_col("rate_limits")
 
-        if expire_at and expire_at > 0 then
-          update["$setOnInsert"] = {
-            expire_at = get_utc_date(expire_at),
-          }
-        end
+  for key, expire_at in pairs(data) do
+    local selector = {
+      _id = {
+        key = key,
+        node = MASTER_NODE_ID,
+      },
+    }
+    local update = {
+      ["$currentDate"] = {
+        updated_at = true,
+      },
+      ["$inc"] = {
+        count = 1,
+      },
+    }
 
-        local upsert = 1
-        col:update(selector, update, upsert)
-      end
-
-      conn:set_keepalive(10000, 5)
+    if expire_at and expire_at > 0 then
+      update["$setOnInsert"] = {
+        expire_at = get_utc_date(expire_at),
+      }
     end
 
-    local ok, err = new_timer(delay, check)
-    if not ok then
-      log(ERR, "failed to create timer: ", err)
-      return
+    local upsert = 1
+    col:update(selector, update, upsert)
+  end
+
+  conn:set_keepalive(10000, 5)
+end
+
+local function check(premature)
+  if premature then
+    return
+  end
+
+  local ok, err = pcall(do_check)
+  if not ok then
+    ngx.log(ngx.ERR, "failed to run backend load cycle: ", err)
+  end
+
+  local ok, err = new_timer(delay, check)
+  if not ok then
+    if err ~= "process exiting" then
+      ngx.log(ngx.ERR, "failed to create timer: ", err)
     end
+
+    return
   end
 end
 

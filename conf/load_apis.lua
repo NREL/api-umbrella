@@ -50,59 +50,72 @@ local function set_apis(apis)
   set_packed(ngx.shared.apis, "packed_data", data)
 end
 
-local check
-check = function(premature)
-  if not premature then
-    api_store.update_worker_cache_if_necessary()
+local function do_check()
+  local elapsed, err = lock:lock("load_apis")
+  if err then
+    return
+  end
 
-    local ok, err = lock:unlock()
-    if not ok then
-      --log(ERR, "failed to unlock: ", err)
+  api_store.update_worker_cache_if_necessary()
+
+  local conn = mongol()
+  conn:set_timeout(1000)
+
+  local ok, err = conn:connect("127.0.0.1", 27017)
+  if not ok then
+    log(ERR, "connect failed: "..err)
+  end
+
+  local db = conn:new_db_handle("api_umbrella_test")
+  local col = db:get_col("config_versions")
+
+  local last_fetched_version = ngx.shared.apis:get("version") or 0
+  local query = {
+    ["$query"] = {
+      version = {
+        ["$gt"] = get_utc_date(last_fetched_version),
+      },
+    },
+    ["$orderby"] = {
+      version = -1
+    },
+  }
+  local v = col:find_one(query)
+  if v and v["config"] and v["config"]["apis"] then
+    local apis = config["internal_apis"] or {}
+    append_array(apis, config["apis"] or {})
+    append_array(apis, v["config"]["apis"])
+
+    ngx.log(ngx.ERR, inspect(v["config"]["apis"]))
+    set_apis(apis)
+    ngx.shared.apis:set("version", ngx.now())
+  end
+
+  conn:set_keepalive(10000, 5)
+
+  local ok, err = lock:unlock()
+  if not ok then
+    ngx.log(ngx.ERR, "failed to unlock: ", err)
+  end
+end
+
+local function check(premature)
+  if premature then
+    return
+  end
+
+  local ok, err = pcall(do_check)
+  if not ok then
+    ngx.log(ngx.ERR, "failed to run api load cycle: ", err)
+  end
+
+  local ok, err = new_timer(delay, check)
+  if not ok then
+    if err ~= "process exiting" then
+      ngx.log(ngx.ERR, "failed to create timer: ", err)
     end
-    local elapsed, err = lock:lock("load_apis")
 
-    if not err then
-      local conn = mongol()
-      conn:set_timeout(1000)
-
-      local ok, err = conn:connect("127.0.0.1", 27017)
-      if not ok then
-        log(ERR, "connect failed: "..err)
-      end
-
-      local db = conn:new_db_handle("api_umbrella_test")
-      local col = db:get_col("config_versions")
-
-      local last_fetched_version = ngx.shared.apis:get("version") or 0
-      local query = {
-        ["$query"] = {
-          version = {
-            ["$gt"] = get_utc_date(last_fetched_version),
-          },
-        },
-        ["$orderby"] = {
-          version = -1
-        },
-      }
-      local v = col:find_one(query)
-      if v and v["config"] and v["config"]["apis"] then
-        local apis = config["internal_apis"] or {}
-        append_array(apis, config["apis"] or {})
-        append_array(apis, v["config"]["apis"])
-
-        ngx.log(ngx.ERR, inspect(v["config"]["apis"]))
-        set_apis(apis)
-        ngx.shared.apis:set("version", ngx.now())
-      end
-
-      conn:set_keepalive(10000, 5)
-    end
-    -- do the health check or other routine work
-    local ok, err = new_timer(delay, check)
-    if not ok then
-      log(ERR, "failed to create timer: ", err)
-      return
-    end
+    return
   end
 end
 

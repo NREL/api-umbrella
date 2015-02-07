@@ -39,30 +39,44 @@ local function setup_backends()
   end
 end
 
+local function do_check()
+  local elapsed, err = lock:lock("load_backends")
+  if err then
+    return
+  end
+
+  local current_config_version = ngx.shared.apis:get("config_version") or 0
+  local version = api_store.version() or 0
+  local backends_version = ngx.shared.apis:get("current_backends_loaded_version") or 0
+
+  if config_version == current_config_version and version > backends_version then
+    setup_backends()
+    ngx.shared.apis:set("current_backends_loaded_version", version)
+  end
+
+  local ok, err = lock:unlock()
+  if not ok then
+    ngx.log(ngx.ERR, "failed to unlock: ", err)
+  end
+end
+
 local function check(premature)
-  if not premature then
-    local ok, err = lock:unlock()
-    if not ok then
-      --log(ERR, "failed to unlock: ", err)
-    end
-    local elapsed, err = lock:lock("load_backends")
+  if premature then
+    return
+  end
 
-    if not err then
-      local current_config_version = ngx.shared.apis:get("config_version") or 0
-      local version = api_store.version() or 0
-      local backends_version = ngx.shared.apis:get("current_backends_loaded_version") or 0
+  local ok, err = pcall(do_check)
+  if not ok then
+    ngx.log(ngx.ERR, "failed to run backend load cycle: ", err)
+  end
 
-      if config_version == current_config_version and version > backends_version then
-        setup_backends()
-        ngx.shared.apis:set("current_backends_loaded_version", version)
-      end
+  local ok, err = new_timer(delay, check)
+  if not ok then
+    if err ~= "process exiting" then
+      ngx.log(ngx.ERR, "failed to create timer: ", err)
     end
-    -- do the health check or other routine work
-    local ok, err = new_timer(delay, check)
-    if not ok then
-      log(ERR, "failed to create timer: ", err)
-      return
-    end
+
+    return
   end
 end
 
