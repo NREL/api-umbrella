@@ -75,9 +75,7 @@ function _M.set_packed(dict, key, value)
 end
 
 function _M.deep_merge_overwrite_arrays(dest, src)
-  if not src then
-    return dest
-  end
+  if not src then return dest end
 
   for key, value in pairs(src) do
     if type(value) == "table" and type(dest[key]) == "table" then
@@ -92,6 +90,20 @@ function _M.deep_merge_overwrite_arrays(dest, src)
   end
 
   return dest
+end
+
+function _M.merge_settings(dest, src)
+  if not src then return dest end
+
+  -- Specially handle merging the query args to append. This attribute should
+  -- actually overwrite any previous values, but since the cached value is
+  -- parsed as a table, we have to explicitly overwrite it, rather than relying
+  -- on our deep merge.
+  if not is_empty(src["_append_query_args"]) then
+    dest["_append_query_args"] = src["_append_query_args"]
+  end
+
+  return _M.deep_merge_overwrite_arrays(dest, src)
 end
 
 function _M.cache_computed_settings(settings)
