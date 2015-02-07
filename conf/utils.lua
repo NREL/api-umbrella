@@ -97,12 +97,6 @@ end
 function _M.cache_computed_settings(settings)
   if not settings then return end
 
-  if settings["url_matches"] then
-    for _, url_match in ipairs(settings["url_matches"]) do
-      url_match["_frontend_prefix_matcher"] = "^" .. escape(url_match.frontend_prefix)
-    end
-  end
-
   -- Parse and cache the allowed IPs as CIDR ranges.
   if not is_empty(settings["allowed_ips"]) then
     settings["_allowed_cidrs"] = parse_cidrs(settings["allowed_ips"])
@@ -128,18 +122,6 @@ function _M.cache_computed_settings(settings)
   if settings["http_basic_auth"] then
     settings["_http_basic_auth_header"] = "Basic " .. ngx.encode_base64(settings["http_basic_auth"])
     settings["http_basic_auth"] = nil
-  end
-
-  if settings["sub_settings"] then
-    for _, sub_settings in ipairs(settings["sub_settings"]) do
-      if sub_settings["http_method"] then
-        sub_settings["http_method"] = string.lower(sub_settings["http_method"])
-      end
-
-      if sub_settings["settings"] then
-        _M.cache_computed_settings(sub_settings["settings"])
-      end
-    end
   end
 end
 

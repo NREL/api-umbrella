@@ -5,12 +5,14 @@ local bson = require "resty-mongol.bson"
 local inspect = require "inspect"
 local lock = require "resty.lock"
 local mongol = require "resty-mongol"
+local plutils = require "pl.utils"
 local tablex = require "pl.tablex"
 local utils = require "utils"
 
 local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings
 local deepcopy = tablex.deepcopy
+local escape = plutils.escape
 local get_utc_date = bson.get_utc_date
 local get_packed = utils.set_packed
 local set_packed = utils.set_packed
@@ -24,6 +26,30 @@ local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
 
+local function cache_computed_api(api)
+  if not api then return end
+
+  if api["url_matches"] then
+    for _, url_match in ipairs(api["url_matches"]) do
+      url_match["_frontend_prefix_matcher"] = "^" .. escape(url_match.frontend_prefix)
+    end
+  end
+end
+
+local function cache_computed_sub_settings(sub_settings)
+  if not sub_settings then return end
+
+  for _, sub_setting in ipairs(sub_settings) do
+    if sub_setting["http_method"] then
+      sub_setting["http_method"] = string.lower(sub_setting["http_method"])
+    end
+
+    if sub_setting["settings"] then
+      cache_computed_settings(sub_setting["settings"])
+    end
+  end
+end
+
 local function set_apis(apis)
   local data = {
     ["apis"] = {},
@@ -31,7 +57,9 @@ local function set_apis(apis)
   }
 
   for _, api in ipairs(apis) do
-    cache_computed_settings(api)
+    cache_computed_api(api)
+    cache_computed_settings(api["settings"])
+    cache_computed_sub_settings(api["sub_settings"])
 
     if not api["_id"] then
       api["_id"] = ndk.set_var.set_secure_random_alphanum(32)
