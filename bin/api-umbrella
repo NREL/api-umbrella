@@ -59,6 +59,12 @@ var tasks = {
         // writable.
         try {
           fsExtra.ensureFileSync(daemonLog);
+
+          // Make sure the file is writable by the current user (the above
+          // ensureFileSync just ensures it exists, but doesn't check it's
+          // writability).
+          var fd = fs.openSync(daemonLog, 'w');
+          fs.closeSync(fd);
         } catch(e) {
           console.error('ERROR: Could not open ' + daemonLog + ' for writing');
           process.exit(1);
@@ -72,10 +78,6 @@ var tasks = {
         }
 
         var monitor;
-
-        // Make sure the file exists, or the Tail module will die.
-        var fd = fs.openSync(daemonLog, 'w');
-        fs.closeSync(fd);
 
         var tail = new Tail(daemonLog, '');
         var buffer = '';
