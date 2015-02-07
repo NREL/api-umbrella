@@ -62,7 +62,9 @@ _.merge(global.shared, {
         });
       }
 
-      fs.writeFileSync('/tmp/runtime_config_test.yml', yaml.dump(config));
+      // Dump as YAML, with nulls being treated as real YAML nulls, rather than
+      // the string "null" (which is js-yaml's default).
+      fs.writeFileSync('/tmp/runtime_config_test.yml', yaml.safeDump(config, { styles: { '!!null': 'canonical' } }));
       done();
     });
 
