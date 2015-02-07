@@ -33,7 +33,7 @@ local function pass_api_key(user, settings)
   -- for specific backends.
   local pass_api_key_query_param = settings["pass_api_key_query_param"]
   local arg_api_key = ngx.ctx.arg_api_key
-  if pass_api_key_query_param and arg_api_key and user then
+  if pass_api_key_query_param and user then
     if arg_api_key ~= user["api_key"] then
       local args = ngx.req.get_uri_args() or {}
       args["api_key"] = user["api_key"]
