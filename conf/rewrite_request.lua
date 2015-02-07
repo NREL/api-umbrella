@@ -1,11 +1,13 @@
 local inspect = require "inspect"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
+local tablex = require "pl.tablex"
 local types = require "pl.types"
 local utils = require "utils"
 
 local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local is_empty = types.is_empty
+local keys = tablex.keys
 local split = plutils.split
 local strip = stringx.strip
 
@@ -63,7 +65,7 @@ end
 
 local function set_roles_header(user)
   if user and user["roles"] then
-    ngx.req.set_header("X-Api-Roles", table.concat(user["roles"], ","))
+    ngx.req.set_header("X-Api-Roles", table.concat(keys(user["roles"]), ","))
   else
     ngx.req.clear_header("X-Api-Roles")
   end
