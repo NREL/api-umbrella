@@ -109,6 +109,7 @@ function _M.cache_computed_settings(settings)
     for _, referer in ipairs(settings["allowed_referers"]) do
       local matcher = escape(referer)
       matcher = string.gsub(matcher, "%%%*", ".*")
+      matcher = "^" .. matcher .. "$"
       table.insert(settings["_allowed_referer_matchers"], matcher)
     end
     settings["allowed_referers"] = nil
