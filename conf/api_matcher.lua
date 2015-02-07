@@ -82,7 +82,7 @@ return function(user)
     -- Set the nginx variables that will determine which nginx upstream this
     -- request gets proxied to.
     ngx.var.api_umbrella_backend_scheme = api["backend_protocol"] or "http"
-    ngx.var.api_umbrella_backend_host = api["backend_host"]
+    ngx.var.api_umbrella_backend_host = api["backend_host"] or ngx.ctx.host
     ngx.var.api_umbrella_backend_id = api["_id"]
 
     return api, url_match
