@@ -162,7 +162,7 @@ describe('rate limiting', function() {
             // generally start returning 429 errors for some requests once
             // we're over 200 requests.
             successes.length.should.be.gte(200);
-            successes.length.should.be.lte(225);
+            successes.length.should.be.lte(245);
             overLimits.length.should.be.gte(1);
             overLimits.length.should.be.lte(50);
             (successes.length + overLimits.length).should.eql(250);
