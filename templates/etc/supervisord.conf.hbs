@@ -34,6 +34,7 @@ stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
+startretries=10
 {{/if}}
 
 {{#if service_log_db_enabled}}
@@ -46,6 +47,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
+startretries=10
 {{/if}}
 
 {{#if service_router_enabled}}
@@ -57,6 +59,7 @@ stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+startretries=10
 
 {{#if test_env}}
 [program:test-env-unbound]
@@ -67,6 +70,7 @@ stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+startretries=10
 {{/if}}
 
 [program:redis]
@@ -77,6 +81,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+startretries=10
 
 [program:beanstalkd]
 command=beanstalkd -l {{beanstalkd.host}} -p {{beanstalkd.port}} -b {{db_dir}}/beanstalkd -f 1000
@@ -86,6 +91,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=3
+startretries=10
 
 [program:varnishd]
 environment=CCACHE_DIR="{{run_dir}}/varnish/.ccache"
@@ -96,6 +102,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+startretries=10
 
 [program:varnishncsa]
 command=varnishncsa -a -w {{log_dir}}/varnishncsa.log -n {{run_dir}}/varnish/api-umbrella
@@ -105,6 +112,7 @@ stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+startretries=10
 
 [program:router-nginx]
 command=nginx -c {{etc_dir}}/nginx/router.conf
@@ -113,6 +121,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+startretries=10
 
 {{#each gatekeeper_hosts}}
 [program:{{process_name}}]
@@ -124,6 +133,7 @@ stdout_logfile={{../log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+startretries=10
 {{/each}}
 
 [group:gatekeeper]
@@ -136,6 +146,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
+startretries=10
 
 [program:router-log-listener]
 command={{router.dir}}/bin/api-umbrella-router-log-listener {{api_umbrella_config_args}}
@@ -145,6 +156,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
+startretries=10
 
 [program:log-processor]
 command={{router.dir}}/bin/api-umbrella-log-processor {{api_umbrella_config_args}}
@@ -154,6 +166,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
+startretries=10
 
 [program:distributed-rate-limits-sync]
 command={{router.dir}}/node_modules/.bin/api-umbrella-distributed-rate-limits-sync {{api_umbrella_config_args}}
@@ -163,6 +176,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+startretries=10
 {{/if}}
 
 {{#if service_web_enabled}}
@@ -177,6 +191,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
+startretries=10
 {{/if}}
 
 [program:web-puma]
@@ -189,6 +204,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
+startretries=10
 
 [program:web-nginx]
 command=nginx -c {{etc_dir}}/nginx/web.conf
@@ -197,6 +213,7 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=5
+startretries=10
 
 [program:web-delayed-job]
 environment=API_UMBRELLA_CONFIG="{{api_umbrella_config_runtime_file}}"
@@ -208,4 +225,5 @@ stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
 logfile_maxbytes=0
 startsecs=10
+startretries=10
 {{/if}}
