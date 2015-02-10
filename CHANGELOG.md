@@ -2,6 +2,8 @@
 
 ## 0.7.0 / 2015-02-08
 
+[Download 0.7.0 Packages](http://nrel.github.io/api-umbrella/download/)
+
 ### Upgrade Instructions
 
 If you're upgrading from API Umbrella v0.6.0, you must first stop API Umbrella manually (`sudo /etc/init.d/api-umbrella stop`) before installing the new package. 
