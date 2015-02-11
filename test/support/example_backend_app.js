@@ -335,7 +335,12 @@ app.all('/logging-example/*', function(req, res) {
 ['0.0.0.0', '::1'].forEach(function(host) {
   var server = app.listen(9444, host);
   server.on('error', function(error) {
-    console.error('Failed to start example backend app:', error);
-    process.exit(1);
+    console.error('Failed to start example backend app (' + host + '):', error);
+    if(host === '::1') {
+      global.DISABLE_IPV6_TESTS = true;
+      console.error('Could not start backend app on IPv6 address - Disabling IPv6 tests');
+    } else {
+      process.exit(1);
+    }
   });
 });
