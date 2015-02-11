@@ -51,6 +51,8 @@ elasticsearch:
     transport:
       tcp:
         port: 13003
+unbound:
+  port: 13100
 apis:
   - _id: down
     frontend_host: localhost

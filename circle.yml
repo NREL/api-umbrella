@@ -3,10 +3,19 @@ dependencies:
     - ci_cache
     - node_modules
   pre:
+    # Download and cache the API Umbrella package installer.
     - mkdir -p ci_cache
     - find ci_cache -maxdepth 1 -name 'api-umbrella*.deb' -not -name 'api-umbrella_0.7.0-1_amd64.deb' -exec rm -f {} \;
     - if [[ ! -e ci_cache/api-umbrella_0.7.0-1_amd64.deb ]]; then wget -P ci_cache https://developer.nrel.gov/downloads/api-umbrella/ubuntu/12.04/api-umbrella_0.7.0-1_amd64.deb; fi
+
+    # Install API Umbrella package
     - sudo dpkg -i ci_cache/api-umbrella_0.7.0-1_amd64.deb
+
+    # Install the unbound package that's not included with API Umbrella, but
+    # needed to run tests. But prevent it from automatically starting up after
+    # install at the system level with the RUNLEVEL=1 variable.
+    - sudo apt-get update
+    - sudo env RUNLEVEL=1 apt-get install unbound
   override:
     - env PATH=/opt/api-umbrella/embedded/bin:$PATH npm install
 test:

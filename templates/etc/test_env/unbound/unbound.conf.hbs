@@ -1,5 +1,5 @@
 server:
-  port: 13100
+  port: {{unbound.port}}
   interface: 127.0.0.1
   do-daemonize: no
   chroot: ""
@@ -8,3 +8,4 @@ server:
   log-queries: yes
   local-zone: "." static
   include: {{etc_dir}}/test_env/unbound/active_test.conf
+  pidfile: {{run_dir}}/test-env-unbound.pid
