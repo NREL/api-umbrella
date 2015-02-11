@@ -187,11 +187,11 @@ describe('logging', function() {
         var fields = _.keys(record).sort();
 
         // Varnish randomly turns some non-chunked responses into chunked
-        // responses, so this header may crop up, but we'll ignore thit for
+        // responses, so these header may crop up, but we'll ignore these for
         // this test's purposes.
         // See: https://www.varnish-cache.org/trac/ticket/1506
         // TODO: Remove if Varnish changes its behavior.
-        fields = _.without(fields, 'response_transfer_encoding');
+        fields = _.without(fields, 'response_transfer_encoding', 'response_content_length');
 
         fields.should.eql([
           'api_key',
@@ -220,7 +220,6 @@ describe('logging', function() {
           'request_user_agent_family',
           'request_user_agent_type',
           'response_age',
-          'response_content_length',
           'response_content_type',
           'response_server',
           'response_size',
