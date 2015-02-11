@@ -81,7 +81,7 @@ describe('dns backend resolving', function() {
 
     // Remove any custom DNS entries to prevent rapid reloads (for short TTL
     // records) after these DNS tests finish.
-    setDnsRecords([], { wait: true }, function(error) {
+    setDnsRecords([], { wait: false }, function(error) {
       should.not.exist(error);
       done();
     });
@@ -419,6 +419,46 @@ describe('dns backend resolving', function() {
           setTimeout(whilstCallback, again);
         });
       }.bind(this), function() {});
+    }.bind(this));
+  });
+
+  it('resolves new api backends when they are published', function(done) {
+    this.timeout(30000);
+
+    setDnsRecords(['newly-published-backend.ooga 60 A 127.0.0.2'], { wait: false }, function(error) {
+      should.not.exist(error);
+
+      shared.publishDbConfig({
+        apis: [
+          {
+            _id: 'dns-newly-published-backend',
+            frontend_host: 'localhost',
+            backend_host: 'newly-published-backend.ooga',
+            servers: [
+              {
+                host: 'newly-published-backend.ooga',
+                port: 9444,
+              }
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/dns/newly-published-backend/',
+                backend_prefix: '/',
+              }
+            ],
+          },
+        ],
+      }, function(error) {
+        should.not.exist(error);
+
+        request.get('http://localhost:9080/dns/newly-published-backend/info/', this.options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          data.local_interface_ip.should.eql('127.0.0.2');
+          done();
+        });
+      }.bind(this));
     }.bind(this));
   });
 });

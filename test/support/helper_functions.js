@@ -3,6 +3,8 @@
 require('../test_helper');
 
 var _ = require('lodash'),
+    Factory = require('factory-lady'),
+    mongoose = require('mongoose'),
     request = require('request');
 
 _.merge(global.shared, {
@@ -34,6 +36,20 @@ _.merge(global.shared, {
           stringChunks: stringChunks,
           chunkTimeGaps: chunkTimeGaps,
         });
+      });
+    });
+  },
+
+  publishDbConfig: function(config, callback) {
+    mongoose.testConnection.model('ConfigVersion').remove({}, function(error) {
+      should.not.exist(error);
+
+      Factory.create('config_version', {
+        config: config,
+      }, function() {
+        // Wait a bit for the Mongo config polling to pickup the change and for
+        // nginx to reload.
+        setTimeout(callback, 2000);
       });
     });
   },
