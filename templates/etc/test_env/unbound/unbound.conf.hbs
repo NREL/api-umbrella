@@ -9,3 +9,7 @@ server:
   local-zone: "." static
   include: {{etc_dir}}/test_env/unbound/active_test.conf
   pidfile: {{run_dir}}/test-env-unbound.pid
+
+remote-control:
+  control-port: {{unbound.control_port}}
+  control-interface: 127.0.0.1

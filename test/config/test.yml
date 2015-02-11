@@ -53,6 +53,7 @@ elasticsearch:
         port: 13003
 unbound:
   port: 13100
+  control_port: 13101
 apis:
   - _id: down
     frontend_host: localhost
