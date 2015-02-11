@@ -126,10 +126,14 @@ module ApiUmbrella
     config.assets.precompile += %w(
       admin.css
       admin.js
-      admin/locales/en.js
       admin/stats.js
       ie_lt_9.js
     )
+
+    # Detect and precompile all the locale assets.
+    Dir.glob("#{config.root}/app/assets/javascripts/admin/locales/*.js.erb").each do |path|
+      config.assets.precompile << path.gsub(%r{^.*/app/assets/javascripts/}, "").gsub(/\.erb$/, "")
+    end
 
     config.ember.variant = :development
     config.handlebars.templates_root = ["admin/templates", "templates"]

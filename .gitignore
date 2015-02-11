@@ -33,3 +33,6 @@ config/environments/*.local.yml
 
 # Test coverage reports
 /coverage
+
+# Generated assets
+/public/test-assets
