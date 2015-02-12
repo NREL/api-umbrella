@@ -135,6 +135,11 @@ elasticsearch:
       breaker:
         fielddata:
           limit: 60%
+    # Disable Groovy scripting for security: CVE-2015-1427
+    script:
+      groovy:
+        sandbox:
+          enabled: false
 log_template_version: v1
 strip_cookies:
   - ^__utm.*$
