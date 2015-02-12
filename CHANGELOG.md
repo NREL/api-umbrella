@@ -1,5 +1,23 @@
 # API Umbrella Change Log
 
+## 0.7.1 / 2015-02-11
+
+This update fixes a couple of important bugs that were discovered shortly after rolling out the v0.7.0 release. It's highly recommended anyone running v0.7.0 upgrade to v0.7.1.
+
+[Download 0.7.1 Packages](http://nrel.github.io/api-umbrella/download/)
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you must first stop API Umbrella manually (`sudo /etc/init.d/api-umbrella stop`) before installing the new package. 
+
+### Changes
+
+* Fix 502 Bad Gateway errors for newly published API backends. Due to the DNS changes introduced in v0.7.0, newly published API backends may have not have properly resolved and passed traffic to the backend servers. (See [#107](https://github.com/NREL/api-umbrella/issues/107))
+* Fix broken admin for non-English web browsers. The translations we introduced in v0.7.0 should actually now work (whoops!). (See [#103](https://github.com/NREL/api-umbrella/issues/103))
+* Cut down on unnecessary DNS changes triggering reloads.
+* Adjust internal API Umbrella logging to reduce error and warning log messages for expected events.
+* Disables Groovy scripting in default ElasticSearch setup due to [CVE-2015-1427](http://www.elasticsearch.org/blog/elasticsearch-1-4-3-and-1-3-8-released/).
+
 ## 0.7.0 / 2015-02-08
 
 [Download 0.7.0 Packages](http://nrel.github.io/api-umbrella/download/)
