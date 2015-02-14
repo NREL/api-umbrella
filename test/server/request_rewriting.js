@@ -3,6 +3,7 @@
 require('../test_helper');
 
 var _ = require('lodash'),
+    async = require('async'),
     Curler = require('curler').Curler,
     Factory = require('factory-lady'),
     mongoose = require('mongoose'),
@@ -13,13 +14,7 @@ describe('request rewriting', function() {
     shared.runServer();
 
     it('strips the api key from the header', function(done) {
-      var options = {
-        headers: {
-          'X-Api-Key': this.apiKey,
-        }
-      };
-
-      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+      request.get('http://localhost:9333/info/', this.options, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         should.not.exist(data.headers['x-api-key']);
@@ -94,13 +89,7 @@ describe('request rewriting', function() {
     });
 
     it('strips the api key from the header', function(done) {
-      var options = {
-        headers: {
-          'X-Api-Key': this.apiKey,
-        }
-      };
-
-      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+      request.get('http://localhost:9333/info/', this.options, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         should.not.exist(data.headers['x-api-key']);
@@ -165,13 +154,7 @@ describe('request rewriting', function() {
     });
 
     it('keeps the api key in the header', function(done) {
-      var options = {
-        headers: {
-          'X-Api-Key': this.apiKey,
-        }
-      };
-
-      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+      request.get('http://localhost:9333/info/', this.options, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.headers['x-api-key'].should.eql(this.apiKey);
@@ -229,15 +212,8 @@ describe('request rewriting', function() {
       }.bind(this));
     });
 
-
     it('passes the api key in the query string even if passed in via other means', function(done) {
-      var options = {
-        headers: {
-          'X-Api-Key': this.apiKey,
-        }
-      };
-
-      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+      request.get('http://localhost:9333/info/', this.options, function(error, response, body) {
         var data = JSON.parse(body);
         data.url.query.api_key.should.eql(this.apiKey);
 
@@ -275,12 +251,11 @@ describe('request rewriting', function() {
     });
 
     it('strips forged role headers on the incoming request', function(done) {
-      var options = {
+      var options = _.merge({}, this.options, {
         headers: {
-          'X-Api-Key': this.apiKey,
           'X-Api-User-Id': 'bogus',
         }
-      };
+      });
 
       request.get('http://localhost:9333/info/', options, function(error, response, body) {
         var data = JSON.parse(body);
@@ -292,12 +267,11 @@ describe('request rewriting', function() {
     });
 
     it('strips forged role headers, case insensitvely', function(done) {
-      var options = {
+      var options = _.merge({}, this.options, {
         headers: {
-          'X-Api-Key': this.apiKey,
           'X-API-USER-ID': 'bogus',
         }
-      };
+      });
 
       request.get('http://localhost:9333/info/', options, function(error, response, body) {
         var data = JSON.parse(body);
@@ -470,13 +444,7 @@ describe('request rewriting', function() {
 
     describe('default', function() {
       it('appends the query string', function(done) {
-        var options = {
-          headers: {
-            'X-Api-Key': this.apiKey,
-          },
-        };
-
-        request.get('http://localhost:9333/info/?test=test', options, function(error, response, body) {
+        request.get('http://localhost:9333/info/?test=test', this.options, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
             'test': 'test',
@@ -489,13 +457,7 @@ describe('request rewriting', function() {
       });
 
       it('overrides existing query parameters', function(done) {
-        var options = {
-          headers: {
-            'X-Api-Key': this.apiKey,
-          },
-        };
-
-        request.get('http://localhost:9333/info/?test=test&add_param1=original', options, function(error, response, body) {
+        request.get('http://localhost:9333/info/?test=test&add_param1=original', this.options, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
             'test': 'test',
@@ -510,13 +472,7 @@ describe('request rewriting', function() {
 
     describe('sub-url match', function() {
       it('overrides the default query string settings', function(done) {
-        var options = {
-          headers: {
-            'X-Api-Key': this.apiKey,
-          },
-        };
-
-        request.get('http://localhost:9333/info/sub/', options, function(error, response, body) {
+        request.get('http://localhost:9333/info/sub/', this.options, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
             'add_param2': 'overridden',
@@ -611,6 +567,94 @@ describe('request rewriting', function() {
       });
     });
   });
+
+
+  describe('setting dynamic headers', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          settings: {
+            headers: [
+              { key: 'X-Dynamic', value: '({{headers.x-dynamic-source}}-{{headers.x-dynamic-source}})' },
+              { key: 'X-Dynamic-Missing', value: '{{headers.x-missing}}' },
+              { key: 'X-Dynamic-Default-Absent', value: '{{#if headers.x-missing}}{{headers.x-missing}}{{else}}default{{/if}}' },
+              { key: 'X-Dynamic-Default-Present', value: '{{#if headers.x-dynamic-source}}{{headers.x-dynamic-source}}{{else}}static{{/if}}' },
+
+            ],
+          },
+          sub_settings: [
+            {
+              http_method: 'any',
+              regex: '^/info/sub',
+              settings: {
+                headers: [
+                  { key: 'X-Dynamic-Sub', value: '{{headers.x-dynamic-source}}' },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    function stripStandardHeaders(headers) {
+      return _.omit(headers, 'host', 'connection', 'x-api-umbrella-backend-scheme', 'x-api-umbrella-backend-id', 'x-api-key', 'x-api-user-id');
+    }
+
+    describe('default', function() {
+
+      it('evaluates dynamic headers', function(done) {
+        var options = {
+          headers: {
+            'x-dynamic-source': 'dynamic'
+          },
+        };
+
+        request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+          var data = JSON.parse(body);
+          stripStandardHeaders(data.headers).should.eql({
+            'x-dynamic': '(dynamic-dynamic)',
+            'x-dynamic-source': 'dynamic',
+            // x-dynamic-missing is not set
+            'x-dynamic-default-absent': 'default',
+            'x-dynamic-default-present': 'dynamic',            
+          });
+
+          done();
+        });
+      });
+
+    });
+
+    describe('sub-url match', function() {
+      it('evaluates sub-url dynamic headers', function(done) {
+        var options = {
+          headers: {
+            'x-dynamic-source': 'dynamic'
+          },
+        };
+
+        request.get('http://localhost:9333/info/sub/?api_key=' + this.apiKey, options, function(error, response, body) {
+          var data = JSON.parse(body);
+          stripStandardHeaders(data.headers).should.eql({
+            'x-dynamic-sub': 'dynamic',
+            'x-dynamic-source': 'dynamic'
+          });
+
+          done();
+        });
+      });
+    });
+  });
+
 
   describe('http basic auth', function() {
     shared.runServer({
@@ -715,14 +759,86 @@ describe('request rewriting', function() {
             {
               matcher_type: 'route',
               http_method: 'any',
-              frontend_matcher: '/info/:category/:id.:ext?foo=:foo&bar=:bar',
-              backend_replacement: '/info/?category={{category}}&id={{id}}&format={{ext}}&foo={{foo}}&bar={{bar}}',
+              frontend_matcher: '/info/*wildcard/:category/:id.:ext?foo=:foo&bar=:bar',
+              backend_replacement: '/info/?wildcard={{wildcard}}&category={{category}}&id={{id}}&format={{ext}}&foo={{foo}}&bar={{bar}}',
             },
             {
               matcher_type: 'route',
               http_method: 'any',
-              frontend_matcher: '/info/wildcard/*after',
-              backend_replacement: '/info/after-wildcard/{{after}}',
+              frontend_matcher: '/info/no-query-string-route',
+              backend_replacement: '/info/matched-no-query-string-route',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/named-path/:path_example/:id',
+              backend_replacement: '/info/matched-named-path?dir={{path_example}}&id={{id}}',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/named-path-ext.:ext',
+              backend_replacement: '/info/matched-named-path-ext?extension={{ext}}',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/named-wildcard-query-string-route?*wildcard',
+              backend_replacement: '/info/matched-named-wildcard-query-string-route?{{wildcard}}',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/named-arg?foo=:foo',
+              backend_replacement: '/info/matched-named-arg?bar={{foo}}',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/named-args?foo=:foo&bar=:bar',
+              backend_replacement: '/info/matched-named-args?bar={{bar}}&foo={{foo}}',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/:path/*wildcard/encoding-test?foo=:foo&bar=:bar&add_path=:add_path',
+              backend_replacement: '/info/{{path}}/{{wildcard}}/{{add_path}}/matched-encoding-test?bar={{bar}}&foo={{foo}}&path={{path}}&wildcard={{wildcard}}&add_path={{add_path}}',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/args?foo=1&bar=2',
+              backend_replacement: '/info/matched-args',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/*before/wildcard/*after',
+              backend_replacement: '/info/{{after}}/matched-wildcard/{{before}}?before={{before}}&after={{after}}',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/with-trailing-slash/?query=foo',
+              backend_replacement: '/info/matched-with-trailing-slash-query',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/without-trailing-slash?query=foo',
+              backend_replacement: '/info/matched-without-trailing-slash-query',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/with-trailing-slash/',
+              backend_replacement: '/info/matched-with-trailing-slash',
+            },
+            {
+              matcher_type: 'route',
+              http_method: 'any',
+              frontend_matcher: '/info/without-trailing-slash',
+              backend_replacement: '/info/matched-without-trailing-slash',
             },
             {
               matcher_type: 'route',
@@ -760,16 +876,11 @@ describe('request rewriting', function() {
     });
 
     describe('route patterns', function() {
-      it('matches a route pattern, without regard to query string ordering', function(done) {
-        var options = {
-          headers: {
-            'X-Api-Key': this.apiKey,
-          },
-        };
-
-        request.get('http://localhost:9333/info/cat/10.json?bar=hello&foo=goodbye', options, function(error, response, body) {
+      it('matches an example with a mixture of path and query string params', function(done) {
+        request.get('http://localhost:9333/info/aaa/zzz/cat/10.json?bar=hello&foo=goodbye', this.options, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
+            'wildcard': 'aaa/zzz',
             'category': 'cat',
             'id': '10',
             'format': 'json',
@@ -778,6 +889,235 @@ describe('request rewriting', function() {
           });
 
           done();
+        });
+      });
+
+      describe('query string argument matching', function() {
+        it('matches, but does not pass along the query string when no query string is specified on the route pattern', function(done) {
+          request.get('http://localhost:9333/info/no-query-string-route?bar=hello&foo=goodbye', this.options, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.url.pathname.should.eql('/info/matched-no-query-string-route');
+            data.url.query.should.eql({});
+            done();
+          });
+        });
+
+        describe('noncapturing matches', function() {
+          it('matches arguments in any order', function(done) {
+            request.get('http://localhost:9333/info/args?foo=1&bar=2', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.url.path.should.eql('/info/matched-args');
+
+              request.get('http://localhost:9333/info/args?bar=2&foo=1', this.options, function(error, response, body) {
+                data = JSON.parse(body);
+                data.url.path.should.eql('/info/matched-args');
+
+                done();
+              });
+            }.bind(this));
+          });
+
+          it('does not match if extra arguments are present', function(done) {
+            request.get('http://localhost:9333/info/args?foo=1&bar=2&aaa=3', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.url.path.should.eql('/info/args?foo=1&bar=2&aaa=3');
+              done();
+            });
+          });
+
+          it('does not match if matched argument is given multiple times', function(done) {
+            request.get('http://localhost:9333/info/args?foo=1&bar=2&bar=3', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.url.path.should.eql('/info/args?foo=1&bar=2&bar=3');
+              done();
+            });
+          });
+
+          it('does not match if not all the arguments are present', function(done) {
+            request.get('http://localhost:9333/info/args?foo=1', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.url.path.should.eql('/info/args?foo=1');
+              done();
+            });
+          });
+        });
+
+        describe('capturing matches', function() {
+          it('matches and replaces named query string arguments', function(done) {
+            request.get('http://localhost:9333/info/named-arg?foo=hello', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.url.path.should.eql('/info/matched-named-arg?bar=hello');
+              done();
+            });
+          });
+
+          it('comma-delimits the replacement for multiple matches on a named query string argument', function(done) {
+            request.get('http://localhost:9333/info/named-arg?foo=hello3&foo=hello1&foo=hello2', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+
+              // JS encodes the commas, Lua does not. Make this test work in
+              // both environments while we experiment with Lua.
+              if(_.contains(data.url.path, '%2C')) {
+                data.url.path.should.eql('/info/matched-named-arg?bar=hello3%2Chello1%2Chello2');
+              } else {
+                data.url.path.should.eql('/info/matched-named-arg?bar=hello3,hello1,hello2');
+              }
+
+              data.url.query.should.eql({
+                bar: 'hello3,hello1,hello2',
+              });
+              done();
+            });
+          });
+
+          it('matches arguments in any order', function(done) {
+            request.get('http://localhost:9333/info/named-args?foo=1&bar=2', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.url.path.should.eql('/info/matched-named-args?bar=2&foo=1');
+
+              request.get('http://localhost:9333/info/named-args?bar=2&foo=1', this.options, function(error, response, body) {
+                data = JSON.parse(body);
+                data.url.path.should.eql('/info/matched-named-args?bar=2&foo=1');
+
+                done();
+              });
+            }.bind(this));
+          });
+
+          it('does not match if extra arguments are present', function(done) {
+            request.get('http://localhost:9333/info/named-args?foo=1&bar=2&aaa=3', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.url.path.should.eql('/info/named-args?foo=1&bar=2&aaa=3');
+              done();
+            });
+          });
+
+          it('does not match if not all the arguments are present', function(done) {
+            request.get('http://localhost:9333/info/named-args?foo=1', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.url.path.should.eql('/info/named-args?foo=1');
+              done();
+            });
+          });
+
+          it('maintains url encoding', function(done) {
+            request.get('http://localhost:9333/info/a/b/c/d/encoding-test?foo=hello+space+test&bar=1%262*3%254%2F5&add_path=x%2Fy%2Fz', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.url.path.should.eql('/info/a/b/c/d/x/y/z/matched-encoding-test?bar=1%262*3%254%2F5&foo=hello%20space%20test&path=a&wildcard=b%2Fc%2Fd&add_path=x%2Fy%2Fz');
+              data.url.query.should.eql({
+                foo: 'hello space test',
+                bar: '1&2*3%4/5',
+                path: 'a',
+                wildcard: 'b/c/d',
+                add_path: 'x/y/z',
+              });
+              done();
+            });
+          });
+
+          // Maybe this is something we should support, though?
+          it('does not support named wildcards in the query string', function(done) {
+            request.get('http://localhost:9333/info/named-wildcard-query-string-route?bar=hello&foo=goodbye', this.options, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.url.path.should.eql('/info/named-wildcard-query-string-route?bar=hello&foo=goodbye');
+              done();
+            });
+          });
+        });
+      });
+
+      describe('path matching', function() {
+        it('captures named path parameters', function(done) {
+          request.get('http://localhost:9333/info/named-path/foo/10', this.options, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.url.path.should.eql('/info/matched-named-path?dir=foo&id=10');
+            done();
+          });
+        });
+
+        it('does not match multiple levels of path heirarchy with named path parameters', function(done) {
+          request.get('http://localhost:9333/info/named-path/foo/bar/10', this.options, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.url.path.should.eql('/info/named-path/foo/bar/10');
+            done();
+          });
+        });
+
+        it('captures file extensions as named path parameters', function(done) {
+          request.get('http://localhost:9333/info/named-path-ext.json', this.options, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.url.path.should.eql('/info/matched-named-path-ext?extension=json');
+            done();
+          });
+        });
+
+        it('captures multiple wildcards in a single route', function(done) {
+          request.get('http://localhost:9333/info/a/b/c/wildcard/d/e/', this.options, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.url.path.should.eql('/info/d/e/matched-wildcard/a/b/c?before=a%2Fb%2Fc&after=d%2Fe');
+            done();
+          });
+        });
+
+        it('ignores trailing slashes for route matching purposes', function(done) {
+          async.parallel([
+            function(callback) {
+              request.get('http://localhost:9333/info/with-trailing-slash/', this.options, function(error, response, body) {
+                var data = JSON.parse(body);
+                data.url.pathname.should.eql('/info/matched-with-trailing-slash');
+                callback();
+              });
+            }.bind(this),
+            function(callback) {
+              request.get('http://localhost:9333/info/with-trailing-slash', this.options, function(error, response, body) {
+                var data = JSON.parse(body);
+                data.url.pathname.should.eql('/info/matched-with-trailing-slash');
+                callback();
+              });
+            }.bind(this),
+            function(callback) {
+              request.get('http://localhost:9333/info/without-trailing-slash/', this.options, function(error, response, body) {
+                var data = JSON.parse(body);
+                data.url.pathname.should.eql('/info/matched-without-trailing-slash');
+                callback();
+              });
+            }.bind(this),
+            function(callback) {
+              request.get('http://localhost:9333/info/without-trailing-slash', this.options, function(error, response, body) {
+                var data = JSON.parse(body);
+                data.url.pathname.should.eql('/info/matched-without-trailing-slash');
+                callback();
+              });
+            }.bind(this),
+            function(callback) {
+              request.get('http://localhost:9333/info/with-trailing-slash/?query=foo', this.options, function(error, response, body) {
+                var data = JSON.parse(body);
+                data.url.pathname.should.eql('/info/matched-with-trailing-slash-query');
+                callback();
+              });
+            }.bind(this),
+            function(callback) {
+              request.get('http://localhost:9333/info/with-trailing-slash?query=foo', this.options, function(error, response, body) {
+                var data = JSON.parse(body);
+                data.url.pathname.should.eql('/info/matched-with-trailing-slash-query');
+                callback();
+              });
+            }.bind(this),
+            function(callback) {
+              request.get('http://localhost:9333/info/without-trailing-slash/?query=foo', this.options, function(error, response, body) {
+                var data = JSON.parse(body);
+                data.url.pathname.should.eql('/info/matched-without-trailing-slash-query');
+                callback();
+              });
+            }.bind(this),
+            function(callback) {
+              request.get('http://localhost:9333/info/without-trailing-slash?query=foo', this.options, function(error, response, body) {
+                var data = JSON.parse(body);
+                data.url.pathname.should.eql('/info/matched-without-trailing-slash-query');
+                callback();
+              });
+            }.bind(this),
+          ], done);
         });
       });
     });

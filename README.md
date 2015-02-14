@@ -54,10 +54,10 @@ Logs and analytics are gathered in ElasticSearch.
 
 ### API Facade / Request Rewriting
 
-API Umbrella Gatekeeper can optionally modify the incoming request in a variety of ways. This allows your pulblic facing API to differ
+API Umbrella Gatekeeper can optionally modify the incoming request in a variety of ways. This allows your public facing API to differ from the backend.
 
 - URL rewriting: The incoming URL can be transformed before hitting the backend. This can be as simple as presenting the API under a different URL prefix, or as complex as providing a completely different URL structure.
-- Manipulate HTTP headers: Add or remove HTTP headers from the request before it hits the API backend.
+- Manipulate HTTP headers: Add or remove HTTP headers from the request before it hits the API backend. You can also used Handlebars templates to dynamic set a header value based on the request coming in: `x-original-proto: {{headers.x-forwarded-proto}}`
 
 The [API Umbrella Web](http://github.com/NREL/api-umbrella-web) application provides an administrative interface configuring the API backends and performing common types of rewriting.
 
