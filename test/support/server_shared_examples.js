@@ -49,6 +49,11 @@ _.merge(global.shared, {
       Factory.create('api_user', function(user) {
         this.user = user;
         this.apiKey = user.api_key;
+        this.options = {
+          headers: {
+            'X-Api-Key': this.apiKey,
+          }
+        };
         done();
       }.bind(this));
     });
