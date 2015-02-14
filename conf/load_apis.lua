@@ -16,6 +16,8 @@ local escape = plutils.escape
 local get_utc_date = bson.get_utc_date
 local get_packed = utils.set_packed
 local set_packed = utils.set_packed
+local size = tablex.size
+local split = plutils.split
 
 local lock = lock:new("my_locks", {
   ["timeout"] = 0,
@@ -31,7 +33,57 @@ local function cache_computed_api(api)
 
   if api["url_matches"] then
     for _, url_match in ipairs(api["url_matches"]) do
-      url_match["_frontend_prefix_matcher"] = "^" .. escape(url_match.frontend_prefix)
+      url_match["_frontend_prefix_matcher"] = "^" .. escape(url_match["frontend_prefix"])
+    end
+  end
+
+  if api["rewrites"] then
+    for _, rewrite in ipairs(api["rewrites"]) do
+      rewrite["http_method"] = string.lower(rewrite["http_method"])
+
+      -- Route pattern matching implementation based on
+      -- https://github.com/bjoerge/route-pattern
+      -- TODO: Cleanup!
+      if rewrite["matcher_type"] == "route" then
+        local backend_replacement = string.gsub(rewrite["backend_replacement"], "{{([^{}]-)}}", "{{{%1}}}")
+        local parts = split(backend_replacement, "?", true, 2)
+        rewrite["_backend_replacement_path"] = parts[1]
+        rewrite["_backend_replacement_args"] = parts[2]
+
+        local parts = split(rewrite["frontend_matcher"], "?", true, 2)
+        local path = parts[1]
+        local args = parts[2]
+
+        local escapeRegExp = "[\\-{}\\[\\]+?.,\\\\^$|#\\s]"
+        local namedParam = [[:(\w+)]]
+        local splatNamedParam = [[\*(\w+)]]
+        local subPath = [[\*([^\w]|$)]]
+
+        local frontend_path_regex, n, err = ngx.re.gsub(path, escapeRegExp, "\\$0")
+        frontend_path_regex = ngx.re.gsub(frontend_path_regex, subPath, [[.*?$1]])
+        frontend_path_regex = ngx.re.gsub(frontend_path_regex, namedParam, [[(?<$1>[^/]+)]])
+        frontend_path_regex = ngx.re.gsub(frontend_path_regex, splatNamedParam, [[(?<$1>.*?)]])
+        frontend_path_regex = ngx.re.gsub(frontend_path_regex, "/$", "")
+        rewrite["_frontend_path_regex"] = "^" .. frontend_path_regex .. "/?$"
+
+        if args then
+          args = ngx.decode_args(args)
+          rewrite["_frontend_args_length"] = size(args)
+          rewrite["_frontend_args"] = {}
+          for key, value in pairs(args) do
+            if key == "*" and value == true then
+              rewrite["_frontend_args_allow_wildcards"] = true
+            else
+              rewrite["_frontend_args"][key] = {}
+              if type(value) == "string" and string.sub(value, 1, 1) == ":" then
+                rewrite["_frontend_args"][key]["named_capture"] = string.sub(value, 2, -1)
+              else
+                rewrite["_frontend_args"][key]["must_equal"] = value
+              end
+            end
+          end
+        end
+      end
     end
   end
 end

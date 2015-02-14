@@ -21,6 +21,7 @@ ngx.ctx.port = ngx_var.http_x_forwarded_port or ngx_var.server_port
 ngx.ctx.protocol = ngx_var.http_x_forwarded_proto or ngx_var.scheme
 ngx.ctx.remote_addr = ngx_var.remote_addr
 ngx.ctx.remote_user = ngx_var.remote_user
+ngx.ctx.request_method = string.lower(ngx.var.request_method)
 ngx.ctx.uri = ngx_var.uri
 
 -- Try to find the matching API backend first, since it dictates further

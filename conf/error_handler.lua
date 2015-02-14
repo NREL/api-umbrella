@@ -20,7 +20,7 @@ local supported_formats = {
 
 local supported_media_types = {}
 for format, media_type in pairs(supported_formats) do
-  local media_type_parts = split(media_type, "/")
+  local media_type_parts = split(media_type, "/", true)
   table.insert(supported_media_types, {
     format = format,
     media_type = media_type_parts[1],

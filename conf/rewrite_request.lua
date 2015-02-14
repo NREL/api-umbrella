@@ -1,4 +1,5 @@
 local inspect = require "inspect"
+local lustache = require "lustache"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
@@ -6,8 +7,10 @@ local types = require "pl.types"
 local utils = require "utils"
 
 local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
+local gsub = ngx.re.gsub
 local is_empty = types.is_empty
 local keys = tablex.keys
+local size = tablex.size
 local split = plutils.split
 local strip = stringx.strip
 
@@ -130,6 +133,94 @@ local function strip_cookies(settings)
   end
 end
 
+local function url_rewrites(api)
+  if not api["rewrites"] then return end
+
+  local request_method = ngx.ctx.request_method
+  local original_path = ngx.var.uri
+  local original_uri = ngx.var.uri
+  local original_args = ngx.var.args
+  if original_args then
+    original_uri = original_uri .. "?" .. original_args
+  end
+  local new_uri = original_uri
+
+  for _, rewrite in ipairs(api["rewrites"]) do
+    if rewrite["http_method"] == "any" or rewrite["http_method"] == ngx.ctx.request_method then
+      if rewrite["matcher_type"] == "regex" then
+        new_uri = gsub(new_uri, rewrite["frontend_matcher"], rewrite["backend_replacement"], "io")
+
+      -- Route pattern matching implementation based on
+      -- https://github.com/bjoerge/route-pattern
+      -- TODO: Cleanup!
+      elseif rewrite["matcher_type"] == "route" then
+        local parts = split(new_uri, "?", true, 2)
+        local path = parts[1]
+        local args = parts[2]
+        local args_length = 0
+        if args then
+          args = ngx.decode_args(args)
+          args_length = size(args)
+        end
+
+        local matches = ngx.re.match(path, rewrite["_frontend_path_regex"])
+
+        if matches then
+          if rewrite["_frontend_args_length"] then
+            if rewrite["_frontend_args_allow_wildcards"] or args_length == rewrite["_frontend_args_length"] then
+              for key, value in pairs(rewrite["_frontend_args"]) do
+                if value["must_equal"] and args[key] ~= value["must_equal"] then
+                  matches = false
+                elseif value["named_capture"] then
+                  matches[value["named_capture"]] = args[key]
+                end
+              end
+            else
+              matches = false
+            end
+          end
+
+          if matches then
+            for key, value in pairs(matches) do
+              if type(value) == "table" then
+                matches[key] = table.concat(value, ",")
+              end
+            end
+
+            local ok, output = pcall(lustache.render, lustache, rewrite["_backend_replacement_path"], matches)
+            if ok then
+              new_uri = output
+            else
+              ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. inspect(output))
+            end
+
+            if rewrite["_backend_replacement_args"] then
+              for key, value in pairs(matches) do
+                matches[key] = ngx.escape_uri(value)
+              end
+
+              local ok, output = pcall(lustache.render, lustache, rewrite["_backend_replacement_args"], matches)
+              if ok then
+                new_uri = new_uri .. "?" .. output
+              else
+                ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. inspect(output))
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  if new_uri ~= original_uri then
+    local parts = split(new_uri, "?", true, 2)
+    local path = parts[1]
+    local args = parts[2] or {}
+    ngx.req.set_uri(path)
+    ngx.req.set_uri_args(args)
+  end
+end
+
 return function(user, api, settings)
   pass_api_key(user, settings)
   set_user_id_header(user)
@@ -138,4 +229,5 @@ return function(user, api, settings)
   set_headers(settings)
   set_http_basic_auth(settings)
   strip_cookies(settings)
+  url_rewrites(api)
 end
