@@ -8,7 +8,6 @@ var _ = require('lodash'),
     fs = require('fs'),
     ippp = require('ipplusplus'),
     request = require('request'),
-    timekeeper = require('timekeeper'),
     yaml = require('js-yaml');
 
 describe('ApiUmbrellaGatekeper', function() {
@@ -218,36 +217,30 @@ describe('ApiUmbrellaGatekeper', function() {
       itBehavesLikeApiKeyRateLimits('/hello', 10);
 
       it('rejects requests after the hourly limit has been exceeded', function(done) {
-        timekeeper.freeze(new Date(2013, 1, 1, 1, 27, 0));
         async.times(10, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, function() {
+          request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 0).getTime() } }, function() {
             asyncCallback(null);
           });
         }.bind(this), function() {
-          timekeeper.freeze(new Date(2013, 1, 1, 2, 26, 59));
-          request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, function(error, response, body) {
+          request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 2, 26, 59).getTime() } }, function(error, response, body) {
             response.statusCode.should.eql(429);
             body.should.include('<code>OVER_RATE_LIMIT</code>');
 
-            timekeeper.reset();
             done();
           });
         }.bind(this));
       });
 
       it('allows requests again in the next hour after the rate limit has been exceeded', function(done) {
-        timekeeper.freeze(new Date(2013, 1, 1, 1, 27, 0));
         async.times(11, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function() {
+          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 0).getTime() } }, function() {
             asyncCallback(null);
           });
         }.bind(this), function() {
-          timekeeper.freeze(new Date(2013, 1, 1, 2, 27, 0));
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
+          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 2, 27, 0).getTime() } }, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('Hello World');
 
-            timekeeper.reset();
             done();
           });
         }.bind(this));
@@ -256,88 +249,78 @@ describe('ApiUmbrellaGatekeper', function() {
       it('resets rate limits on a rolling basis, so no more than the limit can be called within the past hour', function(done) {
         async.series([
           function(callback) {
-            timekeeper.freeze(new Date(2013, 1, 2, 1, 43, 0));
             async.timesSeries(2, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 1, 43, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(200);
                 timesCallback(null);
               });
             }.bind(this), callback);
           }.bind(this),
           function(callback) {
-            timekeeper.freeze(new Date(2013, 1, 2, 2, 3, 0));
             async.timesSeries(3, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 3, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(200);
                 timesCallback(null);
               });
             }.bind(this), callback);
           }.bind(this),
           function(callback) {
-            timekeeper.freeze(new Date(2013, 1, 2, 2, 42, 0));
             async.timesSeries(5, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 42, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(200);
                 timesCallback(null);
               });
             }.bind(this), callback);
           }.bind(this),
           function(callback) {
-            timekeeper.freeze(new Date(2013, 1, 2, 2, 42, 0));
             async.timesSeries(1, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 42, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(429);
                 timesCallback(null);
               });
             }.bind(this), callback);
           }.bind(this),
           function(callback) {
-            timekeeper.freeze(new Date(2013, 1, 2, 2, 43, 0));
             async.timesSeries(2, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 43, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(200);
                 timesCallback(null);
               });
             }.bind(this), callback);
           }.bind(this),
           function(callback) {
-            timekeeper.freeze(new Date(2013, 1, 2, 2, 43, 0));
             async.timesSeries(1, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 43, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(429);
                 timesCallback(null);
               });
             }.bind(this), callback);
           }.bind(this),
           function(callback) {
-            timekeeper.freeze(new Date(2013, 1, 2, 3, 2, 0));
             async.timesSeries(1, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 3, 2, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(429);
                 timesCallback(null);
               });
             }.bind(this), callback);
           }.bind(this),
           function(callback) {
-            timekeeper.freeze(new Date(2013, 1, 2, 3, 3, 0));
             async.timesSeries(3, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 3, 3, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(200);
                 timesCallback(null);
               });
             }.bind(this), callback);
           }.bind(this),
           function(callback) {
-            timekeeper.freeze(new Date(2013, 1, 2, 3, 3, 0));
             async.timesSeries(1, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 3, 3, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(429);
                 timesCallback(null);
               });
             }.bind(this), callback);
           }.bind(this),
         ], function(error) {
-          timekeeper.reset();
           done(error);
         });
       });
@@ -386,19 +369,15 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       it('does not count excess queries in the smaller time window against the larger time window', function(done) {
-        timekeeper.freeze(new Date(2013, 1, 1, 1, 27, 43));
         async.times(15, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function() {
+          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 43).getTime() } }, function() {
             asyncCallback(null);
           });
         }.bind(this), function() {
-          timekeeper.freeze(new Date(2013, 1, 1, 1, 27, 53));
-
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
+          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 53).getTime() } }, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('Hello World');
 
-            timekeeper.reset();
             done();
           });
         }.bind(this));

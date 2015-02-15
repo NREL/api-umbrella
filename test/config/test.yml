@@ -1,3 +1,4 @@
+app_env: test
 mongodb:
   url: "mongodb://127.0.0.1:27017/api_umbrella_test"
 redis:

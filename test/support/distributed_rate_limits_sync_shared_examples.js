@@ -27,11 +27,13 @@ _.merge(global.shared, {
       }.bind(this));
     });
 
+/*
     beforeEach(function startSync(done) {
       this.sync = distributedRateLimitSync.start({
         config: this.loader.runtimeFile,
       }, done);
     });
+    */
 
     afterEach(function stopConfigLoader(done) {
       if(this.loader) {
