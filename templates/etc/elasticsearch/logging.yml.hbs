@@ -1,0 +1,46 @@
+# you can override this using by setting a system property, for example -Des.logger.level=DEBUG
+es.logger.level: INFO
+rootLogger: ${es.logger.level}, console
+logger:
+  # log action execution errors for easier debugging
+  action: DEBUG
+  # reduce the logging for aws, too much is logged under the default INFO
+  com.amazonaws: WARN
+
+  # gateway
+  #gateway: DEBUG
+  #index.gateway: DEBUG
+
+  # peer shard recovery
+  #indices.recovery: DEBUG
+
+  # discovery
+  #discovery: TRACE
+
+  index.search.slowlog: TRACE, index_search_slow_log_file
+  index.indexing.slowlog: TRACE, index_indexing_slow_log_file
+
+additivity:
+  index.search.slowlog: false
+  index.indexing.slowlog: false
+
+appender:
+  console:
+    type: console
+    layout:
+      type: consolePattern
+      conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
+
+  index_search_slow_log_file:
+    type: file
+    file: ${path.logs}/elasticsearch-index-search-slowlog.log
+    layout:
+      type: pattern
+      conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
+
+  index_indexing_slow_log_file:
+    type: file
+    file: ${path.logs}/elasticsearch-index-indexing-slowlog.log
+    layout:
+      type: pattern
+      conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"

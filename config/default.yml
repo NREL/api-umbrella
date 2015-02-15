@@ -1,5 +1,104 @@
+app_env: production
+services:
+  - general_db
+  - log_db
+  - router
+  - web
+user: api-umbrella
+group: api-umbrella
+rlimits:
+  nofile: 100000
+  nproc: 20000
+http_port: 80
+https_port: 443
+etc_dir: /opt/api-umbrella/etc
+log_dir: /opt/api-umbrella/var/log
+run_dir: /opt/api-umbrella/var/run
+tmp_dir: /opt/api-umbrella/var/tmp
+db_dir: /opt/api-umbrella/var/db
+redis:
+  host: 127.0.0.1
+  port: 14000
+beanstalkd:
+  host: 127.0.0.1
+  port: 14005
+dnsmasq:
+  port: 14007
+nginx:
+  workers: 4
+  worker_connections: 8192
+gatekeeper:
+  workers: 4
+  host: 127.0.0.1
+  starting_port: 14050
+  default_frontend_host:
+  api_key_methods:
+    - header
+    - getParam
+    - basicAuthUsername
+  target: "127.0.0.1:14010"
+varnish:
+  port: 14010
+  backend:
+    host: 127.0.0.1
+    port: 14011
+web:
+  host: 127.0.0.1
+  port: 14012
+  dir: /opt/api-umbrella/embedded/apps/web/current
+  rails_secret_token:
+  devise_secret_key:
+  puma:
+    bind: "unix:///opt/api-umbrella/var/run/puma.sock"
+    workers: 2
+    min_threads: 2
+    max_threads: 24
+  admin:
+    initial_superusers: []
+    auth_strategies:
+      enabled:
+        - github
+        - google
+        - persona
+      facebook:
+        client_id:
+        client_secret:
+      github:
+        client_id:
+        client_secret:
+      google:
+        client_id:
+        client_secret:
+static_site:
+  host: 127.0.0.1
+  port: 14013
+  host_header:
+  dir: /opt/api-umbrella/embedded/apps/static-site/current
+router:
+  api_backends:
+    port: 14011
+  dir: /opt/api-umbrella/embedded/apps/router/current
+  trusted_proxies: []
+  global_rate_limits:
+    ip_rate: "100r/s"
+    ip_burst: 200
+    ip_rate_size: 8m
+    ip_connections: 50
+    ip_connections_size: 5m
+  log_listener:
+    port: 14006
+supervisord:
+  inet_http_server:
+    host: 127.0.0.1
+    port: 14004
+hosts:
+  - hostname: localhost
+    default: true
+dns_resolver:
+  minimum_ttl: 40
+  reload_buffer_time: 40
 mongodb:
-  url: "mongodb://127.0.0.1:27017/api_umbrella_development"
+  url: "mongodb://127.0.0.1:14001/api_umbrella"
   options:
     server:
       socketOptions:
@@ -7,28 +106,47 @@ mongodb:
     replset:
       socketOptions:
         keepAlive: 500
-redis:
-  host: 127.0.0.1
-  port: 6379
+  embedded_server_config:
+    systemLog:
+      destination: file
+      logAppend: true
+      quiet: true
+    processManagement:
+      fork: false
+    net:
+      port: 14001
 elasticsearch:
   hosts:
-    - host: 127.0.0.1
-      port: 9200
-gatekeeper:
-  host: 127.0.0.1
-  starting_port: 4000
-  target: "127.0.0.1:6081"
-  api_key_methods:
-    - header
-    - getParam
-    - basicAuthUsername
-router:
-  trusted_proxies:
-    - 127.0.0.1
+    - "http://127.0.0.1:14002"
+  embedded_server_env:
+    heap_size: 512m
+  embedded_server_config:
+    http:
+      port: 14002
+    transport:
+      tcp:
+        port: 14003
+    cluster:
+      name: api-umbrella
+    indices:
+      fielddata:
+        cache:
+          size: 40%
+      breaker:
+        fielddata:
+          limit: 60%
+    # Disable Groovy scripting for security: CVE-2015-1427
+    script:
+      groovy:
+        sandbox:
+          enabled: false
+log_template_version: v1
 strip_cookies:
   - ^__utm.*$
   - ^_ga$
   - ^is_returning$
+default_host: localhost
+site_name: API Umbrella
 apiSettings:
   rate_limits:
     - duration: 1000

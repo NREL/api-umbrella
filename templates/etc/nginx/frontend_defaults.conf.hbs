@@ -1,0 +1,31 @@
+# Limit the number of simultaneous connections per IP address to {{router.global_rate_limits.ip_connections}}.
+limit_conn api_umbrella_conn_addr_zone {{router.global_rate_limits.ip_connections}};
+
+# After the {{router.global_rate_limits.ip_rate}} rate is reached, allow a sizable burst before
+# completely terminating requests at this router level. This is so we can
+# generally rely on API Umbrella Gatekeeper for rate limiting, but still
+# throttle traffic to the Gatekeeper.
+limit_req zone=api_umbrella_req_addr_zone burst={{router.global_rate_limits.ip_burst}} nodelay;
+
+# Conditional proxy headers. Don't set these x-forwarded headers if they've
+# already been set (by the SSL terminator).
+set $real_scheme $http_x_forwarded_proto;
+if ($real_scheme = "") {
+  set $real_scheme $scheme;
+}
+
+set $real_port $http_x_forwarded_port;
+if ($real_port = "") {
+  set $real_port $server_port;
+}
+
+# Only retry backends in the event of connection errors (and not also
+# connection timeouts as is the default). This prevents slow backend timeouts
+# triggering multiple requests (since there are usually multiple gatekeeper
+# processes setup).
+proxy_next_upstream error;
+
+# Don't buffer proxied requests to allow for streaming APIs.
+proxy_buffering off;
+
+include ./frontend_proxy_header_defaults.conf;

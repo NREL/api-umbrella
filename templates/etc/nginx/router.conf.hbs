@@ -1,0 +1,336 @@
+worker_processes {{nginx.workers}};
+
+daemon off;
+
+{{#if user}}
+user {{user}} {{group}};
+{{/if}}
+
+pid {{run_dir}}/router-nginx.pid;
+
+events {
+  worker_connections {{nginx.worker_connections}};
+}
+
+error_log stderr;
+
+http {
+  error_log {{log_dir}}/router-error.log;
+  access_log {{log_dir}}/router-access.log combined buffer=32k flush=10s;
+
+  client_body_temp_path {{tmp_dir}}/router-nginx-client_body_temp;
+  proxy_temp_path {{tmp_dir}}/router-nginx-proxy_temp;
+  fastcgi_temp_path {{tmp_dir}}/router-nginx-fastcgi_temp;
+  uwsgi_temp_path {{tmp_dir}}/router-nginx-uwsgi_temp;
+  scgi_temp_path {{tmp_dir}}/router-nginx-scgi_temp;
+  server_tokens off;
+
+  resolver 127.0.0.1:{{dnsmasq.port}};
+  resolver_timeout 12s;
+
+  # Log format for gathering the primary analytics.
+  #
+  # Note: This is manually constructed JSON to make dealing with it more sane
+  # than a bunch of unnamed columns. nginx will escape quotes in values, so
+  # this is safe, but you have to do manually deal with those escape sequences
+  # before you can actually parse as JSON. See router_log_listener's handling
+  # for more details.
+  log_format api_umbrella_initial_router_log '{'
+    '"id":"$x_api_umbrella_request_id",'
+    '"source":"$router_name",'
+    '"req_accept":"$http_accept",'
+    '"req_accept_encoding":"$http_accept_encoding",'
+    '"req_api_key_header":"$http_x_api_key",'
+    '"req_api_key_query":"$arg_api_key",'
+    '"req_at_msec":"$msec",'
+    '"req_basic_auth_username":"$remote_user",'
+    '"req_connection":"$http_connection",'
+    '"req_content_type":"$http_content_type",'
+    '"req_host":"$http_host",'
+    '"req_ip":"$remote_addr",'
+    '"req_method":"$request_method",'
+    '"req_origin":"$http_origin",'
+    '"req_port":"$server_port",'
+    '"req_referer":"$http_referer",'
+    '"req_scheme":"$scheme",'
+    '"req_size":"$request_length",'
+    '"req_uri":"$request_uri",'
+    '"req_user_agent":"$http_user_agent",'
+    '"res_age":"$sent_http_age",'
+    '"res_content_encoding":"$sent_http_content_encoding",'
+    '"res_content_length":"$sent_http_content_length",'
+    '"res_content_type":"$sent_http_content_type",'
+    '"res_server":"$upstream_http_server",'
+    '"res_size":"$bytes_sent",'
+    '"res_status":"$status",'
+    '"res_time":"$request_time",'
+    '"res_time_backend":"$upstream_response_time",'
+    '"res_transfer_encoding":"$sent_http_transfer_encoding",'
+
+    # These fields aren't technically used for our analytics gathering, but are
+    # useful to have in files for grepping/debugging.
+    '"req_at":"$time_iso8601"'
+  '}';
+
+  # Log format for gathering timer analytics from the backend router.
+  log_format api_umbrella_api_backend_router_log '{'
+    '"id":"$x_api_umbrella_request_id",'
+    '"source":"$router_name",'
+    '"res_time":"$request_time",'
+    '"res_time_backend":"$upstream_response_time",'
+
+    # These fields aren't technically used for our analytics gathering, but are
+    # useful to have in files for grepping/debugging.
+    '"req_at":"$time_iso8601",'
+    '"req_host":"$http_host",'
+    '"req_uri":"$request_uri",'
+    '"res_status":"$status"'
+  '}';
+
+  include ./mime.conf;
+  include ./realip.conf;
+
+  {{#if test_env}}
+  # Allow for these nginx-based rate limits to be disabled in the test
+  # environment.
+  map $http_x_disable_router_rate_limits $rate_limit_by {
+    yes "";
+    default $binary_remote_addr;
+  }
+
+  map $http_x_disable_router_connection_limits $connection_limit_by {
+    yes "";
+    default $binary_remote_addr;
+  }
+  {{else}}
+  # Force the nginx-based rate limits to always be enabled in non-test
+  # environments.
+  map $http_x_disable_router_rate_limits $rate_limit_by {
+    default $binary_remote_addr;
+  }
+
+  map $http_x_disable_router_connection_limits $connection_limit_by {
+    default $binary_remote_addr;
+  }
+  {{/if}}
+
+  # Limit the number of simultaneous connections per IP address.
+  limit_conn_zone $connection_limit_by zone=api_umbrella_conn_addr_zone:{{router.global_rate_limits.ip_connections_size}};
+  limit_conn_status {{apiSettings.error_data.over_rate_limit.status_code}};
+
+  # Rate limits per IP address.
+  #
+  # In general, we want to rely on the more granular and configurable rate limits
+  # provided by the API Umbrella Gatekeeper, so this limit should be higher than
+  # the Gatekeeper's limits. This just provides an extra line of simple defense
+  # against misbehaving clients from overloading the Gatekeeper.
+  limit_req_zone $rate_limit_by zone=api_umbrella_req_addr_zone:{{router.global_rate_limits.ip_rate_size}} rate={{router.global_rate_limits.ip_rate}};
+  limit_req_status {{apiSettings.error_data.over_rate_limit.status_code}};
+
+  # Allow any sized uploads to backends.
+  client_max_body_size 0;
+
+  keepalive_timeout 30s;
+
+  gzip on;
+  gzip_comp_level 2;
+  gzip_disable msie6;
+  gzip_min_length 1000;
+  gzip_proxied any;
+  gzip_types application/atom+xml application/javascript application/json application/rss+xml application/x-javascript application/xml text/css text/csv text/javascript text/plain text/xml;
+  gzip_vary on;
+
+  upstream api_umbrella_web_backend {
+    server {{web.host}}:{{web.port}};
+    keepalive 10;
+  }
+
+  upstream api_umbrella_static_site_backend {
+    server {{static_site.host}}:{{static_site.port}};
+    keepalive 10;
+  }
+
+  upstream api_umbrella_gatekeeper_backends {
+    # Set max_fails=0 to disable taking the servers out of rotation, even on
+    # failures.
+    #
+    # This should maybe be revisited, since this isn't quite ideal, but this
+    # fixes the default behavior that a bunch of backend timeouts can briefly
+    # take all the servers out of rotation (and since we're not in control of
+    # if an API backend times out, this doesn't seem ideal). The basic issue is
+    # that "proxy_next_upstream" cannot exclude timeout errors from this: "The
+    # cases of error, timeout and invalid_header are always considered
+    # unsuccessful attempts, even if they are not specified in the directive."
+    {{#each gatekeeper_hosts}}
+    server {{host}} max_fails=0;
+    {{/each}}
+    keepalive 10;
+  }
+
+  {{#each primary_hosts}}
+  # Primary host. Serves up both APIs and web content.
+  server {
+    listen {{../http_port}}{{#if default}} default_server{{/if}};
+    #listen [::]:{{../http_port}}{{#if default}} default_server{{/if}};
+    server_name {{hostname}};
+
+    listen {{../https_port}} ssl{{#if default}} default_server{{/if}};
+    #listen [::]:{{../https_port}} ssl{{#if default}} default_server{{/if}};
+    {{#if ssl_cert}}
+    ssl_certificate {{ssl_cert}};
+    ssl_certificate_key {{ssl_cert_key}};
+    {{else}}
+    ssl_certificate {{../../etc_dir}}/ssl/self_signed.crt;
+    ssl_certificate_key {{../../etc_dir}}/ssl/self_signed.key;
+    {{/if}}
+
+    include ./frontend_defaults.conf;
+
+    # Determine the SSL status when it's passed via X-Forwarded-Proto from the
+    # SSL terminator.
+    set $ssl_status "off";
+    if ($server_port = {{../https_port}}) {
+      set $ssl_status "on";
+    }
+
+    if ($http_x_forwarded_proto = "https") {
+      set $ssl_status "on";
+    }
+
+    # Match any required HTTPS-only pages.
+    if ($uri ~ ^/(account|admin|admins|signup)(/|$)) {
+      set $ssl_status "${ssl_status}_required";
+    }
+
+    # Force certain content to HTTPS-only.
+    if ($ssl_status = "off_required") {
+      rewrite ^ https://$host:{{../https_port}}$request_uri? permanent;
+    }
+
+    # Route the docs and other static pages to the Rails web app. This may
+    # change, so that's why we're treating it separately.
+    location ~* ^/(|about|assets|community|contact|developer|doc|docs|metrics|favicon\.ico|images|robots.txt|signup|static|__middleman|__rack)(/|$) {
+      {{#if ../static_site.host_header}}
+      set $proxy_host_header "{{../../static_site.host_header}}";
+      {{/if}}
+      include ./frontend_proxy_header_defaults.conf;
+      proxy_pass http://api_umbrella_static_site_backend;
+    }
+
+    # Route the dynamic portions of the site to the Rails web app.
+    location ~* ^/(admin|admins|web-assets)(/|$) {
+      include ./frontend_proxy_header_defaults.conf;
+      proxy_pass http://api_umbrella_web_backend;
+    }
+
+    #location ~* ^/proxy/(.*) {
+    #  proxy_pass http://$1;
+    #}
+
+
+    # Route all other requests as APIs going through the API Umbrella Gatekeeper.
+    location / {
+      include ./frontend_proxy_header_defaults.conf;
+      include ./gatekeeper.conf;
+    }
+  }
+  {{/each}}
+
+  {{#each secondary_hosts}}
+  # Secondary host. Serves up only API traffic (no web page content).
+  server {
+    listen {{http_port}};
+    #listen [::]:{{http_port}};
+    server_name {{hostname}};
+
+    {{#if ssl_cert}}
+    listen {{../../https_port}} ssl;
+    #listen [::]:{{../../https_port}} ssl;
+    ssl_certificate {{ssl_cert}};
+    ssl_certificate_key {{ssl_cert_key}};
+    {{/if}}
+
+    include ./frontend_defaults.conf;
+
+    # Route all other requests as APIs going through the API Umbrella Gatekeeper.
+    location / {
+      include ./frontend_proxy_header_defaults.conf;
+      include ./gatekeeper.conf;
+    }
+  }
+  {{/each}}
+
+  {{#unless has_default_host}}
+  # Catch-all host. Serves up only API traffic (no web page content).
+  # Like secondary hosts, but minus HTTPS (since we don't know the domain).
+  server {
+    listen {{http_port}} default_server;
+    #listen [::]:{{http_port}} default_server;
+    server_name _;
+
+    include ./frontend_defaults.conf;
+
+    # Route all other requests as APIs going through the API Umbrella Gatekeeper.
+    location / {
+      include ./frontend_proxy_header_defaults.conf;
+      include ./gatekeeper.conf;
+    }
+  }
+  {{/unless}}
+
+  {{#unless development_env}}
+  server {
+    listen {{static_site.port}};
+    #listen [::]:{{static_site.port}};
+    server_name _;
+    port_in_redirect off;
+
+    root {{static_site.build_dir}};
+  }
+  {{/unless}}
+
+  include ./api_backends.conf;
+
+  map $http_accept_encoding $normalized_accept_encoding {
+    "~(^|,) *gzip *; *q=0[\.0]* *($|,)" "";
+    "~(^|,) *gzip *($|,|;)" gzip;
+    default "";
+  }
+
+  server {
+    listen {{router.api_backends.port}};
+    #listen [::]:{{router.api_backends.port}};
+    server_name _;
+
+    set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
+    set $router_name "api_backend_router";
+    access_log {{log_dir}}/router.log api_umbrella_api_backend_router_log buffer=32k flush=10s;
+    access_log syslog:server=127.0.0.1:{{router.log_listener.port}} api_umbrella_api_backend_router_log;
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    keepalive_timeout 10s;
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Api-Umbrella-Backend-Scheme "";
+    proxy_set_header X-Api-Umbrella-Backend-Id "";
+
+    # Only retry backends in the event of connection errors (and not also
+    # connection timeouts as is the default). This prevents slow backend timeouts
+    # triggering multiple requests if multiple backends are defined.
+    proxy_next_upstream error;
+
+    # Don't buffer proxied requests to allow for streaming APIs.
+    proxy_buffering off;
+
+    # If the backend only returns gzipped responses, decompress them as
+    # appropriate to meet the Accept headers of the current client.
+    gunzip on;
+
+    location / {
+      proxy_pass $http_x_api_umbrella_backend_scheme://api_umbrella_${http_x_api_umbrella_backend_id}_backend;
+    }
+  }
+}

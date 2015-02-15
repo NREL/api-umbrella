@@ -1,0 +1,306 @@
+#!/opt/api-umbrella/embedded/bin/node
+// vi:syntax=javascript
+'use strict';
+
+var mkdirp = require('mkdirp'),
+    path = require('path'),
+    posix = require('posix');
+
+process.env.FOREVER_ROOT = path.join('/opt/api-umbrella/var/run/forever');
+if(posix.geteuid() === 0) {
+  mkdirp.sync(process.env.FOREVER_ROOT);
+}
+
+var _ = require('lodash'),
+    async = require('async'),
+    clc = require('cli-color'),
+    forever = require('forever'),
+    parser = require('nomnom');
+
+var tasks = {
+  run: function(options) {
+    var router = require('../lib/router');
+    router.run(options);
+  },
+
+  start: function() {
+    var fs = require('fs'),
+        fsExtra = require('fs-extra'),
+        Tail = require('tail').Tail;
+
+    var started = false;
+
+    function exit(error) {
+      if(error) {
+        console.error(error.stack);
+      }
+
+      if(!started) {
+        forever.stopAll();
+        setTimeout(function() {
+          process.exit(1);
+        }, 2000);
+      }
+    }
+
+    process.on('SIGINT', exit);
+    process.on('uncaughtException', exit);
+
+    forever.list(false, function(error, processes) {
+      if(processes && processes.length > 0) {
+        console.error('api-umbrella is already started');
+        process.exit(1);
+      } else {
+        var daemonDir = '/opt/api-umbrella/var';
+        var daemonLog = path.join(daemonDir, 'log/daemon.log');
+        var daemonPid = path.join(daemonDir, 'run/daemon.pid');
+
+        // Create intermediate directories and ensure the files/dirs are
+        // writable.
+        try {
+          fsExtra.ensureFileSync(daemonLog);
+
+          // Make sure the file is writable by the current user (the above
+          // ensureFileSync just ensures it exists, but doesn't check it's
+          // writability).
+          var fd = fs.openSync(daemonLog, 'w');
+          fs.closeSync(fd);
+        } catch(e) {
+          console.error('ERROR: Could not open ' + daemonLog + ' for writing');
+          process.exit(1);
+        }
+
+        try {
+          fsExtra.ensureFileSync(daemonPid);
+        } catch(e) {
+          console.error('ERROR: Could not open ' + daemonPid + ' for writing');
+          process.exit(1);
+        }
+
+        var monitor;
+
+        var tail = new Tail(daemonLog, '');
+        var buffer = '';
+        tail.on('line', function(chunk) {
+          process.stdout.write(chunk);
+          buffer += chunk;
+          if(/Starting api-umbrella[\s\S]*OK.*\]/.test(buffer)) {
+            process.stdout.write('\n');
+
+            // If the output indicates failure, make sure to kill the forever
+            // monitor, since it won't automatically stop even if the process
+            // it's supervising exits. All of this forever business should
+            // probably be resivisted, because it's become less than ideal for
+            // what we're actually trying to do.
+            if(/(FAIL|Stopping|Failed)/.test(buffer)) {
+              if(monitor) {
+                monitor.kill();
+              }
+
+              process.exit(1);
+            } else {
+              started = true;
+              process.exit(0);
+            }
+          }
+        });
+        tail.watch();
+
+        // Pass along any command line args to the "run" command.
+        var runArgs = ['run'];
+        runArgs = runArgs.concat(process.argv.slice(3));
+
+        // Call the "run" command, but just start it in the background.
+        monitor = forever.startDaemon(__filename, {
+          silent: false,
+          pidFile: daemonPid,
+          args: runArgs,
+          logFile: daemonLog,
+          minUptime: 10000,
+          // Do not try to retry starting up the process. This process is only
+          // spinning up supervisord, which should manage it's own stuff (and
+          // we don't want multiple processes fighting to constantly spin
+          // things up if we really want to kill the process). We're just using
+          // forever here since it provides a nicer interface to starting /
+          // stopping / checking the status of a process.
+          max: 1,
+        });
+
+        monitor.on('exit', function(code) {
+          process.exit(code);
+        });
+      }
+    });
+  },
+
+  stop: function(callback) {
+    process.stdout.write('Stopping api-umbrella...');
+
+    forever.list(false, function(error, processes) {
+      if(processes && processes.length > 0) {
+        forever.stopAll().on('stopAll', function() {
+          console.info(' [  ' + clc.green('OK') + '  ]');
+          if(callback && _.isFunction(callback)) {
+            callback();
+          }
+        });
+      } else {
+        console.info(' [' + clc.red('FAIL') + '] (api-umbrella is already stopped)');
+
+        if(callback && _.isFunction(callback)) {
+          callback();
+        } else {
+          process.exit(1);
+        }
+      }
+    });
+  },
+
+  restart: function() {
+    tasks.stop(tasks.start);
+  },
+
+  reload: function(options) {
+    process.stdout.write('Reloading api-umbrella...');
+
+    var fs = require('fs'),
+        os = require('os');
+
+    // A kludgey workaround for instructing the master process which processes
+    // to reload (just the router, just the web, or everything). A better
+    // option might involve a socket, but for now, we'll just use the SIGHUP
+    // signal in combination with this file.
+    if(options) {
+      var reloadOptions = _.pick(options, ['router', 'web']);
+      var reloadOptionsPath = path.join(os.tmpdir(), 'api-umbrella-reload-options.json');
+      fs.writeFileSync(reloadOptionsPath, JSON.stringify(reloadOptions));
+    }
+
+    forever.list(false, function(error, processes) {
+      if(error || !processes) {
+        console.info(' [' + clc.red('FAIL') + '] (is api-umbrella running?)');
+        return process.exit(1);
+      }
+
+      async.eachSeries(processes, function(proc, callback) {
+        process.kill(proc.pid, 'SIGHUP');
+        callback();
+      }, function() {
+        console.info(' [  ' + clc.green('OK') + '  ]');
+      });
+    });
+  },
+
+  status: function() {
+    forever.list(false, function(error, processes) {
+      var pids = _.pluck(processes, 'pid');
+      if(processes && processes.length > 0) {
+        console.info('api-umbrella (pid ' + pids.join(', ') + ') is running');
+      } else {
+        console.error('api-umbrella is stopped');
+        process.exit(1);
+      }
+    });
+  },
+
+  ctl: function() {
+    var apiUmbrellaConfig = require('api-umbrella-config');
+    apiUmbrellaConfig.setGlobal('/opt/api-umbrella/var/run/runtime_config.yml');
+    var kexec = require('kexec'),
+        processEnv = require('../lib/process_env');
+
+    var configPath = processEnv.supervisordConfigPath();
+
+    _.extend(process.env, processEnv.env());
+    kexec('supervisorctl', ['-c', configPath]);
+  },
+
+  reopenLogs: function() {
+    process.stdout.write('Reopening api-umbrella logs...');
+
+    forever.list(false, function(error, processes) {
+      if(error || !processes) {
+        console.info(' [' + clc.red('FAIL') + '] (is api-umbrella running?)');
+        return process.exit(1);
+      }
+
+      async.eachSeries(processes, function(proc, callback) {
+        process.kill(proc.pid, 'SIGUSR1');
+        callback();
+      }, function() {
+        console.info(' [  ' + clc.green('OK') + '  ]');
+      });
+    });
+  },
+
+  version: function() {
+    var packageInfo = require('../package.json');
+    console.info('version ' + packageInfo.version);
+    process.exit(0);
+  },
+};
+
+parser.option('version', {
+  flag: true,
+  abbr: 'v',
+  help: 'Print version and exit',
+  callback: tasks.version,
+});
+
+parser.command('run')
+  .help('Run the API Umbrella server in the foreground')
+  .option('config', {
+    abbr: 'c',
+    metavar: 'FILE',
+    default: ['/etc/api-umbrella/api-umbrella.yml'],
+    list: true,
+    help: 'Conifg file to use (include multiple times for multiple files)',
+  })
+  .callback(tasks.run);
+
+parser.command('start')
+  .help('Start the API Umbrella server')
+  .option('config', {
+    abbr: 'c',
+    metavar: 'FILE',
+    default: ['/etc/api-umbrella/api-umbrella.yml'],
+    list: true,
+    help: 'Conifg file to use (include multiple times for multiple files)',
+  })
+  .callback(tasks.start);
+
+parser.command('stop')
+  .help('Stop the API Umbrella server')
+  .callback(tasks.stop);
+
+parser.command('restart')
+  .help('Restart the API Umbrella server')
+  .callback(tasks.restart);
+
+parser.command('reload')
+  .help('Reload the configuration of the API Umbrella server')
+  .option('router', {
+    abbr: 'r',
+    flag: true,
+    help: 'Reload only the router processes',
+  })
+  .option('web', {
+    abbr: 'w',
+    flag: true,
+    help: 'Reload only the web processes',
+  })
+  .callback(tasks.reload);
+
+parser.command('status')
+  .help('Show the status of the API Umbrella server')
+  .callback(tasks.status);
+
+parser.command('ctl')
+  .help('Control the processes running under API Umbrella')
+  .callback(tasks.ctl);
+
+parser.command('reopen-logs')
+  .help('Close and reopen log files in use')
+  .callback(tasks.reopenLogs);
+
+parser.parse();

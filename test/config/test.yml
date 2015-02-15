@@ -1,15 +1,208 @@
 app_env: test
-mongodb:
-  url: "mongodb://127.0.0.1:27017/api_umbrella_test"
+user:
+group:
+http_port: 9080
+https_port: 9081
+etc_dir: /tmp/api-umbrella-test/etc
+log_dir: /tmp/api-umbrella-test/var/log
+run_dir: /tmp/api-umbrella-test/var/run
+tmp_dir: /tmp/api-umbrella-test/var/tmp
+db_dir: /tmp/api-umbrella-test/var/db
+static_site:
+  port: 13013
+  build_dir: /tmp/api-umbrella-test/static_site_build
 redis:
-  host: 127.0.0.1
-  port: 9736
+  port: 13000
+beanstalkd:
+  port: 13005
+dnsmasq:
+  port: 13007
 gatekeeper:
-  starting_port: 9333
-  target: "localhost:9444"
+  starting_port: 13050
+  target: "127.0.0.1:13010"
+varnish:
+  port: 13010
+  backend:
+    port: 13011
+web:
+  port: 13012
+router:
+  api_backends:
+    port: 13011
+  trusted_proxies:
+    - 192.168.12.0/23
+    - 10.10.10.10
+  log_listener:
+    port: 13006
+supervisord:
+  inet_http_server:
+    port: 13004
+mongodb:
+  url: "mongodb://127.0.0.1:13001/api_umbrella_test"
+  embedded_server_config:
+    net:
+      port: 13001
+elasticsearch:
+  hosts:
+    - "http://127.0.0.1:13002"
+  embedded_server_config:
+    http:
+      port: 13002
+    transport:
+      tcp:
+        port: 13003
+unbound:
+  port: 13100
+  control_port: 13101
 apis:
-  - frontend_host: localhost
+  - _id: down
+    frontend_host: localhost
     backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9450
+    url_matches:
+      - frontend_prefix: /down
+        backend_prefix: /down
+  - _id: keepalive9445
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9445
+    url_matches:
+      - frontend_prefix: /keepalive9445/
+        backend_prefix: /keepalive9445/
+    rate_limit_mode: unlimited
+  - _id: keepalive9446
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9446
+    url_matches:
+      - frontend_prefix: /keepalive9446/
+        backend_prefix: /keepalive9446/
+    rate_limit_mode: unlimited
+    keepalive_connections: 2
+  - _id: keepalive9447
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9447
+    url_matches:
+      - frontend_prefix: /keepalive9447/
+        backend_prefix: /keepalive9447/
+    rate_limit_mode: unlimited
+  - _id: dns-ipv4
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/ipv4/
+        backend_prefix: /
+  - _id: dns-ipv6
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: "::1"
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/ipv6/
+        backend_prefix: /
+  - _id: dns-localhost
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: localhost
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/localhost/
+        backend_prefix: /
+  - _id: dns-valid-external-hostname
+    frontend_host: localhost
+    backend_host: httpbin.org
+    servers:
+      - host: httpbin.org
+        port: 80
+    url_matches:
+      - frontend_prefix: /dns/valid-external-hostname/
+        backend_prefix: /
+  - _id: dns-invalid-hostname
+    frontend_host: localhost
+    backend_host: invalid.ooga
+    servers:
+      - host: invalid.ooga
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/invalid-hostname/
+        backend_prefix: /
+  - _id: dns-invalid-hostname-begins-resolving
+    frontend_host: localhost
+    backend_host: invalid-hostname-begins-resolving.ooga
+    servers:
+      - host: invalid-hostname-begins-resolving.ooga
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/invalid-hostname-begins-resolving/
+        backend_prefix: /
+  - _id: dns-refresh-after-ttl-expires
+    frontend_host: localhost
+    backend_host: refresh-after-ttl-expires.ooga
+    servers:
+      - host: refresh-after-ttl-expires.ooga
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/refresh-after-ttl-expires/
+        backend_prefix: /
+  - _id: dns-down-after-ttl-expires
+    frontend_host: localhost
+    backend_host: down-after-ttl-expires.ooga
+    servers:
+      - host: down-after-ttl-expires.ooga
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/down-after-ttl-expires/
+        backend_prefix: /
+  - _id: dns-ongoing-changes
+    frontend_host: localhost
+    backend_host: ongoing-changes.ooga
+    servers:
+      - host: ongoing-changes.ooga
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/ongoing-changes/
+        backend_prefix: /
+  - _id: dns-multiple-ips
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: multiple-ips.ooga
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/multiple-ips/
+        backend_prefix: /
+  - _id: dns-no-drops-during-changes
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: no-drops-during-changes.ooga
+        port: 9444
+    url_matches:
+      - frontend_prefix: /dns/no-drops-during-changes/
+        backend_prefix: /
+  - _id: example
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
     url_matches:
       - frontend_prefix: /
         backend_prefix: /
+dns_resolver:
+  minimum_ttl: 1
+  reload_buffer_time: 1

@@ -1,16 +1,9 @@
 'use strict';
 
-var fs = require('fs');
+after(function stopProcesses(done) {
+  this.timeout(15000);
 
-after(function nginxClose(done) {
-  if(global.nginxServer.running) {
-    global.nginxServer.on('exit', function() {
-      done();
-    });
-
-    global.nginxServer.stop();
-    fs.unlinkSync(global.nginxPidFile);
-  } else {
-    done();
+  if(this.router) {
+    this.router.stop(done);
   }
 });

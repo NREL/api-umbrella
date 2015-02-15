@@ -11,11 +11,14 @@ module.exports = function(grunt) {
         jshintrc: '.jshintrc'
       },
       all: [
+        '.eastrc',
         'Gruntfile.js',
+        'bin/*',
         'index.js',
         'lib/**/*.js',
-        'test/**/*.js',
+        'migrations/**/*.js',
         'scripts/*',
+        'test/**/*.js',
       ],
     },
 
@@ -58,7 +61,7 @@ module.exports = function(grunt) {
     'mochaTest',
   ]);
 
-  // Run the full test suite 100 times. Only print the output when errors are
+  // Run the full test suite 20 times. Only print the output when errors are
   // encountered. This is to try to make it easier to track down sporadic test
   // issues that only happen occasionally.
   grunt.registerTask('multiTest', 'Run all the tests multiple times', function() {
@@ -67,11 +70,11 @@ module.exports = function(grunt) {
     var async = require('async'),
         exec = require('child_process').exec;
 
-    async.timesSeries(100, function(index, next) {
+    async.timesSeries(20, function(index, next) {
       process.stdout.write('Run ' + (index + 1) + ' ');
       var progress = setInterval(function() {
         process.stdout.write('.');
-      }, 500);
+      }, 5000);
 
       var startTime = process.hrtime();
       exec('./node_modules/grunt-cli/bin/grunt 2>&1', function(error, stdout) {
