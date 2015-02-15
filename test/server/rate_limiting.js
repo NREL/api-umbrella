@@ -253,6 +253,95 @@ describe('ApiUmbrellaGatekeper', function() {
         }.bind(this));
       });
 
+      it('resets rate limits on a rolling basis, so no more than the limit can be called within the past hour', function(done) {
+        async.series([
+          function(callback) {
+            timekeeper.freeze(new Date(2013, 1, 2, 1, 43, 0));
+            async.timesSeries(2, function(index, timesCallback) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+                response.statusCode.should.eql(200);
+                timesCallback(null);
+              });
+            }.bind(this), callback);
+          }.bind(this),
+          function(callback) {
+            timekeeper.freeze(new Date(2013, 1, 2, 2, 3, 0));
+            async.timesSeries(3, function(index, timesCallback) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+                response.statusCode.should.eql(200);
+                timesCallback(null);
+              });
+            }.bind(this), callback);
+          }.bind(this),
+          function(callback) {
+            timekeeper.freeze(new Date(2013, 1, 2, 2, 42, 0));
+            async.timesSeries(5, function(index, timesCallback) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+                response.statusCode.should.eql(200);
+                timesCallback(null);
+              });
+            }.bind(this), callback);
+          }.bind(this),
+          function(callback) {
+            timekeeper.freeze(new Date(2013, 1, 2, 2, 42, 0));
+            async.timesSeries(1, function(index, timesCallback) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+                response.statusCode.should.eql(429);
+                timesCallback(null);
+              });
+            }.bind(this), callback);
+          }.bind(this),
+          function(callback) {
+            timekeeper.freeze(new Date(2013, 1, 2, 2, 43, 0));
+            async.timesSeries(2, function(index, timesCallback) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+                response.statusCode.should.eql(200);
+                timesCallback(null);
+              });
+            }.bind(this), callback);
+          }.bind(this),
+          function(callback) {
+            timekeeper.freeze(new Date(2013, 1, 2, 2, 43, 0));
+            async.timesSeries(1, function(index, timesCallback) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+                response.statusCode.should.eql(429);
+                timesCallback(null);
+              });
+            }.bind(this), callback);
+          }.bind(this),
+          function(callback) {
+            timekeeper.freeze(new Date(2013, 1, 2, 3, 2, 0));
+            async.timesSeries(1, function(index, timesCallback) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+                response.statusCode.should.eql(429);
+                timesCallback(null);
+              });
+            }.bind(this), callback);
+          }.bind(this),
+          function(callback) {
+            timekeeper.freeze(new Date(2013, 1, 2, 3, 3, 0));
+            async.timesSeries(3, function(index, timesCallback) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+                response.statusCode.should.eql(200);
+                timesCallback(null);
+              });
+            }.bind(this), callback);
+          }.bind(this),
+          function(callback) {
+            timekeeper.freeze(new Date(2013, 1, 2, 3, 3, 0));
+            async.timesSeries(1, function(index, timesCallback) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+                response.statusCode.should.eql(429);
+                timesCallback(null);
+              });
+            }.bind(this), callback);
+          }.bind(this),
+        ], function(error) {
+          timekeeper.reset();
+          done(error);
+        });
+      });
+
       it('allows rate limits to be changed live', function(done) {
         var config = require('api-umbrella-config').global();
 
@@ -362,7 +451,7 @@ describe('ApiUmbrellaGatekeper', function() {
         }
       });
 
-      it('returns over rate limit errors for each request, even if the first limit has been exceeded', function(done) {
+      it('returns rate limit headers for each request, even if the first limit has been exceeded', function(done) {
         async.timesSeries(15, function(index, asyncCallback) {
           request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql('10');
