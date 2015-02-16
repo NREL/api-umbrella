@@ -150,7 +150,7 @@ function _M.parse_accept(header, supported_media_types)
     local media = parts[1]
     local params = parts[2]
     if params then
-      params = split(params, ";")
+      params = split(params, ";", true)
     end
 
     local media_parts = split(media, "/", true)
@@ -158,12 +158,14 @@ function _M.parse_accept(header, supported_media_types)
     local media_subtype = strip(media_parts[2] or "")
 
     local q = 1
-    for _, param in ipairs(params) do
-      local param_parts = split(param, "=", true)
-      local param_key = strip(param_parts[1] or "")
-      local param_value = strip(param_parts[2] or "")
-      if param_key == "q" then
-        q = tonumber(param_value)
+    if params then
+      for _, param in ipairs(params) do
+        local param_parts = split(param, "=", true)
+        local param_key = strip(param_parts[1] or "")
+        local param_value = strip(param_parts[2] or "")
+        if param_key == "q" then
+          q = tonumber(param_value)
+        end
       end
     end
 

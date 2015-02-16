@@ -1,5 +1,9 @@
 source "https://rubygems.org"
 
+gem "activesupport", "~> 4.2.0"
+gem "gli", "~> 2.12.2"
+gem "mustache", "~> 1.0.0"
+
 group :development do
   # Deployment
   gem "capistrano", "~> 3.3.5"

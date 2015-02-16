@@ -1,9 +1,5 @@
 'use strict';
 
-<<<<<<< HEAD
-
-
-=======
 var _ = require('lodash'),
     async = require('async'),
     basicAuth = require('basic-auth-connect'),
@@ -423,4 +419,3 @@ app.all('/logging-example/*', function(req, res) {
     }
   });
 });
->>>>>>> router/master

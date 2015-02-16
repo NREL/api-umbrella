@@ -1,0 +1,19 @@
+#!/bin/sh
+# rc.log: perpd logger script for perpboot
+# ===
+
+### --- configure ---
+
+## required:
+LOGDIR={{log_dir}}/perpd
+LOGOPTS="-k 8 -s 1000000 -t -z"
+## suggested:
+
+### --- script ---
+
+## exec tinylog with privilege drop:
+exec \
+  runchoom \
+  tinylog ${LOGOPTS} ${LOGDIR}
+
+### EOF

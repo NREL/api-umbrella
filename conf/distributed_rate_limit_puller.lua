@@ -27,12 +27,19 @@ local function do_check()
   local conn = mongol()
   conn:set_timeout(1000)
 
-  local ok, err = conn:connect("127.0.0.1", 27017)
+  local ok, err = conn:connect(config["mongodb"]["host"], config["mongodb"]["port"])
   if not ok then
-    ngx.log(ngx.ERR, "connect failed: "..err)
+    ngx.log(ngx.ERR, "connect failed: " .. inspect(err))
+
+    local ok, err = lock:unlock()
+    if not ok then
+      ngx.log(ngx.ERR, "failed to unlock: ", err)
+    end
+
+    return false, "failed to connect to mongodb"
   end
 
-  local db = conn:new_db_handle("api_umbrella_test")
+  local db = conn:new_db_handle(config["mongodb"]["database"])
   local col = db:get_col("rate_limits")
 
   local last_fetched_time = ngx.shared.stats:get("distributed_last_updated_at") or 0

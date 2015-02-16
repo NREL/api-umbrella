@@ -6,8 +6,7 @@ var _ = require('lodash'),
     apiUmbrellaConfig = require('api-umbrella-config'),
     elasticsearch = require('elasticsearch'),
     mongoose = require('mongoose'),
-    path = require('path'),
-    redis = require('redis');
+    path = require('path');
 
 var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
@@ -22,12 +21,6 @@ before(function mongoOpen(done) {
   });
 
   mongoose.testConnection.open(config.get('mongodb.url'), config.get('mongodb.options'));
-});
-
-// Wipe the redis data.
-before(function redisOpen(done) {
-  global.redisClient = redis.createClient(config.get('redis.port'), config.get('redis.host'));
-  global.redisClient.flushdb(done);
 });
 
 // Wipe the elasticsearch data.
@@ -49,12 +42,6 @@ before(function elasticsearchOpen(done) {
 // Close the mongo connection cleanly after each run.
 after(function mongoClose(done) {
   mongoose.testConnection.close(done);
-});
-
-after(function redisClose() {
-  if(global.redisClient && global.redisClient.connected) {
-    global.redisClient.end();
-  }
 });
 
 after(function elasticsearchClose() {

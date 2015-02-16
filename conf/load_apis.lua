@@ -141,12 +141,19 @@ local function do_check()
   local conn = mongol()
   conn:set_timeout(1000)
 
-  local ok, err = conn:connect("127.0.0.1", 27017)
+  local ok, err = conn:connect(config["mongodb"]["host"], config["mongodb"]["port"])
   if not ok then
-    log(ERR, "connect failed: "..err)
+    ngx.log(ngx.ERR, "connect failed: " .. inspect(err))
+
+    local ok, err = lock:unlock()
+    if not ok then
+      ngx.log(ngx.ERR, "failed to unlock: ", err)
+    end
+
+    return false, "failed to connect to mongodb"
   end
 
-  local db = conn:new_db_handle("api_umbrella_test")
+  local db = conn:new_db_handle(config["mongodb"]["database"])
   local col = db:get_col("config_versions")
 
   local last_fetched_version = ngx.shared.apis:get("version") or 0
@@ -170,6 +177,8 @@ local function do_check()
     set_apis(apis)
     ngx.shared.apis:set("version", ngx.now())
   end
+
+  ngx.shared.apis:set("last_fetched_at", ngx.now())
 
   conn:set_keepalive(10000, 5)
 

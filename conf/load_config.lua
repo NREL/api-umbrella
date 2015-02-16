@@ -25,7 +25,7 @@ function nillify_yaml_nulls(table)
 end
 
 function _M.parse()
-  local f, err = io.open("/tmp/runtime_config_test.yml", "rb")
+  local f, err = io.open(os.getenv("API_UMBRELLA_CONFIG"), "rb")
   if err then
     return log(ERR, "failed to open config file: ", err)
   end

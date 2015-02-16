@@ -1,9 +1,30 @@
 'use strict';
 
+function killApiUmbrellaServer(callback) {
+  if(global.apiUmbrellaServer) {
+    if(callback) {
+      global.apiUmbrellaServer.on('close', function() {
+        callback();
+      });
+    }
+
+    global.apiUmbrellaServer.kill();
+  } else {
+    if(callback) {
+      callback();
+    }
+  }
+}
+
 after(function stopProcesses(done) {
   this.timeout(15000);
+  killApiUmbrellaServer(done);
+});
 
-  if(this.router) {
-    this.router.stop(done);
-  }
+process.on('exit', function() {
+  killApiUmbrellaServer();
+});
+
+process.on('uncaughtException', function() {
+  killApiUmbrellaServer();
 });

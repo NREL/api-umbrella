@@ -13,7 +13,7 @@ module.exports = function(grunt) {
       all: [
         '.eastrc',
         'Gruntfile.js',
-        'bin/*',
+        'bin/api-umbrella-*',
         'index.js',
         'lib/**/*.js',
         'migrations/**/*.js',

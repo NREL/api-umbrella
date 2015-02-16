@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Redirect stderr to stdout
+exec 2>&1
+
+if test ${1} = "start"; then
+  echo "starting ${2}..."
+  exec beanstalkd -l {{beanstalkd.host}} -p {{beanstalkd.port}} -b {{db_dir}}/beanstalkd -f 1000
+fi
+
+exit 0
