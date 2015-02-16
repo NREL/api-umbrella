@@ -24,7 +24,3 @@ after(function stopProcesses(done) {
 process.on('exit', function() {
   killApiUmbrellaServer();
 });
-
-process.on('uncaughtException', function() {
-  killApiUmbrellaServer();
-});

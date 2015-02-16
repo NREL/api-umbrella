@@ -28,18 +28,9 @@ _.merge(global.shared, {
 
   runServer: function(configOverrides) {
     before(function setupConfig(done) {
-      var paths = [
-        path.resolve(__dirname, '../../config/default.yml'),
-        path.resolve(__dirname, '../config/test.yml'),
-      ];
-
-      var config = {};
-      paths.forEach(function(path) {
-        var data = fs.readFileSync(path);
-        var values = yaml.safeLoad(data.toString());
-
-        mergeOverwriteArrays(config, values);
-      });
+      var runtimeConfigPath = '/tmp/api-umbrella-test/var/run/runtime_config.yml';
+      var data = fs.readFileSync(runtimeConfigPath + '.orig');
+      var config = yaml.safeLoad(data.toString());
 
       if(configOverrides) {
         mergeOverwriteArrays(config, configOverrides);
@@ -64,7 +55,7 @@ _.merge(global.shared, {
 
       // Dump as YAML, with nulls being treated as real YAML nulls, rather than
       // the string "null" (which is js-yaml's default).
-      fs.writeFileSync('/tmp/runtime_config_test.yml', yaml.safeDump(config, { styles: { '!!null': 'canonical' } }));
+      fs.writeFileSync('/tmp/api-umbrella-test/var/run/runtime_config.yml', yaml.safeDump(config, { styles: { '!!null': 'canonical' } }));
       done();
     });
 

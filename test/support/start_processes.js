@@ -5,6 +5,7 @@ require('../test_helper');
 var apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
     fs = require('fs'),
+    fsExtra = require('fs-extra'),
     mkdirp = require('mkdirp'),
     path = require('path'),
     request = require('request'),
@@ -52,4 +53,9 @@ before(function nginxStart(done) {
       setTimeout(callback, 100);
     });
   }, done);
+});
+
+before(function copyRuntimeConfig() {
+  var runtimeConfigPath = '/tmp/api-umbrella-test/var/run/runtime_config.yml';
+  fsExtra.copySync(runtimeConfigPath, runtimeConfigPath + '.orig');
 });

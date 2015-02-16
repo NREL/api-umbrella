@@ -4,12 +4,10 @@ local api_store = require "api_store"
 local dyups = require "ngx.dyups"
 local inspect = require "inspect"
 local lock = require "resty.lock"
-local plutils = require "pl.utils"
 local resolver = require "resty.dns.resolver"
 local types = require "pl.types"
 
 local is_empty = types.is_empty
-local split = plutils.split
 
 local lock = lock:new("my_locks", {
   ["timeout"] = 0,
@@ -32,36 +30,13 @@ local function setup_backends()
     local keepalive = api["keepalive_connections"] or 10
     upstream = upstream .. "keepalive " .. keepalive .. ";\n"
 
-
-    local servers = {}
     if api["servers"] then
       for _, server in ipairs(api["servers"]) do
-        ngx.log(ngx.ERR, "SERVER: " .. inspect(server));
-        local ips = nil
-        local m, err = ngx.re.match(server["host"], "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")
-        if m then
-          ngx.log(ngx.ERR, "IS IP: " .. inspect(server["host"]))
-          ips = server["host"]
-        else
-          ngx.log(ngx.ERR, "NOT IP: " .. inspect(server["host"]))
-          ips = ngx.shared.resolved_hosts:get(server["host"])
-        end
-
-        if ips and server["port"] then
-          ips = split(ips, ",", true)
-          ngx.log(ngx.ERR, "IPS: " .. inspect(ips))
-          for _, ip in ipairs(ips) do
-            table.insert(servers, "server " .. ip .. ":" .. server["port"] .. ";")
-          end
-        end
+        upstream = upstream .. "server " .. server["host"] .. ":" .. server["port"] .. ";\n"
       end
+    else
+      upstream = upstream .. "server 127.255.255.255:80 down;\n"
     end
-
-    if is_empty(servers) then
-      table.insert(servers, "server 127.255.255.255:80 down;")
-    end
-
-    upstream = upstream .. table.concat(servers, "\n") .. "\n"
 
     local backend_id = "api_umbrella_" .. api["_id"] .. "_backend"
     local status, rv = dyups.update(backend_id, upstream);
@@ -69,18 +44,52 @@ local function setup_backends()
 end
 
 local function do_check()
-  local elapsed, err = lock:lock("load_backends")
+  --ngx.log(ngx.ERR, "DO_CHECK")
+  local elapsed, err = lock:lock("resolve_backend_dns")
   if err then
     return
   end
 
-  local current_config_version = ngx.shared.apis:get("config_version") or 0
-  local version = api_store.version() or 0
-  local backends_version = ngx.shared.apis:get("current_backends_loaded_version") or 0
+  local r, err = resolver:new({
+    nameservers = { { "127.0.0.1", config["dnsmasq"]["port"] } },
+    retrans = 3,
+    timeout = 2000,
+  })
 
-  if config_version == current_config_version and version > backends_version then
-    setup_backends()
-    ngx.shared.apis:set("current_backends_loaded_version", version)
+  --ngx.log(ngx.ERR, "RESOLVER: " .. inspect(r))
+
+  if not r then
+    ngx.log(ngx.ERR, "failed to instantiate the resolver: ", err)
+
+    local ok, err = lock:unlock()
+    if not ok then
+      ngx.log(ngx.ERR, "failed to unlock: ", err)
+    end
+
+    return
+  end
+
+  for api_id, api in pairs(api_store.all_apis()) do
+    if api["servers"] then
+      for _, server in ipairs(api["servers"]) do
+        if server["host"] then
+          local answers, err = r:tcp_query(server["host"])
+          if not answers then
+            ngx.log(ngx.ERR, "failed to query the DNS server: ", err)
+          else
+            local ips = {}
+            for i, ans in ipairs(answers) do
+              table.insert(ips, ans.address)
+            end
+
+            if not is_empty(ips) then
+              local ips_string = table.concat(ips, ",")
+              ngx.shared.resolved_hosts:set(server["host"], ips_string)
+            end
+          end
+        end
+      end
+    end
   end
 
   local ok, err = lock:unlock()
@@ -115,10 +124,6 @@ function _M.spawn()
     log(ERR, "failed to create timer: ", err)
     return
   end
-end
-
-function _M.init()
-  setup_backends()
 end
 
 return _M

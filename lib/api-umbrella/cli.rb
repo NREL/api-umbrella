@@ -90,7 +90,7 @@ module ApiUmbrella
                 {
                   "_id" => SecureRandom.uuid,
                   "host" => "127.0.0.1",
-                  "port" => @config["web.port"],
+                  "port" => @config["web"]["port"],
                 }
               ],
               "url_matches" => [
