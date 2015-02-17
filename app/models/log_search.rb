@@ -97,6 +97,104 @@ class LogSearch
     end
   end
 
+  def query!(query)
+    if(query.kind_of?(String))
+      query = MultiJson.load(query)
+    end
+
+    if(query.present?)
+      filters = []
+      query["rules"].each do |rule|
+        filter = {}
+        case(rule["operator"])
+        when "equal", "not_equal"
+          filter = {
+            :term => {
+              rule["field"] => rule["value"],
+            },
+          }
+        when "begins_with", "not_begins_with"
+          filter = {
+            :prefix => {
+              rule["field"] => rule["value"],
+            },
+          }
+        when "contains", "not_contains"
+          filter = {
+            :regexp => {
+              rule["field"] => ".*#{Regexp.escape(rule["value"])}.*",
+            },
+          }
+        when "is_null", "is_not_null"
+          filter = {
+            :exists => {
+              "field" => rule["field"],
+            },
+          }
+        when "less"
+          filter = {
+            :range => {
+              rule["field"] => {
+                "lt" => rule["value"].to_f,
+              },
+            },
+          }
+        when "less_or_equal"
+          filter = {
+            :range => {
+              rule["field"] => {
+                "lte" => rule["value"].to_f,
+              },
+            },
+          }
+        when "greater"
+          filter = {
+            :range => {
+              rule["field"] => {
+                "gt" => rule["value"].to_f,
+              },
+            },
+          }
+        when "greater_or_equal"
+          filter = {
+            :range => {
+              rule["field"] => {
+                "gte" => rule["value"].to_f,
+              },
+            },
+          }
+        when "between"
+          values = rule["value"].map { |v| v.to_f }.sort
+          filter = {
+            :range => {
+              rule["field"] => {
+                "gte" => values[0],
+                "lte" => values[1],
+              },
+            },
+          }
+        else
+          raise "unknown filter operator: #{rule["operator"]} (rule: #{rule.inspect})"
+        end
+
+        if(rule["operator"] =~ /(^not|^is_null)/ && filter.present?)
+          filter = { :not => filter }
+        end
+
+        filters << filter
+      end
+
+      if(filters.present?)
+        condition = if(query["condition"] == "OR") then :or else :and end
+        filter = {
+          condition => filters
+        }
+
+        @query[:query][:filtered][:filter][:bool][:must] << filter
+      end
+    end
+  end
+
   def offset!(from)
     @query_options[:from] = from
   end

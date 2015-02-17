@@ -31,6 +31,7 @@
 //= require livestampjs/livestamp
 //= require numeral
 //= require vendor/jquery.blockUI
+//= require vendor/jQuery-QueryBuilder/query-builder.standalone.js
 //= require spinjs
 //= require vendor/dirtyforms/jquery.dirtyforms
 //= require vendor/jquery.truncate

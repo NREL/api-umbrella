@@ -18,6 +18,7 @@ class Admin::StatsController < Admin::BaseController
     policy_scope(@search)
 
     @search.search!(params[:search])
+    @search.query!(params[:query])
     @search.filter_by_date_range!
     @search.aggregate_by_interval!
     @search.aggregate_by_users!(10)
@@ -43,6 +44,7 @@ class Admin::StatsController < Admin::BaseController
     end
 
     @search.search!(params[:search])
+    @search.query!(params[:query])
     @search.filter_by_date_range!
     @search.offset!(offset)
     @search.limit!(limit)
@@ -127,6 +129,7 @@ class Admin::StatsController < Admin::BaseController
     end
 
     @search.search!(params[:search])
+    @search.query!(params[:query])
     @search.filter_by_date_range!
     @search.aggregate_by_user_stats!(aggregation_options)
 
@@ -193,6 +196,7 @@ class Admin::StatsController < Admin::BaseController
     policy_scope(@search)
 
     @search.search!(params[:search])
+    @search.query!(params[:query])
     @search.filter_by_date_range!
     @search.aggregate_by_region!
 

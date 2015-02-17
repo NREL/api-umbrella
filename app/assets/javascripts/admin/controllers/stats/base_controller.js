@@ -5,6 +5,7 @@ Admin.StatsBaseController = Ember.ObjectController.extend({
 
   actions: {
     submit: function() {
+      this.set('query.params.query', JSON.stringify($('#query_builder').queryBuilder('getRules')));
       this.set('query.params.search', $('#filter_form input[name=search]').val());
     },
   },

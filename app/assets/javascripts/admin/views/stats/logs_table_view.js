@@ -140,5 +140,5 @@ Admin.LogsTableView = Ember.View.extend({
 
   refreshData: function() {
     this.$().DataTable().draw();
-  }.observes('controller.query.params.search', 'controller.query.params.start_at', 'controller.query.params.end_at'),
+  }.observes('controller.query.params.query', 'controller.query.params.search', 'controller.query.params.start_at', 'controller.query.params.end_at'),
 });
