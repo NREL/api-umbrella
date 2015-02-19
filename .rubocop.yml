@@ -4,6 +4,7 @@ AllCops:
     - vendor/**/*
     - config/compass.rb
     - public/web-assets/**/*
+    - public/test-assets/**/*
   RunRailsCops: true
 
 Lint/LiteralInInterpolation:
