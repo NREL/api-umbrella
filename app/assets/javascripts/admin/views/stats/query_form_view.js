@@ -228,7 +228,6 @@ Admin.StatsQueryFormView = Ember.View.extend({
   },
 
   updateQueryBuilderRules: function() {
-  console.info('updateQueryBuilderRules');
     var query = this.get('controller.query.params.query');
     var rules;
     if(query) {
