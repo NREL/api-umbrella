@@ -98,7 +98,7 @@ class LogSearch
   end
 
   def query!(query)
-    if(query.kind_of?(String))
+    if(query.kind_of?(String) && query.present?)
       query = MultiJson.load(query)
     end
 

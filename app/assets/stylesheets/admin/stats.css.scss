@@ -78,6 +78,40 @@
   }
 }
 
+#filter_toggle .fa {
+  width: 8px;
+}
+
+#filters_ui {
+  max-width: 960px;
+
+  .filter-type-toggle {
+    font-size: 12px;
+    text-align: right;
+  }
+
+  #search_field {
+    .input-append {
+      display: block;
+
+      .full-width-input,
+      .full-width-submit {
+        display: table-cell;
+      }
+
+      .full-width-input {
+        width: 100%;
+      }
+
+      .full-width-input input {
+        width: 100%;
+        box-sizing: border-box;
+        height: 26px;
+      }
+    }
+  }
+}
+
 .query-builder {
   .btn-xs {
     font-size: 12px;

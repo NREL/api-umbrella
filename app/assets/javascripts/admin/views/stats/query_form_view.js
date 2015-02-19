@@ -70,13 +70,7 @@ Admin.StatsQueryFormView = Ember.View.extend({
       'is_not_null',
     ];
 
-    var query = this.get('controller.query.params.query');
-    var rules;
-    if(query) {
-      var rules = JSON.parse(query);
-    }
-
-    $('#query_builder').queryBuilder({
+    var $queryBuilder = $('#query_builder').queryBuilder({
       plugins: {
         'filter-description': {
           icon: 'fa fa-info-circle',
@@ -215,9 +209,38 @@ Admin.StatsQueryFormView = Ember.View.extend({
           operators: stringOperators,
         },
       ],
-      rules: rules,
     });
+
+    var query = this.get('controller.query.params.query');
+    var rules;
+    if(query) {
+      rules = JSON.parse(query);
+    }
+
+    if(rules) {
+      $queryBuilder.queryBuilder('setRules', rules);
+      this.send('toggleFilters');
+      this.send('toggleFilterType', 'builder');
+    } else if(this.get('controller.query.params.search')) {
+      this.send('toggleFilters');
+      this.send('toggleFilterType', 'advanced');
+    }
   },
+
+  updateQueryBuilderRules: function() {
+  console.info('updateQueryBuilderRules');
+    var query = this.get('controller.query.params.query');
+    var rules;
+    if(query) {
+      rules = JSON.parse(query);
+    }
+
+    if(rules) {
+      $('#query_builder').queryBuilder('setRules', rules);
+    } else {
+      $('#query_builder').queryBuilder('reset');
+    }
+  }.observes('controller.query.params.query'),
 
   updateInterval: function() {
     var interval = this.get('controller.query.params.interval');
@@ -239,6 +262,25 @@ Admin.StatsQueryFormView = Ember.View.extend({
   },
 
   actions: {
+    toggleFilters: function() {
+      var $container = $('#filters_ui');
+      var $icon = $('#filter_toggle .fa');
+      if($container.is(':visible')) {
+        $icon.addClass('fa-caret-right');
+        $icon.removeClass('fa-caret-down');
+      } else {
+        $icon.addClass('fa-caret-down');
+        $icon.removeClass('fa-caret-right');
+      }
+
+      $container.slideToggle(100);
+    },
+
+    toggleFilterType: function(type) {
+      $('.filter-type').hide();
+      $('#filter_type_' + type).show();
+    },
+
     clickInterval: function(interval) {
       this.set('controller.query.params.interval', interval);
     },
