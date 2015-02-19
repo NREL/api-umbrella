@@ -1,16 +1,16 @@
 <form id="filter_form" action="#" method="get" {{action 'submit' on='submit'}}>
   <div class="row-fluid">
     <div class="span4">
-      <a id="filter_toggle" {{action 'toggleFilters' target='view'}}><i class="fa fa-caret-right"></i>Filter Results</a>
+      <a id="filter_toggle" {{action 'toggleFilters' target='view'}}><i class="fa fa-caret-right"></i>{{t 'admin.stats.filter_results'}}</a>
     </div>
     <div class="span8 filter-times">
       {{#if view.enableInterval}}
         <div id="interval_buttons" class="btn-group" data-toggle="buttons-radio">
-          <button type="button" class="btn btn-mini" value="minute" {{action 'clickInterval' 'minute' target='view'}}>Minute</button>
-          <button type="button" class="btn btn-mini" value="hour" {{action 'clickInterval' 'hour' target='view'}}>Hour</button>
-          <button type="button" class="btn btn-mini" value="day" {{action 'clickInterval' 'day' target='view'}}>Day</button>
-          <button type="button" class="btn btn-mini" value="week" {{action 'clickInterval' 'week' target='view'}}>Week</button>
-          <button type="button" class="btn btn-mini" value="month" {{action 'clickInterval' 'month' target='view'}}>Month</button>
+          <button type="button" class="btn btn-mini" value="minute" {{action 'clickInterval' 'minute' target='view'}}>{{t 'admin.stats.minute'}}</button>
+          <button type="button" class="btn btn-mini" value="hour" {{action 'clickInterval' 'hour' target='view'}}>{{t 'admin.stats.hour'}}</button>
+          <button type="button" class="btn btn-mini" value="day" {{action 'clickInterval' 'day' target='view'}}>{{t 'admin.stats.day'}}</button>
+          <button type="button" class="btn btn-mini" value="week" {{action 'clickInterval' 'week' target='view'}}>{{t 'admin.stats.week'}}</button>
+          <button type="button" class="btn btn-mini" value="month" {{action 'clickInterval' 'month' target='view'}}>{{t 'admin.stats.month'}}</button>
         </div>
       {{/if}}
 
@@ -30,10 +30,10 @@
           <div id="query_builder"></div>
           <div class="row-fluid">
             <div class="span6">
-              <button class="btn btn-small" type="submit">Filter</button>
+              <button class="btn btn-small" type="submit">{{t 'admin.stats.filter'}}</button>
             </div>
             <div class="span6 text-right">
-              <a {{action 'toggleFilterType' 'advanced' target='view'}} class="filter-type-toggle">Switch to advanced filters</a>
+              <a {{action 'toggleFilterType' 'advanced' target='view'}} class="filter-type-toggle">{{t 'admin.stats.switch_advanced_filters'}}</a>
             </div>
           </div>
         </div>
@@ -41,30 +41,30 @@
           <div id="search_field">
             <div class="input-append">
               <div class="full-width-input">
-                <input type="text" name="search" class="input-xxlarge" placeholder="Advanced filters..." {{bind-attr value='query.params.search'}} />
+                <input type="text" name="search" class="input-xxlarge" placeholder="{{t 'admin.stats.advanced_filters_placeholder'}}" {{bind-attr value='query.params.search'}} />
               </div>
               <div class="full-width-submit">
-                <button class="btn btn-small" type="submit">Filter</button>
+                <button class="btn btn-small" type="submit">{{t 'admin.stats.filter'}}</button>
               </div>
             </div>
             <div class="row-fluid">
               <div class="span6">
-                <span class="help-block">Advanced filters use <a href="#query_syntax_help_content" rel="popover">Lucene's Query Syntax</a>.</span>
+                <span class="help-block">{{{t 'admin.stats.advanced_filters_tip'}}}</span>
               </div>
               <div class="span6 text-right">
-                <a {{action 'toggleFilterType' 'builder' target='view'}} class="filter-type-toggle">Switch to simple filters</a>
+                <a {{action 'toggleFilterType' 'builder' target='view'}} class="filter-type-toggle">{{t 'admin.stats.switch_simple_filters'}}</a>
               </div>
             </div>
             <div id="query_syntax_help_content" style="display: none;">
-              <p>Use <a href="http://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene's query syntax</a> to perform complex queries.</p>
-              <p>Example:</p>
+              <p>{{{t 'admin.stats.advanced_filters_help_content'}}}</p>
+              <p>{{t 'admin.stats.example'}}:</p>
               <pre>request_method:"POST" AND response_status:[400 TO *]</pre>
-              <p>Available Fields:</p>
+              <p>{{t 'admin.stats.available_fields'}}:</p>
               <table class="table table-condensed query-syntax-help">
                 <thead>
                   <tr>
-                    <th>Field</th>
-                    <th class="example">Example</th>
+                    <th>{{t 'admin.stats.field'}}</th>
+                    <th class="example">{{t 'admin.stats.example'}}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -177,4 +177,3 @@
     </div>
   </div>
 </form>
-

@@ -95,3 +95,19 @@ en:
       sub_settings:
         legend: Sub-URL Request Settings
         note: Change settings for specific sub-URLs within this API.
+    stats:
+      filter_results: Filter Results
+      filter: Filter
+      switch_advanced_filters: Switch to advanced filters
+      switch_simple_filters: Switch to advanced filters
+      advanced_filters_placeholder: Advanced filters...
+      advanced_filters_tip: Advanced filters use <a href="#query_syntax_help_content" rel="popover">Lucene's Query Syntax</a>.
+      advanced_filters_help_content: Use <a href="http://www.lucenetutorial.com/lucene-query-syntax.html" target="_blank">Lucene's query syntax</a> to perform complex queries.
+      available_fields: Available Fields
+      field: Field
+      example: Example
+      minute: Minute
+      hour: Hour
+      day: Day
+      week: Week
+      month: Month
