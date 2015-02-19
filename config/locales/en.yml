@@ -111,3 +111,52 @@ en:
       day: Day
       week: Week
       month: Month
+      fields:
+        request_method:
+          label: 'Request: HTTP Method'
+          description: 'The HTTP method of the request.<br><em>Example:</em> <code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>, etc.'
+        request_scheme:
+          label: 'Request: URL Scheme'
+          description: 'The scheme of the original request URL.<br><em>Example:</em>: <code>http</code> or <code>https</code>'
+        request_host:
+          label: 'Request: URL Host'
+          description: 'The host of the original request URL.<br><em>Example:</em> <code>example.com</code>'
+        request_path:
+          label: 'Request: URL Path'
+          description: 'The path portion of the original request URL.<br><em>Example:</em> <code>/geocode/v1.json</code>'
+        request_url:
+          label: 'Request: Full URL & Query String'
+          description: 'The original, complete request URL.<br><em>Example:</em> <code>http://example.com/geocode/v1.json?address=1617+Cole+Blvd+Golden+CO</code><br><em>Note:</em> If you want to simply filter on the host or path portion of the URL, your queries will run better if you use the separate "Request: URL Path" or "Request: URL Host" fields.'
+        request_ip:
+          label: 'Request: IP Address'
+          description: 'The IP address of the requestor.<br><em>Example:</em> <code>93.184.216.119</code>'
+        request_ip_country:
+          label: 'Request: IP Country'
+          description: 'The 2 letter country code (<a href="http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2" target="_blank">ISO 3166-1</a>) that the IP address geocoded to.<br><em>Example:</em> <code>US</code>'
+        request_ip_region:
+          label: 'Request: IP State/Region'
+          description: 'The 2 letter state or region code (<a href="http://en.wikipedia.org/wiki/ISO_3166-2" target="_blank">ISO 3166-2</a>) that the IP address geocoded to.<br><em>Example:</em> <code>CO</code>'
+        request_ip_city:
+          label: 'Request: IP City'
+          description: 'The name of the city that the IP address geocoded to.<br><em>Example:</em> <code>Golden</code>'
+        request_user_agent:
+          label: 'Request: User Agent'
+          description: 'The user agent of the requestor.<br><em>Example:</em> <code>curl/7.33.0</code>'
+        api_key:
+          label: 'User: API Key'
+          description: 'The API key used to make the request.<br><em>Example:</em> <code>vfcHB9tOyFKc6YbbdDsE8plxtFHvp9zXIJWAtaep</code>'
+        user_email:
+          label: 'User: E-mail'
+          description: 'The e-mail address associated with the API key used to make the request.<br><em>Example:</em> <code>john.doe@example.com</code>'
+        user_id:
+          label: 'User: ID'
+          description: 'The user ID associated with the API key used to make the request.<br><em>Example:</em> <code>ad2d94b6-e0f8-4e26-b1a6-1bc6b12f3d76</code>'
+        response_status:
+          label: 'Response: HTTP Status Code'
+          description: 'The HTTP status code returned for the response.<br><em>Example:</em> <code>200</code>, <code>403</code>, <code>429</code>, etc.'
+        response_time:
+          label: 'Response: Load Time'
+          description: 'The total amount of time taken to respond to the request (in milliseconds)'
+        response_content_type:
+          label: 'Response: Content Type'
+          description: 'The content type of the response.<br><em>Example:</em> <code>application/json; charset=utf-8</code>'
