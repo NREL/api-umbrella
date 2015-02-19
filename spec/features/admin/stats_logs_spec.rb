@@ -40,6 +40,8 @@ describe "apis", :js => true do
         "interval" => "day",
       })
 
+      find("a", :text => /Filter Results/).click
+      find("a", :text => /Switch to advanced filters/).click
       fill_in "search", :with => "response_status:200"
       click_button "Filter"
       link = find_link("Download CSV")
@@ -51,6 +53,7 @@ describe "apis", :js => true do
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "interval" => "day",
+        "query" => "",
       })
     end
 
