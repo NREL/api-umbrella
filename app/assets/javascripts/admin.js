@@ -79,6 +79,9 @@ $(document).ready(function() {
     event.preventDefault();
   });
 
+  $.blockUI.defaults.fadeIn = 0;
+  $.blockUI.defaults.fadeOut = 0;
+
   $(document).on('click', 'a[rel=popover]', function(event) {
     $(this).qtip({
       overwrite: false,
