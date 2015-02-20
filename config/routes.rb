@@ -17,6 +17,15 @@ ApiUmbrella::Application.routes.draw do
         end
       end
 
+      # /v0 is for unstable APIs we may be experimenting with internally.
+      namespace :v0 do
+        resources :analytics do
+          collection do
+            get "summary"
+          end
+        end
+      end
+
       namespace :v1 do
         resources :admin_groups
         resources :admin_permissions, :only => [:index]
