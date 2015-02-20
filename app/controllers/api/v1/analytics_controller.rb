@@ -12,6 +12,7 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
     policy_scope(@search)
 
     @search.search!(params[:search])
+    @search.query!(params[:query])
     @search.filter_by_date_range!
 
     drilldown_size = if(request.format == "csv") then 0 else 500 end

@@ -39,7 +39,210 @@ Admin.StatsQueryFormView = Ember.View.extend({
       startDate: moment(this.get('controller.query.params.start_at'), 'YYYY-MM-DD'),
       endDate: moment(this.get('controller.query.params.end_at'), 'YYYY-MM-DD'),
     }, _.bind(this.handleDateRangeChange, this));
+
+    var stringOperators = [
+      'begins_with',
+      'not_begins_with',
+      'equal',
+      'not_equal',
+      'contains',
+      'not_contains',
+      'is_null',
+      'is_not_null',
+    ];
+
+    var selectOperators = [
+      'equal',
+      'not_equal',
+      'is_null',
+      'is_not_null',
+    ];
+
+    var numberOperators = [
+      'equal',
+      'not_equal',
+      'less',
+      'less_or_equal',
+      'greater',
+      'greater_or_equal',
+      'between',
+      'is_null',
+      'is_not_null',
+    ];
+
+    var $queryBuilder = $('#query_builder').queryBuilder({
+      plugins: {
+        'filter-description': {
+          icon: 'fa fa-info-circle',
+          mode: 'bootbox',
+        },
+        'bt-tooltip-errors': null
+      },
+      allow_empty: true,
+      allow_groups: false,
+      filters: [
+        {
+          id: 'request_method',
+          label: polyglot.t('admin.stats.fields.request_method.label'),
+          description: polyglot.t('admin.stats.fields.request_method.description'),
+          type: 'string',
+          operators: selectOperators,
+          input: 'select',
+          values: {
+            'get': 'GET',
+            'post': 'POST',
+            'put': 'PUT',
+            'delete': 'DELETE',
+            'head': 'HEAD',
+            'patch': 'PATCH',
+            'options': 'OPTIONS',
+          },
+        },
+        {
+          id: 'request_scheme',
+          label: polyglot.t('admin.stats.fields.request_scheme.label'),
+          description: polyglot.t('admin.stats.fields.request_scheme.description'),
+          type: 'string',
+          operators: selectOperators,
+          input: 'select',
+          values: {
+            'http': 'http',
+            'https': 'https',
+          },
+        },
+        {
+          id: 'request_host',
+          label: polyglot.t('admin.stats.fields.request_host.label'),
+          description: polyglot.t('admin.stats.fields.request_host.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_path',
+          label: polyglot.t('admin.stats.fields.request_path.label'),
+          description: polyglot.t('admin.stats.fields.request_path.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_url',
+          label: polyglot.t('admin.stats.fields.request_url.label'),
+          description: polyglot.t('admin.stats.fields.request_url.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_ip',
+          label: polyglot.t('admin.stats.fields.request_ip.label'),
+          description: polyglot.t('admin.stats.fields.request_ip.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_ip_country',
+          label: polyglot.t('admin.stats.fields.request_ip_country.label'),
+          description: polyglot.t('admin.stats.fields.request_ip_country.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_ip_region',
+          label: polyglot.t('admin.stats.fields.request_ip_region.label'),
+          description: polyglot.t('admin.stats.fields.request_ip_region.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_ip_city',
+          label: polyglot.t('admin.stats.fields.request_ip_city.label'),
+          description: polyglot.t('admin.stats.fields.request_ip_city.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'request_user_agent',
+          label: polyglot.t('admin.stats.fields.request_user_agent.label'),
+          description: polyglot.t('admin.stats.fields.request_user_agent.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'api_key',
+          label: polyglot.t('admin.stats.fields.api_key.label'),
+          description: polyglot.t('admin.stats.fields.api_key.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'user_email',
+          label: polyglot.t('admin.stats.fields.user_email.label'),
+          description: polyglot.t('admin.stats.fields.user_email.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'user_id',
+          label: polyglot.t('admin.stats.fields.user_id.label'),
+          description: polyglot.t('admin.stats.fields.user_id.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+        {
+          id: 'response_status',
+          label: polyglot.t('admin.stats.fields.response_status.label'),
+          description: polyglot.t('admin.stats.fields.response_status.description'),
+          type: 'integer',
+          operators: numberOperators,
+        },
+        {
+          id: 'response_time',
+          label: polyglot.t('admin.stats.fields.response_time.label'),
+          description: polyglot.t('admin.stats.fields.response_time.description'),
+          type: 'integer',
+          operators: numberOperators,
+        },
+        {
+          id: 'response_content_type',
+          label: polyglot.t('admin.stats.fields.response_content_type.label'),
+          description: polyglot.t('admin.stats.fields.response_content_type.description'),
+          type: 'string',
+          operators: stringOperators,
+        },
+      ],
+    });
+
+    var query = this.get('controller.query.params.query');
+    var rules;
+    if(query) {
+      rules = JSON.parse(query);
+    }
+
+    if(rules) {
+      if(rules.condition) {
+        $queryBuilder.queryBuilder('setRules', rules);
+      }
+
+      this.send('toggleFilters');
+      this.send('toggleFilterType', 'builder');
+    } else if(this.get('controller.query.params.search')) {
+      this.send('toggleFilters');
+      this.send('toggleFilterType', 'advanced');
+    }
   },
+
+  updateQueryBuilderRules: function() {
+    var query = this.get('controller.query.params.query');
+    var rules;
+    if(query) {
+      rules = JSON.parse(query);
+    }
+
+    if(rules && rules.condition) {
+      $('#query_builder').queryBuilder('setRules', rules);
+    } else {
+      $('#query_builder').queryBuilder('reset');
+    }
+  }.observes('controller.query.params.query'),
 
   updateInterval: function() {
     var interval = this.get('controller.query.params.interval');
@@ -61,6 +264,25 @@ Admin.StatsQueryFormView = Ember.View.extend({
   },
 
   actions: {
+    toggleFilters: function() {
+      var $container = $('#filters_ui');
+      var $icon = $('#filter_toggle .fa');
+      if($container.is(':visible')) {
+        $icon.addClass('fa-caret-right');
+        $icon.removeClass('fa-caret-down');
+      } else {
+        $icon.addClass('fa-caret-down');
+        $icon.removeClass('fa-caret-right');
+      }
+
+      $container.slideToggle(100);
+    },
+
+    toggleFilterType: function(type) {
+      $('.filter-type').hide();
+      $('#filter_type_' + type).show();
+    },
+
     clickInterval: function(interval) {
       this.set('controller.query.params.interval', interval);
     },

@@ -8,6 +8,8 @@
 // The other part of this is altering the CSS to disable transitions in
 // admin_test.css.
 $.support.transition = false;
+$.fx.off = true;
 $(document).ready(function() {
   $.support.transition = false;
+  $.fx.off = true;
 });

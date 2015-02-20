@@ -69,7 +69,7 @@ Admin.StatsBaseRoute = Ember.Route.extend({
         this.transitionTo('stats.logs', $.param(newQueryParams));
       }
     }
-  }.observes('query.params.search', 'query.params.interval', 'query.params.start_at', 'query.params.end_at'),
+  }.observes('query.params.query', 'query.params.search', 'query.params.interval', 'query.params.start_at', 'query.params.end_at'),
 
   actions: {
     error: function() {

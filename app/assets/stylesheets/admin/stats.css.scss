@@ -78,4 +78,63 @@
   }
 }
 
+#filter_toggle .fa {
+  width: 8px;
+}
 
+#filters_ui {
+  max-width: 960px;
+
+  .filter-type-toggle {
+    font-size: 12px;
+    text-align: right;
+  }
+
+  #search_field {
+    .input-append {
+      display: block;
+
+      .full-width-input,
+      .full-width-submit {
+        display: table-cell;
+      }
+
+      .full-width-input {
+        width: 100%;
+      }
+
+      .full-width-input input {
+        width: 100%;
+        box-sizing: border-box;
+        height: 26px;
+      }
+    }
+  }
+}
+
+.query-builder {
+  .btn-xs {
+    font-size: 12px;
+    padding: 1px 5px;
+  }
+
+  .rule-container input[type=number],
+  .rule-container input[type=text],
+  .rule-container select {
+    font-size: 11px;
+    height: 24px;
+    margin: 0px;
+    box-sizing: border-box;
+    padding: 1px 3px;
+  }
+
+  .rule-container input[type=number] {
+    width: 102px;
+  }
+
+  .rules-group-container {
+    background: #edf5fc;
+    background: rgba(237, 245, 252, 0.5);
+    border-color: #96bedc;
+  }
+}

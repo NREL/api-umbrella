@@ -31,6 +31,7 @@
 //= require livestampjs/livestamp
 //= require numeral
 //= require vendor/jquery.blockUI
+//= require vendor/jQuery-QueryBuilder/query-builder.standalone.js
 //= require spinjs
 //= require vendor/dirtyforms/jquery.dirtyforms
 //= require vendor/jquery.truncate
@@ -77,6 +78,9 @@ $(document).ready(function() {
 
     event.preventDefault();
   });
+
+  $.blockUI.defaults.fadeIn = 0;
+  $.blockUI.defaults.fadeOut = 0;
 
   $(document).on('click', 'a[rel=popover]', function(event) {
     $(this).qtip({
