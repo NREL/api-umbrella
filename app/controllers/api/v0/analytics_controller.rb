@@ -94,8 +94,9 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
       :interval => "month",
     })
 
-    # Try to ignore some of the baseline monitoring traffic.
-    search.search!("!request_user_agent:check_http* AND !request_user_agent:NewRelicPinger* AND !request_user_agent:Site24x7*")
+    # Try to ignore some of the baseline monitoring traffic. Only include
+    # successful responses.
+    search.search!("!request_user_agent:check_http* AND !request_user_agent:NewRelicPinger* AND !request_user_agent:Site24x7* AND response_status:[200 TO 399]")
     search.filter_by_date_range!
     search.aggregate_by_interval!
     search.limit!(1)
