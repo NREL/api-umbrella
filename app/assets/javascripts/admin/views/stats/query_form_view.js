@@ -218,7 +218,10 @@ Admin.StatsQueryFormView = Ember.View.extend({
     }
 
     if(rules) {
-      $queryBuilder.queryBuilder('setRules', rules);
+      if(rules.condition) {
+        $queryBuilder.queryBuilder('setRules', rules);
+      }
+
       this.send('toggleFilters');
       this.send('toggleFilterType', 'builder');
     } else if(this.get('controller.query.params.search')) {
@@ -234,7 +237,7 @@ Admin.StatsQueryFormView = Ember.View.extend({
       rules = JSON.parse(query);
     }
 
-    if(rules) {
+    if(rules && rules.condition) {
       $('#query_builder').queryBuilder('setRules', rules);
     } else {
       $('#query_builder').queryBuilder('reset');
