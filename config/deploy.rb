@@ -32,6 +32,7 @@ set :linked_dirs, %w{node_modules}
 # Default value for default_env is {}
 fetch(:default_env).merge!({
   "PATH" => "/opt/api-umbrella/bin:/opt/api-umbrella/embedded/bin:$PATH",
+  "GEM_PATH" => "/opt/api-umbrella/embedded/lib/ruby/gems/*",
 })
 
 # Default value for keep_releases is 5
