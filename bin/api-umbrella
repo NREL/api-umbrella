@@ -187,6 +187,7 @@ var tasks = {
         callback();
       }, function() {
         console.info(' [  ' + clc.green('OK') + '  ]');
+        process.exit(0);
       });
     });
   },
@@ -225,10 +226,11 @@ var tasks = {
       }
 
       async.eachSeries(processes, function(proc, callback) {
-        process.kill(proc.pid, 'SIGUSR1');
+        process.kill(proc.pid, 'SIGUSR2');
         callback();
       }, function() {
         console.info(' [  ' + clc.green('OK') + '  ]');
+        process.exit(0);
       });
     });
   },

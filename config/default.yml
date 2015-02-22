@@ -107,10 +107,6 @@ mongodb:
       socketOptions:
         keepAlive: 500
   embedded_server_config:
-    systemLog:
-      destination: file
-      logAppend: true
-      quiet: true
     processManagement:
       fork: false
     net:

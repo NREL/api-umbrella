@@ -30,9 +30,9 @@ serverurl=unix://{{run_dir}}/supervisor.sock
 command=mongod --config {{etc_dir}}/mongod.conf
 {{supervisor_conditional_user}}
 redirect_stderr=true
-stdout_logfile={{log_dir}}/%(program_name)s-process.log
+stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=10
 startretries=10
 {{/if}}
@@ -45,7 +45,7 @@ command=elasticsearch
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=10
 startretries=10
 {{/if}}
@@ -57,7 +57,7 @@ command=dnsmasq -C {{etc_dir}}/dnsmasq.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=5
 startretries=10
 
@@ -68,7 +68,7 @@ command=unbound -c {{etc_dir}}/test_env/unbound/unbound.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=5
 startretries=10
 {{/if}}
@@ -79,7 +79,7 @@ command=redis-server {{etc_dir}}/redis.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=5
 startretries=10
 
@@ -89,7 +89,7 @@ command=beanstalkd -l {{beanstalkd.host}} -p {{beanstalkd.port}} -b {{db_dir}}/b
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=3
 startretries=10
 
@@ -100,7 +100,7 @@ command=varnishd -F -a :{{varnish.port}} -f {{etc_dir}}/varnish.vcl -t 0 -n {{ru
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=5
 startretries=10
 
@@ -110,7 +110,7 @@ command=varnishncsa -a -w {{log_dir}}/varnishncsa.log -n {{run_dir}}/varnish/api
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s-process.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=5
 startretries=10
 
@@ -119,7 +119,7 @@ command=nginx -c {{etc_dir}}/nginx/router.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=5
 startretries=10
 
@@ -131,7 +131,7 @@ command={{../router.dir}}/node_modules/.bin/api-umbrella-gatekeeper {{../api_umb
 redirect_stderr=true
 stdout_logfile={{../log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=5
 startretries=10
 {{/each}}
@@ -144,7 +144,7 @@ command={{router.dir}}/bin/api-umbrella-config-reloader {{api_umbrella_config_ar
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=10
 startretries=10
 
@@ -154,7 +154,7 @@ command={{router.dir}}/bin/api-umbrella-router-log-listener {{api_umbrella_confi
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=10
 startretries=10
 
@@ -164,7 +164,7 @@ command={{router.dir}}/bin/api-umbrella-log-processor {{api_umbrella_config_args
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=10
 startretries=10
 
@@ -174,7 +174,7 @@ command={{router.dir}}/node_modules/.bin/api-umbrella-distributed-rate-limits-sy
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=5
 startretries=10
 {{/if}}
@@ -189,7 +189,7 @@ command=bundle exec middleman server -p {{static_site.port}} --verbose
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=10
 startretries=10
 {{/if}}
@@ -202,7 +202,7 @@ command=bundle exec puma -q --dir {{web.dir}} --prune-bundler -e {{app_env}} -w 
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=10
 startretries=10
 
@@ -211,7 +211,7 @@ command=nginx -c {{etc_dir}}/nginx/web.conf
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=5
 startretries=10
 
@@ -223,7 +223,7 @@ command=bundle exec ./script/delayed_job --pid-dir={{run_dir}} --queues=mailers 
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
 stderr_logfile=NONE
-logfile_maxbytes=0
+stdout_logfile_maxbytes=0
 startsecs=10
 startretries=10
 {{/if}}
