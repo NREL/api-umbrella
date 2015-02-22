@@ -1,5 +1,4 @@
 source "https://rubygems.org"
-source "https://rails-assets.org"
 
 gem "rails", "~> 3.2.21"
 
@@ -165,43 +164,45 @@ group :assets do
   # deployments by combining two tasks into one (particularly under JRuby).
   gem "turbo-sprockets-rails3", "0.3.13"
 
-  # Client-side translations
-  gem "rails-assets-polyglot", "~> 0.4.1"
+  source "https://rails-assets.org" do
+    # Client-side translations
+    gem "rails-assets-polyglot", "~> 0.4.1"
 
-  # Smooth scrolling to content
-  gem "rails-assets-jquery.scrollTo", "~> 1.4.14"
+    # Smooth scrolling to content
+    gem "rails-assets-jquery.scrollTo", "~> 1.4.14"
 
-  # Icons
-  gem "rails-assets-fontawesome", "~> 4.2.0"
+    # Icons
+    gem "rails-assets-fontawesome", "~> 4.2.0"
 
-  # Code editor (for syntax highlighting inside textareas)
-  gem "rails-assets-ace-builds", "~> 1.1.7"
+    # Code editor (for syntax highlighting inside textareas)
+    gem "rails-assets-ace-builds", "~> 1.1.7"
 
-  # Visual text diffs
-  gem "rails-assets-jsdiff", "~> 1.0.8"
+    # Visual text diffs
+    gem "rails-assets-jsdiff", "~> 1.0.8"
 
-  # jQuery ajax calls wrapped in Ember promises
-  gem "rails-assets-ic-ajax", "~> 2.0.1"
+    # jQuery ajax calls wrapped in Ember promises
+    gem "rails-assets-ic-ajax", "~> 2.0.1"
 
-  # For Markdown parsing
-  gem "rails-assets-marked", "~> 0.3.2"
+    # For Markdown parsing
+    gem "rails-assets-marked", "~> 0.3.2"
 
-  gem "rails-assets-bootbox", "~> 3.3.0"
-  gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.12"
-  gem "rails-assets-datatables", "~> 1.10.2"
-  gem "rails-assets-html5shiv", "~> 3.7.0"
-  gem "rails-assets-inflection", "~> 1.4.0"
-  gem "rails-assets-jquery", "~> 1.11.0"
-  gem "rails-assets-jquery-bbq-deparam", "~> 1.2.1"
-  gem "rails-assets-jstz-detect", "~> 1.0.5"
-  gem "rails-assets-livestampjs", "~> 1.1.2"
-  gem "rails-assets-lodash", "~> 2.4.1"
-  gem "rails-assets-moment", "~> 2.8.2"
-  gem "rails-assets-numeral", "~> 1.5.3"
-  gem "rails-assets-pnotify", "~> 2.0.1"
-  gem "rails-assets-qtip2", "~> 2.2.0"
-  gem "rails-assets-selectize", "~> 0.11.2"
-  gem "rails-assets-spinjs", "~> 2.0.0"
+    gem "rails-assets-bootbox", "~> 3.3.0"
+    gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.12"
+    gem "rails-assets-datatables", "~> 1.10.2"
+    gem "rails-assets-html5shiv", "~> 3.7.0"
+    gem "rails-assets-inflection", "~> 1.4.0"
+    gem "rails-assets-jquery", "~> 1.11.0"
+    gem "rails-assets-jquery-bbq-deparam", "~> 1.2.1"
+    gem "rails-assets-jstz-detect", "~> 1.0.5"
+    gem "rails-assets-livestampjs", "~> 1.1.2"
+    gem "rails-assets-lodash", "~> 2.4.1"
+    gem "rails-assets-moment", "~> 2.8.2"
+    gem "rails-assets-numeral", "~> 1.5.3"
+    gem "rails-assets-pnotify", "~> 2.0.1"
+    gem "rails-assets-qtip2", "~> 2.2.0"
+    gem "rails-assets-selectize", "~> 0.11.2"
+    gem "rails-assets-spinjs", "~> 2.0.0"
+  end
 end
 
 # Bundle gems for the local environment. Make sure to
