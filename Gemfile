@@ -191,7 +191,7 @@ group :assets do
   gem "rails-assets-datatables", "~> 1.10.2"
   gem "rails-assets-html5shiv", "~> 3.7.0"
   gem "rails-assets-inflection", "~> 1.4.0"
-  gem "rails-assets-jquery", "~> 1.11.0"
+  gem "rails-assets-jquery", "~> 1.11.2"
   gem "rails-assets-jquery-bbq-deparam", "~> 1.2.1"
   gem "rails-assets-jstz-detect", "~> 1.0.5"
   gem "rails-assets-livestampjs", "~> 1.1.2"
