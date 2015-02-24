@@ -32,7 +32,14 @@ set :linked_dirs, %w(bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public
 # Default value for default_env is {}
 fetch(:default_env).merge!({
   "PATH" => "/opt/api-umbrella/bin:/opt/api-umbrella/embedded/bin:$PATH",
+
+  # Reset Ruby related environment variables. This is in case the system being
+  # deployed to has something like rvm/rbenv/chruby in place. This ensures that
+  # we're using our API Umbrella bundled version of Ruby on PATH rather than
+  # another version.
   "GEM_PATH" => "/opt/api-umbrella/embedded/lib/ruby/gems/*",
+  "RUBY_ROOT" => "",
+  "RUBYLIB" => "",
 
   # The real secret tokens are read from the api-umbrella config file when the
   # web app is started. But for rake task purposes (like asset precompilation
