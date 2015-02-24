@@ -52,6 +52,11 @@ Admin.ApiUsersTableView = Ember.View.extend({
           },
         },
         {
+          data: 'registration_source',
+          title: 'Registration Source',
+          defaultContent: '-',
+        },
+        {
           data: 'api_key_preview',
           title: 'API Key',
           defaultContent: '-',
