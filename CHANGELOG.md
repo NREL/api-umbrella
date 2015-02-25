@@ -1,5 +1,25 @@
 # API Umbrella Change Log
 
+## 0.8.0 (Unreleased)
+
+### Changes
+
+* **Fix file descriptor leak:** This could lead to exhausting your systems maximum number of file descriptors for setups with lots of API backends using domains with short-lived TTLs (See [api.data.gov#188](https://github.com/18F/api.data.gov/issues/188))
+* **New analytics querying interface:** The new interface for querying the analytics allows you to filter your analytics using drop down menus and form fields. This should be much easier to use than the raw Lucene queries we previously relied on. (See [#15](https://github.com/NREL/api-umbrella/issues/15))
+* **Fix server log rotation issues:** There were a few issues present with a default installation that prevented log files from rotating properly, and may have wiped previous log files each night. This should now be resolved. (See [api.data.gov#189](https://github.com/18F/api.data.gov/issues/189))
+* **Add registration source information to admin user list:** The user registration source is now shown in the user listing and can also be searched by the free-from search field. (See [api.data.gov#190](https://github.com/18F/api.data.gov/issues/190))
+* **Fixes to URL encoding for advanced request rewriting:** If you were doing complex URL rewriting with "Route Pattern" rewrites under the Advanced Request Rewriting section, this fixes a variety of URL encoding issues.
+* **Reduce duplicative nginx reloads for DNS changes:** If your system has several API backends with domains that have short-lived TTLs, there were a couple race conditions that could lead to nginx reloading twice on DNS changes. This is now fixed so the unnecessary, duplicate reload commands are gone. (See [api.data.gov#191](https://github.com/18F/api.data.gov/issues/191))
+* **Improve compatibility of install on systems with other Rubies present:** If you're installing API Umbrella on a system that already had something like rbenv/rvm/chruby installed, this should should fix some compatibility issues.
+* **Build process improvements:** Various improvements to our build process for packaging new binary releases.
+* **Upgrade bundled dependencies:**
+  * Bundler 1.7.12 -> 1.7.13
+  * ElasticSearch 1.4.2 -> 1.4.4
+  * nginx 1.7.9 -> 1.7.10
+  * ngx_txid a41a705 -> f1c197c
+  * RubyGems 2.4.5 -> 2.4.6
+  * Varnish 4.0.2 -> 4.0.3
+
 ## 0.7.1 / 2015-02-11
 
 This update fixes a couple of important bugs that were discovered shortly after rolling out the v0.7.0 release. It's highly recommended anyone running v0.7.0 upgrade to v0.7.1.
