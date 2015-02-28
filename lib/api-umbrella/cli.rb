@@ -189,6 +189,7 @@ module ApiUmbrella
         File.join(config["db_dir"], "beanstalkd"),
         File.join(config["db_dir"], "elasticsearch"),
         File.join(config["db_dir"], "mongodb"),
+        File.join(config["db_dir"], "redis"),
         config["log_dir"],
         config["run_dir"],
         config["tmp_dir"],

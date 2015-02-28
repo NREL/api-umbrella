@@ -18,4 +18,15 @@ else
   master_id = master_id .. "-" .. str.to_hex(resty_random.bytes(4))
 end
 
+-- Require the module
+local ledge_m = require "ledge.ledge"
+
+-- Create a global instance and set any global configuration
+ledge = ledge_m.new()
+-- ledge:config_set("use_resty_upstream", true)
+ledge:config_set("enable_collapsed_forwarding", true)
+ledge:config_set("redis_host", { host = "127.0.0.1", port = 13000 })
+ledge:config_set("upstream_host", "127.0.0.1")
+ledge:config_set("upstream_port", 9999)
+
 MASTER_NODE_ID = master_id

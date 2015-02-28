@@ -30,5 +30,19 @@ set $api_umbrella_backend_scheme '';
 set $api_umbrella_backend_host '';
 set $api_umbrella_backend_id '';
 
-proxy_set_header Host $api_umbrella_backend_host;
-proxy_pass $api_umbrella_backend_scheme://api_umbrella_${api_umbrella_backend_id}_backend;
+content_by_lua '
+  --ledge:config_set("resty_upstream", ngx.var.api_umbrella_backend_id)
+  ledge:bind("origin_fetched", function(res)
+    if res.header["Surrogate-Control"] then
+      res.header["X-Orig-Cache-Control"] = res.header["Cache-Control"]
+      res.header["Cache-Control"] = res.header["Surrogate-Control"]
+    end
+  end)
+  ledge:bind("response_ready", function(res)
+    if res.header["Surrogate-Control"] then
+      res.header["Surrogate-Control"] = nil
+      res.header["Cache-Control"] = res.header["X-Orig-Cache-Control"]
+    end
+  end)
+  ledge:run()
+';

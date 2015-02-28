@@ -1,3 +1,5 @@
+ledge:run_workers()
+
 local iputils = require "resty.iputils"
 
 -- Cache IP to binary lookup results (used internally in ip_in_cidr). Cache the

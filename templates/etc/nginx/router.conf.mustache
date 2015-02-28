@@ -110,6 +110,9 @@ http {
   #add_header X-Cache $upstream_cache_status;
   #proxy_cache_valid 5m;
 
+  lua_check_client_abort on;
+  if_modified_since off;
+
   include ./mime.conf;
   include ./realip.conf;
 
@@ -272,5 +275,18 @@ http {
     "~(^|,) *gzip *; *q=0[\.0]* *($|,)" "";
     "~(^|,) *gzip *($|,|;)" gzip;
     default "";
+  }
+
+  server {
+    listen 9999;
+    server_name _;
+
+    # proxy_set_header Host $api_umbrella_backend_host;
+    # proxy_pass $api_umbrella_backend_scheme://api_umbrella_${api_umbrella_backend_id}_backend;
+    location / {
+      proxy_buffering off;
+      proxy_set_header Host $http_x_api_umbrella_backend_host;
+      proxy_pass $http_x_api_umbrella_backend_scheme://api_umbrella_${http_x_api_umbrella_backend_id}_backend;
+    }
   }
 }

@@ -85,6 +85,10 @@ return function(user)
     ngx.var.api_umbrella_backend_host = api["backend_host"] or ngx.ctx.host
     ngx.var.api_umbrella_backend_id = api["_id"]
 
+    ngx.req.set_header("X-Api-Umbrella-Backend-Scheme", ngx.var.api_umbrella_backend_scheme)
+    ngx.req.set_header("X-Api-Umbrella-Backend-Host", ngx.var.api_umbrella_backend_host)
+    ngx.req.set_header("X-Api-Umbrella-Backend-Id", ngx.var.api_umbrella_backend_id)
+
     return api, url_match
   else
     return nil, nil, "not_found"
