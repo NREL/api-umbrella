@@ -24,7 +24,7 @@ describe('ApiUmbrellaGatekeper', function() {
             ]
           },
           {
-            'frontend_host': 'localhost:9333',
+            'frontend_host': 'localhost:9080',
             'backend_host': 'example.com',
             '_id': 'localhost-with-port',
             'url_matches': [

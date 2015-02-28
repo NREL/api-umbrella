@@ -39,7 +39,7 @@ before(function nginxStart(done) {
   async.until(function() {
     return healthy;
   }, function(callback) {
-    request.get('http://127.0.0.1:9333/api-umbrella/v1/health', function(error, response, body) {
+    request.get('http://127.0.0.1:9080/api-umbrella/v1/health', function(error, response, body) {
       if(!error && response && response.statusCode === 200) {
         var data = JSON.parse(body);
         if(data['status'] === 'green') {

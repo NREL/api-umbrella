@@ -33,7 +33,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }, headerOverrides),
         };
 
-        request.get('http://localhost:9333' + path, options, function(error, response) {
+        request.get('http://localhost:9080' + path, options, function(error, response) {
           response.headers['x-ratelimit-limit'].should.eql(limit.toString());
           response.headers['x-ratelimit-remaining'].should.eql((limit - 1).toString());
           done();
@@ -50,7 +50,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }, headerOverrides),
         };
 
-        request.get('http://localhost:9333' + path, options, function(error, response) {
+        request.get('http://localhost:9080' + path, options, function(error, response) {
           should.not.exist(response.headers['x-ratelimit-limit']);
           should.not.exist(response.headers['x-ratelimit-remaining']);
           done();
@@ -68,12 +68,12 @@ describe('ApiUmbrellaGatekeper', function() {
         };
 
         async.times(limit, function(index, asyncCallback) {
-          request.get('http://localhost:9333' + path, options, function(error, response) {
+          request.get('http://localhost:9080' + path, options, function(error, response) {
             response.statusCode.should.eql(200);
             asyncCallback(null);
           });
         }.bind(this), function() {
-          request.get('http://localhost:9333' + path, options, function(error, response) {
+          request.get('http://localhost:9080' + path, options, function(error, response) {
             response.statusCode.should.eql(429);
             done();
           });
@@ -89,7 +89,7 @@ describe('ApiUmbrellaGatekeper', function() {
         };
 
         async.times(limit, function(index, asyncCallback) {
-          request.get('http://localhost:9333' + path, options, function(error, response) {
+          request.get('http://localhost:9080' + path, options, function(error, response) {
             response.statusCode.should.eql(200);
             asyncCallback(null);
           });
@@ -97,7 +97,7 @@ describe('ApiUmbrellaGatekeper', function() {
           Factory.create('api_user', function(user) {
             options.headers['X-Api-Key'] = user.api_key;
 
-            request.get('http://localhost:9333' + path, options, function(error, response) {
+            request.get('http://localhost:9080' + path, options, function(error, response) {
               response.statusCode.should.eql(200);
               done();
             });
@@ -122,12 +122,12 @@ describe('ApiUmbrellaGatekeper', function() {
         };
 
         async.times(limit, function(index, asyncCallback) {
-          request.get('http://localhost:9333' + path, options, function(error, response) {
+          request.get('http://localhost:9080' + path, options, function(error, response) {
             response.statusCode.should.eql(200);
             asyncCallback(null);
           });
         }, function() {
-          request.get('http://localhost:9333' + path, options, function(error, response) {
+          request.get('http://localhost:9080' + path, options, function(error, response) {
             response.statusCode.should.eql(429);
             done();
           });
@@ -143,7 +143,7 @@ describe('ApiUmbrellaGatekeper', function() {
         };
 
         async.times(limit, function(index, asyncCallback) {
-          request.get('http://localhost:9333' + path, options, function(error, response) {
+          request.get('http://localhost:9080' + path, options, function(error, response) {
             response.statusCode.should.eql(200);
             asyncCallback(null);
           });
@@ -151,7 +151,7 @@ describe('ApiUmbrellaGatekeper', function() {
           global.autoIncrementingIpAddress = ippp.next(global.autoIncrementingIpAddress);
           options.headers['X-Forwarded-For'] = global.autoIncrementingIpAddress;
 
-          request.get('http://localhost:9333' + path, options, function(error, response) {
+          request.get('http://localhost:9080' + path, options, function(error, response) {
             response.statusCode.should.eql(200);
             done();
           });
@@ -174,7 +174,7 @@ describe('ApiUmbrellaGatekeper', function() {
         };
 
         async.times(limit + 1, function(index, asyncCallback) {
-          request.get('http://localhost:9333' + path, options, function(error, response) {
+          request.get('http://localhost:9080' + path, options, function(error, response) {
             response.statusCode.should.eql(200);
             asyncCallback(null);
           });
@@ -190,7 +190,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }, headerOverrides),
         };
 
-        request.get('http://localhost:9333' + path, options, function(error, response) {
+        request.get('http://localhost:9080' + path, options, function(error, response) {
           should.not.exist(response.headers['x-ratelimit-limit']);
           should.not.exist(response.headers['x-ratelimit-remaining']);
           done();
@@ -218,11 +218,11 @@ describe('ApiUmbrellaGatekeper', function() {
 
       it('rejects requests after the hourly limit has been exceeded', function(done) {
         async.times(10, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 0).getTime() } }, function() {
+          request.get('http://localhost:9080/hello.xml?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 0).getTime() } }, function() {
             asyncCallback(null);
           });
         }.bind(this), function() {
-          request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 2, 26, 59).getTime() } }, function(error, response, body) {
+          request.get('http://localhost:9080/hello.xml?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 2, 26, 59).getTime() } }, function(error, response, body) {
             response.statusCode.should.eql(429);
             body.should.include('<code>OVER_RATE_LIMIT</code>');
 
@@ -233,11 +233,11 @@ describe('ApiUmbrellaGatekeper', function() {
 
       it('allows requests again in the next hour after the rate limit has been exceeded', function(done) {
         async.times(11, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 0).getTime() } }, function() {
+          request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 0).getTime() } }, function() {
             asyncCallback(null);
           });
         }.bind(this), function() {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 2, 27, 0).getTime() } }, function(error, response, body) {
+          request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 2, 27, 0).getTime() } }, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('Hello World');
 
@@ -250,7 +250,7 @@ describe('ApiUmbrellaGatekeper', function() {
         async.series([
           function(callback) {
             async.timesSeries(2, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 1, 43, 0).getTime() } }, function(error, response) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 1, 43, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(200);
                 timesCallback(null);
               });
@@ -258,7 +258,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }.bind(this),
           function(callback) {
             async.timesSeries(3, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 3, 0).getTime() } }, function(error, response) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 3, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(200);
                 timesCallback(null);
               });
@@ -266,7 +266,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }.bind(this),
           function(callback) {
             async.timesSeries(5, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 42, 0).getTime() } }, function(error, response) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 42, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(200);
                 timesCallback(null);
               });
@@ -274,7 +274,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }.bind(this),
           function(callback) {
             async.timesSeries(1, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 42, 0).getTime() } }, function(error, response) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 42, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(429);
                 timesCallback(null);
               });
@@ -282,7 +282,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }.bind(this),
           function(callback) {
             async.timesSeries(2, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 43, 0).getTime() } }, function(error, response) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 43, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(200);
                 timesCallback(null);
               });
@@ -290,7 +290,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }.bind(this),
           function(callback) {
             async.timesSeries(1, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 43, 0).getTime() } }, function(error, response) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 2, 43, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(429);
                 timesCallback(null);
               });
@@ -298,7 +298,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }.bind(this),
           function(callback) {
             async.timesSeries(1, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 3, 2, 0).getTime() } }, function(error, response) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 3, 2, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(429);
                 timesCallback(null);
               });
@@ -306,7 +306,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }.bind(this),
           function(callback) {
             async.timesSeries(3, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 3, 3, 0).getTime() } }, function(error, response) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 3, 3, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(200);
                 timesCallback(null);
               });
@@ -314,7 +314,7 @@ describe('ApiUmbrellaGatekeper', function() {
           }.bind(this),
           function(callback) {
             async.timesSeries(1, function(index, timesCallback) {
-              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 3, 3, 0).getTime() } }, function(error, response) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 2, 3, 3, 0).getTime() } }, function(error, response) {
                 response.statusCode.should.eql(429);
                 timesCallback(null);
               });
@@ -328,7 +328,7 @@ describe('ApiUmbrellaGatekeper', function() {
       it('allows rate limits to be changed live', function(done) {
         var config = require('api-umbrella-config').global();
 
-        var url = 'http://localhost:9333/hello?api_key=' + this.apiKey;
+        var url = 'http://localhost:9080/hello?api_key=' + this.apiKey;
         request.get(url, function(error, response) {
           response.headers['x-ratelimit-limit'].should.eql('10');
 
@@ -370,11 +370,11 @@ describe('ApiUmbrellaGatekeper', function() {
 
       it('does not count excess queries in the smaller time window against the larger time window', function(done) {
         async.times(15, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 43).getTime() } }, function() {
+          request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 43).getTime() } }, function() {
             asyncCallback(null);
           });
         }.bind(this), function() {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 53).getTime() } }, function(error, response, body) {
+          request.get('http://localhost:9080/hello?api_key=' + this.apiKey, { headers: { 'X-Fake-Time': new Date(2013, 1, 1, 1, 27, 53).getTime() } }, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('Hello World');
 
@@ -390,7 +390,7 @@ describe('ApiUmbrellaGatekeper', function() {
       it('counts down the response header counters, but never returns negative', function(done) {
         var limit = 3;
         async.timesSeries(limit + 2, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello?api_key=' + this.apiKey, function(error, response) {
+          request.get('http://localhost:9080/hello?api_key=' + this.apiKey, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql(limit.toString());
 
             var remaining = limit - 1 - index;
@@ -432,7 +432,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
       it('returns rate limit headers for each request, even if the first limit has been exceeded', function(done) {
         async.timesSeries(15, function(index, asyncCallback) {
-          request.get('http://localhost:9333/hello.xml?api_key=' + this.apiKey, function(error, response) {
+          request.get('http://localhost:9080/hello.xml?api_key=' + this.apiKey, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql('10');
             asyncCallback(null);
           });
@@ -805,7 +805,7 @@ describe('ApiUmbrellaGatekeper', function() {
         it('allows rate limits to be changed live', function(done) {
           var config = require('api-umbrella-config').global();
 
-          var url = 'http://localhost:9333/info/lower/?api_key=' + this.apiKey;
+          var url = 'http://localhost:9080/info/lower/?api_key=' + this.apiKey;
           request.get(url, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql('3');
 
@@ -891,7 +891,7 @@ describe('ApiUmbrellaGatekeper', function() {
         itBehavesLikeApiKeyRateLimits('/hello', 10);
 
         it('allows rate limits to be changed live', function(done) {
-          var url = 'http://localhost:9333/hello?api_key=' + this.apiKey;
+          var url = 'http://localhost:9080/hello?api_key=' + this.apiKey;
           request.get(url, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql('10');
 

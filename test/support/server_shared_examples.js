@@ -21,7 +21,7 @@ global.autoIncrementingIpAddress = '10.0.0.0';
 _.merge(global.shared, {
   buildRequestOptions: function(path, apiKey, options) {
     return _.extend({
-        url: 'http://localhost:9333' + path,
+        url: 'http://localhost:9080' + path,
         qs: { api_key: apiKey },
       }, options);
   },

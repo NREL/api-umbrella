@@ -5,7 +5,7 @@ exec 2>&1
 
 if test ${1} = "start"; then
   echo "starting ${2}..."
-  exec runtool -e rc.env -c {{gatekeeper.dir}} nginx -p {{gatekeeper.dir}}/ -c {{gatekeeper.dir}}/conf/nginx.conf
+  exec runtool -e rc.env -c {{gatekeeper.dir}} nginx -p {{gatekeeper.dir}}/ -c {{etc_dir}}/nginx/router.conf
 fi
 
 exit 0

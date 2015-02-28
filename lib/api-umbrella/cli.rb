@@ -233,8 +233,11 @@ module ApiUmbrella
 
     def start_perp
       ENV["PATH"] = [
-        "/opt/openresty/nginx/sbin",
-        "/opt/perp/sbin",
+        "/opt/api-umbrella-openresty/embedded/openresty/nginx/sbin",
+        "/opt/api-umbrella-openresty/embedded/elasticsearch/bin",
+        "/opt/api-umbrella-openresty/embedded/jre/bin",
+        "/opt/api-umbrella-openresty/embedded/sbin",
+        "/opt/api-umbrella-openresty/embedded/bin",
         "/opt/api-umbrella/embedded/elasticsearch/bin",
         "/opt/api-umbrella/embedded/sbin",
         "/opt/api-umbrella/embedded/bin",

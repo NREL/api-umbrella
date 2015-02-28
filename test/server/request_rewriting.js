@@ -14,7 +14,7 @@ describe('request rewriting', function() {
     shared.runServer();
 
     it('strips the api key from the header', function(done) {
-      request.get('http://localhost:9333/info/', this.options, function(error, response, body) {
+      request.get('http://localhost:9080/info/', this.options, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         should.not.exist(data.headers['x-api-key']);
@@ -24,7 +24,7 @@ describe('request rewriting', function() {
     });
 
     it('strips the api key from the query string', function(done) {
-      request.get('http://localhost:9333/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://localhost:9080/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.url.query.should.eql({ 'test': 'test' });
@@ -34,7 +34,7 @@ describe('request rewriting', function() {
     });
 
     it('strips basic auth if api key was passed in as username', function(done) {
-      request.get('http://' + this.apiKey + ':@localhost:9333/info/', function(error, response, body) {
+      request.get('http://' + this.apiKey + ':@localhost:9080/info/', function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         should.not.exist(data.headers['authorization']);
@@ -44,7 +44,7 @@ describe('request rewriting', function() {
     });
 
     it('does not strip basic auth if the api key is passed via other means', function(done) {
-      request.get('http://foo:@localhost:9333/info/?api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://foo:@localhost:9080/info/?api_key=' + this.apiKey, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         should.exist(data.headers['authorization']);
@@ -54,7 +54,7 @@ describe('request rewriting', function() {
     });
 
     it('strips the api key from the query string even if the query string contains invalid encoded params', function(done) {
-      request.get('http://localhost:9333/info/?test=foo%26%20bar&url=%ED%A1%BC&api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://localhost:9080/info/?test=foo%26%20bar&url=%ED%A1%BC&api_key=' + this.apiKey, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         Object.keys(data.url.query).sort().should.eql([
@@ -89,7 +89,7 @@ describe('request rewriting', function() {
     });
 
     it('strips the api key from the header', function(done) {
-      request.get('http://localhost:9333/info/', this.options, function(error, response, body) {
+      request.get('http://localhost:9080/info/', this.options, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         should.not.exist(data.headers['x-api-key']);
@@ -99,7 +99,7 @@ describe('request rewriting', function() {
     });
 
     it('strips the api key from the query string', function(done) {
-      request.get('http://localhost:9333/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://localhost:9080/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.url.query.should.eql({ 'test': 'test' });
@@ -109,7 +109,7 @@ describe('request rewriting', function() {
     });
 
     it('strips basic auth if api key was passed in as username despite not being required', function(done) {
-      request.get('http://' + this.apiKey + ':@localhost:9333/info/', function(error, response, body) {
+      request.get('http://' + this.apiKey + ':@localhost:9080/info/', function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         should.not.exist(data.headers['authorization']);
@@ -123,7 +123,7 @@ describe('request rewriting', function() {
     // assumes the username is a key which then isn't valid). I don't think
     // this is the behavior we want, so need to figure out how to address this.
     xit('does not strip basic auth if it contains non-api key auth', function(done) {
-      request.get('http://foo:@localhost:9333/info/', function(error, response, body) {
+      request.get('http://foo:@localhost:9080/info/', function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         console.info(data);
@@ -154,7 +154,7 @@ describe('request rewriting', function() {
     });
 
     it('keeps the api key in the header', function(done) {
-      request.get('http://localhost:9333/info/', this.options, function(error, response, body) {
+      request.get('http://localhost:9080/info/', this.options, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.headers['x-api-key'].should.eql(this.apiKey);
@@ -164,7 +164,7 @@ describe('request rewriting', function() {
     });
 
     it('passes the api key in the header even if passed in via other means', function(done) {
-      request.get('http://localhost:9333/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://localhost:9080/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.headers['x-api-key'].should.eql(this.apiKey);
@@ -174,7 +174,7 @@ describe('request rewriting', function() {
     });
 
     it('strips the api key from the query string', function(done) {
-      request.get('http://localhost:9333/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://localhost:9080/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.url.query.should.eql({ 'test': 'test' });
@@ -204,7 +204,7 @@ describe('request rewriting', function() {
     });
 
     it('keeps the api key in the query string', function(done) {
-      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, function(error, response, body) {
         var data = JSON.parse(body);
         data.url.query.api_key.should.eql(this.apiKey);
 
@@ -213,7 +213,7 @@ describe('request rewriting', function() {
     });
 
     it('passes the api key in the query string even if passed in via other means', function(done) {
-      request.get('http://localhost:9333/info/', this.options, function(error, response, body) {
+      request.get('http://localhost:9080/info/', this.options, function(error, response, body) {
         var data = JSON.parse(body);
         data.url.query.api_key.should.eql(this.apiKey);
 
@@ -226,7 +226,7 @@ describe('request rewriting', function() {
     shared.runServer();
 
     it('passes a header containing the user id to the backend', function(done) {
-      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, function(error, response, body) {
         var data = JSON.parse(body);
         data.headers['x-api-user-id'].should.eql(this.user._id);
         data.headers['x-api-user-id'].length.should.eql(36);
@@ -239,7 +239,7 @@ describe('request rewriting', function() {
       Factory.create('api_user', { _id: mongoose.Types.ObjectId() }, function(user) {
         user._id.should.be.instanceOf(mongoose.Types.ObjectId);
 
-        request.get('http://localhost:9333/info/?api_key=' + user.api_key, function(error, response, body) {
+        request.get('http://localhost:9080/info/?api_key=' + user.api_key, function(error, response, body) {
           var data = JSON.parse(body);
 
           data.headers['x-api-user-id'].should.eql(user._id.toHexString());
@@ -257,7 +257,7 @@ describe('request rewriting', function() {
         }
       });
 
-      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+      request.get('http://localhost:9080/info/', options, function(error, response, body) {
         var data = JSON.parse(body);
         data.headers['x-api-user-id'].should.not.eql('bogus');
         data.headers['x-api-user-id'].length.should.eql(36);
@@ -273,7 +273,7 @@ describe('request rewriting', function() {
         }
       });
 
-      request.get('http://localhost:9333/info/', options, function(error, response, body) {
+      request.get('http://localhost:9080/info/', options, function(error, response, body) {
         var data = JSON.parse(body);
         data.headers['x-api-user-id'].should.not.eql('bogus');
         data.headers['x-api-user-id'].length.should.eql(36);
@@ -290,7 +290,7 @@ describe('request rewriting', function() {
 
     it('passes a header defining the user\'s roles to the backend', function(done) {
       Factory.create('api_user', { roles: ['private'] }, function(user) {
-        request.get('http://localhost:9333/info/?api_key=' + user.api_key, function(error, response, body) {
+        request.get('http://localhost:9080/info/?api_key=' + user.api_key, function(error, response, body) {
           var data = JSON.parse(body);
           data.headers['x-api-roles'].should.eql('private');
 
@@ -301,7 +301,7 @@ describe('request rewriting', function() {
 
     it('delimits multiple roles with commas', function(done) {
       Factory.create('api_user', { roles: ['private', 'foo', 'bar'] }, function(user) {
-        request.get('http://localhost:9333/info/?api_key=' + user.api_key, function(error, response, body) {
+        request.get('http://localhost:9080/info/?api_key=' + user.api_key, function(error, response, body) {
           var data = JSON.parse(body);
           data.headers['x-api-roles'].should.eql('private,foo,bar');
 
@@ -319,7 +319,7 @@ describe('request rewriting', function() {
           }
         };
 
-        request.get('http://localhost:9333/info/', options, function(error, response, body) {
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
           var data = JSON.parse(body);
           should.not.exist(data.headers['x-api-roles']);
           should.not.exist(data.headers['X-Api-Roles']);
@@ -338,7 +338,7 @@ describe('request rewriting', function() {
           }
         };
 
-        request.get('http://localhost:9333/info/', options, function(error, response, body) {
+        request.get('http://localhost:9080/info/', options, function(error, response, body) {
           var data = JSON.parse(body);
           should.not.exist(data.headers['x-api-roles']);
           should.not.exist(data.headers['X-Api-Roles']);
@@ -387,7 +387,7 @@ describe('request rewriting', function() {
     });
 
     it('sets the host header', function(done) {
-      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, function(error, response, body) {
         var data = JSON.parse(body);
         data.headers.host.should.eql('example.com');
 
@@ -396,7 +396,7 @@ describe('request rewriting', function() {
     });
 
     it('includes the port number when given', function(done) {
-      request.get('http://localhost:9333/info/port?api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://localhost:9080/info/port?api_key=' + this.apiKey, function(error, response, body) {
         var data = JSON.parse(body);
         data.headers.host.should.eql('example.com:8080');
 
@@ -405,9 +405,9 @@ describe('request rewriting', function() {
     });
 
     it('leaves the host header untouched when a backend replacement is not present', function(done) {
-      request.get('http://localhost:9333/info/none?api_key=' + this.apiKey, function(error, response, body) {
+      request.get('http://localhost:9080/info/none?api_key=' + this.apiKey, function(error, response, body) {
         var data = JSON.parse(body);
-        data.headers.host.should.eql('localhost:9333');
+        data.headers.host.should.eql('localhost:9080');
 
         done();
       }.bind(this));
@@ -444,7 +444,7 @@ describe('request rewriting', function() {
 
     describe('default', function() {
       it('appends the query string', function(done) {
-        request.get('http://localhost:9333/info/?test=test', this.options, function(error, response, body) {
+        request.get('http://localhost:9080/info/?test=test', this.options, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
             'test': 'test',
@@ -457,7 +457,7 @@ describe('request rewriting', function() {
       });
 
       it('overrides existing query parameters', function(done) {
-        request.get('http://localhost:9333/info/?test=test&add_param1=original', this.options, function(error, response, body) {
+        request.get('http://localhost:9080/info/?test=test&add_param1=original', this.options, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
             'test': 'test',
@@ -472,7 +472,7 @@ describe('request rewriting', function() {
 
     describe('sub-url match', function() {
       it('overrides the default query string settings', function(done) {
-        request.get('http://localhost:9333/info/sub/', this.options, function(error, response, body) {
+        request.get('http://localhost:9080/info/sub/', this.options, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
             'add_param2': 'overridden',
@@ -524,7 +524,7 @@ describe('request rewriting', function() {
 
     describe('default', function() {
       it('sets header values', function(done) {
-        request.get('http://localhost:9333/info/?api_key=' + this.apiKey, function(error, response, body) {
+        request.get('http://localhost:9080/info/?api_key=' + this.apiKey, function(error, response, body) {
           var data = JSON.parse(body);
           stripStandardHeaders(data.headers).should.eql({
             'x-add1': 'test1',
@@ -542,7 +542,7 @@ describe('request rewriting', function() {
           },
         };
 
-        request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+        request.get('http://localhost:9080/info/?api_key=' + this.apiKey, options, function(error, response, body) {
           var data = JSON.parse(body);
           stripStandardHeaders(data.headers).should.eql({
             'x-add1': 'test1',
@@ -556,7 +556,7 @@ describe('request rewriting', function() {
 
     describe('sub-url match', function() {
       it('overrides the default header settings', function(done) {
-        request.get('http://localhost:9333/info/sub/?api_key=' + this.apiKey, function(error, response, body) {
+        request.get('http://localhost:9080/info/sub/?api_key=' + this.apiKey, function(error, response, body) {
           var data = JSON.parse(body);
           stripStandardHeaders(data.headers).should.eql({
             'x-add2': 'overridden',
@@ -618,7 +618,7 @@ describe('request rewriting', function() {
           },
         };
 
-        request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+        request.get('http://localhost:9080/info/?api_key=' + this.apiKey, options, function(error, response, body) {
           var data = JSON.parse(body);
           stripStandardHeaders(data.headers).should.eql({
             'x-dynamic': '(dynamic-dynamic)',
@@ -642,7 +642,7 @@ describe('request rewriting', function() {
           },
         };
 
-        request.get('http://localhost:9333/info/sub/?api_key=' + this.apiKey, options, function(error, response, body) {
+        request.get('http://localhost:9080/info/sub/?api_key=' + this.apiKey, options, function(error, response, body) {
           var data = JSON.parse(body);
           stripStandardHeaders(data.headers).should.eql({
             'x-dynamic-sub': 'dynamic',
@@ -693,7 +693,7 @@ describe('request rewriting', function() {
 
     describe('default', function() {
       it('sets the http basic authentication', function(done) {
-        request.get('http://localhost:9333/auth/?api_key=' + this.apiKey, function(error, response, body) {
+        request.get('http://localhost:9080/auth/?api_key=' + this.apiKey, function(error, response, body) {
           response.statusCode.should.eql(200);
           body.should.eql('somebody');
 
@@ -709,7 +709,7 @@ describe('request rewriting', function() {
           },
         };
 
-        request.get('http://localhost:9333/auth/?api_key=' + this.apiKey, options, function(error, response, body) {
+        request.get('http://localhost:9080/auth/?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           body.should.eql('somebody');
 
@@ -720,7 +720,7 @@ describe('request rewriting', function() {
 
     describe('sub-url match', function() {
       it('overrides the default basic auth settings', function(done) {
-        request.get('http://localhost:9333/auth/sub/?api_key=' + this.apiKey, function(error, response, body) {
+        request.get('http://localhost:9080/auth/sub/?api_key=' + this.apiKey, function(error, response, body) {
           response.statusCode.should.eql(200);
           body.should.eql('anotheruser');
 
@@ -729,7 +729,7 @@ describe('request rewriting', function() {
       });
 
       it('passes an unthorized error up if the user/pass in the settings are wrong', function(done) {
-        request.get('http://localhost:9333/auth/invalid/?api_key=' + this.apiKey, function(error, response, body) {
+        request.get('http://localhost:9080/auth/invalid/?api_key=' + this.apiKey, function(error, response, body) {
           response.statusCode.should.eql(401);
           body.should.eql('Unauthorized');
 
@@ -877,7 +877,7 @@ describe('request rewriting', function() {
 
     describe('route patterns', function() {
       it('matches an example with a mixture of path and query string params', function(done) {
-        request.get('http://localhost:9333/info/aaa/zzz/cat/10.json?bar=hello&foo=goodbye', this.options, function(error, response, body) {
+        request.get('http://localhost:9080/info/aaa/zzz/cat/10.json?bar=hello&foo=goodbye', this.options, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
             'wildcard': 'aaa/zzz',
@@ -894,7 +894,7 @@ describe('request rewriting', function() {
 
       describe('query string argument matching', function() {
         it('matches, but does not pass along the query string when no query string is specified on the route pattern', function(done) {
-          request.get('http://localhost:9333/info/no-query-string-route?bar=hello&foo=goodbye', this.options, function(error, response, body) {
+          request.get('http://localhost:9080/info/no-query-string-route?bar=hello&foo=goodbye', this.options, function(error, response, body) {
             var data = JSON.parse(body);
             data.url.pathname.should.eql('/info/matched-no-query-string-route');
             data.url.query.should.eql({});
@@ -904,11 +904,11 @@ describe('request rewriting', function() {
 
         describe('noncapturing matches', function() {
           it('matches arguments in any order', function(done) {
-            request.get('http://localhost:9333/info/args?foo=1&bar=2', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/args?foo=1&bar=2', this.options, function(error, response, body) {
               var data = JSON.parse(body);
               data.url.path.should.eql('/info/matched-args');
 
-              request.get('http://localhost:9333/info/args?bar=2&foo=1', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/info/args?bar=2&foo=1', this.options, function(error, response, body) {
                 data = JSON.parse(body);
                 data.url.path.should.eql('/info/matched-args');
 
@@ -918,7 +918,7 @@ describe('request rewriting', function() {
           });
 
           it('does not match if extra arguments are present', function(done) {
-            request.get('http://localhost:9333/info/args?foo=1&bar=2&aaa=3', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/args?foo=1&bar=2&aaa=3', this.options, function(error, response, body) {
               var data = JSON.parse(body);
               data.url.path.should.eql('/info/args?foo=1&bar=2&aaa=3');
               done();
@@ -926,7 +926,7 @@ describe('request rewriting', function() {
           });
 
           it('does not match if matched argument is given multiple times', function(done) {
-            request.get('http://localhost:9333/info/args?foo=1&bar=2&bar=3', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/args?foo=1&bar=2&bar=3', this.options, function(error, response, body) {
               var data = JSON.parse(body);
               data.url.path.should.eql('/info/args?foo=1&bar=2&bar=3');
               done();
@@ -934,7 +934,7 @@ describe('request rewriting', function() {
           });
 
           it('does not match if not all the arguments are present', function(done) {
-            request.get('http://localhost:9333/info/args?foo=1', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/args?foo=1', this.options, function(error, response, body) {
               var data = JSON.parse(body);
               data.url.path.should.eql('/info/args?foo=1');
               done();
@@ -944,7 +944,7 @@ describe('request rewriting', function() {
 
         describe('capturing matches', function() {
           it('matches and replaces named query string arguments', function(done) {
-            request.get('http://localhost:9333/info/named-arg?foo=hello', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/named-arg?foo=hello', this.options, function(error, response, body) {
               var data = JSON.parse(body);
               data.url.path.should.eql('/info/matched-named-arg?bar=hello');
               done();
@@ -952,7 +952,7 @@ describe('request rewriting', function() {
           });
 
           it('comma-delimits the replacement for multiple matches on a named query string argument', function(done) {
-            request.get('http://localhost:9333/info/named-arg?foo=hello3&foo=hello1&foo=hello2', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/named-arg?foo=hello3&foo=hello1&foo=hello2', this.options, function(error, response, body) {
               var data = JSON.parse(body);
 
               // JS encodes the commas, Lua does not. Make this test work in
@@ -971,11 +971,11 @@ describe('request rewriting', function() {
           });
 
           it('matches arguments in any order', function(done) {
-            request.get('http://localhost:9333/info/named-args?foo=1&bar=2', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/named-args?foo=1&bar=2', this.options, function(error, response, body) {
               var data = JSON.parse(body);
               data.url.path.should.eql('/info/matched-named-args?bar=2&foo=1');
 
-              request.get('http://localhost:9333/info/named-args?bar=2&foo=1', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/info/named-args?bar=2&foo=1', this.options, function(error, response, body) {
                 data = JSON.parse(body);
                 data.url.path.should.eql('/info/matched-named-args?bar=2&foo=1');
 
@@ -985,7 +985,7 @@ describe('request rewriting', function() {
           });
 
           it('does not match if extra arguments are present', function(done) {
-            request.get('http://localhost:9333/info/named-args?foo=1&bar=2&aaa=3', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/named-args?foo=1&bar=2&aaa=3', this.options, function(error, response, body) {
               var data = JSON.parse(body);
               data.url.path.should.eql('/info/named-args?foo=1&bar=2&aaa=3');
               done();
@@ -993,7 +993,7 @@ describe('request rewriting', function() {
           });
 
           it('does not match if not all the arguments are present', function(done) {
-            request.get('http://localhost:9333/info/named-args?foo=1', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/named-args?foo=1', this.options, function(error, response, body) {
               var data = JSON.parse(body);
               data.url.path.should.eql('/info/named-args?foo=1');
               done();
@@ -1001,7 +1001,7 @@ describe('request rewriting', function() {
           });
 
           it('maintains url encoding', function(done) {
-            request.get('http://localhost:9333/info/a/b/c/d/encoding-test?foo=hello+space+test&bar=1%262*3%254%2F5&add_path=x%2Fy%2Fz', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/a/b/c/d/encoding-test?foo=hello+space+test&bar=1%262*3%254%2F5&add_path=x%2Fy%2Fz', this.options, function(error, response, body) {
               var data = JSON.parse(body);
               data.url.path.should.eql('/info/a/b/c/d/x/y/z/matched-encoding-test?bar=1%262*3%254%2F5&foo=hello%20space%20test&path=a&wildcard=b%2Fc%2Fd&add_path=x%2Fy%2Fz');
               data.url.query.should.eql({
@@ -1017,7 +1017,7 @@ describe('request rewriting', function() {
 
           // Maybe this is something we should support, though?
           it('does not support named wildcards in the query string', function(done) {
-            request.get('http://localhost:9333/info/named-wildcard-query-string-route?bar=hello&foo=goodbye', this.options, function(error, response, body) {
+            request.get('http://localhost:9080/info/named-wildcard-query-string-route?bar=hello&foo=goodbye', this.options, function(error, response, body) {
               var data = JSON.parse(body);
               data.url.path.should.eql('/info/named-wildcard-query-string-route?bar=hello&foo=goodbye');
               done();
@@ -1028,7 +1028,7 @@ describe('request rewriting', function() {
 
       describe('path matching', function() {
         it('captures named path parameters', function(done) {
-          request.get('http://localhost:9333/info/named-path/foo/10', this.options, function(error, response, body) {
+          request.get('http://localhost:9080/info/named-path/foo/10', this.options, function(error, response, body) {
             var data = JSON.parse(body);
             data.url.path.should.eql('/info/matched-named-path?dir=foo&id=10');
             done();
@@ -1036,7 +1036,7 @@ describe('request rewriting', function() {
         });
 
         it('does not match multiple levels of path heirarchy with named path parameters', function(done) {
-          request.get('http://localhost:9333/info/named-path/foo/bar/10', this.options, function(error, response, body) {
+          request.get('http://localhost:9080/info/named-path/foo/bar/10', this.options, function(error, response, body) {
             var data = JSON.parse(body);
             data.url.path.should.eql('/info/named-path/foo/bar/10');
             done();
@@ -1044,7 +1044,7 @@ describe('request rewriting', function() {
         });
 
         it('captures file extensions as named path parameters', function(done) {
-          request.get('http://localhost:9333/info/named-path-ext.json', this.options, function(error, response, body) {
+          request.get('http://localhost:9080/info/named-path-ext.json', this.options, function(error, response, body) {
             var data = JSON.parse(body);
             data.url.path.should.eql('/info/matched-named-path-ext?extension=json');
             done();
@@ -1052,7 +1052,7 @@ describe('request rewriting', function() {
         });
 
         it('captures multiple wildcards in a single route', function(done) {
-          request.get('http://localhost:9333/info/a/b/c/wildcard/d/e/', this.options, function(error, response, body) {
+          request.get('http://localhost:9080/info/a/b/c/wildcard/d/e/', this.options, function(error, response, body) {
             var data = JSON.parse(body);
             data.url.path.should.eql('/info/d/e/matched-wildcard/a/b/c?before=a%2Fb%2Fc&after=d%2Fe');
             done();
@@ -1062,56 +1062,56 @@ describe('request rewriting', function() {
         it('ignores trailing slashes for route matching purposes', function(done) {
           async.parallel([
             function(callback) {
-              request.get('http://localhost:9333/info/with-trailing-slash/', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/info/with-trailing-slash/', this.options, function(error, response, body) {
                 var data = JSON.parse(body);
                 data.url.pathname.should.eql('/info/matched-with-trailing-slash');
                 callback();
               });
             }.bind(this),
             function(callback) {
-              request.get('http://localhost:9333/info/with-trailing-slash', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/info/with-trailing-slash', this.options, function(error, response, body) {
                 var data = JSON.parse(body);
                 data.url.pathname.should.eql('/info/matched-with-trailing-slash');
                 callback();
               });
             }.bind(this),
             function(callback) {
-              request.get('http://localhost:9333/info/without-trailing-slash/', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/info/without-trailing-slash/', this.options, function(error, response, body) {
                 var data = JSON.parse(body);
                 data.url.pathname.should.eql('/info/matched-without-trailing-slash');
                 callback();
               });
             }.bind(this),
             function(callback) {
-              request.get('http://localhost:9333/info/without-trailing-slash', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/info/without-trailing-slash', this.options, function(error, response, body) {
                 var data = JSON.parse(body);
                 data.url.pathname.should.eql('/info/matched-without-trailing-slash');
                 callback();
               });
             }.bind(this),
             function(callback) {
-              request.get('http://localhost:9333/info/with-trailing-slash/?query=foo', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/info/with-trailing-slash/?query=foo', this.options, function(error, response, body) {
                 var data = JSON.parse(body);
                 data.url.pathname.should.eql('/info/matched-with-trailing-slash-query');
                 callback();
               });
             }.bind(this),
             function(callback) {
-              request.get('http://localhost:9333/info/with-trailing-slash?query=foo', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/info/with-trailing-slash?query=foo', this.options, function(error, response, body) {
                 var data = JSON.parse(body);
                 data.url.pathname.should.eql('/info/matched-with-trailing-slash-query');
                 callback();
               });
             }.bind(this),
             function(callback) {
-              request.get('http://localhost:9333/info/without-trailing-slash/?query=foo', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/info/without-trailing-slash/?query=foo', this.options, function(error, response, body) {
                 var data = JSON.parse(body);
                 data.url.pathname.should.eql('/info/matched-without-trailing-slash-query');
                 callback();
               });
             }.bind(this),
             function(callback) {
-              request.get('http://localhost:9333/info/without-trailing-slash?query=foo', this.options, function(error, response, body) {
+              request.get('http://localhost:9080/info/without-trailing-slash?query=foo', this.options, function(error, response, body) {
                 var data = JSON.parse(body);
                 data.url.pathname.should.eql('/info/matched-without-trailing-slash-query');
                 callback();
@@ -1124,7 +1124,7 @@ describe('request rewriting', function() {
 
     describe('regular expressions', function() {
       it('replaces only the matched part of the regex', function(done) {
-        request.get('http://localhost:9333/info/?state=CO&api_key=' + this.apiKey, function(error, response, body) {
+        request.get('http://localhost:9080/info/?state=CO&api_key=' + this.apiKey, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
             region: 'US-CO',
@@ -1135,7 +1135,7 @@ describe('request rewriting', function() {
       });
 
       it('replaces all instances of the regex', function(done) {
-        request.get('http://localhost:9333/info/state=CO/?state=CO&api_key=' + this.apiKey, function(error, response, body) {
+        request.get('http://localhost:9080/info/state=CO/?state=CO&api_key=' + this.apiKey, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.pathname.should.eql('/info/region=US-CO/');
           data.url.query.should.eql({
@@ -1147,7 +1147,7 @@ describe('request rewriting', function() {
       });
 
       it('matches the regex case insensitively', function(done) {
-        request.get('http://localhost:9333/info/?STATE=CO&api_key=' + this.apiKey, function(error, response, body) {
+        request.get('http://localhost:9080/info/?STATE=CO&api_key=' + this.apiKey, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
             region: 'US-CO',
@@ -1160,7 +1160,7 @@ describe('request rewriting', function() {
 
     describe('ordering', function() {
       it('matches after the api key has been removed from the query string', function(done) {
-        request.get('http://localhost:9333/info/?api_key=' + this.apiKey + '&foo=bar', function(error, response, body) {
+        request.get('http://localhost:9080/info/?api_key=' + this.apiKey + '&foo=bar', function(error, response, body) {
           var data = JSON.parse(body);
           data.url.path.should.eql('/info/?foo=moo');
 
@@ -1169,7 +1169,7 @@ describe('request rewriting', function() {
       });
 
       it('matches after url prefixes have been replaced', function(done) {
-        request.get('http://localhost:9333/info/prefix/?api_key=' + this.apiKey, function(error, response, body) {
+        request.get('http://localhost:9080/info/prefix/?api_key=' + this.apiKey, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.pathname.should.eql('/info/second-replacement/');
 
@@ -1178,7 +1178,7 @@ describe('request rewriting', function() {
       });
 
       it('chains multiple replacements in given order', function(done) {
-        request.get('http://localhost:9333/info/route/hello?state=CO&api_key=' + this.apiKey, function(error, response, body) {
+        request.get('http://localhost:9080/info/route/hello?state=CO&api_key=' + this.apiKey, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.path.should.eql('/info/after-route/hello?region=US-CO');
 
@@ -1188,7 +1188,7 @@ describe('request rewriting', function() {
     });
 
     it('matches based on the http method', function(done) {
-      var url = 'http://localhost:9333/info/?post_only=before&api_key=' + this.apiKey;
+      var url = 'http://localhost:9080/info/?post_only=before&api_key=' + this.apiKey;
       request.get(url, function(error, response, body) {
         var data = JSON.parse(body);
         data.url.query.post_only.should.eql('before');
@@ -1213,7 +1213,7 @@ describe('request rewriting', function() {
         }
       };
 
-      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, options, function(error, response, body) {
         var data = JSON.parse(body);
         should.not.exist(data.headers['cookie']);
         done();
@@ -1227,7 +1227,7 @@ describe('request rewriting', function() {
         }
       };
 
-      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, options, function(error, response, body) {
         var data = JSON.parse(body);
         should.not.exist(data.headers['cookie']);
         done();
@@ -1241,7 +1241,7 @@ describe('request rewriting', function() {
         }
       };
 
-      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, options, function(error, response, body) {
         var data = JSON.parse(body);
         data.headers['cookie'].should.eql('moo=boo; foo=bar');
         done();
@@ -1255,7 +1255,7 @@ describe('request rewriting', function() {
         }
       };
 
-      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, options, function(error, response, body) {
         var data = JSON.parse(body);
         data.headers['cookie'].should.eql('moo=boo; foo=bar');
         done();
@@ -1269,7 +1269,7 @@ describe('request rewriting', function() {
         }
       };
 
-      request.get('http://localhost:9333/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, options, function(error, response, body) {
         var data = JSON.parse(body);
         data.headers['cookie'].should.eql('foo=bar; moo=boo');
         done();
@@ -1292,7 +1292,7 @@ describe('request rewriting', function() {
       var curl = new Curler();
       curl.request({
         method: 'OPTIONS',
-        url: 'http://localhost:9333/info/?test=test&api_key=' + this.apiKey,
+        url: 'http://localhost:9080/info/?test=test&api_key=' + this.apiKey,
       }, function(error, response, body) {
         should.not.exist(error);
         response.statusCode.should.eql(200);
@@ -1306,7 +1306,7 @@ describe('request rewriting', function() {
       var curl = new Curler();
       curl.request({
         method: 'OPTIONS',
-        url: 'http://localhost:9333/info/?test=test&api_key=' + this.apiKey,
+        url: 'http://localhost:9080/info/?test=test&api_key=' + this.apiKey,
         headers: {
           'Transfer-Encoding': 'chunked',
           'Content-Length': '4',
