@@ -25,7 +25,7 @@ var express = require('express');
     // requests get opened up.
     setTimeout(function() {
       res.json(connections);
-    }, 50);
+    }, 200);
   });
 
   var server = app.listen(port);

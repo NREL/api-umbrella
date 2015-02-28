@@ -207,11 +207,23 @@ describe('proxying', function() {
       });
     });
 
-    it('places no distinct limit on the number of individual lines in the header as long as', function(done) {
-      requestOfHeaderSize({ size: 12000, lineLength: 24, numHeaders: 150, apiKey: this.apiKey }, function(response, body) {
+    // Varnish has a limit on the number of HTTP header lines. This is 64 lines
+    // by default. But because our stack adds a variety of extra headers (eg,
+    // x-forwarded-for, x-api-umbrella-key, etc), by the time the request gets
+    // to Varnish, it means we can really only pass 54 lines in as the original
+    // request.
+    it('allows up to 54 header lines (really 64 lines at the Varnish layer)', function(done) {
+      requestOfHeaderSize({ size: 12000, lineLength: 24, numHeaders: 54, apiKey: this.apiKey }, function(response, body) {
         response.statusCode.should.eql(200);
-        body.should.contain('"x-test150":');
-        body.should.not.contain('"x-test151":');
+        body.should.contain('"x-test54":');
+        body.should.not.contain('"x-test55":');
+        done();
+      });
+    });
+
+    it('returns 400 request entity too large when the number of header lines exceeds 54 (really 64 lines at the Varnish layer)', function(done) {
+      requestOfHeaderSize({ size: 12000, lineLength: 24, numHeaders: 55, apiKey: this.apiKey }, function(response) {
+        response.statusCode.should.eql(400);
         done();
       });
     });

@@ -59,8 +59,17 @@ describe('caching', function() {
 
   function actsLikeNotCacheable(baseUrl, options, done) {
     makeDuplicateRequests(baseUrl, options, function(error, result) {
-      result.firstResponse.headers['x-cache'].should.not.include('HIT');
-      result.secondResponse.headers['x-cache'].should.not.include('HIT');
+      if(result.firstResponse.headers['x-cache']) {
+        result.firstResponse.headers['x-cache'].should.not.include('HIT');
+      } else {
+        should.not.exist(result.firstResponse.headers['x-cache']);
+      }
+
+      if(result.secondResponse.headers['x-cache']) {
+        result.secondResponse.headers['x-cache'].should.not.include('HIT');
+      } else {
+        should.not.exist(result.secondResponse.headers['x-cache']);
+      }
 
       result.firstBody.length.should.be.greaterThan(0);
       result.firstBody.should.not.eql(result.secondBody);
@@ -71,7 +80,12 @@ describe('caching', function() {
 
   function actsLikeCacheable(baseUrl, options, done) {
     makeDuplicateRequests(baseUrl, options, function(error, result) {
-      result.firstResponse.headers['x-cache'].should.not.include('HIT');
+      if(result.firstResponse.headers['x-cache']) {
+        result.firstResponse.headers['x-cache'].should.not.include('HIT');
+      } else {
+        should.not.exist(result.firstResponse.headers['x-cache']);
+      }
+
       result.secondResponse.headers['x-cache'].should.include('HIT');
 
       result.firstBody.length.should.be.greaterThan(0);

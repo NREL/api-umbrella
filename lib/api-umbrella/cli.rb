@@ -191,7 +191,7 @@ module ApiUmbrella
         File.join(config["db_dir"], "mongodb"),
         File.join(config["db_dir"], "redis"),
         config["log_dir"],
-        config["run_dir"],
+        File.join(config["run_dir"], "varnish/api-umbrella"),
         config["tmp_dir"],
       ]
 

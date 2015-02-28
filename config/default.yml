@@ -39,10 +39,8 @@ gatekeeper:
     - basicAuthUsername
   target: "127.0.0.1:14010"
 varnish:
+  host: 127.0.0.1
   port: 14010
-  backend:
-    host: 127.0.0.1
-    port: 14011
 web:
   host: 127.0.0.1
   port: 14012
@@ -77,6 +75,7 @@ static_site:
   dir: /opt/api-umbrella/embedded/apps/static-site/current
 router:
   api_backends:
+    host: 127.0.0.1
     port: 14011
   dir: /opt/api-umbrella/embedded/apps/router/current
   trusted_proxies: []
