@@ -1321,4 +1321,28 @@ describe('request rewriting', function() {
       });
     });
   });
+
+  describe('url encoding', function() {
+    shared.runServer();
+
+    // Test for backslashes flipping to forward slashes:
+    // https://github.com/joyent/node/pull/8459
+    it('passes backslashes', function(done) {
+      // Use curl and not request for these tests, since the request library
+      // calls url.parse which has a bug that causes backslashes to become
+      // forward slashes https://github.com/joyent/node/pull/8459
+      var curl = new Curler();
+      curl.request({
+        method: 'GET',
+        url: 'http://localhost:9333/info/test\\backslash?test=\\hello&api_key=' + this.apiKey,
+      }, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.query.test.should.eql('\\hello');
+        data.url.pathname.should.eql('/info/test%5Cbackslash');
+        data.raw_url.should.contain(data.url.pathname);
+        done();
+      }.bind(this));
+    });
+  });
 });

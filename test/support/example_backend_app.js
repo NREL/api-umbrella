@@ -83,9 +83,11 @@ app.get('/chunked', function(req, res) {
 });
 
 app.all('/info/*', function(req, res) {
+  var rawUrl = req.protocol + '://' + req.hostname + req.url;
   res.json({
     headers: req.headers,
-    url: url.parse(req.protocol + '://' + req.hostname + req.url, true),
+    raw_url: rawUrl,
+    url: url.parse(rawUrl, true),
   });
 });
 
