@@ -5,6 +5,11 @@ keep-in-foreground
 pid-file={{run_dir}}/dnsmasq.pid
 
 log-queries
+# We normally like logging via stdout and dnsmasq does support this via the "-"
+# value. However, we lose timestamp information when logging to stdout, and
+# supervsiord's logging capabilities don't have a great way to add timestamps,
+# so instead we'll log directly to a file so we can keep the timestamp
+# information (since that's helpful for debugging).
 log-facility={{log_dir}}/dnsmasq.log
 log-async=25
 
