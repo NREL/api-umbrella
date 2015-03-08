@@ -59,6 +59,14 @@ describe('caching', function() {
 
   function actsLikeNotCacheable(baseUrl, options, done) {
     makeDuplicateRequests(baseUrl, options, function(error, result) {
+      if(!options.skipBodyCompare) {
+        result.firstBody.length.should.be.greaterThan(0);
+        result.firstBody.should.not.eql(result.secondBody);
+      }
+
+      result.firstResponse.headers['x-unique-output'].length.should.be.greaterThan(0);
+      result.firstResponse.headers['x-unique-output'].should.not.eql(result.secondResponse.headers['x-unique-output']);
+
       if(result.firstResponse.headers['x-cache']) {
         result.firstResponse.headers['x-cache'].should.not.include('HIT');
       } else {
@@ -71,15 +79,20 @@ describe('caching', function() {
         should.not.exist(result.secondResponse.headers['x-cache']);
       }
 
-      result.firstBody.length.should.be.greaterThan(0);
-      result.firstBody.should.not.eql(result.secondBody);
-
       done(error, result);
     });
   }
 
   function actsLikeCacheable(baseUrl, options, done) {
     makeDuplicateRequests(baseUrl, options, function(error, result) {
+      if(!options.skipBodyCompare) {
+        result.firstBody.length.should.be.greaterThan(0);
+        result.firstBody.should.eql(result.secondBody);
+      }
+
+      result.firstResponse.headers['x-unique-output'].length.should.be.greaterThan(0);
+      result.firstResponse.headers['x-unique-output'].should.eql(result.secondResponse.headers['x-unique-output']);
+
       if(result.firstResponse.headers['x-cache']) {
         result.firstResponse.headers['x-cache'].should.not.include('HIT');
       } else {
@@ -87,9 +100,6 @@ describe('caching', function() {
       }
 
       result.secondResponse.headers['x-cache'].should.include('HIT');
-
-      result.firstBody.length.should.be.greaterThan(0);
-      result.firstBody.should.eql(result.secondBody);
 
       done(error, result);
     });
@@ -203,21 +213,11 @@ describe('caching', function() {
 
     ['HEAD'].forEach(function(method) {
       it('allows caching for ' + method + ' requests', function(done) {
-        var options = _.merge({}, this.options, { method: method });
-        makeDuplicateRequests('http://localhost:9080/cacheable-cache-control-max-age/', options, function(error, result) {
-          if(result.firstResponse.headers['age']) {
-            result.firstResponse.headers['age'].should.eql('0');
-          } else {
-            should.not.exist(result.firstResponse.headers['age']);
-          }
-
-          should.exist(result.secondResponse.headers['age']);
-
-          result.firstResponse.headers['x-unique-output'].length.should.be.greaterThan(0);
-          result.firstResponse.headers['x-unique-output'].should.eql(result.secondResponse.headers['x-unique-output']);
-
-          done(error, result);
+        var options = _.merge({}, this.options, {
+          method: method,
+          skipBodyCompare: true,
         });
+        actsLikeCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
       });
 
       it('returns a cached ' + method + ' request when a GET request is made first', function(done) {
@@ -226,22 +226,9 @@ describe('caching', function() {
           secondCallOverrides: {
             method: method,
           },
+          skipBodyCompare: true,
         });
-
-        makeDuplicateRequests('http://localhost:9080/cacheable-cache-control-max-age/', options, function(error, result) {
-          if(result.firstResponse.headers['age']) {
-            result.firstResponse.headers['age'].should.eql('0');
-          } else {
-            should.not.exist(result.firstResponse.headers['age']);
-          }
-
-          should.exist(result.secondResponse.headers['age']);
-
-          result.firstResponse.headers['x-unique-output'].length.should.be.greaterThan(0);
-          result.firstResponse.headers['x-unique-output'].should.eql(result.secondResponse.headers['x-unique-output']);
-
-          done(error, result);
-        });
+        actsLikeCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
       });
     });
   });
@@ -250,6 +237,17 @@ describe('caching', function() {
     ['POST', 'PUT', 'PATCH', 'OPTIONS', 'DELETE'].forEach(function(method) {
       it('does not allow caching for ' + method + ' requests', function(done) {
         var options = _.merge({}, this.options, { method: method });
+        actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
+      });
+
+      it('does not cache ' + method + ' requests when a GET request is made first', function(done) {
+        var options = _.merge({}, this.options, {
+          method: 'GET',
+          secondCallOverrides: {
+            method: method,
+          },
+        });
+
         actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
       });
     });
@@ -358,13 +356,11 @@ describe('caching', function() {
   });
 
   it('does not cache responses that expires at 0', function(done) {
-    var options = _.merge({}, this.options, { secondCallSleep: 1000 });
-    actsLikeNotCacheable('http://localhost:9080/cacheable-expires-0/', options, done);
+    actsLikeNotCacheable('http://localhost:9080/cacheable-expires-0/', this.options, done);
   });
 
   it('does not cache responses that expires in the past', function(done) {
-    var options = _.merge({}, this.options, { secondCallSleep: 1000 });
-    actsLikeNotCacheable('http://localhost:9080/cacheable-expires-past/', options, done);
+    actsLikeNotCacheable('http://localhost:9080/cacheable-expires-past/', this.options, done);
   });
 
   it('does not cache responses that contain www-authenticate headers', function(done) {

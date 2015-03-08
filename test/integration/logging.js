@@ -5,6 +5,7 @@ require('../test_helper');
 var _ = require('lodash'),
     apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
+    Curler = require('curler').Curler,
     execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
     mkdirp = require('mkdirp'),
@@ -69,6 +70,10 @@ describe('logging', function() {
     if(!done && _.isFunction(options)) {
       done = options;
       options = null;
+    }
+
+    if(!uniqueQueryId) {
+      return done('waitForLog must be passed a uniqueQueryId parameter. Passed: ' + uniqueQueryId);
     }
 
     options = options || {};
@@ -354,6 +359,10 @@ describe('logging', function() {
         'Referer': 'http://example.com/"foo\'bar',
         'Content-Type': 'text"\x22plain\'\\x22',
       },
+      auth: {
+        user: '"foo\'bar',
+        pass: 'bar"foo\'',
+      },
     });
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
@@ -362,6 +371,7 @@ describe('logging', function() {
         should.not.exist(error);
         record.request_referer.should.eql('http://example.com/"foo\'bar');
         record.request_content_type.should.eql('text""plain\'\\x22');
+        record.request_basic_auth_username.should.eql('"foo\'bar');
         done();
       }.bind(this));
     }.bind(this));
@@ -380,6 +390,59 @@ describe('logging', function() {
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.request_referer.should.eql('http://example.com/!\\*^%#[]');
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs requests with utf8 characters in the URL', function(done) {
+    this.timeout(4500);
+
+    // Use curl and not request for these tests, since the request library
+    // calls url.parse which has a bug that causes backslashes to become
+    // forward slashes https://github.com/joyent/node/pull/8459
+    var curl = new Curler();
+    curl.request({
+      method: 'GET',
+      url: 'http://localhost:9080/info/utf8/✓/encoded_utf8/%E2%9C%93/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&utf8=✓&utf8_url_encoded=%E2%9C%93&more_utf8=¬¶ªþ¤l&more_utf8_hex=\xAC\xB6\xAA\xFE\xA4l&more_utf8_hex_lowercase=\xac\xb6\xaa\xfe\xa4l&actual_backslash_x=\\xAC\\xB6\\xAA\\xFE\\xA4l',
+    }, function(error, response) {
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_query.utf8.should.eql('✓');
+        record.request_query.utf8_url_encoded.should.eql('✓');
+        record.request_query.more_utf8.should.eql('¬¶ªþ¤l');
+        record.request_query.more_utf8_hex.should.eql('¬¶ªþ¤l');
+        record.request_query.more_utf8_hex_lowercase.should.eql('¬¶ªþ¤l');
+        record.request_query.actual_backslash_x.should.eql('\\xAC\\xB6\\xAA\\xFE\\xA4l');
+        record.request_path.should.eql('/info/utf8/✓/encoded_utf8/%E2%9C%93/');
+        record.request_url.should.contain(record.request_path);
+        record.request_url.should.contain('utf8=%E2%9C%93&utf8_url_encoded=%E2%9C%93&more_utf8=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex_lowercase=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&actual_backslash_x=%5CxAC%5CxB6%5CxAA%5CxFE%5CxA4l');
+        done();
+      });
+    }.bind(this));
+  });
+
+  it('logs requests with backslashes and slashes', function(done) {
+    this.timeout(4500);
+
+    // Use curl and not request for these tests, since the request library
+    // calls url.parse which has a bug that causes backslashes to become
+    // forward slashes https://github.com/joyent/node/pull/8459
+    var curl = new Curler();
+    curl.request({
+      method: 'GET',
+      url: 'http://localhost:9080/info/extra//slash/some\\backslash/encoded%5Cbackslash/encoded%2Fslash?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&forward_slash=/slash&encoded_forward_slash=%2F&back_slash=\\&encoded_back_slash=%5C',
+    }, function(error, response) {
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_query.forward_slash.should.eql('/slash');
+        record.request_query.encoded_forward_slash.should.eql('/');
+        record.request_query.back_slash.should.eql('\\');
+        record.request_query.encoded_back_slash.should.eql('\\');
+        record.request_path.should.eql('/info/extra//slash/some%5Cbackslash/encoded%5Cbackslash/encoded%2Fslash');
+        record.request_url.should.contain(record.request_path);
         done();
       }.bind(this));
     }.bind(this));
