@@ -107,12 +107,14 @@ app.get('/auth/*', auth, function(req, res) {
 });
 
 app.all('/info/*', function(req, res) {
+  var rawUrl = req.protocol + '://' + req.hostname + req.url;
   res.set('X-Received-Method', req.method);
   res.json({
     method: req.method,
     headers: req.headers,
     local_interface_ip: req.socket.localAddress,
-    url: url.parse(req.protocol + '://' + req.hostname + req.url, true),
+    raw_url: rawUrl,
+    url: url.parse(rawUrl, true),
   });
 });
 
