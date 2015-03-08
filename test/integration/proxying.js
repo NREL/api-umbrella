@@ -826,7 +826,7 @@ describe('proxying', function() {
     // Update if Varnish's behavior changes:
     // https://www.varnish-cache.org/trac/ticket/1506
     //
-    // So for now, we're simply testing to ensure that the majority of
+    // So for now, we're simply testing to ensure that a portion of
     // chunked/non-chunked responses get returned as expected. So these test
     // aren't exactly precise, but ensure we're testing the basic chunking
     // behavior.
@@ -884,7 +884,7 @@ describe('proxying', function() {
           _.merge(this.options, { url: 'http://localhost:9080/compressible/10' });
           countChunkedResponses(this.options, 50, 10, function(counts) {
             counts.total.should.eql(50);
-            counts.nonChunked.should.be.greaterThan(25);
+            counts.nonChunked.should.be.greaterThan(15);
             done();
           });
         });
@@ -896,7 +896,7 @@ describe('proxying', function() {
             _.merge(this.options, { url: 'http://localhost:9080/compressible/100000' });
             countChunkedResponses(this.options, 50, 100000, function(counts) {
               counts.total.should.eql(50);
-              counts.chunked.should.be.greaterThan(25);
+              counts.chunked.should.be.greaterThan(15);
               done();
             });
           });
@@ -906,7 +906,7 @@ describe('proxying', function() {
             _.merge(this.options, { url: 'http://localhost:9080/compressible/10000' });
             countChunkedResponses(this.options, 50, 10000, function(counts) {
               counts.total.should.eql(50);
-              counts.nonChunked.should.be.greaterThan(25);
+              counts.nonChunked.should.be.greaterThan(15);
               done();
             });
           });
@@ -917,7 +917,7 @@ describe('proxying', function() {
           _.merge(this.options, { url: 'http://localhost:9080/compressible-chunked/1/500' });
           countChunkedResponses(this.options, 50, 500, function(counts) {
             counts.total.should.eql(50);
-            counts.chunked.should.be.greaterThan(25);
+            counts.chunked.should.be.greaterThan(15);
             done();
           });
         });
@@ -927,7 +927,7 @@ describe('proxying', function() {
           _.merge(this.options, { url: 'http://localhost:9080/compressible-chunked/50/2000' });
           countChunkedResponses(this.options, 50, 100000, function(counts) {
             counts.total.should.eql(50);
-            counts.chunked.should.be.greaterThan(25);
+            counts.chunked.should.be.greaterThan(15);
             done();
           });
         });
