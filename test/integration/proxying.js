@@ -1077,6 +1077,38 @@ describe('proxying', function() {
           });
         },
 
+        // allows concurrent requests to the same endpoint via different HTTP
+        // methods.
+        //
+        // This is mainly done to ensure that any connection collapsing the
+        // cache is doing, doesn't improperly hold up non-cacheable requests
+        // waiting on a potentially cacheable request.
+        function(callback) {
+          var start = new Date();
+          async.parallel([
+            function(request_callback) {
+              request.get('http://localhost:9080/delay/10000', options, function(error, response) {
+                response.statusCode.should.eql(200);
+                request_callback();
+              });
+            },
+            function(request_callback) {
+              setTimeout(function() {
+                request.post('http://localhost:9080/delay/10000', options, function(error, response) {
+                  response.statusCode.should.eql(200);
+                  request_callback();
+                });
+              }, 1000);
+            },
+          ], function() {
+            var end = new Date();
+            var duration = end - start;
+            duration.should.be.greaterThan(10000);
+            duration.should.be.lessThan(15000);
+            callback();
+          });
+        },
+
         // only sends 1 request to the backend on timeouts for GET requests
         //
         // This is to ensure that no proxy in front of the backend makes

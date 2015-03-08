@@ -170,6 +170,7 @@ app.get('/between-varnish-timeout', function(req, res) {
 });
 
 app.all('/cacheable-but-not/:id', function(req, res) {
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
@@ -178,6 +179,7 @@ app.all('/cacheable-thundering-herd/:id', function(req, res) {
 
   setTimeout(function() {
     res.set('Cache-Control', 'max-age=60');
+    res.set('X-Unique-Output', uniqueOutput());
     res.end(uniqueOutput());
   }, 1000);
 });
@@ -187,6 +189,7 @@ app.all('/cacheable-but-no-explicit-cache-thundering-herd/:id', function(req, re
 
   setTimeout(function() {
     res.set('Cache-Control', 'max-age=0, private, must-revalidate');
+    res.set('X-Unique-Output', uniqueOutput());
     res.end(uniqueOutput());
   }, 1000);
 });
@@ -196,6 +199,7 @@ app.all('/cacheable-but-cache-forbidden-thundering-herd/:id', function(req, res)
 
   setTimeout(function() {
     res.set('Cache-Control', 'max-age=0, private, must-revalidate');
+    res.set('X-Unique-Output', uniqueOutput());
     res.end(uniqueOutput());
   }, 1000);
 });
@@ -208,71 +212,84 @@ app.all('/cacheable-cache-control-max-age/:id', function(req, res) {
 
 app.all('/cacheable-cache-control-s-maxage/:id', function(req, res) {
   res.set('Cache-Control', 's-maxage=60');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-cache-control-case-insensitive/:id', function(req, res) {
   res.set('CAcHE-cONTROL', 'max-age=60');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-expires/:id', function(req, res) {
   res.set('Expires', new Date(Date.now() + 60000).toUTCString());
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-expires-0/:id', function(req, res) {
   res.set('Expires', '0');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-expires-past/:id', function(req, res) {
   res.set('Expires', new Date(Date.now() - 60000).toUTCString());
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-set-cookie/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
   res.set('Set-Cookie', 'foo=bar');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-www-authenticate/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
   res.set('WWW-Authenticate', 'Basic');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-surrogate-control-max-age/:id', function(req, res) {
   res.set('Surrogate-Control', 'max-age=60');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-surrogate-control-case-insensitive/:id', function(req, res) {
   res.set('SURrOGATE-CONtROL', 'max-age=60');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-surrogate-control-and-cache-control/:id', function(req, res) {
   res.set('Surrogate-Control', 'max-age=60');
   res.set('Cache-Control', 'max-age=0, private, must-revalidate');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-dynamic/*', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
 app.all('/cacheable-compressible/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
   res.set('Content-Type', 'text/plain');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 
 app.all('/cacheable-pre-gzip/:id', compression(), function(req, res) {
   res.set('Cache-Control', 'max-age=60');
   res.set('Content-Type', 'text/plain');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 
@@ -280,6 +297,7 @@ app.all('/cacheable-vary-accept-encoding/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
   res.set('Content-Type', 'text/plain');
   res.set('Vary', 'Accept-Encoding');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 
@@ -287,6 +305,7 @@ app.all('/cacheable-pre-gzip-multiple-vary/:id', compression(), function(req, re
   res.set('Cache-Control', 'max-age=60');
   res.set('Content-Type', 'text/plain');
   res.set('Vary', 'X-Foo,Accept-Encoding,Accept');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 
@@ -294,12 +313,14 @@ app.all('/cacheable-vary-accept-encoding-multiple/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
   res.set('Content-Type', 'text/plain');
   res.set('Vary', 'X-Foo,Accept-Encoding,Accept');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 
 app.all('/cacheable-vary-x-custom/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
   res.set('Vary', 'X-Custom');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
@@ -307,6 +328,7 @@ app.all('/cacheable-vary-accept-encoding-accept-separate/:id', function(req, res
   res.set('Cache-Control', 'max-age=60');
   res.set('Vary', 'Accept-Encoding');
   res.set('Vary', 'Accept');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
@@ -314,6 +336,7 @@ app.all('/cacheable-multiple-vary/:id', function(req, res) {
   res.set('Cache-Control', 'max-age=60');
   res.set('Content-Type', 'text/plain');
   res.set('Vary', 'X-Foo,Accept-Language,Accept');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput());
 });
 
@@ -321,6 +344,7 @@ app.all('/cacheable-multiple-vary-with-accept-encoding/:id', function(req, res) 
   res.set('Cache-Control', 'max-age=60');
   res.set('Content-Type', 'text/plain');
   res.set('Vary', 'X-Foo,Accept-Language,Accept-Encoding,Accept');
+  res.set('X-Unique-Output', uniqueOutput());
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 
