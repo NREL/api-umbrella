@@ -1,0 +1,59 @@
+CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
+
+{{#user}}
+CONFIG proxy.config.admin.user_id STRING {{user}}
+{{/user}}
+{{^user}}
+# When not running as root, use the special "#-1" value to keep running as the
+# current user.
+CONFIG proxy.config.admin.user_id STRING #-1
+{{/user}}
+
+# Specify where to find the TrafficServer binaries, plugins, etc. Our config
+# files are in a non-default location by using TS_ROOT (this is done so that
+# the config files can co-exist with the rest of the API Umbrella config files,
+# and so that we can relocate the location for running tests). Therefore, we
+# must explicitly point back to the original TrafficServer install directory.
+# This could potentially be made cleaner without the use of TS_ROOT with the
+# new proxy.config.config_dir setting
+# (https://issues.apache.org/jira/browse/TS-3192), but I wasn't able to get
+# that to quite work properly.
+CONFIG proxy.config.bin_path STRING {{trafficserver.install_root}}/bin
+CONFIG proxy.config.plugin.plugin_dir STRING {{trafficserver.install_root}}/libexec/trafficserver
+CONFIG proxy.config.body_factory.template_sets_dir STRING {{trafficserver.install_root}}/etc/trafficserver/body_factory
+
+# Log to the standard API Umbrella log directory location.
+CONFIG proxy.config.log.logfile_dir STRING {{log_dir}}/trafficserver
+
+# Increase timeouts to 60 seconds to match other pieces of the stack.
+CONFIG proxy.config.http.transaction_no_activity_timeout_in INT 60
+CONFIG proxy.config.http.transaction_no_activity_timeout_out INT 60
+CONFIG proxy.config.http.connect_attempts_timeout INT 60
+
+# Don't retry requests when a server is not responding (we don't want to
+# overwhelm servers that may already be struggling).
+CONFIG proxy.config.http.connect_attempts_max_retries INT 0
+
+# Don't consider the backend down, even if some requests timeout. Since we're
+# actually funneling all of our existing traffic back through a single nginx
+# backend, we don't want some bad API requests to mark the entire nginx backend
+# as being down.
+CONFIG proxy.config.http.down_server.cache_time INT 0
+
+# Don't append IP information to X-Forwarded-For or Client-IP headers, since
+# we've already dealt with those at the first nginx proxy layer.
+CONFIG proxy.config.http.anonymize_insert_client_ip INT 0
+CONFIG proxy.config.http.insert_squid_x_forwarded_for INT 0
+
+# Don't perform caching when the request contains cookies.
+CONFIG proxy.config.http.cache.cache_responses_to_cookies INT 0
+
+# Disable read_while_writer, since it can delay processing for mis-matched HTTP
+# methods: https://issues.apache.org/jira/browse/TS-3431
+# Instead, we'll use the connection collapsing plugin, which actually seems
+# closer to the behavior we want.
+CONFIG proxy.config.cache.enable_read_while_writer INT 0
+
+# Include information in the Via response indicating whether this was a cache
+# hit or not.
+CONFIG proxy.config.http.insert_response_via_str INT 2

@@ -3,6 +3,7 @@ user:
 group:
 http_port: 9080
 https_port: 9081
+root_dir: /tmp/api-umbrella-test
 etc_dir: /tmp/api-umbrella-test/etc
 log_dir: /tmp/api-umbrella-test/var/log
 run_dir: /tmp/api-umbrella-test/var/run

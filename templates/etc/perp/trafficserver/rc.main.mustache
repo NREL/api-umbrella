@@ -5,8 +5,7 @@ exec 2>&1
 
 if test ${1} = "start"; then
   echo "starting ${2}..."
-  # exec {{router.dir}}/bin/api-umbrella-router-log-listener {{api_umbrella_config_args}}
-  exec sleep 60
+  exec runenv rc.env traffic_cop --stdout
 fi
 
 exit 0

@@ -11,6 +11,7 @@ rlimits:
   nproc: 20000
 http_port: 80
 https_port: 443
+root_dir: /opt/api-umbrella
 etc_dir: /opt/api-umbrella/etc
 log_dir: /opt/api-umbrella/var/log
 run_dir: /opt/api-umbrella/var/run
@@ -41,6 +42,13 @@ gatekeeper:
 varnish:
   host: 127.0.0.1
   port: 14010
+trafficserver:
+  host: 127.0.0.1
+  port: 14009
+  storage:
+    size: 256M
+  # install_root: /opt/api-umbrella/embedded
+  install_root: "/opt/trafficserver"
 web:
   host: 127.0.0.1
   port: 14012

@@ -20,9 +20,11 @@ module ApiUmbrella
     end
 
     def run
+      permission_check
       write_runtime_config
       prepare
       write_templates
+      set_permissions
       start_perp
     end
 
@@ -37,6 +39,8 @@ module ApiUmbrella
       unless @config
         @config = YAML.load_file(DEFAULT_CONFIG_PATH)
         @config.deep_merge!(YAML.load_file(global_options[:config]))
+
+        apply_config_variables!(@config)
 
         @config.deep_merge!({
           "mongodb" => {
@@ -144,6 +148,20 @@ module ApiUmbrella
       @config
     end
 
+    def apply_config_variables!(config)
+      if(config.kind_of?(Hash))
+        config.each do |key, value|
+          next if(key == "apiSettings")
+
+          if(value.kind_of?(String))
+            value.gsub!("{{root_dir}}", @config["root_dir"])
+          elsif(value.kind_of?(Hash))
+            apply_config_variables!(value)
+          end
+        end
+      end
+    end
+
     def template_config
       unless @template_config
         @template_config = config.merge({
@@ -179,6 +197,44 @@ module ApiUmbrella
       @runtime_config_path ||= File.join(config["run_dir"], "runtime_config.yml")
     end
 
+    def permission_check
+      if(config["user"])
+        if(Process.euid != 0)
+          raise "Must be started with super-user privileges to change user to '#{config["user"]}'"
+        end
+
+        begin
+          Etc.getpwnam(config["user"])
+        rescue
+          raise "User '#{config["user"]}' does not exist"
+        end
+      end
+
+      if(config["group"])
+        if(Process.euid != 0)
+          raise "Must be started with super-user privileges to change group to '#{config["group"]}'"
+        end
+
+        begin
+          Etc.getgrnam(config["group"])
+        rescue
+          raise "Group '#{config["group"]}' does not exist"
+        end
+      end
+
+      if(config["http_port"] < 1024 || config["https_port"] < 1024)
+        if(Process.euid != 0)
+          raise "Must be started with super-user privileges to use http ports below 1024"
+        end
+      end
+
+      if(Process.euid == 0)
+        if(!config["user"] || !config["group"])
+          raise "Must define a user and group to run worker processes as when starting with with super-user privileges"
+        end
+      end
+    end
+
     def write_runtime_config
       FileUtils.mkdir_p(File.dirname(runtime_config_path))
       File.open(runtime_config_path, "w") { |f| f.write(YAML.dump(config)) }
@@ -186,20 +242,23 @@ module ApiUmbrella
 
     def prepare
       dirs = [
+        config["db_dir"],
+        config["log_dir"],
+        config["run_dir"],
+        config["tmp_dir"],
         File.join(config["db_dir"], "beanstalkd"),
         File.join(config["db_dir"], "elasticsearch"),
         File.join(config["db_dir"], "mongodb"),
         File.join(config["db_dir"], "redis"),
-        config["log_dir"],
+        File.join(config["etc_dir"], "trafficserver/snapshots"),
+        File.join(config["log_dir"], "trafficserver"),
+        File.join(config["root_dir"], "var/trafficserver"),
         File.join(config["run_dir"], "varnish/api-umbrella"),
-        config["tmp_dir"],
       ]
 
       dirs.each do |dir|
         FileUtils.mkdir_p(dir)
       end
-
-      FileUtils.chmod(0777, config["tmp_dir"])
     end
 
     def write_templates
@@ -232,6 +291,16 @@ module ApiUmbrella
       end
     end
 
+    def set_permissions
+      FileUtils.chmod(0777, config["tmp_dir"])
+
+      if(config["user"])
+        FileUtils.chown(config["user"], config["group"], File.join(config["root_dir"], "var/trafficserver"))
+        FileUtils.chown(config["user"], config["group"], File.join(config["log_dir"], "trafficserver"))
+        FileUtils.chown_R(config["user"], config["group"], File.join(config["etc_dir"], "trafficserver"))
+      end
+    end
+
     def start_perp
       ENV["PATH"] = [
         "/opt/api-umbrella-openresty/embedded/openresty/nginx/sbin",
@@ -243,6 +312,7 @@ module ApiUmbrella
         "/opt/api-umbrella/embedded/sbin",
         "/opt/api-umbrella/embedded/bin",
         "/opt/api-umbrella/embedded/jre/bin",
+        "/opt/trafficserver/bin",
       ].join(":") + ":#{ENV["PATH"]}"
 
       perp_base = File.join(config["etc_dir"], "perp")

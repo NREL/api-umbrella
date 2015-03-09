@@ -182,19 +182,21 @@ function _M.parse_accept(header, supported_media_types)
     table.insert(accepts, accept)
   end
 
-  table.sort(accepts, function(a, b)
-    if a.q < b.q then
-      return false
-    elseif a.q > b.q then
-      return true
-    elseif (a.media_type == "*" and b.media_type ~= "*") or (a.media_subtype == "*" and b.media_subtype ~= "*") then
-      return false
-    elseif (a.media_type ~= "*" and b.media_type == "*") or (a.media_subtype ~= "*" and b.media_subtype == "*") then
-      return true
-    else
-      return true
-    end
-  end)
+  if accepts then
+    table.sort(accepts, function(a, b)
+      if a.q < b.q then
+        return false
+      elseif a.q > b.q then
+        return true
+      elseif (a.media_type == "*" and b.media_type ~= "*") or (a.media_subtype == "*" and b.media_subtype ~= "*") then
+        return false
+      elseif (a.media_type ~= "*" and b.media_type == "*") or (a.media_subtype ~= "*" and b.media_subtype == "*") then
+        return true
+      else
+        return true
+      end
+    end)
+  end
 
   for _, supported in ipairs(supported_media_types) do
     for _, accept in ipairs(accepts) do
