@@ -71,16 +71,17 @@ describe('failures', function() {
     it('does not drop connections during replicaset elections', function(done) {
       this.timeout(90000);
 
-      this.apiKeyBatches = {}
+      var apiKeyBatches = {};
+      var options = this.options;
 
       function makeBatch(apiKeys, callback) {
         async.eachSeries(apiKeys, function(apiKey, next) {
-          request.get('http://localhost:9080/info/db-config/?api_key=' + apiKey, this.options, function(error, response) {
+          request.get('http://localhost:9080/info/db-config/?api_key=' + apiKey, options, function(error, response) {
             should.not.exist(error);
             response.statusCode.should.eql(200);
-            setTimeout(callback, 10);
-          }.bind(this));
-        }.bind(this), callback);
+            setTimeout(next, 10);
+          });
+        }, callback);
       }
 
       async.series([
@@ -92,29 +93,29 @@ describe('failures', function() {
         // time.
         function(callback) {
           async.timesSeries(3, function(batchIndex, batchNext) {
-            this.apiKeyBatches[batchIndex] = [];
+            apiKeyBatches[batchIndex] = [];
 
             async.times(100, function(index, next) {
               Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
-                this.apiKeyBatches[batchIndex].push(user.api_key);
+                apiKeyBatches[batchIndex].push(user.api_key);
                 next();
-              }.bind(this));
-            }.bind(this), batchNext);
-          }.bind(this), callback);
-        }.bind(this),
+              });
+            }, batchNext);
+          }, callback);
+        },
 
         // Make an initial batch of requests just to ensure things are working
         // as expected.
         function(callback) {
-          makeBatch.call(this, this.apiKeyBatches[0], callback);
-        }.bind(this),
+          makeBatch(apiKeyBatches[0], callback);
+        },
 
         // Force the primary mongo host to step down for 30 seconds. (We do
         // this via the command line instead of mongo-orchestration's API,
         // since mongo-orchestration forces a 60 second step down period, and
         // we want something shorter).
         function(callback) {
-          execFile('mongo', ['--host', this.hostArg, '--eval', 'rs.stepDown(30)'], function(error) {
+          execFile('mongo', ['--host', this.hostArg, '--eval', 'rs.stepDown(30)'], function() {
             callback();
           });
         }.bind(this),
@@ -123,8 +124,8 @@ describe('failures', function() {
         // down. Requests may be returned more slowly while things wait for the
         // replicaset election to kick in, but no connections should fail.
         function(callback) {
-          makeBatch.call(this, this.apiKeyBatches[1], callback);
-        }.bind(this),
+          makeBatch(apiKeyBatches[1], callback);
+        },
 
         // Force the new primary server offline completely. Just another sanity
         // check that a true failure and election will be handled properly.
@@ -136,8 +137,8 @@ describe('failures', function() {
 
         // Run the next batch of requests that should succeed.
         function(callback) {
-          makeBatch.call(this, this.apiKeyBatches[2], callback);
-        }.bind(this),
+          makeBatch(apiKeyBatches[2], callback);
+        },
       ], done);
     });
   });
