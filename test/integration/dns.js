@@ -9,7 +9,6 @@ var _ = require('lodash'),
     Factory = require('factory-lady'),
     fs = require('fs'),
     ipaddr = require('ipaddr.js'),
-    mongoose = require('mongoose'),
     path = require('path'),
     processEnv = require('../../lib/process_env'),
     request = require('request'),
@@ -463,18 +462,9 @@ describe('dns backend resolving', function() {
           var data = JSON.parse(body);
           data.local_interface_ip.should.eql('127.0.0.2');
 
-          // Wipe the mongo-based config after finishing so that the file-based
-          // YAML config takes precedence again (api-umbrella-config overwrites
-          // the apis array from the mongo config if present, which I'm not
-          // sure this is actually what we want, but since we don't actually
-          // need merging behavior right now, we'll just wipe this).
-          mongoose.testConnection.model('ConfigVersion').remove({}, function(error) {
-            should.not.exist(error);
-
-            // Wait a bit for the Mongo config polling to pickup the change and for
-            // nginx to reload.
-            setTimeout(done, 2000);
-          });
+          // Remove DB-based config after these tests, so the rest of the tests
+          // go back to the file-based configs.
+          shared.removeDbConfig(done);
         });
       }.bind(this));
     }.bind(this));

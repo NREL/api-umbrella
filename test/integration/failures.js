@@ -68,6 +68,14 @@ describe('failures', function() {
       };
     });
 
+    after(function removeDbConfig(done) {
+      this.timeout(6000);
+
+      // Remove DB-based config after these tests, so the rest of the tests go
+      // back to the file-based configs.
+      shared.removeDbConfig(done);
+    });
+
     it('does not drop connections during replicaset elections', function(done) {
       this.timeout(90000);
 
