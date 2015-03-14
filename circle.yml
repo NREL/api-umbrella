@@ -16,6 +16,10 @@ dependencies:
     # install at the system level with the RUNLEVEL=1 variable.
     - sudo apt-get update
     - sudo env RUNLEVEL=1 apt-get install unbound
+
+    # Use the mongo-orchestration library for providing a testable replicaset,
+    # so we can see how the stack reacts to replicaset re-elections, etc.
+    - sudo pip install mongo-orchestration
   override:
     - env PATH=/opt/api-umbrella/embedded/bin:$PATH npm install
 test:

@@ -35,6 +35,18 @@ stderr_logfile=NONE
 stdout_logfile_maxbytes=0
 startsecs=10
 startretries=10
+
+{{#if test_env}}
+[program:mongo-orchestration]
+command=mongo-orchestration --no-fork --port 13089 start
+{{supervisor_conditional_user}}
+redirect_stderr=true
+stdout_logfile={{log_dir}}/%(program_name)s.log
+stderr_logfile=NONE
+stdout_logfile_maxbytes=0
+startsecs=5
+startretries=10
+{{/if}}
 {{/if}}
 
 {{#if service_log_db_enabled}}
