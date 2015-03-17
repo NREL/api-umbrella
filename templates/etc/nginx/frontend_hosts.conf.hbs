@@ -1,0 +1,64 @@
+{{#each hosts}}
+server {
+  listen {{../http_port}}{{#if default}} default_server{{/if}};
+  listen [::]:{{../http_port}}{{#if default}} default_server{{/if}};
+  server_name {{hostname}};
+
+  listen {{../https_port}} ssl{{#if default}} default_server{{/if}};
+  listen [::]:{{../https_port}} ssl{{#if default}} default_server{{/if}};
+  {{#if ssl_cert}}
+  ssl_certificate {{ssl_cert}};
+  ssl_certificate_key {{ssl_cert_key}};
+  {{else}}
+  ssl_certificate {{../../etc_dir}}/ssl/self_signed.crt;
+  ssl_certificate_key {{../../etc_dir}}/ssl/self_signed.key;
+  {{/if}}
+
+  include ./frontend_defaults.conf;
+
+  # Determine the SSL status when it's passed via X-Forwarded-Proto from the
+  # SSL terminator.
+  set $ssl_status "off";
+  if ($server_port = {{../https_port}}) {
+    set $ssl_status "on";
+  }
+
+  if ($http_x_forwarded_proto = "https") {
+    set $ssl_status "on";
+  }
+
+  # Match any required HTTPS-only pages.
+  if ($uri ~ ^/(account|admin|admins|signup)(/|$)) {
+    set $ssl_status "${ssl_status}_required";
+  }
+
+  # Force certain content to HTTPS-only.
+  if ($ssl_status = "off_required") {
+    rewrite ^ https://$host:{{../https_port}}$request_uri? permanent;
+  }
+
+  # Route the dynamic portions of the site to the Rails web app.
+  location ~* ^/(admin|admins|web-assets)(/|$) {
+    include ./frontend_proxy_header_defaults.conf;
+    proxy_pass http://api_umbrella_web_backend;
+  }
+
+  {{#if api_url_prefixes_matcher}}
+    # Route all API requests through the API Umbrella Gatekeeper.
+    location ~* {{api_url_prefixes_matcher}} {
+      include ./frontend_proxy_header_defaults.conf;
+      include ./gatekeeper.conf;
+    }
+  {{/if}}
+
+  # Route the docs and other static pages to the Rails web app. This may
+  # change, so that's why we're treating it separately.
+  location / {
+    {{#if ../static_site.host_header}}
+    set $proxy_host_header "{{../../static_site.host_header}}";
+    {{/if}}
+    include ./frontend_proxy_header_defaults.conf;
+    proxy_pass http://api_umbrella_static_site_backend;
+  }
+}
+{{/each}}
