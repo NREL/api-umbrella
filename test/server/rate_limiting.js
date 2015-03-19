@@ -837,6 +837,22 @@ describe('ApiUmbrellaGatekeper', function() {
         itBehavesLikeApiKeyRateLimits('/hello', 5);
       });
 
+      describe('user with empty rate limits settings array', function() {
+        beforeEach(function setupApiUser(done) {
+          Factory.create('api_user', {
+            settings: {
+              rate_limit_mode: null,
+              rate_limits: [],
+            }
+          }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        itBehavesLikeApiKeyRateLimits('/info/lower/', 3);
+      });
+
       describe('changing rate limits', function() {
         it('allows rate limits to be changed live', function(done) {
           var config = require('api-umbrella-config').global();
