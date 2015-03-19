@@ -740,6 +740,21 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       itBehavesLikeUnlimitedRateLimits('/hello', 5);
+
+      describe('user with settings object present, but null rate_limit mode', function() {
+        beforeEach(function setupApiUser(done) {
+          Factory.create('api_user', {
+            settings: {
+              rate_limit_mode: null,
+            }
+          }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        itBehavesLikeUnlimitedRateLimits('/hello', 5);
+      });
     });
 
     describe('api specific limits', function() {
