@@ -3,6 +3,7 @@
 FactoryGirl.define do
   factory :admin_group do
     sequence(:name) { |n| "Example#{n}" }
+    api_scopes { [FactoryGirl.create(:api_scope)] }
     permission_ids [
       "analytics",
       "user_view",
