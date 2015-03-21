@@ -34,6 +34,7 @@ ApiUmbrella::Application.routes.draw do
         resources :api_scopes
         resources :apis
         resources :users
+        resources :website_backends
         resource :contact, :only => [:create]
 
         resources :analytics do

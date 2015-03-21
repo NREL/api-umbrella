@@ -5,21 +5,42 @@
     {{#if model.config.apis.new}}
       <fieldset>
         <legend>{{model.config.apis.new.length}} New API Backends</legend>
-        {{render "config/publish_api" model.config.apis.new}}
+        {{render "config/publish_record" model.config.apis.new category="apis"}}
+      </fieldset>
+    {{/if}}
+
+    {{#if model.config.website_backends.new}}
+      <fieldset>
+        <legend>{{model.config.website_backends.new.length}} New Website Backends</legend>
+        {{render "config/publish_record" model.config.website_backends.new category="website_backends"}}
       </fieldset>
     {{/if}}
 
     {{#if model.config.apis.modified}}
       <fieldset>
         <legend>{{model.config.apis.modified.length}} Modified API Backends</legend>
-        {{render "config/publish_api" model.config.apis.modified}}
+        {{render "config/publish_record" model.config.apis.modified category="apis"}}
+      </fieldset>
+    {{/if}}
+
+    {{#if model.config.website_backends.modified}}
+      <fieldset>
+        <legend>{{model.config.website_backends.modified.length}} Modified Website Backends</legend>
+        {{render "config/publish_record" model.config.website_backends.modified category="website_backends"}}
       </fieldset>
     {{/if}}
 
     {{#if model.config.apis.deleted}}
       <fieldset>
         <legend>{{model.config.apis.deleted.length}} Deleted API Backends</legend>
-        {{render "config/publish_api" model.config.apis.deleted}}
+        {{render "config/publish_record" model.config.apis.deleted category="apis"}}
+      </fieldset>
+    {{/if}}
+
+    {{#if model.config.website_backends.deleted}}
+      <fieldset>
+        <legend>{{model.config.website_backends.deleted.length}} Deleted Website Backends</legend>
+        {{render "config/publish_record" model.config.website_backends.deleted category="website_backends"}}
       </fieldset>
     {{/if}}
 

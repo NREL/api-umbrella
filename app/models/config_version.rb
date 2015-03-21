@@ -54,81 +54,98 @@ class ConfigVersion
   end
 
   def self.pending_changes(current_admin)
-    # Grab all APIs, including "deleted" ones so we can determine what API
-    # deletions still need to be published.
-    pending_apis = Api.unscoped
-
-    if(current_admin)
-      pending_apis = Pundit.policy_scope!(current_admin, pending_apis)
-    end
-
-    pending_apis = pending_apis.sorted.all
-    pending_apis = pending_apis.to_a.select { |api| Pundit.policy!(current_admin, api).publish? }
-    pending_apis.map! { |api| api.attributes_hash }
-
-    active_config = ConfigVersion.active_config
-
     changes = {
-      :new => [],
-      :modified => [],
-      :deleted => [],
-      :identical => [],
+      "apis" => {},
+      "website_backends" => {},
     }
 
-    active_apis_by_id = {}
-    if(active_config.present? && active_config["apis"].present?)
-      active_config["apis"].each do |active_api|
-        active_apis_by_id[active_api["_id"]] = active_api
+    changes.each do |category, category_changes|
+      # Grab all APIs, including "deleted" ones so we can determine what API
+      # deletions still need to be published.
+      pending_records = case(category)
+      when "apis"
+        Api.unscoped
+      when "website_backends"
+        WebsiteBackend.unscoped
       end
-    end
 
-    pending_apis.each do |pending_api|
-      active_api = active_apis_by_id[pending_api["_id"]]
+      if(current_admin)
+        pending_records = Pundit.policy_scope!(current_admin, pending_records)
+      end
 
-      if(pending_api["deleted_at"].present?)
-        if(active_api.present?)
-          changes[:deleted] << {
-            "mode" => "deleted",
-            "active" => active_api,
-            "pending" => nil,
-          }
+      pending_records = pending_records.sorted.all
+      pending_records = pending_records.to_a.select { |record| Pundit.policy!(current_admin, record).publish? }
+      pending_records.map! { |record| record.attributes_hash }
+
+      active_config = ConfigVersion.active_config
+
+      category_changes.merge!({
+        :new => [],
+        :modified => [],
+        :deleted => [],
+        :identical => [],
+      })
+
+      active_records_by_id = {}
+      if(active_config.present? && active_config[category].present?)
+        active_config[category].each do |active_record|
+          active_records_by_id[active_record["_id"]] = active_record
         end
-      else
-        if(active_api.blank?)
-          changes[:new] << {
-            "mode" => "new",
-            "active" => nil,
-            "pending" => pending_api,
-          }
-        elsif(api_for_comparison(active_api) == api_for_comparison(pending_api))
-          changes[:identical] << {
-            "mode" => "identical",
-            "active" => active_api,
-            "pending" => pending_api,
-          }
+      end
+
+      pending_records.each do |pending_record|
+        active_record = active_records_by_id[pending_record["_id"]]
+
+        if(pending_record["deleted_at"].present?)
+          if(active_record.present?)
+            category_changes[:deleted] << {
+              "mode" => "deleted",
+              "active" => active_record,
+              "pending" => nil,
+            }
+          end
         else
-          changes[:modified] << {
-            "mode" => "modified",
-            "active" => active_api,
-            "pending" => pending_api,
-          }
+          if(active_record.blank?)
+            category_changes[:new] << {
+              "mode" => "new",
+              "active" => nil,
+              "pending" => pending_record,
+            }
+          elsif(record_for_comparison(active_record) == record_for_comparison(pending_record))
+            category_changes[:identical] << {
+              "mode" => "identical",
+              "active" => active_record,
+              "pending" => pending_record,
+            }
+          else
+            category_changes[:modified] << {
+              "mode" => "modified",
+              "active" => active_record,
+              "pending" => pending_record,
+            }
+          end
         end
       end
-    end
 
-    changes.each do |mode, mode_changes|
-      mode_changes.each do |change|
-        change["id"] = if(change["pending"]) then change["pending"]["_id"] else change["active"]["_id"] end
-        change["name"] = if(change["pending"]) then change["pending"]["name"] else change["active"]["name"] end
-        change["active_yaml"] = pretty_dump(change["active"])
-        change["pending_yaml"] = pretty_dump(change["pending"])
+      category_changes.each do |mode, mode_changes|
+        mode_changes.each do |change|
+          change["id"] = if(change["pending"]) then change["pending"]["_id"] else change["active"]["_id"] end
+          change["name"] = case(category)
+          when "apis"
+            if(change["pending"]) then change["pending"]["name"] else change["active"]["name"] end
+          when "website_backends"
+            if(change["pending"]) then change["pending"]["frontend_host"] else change["active"]["frontend_host"] end
+          end
+          change["active_yaml"] = pretty_dump(change["active"])
+          change["pending_yaml"] = pretty_dump(change["pending"])
+        end
       end
     end
 
     changes
   end
 
-  def self.api_for_comparison(object)
+  def self.record_for_comparison(object)
     duplicate = if(object.duplicable?) then object.dup else object end
 
     if(duplicate.kind_of?(Hash))
@@ -139,11 +156,11 @@ class ConfigVersion
       duplicate.except!(*%w(version created_by created_at updated_at updated_by _id))
 
       duplicate.each do |key, value|
-        duplicate[key] = api_for_comparison(value)
+        duplicate[key] = record_for_comparison(value)
       end
     elsif(duplicate.kind_of?(Array))
       duplicate.map! do |item|
-        api_for_comparison(item)
+        record_for_comparison(item)
       end
     end
 
@@ -153,7 +170,7 @@ class ConfigVersion
   def self.pretty_dump(data)
     yaml = ""
     if(data.present?)
-      data = prettify_data(api_for_comparison(data))
+      data = prettify_data(record_for_comparison(data))
       yaml = Psych.dump(data)
       yaml.gsub!(/^---\s*\n/, "")
     end
