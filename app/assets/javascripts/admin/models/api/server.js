@@ -13,6 +13,7 @@ Admin.ApiServer = Ember.Model.extend(Ember.Validations.Mixin, {
     },
     port: {
       presence: true,
+      numericality: true,
     },
   },
 

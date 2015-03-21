@@ -1,4 +1,4 @@
-Admin.AdminGroup = Ember.Model.extend({
+Admin.AdminGroup = Ember.Model.extend(Ember.Validations.Mixin, {
   id: Ember.attr(),
   name: Ember.attr(),
   apiScopeIds: Ember.attr(),
@@ -7,6 +7,12 @@ Admin.AdminGroup = Ember.Model.extend({
   updatedAt: Ember.attr(),
   creator: Ember.attr(),
   updater: Ember.attr(),
+
+  validations: {
+    name: {
+      presence: true,
+    },
+  },
 });
 
 Admin.AdminGroup.url = '/api-umbrella/v1/admin_groups';

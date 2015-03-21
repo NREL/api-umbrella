@@ -14,6 +14,12 @@ class AdminGroup
   has_and_belongs_to_many :permissions, :class_name => "AdminPermission", :inverse_of => nil
 
   # Validations
+  validates :name,
+    :presence => true
+  validates :api_scopes,
+    :presence => true
+  validates :permissions,
+    :presence => true
   validate :validate_permissions
 
   # Mass assignment security

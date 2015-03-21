@@ -1,4 +1,4 @@
-Admin.ApiUser = Ember.Model.extend({
+Admin.ApiUser = Ember.Model.extend(Ember.Validations.Mixin, {
   id: Ember.attr(),
   apiKey: Ember.attr(),
   apiKeyHidesAt: Ember.attr(),
@@ -20,6 +20,18 @@ Admin.ApiUser = Ember.Model.extend({
   updater: Ember.attr(),
 
   settings: Ember.belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
+
+  validations: {
+    firstName: {
+      presence: true,
+    },
+    lastName: {
+      presence: true,
+    },
+    email: {
+      presence: true,
+    },
+  },
 
   init: function() {
     this._super();

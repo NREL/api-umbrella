@@ -1,3 +1,5 @@
+require "common_validations"
+
 class ApiScope
   include Mongoid::Document
   include Mongoid::Timestamps
@@ -10,6 +12,22 @@ class ApiScope
   field :name, :type => String
   field :host, :type => String
   field :path_prefix, :type => String
+
+  # Validations
+  validates :name,
+    :presence => true
+  validates :host,
+    :presence => true,
+    :format => {
+      :with => CommonValidations::HOST_FORMAT,
+      :message => :invalid_host_format,
+    }
+  validates :path_prefix,
+    :presence => true,
+    :format => {
+      :with => CommonValidations::URL_PREFIX_FORMAT,
+      :message => :invalid_url_prefix_format,
+    }
 
   # Mass assignment security
   attr_accessible :name,

@@ -286,6 +286,10 @@ fieldset .table {
   font-style: italic;
 }
 
+.form-horizontal .control-group.error .help-block {
+  margin-top: 0px;
+}
+
 .error-messages {
   h4 {
     margin-bottom: 4px;
