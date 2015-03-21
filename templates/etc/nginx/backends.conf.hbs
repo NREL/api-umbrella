@@ -16,3 +16,15 @@
     {{/each}}
   }
 {{/each}}
+
+{{#each website_backends}}
+  # {{name}}
+  upstream api_umbrella_website_{{_id}}_backend {
+    least_conn;
+    keepalive 10;
+
+    {{#each nginx_servers}}
+      server {{.}};
+    {{/each}}
+  }
+{{/each}}

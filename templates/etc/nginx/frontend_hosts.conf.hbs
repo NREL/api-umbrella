@@ -16,32 +16,36 @@ server {
 
   include ./frontend_defaults.conf;
 
-  # Determine the SSL status when it's passed via X-Forwarded-Proto from the
-  # SSL terminator.
-  set $ssl_status "off";
-  if ($server_port = {{../https_port}}) {
-    set $ssl_status "on";
-  }
+  {{#if enable_web_backend}}
+    # Route the dynamic portions of the site to the Rails web app.
+    location ~* {{../../router.web_backend_regex}} {
+      {{#if ../../router.web_backend_required_https_regex}}
+        # Determine the SSL status when it's passed via X-Forwarded-Proto from the
+        # SSL terminator.
+        set $web_ssl_status "off";
+        if ($server_port = {{../../../https_port}}) {
+          set $web_ssl_status "on";
+        }
 
-  if ($http_x_forwarded_proto = "https") {
-    set $ssl_status "on";
-  }
+        if ($http_x_forwarded_proto = "https") {
+          set $web_ssl_status "on";
+        }
 
-  # Match any required HTTPS-only pages.
-  if ($uri ~ ^/(account|admin|admins|signup)(/|$)) {
-    set $ssl_status "${ssl_status}_required";
-  }
+        # Match any required HTTPS-only pages.
+        if ($uri ~ {{../../../router.web_backend_required_https_regex}}) {
+          set $web_ssl_status "${web_ssl_status}_required";
+        }
 
-  # Force certain content to HTTPS-only.
-  if ($ssl_status = "off_required") {
-    rewrite ^ https://$host:{{../https_port}}$request_uri? permanent;
-  }
+        # Force certain content to HTTPS-only.
+        if ($web_ssl_status = "off_required") {
+          rewrite ^ https://$host:{{../../../https_port}}$request_uri? permanent;
+        }
+      {{/if}}
 
-  # Route the dynamic portions of the site to the Rails web app.
-  location ~* ^/(admin|admins|web-assets)(/|$) {
-    include ./frontend_proxy_header_defaults.conf;
-    proxy_pass http://api_umbrella_web_backend;
-  }
+      include ./frontend_proxy_header_defaults.conf;
+      proxy_pass http://api_umbrella_web_backend;
+    }
+  {{/if}}
 
   {{#if api_url_prefixes_matcher}}
     # Route all API requests through the API Umbrella Gatekeeper.
@@ -51,14 +55,45 @@ server {
     }
   {{/if}}
 
-  # Route the docs and other static pages to the Rails web app. This may
-  # change, so that's why we're treating it separately.
-  location / {
-    {{#if ../static_site.host_header}}
-    set $proxy_host_header "{{../../static_site.host_header}}";
-    {{/if}}
-    include ./frontend_proxy_header_defaults.conf;
-    proxy_pass http://api_umbrella_static_site_backend;
-  }
+  {{#if website_backend}}
+    # Route everything else (documentation and other webpage content) to the
+    # website backend.
+    location / {
+      {{#if website_backend_required_https_regex}}
+        # Determine the SSL status when it's passed via X-Forwarded-Proto from the
+        # SSL terminator.
+        set $web_ssl_status "off";
+        if ($server_port = {{../../../https_port}}) {
+          set $web_ssl_status "on";
+        }
+
+        if ($http_x_forwarded_proto = "https") {
+          set $web_ssl_status "on";
+        }
+
+        # Match any required HTTPS-only pages.
+        if ($uri ~ {{website_backend_required_https_regex}}) {
+          set $web_ssl_status "${web_ssl_status}_required";
+        }
+
+        # Force certain content to HTTPS-only.
+        if ($web_ssl_status = "off_required") {
+          rewrite ^ https://$host:{{../../../https_port}}$request_uri? permanent;
+        }
+      {{/if}}
+
+      {{#if website_host}}
+      set $proxy_host_header "{{website_host}}";
+      {{/if}}
+      include ./frontend_proxy_header_defaults.conf;
+      proxy_pass {{website_protocol}}://{{website_backend}};
+    }
+  {{else}}
+    # If no website is setup for this domain, route everything else to a 404
+    # page (this just ensures we skip the "Welcome to nginx" default page).
+    location / {
+      return 404;
+    }
+  {{/if}}
 }
 {{/each}}

@@ -179,7 +179,7 @@ http {
   {{/unless}}
 
   include ./frontend_hosts.conf;
-  include ./api_backends.conf;
+  include ./backends.conf;
 
   map $http_accept_encoding $normalized_accept_encoding {
     "~(^|,) *gzip *; *q=0[\.0]* *($|,)" "";
