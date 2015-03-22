@@ -203,6 +203,45 @@ apis:
     url_matches:
       - frontend_prefix: /
         backend_prefix: /
+  - _id: with-apis-and-website-example
+    frontend_host: with-apis-and-website.foo
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /example/
+        backend_prefix: /example/
+  - _id: with-apis-and-website-info
+    frontend_host: with-apis-and-website.foo
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /info/
+        backend_prefix: /info/
+  - _id: with-apis-no-website
+    frontend_host: with-apis-no-website.foo
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /example2/
+        backend_prefix: /example2/
+website_backends:
+  - _id: example
+    frontend_host: with-apis-and-website.foo
+    server_host: 127.0.0.1
+    server_port: 9444
+hosts:
+  - hostname: default.foo
+    default: true
+    enable_web_backend: true
+  - hostname: withweb.foo
+    enable_web_backend: true
+  - hostname: withoutweb.foo
 dns_resolver:
   minimum_ttl: 1
   reload_buffer_time: 1
