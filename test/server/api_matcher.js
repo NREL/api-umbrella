@@ -311,7 +311,6 @@ describe('ApiUmbrellaGatekeper', function() {
         describe('mismatched case sensitivity', function() {
           shared.itBehavesLikeGatekeeperBlocked('/info/SPECIFIC/', 404, 'NOT_FOUND');
         });
-
       });
     });
 

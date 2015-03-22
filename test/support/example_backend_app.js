@@ -82,6 +82,13 @@ app.get('/chunked', function(req, res) {
   }, 100);
 });
 
+app.get('/headers/*', function(req, res) {
+  res.set('X-Existing1', 'existing1');
+  res.set('x-existing2', 'existing2');
+  res.set('X-EXISTING3', 'existing3');
+  res.send('Hello World');
+});
+
 app.all('/info/*', function(req, res) {
   var rawUrl = req.protocol + '://' + req.hostname + req.url;
   res.json({
