@@ -1,5 +1,5 @@
 if ($proxy_host_header = '') {
-  set $proxy_host_header $host;
+  set $proxy_host_header $server_name;
 }
 
 proxy_set_header Host $proxy_host_header;

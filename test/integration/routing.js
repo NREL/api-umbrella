@@ -14,6 +14,7 @@ describe('routing', function() {
 
   describe('web admin', function() {
     it('routes to the admin app for the default host', function(done) {
+      this.timeout(5000);
       var options = _.merge({}, this.options, {
         headers: {
           'Host': 'default.foo',
@@ -28,6 +29,7 @@ describe('routing', function() {
     });
 
     it('routes to the admin app for unknown hosts when there is a default host', function(done) {
+      this.timeout(5000);
       var options = _.merge({}, this.options, {
         headers: {
           'Host': 'unknown.foo',
@@ -55,6 +57,7 @@ describe('routing', function() {
     });
 
     it('allows for routing to the web admin for non-default hosts if explicitly enabled', function(done) {
+      this.timeout(5000);
       var options = _.merge({}, this.options, {
         headers: {
           'Host': 'withweb.foo',
@@ -130,6 +133,51 @@ describe('routing', function() {
         should.not.exist(error);
         response.statusCode.should.eql(404);
         body.should.contain('Test 404 Not Found');
+        done();
+      });
+    });
+
+    it('routes to the api-umbrella internal apis for the default host', function(done) {
+      var options = _.merge({}, this.options, {
+        followRedirect: false,
+        headers: {
+          'Host': 'default.foo',
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/', options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(403);
+        body.should.contain('API_KEY_MISSING');
+        done();
+      });
+    });
+
+    it('routes to the api-umbrella internal apis for unknown hosts when there is a default host', function(done) {
+      var options = _.merge({}, this.options, {
+        followRedirect: false,
+        headers: {
+          'Host': 'unknown.foo',
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/', options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(403);
+        body.should.contain('API_KEY_MISSING');
+        done();
+      });
+    });
+
+    it('does not route to the api-umbrella internal apis for non-default hosts that are explicitly defined', function(done) {
+      var options = _.merge({}, this.options, {
+        followRedirect: false,
+        headers: {
+          'Host': 'with-apis-no-website.foo',
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/', options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(404);
+        body.should.contain('404 Not Found');
         done();
       });
     });
