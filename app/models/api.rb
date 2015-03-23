@@ -85,7 +85,7 @@ class Api
 
   def as_json(options)
     options[:methods] ||= []
-    options[:methods] += [:error_data_yaml_strings, :headers_string]
+    options[:methods] += [:error_data_yaml_strings, :headers_string, :default_response_headers_string, :override_response_headers_string]
 
     json = super(options)
 

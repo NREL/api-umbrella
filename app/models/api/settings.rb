@@ -21,6 +21,8 @@ class Api::Settings
   # Relations
   embeds_many :headers, :class_name => "Api::Header"
   embeds_many :rate_limits, :class_name => "Api::RateLimit"
+  embeds_many :default_response_headers, :class_name => "Api::Header"
+  embeds_many :override_response_headers, :class_name => "Api::Header"
   embedded_in :api
   embedded_in :sub_settings
   embedded_in :api_user
@@ -35,7 +37,7 @@ class Api::Settings
   validate :validate_error_data_yaml_strings
 
   # Nested attributes
-  accepts_nested_attributes_for :headers, :rate_limits, :allow_destroy => true
+  accepts_nested_attributes_for :headers, :rate_limits, :default_response_headers, :override_response_headers, :allow_destroy => true
 
   # Mass assignment security
   attr_accessible :append_query_string,
@@ -52,40 +54,37 @@ class Api::Settings
     :allowed_referers,
     :error_templates,
     :error_data_yaml_strings,
+    :headers,
     :headers_string,
     :rate_limits_attributes,
+    :default_response_headers,
+    :default_response_headers_string,
+    :override_response_headers,
+    :override_response_headers_string,
     :as => [:default, :admin]
 
   def headers_string
-    unless @headers_string
-      @headers_string = ""
-      if(self.headers.present?)
-        @headers_string = self.headers.map do |header|
-          header.to_s
-        end.join("\n")
-      end
-    end
-
-    @headers_string
+    read_headers_string(:headers)
   end
 
   def headers_string=(string)
-    @headers_string = string
+    write_headers_string(:headers, string)
+  end
 
-    header_objects = []
+  def default_response_headers_string
+    read_headers_string(:default_response_headers)
+  end
 
-    header_lines = string.split(/[\r\n]+/)
-    header_lines.each do |line|
-      next if(line.strip.blank?)
+  def default_response_headers_string=(string)
+    write_headers_string(:default_response_headers, string)
+  end
 
-      parts = line.split(":", 2)
-      header_objects << Api::Header.new({
-        :key => parts[0].to_s.strip,
-        :value => parts[1].to_s.strip,
-      })
-    end
+  def override_response_headers_string
+    read_headers_string(:override_response_headers)
+  end
 
-    self.headers = header_objects
+  def override_response_headers_string=(string)
+    write_headers_string(:override_response_headers, string)
   end
 
   def error_templates=(templates)
@@ -129,6 +128,43 @@ class Api::Settings
   end
 
   private
+
+  def read_headers_string(field)
+    @headers_strings ||= {}
+    field = field.to_sym
+
+    unless @headers_strings[field]
+      @headers_strings[field] = ""
+      current_value = self.send(field)
+      if(current_value.present?)
+        @headers_strings[field] = current_value.map do |header|
+          header.to_s
+        end.join("\n")
+      end
+    end
+
+    @headers_strings[field]
+  end
+
+  def write_headers_string(field, string)
+    header_objects = []
+
+    if(string.present?)
+      header_lines = string.split(/[\r\n]+/)
+      header_lines.each do |line|
+        next if(line.strip.blank?)
+
+        parts = line.split(":", 2)
+        header_objects << Api::Header.new({
+          :key => parts[0].to_s.strip,
+          :value => parts[1].to_s.strip,
+        })
+      end
+    end
+
+    self.send(:"#{field}=", header_objects)
+    @headers_strings.delete(field.to_sym) if(@headers_strings)
+  end
 
   def validate_error_data_yaml_strings
     strings = @error_data_yaml_strings
