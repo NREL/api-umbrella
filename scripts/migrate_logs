@@ -1,0 +1,65 @@
+#!/usr/bin/env ruby
+
+# A script to migrate analytics log data from a separate ElasticSearch cluster
+# to a new one (where it can be combined with other new data).
+#
+# This is for the migration of developer.nrel.gov's older and separate API
+# Umbrella installation onto api.data.gov's newer one.
+#
+# Setup compressed double tunnel to directly expose ElasticSearch on DB server
+# (via NAT server):
+# ssh -C -L 9999:$DB_INTERNAL_IP:9200 -N $NAT_IP
+#
+# Run this script locally to copy data from $CURRENT_SERVER into remote
+# destination DB server:
+# SOURCE="http://$CURRENT_SERVER:9200" DEST="http://127.0.0.1:9999" ./scripts/migrate_logs
+
+require "open-uri"
+require "fileutils"
+require "json"
+
+source_server = ENV["SOURCE"].chomp("/")
+dest_server = ENV["DEST"].chomp("/")
+
+indices = JSON.parse(open("#{source_server}/_aliases?pretty").read).keys.sort
+indices.each do |source_index|
+  dest_index = source_index.dup
+  if(source_index =~ /^api-umbrella-logs-v1-production-\d\d\d\d-\d\d$/)
+    dest_index.gsub!(/-production-/, "-")
+  elsif(source_index == "api-umbrella")
+    # The geocoding collection
+    # TODO: Figure out how to merge this data over. Maybe nothing else is
+    # really necessary, and we can just use elasticdump like the other indexes?
+    next
+  else
+    raise "Unknown index: #{source_index}"
+  end
+
+  puts "#{Time.now}: #{source_index} => #{dest_index}"
+  output = `./node_modules/.bin/elasticdump --input=#{source_server}/#{source_index} --output=#{dest_server}/#{dest_index}`
+  unless $?.success?
+    raise "elasticdump export failed: #{output}"
+  end
+
+  if(source_index != "api-umbrella")
+    # Create the version-less index alias names.
+    indices = JSON.parse(open("#{dest_server}/_aliases?pretty").read)
+    if(indices[dest_index] && (!indices[dest_index]["aliases"] || indices[dest_index]["aliases"].length != 2))
+      uri = URI("#{dest_server}/_aliases")
+      req = Net::HTTP::Post.new(uri, "Content-Type" => "application/json")
+      req.body = JSON.generate({
+        "actions" => [
+          { "add" => { "index" => dest_index, "alias" => dest_index.gsub("-v1-", "-write-") } },
+          { "add" => { "index" => dest_index, "alias" => dest_index.gsub("-v1-", "-") } },
+        ]
+      })
+      res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+        http.request(req)
+      end
+
+      if(res.code.to_i != 200)
+        raise "Index alias creation failed: #{res.code} #{res.message}"
+      end
+    end
+  end
+end
