@@ -36,7 +36,7 @@ indices.each do |source_index|
   end
 
   puts "#{Time.now}: #{source_index} => #{dest_index}"
-  output = `./node_modules/.bin/elasticdump --input=#{source_server}/#{source_index} --output=#{dest_server}/#{dest_index}`
+  output = `./node_modules/.bin/elasticdump --bulk --bulk-use-output-index-name --input=#{source_server}/#{source_index} --output=#{dest_server}/#{dest_index}`
   unless $?.success?
     raise "elasticdump export failed: #{output}"
   end
