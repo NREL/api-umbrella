@@ -19,6 +19,14 @@ if ($real_port = "") {
   set $real_port $server_port;
 }
 
+# Setup a variable for appending to the host header when the port is
+# non-default (non 80 or 443) and needs to be appended to host headers.
+set $non_default_port_suffix "";
+set $scheme_and_port "$real_scheme:$real_port";
+if ($scheme_and_port !~ "^(http:80|https:443)$") {
+  set $non_default_port_suffix ":$real_port";
+}
+
 # Only retry backends in the event of connection errors (and not also
 # connection timeouts as is the default). This prevents slow backend timeouts
 # triggering multiple requests (since there are usually multiple gatekeeper

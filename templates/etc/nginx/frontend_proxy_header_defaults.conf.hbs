@@ -1,5 +1,11 @@
-if ($proxy_host_header = '') {
-  set $proxy_host_header $server_name;
+if ($proxy_host_header = "") {
+  set $proxy_host_header $host;
+}
+
+# Append the port to the host header if the port is non-default (not 80 or 443)
+# and it's not already present.
+if ($proxy_host_header !~ ":") {
+  set $proxy_host_header "$proxy_host_header$non_default_port_suffix";
 }
 
 proxy_set_header Host $proxy_host_header;

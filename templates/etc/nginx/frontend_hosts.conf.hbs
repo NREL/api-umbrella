@@ -38,7 +38,7 @@ server {
 
         # Force certain content to HTTPS-only.
         if ($web_ssl_status = "off_required") {
-          rewrite ^ https://$server_name:{{../../../https_port}}$request_uri? permanent;
+          rewrite ^ https://$host:{{../../../https_port}}$request_uri? permanent;
         }
       {{/if}}
 
@@ -50,6 +50,10 @@ server {
   {{#if api_url_prefixes_matcher}}
     # Route all API requests through the API Umbrella Gatekeeper.
     location ~ {{api_url_prefixes_matcher}} {
+      # For wildcard hosts, normalize the host that's passed to the backend to
+      # the defined server name to simplify API host matching.
+      set $proxy_host_header $server_name;
+
       include ./frontend_proxy_header_defaults.conf;
       include ./gatekeeper.conf;
     }
@@ -78,7 +82,7 @@ server {
 
         # Force certain content to HTTPS-only.
         if ($web_ssl_status = "off_required") {
-          rewrite ^ https://$server_name:{{../../../https_port}}$request_uri? permanent;
+          rewrite ^ https://$host:{{../../../https_port}}$request_uri? permanent;
         }
       {{/if}}
 

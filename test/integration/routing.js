@@ -86,7 +86,7 @@ describe('routing', function() {
       });
     });
 
-    it('redirects to the default host when performing the https redirect for the admin', function(done) {
+    it('redirects to the same host when performing the https redirect for the admin', function(done) {
       var options = _.merge({}, this.options, {
         followRedirect: false,
         headers: {
@@ -96,7 +96,23 @@ describe('routing', function() {
       request.get('http://localhost:9080/admin/login', options, function(error, response) {
         should.not.exist(error);
         response.statusCode.should.eql(301);
-        response.headers.location.should.eql('https://default.foo:9081/admin/login');
+        response.headers.location.should.eql('https://unknown.foo:9081/admin/login');
+        done();
+      });
+    });
+
+    it('redirects to the same host when performing the login redirect for the admin', function(done) {
+      this.timeout(5000);
+      var options = _.merge({}, this.options, {
+        followRedirect: false,
+        headers: {
+          'Host': 'unknown.foo',
+        },
+      });
+      request.get('https://localhost:9081/admin/', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(302);
+        response.headers.location.should.eql('https://unknown.foo:9081/admin/login');
         done();
       });
     });
