@@ -21,15 +21,40 @@ require "json"
 source_server = ENV["SOURCE"].chomp("/")
 dest_server = ENV["DEST"].chomp("/")
 
-indices = JSON.parse(open("#{source_server}/_aliases?pretty").read).keys.sort
+# Manually sync the geocoding index by explicitly merging to pick the most
+# recent result for a location.
+source_index = "api-umbrella"
+dest_index = "api-umbrella"
+puts "#{Time.now}: #{source_index} => #{dest_index}"
+source_geocodes = JSON.parse(open("#{source_server}/#{source_index}/_search?size=50000").read)["hits"]["hits"]
+existing_geocodes = JSON.parse(open("#{dest_server}/#{dest_index}/_search?size=50000").read)["hits"]["hits"]
+source_geocodes.each do |source_geocode|
+  existing_geocode = existing_geocodes.detect { |dg| dg["_id"] == source_geocode["_id"] }
+  if(existing_geocode && existing_geocode["_source"]["updated_at"] > source_geocode["_source"]["updated_at"])
+    next
+  end
+
+  uri = URI("#{dest_server}/#{dest_index}/#{source_geocode["_type"]}/#{source_geocode["_id"]}")
+  req = Net::HTTP::Put.new(uri, "Content-Type" => "application/json")
+  req.body = JSON.generate(source_geocode["_source"])
+  res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+    http.request(req)
+  end
+
+  if(res.code.to_i != 200 && res.code.to_i != 201)
+    raise "Index alias creation failed: #{res.code} #{res.message}"
+  end
+end
+
+indices = JSON.parse(open("#{source_server}/_aliases").read).keys.sort
 indices.each do |source_index|
   dest_index = source_index.dup
+  next unless(source_index == "api-umbrella-logs-v1-production-2015-03")
   if(source_index =~ /^api-umbrella-logs-v1-production-\d\d\d\d-\d\d$/)
     dest_index.gsub!(/-production-/, "-")
   elsif(source_index == "api-umbrella")
-    # The geocoding collection
-    # TODO: Figure out how to merge this data over. Maybe nothing else is
-    # really necessary, and we can just use elasticdump like the other indexes?
+    # The geocoding collection - Migrated manually above to pick out most
+    # recent from duplicates.
     next
   else
     raise "Unknown index: #{source_index}"
@@ -43,7 +68,7 @@ indices.each do |source_index|
 
   if(source_index != "api-umbrella")
     # Create the version-less index alias names.
-    indices = JSON.parse(open("#{dest_server}/_aliases?pretty").read)
+    indices = JSON.parse(open("#{dest_server}/_aliases").read)
     if(indices[dest_index] && (!indices[dest_index]["aliases"] || indices[dest_index]["aliases"].length != 2))
       uri = URI("#{dest_server}/_aliases")
       req = Net::HTTP::Post.new(uri, "Content-Type" => "application/json")
