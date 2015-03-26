@@ -203,6 +203,15 @@ apis:
     url_matches:
       - frontend_prefix: /
         backend_prefix: /
+  - _id: wildcard-frontend-host
+    frontend_host: "*"
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /wildcard-info/
+        backend_prefix: /info/
 dns_resolver:
   minimum_ttl: 1
   reload_buffer_time: 1
