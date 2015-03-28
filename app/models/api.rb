@@ -132,7 +132,6 @@ class Api
   end
 
   def handle_transition_https_on_publish!
-    changed = false
     if(self.settings)
       self.settings.set_require_https_transition_start_at_on_publish
     end
