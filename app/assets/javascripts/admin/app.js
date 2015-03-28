@@ -94,7 +94,7 @@ function eachTranslatedAttribute(object, fn) {
   for (var key in object) {
     isTranslatedAttributeMatch = key.match(isTranslatedAttribute);
     if (isTranslatedAttributeMatch) {
-      var translation = object[key] == null ? null : polyglot.t(object[key]);
+      var translation = (!object[key]) ? null : polyglot.t(object[key]);
       fn.call(object, isTranslatedAttributeMatch[1], translation);
     }
   }
