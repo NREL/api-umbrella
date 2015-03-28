@@ -5,7 +5,8 @@ class Api::Settings
   field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
   field :append_query_string, :type => String
   field :http_basic_auth, :type => String
-  field :require_https, :type => Boolean
+  field :require_https, :type => String
+  field :require_https_transition_start_at, :type => Time
   field :disable_api_key, :type => Boolean
   field :required_roles, :type => Array
   field :allowed_ips, :type => Array
@@ -26,6 +27,8 @@ class Api::Settings
   embedded_in :api_user
 
   # Validations
+  validates :require_https,
+    :inclusion => { :in => %w(required_return_error required_return_redirect transition_return_error transition_return_redirect optional), :allow_blank => true }
   validates :rate_limit_mode,
     :inclusion => { :in => %w(unlimited custom), :allow_blank => true }
   validates :anonymous_rate_limit_behavior,
@@ -41,6 +44,7 @@ class Api::Settings
   attr_accessible :append_query_string,
     :http_basic_auth,
     :require_https,
+    :require_https_transition_start_at,
     :disable_api_key,
     :rate_limit_mode,
     :anonymous_rate_limit_behavior,
@@ -125,6 +129,18 @@ class Api::Settings
       # Ignore YAML errors, we'll deal with validating during
       # validate_error_data_yaml_strings.
       logger.info("YAML parsing error: #{error.message}")
+    end
+  end
+
+  def set_require_https_transition_start_at_on_publish
+    if(self.require_https =~ /^transition_/)
+      if(self.require_https_transition_start_at.blank?)
+        self.require_https_transition_start_at = Time.now
+      end
+    else
+      if(self.require_https_transition_start_at.present?)
+        self.require_https_transition_start_at = nil
+      end
     end
   end
 

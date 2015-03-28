@@ -131,6 +131,25 @@ class Api
     true
   end
 
+  def handle_transition_https_on_publish!
+    changed = false
+    if(self.settings)
+      self.settings.set_require_https_transition_start_at_on_publish
+    end
+
+    if(self.sub_settings)
+      self.sub_settings.each do |sub|
+        if(sub.settings)
+          sub.settings.set_require_https_transition_start_at_on_publish
+        end
+      end
+    end
+
+    if(self.changed?)
+      self.save!
+    end
+  end
+
   def roles
     roles = []
 

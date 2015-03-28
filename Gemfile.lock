@@ -218,6 +218,7 @@ GEM
     kaminari-bootstrap (0.1.3)
       kaminari (>= 0.13.0)
       rails
+    kramdown (1.6.0)
     libv8 (3.16.14.7)
     mail (2.5.4)
       mime-types (~> 1.16)
@@ -520,6 +521,7 @@ DEPENDENCIES
   jshintrb (~> 0.2.4)!
   kaminari (~> 0.16.1)
   kaminari-bootstrap (~> 0.1.3)
+  kramdown (~> 1.6.0)
   mongoid (~> 3.1.6)
   mongoid-embedded-errors (~> 2.0.1)
   mongoid_delorean (~> 1.3.0)
