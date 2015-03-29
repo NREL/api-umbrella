@@ -357,6 +357,14 @@ app.all('/logging-example/*', function(req, res) {
   res.end('hello');
 });
 
+app.all('/', function(req, res) {
+  res.end('Test Home Page');
+});
+
+app.use(function(req, res) {
+  res.status(404).send('Test 404 Not Found');
+});
+
 // Listen on all interfaces on both IPv4 and IPv6
 ['0.0.0.0', '::1'].forEach(function(host) {
   var server = app.listen(9444, host);
