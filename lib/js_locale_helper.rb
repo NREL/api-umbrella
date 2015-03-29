@@ -21,16 +21,10 @@ module JsLocaleHelper
     if(data.kind_of?(Hash))
       data.each do |key, value|
         if(value.kind_of?(String))
-          # Parse as github-flavored markdown.
-          markdown = Kramdown::Document.new(value, :input => 'GFM').to_html
-
-          # For simple one-liner values, strip the default paragraph tags
-          # converting to Markdown adds.
-          if(markdown.lines.length == 1)
-            markdown.gsub!(%r{<p>(.*)</p>}, "\\1")
+          if(key =~ /_tooltip$/)
+            # Parse as github-flavored markdown.
+            data[key] = Kramdown::Document.new(value, :input => 'GFM').to_html
           end
-
-          data[key] = markdown
         else
           data[key] = markdown!(value)
         end
