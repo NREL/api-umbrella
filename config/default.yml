@@ -147,6 +147,7 @@ strip_cookies:
 default_host: localhost
 site_name: API Umbrella
 apiSettings:
+  require_https: required_return_error
   rate_limits:
     - duration: 1000
       accuracy: 500
@@ -229,3 +230,7 @@ apiSettings:
       status_code: 500
       code: INTERNAL_SERVER_ERROR
       message: An unexpected error has occurred. Try again later or contact us at {{baseUrl}}/contact for assistance
+    https_required:
+      status_code: 400
+      code: HTTPS_REQUIRED
+      message: "Requests must be made over HTTPS. Try accessing the API at: {{httpsUrl}}"

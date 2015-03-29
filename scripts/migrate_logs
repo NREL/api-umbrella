@@ -1,0 +1,90 @@
+#!/usr/bin/env ruby
+
+# A script to migrate analytics log data from a separate ElasticSearch cluster
+# to a new one (where it can be combined with other new data).
+#
+# This is for the migration of developer.nrel.gov's older and separate API
+# Umbrella installation onto api.data.gov's newer one.
+#
+# Setup compressed double tunnel to directly expose ElasticSearch on DB server
+# (via NAT server):
+# ssh -C -L 9999:$DB_INTERNAL_IP:9200 -N $NAT_IP
+#
+# Run this script locally to copy data from $CURRENT_SERVER into remote
+# destination DB server:
+# SOURCE="http://$CURRENT_SERVER:9200" DEST="http://127.0.0.1:9999" ./scripts/migrate_logs
+
+require "open-uri"
+require "fileutils"
+require "json"
+
+source_server = ENV["SOURCE"].chomp("/")
+dest_server = ENV["DEST"].chomp("/")
+
+# Manually sync the geocoding index by explicitly merging to pick the most
+# recent result for a location.
+source_index = "api-umbrella"
+dest_index = "api-umbrella"
+puts "#{Time.now}: #{source_index} => #{dest_index}"
+source_geocodes = JSON.parse(open("#{source_server}/#{source_index}/_search?size=50000").read)["hits"]["hits"]
+existing_geocodes = JSON.parse(open("#{dest_server}/#{dest_index}/_search?size=50000").read)["hits"]["hits"]
+source_geocodes.each do |source_geocode|
+  existing_geocode = existing_geocodes.detect { |dg| dg["_id"] == source_geocode["_id"] }
+  if(existing_geocode && existing_geocode["_source"]["updated_at"] > source_geocode["_source"]["updated_at"])
+    next
+  end
+
+  uri = URI("#{dest_server}/#{dest_index}/#{source_geocode["_type"]}/#{source_geocode["_id"]}")
+  req = Net::HTTP::Put.new(uri, "Content-Type" => "application/json")
+  req.body = JSON.generate(source_geocode["_source"])
+  res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+    http.request(req)
+  end
+
+  if(res.code.to_i != 200 && res.code.to_i != 201)
+    raise "Index alias creation failed: #{res.code} #{res.message}"
+  end
+end
+
+indices = JSON.parse(open("#{source_server}/_aliases").read).keys.sort
+indices.each do |source_index|
+  dest_index = source_index.dup
+  next unless(source_index == "api-umbrella-logs-v1-production-2015-03")
+  if(source_index =~ /^api-umbrella-logs-v1-production-\d\d\d\d-\d\d$/)
+    dest_index.gsub!(/-production-/, "-")
+  elsif(source_index == "api-umbrella")
+    # The geocoding collection - Migrated manually above to pick out most
+    # recent from duplicates.
+    next
+  else
+    raise "Unknown index: #{source_index}"
+  end
+
+  puts "#{Time.now}: #{source_index} => #{dest_index}"
+  output = `./node_modules/.bin/elasticdump --bulk --bulk-use-output-index-name --input=#{source_server}/#{source_index} --output=#{dest_server}/#{dest_index}`
+  unless $?.success?
+    raise "elasticdump export failed: #{output}"
+  end
+
+  if(source_index != "api-umbrella")
+    # Create the version-less index alias names.
+    indices = JSON.parse(open("#{dest_server}/_aliases").read)
+    if(indices[dest_index] && (!indices[dest_index]["aliases"] || indices[dest_index]["aliases"].length != 2))
+      uri = URI("#{dest_server}/_aliases")
+      req = Net::HTTP::Post.new(uri, "Content-Type" => "application/json")
+      req.body = JSON.generate({
+        "actions" => [
+          { "add" => { "index" => dest_index, "alias" => dest_index.gsub("-v1-", "-write-") } },
+          { "add" => { "index" => dest_index, "alias" => dest_index.gsub("-v1-", "-") } },
+        ]
+      })
+      res = Net::HTTP.start(uri.hostname, uri.port) do |http|
+        http.request(req)
+      end
+
+      if(res.code.to_i != 200)
+        raise "Index alias creation failed: #{res.code} #{res.message}"
+      end
+    end
+  end
+end
