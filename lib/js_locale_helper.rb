@@ -21,7 +21,7 @@ module JsLocaleHelper
     if(data.kind_of?(Hash))
       data.each do |key, value|
         if(value.kind_of?(String))
-          if(key =~ /_tooltip$/)
+          if(key =~ /_markdown$/)
             # Parse as github-flavored markdown.
             data[key] = Kramdown::Document.new(value, :input => 'GFM').to_html
           end
