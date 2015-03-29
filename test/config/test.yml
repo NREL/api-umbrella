@@ -194,6 +194,28 @@ apis:
     url_matches:
       - frontend_prefix: /dns/no-drops-during-changes/
         backend_prefix: /
+  - _id: https-requirements-error
+    frontend_host: "*"
+    backend_host: localhost
+    servers:
+      - host: localhost
+        port: 9444
+    url_matches:
+      - frontend_prefix: /info/https/required_return_error/
+        backend_prefix: /info/
+    settings:
+      require_https: required_return_error
+  - _id: https-requirements-redirect
+    frontend_host: "*"
+    backend_host: localhost
+    servers:
+      - host: localhost
+        port: 9444
+    url_matches:
+      - frontend_prefix: /info/https/required_return_redirect/
+        backend_prefix: /info/
+    settings:
+      require_https: required_return_redirect
   - _id: example
     frontend_host: localhost
     backend_host: localhost
@@ -215,3 +237,5 @@ apis:
 dns_resolver:
   minimum_ttl: 1
   reload_buffer_time: 1
+apiSettings:
+  require_https: optional
