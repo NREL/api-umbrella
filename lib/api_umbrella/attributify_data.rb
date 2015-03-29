@@ -49,7 +49,7 @@ module ApiUmbrella
       settings_data = data["settings_attributes"]
       old_settings_data = old_data["settings"] if(old_data.present?)
 
-      %w(headers rate_limits).each do |collection_name|
+      %w(headers rate_limits default_response_headers override_response_headers).each do |collection_name|
         attributify_embeds_many!(settings_data, collection_name, old_settings_data)
       end
     end
