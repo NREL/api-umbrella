@@ -41,4 +41,9 @@ Admin.Router.map(function() {
     this.route('map', { path: '/map/*query' });
     this.route('mapDefault', { path: '/map' });
   });
+
+  this.resource('website_backends', { path: '/website_backends' }, function() {
+    this.route('new');
+    this.route('edit', { path: '/:websiteBackendId/edit' });
+  });
 });

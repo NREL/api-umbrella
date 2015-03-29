@@ -10,23 +10,36 @@ class Api::V1::ConfigController < Api::V1::BaseController
   def publish
     active_config = ConfigVersion.active_config || {}
     new_config = active_config.deep_dup
-    new_config["apis"] ||= []
 
-    params[:config][:apis].each do |api_id, api_params|
-      next unless(api_params[:publish].to_s == "1")
+    ["apis", "website_backends"].each do |category|
+      new_config[category] ||= []
+      next unless(params[:config].present? && params[:config][category].present?)
 
-      api = Api.unscoped.find(api_id)
-      authorize(api, :publish?)
+      params[:config][category].each do |record_id, record_params|
+        next unless(record_params[:publish].to_s == "1")
 
-      api.handle_transition_https_on_publish!
+        record = case(category)
+                 when "apis"
+                   Api.unscoped.find(record_id)
+                 when "website_backends"
+                   WebsiteBackend.unscoped.find(record_id)
+                 end
 
-      new_config["apis"].reject! { |data| data["_id"] == api_id }
-      unless api.deleted_at?
-        new_config["apis"] << api.attributes_hash
+        authorize(record, :publish?)
+
+        if(record.kind_of?(Api))
+          record.handle_transition_https_on_publish!
+        end
+
+        new_config[category].reject! { |data| data["_id"] == record_id }
+        unless record.deleted_at?
+          new_config[category] << record.attributes_hash
+        end
       end
     end
 
     new_config["apis"].sort_by! { |data| data["sort_order"].to_i }
+    new_config["website_backends"].sort_by! { |data| data["frontend_host"].to_i }
 
     @config_version = ConfigVersion.publish!(new_config)
     respond_with(:api_v1, @config_version, :root => "config_version", :location => api_v1_config_pending_changes_url)
