@@ -8,4 +8,4 @@ end
 
 role :app, servers
 role :web, servers
-role :db, []
+role :db, servers.first

@@ -18,6 +18,11 @@ end
 module ApiUmbrella
   class Application < Rails::Application
     config.before_configuration do
+      default_config = "/opt/api-umbrella/var/run/runtime_config.yml"
+      if(ENV["API_UMBRELLA_CONFIG"].blank? && File.exist?(default_config) && File.readable?(default_config))
+        ENV["API_UMBRELLA_CONFIG"] = default_config
+      end
+
       if(ENV["API_UMBRELLA_CONFIG"])
         ApiUmbrellaConfig.add_source!(ENV["API_UMBRELLA_CONFIG"])
         ApiUmbrellaConfig.reload!
