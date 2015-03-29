@@ -152,7 +152,7 @@ describe('https requirements', function() {
 
         request('http://localhost:9333' + path + '?foo=bar&hello=world', options, function(error, response, body) {
           should.not.exist(error);
-          body.should.include('https://localhost:9333' + path + '?foo=bar&hello=world');
+          body.should.include('https://localhost' + path + '?foo=bar&hello=world');
           done();
         });
       });
@@ -178,7 +178,7 @@ describe('https requirements', function() {
 
         request('http://localhost:9333' + path + '?foo=bar&hello=world', options, function(error, response) {
           should.not.exist(error);
-          response.headers['location'].should.eql('https://localhost:9333' + path + '?foo=bar&hello=world');
+          response.headers['location'].should.eql('https://localhost' + path + '?foo=bar&hello=world');
           done();
         });
       });
@@ -194,7 +194,7 @@ describe('https requirements', function() {
         request('http://localhost:9333' + path + '?foo=bar&hello=world', options, function(error, response, body) {
           should.not.exist(error);
           response.headers['content-type'].should.eql('text/plain');
-          body.should.eql('Redirecting to https://localhost:9333' + path + '?foo=bar&hello=world');
+          body.should.eql('Redirecting to https://localhost' + path + '?foo=bar&hello=world');
           parseInt(response.headers['content-length'], 10).should.eql(body.length);
           done();
         });
@@ -231,7 +231,7 @@ describe('https requirements', function() {
 
         request('http://localhost:9333' + path + '?foo=bar&hello=world', options, function(error, response, body) {
           should.not.exist(error);
-          response.headers['location'].should.eql('https://localhost:9333' + path + '?foo=bar&hello=world');
+          response.headers['location'].should.eql('https://localhost' + path + '?foo=bar&hello=world');
           body.should.eql('');
           should.not.exist(response.headers['content-type']);
           should.not.exist(response.headers['content-length']);
