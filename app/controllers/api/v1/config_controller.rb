@@ -27,6 +27,10 @@ class Api::V1::ConfigController < Api::V1::BaseController
 
         authorize(record, :publish?)
 
+        if(record.kind_of?(Api))
+          record.handle_transition_https_on_publish!
+        end
+
         new_config[category].reject! { |data| data["_id"] == record_id }
         unless record.deleted_at?
           new_config[category] << record.attributes_hash

@@ -13,6 +13,8 @@ Admin.ApiSettings = Ember.Model.extend({
   authenticatedRateLimitBehavior: Ember.attr(),
   passApiKeyHeader: Ember.attr(),
   passApiKeyQueryParam: Ember.attr(),
+  defaultResponseHeadersString: Ember.attr(),
+  overrideResponseHeadersString: Ember.attr(),
   errorTemplates: Ember.attr(),
   errorDataYamlStrings: Ember.attr(),
 

@@ -18,6 +18,32 @@ describe Api::V1::ApisController do
         :required_roles => [
           "test-write",
         ],
+        :headers => [
+          {
+            :key => "X-Add1",
+            :value => "test1",
+          },
+          {
+            :key => "X-Add2",
+            :value => "test2",
+          },
+        ],
+        :default_response_headers => [
+          {
+            :key => "X-Default-Add1",
+            :value => "test1",
+          },
+          {
+            :key => "X-Default-Add2",
+            :value => "test2",
+          },
+        ],
+        :override_response_headers => [
+          {
+            :key => "X-Override-Add1",
+            :value => "test1",
+          },
+        ],
       }),
     })
     @google_api = FactoryGirl.create(:google_api)
@@ -36,6 +62,247 @@ describe Api::V1::ApisController do
       :url_matches => [],
     })
     @empty_url_prefixes_api.save!(:validate => false)
+  end
+
+  shared_examples "api settings header fields - show" do |field|
+    it "returns no headers as an empty string" do
+      api = FactoryGirl.create(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+        }),
+      })
+
+      admin_token_auth(@admin)
+      get :show, :format => "json", :id => api.id
+
+      response.status.should eql(200)
+      data = MultiJson.load(response.body)
+      data["api"]["settings"]["#{field}_string"].should eql("")
+    end
+
+    it "returns a single header as a string" do
+      api = FactoryGirl.create(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}" => [
+            FactoryGirl.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
+          ],
+        }),
+      })
+
+      admin_token_auth(@admin)
+      get :show, :format => "json", :id => api.id
+
+      response.status.should eql(200)
+      data = MultiJson.load(response.body)
+      data["api"]["settings"]["#{field}_string"].should eql("X-Add1: test1")
+    end
+
+    it "returns multiple headers as a new-line separated string" do
+      api = FactoryGirl.create(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}" => [
+            FactoryGirl.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
+            FactoryGirl.attributes_for(:api_header, { :key => "X-Add2", :value => "test2" }),
+          ],
+        }),
+      })
+
+      admin_token_auth(@admin)
+      get :show, :format => "json", :id => api.id
+
+      response.status.should eql(200)
+      data = MultiJson.load(response.body)
+      data["api"]["settings"]["#{field}_string"].should eql("X-Add1: test1\nX-Add2: test2")
+    end
+  end
+
+  shared_examples "api settings header fields - create" do |field|
+    it "accepts a nil value" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}_string" => nil,
+        }),
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["settings"]["#{field}_string"].should eql("")
+
+        api = Api.find(data["api"]["id"])
+        api.settings.send(field).length.should eql(0)
+      end.to change { Api.count }.by(1)
+    end
+
+    it "accepts an empty string" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}_string" => "",
+        }),
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["settings"]["#{field}_string"].should eql("")
+
+        api = Api.find(data["api"]["id"])
+        api.settings.send(field).length.should eql(0)
+      end.to change { Api.count }.by(1)
+    end
+
+    it "parses a single header from a string" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}_string" => "X-Add1: test1",
+        }),
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["settings"]["#{field}_string"].should eql("X-Add1: test1")
+
+        api = Api.find(data["api"]["id"])
+        api.settings.send(field).length.should eql(1)
+      end.to change { Api.count }.by(1)
+    end
+
+    it "parses a multiple headers from a string" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}_string" => "X-Add1: test1\nX-Add2: test2",
+        }),
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["settings"]["#{field}_string"].should eql("X-Add1: test1\nX-Add2: test2")
+
+        api = Api.find(data["api"]["id"])
+        api.settings.send(field).length.should eql(2)
+      end.to change { Api.count }.by(1)
+    end
+
+    it "strips extra whitespace from the string" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}_string" => "\n\n  X-Add1:test1\n\n\nX-Add2:     test2   \n\n",
+        }),
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["settings"]["#{field}_string"].should eql("X-Add1: test1\nX-Add2: test2")
+
+        api = Api.find(data["api"]["id"])
+        api.settings.send(field).length.should eql(2)
+      end.to change { Api.count }.by(1)
+    end
+
+    it "only parses to the first colon for the header name" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}_string" => "X-Add1: test1:test2",
+        }),
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["settings"]["#{field}_string"].should eql("X-Add1: test1:test2")
+
+        api = Api.find(data["api"]["id"])
+        api.settings.send(field).length.should eql(1)
+      end.to change { Api.count }.by(1)
+    end
+
+  end
+
+  shared_examples "api settings header fields - update" do |field|
+    it "clears existing headers when passed nil" do
+      admin_token_auth(@admin)
+
+      api = FactoryGirl.create(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}" => [
+            FactoryGirl.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
+          ],
+        }),
+      })
+
+      api.settings.send(field).length.should eql(1)
+
+      attributes = api.serializable_hash
+      attributes["settings"].delete(field.to_s)
+      attributes["settings"]["#{field}_string"] = nil
+      put :update, :format => "json", :id => api.id, :api => attributes
+
+      response.status.should eql(204)
+      api = Api.find(api.id)
+      api.settings.send(field).length.should eql(0)
+    end
+
+    it "clears existing headers when passed an empty string" do
+      admin_token_auth(@admin)
+
+      api = FactoryGirl.create(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}" => [
+            FactoryGirl.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
+          ],
+        }),
+      })
+
+      api.settings.send(field).length.should eql(1)
+
+      attributes = api.serializable_hash
+      attributes["settings"].delete(field.to_s)
+      attributes["settings"]["#{field}_string"] = ""
+      put :update, :format => "json", :id => api.id, :api => attributes
+
+      response.status.should eql(204)
+      api = Api.find(api.id)
+      api.settings.send(field).length.should eql(0)
+    end
+
+    it "replaces existing headers when passed the headers string" do
+      admin_token_auth(@admin)
+
+      api = FactoryGirl.create(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}" => [
+            FactoryGirl.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
+          ],
+        }),
+      })
+
+      api.settings.send(field).length.should eql(1)
+      api.settings.send(field).map { |h| h.key }.should eql(["X-Add1"])
+
+      attributes = api.serializable_hash
+      attributes["settings"].delete(field.to_s)
+      attributes["settings"]["#{field}_string"] = "X-New1: test1\nX-New2: test2"
+      put :update, :format => "json", :id => api.id, :api => attributes
+
+      response.status.should eql(204)
+      api = Api.find(api.id)
+      api.settings.send(field).length.should eql(2)
+      api.settings.send(field).map { |h| h.key }.should eql(["X-New1", "X-New2"])
+    end
   end
 
   describe "GET index" do
@@ -186,6 +453,18 @@ describe Api::V1::ApisController do
         data = MultiJson.load(response.body)
         data.keys.should eql(["errors"])
       end
+    end
+
+    describe "request headers" do
+      it_behaves_like "api settings header fields - show", :headers
+    end
+
+    describe "response default headers" do
+      it_behaves_like "api settings header fields - show", :default_response_headers
+    end
+
+    describe "response override headers" do
+      it_behaves_like "api settings header fields - show", :override_response_headers
     end
   end
 
@@ -465,6 +744,18 @@ describe Api::V1::ApisController do
         end.to change { Api.count }.by(1)
       end
     end
+
+    describe "request headers" do
+      it_behaves_like "api settings header fields - create", :headers
+    end
+
+    describe "response default headers" do
+      it_behaves_like "api settings header fields - create", :default_response_headers
+    end
+
+    describe "response override headers" do
+      it_behaves_like "api settings header fields - create", :override_response_headers
+    end
   end
 
   describe "PUT update" do
@@ -729,6 +1020,18 @@ describe Api::V1::ApisController do
         @google_api = Api.find(@google_api.id)
         @google_api.settings.required_roles.should eql(attributes[:settings][:required_roles])
       end
+    end
+
+    describe "request headers" do
+      it_behaves_like "api settings header fields - update", :headers
+    end
+
+    describe "response default headers" do
+      it_behaves_like "api settings header fields - update", :default_response_headers
+    end
+
+    describe "response override headers" do
+      it_behaves_like "api settings header fields - update", :override_response_headers
     end
   end
 

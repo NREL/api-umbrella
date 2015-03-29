@@ -85,7 +85,7 @@ class Api
 
   def as_json(options)
     options[:methods] ||= []
-    options[:methods] += [:error_data_yaml_strings, :headers_string]
+    options[:methods] += [:error_data_yaml_strings, :headers_string, :default_response_headers_string, :override_response_headers_string]
 
     json = super(options)
 
@@ -129,6 +129,24 @@ class Api
     end
 
     true
+  end
+
+  def handle_transition_https_on_publish!
+    if(self.settings)
+      self.settings.set_require_https_transition_start_at_on_publish
+    end
+
+    if(self.sub_settings)
+      self.sub_settings.each do |sub|
+        if(sub.settings)
+          sub.settings.set_require_https_transition_start_at_on_publish
+        end
+      end
+    end
+
+    if(self.changed?)
+      self.save!
+    end
   end
 
   def roles
