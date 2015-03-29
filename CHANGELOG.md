@@ -15,8 +15,11 @@
 * **Upgrade bundled dependencies:**
   * Bundler 1.7.12 -> 1.7.13
   * ElasticSearch 1.4.2 -> 1.4.4
+  * MongoDB 2.6.7 -> 2.6.9
   * nginx 1.7.9 -> 1.7.10
   * ngx_txid a41a705 -> f1c197c
+  * Node.js 0.10.36 -> 0.10.38
+  * OpenSSL 1.0.1l -> 1.0.1m
   * RubyGems 2.4.5 -> 2.4.6
   * Varnish 4.0.2 -> 4.0.3
 
