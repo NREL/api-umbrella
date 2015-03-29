@@ -195,7 +195,7 @@ apis:
       - frontend_prefix: /dns/no-drops-during-changes/
         backend_prefix: /
   - _id: https-requirements-error
-    frontend_host: "*"
+    frontend_host: "https.foo"
     backend_host: localhost
     servers:
       - host: localhost
@@ -206,7 +206,7 @@ apis:
     settings:
       require_https: required_return_error
   - _id: https-requirements-redirect
-    frontend_host: "*"
+    frontend_host: "https.foo"
     backend_host: localhost
     servers:
       - host: localhost

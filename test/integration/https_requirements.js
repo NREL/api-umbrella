@@ -27,13 +27,13 @@ describe('https requirements', function() {
   it('https redirects include the original host and URL including api key', function(done) {
     var options = _.merge({}, this.options, {
       headers: {
-        'Host': 'unknown.foo',
+        'Host': 'https.foo',
       },
     });
     request.get('http://localhost:9080/info/https/required_return_redirect/?foo=bar&test1=test2&api_key=' + this.apiKey, options, function(error, response) {
       should.not.exist(error);
       response.statusCode.should.eql(301);
-      response.headers.location.should.eql('https://unknown.foo:9081/info/https/required_return_redirect/?foo=bar&test1=test2&api_key=' + this.apiKey);
+      response.headers.location.should.eql('https://https.foo:9081/info/https/required_return_redirect/?foo=bar&test1=test2&api_key=' + this.apiKey);
       done();
     }.bind(this));
   });
@@ -41,13 +41,13 @@ describe('https requirements', function() {
   it('POST requests result in a 307 redirect', function(done) {
     var options = _.merge({}, this.options, {
       headers: {
-        'Host': 'unknown.foo',
+        'Host': 'https.foo',
       },
     });
     request.post('http://localhost:9080/info/https/required_return_redirect/?foo=bar&test1=test2', options, function(error, response) {
       should.not.exist(error);
       response.statusCode.should.eql(307);
-      response.headers.location.should.eql('https://unknown.foo:9081/info/https/required_return_redirect/?foo=bar&test1=test2');
+      response.headers.location.should.eql('https://https.foo:9081/info/https/required_return_redirect/?foo=bar&test1=test2');
       done();
     });
   });
@@ -55,13 +55,13 @@ describe('https requirements', function() {
   it('returns the https url in the error message', function(done) {
     var options = _.merge({}, this.options, {
       headers: {
-        'Host': 'unknown.foo',
+        'Host': 'https.foo',
       },
     });
     request.post('http://localhost:9080/info/https/required_return_error/?foo=bar&test1=test2', options, function(error, response, body) {
       should.not.exist(error);
       response.statusCode.should.eql(400);
-      body.should.include('https://unknown.foo:9081/info/https/required_return_error/?foo=bar&test1=test2');
+      body.should.include('https://https.foo:9081/info/https/required_return_error/?foo=bar&test1=test2');
       done();
     });
   });
