@@ -3,6 +3,7 @@
 require('../test_helper');
 
 var _ = require('lodash'),
+    Factory = require('factory-lady'),
     request = require('request');
 
 describe('https requirements', function() {
