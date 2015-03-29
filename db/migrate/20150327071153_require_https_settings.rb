@@ -17,8 +17,27 @@ class RequireHttpsSettings < Mongoid::Migration
       end
 
       if(api.changed?)
-        api.save!
+        api.save!(:validate => false)
       end
+    end
+
+    active_config = ConfigVersion.active
+    active_config.config["apis"].each do |api|
+      if(api["settings"].present? && !api["settings"]["require_https"].kind_of?(String))
+        api["settings"]["require_https"] = "optional"
+      end
+
+      if(api["sub_settings"].present?)
+        api["sub_settings"].each do |sub|
+          if(sub["settings"].present? && !sub["settings"]["require_https"].kind_of?(String))
+            sub["settings"]["require_https"] = "optional"
+          end
+        end
+      end
+    end
+
+    if(active_config.changed?)
+      active_config.save!(:validate => false)
     end
   end
 
