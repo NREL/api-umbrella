@@ -12,3 +12,5 @@ apis:
     url_matches:
       - frontend_prefix: /
         backend_prefix: /
+apiSettings:
+  require_https: optional
