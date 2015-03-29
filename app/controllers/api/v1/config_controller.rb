@@ -18,6 +18,8 @@ class Api::V1::ConfigController < Api::V1::BaseController
       api = Api.unscoped.find(api_id)
       authorize(api, :publish?)
 
+      api.handle_transition_https_on_publish!
+
       new_config["apis"].reject! { |data| data["_id"] == api_id }
       unless api.deleted_at?
         new_config["apis"] << api.attributes_hash

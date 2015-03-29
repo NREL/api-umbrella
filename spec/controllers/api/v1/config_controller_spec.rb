@@ -482,5 +482,191 @@ describe Api::V1::ConfigController do
         ConfigVersion.active_config.should eql(nil)
       end
     end
+
+    describe "transitionary https" do
+      ["transition_return_error", "transition_return_redirect"].each do |mode|
+        it "sets the transition timestamp for #{mode.inspect} mode when publishing" do
+          api = FactoryGirl.create(:api, {
+            :settings => {
+              :require_https => mode,
+            },
+          })
+          config = {
+            :apis => {
+              api.id => { :publish => "1" },
+            }
+          }
+
+          api.settings.require_https_transition_start_at.should eql(nil)
+
+          admin_token_auth(@admin)
+          post :publish, :format => "json", :config => config
+
+          ConfigVersion.count.should eql(1)
+          active_config = ConfigVersion.active_config
+
+          api.reload
+          api.settings.require_https_transition_start_at.should be_kind_of(Time)
+          active_config["apis"][0]["settings"]["require_https_transition_start_at"].should be_kind_of(Time)
+        end
+
+        it "sets the transition timestamp for #{mode.inspect} mode in sub-settings when publishing" do
+          api = FactoryGirl.create(:api, {
+            :sub_settings => [
+              FactoryGirl.attributes_for(:api_sub_setting, {
+                :settings_attributes => FactoryGirl.attributes_for(:api_setting, {
+                  :require_https => mode,
+                })
+              }),
+            ],
+          })
+          config = {
+            :apis => {
+              api.id => { :publish => "1" },
+            }
+          }
+
+          api.sub_settings[0].settings.require_https_transition_start_at.should eql(nil)
+
+          admin_token_auth(@admin)
+          post :publish, :format => "json", :config => config
+
+          ConfigVersion.count.should eql(1)
+          active_config = ConfigVersion.active_config
+
+          api.reload
+          api.sub_settings[0].settings.require_https_transition_start_at.should be_kind_of(Time)
+          active_config["apis"][0]["sub_settings"][0]["settings"]["require_https_transition_start_at"].should be_kind_of(Time)
+        end
+
+        it "does not change existing transition timestamp for #{mode.inspect} mode when publishing" do
+          timestamp = Time.parse("2015-01-16T06:06:28.816Z")
+          api = FactoryGirl.create(:api, {
+            :settings => FactoryGirl.attributes_for(:api_setting, {
+              :require_https => mode,
+              :require_https_transition_start_at => timestamp,
+            }),
+          })
+          config = {
+            :apis => {
+              api.id => { :publish => "1" },
+            }
+          }
+
+          api.settings.require_https_transition_start_at.should eql(timestamp)
+
+          admin_token_auth(@admin)
+          post :publish, :format => "json", :config => config
+
+          ConfigVersion.count.should eql(1)
+          active_config = ConfigVersion.active_config
+
+          api.reload
+          api.settings.require_https_transition_start_at.should eql(timestamp)
+          active_config["apis"][0]["settings"]["require_https_transition_start_at"].should eql(timestamp)
+        end
+
+        it "does not change existing transition timestamp for #{mode.inspect} mode if the mode changes are made without publishing" do
+          timestamp = Time.parse("2015-01-16T06:06:28.816Z")
+          api = FactoryGirl.create(:api, {
+            :settings => FactoryGirl.attributes_for(:api_setting, {
+              :require_https => mode,
+              :require_https_transition_start_at => timestamp,
+            }),
+          })
+
+          api.settings.require_https = "required_return_error"
+          api.save!
+
+          api.settings.require_https = "required_return_redirect"
+          api.save!
+
+          api.settings.require_https = "optional"
+          api.save!
+
+          api.settings.require_https = nil
+          api.save!
+
+          api.settings.require_https = mode
+          api.save!
+
+          config = {
+            :apis => {
+              api.id => { :publish => "1" },
+            }
+          }
+
+          api.settings.require_https_transition_start_at.should eql(timestamp)
+
+          admin_token_auth(@admin)
+          post :publish, :format => "json", :config => config
+
+          ConfigVersion.count.should eql(1)
+          active_config = ConfigVersion.active_config
+
+          api.reload
+          api.settings.require_https_transition_start_at.should eql(timestamp)
+          active_config["apis"][0]["settings"]["require_https_transition_start_at"].should eql(timestamp)
+        end
+      end
+
+      ["required_return_error", "required_return_redirect", "optional", nil].each do |mode|
+        it "unsets the transition timestamp for #{mode.inspect} mode when publishing" do
+          api = FactoryGirl.create(:api, {
+            :settings => FactoryGirl.attributes_for(:api_setting, {
+              :require_https => mode,
+              :require_https_transition_start_at => Time.now,
+            }),
+          })
+          config = {
+            :apis => {
+              api.id => { :publish => "1" },
+            }
+          }
+
+          api.settings.require_https_transition_start_at.should be_kind_of(Time)
+
+          admin_token_auth(@admin)
+          post :publish, :format => "json", :config => config
+
+          ConfigVersion.count.should eql(1)
+          active_config = ConfigVersion.active_config
+
+          api.reload
+          api.settings.require_https_transition_start_at.should eql(nil)
+          active_config["apis"][0]["settings"]["require_https_transition_start_at"].should eql(nil)
+        end
+
+        it "unsets the transition timestamp for #{mode.inspect} mode in sub-settings when publishing" do
+          api = FactoryGirl.create(:api, {
+            :sub_settings => [
+              FactoryGirl.attributes_for(:api_sub_setting, {
+                :settings_attributes => FactoryGirl.attributes_for(:api_setting, {
+                  :require_https => mode,
+                  :require_https_transition_start_at => Time.now,
+                })
+              }),
+            ],
+          })
+          config = {
+            :apis => {
+              api.id => { :publish => "1" },
+            }
+          }
+
+          api.sub_settings[0].settings.require_https_transition_start_at.should be_kind_of(Time)
+
+          admin_token_auth(@admin)
+          post :publish, :format => "json", :config => config
+
+          ConfigVersion.count.should eql(1)
+          active_config = ConfigVersion.active_config
+
+          api.reload
+          api.sub_settings[0].settings.require_https_transition_start_at.should eql(nil)
+          active_config["apis"][0]["sub_settings"][0]["settings"]["require_https_transition_start_at"].should eql(nil)
+        end
+      end
+    end
   end
 end

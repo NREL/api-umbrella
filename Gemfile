@@ -126,6 +126,9 @@ gem "premailer-rails", "~> 1.8.0"
 # Localization in the admin based on the Accept-Language header
 gem "http_accept_language", "~> 2.0.2"
 
+# Markdown
+gem "kramdown", "~> 1.6.0"
+
 group :production, :staging do
   # Log to stdout instead of file
   gem "rails_stdout_logging", "~> 0.0.3"

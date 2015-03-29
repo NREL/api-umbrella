@@ -1,15 +1,21 @@
 {{input requireHttps as='select'
   value='requireHttps'
-  label='HTTPS Requirements'
+  class='row-fluid'
+  labelTranslation='admin.api.settings.require_https'
+  tooltipClass='qtip-wide'
+  tooltipTranslation='admin.api.settings.require_https_tooltip'
   collection='requireHttpsOptions'
   optionValuePath='content.id'
-  optionLabelPath='content.name'}}
+  optionLabelPath='content.name'
+  inputConfig='class:span12'}}
 {{input disableApiKey as='select'
   value='disableApiKey'
+  class='row-fluid'
   label='API Key Checks'
   collection='disableApiKeyOptions'
   optionValuePath='content.id'
-  optionLabelPath='content.name'}}
+  optionLabelPath='content.name'
+  inputConfig='class:span12'}}
 {{#view Admin.SelectizeView valueBinding='requiredRolesString' contentBinding='roleOptions' optionValuePath='id' optionLabelPath='id'}}
   {{input requiredRolesString
     class='row-fluid'

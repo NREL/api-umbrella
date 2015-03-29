@@ -87,9 +87,45 @@ window.Admin = Ember.Application.create({
   rootElement: '#content'
 });
 
+function eachTranslatedAttribute(object, fn) {
+  var isTranslatedAttribute = /(.+)Translation$/,
+      isTranslatedAttributeMatch;
+
+  for (var key in object) {
+    isTranslatedAttributeMatch = key.match(isTranslatedAttribute);
+    if (isTranslatedAttributeMatch) {
+      var translation = (!object[key]) ? null : polyglot.t(object[key]);
+      fn.call(object, isTranslatedAttributeMatch[1], translation);
+    }
+  }
+}
+
+// Override existing Ember.EasyForm.processOptions to use our polyglot
+// translations instead of Ember.i18n for the special *Translation fields.
+//
+// We could also potentially use subexpressions to call polyglot directly in
+// the templates, but at least as of Ember 1.7, there are bugs with multiple
+// subexpressions: https://github.com/wycats/handlebars.js/issues/748
+// Perhaps revisit when we upgrade Ember.
+Ember.EasyForm.processOptions = function(property, options) {
+  if(options) {
+    if(polyglot) {
+      eachTranslatedAttribute(options.hash, function(attribute, translation) {
+        options.hash[attribute] = translation;
+        delete options.hash[attribute + 'Translation'];
+      });
+    }
+    options.hash.property = property;
+  } else {
+    options = property;
+  }
+
+  return options;
+};
+
 Ember.EasyForm.Tooltip = Ember.EasyForm.BaseView.extend({
   tagName: 'a',
-  attributeBindings: ['title', 'rel'],
+  attributeBindings: ['title', 'rel', 'data-tooltip-class'],
   template: Ember.Handlebars.compile('<i class="fa fa-question-circle"></i>'),
   rel: 'tooltip',
 });
@@ -127,7 +163,7 @@ Ember.Handlebars.registerHelper('tooltip-field', function(property, options) {
 
 // Use a custom template for Easy Form. This adds a tooltip and wraps that in
 // the control-label div with the label.
-Ember.TEMPLATES['easyForm/wrapped_input'] = Ember.Handlebars.compile('<div class="control-label">{{label-field propertyBinding="view.property" textBinding="view.label"}}{{#if view.tooltip}}{{tooltip-field titleBinding="view.tooltip"}}{{/if}}</div><div class="{{unbound view.controlsWrapperClass}}">{{partial "easyForm/inputControls"}}</div>');
+Ember.TEMPLATES['easyForm/wrapped_input'] = Ember.Handlebars.compile('<div class="control-label">{{label-field propertyBinding="view.property" textBinding="view.label"}}{{#if view.tooltip}}{{tooltip-field titleBinding="view.tooltip" data-tooltip-classBinding="view.tooltipClass"}}{{/if}}</div><div class="{{unbound view.controlsWrapperClass}}">{{partial "easyForm/inputControls"}}</div>');
 
 Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
   attributeBindings: ['data-ace-mode'],

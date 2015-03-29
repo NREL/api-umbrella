@@ -64,7 +64,7 @@ $(document).ready(function() {
         event: 'unfocus'
       },
       style: {
-        classes: 'qtip-bootstrap',
+        classes: 'qtip-bootstrap ' + $(this).data('tooltip-class'),
       },
       position: {
         viewport: true,
