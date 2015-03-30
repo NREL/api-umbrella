@@ -269,7 +269,6 @@ website_backends:
 hosts:
   - hostname: default.foo
     default: true
-    enable_web_backend: true
   - hostname: withweb.foo
     enable_web_backend: true
   - hostname: withoutweb.foo

@@ -96,7 +96,6 @@ supervisord:
 hosts:
   - hostname: localhost
     default: true
-    enable_web_backend: true
 dns_resolver:
   minimum_ttl: 40
   reload_buffer_time: 40
