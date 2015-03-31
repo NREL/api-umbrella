@@ -319,6 +319,19 @@ describe Api::V1::ApisController do
       ])
     end
 
+    it "paginates results" do
+      admin_token_auth(@admin)
+      get :index, :format => "json", :length => "2"
+
+      api_count = Api.count
+      api_count.should be > 2
+
+      data = MultiJson.load(response.body)
+      data["recordsTotal"].should eql(api_count)
+      data["recordsFiltered"].should eql(api_count)
+      data["data"].length.should eql(2)
+    end
+
     describe "admin permissions" do
       it "includes all apis for superuser admins" do
         admin_token_auth(@admin)

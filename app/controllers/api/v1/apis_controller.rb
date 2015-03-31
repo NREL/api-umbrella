@@ -26,6 +26,7 @@ class Api::V1::ApisController < Api::V1::BaseController
       ])
     end
 
+    @apis_count = @apis.count
     @apis = @apis.to_a.select { |api| Pundit.policy!(pundit_user, api).show? }
   end
 
