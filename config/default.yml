@@ -88,7 +88,7 @@ router:
     port: 14006
   web_backend_regex: "^/(admin|admins|web-assets)(/|$)"
   web_backend_required_https_regex: "^/(admin|admins)(/|$)"
-  website_backend_required_https_regex_default: "^/(account|signup)(/|$)"
+  website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
 supervisord:
   inet_http_server:
     host: 127.0.0.1
