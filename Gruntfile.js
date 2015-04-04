@@ -57,7 +57,7 @@ module.exports = function(grunt) {
       }, 5000);
 
       var startTime = process.hrtime();
-      exec('./node_modules/grunt-cli/bin/grunt 2>&1', function(error, stdout) {
+      exec('./node_modules/.bin/grunt 2>&1', function(error, stdout) {
         clearInterval(progress);
 
         var duration = process.hrtime(startTime);
@@ -69,8 +69,39 @@ module.exports = function(grunt) {
 
         next();
       });
-    }, function() {
-      done();
+    }, function(error) {
+      done(error);
+    });
+  });
+
+  grunt.registerTask('multiLongConnectionDrops', 'Run all the tests multiple times', function() {
+    var done = this.async();
+
+    var async = require('async'),
+        exec = require('child_process').exec;
+
+    async.timesSeries(20, function(index, next) {
+      process.stdout.write('Run ' + (index + 1) + ' ');
+      var progress = setInterval(function() {
+        process.stdout.write('.');
+      }, 5000);
+
+      var startTime = process.hrtime();
+      process.env.CONNECTION_DROPS_DURATION = 10 * 60;
+      exec('./node_modules/.bin/mocha test/integration/dns.js -g "handles ip changes without dropping any connections" 2>&1', function(error, stdout) {
+        clearInterval(progress);
+
+        var duration = process.hrtime(startTime);
+        console.info(' ' + duration[0] + 's');
+
+        if(error !== null) {
+          console.info(stdout);
+        }
+
+        next();
+      });
+    }, function(error) {
+      done(error);
     });
   });
 };

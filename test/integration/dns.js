@@ -352,10 +352,18 @@ describe('dns backend resolving', function() {
   });
 
   it('handles ip changes without dropping any connections', function(done) {
-    this.timeout(35000);
-
+    // For a period of time we'll make lots of parallel requests while
+    // simultaneously triggering DNS changes.
+    //
+    // We default to 20 seconds, but allow an environment variable override for
+    // much longer tests via the multiLongConnectionDrops grunt task.
+    var duration = 20;
+    if(process.env.CONNECTION_DROPS_DURATION) {
+      duration = parseInt(process.env.CONNECTION_DROPS_DURATION, 10);
+    }
     var runTests = true;
-    setTimeout(function() { runTests = false; }, 20000);
+    setTimeout(function() { runTests = false; }, duration * 1000);
+    this.timeout((duration + 20) * 1000);
 
     var responseCodes = {};
     var seenLocalInterfaceIps = {};
@@ -369,6 +377,9 @@ describe('dns backend resolving', function() {
         tasks.push(function(parallelCallback) {
           async.whilst(function() { return runTests; }, function(whilstCallback) {
             request.get('http://localhost:9080/dns/no-drops-during-changes/info/', this.options, function(error, response, body) {
+              should.not.exist(error);
+              response.statusCode.should.eql(200);
+
               if(!error) {
                 // For each request, keep track of the response code and the
                 // local interface IP address this request hit.
