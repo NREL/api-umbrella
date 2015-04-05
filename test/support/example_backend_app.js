@@ -352,6 +352,20 @@ app.all('/cacheable-multiple-vary-with-accept-encoding/:id', function(req, res) 
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 
+app.all('/cacheable-backend-reports-cached/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Age', '3');
+  res.set('X-Cache', 'HIT');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-backend-reports-not-cached/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Age', '0');
+  res.set('X-Cache', 'BACKEND-MISS');
+  res.end(uniqueOutput());
+});
+
 app.all('/logging-example/*', function(req, res) {
   res.set('Age', '20');
   res.set('Cache-Control', 'max-age=60');

@@ -66,6 +66,7 @@ http {
     '"res_time":"$request_time",'
     '"res_time_backend":"$upstream_response_time",'
     '"res_transfer_encoding":"$sent_http_transfer_encoding",'
+    '"res_x_cache":"$sent_http_x_cache",'
 
     # These fields aren't technically used for our analytics gathering, but are
     # useful to have in files for grepping/debugging.
@@ -84,7 +85,8 @@ http {
     '"req_at":"$time_iso8601",'
     '"req_host":"$http_host",'
     '"req_uri":"$request_uri",'
-    '"res_status":"$status"'
+    '"res_status":"$status",'
+    '"res_x_cache":"$sent_http_x_cache"'
   '}';
 
   include ./mime.conf;

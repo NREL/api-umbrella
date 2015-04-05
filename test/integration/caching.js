@@ -67,16 +67,16 @@ describe('caching', function() {
       result.firstResponse.headers['x-unique-output'].length.should.be.greaterThan(0);
       result.firstResponse.headers['x-unique-output'].should.not.eql(result.secondResponse.headers['x-unique-output']);
 
-      if(result.firstResponse.headers['age']) {
-        result.firstResponse.headers['age'].should.eql('0');
+      if(result.firstResponse.headers['x-cache']) {
+        result.firstResponse.headers['x-cache'].should.not.include('HIT');
       } else {
-        should.not.exist(result.firstResponse.headers['age']);
+        should.not.exist(result.firstResponse.headers['x-cache']);
       }
 
-      if(result.secondResponse.headers['age']) {
-        result.secondResponse.headers['age'].should.eql('0');
+      if(result.secondResponse.headers['x-cache']) {
+        result.secondResponse.headers['x-cache'].should.not.include('HIT');
       } else {
-        should.not.exist(result.secondResponse.headers['age']);
+        should.not.exist(result.secondResponse.headers['x-cache']);
       }
 
       done(error, result);
@@ -93,13 +93,13 @@ describe('caching', function() {
       result.firstResponse.headers['x-unique-output'].length.should.be.greaterThan(0);
       result.firstResponse.headers['x-unique-output'].should.eql(result.secondResponse.headers['x-unique-output']);
 
-      if(result.firstResponse.headers['age']) {
-        result.firstResponse.headers['age'].should.eql('0');
+      if(result.firstResponse.headers['x-cache']) {
+        result.firstResponse.headers['x-cache'].should.not.include('HIT');
       } else {
-        should.not.exist(result.firstResponse.headers['age']);
+        should.not.exist(result.firstResponse.headers['x-cache']);
       }
 
-      should.exist(result.secondResponse.headers['age']);
+      result.secondResponse.headers['x-cache'].should.include('HIT');
 
       done(error, result);
     });
@@ -253,36 +253,100 @@ describe('caching', function() {
     });
   });
 
-  it('increases the age in the response over time for cached responses', function(done) {
-    this.timeout(6000);
-
-    var id = _.uniqueId();
-    request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
-      parseInt(response.headers['age']).should.eql(0);
-
-      setTimeout(function() {
+  describe('cache response headers', function() {
+    it('returns X-Cache: HIT for cache hits', function(done) {
+      var id = _.uniqueId();
+      request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function() {
         request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
-          parseInt(response.headers['age']).should.be.gte(1);
-          parseInt(response.headers['age']).should.be.lte(2);
+          response.headers['x-cache'].should.eql('HIT');
+          done();
+        });
+      }.bind(this));
+    });
 
-          setTimeout(function() {
-            request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
-              parseInt(response.headers['age']).should.be.gte(2);
-              parseInt(response.headers['age']).should.be.lte(3);
+    it('returns X-Cache: MISS for cache misses', function(done) {
+      var id = _.uniqueId();
+      request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
+        response.headers['x-cache'].should.eql('MISS');
+        done();
+      });
+    });
 
-              setTimeout(function() {
-                request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
-                  parseInt(response.headers['age']).should.be.gte(3);
-                  parseInt(response.headers['age']).should.be.lte(4);
+    it('returns X-Cache: HIT if underlying backend server reports a cache hit', function(done) {
+      var id = _.uniqueId();
+      request.get('http://localhost:9080/cacheable-backend-reports-cached/' + id, this.options, function(error, response) {
+        response.headers['x-cache'].should.eql('HIT');
+        done();
+      });
+    });
 
-                  done();
-                });
-              }.bind(this), 1100);
-            }.bind(this));
-          }.bind(this), 1100);
-        }.bind(this));
-      }.bind(this), 1100);
-    }.bind(this));
+    it('increases the age in the response over time for cached responses', function(done) {
+      this.timeout(6000);
+
+      var id = _.uniqueId();
+      request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
+        parseInt(response.headers['age']).should.eql(0);
+
+        setTimeout(function() {
+          request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
+            parseInt(response.headers['age']).should.be.gte(1);
+            parseInt(response.headers['age']).should.be.lte(2);
+
+            setTimeout(function() {
+              request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
+                parseInt(response.headers['age']).should.be.gte(2);
+                parseInt(response.headers['age']).should.be.lte(3);
+
+                setTimeout(function() {
+                  request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
+                    parseInt(response.headers['age']).should.be.gte(3);
+                    parseInt(response.headers['age']).should.be.lte(4);
+
+                    done();
+                  });
+                }.bind(this), 1100);
+              }.bind(this));
+            }.bind(this), 1100);
+          }.bind(this));
+        }.bind(this), 1100);
+      }.bind(this));
+    });
+
+    it('returns original value for Age header from the backend server and then increments based off that for the local cache', function(done) {
+      this.timeout(6000);
+
+      var id = _.uniqueId();
+      request.get('http://localhost:9080/cacheable-backend-reports-cached/' + id, this.options, function(error, response) {
+        response.headers['age'].should.eql('3');
+
+        setTimeout(function() {
+          request.get('http://localhost:9080/cacheable-backend-reports-cached/' + id, this.options, function(error, response) {
+            parseInt(response.headers['age']).should.be.gte(4);
+            parseInt(response.headers['age']).should.be.lte(5);
+
+            setTimeout(function() {
+              request.get('http://localhost:9080/cacheable-backend-reports-cached/' + id, this.options, function(error, response) {
+                parseInt(response.headers['age']).should.be.gte(7);
+                parseInt(response.headers['age']).should.be.lte(8);
+
+                done();
+              });
+            }.bind(this), 3100);
+          }.bind(this));
+        }.bind(this), 1100);
+      }.bind(this));
+    });
+
+    it('returns original value for X-Cache from the backend server until the response becomes locally cached', function(done) {
+      var id = _.uniqueId();
+      request.get('http://localhost:9080/cacheable-backend-reports-not-cached/' + id, this.options, function(error, response) {
+        response.headers['x-cache'].should.eql('BACKEND-MISS');
+        request.get('http://localhost:9080/cacheable-backend-reports-not-cached/' + id, this.options, function(error, response) {
+          response.headers['x-cache'].should.eql('HIT');
+          done();
+        });
+      }.bind(this));
+    });
   });
 
   it('prevents thundering herds for cacheable requests', function(done) {
