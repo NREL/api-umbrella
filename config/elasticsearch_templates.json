@@ -66,6 +66,8 @@
             "enabled": true,
             "path": "request_at"
           },
+          "date_detection": false,
+          "numeric_detection": false,
           "dynamic_templates": [
             {
               "string_template": {

@@ -43,8 +43,12 @@ describe('logging', function() {
     });
   });
 
+  function generateUniqueQueryId() {
+    return process.hrtime().join('-') + '-' + Math.random();
+  }
+
   beforeEach(function(done) {
-    this.uniqueQueryId = process.hrtime().join('-') + '-' + Math.random();
+    this.uniqueQueryId = generateUniqueQueryId();
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.user = user;
       this.apiKey = user.api_key;
@@ -509,6 +513,66 @@ describe('logging', function() {
         done();
       }.bind(this));
     }.bind(this));
+  });
+
+  it('successfully logs query strings when the field first indexed was a date, but later queries are not (does not attempt to map fields into dates)', function(done) {
+    this.timeout(15000);
+
+    var options = _.merge({}, this.options, {
+      qs: {
+        'unique_query_id': generateUniqueQueryId(),
+        'date_field': '2010-05-01',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+        record.request_query.date_field.should.eql('2010-05-01');
+
+        options.qs.unique_query_id = generateUniqueQueryId();
+        options.qs.date_field = '2010-05-0';
+        request.get('http://localhost:9080/info/', options, function(error, response) {
+          waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+            record.request_query.date_field.should.eql('2010-05-0');
+
+            options.qs.unique_query_id = generateUniqueQueryId();
+            options.qs.date_field = 'foo';
+            request.get('http://localhost:9080/info/', options, function(error, response) {
+              waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+                record.request_query.date_field.should.eql('foo');
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it('successfully logs query strings when the field first indexed was a number, but later queries are not (does not attempt to map fields into numbers)', function(done) {
+    this.timeout(15000);
+
+    var options = _.merge({}, this.options, {
+      qs: {
+        'unique_query_id': generateUniqueQueryId(),
+        'number_field': '123',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+        record.request_query.number_field.should.eql('123');
+
+        options.qs.unique_query_id = generateUniqueQueryId();
+        options.qs.number_field = 'foo';
+        request.get('http://localhost:9080/info/', options, function(error, response) {
+          waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+            record.request_query.number_field.should.eql('foo');
+            done();
+          });
+        });
+      });
+    });
   });
 
   it('logs requests that exceed the nginx-level rate limits', function(done) {
