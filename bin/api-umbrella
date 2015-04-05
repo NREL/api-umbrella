@@ -124,6 +124,11 @@ var tasks = {
           // forever here since it provides a nicer interface to starting /
           // stopping / checking the status of a process.
           max: 1,
+          // When we want to stop this process, do so gracefully, so the child
+          // processes can cleanly shut down.
+          killSignal: 'SIGTERM',
+          killTTL: 10000,
+          killTree: true,
         });
 
         monitor.on('exit', function(code) {
