@@ -31,6 +31,10 @@ app.use(multer({
   },
 }));
 
+app.get('/hello', function(req, res) {
+  res.send('Hello World');
+});
+
 app.all('/info/*', function(req, res) {
   var rawUrl = req.protocol + '://' + req.hostname + req.url;
   res.set('X-Received-Method', req.method);

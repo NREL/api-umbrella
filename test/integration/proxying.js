@@ -5,6 +5,7 @@ require('../test_helper');
 var _ = require('lodash'),
     async = require('async'),
     Curler = require('curler').Curler,
+    execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
     fs = require('fs'),
     http = require('http'),
@@ -288,6 +289,17 @@ describe('proxying', function() {
           response.statusCode.should.eql(405);
           done();
         });
+      });
+    });
+  });
+
+  describe('client-side keep alive', function() {
+    it('reuses connections', function(done) {
+      var url = 'http://localhost:9080/hello/?api_key=' + this.apiKey;
+      execFile('curl', ['-v', url, url], function(error, stdout, stderr) {
+        stdout.should.eql('Hello WorldHello World');
+        stderr.should.match(/200 OK[\s\S]+Re-using existing connection[\s\S]+200 OK/);
+        done();
       });
     });
   });

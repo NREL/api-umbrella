@@ -51,23 +51,26 @@ module.exports = function(grunt) {
         exec = require('child_process').exec;
 
     async.timesSeries(20, function(index, next) {
-      process.stdout.write('Run ' + (index + 1) + ' ');
+      var runNum = index + 1;
+      process.stdout.write('Run ' + runNum + ' ');
       var progress = setInterval(function() {
         process.stdout.write('.');
       }, 5000);
 
       var startTime = process.hrtime();
-      exec('./node_modules/.bin/grunt 2>&1', function(error, stdout) {
+      exec('./node_modules/.bin/grunt 2>&1', function(error, stdout, stderr) {
         clearInterval(progress);
 
         var duration = process.hrtime(startTime);
         console.info(' ' + duration[0] + 's');
 
         if(error !== null) {
-          console.info(stdout);
+          console.info('Run ' + runNum + ' encountered an error');
+          console.info('STDOUT: ', stdout);
+          console.info('STDERR: ', stderr);
         }
 
-        next();
+        next(error);
       });
     }, function(error) {
       done(error);
@@ -81,24 +84,27 @@ module.exports = function(grunt) {
         exec = require('child_process').exec;
 
     async.timesSeries(20, function(index, next) {
-      process.stdout.write('Run ' + (index + 1) + ' ');
+      var runNum = index + 1;
+      process.stdout.write('Run ' + runNum + ' ');
       var progress = setInterval(function() {
         process.stdout.write('.');
       }, 5000);
 
       var startTime = process.hrtime();
       process.env.CONNECTION_DROPS_DURATION = 10 * 60;
-      exec('./node_modules/.bin/mocha test/integration/dns.js -g "handles ip changes without dropping any connections" 2>&1', function(error, stdout) {
+      exec('./node_modules/.bin/mocha test/integration/dns.js -g "handles ip changes without dropping any connections" 2>&1', function(error, stdout, stderr) {
         clearInterval(progress);
 
         var duration = process.hrtime(startTime);
         console.info(' ' + duration[0] + 's');
 
         if(error !== null) {
-          console.info(stdout);
+          console.info('Run ' + runNum + ' encountered an error');
+          console.info('STDOUT: ', stdout);
+          console.info('STDERR: ', stderr);
         }
 
-        next();
+        next(error);
       });
     }, function(error) {
       done(error);

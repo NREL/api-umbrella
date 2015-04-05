@@ -201,8 +201,6 @@ http {
     proxy_http_version 1.1;
     proxy_set_header Connection "";
 
-    keepalive_timeout 10s;
-
     proxy_set_header Host $host;
     proxy_set_header X-Api-Umbrella-Backend-Scheme "";
     proxy_set_header X-Api-Umbrella-Backend-Id "";
