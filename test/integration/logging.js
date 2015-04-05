@@ -526,19 +526,31 @@ describe('logging', function() {
     });
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+
       waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+        should.not.exist(error);
         record.request_query.date_field.should.eql('2010-05-01');
 
         options.qs.unique_query_id = generateUniqueQueryId();
         options.qs.date_field = '2010-05-0';
         request.get('http://localhost:9080/info/', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+
           waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+            should.not.exist(error);
             record.request_query.date_field.should.eql('2010-05-0');
 
             options.qs.unique_query_id = generateUniqueQueryId();
             options.qs.date_field = 'foo';
             request.get('http://localhost:9080/info/', options, function(error, response) {
+              should.not.exist(error);
+              response.statusCode.should.eql(200);
+
               waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+                should.not.exist(error);
                 record.request_query.date_field.should.eql('foo');
                 done();
               });
@@ -560,13 +572,21 @@ describe('logging', function() {
     });
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+
       waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+        should.not.exist(error);
         record.request_query.number_field.should.eql('123');
 
         options.qs.unique_query_id = generateUniqueQueryId();
         options.qs.number_field = 'foo';
         request.get('http://localhost:9080/info/', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+
           waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+            should.not.exist(error);
             record.request_query.number_field.should.eql('foo');
             done();
           });
