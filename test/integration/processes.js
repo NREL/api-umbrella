@@ -2,9 +2,7 @@
 
 require('../test_helper');
 
-var _ = require('lodash'),
-    async = require('async'),
-    execFile = require('child_process').execFile,
+var async = require('async'),
     Factory = require('factory-lady'),
     request = require('request');
 
