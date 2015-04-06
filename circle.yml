@@ -20,6 +20,15 @@ dependencies:
     # Use the mongo-orchestration library for providing a testable replicaset,
     # so we can see how the stack reacts to replicaset re-elections, etc.
     - sudo pip install mongo-orchestration
+
+    # If the tests fail, it seems like sometimes the server processes don't
+    # exist cleanly, and then stick around on the CI server causing issues for
+    # subsequent tests. We should try to figure out how we can ensure we always
+    # cleanup on test failures, but in the mean-time, we'll just try to cleanup
+    # any processes potentially hanging around before running the tests again
+    # (not deal, I know).
+    - killall --user $USER --wait grunt || true
+    - killall --user $USER --wait supervisord || true
   override:
     - env PATH=/opt/api-umbrella/embedded/bin:$PATH npm install
 test:
