@@ -13,6 +13,7 @@ describe('failures', function() {
     before(function fetchMongoDbReplicaSetInfo(done) {
       // Fetch the replicaset information from the mongo-orchestration.
       request.get('http://127.0.0.1:13089/v1/replica_sets/test-cluster', function(error, response, body) {
+        should.not.exist(error);
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
 
@@ -87,7 +88,8 @@ describe('failures', function() {
           action: 'reset',
         }
       };
-      request.post('http://127.0.0.1:13089/v1/replica_sets/test-cluster', options, function(error, response, body) {
+      request.post('http://127.0.0.1:13089/v1/replica_sets/test-cluster', options, function(error, response) {
+        should.not.exist(error);
         response.statusCode.should.eql(200);
 
         // Not entirely sure if this is necessary, but wait a little while
