@@ -47,7 +47,7 @@ describe('logging', function() {
     return process.hrtime().join('-') + '-' + Math.random();
   }
 
-  beforeEach(function(done) {
+  beforeEach(function createUser(done) {
     this.uniqueQueryId = generateUniqueQueryId();
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.user = user;

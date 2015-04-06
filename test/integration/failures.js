@@ -76,6 +76,27 @@ describe('failures', function() {
       shared.removeDbConfig(done);
     });
 
+    after(function resetMongoDbReplicaSet(done) {
+      this.timeout(10000);
+
+      // Reset the MongoDB replicaset back to the normal state after the tests
+      // are finished, so we don't leave it in a strange state for subsequent
+      // tests.
+      var options = {
+        json: {
+          action: 'reset',
+        }
+      };
+      request.post('http://127.0.0.1:13089/v1/replica_sets/test-cluster', options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+
+        // Not entirely sure if this is necessary, but wait a little while
+        // after resetting, to ensure the replicaset has time to deal with
+        // elections back to the normal state.
+        setTimeout(done, 7000);
+      }.bind(this));
+    });
+
     it('does not drop connections during replicaset elections', function(done) {
       this.timeout(90000);
 

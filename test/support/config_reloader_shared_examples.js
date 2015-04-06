@@ -20,7 +20,7 @@ var ConfigReloaderWorker = require('../../lib/config_reloader/worker').Worker;
 
 _.merge(global.shared, {
   runConfigReloader: function() {
-    beforeEach(function(done) {
+    beforeEach(function setupConfigReloader(done) {
       this.timeout(10000);
 
       this.configReloader = new ConfigReloaderWorker();

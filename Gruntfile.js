@@ -48,7 +48,8 @@ module.exports = function(grunt) {
     var done = this.async();
 
     var async = require('async'),
-        exec = require('child_process').exec;
+        exec = require('child_process').exec,
+        fs = require('fs');
 
     async.timesSeries(20, function(index, next) {
       var runNum = index + 1;
@@ -58,21 +59,25 @@ module.exports = function(grunt) {
       }, 5000);
 
       var startTime = process.hrtime();
-      exec('./node_modules/.bin/grunt 2>&1', function(error, stdout, stderr) {
+      var logPath = '/tmp/api-umbrella-multi-test.log';
+      exec('./node_modules/.bin/grunt > ' + logPath + ' 2>&1', function(error) {
         clearInterval(progress);
 
         var duration = process.hrtime(startTime);
         console.info(' ' + duration[0] + 's');
 
-        if(error !== null) {
-          console.info('Run ' + runNum + ' encountered an error');
-          console.info('STDOUT: ', stdout);
-          console.info('STDERR: ', stderr);
+        if(error) {
+          console.info('Run ' + runNum + ' encountered an error: ', error);
+          console.info(fs.readFileSync(logPath).toString());
         }
 
         next(error);
       });
     }, function(error) {
+      if(error) {
+        console.info('Error during multiple runs: ', error);
+      }
+
       done(error);
     });
   });
@@ -81,7 +86,8 @@ module.exports = function(grunt) {
     var done = this.async();
 
     var async = require('async'),
-        exec = require('child_process').exec;
+        exec = require('child_process').exec,
+        fs = require('fs');
 
     async.timesSeries(20, function(index, next) {
       var runNum = index + 1;
@@ -92,21 +98,25 @@ module.exports = function(grunt) {
 
       var startTime = process.hrtime();
       process.env.CONNECTION_DROPS_DURATION = 10 * 60;
-      exec('./node_modules/.bin/mocha test/integration/dns.js -g "handles ip changes without dropping any connections" 2>&1', function(error, stdout, stderr) {
+      var logPath = '/tmp/api-umbrella-multi-long-connection-drops.log';
+      exec('./node_modules/.bin/mocha test/integration/dns.js -g "handles ip changes without dropping any connections" > ' + logPath + ' 2>&1', function(error) {
         clearInterval(progress);
 
         var duration = process.hrtime(startTime);
         console.info(' ' + duration[0] + 's');
 
-        if(error !== null) {
-          console.info('Run ' + runNum + ' encountered an error');
-          console.info('STDOUT: ', stdout);
-          console.info('STDERR: ', stderr);
+        if(error) {
+          console.info('Run ' + runNum + ' encountered an error: ', error);
+          console.info(fs.readFileSync(logPath).toString());
         }
 
         next(error);
       });
     }, function(error) {
+      if(error) {
+        console.info('Error during multiple runs: ', error);
+      }
+
       done(error);
     });
   });

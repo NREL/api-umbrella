@@ -87,7 +87,7 @@ describe('dns backend resolving', function() {
     });
   });
 
-  beforeEach(function(done) {
+  beforeEach(function createUser(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.user = user;
       this.apiKey = user.api_key;
