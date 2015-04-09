@@ -34,6 +34,7 @@ class LogSearch
           :filter => {
             :bool => {
               :must => [],
+              :must_not => [],
             },
           },
         },
@@ -205,6 +206,14 @@ class LogSearch
 
   def sort!(sort)
     @query[:sort] = sort
+  end
+
+  def exclude_imported!
+    @query[:query][:filtered][:filter][:bool][:must_not] << {
+      :exists => {
+        :field => "imported",
+      },
+    }
   end
 
   def filter_by_date_range!
