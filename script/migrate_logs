@@ -24,8 +24,8 @@ dest_client = Elasticsearch::Client.new(:url => ENV["DEST"])
 source_index = "api-umbrella"
 dest_index = "api-umbrella"
 puts "#{Time.now}: #{source_index} => #{dest_index}"
-source_geocodes = source_client.search(:index => source_index, :size => 100000)["hits"]["hits"]
-existing_geocodes = dest_client.search(:index => dest_index, :size => 100000)["hits"]["hits"]
+source_geocodes = source_client.search(:index => source_index, :size => 100_000)["hits"]["hits"]
+existing_geocodes = dest_client.search(:index => dest_index, :size => 100_000)["hits"]["hits"]
 source_geocodes.each do |source_geocode|
   existing_geocode = existing_geocodes.detect { |dg| dg["_id"] == source_geocode["_id"] }
   if(existing_geocode && existing_geocode["_source"]["updated_at"] >= source_geocode["_source"]["updated_at"])
@@ -36,7 +36,7 @@ source_geocodes.each do |source_geocode|
 end
 
 indices = source_client.indices.get_aliases.keys.sort
-indices.each do |source_index|
+indices.each do |source_index| # rubocop:disable Lint/ShadowingOuterLocalVariable
   dest_index = source_index.dup
   if(source_index =~ /^api-umbrella-logs-v1-production-\d\d\d\d-\d\d$/)
     dest_index.gsub!(/-production-/, "-")
