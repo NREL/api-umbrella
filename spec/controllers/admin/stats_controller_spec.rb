@@ -4,10 +4,11 @@ describe Admin::StatsController do
   login_admin
 
   before(:each) do
-    begin
-      LogItem.gateway.client.indices.delete :index => LogItem.index_name
-    rescue Elasticsearch::Transport::Transport::Errors::NotFound # rubocop:disable Lint/HandleExceptions
-    end
+    LogItem.gateway.client.delete_by_query :index => LogItem.index_name, :body => {
+      :query => {
+        :match_all => {},
+      },
+    }
   end
 
   describe "GET logs" do

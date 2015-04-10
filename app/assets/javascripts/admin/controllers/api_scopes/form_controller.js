@@ -3,7 +3,7 @@ Admin.ApiScopesFormController = Ember.ObjectController.extend(Admin.Save, {
     submit: function() {
       this.save({
         transitionToRoute: 'api_scopes',
-        message: 'Successfully saved the API scope "' + this.get('model.name') + '"',
+        message: 'Successfully saved the API scope "' + _.escape(this.get('model.name')) + '"',
       });
     },
   },

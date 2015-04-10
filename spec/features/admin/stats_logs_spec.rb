@@ -1,14 +1,15 @@
 require "spec_helper"
 require "addressable/uri"
 
-describe "apis", :js => true do
+describe "analytics filter logs", :js => true do
   login_admin
 
   before(:each) do
-    begin
-      LogItem.gateway.client.indices.delete :index => LogItem.index_name
-    rescue Elasticsearch::Transport::Transport::Errors::NotFound # rubocop:disable Lint/HandleExceptions
-    end
+    LogItem.gateway.client.delete_by_query :index => LogItem.index_name, :body => {
+      :query => {
+        :match_all => {},
+      },
+    }
   end
 
   describe "xss" do
@@ -19,7 +20,6 @@ describe "apis", :js => true do
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
 
       page.should have_content(log.request_method)
-      page.should_not have_selector(".xss-test", :visible => :all)
       page.should have_content(log.request_accept_encoding)
       page.should have_content(log.request_ip_city)
       page.should have_content(log.request_ip_country)
@@ -27,6 +27,7 @@ describe "apis", :js => true do
       page.should have_content(log.request_user_agent)
       page.should have_content(log.response_content_type)
       page.should have_content(log.user_email)
+      page.should_not have_selector(".xss-test", :visible => :all)
     end
   end
 

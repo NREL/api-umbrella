@@ -22,7 +22,7 @@ Admin.WebsiteBackendsFormController = Ember.ObjectController.extend(Admin.Save, 
     submit: function() {
       this.save({
         transitionToRoute: 'website_backends',
-        message: 'Successfully saved the "' + this.get('model.frontendHost') + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+        message: 'Successfully saved the "' + _.escape(this.get('model.frontendHost')) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
 

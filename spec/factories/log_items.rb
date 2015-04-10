@@ -3,13 +3,14 @@ require "elasticsearch/persistence/model"
 class LogItem
   include Elasticsearch::Persistence::Model
 
-  index_name "api-umbrella-logs-2015-01"
+  index_name "api-umbrella-logs-write-2015-01"
+  document_type "log"
 
   attribute :api_key, String
-  attribute :backend_response_time, Float
+  attribute :backend_response_time, Integer
   attribute :internal_gatekeeper_time, Float
   attribute :internal_response_time, Float
-  attribute :proxy_overhead, Float
+  attribute :proxy_overhead, Integer
   attribute :request_accept_encoding, String
   attribute :request_at, Time
   attribute :request_hierarchy, Array
@@ -33,7 +34,7 @@ class LogItem
   attribute :response_server, String
   attribute :response_size, Integer
   attribute :response_status, Integer
-  attribute :response_time, Float
+  attribute :response_time, Integer
   attribute :user_email, String
   attribute :user_id, String
   attribute :user_registration_source, String

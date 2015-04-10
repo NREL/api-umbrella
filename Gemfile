@@ -245,6 +245,10 @@ group :development, :test do
 
   # For parsing URLs in tests.
   gem "addressable", "~> 2.3.6"
+
+  # For caching external web requests
+  gem "vcr", "~> 2.9.3", :require => false
+  gem "webmock", "~> 1.21.0", :require => false
 end
 
 group :development do

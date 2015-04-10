@@ -11,7 +11,7 @@ Admin.AdminGroupsFormController = Ember.ObjectController.extend(Admin.Save, {
     submit: function() {
       this.save({
         transitionToRoute: 'admin_groups',
-        message: 'Successfully saved the admin group "' + this.get('model.name') + '"',
+        message: 'Successfully saved the admin group "' + _.escape(this.get('model.name')) + '"',
       });
     },
   },

@@ -13,22 +13,32 @@ describe "api users form", :js => true do
       visit "/admin/#/api_users"
 
       page.should have_content(@user.email)
-      page.should_not have_selector(".xss-test", :visible => :all)
       page.should have_content(@user.first_name)
       page.should have_content(@user.last_name)
       page.should have_content(@user.use_description)
       page.should have_content(@user.registration_source)
+      page.should_not have_selector(".xss-test", :visible => :all)
     end
 
     it "escapes html entities in the form" do
       visit "/admin/#/api_users/#{@user.id}/edit"
 
       find_field("E-mail").value.should eql(@user.email)
-      page.should_not have_selector(".xss-test", :visible => :all)
       find_field("First Name").value.should eql(@user.first_name)
       find_field("Last Name").value.should eql(@user.last_name)
       find_field("Purpose").value.should eql(@user.use_description)
       page.should have_content(@user.registration_source)
+      page.should_not have_selector(".xss-test", :visible => :all)
+    end
+
+    it "escapes html entities in flash confirmation message" do
+      visit "/admin/#/api_users/#{@user.id}/edit"
+
+      fill_in "Last Name", :with => "Doe"
+      click_button("Save")
+
+      page.should have_content("Successfully saved the user \"#{@user.email}\"")
+      page.should_not have_selector(".xss-test", :visible => :all)
     end
   end
 

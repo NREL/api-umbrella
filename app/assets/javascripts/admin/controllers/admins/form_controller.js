@@ -11,7 +11,7 @@ Admin.AdminsFormController = Ember.ObjectController.extend(Admin.Save, {
     submit: function() {
       this.save({
         transitionToRoute: 'admins',
-        message: 'Successfully saved the admin "' + this.get('model.username') + '"',
+        message: 'Successfully saved the admin "' + _.escape(this.get('model.username')) + '"',
       });
     },
   },
