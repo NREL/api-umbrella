@@ -17,13 +17,17 @@
 require "moped"
 require "active_support/core_ext/hash/except"
 
+Moped.logger.level = Logger::ERROR
+
 source_session = Moped::Session.connect(ENV["SOURCE"])
 dest_session = Moped::Session.connect(ENV["DEST"])
 
 source_collection = source_session[:api_users]
 dest_collection = dest_session.with(:safe => true)[:api_users]
 
-source_collection.find.each do |user|
+source_collection.find.no_timeout.each do |user|
+  print "."
+
   existing = dest_collection.find(:api_key => user["api_key"]).first
   if(existing)
     if(existing.except("imported", "registration_source") != user.except("registration_source"))
@@ -45,9 +49,12 @@ source_collection.find.each do |user|
   # Mark this user as imported, so we can distinguish those imported users.
   user["imported"] = true
   user["registration_source"] = [ENV["REGISTRATION_SOURCE_PREFIX"], user["registration_source"]].compact.join("_")
-
-  print "."
-  dest_collection.insert(user)
+  begin
+    dest_collection.insert(user)
+  rescue
+    puts "ERROR inserting user: #{user.inspect}"
+    raise $!
+  end
 end
 
 puts ""
