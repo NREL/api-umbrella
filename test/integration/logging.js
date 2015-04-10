@@ -515,6 +515,34 @@ describe('logging', function() {
     }.bind(this));
   });
 
+  it('logs the request_at field as a date', function(done) {
+    this.timeout(4500);
+
+    request.get('http://localhost:9080/info/', this.options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+
+      waitForLog(this.options.qs.unique_query_id, function(error, response, hit) {
+        should.not.exist(error);
+
+        global.elasticsearch.indices.getMapping({
+          index: hit['_index'],
+          type: hit['_type'],
+          field: 'request_at',
+        }, function(error, res) {
+          should.not.exist(error);
+
+          res[hit['_index']].mappings[hit['_type']].properties.request_at.should.eql({
+            type: 'date',
+            format: 'dateOptionalTime',
+          });
+
+          done();
+        });
+      });
+    }.bind(this));
+  });
+
   it('successfully logs query strings when the field first indexed was a date, but later queries are not (does not attempt to map fields into dates)', function(done) {
     this.timeout(15000);
 

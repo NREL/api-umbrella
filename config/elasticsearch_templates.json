@@ -90,6 +90,9 @@
               "type": "string",
               "index": "not_analyzed"
             },
+            "request_at": {
+              "type": "date"
+            },
             "request_ip": {
               "type": "string",
               "index": "not_analyzed"
