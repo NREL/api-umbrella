@@ -12,44 +12,32 @@
 #
 # Run this script locally to copy data from $CURRENT_SERVER into remote
 # destination DB server:
-# SOURCE="http://$CURRENT_SERVER:9200" DEST="http://127.0.0.1:9999" ./scripts/migrate_logs
+# SOURCE="http://$CURRENT_SERVER:9200" DEST="http://127.0.0.1:9999" EXPECTED_HOST="example.com" bundle exec ./script/migrate_logs
 
-require "open-uri"
-require "fileutils"
-require "json"
+require "elasticsearch"
 
-source_server = ENV["SOURCE"].chomp("/")
-dest_server = ENV["DEST"].chomp("/")
+source_client = Elasticsearch::Client.new(:url => ENV["SOURCE"])
+dest_client = Elasticsearch::Client.new(:url => ENV["DEST"])
 
 # Manually sync the geocoding index by explicitly merging to pick the most
 # recent result for a location.
 source_index = "api-umbrella"
 dest_index = "api-umbrella"
 puts "#{Time.now}: #{source_index} => #{dest_index}"
-source_geocodes = JSON.parse(open("#{source_server}/#{source_index}/_search?size=50000").read)["hits"]["hits"]
-existing_geocodes = JSON.parse(open("#{dest_server}/#{dest_index}/_search?size=50000").read)["hits"]["hits"]
+source_geocodes = source_client.search(:index => source_index, :size => 100000)["hits"]["hits"]
+existing_geocodes = dest_client.search(:index => dest_index, :size => 100000)["hits"]["hits"]
 source_geocodes.each do |source_geocode|
   existing_geocode = existing_geocodes.detect { |dg| dg["_id"] == source_geocode["_id"] }
-  if(existing_geocode && existing_geocode["_source"]["updated_at"] > source_geocode["_source"]["updated_at"])
+  if(existing_geocode && existing_geocode["_source"]["updated_at"] >= source_geocode["_source"]["updated_at"])
     next
   end
 
-  uri = URI("#{dest_server}/#{dest_index}/#{source_geocode["_type"]}/#{source_geocode["_id"]}")
-  req = Net::HTTP::Put.new(uri, "Content-Type" => "application/json")
-  req.body = JSON.generate(source_geocode["_source"])
-  res = Net::HTTP.start(uri.hostname, uri.port) do |http|
-    http.request(req)
-  end
-
-  if(res.code.to_i != 200 && res.code.to_i != 201)
-    raise "Index alias creation failed: #{res.code} #{res.message}"
-  end
+  dest_client.index(:index => dest_index, :type => source_geocode["_type"], :id => source_geocode["_id"], :body => source_geocode["_source"])
 end
 
-indices = JSON.parse(open("#{source_server}/_aliases").read).keys.sort
+indices = source_client.indices.get_aliases.keys.sort
 indices.each do |source_index|
   dest_index = source_index.dup
-  next unless(source_index == "api-umbrella-logs-v1-production-2015-03")
   if(source_index =~ /^api-umbrella-logs-v1-production-\d\d\d\d-\d\d$/)
     dest_index.gsub!(/-production-/, "-")
   elsif(source_index == "api-umbrella")
@@ -57,34 +45,50 @@ indices.each do |source_index|
     # recent from duplicates.
     next
   else
-    raise "Unknown index: #{source_index}"
+    puts "ERROR: Unknown index: #{source_index}"
+    next
   end
 
   puts "#{Time.now}: #{source_index} => #{dest_index}"
-  output = `./node_modules/.bin/elasticdump --bulk --bulk-use-output-index-name --input=#{source_server}/#{source_index} --output=#{dest_server}/#{dest_index}`
-  unless $?.success?
-    raise "elasticdump export failed: #{output}"
+
+  result = source_client.search(:index => source_index, :search_type => "scan", :scroll => "10m", :size => 500)
+  scroll_id = result["_scroll_id"]
+  while(scroll = source_client.scroll(:scroll_id => scroll_id, :scroll => "10m")) # rubocop:disable Lint/LiteralInCondition
+    scroll_id = scroll["_scroll_id"]
+    hits = scroll["hits"]["hits"]
+
+    # Break when elasticsearch returns empty hits (we've reached the end).
+    break if hits.empty?
+
+    bulk_commands = []
+    hits.each do |hit|
+      # Ensure the record being imported has the expected host (just to double
+      # check that the imported records can be clearly distinguished).
+      if(!hit["_source"]["request_host"] || !hit["_source"]["request_host"].include?(ENV["EXPECTED_HOST"]))
+        puts "ERROR: Record did not contain expected request_host field. Skipping. #{hit["_id"].inspect}"
+        next
+      end
+
+      # Mark this record as imported, so we can distinguish the imported hits.
+      hit["_source"]["imported"] = true
+
+      bulk_commands << { :index => { :_index => dest_index, :_type => hit["_type"], :_id => hit["_id"] } }
+      bulk_commands << hit["_source"]
+    end
+
+    dest_client.bulk(:body => bulk_commands)
   end
 
   if(source_index != "api-umbrella")
     # Create the version-less index alias names.
-    indices = JSON.parse(open("#{dest_server}/_aliases").read)
-    if(indices[dest_index] && (!indices[dest_index]["aliases"] || indices[dest_index]["aliases"].length != 2))
-      uri = URI("#{dest_server}/_aliases")
-      req = Net::HTTP::Post.new(uri, "Content-Type" => "application/json")
-      req.body = JSON.generate({
-        "actions" => [
-          { "add" => { "index" => dest_index, "alias" => dest_index.gsub("-v1-", "-write-") } },
-          { "add" => { "index" => dest_index, "alias" => dest_index.gsub("-v1-", "-") } },
-        ]
-      })
-      res = Net::HTTP.start(uri.hostname, uri.port) do |http|
-        http.request(req)
-      end
-
-      if(res.code.to_i != 200)
-        raise "Index alias creation failed: #{res.code} #{res.message}"
-      end
+    alias_name = dest_index.gsub("-v1-", "-")
+    alias_write_name = dest_index.gsub("-v1-", "-write-")
+    indices = dest_client.indices.get_aliases
+    if(indices[dest_index] && (!indices[dest_index]["aliases"] || !indices[dest_index]["aliases"][alias_name]))
+      dest_client.indices.put_alias(:index => dest_index, :name => alias_name)
+    end
+    if(indices[dest_index] && (!indices[dest_index]["aliases"] || !indices[dest_index]["aliases"][alias_write_name]))
+      dest_client.indices.put_alias(:index => dest_index, :name => alias_write_name)
     end
   end
 end
