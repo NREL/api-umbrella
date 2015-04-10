@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+
+# A script to migrate api keys and user accounts from one server instance to
+# another.
+#
+# This is for the migration of developer.nrel.gov's older and separate API
+# Umbrella installation onto api.data.gov's newer one.
+#
+# Setup compressed double tunnel to directly expose MongoDB on the DB server
+# (via NAT server):
+# ssh -C -L 9998:$DB_INTERNAL_IP:27017 -N $NAT_IP
+#
+# Run this script locally to copy data from $CURRENT_SERVER into remote
+# destination DB server:
+# SOURCE="mongodb://$USERNAME:$PASSWORD@$CURRENT_SERVER/api_umbrella" DEST="mongodb://localhost:9998/api_umbrella" REGISTRATION_SOURCE_PREFIX="name" bundle exec ./script/migrate_users
+
+require "moped"
+require "active_support/core_ext/hash/except"
+
+source_session = Moped::Session.connect(ENV["SOURCE"])
+dest_session = Moped::Session.connect(ENV["DEST"])
+
+source_collection = source_session[:api_users]
+dest_collection = dest_session.with(:safe => true)[:api_users]
+
+source_collection.find.each do |user|
+  existing = dest_collection.find(:api_key => user["api_key"]).first
+  if(existing)
+    if(existing.except("imported", "registration_source") != user.except("registration_source"))
+      puts "\nERROR: #{existing["api_key"]} api key (#{existing["email"]}) already exists and the records do not match"
+    end
+
+    next
+  end
+
+  existing = dest_collection.find(:api_key => user["api_key"]).first
+  if existing
+    if(existing.except("imported", "registration_source") != user.except("registration_source"))
+      puts "\nERROR: #{existing["_id"]} ID (#{existing["email"]}) already exists and the records do not match"
+    end
+
+    next
+  end
+
+  # Mark this user as imported, so we can distinguish those imported users.
+  user["imported"] = true
+  user["registration_source"] = [ENV["REGISTRATION_SOURCE_PREFIX"], user["registration_source"]].compact.join("_")
+
+  print "."
+  dest_collection.insert(user)
+end
+
+puts ""
