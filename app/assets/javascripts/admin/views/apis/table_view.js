@@ -39,17 +39,20 @@ Admin.ApisTableView = Ember.View.extend({
           data: 'frontend_host',
           title: 'Host',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'frontend_prefixes',
           title: 'Prefixes',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'sort_order',
           title: 'Matching Order',
           defaultContent: '-',
           width: 130,
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: null,

@@ -27,48 +27,32 @@ Admin.AdminsTableView = Ember.View.extend({
           data: 'email',
           title: 'E-mail',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'name',
           title: 'Name',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'group_names',
           title: 'Groups',
-          render: function(names, type) {
-            if(type === 'display' && names && names !== '-') {
-              return names.join('<br>');
-            }
-
-            return names;
-          }
+          render: Admin.DataTablesHelpers.renderListEscaped,
         },
         {
           data: 'last_sign_in_at',
           type: 'date',
           title: 'Last Signed In',
           defaultContent: '-',
-          render: function(time, type) {
-            if(type === 'display' && time && time !== '-') {
-              return moment(time).format('YYYY-MM-DD HH:mm:ss');
-            }
-
-            return time;
-          },
+          render: Admin.DataTablesHelpers.renderTime,
         },
         {
           data: 'created_at',
           type: 'date',
           title: 'Created',
           defaultContent: '-',
-          render: function(time, type) {
-            if(type === 'display' && time && time !== '-') {
-              return moment(time).format('YYYY-MM-DD HH:mm:ss');
-            }
-
-            return time;
-          },
+          render: Admin.DataTablesHelpers.renderTime,
         }
       ]
     });

@@ -3,6 +3,35 @@ require 'spec_helper'
 describe "api users form", :js => true do
   login_admin
 
+  describe "xss" do
+    before(:all) do
+      ApiUser.where(:registration_source.ne => "seed").delete_all
+      @user = FactoryGirl.create(:xss_api_user)
+    end
+
+    it "escapes html entities in the table" do
+      visit "/admin/#/api_users"
+
+      page.should have_content(@user.email)
+      page.should_not have_selector(".xss-test", :visible => :all)
+      page.should have_content(@user.first_name)
+      page.should have_content(@user.last_name)
+      page.should have_content(@user.use_description)
+      page.should have_content(@user.registration_source)
+    end
+
+    it "escapes html entities in the form" do
+      visit "/admin/#/api_users/#{@user.id}/edit"
+
+      find_field("E-mail").value.should eql(@user.email)
+      page.should_not have_selector(".xss-test", :visible => :all)
+      find_field("First Name").value.should eql(@user.first_name)
+      find_field("Last Name").value.should eql(@user.last_name)
+      find_field("Purpose").value.should eql(@user.use_description)
+      page.should have_content(@user.registration_source)
+    end
+  end
+
   describe "api key in the save notification" do
     it "shows the api key when creating a new account" do
       visit "/admin/#/api_users/new"

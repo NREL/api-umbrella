@@ -27,40 +27,39 @@ Admin.ApiUsersTableView = Ember.View.extend({
           data: 'first_name',
           title: 'First Name',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'last_name',
           title: 'Last Name',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'use_description',
           title: 'Purpose',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'created_at',
           type: 'date',
           title: 'Created',
           defaultContent: '-',
-          render: function(time, type) {
-            if(type === 'display' && time && time !== '-') {
-              return moment(time).format('YYYY-MM-DD HH:mm:ss');
-            }
-
-            return time;
-          },
+          render: Admin.DataTablesHelpers.renderTime,
         },
         {
           data: 'registration_source',
           title: 'Registration Source',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'api_key_preview',
           title: 'API Key',
           defaultContent: '-',
           orderable: false,
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
       ]
     });

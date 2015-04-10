@@ -27,11 +27,13 @@ Admin.ApiScopesTableView = Ember.View.extend({
           data: 'host',
           title: 'Host',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'path_prefix',
           title: 'Path Prefix',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         }
       ]
     });

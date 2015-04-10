@@ -11,6 +11,25 @@ describe "apis", :js => true do
     end
   end
 
+  describe "xss" do
+    it "escapes html entities in the table" do
+      log = FactoryGirl.create(:xss_log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_method => "OPTIONS")
+      LogItem.gateway.refresh_index!
+
+      visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+
+      page.should have_content(log.request_method)
+      page.should_not have_selector(".xss-test", :visible => :all)
+      page.should have_content(log.request_accept_encoding)
+      page.should have_content(log.request_ip_city)
+      page.should have_content(log.request_ip_country)
+      page.should have_content(log.request_ip_region)
+      page.should have_content(log.request_user_agent)
+      page.should have_content(log.response_content_type)
+      page.should have_content(log.user_email)
+    end
+  end
+
   describe "csv download" do
     it "updates the download link as the query parameters change" do
       FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"))

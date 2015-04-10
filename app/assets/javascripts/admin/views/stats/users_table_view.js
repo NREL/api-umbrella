@@ -36,22 +36,20 @@ Admin.StatsUsersTableView = Ember.View.extend({
           data: 'first_name',
           title: 'First Name',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'last_name',
           title: 'Last Name',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'created_at',
           type: 'date',
           title: 'Signed Up',
           defaultContent: '-',
-          render: function(time, type) {
-            if(type === 'display' && time && time !== '-') {
-              return moment(time).format('YYYY-MM-DD HH:mm:ss');
-            }
-          },
+          render: Admin.DataTablesHelpers.renderTime,
         },
         {
           data: 'hits',
@@ -70,18 +68,13 @@ Admin.StatsUsersTableView = Ember.View.extend({
           type: 'date',
           title: 'Last Request',
           defaultContent: '-',
-          render: function(time, type) {
-            if(type === 'display' && time && time !== '-') {
-              return moment(time).format('YYYY-MM-DD HH:mm:ss');
-            }
-
-            return time;
-          },
+          render: Admin.DataTablesHelpers.renderTime,
         },
         {
           data: 'use_description',
           title: 'Use Description',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderTime,
         },
       ]
     });

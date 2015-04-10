@@ -11,5 +11,12 @@ FactoryGirl.define do
     factory :invalid_api_user do
       terms_and_conditions ""
     end
+
+    factory :xss_api_user do
+      first_name '"><script class="xss-test">alert("Hello first_name");</script>'
+      last_name '"><script class="xss-test">alert("Hello last_name");</script>'
+      use_description '"><script class="xss-test">alert("Hello use_description");</script>'
+      registration_source '"><script class="xss-test">alert("Hello registration_source");</script>'
+    end
   end
 end

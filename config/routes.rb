@@ -71,6 +71,7 @@ ApiUmbrella::Application.routes.draw do
       collection do
         get "search"
         get "logs"
+        post "logs"
         get "users"
         get "map"
       end

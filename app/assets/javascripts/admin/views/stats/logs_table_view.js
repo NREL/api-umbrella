@@ -9,6 +9,9 @@ Admin.LogsTableView = Ember.View.extend({
       serverSide: true,
       ajax: {
         url: '/admin/stats/logs.json',
+        // Use POST for this endpoint, since the URLs can be very long and
+        // exceed URL length limits in IE (and apparently Capybara too).
+        type: 'POST',
         data: _.bind(function(data) {
           var query = this.get('controller.query.params');
           return _.extend({}, data, query);
@@ -43,28 +46,25 @@ Admin.LogsTableView = Ember.View.extend({
           type: 'date',
           title: 'Time',
           defaultContent: '-',
-          render: function(time, type) {
-            if(type === 'display' && time && time !== '-') {
-              return moment(time).format('YYYY-MM-DD HH:mm:ss');
-            }
-
-            return time;
-          },
+          render: Admin.DataTablesHelpers.renderTime,
         },
         {
           data: 'request_method',
           title: 'Method',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_host',
           title: 'Host',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_url',
           title: 'URL',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'user_email',
@@ -86,26 +86,31 @@ Admin.LogsTableView = Ember.View.extend({
           data: 'request_ip',
           title: 'IP Address',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_ip_country',
           title: 'Country',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_ip_region',
           title: 'State',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_ip_city',
           title: 'City',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'response_status',
           title: 'Status',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'response_time',
@@ -123,16 +128,19 @@ Admin.LogsTableView = Ember.View.extend({
           data: 'response_content_type',
           title: 'Content Type',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_accept_encoding',
           title: 'Accept Encoding',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_user_agent',
           title: 'User Agent',
           defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
       ]
     });
