@@ -74,7 +74,7 @@ Admin.StatsUsersTableView = Ember.View.extend({
           data: 'use_description',
           title: 'Use Description',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderTime,
+          render: Admin.DataTablesHelpers.renderEscaped,
         },
       ]
     });
