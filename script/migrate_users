@@ -51,9 +51,9 @@ source_collection.find.no_timeout.each do |user|
   user["registration_source"] = [ENV["REGISTRATION_SOURCE_PREFIX"], user["registration_source"]].compact.join("_")
   begin
     dest_collection.insert(user)
-  rescue
+  rescue => e
     puts "ERROR inserting user: #{user.inspect}"
-    raise $!
+    raise e
   end
 end
 
