@@ -15,6 +15,10 @@
 # SOURCE="http://$CURRENT_SERVER:9200" DEST="http://127.0.0.1:9999" EXPECTED_HOST="example.com" bundle exec ./script/migrate_logs
 
 require "elasticsearch"
+require "logger"
+
+STDOUT.sync = true
+logger = Logger.new(STDOUT)
 
 source_client = Elasticsearch::Client.new(:url => ENV["SOURCE"])
 dest_client = Elasticsearch::Client.new(:url => ENV["DEST"])
@@ -23,16 +27,22 @@ dest_client = Elasticsearch::Client.new(:url => ENV["DEST"])
 # recent result for a location.
 source_index = "api-umbrella"
 dest_index = "api-umbrella"
-puts "#{Time.now}: #{source_index} => #{dest_index}"
+logger.info "#{source_index} => #{dest_index}"
 source_geocodes = source_client.search(:index => source_index, :size => 100_000)["hits"]["hits"]
 existing_geocodes = dest_client.search(:index => dest_index, :size => 100_000)["hits"]["hits"]
+bulk_commands = []
 source_geocodes.each do |source_geocode|
   existing_geocode = existing_geocodes.detect { |dg| dg["_id"] == source_geocode["_id"] }
   if(existing_geocode && existing_geocode["_source"]["updated_at"] >= source_geocode["_source"]["updated_at"])
     next
   end
 
-  dest_client.index(:index => dest_index, :type => source_geocode["_type"], :id => source_geocode["_id"], :body => source_geocode["_source"])
+  bulk_commands << { :index => { :_index => dest_index, :_type => source_geocode["_type"], :_id => source_geocode["_id"] } }
+  bulk_commands << source_geocode["_source"]
+end
+
+if(bulk_commands.any?)
+  dest_client.bulk(:body => bulk_commands)
 end
 
 indices = source_client.indices.get_aliases.keys.sort
@@ -45,15 +55,24 @@ indices.each do |source_index| # rubocop:disable Lint/ShadowingOuterLocalVariabl
     # recent from duplicates.
     next
   else
-    puts "ERROR: Unknown index: #{source_index}"
+    logger.error "Unknown index: #{source_index}"
     next
   end
 
-  puts "#{Time.now}: #{source_index} => #{dest_index}"
+  logger.info "#{source_index} => #{dest_index}"
 
-  result = source_client.search(:index => source_index, :search_type => "scan", :scroll => "10m", :size => 500)
+  if(ENV["SKIP_LESS_THAN_INDEX"] && dest_index < ENV["SKIP_LESS_THAN_INDEX"])
+    logger.info "Skipping #{dest_index} index"
+    next
+  end
+
+  result = source_client.search(:index => source_index, :search_type => "scan", :scroll => "10m", :size => 5000)
   scroll_id = result["_scroll_id"]
+  total_hits = result["hits"]["total"]
+  count = 0
   while(scroll = source_client.scroll(:scroll_id => scroll_id, :scroll => "10m")) # rubocop:disable Lint/LiteralInCondition
+    start_time = Time.now
+
     scroll_id = scroll["_scroll_id"]
     hits = scroll["hits"]["hits"]
 
@@ -62,11 +81,34 @@ indices.each do |source_index| # rubocop:disable Lint/ShadowingOuterLocalVariabl
 
     bulk_commands = []
     hits.each do |hit|
+      count += 1
+
       # Ensure the record being imported has the expected host (just to double
       # check that the imported records can be clearly distinguished).
       if(!hit["_source"]["request_host"] || !hit["_source"]["request_host"].include?(ENV["EXPECTED_HOST"]))
-        puts "ERROR: Record did not contain expected request_host field. Skipping. #{hit["_id"].inspect}"
+        logger.error "Record did not contain expected request_host field. Skipping. #{hit["_id"].inspect}"
         next
+      end
+
+      # Translate to the new way of storing hierarchy path information.
+      hit["_source"].delete("request_path_hierarchy")
+      if(!hit["_source"]["request_hierarchy"])
+        hierarchy_string = "#{hit["_source"]["request_host"]}#{hit["_source"]["request_path"]}"
+        hierarchy_string.gsub!(%r{//+}, "/")
+        hierarchy_string.chomp!("/")
+        hierarchy = []
+        hierarchy_parts = hierarchy_string.split("/")
+        (0...hierarchy_parts.length).each do |index|
+          parents_and_self = hierarchy_parts[0..index]
+          token = "#{index}/#{parents_and_self.join("/")}"
+
+          if(index < hierarchy_parts.length - 1)
+            token << "/"
+          end
+
+          hierarchy << token
+        end
+        hit["_source"]["request_hierarchy"] = hierarchy
       end
 
       # Mark this record as imported, so we can distinguish the imported hits.
@@ -76,7 +118,11 @@ indices.each do |source_index| # rubocop:disable Lint/ShadowingOuterLocalVariabl
       bulk_commands << hit["_source"]
     end
 
-    dest_client.bulk(:body => bulk_commands)
+    if(bulk_commands.any?)
+      dest_client.bulk(:body => bulk_commands)
+      elapsed_time = Time.now - start_time
+      logger.info "Indexed #{count} of #{total_hits} (#{bulk_commands.length / 2} records indexed in #{elapsed_time.round} seconds)"
+    end
   end
 
   if(source_index != "api-umbrella")
