@@ -11,6 +11,39 @@ describe Admin::StatsController do
     }
   end
 
+  describe "GET search" do
+    it "bins the results by day with proper time zone" do
+      Time.use_zone("America/Denver") do
+        FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-12T23:59:59"))
+        FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-13T00:00:00"))
+        FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-18T23:59:59"))
+        FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-19T00:00:00"))
+      end
+      LogItem.gateway.refresh_index!
+
+      get :search, {
+        :format => "json",
+        :tz => "America/Denver",
+        :search => "",
+        :start_at => "2015-01-13",
+        :end_at => "2015-01-18",
+        :interval => "day",
+      }
+
+      response.status.should eql(200)
+      data = MultiJson.load(response.body)
+      data["stats"]["total_hits"].should eql(2)
+      data["hits_over_time"][0]["c"][0]["f"].should eql("Tue, Jan 13, 2015")
+      data["hits_over_time"][0]["c"][0]["v"].should eql(1421132400000)
+      data["hits_over_time"][0]["c"][1]["f"].should eql("1")
+      data["hits_over_time"][0]["c"][1]["v"].should eql(1)
+      data["hits_over_time"][5]["c"][0]["f"].should eql("Sun, Jan 18, 2015")
+      data["hits_over_time"][5]["c"][0]["v"].should eql(1421564400000)
+      data["hits_over_time"][5]["c"][1]["f"].should eql("1")
+      data["hits_over_time"][5]["c"][1]["v"].should eql(1)
+    end
+  end
+
   describe "GET logs" do
     it "downloads a CSV that requires an elasticsearch scan and scroll query" do
       FactoryGirl.create_list(:log_item, 1005, :request_at => Time.parse("2015-01-16T06:06:28.816Z"))
