@@ -33,5 +33,49 @@ describe Admin::StatsController do
       lines[0].should eql("Time,Method,Host,URL,User,IP Address,Country,State,City,Status,Response Time,Content Type,Accept Encoding,User Agent")
       lines.length.should eql(1006)
     end
+
+    describe "query builder" do
+      it "searches fields case-insensitively by default" do
+        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_user_agent => "MOZILLAAA")
+        LogItem.gateway.refresh_index!
+
+        get :logs, {
+          "format" => "json",
+          "tz" => "America/Denver",
+          "start_at" => "2015-01-13",
+          "end_at" => "2015-01-18",
+          "interval" => "day",
+          "start" => "0",
+          "length" => "10",
+          "query" => '{"condition":"AND","rules":[{"id":"request_user_agent","field":"request_user_agent","type":"string","input":"text","operator":"begins_with","value":"Mozilla"}]}'
+        }
+
+        response.status.should eql(200)
+        data = MultiJson.load(response.body)
+        data["recordsTotal"].should eql(1)
+        data["data"][0]["request_user_agent"].should eql("MOZILLAAA")
+      end
+
+      it "matches the api key case-sensitively" do
+        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :api_key => "AbCDeF", :request_user_agent => "api key match test")
+        LogItem.gateway.refresh_index!
+
+        get :logs, {
+          "format" => "json",
+          "tz" => "America/Denver",
+          "start_at" => "2015-01-13",
+          "end_at" => "2015-01-18",
+          "interval" => "day",
+          "start" => "0",
+          "length" => "10",
+          "query" => '{"condition":"AND","rules":[{"id":"api_key","field":"api_key","type":"string","input":"text","operator":"begins_with","value":"AbCDeF"}]}'
+        }
+
+        response.status.should eql(200)
+        data = MultiJson.load(response.body)
+        data["recordsTotal"].should eql(1)
+        data["data"][0]["request_user_agent"].should eql("api key match test")
+      end
+    end
   end
 end

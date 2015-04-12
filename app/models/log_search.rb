@@ -2,6 +2,13 @@ class LogSearch
   attr_accessor :query, :query_options
   attr_reader :client, :start_time, :end_time, :interval, :region, :country, :state
 
+  CASE_SENSITIVE_FIELDS = [
+    "api_key",
+    "request_ip_country",
+    "request_ip_region",
+    "request_ip_city",
+  ]
+
   def initialize(options = {})
     @client = Elasticsearch::Client.new({
       :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
@@ -107,6 +114,11 @@ class LogSearch
       filters = []
       query["rules"].each do |rule|
         filter = {}
+
+        unless(CASE_SENSITIVE_FIELDS.include?(rule["field"]) && rule["value"].kind_of?(String))
+          rule["value"].downcase!
+        end
+
         case(rule["operator"])
         when "equal", "not_equal"
           filter = {
