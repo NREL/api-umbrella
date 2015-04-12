@@ -5,13 +5,12 @@ require('../test_helper');
 var _ = require('lodash'),
     apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
-    execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
     fs = require('fs'),
     ipaddr = require('ipaddr.js'),
     path = require('path'),
-    processEnv = require('../../lib/process_env'),
     request = require('request'),
+    supervisorSignal = require('../../lib/supervisor_signal'),
     Tail = require('tail').Tail;
 
 var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
@@ -49,15 +48,11 @@ describe('dns backend resolving', function() {
     }
 
     // Reload unbound to read the new config file.
-    var configPath = processEnv.supervisordConfigPath();
-    var execOpts = {
-      env: processEnv.env(),
-    };
-    execFile('supervisorctl', ['-c', configPath, 'kill', 'HUP', 'test-env-unbound'], execOpts, function(error, stdout, stderr) {
+    supervisorSignal('test-env-unbound', 'SIGHUP', function(error) {
       if(error) {
         clearTimeout(logTailTimeout);
         logTail.unwatch();
-        return callback('Error reloading unbound: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
+        return callback('Error reloading unbound: ' + error);
       }
 
       if(!options.wait) {
