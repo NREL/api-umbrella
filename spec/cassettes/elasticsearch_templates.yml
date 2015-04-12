@@ -19,7 +19,7 @@ http_interactions:
       message: OK
     headers:
       Date:
-      - Fri, 10 Apr 2015 17:17:38 GMT
+      - Sun, 12 Apr 2015 15:32:16 GMT
       Server:
       - Apache
       Access-Control-Allow-Origin:
@@ -47,7 +47,7 @@ http_interactions:
       Via:
       - 1.1 varnish
       X-Served-By:
-      - cache-mia1323-MIA
+      - cache-den6025-DEN
       X-Cache:
       - MISS
       X-Cache-Hits:
@@ -55,7 +55,7 @@ http_interactions:
       Vary:
       - Authorization,Accept-Encoding
       Expires:
-      - Fri, 10 Apr 2015 17:22:38 GMT
+      - Sun, 12 Apr 2015 15:37:16 GMT
       Source-Age:
       - '0'
     body:
@@ -217,5 +217,5 @@ http_interactions:
           }
         ]
     http_version: 
-  recorded_at: Fri, 10 Apr 2015 07:01:09 GMT
+  recorded_at: Sat, 11 Apr 2015 13:32:04 GMT
 recorded_with: VCR 2.9.3

@@ -28,6 +28,14 @@ module CapybaraFeatureHelpers
   def wait_for_datatables_filter
     sleep 1
   end
+
+  def wait_until
+    require "timeout"
+    Timeout.timeout(Capybara.default_wait_time) do
+      sleep(0.1) until(value = yield) # rubocop:disable Lint/AssignmentInCondition
+      value
+    end
+  end
 end
 
 RSpec.configure do |config|

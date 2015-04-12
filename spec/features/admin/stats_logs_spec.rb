@@ -78,11 +78,21 @@ describe "analytics filter logs", :js => true do
     end
 
     it "successfully downloads a csv" do
-      FactoryGirl.create_list(:log_item, 10, :request_at => Time.parse("2015-01-16T06:06:28.816Z"))
+      FactoryGirl.create_list(:log_item, 10, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_method => "OPTIONS")
       LogItem.gateway.refresh_index!
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+
+      # Wait for the ajax actions to fetch the graph and tables to both
+      # complete, or else the download link seems to be flakey in Capybara.
+      page.should have_content("Download CSV")
+      page.should have_content("OPTIONS")
+      wait_for_ajax
       click_link "Download CSV"
+
+      # Downloading files via Capybara generally seems flakey, so add an extra
+      # wait.
+      wait_until { page.response_headers["Content-Type"] == "text/csv" }
       page.status_code.should eql(200)
       page.response_headers["Content-Type"].should eql("text/csv")
     end

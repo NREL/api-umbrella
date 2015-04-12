@@ -4,10 +4,10 @@ source "https://rails-assets.org"
 gem "rails", "~> 3.2.21"
 
 # Rails app server
-gem "puma", "~> 2.10.2"
+gem "puma", "~> 2.11.2"
 
 # Error notification service (optional)
-gem "rollbar", "~> 1.4.0"
+gem "rollbar", "~> 1.4.5"
 
 # Environment specific configuration
 gem "dotenv-rails", "~> 1.0.2"
@@ -18,11 +18,11 @@ gem "dotenv-rails", "~> 1.0.2"
 gem "rack-timeout", "~> 0.0.4"
 
 # For proxying HTTP requests to password-protected places for admins.
-gem "rack-proxy", "~> 0.5.16"
+gem "rack-proxy", "~> 0.5.17"
 
 # JSON handling
-gem "multi_json", "~> 1.10.1"
-gem "oj", "~> 2.11.1", :platforms => [:ruby]
+gem "multi_json", "~> 1.11.0"
+gem "oj", "~> 2.12.1", :platforms => [:ruby]
 gem "oj_mimic_json", "~> 1.0.1", :platforms => [:ruby]
 
 # MongoDB
@@ -43,7 +43,7 @@ gem "mongoid-embedded-errors", "~> 2.0.1"
 gem "mongoid_rails_migrations", "~> 1.0.1"
 
 # Orderable database items
-gem "mongoid_orderable", "~> 4.1.0"
+gem "mongoid_orderable", "~> 4.1.1"
 
 # Generate UUIDs
 gem "uuidtools", "~> 2.1.4"
@@ -54,7 +54,7 @@ gem "uuidtools", "~> 2.1.4"
 gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
 
 # Elasticsearch
-gem "elasticsearch", "~> 1.0.6"
+gem "elasticsearch", "~> 1.0.8"
 
 # OmniAuth-based authentication
 gem "devise", "~> 3.4.0"
@@ -96,19 +96,19 @@ gem "csv_builder", "~> 2.1.1"
 gem "active_model_serializers", "0.9.0"
 
 # Country and state name lookups
-gem "countries", "~> 0.9.3"
+gem "countries", "~> 0.11.3"
 
 # Ember.js
 gem "ember-rails", "~> 0.15.0"
-gem "ember-source", "~> 1.7.0"
+gem "ember-source", "~> 1.7.1"
 
 # HTML diffs
-gem "diffy", "~> 3.0.3"
+gem "diffy", "~> 3.0.7"
 
 # Use a newer version of Psych for YAML. The newer gem version does a better
 # job of making multi-line strings and strings with colons in them more human
 # readable.
-gem "psych", "~> 2.0.8", :platforms => [:ruby]
+gem "psych", "~> 2.0.13", :platforms => [:ruby]
 
 # For user-inputted YAML.
 gem "safe_yaml", "~> 1.0.4", :require => "safe_yaml/load"
@@ -118,13 +118,13 @@ gem "rails_config", "~> 0.4.2"
 
 # Delayed jobs and background tasks
 gem "delayed_job_mongoid", "~> 2.1.0"
-gem "daemons", "~> 1.1.9"
+gem "daemons", "~> 1.2.2"
 
 # HTML email styling
 gem "premailer-rails", "~> 1.8.0"
 
 # Localization in the admin based on the Accept-Language header
-gem "http_accept_language", "~> 2.0.2"
+gem "http_accept_language", "~> 2.0.5"
 
 # Markdown
 gem "kramdown", "~> 1.6.0"
@@ -153,12 +153,12 @@ group :assets do
   gem "compass-rails", "~> 1.1.7"
 
   # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-  gem 'therubyracer', "~> 0.12.1", :platforms => :ruby
+  gem "therubyracer", "~> 0.12.2", :platforms => :ruby
   # For JRuby, use the Node.js execjs runtime - We'll assume it's on the
   # servers so it gets picked up by execjs. It's faster than therubyrhino.
 
   # JavaScript compression
-  gem 'uglifier', "~> 2.5.0"
+  gem "uglifier", "~> 2.7.1"
 
   # Smarter handling of compiled CSS with relative paths (like Jammit)
   gem "sprockets-urlrewriter", "~> 0.1.2"
@@ -185,6 +185,7 @@ group :assets do
 
   # jQuery ajax calls wrapped in Ember promises
   gem "rails-assets-ic-ajax", "~> 2.0.1"
+  gem "rails-assets-ember", "~> 1.7.1"
 
   # For Markdown parsing
   gem "rails-assets-marked", "~> 0.3.2"
@@ -212,7 +213,7 @@ end
 # and rake tasks are available in development mode:
 group :development, :test do
   gem "rspec-rails", "~> 2.99.0"
-  gem "factory_girl_rails", "~> 4.4.1"
+  gem "factory_girl_rails", "~> 4.5.0"
   gem "rspec-html-matchers", "~> 0.5.0"
 
   # Rspec formatter - Prints overall progress and error details as they happen.
@@ -222,29 +223,28 @@ group :development, :test do
   gem "rubocop", "~> 0.27.1", :require => false
 
   # Code coverage testing
-  gem "coveralls", "~> 0.7.0", :require => false
+  gem "coveralls", "~> 0.8.0", :require => false
 
   # Real browser testing
-  gem "capybara", "~> 2.4.3"
+  gem "capybara", "~> 2.4.4"
 
   # Headless webkit for capybara
-  gem "poltergeist", "~> 1.5.0"
+  gem "poltergeist", "~> 1.6.0"
 
   # Clean the database between tests
-  gem "database_cleaner", "~> 1.3.0"
+  gem "database_cleaner", "~> 1.4.1"
 
   # JavaScript lint/style checker
-  # This git fork contains a newer version of the underlying jshint library.
-  gem "jshintrb", "~> 0.2.4", :git => "https://github.com/Paxa/jshintrb.git"
+  gem "jshintrb", "~> 0.3.0"
 
   # For testing drag and drop in capybara.
   gem "rails-assets-jquery-simulate-ext", "~> 1.3.0"
 
   # For creating test data in elasticsearch.
-  gem "elasticsearch-persistence", "~> 0.1.6"
+  gem "elasticsearch-persistence", "~> 0.1.7"
 
   # For parsing URLs in tests.
-  gem "addressable", "~> 2.3.6"
+  gem "addressable", "~> 2.3.8"
 
   # For caching external web requests
   gem "vcr", "~> 2.9.3", :require => false
@@ -256,5 +256,5 @@ group :development do
   gem "capistrano", "~> 3.3.5"
   gem "capistrano-rails", "~> 1.1.2"
 
-  gem "awesome_print", "~> 1.2.0"
+  gem "awesome_print", "~> 1.6.1"
 end
