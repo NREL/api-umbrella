@@ -1,17 +1,13 @@
-<p>Your API key for <strong><%= @user.website %></strong> is:</p>
+<p>Your API key for <strong><%= @user.email %></strong> is:</p>
 <code class="signup-key"><%= @user.api_key %></code>
 
-<p>You can start using this key to make Web service requests. Simply pass your key in the URL when making a Web request. Here's an example:</p>
-<pre><%= link_to("https://#{ApiUmbrellaConfig[:default_host]}/nrel/alt-fuel-stations/v1/nearest.json?<strong>api_key=#{@user.api_key}</strong>&location=Denver+CO".html_safe, "https://#{ApiUmbrellaConfig[:default_host]}/nrel/alt-fuel-stations/v1/nearest.json?api_key=#{@user.api_key}&location=Denver+CO") %></pre>
-
-<h2>What Next?</h2>
-<ul>
-  <li>Explore our <%= link_to("available Web services", "https://#{ApiUmbrellaConfig[:default_host]}/docs/") %>.</li>
-  <li>Need more help? <a href="http://<%= ApiUmbrellaConfig[:default_host] %>/contact/">Contact us</a>.</li>
-</ul>
+<% if(@example_api_url) -%>
+<p>You can start using this key to make web service requests. Simply pass your key in the URL when making a web request. Here's an example:</p>
+<pre><%= link_to(@formatted_example_api_url.html_safe, @example_api_url) %></pre>
+<% end -%>
 
 <div class="signup-footer">
-  <p>For additional support, please <a href="http://<%= ApiUmbrellaConfig[:default_host] %>/contact/">contact us</a>. When contacting us, please tell us what API you're accessing and provide the following account details so we can quickly find you:</p>
+  <p>For additional support, please <a href="<%= @contact_url %>">contact us</a>. When contacting us, please tell us what API you're accessing and provide the following account details so we can quickly find you:</p>
   Account Email: <%= @user.email %><br>
   Account ID: <%= @user.id %>
 </div>

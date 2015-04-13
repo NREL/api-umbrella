@@ -44,7 +44,7 @@ class Api::V1::UsersController < Api::V1::BaseController
     respond_to do |format|
       if(@api_user.save)
         if(params[:user][:send_welcome_email])
-          ApiUserMailer.delay(:queue => "mailers").signup_email(@api_user)
+          ApiUserMailer.delay(:queue => "mailers").signup_email(@api_user, params[:options] || {})
         end
 
         format.json { render("show", :status => :created, :location => api_v1_user_url(@api_user)) }
