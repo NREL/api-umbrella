@@ -10,6 +10,9 @@ AllCops:
 Lint/LiteralInInterpolation:
   Enabled: false
 
+Lint/NumericLiterals:
+  Enabled: false
+
 Lint/UnusedBlockArgument:
   Enabled: false
 
