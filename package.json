@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "api-umbrella-config": "0.2.4",
-    "api-umbrella-gatekeeper": "0.8.6",
+    "api-umbrella-gatekeeper": "0.8.7",
     "async": "0.9.0",
     "bunyan": "1.2.1",
     "bunyan-rollbar": "0.1.0",
