@@ -31,10 +31,15 @@ describe "datatables", :js => true do
 
     it "displays a spinner when server side processing" do
       visit "/admin/#/api_users"
-      # Ensure that clicking a header triggers a server-side refresh which in
-      # turn should briefly show the spinner before then disappearing.
+
+      # Slow down ajax queries so we can reliably have enough time to make sure
+      # that clicking a header triggers a server-side refresh which in turn
+      # should briefly show the spinner.
+      delay_all_ajax_calls
       find("thead tr:first-child").click
       page.should have_selector(".dataTables_wrapper .blockMsg .fa-spinner")
+
+      # Ensure that the spinner eventually goes away after things load.
       page.should_not have_selector(".dataTables_wrapper .blockOverlay")
       page.should_not have_selector(".dataTables_wrapper .blockMsg")
     end

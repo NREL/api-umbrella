@@ -36,6 +36,19 @@ module CapybaraFeatureHelpers
       value
     end
   end
+
+  def delay_all_ajax_calls(delay = 1500)
+    page.execute_script <<-eos
+      $.ajaxOrig = $.ajax;
+      $.ajax = function() {
+        var args = arguments;
+        var self = this;
+        setTimeout(function() {
+          $.ajaxOrig.apply(self, args);
+        }, #{delay});
+      };
+    eos
+  end
 end
 
 RSpec.configure do |config|
