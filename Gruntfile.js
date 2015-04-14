@@ -26,6 +26,10 @@ module.exports = function(grunt) {
 
           // Force colors for the output of mutliTest
           colors: true,
+
+          // Increase the default timeout from 2 seconds to 4 seconds. We'll
+          // see if this helps with sporadic issues in the CI environment.
+          timeout: 4000,
         },
         src: ['test/**/*.js']
       },
