@@ -13,12 +13,6 @@ childlogdir={{log_dir}}
 [rpcinterface:supervisor]
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 
-[rpcinterface:laforge]
-supervisor.rpcinterface_factory = mr.laforge.rpcinterface:make_laforge_rpcinterface
-
-[ctlplugin:laforge]
-supervisor.ctl_factory = mr.laforge.controllerplugin:make_laforge_controllerplugin
-
 [ctlplugin:serialrestart]
 supervisor.ctl_factory = supervisorserialrestart.controllerplugin:make_serialrestart_controllerplugin
 
