@@ -922,7 +922,7 @@ describe('proxying', function() {
               // quite low. I think this might be due to how Varnish buffers
               // things. We can revisit this, but this chunked vs non-chunked
               // behavior probably isn't a huge deal.
-              counts.nonChunked.should.be.greaterThan(3);
+              counts.nonChunked.should.be.greaterThan(1);
               done();
             });
           });
