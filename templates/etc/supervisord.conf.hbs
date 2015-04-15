@@ -32,7 +32,7 @@ startretries=10
 
 {{#if test_env}}
 [program:mongo-orchestration]
-command=mongo-orchestration --no-fork --port 13089 start
+command=mongo-orchestration --no-fork --port 13089 --bind 127.0.0.1 start
 {{supervisor_conditional_user}}
 redirect_stderr=true
 stdout_logfile={{log_dir}}/%(program_name)s.log
