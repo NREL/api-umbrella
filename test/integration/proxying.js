@@ -892,7 +892,7 @@ describe('proxying', function() {
         });
 
         it('returns small non-chunked responses', function(done) {
-          this.timeout(5000);
+          this.timeout(10000);
           _.merge(this.options, { url: 'http://localhost:9080/compressible/10' });
           countChunkedResponses(this.options, 50, 10, function(counts) {
             counts.total.should.eql(50);
@@ -904,7 +904,7 @@ describe('proxying', function() {
         // nginx's gzipping chunks responses, even if they weren't before.
         if(gzipEnabled) {
           it('returns larger non-chunked responses as chunked when gzip is enabled', function(done) {
-            this.timeout(5000);
+            this.timeout(10000);
             _.merge(this.options, { url: 'http://localhost:9080/compressible/100000' });
             countChunkedResponses(this.options, 50, 100000, function(counts) {
               counts.total.should.eql(50);
@@ -914,7 +914,7 @@ describe('proxying', function() {
           });
         } else {
           it('returns larger non-chunked responses as non-chunked when gzip is disabled', function(done) {
-            this.timeout(5000);
+            this.timeout(10000);
             _.merge(this.options, { url: 'http://localhost:9080/compressible/10000' });
             countChunkedResponses(this.options, 50, 10000, function(counts) {
               counts.total.should.eql(50);
@@ -929,7 +929,7 @@ describe('proxying', function() {
         }
 
         it('returns small chunked responses', function(done) {
-          this.timeout(5000);
+          this.timeout(10000);
           _.merge(this.options, { url: 'http://localhost:9080/compressible-chunked/1/500' });
           countChunkedResponses(this.options, 50, 500, function(counts) {
             counts.total.should.eql(50);
@@ -939,7 +939,7 @@ describe('proxying', function() {
         });
 
         it('returns larger chunked responses', function(done) {
-          this.timeout(5000);
+          this.timeout(10000);
           _.merge(this.options, { url: 'http://localhost:9080/compressible-chunked/50/2000' });
           countChunkedResponses(this.options, 50, 100000, function(counts) {
             counts.total.should.eql(50);
