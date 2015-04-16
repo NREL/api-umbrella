@@ -72,7 +72,7 @@ describe('dns backend resolving', function() {
   });
 
   after(function clearDnsRecords(done) {
-    this.timeout(5000);
+    this.timeout(10000);
 
     // Remove any custom DNS entries to prevent rapid reloads (for short TTL
     // records) after these DNS tests finish.
