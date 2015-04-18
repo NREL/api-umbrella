@@ -719,6 +719,21 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       itBehavesLikeUnlimitedRateLimits('/hello', 5);
+
+      describe('user with settings object present, but null rate_limit mode', function() {
+        beforeEach(function setupApiUser(done) {
+          Factory.create('api_user', {
+            settings: {
+              rate_limit_mode: null,
+            }
+          }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        itBehavesLikeUnlimitedRateLimits('/hello', 5);
+      });
     });
 
     describe('api specific limits', function() {
@@ -799,6 +814,22 @@ describe('ApiUmbrellaGatekeper', function() {
 
       describe('api with no rate limit settings uses the defaults', function() {
         itBehavesLikeApiKeyRateLimits('/hello', 5);
+      });
+
+      describe('user with empty rate limits settings array', function() {
+        beforeEach(function setupApiUser(done) {
+          Factory.create('api_user', {
+            settings: {
+              rate_limit_mode: null,
+              rate_limits: [],
+            }
+          }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        itBehavesLikeApiKeyRateLimits('/info/lower/', 3);
       });
 
       describe('changing rate limits', function() {

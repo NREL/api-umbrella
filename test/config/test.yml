@@ -207,3 +207,5 @@ apis:
 dns_resolver:
   minimum_ttl: 1
   reload_buffer_time: 1
+apiSettings:
+  require_https: optional

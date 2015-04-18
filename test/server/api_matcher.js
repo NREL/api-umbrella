@@ -305,11 +305,11 @@ describe('ApiUmbrellaGatekeper', function() {
 
       describe('non-matching prefixes', function() {
         describe('mismatched trailing slash', function() {
-          shared.itBehavesLikeGatekeeperBlocked('/info/specific', 404, 'NOT_FOUND', {
-            headers: {
-              'Host': 'unmatched.example.com',
-            },
-          });
+          shared.itBehavesLikeGatekeeperBlocked('/info/specific', 404, 'NOT_FOUND');
+        });
+
+        describe('mismatched case sensitivity', function() {
+          shared.itBehavesLikeGatekeeperBlocked('/info/SPECIFIC/', 404, 'NOT_FOUND');
         });
       });
     });
