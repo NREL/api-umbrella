@@ -20,7 +20,14 @@ before(function mongoOpen(done) {
     mongoose.testConnection.db.dropDatabase(done);
   });
 
-  mongoose.testConnection.open(config.get('mongodb.url'), config.get('mongodb.options'));
+  // Since we're calling createConnection earlier on, and then opening the
+  // connection here, we need to explicitly handle whether we should call
+  // openSet for a replicaset based URL.
+  if(/^.+,.+$/.test(config.get('mongodb.url'))) {
+    mongoose.testConnection.openSet(config.get('mongodb.url'), config.get('mongodb.options'));
+  } else {
+    mongoose.testConnection.open(config.get('mongodb.url'), config.get('mongodb.options'));
+  }
 });
 
 // Wipe the elasticsearch data.

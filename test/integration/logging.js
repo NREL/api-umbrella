@@ -43,8 +43,12 @@ describe('logging', function() {
     });
   });
 
-  beforeEach(function(done) {
-    this.uniqueQueryId = process.hrtime().join('-') + '-' + Math.random();
+  function generateUniqueQueryId() {
+    return process.hrtime().join('-') + '-' + Math.random();
+  }
+
+  beforeEach(function createUser(done) {
+    this.uniqueQueryId = generateUniqueQueryId();
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.user = user;
       this.apiKey = user.api_key;
@@ -186,6 +190,7 @@ describe('logging', function() {
 
     var requestUrl = 'http://localhost:9080/logging-example/foo/bar/?unique_query_id=' + this.uniqueQueryId + '&url1=http%3A%2F%2Fexample.com%2F%3Ffoo%3Dbar%26foo%3Dbar%20more+stuff&url2=%ED%A1%BC&url3=https%3A//example.com/foo/%D6%D0%B9%FA%BD%AD%CB%D5%CA%A1%B8%D3%D3%DC%CF%D8%D2%BB%C2%A5%C5%CC%CA%C0%BD%F5%BB%AA%B3%C7200%D3%E0%D2%B5%D6%F7%B9%BA%C2%F2%B5%C4%C9%CC%C6%B7%B7%BF%A3%AC%D2%F2%BF%AA%B7%A2%C9%CC%C5%DC%C2%B7%D2%D1%CD%A3%B9%A420%B8%F6%D4%C2%A3%AC%D2%B5%D6%F7%C4%C3%B7%BF%CE%DE%CD%FB%C8%B4%D0%E8%BC%CC%D0%F8%B3%A5%BB%B9%D2%F8%D0%D0%B4%FB%BF%EE%A1%A3%CF%F2%CA%A1%CA%D0%CF%D8%B9%FA%BC%D2%D0%C5%B7%C3%BE%D6%B7%B4%D3%B3%BD%FC2%C4%EA%CE%DE%C8%CB%B4%A6%C0%ED%A1%A3%D4%DA%B4%CB%B0%B8%D6%D0%A3%AC%CE%D2%C3%C7%BB%B3%D2%C9%D3%D0%C8%CB%CA%A7%D6%B0%E4%C2%D6%B0/sites/default/files/googleanalytics/ga.js';
     request.get(requestUrl, options, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(200);
 
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
@@ -304,6 +309,7 @@ describe('logging', function() {
     });
 
     request.get('http://localhost:9080/compressible-delayed-chunked/5', options, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(200);
 
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
@@ -325,6 +331,7 @@ describe('logging', function() {
     });
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
@@ -343,10 +350,66 @@ describe('logging', function() {
     });
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
         record.request_connection.should.eql('close');
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs the host used to access the site for a wildcard api', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'Host': 'unknown.foo',
+      },
+    });
+
+    request.get('http://localhost:9080/wildcard-info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_host.should.eql('unknown.foo');
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs request scheme when hit directly', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      strictSSL: false,
+    });
+
+    request.get('https://localhost:9081/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_scheme.should.eql('https');
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs request scheme when forwarded from an external load balancer via X-Forwarded-Proto', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-Proto': 'https',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_scheme.should.eql('https');
         done();
       }.bind(this));
     }.bind(this));
@@ -366,6 +429,7 @@ describe('logging', function() {
     });
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
@@ -386,6 +450,7 @@ describe('logging', function() {
     });
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
@@ -406,6 +471,7 @@ describe('logging', function() {
       method: 'GET',
       url: 'http://localhost:9080/info/utf8/✓/encoded_utf8/%E2%9C%93/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&utf8=✓&utf8_url_encoded=%E2%9C%93&more_utf8=¬¶ªþ¤l&more_utf8_hex=\xAC\xB6\xAA\xFE\xA4l&more_utf8_hex_lowercase=\xac\xb6\xaa\xfe\xa4l&actual_backslash_x=\\xAC\\xB6\\xAA\\xFE\\xA4l',
     }, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
@@ -434,6 +500,7 @@ describe('logging', function() {
       method: 'GET',
       url: 'http://localhost:9080/info/extra//slash/some\\backslash/encoded%5Cbackslash/encoded%2Fslash?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&forward_slash=/slash&encoded_forward_slash=%2F&back_slash=\\&encoded_back_slash=%5C',
     }, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
@@ -446,6 +513,114 @@ describe('logging', function() {
         done();
       }.bind(this));
     }.bind(this));
+  });
+
+  it('logs the request_at field as a date', function(done) {
+    this.timeout(4500);
+
+    request.get('http://localhost:9080/info/', this.options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+
+      waitForLog(this.options.qs.unique_query_id, function(error, response, hit) {
+        should.not.exist(error);
+
+        global.elasticsearch.indices.getMapping({
+          index: hit['_index'],
+          type: hit['_type'],
+          field: 'request_at',
+        }, function(error, res) {
+          should.not.exist(error);
+
+          res[hit['_index']].mappings[hit['_type']].properties.request_at.should.eql({
+            type: 'date',
+            format: 'dateOptionalTime',
+          });
+
+          done();
+        });
+      });
+    }.bind(this));
+  });
+
+  it('successfully logs query strings when the field first indexed was a date, but later queries are not (does not attempt to map fields into dates)', function(done) {
+    this.timeout(15000);
+
+    var options = _.merge({}, this.options, {
+      qs: {
+        'unique_query_id': generateUniqueQueryId(),
+        'date_field': '2010-05-01',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+
+      waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_query.date_field.should.eql('2010-05-01');
+
+        options.qs.unique_query_id = generateUniqueQueryId();
+        options.qs.date_field = '2010-05-0';
+        request.get('http://localhost:9080/info/', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+
+          waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+            should.not.exist(error);
+            record.request_query.date_field.should.eql('2010-05-0');
+
+            options.qs.unique_query_id = generateUniqueQueryId();
+            options.qs.date_field = 'foo';
+            request.get('http://localhost:9080/info/', options, function(error, response) {
+              should.not.exist(error);
+              response.statusCode.should.eql(200);
+
+              waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+                should.not.exist(error);
+                record.request_query.date_field.should.eql('foo');
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it('successfully logs query strings when the field first indexed was a number, but later queries are not (does not attempt to map fields into numbers)', function(done) {
+    this.timeout(15000);
+
+    var options = _.merge({}, this.options, {
+      qs: {
+        'unique_query_id': generateUniqueQueryId(),
+        'number_field': '123',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+
+      waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_query.number_field.should.eql('123');
+
+        options.qs.unique_query_id = generateUniqueQueryId();
+        options.qs.number_field = 'foo';
+        request.get('http://localhost:9080/info/', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+
+          waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+            should.not.exist(error);
+            record.request_query.number_field.should.eql('foo');
+            done();
+          });
+        });
+      });
+    });
   });
 
   it('logs requests that exceed the nginx-level rate limits', function(done) {
@@ -485,6 +660,7 @@ describe('logging', function() {
   it('logs requests that time out before responding', function(done) {
     this.timeout(90000);
     request.get('http://localhost:9080/delay/65000', this.options, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(504);
 
       waitForLog(this.uniqueQueryId, { timeout: 10000 }, function(error, response, hit, record) {
@@ -553,6 +729,7 @@ describe('logging', function() {
     });
 
     request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(403);
 
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
@@ -573,6 +750,7 @@ describe('logging', function() {
   it('logs requests when the api backend is down', function(done) {
     this.timeout(4500);
     request.get('http://localhost:9080/down', this.options, function(error, response) {
+      should.not.exist(error);
       response.statusCode.should.eql(502);
 
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
@@ -621,6 +799,7 @@ describe('logging', function() {
     it('still logs failed requests', function(done) {
       this.timeout(4500);
       request.get('http://localhost:9080/info/', this.options, function(error, response) {
+        should.not.exist(error);
         response.statusCode.should.eql(502);
 
         waitForLog(this.uniqueQueryId, function(error, response, hit, record) {

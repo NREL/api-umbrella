@@ -430,6 +430,20 @@ app.all('/cacheable-multiple-vary-with-accept-encoding/:id', function(req, res) 
   res.end(uniqueOutput() + randomstring.generate(1500));
 });
 
+app.all('/cacheable-backend-reports-cached/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Age', '3');
+  res.set('X-Cache', 'HIT');
+  res.end(uniqueOutput());
+});
+
+app.all('/cacheable-backend-reports-not-cached/:id', function(req, res) {
+  res.set('Cache-Control', 'max-age=60');
+  res.set('Age', '0');
+  res.set('X-Cache', 'BACKEND-MISS');
+  res.end(uniqueOutput());
+});
+
 app.all('/logging-example/*', function(req, res) {
   res.set('Age', '20');
   res.set('Cache-Control', 'max-age=60');
@@ -437,6 +451,14 @@ app.all('/logging-example/*', function(req, res) {
   res.set('Expires', new Date(Date.now() + 60000).toUTCString());
   res.set('Content-Length', 5);
   res.end('hello');
+});
+
+app.all('/', function(req, res) {
+  res.end('Test Home Page');
+});
+
+app.use(function(req, res) {
+  res.status(404).send('Test 404 Not Found');
 });
 
 // Listen on all interfaces on both IPv4 and IPv6

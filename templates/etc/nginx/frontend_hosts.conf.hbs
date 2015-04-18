@@ -1,0 +1,103 @@
+{{#each hosts}}
+server {
+  listen {{../http_port}}{{#if default}} default_server{{/if}};
+  listen [::]:{{../http_port}}{{#if default}} default_server{{/if}};
+  server_name {{hostname}};
+
+  listen {{../https_port}} ssl{{#if default}} default_server{{/if}};
+  listen [::]:{{../https_port}} ssl{{#if default}} default_server{{/if}};
+  {{~#if ssl_cert}}
+  ssl_certificate {{ssl_cert}};
+  ssl_certificate_key {{ssl_cert_key}};
+  {{~else}}
+  ssl_certificate {{../../etc_dir}}/ssl/self_signed.crt;
+  ssl_certificate_key {{../../etc_dir}}/ssl/self_signed.key;
+  {{~/if}}
+
+  include ./frontend_defaults.conf;
+
+  {{~#if enable_web_backend}}
+    # Route the dynamic portions of the site to the Rails web app.
+    location ~* {{../../router.web_backend_regex}} {
+      {{~#if ../../router.web_backend_required_https_regex}}
+        # Determine the SSL status when it's passed via X-Forwarded-Proto from the
+        # SSL terminator.
+        set $web_ssl_status "off";
+        if ($server_port = {{../../../https_port}}) {
+          set $web_ssl_status "on";
+        }
+
+        if ($http_x_forwarded_proto = "https") {
+          set $web_ssl_status "on";
+        }
+
+        # Match any required HTTPS-only pages.
+        if ($uri ~ {{../../../router.web_backend_required_https_regex}}) {
+          set $web_ssl_status "${web_ssl_status}_required";
+        }
+
+        # Force certain content to HTTPS-only.
+        if ($web_ssl_status = "off_required") {
+          rewrite ^ https://$host:{{../../../https_port}}$request_uri? permanent;
+        }
+      {{~/if}}
+
+      include ./frontend_proxy_header_defaults.conf;
+      proxy_pass http://api_umbrella_web_backend;
+    }
+  {{~/if}}
+
+  {{~#if api_url_prefixes_matcher}}
+    # Route all API requests through the API Umbrella Gatekeeper.
+    location ~ {{api_url_prefixes_matcher}} {
+      # For wildcard hosts, normalize the host that's passed to the backend to
+      # the defined server name to simplify API host matching.
+      set $proxy_host_header $server_name;
+
+      include ./frontend_proxy_header_defaults.conf;
+      include ./gatekeeper.conf;
+    }
+  {{~/if}}
+
+  {{~#if website_backend}}
+    # Route everything else (documentation and other webpage content) to the
+    # website backend.
+    location / {
+      {{~#if website_backend_required_https_regex}}
+        # Determine the SSL status when it's passed via X-Forwarded-Proto from the
+        # SSL terminator.
+        set $web_ssl_status "off";
+        if ($server_port = {{../../../https_port}}) {
+          set $web_ssl_status "on";
+        }
+
+        if ($http_x_forwarded_proto = "https") {
+          set $web_ssl_status "on";
+        }
+
+        # Match any required HTTPS-only pages.
+        if ($uri ~ {{website_backend_required_https_regex}}) {
+          set $web_ssl_status "${web_ssl_status}_required";
+        }
+
+        # Force certain content to HTTPS-only.
+        if ($web_ssl_status = "off_required") {
+          rewrite ^ https://$host:{{../../../https_port}}$request_uri? permanent;
+        }
+      {{~/if}}
+
+      {{~#if website_host}}
+      set $proxy_host_header "{{website_host}}";
+      {{~/if}}
+      include ./frontend_proxy_header_defaults.conf;
+      proxy_pass {{website_protocol}}://{{website_backend}};
+    }
+  {{~else}}
+    # If no website is setup for this domain, route everything else to a 404
+    # page (this just ensures we skip the "Welcome to nginx" default page).
+    location / {
+      return 404;
+    }
+  {{~/if}}
+}
+{{/each}}

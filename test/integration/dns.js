@@ -5,14 +5,12 @@ require('../test_helper');
 var _ = require('lodash'),
     apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
-    execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
     fs = require('fs'),
     ipaddr = require('ipaddr.js'),
-    mongoose = require('mongoose'),
     path = require('path'),
-    processEnv = require('../../lib/process_env'),
     request = require('request'),
+    supervisorSignal = require('../../lib/supervisor_signal'),
     Tail = require('tail').Tail;
 
 var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
@@ -50,15 +48,11 @@ describe('dns backend resolving', function() {
     }
 
     // Reload unbound to read the new config file.
-    var configPath = processEnv.supervisordConfigPath();
-    var execOpts = {
-      env: processEnv.env(),
-    };
-    execFile('supervisorctl', ['-c', configPath, 'kill', 'HUP', 'test-env-unbound'], execOpts, function(error, stdout, stderr) {
+    supervisorSignal('test-env-unbound', 'SIGHUP', function(error) {
       if(error) {
         clearTimeout(logTailTimeout);
         logTail.unwatch();
-        return callback('Error reloading unbound: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
+        return callback('Error reloading unbound: ' + error);
       }
 
       if(!options.wait) {
@@ -78,7 +72,7 @@ describe('dns backend resolving', function() {
   });
 
   after(function clearDnsRecords(done) {
-    this.timeout(5000);
+    this.timeout(10000);
 
     // Remove any custom DNS entries to prevent rapid reloads (for short TTL
     // records) after these DNS tests finish.
@@ -88,7 +82,7 @@ describe('dns backend resolving', function() {
     });
   });
 
-  beforeEach(function(done) {
+  beforeEach(function createUser(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.user = user;
       this.apiKey = user.api_key;
@@ -353,10 +347,18 @@ describe('dns backend resolving', function() {
   });
 
   it('handles ip changes without dropping any connections', function(done) {
-    this.timeout(35000);
-
+    // For a period of time we'll make lots of parallel requests while
+    // simultaneously triggering DNS changes.
+    //
+    // We default to 20 seconds, but allow an environment variable override for
+    // much longer tests via the multiLongConnectionDrops grunt task.
+    var duration = 20;
+    if(process.env.CONNECTION_DROPS_DURATION) {
+      duration = parseInt(process.env.CONNECTION_DROPS_DURATION, 10);
+    }
     var runTests = true;
-    setTimeout(function() { runTests = false; }, 20000);
+    setTimeout(function() { runTests = false; }, duration * 1000);
+    this.timeout((duration + 20) * 1000);
 
     var responseCodes = {};
     var seenLocalInterfaceIps = {};
@@ -370,6 +372,9 @@ describe('dns backend resolving', function() {
         tasks.push(function(parallelCallback) {
           async.whilst(function() { return runTests; }, function(whilstCallback) {
             request.get('http://localhost:9080/dns/no-drops-during-changes/info/', this.options, function(error, response, body) {
+              should.not.exist(error);
+              response.statusCode.should.eql(200);
+
               if(!error) {
                 // For each request, keep track of the response code and the
                 // local interface IP address this request hit.
@@ -463,18 +468,9 @@ describe('dns backend resolving', function() {
           var data = JSON.parse(body);
           data.local_interface_ip.should.eql('127.0.0.2');
 
-          // Wipe the mongo-based config after finishing so that the file-based
-          // YAML config takes precedence again (api-umbrella-config overwrites
-          // the apis array from the mongo config if present, which I'm not
-          // sure this is actually what we want, but since we don't actually
-          // need merging behavior right now, we'll just wipe this).
-          mongoose.testConnection.model('ConfigVersion').remove({}, function(error) {
-            should.not.exist(error);
-
-            // Wait a bit for the Mongo config polling to pickup the change and for
-            // nginx to reload.
-            setTimeout(done, 2000);
-          });
+          // Remove DB-based config after these tests, so the rest of the tests
+          // go back to the file-based configs.
+          shared.removeDbConfig(done);
         });
       }.bind(this));
     }.bind(this));

@@ -20,14 +20,14 @@ var ConfigReloaderWorker = require('../../lib/config_reloader/worker').Worker;
 
 _.merge(global.shared, {
   runConfigReloader: function() {
-    beforeEach(function(done) {
+    beforeEach(function setupConfigReloader(done) {
       this.timeout(10000);
 
       this.configReloader = new ConfigReloaderWorker();
       this.configReloader.on('ready', function() {
         async.parallel([
           function(callback) {
-            var filePath = path.join(config.get('etc_dir'), 'nginx/api_backends.conf');
+            var filePath = path.join(config.get('etc_dir'), 'nginx/backends.conf');
             fs.readFile(filePath, function(error, data) {
               this.nginxConfigContents = data.toString();
               callback(error);

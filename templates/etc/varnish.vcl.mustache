@@ -6,10 +6,6 @@ backend default {
   .host = "{{router.api_backends.host}}";
   .port = "{{router.api_backends.port}}";
 
-  # Increase the connect timeout to help prevent possible 503 errors if the
-  # nginx backend is reloading.
-  .connect_timeout = 10s;
-
   # Define a timeout in Varnish longer than the 60 second timeout defined in
   # nginx. This works around the issue of Varnish sending a second request to
   # the backend when the backend times out:
@@ -82,6 +78,32 @@ sub vcl_hash {
   }
 }
 
+sub vcl_backend_fetch {
+  # Disable keep-alive between Varnish and the backend nginx server. This fixes
+  # rare, but repeatable 503 errors Varnish generates if the nginx backend is
+  # being reloaded (as happens during our DNS changes). These are caused
+  # because Varnish holds open connections to the backend servers, but then
+  # doesn't always handle things properly when the nginx backend gets reloaded.
+  #
+  # While having keep-alive would be ideal, this shouldn't be a huge loss,
+  # since it just affects the localhost connections between Varnish and the
+  # nginx backend. End-user clients can still hold keep-alive connections
+  # against the initial nginx server. And the backend nginx server holds
+  # keep-alive connections to the API backend servers.
+  #
+  # We have a basic test to try to catch this in our integration test suite,
+  # but to really test this, the tests sometimes have to be run for much
+  # longer. See the "grunt multiLongConnectionDrops" task and let that run for
+  # 30-60 minutes to reproduce this if considering a change in behavior..
+  #
+  # See:
+  # https://github.com/18F/api.data.gov/issues/207
+  # http://comments.gmane.org/gmane.comp.web.varnish.misc/8566
+  # http://comments.gmane.org/gmane.comp.web.varnish.misc/3621
+  # http://comments.gmane.org/gmane.comp.web.varnish.dev/2352
+  set bereq.http.Connection = "Close";
+}
+
 sub vcl_backend_response {
   # Don't cache error pages.
   #
@@ -108,9 +130,6 @@ sub vcl_backend_response {
   # This allows for independant control of how the end-user should cache things
   # (Cache-Control) and how Varnish should cache things (Surrogate-Control).
   if(beresp.http.Surrogate-Control) {
-    #set beresp.http.X-Api-Umbrella-Orig-Cache-Control = beresp.http.Cache-Control;
-    #set beresp.http.Cache-Control = beresp.http.Surrogate-Control;
-
     # Parse the max-age from the Surrogate-Control header and set the
     # response's TTL to this value.
     set beresp.http.X-Surrogate-Control-Max-Age-Duration = regsub(beresp.http.Surrogate-Control, "max-age\s*=\s*(\d+)", "\1s");
@@ -128,14 +147,12 @@ sub vcl_backend_response {
 
 sub vcl_deliver {
   if(resp.http.Surrogate-Control) {
-    #set resp.http.Cache-Control = resp.http.X-Api-Umbrella-Orig-Cache-Control;
-    #unset resp.http.X-Api-Umbrella-Orig-Cache-Control;
     unset resp.http.Surrogate-Control;
   }
 
   if(obj.hits > 0) {
     set resp.http.X-Cache = "HIT";
-  } else {
+  } else if(!resp.http.X-Cache) {
     set resp.http.X-Cache = "MISS";
   }
 }

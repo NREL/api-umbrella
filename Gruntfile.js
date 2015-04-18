@@ -31,6 +31,10 @@ module.exports = function(grunt) {
           colors: true,
 
           //require: 'test/support/blanket'
+
+          // Increase the default timeout from 2 seconds to 4 seconds. We'll
+          // see if this helps with sporadic issues in the CI environment.
+          timeout: 4000,
         },
         src: ['test/**/*.js']
       },
@@ -68,29 +72,76 @@ module.exports = function(grunt) {
     var done = this.async();
 
     var async = require('async'),
-        exec = require('child_process').exec;
+        exec = require('child_process').exec,
+        fs = require('fs');
 
     async.timesSeries(20, function(index, next) {
-      process.stdout.write('Run ' + (index + 1) + ' ');
+      var runNum = index + 1;
+      process.stdout.write('Run ' + runNum + ' ');
       var progress = setInterval(function() {
         process.stdout.write('.');
       }, 5000);
 
       var startTime = process.hrtime();
-      exec('./node_modules/grunt-cli/bin/grunt 2>&1', function(error, stdout) {
+      var logPath = '/tmp/api-umbrella-multi-test.log';
+      exec('./node_modules/.bin/grunt > ' + logPath + ' 2>&1', function(error) {
         clearInterval(progress);
 
         var duration = process.hrtime(startTime);
         console.info(' ' + duration[0] + 's');
 
-        if(error !== null) {
-          console.info(stdout);
+        if(error) {
+          console.info('Run ' + runNum + ' encountered an error: ', error);
+          console.info(fs.readFileSync(logPath).toString());
         }
 
-        next();
+        next(error);
       });
-    }, function() {
-      done();
+    }, function(error) {
+      if(error) {
+        console.info('Error during multiple runs: ', error);
+      }
+
+      done(error);
+    });
+  });
+
+  grunt.registerTask('multiLongConnectionDrops', 'Run all the tests multiple times', function() {
+    var done = this.async();
+
+    var async = require('async'),
+        exec = require('child_process').exec,
+        fs = require('fs');
+
+    async.timesSeries(20, function(index, next) {
+      var runNum = index + 1;
+      process.stdout.write('Run ' + runNum + ' ');
+      var progress = setInterval(function() {
+        process.stdout.write('.');
+      }, 5000);
+
+      var startTime = process.hrtime();
+      process.env.CONNECTION_DROPS_DURATION = 10 * 60;
+      var logPath = '/tmp/api-umbrella-multi-long-connection-drops.log';
+      exec('./node_modules/.bin/mocha test/integration/dns.js -g "handles ip changes without dropping any connections" > ' + logPath + ' 2>&1', function(error) {
+        clearInterval(progress);
+
+        var duration = process.hrtime(startTime);
+        console.info(' ' + duration[0] + 's');
+
+        if(error) {
+          console.info('Run ' + runNum + ' encountered an error: ', error);
+          console.info(fs.readFileSync(logPath).toString());
+        }
+
+        next(error);
+      });
+    }, function(error) {
+      if(error) {
+        console.info('Error during multiple runs: ', error);
+      }
+
+      done(error);
     });
   });
 

@@ -41,7 +41,7 @@ _.merge(global.shared, {
   },
 
   publishDbConfig: function(config, callback) {
-    mongoose.testConnection.model('ConfigVersion').remove({}, function(error) {
+    mongoose.testConnection.model('RouterConfigVersion').remove({}, function(error) {
       should.not.exist(error);
 
       Factory.create('config_version', {
@@ -53,4 +53,19 @@ _.merge(global.shared, {
       });
     });
   },
+
+  removeDbConfig: function(callback) {
+    // Wipe the mongo-based config after finishing so that the file-based
+    // YAML config takes precedence again (api-umbrella-config overwrites
+    // the apis array from the mongo config if present, which I'm not
+    // sure this is actually what we want, but since we don't actually
+    // need merging behavior right now, we'll just wipe this).
+    mongoose.testConnection.model('RouterConfigVersion').remove({}, function(error) {
+      should.not.exist(error);
+
+      // Wait a bit for the Mongo config polling to pickup the change and for
+      // nginx to reload.
+      setTimeout(callback, 2000);
+    });
+  }
 });

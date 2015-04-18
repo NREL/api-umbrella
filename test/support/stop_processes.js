@@ -17,7 +17,7 @@ function killApiUmbrellaServer(callback) {
 }
 
 after(function stopProcesses(done) {
-  this.timeout(15000);
+  this.timeout(30000);
   killApiUmbrellaServer(done);
 });
 

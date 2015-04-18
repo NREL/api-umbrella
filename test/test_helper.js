@@ -9,12 +9,7 @@ mkdirp.sync('/tmp/api-umbrella-test/var/log');
 
 require('./support/env');
 
-var request = require('request'),
-    Factory = require('factory-lady'),
-    mongoose = require('mongoose');
-
-global.request = request;
-global.Factory = Factory;
+var mongoose = require('mongoose');
 global.mongoose = mongoose;
 
 require('./support/delete_beanstalk');

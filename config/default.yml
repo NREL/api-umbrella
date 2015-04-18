@@ -79,7 +79,6 @@ web:
 static_site:
   host: 127.0.0.1
   port: 14013
-  host_header:
   dir: /opt/api-umbrella/embedded/apps/static-site/current
 router:
   api_backends:
@@ -95,6 +94,9 @@ router:
     ip_connections_size: 5m
   log_listener:
     port: 14006
+  web_backend_regex: "^/(admin|admins|web-assets)(/|$)"
+  web_backend_required_https_regex: "^/(admin|admins)(/|$)"
+  website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
 supervisord:
   inet_http_server:
     host: 127.0.0.1

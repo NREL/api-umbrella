@@ -39,7 +39,7 @@ supervisord:
   inet_http_server:
     port: 13004
 mongodb:
-  url: "mongodb://127.0.0.1:13001/api_umbrella_test"
+  url: "mongodb://127.0.0.1:13090,127.0.0.1:13091/api_umbrella_test"
   embedded_server_config:
     net:
       port: 13001
@@ -195,6 +195,28 @@ apis:
     url_matches:
       - frontend_prefix: /dns/no-drops-during-changes/
         backend_prefix: /
+  - _id: https-requirements-error
+    frontend_host: "https.foo"
+    backend_host: localhost
+    servers:
+      - host: localhost
+        port: 9444
+    url_matches:
+      - frontend_prefix: /info/https/required_return_error/
+        backend_prefix: /info/
+    settings:
+      require_https: required_return_error
+  - _id: https-requirements-redirect
+    frontend_host: "https.foo"
+    backend_host: localhost
+    servers:
+      - host: localhost
+        port: 9444
+    url_matches:
+      - frontend_prefix: /info/https/required_return_redirect/
+        backend_prefix: /info/
+    settings:
+      require_https: required_return_redirect
   - _id: example
     frontend_host: localhost
     backend_host: localhost
@@ -204,6 +226,53 @@ apis:
     url_matches:
       - frontend_prefix: /
         backend_prefix: /
+  - _id: with-apis-and-website-example
+    frontend_host: with-apis-and-website.foo
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /example/
+        backend_prefix: /example/
+  - _id: with-apis-and-website-info
+    frontend_host: with-apis-and-website.foo
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /info/
+        backend_prefix: /info/
+  - _id: with-apis-no-website
+    frontend_host: with-apis-no-website.foo
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /example2/
+        backend_prefix: /example2/
+  - _id: wildcard-frontend-host
+    frontend_host: "*"
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /wildcard-info/
+        backend_prefix: /info/
+website_backends:
+  - _id: example
+    frontend_host: with-apis-and-website.foo
+    server_host: 127.0.0.1
+    server_port: 9444
+hosts:
+  - hostname: default.foo
+    default: true
+  - hostname: withweb.foo
+    enable_web_backend: true
+  - hostname: withoutweb.foo
 dns_resolver:
   minimum_ttl: 1
   reload_buffer_time: 1
