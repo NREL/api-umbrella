@@ -186,4 +186,42 @@ describe "api users form", :js => true do
       user.settings.allowed_referers.should eql(nil)
     end
   end
+
+  describe "welcome e-mail" do
+    before(:each) do
+      Delayed::Worker.delay_jobs = false
+      ActionMailer::Base.deliveries.clear
+    end
+
+    after(:each) do
+      Delayed::Worker.delay_jobs = true
+    end
+
+    it "defaults to not sending it when signing up via the admin" do
+      expect do
+        visit "/admin/#/api_users/new"
+
+        fill_in "E-mail", :with => "example@example.com"
+        fill_in "First Name", :with => "John"
+        fill_in "Last Name", :with => "Doe"
+        check "User agrees to the terms and conditions"
+        click_button("Save")
+        page.should have_content("Successfully saved the user")
+      end.to change { ActionMailer::Base.deliveries.count }.by(0)
+    end
+
+    it "sends the e-mail when explicitly asked for" do
+      expect do
+        visit "/admin/#/api_users/new"
+
+        fill_in "E-mail", :with => "example@example.com"
+        fill_in "First Name", :with => "John"
+        fill_in "Last Name", :with => "Doe"
+        check "User agrees to the terms and conditions"
+        check "Send user welcome e-mail with API key information"
+        click_button("Save")
+        page.should have_content("Successfully saved the user")
+      end.to change { ActionMailer::Base.deliveries.count }.by(1)
+    end
+  end
 end

@@ -43,7 +43,17 @@ class Api::V1::UsersController < Api::V1::BaseController
 
     respond_to do |format|
       if(@api_user.save)
-        if(!params[:options] || params[:options][:send_welcome_email].to_s != "false")
+        send_email = (params[:options] && params[:options][:send_welcome_email].to_s == "true")
+
+        # For the admin tool, it's easier to have this attribute on the user
+        # model, rather than options, so check there for whether we should send
+        # e-mail. Also note that for backwards compatibility, we only check for
+        # the presence of this attribute, and not it's actual value.
+        if(!send_email && params[:user] && params[:user][:send_welcome_email])
+          send_email = true
+        end
+
+        if(send_email)
           ApiUserMailer.delay(:queue => "mailers").signup_email(@api_user, params[:options] || {})
         end
 

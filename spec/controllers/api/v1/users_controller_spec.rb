@@ -414,7 +414,7 @@ describe Api::V1::UsersController do
         admin_token_auth(@admin)
         expect do
           p = params
-          p[:options] = { :send_welcome_email => "true" }
+          p[:options] = { :send_welcome_email => true }
           post :create, p
         end.to change { ActionMailer::Base.deliveries.count }.by(1)
       end
@@ -428,19 +428,28 @@ describe Api::V1::UsersController do
         end.to change { ActionMailer::Base.deliveries.count }.by(0)
       end
 
-      it "sends a welcome e-mail when the option is an unknown value" do
+      it "does not send a welcome e-mail when the option is an unknown value" do
         admin_token_auth(@admin)
         expect do
           p = params
-          p[:options] = { :send_welcome_email => 0 }
+          p[:options] = { :send_welcome_email => 1 }
           post :create, p
-        end.to change { ActionMailer::Base.deliveries.count }.by(1)
+        end.to change { ActionMailer::Base.deliveries.count }.by(0)
       end
 
-      it "sends welcome e-mails by default" do
+      it "does not send welcome e-mails by default" do
         admin_token_auth(@admin)
         expect do
           post :create, params
+        end.to change { ActionMailer::Base.deliveries.count }.by(0)
+      end
+
+      it "sends welcome e-mails when the user-based 'send_welcome_email' attribute is set to anything (for the admin tool/backwards compatibility)" do
+        admin_token_auth(@admin)
+        expect do
+          p = params
+          p[:user][:send_welcome_email] = "0"
+          post :create, p
         end.to change { ActionMailer::Base.deliveries.count }.by(1)
       end
 
@@ -449,20 +458,26 @@ describe Api::V1::UsersController do
         admin_token_auth(@admin)
         expect do
           expect do
-            post :create, params
+            p = params
+            p[:options] = { :send_welcome_email => true }
+            post :create, p
           end.to change { Delayed::Job.count }.by(1)
         end.to change { ActionMailer::Base.deliveries.count }.by(0)
       end
 
       it "sends the e-mail to the user that signed up" do
         admin_token_auth(@admin)
-        post :create, params
+        p = params
+        p[:options] = { :send_welcome_email => true }
+        post :create, p
         ActionMailer::Base.deliveries.first.to.should eql(["potato@example.com"])
       end
 
       it "includes the API key in the signup message" do
         admin_token_auth(@admin)
-        post :create, params
+        p = params
+        p[:options] = { :send_welcome_email => true }
+        post :create, p
 
         data = MultiJson.load(response.body)
         user = ApiUser.find(data["user"]["id"])
@@ -473,14 +488,16 @@ describe Api::V1::UsersController do
       describe "e-mail subject" do
         it "defaults to the configured site name" do
           admin_token_auth(@admin)
-          post :create, params
+          p = params
+          p[:options] = { :send_welcome_email => true }
+          post :create, p
           ActionMailer::Base.deliveries.first.subject.should eql("Your API Umbrella API key")
         end
 
         it "changes the e-mail subject based on the site name" do
           admin_token_auth(@admin)
           p = params
-          p[:options] = { :site_name => "External Example" }
+          p[:options] = { :send_welcome_email => true, :site_name => "External Example" }
           post :create, p
           ActionMailer::Base.deliveries.first.subject.should eql("Your External Example API key")
         end
@@ -489,7 +506,9 @@ describe Api::V1::UsersController do
       describe "from" do
         it "defaults to using the configured host" do
           admin_token_auth(@admin)
-          post :create, params
+          p = params
+          p[:options] = { :send_welcome_email => true }
+          post :create, p
           ActionMailer::Base.deliveries.first.from.should eql(["noreply@localhost"])
           ActionMailer::Base.deliveries.first[:from].value.should eql("noreply@localhost")
         end
@@ -497,7 +516,7 @@ describe Api::V1::UsersController do
         it "allows changing the from e-mail name" do
           admin_token_auth(@admin)
           p = params
-          p[:options] = { :email_from_name => "Tester" }
+          p[:options] = { :send_welcome_email => true, :email_from_name => "Tester" }
           post :create, p
           ActionMailer::Base.deliveries.first.from.should eql(["noreply@localhost"])
           ActionMailer::Base.deliveries.first[:from].value.should eql("Tester <noreply@localhost>")
@@ -506,7 +525,7 @@ describe Api::V1::UsersController do
         it "allows changing the from e-mail address" do
           admin_token_auth(@admin)
           p = params
-          p[:options] = { :email_from_address => "test@google.com" }
+          p[:options] = { :send_welcome_email => true, :email_from_address => "test@google.com" }
           post :create, p
           ActionMailer::Base.deliveries.first.from.should eql(["test@google.com"])
           ActionMailer::Base.deliveries.first[:from].value.should eql("test@google.com")
@@ -515,7 +534,7 @@ describe Api::V1::UsersController do
         it "allows changing the both the from e-mail address and name" do
           admin_token_auth(@admin)
           p = params
-          p[:options] = { :email_from_name => "Tester", :email_from_address => "test@google.com" }
+          p[:options] = { :send_welcome_email => true, :email_from_name => "Tester", :email_from_address => "test@google.com" }
           post :create, p
           ActionMailer::Base.deliveries.first.from.should eql(["test@google.com"])
           ActionMailer::Base.deliveries.first[:from].value.should eql("Tester <test@google.com>")
@@ -525,14 +544,16 @@ describe Api::V1::UsersController do
       describe "example API url" do
         it "defaults to no example URL" do
           admin_token_auth(@admin)
-          post :create, params
+          p = params
+          p[:options] = { :send_welcome_email => true }
+          post :create, p
           ActionMailer::Base.deliveries.first.encoded.should_not include("Here's an example")
         end
 
         it "includes an example API url when given" do
           admin_token_auth(@admin)
           p = params
-          p[:options] = { :example_api_url => "https://example.com/api.json?api_key={{api_key}}&test=1" }
+          p[:options] = { :send_welcome_email => true, :example_api_url => "https://example.com/api.json?api_key={{api_key}}&test=1" }
           post :create, p
           ActionMailer::Base.deliveries.first.encoded.should include("Here's an example")
         end
@@ -540,7 +561,7 @@ describe Api::V1::UsersController do
         it "formats the example URL by substituting the api key" do
           admin_token_auth(@admin)
           p = params
-          p[:options] = { :example_api_url => "https://example.com/api.json?api_key={{api_key}}&test=1" }
+          p[:options] = { :send_welcome_email => true, :example_api_url => "https://example.com/api.json?api_key={{api_key}}&test=1" }
           post :create, p
 
           data = MultiJson.load(response.body)
@@ -552,14 +573,12 @@ describe Api::V1::UsersController do
         it "offers a plain text version" do
           admin_token_auth(@admin)
           p = params
-          p[:options] = { :example_api_url => "https://example.com/api.json?api_key={{api_key}}" }
+          p[:options] = { :send_welcome_email => true, :example_api_url => "https://example.com/api.json?api_key={{api_key}}" }
           post :create, p
 
           data = MultiJson.load(response.body)
           user = ApiUser.find(data["user"]["id"])
 
-          admin_token_auth(@admin)
-          post :create, params
           ActionMailer::Base.deliveries.first.encoded.should include("https://example.com/api.json?api_key=#{user.api_key}\r\n( https://example.com/api.json?api_key=#{user.api_key} )")
         end
       end
@@ -567,21 +586,25 @@ describe Api::V1::UsersController do
       describe "contact URL" do
         it "defaults to no example URL" do
           admin_token_auth(@admin)
-          post :create, params
+          p = params
+          p[:options] = { :send_welcome_email => true }
+          post :create, p
           ActionMailer::Base.deliveries.first.encoded.should include(%(<a href="http://localhost/contact/">contact us</a>))
         end
 
         it "includes an example API url when given" do
           admin_token_auth(@admin)
           p = params
-          p[:options] = { :contact_url => "https://example.com/contact-us" }
+          p[:options] = { :send_welcome_email => true, :contact_url => "https://example.com/contact-us" }
           post :create, p
           ActionMailer::Base.deliveries.first.encoded.should include(%(<a href="https://example.com/contact-us">contact us</a>))
         end
 
         it "offers a plain text version" do
           admin_token_auth(@admin)
-          post :create, params
+          p = params
+          p[:options] = { :send_welcome_email => true }
+          post :create, p
           ActionMailer::Base.deliveries.first.encoded.should include("contact us ( http://localhost/contact/ )")
         end
       end
