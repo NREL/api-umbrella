@@ -146,4 +146,28 @@ describe "apis", :js => true do
       find_field("Frontend Host").value.should eql("example2.com")
     end
   end
+
+  it "returns a validation error when all servers are removed from an existing API" do
+    api = FactoryGirl.create(:api)
+    visit "/admin/#/apis/#{api.id}/edit"
+    find("#servers_table a", :text => /Remove/).click
+    click_link("OK")
+    click_button("Save")
+    page.should have_content("must have at least one servers")
+
+    api = Api.find(api.id)
+    api.servers.length.should eql(1)
+  end
+
+  it "returns a validation error when all url prefixes are removed from an existing API" do
+    api = FactoryGirl.create(:api)
+    visit "/admin/#/apis/#{api.id}/edit"
+    find("#url_matches_table a", :text => /Remove/).click
+    click_link("OK")
+    click_button("Save")
+    page.should have_content("must have at least one url_matches")
+
+    api = Api.find(api.id)
+    api.url_matches.length.should eql(1)
+  end
 end

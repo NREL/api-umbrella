@@ -47,7 +47,7 @@ class Api
   validates :balance_algorithm,
     :inclusion => { :in => %w(round_robin least_conn ip_hash) }
   validates_each :servers, :url_matches do |record, attr, value|
-    if(value.blank?)
+    if(value.blank? || (value && value.reject(&:marked_for_destruction?).blank?))
       record.errors.add(:base, "must have at least one #{attr}")
     end
   end

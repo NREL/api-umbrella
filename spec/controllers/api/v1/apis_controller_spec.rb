@@ -64,6 +64,97 @@ describe Api::V1::ApisController do
     @empty_url_prefixes_api.save!(:validate => false)
   end
 
+  shared_examples "validates nested attributes presence - create" do |field|
+    it "returns a validation error if #{field} is set to nil" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        field => nil,
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(422)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+        data["errors"].should eql({
+          "base" => ["must have at least one #{field}"],
+        })
+      end.to_not change { Api.count }
+    end
+
+    it "returns a validation error if #{field} is set to an empty array" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        field => [],
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(422)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+        data["errors"].should eql({
+          "base" => ["must have at least one #{field}"],
+        })
+      end.to_not change { Api.count }
+    end
+
+    it "accepts the input if at least one url prefix exists" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        field => [FactoryGirl.attributes_for(:"api_#{field.to_s.singularize}")],
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["name"].should eql(attributes[:name])
+      end.to change { Api.count }.by(1)
+    end
+  end
+
+  shared_examples "validates nested attributes presence - update" do |field|
+    it "returns a validation error if #{field} is set to nil" do
+      admin_token_auth(@admin)
+      attributes = @api.serializable_hash
+      attributes[field.to_s] = nil
+
+      put :update, :format => "json", :id => @api.id, :api => attributes
+      response.status.should eql(422)
+      data = MultiJson.load(response.body)
+      data.keys.should eql(["errors"])
+      data["errors"].should eql({
+        "base" => ["must have at least one #{field}"],
+      })
+    end
+
+    it "returns a validation error if #{field} is set to an empty array" do
+      admin_token_auth(@admin)
+      attributes = @api.serializable_hash
+      attributes[field.to_s] = []
+
+      put :update, :format => "json", :id => @api.id, :api => attributes
+      response.status.should eql(422)
+      data = MultiJson.load(response.body)
+      data.keys.should eql(["errors"])
+      data["errors"].should eql({
+        "base" => ["must have at least one #{field}"],
+      })
+    end
+
+    it "accepts the input if at least one #{field} exists" do
+      admin_token_auth(@admin)
+      attributes = @api.serializable_hash
+      attributes[field.to_s] = [FactoryGirl.attributes_for(:"api_#{field.to_s.singularize}")]
+
+      put :update, :format => "json", :id => @api.id, :api => attributes
+      response.status.should eql(204)
+      @api = Api.find(@api.id)
+      @api[field].length.should eql(1)
+    end
+  end
+
   shared_examples "api settings header fields - show" do |field|
     it "returns no headers as an empty string" do
       api = FactoryGirl.create(:api, {
@@ -229,7 +320,6 @@ describe Api::V1::ApisController do
         api.settings.send(field).length.should eql(1)
       end.to change { Api.count }.by(1)
     end
-
   end
 
   shared_examples "api settings header fields - update" do |field|
@@ -758,6 +848,14 @@ describe Api::V1::ApisController do
       end
     end
 
+    describe "servers" do
+      it_behaves_like "validates nested attributes presence - create", :servers
+    end
+
+    describe "matching url prefixes" do
+      it_behaves_like "validates nested attributes presence - create", :url_matches
+    end
+
     describe "request headers" do
       it_behaves_like "api settings header fields - create", :headers
     end
@@ -1033,6 +1131,14 @@ describe Api::V1::ApisController do
         @google_api = Api.find(@google_api.id)
         @google_api.settings.required_roles.should eql(attributes[:settings][:required_roles])
       end
+    end
+
+    describe "servers" do
+      it_behaves_like "validates nested attributes presence - update", :servers
+    end
+
+    describe "matching url prefixes" do
+      it_behaves_like "validates nested attributes presence - update", :url_matches
     end
 
     describe "request headers" do
