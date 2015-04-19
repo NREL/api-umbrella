@@ -8,6 +8,7 @@ var _ = require('lodash'),
     Factory = require('factory-lady'),
     processEnv = require('../../lib/process_env'),
     request = require('request'),
+    supervisorPid = require('../../lib/supervisor_pid'),
     supervisorSignal = require('../../lib/supervisor_signal');
 
 describe('processes', function() {
@@ -15,14 +16,11 @@ describe('processes', function() {
     it('does not leak file descriptors across reloads', function(done) {
       this.timeout(40000);
 
-      var configPath = processEnv.supervisordConfigPath();
       var execOpts = { env: processEnv.env() };
-      execFile('supervisorctl', ['-c', configPath, 'pid', 'router-nginx'], execOpts, function(error, stdout, stderr) {
+      supervisorPid('router-nginx', function(error, parentPid) {
         if(error) {
-          return done('Error fetching nginx pid: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
+          return done('Error fetching nginx pid: ' + error);
         }
-
-        var parentPid = stdout.trim();
 
         async.timesSeries(15, function(index, next) {
           supervisorSignal('router-nginx', 'SIGHUP', function(error) {
@@ -38,7 +36,7 @@ describe('processes', function() {
 
                 var lines = _.filter(stdout.split('\n'), function(line) {
                   var columns = line.split(/\s+/);
-                  return columns[2] === parentPid;
+                  return parseInt(columns[2], 10) === parentPid;
                 });
                 setTimeout(function() {
                   next(null, lines.length);
@@ -52,8 +50,8 @@ describe('processes', function() {
           }
 
           descriptorCounts.length.should.eql(15);
-          _.uniq(descriptorCounts).length.should.eql(1);
           descriptorCounts[0].should.be.greaterThan(0);
+          _.uniq(descriptorCounts).length.should.eql(1);
           done();
         });
       });
