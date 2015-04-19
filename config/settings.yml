@@ -37,3 +37,5 @@ web:
   mailer:
     default_url_options:
       host: example.com
+site_name: API Umbrella
+default_host: localhost

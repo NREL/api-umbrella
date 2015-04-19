@@ -10,8 +10,12 @@ class ApiUserMailer < ActionMailer::Base
     end
 
     @contact_url = options[:contact_url].presence || "http://#{ApiUmbrellaConfig[:default_host]}/contact/"
-    from = options[:email_from].presence || "noreply@#{ApiUmbrellaConfig[:default_host]}"
     site_name = options[:site_name].presence || ApiUmbrellaConfig[:site_name]
+
+    from = options[:email_from_address].presence || "noreply@#{ApiUmbrellaConfig[:default_host]}"
+    if(options[:email_from_name].present?)
+      from = "#{options[:email_from_name]} <#{from}>"
+    end
 
     mail :subject => "Your #{site_name} API key",
       :from => from,
