@@ -7,12 +7,13 @@ var _ = require('lodash'),
     execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
     processEnv = require('../../lib/process_env'),
-    request = require('request');
+    request = require('request'),
+    supervisorSignal = require('../../lib/supervisor_signal');
 
 describe('processes', function() {
   describe('nginx', function() {
     it('does not leak file descriptors across reloads', function(done) {
-      this.timeout(30000);
+      this.timeout(40000);
 
       var configPath = processEnv.supervisordConfigPath();
       var execOpts = { env: processEnv.env() };
@@ -23,10 +24,10 @@ describe('processes', function() {
 
         var parentPid = stdout.trim();
 
-        async.timesSeries(10, function(index, next) {
-          execFile('supervisorctl', ['-c', configPath, 'kill', 'HUP', 'router-nginx'], execOpts, function(error, stdout, stderr) {
+        async.timesSeries(15, function(index, next) {
+          supervisorSignal('router-nginx', 'SIGHUP', function(error) {
             if(error) {
-              return next('Error reloading nginx: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
+              return next('Error reloading nginx: ' + error);
             }
 
             setTimeout(function() {
@@ -50,7 +51,9 @@ describe('processes', function() {
             return done(error);
           }
 
+          descriptorCounts.length.should.eql(15);
           _.uniq(descriptorCounts).length.should.eql(1);
+          descriptorCounts[0].should.be.greaterThan(0);
           done();
         });
       });
