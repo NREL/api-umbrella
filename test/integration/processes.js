@@ -3,17 +3,11 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
     execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
-    fs = require('fs'),
-    ipaddr = require('ipaddr.js'),
-    mongoose = require('mongoose'),
-    path = require('path'),
     processEnv = require('../../lib/process_env'),
-    request = require('request'),
-    Tail = require('tail').Tail;
+    request = require('request');
 
 describe('processes', function() {
   describe('nginx', function() {
@@ -43,7 +37,7 @@ describe('processes', function() {
 
                 var lines = _.filter(stdout.split('\n'), function(line) {
                   var columns = line.split(/\s+/);
-                  return columns[2] == parentPid;
+                  return columns[2] === parentPid;
                 });
                 setTimeout(function() {
                   next(null, lines.length);
