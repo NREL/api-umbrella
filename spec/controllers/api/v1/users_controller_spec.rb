@@ -354,16 +354,27 @@ describe Api::V1::UsersController do
       admin_token_auth(@admin)
       expect do
         p = params
-        p[:user][:send_welcome_email] = "1"
+        p[:options] ||= {}
+        p[:options][:send_welcome_email] = "true"
         post :create, p
       end.to change { Delayed::Job.count }.by(1)
     end
 
-    it "does not send welcome e-mails by default" do
+    it "does not send welcome e-mails when explicitly disabled" do
+      admin_token_auth(@admin)
+      expect do
+        p = params
+        p[:options] ||= {}
+        p[:options][:send_welcome_email] = false
+        post :create, p
+      end.to change { Delayed::Job.count }.by(0)
+    end
+
+    it "sends welcome e-mails by default" do
       admin_token_auth(@admin)
       expect do
         post :create, params
-      end.to change { Delayed::Job.count }.by(0)
+      end.to change { Delayed::Job.count }.by(1)
     end
 
     it "returns a wildcard CORS response" do

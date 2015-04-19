@@ -43,7 +43,7 @@ class Api::V1::UsersController < Api::V1::BaseController
 
     respond_to do |format|
       if(@api_user.save)
-        if(params[:user][:send_welcome_email])
+        if(!params[:options] || params[:options][:send_welcome_email].to_s != "false")
           ApiUserMailer.delay(:queue => "mailers").signup_email(@api_user, params[:options] || {})
         end
 
