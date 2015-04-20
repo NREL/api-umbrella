@@ -25,12 +25,14 @@ module ApiUmbrella
     # settings and rate limits. If those use cases start to diverge,
     # this should be revisited to make more abstract.
     def assign_nested_attributes(data, options = {})
-      data = data.deep_dup
+      if(data.kind_of?(Hash))
+        data = data.deep_dup
 
-      old_data = self.attributes
-      attributify_data!(data, old_data)
+        old_data = self.attributes
+        attributify_data!(data, old_data)
 
-      self.assign_attributes(data, options)
+        self.assign_attributes(data, options)
+      end
     end
 
     private

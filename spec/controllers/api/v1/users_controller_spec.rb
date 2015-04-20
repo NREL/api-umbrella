@@ -350,6 +350,28 @@ describe Api::V1::UsersController do
       end.to change { ApiUser.count }.by(1)
     end
 
+    it "returns a validation error if the user attributes aren't present" do
+      admin_token_auth(@admin)
+      expect do
+        post :create, :format => "json"
+
+        response.status.should eql(422)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+      end.to_not change { ApiUser.count }
+    end
+
+    it "returns a validation error if the user attributes are an unexpected object" do
+      admin_token_auth(@admin)
+      expect do
+        post :create, :format => "json", :user => "something"
+
+        response.status.should eql(422)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+      end.to_not change { ApiUser.count }
+    end
+
     it "returns a wildcard CORS response" do
       admin_token_auth(@admin)
       post :create, params
