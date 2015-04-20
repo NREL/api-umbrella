@@ -22,6 +22,9 @@ describe('processes', function() {
           return done('Error fetching nginx pid: ' + error);
         }
 
+        var descriptorCounts = [];
+        var urandomDescriptorCounts = [];
+
         async.timesSeries(15, function(index, next) {
           supervisorSignal('router-nginx', 'SIGHUP', function(error) {
             if(error) {
@@ -34,24 +37,50 @@ describe('processes', function() {
                   return next('Error gathering lsof details: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
                 }
 
-                var lines = _.filter(stdout.split('\n'), function(line) {
+                var lines = stdout.split('\n');
+                var descriptorCount = 0;
+                var urandomDescriptorCount = 0;
+                lines.forEach(function(line) {
                   var columns = line.split(/\s+/);
-                  return parseInt(columns[2], 10) === parentPid;
+                  if(parseInt(columns[1], 10) === parentPid || parseInt(columns[2], 10) === parentPid) {
+                    descriptorCount++;
+
+                    if(_.contains(line, 'urandom')) {
+                      urandomDescriptorCount++;
+                    }
+                  }
                 });
+
+                descriptorCounts.push(descriptorCount);
+                urandomDescriptorCounts.push(urandomDescriptorCount);
+
                 setTimeout(function() {
                   next(null, lines.length);
                 }, 500);
               });
             }, 500);
           });
-        }, function(error, descriptorCounts) {
+        }, function(error) {
           if(error) {
             return done(error);
           }
 
+          // Test to ensure ngx_txid isn't leaving open file descriptors around
+          // on reloads test for this patch:
+          // https://github.com/streadway/ngx_txid/pull/6
+          urandomDescriptorCounts.length.should.eql(15);
+          urandomDescriptorCounts[0].should.be.greaterThan(0);
+          _.max(urandomDescriptorCounts).should.eql(_.min(urandomDescriptorCounts));
+
+          // A more general test to ensure that we don't see other unexpected
+          // file descriptor growth. We'll allow some growth for this test,
+          // though, just to account for small fluctuations in sockets due to
+          // other things nginx may be doing.
           descriptorCounts.length.should.eql(15);
-          descriptorCounts[0].should.be.greaterThan(0);
-          _.uniq(descriptorCounts).length.should.eql(1);
+          _.min(descriptorCounts).should.be.greaterThan(0);
+          var range = _.max(descriptorCounts) - _.min(descriptorCounts);
+          range.should.be.lessThan(10);
+
           done();
         });
       });
