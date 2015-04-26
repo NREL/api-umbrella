@@ -207,17 +207,4 @@ class Admin::StatsController < Admin::BaseController
       format.csv
     end
   end
-
-  private
-
-  def set_time_zone
-    old_time_zone = Time.zone
-    if(params[:tz].present?)
-      Time.zone = params[:tz]
-    end
-
-    yield
-  ensure
-    Time.zone = old_time_zone
-  end
 end

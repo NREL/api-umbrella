@@ -14,19 +14,22 @@ VCR.use_cassette("elasticsearch_templates", :re_record_interval => 1.day) do
   end
 end
 
-# For simplicity sake, we're assuming our tests only deal with the 2015-01
-# index currently. First delete any existing indexes.
-%w(api-umbrella-logs-v1-2015-01 api-umbrella-logs-2015-01 api-umbrella-logs-write-2015-01).each do |index_name|
-  begin
-    client.indices.delete :index => index_name
-  rescue Elasticsearch::Transport::Transport::Errors::NotFound # rubocop:disable Lint/HandleExceptions
+# For simplicity sake, we're assuming our tests only deal with a few explicit
+# indexes currently.
+["2014-11", "2015-01", "2015-03"].each do |month|
+  # First delete any existing indexes.
+  ["api-umbrella-logs-v1-#{month}", "api-umbrella-logs-#{month}", "api-umbrella-logs-write-#{month}"].each do |index_name|
+    begin
+      client.indices.delete :index => index_name
+    rescue Elasticsearch::Transport::Transport::Errors::NotFound # rubocop:disable Lint/HandleExceptions
+    end
   end
-end
 
-# Create the index with proper aliases setup.
-client.indices.create(:index => "api-umbrella-logs-v1-2015-01", :body => {
-  :aliases => {
-    "api-umbrella-logs-2015-01" => {},
-    "api-umbrella-logs-write-2015-01" => {},
-  },
-})
+  # Create the index with proper aliases setup.
+  client.indices.create(:index => "api-umbrella-logs-v1-#{month}", :body => {
+    :aliases => {
+      "api-umbrella-logs-#{month}" => {},
+      "api-umbrella-logs-write-#{month}" => {},
+    },
+  })
+end

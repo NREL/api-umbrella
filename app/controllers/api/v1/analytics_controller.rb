@@ -2,6 +2,7 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
   include ActionView::Helpers::NumberHelper
 
   skip_after_filter :verify_authorized
+  around_filter :set_time_zone
 
   def drilldown
     @search = LogSearch.new({

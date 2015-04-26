@@ -74,4 +74,15 @@ class ApplicationController < ActionController::Base
       params.merge!(Rack::Utils.parse_nested_query(request.raw_post))
     end
   end
+
+  def set_time_zone
+    old_time_zone = Time.zone
+    if(params[:tz].present?)
+      Time.zone = params[:tz]
+    end
+
+    yield
+  ensure
+    Time.zone = old_time_zone
+  end
 end
