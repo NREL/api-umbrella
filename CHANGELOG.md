@@ -1,25 +1,52 @@
 # API Umbrella Change Log
 
-## 0.8.0 (Unreleased)
+## 0.8.0 (2015-04-26)
 
-### Changes
+This update fixes a couple of security issues and a few important bugs. It's highly recommended anyone running earlier versions upgrade to v0.8.0.
 
-* **Fix file descriptor leak:** This could lead to exhausting your systems maximum number of file descriptors for setups with lots of API backends using domains with short-lived TTLs (See [api.data.gov#188](https://github.com/18F/api.data.gov/issues/188))
-* **New analytics querying interface:** The new interface for querying the analytics allows you to filter your analytics using drop down menus and form fields. This should be much easier to use than the raw Lucene queries we previously relied on. (See [#15](https://github.com/NREL/api-umbrella/issues/15))
+[Download 0.8.0 Packages](http://nrel.github.io/api-umbrella/download/)
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you must first stop API Umbrella manually (`sudo /etc/init.d/api-umbrella stop`) before installing the new package. 
+
+### Hightlights
+
+* **Fix cross-site-scripting vulnerability:** In the admin, there was a possibility of a cross-site-scripting vulnerability. (See [api.data.gov#214](https://github.com/18F/api.data.gov/issues/214))
+* **Make it easier to route to new website pages:** Any non-API request will be routed to the website backend, making it easier to manage your public website content. In addition, different website content can now be served up for different hostnames. (See [api.data.gov#146](https://github.com/18F/api.data.gov/issues/146) and [#69](https://github.com/NREL/api-umbrella/issues/69))
+* **New analytics querying interface:** The new interface for querying the analytics allows you to filter your analytics using drop down menus and form fields. This should be much easier to use than the raw Lucene queries we previously relied on. (See [#15](https://github.com/NREL/api-umbrella/issues/15) and [api.data.gov#168](https://github.com/18F/api.data.gov/issues/168))
+* **Add ability to set API response headers:** This feature can be used to set headers on the API responses, which can be used to force CORS headers with API Umbrella. (See [#81](https://github.com/NREL/api-umbrella/issues/81) and [api.data.gov#188](https://github.com/18F/api.data.gov/issues/188))
+* **Add feature to specify HTTPS requirements:** This feature can be used force HTTPS usage to access your APIs and can also be used to help transition new users to HTTPS-only. (See [api.data.gov#34](https://github.com/18F/api.data.gov/issues/34))
+* **Allow for better customization of the API key signup confirmation e-mail:** The contents for the API key signup e-mail can now be better tailored for different sites. (See [api.data.gov#133](https://github.com/18F/api.data.gov/issues/133))
+* **Fix file descriptor leak:** This could lead to an outage by exhausting your systems maximum number of file descriptors for setups with lots of API backends using domains with short-lived TTLs. (See [api.data.gov#188](https://github.com/18F/api.data.gov/issues/188))
+
+### Everything Else
+
+* **Fix possibility of very brief 503 errors:** For setups with lots of API backends using domains with short-lived TTLs, there was a possibility of rare 503 errors when DNS changes were being reloaded. (See [api.data.gov#207](https://github.com/18F/api.data.gov/issues/207))
 * **Fix server log rotation issues:** There were a few issues present with a default installation that prevented log files from rotating properly, and may have wiped previous log files each night. This should now be resolved. (See [api.data.gov#189](https://github.com/18F/api.data.gov/issues/189))
+* **Fix couple of edge-cases where custom rate limits weren't applied:** There were a couple of edge-cases in how API backends and users were configured that could lead to rate limits being ignored. (See [#127](https://github.com/NREL/api-umbrella/issues/127), [api.data.gov#201](https://github.com/18F/api.data.gov/issues/201), [api.data.gov#202](https://github.com/18F/api.data.gov/issues/202))
+* **Fix situations where analytics may have not been logged for specific queries:** If a URL contained UTF-8 character or if a query parameter contained a date or time, there were certain situations where that request would fail to be logged in the analytics database. (See [api.data.gov#198](https://github.com/18F/api.data.gov/issues/198) and [api.data.gov#213](https://github.com/18F/api.data.gov/issues/213))
+* **Fix proxy transforming backslashes into forward slashes in the URL:** If a URL contained a backslash character, it may have been transformed into a forward slash when the API backend received the request. (See [api.data.gov#199](https://github.com/18F/api.data.gov/issues/199))
+* **Gracefully handle MongoDB replicaset changes:** API Umbrella should continue to serve requests with no downtime if the MongoDB primary server changes. (See [api.data.gov#200](https://github.com/18F/api.data.gov/issues/200))
 * **Add registration source information to admin user list:** The user registration source is now shown in the user listing and can also be searched by the free-from search field. (See [api.data.gov#190](https://github.com/18F/api.data.gov/issues/190))
+* **Fix broken pagination on the admin list of API backends:** The list of API backends didn't properly handle pagination when more than 50 backends were present. (See [api.data.gov#209](https://github.com/18F/api.data.gov/issues/209))
 * **Fixes to URL encoding for advanced request rewriting:** If you were doing complex URL rewriting with "Route Pattern" rewrites under the Advanced Request Rewriting section, this fixes a variety of URL encoding issues.
 * **Reduce duplicative nginx reloads for DNS changes:** If your system has several API backends with domains that have short-lived TTLs, there were a couple race conditions that could lead to nginx reloading twice on DNS changes. This is now fixed so the unnecessary, duplicate reload commands are gone. (See [api.data.gov#191](https://github.com/18F/api.data.gov/issues/191))
+* **Fix incorrectly logging HTTPS requests as HTTP:** API Umbrella v0.7 introduced a bug the led to HTTPS requests being logged as HTTP requests in the analytics database. (See [api.data.gov#208](https://github.com/18F/api.data.gov/issues/208))
+* **Fix analytics charts during daylight saving time:** During daylight saving time, the daily analytics charts in the admin may have contained an extra duplicate day with 0 results. (See [api.data.gov#147](https://github.com/18F/api.data.gov/issues/147))
+* **Prevent all URL prefixes from being removed from API backends:** In the admin, it was possible to remove all URL prefixes from an API backend's configuration, leaving it in an invalid state (See [api.data.gov#215](https://github.com/18F/api.data.gov/issues/215))
 * **Improve compatibility of install on systems with other Rubies present:** If you're installing API Umbrella on a system that already had something like rbenv/rvm/chruby installed, this should should fix some compatibility issues.
 * **Build process improvements:** Various improvements to our build process for packaging new binary releases.
 * **Upgrade bundled dependencies:**
-  * Bundler 1.7.12 -> 1.7.13
-  * ElasticSearch 1.4.2 -> 1.4.4
+  * Bundler 1.7.12 -> 1.7.14
+  * ElasticSearch 1.4.2 -> 1.5.1
   * MongoDB 2.6.7 -> 2.6.9
   * nginx 1.7.9 -> 1.7.10
+  * ngx_headers_more 0.25 -> 0.26
   * ngx_txid a41a705 -> f1c197c
   * Node.js 0.10.36 -> 0.10.38
   * OpenSSL 1.0.1l -> 1.0.1m
+  * Ruby 2.1.5 -> 2.1.6
   * RubyGems 2.4.5 -> 2.4.6
   * Varnish 4.0.2 -> 4.0.3
 
