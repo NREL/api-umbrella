@@ -50,7 +50,13 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     # the same e-mail address (each e-mail address only gets counted for the first
     # month it signed up).
     users_by_month = ApiUser.collection.aggregate([
-      { "$match" => { "created_at" => { "$exists" => true }, "imported" => { "$in" => [nil, false] } } },
+      {
+        "$match" => {
+          "created_at" => { "$exists" => true },
+          "imported" => { "$in" => [nil, false] },
+          "disabled_at" => { "$in" => [nil, false] },
+        },
+      },
       { "$sort" => { "created_at" => 1 } },
       { "$group" => { "_id" => { "email" => "$email" }, "created_at" => { "$first" => "$created_at" } } },
       { "$group" => { "_id" => { "year" => { "$year" => "$created_at" }, "month" => { "$month" => "$created_at" } }, "count" => { "$sum" => 1 } } },
