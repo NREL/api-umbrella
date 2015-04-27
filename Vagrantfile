@@ -14,7 +14,7 @@ end
 
 # Allow picking a different Vagrant base box:
 # API_UMBRELLA_VAGRANT_BOX="chef/debian-7.4" vagrant up
-BOX = ENV["API_UMBRELLA_VAGRANT_BOX"] || "nrel/CentOS-6.5-x86_64"
+BOX = ENV["API_UMBRELLA_VAGRANT_BOX"] || "nrel/CentOS-6.6-x86_64"
 
 # Allow adjusting the memory and cores when starting the VM:
 MEMORY = (ENV["API_UMBRELLA_VAGRANT_MEMORY"] || "2048").to_i
@@ -75,7 +75,7 @@ Vagrant.configure("2") do |config|
   config.librarian_chef.cheffile_dir = "chef"
 
   # Install chef via the vagrant-omnibus plugin.
-  config.omnibus.chef_version = "11.16.4"
+  config.omnibus.chef_version = "12.2.1"
 
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
   # path, and data_bags path (all relative to this Vagrantfile), and adding
