@@ -264,7 +264,11 @@ describe Api::V1::UsersController do
         "first_name",
         "id",
         "last_name",
+        "registration_ip",
+        "registration_origin",
+        "registration_referer",
         "registration_source",
+        "registration_user_agent",
         "roles",
         "settings",
         "throttle_by_ip",
@@ -315,6 +319,7 @@ describe Api::V1::UsersController do
       data["user"].keys.should_not include("api_key_hides_at")
       data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0, 6]}...")
     end
+
   end
 
   describe "POST create" do
@@ -420,6 +425,81 @@ describe Api::V1::UsersController do
       post :create, p
       data = MultiJson.load(response.body)
       data["user"]["registration_source"].should eql("whatever")
+    end
+
+    it "captures the requester's IP - does not trust x-forwarded-for from arbitrary IP" do
+      admin_token_auth(@admin)
+      request.env["REMOTE_ADDR"] = "48.146.218.185"
+      request.env["HTTP_X_FORWARDED_FOR"] = "3.3.3.3"
+      post :create, params
+      data = MultiJson.load(response.body)
+      user = ApiUser.find(data["user"]["id"])
+      user.registration_ip.should eql("48.146.218.185")
+    end
+
+    it "captures the requester's IP - does trust x-forwarded-for from local IP" do
+      admin_token_auth(@admin)
+      request.env["REMOTE_ADDR"] = "127.0.0.1"
+      request.env["HTTP_X_FORWARDED_FOR"] = "3.3.3.3"
+      post :create, params
+      data = MultiJson.load(response.body)
+      user = ApiUser.find(data["user"]["id"])
+      user.registration_ip.should eql("3.3.3.3")
+    end
+
+    it "captures the requester's user agent" do
+      admin_token_auth(@admin)
+      request.env["HTTP_USER_AGENT"] = "curl"
+      post :create, params
+      data = MultiJson.load(response.body)
+      user = ApiUser.find(data["user"]["id"])
+      user.registration_user_agent.should eql("curl")
+    end
+
+    it "captures the requester's referer" do
+      admin_token_auth(@admin)
+      request.env["HTTP_REFERER"] = "http://example.com/foo"
+      post :create, params
+      data = MultiJson.load(response.body)
+      user = ApiUser.find(data["user"]["id"])
+      user.registration_referer.should eql("http://example.com/foo")
+    end
+
+    it "captures the requester's origin" do
+      admin_token_auth(@admin)
+      request.env["HTTP_ORIGIN"] = "http://example.com"
+      post :create, params
+      data = MultiJson.load(response.body)
+      user = ApiUser.find(data["user"]["id"])
+      user.registration_origin.should eql("http://example.com")
+    end
+
+    it "returns registration requester information for admin users" do
+      admin_token_auth(@admin)
+      request.env["REMOTE_ADDR"] = "1.2.3.4"
+      request.env["HTTP_USER_AGENT"] = "curl"
+      request.env["HTTP_REFERER"] = "http://example.com/foo"
+      request.env["HTTP_ORIGIN"] = "http://example.com"
+      post :create, params
+      data = MultiJson.load(response.body)
+      data["user"]["registration_ip"].should eql("1.2.3.4")
+      data["user"]["registration_user_agent"].should eql("curl")
+      data["user"]["registration_referer"].should eql("http://example.com/foo")
+      data["user"]["registration_origin"].should eql("http://example.com")
+    end
+
+    it "omits registration requester information for non-admin users" do
+      request.env["REMOTE_ADDR"] = "1.2.3.4"
+      request.env["HTTP_USER_AGENT"] = "curl"
+      request.env["HTTP_REFERER"] = "http://example.com/foo"
+      request.env["HTTP_ORIGIN"] = "http://example.com"
+      request.env["HTTP_X_API_ROLES"] = "api-umbrella-key-creator"
+      post :create, params
+      data = MultiJson.load(response.body)
+      data["user"]["registration_ip"].should eql(nil)
+      data["user"]["registration_user_agent"].should eql(nil)
+      data["user"]["registration_referer"].should eql(nil)
+      data["user"]["registration_origin"].should eql(nil)
     end
 
     describe "welcome e-mail" do

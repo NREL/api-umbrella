@@ -18,6 +18,13 @@ if((!current_admin || @api_user.created_by == current_admin.id) && Time.now < @a
   attributes :api_key_hides_at
 end
 
+if(current_admin)
+  attributes :registration_ip,
+             :registration_user_agent,
+             :registration_referer,
+             :registration_origin
+end
+
 child :settings => :settings do
   attributes :id
   attributes :rate_limit_mode

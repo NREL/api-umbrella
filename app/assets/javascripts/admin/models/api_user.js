@@ -18,6 +18,10 @@ Admin.ApiUser = Ember.Model.extend(Ember.Validations.Mixin, {
   updatedAt: Ember.attr(),
   creator: Ember.attr(),
   updater: Ember.attr(),
+  registrationIp: Ember.attr(),
+  registrationUserAgent: Ember.attr(),
+  registrationReferer: Ember.attr(),
+  registrationOrigin: Ember.attr(),
 
   settings: Ember.belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
 

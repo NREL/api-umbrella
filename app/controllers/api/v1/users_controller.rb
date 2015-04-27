@@ -39,7 +39,12 @@ class Api::V1::UsersController < Api::V1::BaseController
     headers["Access-Control-Allow-Origin"] = "*"
 
     @api_user = ApiUser.new
-    save!
+    assign_attributes!
+
+    @api_user.registration_ip = request.ip
+    @api_user.registration_user_agent = request.user_agent
+    @api_user.registration_referer = request.referer
+    @api_user.registration_origin = request.env["HTTP_ORIGIN"]
 
     respond_to do |format|
       if(@api_user.save)
@@ -66,7 +71,7 @@ class Api::V1::UsersController < Api::V1::BaseController
 
   def update
     @api_user = ApiUser.find(params[:id])
-    save!
+    assign_attributes!
 
     respond_to do |format|
       if(@api_user.save)
@@ -79,7 +84,7 @@ class Api::V1::UsersController < Api::V1::BaseController
 
   private
 
-  def save!
+  def assign_attributes!
     assign_options = {}
     if(admin_signed_in?)
       assign_options[:as] = :admin

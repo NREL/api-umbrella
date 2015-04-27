@@ -41,13 +41,13 @@ http_interactions:
       Accept-Ranges:
       - bytes
       Date:
-      - Sun, 26 Apr 2015 15:07:27 GMT
+      - Mon, 27 Apr 2015 12:38:03 GMT
       Via:
       - 1.1 varnish
       Connection:
       - keep-alive
       X-Served-By:
-      - cache-den6025-DEN
+      - cache-mia1323-MIA
       X-Cache:
       - MISS
       X-Cache-Hits:
@@ -55,7 +55,7 @@ http_interactions:
       Vary:
       - Authorization,Accept-Encoding
       Expires:
-      - Sun, 26 Apr 2015 15:12:27 GMT
+      - Mon, 27 Apr 2015 12:43:03 GMT
       Source-Age:
       - '0'
     body:
@@ -217,5 +217,5 @@ http_interactions:
           }
         ]
     http_version: 
-  recorded_at: Wed, 22 Apr 2015 15:58:09 GMT
+  recorded_at: Mon, 27 Apr 2015 01:33:02 GMT
 recorded_with: VCR 2.9.3

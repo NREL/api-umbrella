@@ -21,6 +21,10 @@ class ApiUser
   field :throttle_by_ip, :type => Boolean
   field :disabled_at, :type => Time
   field :roles, :type => Array
+  field :registration_ip
+  field :registration_user_agent
+  field :registration_referer
+  field :registration_origin
 
   # Virtual fields
   attr_accessor :terms_and_conditions
