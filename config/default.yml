@@ -233,3 +233,10 @@ apiSettings:
       status_code: 400
       code: HTTPS_REQUIRED
       message: "Requests must be made over HTTPS. Try accessing the API at: {{httpsUrl}}"
+ban:
+  user_agents:
+  ips:
+  response:
+    status_code: 500
+    delay: 0
+    message: "Please contact us for assistance."

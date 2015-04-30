@@ -92,6 +92,20 @@ http {
   include ./mime.conf;
   include ./realip.conf;
 
+  geo $banned_ip {
+    default 0;
+    {{#each ban.ips}}
+    {{.}} 1;
+    {{/each}}
+  }
+
+  map $http_user_agent $banned_user_agent {
+    default 0;
+    {{#each ban.user_agents}}
+    "{{.}}" 1;
+    {{/each}}
+  }
+
   {{#if test_env}}
   # Allow for these nginx-based rate limits to be disabled in the test
   # environment.
