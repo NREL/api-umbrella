@@ -237,6 +237,6 @@ ban:
   user_agents:
   ips:
   response:
-    status_code: 500
+    status_code: 403
     delay: 0
     message: "Please contact us for assistance."
