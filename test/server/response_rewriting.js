@@ -154,4 +154,52 @@ describe('response rewriting', function() {
       });
     });
   });
+
+  describe('rewrites redirects', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          settings: {
+            override_response_headers: []
+          },
+          sub_settings: []
+        },
+      ],
+    });
+    describe('default', function() {
+      var baseUrl = function(apiKey) { return 'http://localhost:9333/redirect?api_key=' + apiKey; };
+      it('does not modify the redirect if it is relative', function(done) {
+        request.get(baseUrl(this.apiKey), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('/hello');
+          done();
+        });
+      });
+      it('does not modify the redirect if it is absolute, to an unrelated domain', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('http://other_url.com/hello'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('http://other_url.com/hello');
+          done();
+        });
+      });
+      it('modifies the redirect if it references the domain', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('http://example.com/hello'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('http://localhost/hello');
+          done();
+        });
+      });
+    });
+  });
 });

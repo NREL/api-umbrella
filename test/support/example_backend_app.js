@@ -89,6 +89,11 @@ app.get('/headers/*', function(req, res) {
   res.send('Hello World');
 });
 
+app.get('/redirect', function(req, res) {
+  res.redirect(req.query.to || '/hello');
+});
+
+
 app.all('/info/*', function(req, res) {
   var rawUrl = req.protocol + '://' + req.hostname + req.url;
   res.json({
