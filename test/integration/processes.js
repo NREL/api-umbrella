@@ -3,13 +3,19 @@
 require('../test_helper');
 
 var _ = require('lodash'),
+    apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
     execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
+    fs = require('fs'),
+    path = require('path'),
     processEnv = require('../../lib/process_env'),
     request = require('request'),
     supervisorPid = require('../../lib/supervisor_pid'),
-    supervisorSignal = require('../../lib/supervisor_signal');
+    supervisorSignal = require('../../lib/supervisor_signal'),
+    yaml = require('js-yaml');
+
+var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 describe('processes', function() {
   describe('nginx', function() {
@@ -143,6 +149,37 @@ describe('processes', function() {
       // Remove DB-based config after these tests, so the rest of the tests go
       // back to the file-based configs.
       shared.removeDbConfig(done);
+    });
+
+    it('updates templates with file-based config file changes', function(done) {
+      this.timeout(90000);
+
+      var nginxFile = path.join(config.get('etc_dir'), 'nginx/router.conf');
+      var nginxConfig = fs.readFileSync(nginxFile).toString();
+      nginxConfig.should.contain('worker_processes 4;');
+
+      var file = '/tmp/api-umbrella-test.yml';
+      var origConfig = yaml.safeLoad(fs.readFileSync(file).toString());
+      fs.writeFileSync(file, yaml.safeDump(_.merge(origConfig, {
+        nginx: {
+          workers: 1,
+        },
+      })));
+
+      this.router.reload(function(error) {
+        should.not.exist(error);
+        nginxConfig = fs.readFileSync(nginxFile).toString();
+        nginxConfig.should.contain('worker_processes 1;');
+
+        fs.writeFileSync(file, yaml.safeDump(origConfig));
+        this.router.reload(function(error) {
+          should.not.exist(error);
+
+          nginxConfig = fs.readFileSync(nginxFile).toString();
+          nginxConfig.should.contain('worker_processes 1;');
+          done();
+        }.bind(this));
+      }.bind(this));
     });
 
     it('does not drop connections during reloads', function(done) {
