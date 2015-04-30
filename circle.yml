@@ -21,13 +21,9 @@ dependencies:
     # so we can see how the stack reacts to replicaset re-elections, etc.
     - sudo pip install mongo-orchestration
 
-    # FIXME: Temporary workaround until the next package release after API
-    # Umbrella v0.8.0 comes out. This should be fixed by:
-    # https://github.com/NREL/omnibus-api-umbrella/commit/69b9b0d516860ac47a9012804bb5603c0746fca3
-    - sudo chown -R api-umbrella:api-umbrella-deploy /opt/api-umbrella/embedded/apps/web/shared/tmp
-    - sudo chmod 775 /opt/api-umbrella/embedded/apps/web/shared/tmp
-    - sudo find /opt/api-umbrella/embedded/apps/web/shared/tmp -type d -exec chmod 775 {} \;
-    - sudo find /opt/api-umbrella/embedded/apps/web/shared/tmp -type f -exec chmod 664 {} \;
+    # Ensure the temp directory is world-writable, since our tests don't run as
+    # the api-umbrella this is normally configured to be writable by.
+    - sudo chmod -R 777 /opt/api-umbrella/embedded/apps/web/shared/tmp
 
     # If the tests fail, it seems like sometimes the server processes don't
     # exist cleanly, and then stick around on the CI server causing issues for
