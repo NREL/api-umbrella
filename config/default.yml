@@ -101,6 +101,10 @@ apiSettings:
       status_code: 403
       code: API_KEY_DISABLED
       message: The api_key supplied has been disabled. Contact us at {{baseUrl}}/contact for assistance
+    api_key_unverified:
+      status_code: 403
+      code: API_KEY_UNVERIFIED
+      message: The api_key supplied has not been verified yet. Please check your e-mail to verify the API key. Contact us at {{baseUrl}}/contact for assistance
     api_key_unauthorized:
       status_code: 403
       code: API_KEY_UNAUTHORIZED
