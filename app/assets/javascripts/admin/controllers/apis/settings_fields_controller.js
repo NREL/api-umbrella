@@ -14,6 +14,13 @@ Admin.ApisSettingsFieldsController = Ember.ObjectController.extend({
     { id: true, name: polyglot.t('admin.api.settings.disable_api_key_options.disabled') },
   ],
 
+  apiKeyVerificationLevelOptions: [
+    { id: null, name: polyglot.t('admin.api.settings.api_key_verification_level_options.inherit') },
+    { id: 'none', name: polyglot.t('admin.api.settings.api_key_verification_level_options.none') },
+    { id: 'transition_email', name: polyglot.t('admin.api.settings.api_key_verification_level_options.transition_email') },
+    { id: 'required_email', name: polyglot.t('admin.api.settings.api_key_verification_level_options.required_email') },
+  ],
+
   roleOptions: function() {
     return Admin.ApiUserRole.find();
     // Don't cache this property, so we can rely on refreshing the underlying

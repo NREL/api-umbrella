@@ -6,6 +6,7 @@ Admin.ApiUser = Ember.Model.extend(Ember.Validations.Mixin, {
   firstName: Ember.attr(),
   lastName: Ember.attr(),
   email: Ember.attr(),
+  emailVerified: Ember.attr(),
   website: Ember.attr(),
   useDescription: Ember.attr(),
   registrationSource: Ember.attr(),

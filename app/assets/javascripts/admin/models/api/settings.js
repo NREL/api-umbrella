@@ -5,6 +5,7 @@ Admin.ApiSettings = Ember.Model.extend({
   httpBasicAuth: Ember.attr(),
   requireHttps: Ember.attr(),
   disableApiKey: Ember.attr(),
+  apiKeyVerificationLevel: Ember.attr(),
   requiredRoles: Ember.attr(),
   allowedIps: Ember.attr(),
   allowedReferers: Ember.attr(),

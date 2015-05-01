@@ -502,6 +502,37 @@ describe Api::V1::UsersController do
       data["user"]["registration_origin"].should eql(nil)
     end
 
+    describe "e-mail verification" do
+      it "returns the api key immediately and does not mark the user as e-mail verified by default" do
+        request.env["HTTP_X_API_ROLES"] = "api-umbrella-key-creator"
+        post :create, params
+        data = MultiJson.load(response.body)
+        data["user"]["api_key"].should be_kind_of(String)
+        user = ApiUser.find(data["user"]["id"])
+        user.email_verified.should eql(false)
+      end
+
+      it "does not return the api key and marks the user as e-mail verified when requested" do
+        request.env["HTTP_X_API_ROLES"] = "api-umbrella-key-creator"
+        p = params
+        p[:options] = { :verify_email => true }
+        post :create, p
+        data = MultiJson.load(response.body)
+        data["user"]["api_key"].should eql(nil)
+        user = ApiUser.find(data["user"]["id"])
+        user.email_verified.should eql(true)
+      end
+
+      it "always marks the user as e-mail verified when an admin creates the account" do
+        admin_token_auth(@admin)
+        post :create, params
+        data = MultiJson.load(response.body)
+        data["user"]["api_key"].should be_kind_of(String)
+        user = ApiUser.find(data["user"]["id"])
+        user.email_verified.should eql(true)
+      end
+    end
+
     describe "welcome e-mail" do
       before(:each) do
         Delayed::Worker.delay_jobs = false

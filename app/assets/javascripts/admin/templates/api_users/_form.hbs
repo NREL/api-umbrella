@@ -101,6 +101,7 @@
     <div class="span6 record-details">
       Created: {{formatDate createdAt}}{{#if creator}} by {{creator.username}}{{/if}}<br>
       Last Updated: {{formatDate updatedAt}}{{#if updater}} by {{updater.username}}{{/if}}<br>
+      E-mail Verified: {{emailVerified}}<br>
       {{#if registrationIp}}
       Registration IP: {{registrationIp}}<br>
       {{/if}}

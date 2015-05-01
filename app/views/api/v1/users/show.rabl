@@ -1,6 +1,5 @@
 object @api_user => :user
 attributes :id,
-           :api_key_preview,
            :first_name,
            :last_name,
            :email,
@@ -13,16 +12,22 @@ attributes :id,
            :created_at,
            :updated_at
 
-if((!current_admin || @api_user.created_by == current_admin.id) && Time.now < @api_user.api_key_hides_at)
-  attributes :api_key
-  attributes :api_key_hides_at
-end
-
 if(current_admin)
-  attributes :registration_ip,
+  attributes :api_key_preview,
+             :email_verified,
+             :registration_ip,
              :registration_user_agent,
              :registration_referer,
              :registration_origin
+
+  if(@api_user.created_by == current_admin.id && Time.now < @api_user.api_key_hides_at)
+    attributes :api_key
+    attributes :api_key_hides_at
+  end
+else
+  if(!@verify_email)
+    attributes :api_key
+  end
 end
 
 child :settings => :settings do

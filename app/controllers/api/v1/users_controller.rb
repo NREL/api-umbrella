@@ -92,6 +92,13 @@ class Api::V1::UsersController < Api::V1::BaseController
 
     @api_user.assign_nested_attributes(params[:user], assign_options)
 
+    @verify_email = (params[:options] && params[:options][:verify_email].to_s == "true")
+    if(@verify_email || admin_signed_in?)
+      @api_user.email_verified = true
+    else
+      @api_user.email_verified = false
+    end
+
     if(@api_user.new_record? && @api_user.registration_source.blank?)
       @api_user.registration_source = "api"
     end

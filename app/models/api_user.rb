@@ -15,6 +15,7 @@ class ApiUser
   field :first_name
   field :last_name
   field :email
+  field :email_verified, :type => Boolean
   field :website
   field :use_description
   field :registration_source

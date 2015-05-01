@@ -8,6 +8,8 @@ class Api::Settings
   field :require_https, :type => String
   field :require_https_transition_start_at, :type => Time
   field :disable_api_key, :type => Boolean
+  field :api_key_verification_level, :type => String
+  field :api_key_verification_transition_start_at, :type => Time
   field :required_roles, :type => Array
   field :allowed_ips, :type => Array
   field :allowed_referers, :type => Array
@@ -31,6 +33,8 @@ class Api::Settings
   # Validations
   validates :require_https,
     :inclusion => { :in => %w(required_return_error required_return_redirect transition_return_error transition_return_redirect optional), :allow_blank => true }
+  validates :api_key_verification_level,
+    :inclusion => { :in => %w(none transition_email required_email), :allow_blank => true }
   validates :rate_limit_mode,
     :inclusion => { :in => %w(unlimited custom), :allow_blank => true }
   validates :anonymous_rate_limit_behavior,
@@ -48,6 +52,8 @@ class Api::Settings
     :require_https,
     :require_https_transition_start_at,
     :disable_api_key,
+    :api_key_verification_level,
+    :api_key_verification_transition_start_at,
     :rate_limit_mode,
     :anonymous_rate_limit_behavior,
     :authenticated_rate_limit_behavior,
@@ -131,7 +137,7 @@ class Api::Settings
     end
   end
 
-  def set_require_https_transition_start_at_on_publish
+  def set_transition_starts_on_publish
     if(self.require_https =~ /^transition_/)
       if(self.require_https_transition_start_at.blank?)
         self.require_https_transition_start_at = Time.now
@@ -139,6 +145,16 @@ class Api::Settings
     else
       if(self.require_https_transition_start_at.present?)
         self.require_https_transition_start_at = nil
+      end
+    end
+
+    if(self.api_key_verification_level =~ /^transition_/)
+      if(self.api_key_verification_transition_start_at.blank?)
+        self.api_key_verification_transition_start_at = Time.now
+      end
+    else
+      if(self.api_key_verification_transition_start_at.present?)
+        self.api_key_verification_transition_start_at = nil
       end
     end
   end

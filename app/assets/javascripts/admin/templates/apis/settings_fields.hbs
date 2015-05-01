@@ -16,6 +16,15 @@
   optionValuePath='content.id'
   optionLabelPath='content.name'
   inputConfig='class:span12'}}
+{{input apiKeyVerificationLevel as='select'
+  value='apiKeyVerificationLevel'
+  class='row-fluid'
+  labelTranslation='admin.api.settings.api_key_verification_level'
+  collection='apiKeyVerificationLevelOptions'
+  optionValuePath='content.id'
+  optionLabelPath='content.name'
+  inputConfig='class:span12'}}
+
 {{#view Admin.SelectizeView valueBinding='requiredRolesString' contentBinding='roleOptions' optionValuePath='id' optionLabelPath='id'}}
   {{input requiredRolesString
     class='row-fluid'

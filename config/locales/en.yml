@@ -33,6 +33,7 @@ en:
         http_basic_auth: Set Headers
         require_https: HTTPS Requirements
         disable_api_key: API Key Checks
+        api_key_verification_level: API Key Verification Requirements
         allowed_ips: Restrict Access to IPs
         allowed_referers: Restrict Access to HTTP Referers
         rate_limit_mode: Rate Limit
@@ -120,6 +121,12 @@ en:
           inherit: Inherit (default - required)
           required: Required - API keys are mandatory
           disabled: Disabled - API keys are optional
+        api_key_verification_level: API Key Verification Requirements
+        api_key_verification_level_options:
+          inherit: Inherit (default - none)
+          none: None - API keys can be used without any verification
+          transition_email: E-mail verification transition - Existing API keys will continue to work, new API keys will only work if verified
+          required_email: E-mail verification required - Existing API keys will break, only new API keys will work if verified
       sub_settings:
         legend: Sub-URL Request Settings
         note: Change settings for specific sub-URLs within this API.
