@@ -260,6 +260,7 @@ describe Api::V1::UsersController do
         "created_at",
         "creator",
         "email",
+        "email_verified",
         "enabled",
         "first_name",
         "id",
