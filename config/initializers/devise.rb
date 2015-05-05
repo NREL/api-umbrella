@@ -247,6 +247,9 @@ Devise.setup do |config|
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_id],
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_secret],
         :scope => "email"
+    when "cas"
+      config.omniauth :cas,
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:cas][:options]
     when "github"
       config.omniauth :github,
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:github][:client_id],
@@ -257,6 +260,9 @@ Devise.setup do |config|
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:google][:client_id],
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:google][:client_secret],
         :scope => "userinfo.email"
+    when "ldap"
+      config.omniauth :ldap,
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options]
     when "max.gov"
       config.omniauth :cas,
         :host => "login.max.gov",
