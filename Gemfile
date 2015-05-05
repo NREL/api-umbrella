@@ -65,6 +65,7 @@ gem "omniauth-facebook", "~> 2.0.0"
 # https://github.com/intridea/omniauth-github/pull/41
 gem "omniauth-github", :git => "https://github.com/riking/omniauth-github.git", :branch => "all_emails"
 gem "omniauth-google-oauth2", "~> 0.2.2"
+gem "omniauth-ldap", "~> 1.0.4"
 gem "omniauth-myusa", :git => "https://github.com/GSA-OCSIT/omniauth-myusa.git"
 gem "omniauth-persona", "~> 0.0.1"
 gem "omniauth-twitter", "~> 1.0.1"
