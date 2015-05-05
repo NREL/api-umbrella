@@ -65,6 +65,37 @@ describe('formatted error responses', function() {
         done();
       });
     });
+
+    it('gracefully handles query param encoding, format[]=xml', function(done) {
+      request.get('http://localhost:9333/hello?format[]=xml', function(error, response, body) {
+        body.should.include('<code>API_KEY_MISSING</code>');
+        done();
+      });
+    });
+
+    it('gracefully handles query param encoding, format=xml&format=csv', function(done) {
+      request.get('http://localhost:9333/hello?format=xml&format=csv', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.error.code.should.eql('API_KEY_MISSING');
+        done();
+      });
+    });
+
+    it('gracefully handles query params encoding, format[key]=value', function(done) {
+      request.get('http://localhost:9333/hello?format[key]=value', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.error.code.should.eql('API_KEY_MISSING');
+        done();
+      });
+    });
+
+    it('gracefully handles query params encoding, format[]=', function(done) {
+      request.get('http://localhost:9333/hello?format[]=', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.error.code.should.eql('API_KEY_MISSING');
+        done();
+      });
+    });
   });
 
   describe('data variables', function() {

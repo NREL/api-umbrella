@@ -221,4 +221,219 @@ describe('api key validation', function() {
       });
     });
   });
+
+  describe('api key verification levels', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/info/api-key-verification',
+              backend_prefix: '/info/api-key-verification',
+            }
+          ],
+          settings: {},
+          sub_settings: [
+            {
+              http_method: 'any',
+              regex: '^/info/api-key-verification/none',
+              settings: {
+                api_key_verification_level: 'none',
+              },
+            },
+            {
+              http_method: 'any',
+              regex: '^/info/api-key-verification/transition_email',
+              settings: {
+                api_key_verification_level: 'transition_email',
+                api_key_verification_transition_start_at: new Date(2013, 1, 1, 1, 27, 0),
+              },
+            },
+            {
+              http_method: 'any',
+              regex: '^/info/api-key-verification/required_email',
+              settings: {
+                api_key_verification_level: 'required_email',
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    describe('default (none)', function() {
+      describe('unknown verification api user', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { email_verified: null }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/');
+      });
+
+      describe('unverified api user', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { email_verified: false }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/');
+      });
+
+      describe('verified api user', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { email_verified: true }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/');
+      });
+    });
+
+    describe('none', function() {
+      describe('unknown verification api user', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { email_verified: null }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/none');
+      });
+
+      describe('unverified api user', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { email_verified: false }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/none');
+      });
+
+      describe('verified api user', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { email_verified: true }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/none');
+      });
+    });
+
+    describe('transition_email', function() {
+      describe('unknown verification api user created before the transition start', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { created_at: new Date(2013, 1, 1, 1, 26, 59), email_verified: null }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/transition_email');
+      });
+
+      describe('unverified api user created before the transition start', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { created_at: new Date(2013, 1, 1, 1, 26, 59), email_verified: false }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/transition_email');
+      });
+
+      describe('unknown verification api user created on or after the transition start', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { created_at: new Date(2013, 1, 1, 1, 27, 0), email_verified: null }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperBlocked('/info/api-key-verification/transition_email', 403, 'API_KEY_UNVERIFIED');
+      });
+
+      describe('unverified api user created on or after the transition start', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { created_at: new Date(2013, 1, 1, 1, 27, 0), email_verified: false }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperBlocked('/info/api-key-verification/transition_email', 403, 'API_KEY_UNVERIFIED');
+      });
+
+      describe('verified api user created before the transition start', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { created_at: new Date(2013, 1, 1, 1, 26, 59), email_verified: true }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/transition_email');
+      });
+
+      describe('verified api user created on or after the transition start', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { created_at: new Date(2013, 1, 1, 1, 27, 0), email_verified: true }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/transition_email');
+      });
+    });
+
+    describe('required_email', function() {
+      describe('unknown verification api user', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { email_verified: null }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperBlocked('/info/api-key-verification/required_email', 403, 'API_KEY_UNVERIFIED');
+      });
+
+      describe('unverified api user', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { email_verified: false }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperBlocked('/info/api-key-verification/required_email', 403, 'API_KEY_UNVERIFIED');
+      });
+
+      describe('verified api user', function() {
+        beforeEach(function createApiUser(done) {
+          Factory.create('api_user', { email_verified: true }, function(user) {
+            this.apiKey = user.api_key;
+            done();
+          }.bind(this));
+        });
+
+        shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/required_email');
+      });
+    });
+  });
 });
