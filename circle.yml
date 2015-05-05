@@ -4,4 +4,4 @@ dependencies:
 test:
   override:
     - npm test
-    - ./node_modules/.bin/grunt shell:coveralls
+    - ./node_modules/.bin/grunt shell:coveralls --force
