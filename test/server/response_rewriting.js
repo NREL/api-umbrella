@@ -200,6 +200,22 @@ describe('response rewriting', function() {
           done();
         });
       });
+      it('does not override the GET params', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('/somewhere?param=example.com'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('/somewhere?param=example.com');
+          done();
+        });
+      });
+      it('only replaces the whole domain', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('http://eeexample.com/hello'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('http://eeexample.com/hello');
+          done();
+        });
+      });
     });
   });
 });
