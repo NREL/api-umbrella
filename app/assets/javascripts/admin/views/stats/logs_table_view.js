@@ -113,6 +113,12 @@ Admin.LogsTableView = Ember.View.extend({
           render: Admin.DataTablesHelpers.renderEscaped,
         },
         {
+          data: 'gatekeeper_denied_code',
+          title: 'Reason Denied',
+          defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
+        },
+        {
           data: 'response_time',
           title: 'Response Time',
           defaultContent: '-',

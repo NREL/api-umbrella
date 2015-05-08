@@ -69,7 +69,7 @@ class Admin::StatsController < Admin::BaseController
         response.headers["Last-Modified"] = Time.now.httpdate
 
         scroll_id = @result.raw_result["_scroll_id"]
-        headers = ["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Response Time", "Content Type", "Accept Encoding", "User Agent"]
+        headers = ["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Reason Denied", "Response Time", "Content Type", "Accept Encoding", "User Agent"]
 
         send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.strftime("%b %-e %Y")}).#{params[:format]}")
         self.response_body = CsvStreamer.new(@search.client, scroll_id, headers) do |row|
@@ -84,6 +84,7 @@ class Admin::StatsController < Admin::BaseController
             row["request_ip_region"],
             row["request_ip_city"],
             row["response_status"],
+            row["gatekeeper_denied_code"],
             row["response_time"],
             row["response_content_type"],
             row["request_accept_encoding"],
