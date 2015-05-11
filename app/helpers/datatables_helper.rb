@@ -2,13 +2,12 @@
 module DatatablesHelper
   def datatables_sort
     sort = []
-
-    if(params[:order].present?)
-      params[:order].each do |i, order|
-        column_index = order[:column]
-        column = params[:columns][column_index]
-        column_name = column[:data]
-        sort << { column_name => order[:dir] }
+    columns = self.datatables_columns
+    param_index_array(:order).each do |order|
+      column_index = order[:column].to_i
+      if columns.length > column_index
+        field = columns[column_index][:field]
+        sort << { field => order[:dir] }
       end
     end
 
@@ -31,6 +30,8 @@ module DatatablesHelper
           as_array << params[key][idx.to_s]
         end
       }
+    elsif params.has_key?(key)
+      as_array = [params[key]]
     end
     as_array
   end
@@ -48,8 +49,7 @@ module DatatablesHelper
   # Set download headers and join arrays
   def csv_output(results, columns)
     requested_fields = columns.map{|c| c[:field]}
-    send_file_headers!(disposition: "attachment")
-    self.response_body = CSV.generate { |csv|
+    CSV.generate { |csv|
       csv << columns.map{|c| c[:name]}
       results.each { |result|
         result = requested_fields.map{|field| result[field]}
@@ -68,7 +68,10 @@ module DatatablesHelper
       hash.select{|k,v| requested_fields.include? k}
     }
     respond_to do |format|
-      format.csv { self.csv_output(results, columns) }
+      format.csv {
+        send_file_headers!(disposition: "attachment")
+        self.response_body = self.csv_output(results, columns)
+      }
       format.json
     end
   end
