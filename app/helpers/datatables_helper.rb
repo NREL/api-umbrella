@@ -60,7 +60,7 @@ module DatatablesHelper
   end
 
   # Include only the requested columns
-  def respond_to_datatables(results)
+  def respond_to_datatables(results, csv_filename)
     columns = self.datatables_columns
     requested_fields = columns.map{|c| c[:field]}
     results = results.map{|result|
@@ -69,7 +69,7 @@ module DatatablesHelper
     }
     respond_to do |format|
       format.csv {
-        send_file_headers!(disposition: "attachment")
+        send_file_headers!(disposition: "attachment", filename: csv_filename + ".csv")
         self.response_body = self.csv_output(results, columns)
       }
       format.json
