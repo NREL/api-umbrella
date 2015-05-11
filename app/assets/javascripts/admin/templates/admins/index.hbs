@@ -7,3 +7,7 @@
 <div id="results_table searchable-table-with-add">
   {{view Admin.AdminsTableView dataBinding='model.logs' queryBinding='query'}}
 </div>
+
+<div class="results-table-actions">
+  <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
+</div>
