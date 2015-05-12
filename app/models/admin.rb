@@ -123,7 +123,7 @@ class Admin
     @disallowed_roles
   end
 
-  def serializable_hash(options=nil)
+  def serializable_hash(options = nil)
     options ||= {}
     options[:force_except] = options.fetch(:force_except, []) + [:authentication_token]
     hash = super(options)

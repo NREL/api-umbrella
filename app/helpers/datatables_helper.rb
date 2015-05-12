@@ -25,12 +25,12 @@ module DatatablesHelper
       as_array = params[key]
     elsif params[key].is_a?(Hash)
       upper_bound = params[key].length - 1
-      (0..upper_bound).each { |idx|
-        if params[key].has_key?(idx.to_s)
+      (0..upper_bound).each do |idx|
+        if params[key].key?(idx.to_s)
           as_array << params[key][idx.to_s]
         end
-      }
-    elsif params.has_key?(key)
+      end
+    elsif params.key?(key)
       as_array = [params[key]]
     end
     as_array
@@ -39,41 +39,41 @@ module DatatablesHelper
   # Parse the column request from a datatables query
   def datatables_columns
     columns = self.param_index_array(:columns)
-    columns = columns.select{ |col| col[:data] }
-    columns.map { |col| {
-      name: (col[:name] || '-').to_s,
-      field: col[:data].to_s
-    }}
+    columns = columns.select { |col| col[:data] }
+    columns.map do |col|
+      { :name => (col[:name] || '-').to_s,
+        :field => col[:data].to_s
+      }
+    end
   end
 
   # Set download headers and join arrays
   def csv_output(results, columns)
-    requested_fields = columns.map{|c| c[:field]}
-    CSV.generate { |csv|
-      csv << columns.map{|c| c[:name]}
-      results.each { |result|
-        result = requested_fields.map{|field| result[field]}
-        result = result.map{|cell| cell.is_a?(Array) ? cell.join(",") : cell }
+    requested_fields = columns.map { |c| c[:field] }
+    CSV.generate do |csv|
+      csv << columns.map { |c| c[:name] }
+      results.each do |result|
+        result = requested_fields.map { |field| result[field] }
+        result = result.map { |cell| cell.is_a?(Array) ? cell.join(",") : cell }
         csv << result
-      }
-    }
+      end
+    end
   end
 
   # Include only the requested columns
   def respond_to_datatables(results, csv_filename)
     columns = self.datatables_columns
-    requested_fields = columns.map{|c| c[:field]}
-    results = results.map{|result|
+    requested_fields = columns.map { |c| c[:field] }
+    results = results.map do |result|
       hash = result.serializable_hash
-      hash.select{|k,v| requested_fields.include? k}
-    }
+      hash.select { |k, v| requested_fields.include? k }
+    end
     respond_to do |format|
-      format.csv {
-        send_file_headers!(disposition: "attachment", filename: csv_filename + ".csv")
+      format.csv do
+        send_file_headers!(:disposition => "attachment", :filename => csv_filename + ".csv")
         self.response_body = self.csv_output(results, columns)
-      }
+      end
       format.json
     end
   end
-
 end
