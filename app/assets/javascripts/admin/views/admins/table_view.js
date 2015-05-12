@@ -61,7 +61,7 @@ Admin.AdminsTableView = Ember.View.extend({
           render: Admin.DataTablesHelpers.renderTime,
         }
       ]
-    })
+    });
     dataTable.on('draw.dt', function() {
       this.get('controller').send('paramsChange', dataTable.ajax.params());
     }.bind(this));
