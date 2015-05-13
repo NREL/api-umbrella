@@ -121,6 +121,10 @@ mongodb:
       fork: false
     net:
       port: 14001
+mora:
+  host: 127.0.0.1
+  port: 8181
+  timeout: 5
 elasticsearch:
   hosts:
     - "http://127.0.0.1:14002"

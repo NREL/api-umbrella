@@ -1,16 +1,16 @@
 local _M = {}
+ngx.log(ngx.ERR, "HELLO LOAD API USERS")
 
 local inspect = require "inspect"
-local bson = require "resty-mongol.bson"
+local cjson = require "cjson"
+local http = require "resty.http"
 local lock = require "resty.lock"
-local mongol = require "resty-mongol"
 local std_table = require "std.table"
 local types = require "pl.types"
 local utils = require "utils"
 
 local cache_computed_settings = utils.cache_computed_settings
 local clone_select = std_table.clone_select
-local get_utc_date = bson.get_utc_date
 local invert = std_table.invert
 local is_empty = types.is_empty
 local set_packed = utils.set_packed
@@ -21,10 +21,48 @@ local lock = lock:new("my_locks", {
 
 local api_users = ngx.shared.api_users
 
-local delay = 0.01 -- in seconds
+local delay = 1 -- in seconds
 local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
+
+local function handle_user_result(result)
+  local user = clone_select(result, {
+    "disabled_at",
+    "throttle_by_ip",
+  })
+
+  -- Ensure IDs get stored as strings, even if Mongo ObjectIds are in use.
+  user["id"] = tostring(result["_id"])
+
+  -- Invert the array of roles into a hashy table for more optimized
+  -- lookups (so we can just check if the key exists, rather than
+  -- looping over each value).
+  if result["roles"] then
+    user["roles"] = invert(result["roles"])
+  end
+
+  if user["throttle_by_ip"] == false then
+    user["throttle_by_ip"] = nil
+  end
+
+  if result["settings"] then
+    user["settings"] = clone_select(result["settings"], {
+      "allowed_ips",
+      "allowed_referers",
+      "rate_limit_mode",
+      "rate_limits",
+    })
+
+    if is_empty(user["settings"]) then
+      user["settings"] = nil
+    else
+      cache_computed_settings(user["settings"])
+    end
+  end
+
+  set_packed(api_users, result["api_key"], user)
+end
 
 local function do_check()
   local elapsed, err = lock:lock("load_api_users")
@@ -32,77 +70,50 @@ local function do_check()
     return
   end
 
-  local conn = mongol()
-  conn:set_timeout(1000)
-
-  local ok, err = conn:connect(config["mongodb"]["host"], config["mongodb"]["port"])
-  if not ok then
-    ngx.log(ngx.ERR, "connect failed: " .. inspect(err))
-
-    local ok, err = lock:unlock()
-    if not ok then
-      ngx.log(ngx.ERR, "failed to unlock: ", err)
-    end
-
-    return false, "failed to connect to mongodb"
-  end
-
-  local db = conn:new_db_handle(config["mongodb"]["database"])
-  local col = db:get_col("api_users")
-
   local last_fetched_time = api_users:get("last_updated_at") or 0
 
-  local r = col:find({
-    updated_at = {
-      ["$gt"] = get_utc_date(last_fetched_time),
-    },
-  })
-  r:sort({ updated_at = -1 })
-  for i , v in r:pairs() do
-    if i == 1 then
-      api_users:set("last_updated_at", v["updated_at"])
-    end
-
-    local user = clone_select(v, {
-      "disabled_at",
-      "throttle_by_ip",
+  local skip = 0
+  local page_size = 250
+  local err
+  repeat
+    local httpc = http.new()
+    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/api_users", {
+      query = {
+        extended_json = "true",
+        limit = page_size,
+        skip = skip,
+        query = cjson.encode({
+          updated_at = {
+            ["$gt"] = {
+              ["$date"] = last_fetched_time,
+            },
+          },
+        }),
+      },
     })
 
-    -- Ensure IDs get stored as strings, even if Mongo ObjectIds are in use.
-    user["id"] = tostring(v["_id"])
+    local results = nil
+    if not err and res.body then
+      local response = cjson.decode(res.body)
+      if response and response["data"] then
+        results = response["data"]
+        ngx.log(ngx.ERR, "RESULTS", inspect(results))
+        for index, result in pairs(results) do
+          if index == 1 then
+            api_users:set("last_updated_at", result["updated_at"]["$date"])
+          end
 
-    -- Invert the array of roles into a hashy table for more optimized
-    -- lookups (so we can just check if the key exists, rather than
-    -- looping over each value).
-    if v["roles"] then
-      user["roles"] = invert(v["roles"])
-    end
-
-    if user["throttle_by_ip"] == false then
-      user["throttle_by_ip"] = nil
-    end
-
-    if v["settings"] then
-      user["settings"] = clone_select(v["settings"], {
-        "allowed_ips",
-        "allowed_referers",
-        "rate_limit_mode",
-        "rate_limits",
-      })
-
-      if is_empty(user["settings"]) then
-        user["settings"] = nil
-      else
-        cache_computed_settings(user["settings"])
+          handle_user_result(result)
+        end
       end
     end
 
-    set_packed(api_users, v["api_key"], user)
+    skip = skip + page_size
+  until is_empty(results)
+
+  if not err then
+    api_users:set("last_fetched_at", ngx.now())
   end
-
-  api_users:set("last_fetched_at", ngx.now())
-
-  conn:set_keepalive(10000, 5)
 
   local ok, err = lock:unlock()
   if not ok then

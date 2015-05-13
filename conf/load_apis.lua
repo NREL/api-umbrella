@@ -1,10 +1,10 @@
 local _M = {}
 
 local api_store = require "api_store"
-local bson = require "resty-mongol.bson"
+local cjson = require "cjson"
+local http = require "resty.http"
 local inspect = require "inspect"
 local lock = require "resty.lock"
-local mongol = require "resty-mongol"
 local plutils = require "pl.utils"
 local tablex = require "pl.tablex"
 local utils = require "utils"
@@ -13,7 +13,6 @@ local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings
 local deepcopy = tablex.deepcopy
 local escape = plutils.escape
-local get_utc_date = bson.get_utc_date
 local get_packed = utils.set_packed
 local set_packed = utils.set_packed
 local size = tablex.size
@@ -23,7 +22,7 @@ local lock = lock:new("my_locks", {
   ["timeout"] = 0,
 })
 
-local delay = 0.05  -- in seconds
+local delay = 1  -- in seconds
 local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
@@ -138,49 +137,43 @@ local function do_check()
 
   api_store.update_worker_cache_if_necessary()
 
-  local conn = mongol()
-  conn:set_timeout(1000)
+  local last_fetched_version = ngx.shared.apis:get("version") or 0
 
-  local ok, err = conn:connect(config["mongodb"]["host"], config["mongodb"]["port"])
-  if not ok then
-    ngx.log(ngx.ERR, "connect failed: " .. inspect(err))
+  local httpc = http.new()
+  local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/config_versions", {
+    query = {
+      extended_json = "true",
+      limit = 1,
+      sort_by = "-version",
+      query = cjson.encode({
+        version = {
+          ["$gt"] = {
+            ["$date"] = last_fetched_version,
+          },
+        },
+      }),
+    },
+  })
 
-    local ok, err = lock:unlock()
-    if not ok then
-      ngx.log(ngx.ERR, "failed to unlock: ", err)
+  local results = nil
+  if not err and res.body then
+    local response = cjson.decode(res.body)
+    if response and response["data"] and response["data"] and response["data"][1] then
+      result = response["data"][1]
+      if result and result["config"] and result["config"]["apis"] then
+        local apis = config["internal_apis"] or {}
+        append_array(apis, config["apis"] or {})
+        append_array(apis, result["config"]["apis"])
+
+        set_apis(apis)
+        ngx.shared.apis:set("version", result["version"]["$date"])
+      end
     end
 
-    return false, "failed to connect to mongodb"
+    if not err then
+      ngx.shared.apis:set("last_fetched_at", ngx.now())
+    end
   end
-
-  local db = conn:new_db_handle(config["mongodb"]["database"])
-  local col = db:get_col("config_versions")
-
-  local last_fetched_version = ngx.shared.apis:get("version") or 0
-  local query = {
-    ["$query"] = {
-      version = {
-        ["$gt"] = get_utc_date(last_fetched_version),
-      },
-    },
-    ["$orderby"] = {
-      version = -1
-    },
-  }
-  local v = col:find_one(query)
-  if v and v["config"] and v["config"]["apis"] then
-    local apis = config["internal_apis"] or {}
-    append_array(apis, config["apis"] or {})
-    append_array(apis, v["config"]["apis"])
-
-    ngx.log(ngx.ERR, inspect(v["config"]["apis"]))
-    set_apis(apis)
-    ngx.shared.apis:set("version", ngx.now())
-  end
-
-  ngx.shared.apis:set("last_fetched_at", ngx.now())
-
-  conn:set_keepalive(10000, 5)
 
   local ok, err = lock:unlock()
   if not ok then

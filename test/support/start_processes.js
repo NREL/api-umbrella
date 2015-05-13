@@ -4,6 +4,7 @@ require('../test_helper');
 
 var apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
+    execFile = require('child_process').execFile,
     fs = require('fs'),
     fsExtra = require('fs-extra'),
     mkdirp = require('mkdirp'),
@@ -20,9 +21,58 @@ before(function clearTestEnvDns() {
   fs.writeFileSync(configPath, '');
 });
 
+// Trigger the mongo-orchestration setup to configure our replicaset.
+//
+// Note that this is a bit funny, since mongo-orchestration doesn't actually
+// get started until we startup api-umbrella and all of the other server
+// processes in the next apiUmbrellaStart method (we start it in there mainly
+// since that's the easiest place to start a process that should start/stop
+// with everything else as part of the test run).
+before(function mongoOrchestrationSetup() {
+  // Since we're doing this setup asyncronsouly so we can continue onto the
+  // next before apiUmbrellaStart method call, setup our own timeout to bail on
+  // testing if this doesn't respond as expected.
+  var timeout = setTimeout(function() {
+    console.error('Unable to establish connection to mongo-orchestration');
+    return process.exit(1);
+  }.bind(this), 20000);
+  timeout.unref();
+
+  // First wait for mongo-orchestration to get started.
+  var connected = false;
+  var attemptDelay = 250;
+  async.until(function() {
+    return connected;
+  }, function(untilCallback) {
+    request({ url: 'http://127.0.0.1:13089/', timeout: 1500 }, function(error) {
+      if(!error) {
+        connected = true;
+        untilCallback();
+      } else {
+        setTimeout(untilCallback, attemptDelay);
+      }
+    });
+  }, function() {
+    clearTimeout(timeout);
+
+    // Once started, send our config file to configure the replica set for
+    // testing.
+    request.put({
+      url: 'http://127.0.0.1:13089/v1/replica_sets/test-cluster',
+      body: fs.readFileSync(path.resolve(__dirname, '../config/mongo-orchestration.json')).toString(),
+      timeout: 120000,
+    }, function(error) {
+      if(error && !global.apiUmbrellaStopping) {
+        console.error('mongo-orchestration failed: ', error);
+        return process.exit(1);
+      }
+    });
+  });
+});
+
 global.nginxPidFile = path.resolve(__dirname, '../tmp/nginx.pid');
-before(function nginxStart(done) {
-  this.timeout(30000);
+before(function apiUmbrellaStart(done) {
+  this.timeout(60000);
 
   process.stdout.write('Waiting for api-umbrella to start...');
   var startWaitLog = setInterval(function() {

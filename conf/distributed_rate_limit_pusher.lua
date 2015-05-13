@@ -1,83 +1,74 @@
 local _M = {}
 
-local bson = require "resty-mongol.bson"
+local cjson = require "cjson"
 local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
+local http = require "resty.http"
 local inspect = require "inspect"
-local mongol = require "resty-mongol"
 local types = require "pl.types"
 local utils = require "utils"
 
-local get_utc_date = bson.get_utc_date
 local is_empty = types.is_empty
 
-local delay = 0.05  -- in seconds
+local delay = 1  -- in seconds
 local new_timer = ngx.timer.at
 
 local indexes_created = false
 
-local function create_indexes(db)
+local function create_indexes()
   if not indexes_created then
-    local col = db:get_col("system.indexes")
-    local docs = {
-      {
-        ns = "api_umbrella.rate_limits",
+    local httpc = http.new()
+    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/system.indexes", {
+      method = "POST",
+      headers = {
+        ["Content-Type"] = "application/json",
+      },
+      query = {
+        extended_json = "true",
+      },
+
+      body = cjson.encode({
+        ns = config["mongodb"]["database"] .. ".rate_limits",
         key = {
           updated_at = -1,
         },
         name = "updated_at",
         background = true,
+      })
+    })
+
+    local httpc = http.new()
+    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/system.indexes", {
+      method = "POST",
+      headers = {
+        ["Content-Type"] = "application/json",
       },
-      {
-        ns = "api_umbrella.rate_limits",
+      query = {
+        extended_json = "true",
+      },
+      body = cjson.encode({
+        ns = config["mongodb"]["database"] .. ".rate_limits",
         key = {
           expire_at = 1,
         },
         name = "expire_at",
         expireAfterSeconds = 0,
         background = true,
-      },
-    }
+      })
+    })
 
-    local continue_on_error = 1
-    local safe = 1
-    result, err = col:insert(docs, continue_on_error, safe)
     indexes_created = true
   end
 end
 
 local function do_check()
+  create_indexes()
+
   local data = distributed_rate_limit_queue.fetch()
   if is_empty(data) then
     return
   end
 
-  local conn = mongol()
-  conn:set_timeout(1000)
-
-  local ok, err = conn:connect(config["mongodb"]["host"], config["mongodb"]["port"])
-  if not ok then
-    ngx.log(ngx.ERR, "connect failed: " .. inspect(err))
-
-    local ok, err = lock:unlock()
-    if not ok then
-      ngx.log(ngx.ERR, "failed to unlock: ", err)
-    end
-
-    return false, "failed to connect to mongodb"
-  end
-
-  local db = conn:new_db_handle(config["mongodb"]["database"])
-  create_indexes(db)
-
-  local col = db:get_col("rate_limits")
-
   for key, expire_at in pairs(data) do
-    local selector = {
-      _id = {
-        key = key,
-        node = MASTER_NODE_ID,
-      },
-    }
     local update = {
       ["$currentDate"] = {
         updated_at = true,
@@ -89,15 +80,22 @@ local function do_check()
 
     if expire_at and expire_at > 0 then
       update["$setOnInsert"] = {
-        expire_at = get_utc_date(expire_at),
+        expire_at = ngx.now() * 1000 + 60000,
       }
     end
 
-    local upsert = 1
-    col:update(selector, update, upsert)
+    local httpc = http.new()
+    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/rate_limits/" .. key, {
+      method = "PUT",
+      headers = {
+        ["Content-Type"] = "application/json",
+      },
+      query = {
+        extended_json = "true",
+      },
+      body = cjson.encode(update),
+    })
   end
-
-  conn:set_keepalive(10000, 5)
 end
 
 local function check(premature)

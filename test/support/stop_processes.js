@@ -1,6 +1,8 @@
 'use strict';
 
 function killApiUmbrellaServer(callback) {
+  global.apiUmbrellaStopping = true;
+
   if(global.apiUmbrellaServer) {
     if(callback) {
       global.apiUmbrellaServer.on('close', function() {

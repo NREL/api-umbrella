@@ -15,7 +15,7 @@ local lock = lock:new("my_locks", {
   ["timeout"] = 0,
 })
 
-local delay = 0.05  -- in seconds
+local delay = 1  -- in seconds
 local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
@@ -36,7 +36,7 @@ local function setup_backends()
     local servers = {}
     if api["servers"] then
       for _, server in ipairs(api["servers"]) do
-        ngx.log(ngx.ERR, "SERVER: " .. inspect(server));
+        -- ngx.log(ngx.ERR, "SERVER: " .. inspect(server));
         local ips = nil
         local m, err = ngx.re.match(server["host"], "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")
         if m then

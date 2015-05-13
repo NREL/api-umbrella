@@ -40,6 +40,8 @@ local function increment_limit(current_time_key, duration)
     ngx.log(ngx.ERR, "stats incr err" .. err)
     return
   end
+
+  distributed_rate_limit_queue.push(current_time_key)
 end
 
 local function get_remaining_for_limit(settings, user, limit, current_time)

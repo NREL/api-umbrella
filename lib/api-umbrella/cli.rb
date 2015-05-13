@@ -267,6 +267,7 @@ module ApiUmbrella
       templates += Dir.glob(File.join(template_root, "perp/.boot/**/*"))
       templates.each do |template_path|
         next if(File.directory?(template_path))
+        next if(@config["app_env"] != "test" && template_path.include?("test-env"))
 
         install_path = template_path.gsub(template_root, "")
         install_path.chomp!(".mustache")
@@ -312,11 +313,12 @@ module ApiUmbrella
         "/opt/api-umbrella/embedded/sbin",
         "/opt/api-umbrella/embedded/bin",
         "/opt/api-umbrella/embedded/jre/bin",
+        "/vagrant/mora",
         "/opt/trafficserver/bin",
       ].join(":") + ":#{ENV["PATH"]}"
 
       perp_base = File.join(config["etc_dir"], "perp")
-      detach = if(@background) then " -d" else nil end
+      detach = if(@background) then "-d" else nil end
 
       commands = [
         "runtool",

@@ -13,7 +13,7 @@ local lock = lock:new("my_locks", {
   ["timeout"] = 0,
 })
 
-local delay = 0.05  -- in seconds
+local delay = 1  -- in seconds
 local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
