@@ -217,7 +217,7 @@ describe Admin::StatsController do
       response.headers["Content-Disposition"].should include("attachment; filename=\"api_logs (#{Time.now.strftime("%b %-e %Y")}).csv\"")
 
       lines = response.body.split("\n")
-      lines[0].should eql("Time,Method,Host,URL,User,IP Address,Country,State,City,Status,Response Time,Content Type,Accept Encoding,User Agent")
+      lines[0].should eql("Time,Method,Host,URL,User,IP Address,Country,State,City,Status,Reason Denied,Response Time,Content Type,Accept Encoding,User Agent")
       lines.length.should eql(1006)
     end
 
