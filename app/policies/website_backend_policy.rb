@@ -32,6 +32,10 @@ class WebsiteBackendPolicy < ApplicationPolicy
     show?
   end
 
+  def destroy?
+    show?
+  end
+
   def publish?
     can?("backend_publish")
   end
