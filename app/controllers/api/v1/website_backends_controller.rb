@@ -43,6 +43,13 @@ class Api::V1::WebsiteBackendsController < Api::V1::BaseController
     respond_with(:api_v1, @website_backend, :root => "website_backend")
   end
 
+  def destroy
+    @website_backend = WebsiteBackend.find(params[:id])
+    authorize(@website_backend)
+    @website_backend.destroy
+    respond_with(:api_v1, @website_backend, :root => "website_backend")
+  end
+
   private
 
   def save!
