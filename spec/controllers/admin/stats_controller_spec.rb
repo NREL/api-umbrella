@@ -263,6 +263,28 @@ describe Admin::StatsController do
         data["recordsTotal"].should eql(1)
         data["data"][0]["request_user_agent"].should eql("api key match test")
       end
+
+      it "operates properly with null operators and a null value" do
+        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_user_agent => "gatekeeper denied code null test")
+        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :gatekeeper_denied_code => "api_key_missing", :request_user_agent => "gatekeeper denied code not null test")
+        LogItem.gateway.refresh_index!
+
+        get :logs, {
+          "format" => "json",
+          "tz" => "America/Denver",
+          "start_at" => "2015-01-13",
+          "end_at" => "2015-01-18",
+          "interval" => "day",
+          "start" => "0",
+          "length" => "10",
+          "query" => '{"condition":"AND","rules":[{"id":"gatekeeper_denied_code","field":"gatekeeper_denied_code","type":"string","input":"select","operator":"is_not_null","value":null}]}'
+        }
+
+        response.status.should eql(200)
+        data = MultiJson.load(response.body)
+        data["recordsTotal"].should eql(1)
+        data["data"][0]["request_user_agent"].should eql("gatekeeper denied code not null test")
+      end
     end
   end
 end
