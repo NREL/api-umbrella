@@ -8,6 +8,7 @@ class LogItem
 
   attribute :api_key, String
   attribute :backend_response_time, Integer
+  attribute :gatekeeper_denied_code, String
   attribute :internal_gatekeeper_time, Float
   attribute :internal_response_time, Float
   attribute :proxy_overhead, Integer

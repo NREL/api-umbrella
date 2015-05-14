@@ -115,7 +115,7 @@ class LogSearch
       query["rules"].each do |rule|
         filter = {}
 
-        unless(CASE_SENSITIVE_FIELDS.include?(rule["field"]) && rule["value"].kind_of?(String))
+        if(!CASE_SENSITIVE_FIELDS.include?(rule["field"]) && rule["value"].kind_of?(String))
           rule["value"].downcase!
         end
 

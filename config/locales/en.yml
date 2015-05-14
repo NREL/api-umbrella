@@ -218,6 +218,11 @@ en:
           description_markdown: |-
             The HTTP status code returned for the response.
             *Example:* `200`, `403`, `429`, etc.
+        gatekeeper_denied_code:
+          label: 'Response: API Umbrella Denied Code'
+          description_markdown: |-
+            If API Umbrella is responsible for blocking the request, this code value describes the reason for the block.
+            *Example:* `api_key_missing`, `over_rate_limit`, etc.
         response_time:
           label: 'Response: Load Time'
           description_markdown: |-
