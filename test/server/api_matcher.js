@@ -68,17 +68,6 @@ describe('ApiUmbrellaGatekeper', function() {
             ]
           },
           {
-            'frontend_host': 'fallback.example.com:80',
-            'backend_host': 'example.com',
-            '_id': 'fallback-no-port',
-            'url_matches': [
-              {
-                'frontend_prefix': '/info/matching/',
-                'backend_prefix': '/info/matching/'
-              }
-            ]
-          },
-          {
             'frontend_host': '*',
             'backend_host': 'example.com',
             '_id': 'wildcard',
