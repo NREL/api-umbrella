@@ -15,8 +15,6 @@ local split = plutils.split
 local strip = stringx.strip
 
 local function pass_api_key(user, settings)
-  ngx.req.set_header("X-Api-Umbrella-Backend-Id", ngx.var.api_umbrella_backend_id)
-
   -- DEPRECATED: We don't want to pass api keys to backends for security
   -- reasons. Instead, we want to only pass the X-Api-User-Id for identifying
   -- the user. But for legacy purposes, we still support passing api keys to

@@ -21,7 +21,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/matching/',
                 'backend_prefix': '/info/matching/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'localhost-non-matching-port' },
+              ],
+            },
           },
           {
             'frontend_host': 'localhost:9080',
@@ -32,7 +37,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/matching/',
                 'backend_prefix': '/info/matching/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'localhost-with-port' },
+              ],
+            },
           },
           {
             'frontend_host': 'localhost:80',
@@ -43,7 +53,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/matching/',
                 'backend_prefix': '/info/matching/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'localhost-default-port' },
+              ],
+            },
           },
           {
             'frontend_host': 'localhost:443',
@@ -54,7 +69,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/matching/',
                 'backend_prefix': '/info/matching/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'localhost-ssl-port' },
+              ],
+            },
           },
           {
             'frontend_host': 'fallback.example.com',
@@ -65,7 +85,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/matching/',
                 'backend_prefix': '/info/matching/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'fallback-no-port' },
+              ],
+            },
           },
           {
             'frontend_host': '*',
@@ -76,7 +101,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/wildcard/',
                 'backend_prefix': '/info/wildcard/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'wildcard' },
+              ],
+            },
           },
           {
             'frontend_host': 'wildcard-coexist.example.com',
@@ -87,7 +117,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/wildcard-coexist/',
                 'backend_prefix': '/info/wildcard-coexist/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'host-over-wildcard' },
+              ],
+            },
           },
           {
             'frontend_host': 'default-host-config.example.com',
@@ -98,7 +133,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/default-host-config/',
                 'backend_prefix': '/info/default-host-config/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'default-host-config' },
+              ],
+            },
           },
 
         ],
@@ -108,7 +148,7 @@ describe('ApiUmbrellaGatekeper', function() {
         var opts = shared.buildRequestOptions('/info/matching/', this.apiKey);
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('localhost-with-port');
+          data.headers['x-backend'].should.eql('localhost-with-port');
           done();
         });
       });
@@ -122,7 +162,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('localhost-default-port');
+          data.headers['x-backend'].should.eql('localhost-default-port');
           done();
         });
       });
@@ -136,7 +176,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('localhost-default-port');
+          data.headers['x-backend'].should.eql('localhost-default-port');
           done();
         });
       });
@@ -151,7 +191,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('localhost-ssl-port');
+          data.headers['x-backend'].should.eql('localhost-ssl-port');
           done();
         });
       });
@@ -165,7 +205,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('fallback-no-port');
+          data.headers['x-backend'].should.eql('fallback-no-port');
           done();
         });
       });
@@ -179,7 +219,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('fallback-no-port');
+          data.headers['x-backend'].should.eql('fallback-no-port');
           done();
         });
       });
@@ -193,7 +233,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('wildcard');
+          data.headers['x-backend'].should.eql('wildcard');
           done();
         });
       });
@@ -207,7 +247,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('wildcard');
+          data.headers['x-backend'].should.eql('wildcard');
           done();
         });
       });
@@ -221,7 +261,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('default-host-config');
+          data.headers['x-backend'].should.eql('default-host-config');
           done();
         });
       });
@@ -248,6 +288,11 @@ describe('ApiUmbrellaGatekeper', function() {
                 'backend_prefix': '/info/other/'
               }
             ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'other-prefix' },
+              ],
+            },
           },
           {
             'frontend_host': 'unused.example.com',
@@ -259,6 +304,11 @@ describe('ApiUmbrellaGatekeper', function() {
                 'backend_prefix': '/info/specific/'
               }
             ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'specific-prefix-different-host' },
+              ],
+            },
           },
           {
             'frontend_host': 'localhost',
@@ -270,6 +320,11 @@ describe('ApiUmbrellaGatekeper', function() {
                 'backend_prefix': '/info/specific/'
               }
             ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'specific-prefix' },
+              ],
+            },
           },
         ],
       });
@@ -278,7 +333,7 @@ describe('ApiUmbrellaGatekeper', function() {
         var opts = shared.buildRequestOptions('/info/specific/', this.apiKey);
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('specific-prefix');
+          data.headers['x-backend'].should.eql('specific-prefix');
           done();
         });
       });
@@ -287,7 +342,7 @@ describe('ApiUmbrellaGatekeper', function() {
         var opts = shared.buildRequestOptions('/info/specific/abc/xyz', this.apiKey);
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-api-umbrella-backend-id'].should.eql('specific-prefix');
+          data.headers['x-backend'].should.eql('specific-prefix');
           done();
         });
       });
@@ -316,6 +371,11 @@ describe('ApiUmbrellaGatekeper', function() {
                 'backend_prefix': '/info/outgoing/'
               }
             ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'rewrites' },
+              ],
+            },
           },
         ],
       });
