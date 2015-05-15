@@ -163,8 +163,8 @@ describe('response rewriting', function() {
           backend_host: 'example.com',
           url_matches: [
             {
-              frontend_prefix: '/',
-              backend_prefix: '/',
+              frontend_prefix: '/front/end/path',
+              backend_prefix: '/backend-prefix'
             }
           ],
           settings: {
@@ -174,8 +174,8 @@ describe('response rewriting', function() {
         },
       ],
     });
-    describe('default', function() {
-      var baseUrl = function(apiKey) { return 'http://localhost:9333/redirect?api_key=' + apiKey; };
+    describe('RewriteResponse.rewriteRedirects', function() {
+      var baseUrl = function(apiKey) { return 'http://localhost:9333/front/end/path/redirect?api_key=' + apiKey; };
       it('does not modify the redirect if it is relative', function(done) {
         request.get(baseUrl(this.apiKey), {followRedirect: false}, function(error, response) {
           should.not.exist(error);
@@ -213,6 +213,14 @@ describe('response rewriting', function() {
           should.not.exist(error);
           response.statusCode.should.eql(302);
           response.headers['location'].should.eql('http://eeexample.com/hello');
+          done();
+        });
+      });
+      it('replaces the path', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('http://example.com/backend-prefix/'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('http://localhost/front/end/path/');
           done();
         });
       });

@@ -12,6 +12,10 @@ app.use(bodyParser.raw());
 
 app.use(function(req, res, next) {
   backendCalled = true;
+  // Allow all requests to include this prefix
+  if (req.url.indexOf('/backend-prefix/') === 0) {
+    req.url = req.url.substr('/backend-prefix'.length);
+  }
   next();
 });
 
