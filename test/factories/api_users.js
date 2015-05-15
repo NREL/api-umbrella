@@ -33,9 +33,7 @@ ApiUser.prototype.save = function(callback) {
     },
   };
 
-  ApiUser.update({ _id: this._id }, upsertData, { upsert: true }, function() {
-    setTimeout(callback, 25);
-  });
+  ApiUser.update({ _id: this._id }, upsertData, { upsert: true }, callback);
 };
 
 Factory.define('api_user', ApiUser, {
