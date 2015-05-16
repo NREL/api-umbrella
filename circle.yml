@@ -19,7 +19,7 @@ dependencies:
 
     # Use the mongo-orchestration library for providing a testable replicaset,
     # so we can see how the stack reacts to replicaset re-elections, etc.
-    - sudo pip install mongo-orchestration
+    - sudo pip install mongo-orchestration==0.3.1
 
     # Ensure the temp directory is world-writable, since our tests don't run as
     # the api-umbrella this is normally configured to be writable by.
