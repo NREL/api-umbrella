@@ -23,7 +23,7 @@ dependencies:
 
     # Ensure the temp directory is world-writable, since our tests don't run as
     # the api-umbrella this is normally configured to be writable by.
-    - sudo chmod -R 777 /opt/api-umbrella/embedded/apps/web/shared/tmp /opt/api-umbrella/embedded/apps/web/current/public
+    - sudo chmod -R 777 /opt/api-umbrella/embedded/apps/web/shared/tmp
 
     # If the tests fail, it seems like sometimes the server processes don't
     # exist cleanly, and then stick around on the CI server causing issues for
