@@ -25,6 +25,11 @@ dependencies:
     # the api-umbrella this is normally configured to be writable by.
     - sudo chmod -R 777 /opt/api-umbrella/embedded/apps/web/shared/tmp
 
+    # FIXME: Temporary workaround for failing integration web tests in the API
+    # Umbrella v0.8.0 packages. Remove after next package upgrade. See:
+    # https://github.com/NREL/api-umbrella-web/commit/4773da852068713a15d1668d55c6f7e0e681c6f6
+    - sudo curl -o /opt/api-umbrella/embedded/apps/web/current/config/environments/test.rb "https://raw.githubusercontent.com/NREL/api-umbrella-web/4773da852068713a15d1668d55c6f7e0e681c6f6/config/environments/test.rb"
+
     # If the tests fail, it seems like sometimes the server processes don't
     # exist cleanly, and then stick around on the CI server causing issues for
     # subsequent tests. We should try to figure out how we can ensure we always
