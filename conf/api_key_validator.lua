@@ -30,7 +30,7 @@ return function(settings)
   -- Find the API key in the header, query string, or HTTP auth.
   local api_key = resolve_api_key()
   if is_empty(api_key) then
-    if settings and settings.disable_api_key then
+    if settings and settings["disable_api_key"] then
       return nil
     else
       return nil, "api_key_missing"
@@ -50,6 +50,22 @@ return function(settings)
   -- Check to make sure the user isn't disabled.
   if user["disabled_at"] then
     return nil, "api_key_disabled"
+  end
+
+  -- Check if this API requires the user's API key be verified in some fashion
+  -- (for example, if they must verify their e-mail address during signup).
+  if settings and settings["api_key_verification_level"] then
+    local verification_level = settings["api_key_verification_level"]
+    if verification_level == "required_email" then
+      if not user["email_verified"] then
+        return nil, "api_key_unverified"
+      end
+    elseif verification_level == "transition_email" then
+      local transition_start_at = settings["api_key_verification_transition_start_at"]
+      if user["created_at"] and user["created_at"] >= transition_start_at and not user["email_verified"] then
+        return nil, "api_key_unverified"
+      end
+    end
   end
 
   return user

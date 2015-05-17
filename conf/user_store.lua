@@ -31,9 +31,12 @@ local function lookup_user(api_key)
     local response = cjson.decode(res.body)
     if response and response["data"] and response["data"][1] then
       local raw = response["data"][1]
-
-      local user = clone_select(raw, {
+      local user = utils.pick_where_present(raw, {
+        "created_at",
         "disabled_at",
+        "email_verified",
+        "roles",
+        "settings",
         "throttle_by_ip",
       })
 
@@ -43,16 +46,16 @@ local function lookup_user(api_key)
       -- Invert the array of roles into a hashy table for more optimized
       -- lookups (so we can just check if the key exists, rather than
       -- looping over each value).
-      if raw["roles"] then
-        user["roles"] = invert(raw["roles"])
+      if user["roles"] then
+        user["roles"] = invert(user["roles"])
       end
 
-      if user["throttle_by_ip"] == false then
-        user["throttle_by_ip"] = nil
+      if user["created_at"] and user["created_at"]["$date"] then
+        user["created_at"] = user["created_at"]["$date"]
       end
 
-      if raw["settings"] then
-        user["settings"] = clone_select(raw["settings"], {
+      if user["settings"] and user["settings"] ~= cjson.null then
+        user["settings"] = utils.pick_where_present(user["settings"], {
           "allowed_ips",
           "allowed_referers",
           "rate_limit_mode",

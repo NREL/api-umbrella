@@ -1,5 +1,6 @@
 local _M = {}
 
+local cjson = require "cjson"
 local cmsgpack = require "cmsgpack"
 local inspect = require "inspect"
 local iputils = require "resty.iputils"
@@ -9,6 +10,7 @@ local types = require "pl.types"
 
 local escape = plutils.escape
 local is_empty = types.is_empty
+local json_null = cjson.null
 local pack = cmsgpack.pack
 local parse_cidrs = iputils.parse_cidrs
 local split = plutils.split
@@ -74,6 +76,20 @@ function _M.set_packed(dict, key, value)
   return dict:set(key, pack(value))
 end
 
+function _M.pick_where_present(dict, keys)
+  local selected = {}
+
+  if type(dict) == "table" and type(keys) == "table" then
+    for _, key in ipairs(keys) do
+      if dict[key] and dict[key] ~= false and dict[key] ~= json_null then
+        selected[key] = dict[key]
+      end
+    end
+  end
+
+  return selected
+end
+
 function _M.deep_merge_overwrite_arrays(dest, src)
   if not src then return dest end
 
@@ -135,6 +151,10 @@ function _M.cache_computed_settings(settings)
   if settings["http_basic_auth"] then
     settings["_http_basic_auth_header"] = "Basic " .. ngx.encode_base64(settings["http_basic_auth"])
     settings["http_basic_auth"] = nil
+  end
+
+  if settings["api_key_verification_transition_start_at"] and settings["api_key_verification_transition_start_at"]["$date"] then
+    settings["api_key_verification_transition_start_at"] = settings["api_key_verification_transition_start_at"]["$date"]
   end
 end
 
