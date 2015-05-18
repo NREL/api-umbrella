@@ -28,10 +28,17 @@ Admin.Api = Ember.Model.extend(Ember.Validations.Mixin, {
       },
     },
     backendHost: {
-      presence: true,
+      presence: {
+        unless: function(object) {
+          return (object.get('frontendHost') && object.get('frontendHost')[0] === '*');
+        },
+      },
       format: {
         with: CommonValidations.host_format,
         message: polyglot.t('errors.messages.invalid_host_format'),
+        if: function(object) {
+          return !!object.get('backendHost');
+        },
       },
     },
   },
