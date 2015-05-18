@@ -36,6 +36,10 @@ server {
     rewrite .* /api-umbrella-banned last;
   }
 
+  {{~#each rewrites}}
+    rewrite {{{.}}};
+  {{~/each}}
+
   {{~#if enable_web_backend}}
     # Route the dynamic portions of the site to the Rails web app.
     location ~* {{../../router.web_backend_regex}} {

@@ -269,9 +269,16 @@ website_backends:
 hosts:
   - hostname: default.foo
     default: true
+    rewrites:
+      - "^/admin/rewrite_me$ https://example.com/ permanent"
+      - "^/hello/rewrite/(debian|el|ubuntu)/([\\d\\.]+)/(file[_-]([\\d\\.]+)-\\d+).*((\\.|_)(amd64|x86_64).(deb|rpm)) https://example.com/downloads/v$4/$3.$1$2$5? redirect"
+      - "^/hello/rewrite https://example.com/something/ permanent"
   - hostname: withweb.foo
     enable_web_backend: true
   - hostname: withoutweb.foo
+  - hostname: with-apis-and-website.foo
+    rewrites:
+      - "^/example/rewrite_me$ https://example.com/ permanent"
 dns_resolver:
   minimum_ttl: 1
   reload_buffer_time: 1
