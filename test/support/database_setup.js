@@ -14,6 +14,8 @@ mongoose.testConnection = mongoose.createConnection();
 
 // Drop the mongodb database.
 before(function mongoOpen(done) {
+  this.timeout(20000);
+
   mongoose.testConnection.on('connected', function() {
     // Drop the whole database, since that properly blocks for any active
     // connections. The database will get re-created on demand.

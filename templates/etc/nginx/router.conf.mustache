@@ -101,6 +101,20 @@ http {
   lua_shared_dict my_locks 100k;
   lua_shared_dict locks 5M;
 
+  geo $banned_ip {
+    default 0;
+    {{#ban.ips}}
+    {{.}} 1;
+    {{/ban.ips}}
+  }
+
+  map $http_user_agent $banned_user_agent {
+    default 0;
+    {{#ban.user_agents}}
+    "{{.}}" 1;
+    {{/ban.user_agents}}
+  }
+
   init_by_lua_file '{{gatekeeper.dir}}/conf/init.lua';
   init_worker_by_lua_file '{{gatekeeper.dir}}/conf/init_worker.lua';
 

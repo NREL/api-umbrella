@@ -201,7 +201,7 @@ startretries=10
 {{/if}}
 
 [program:web-puma]
-environment=API_UMBRELLA_CONFIG="{{api_umbrella_config_runtime_file}}"
+environment=API_UMBRELLA_CONFIG="{{api_umbrella_config_runtime_file}}"{{#if test_env}},PRECOMPILE_TEST_ASSETS="false"{{/if}}
 directory={{web.dir}}
 command=bundle exec puma -q --dir {{web.dir}} --prune-bundler -e {{app_env}} -w {{web.puma.workers}} -t {{web.puma.min_threads}}:{{web.puma.max_threads}} -b unix://{{run_dir}}/web-puma.sock
 {{supervisor_conditional_user}}

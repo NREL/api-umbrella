@@ -16,6 +16,26 @@ server {
 
   include ./frontend_defaults.conf;
 
+  location @banned_pit {
+    echo_sleep {{../ban.response.delay}};
+    echo "{{{../ban.response.message}}}";
+    echo_flush;
+  }
+
+  location = /api-umbrella-banned {
+    internal;
+    error_page 403 ={{../ban.response.status_code}} @banned_pit;
+    return 403;
+  }
+
+  if ($banned_ip) {
+    rewrite .* /api-umbrella-banned last;
+  }
+
+  if ($banned_user_agent) {
+    rewrite .* /api-umbrella-banned last;
+  }
+
   {{~#if enable_web_backend}}
     # Route the dynamic portions of the site to the Rails web app.
     location ~* {{../../router.web_backend_regex}} {

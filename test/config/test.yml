@@ -278,3 +278,13 @@ dns_resolver:
   reload_buffer_time: 1
 apiSettings:
   require_https: optional
+ban:
+  response:
+    status_code: 418
+    delay: 1
+    message: "You've been banned!"
+  ips:
+    - 7.4.2.2
+    - 8.7.1.0/24
+  user_agents:
+    - "~*naughty"
