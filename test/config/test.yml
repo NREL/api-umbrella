@@ -56,212 +56,212 @@ unbound:
   port: 13100
   control_port: 13101
 apis:
-  - _id: down
-    frontend_host: localhost
-    backend_host: localhost
-    servers:
-      - host: 127.0.0.1
-        port: 9450
-    url_matches:
-      - frontend_prefix: /down
-        backend_prefix: /down
-  - _id: keepalive9445
-    frontend_host: localhost
-    backend_host: localhost
-    servers:
-      - host: 127.0.0.1
-        port: 9445
-    url_matches:
-      - frontend_prefix: /keepalive9445/
-        backend_prefix: /keepalive9445/
-    rate_limit_mode: unlimited
-  - _id: keepalive9446
-    frontend_host: localhost
-    backend_host: localhost
-    servers:
-      - host: 127.0.0.1
-        port: 9446
-    url_matches:
-      - frontend_prefix: /keepalive9446/
-        backend_prefix: /keepalive9446/
-    rate_limit_mode: unlimited
-    keepalive_connections: 2
-  - _id: keepalive9447
-    frontend_host: localhost
-    backend_host: localhost
-    servers:
-      - host: 127.0.0.1
-        port: 9447
-    url_matches:
-      - frontend_prefix: /keepalive9447/
-        backend_prefix: /keepalive9447/
-    rate_limit_mode: unlimited
-  - _id: dns-ipv4
-    frontend_host: localhost
-    backend_host: localhost
-    servers:
-      - host: 127.0.0.1
-        port: 9444
-    url_matches:
-      - frontend_prefix: /dns/ipv4/
-        backend_prefix: /
-  - _id: dns-ipv6
-    frontend_host: localhost
-    backend_host: localhost
-    servers:
-      - host: "::1"
-        port: 9444
-    url_matches:
-      - frontend_prefix: /dns/ipv6/
-        backend_prefix: /
-  - _id: dns-localhost
-    frontend_host: localhost
-    backend_host: localhost
-    servers:
-      - host: localhost
-        port: 9444
-    url_matches:
-      - frontend_prefix: /dns/localhost/
-        backend_prefix: /
-  - _id: dns-valid-external-hostname
-    frontend_host: localhost
-    backend_host: httpbin.org
-    servers:
-      - host: httpbin.org
-        port: 80
-    url_matches:
-      - frontend_prefix: /dns/valid-external-hostname/
-        backend_prefix: /
-  - _id: dns-invalid-hostname
-    frontend_host: localhost
-    backend_host: invalid.ooga
-    servers:
-      - host: invalid.ooga
-        port: 9444
-    url_matches:
-      - frontend_prefix: /dns/invalid-hostname/
-        backend_prefix: /
-  - _id: dns-invalid-hostname-begins-resolving
-    frontend_host: localhost
-    backend_host: invalid-hostname-begins-resolving.ooga
-    servers:
-      - host: invalid-hostname-begins-resolving.ooga
-        port: 9444
-    url_matches:
-      - frontend_prefix: /dns/invalid-hostname-begins-resolving/
-        backend_prefix: /
-  - _id: dns-refresh-after-ttl-expires
-    frontend_host: localhost
-    backend_host: refresh-after-ttl-expires.ooga
-    servers:
-      - host: refresh-after-ttl-expires.ooga
-        port: 9444
-    url_matches:
-      - frontend_prefix: /dns/refresh-after-ttl-expires/
-        backend_prefix: /
-  - _id: dns-down-after-ttl-expires
-    frontend_host: localhost
-    backend_host: down-after-ttl-expires.ooga
-    servers:
-      - host: down-after-ttl-expires.ooga
-        port: 9444
-    url_matches:
-      - frontend_prefix: /dns/down-after-ttl-expires/
-        backend_prefix: /
-  - _id: dns-ongoing-changes
-    frontend_host: localhost
-    backend_host: ongoing-changes.ooga
-    servers:
-      - host: ongoing-changes.ooga
-        port: 9444
-    url_matches:
-      - frontend_prefix: /dns/ongoing-changes/
-        backend_prefix: /
-  - _id: dns-multiple-ips
-    frontend_host: localhost
-    backend_host: localhost
-    servers:
-      - host: multiple-ips.ooga
-        port: 9444
-    url_matches:
-      - frontend_prefix: /dns/multiple-ips/
-        backend_prefix: /
-  - _id: dns-no-drops-during-changes
-    frontend_host: localhost
-    backend_host: localhost
-    servers:
-      - host: no-drops-during-changes.ooga
-        port: 9444
-    url_matches:
-      - frontend_prefix: /dns/no-drops-during-changes/
-        backend_prefix: /
-  - _id: https-requirements-error
-    frontend_host: "https.foo"
-    backend_host: localhost
-    servers:
-      - host: localhost
-        port: 9444
-    url_matches:
-      - frontend_prefix: /info/https/required_return_error/
-        backend_prefix: /info/
-    settings:
-      require_https: required_return_error
-  - _id: https-requirements-redirect
-    frontend_host: "https.foo"
-    backend_host: localhost
-    servers:
-      - host: localhost
-        port: 9444
-    url_matches:
-      - frontend_prefix: /info/https/required_return_redirect/
-        backend_prefix: /info/
-    settings:
-      require_https: required_return_redirect
-  - _id: example
-    frontend_host: localhost
-    backend_host: localhost
-    servers:
-      - host: 127.0.0.1
-        port: 9444
-    url_matches:
-      - frontend_prefix: /
-        backend_prefix: /
-  - _id: with-apis-and-website-example
-    frontend_host: with-apis-and-website.foo
-    backend_host: localhost
-    servers:
-      - host: 127.0.0.1
-        port: 9444
-    url_matches:
-      - frontend_prefix: /example/
-        backend_prefix: /example/
-  - _id: with-apis-and-website-info
-    frontend_host: with-apis-and-website.foo
-    backend_host: localhost
-    servers:
-      - host: 127.0.0.1
-        port: 9444
-    url_matches:
-      - frontend_prefix: /info/
-        backend_prefix: /info/
-  - _id: with-apis-no-website
-    frontend_host: with-apis-no-website.foo
-    backend_host: localhost
-    servers:
-      - host: 127.0.0.1
-        port: 9444
-    url_matches:
-      - frontend_prefix: /example2/
-        backend_prefix: /example2/
-  - _id: wildcard-frontend-host
-    frontend_host: "*"
-    backend_host: localhost
-    servers:
-      - host: 127.0.0.1
-        port: 9444
-    url_matches:
-      - frontend_prefix: /wildcard-info/
-        backend_prefix: /info/
+  # - _id: down
+  #   frontend_host: localhost
+  #   backend_host: localhost
+  #   servers:
+  #     - host: 127.0.0.1
+  #       port: 9450
+  #   url_matches:
+  #     - frontend_prefix: /down
+  #       backend_prefix: /down
+  # - _id: keepalive9445
+  #   frontend_host: localhost
+  #   backend_host: localhost
+  #   servers:
+  #     - host: 127.0.0.1
+  #       port: 9445
+  #   url_matches:
+  #     - frontend_prefix: /keepalive9445/
+  #       backend_prefix: /keepalive9445/
+  #   rate_limit_mode: unlimited
+  # - _id: keepalive9446
+  #   frontend_host: localhost
+  #   backend_host: localhost
+  #   servers:
+  #     - host: 127.0.0.1
+  #       port: 9446
+  #   url_matches:
+  #     - frontend_prefix: /keepalive9446/
+  #       backend_prefix: /keepalive9446/
+  #   rate_limit_mode: unlimited
+  #   keepalive_connections: 2
+  # - _id: keepalive9447
+  #   frontend_host: localhost
+  #   backend_host: localhost
+  #   servers:
+  #     - host: 127.0.0.1
+  #       port: 9447
+  #   url_matches:
+  #     - frontend_prefix: /keepalive9447/
+  #       backend_prefix: /keepalive9447/
+  #   rate_limit_mode: unlimited
+  # - _id: dns-ipv4
+  #   frontend_host: localhost
+  #   backend_host: localhost
+  #   servers:
+  #     - host: 127.0.0.1
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /dns/ipv4/
+  #       backend_prefix: /
+  # - _id: dns-ipv6
+  #   frontend_host: localhost
+  #   backend_host: localhost
+  #   servers:
+  #     - host: "::1"
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /dns/ipv6/
+  #       backend_prefix: /
+  # - _id: dns-localhost
+  #   frontend_host: localhost
+  #   backend_host: localhost
+  #   servers:
+  #     - host: localhost
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /dns/localhost/
+  #       backend_prefix: /
+  # - _id: dns-valid-external-hostname
+  #   frontend_host: localhost
+  #   backend_host: httpbin.org
+  #   servers:
+  #     - host: httpbin.org
+  #       port: 80
+  #   url_matches:
+  #     - frontend_prefix: /dns/valid-external-hostname/
+  #       backend_prefix: /
+  # - _id: dns-invalid-hostname
+  #   frontend_host: localhost
+  #   backend_host: invalid.ooga
+  #   servers:
+  #     - host: invalid.ooga
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /dns/invalid-hostname/
+  #       backend_prefix: /
+  # - _id: dns-invalid-hostname-begins-resolving
+  #   frontend_host: localhost
+  #   backend_host: invalid-hostname-begins-resolving.ooga
+  #   servers:
+  #     - host: invalid-hostname-begins-resolving.ooga
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /dns/invalid-hostname-begins-resolving/
+  #       backend_prefix: /
+  # - _id: dns-refresh-after-ttl-expires
+  #   frontend_host: localhost
+  #   backend_host: refresh-after-ttl-expires.ooga
+  #   servers:
+  #     - host: refresh-after-ttl-expires.ooga
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /dns/refresh-after-ttl-expires/
+  #       backend_prefix: /
+  # - _id: dns-down-after-ttl-expires
+  #   frontend_host: localhost
+  #   backend_host: down-after-ttl-expires.ooga
+  #   servers:
+  #     - host: down-after-ttl-expires.ooga
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /dns/down-after-ttl-expires/
+  #       backend_prefix: /
+  # - _id: dns-ongoing-changes
+  #   frontend_host: localhost
+  #   backend_host: ongoing-changes.ooga
+  #   servers:
+  #     - host: ongoing-changes.ooga
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /dns/ongoing-changes/
+  #       backend_prefix: /
+  # - _id: dns-multiple-ips
+  #   frontend_host: localhost
+  #   backend_host: localhost
+  #   servers:
+  #     - host: multiple-ips.ooga
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /dns/multiple-ips/
+  #       backend_prefix: /
+  # - _id: dns-no-drops-during-changes
+  #   frontend_host: localhost
+  #   backend_host: localhost
+  #   servers:
+  #     - host: no-drops-during-changes.ooga
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /dns/no-drops-during-changes/
+  #       backend_prefix: /
+  # - _id: https-requirements-error
+  #   frontend_host: "https.foo"
+  #   backend_host: localhost
+  #   servers:
+  #     - host: localhost
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /info/https/required_return_error/
+  #       backend_prefix: /info/
+  #   settings:
+  #     require_https: required_return_error
+  # - _id: https-requirements-redirect
+  #   frontend_host: "https.foo"
+  #   backend_host: localhost
+  #   servers:
+  #     - host: localhost
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /info/https/required_return_redirect/
+  #       backend_prefix: /info/
+  #   settings:
+  #     require_https: required_return_redirect
+  # - _id: example
+  #   frontend_host: localhost
+  #   backend_host: localhost
+  #   servers:
+  #     - host: 127.0.0.1
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /
+  #       backend_prefix: /
+  # - _id: with-apis-and-website-example
+  #   frontend_host: with-apis-and-website.foo
+  #   backend_host: localhost
+  #   servers:
+  #     - host: 127.0.0.1
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /example/
+  #       backend_prefix: /example/
+  # - _id: with-apis-and-website-info
+  #   frontend_host: with-apis-and-website.foo
+  #   backend_host: localhost
+  #   servers:
+  #     - host: 127.0.0.1
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /info/
+  #       backend_prefix: /info/
+  # - _id: with-apis-no-website
+  #   frontend_host: with-apis-no-website.foo
+  #   backend_host: localhost
+  #   servers:
+  #     - host: 127.0.0.1
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /example2/
+  #       backend_prefix: /example2/
+  # - _id: wildcard-frontend-host
+  #   frontend_host: "*"
+  #   backend_host: localhost
+  #   servers:
+  #     - host: 127.0.0.1
+  #       port: 9444
+  #   url_matches:
+  #     - frontend_prefix: /wildcard-info/
+  #       backend_prefix: /info/
 website_backends:
   - _id: example
     frontend_host: with-apis-and-website.foo

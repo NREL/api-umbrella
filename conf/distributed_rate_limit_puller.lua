@@ -1,13 +1,10 @@
 local _M = {}
 
-local bson = require "resty-mongol.bson"
 local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
 local inspect = require "inspect"
 local lock = require "resty.lock"
-local mongol = require "resty-mongol"
 local types = require "pl.types"
 
-local get_utc_date = bson.get_utc_date
 local is_empty = types.is_empty
 
 local lock = lock:new("my_locks", {
@@ -21,6 +18,10 @@ local new_timer = ngx.timer.at
 local function do_check()
   local elapsed, err = lock:lock("distributed_rate_limit_puller")
   if err then
+    return
+  end
+
+  if true then
     return
   end
 
@@ -44,23 +45,57 @@ local function do_check()
 
   local last_fetched_time = ngx.shared.stats:get("distributed_last_updated_at") or 0
 
-  local pipeline = {
-    {
-      ["$match"] = {
-        updated_at = {
-          ["$gt"] = get_utc_date(last_fetched_time),
-        },
-        expire_at = {
-          ["$gte"] = get_utc_date(ngx.now() * 1000),
-        },
+  local page = 1
+  repeat
+    local httpc = http.new()
+    local res, err = httpc:request_uri("http://127.0.0.1:8080/" .. config["mongodb"]["database"] .. "/api_users", {
+      query = {
+        pagesize = 250,
+        page = page,
+        filter = cjson.encode({
+          {
+            ["$match"] = {
+              updated_at = {
+                ["$gt"] = {
+                  ["$date"] = last_fetched_time,
+                },
+              },
+              expire_at = {
+                ["$gte"] = {
+                  ["$date"] = ngx.now() * 1000,
+                },
+              },
+            },
+          },
+          {
+            ["$group"] = {
+              _id = "$_id.key",
+            },
+          },
+        })
       },
-    },
-    {
-      ["$group"] = {
-        _id = "$_id.key",
-      },
-    },
-  }
+    })
+
+    local results = nil
+    if not err and res.body then
+      local response = cjson.decode(res.body)
+      if response and response["_embedded"] and response["_embedded"]["rh:doc"] then
+        results = response["_embedded"]["rh:doc"]
+        -- ngx.log(ngx.ERR, "RESULTS", inspect(results))
+        for index, result in pairs(results) do
+          if index == 1 then
+            api_users:set("last_updated_at", result["updated_at"]["$date"])
+          end
+
+          handle_user_result(result)
+        end
+      end
+    end
+
+    page = page + 1
+  until is_empty(results)
+
+
   local r, err = col:aggregate(pipeline)
 
   local recent_ids = {}
@@ -149,11 +184,11 @@ local function check(premature)
 end
 
 function _M.spawn()
-  local ok, err = new_timer(0, check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to create timer: ", err)
-    return
-  end
+  -- local ok, err = new_timer(0, check)
+  -- if not ok then
+    -- ngx.log(ngx.ERR, "failed to create timer: ", err)
+    -- return
+  -- end
 end
 
 return _M

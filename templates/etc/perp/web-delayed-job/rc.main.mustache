@@ -5,13 +5,14 @@ exec 2>&1
 
 if test ${1} = "start"; then
   echo "starting ${2}..."
-  exec \
-    runenv rc.env \
-    bundle exec \
-      {{web.dir}}/script/delayed_job \
-      --pid-dir={{run_dir}} \
-      --queues=mailers \
-      run
+  exec sleep 60
+  #exec \
+  #  runenv rc.env \
+  #  bundle exec \
+  #    {{web.dir}}/script/delayed_job \
+  #    --pid-dir={{run_dir}} \
+  #    --queues=mailers \
+  #    run
 fi
 
 exit 0

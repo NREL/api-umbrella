@@ -15,7 +15,6 @@ events {
 error_log stderr;
 
 http {
-  error_log {{log_dir}}/web-error.log;
   access_log {{log_dir}}/web-access.log combined buffer=32k flush=10s;
 
   server_tokens off;

@@ -5,17 +5,18 @@ exec 2>&1
 
 if test ${1} = "start"; then
   echo "starting ${2}..."
-  exec \
-    runenv rc.env \
-    bundle exec \
-      puma \
-      -q \
-      --dir {{web.dir}} \
-      --prune-bundler \
-      -e {{app_env}} \
-      -w {{web.puma.workers}} \
-      -t {{web.puma.min_threads}}:{{web.puma.max_threads}} \
-      -b unix://{{run_dir}}/web-puma.sock
+  exec sleep 60
+  #exec \
+  #  runenv rc.env \
+  #  bundle exec \
+  #    puma \
+  #    -q \
+  #    --dir {{web.dir}} \
+  #    --prune-bundler \
+  #    -e {{app_env}} \
+  #    -w {{web.puma.workers}} \
+  #    -t {{web.puma.min_threads}}:{{web.puma.max_threads}} \
+  #    -b unix://{{run_dir}}/web-puma.sock
 fi
 
 exit 0

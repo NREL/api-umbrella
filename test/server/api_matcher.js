@@ -140,7 +140,6 @@ describe('ApiUmbrellaGatekeper', function() {
               ],
             },
           },
-
         ],
       });
 

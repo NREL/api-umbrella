@@ -5,17 +5,12 @@ local iputils = require "resty.iputils"
 iputils.enable_lrucache(1000)
 
 local load_apis = require "load_apis"
-local load_backends = require "load_backends"
 local load_api_users = require "load_api_users"
 local distributed_rate_limit_puller = require "distributed_rate_limit_puller"
 local distributed_rate_limit_pusher = require "distributed_rate_limit_pusher"
 local resolve_backend_dns = require "resolve_backend_dns"
 
-load_apis.init()
-load_backends.init()
-
 load_apis.spawn()
-load_backends.spawn()
 load_api_users.spawn()
 resolve_backend_dns.spawn()
 distributed_rate_limit_puller.spawn()

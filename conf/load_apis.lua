@@ -7,13 +7,15 @@ local inspect = require "inspect"
 local lock = require "resty.lock"
 local plutils = require "pl.utils"
 local tablex = require "pl.tablex"
+local types = require "pl.types"
 local utils = require "utils"
+local load_backends = require "load_backends"
 
 local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings
-local deepcopy = tablex.deepcopy
 local escape = plutils.escape
-local get_packed = utils.set_packed
+local get_packed = utils.get_packed
+local is_empty = types.is_empty
 local set_packed = utils.set_packed
 local size = tablex.size
 local split = plutils.split
@@ -22,7 +24,12 @@ local lock = lock:new("my_locks", {
   ["timeout"] = 0,
 })
 
-local delay = 1  -- in seconds
+local setlock = lock:new("my_locks", {
+  ["timeout"] = 0,
+})
+
+local loaded_version = nil
+local delay = 0.3  -- in seconds
 local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
@@ -102,9 +109,13 @@ local function cache_computed_sub_settings(sub_settings)
 end
 
 local function set_apis(apis)
+  local elapsed, err = setlock:lock("set_apis")
+  if err then
+    return
+  end
+
   local data = {
-    ["apis"] = {},
-    ["ids_by_host"] = {},
+    ["apis_by_host"] = {},
   }
 
   for _, api in ipairs(apis) do
@@ -116,17 +127,62 @@ local function set_apis(apis)
       api["_id"] = ndk.set_var.set_secure_random_alphanum(32)
     end
 
-    local api_id = api["_id"]
-    data["apis"][api_id] = api
-
     local host = api["frontend_host"]
-    if not data["ids_by_host"][host] then
-      data["ids_by_host"][host] = {}
+    if not data["apis_by_host"][host] then
+      data["apis_by_host"][host] = {}
     end
-    table.insert(data["ids_by_host"][host], api_id)
+    table.insert(data["apis_by_host"][host], api)
   end
 
   set_packed(ngx.shared.apis, "packed_data", data)
+  load_backends.setup_backends()
+
+  local ok, err = setlock:unlock()
+  if not ok then
+    ngx.log(ngx.ERR, "failed to unlock: ", err)
+  end
+end
+
+local function finalize_check(premature, version, last_fetched_at)
+  if premature then
+    return
+  end
+
+  -- Only consider this version of the config loaded and upstreams initialized
+  -- the *second* time we see it when nginx workers are starting for the first
+  -- time. This is ugly, but it's the only way I can currently figure to
+  -- prevent race conditions across processes during nginx SIGHUP reloads.
+  --
+  -- This tries to prevent the race condition where nginx gets reloaded, and
+  -- the new processes spin up while an old process was in the middle of
+  -- loading the API config. Due to how dyups works, we need to initialize all
+  -- the upstreams in the new workers before allowing requests to be processes.
+  -- This means we need to ignore the old process completing any upstream
+  -- config (since that doesn't help the new processes).
+  --
+  -- TODO: balancer_by_lua is supposedly coming soon, which I think might offer
+  -- a much cleaner way to deal with all this versus what we're currently doing
+  -- with dyups. Revisit if that gets released.
+  -- https://groups.google.com/d/msg/openresty-en/NS2dWt-xHsY/PYzi5fiiW8AJ
+  if ngx.shared.apis:get("nginx_reloading_guard") then
+    ngx.shared.apis:set("upstreams_inited", true)
+
+    if last_fetched_at then
+      ngx.shared.apis:set("last_fetched_at", ngx.now())
+    end
+
+    if version then
+      ngx.shared.apis:set("version", version)
+      loaded_version = version
+    end
+  else
+    ngx.shared.apis:set("nginx_reloading_guard", true)
+  end
+
+  local ok, err = lock:unlock()
+  if not ok then
+    ngx.log(ngx.ERR, "failed to unlock: ", err)
+  end
 end
 
 local function do_check()
@@ -134,8 +190,6 @@ local function do_check()
   if err then
     return
   end
-
-  api_store.update_worker_cache_if_necessary()
 
   local last_fetched_version = ngx.shared.apis:get("version") or 0
 
@@ -156,28 +210,65 @@ local function do_check()
   })
 
   local results = nil
+  local runtime_config_apis = nil
+
+  local version = nil
+  local last_fetched_at = nil
+
   if not err and res.body then
     local response = cjson.decode(res.body)
     if response and response["data"] and response["data"] and response["data"][1] then
       result = response["data"][1]
       if result and result["config"] and result["config"]["apis"] then
-        local apis = config["internal_apis"] or {}
-        append_array(apis, config["apis"] or {})
-        append_array(apis, result["config"]["apis"])
-
-        set_apis(apis)
-        ngx.shared.apis:set("version", result["version"]["$date"])
+        runtime_config_apis = result["config"]["apis"]
+        set_packed(ngx.shared.apis, "packed_runtime_config_apis", runtime_config_apis)
       end
+
+      version = result["version"]["$date"]
     end
 
     if not err then
-      ngx.shared.apis:set("last_fetched_at", ngx.now())
+      last_fetched_at = ngx.now()
     end
   end
 
-  local ok, err = lock:unlock()
+  if runtime_config_apis or not ngx.shared.apis:get("version") or not loaded_version then
+    local config_apis = config["_combined_apis"] or {}
+
+    -- If for some reason, fetching the runtime config has failed, always use
+    -- the old configuration we last saw.
+    if not runtime_config_apis then
+      runtime_config_apis = get_packed(ngx.shared.apis, "packed_runtime_config_apis") or {}
+    end
+
+    local all_apis = {}
+    append_array(all_apis, config_apis)
+    append_array(all_apis, runtime_config_apis)
+    set_apis(all_apis)
+  end
+
+  -- Defer setting the shared variables indicating the runtime config has been
+  -- loaded with a timer. Since timers don't run when a process is exiting,
+  -- this is to help ensure we don't set these variables if we're in the midst
+  -- of a load that's still running on an nginx process that is exiting (due to
+  -- a SIGHUP reload).
+  --
+  -- This tries to prevent the race condition where nginx gets reloaded, and
+  -- the new processes spin up while an old process was in the middle of
+  -- loading the API config. Due to how dyups works, we need to initialize all
+  -- the upstreams in the new workers before allowing requests to be processes.
+  -- This means we need to ignore the old process completing any upstream
+  -- config (since that doesn't help the new processes).
+  --
+  -- TODO: balancer_by_lua is supposedly coming soon, which I think might offer
+  -- a much cleaner way to deal with all this versus what we're currently doing
+  -- with dyups. Revisit if that gets released.
+  -- https://groups.google.com/d/msg/openresty-en/NS2dWt-xHsY/PYzi5fiiW8AJ
+  local ok, err = new_timer(0, finalize_check, version, last_fetched_at)
   if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", err)
+    if err ~= "process exiting" then
+      ngx.log(ngx.ERR, "failed to create timer: ", err)
+    end
   end
 end
 
@@ -207,21 +298,6 @@ function _M.spawn()
     log(ERR, "failed to create timer: ", err)
     return
   end
-end
-
-function _M.init()
-  local config_apis = deepcopy(config["internal_apis"] or {})
-  append_array(config_apis, config["apis"] or {})
-  set_packed(ngx.shared.apis, "packed_config_apis", config_apis)
-
-  local db_apis = get_packed(ngx.shared.apis, "packed_db_apis") or {}
-
-  local all_apis = {}
-  append_array(all_apis, config_apis)
-  append_array(all_apis, db_apis)
-
-  set_apis(all_apis)
-  api_store.update_worker_cache()
 end
 
 return _M

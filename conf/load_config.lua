@@ -2,8 +2,9 @@ local _M = {}
 
 local inspect = require "inspect"
 local lyaml = require "lyaml"
-local utils = require "pl.utils"
+local utils = require "utils"
 
+local append_array = utils.append_array
 local log = ngx.log
 local ERR = ngx.ERR
 
@@ -35,6 +36,13 @@ function _M.parse()
 
   local data = lyaml.load(content)
   nillify_yaml_nulls(data)
+
+  local combined_apis = {}
+  append_array(combined_apis, data["internal_apis"] or {})
+  append_array(combined_apis, data["apis"] or {})
+  data["_combined_apis"] = combined_apis
+  data["apis"] = nil
+  data["internal_apis"] = nil
 
   return data
 end

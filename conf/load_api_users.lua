@@ -1,5 +1,4 @@
 local _M = {}
-ngx.log(ngx.ERR, "HELLO LOAD API USERS")
 
 local inspect = require "inspect"
 local cjson = require "cjson"
@@ -26,51 +25,13 @@ local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
 
-local function handle_user_result(result)
-  local user = clone_select(result, {
-    "disabled_at",
-    "throttle_by_ip",
-  })
-
-  -- Ensure IDs get stored as strings, even if Mongo ObjectIds are in use.
-  user["id"] = tostring(result["_id"])
-
-  -- Invert the array of roles into a hashy table for more optimized
-  -- lookups (so we can just check if the key exists, rather than
-  -- looping over each value).
-  if result["roles"] then
-    user["roles"] = invert(result["roles"])
-  end
-
-  if user["throttle_by_ip"] == false then
-    user["throttle_by_ip"] = nil
-  end
-
-  if result["settings"] then
-    user["settings"] = clone_select(result["settings"], {
-      "allowed_ips",
-      "allowed_referers",
-      "rate_limit_mode",
-      "rate_limits",
-    })
-
-    if is_empty(user["settings"]) then
-      user["settings"] = nil
-    else
-      cache_computed_settings(user["settings"])
-    end
-  end
-
-  set_packed(api_users, result["api_key"], user)
-end
-
 local function do_check()
   local elapsed, err = lock:lock("load_api_users")
   if err then
     return
   end
 
-  local last_fetched_time = api_users:get("last_updated_at") or 0
+  local last_fetched_time = api_users:get("last_updated_at") or ngx.now() - 60
 
   local skip = 0
   local page_size = 250
@@ -97,13 +58,14 @@ local function do_check()
       local response = cjson.decode(res.body)
       if response and response["data"] then
         results = response["data"]
-        ngx.log(ngx.ERR, "RESULTS", inspect(results))
         for index, result in pairs(results) do
-          if index == 1 then
+          if index == 1 and result["updated_at"] and result["updated_at"]["$date"] then
             api_users:set("last_updated_at", result["updated_at"]["$date"])
           end
 
-          handle_user_result(result)
+          if result["api_key"] then
+            ngx.shared.api_users:delete(result["api_key"])
+          end
         end
       end
     end

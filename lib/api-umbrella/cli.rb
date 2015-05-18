@@ -76,10 +76,16 @@ module ApiUmbrella
                   "_id" => SecureRandom.uuid,
                   "frontend_prefix" => "/api-umbrella/v1/health",
                   "backend_prefix" => "/api-umbrella/v1/health",
+                },
+                {
+                  "_id" => SecureRandom.uuid,
+                  "frontend_prefix" => "/api-umbrella/v1/state",
+                  "backend_prefix" => "/api-umbrella/v1/state",
                 }
               ],
               "settings" => {
                 "disable_api_key" => true,
+                "rate_limit_mode" => "unlimited",
               },
             },
             {

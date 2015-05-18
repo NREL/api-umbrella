@@ -1,7 +1,6 @@
 set $x_api_umbrella_request_id $txid;
 set $router_name "initial_router";
 access_log {{log_dir}}/router.log api_umbrella_initial_router_log buffer=32k flush=10s;
-access_log syslog:server=127.0.0.1:{{router.log_listener.port}} api_umbrella_initial_router_log;
 
 proxy_set_header X-Api-Umbrella-Request-ID $txid;
 
@@ -31,3 +30,5 @@ set $api_umbrella_backend_host '';
 set $api_umbrella_backend_id '';
 
 proxy_pass http://api_umbrella_trafficserver_backend;
+#proxy_pass http://api_umbrella_varnish_backend;
+#proxy_pass http://127.0.0.1:{{router.api_backends.port}};

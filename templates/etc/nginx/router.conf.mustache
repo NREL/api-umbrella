@@ -17,7 +17,6 @@ error_log stderr;
 env API_UMBRELLA_CONFIG;
 
 http {
-  error_log {{log_dir}}/router-error.log;
   access_log {{log_dir}}/router-access.log combined buffer=32k flush=10s;
 
   client_body_temp_path {{tmp_dir}}/router-nginx-client_body_temp;
@@ -152,6 +151,8 @@ http {
     keepalive 10;
   }
 
+  dyups_trylock on;
+  dyups_read_msg_timeout 300ms;
   server {
     listen 8081;
     location / {
@@ -161,8 +162,12 @@ http {
 
   server {
     listen 14008;
-    location / {
+    location /api-umbrella/v1/health {
       content_by_lua_file '{{gatekeeper.dir}}/conf/health.lua';
+    }
+
+    location /api-umbrella/v1/state {
+      content_by_lua_file '{{gatekeeper.dir}}/conf/state.lua';
     }
   }
 
@@ -298,7 +303,6 @@ http {
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
     set $router_name "api_backend_router";
     access_log {{log_dir}}/router.log api_umbrella_api_backend_router_log buffer=32k flush=10s;
-    access_log syslog:server=127.0.0.1:{{router.log_listener.port}} api_umbrella_api_backend_router_log;
 
     # Enable keep alive connections to the backend servers.
     proxy_http_version 1.1;

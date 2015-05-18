@@ -4,7 +4,6 @@ require('../test_helper');
 
 var apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
-    execFile = require('child_process').execFile,
     fs = require('fs'),
     fsExtra = require('fs-extra'),
     mkdirp = require('mkdirp'),
@@ -62,6 +61,8 @@ before(function mongoOrchestrationSetup() {
       body: fs.readFileSync(path.resolve(__dirname, '../config/mongo-orchestration.json')).toString(),
       timeout: 120000,
     }, function(error) {
+      global.mongoOrchestrationReady = true;
+
       if(error && !global.apiUmbrellaStopping) {
         console.error('mongo-orchestration failed: ', error);
         return process.exit(1);
@@ -70,9 +71,8 @@ before(function mongoOrchestrationSetup() {
   });
 });
 
-global.nginxPidFile = path.resolve(__dirname, '../tmp/nginx.pid');
 before(function apiUmbrellaStart(done) {
-  this.timeout(60000);
+  this.timeout(100000);
 
   process.stdout.write('Waiting for api-umbrella to start...');
   var startWaitLog = setInterval(function() {
@@ -87,22 +87,24 @@ before(function apiUmbrellaStart(done) {
   // Wait until we're able to establish a connection before moving on.
   var healthy = false;
   async.until(function() {
-    return healthy;
+    return healthy && global.mongoOrchestrationReady;
   }, function(callback) {
     request.get('http://127.0.0.1:9080/api-umbrella/v1/health', function(error, response, body) {
       if(!error && response && response.statusCode === 200) {
         var data = JSON.parse(body);
         if(data['status'] === 'green') {
           healthy = true;
-          console.info('\n');
-          clearInterval(startWaitLog);
           return callback();
         }
       }
 
       setTimeout(callback, 100);
     });
-  }, done);
+  }, function(error) {
+    console.info('\n');
+    clearInterval(startWaitLog);
+    done(error);
+  });
 });
 
 before(function copyRuntimeConfig() {

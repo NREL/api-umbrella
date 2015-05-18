@@ -7,7 +7,11 @@ if test ${1} = "start"; then
   echo "starting ${2}..."
   exec \
     runtrap test-env-mongo-orchestration ${0} \
-    mongo-orchestration --no-fork --port 13089 --bind 127.0.0.1 start
+    mongo-orchestration \
+      --no-fork \
+      --port 13089 \
+      --bind 127.0.0.1 \
+      start
 fi
 
 # mongo-orchestration doesn't respond properly to SIGTERM (which is what

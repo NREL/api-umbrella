@@ -3,51 +3,26 @@ local _M = {}
 local inspect = require "inspect"
 local utils = require "utils"
 
-local worker_version = 0
-local data = {}
+local append_array = utils.append_array
+local get_packed = utils.get_packed
 
 function _M.all_apis(host)
-  return data["apis"] or {}
-end
+  local data = get_packed(ngx.shared.apis, "packed_data")
 
-function _M.version(host)
-  return worker_version
-end
-
-function _M.for_host(host)
-  if DEBUG then _M.update_worker_cache_if_necessary() end
-
-  if host and data["apis_by_host"] then
-    return data["apis_by_host"][host]
-  end
-end
-
-function _M.update_worker_cache(version)
-  version = version or ngx.shared.apis:get("version") or 0
-  local shared_data = utils.get_packed(ngx.shared.apis, "packed_data") or {}
-
-  if shared_data["apis"] and shared_data["ids_by_host"] then
-    shared_data["apis_by_host"] = {}
-    for host, api_ids in pairs(shared_data["ids_by_host"]) do
-      for _, api_id in ipairs(api_ids) do
-        if not shared_data["apis_by_host"][host] then
-          shared_data["apis_by_host"][host] = {}
-        end
-
-        local api = shared_data["apis"][api_id]
-        table.insert(shared_data["apis_by_host"][host], api)
-      end
+  local all_apis = {}
+  if data and data["apis_by_host"] then
+    for _, apis_for_host in pairs(data["apis_by_host"]) do
+      append_array(all_apis, apis_for_host)
     end
   end
 
-  data = shared_data
-  worker_version = version
+  return all_apis
 end
 
-function _M.update_worker_cache_if_necessary()
-  local version = ngx.shared.apis:get("version") or 0
-  if version > worker_version then
-    _M.update_worker_cache(version)
+function _M.for_host(host)
+  local data = get_packed(ngx.shared.apis, "packed_data") or {}
+  if host and data["apis_by_host"] then
+    return data["apis_by_host"][host]
   end
 end
 
