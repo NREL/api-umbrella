@@ -68,6 +68,28 @@ describe('ApiUmbrellaGatekeper', function() {
             ]
           },
           {
+            'frontend_host': '*wild-without-dot-subdomain.foo',
+            'backend_host': 'example.com',
+            '_id': 'wildcard-without-dot-subdomain',
+            'url_matches': [
+              {
+                'frontend_prefix': '/info/wildcard-subdomain/',
+                'backend_prefix': '/info/wildcard-subdomain/'
+              }
+            ]
+          },
+          {
+            'frontend_host': '*.wild-with-dot-subdomain.foo',
+            'backend_host': 'example.com',
+            '_id': 'wildcard-with-dot-subdomain',
+            'url_matches': [
+              {
+                'frontend_prefix': '/info/wildcard-subdomain/',
+                'backend_prefix': '/info/wildcard-subdomain/'
+              }
+            ]
+          },
+          {
             'frontend_host': '*',
             'backend_host': 'example.com',
             '_id': 'wildcard',
@@ -209,6 +231,66 @@ describe('ApiUmbrellaGatekeper', function() {
           var data = JSON.parse(body);
           data.headers['x-api-umbrella-backend-id'].should.eql('wildcard');
           done();
+        });
+      });
+
+      describe('wildcard subdomains', function() {
+        it('matches wildcard with *. prefix when dot given', function(done) {
+          var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
+            headers: {
+              'Host': 'foo.wild-with-dot-subdomain.foo',
+            },
+          });
+
+          request.get(opts, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-with-dot-subdomain');
+            done();
+          });
+        });
+
+        describe('does not match wildcard subdomain with *. prefix when no dot given', function() {
+          shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
+            headers: {
+              'Host': 'foowild-with-dot-subdomain.foo',
+            },
+          });
+        });
+
+        it('matches wildcard with * prefix when dot given', function(done) {
+          var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
+            headers: {
+              'Host': 'foo.wild-without-dot-subdomain.foo',
+            },
+          });
+
+          request.get(opts, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-without-dot-subdomain');
+            done();
+          });
+        });
+
+        it('matches wildcard with * prefix when no dot given', function(done) {
+          var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
+            headers: {
+              'Host': 'foowild-without-dot-subdomain.foo',
+            },
+          });
+
+          request.get(opts, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-without-dot-subdomain');
+            done();
+          });
+        });
+
+        describe('escapes other possible regex characters in domain', function() {
+          shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
+            headers: {
+              'Host': 'foo.wild-without-dot-subdomainXfoo',
+            },
+          });
         });
       });
 
