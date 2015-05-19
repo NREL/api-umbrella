@@ -123,6 +123,14 @@ class Admin
     @disallowed_roles
   end
 
+  def serializable_hash(options = nil)
+    options ||= {}
+    options[:force_except] = options.fetch(:force_except, []) + [:authentication_token]
+    hash = super(options)
+    hash["group_names"] = self.group_names
+    hash
+  end
+
   private
 
   def generate_authentication_token

@@ -27,6 +27,7 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
     @admins_count = @admins.count
     @admins = @admins.to_a.select { |admin| Pundit.policy!(pundit_user, admin).show? }
+    self.respond_to_datatables(@admins, "admins #{Time.now.strftime("%b %-e %Y")}")
   end
 
   def show
