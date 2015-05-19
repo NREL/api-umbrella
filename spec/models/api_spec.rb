@@ -153,5 +153,129 @@ describe Api do
       api.errors_on(:backend_host).should include('must be in the format of "example.com"')
       api.errors_on(:"servers[0].host").should include('must be in the format of "example.com"')
     end
+
+    it "allows an empty string backend host when the frontend host is a wildcard" do
+      api = FactoryGirl.build(:api, {
+        :frontend_host => "*",
+        :backend_host => "",
+        :servers => [
+          FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        ]
+      })
+
+      api.valid?.should eql(true)
+    end
+
+    it "allows an null backend host when the frontend host is a wildcard" do
+      api = FactoryGirl.build(:api, {
+        :frontend_host => "*",
+        :backend_host => nil,
+        :servers => [
+          FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        ]
+      })
+
+      api.valid?.should eql(true)
+    end
+
+    it "allows an empty backend host when the frontend host contains a wildcard with dot" do
+      api = FactoryGirl.build(:api, {
+        :frontend_host => "*.example.com",
+        :backend_host => nil,
+        :servers => [
+          FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        ]
+      })
+
+      api.valid?.should eql(true)
+    end
+
+    it "allows an empty backend host when the frontend host contains a wildcard without dot" do
+      api = FactoryGirl.build(:api, {
+        :frontend_host => "*example.com",
+        :backend_host => nil,
+        :servers => [
+          FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        ]
+      })
+
+      api.valid?.should eql(true)
+    end
+
+    it "does not allow a frontend host starting with a dot" do
+      api = FactoryGirl.build(:api, {
+        :frontend_host => ".example.com",
+        :backend_host => "example.com",
+        :servers => [
+          FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        ]
+      })
+
+      api.valid?.should eql(false)
+      api.errors.messages.keys.sort.should eql([
+        :frontend_host,
+      ])
+    end
+
+    it "does not allow a frontend host equal to '.'" do
+      api = FactoryGirl.build(:api, {
+        :frontend_host => ".",
+        :backend_host => "example.com",
+        :servers => [
+          FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        ]
+      })
+
+      api.valid?.should eql(false)
+      api.errors.messages.keys.sort.should eql([
+        :frontend_host,
+      ])
+    end
+
+    it "does not allow a frontend host equal to '*.'" do
+      api = FactoryGirl.build(:api, {
+        :frontend_host => "*.",
+        :backend_host => "example.com",
+        :servers => [
+          FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        ]
+      })
+
+      api.valid?.should eql(false)
+      api.errors.messages.keys.sort.should eql([
+        :frontend_host,
+      ])
+    end
+
+    it "does not allow an empty backend host when the frontend host does not contain a wildcard" do
+      api = FactoryGirl.build(:api, {
+        :frontend_host => "example.com",
+        :backend_host => nil,
+        :servers => [
+          FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        ]
+      })
+
+      api.valid?.should eql(false)
+      api.errors.messages.keys.sort.should eql([
+        :backend_host,
+      ])
+    end
+
+    it "does not allow an empty backend host when the frontend host contains a wildcard in the middle" do
+      api = FactoryGirl.build(:api, {
+        :frontend_host => "exam*ple.com",
+        :backend_host => nil,
+        :servers => [
+          FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        ]
+      })
+
+      api.valid?.should eql(false)
+      api.errors.messages.keys.sort.should eql([
+        :backend_host,
+        :frontend_host,
+      ])
+    end
   end
 end

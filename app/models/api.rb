@@ -40,10 +40,13 @@ class Api
     }
   validates :backend_host,
     :presence => true,
+    :unless => proc { |record| record.frontend_host.start_with?("*") }
+  validates :backend_host,
     :format => {
       :with => CommonValidations::HOST_FORMAT,
       :message => :invalid_host_format,
-    }
+    },
+    :if => proc { |record| record.backend_host.present? }
   validates :balance_algorithm,
     :inclusion => { :in => %w(round_robin least_conn ip_hash) }
   validates_each :servers, :url_matches do |record, attr, value|
