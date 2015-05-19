@@ -1,12 +1,13 @@
-/.moonbox
-/log/*
-/node_modules
 /config/nginx.conf
 /config/runtime.json
 /config/runtime.yml*
+/deps
+/log/*
+/node_modules
 /test/config/nginx.conf
 /test/config/overrides.yml
 /test/config/runtime.json
 /test/config/runtime.yml*
 /test/log/*
 /test/tmp/*
+/vendor

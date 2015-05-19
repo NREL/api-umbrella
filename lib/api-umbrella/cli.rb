@@ -310,17 +310,19 @@ module ApiUmbrella
 
     def start_perp
       ENV["PATH"] = [
-        "/opt/api-umbrella-openresty/embedded/openresty/nginx/sbin",
-        "/opt/api-umbrella-openresty/embedded/elasticsearch/bin",
-        "/opt/api-umbrella-openresty/embedded/jre/bin",
-        "/opt/api-umbrella-openresty/embedded/sbin",
-        "/opt/api-umbrella-openresty/embedded/bin",
-        "/opt/api-umbrella/embedded/elasticsearch/bin",
-        "/opt/api-umbrella/embedded/sbin",
-        "/opt/api-umbrella/embedded/bin",
-        "/opt/api-umbrella/embedded/jre/bin",
-        "/vagrant/mora",
-        "/opt/trafficserver/bin",
+        "/tmp/api-umbrella-build/embedded/sbin",
+        "/tmp/api-umbrella-build/embedded/bin",
+        # "/opt/api-umbrella-openresty/embedded/openresty/nginx/sbin",
+        # "/opt/api-umbrella-openresty/embedded/elasticsearch/bin",
+        # "/opt/api-umbrella-openresty/embedded/jre/bin",
+        # "/opt/api-umbrella-openresty/embedded/sbin",
+        # "/opt/api-umbrella-openresty/embedded/bin",
+        # "/opt/api-umbrella/embedded/elasticsearch/bin",
+        # "/opt/api-umbrella/embedded/sbin",
+        # "/opt/api-umbrella/embedded/bin",
+        # "/opt/api-umbrella/embedded/jre/bin",
+        # "/vagrant/mora",
+        # "/opt/trafficserver/bin",
       ].join(":") + ":#{ENV["PATH"]}"
 
       perp_base = File.join(config["etc_dir"], "perp")

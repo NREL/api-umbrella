@@ -90,7 +90,8 @@ http {
     '"res_x_cache":"$sent_http_x_cache"'
   '}';
 
-  lua_package_path '{{gatekeeper.dir}}/conf/?.lua;{{gatekeeper.dir}}/.moonbox/share/lua/5.1/?.lua;{{gatekeeper.dir}}/.moonbox/share/lua/5.1/?/init.lua;;';
+  lua_package_path '{{gatekeeper.dir}}/conf/?.lua;{{gatekeeper.dir}}/vendor/share/lua/5.1/?.lua;{{gatekeeper.dir}}/vendor/share/lua/5.1/?/init.lua;;';
+  lua_package_cpath '{{gatekeeper.dir}}/vendor/lib/lua/5.1/?.so;;';
   #lua_code_cache off;
 
   lua_shared_dict stats 10m;
