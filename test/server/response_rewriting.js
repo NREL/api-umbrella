@@ -193,10 +193,11 @@ describe('response rewriting', function() {
         });
       });
       it('modifies the redirect if it references the domain', function(done) {
-        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('http://example.com/hello'), {followRedirect: false}, function(error, response) {
+        var apiKey = this.apiKey;
+        request.get(baseUrl(apiKey) + '&to=' + encodeURIComponent('http://example.com/hello'), {followRedirect: false}, function(error, response) {
           should.not.exist(error);
           response.statusCode.should.eql(302);
-          response.headers['location'].should.eql('http://localhost/hello');
+          response.headers['location'].should.eql('http://localhost/hello?api_key=' + apiKey);
           done();
         });
       });
@@ -217,10 +218,20 @@ describe('response rewriting', function() {
         });
       });
       it('replaces the path', function(done) {
-        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('http://example.com/backend-prefix/'), {followRedirect: false}, function(error, response) {
+        var apiKey = this.apiKey;
+        request.get(baseUrl(apiKey) + '&to=' + encodeURIComponent('http://example.com/backend-prefix/'), {followRedirect: false}, function(error, response) {
           should.not.exist(error);
           response.statusCode.should.eql(302);
-          response.headers['location'].should.eql('http://localhost/front/end/path/');
+          response.headers['location'].should.eql('http://localhost/front/end/path/?api_key=' + apiKey);
+          done();
+        });
+      });
+      it('does not interfere with existing GET params', function(done) {
+        var apiKey = this.apiKey;
+        request.get(baseUrl(apiKey) + '&to=' + encodeURIComponent('http://example.com/?some=param&and=another'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('http://localhost/?some=param&and=another&api_key=' + apiKey);
           done();
         });
       });
