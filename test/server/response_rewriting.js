@@ -176,11 +176,20 @@ describe('response rewriting', function() {
     });
     describe('RewriteResponse.rewriteRedirects', function() {
       var baseUrl = function(apiKey) { return 'http://localhost:9333/front/end/path/redirect?api_key=' + apiKey; };
-      it('does not modify the redirect if it is relative', function(done) {
-        request.get(baseUrl(this.apiKey), {followRedirect: false}, function(error, response) {
+      it('does not modify the redirect if it is relative, but not to a rewrite path', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('/somewhere'), {followRedirect: false}, function(error, response) {
           should.not.exist(error);
           response.statusCode.should.eql(302);
-          response.headers['location'].should.eql('/hello');
+          response.headers['location'].should.eql('/somewhere');
+          done();
+        });
+      });
+      it('modifies the redirect if it is relative, to a rewrite path', function(done) {
+        var apiKey = this.apiKey;
+        request.get(baseUrl(apiKey) + '&to=' + encodeURIComponent('/backend-prefix/more/here'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('/front/end/path/more/here?api_key=' + apiKey);
           done();
         });
       });
