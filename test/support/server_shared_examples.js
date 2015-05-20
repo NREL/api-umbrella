@@ -29,28 +29,27 @@ _.merge(global.shared, {
   },
 
   runServer: function(configOverrides) {
-    if(!configOverrides) {
-      configOverrides = {
-        apis: [
-          {
-            _id: 'example',
-            frontend_host: 'localhost',
-            backend_host: 'localhost',
-            servers: [
-              {
-                host: '127.0.0.1',
-                port: 9444,
-              },
-            ],
-            url_matches: [
-              {
-                frontend_prefix: '/',
-                backend_prefix: '/',
-              },
-            ],
-          },
-        ],
-      };
+    configOverrides = configOverrides || {};
+    if(!configOverrides.apis) {
+      configOverrides.apis = [
+        {
+          _id: 'example',
+          frontend_host: 'localhost',
+          backend_host: 'localhost',
+          servers: [
+            {
+              host: '127.0.0.1',
+              port: 9444,
+            },
+          ],
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            },
+          ],
+        },
+      ];
     }
 
     var runtimeKeys = ['apis', 'website_backends'];
