@@ -10,6 +10,7 @@ local types = require "pl.types"
 local utils = require "utils"
 local http = require "resty.http"
 
+local cache_computed_settings = utils.cache_computed_settings
 local clone_select = std_table.clone_select
 local invert = std_table.invert
 local is_empty = types.is_empty

@@ -3,7 +3,6 @@ local _M = {}
 local cjson = require "cjson"
 local cmsgpack = require "cmsgpack"
 local inspect = require "inspect"
-local iputils = require "resty.iputils"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local types = require "pl.types"
@@ -12,7 +11,6 @@ local escape = plutils.escape
 local is_empty = types.is_empty
 local json_null = cjson.null
 local pack = cmsgpack.pack
-local parse_cidrs = iputils.parse_cidrs
 local split = plutils.split
 local strip = stringx.strip
 local unpack = cmsgpack.unpack
@@ -127,9 +125,9 @@ function _M.cache_computed_settings(settings)
 
   -- Parse and cache the allowed IPs as CIDR ranges.
   if not is_empty(settings["allowed_ips"]) then
-    settings["_allowed_cidrs"] = parse_cidrs(settings["allowed_ips"])
-    settings["allowed_ips"] = nil
+    settings["_allowed_ips"] = settings["allowed_ips"]
   end
+  settings["allowed_ips"] = nil
 
   -- Parse and cache the allowed referers as matchers
   if not is_empty(settings["allowed_referers"]) then
@@ -140,8 +138,8 @@ function _M.cache_computed_settings(settings)
       matcher = "^" .. matcher .. "$"
       table.insert(settings["_allowed_referer_matchers"], matcher)
     end
-    settings["allowed_referers"] = nil
   end
+  settings["allowed_referers"] = nil
 
   if settings["append_query_string"] then
     settings["_append_query_args"] = ngx.decode_args(settings["append_query_string"])

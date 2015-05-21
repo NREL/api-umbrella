@@ -34,6 +34,12 @@ HEKA_DIGEST:=md5
 HEKA_CHECKSUM:=864625dff702306eba1494149ff903ee
 HEKA_URL:=https://github.com/mozilla-services/heka/releases/download/v$(HEKA_VERSION)/heka-$(HEKA_VERSION_UNDERSCORE)-linux-amd64.tar.gz
 
+LIBCIDR_VERSION:=1.2.3
+LIBCIDR:=libcidr-$(LIBCIDR_VERSION)
+LIBCIDR_DIGEST:=md5
+LIBCIDR_CHECKSUM:=c5efcc7ae114fdaa5583f58dacecd9de
+LIBCIDR_URL:=https://www.over-yonder.net/~fullermd/projects/libcidr/$(LIBCIDR).tar.xz
+
 LIBYAML_VERSION:=0.1.6
 LIBYAML:=libyaml-$(LIBYAML_VERSION)
 LIBYAML_DIGEST:=md5
@@ -162,6 +168,20 @@ deps/$(OPENRESTY)/.built: deps/$(OPENRESTY) deps/$(NGX_DYUPS) deps/$(NGX_TXID)
 		--add-module=../$(NGX_DYUPS) \
 		--add-module=../$(NGX_TXID)
 	cd $< && make
+	touch $@
+
+# libcidr
+deps/$(LIBCIDR).tar.gz: | deps
+	curl -L -o $@ $(LIBCIDR_URL)
+
+deps/$(LIBCIDR): deps/$(LIBCIDR).tar.xz
+	openssl $(LIBCIDR_DIGEST) $< | grep $(LIBCIDR_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
+deps/$(LIBCIDR)/.built: deps/$(LIBCIDR)
+	cd $< && make PREFIX=$(PREFIX)/embedded
 	touch $@
 
 # LibYAML
@@ -322,6 +342,7 @@ dependencies: \
 	deps/$(ELASTICSEARCH) \
 	deps/$(FREEGEOIP) \
 	deps/$(HEKA) \
+	deps/$(LIBCIDR)/.built \
 	deps/$(LIBYAML)/.built \
 	deps/$(LUAROCKS) \
 	deps/$(MONGODB) \
@@ -345,6 +366,8 @@ install_dependencies: all
 	cp deps/$(FREEGEOIP)/freegeoip $(PREFIX)/embedded/bin/
 	# Heka
 	rsync -a deps/$(HEKA)/ $(PREFIX)/embedded/
+	# libcidr
+	cd deps/$(LIBCIDR) && make install PREFIX=$(PREFIX)/embedded
 	# LibYAML
 	cd deps/$(LIBYAML) && make install
 	# MongoDB
@@ -365,8 +388,8 @@ install_dependencies: all
 vendor:
 	mkdir -p $@
 
-LUA_RESTY_IPUTILS:=lua-resty-iputils
-LUA_RESTY_IPUTILS_VERSION:=0.1.0-1
+LUA_LIBCIDR_FFI:=lua-libcidr-ffi
+LUA_LIBCIDR_FFI_VERSION:=0.1.0-1
 INSPECT:=inspect
 INSPECT_VERSION:=3.0-1
 LUA_CMSGPACK:=lua-cmsgpack
@@ -380,10 +403,6 @@ PENLIGHT_VERSION:=1.3.2-2
 STDLIB:=stdlib
 STDLIB_VERSION:=41.2.0-1
 
-vendor/lib/luarocks/rocks/$(LUA_RESTY_IPUTILS)/$(LUA_RESTY_IPUTILS_VERSION): deps/$(LUAROCKS)/.installed | vendor
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUA_RESTY_IPUTILS) $(LUA_RESTY_IPUTILS_VERSION)
-	touch $@
-
 vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION): deps/$(LUAROCKS)/.installed | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(INSPECT) $(INSPECT_VERSION)
 	touch $@
@@ -391,6 +410,10 @@ vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION): deps/$(LUAROCKS)/.insta
 vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): deps/$(LUAROCKS)/.installed | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUA_CMSGPACK) $(LUA_CMSGPACK_VERSION)
 	touch $@
+
+#vendor/lib/luarocks/rocks/$(LUA_LIBCIDR_FFI)/$(LUA_LIBCIDR_FFI_VERSION): deps/$(LUAROCKS)/.installed | vendor
+#	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUA_LIBCIDR_FFI) $(LUA_LIBCIDR_FFI_VERSION)
+#	touch $@
 
 vendor/lib/luarocks/rocks/$(LUSTACHE)/$(LUSTACHE_VERSION): deps/$(LUAROCKS)/.installed | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUSTACHE) $(LUSTACHE_VERSION)
@@ -417,7 +440,6 @@ vendor/share/lua/5.1/shcache.lua: deps/$(LUA_RESTY_SHCACHE) | vendor
 	touch $@
 
 install_app_dependencies: \
-	vendor/lib/luarocks/rocks/$(LUA_RESTY_IPUTILS)/$(LUA_RESTY_IPUTILS_VERSION) \
 	vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUSTACHE)/$(LUSTACHE_VERSION) \
