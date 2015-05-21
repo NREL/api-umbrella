@@ -24,6 +24,7 @@ proxy_buffering off;
 gunzip on;
 
 access_by_lua_file 'conf/access.lua';
+header_filter_by_lua_file 'conf/header_filter.lua';
 
 set $api_umbrella_backend_scheme '';
 set $api_umbrella_backend_host '';

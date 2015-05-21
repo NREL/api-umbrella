@@ -120,6 +120,21 @@ function _M.merge_settings(dest, src)
   return _M.deep_merge_overwrite_arrays(dest, src)
 end
 
+local function lowercase_settings_header_keys(settings, headers_key)
+  local computed_headers_key = "_" .. headers_key
+  if not is_empty(settings[headers_key]) then
+    settings[computed_headers_key] = {}
+    for _, header in ipairs(settings[headers_key]) do
+      if header["key"] then
+        header["key"] = string.lower(header["key"])
+      end
+
+      table.insert(settings[computed_headers_key], header)
+    end
+  end
+  settings[headers_key] = nil
+end
+
 function _M.cache_computed_settings(settings)
   if not settings then return end
 
@@ -140,6 +155,10 @@ function _M.cache_computed_settings(settings)
     end
   end
   settings["allowed_referers"] = nil
+
+  -- Lowercase header keys to match ngx.resp.getHeaders() output.
+  lowercase_settings_header_keys(settings, "default_response_headers")
+  lowercase_settings_header_keys(settings, "override_response_headers")
 
   if settings["append_query_string"] then
     settings["_append_query_args"] = ngx.decode_args(settings["append_query_string"])

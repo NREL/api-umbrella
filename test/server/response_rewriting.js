@@ -43,7 +43,7 @@ describe('response rewriting', function() {
 
     describe('default', function() {
       it('sets new header values', function(done) {
-        request.get('http://localhost:9333/headers/?api_key=' + this.apiKey, function(error, response) {
+        request.get('http://localhost:9080/headers/?api_key=' + this.apiKey, function(error, response) {
           should.not.exist(error);
           response.statusCode.should.eql(200);
           response.headers['x-add1'].should.eql('test1');
@@ -53,7 +53,7 @@ describe('response rewriting', function() {
       });
 
       it('leaves existing headers (case insensitive)', function(done) {
-        request.get('http://localhost:9333/headers/?api_key=' + this.apiKey, function(error, response) {
+        request.get('http://localhost:9080/headers/?api_key=' + this.apiKey, function(error, response) {
           should.not.exist(error);
           response.statusCode.should.eql(200);
           response.headers['x-existing1'].should.eql('existing1');
@@ -66,7 +66,7 @@ describe('response rewriting', function() {
 
     describe('sub-url match', function() {
       it('overrides the default header settings', function(done) {
-        request.get('http://localhost:9333/headers/sub/?api_key=' + this.apiKey, function(error, response) {
+        request.get('http://localhost:9080/headers/sub/?api_key=' + this.apiKey, function(error, response) {
           should.not.exist(error);
           response.statusCode.should.eql(200);
           should.not.exist(response.headers['x-add1']);
@@ -118,7 +118,7 @@ describe('response rewriting', function() {
 
     describe('default', function() {
       it('sets new header values', function(done) {
-        request.get('http://localhost:9333/headers/?api_key=' + this.apiKey, function(error, response) {
+        request.get('http://localhost:9080/headers/?api_key=' + this.apiKey, function(error, response) {
           should.not.exist(error);
           response.statusCode.should.eql(200);
           response.headers['x-add1'].should.eql('test1');
@@ -128,7 +128,7 @@ describe('response rewriting', function() {
       });
 
       it('overrides existing headers (case insensitive)', function(done) {
-        request.get('http://localhost:9333/headers/?api_key=' + this.apiKey, function(error, response) {
+        request.get('http://localhost:9080/headers/?api_key=' + this.apiKey, function(error, response) {
           should.not.exist(error);
           response.statusCode.should.eql(200);
           response.headers['x-existing1'].should.eql('test3');
@@ -141,7 +141,7 @@ describe('response rewriting', function() {
 
     describe('sub-url match', function() {
       it('overrides the default header settings', function(done) {
-        request.get('http://localhost:9333/headers/sub/?api_key=' + this.apiKey, function(error, response) {
+        request.get('http://localhost:9080/headers/sub/?api_key=' + this.apiKey, function(error, response) {
           should.not.exist(error);
           response.statusCode.should.eql(200);
           should.not.exist(response.headers['x-add1']);

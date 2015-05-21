@@ -109,3 +109,5 @@ local err = rewrite_request(user, api, settings)
 if err then
   return error_handler(err, settings)
 end
+
+ngx.ctx.settings = settings
