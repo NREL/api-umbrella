@@ -64,6 +64,12 @@ LUAROCKS_DIGEST:=md5
 LUAROCKS_CHECKSUM:=b46809e44648875e8234c2fef79783f9
 LUAROCKS_URL:=http://pkgs.fedoraproject.org/repo/pkgs/luarocks/$(LUAROCKS).tar.gz/$(LUAROCKS_CHECKSUM)/$(LUAROCKS).tar.gz
 
+LUSTACHE_VERSION:=241b3a16f358035887c2c05c6e151c1f48401a42
+LUSTACHE:=lustache-$(LUSTACHE_VERSION)
+LUSTACHE_DIGEST:=md5
+LUSTACHE_CHECKSUM:=7c64dd36bbb02e71a0e60e847b70d561
+LUSTACHE_URL:=https://github.com/Olivine-Labs/lustache/archive/$(LUSTACHE_VERSION).tar.gz
+
 MONGODB_VERSION:=3.0.3
 MONGODB:=mongodb-$(MONGODB_VERSION)
 MONGODB_DIGEST:=md5
@@ -239,6 +245,16 @@ deps/$(LUA_RESTY_SHCACHE): deps/$(LUA_RESTY_SHCACHE).tar.gz
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
+# lustache
+deps/$(LUSTACHE).tar.gz: | deps
+	curl -L -o $@ $(LUSTACHE_URL)
+
+deps/$(LUSTACHE): deps/$(LUSTACHE).tar.gz
+	openssl $(LUSTACHE_DIGEST) $< | grep $(LUSTACHE_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
 # Mora
 deps/$(MORA).tar.gz: | deps
 	curl -L -o $@ $(MORA_URL)
@@ -394,8 +410,6 @@ INSPECT:=inspect
 INSPECT_VERSION:=3.0-1
 LUA_CMSGPACK:=lua-cmsgpack
 LUA_CMSGPACK_VERSION:=0.3-2
-LUSTACHE:=lustache
-LUSTACHE_VERSION:=1.3-1
 LYAML:=lyaml
 LYAML_VERSION:=5.1.4-1
 PENLIGHT:=penlight
@@ -414,10 +428,6 @@ vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): deps/$(LUAROC
 #vendor/lib/luarocks/rocks/$(LUA_LIBCIDR_FFI)/$(LUA_LIBCIDR_FFI_VERSION): deps/$(LUAROCKS)/.installed | vendor
 #	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUA_LIBCIDR_FFI) $(LUA_LIBCIDR_FFI_VERSION)
 #	touch $@
-
-vendor/lib/luarocks/rocks/$(LUSTACHE)/$(LUSTACHE_VERSION): deps/$(LUAROCKS)/.installed | vendor
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUSTACHE) $(LUSTACHE_VERSION)
-	touch $@
 
 vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION): deps/$(LUAROCKS)/.installed | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LYAML) $(LYAML_VERSION) YAML_DIR=$(PREFIX)/embedded
@@ -439,13 +449,17 @@ vendor/share/lua/5.1/shcache.lua: deps/$(LUA_RESTY_SHCACHE) | vendor
 	rsync -a deps/$(LUA_RESTY_SHCACHE)/*.lua vendor/share/lua/5.1/
 	touch $@
 
+vendor/share/lua/5.1/lustache.lua: deps/$(LUSTACHE) | vendor
+	rsync -a deps/$(LUSTACHE)/src/ vendor/share/lua/5.1/
+	touch $@
+
 install_app_dependencies: \
 	vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
-	vendor/lib/luarocks/rocks/$(LUSTACHE)/$(LUSTACHE_VERSION) \
 	vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION) \
 	vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION) \
 	vendor/lib/luarocks/rocks/$(STDLIB)/$(STDLIB_VERSION) \
+	vendor/share/lua/5.1/lustache.lua \
 	vendor/share/lua/5.1/resty/http.lua \
 	vendor/share/lua/5.1/shcache.lua
 

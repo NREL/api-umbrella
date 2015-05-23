@@ -79,15 +79,11 @@ return function(user)
       ngx.req.set_uri(new_path)
     end
 
-    -- Set the nginx variables that will determine which nginx upstream this
+    -- Set the nginx headers that will determine which nginx upstream this
     -- request gets proxied to.
-    ngx.var.api_umbrella_backend_scheme = api["backend_protocol"] or "http"
-    ngx.var.api_umbrella_backend_host = api["backend_host"] or ngx.ctx.host
-    ngx.var.api_umbrella_backend_id = api["_id"]
-
-    ngx.req.set_header("X-Api-Umbrella-Backend-Scheme", ngx.var.api_umbrella_backend_scheme)
-    ngx.req.set_header("X-Api-Umbrella-Backend-Host", ngx.var.api_umbrella_backend_host)
-    ngx.req.set_header("X-Api-Umbrella-Backend-Id", ngx.var.api_umbrella_backend_id)
+    ngx.req.set_header("X-Api-Umbrella-Backend-Scheme", api["backend_protocol"] or "http")
+    ngx.req.set_header("X-Api-Umbrella-Backend-Host", api["backend_host"] or ngx.ctx.host)
+    ngx.req.set_header("X-Api-Umbrella-Backend-Id", api["_id"])
 
     return api, url_match
   else

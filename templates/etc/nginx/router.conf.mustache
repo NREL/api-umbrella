@@ -323,7 +323,7 @@ http {
     proxy_http_version 1.1;
     proxy_set_header Connection "";
 
-    proxy_set_header Host $host;
+    proxy_set_header Host $http_x_api_umbrella_backend_host;
     proxy_set_header X-Api-Umbrella-Backend-Scheme "";
     proxy_set_header X-Api-Umbrella-Backend-Host "";
     proxy_set_header X-Api-Umbrella-Backend-Id "";

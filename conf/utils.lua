@@ -156,6 +156,18 @@ function _M.cache_computed_settings(settings)
   end
   settings["allowed_referers"] = nil
 
+  if not is_empty(settings["headers"]) then
+    settings["_headers"] = {}
+    for _, header in ipairs(settings["headers"]) do
+      if header["value"] and string.find(header["value"], "{{") then
+        header["_process_as_template"] = true
+      end
+
+      table.insert(settings["_headers"], header)
+    end
+  end
+  settings["headers"] = nil
+
   -- Lowercase header keys to match ngx.resp.getHeaders() output.
   lowercase_settings_header_keys(settings, "default_response_headers")
   lowercase_settings_header_keys(settings, "override_response_headers")

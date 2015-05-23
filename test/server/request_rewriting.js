@@ -10,6 +10,10 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('request rewriting', function() {
+  function stripStandardHeaders(headers) {
+    return _.omit(headers, 'host', 'connection', 'x-api-key', 'x-api-user-id', 'x-api-umbrella-request-id', 'x-forwarded-for', 'x-forwarded-port', 'x-forwarded-proto', 'via');
+  }
+
   describe('api key stripping', function() {
     shared.runServer();
 
@@ -518,10 +522,6 @@ describe('request rewriting', function() {
       ],
     });
 
-    function stripStandardHeaders(headers) {
-      return _.omit(headers, 'host', 'connection', 'x-api-umbrella-backend-scheme', 'x-api-umbrella-backend-id', 'x-api-key', 'x-api-user-id');
-    }
-
     describe('default', function() {
       it('sets header values', function(done) {
         request.get('http://localhost:9080/info/?api_key=' + this.apiKey, function(error, response, body) {
@@ -585,9 +585,8 @@ describe('request rewriting', function() {
             headers: [
               { key: 'X-Dynamic', value: '({{headers.x-dynamic-source}}-{{headers.x-dynamic-source}})' },
               { key: 'X-Dynamic-Missing', value: '{{headers.x-missing}}' },
-              { key: 'X-Dynamic-Default-Absent', value: '{{#if headers.x-missing}}{{headers.x-missing}}{{else}}default{{/if}}' },
-              { key: 'X-Dynamic-Default-Present', value: '{{#if headers.x-dynamic-source}}{{headers.x-dynamic-source}}{{else}}static{{/if}}' },
-
+              { key: 'X-Dynamic-Default-Absent', value: '{{#headers.x-missing}}{{headers.x-missing}}{{/headers.x-missing}}{{^headers.x-missing}}default{{/headers.x-missing}}' },
+              { key: 'X-Dynamic-Default-Present', value: '{{#headers.x-dynamic-source}}{{headers.x-dynamic-source}}{{/headers.x-dynamic-source}}{{^headers.x-dynamic-source}}static{{/headers.x-dynamic-source}}' },
             ],
           },
           sub_settings: [
@@ -605,13 +604,8 @@ describe('request rewriting', function() {
       ],
     });
 
-    function stripStandardHeaders(headers) {
-      return _.omit(headers, 'host', 'connection', 'x-api-umbrella-backend-scheme', 'x-api-umbrella-backend-id', 'x-api-key', 'x-api-user-id');
-    }
-
     describe('default', function() {
-
-      it('evaluates dynamic headers', function(done) {
+      it('evaluates dynamic headers including if statements', function(done) {
         var options = {
           headers: {
             'x-dynamic-source': 'dynamic'
@@ -625,13 +619,33 @@ describe('request rewriting', function() {
             'x-dynamic-source': 'dynamic',
             // x-dynamic-missing is not set
             'x-dynamic-default-absent': 'default',
-            'x-dynamic-default-present': 'dynamic',            
+            'x-dynamic-default-present': 'dynamic',
           });
 
           done();
         });
       });
 
+      it('evaluates dynamic headers including inverted statements', function(done) {
+        var options = {
+          headers: {
+            'x-missing': 'not-missing'
+          },
+        };
+
+        request.get('http://localhost:9080/info/?api_key=' + this.apiKey, options, function(error, response, body) {
+          var data = JSON.parse(body);
+          stripStandardHeaders(data.headers).should.eql({
+            'x-dynamic': '(-)',
+            'x-missing': 'not-missing',
+            'x-dynamic-missing': 'not-missing',
+            'x-dynamic-default-absent': 'not-missing',
+            'x-dynamic-default-present': 'static',
+          });
+
+          done();
+        });
+      });
     });
 
     describe('sub-url match', function() {
@@ -1334,7 +1348,7 @@ describe('request rewriting', function() {
       var curl = new Curler();
       curl.request({
         method: 'GET',
-        url: 'http://localhost:9333/info/test\\backslash?test=\\hello&api_key=' + this.apiKey,
+        url: 'http://localhost:9080/info/test\\backslash?test=\\hello&api_key=' + this.apiKey,
       }, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);

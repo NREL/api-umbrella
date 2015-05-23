@@ -81,9 +81,38 @@ local function append_query_string(settings)
 end
 
 local function set_headers(settings)
-  if settings["headers"] then
-    for _, header in ipairs(settings["headers"]) do
-      ngx.req.set_header(header["key"], header["value"])
+  local template_vars = nil
+
+  if settings["_headers"] then
+    for _, header in ipairs(settings["_headers"]) do
+      local value = nil
+
+      -- The headers replacement may optionally be processed as a Mustache
+      -- template, but for efficiency only do that if we've detected the value
+      -- is a template.
+      if header["_process_as_template"] then
+        -- Only generate the mustache template variables if a mustache template
+        -- header is being used. But then cache it for potential subsequent
+        -- headers in this loop.
+        if not template_vars then
+          template_vars = {
+            headers = ngx.req.get_headers(),
+          }
+
+          setmetatable(template_vars["headers"], nil)
+        end
+
+        local ok, output = pcall(lustache.render, lustache, header["value"], template_vars)
+        if ok then
+          value = output
+        else
+          ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. inspect(output))
+        end
+      else
+        value = header["value"]
+      end
+
+      ngx.req.set_header(header["key"], value)
     end
   end
 end
