@@ -1291,51 +1291,6 @@ describe('request rewriting', function() {
     });
   });
 
-  // These tests probably belong in the router project, once we get the full
-  // stack more testable there (so we can actually verify Varnish works):
-  // https://github.com/NREL/api-umbrella/issues/28
-  //
-  // Also, this is a little tricky to test in node.js, since all OPTIONS
-  // requests originating from node's http library currently add the chunked
-  // headers: https://github.com/joyent/node/pull/7725 So we'll drop to a curl
-  // library to make these test requests.
-  describe('OPTIONS fixes', function() {
-    shared.runServer();
-
-    it('does not add chunked headers for requests without a body', function(done) {
-      var curl = new Curler();
-      curl.request({
-        method: 'OPTIONS',
-        url: 'http://localhost:9080/info/?test=test&api_key=' + this.apiKey,
-      }, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        var data = JSON.parse(body);
-        should.not.exist(data.headers['transfer-encoding']);
-        done();
-      });
-    });
-
-    it('passes chunked headers for requests with a body', function(done) {
-      var curl = new Curler();
-      curl.request({
-        method: 'OPTIONS',
-        url: 'http://localhost:9080/info/?test=test&api_key=' + this.apiKey,
-        headers: {
-          'Transfer-Encoding': 'chunked',
-          'Content-Length': '4',
-        },
-        data: 'test',
-      }, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        var data = JSON.parse(body);
-        data.headers['transfer-encoding'].should.eql('chunked');
-        done();
-      });
-    });
-  });
-
   describe('url encoding', function() {
     shared.runServer();
 
@@ -1353,8 +1308,7 @@ describe('request rewriting', function() {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.url.query.test.should.eql('\\hello');
-        data.url.pathname.should.eql('/info/test%5Cbackslash');
-        data.raw_url.should.contain(data.url.pathname);
+        data.raw_url.should.eql('http://localhost/info/test\\backslash?test=%5Chello');
         done();
       }.bind(this));
     });
