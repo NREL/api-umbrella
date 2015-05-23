@@ -2,7 +2,8 @@
 
 require('../test_helper');
 
-var Factory = require('factory-lady'),
+var async = require('async'),
+    Factory = require('factory-lady'),
     request = require('request');
 
 describe('api key validation', function() {
@@ -87,6 +88,24 @@ describe('api key validation', function() {
           body.should.eql('Hello World');
           done();
         });
+      });
+
+      it('key works across parllel calls (testing key lookup caching behavior)', function(done) {
+        async.times(20, function(index, callback) {
+          request.get('http://localhost:9080/hello?api_key=' + this.apiKey, function(error, response, body) {
+            body.should.eql('Hello World');
+            callback();
+          });
+        }.bind(this), done);
+      });
+
+      it('key works across repeated calls (testing key lookup caching behavior)', function(done) {
+        async.timesSeries(20, function(index, callback) {
+          request.get('http://localhost:9080/hello?api_key=' + this.apiKey, function(error, response, body) {
+            body.should.eql('Hello World');
+            callback();
+          });
+        }.bind(this), done);
       });
     });
   });

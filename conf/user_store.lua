@@ -42,7 +42,11 @@ local function lookup_user(api_key)
       })
 
       -- Ensure IDs get stored as strings, even if Mongo ObjectIds are in use.
-      user["id"] = tostring(raw["_id"])
+      if raw["_id"] and raw["_id"]["$oid"] then
+        user["id"] = raw["_id"]["$oid"]
+      else
+        user["id"] = raw["_id"]
+      end
 
       -- Invert the array of roles into a hashy table for more optimized
       -- lookups (so we can just check if the key exists, rather than
@@ -91,7 +95,7 @@ function _M.get(api_key)
 
   local shared_cache, err = shcache:new(ngx.shared.api_users, {
     encode = cmsgpack.pack,
-    decode = cmsgpack.decode,
+    decode = cmsgpack.unpack,
     external_lookup = lookup_user,
     external_lookup_arg = api_key,
   }, {
