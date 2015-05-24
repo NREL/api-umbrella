@@ -18,6 +18,97 @@ var _ = require('lodash'),
 temp.track();
 
 describe('proxying', function() {
+  shared.runServer({
+    apis: [
+      {
+        _id: 'down',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9450,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/down',
+            backend_prefix: '/down',
+          },
+        ],
+      },
+      {
+        _id: 'keepalive9445',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9445,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/keepalive9445/',
+            backend_prefix: '/keepalive9445/',
+          },
+        ],
+      },
+      {
+        _id: 'keepalive9446',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9446,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/keepalive9446/',
+            backend_prefix: '/keepalive9446/',
+          },
+        ],
+        keepalive_connections: 2,
+      },
+      {
+        _id: 'keepalive9447',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9447,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/keepalive9447/',
+            backend_prefix: '/keepalive9447/',
+          },
+        ],
+      },
+      {
+        _id: 'example',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/',
+            backend_prefix: '/',
+          },
+        ],
+      },
+    ],
+  });
+
   beforeEach(function createUser(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.apiKey = user.api_key;
@@ -996,10 +1087,7 @@ describe('proxying', function() {
         data.url.query.more_utf8.should.eql('¬¶ªþ¤l');
         data.url.query.more_utf8_hex.should.eql('¬¶ªþ¤l');
         data.url.query.more_utf8_hex_lowercase.should.eql('¬¶ªþ¤l');
-        data.url.query.actual_backslash_x.should.eql('\\xAC\\xB6\\xAA\\xFE\\xA4l');
-        data.url.pathname.should.eql('/info/utf8/✓/encoded_utf8/%E2%9C%93/');
-        data.raw_url.should.contain(data.url.pathname);
-        data.raw_url.should.contain('utf8=%E2%9C%93&utf8_url_encoded=%E2%9C%93&more_utf8=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex_lowercase=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&actual_backslash_x=%5CxAC%5CxB6%5CxAA%5CxFE%5CxA4l');
+        data.raw_url.should.endWith('/info/utf8/%E2%9C%93/encoded_utf8/%E2%9C%93/?unique_query_id=' + this.uniqueQueryId + '&utf8=✓&utf8_url_encoded=%E2%9C%93&more_utf8=¬¶ªþ¤l&more_utf8_hex=\xAC\xB6\xAA\xFE\xA4l&more_utf8_hex_lowercase=\xac\xb6\xaa\xfe\xa4l&actual_backslash_x=\\xAC\\xB6\\xAA\\xFE\\xA4l');
         done();
       });
     });
@@ -1011,16 +1099,14 @@ describe('proxying', function() {
       var curl = new Curler();
       curl.request({
         method: 'GET',
-        url: 'http://localhost:9080/info/extra//slash/some\\backslash/encoded%5Cbackslash/encoded%2Fslash?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&forward_slash=/slash&encoded_forward_slash=%2F&back_slash=\\&encoded_back_slash=%5C',
+        url: 'http://localhost:9080/info/extra//slash/some\\backslash/encoded%5Cbackslash/encoded%2Fslash/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&forward_slash=/slash&encoded_forward_slash=%2F&back_slash=\\&encoded_back_slash=%5C',
       }, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.url.query.forward_slash.should.eql('/slash');
         data.url.query.encoded_forward_slash.should.eql('/');
-        data.url.query.back_slash.should.eql('\\');
         data.url.query.encoded_back_slash.should.eql('\\');
-        data.url.pathname.should.eql('/info/extra//slash/some%5Cbackslash/encoded%5Cbackslash/encoded%2Fslash');
-        data.raw_url.should.contain(data.url.pathname);
+        data.raw_url.should.endWith('/info/extra/slash/some\\backslash/encoded\\backslash/encoded/slash/?unique_query_id=' + this.uniqueQueryId + '&forward_slash=/slash&encoded_forward_slash=%2F&back_slash=\\&encoded_back_slash=%5C');
         done();
       });
     });

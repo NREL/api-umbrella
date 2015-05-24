@@ -37,15 +37,14 @@ local function pass_api_key(user, settings)
   local arg_api_key = ngx.ctx.arg_api_key
   if pass_api_key_query_param and user then
     if arg_api_key ~= user["api_key"] then
-      local args = ngx.req.get_uri_args() or {}
-      args["api_key"] = user["api_key"]
+      local args = utils.remove_arg(ngx.ctx.args, "api_key")
+      args = utils.append_args(args, "api_key=" .. user["api_key"])
       set_uri(nil, args)
     end
-  elseif arg_api_key then
+  else
     -- Strip the api key from the query string, so better HTTP caching can be
     -- performed (so the URL won't vary for each user).
-    local args = ngx.req.get_uri_args() or {}
-    args["api_key"] = nil
+    local args = utils.remove_arg(ngx.ctx.args, "api_key")
     set_uri(nil, args)
   end
 
@@ -74,9 +73,19 @@ local function set_roles_header(user)
 end
 
 local function append_query_string(settings)
-  if settings["_append_query_args"] then
-    local args = ngx.req.get_uri_args() or {}
-    deep_merge_overwrite_arrays(args, settings["_append_query_args"])
+  if settings["append_query_string"] then
+    local args = ngx.ctx.args
+
+    -- First remove any existing query parameters that match the names of the
+    -- query parameters we're going to override.
+    if settings["_append_query_arg_names"] then
+      for _, arg_name in ipairs(settings["_append_query_arg_names"]) do
+        args = utils.remove_arg(args, arg_name)
+      end
+    end
+
+    -- Next, add the query string to the end.
+    args = utils.append_args(args, settings["append_query_string"])
     set_uri(nil, args)
   end
 end

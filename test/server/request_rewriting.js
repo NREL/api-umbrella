@@ -27,8 +27,78 @@ describe('request rewriting', function() {
       }.bind(this));
     });
 
-    it('strips the api key from the query string', function(done) {
+    it('strips the api key from the query string when no other query args are present', function(done) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.query.should.eql({});
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips the api key from the beginning of the query string', function(done) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey + '&test=test', function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.query.should.eql({ 'test': 'test' });
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips the api key from the middle of the query string', function(done) {
+      request.get('http://localhost:9080/info/?test=test&api_key=' + this.apiKey + '&foo=bar', function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.query.should.eql({ 'test': 'test', 'foo': 'bar' });
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips the api key from the end of the query string', function(done) {
       request.get('http://localhost:9080/info/?test=test&api_key=' + this.apiKey, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.query.should.eql({ 'test': 'test' });
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips the api key from the query string if passed in multiple times', function(done) {
+      request.get('http://localhost:9080/info/?api_key=' + this.apiKey + '&api_key=foo&test=test&api_key=bar', function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.query.should.eql({ 'test': 'test' });
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips the api key from the query string even if it contains the incorrect api key', function(done) {
+      request.get('http://localhost:9080/info/?api_key=oops_typo_incorrect_api_key&test=test', this.options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.query.should.eql({ 'test': 'test' });
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips the api key from the query string if it is an empty argument', function(done) {
+      request.get('http://localhost:9080/info/?api_key=&test=test', this.options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.query.should.eql({ 'test': 'test' });
+
+        done();
+      }.bind(this));
+    });
+
+    it('strips the api key from the query string if it is a boolean argument', function(done) {
+      request.get('http://localhost:9080/info/?api_key&test=test', this.options, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         data.url.query.should.eql({ 'test': 'test' });
@@ -218,6 +288,15 @@ describe('request rewriting', function() {
 
     it('passes the api key in the query string even if passed in via other means', function(done) {
       request.get('http://localhost:9080/info/', this.options, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.url.query.api_key.should.eql(this.apiKey);
+
+        done();
+      }.bind(this));
+    });
+
+    it('overwrites an invalid api key parameter', function(done) {
+      request.get('http://localhost:9080/info/?api_key=foo', this.options, function(error, response, body) {
         var data = JSON.parse(body);
         data.url.query.api_key.should.eql(this.apiKey);
 
@@ -418,6 +497,69 @@ describe('request rewriting', function() {
     });
   });
 
+  describe('query string order', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          sub_settings: [
+            {
+              http_method: 'any',
+              regex: '^/info/append-api-key',
+              settings: {
+                pass_api_key_query_param: true,
+              },
+            },
+            {
+              http_method: 'any',
+              regex: '^/info/append-query-string',
+              settings: {
+                append_query_string: '1=a&2=b&z=3',
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    it('preserves the original query string order when the api key gets removed', function(done) {
+      request.get('http://localhost:9080/info/?ccc=foo&aaa=bar&api_key=' + this.apiKey + '&b=test', this.options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.raw_url.should.contain('/info/?ccc=foo&aaa=bar&b=test');
+        done();
+      });
+    });
+
+    it('preserves the original query string order when the api key gets added', function(done) {
+      request.get('http://localhost:9080/info/append-api-key?ccc=foo&aaa=bar&b=test', this.options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.raw_url.should.contain('/info/append-api-key?ccc=foo&aaa=bar&b=test&api_key=' + this.apiKey);
+        done();
+      }.bind(this));
+    });
+
+    it('preserves the original query string order when appending extra query strings', function(done) {
+      request.get('http://localhost:9080/info/append-query-string?ccc=foo&aaa=bar&b=test', this.options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.raw_url.should.contain('/info/append-query-string?ccc=foo&aaa=bar&b=test&1=a&2=b&z=3');
+        done();
+      }.bind(this));
+    });
+  });
+
   describe('appending query strings', function() {
     shared.runServer({
       apis: [
@@ -447,7 +589,31 @@ describe('request rewriting', function() {
     });
 
     describe('default', function() {
-      it('appends the query string', function(done) {
+      it('appends the query string to a url with no query string', function(done) {
+        request.get('http://localhost:9080/info/', this.options, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.url.query.should.eql({
+            'add_param1': 'test1',
+            'add_param2': 'test2',
+          });
+
+          done();
+        });
+      });
+
+      it('appends the query string to a url with an empty query string', function(done) {
+        request.get('http://localhost:9080/info/?', this.options, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.url.query.should.eql({
+            'add_param1': 'test1',
+            'add_param2': 'test2',
+          });
+
+          done();
+        });
+      });
+
+      it('appends the query string to a url with an existing query string', function(done) {
         request.get('http://localhost:9080/info/?test=test', this.options, function(error, response, body) {
           var data = JSON.parse(body);
           data.url.query.should.eql({
@@ -1307,8 +1473,7 @@ describe('request rewriting', function() {
       }, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
-        data.url.query.test.should.eql('\\hello');
-        data.raw_url.should.eql('http://localhost/info/test\\backslash?test=%5Chello');
+        data.raw_url.should.endWith('/info/test\\backslash?test=\\hello');
         done();
       }.bind(this));
     });

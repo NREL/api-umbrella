@@ -2,4 +2,6 @@
 
 require('../test_helper');
 
-global.should = require('chai').should();
+var chai = require('chai');
+chai.use(require('chai-string'));
+global.should = chai.should();

@@ -76,6 +76,7 @@
     "blanket": "1.1.6",
     "body-parser": "1.9.2",
     "chai": "2.2.0",
+    "chai-string": "1.1.1",
     "compression": "1.2.0",
     "connect-busboy": "0.0.2",
     "coveralls": "2.11.2",

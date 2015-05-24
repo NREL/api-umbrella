@@ -2,7 +2,7 @@ local inspect = require "inspect"
 local tablex = require "pl.tablex"
 local utils = require "utils"
 
-local merge_settings = utils.merge_settings
+local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local deepcopy = tablex.deepcopy
 
 return function(settings, user)
@@ -10,6 +10,6 @@ return function(settings, user)
 
   if user and user["settings"] then
     settings["original_user_settings"] = deepcopy(user["settings"])
-    merge_settings(settings, settings["original_user_settings"])
+    deep_merge_overwrite_arrays(settings, settings["original_user_settings"])
   end
 end

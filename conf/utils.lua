@@ -5,11 +5,14 @@ local cmsgpack = require "cmsgpack"
 local inspect = require "inspect"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
+local tablex = require "pl.tablex"
 local types = require "pl.types"
 
 local escape = plutils.escape
+local gsub = ngx.re.gsub
 local is_empty = types.is_empty
 local json_null = cjson.null
+local keys = tablex.keys
 local pack = cmsgpack.pack
 local split = plutils.split
 local strip = stringx.strip
@@ -106,20 +109,6 @@ function _M.deep_merge_overwrite_arrays(dest, src)
   return dest
 end
 
-function _M.merge_settings(dest, src)
-  if not src then return dest end
-
-  -- Specially handle merging the query args to append. This attribute should
-  -- actually overwrite any previous values, but since the cached value is
-  -- parsed as a table, we have to explicitly overwrite it, rather than relying
-  -- on our deep merge.
-  if not is_empty(src["_append_query_args"]) then
-    dest["_append_query_args"] = src["_append_query_args"]
-  end
-
-  return _M.deep_merge_overwrite_arrays(dest, src)
-end
-
 local function lowercase_settings_header_keys(settings, headers_key)
   local computed_headers_key = "_" .. headers_key
   if not is_empty(settings[headers_key]) then
@@ -173,9 +162,8 @@ function _M.cache_computed_settings(settings)
   lowercase_settings_header_keys(settings, "override_response_headers")
 
   if settings["append_query_string"] then
-    settings["_append_query_args"] = ngx.decode_args(settings["append_query_string"])
+    settings["_append_query_arg_names"] = keys(ngx.decode_args(settings["append_query_string"]))
   end
-  settings["append_query_string"] = nil
 
   if settings["http_basic_auth"] then
     settings["_http_basic_auth_header"] = "Basic " .. ngx.encode_base64(settings["http_basic_auth"])
@@ -266,6 +254,40 @@ function _M.parse_accept(header, supported_media_types)
       end
     end
   end
+end
+
+function _M.remove_arg(original_args, remove)
+  local args = original_args
+  if args then
+    -- Remove the given argument name from the query string via a regex.
+    --
+    -- Note: OpenResty's table based approach with
+    -- ngx.req.get_uri_args/ngx.req.set_uri_args would be a little cleaner, but
+    -- ngx.req.get_uri_args re-sorts all the query parameters alphabetically,
+    -- which we don't want to do by default. We could revisit this, but my
+    -- thinking is that re-sorting the query parameters may interfere with some
+    -- specific use-cases, like if the underlying API cares about the arg
+    -- order, or if you were signing a URL with HMAC, in which case the order
+    -- matters (although, in that case, stripping any arguments may also
+    -- matter, but in general it just seems safer to default to doing less
+    -- changes to the query string).
+    args = gsub(args, "\\b" .. remove .. "=?[^&]*(&|$)", "")
+    args = gsub(args, "&$", "")
+  end
+
+  return args
+end
+
+function _M.append_args(original_args, append)
+  local args = original_args
+  if append then
+    if args then
+      args = args .. "&"
+    end
+    args = (args or "") .. append
+  end
+
+  return args
 end
 
 function _M.set_uri(new_path, new_args)

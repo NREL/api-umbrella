@@ -2,7 +2,7 @@ local inspect = require "inspect"
 local tablex = require "pl.tablex"
 local utils = require "utils"
 
-local merge_settings = utils.merge_settings
+local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local deepcopy = tablex.deepcopy
 
 return function(api)
@@ -11,7 +11,7 @@ return function(api)
 
   -- Merge the base API settings on top.
   if api["settings"] then
-    merge_settings(settings, api["settings"])
+    deep_merge_overwrite_arrays(settings, api["settings"])
   end
 
   -- See if there's any settings for a matching sub-url.
@@ -22,7 +22,7 @@ return function(api)
       if sub_settings["http_method"] == "any" or sub_settings["http_method"] == request_method then
         local match, err = ngx.re.match(request_uri, sub_settings["regex"], "io")
         if match then
-          merge_settings(settings, sub_settings["settings"])
+          deep_merge_overwrite_arrays(settings, sub_settings["settings"])
           break
         end
       end
