@@ -73,7 +73,6 @@
   },
   "devDependencies": {
     "basic-auth-connect": "1.0.0",
-    "blanket": "1.1.6",
     "body-parser": "1.9.2",
     "chai": "2.2.0",
     "chai-string": "1.1.1",
@@ -112,14 +111,5 @@
     "type": "git",
     "url": "https://github.com/NREL/api-umbrella-gatekeeper.git"
   },
-  "license": "MIT",
-  "config": {
-    "blanket": {
-      "pattern": "/lib/",
-      "data-cover-never": [
-        "test",
-        "node_modules"
-      ]
-    }
-  }
+  "license": "MIT"
 }
