@@ -8,6 +8,8 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('caching', function() {
+  shared.runServer();
+
   beforeEach(function createUser(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.apiKey = user.api_key;
@@ -81,8 +83,8 @@ describe('caching', function() {
       result.firstResponse.headers['x-unique-output'].length.should.be.greaterThan(0);
       result.firstResponse.headers['x-unique-output'].should.not.eql(result.secondResponse.headers['x-unique-output']);
 
-      trafficServerViaCode(result.firstResponse, 's').should.eql('S'); // served from origin server
-      trafficServerViaCode(result.secondResponse, 's').should.eql('S'); // served from origin server
+      result.firstResponse.headers['x-cache'].should.eql('MISS');
+      result.secondResponse.headers['x-cache'].should.eql('MISS');
 
       done(error, result);
     });
@@ -98,8 +100,8 @@ describe('caching', function() {
       result.firstResponse.headers['x-unique-output'].length.should.be.greaterThan(0);
       result.firstResponse.headers['x-unique-output'].should.eql(result.secondResponse.headers['x-unique-output']);
 
-      trafficServerViaCode(result.firstResponse, 's').should.eql('S'); // served from origin server
-      trafficServerViaCode(result.secondResponse, 's').should.eql(' '); // no origin server connection needed
+      result.firstResponse.headers['x-cache'].should.eql('MISS');
+      result.secondResponse.headers['x-cache'].should.eql('HIT');
 
       done(error, result);
     });

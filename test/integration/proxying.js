@@ -603,6 +603,7 @@ describe('proxying', function() {
 
     describe('compressible response types', function() {
       [
+        '', // Gets turned into text/plain
         'application/atom+xml',
         'application/javascript',
         'application/json',
@@ -637,7 +638,6 @@ describe('proxying', function() {
 
     describe('non-compressible response types', function() {
       [
-        '',
         'image/png',
         'application/octet-stream',
         'application/x-perl',
@@ -929,6 +929,45 @@ describe('proxying', function() {
             callback();
           });
         }, done);
+      });
+    });
+  });
+
+  describe('content type', function() {
+    // This is a side-effect of setting the X-Cache header in OpenResty. It
+    // appears like OpenResty forces a default text/plain content-type when it
+    // changes any other header if the content-type isn't already set. If this
+    // changes in the future to retaining no header, that should be fine, just
+    // testing current behavior.
+    it('turns an empty content-type response header into text/plain', function(done) {
+      var options = _.merge({}, this.options, {
+        url: 'http://localhost:9080/compressible/1000',
+        qs: {
+          content_type: '',
+        },
+        gzip: true,
+      });
+
+      request(options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        response.headers['content-type'].should.eql('text/plain');
+        done();
+      });
+    });
+
+    it('keeps any existing contet-type as is', function(done) {
+      var options = _.merge({}, this.options, {
+        url: 'http://localhost:9080/compressible/1000',
+        qs: {
+          content_type: 'Qwerty',
+        },
+        gzip: true,
+      });
+
+      request(options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        response.headers['content-type'].should.eql('Qwerty');
+        done();
       });
     });
   });
