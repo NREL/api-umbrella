@@ -174,17 +174,23 @@ function _M.cache_computed_settings(settings)
 
   if settings["append_query_string"] then
     settings["_append_query_args"] = ngx.decode_args(settings["append_query_string"])
-    settings["append_query_string"] = nil
   end
+  settings["append_query_string"] = nil
 
   if settings["http_basic_auth"] then
     settings["_http_basic_auth_header"] = "Basic " .. ngx.encode_base64(settings["http_basic_auth"])
-    settings["http_basic_auth"] = nil
   end
+  settings["http_basic_auth"] = nil
 
   if settings["api_key_verification_transition_start_at"] and settings["api_key_verification_transition_start_at"]["$date"] then
-    settings["api_key_verification_transition_start_at"] = settings["api_key_verification_transition_start_at"]["$date"]
+    settings["_api_key_verification_transition_start_at"] = settings["api_key_verification_transition_start_at"]["$date"]
   end
+  settings["api_key_verification_transition_start_at"] = nil
+
+  if settings["require_https_transition_start_at"] and settings["require_https_transition_start_at"]["$date"] then
+    settings["_require_https_transition_start_at"] = settings["require_https_transition_start_at"]["$date"]
+  end
+  settings["require_https_transition_start_at"] = nil
 end
 
 function _M.parse_accept(header, supported_media_types)
@@ -258,6 +264,32 @@ function _M.parse_accept(header, supported_media_types)
       else
         return nil
       end
+    end
+  end
+end
+
+function _M.set_uri(new_path, new_args)
+  if new_path then
+    ngx.req.set_uri(new_path)
+
+    -- Update the cached variable.
+    ngx.ctx.uri = ngx.var.uri
+  end
+
+  if new_args then
+    ngx.req.set_uri_args(new_args)
+
+    -- Update the cached variable.
+    ngx.ctx.args = ngx.var.args
+  end
+
+  -- If either value changed, update the cached request_uri variable. We have
+  -- to manually put this together based on the other values since
+  -- ngx.var.request_uri does not automatically update.
+  if new_path or new_args then
+    ngx.ctx.request_uri = ngx.ctx.uri
+    if ngx.ctx.args then
+      ngx.ctx.request_uri = ngx.ctx.request_uri .. "?" .. ngx.ctx.args
     end
   end
 end

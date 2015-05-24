@@ -86,6 +86,7 @@ module ApiUmbrella
               "settings" => {
                 "disable_api_key" => true,
                 "rate_limit_mode" => "unlimited",
+                "require_https" => "optional",
               },
             },
             {

@@ -8,6 +8,7 @@ local apis_for_host = api_store.for_host
 local append_array = utils.append_array
 local gsub = string.gsub
 local is_empty = types.is_empty
+local set_uri = utils.set_uri
 local startswith = stringx.startswith
 
 local function apis_for_request_host()
@@ -69,14 +70,14 @@ local function match_api(request_path)
 end
 
 return function(user)
-  local request_path = ngx.ctx.uri
+  local request_path = ngx.ctx.original_uri
   local api, url_match = match_api(request_path)
 
   if api and url_match then
     -- Rewrite the URL prefix path.
     new_path = gsub(request_path, url_match["_frontend_prefix_matcher"], url_match["backend_prefix"], 1)
     if new_path ~= request_path then
-      ngx.req.set_uri(new_path)
+      set_uri(new_path)
     end
 
     -- Set the nginx headers that will determine which nginx upstream this

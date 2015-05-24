@@ -10,6 +10,7 @@ local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local gsub = ngx.re.gsub
 local is_empty = types.is_empty
 local keys = tablex.keys
+local set_uri = utils.set_uri
 local size = tablex.size
 local split = plutils.split
 local strip = stringx.strip
@@ -38,14 +39,14 @@ local function pass_api_key(user, settings)
     if arg_api_key ~= user["api_key"] then
       local args = ngx.req.get_uri_args() or {}
       args["api_key"] = user["api_key"]
-      ngx.req.set_uri_args(args)
+      set_uri(nil, args)
     end
   elseif arg_api_key then
     -- Strip the api key from the query string, so better HTTP caching can be
     -- performed (so the URL won't vary for each user).
     local args = ngx.req.get_uri_args() or {}
     args["api_key"] = nil
-    ngx.req.set_uri_args(args)
+    set_uri(nil, args)
   end
 
   -- Never pass along basic auth if it's how the api key was passed in
@@ -76,7 +77,7 @@ local function append_query_string(settings)
   if settings["_append_query_args"] then
     local args = ngx.req.get_uri_args() or {}
     deep_merge_overwrite_arrays(args, settings["_append_query_args"])
-    ngx.req.set_uri_args(args)
+    set_uri(nil, args)
   end
 end
 
@@ -164,16 +165,11 @@ local function url_rewrites(api)
   if not api["rewrites"] then return end
 
   local request_method = ngx.ctx.request_method
-  local original_path = ngx.var.uri
-  local original_uri = ngx.var.uri
-  local original_args = ngx.var.args
-  if original_args then
-    original_uri = original_uri .. "?" .. original_args
-  end
-  local new_uri = original_uri
+  local original_uri = ngx.ctx.request_uri
+  local new_uri = ngx.ctx.request_uri
 
   for _, rewrite in ipairs(api["rewrites"]) do
-    if rewrite["http_method"] == "any" or rewrite["http_method"] == ngx.ctx.request_method then
+    if rewrite["http_method"] == "any" or rewrite["http_method"] == request_method then
       if rewrite["matcher_type"] == "regex" then
         new_uri = gsub(new_uri, rewrite["frontend_matcher"], rewrite["backend_replacement"], "io")
 
@@ -243,8 +239,7 @@ local function url_rewrites(api)
     local parts = split(new_uri, "?", true, 2)
     local path = parts[1]
     local args = parts[2] or {}
-    ngx.req.set_uri(path)
-    ngx.req.set_uri_args(args)
+    set_uri(path, args)
   end
 end
 

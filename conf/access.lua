@@ -2,6 +2,7 @@ local api_key_validator = require "api_key_validator"
 local api_matcher = require "api_matcher"
 local api_settings = require "api_settings"
 local error_handler = require "error_handler"
+local https_validator = require "https_validator"
 local ip_validator = require "ip_validator"
 local rate_limit = require "rate_limit"
 local referer_validator = require "referer_validator"
@@ -14,6 +15,7 @@ local ngx_var = ngx.var
 -- Cache various "ngx.var" lookups that are repeated throughout the stack,
 -- so they don't allocate duplicate memory during the request, and since
 -- ngx.var lookups are apparently somewhat expensive.
+ngx.ctx.args = ngx_var.args
 ngx.ctx.arg_api_key = ngx_var.arg_api_key
 ngx.ctx.host = ngx_var.http_x_forwarded_host or ngx_var.http_host or ngx_var.host
 ngx.ctx.http_x_api_key = ngx_var.http_x_api_key
@@ -22,7 +24,10 @@ ngx.ctx.protocol = ngx_var.http_x_forwarded_proto or ngx_var.scheme
 ngx.ctx.remote_addr = ngx_var.remote_addr
 ngx.ctx.remote_user = ngx_var.remote_user
 ngx.ctx.request_method = string.lower(ngx.var.request_method)
-ngx.ctx.uri = ngx_var.uri
+ngx.ctx.original_request_uri = ngx_var.request_uri
+ngx.ctx.request_uri = ngx.ctx.original_request_uri
+ngx.ctx.original_uri = ngx_var.uri
+ngx.ctx.uri = ngx.ctx.original_uri
 
 -- When nginx is first starting or the workers are being reloaded (SIGHUP),
 -- pause the request serving until the API config and upstreams have been
@@ -75,6 +80,12 @@ end
 local err = user_settings(settings, user)
 if err then
   return error_handler(err, settings)
+end
+
+-- If this API requires access over HTTPS, verify that it's happening.
+local err, err_data = https_validator(settings, user)
+if err then
+  return error_handler(err, settings, err_data)
 end
 
 -- If this API requires roles, verify that the user has those.

@@ -6,6 +6,7 @@ local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
 local utils = require "utils"
 
+local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local deepcopy = tablex.deepcopy
 local extension = path.extension
 local split = plutils.split
@@ -93,7 +94,7 @@ local function render_template(template, data, format, strip_whitespace)
   end
 end
 
-return function(err, settings)
+return function(err, settings, extra_data)
   if not settings then
     settings = config["apiSettings"]
   end
@@ -105,9 +106,10 @@ return function(err, settings)
     data = deepcopy(settings["error_data"]["internal_server_error"])
   end
 
-  data["message"] = render_template(data["message"], {
+  local message_data = deep_merge_overwrite_arrays({
     ["baseUrl"] = utils.base_url(),
-  })
+  }, extra_data)
+  data["message"] = render_template(data["message"], message_data)
 
   local status_code = data["status_code"]
   if not status_code then

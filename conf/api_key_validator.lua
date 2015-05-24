@@ -61,7 +61,7 @@ return function(settings)
         return nil, "api_key_unverified"
       end
     elseif verification_level == "transition_email" then
-      local transition_start_at = settings["api_key_verification_transition_start_at"]
+      local transition_start_at = settings["_api_key_verification_transition_start_at"]
       if user["created_at"] and user["created_at"] >= transition_start_at and not user["email_verified"] then
         return nil, "api_key_unverified"
       end
