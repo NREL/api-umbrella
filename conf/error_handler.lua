@@ -95,6 +95,9 @@ local function render_template(template, data, format, strip_whitespace)
 end
 
 return function(err, settings, extra_data)
+  -- Store the gatekeeper rejection code for logging.
+  ngx.ctx.gatekeeper_denied_code = err
+
   if not settings then
     settings = config["apiSettings"]
   end

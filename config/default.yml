@@ -20,6 +20,9 @@ db_dir: /opt/api-umbrella/var/db
 redis:
   host: 127.0.0.1
   port: 14000
+heka:
+  host: 127.0.0.1
+  port: 14014
 beanstalkd:
   host: 127.0.0.1
   port: 14005

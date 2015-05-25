@@ -35,7 +35,9 @@ local function lookup_user(api_key)
       local user = utils.pick_where_present(raw, {
         "created_at",
         "disabled_at",
+        "email",
         "email_verified",
+        "registration_source",
         "roles",
         "settings",
         "throttle_by_ip",

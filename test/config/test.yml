@@ -14,6 +14,8 @@ static_site:
   build_dir: /tmp/api-umbrella-test/static_site_build
 redis:
   port: 13000
+heka:
+  port: 13014
 beanstalkd:
   port: 13005
 dnsmasq:

@@ -52,6 +52,12 @@ LUA_RESTY_HTTP_DIGEST:=md5
 LUA_RESTY_HTTP_CHECKSUM:=bf489d545d99c11f8deef769cfd5fec2
 LUA_RESTY_HTTP_URL:=https://github.com/pintsized/lua-resty-http/archive/v$(LUA_RESTY_HTTP_VERSION).tar.gz
 
+LUA_RESTY_LOGGER_SOCKET_VERSION:=89864590fea7273bff37925d11e7fc4239bb2f8c
+LUA_RESTY_LOGGER_SOCKET:=lua-resty-logger-socket-$(LUA_RESTY_LOGGER_SOCKET_VERSION)
+LUA_RESTY_LOGGER_SOCKET_DIGEST:=md5
+LUA_RESTY_LOGGER_SOCKET_CHECKSUM:=847c220a6d93262fc001e9761de9bcf0
+LUA_RESTY_LOGGER_SOCKET_URL:=https://github.com/cloudflare/lua-resty-logger-socket/archive/$(LUA_RESTY_LOGGER_SOCKET_VERSION).tar.gz
+
 LUA_RESTY_SHCACHE_VERSION:=fb2e275c2cdca08eaa34a7b73375e41ac3eff200
 LUA_RESTY_SHCACHE:=lua-resty-shcache-$(LUA_RESTY_SHCACHE_VERSION)
 LUA_RESTY_SHCACHE_DIGEST:=md5
@@ -235,6 +241,16 @@ deps/$(LUA_RESTY_HTTP): deps/$(LUA_RESTY_HTTP).tar.gz
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
+# lua-resty-logger-socket
+deps/$(LUA_RESTY_LOGGER_SOCKET).tar.gz: | deps
+	curl -L -o $@ $(LUA_RESTY_LOGGER_SOCKET_URL)
+
+deps/$(LUA_RESTY_LOGGER_SOCKET): deps/$(LUA_RESTY_LOGGER_SOCKET).tar.gz
+	openssl $(LUA_RESTY_LOGGER_SOCKET_DIGEST) $< | grep $(LUA_RESTY_LOGGER_SOCKET_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
 # lua-resty-shcache
 deps/$(LUA_RESTY_SHCACHE).tar.gz: | deps
 	curl -L -o $@ $(LUA_RESTY_SHCACHE_URL)
@@ -410,6 +426,8 @@ INSPECT:=inspect
 INSPECT_VERSION:=3.0-1
 LUA_CMSGPACK:=lua-cmsgpack
 LUA_CMSGPACK_VERSION:=0.3-2
+LUAUTF8:=luautf8
+LUAUTF8_VERSION:=0.1.0-1
 LYAML:=lyaml
 LYAML_VERSION:=5.1.4-1
 PENLIGHT:=penlight
@@ -423,6 +441,10 @@ vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION): deps/$(LUAROCKS)/.insta
 
 vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): deps/$(LUAROCKS)/.installed | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUA_CMSGPACK) $(LUA_CMSGPACK_VERSION)
+	touch $@
+
+vendor/lib/luarocks/rocks/$(LUAUTF8)/$(LUAUTF8_VERSION): deps/$(LUAROCKS)/.installed | vendor
+	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUAUTF8) $(LUAUTF8_VERSION)
 	touch $@
 
 #vendor/lib/luarocks/rocks/$(LUA_LIBCIDR_FFI)/$(LUA_LIBCIDR_FFI_VERSION): deps/$(LUAROCKS)/.installed | vendor
@@ -445,6 +467,10 @@ vendor/share/lua/5.1/resty/http.lua: deps/$(LUA_RESTY_HTTP) | vendor
 	rsync -a deps/$(LUA_RESTY_HTTP)/lib/resty/ vendor/share/lua/5.1/resty/
 	touch $@
 
+vendor/share/lua/5.1/resty/logger/socket.lua: deps/$(LUA_RESTY_LOGGER_SOCKET) | vendor
+	rsync -a deps/$(LUA_RESTY_LOGGER_SOCKET)/lib/resty/ vendor/share/lua/5.1/resty/
+	touch $@
+
 vendor/share/lua/5.1/shcache.lua: deps/$(LUA_RESTY_SHCACHE) | vendor
 	rsync -a deps/$(LUA_RESTY_SHCACHE)/*.lua vendor/share/lua/5.1/
 	touch $@
@@ -456,11 +482,13 @@ vendor/share/lua/5.1/lustache.lua: deps/$(LUSTACHE) | vendor
 install_app_dependencies: \
 	vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
+	vendor/lib/luarocks/rocks/$(LUAUTF8)/$(LUAUTF8_VERSION) \
 	vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION) \
 	vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION) \
 	vendor/lib/luarocks/rocks/$(STDLIB)/$(STDLIB_VERSION) \
 	vendor/share/lua/5.1/lustache.lua \
 	vendor/share/lua/5.1/resty/http.lua \
+	vendor/share/lua/5.1/resty/logger/socket.lua \
 	vendor/share/lua/5.1/shcache.lua
 
 install: all install_dependencies install_app_dependencies

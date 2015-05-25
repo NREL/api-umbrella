@@ -1,6 +1,5 @@
 set $x_api_umbrella_request_id $txid;
-set $router_name "initial_router";
-access_log {{log_dir}}/router.log api_umbrella_initial_router_log buffer=32k flush=10s;
+log_by_lua_file 'conf/log_initial_proxy.lua';
 
 proxy_set_header X-Api-Umbrella-Request-ID $txid;
 

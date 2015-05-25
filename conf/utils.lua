@@ -52,9 +52,10 @@ function _M.append_array(dest, src)
 end
 
 function _M.base_url()
-  local protocol = ngx.ctx.protocol
-  local host = ngx.ctx.host
-  local port = ngx.ctx.port
+  local ngx_ctx = ngx.ctx
+  local protocol = ngx_ctx.protocol
+  local host = ngx_ctx.host
+  local port = ngx_ctx.port
 
   local base = protocol .. "://" .. host
   if (protocol == "http" and port ~= "80") or (protocol == "https" and port ~= "443") then
@@ -291,29 +292,46 @@ function _M.append_args(original_args, append)
 end
 
 function _M.set_uri(new_path, new_args)
+  local ngx_ctx = ngx.ctx
+  local ngx_var = ngx.var
+
   if new_path then
     ngx.req.set_uri(new_path)
 
     -- Update the cached variable.
-    ngx.ctx.uri = ngx.var.uri
+    ngx_ctx.uri = ngx_var.uri
   end
 
   if new_args then
     ngx.req.set_uri_args(new_args)
 
     -- Update the cached variable.
-    ngx.ctx.args = ngx.var.args
+    ngx_ctx.args = ngx_var.args
   end
 
   -- If either value changed, update the cached request_uri variable. We have
   -- to manually put this together based on the other values since
   -- ngx.var.request_uri does not automatically update.
   if new_path or new_args then
-    ngx.ctx.request_uri = ngx.ctx.uri
-    if ngx.ctx.args then
-      ngx.ctx.request_uri = ngx.ctx.request_uri .. "?" .. ngx.ctx.args
+    ngx_ctx.request_uri = ngx_ctx.uri
+    if ngx_ctx.args then
+      ngx_ctx.request_uri = ngx_ctx.request_uri .. "?" .. ngx_ctx.args
     end
   end
+end
+
+function _M.round(value)
+  return math.floor(value + 0.5)
+end
+
+function _M.overhead_timer(start_time)
+  local ngx_ctx = ngx.ctx
+
+  if not ngx_ctx.internal_overhead then
+    ngx_ctx.internal_overhead = 0
+  end
+
+  ngx_ctx.internal_overhead = ngx_ctx.internal_overhead + (ngx.now() - start_time)
 end
 
 return _M

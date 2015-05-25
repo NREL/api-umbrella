@@ -57,3 +57,6 @@ CONFIG proxy.config.cache.enable_read_while_writer INT 0
 # Include information in the Via response indicating whether this was a cache
 # hit or not.
 CONFIG proxy.config.http.insert_response_via_str INT 2
+
+# Don't override the "Server" response header with at TrafficServer signature.
+CONFIG proxy.config.http.response_server_enabled INT 0

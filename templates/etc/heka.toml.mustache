@@ -1,0 +1,46 @@
+[hekad]
+base_dir = "{{db_dir}}/heka"
+share_dir = "/tmp/api-umbrella-build/embedded/share/heka"
+
+[TcpInput]
+address = "{{heka.host}}:{{heka.port}}"
+splitter = "TokenSplitter"
+decoder = "JsonDecoder"
+
+[JsonDecoder]
+type = "SandboxDecoder"
+filename = "/vagrant/lua-integration/heka/json_decoder.lua"
+
+[RstEncoder]
+
+[FileOutput]
+message_matcher = "TRUE"
+path = "/tmp/counter-output.log"
+perm = "666"
+flush_interval = 10
+encoder = "RstEncoder"
+
+[ESJsonEncoder]
+index = "api-umbrella-logs-v1-%{2006-01}"
+es_index_from_timestamp = true
+type_name = "log"
+fields = ["Fields"]
+id = "EnvVersion"
+raw_bytes_fields  = ["request_query"]
+
+[es_payload]
+type = "SandboxEncoder"
+filename = "/vagrant/lua-integration/heka/es_payload.lua"
+    [es_payload.config]
+    es_index_from_timestamp = true
+    index = "api-umbrella-logs-v1-%{%Y-%m}"
+    type_name = "log"
+
+[ElasticSearchOutput]
+message_matcher = "TRUE"
+server = "http://127.0.0.1:13002"
+flush_interval = 1000
+flush_count = 10
+encoder = "es_payload"
+use_buffering = true
+queue_max_buffer_size = 0

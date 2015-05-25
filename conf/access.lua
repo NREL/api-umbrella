@@ -1,3 +1,4 @@
+local start_time = ngx.now()
 local api_key_validator = require "api_key_validator"
 local api_matcher = require "api_matcher"
 local api_settings = require "api_settings"
@@ -9,6 +10,7 @@ local referer_validator = require "referer_validator"
 local rewrite_request = require "rewrite_request"
 local role_validator = require "role_validator"
 local user_settings = require "user_settings"
+local utils = require "utils"
 
 local ngx_var = ngx.var
 
@@ -121,4 +123,9 @@ if err then
   return error_handler(err, settings)
 end
 
+-- Store the settings for use by the header_filter.
 ngx.ctx.settings = settings
+
+-- Compute how much time we spent in Lua processing during this phase of the
+-- request.
+utils.overhead_timer(start_time)

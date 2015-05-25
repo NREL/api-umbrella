@@ -17,30 +17,60 @@ var _ = require('lodash'),
 var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 describe('logging', function() {
-  // Clear all the queued beanstalk jobs before running these logging tests, so
-  // we ensure we don't have a big backlog of logs to process from tests that
-  // ran before this suite. This ensures we're testing the logging specific
-  // functionality with a fresh-slate and it's performance won't be impacted by
-  // previous tests.
-  before(function clearBeanstalkData(done) {
-    this.timeout(10000);
-
-    var configPath = processEnv.supervisordConfigPath();
-    var execOpts = {
-      env: processEnv.env(),
-    };
-
-    // Beanstalk doesn't have a super easy way to delete all jobs (without
-    // peeking and deleting records one at a time), so let's stop beanstalk,
-    // wipe the directory, and start it back up.
-    execFile('supervisorctl', ['-c', configPath, 'stop', 'beanstalkd'], execOpts, function(error) {
-      if(error) { return done(error); }
-
-      rimraf.sync(path.join(config.get('db_dir'), 'beanstalkd'));
-      mkdirp.sync(path.join(config.get('db_dir'), 'beanstalkd'));
-
-      execFile('supervisorctl', ['-c', configPath, 'start', 'beanstalkd'], execOpts, done);
-    });
+  shared.runServer({
+    apis: [
+      {
+        _id: 'down',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9450,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/down',
+            backend_prefix: '/down',
+          },
+        ],
+      },
+      {
+        _id: 'example',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/',
+            backend_prefix: '/',
+          },
+        ],
+      },
+      {
+        _id: 'wildcard-frontend-host',
+        frontend_host: '*',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/wildcard-info/',
+            backend_prefix: '/info/',
+          },
+        ],
+      },
+    ],
   });
 
   function generateUniqueQueryId() {
@@ -127,10 +157,10 @@ describe('logging', function() {
   }
 
   function itLogsBaseFields(record, uniqueQueryId, user) {
-    record.request_at.should.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ$/);
+    record.request_at.should.match(/^\d{13}$/);
     record.request_hierarchy.should.be.an('array');
     record.request_hierarchy.length.should.be.gte(1);
-    record.request_host.should.eql('localhost');
+    record.request_host.should.eql('localhost:9080');
     record.request_ip.should.match(/^\d+\.\d+\.\d+\.\d+$/);
     record.request_method.should.eql('GET');
     record.request_path.should.be.a('string');
@@ -145,6 +175,8 @@ describe('logging', function() {
     record.response_size.should.be.a('number');
     record.response_status.should.be.a('number');
     record.response_time.should.be.a('number');
+    record.internal_gatekeeper_time.should.be.a('number');
+    record.proxy_overhead.should.be.a('number');
 
     if(user) {
       record.api_key.should.eql(user.api_key);
@@ -155,17 +187,12 @@ describe('logging', function() {
   }
 
   function itLogsBackendFields(record) {
-    record.internal_gatekeeper_time.should.be.a('number');
-    record.internal_response_time.should.be.a('number');
     record.backend_response_time.should.be.a('number');
   }
 
   function itDoesNotLogBackendFields(record) {
-    should.not.exist(record.internal_gatekeeper_time);
-    should.not.exist(record.internal_response_time);
     should.not.exist(record.backend_response_time);
   }
-
 
   it('logs all the expected response fileds (for a non-chunked, non-gzipped response)', function(done) {
     this.timeout(4500);
@@ -207,7 +234,6 @@ describe('logging', function() {
           'api_key',
           'backend_response_time',
           'internal_gatekeeper_time',
-          'internal_response_time',
           'proxy_overhead',
           'request_accept',
           'request_accept_encoding',
@@ -243,21 +269,20 @@ describe('logging', function() {
         record.api_key.should.eql(this.apiKey);
         record.backend_response_time.should.be.a('number');
         record.internal_gatekeeper_time.should.be.a('number');
-        record.internal_response_time.should.be.a('number');
         record.proxy_overhead.should.be.a('number');
         record.request_accept.should.eql('text/plain; q=0.5, text/html');
         record.request_accept_encoding.should.eql('compress, gzip');
-        record.request_at.should.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\dZ$/);
+        record.request_at.should.match(/^\d{13}$/);
         record.request_basic_auth_username.should.eql('basic-auth-username-example');
         record.request_connection.should.eql('close');
         record.request_content_type.should.eql('application/x-www-form-urlencoded');
         record.request_hierarchy.should.eql([
-          '0/localhost/',
-          '1/localhost/logging-example/',
-          '2/localhost/logging-example/foo/',
-          '3/localhost/logging-example/foo/bar',
+          '0/localhost:9080/',
+          '1/localhost:9080/logging-example/',
+          '2/localhost:9080/logging-example/foo/',
+          '3/localhost:9080/logging-example/foo/bar',
         ]);
-        record.request_host.should.eql('localhost');
+        record.request_host.should.eql('localhost:9080');
         record.request_ip.should.eql('10.10.10.11');
         record.request_method.should.eql('GET');
         record.request_origin.should.eql('http://foo.example');
@@ -271,7 +296,7 @@ describe('logging', function() {
         record.request_query.unique_query_id.should.eql(this.uniqueQueryId);
         record.request_query.url1.should.eql('http://example.com/?foo=bar&foo=bar more stuff');
         (new Buffer(record.request_query.url2)).toString('base64').should.eql('77+9');
-        (new Buffer(record.request_query.url3)).toString('base64').should.eql('aHR0cHM6Ly9leGFtcGxlLmNvbS9mb28v77+90Lnvv73vv73vv73vv73vv73Koe+/ve+/ve+/ve+/ve+/ve+/vdK7wqXvv73vv73vv73vv73vv73xu6qz77+9MjAw77+977+90rXvv73vv73vv73vv73vv73vv73vv73vv73vv73vv73Gt++/ve+/ve+/ve+/ve+/vfK/qrfvv73vv73vv73vv73vv73Ct++/ve+/vc2j77+977+9MjDvv73vv73vv73Co++/vdK177+977+977+9w7fvv73vv73vv73vv73vv73ItO+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/ve+/vdC077+977+97qGj77+977+9yqHvv73vv73vv73Yue+/ve+/ve+/ve+/vcW3w77Wt++/vdOz77+977+9Mu+/ve+/ve+/ve+/ve+/vcu077+977+977+977+92rTLsO+/ve+/vdCj77+977+977+977+9x7vvv73vv73vv73vv73vv73vv73vv73Kp9aw77+977+91rAvc2l0ZXMvZGVmYXVsdC9maWxlcy9nb29nbGVhbmFseXRpY3MvZ2EuanM=');
+        (new Buffer(record.request_query.url3)).toString('base64').should.eql('aHR0cHM6Ly9leGFtcGxlLmNvbS9mb28vw5bQuc+owr3CrcOLw5XKocK4w5PDk8Ocw4/DmNK7wqXDhcOMw4o9PcOHMjAww5PDoNK1w5bPnMK5wrrDgsekwrXDhMOJw4zGt8K3wr/Co8Ksw5LDksKiw4nDjMOFw5zCt8OSw5HNo8K5wqQyMMK4w7bDlMKjwqzStcOWw7fDhMO3wr/DjsOew43Du8i0w5DDqMK8w4zDkMOQw5LDuMOQ0LTHtsK/7qGjw4/Dssqhw4rDkMOP2LnHtMK8w5LDkMW3w77Wt8K007PCvcO8MsOEw6rDjsOew4jLtMKmw4Dvv73DlNq0y7DCuMOW0KPCrMOOw5LDg8e7wrPDksOJw5PDkMOIw4vKp9aww6TDgtawL3NpdGVzL2RlZmF1bHQvZmlsZXMvZ29vZ2xlYW5hbHl0aWNzL2dhLmpz');
         record.request_referer.should.eql('http://example.com');
         record.request_scheme.should.eql('http');
         record.request_size.should.be.a('number');
@@ -281,7 +306,7 @@ describe('logging', function() {
         record.request_user_agent_type.should.eql('Library');
         record.response_age.should.eql(20);
         record.response_content_type.should.eql('text/plain; charset=utf-8');
-        record.response_server.should.eql('nginx');
+        record.response_server.should.eql('openresty');
         record.response_size.should.be.a('number');
         record.response_status.should.eql(200);
         record.response_time.should.be.a('number');
@@ -467,9 +492,10 @@ describe('logging', function() {
     // calls url.parse which has a bug that causes backslashes to become
     // forward slashes https://github.com/joyent/node/pull/8459
     var curl = new Curler();
+    var args = 'utf8=✓&utf8_url_encoded=%E2%9C%93&more_utf8=¬¶ªþ¤l&more_utf8_hex=\xAC\xB6\xAA\xFE\xA4l&more_utf8_hex_lowercase=\xac\xb6\xaa\xfe\xa4l&actual_backslash_x=\\xAC\\xB6\\xAA\\xFE\\xA4l';
     curl.request({
       method: 'GET',
-      url: 'http://localhost:9080/info/utf8/✓/encoded_utf8/%E2%9C%93/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&utf8=✓&utf8_url_encoded=%E2%9C%93&more_utf8=¬¶ªþ¤l&more_utf8_hex=\xAC\xB6\xAA\xFE\xA4l&more_utf8_hex_lowercase=\xac\xb6\xaa\xfe\xa4l&actual_backslash_x=\\xAC\\xB6\\xAA\\xFE\\xA4l',
+      url: 'http://localhost:9080/info/utf8/✓/encoded_utf8/%E2%9C%93/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&' + args,
     }, function(error, response) {
       should.not.exist(error);
       response.statusCode.should.eql(200);
@@ -483,7 +509,7 @@ describe('logging', function() {
         record.request_query.actual_backslash_x.should.eql('\\xAC\\xB6\\xAA\\xFE\\xA4l');
         record.request_path.should.eql('/info/utf8/✓/encoded_utf8/%E2%9C%93/');
         record.request_url.should.contain(record.request_path);
-        record.request_url.should.contain('utf8=%E2%9C%93&utf8_url_encoded=%E2%9C%93&more_utf8=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex_lowercase=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&actual_backslash_x=%5CxAC%5CxB6%5CxAA%5CxFE%5CxA4l');
+        record.request_url.should.endWith(args);
         done();
       });
     }.bind(this));
@@ -508,7 +534,7 @@ describe('logging', function() {
         record.request_query.encoded_forward_slash.should.eql('/');
         record.request_query.back_slash.should.eql('\\');
         record.request_query.encoded_back_slash.should.eql('\\');
-        record.request_path.should.eql('/info/extra//slash/some%5Cbackslash/encoded%5Cbackslash/encoded%2Fslash');
+        record.request_path.should.eql('/info/extra//slash/some\\backslash/encoded%5Cbackslash/encoded%2Fslash');
         record.request_url.should.contain(record.request_path);
         done();
       }.bind(this));
@@ -623,40 +649,6 @@ describe('logging', function() {
     });
   });
 
-  it('logs requests that exceed the nginx-level rate limits', function(done) {
-    this.timeout(10000);
-    async.times(100, function(index, callback) {
-      var uniqueQueryId = this.uniqueQueryId + '-' + index;
-      var options = _.merge({}, this.options, {
-        qs: {
-          'unique_query_id': uniqueQueryId,
-        },
-        headers: {
-          'X-Disable-Router-Connection-Limits': 'no',
-          'X-Disable-Router-Rate-Limits': 'no',
-        },
-      });
-
-      request.get('http://localhost:9080/delay/1000', options, function(error, response) {
-        callback(error, {
-          uniqueQueryId: uniqueQueryId,
-          statusCode: response.statusCode,
-        });
-      });
-    }.bind(this), function(error, results) {
-      var overLimits = _.filter(results, function(result) { return result.statusCode === 429; });
-      overLimits.length.should.be.gte(1);
-
-      async.each(results, function(result, callback) {
-        waitForLog(result.uniqueQueryId, function(error, response, hit, record) {
-          should.not.exist(error);
-          itLogsBaseFields(record, result.uniqueQueryId, this.user);
-          callback();
-        }.bind(this));
-      }.bind(this), done);
-    }.bind(this));
-  });
-
   it('logs requests that time out before responding', function(done) {
     this.timeout(90000);
     request.get('http://localhost:9080/delay/65000', this.options, function(error, response) {
@@ -736,6 +728,7 @@ describe('logging', function() {
         should.not.exist(error);
         record.response_status.should.eql(403);
         itLogsBaseFields(record, this.uniqueQueryId);
+        itDoesNotLogBackendFields(record);
         record.api_key.should.eql('INVALID_KEY');
         record.gatekeeper_denied_code.should.eql('api_key_invalid');
         should.not.exist(record.user_email);
@@ -761,55 +754,5 @@ describe('logging', function() {
         done();
       }.bind(this));
     }.bind(this));
-  });
-
-  describe('when gatekeeper is down', function() {
-    before(function stopGatekeeper(done) {
-      this.timeout(20000);
-      var configPath = processEnv.supervisordConfigPath();
-      var execOpts = {
-        env: processEnv.env(),
-      };
-
-      execFile('supervisorctl', ['-c', configPath, 'stop', 'gatekeeper:*'], execOpts, function(error, stdout, stderr) {
-        if(error) {
-          return done('could not stop gatkeeper processes: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
-        }
-
-        done();
-      });
-    });
-
-    after(function restartGatekeeper(done) {
-      this.timeout(20000);
-      var configPath = processEnv.supervisordConfigPath();
-      var execOpts = {
-        env: processEnv.env(),
-      };
-
-      execFile('supervisorctl', ['-c', configPath, 'start', 'gatekeeper:*'], execOpts, function(error, stdout, stderr) {
-        if(error) {
-          return done('could not start gatkeeper processes: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
-        }
-
-        done();
-      });
-    });
-
-    it('still logs failed requests', function(done) {
-      this.timeout(4500);
-      request.get('http://localhost:9080/info/', this.options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(502);
-
-        waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
-          should.not.exist(error);
-          record.response_status.should.eql(502);
-          itLogsBaseFields(record, this.uniqueQueryId, this.user);
-          itDoesNotLogBackendFields(record);
-          done();
-        }.bind(this));
-      }.bind(this));
-    });
   });
 });

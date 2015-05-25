@@ -1,0 +1,64 @@
+#!/usr/bin/env ruby
+
+require "json"
+require "open-uri"
+require "rexml/document"
+
+include REXML
+
+File.open("/tmp/uas.xml", "w") do |file|
+  # user-agent-string.info has shutdown and changed terms on their new site
+  # (https://github.com/before/uadetector/issues/96). Use the last known copy
+  # prior to the shutdown/switch.
+  file.write(open("https://raw.githubusercontent.com/before/uadetector/1f0fd95e52528caa620b5ec6664e1585c0ce5db5/modules/uadetector-resources/src/main/resources/net/sf/uadetector/resources/uas.xml").read)
+end
+
+$xml = Document.new(File.new("/tmp/uas.xml"))
+$uas = {
+  "metadata" => {
+    "source" => "All user agent data is from user-agent-string.info",
+    "license" => "user-agent-string.info data is licensed under a Creative Commons Attribution 3.0 Unported License",
+    "version" => XPath.first($xml, "/uasdata/description/version").text,
+  },
+}
+
+def regexes(cache_key, xml_array_name, xml_element_name, xml_id_name)
+  XPath.each($xml, "/uasdata/data/#{xml_array_name}/#{xml_element_name}") do |e|
+    regex = e.elements["regstring"].text.match(%r{^/(.*)/([gimynsx]*)\s*$})
+    $uas[cache_key] ||= []
+    $uas[cache_key] << {
+      "regex" => regex[1],
+      "regex_flags" => regex[2],
+      "browser_id" => e.elements[xml_id_name].text,
+    }
+  end
+end
+
+def metadata(cache_key, xml_array_name, xml_element_name, fields)
+  XPath.each($xml, "/uasdata/data/#{xml_array_name}/#{xml_element_name}") do |e|
+    id = e.elements["id"].text
+    $uas[cache_key] ||= {}
+    $uas[cache_key][id] = {}
+    fields.each do |field|
+      $uas[cache_key][id][field] = e.elements[field].text
+    end
+  end
+end
+
+regexes("browser_regexes", "browsers_reg", "browser_reg", "browser_id")
+regexes("operating_system_regexes", "operating_systems_reg", "operating_system_reg", "os_id")
+regexes("device_regexes", "devices_reg", "device_reg", "device_id")
+
+metadata("robots", "robots", "robot", ["useragent", "family", "name"])
+metadata("operating_systems", "operating_systems", "os", ["family", "name"])
+metadata("browsers", "browsers", "browser", ["type", "name"])
+metadata("browser_types", "browser_types", "browser_type", ["type"])
+metadata("devices", "devices", "device", ["name"])
+
+XPath.each($xml, "/uasdata/data/browsers_os/browser_os") do |e|
+  browser_id = e.elements["browser_id"].text
+  os_id = e.elements["os_id"].text
+  $uas["browsers"][browser_id]["operating_system_id"] = os_id
+end
+
+File.open(File.expand_path("../../config/user_agent_data.json", __FILE__), "w") { |file| file.write(JSON.pretty_generate($uas)) }

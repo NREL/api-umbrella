@@ -23,6 +23,9 @@ local function resolve_api_key()
     end
   end
 
+  -- Store the api key for logging.
+  ngx.ctx.api_key = api_key
+
   return api_key
 end
 
@@ -46,6 +49,11 @@ return function(settings)
   -- Store the api key on the user object for easier access (the user object
   -- doesn't contain it directly, to save memory storage in the lookup table).
   user["api_key"] = api_key
+
+  -- Store user details for logging.
+  ngx.ctx.user_id = user["id"]
+  ngx.ctx.user_email = user["email"]
+  ngx.ctx.user_registration_source = user["registration_source"]
 
   -- Check to make sure the user isn't disabled.
   if user["disabled_at"] then
