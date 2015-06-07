@@ -83,7 +83,7 @@ function _M.pick_where_present(dict, keys)
 
   if type(dict) == "table" and type(keys) == "table" then
     for _, key in ipairs(keys) do
-      if dict[key] and dict[key] ~= false and dict[key] ~= json_null then
+      if dict[key] and dict[key] ~= false and dict[key] ~= json_null and not is_empty(dict[key]) then
         selected[key] = dict[key]
       end
     end
