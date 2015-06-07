@@ -326,21 +326,25 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       it('allows rate limits to be changed live', function(done) {
-        var config = require('api-umbrella-config').global();
+        this.timeout(8000);
 
         var url = 'http://localhost:9080/hello?api_key=' + this.apiKey;
         request.get(url, function(error, response) {
           response.headers['x-ratelimit-limit'].should.eql('10');
 
-          var apiSettings = config.get('apiSettings');
-          apiSettings.rate_limits[0].limit = 70;
-
-          fs.writeFileSync(config.path, yaml.dump(config.getAll()));
-          config.reload();
-
-          request.get(url, function(error, response) {
-            response.headers['x-ratelimit-limit'].should.eql('70');
-            done();
+          var newConfig = _.cloneDeep(this.currentConfigOverrides);
+          newConfig.apiSettings.rate_limits[0].limit = 70;
+          shared.setConfigOverrides(newConfig, function() {
+            shared.waitForConfig(function() {
+              // Perform a number of requests to make sure any local worker
+              // cache is cleared across all possible worker processes.
+              async.times(20, function(index, timesCallback) {
+                request.get(url, function(error, response) {
+                  response.headers['x-ratelimit-limit'].should.eql('70');
+                  timesCallback();
+                }.bind(this));
+              }.bind(this), done);
+            }.bind(this));
           }.bind(this));
         }.bind(this));
       });
@@ -834,21 +838,25 @@ describe('ApiUmbrellaGatekeper', function() {
 
       describe('changing rate limits', function() {
         it('allows rate limits to be changed live', function(done) {
-          var config = require('api-umbrella-config').global();
+          this.timeout(8000);
 
           var url = 'http://localhost:9080/info/lower/?api_key=' + this.apiKey;
           request.get(url, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql('3');
 
-            var apis = config.get('apis');
-            apis[0].settings.rate_limits[0].limit = 80;
-
-            fs.writeFileSync(config.path, yaml.dump(config.getAll()));
-            config.reload();
-
-            request.get(url, function(error, response) {
-              response.headers['x-ratelimit-limit'].should.eql('80');
-              done();
+            var newConfig = _.cloneDeep(this.currentRuntimeConfigOverrides);
+            newConfig.apis[0].settings.rate_limits[0].limit = 80;
+            shared.setRuntimeConfigOverrides(newConfig, function() {
+              shared.waitForConfig(function() {
+                // Perform a number of requests to make sure any local worker
+                // cache is cleared across all possible worker processes.
+                async.times(20, function(index, timesCallback) {
+                  request.get(url, function(error, response) {
+                    response.headers['x-ratelimit-limit'].should.eql('80');
+                    timesCallback();
+                  }.bind(this));
+                }.bind(this), done);
+              }.bind(this));
             }.bind(this));
           }.bind(this));
         });
@@ -921,7 +929,9 @@ describe('ApiUmbrellaGatekeper', function() {
 
         itBehavesLikeApiKeyRateLimits('/hello', 10);
 
-        it('allows rate limits to be changed live', function(done) {
+        it('allows rate limits to be changed live (within 2 seconds)', function(done) {
+          this.timeout(4000);
+
           var url = 'http://localhost:9080/hello?api_key=' + this.apiKey;
           request.get(url, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql('10');
@@ -929,10 +939,17 @@ describe('ApiUmbrellaGatekeper', function() {
             this.user.settings.rate_limits[0].limit = 90;
             this.user.markModified('settings');
             this.user.save(function() {
-              request.get(url, function(error, response) {
-                response.headers['x-ratelimit-limit'].should.eql('90');
-                done();
-              }.bind(this));
+              // Wait for any local caches to expire (2 seconds).
+              setTimeout(function() {
+                // Perform a number of requests to make sure any local worker
+                // cache is cleared across all possible worker processes.
+                async.times(20, function(index, timesCallback) {
+                  request.get(url, function(error, response) {
+                    response.headers['x-ratelimit-limit'].should.eql('90');
+                    timesCallback();
+                  }.bind(this));
+                }.bind(this), done);
+              }.bind(this), 2100);
             }.bind(this));
           }.bind(this));
         });

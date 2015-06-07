@@ -3,41 +3,70 @@
 require('../test_helper');
 
 var async = require('async'),
+    Factory = require('factory-lady'),
     moment = require('moment'),
     mongoose = require('mongoose'),
-    rateLimitModel = require('../../lib/models/rate_limit_model');
+    request = require('request');
+
+require('../../lib/models/rate_limit_model');
+var RateLimit = mongoose.testConnection.model('RateLimit');
 
 describe('distributed rate limit sync', function() {
-  var configOptions = {
+  before(function(done) {
+    Factory.create('api_user', function(user) {
+      this.apiKeyWithExistingCounts = user.api_key;
+
+      var options = {
+        apiKey: this.apiKeyWithExistingCounts,
+        duration: 50 * 60 * 1000, // 50 minutes
+        limit: 1001,
+        updatedAt: new Date(moment().startOf('minute').toDate() - 49 * 60 * 1000), // 49min ago
+      };
+
+      setDistributedCount(97, options, function() {
+        options.updatedAt = new Date(moment().startOf('minute').toDate() - 51 * 60 * 1000); // 51min ago
+        setDistributedCount(41, options, done);
+      });
+    }.bind(this));
+  });
+
+  shared.runServer({
     apiSettings: {
       rate_limits: [
         {
           duration: 50 * 60 * 1000, // 50 minutes
           accuracy: 1 * 60 * 1000, // 1 minute
           limit_by: 'apiKey',
-          limit: 10,
+          limit: 1001,
           distributed: true,
           response_headers: true,
         },
-        {
-          duration: 12 * 60 * 1000, // 12 minutes
-          accuracy: 1 * 60 * 1000, // 1 minute
-          limit_by: 'apiKey',
-          limit: 10,
-          distributed: false,
-          response_headers: false,
-        }
       ],
     },
     apis: [
       {
+        _id: 'example2',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/info/specific/',
+            backend_prefix: '/info/specific/',
+          },
+        ],
         settings: {
           rate_limits: [
             {
               duration: 45 * 60 * 1000, // 45 minutes
               accuracy: 1 * 60 * 1000, // 1 minute
               limit_by: 'apiKey',
-              limit: 3,
+              limit: 1002,
               distributed: true,
               response_headers: true,
             }
@@ -45,14 +74,32 @@ describe('distributed rate limit sync', function() {
         },
         sub_settings: [
           {
+            http_method: 'any',
+            regex: '^/info/specific/subsettings/',
             settings: {
               rate_limits: [
                 {
                   duration: 48 * 60 * 1000, // 48 minutes
                   accuracy: 1 * 60 * 1000, // 1 minute
                   limit_by: 'apiKey',
-                  limit: 7,
+                  limit: 1003,
                   distributed: true,
+                  response_headers: true,
+                }
+              ],
+            },
+          },
+          {
+            http_method: 'any',
+            regex: '^/info/specific/non-distributed/',
+            settings: {
+              rate_limits: [
+                {
+                  duration: 12 * 60 * 1000, // 12 minutes
+                  accuracy: 1 * 60 * 1000, // 1 minute
+                  limit_by: 'apiKey',
+                  limit: 1004,
+                  distributed: false,
                   response_headers: true,
                 }
               ],
@@ -60,280 +107,254 @@ describe('distributed rate limit sync', function() {
           },
         ],
       },
+      {
+        _id: 'example',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/',
+            backend_prefix: '/',
+          },
+        ],
+      },
     ],
-  };
+  });
 
-  before(function setupDefaultRateLimits(done) {
-    this.bucketDate = moment().startOf('minute').toDate();
+  function makeRequests(numRequests, options, callback) {
+    var totalLocalCount = 0;
 
-    var options = configOptions.apiSettings.rate_limits[0];
-    var localOptions = configOptions.apiSettings.rate_limits[1];
-    var apiOptions = configOptions.apis[0].settings.rate_limits[0];
-    var apiSubSettingsOptions = configOptions.apis[0].sub_settings[0].settings.rate_limits[0];
+    async.timesLimit(numRequests, 50, function(index, timesCallback) {
+      var urlPath = options.urlPath || '/info/';
+      request.get('http://localhost:9080' + urlPath + '?api_key=' + options.apiKey, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
 
-    var limits = [
+        var count = parseInt(response.headers['x-ratelimit-limit'], 10) - parseInt(response.headers['x-ratelimit-remaining'], 10);
+        if(count > totalLocalCount) {
+          totalLocalCount = count;
+        }
+
+        timesCallback();
+      });
+    }, function(error) {
+      if(!options.disableCountCheck) {
+        totalLocalCount.should.eql(numRequests);
+      }
+
+      // Delay the callback to give the local rate limits (from the actual
+      // requests being made) a chance to be pushed into the distributed mongo
+      // store.
+      setTimeout(callback, 300);
+    });
+  }
+
+  function setDistributedCount(count, options, callback) {
+    var updatedAt = options.updatedAt || new Date();
+    var bucketDate = moment(updatedAt).startOf('minute').toDate();
+
+    var key = 'apiKey:' + options.duration + ':' + options.apiKey + ':' + bucketDate.getTime();
+
+    RateLimit.update({
+      _id: key,
+    }, {
+      time: bucketDate,
+      updated_at: updatedAt,
+      count: count,
+      expire_at: updatedAt.getTime() + 60 * 60 * 1000,
+    }, { upsert: true }, function(error) {
+      should.not.exist(error);
+
+      // Delay the callback to give the distributed rate limit a chance to
+      // propagate to the local nodes.
+      setTimeout(callback, 300);
+    });
+  }
+
+  function expectDistributedCountAfterSync(expectedCount, options, callback) {
+    var pipeline = [
       {
-        options: options,
-        key: 'NEW',
-        distributedCount: 143,
+        $match: { _id: new RegExp(':' + options.apiKey + ':') },
       },
       {
-        options: options,
-        key: 'EXISTING',
-        localCount: 75,
-        distributedCount: 99,
-      },
-      {
-        options: options,
-        key: 'LOWER',
-        localCount: 80,
-        distributedCount: 60,
-      },
-      {
-        options: localOptions,
-        key: 'LOCAL',
-        localCount: 47,
-        distributedCount: 55,
-      },
-      {
-        options: apiOptions,
-        key: 'API',
-        distributedCount: 133,
-      },
-      {
-        options: apiSubSettingsOptions,
-        key: 'API_SUB_SETTINGS',
-        distributedCount: 38,
-      },
-      {
-        options: options,
-        key: 'OLD',
-        updatedAt: new Date(this.bucketDate - 49 * 60 * 1000), // 49min ago
-        distributedCount: 97,
-      },
-      {
-        options: options,
-        key: 'TOO_OLD',
-        updatedAt: new Date(this.bucketDate - 61 * 60 * 1000), // 51min ago
-        distributedCount: 41,
+        $group: {
+          _id: "$_id",
+          count: { "$sum": "$count" },
+        },
       },
     ];
 
-    async.each(limits, function(limit, eachCallback) {
-      var updatedAt = limit.updatedAt || new Date();
-      var bucketDate = moment(updatedAt).startOf('minute').toDate();
+    RateLimit.aggregate(pipeline, function(error, response) {
+      var count = 0;
+      if(response && response[0] && response[0].count) {
+        count = response[0].count;
+      }
+      count.should.eql(expectedCount);
 
-      var key = limit.options.limit_by + ':' + limit.options.duration + ':' + limit.key + ':' + bucketDate.toISOString();
-      async.parallel([
-        function(callback) {
-          if(limit.localCount) {
-            redisClient.set(key, limit.localCount, callback);
-          } else {
-            callback(null);
-          }
-        }.bind(this),
-        function(callback) {
-          var Model = mongoose.testConnection.model(rateLimitModel(limit.options).modelName);
-          new Model({
-            _id: key,
-            time: bucketDate,
-            updated_at: updatedAt,
-            count: limit.distributedCount,
-          }).save(callback);
-        }.bind(this),
-      ], eachCallback);
-    }.bind(this), function(error) {
-      done(error);
+      callback();
     });
-  });
+  }
 
-  shared.runDistributedRateLimitsSync(configOptions);
+  function expectLocalCountAfterSync(expectedCount, options, callback) {
+    var urlPath = options.urlPath || '/info/';
+    request.get('http://localhost:9080' + urlPath + '?api_key=' + options.apiKey, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+
+      var limit = parseInt(response.headers['x-ratelimit-limit'], 10);
+      limit.should.eql(options.limit);
+
+      var count = limit - parseInt(response.headers['x-ratelimit-remaining'], 10);
+      var previousCount = count - 1;
+      previousCount.should.eql(expectedCount);
+
+      callback();
+    });
+  }
 
   it('sets new rate limits to the distributed value', function(done) {
-    redisClient.get('apiKey:3000000:NEW:' + this.bucketDate.toISOString(), function(error, limit) {
-      should.not.exist(error);
-      limit.should.eql('143');
-      done();
+    var options = {
+      apiKey: this.apiKey,
+      duration: 50 * 60 * 1000, // 50 minutes
+      limit: 1001,
+    };
+
+    setDistributedCount(143, options, function() {
+      expectLocalCountAfterSync(143, options, done);
     });
   });
 
   it('increases existing rate limits to match the distributed value', function(done) {
-    redisClient.get('apiKey:3000000:EXISTING:' + this.bucketDate.toISOString(), function(error, limit) {
-      should.not.exist(error);
-      limit.should.eql('99');
-      done();
+    var options = {
+      apiKey: this.apiKey,
+      duration: 50 * 60 * 1000, // 50 minutes
+      limit: 1001,
+    };
+
+    makeRequests(75, options, function() {
+      setDistributedCount(99, options, function() {
+        expectLocalCountAfterSync(99, options, done);
+      });
     });
   });
 
   it('ignores rate limits when the distributed value is lower', function(done) {
-    redisClient.get('apiKey:3000000:LOWER:' + this.bucketDate.toISOString(), function(error, limit) {
-      should.not.exist(error);
-      limit.should.eql('80');
-      done();
+    var options = {
+      apiKey: this.apiKey,
+      duration: 50 * 60 * 1000, // 50 minutes
+      limit: 1001,
+    };
+
+    makeRequests(80, options, function() {
+      setDistributedCount(60, options, function() {
+        expectLocalCountAfterSync(80, options, done);
+      });
     });
   });
 
-  it('ignores non-distributed rate limits', function(done) {
-    redisClient.get('apiKey:720000:LOCAL:' + this.bucketDate.toISOString(), function(error, limit) {
-      should.not.exist(error);
-      limit.should.eql('47');
-      done();
+  it('syncs local rate limits into mongo', function(done) {
+    var options = {
+      apiKey: this.apiKey,
+      duration: 50 * 60 * 1000, // 50 minutes
+      limit: 1001,
+    };
+
+    makeRequests(27, options, function() {
+      expectDistributedCountAfterSync(27, options, done);
+    });
+  });
+
+  it('does not sync non-distributed rate limits into mongo', function(done) {
+    var options = {
+      apiKey: this.apiKey,
+      duration: 12 * 60 * 1000, // 12 minutes
+      limit: 1004,
+      urlPath: '/info/specific/non-distributed/',
+    };
+
+    makeRequests(47, options, function() {
+      expectDistributedCountAfterSync(0, options, done);
     });
   });
 
   it('syncs api-specific rate limits', function(done) {
-    redisClient.get('apiKey:2700000:API:' + this.bucketDate.toISOString(), function(error, limit) {
-      should.not.exist(error);
-      limit.should.eql('133');
-      done();
+    var options = {
+      apiKey: this.apiKey,
+      duration: 45 * 60 * 1000, // 45 minutes
+      limit: 1002,
+      urlPath: '/info/specific/',
+    };
+
+    setDistributedCount(133, options, function() {
+      expectLocalCountAfterSync(133, options, done);
     });
   });
 
   it('syncs api-specific sub settings rate limits', function(done) {
-    redisClient.get('apiKey:2880000:API_SUB_SETTINGS:' + this.bucketDate.toISOString(), function(error, limit) {
-      should.not.exist(error);
-      limit.should.eql('38');
-      done();
+    var options = {
+      apiKey: this.apiKey,
+      duration: 48 * 60 * 1000, // 48 minutes
+      limit: 1003,
+      urlPath: '/info/specific/subsettings/',
+    };
+
+    setDistributedCount(38, options, function() {
+      expectLocalCountAfterSync(38, options, done);
     });
   });
 
-  it('initially performs a sync for the entire duration on start', function(done) {
-    var bucketDate = new Date(this.bucketDate - 49 * 60 * 1000); // 49min ago
-    redisClient.get('apiKey:3000000:OLD:' + bucketDate.toISOString(), function(error, limit) {
-      should.not.exist(error);
-      limit.should.eql('97');
-      done();
-    });
-  });
+  it('performs a sync for the entire duration (but not outside the duration) on start', function(done) {
+    var options = {
+      apiKey: this.apiKeyWithExistingCounts,
+      duration: 50 * 60 * 1000, // 50 minutes
+      limit: 1001,
+    };
 
-  it('does not sync distributed rate limits outside the duration on start', function(done) {
-    redisClient.keys('apiKey:3000000:TOO_OLD:*', function(error, keys) {
-      should.not.exist(error);
-      keys.length.should.eql(0);
-      done();
-    });
+    expectLocalCountAfterSync(97, options, done);
   });
 
   it('polls for distributed changes after start', function(done) {
-    var options = configOptions.apiSettings.rate_limits[0];
-    var Model = mongoose.testConnection.model(rateLimitModel(options).modelName);
-    var updatedAt = new Date();
-    var bucketDate = moment(updatedAt).startOf('minute').toDate();
-    var key = options.limit_by + ':' + options.duration + ':AFTER:' + bucketDate.toISOString();
-
-    var distributed = new Model({
-      _id: key,
-      time: bucketDate,
-      updated_at: updatedAt,
-      count: 76,
-    });
-
-    distributed.save(function(error) {
-      should.not.exist(error);
-      setTimeout(function() {
-        redisClient.get('apiKey:3000000:AFTER:' + bucketDate.toISOString(), function(error, limit) {
-          should.not.exist(error);
-          limit.should.eql('76');
-
-          distributed.count = 99;
-          distributed.updated_at = new Date();
-          distributed.save(function() {
-            setTimeout(function() {
-              redisClient.get('apiKey:3000000:AFTER:' + bucketDate.toISOString(), function(error, limit) {
-                should.not.exist(error);
-                limit.should.eql('99');
-                done();
-              });
-            }, this.sync.syncEvery + 100);
-          }.bind(this));
-        }.bind(this));
-      }.bind(this), this.sync.syncEvery + 100);
-    }.bind(this));
-  });
-
-  it('polling continues when no data is present on a polling cycle', function(done) {
     this.timeout(5000);
 
-    var options = configOptions.apiSettings.rate_limits[0];
-    var Model = mongoose.testConnection.model(rateLimitModel(options).modelName);
-    var updatedAt = new Date();
-    var bucketDate = moment(updatedAt).startOf('minute').toDate();
-    var key = options.limit_by + ':' + options.duration + ':POLL:' + bucketDate.toISOString();
+    var options = {
+      apiKey: this.apiKey,
+      duration: 50 * 60 * 1000, // 50 minutes
+      limit: 1001,
+    };
 
-    var distributed = new Model({
-      _id: key,
-      time: bucketDate,
-      updated_at: updatedAt,
-      count: 76,
-    });
+    var expectedCount = 9;
+    makeRequests(9, options, function() {
+      expectDistributedCountAfterSync(expectedCount, options, function() {
+        expectLocalCountAfterSync(expectedCount, options, function() {
+          options.disableCountCheck = true;
+          makeRequests(10, options, function() {
+            // The expected count is 20 due to the extra request made in
+            // expectLocalCountAfterSync (9 + 10 + 1).
+            expectedCount = 20;
+            expectDistributedCountAfterSync(expectedCount, options, function() {
+              expectLocalCountAfterSync(expectedCount, options, function() {
 
-    distributed.save(function(error) {
-      should.not.exist(error);
-      setTimeout(function() {
-        redisClient.get('apiKey:3000000:POLL:' + bucketDate.toISOString(), function(error, limit) {
-          should.not.exist(error);
-          limit.should.eql('76');
-
-          // Wait long enough to to hit a polling cycle outside the 2 second
-          // buffer.
-          var wait = this.sync.syncBuffer + this.sync.syncEvery + 100;
-          setTimeout(function() {
-            distributed.count = 99;
-            distributed.updated_at = new Date();
-            distributed.save(function(error) {
-              should.not.exist(error);
-              setTimeout(function() {
-                redisClient.get('apiKey:3000000:POLL:' + bucketDate.toISOString(), function(error, limit) {
-                  should.not.exist(error);
-                  limit.should.eql('99');
-                  done();
-                });
-              }, this.sync.syncEvery + 100);
-            }.bind(this));
-          }.bind(this), wait);
-        }.bind(this));
-      }.bind(this), this.sync.syncEvery + 100);
-    }.bind(this));
-  });
-
-
-  it('uses a 2 second buffer when polling for changes to account for clock skew', function(done) {
-    // Use the 2 second buffer time +/- 500ms to account for the fact that we
-    // only poll every 500ms, so the 2s buffer is approximate.
-    var options = configOptions.apiSettings.rate_limits[0];
-    var Model = mongoose.testConnection.model(rateLimitModel(options).modelName);
-    var updatedAt = new Date() - 1400;
-    var bucketDate = moment(updatedAt).startOf('minute').toDate();
-    var key = options.limit_by + ':' + options.duration + ':BUFFER:' + bucketDate.toISOString();
-
-    var distributed = new Model({
-      _id: key,
-      time: bucketDate,
-      updated_at: updatedAt,
-      count: 13,
-    });
-
-    distributed.save(function(error) {
-      setTimeout(function() {
-        should.not.exist(error);
-        redisClient.get('apiKey:3000000:BUFFER:' + bucketDate.toISOString(), function(error, limit) {
-          should.not.exist(error);
-          limit.should.eql('13');
-
-          distributed.count = 88;
-          distributed.updated_at = new Date() - 2600;
-          distributed.save(function(error) {
-            should.not.exist(error);
-            setTimeout(function() {
-              redisClient.get('apiKey:3000000:BUFFER:' + bucketDate.toISOString(), function(error, limit) {
-                should.not.exist(error);
-                limit.should.eql('13');
-                done();
+                // Delay the next override to give a chance for the request
+                // made in expectLocalCountAfterSync above a chance to
+                // propagate so that we can override it.
+                setTimeout(function() {
+                  setDistributedCount(77, options, function() {
+                    expectDistributedCountAfterSync(77, options, function() {
+                      expectLocalCountAfterSync(77, options, done);
+                    });
+                  });
+                }, 300);
               });
-            }, this.sync.syncEvery + 100);
-          }.bind(this));
-        }.bind(this));
-      }.bind(this), this.sync.syncEvery + 100);
-    }.bind(this));
+            });
+          });
+        });
+      });
+    });
   });
 });

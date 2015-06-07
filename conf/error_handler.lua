@@ -89,7 +89,7 @@ local function render_template(template, data, format, strip_whitespace)
   if ok then
     return output
   else
-    ngx.log(ngx.ERR, "Mustache rendering error while rendering error template: " .. inspect(output))
+    ngx.log(ngx.ERR, "Mustache rendering error while rendering error template. Error: ", output, " Template: ", template)
     return nil, "template error"
   end
 end

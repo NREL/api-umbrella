@@ -28,6 +28,87 @@ _.merge(global.shared, {
       }, options);
   },
 
+  setConfigOverrides: function setConfigOverrides(newConfig, callback) {
+    this.currentConfigOverrides = newConfig;
+
+    var runtimeConfigPath = '/tmp/api-umbrella-test/var/run/runtime_config.yml';
+    var data = fs.readFileSync(runtimeConfigPath + '.orig');
+    var config = yaml.safeLoad(data.toString());
+    mergeOverwriteArrays(config, newConfig);
+
+    // Generate a unique ID for this config, so we can detect when it's been
+    // loaded.
+    config.config_id = uuid.v4();
+    this.currentConfigId = config.config_id;
+
+    // Dump as YAML, with nulls being treated as real YAML nulls, rather than
+    // the string "null" (which is js-yaml's default).
+    fs.writeFileSync(runtimeConfigPath, yaml.safeDump(config, { styles: { '!!null': 'canonical' } }));
+
+    execFile('pkill', ['-HUP', '-f', 'nginx: master'], callback);
+  },
+
+  setRuntimeConfigOverrides: function setRuntimeConfigOverrides(newRuntimeConfig, callback) {
+    this.currentRuntimeConfigOverrides = newRuntimeConfig;
+
+    if(newRuntimeConfig.apis) {
+      newRuntimeConfig.apis.forEach(function(api) {
+        if(!api._id) {
+          api._id = uuid.v4();
+        }
+
+        if(!api.servers) {
+          api.servers = [
+            {
+              host: '127.0.0.1',
+              port: 9444,
+            }
+          ];
+        }
+      });
+    }
+
+    mongoose.testConnection.model('RouterConfigVersion').remove({}, function(error) {
+      should.not.exist(error);
+
+      Factory.create('config_version', {
+        config: newRuntimeConfig,
+      }, function(record) {
+        this.currentRuntimeConfigVersion = record.version.getTime();
+        callback();
+      }.bind(this));
+    }.bind(this));
+  },
+
+  waitForConfig: function waitForConfig(callback) {
+    var configLoaded = false;
+    var timedOut = false;
+    setTimeout(function() { timedOut = true; }, 4800);
+
+    async.until(function() {
+      return configLoaded || timedOut;
+    }, function(callback) {
+      request.get('http://127.0.0.1:9080/api-umbrella/v1/state', function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+
+        var data = JSON.parse(body);
+        if(data['runtime_config_version'] === this.currentRuntimeConfigVersion && data['config_id'] === this.currentConfigId) {
+          configLoaded = true;
+          return callback();
+        }
+
+        setTimeout(callback, 10);
+      }.bind(this));
+    }.bind(this), function() {
+      if(!configLoaded) {
+        callback('configuration did not load in the expected amount of time');
+      } else {
+        callback();
+      }
+    });
+  },
+
   runServer: function(configOverrides) {
     configOverrides = configOverrides || {};
     if(!configOverrides.apis) {
@@ -58,21 +139,7 @@ _.merge(global.shared, {
 
     if(!_.isEmpty(newConfig)) {
       before(function setupConfig(done) {
-        var runtimeConfigPath = '/tmp/api-umbrella-test/var/run/runtime_config.yml';
-        var data = fs.readFileSync(runtimeConfigPath + '.orig');
-        var config = yaml.safeLoad(data.toString());
-        mergeOverwriteArrays(config, newConfig);
-
-        // Generate a unique ID for this config, so we can detect when it's been
-        // loaded.
-        config.config_id = uuid.v4();
-        this.currentConfigId = config.config_id;
-
-        // Dump as YAML, with nulls being treated as real YAML nulls, rather than
-        // the string "null" (which is js-yaml's default).
-        fs.writeFileSync(runtimeConfigPath, yaml.safeDump(config, { styles: { '!!null': 'canonical' } }));
-
-        execFile('pkill', ['-HUP', '-f', 'nginx: master'], done);
+        shared.setConfigOverrides.call(this, newConfig, done);
       });
 
       after(function revertConfig(done) {
@@ -85,33 +152,7 @@ _.merge(global.shared, {
 
     if(!_.isEmpty(newRuntimeConfig)) {
       before(function setupRuntimeConfig(done) {
-        if(newRuntimeConfig.apis) {
-          newRuntimeConfig.apis.forEach(function(api) {
-            if(!api._id) {
-              api._id = uuid.v4();
-            }
-
-            if(!api.servers) {
-              api.servers = [
-                {
-                  host: '127.0.0.1',
-                  port: 9444,
-                }
-              ];
-            }
-          });
-        }
-
-        mongoose.testConnection.model('RouterConfigVersion').remove({}, function(error) {
-          should.not.exist(error);
-
-          Factory.create('config_version', {
-            config: newRuntimeConfig,
-          }, function(record) {
-            this.currentRuntimeConfigVersion = record.version.getTime();
-            done();
-          }.bind(this));
-        }.bind(this));
+        shared.setRuntimeConfigOverrides.call(this, newRuntimeConfig, done);
       });
 
       after(function revertRuntimeConfig(done) {
@@ -128,40 +169,14 @@ _.merge(global.shared, {
       });
     }
 
-    function waitForConfig(done) {
-      /* jshint validthis:true */
+    before(function(done) {
       this.timeout(5000);
-
-      var configLoaded = false;
-      var timedOut = false;
-      setTimeout(function() { timedOut = true; }, 4800);
-
-      async.until(function() {
-        return configLoaded || timedOut;
-      }, function(callback) {
-        request.get('http://127.0.0.1:9080/api-umbrella/v1/state', function(error, response, body) {
-          should.not.exist(error);
-          response.statusCode.should.eql(200);
-
-          var data = JSON.parse(body);
-          if(data['runtime_config_version'] === this.currentRuntimeConfigVersion && data['config_id'] === this.currentConfigId) {
-            configLoaded = true;
-            return callback();
-          }
-
-          setTimeout(callback, 10);
-        }.bind(this));
-      }.bind(this), function() {
-        if(!configLoaded) {
-          done('configuration did not load in the expected amount of time');
-        } else {
-          done();
-        }
-      });
-    }
-
-    before(waitForConfig);
-    after(waitForConfig);
+      shared.waitForConfig.call(this, done);
+    });
+    after(function(done) {
+      this.timeout(5000);
+      shared.waitForConfig.call(this, done);
+    });
 
     beforeEach(function createDefaultApiUser(done) {
       global.autoIncrementingIpAddress = ippp.next(global.autoIncrementingIpAddress);

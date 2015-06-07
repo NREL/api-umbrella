@@ -9,7 +9,7 @@ local utils = require "utils"
 
 local is_empty = types.is_empty
 
-local delay = 1  -- in seconds
+local delay = 0.25  -- in seconds
 local new_timer = ngx.timer.at
 
 local indexes_created = false
@@ -63,26 +63,23 @@ end
 local function do_check()
   create_indexes()
 
-  local data = distributed_rate_limit_queue.fetch()
+  local data = distributed_rate_limit_queue.pop()
   if is_empty(data) then
     return
   end
 
-  for key, expire_at in pairs(data) do
+  for key, count in pairs(data) do
     local update = {
       ["$currentDate"] = {
         updated_at = true,
       },
       ["$inc"] = {
-        count = 1,
+        count = count,
+      },
+      ["$setOnInsert"] = {
+        expire_at = ngx.now() * 1000 + 60000,
       },
     }
-
-    if expire_at and expire_at > 0 then
-      update["$setOnInsert"] = {
-        expire_at = ngx.now() * 1000 + 60000,
-      }
-    end
 
     local httpc = http.new()
     local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/rate_limits/" .. key, {

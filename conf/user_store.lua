@@ -112,9 +112,9 @@ function _M.get(api_key)
 
   local user, from_cache = shared_cache:load(api_key)
   if user then
-    local_cache:set(api_key, user)
+    local_cache:set(api_key, user, 2)
   else
-    local_cache:set(api_key, EMPTY_DATA)
+    local_cache:set(api_key, EMPTY_DATA, 2)
   end
 
   return user

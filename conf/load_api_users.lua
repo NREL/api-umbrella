@@ -31,7 +31,8 @@ local function do_check()
     return
   end
 
-  local last_fetched_time = api_users:get("last_updated_at") or ngx.now() - 60
+  local current_fetch_time = ngx.now() * 1000
+  local last_fetched_time = api_users:get("last_fetched_at") or current_fetch_time - (60 * 1000)
 
   local skip = 0
   local page_size = 250
@@ -43,10 +44,14 @@ local function do_check()
         extended_json = "true",
         limit = page_size,
         skip = skip,
+        sort = "updated_at",
         query = cjson.encode({
           updated_at = {
-            ["$gt"] = {
+            ["$gte"] = {
               ["$date"] = last_fetched_time,
+            },
+            ["$lt"] = {
+              ["$date"] = current_fetch_time,
             },
           },
         }),
@@ -58,11 +63,7 @@ local function do_check()
       local response = cjson.decode(res.body)
       if response and response["data"] then
         results = response["data"]
-        for index, result in pairs(results) do
-          if index == 1 and result["updated_at"] and result["updated_at"]["$date"] then
-            api_users:set("last_updated_at", result["updated_at"]["$date"])
-          end
-
+        for _, result in ipairs(results) do
           if result["api_key"] then
             ngx.shared.api_users:delete(result["api_key"])
           end
@@ -74,7 +75,7 @@ local function do_check()
   until is_empty(results)
 
   if not err then
-    api_users:set("last_fetched_at", ngx.now())
+    api_users:set("last_fetched_at", current_fetch_time)
   end
 
   local ok, err = lock:unlock()

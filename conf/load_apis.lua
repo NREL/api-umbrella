@@ -128,10 +128,12 @@ local function set_apis(apis)
     end
 
     local host = api["frontend_host"]
-    if not data["apis_by_host"][host] then
-      data["apis_by_host"][host] = {}
+    if host then
+      if not data["apis_by_host"][host] then
+        data["apis_by_host"][host] = {}
+      end
+      table.insert(data["apis_by_host"][host], api)
     end
-    table.insert(data["apis_by_host"][host], api)
   end
 
   set_packed(ngx.shared.apis, "packed_data", data)
@@ -198,7 +200,7 @@ local function do_check()
     query = {
       extended_json = "true",
       limit = 1,
-      sort_by = "-version",
+      sort = "-version",
       query = cjson.encode({
         version = {
           ["$gt"] = {
