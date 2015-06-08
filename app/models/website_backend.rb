@@ -18,7 +18,7 @@ class WebsiteBackend
   validates :frontend_host,
     :presence => true,
     :format => {
-      :with => CommonValidations::FRONTEND_HOST_FORMAT,
+      :with => CommonValidations::HOST_FORMAT_WITH_WILDCARD,
       :message => :invalid_host_format,
     }
   validates :backend_protocol,

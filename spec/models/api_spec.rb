@@ -135,7 +135,7 @@ describe Api do
       it_behaves_like "invalid host"
     end
 
-    it "allows a wildcard for the frontend host, but not for backend host or server host" do
+    it "allows a wildcard for the frontend host or backend host, but not for server host" do
       api = FactoryGirl.build(:api, {
         :frontend_host => "*",
         :backend_host => "*",
@@ -146,11 +146,9 @@ describe Api do
 
       api.valid?.should eql(false)
       api.errors.messages.keys.sort.should eql([
-        :backend_host,
         :"servers[0].host"
       ])
 
-      api.errors_on(:backend_host).should include('must be in the format of "example.com"')
       api.errors_on(:"servers[0].host").should include('must be in the format of "example.com"')
     end
 

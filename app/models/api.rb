@@ -35,7 +35,7 @@ class Api
   validates :frontend_host,
     :presence => true,
     :format => {
-      :with => CommonValidations::FRONTEND_HOST_FORMAT,
+      :with => CommonValidations::HOST_FORMAT_WITH_WILDCARD,
       :message => :invalid_host_format,
     }
   validates :backend_host,
@@ -43,7 +43,7 @@ class Api
     :unless => proc { |record| record.frontend_host.start_with?("*") }
   validates :backend_host,
     :format => {
-      :with => CommonValidations::HOST_FORMAT,
+      :with => CommonValidations::HOST_FORMAT_WITH_WILDCARD,
       :message => :invalid_host_format,
     },
     :if => proc { |record| record.backend_host.present? }

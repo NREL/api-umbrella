@@ -9,7 +9,7 @@ Admin.WebsiteBackend = Ember.Model.extend(Ember.Validations.Mixin, {
     frontendHost: {
       presence: true,
       format: {
-        with: CommonValidations.frontend_host_format,
+        with: CommonValidations.host_format_with_wildcard,
         message: polyglot.t('errors.messages.invalid_host_format'),
       },
     },
@@ -19,7 +19,7 @@ Admin.WebsiteBackend = Ember.Model.extend(Ember.Validations.Mixin, {
     serverHost: {
       presence: true,
       format: {
-        with: CommonValidations.frontend_host_format,
+        with: CommonValidations.host_format_with_wildcard,
         message: polyglot.t('errors.messages.invalid_host_format'),
       },
     },
