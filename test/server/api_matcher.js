@@ -68,6 +68,17 @@ describe('ApiUmbrellaGatekeper', function() {
             ]
           },
           {
+            'frontend_host': '.wild-just-dot-subdomain.foo',
+            'backend_host': 'example.com',
+            '_id': 'wildcard-just-dot-subdomain',
+            'url_matches': [
+              {
+                'frontend_prefix': '/info/wildcard-subdomain/',
+                'backend_prefix': '/info/wildcard-subdomain/'
+              }
+            ]
+          },
+          {
             'frontend_host': '*wild-without-dot-subdomain.foo',
             'backend_host': 'example.com',
             '_id': 'wildcard-without-dot-subdomain',
@@ -112,9 +123,20 @@ describe('ApiUmbrellaGatekeper', function() {
             ]
           },
           {
-            'frontend_host': '*wildcard-backend.foo',
-            'backend_host': '*example.com',
-            '_id': 'wildcard-backend',
+            'frontend_host': '*.wildcard-backend-star-dot.foo',
+            'backend_host': '*.example.com',
+            '_id': 'wildcard-backend-star-dot',
+            'url_matches': [
+              {
+                'frontend_prefix': '/info/wildcard-backend/',
+                'backend_prefix': '/info/wildcard-backend/'
+              }
+            ]
+          },
+          {
+            'frontend_host': '.wildcard-backend-dot.foo',
+            'backend_host': '.example.com',
+            '_id': 'wildcard-backend-dot',
             'url_matches': [
               {
                 'frontend_prefix': '/info/wildcard-backend/',
@@ -248,112 +270,191 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       describe('wildcard subdomains', function() {
-        it('matches wildcard with *. prefix when dot given', function(done) {
-          var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
-            headers: {
-              'Host': 'foo.wild-with-dot-subdomain.foo',
-            },
+        describe('*. prefix', function() {
+          it('matches wildcard subdomains', function(done) {
+            var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
+              headers: {
+                'Host': 'foo.wild-with-dot-subdomain.foo',
+              },
+            });
+
+            request.get(opts, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-with-dot-subdomain');
+              data.headers['host'].should.eql('example.com');
+              done();
+            });
           });
 
-          request.get(opts, function(error, response, body) {
-            var data = JSON.parse(body);
-            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-with-dot-subdomain');
-            data.headers['host'].should.eql('example.com');
-            done();
+          describe('does not match the root domain itself', function() {
+            shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
+              headers: {
+                'Host': 'wild-with-dot-subdomain.foo',
+              },
+            });
+          });
+
+          describe('does not match wildcards without the dot boundary', function() {
+            shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
+              headers: {
+                'Host': 'foowild-with-dot-subdomain.foo',
+              },
+            });
+          });
+
+          describe('does not match domains with extra trailing text', function() {
+            shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
+              headers: {
+                'Host': 'foo.wild-with-dot-subdomain.foobar',
+              },
+            });
+          });
+
+          it('replaces wildcard subdomains in backend hosts', function(done) {
+            var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
+              headers: {
+                'Host': 'foo.wildcard-backend-star-dot.foo',
+              },
+            });
+
+            request.get(opts, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend-star-dot');
+              data.headers['host'].should.eql('foo.example.com');
+              done();
+            });
+          });
+
+          it('replaces wildcard subdomains multiple levels deep in backend hosts', function(done) {
+            var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
+              headers: {
+                'Host': 'foo.bar.wildcard-backend-star-dot.foo',
+              },
+            });
+
+            request.get(opts, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend-star-dot');
+              data.headers['host'].should.eql('foo.bar.example.com');
+              done();
+            });
+          });
+
+        });
+
+        describe('. prefix', function() {
+          it('matches wildcard subdomains', function(done) {
+            var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
+              headers: {
+                'Host': 'foo.wild-just-dot-subdomain.foo',
+              },
+            });
+
+            request.get(opts, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-just-dot-subdomain');
+              data.headers['host'].should.eql('example.com');
+              done();
+            });
+          });
+
+          it('matches the root domain itself', function(done) {
+            var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
+              headers: {
+                'Host': 'wild-just-dot-subdomain.foo',
+              },
+            });
+
+            request.get(opts, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-just-dot-subdomain');
+              data.headers['host'].should.eql('example.com');
+              done();
+            });
+          });
+
+          describe('does not match wildcards without the dot boundary', function() {
+            shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
+              headers: {
+                'Host': 'foowild-just-dot-subdomain.foo',
+              },
+            });
+          });
+
+          describe('does not match domains with extra trailing text', function() {
+            shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
+              headers: {
+                'Host': 'foo.wild-just-dot-subdomain.foobar',
+              },
+            });
+          });
+
+          it('replaces wildcard subdomains in backend hosts', function(done) {
+            var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
+              headers: {
+                'Host': 'foo.wildcard-backend-dot.foo',
+              },
+            });
+
+            request.get(opts, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend-dot');
+              data.headers['host'].should.eql('foo.example.com');
+              done();
+            });
+          });
+
+          it('replaces wildcard backend hosts with nothing if accessing the root', function(done) {
+            var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
+              headers: {
+                'Host': 'wildcard-backend-dot.foo',
+              },
+            });
+
+            request.get(opts, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend-dot');
+              data.headers['host'].should.eql('example.com');
+              done();
+            });
           });
         });
 
-        describe('does not match wildcard subdomain with *. prefix when no dot given', function() {
-          shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
-            headers: {
-              'Host': 'foowild-with-dot-subdomain.foo',
-            },
-          });
-        });
-
-        it('matches wildcard with * prefix when dot given', function(done) {
-          var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
-            headers: {
-              'Host': 'foo.wild-without-dot-subdomain.foo',
-            },
+        describe('* prefix', function() {
+          describe('does not match wildcard subdomains', function() {
+            shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
+              headers: {
+                'Host': 'foo.wild-without-dot-subdomain.foo',
+              },
+            });
           });
 
-          request.get(opts, function(error, response, body) {
-            var data = JSON.parse(body);
-            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-without-dot-subdomain');
-            data.headers['host'].should.eql('example.com');
-            done();
-          });
-        });
-
-        it('matches wildcard with * prefix when no dot given', function(done) {
-          var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
-            headers: {
-              'Host': 'foowild-without-dot-subdomain.foo',
-            },
+          describe('does not match the root domain itself', function() {
+            shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
+              headers: {
+                'Host': 'wild-without-dot-subdomain.foo',
+              },
+            });
           });
 
-          request.get(opts, function(error, response, body) {
-            var data = JSON.parse(body);
-            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-without-dot-subdomain');
-            data.headers['host'].should.eql('example.com');
-            done();
+          describe('does not match wildcards without the dot boundary', function() {
+            shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
+              headers: {
+                'Host': 'foowild-without-dot-subdomain.foo',
+              },
+            });
           });
         });
 
         describe('escapes other possible regex characters in domain', function() {
           shared.itBehavesLikeGatekeeperBlocked('/info/wildcard-subdomain/', 404, 'NOT_FOUND', {
             headers: {
-              'Host': 'foo.wild-without-dot-subdomainXfoo',
+              'Host': 'foo.wild-with-dot-subdomainXfoo',
             },
-          });
-        });
-
-        it('replaces wildcard subdomains in backend hosts', function(done) {
-          var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
-            headers: {
-              'Host': 'foo.wildcard-backend.foo',
-            },
-          });
-
-          request.get(opts, function(error, response, body) {
-            var data = JSON.parse(body);
-            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend');
-            data.headers['host'].should.eql('foo.example.com');
-            done();
-          });
-        });
-
-        it('replaces wildcard subdomains multiple levels deep in backend hosts', function(done) {
-          var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
-            headers: {
-              'Host': 'foo.bar.wildcard-backend.foo',
-            },
-          });
-
-          request.get(opts, function(error, response, body) {
-            var data = JSON.parse(body);
-            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend');
-            data.headers['host'].should.eql('foo.bar.example.com');
-            done();
-          });
-        });
-
-        it('replaces wildcard backend hosts with nothing if accessing the root', function(done) {
-          var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
-            headers: {
-              'Host': 'wildcard-backend.foo',
-            },
-          });
-
-          request.get(opts, function(error, response, body) {
-            var data = JSON.parse(body);
-            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend');
-            data.headers['host'].should.eql('example.com');
-            done();
           });
         });
       });
+
 
       it('allows a configurable default host to fallback to', function(done) {
         var opts = shared.buildRequestOptions('/info/default-host-config/', this.apiKey, {
