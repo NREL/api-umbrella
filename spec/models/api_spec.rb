@@ -188,10 +188,26 @@ describe Api do
       api.valid?.should eql(true)
     end
 
-    it "allows an empty backend host when the frontend host contains a wildcard without dot" do
+    it "does not allow a frontend or backend host starting with a wildcard when not bordered by a dot" do
       api = FactoryGirl.build(:api, {
         :frontend_host => "*example.com",
-        :backend_host => nil,
+        :backend_host => "*example.com",
+        :servers => [
+          FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        ]
+      })
+
+      api.valid?.should eql(false)
+      api.errors.messages.keys.sort.should eql([
+        :backend_host,
+        :frontend_host,
+      ])
+    end
+
+    it "allows a frontend or backend host starting with a star dot" do
+      api = FactoryGirl.build(:api, {
+        :frontend_host => "*.example.com",
+        :backend_host => "*.example.com",
         :servers => [
           FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
         ]
@@ -200,19 +216,16 @@ describe Api do
       api.valid?.should eql(true)
     end
 
-    it "does not allow a frontend host starting with a dot" do
+    it "allows a frontend or backend host starting with a dot" do
       api = FactoryGirl.build(:api, {
         :frontend_host => ".example.com",
-        :backend_host => "example.com",
+        :backend_host => ".example.com",
         :servers => [
           FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
         ]
       })
 
-      api.valid?.should eql(false)
-      api.errors.messages.keys.sort.should eql([
-        :frontend_host,
-      ])
+      api.valid?.should eql(true)
     end
 
     it "does not allow a frontend host equal to '.'" do
