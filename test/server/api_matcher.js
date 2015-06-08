@@ -112,6 +112,17 @@ describe('ApiUmbrellaGatekeper', function() {
             ]
           },
           {
+            'frontend_host': '*wildcard-backend.foo',
+            'backend_host': '*example.com',
+            '_id': 'wildcard-backend',
+            'url_matches': [
+              {
+                'frontend_prefix': '/info/wildcard-backend/',
+                'backend_prefix': '/info/wildcard-backend/'
+              }
+            ]
+          },
+          {
             'frontend_host': 'default-host-config.example.com',
             'backend_host': 'example.com',
             '_id': 'default-host-config',
@@ -216,6 +227,7 @@ describe('ApiUmbrellaGatekeper', function() {
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
           data.headers['x-api-umbrella-backend-id'].should.eql('wildcard');
+          data.headers['host'].should.eql('example.com');
           done();
         });
       });
@@ -230,6 +242,7 @@ describe('ApiUmbrellaGatekeper', function() {
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
           data.headers['x-api-umbrella-backend-id'].should.eql('wildcard');
+          data.headers['host'].should.eql('example.com');
           done();
         });
       });
@@ -245,6 +258,7 @@ describe('ApiUmbrellaGatekeper', function() {
           request.get(opts, function(error, response, body) {
             var data = JSON.parse(body);
             data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-with-dot-subdomain');
+            data.headers['host'].should.eql('example.com');
             done();
           });
         });
@@ -267,6 +281,7 @@ describe('ApiUmbrellaGatekeper', function() {
           request.get(opts, function(error, response, body) {
             var data = JSON.parse(body);
             data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-without-dot-subdomain');
+            data.headers['host'].should.eql('example.com');
             done();
           });
         });
@@ -281,6 +296,7 @@ describe('ApiUmbrellaGatekeper', function() {
           request.get(opts, function(error, response, body) {
             var data = JSON.parse(body);
             data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-without-dot-subdomain');
+            data.headers['host'].should.eql('example.com');
             done();
           });
         });
@@ -290,6 +306,51 @@ describe('ApiUmbrellaGatekeper', function() {
             headers: {
               'Host': 'foo.wild-without-dot-subdomainXfoo',
             },
+          });
+        });
+
+        it('replaces wildcard subdomains in backend hosts', function(done) {
+          var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
+            headers: {
+              'Host': 'foo.wildcard-backend.foo',
+            },
+          });
+
+          request.get(opts, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend');
+            data.headers['host'].should.eql('foo.example.com');
+            done();
+          });
+        });
+
+        it('replaces wildcard subdomains multiple levels deep in backend hosts', function(done) {
+          var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
+            headers: {
+              'Host': 'foo.bar.wildcard-backend.foo',
+            },
+          });
+
+          request.get(opts, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend');
+            data.headers['host'].should.eql('foo.bar.example.com');
+            done();
+          });
+        });
+
+        it('replaces wildcard backend hosts with nothing if accessing the root', function(done) {
+          var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
+            headers: {
+              'Host': 'wildcard-backend.foo',
+            },
+          });
+
+          request.get(opts, function(error, response, body) {
+            var data = JSON.parse(body);
+            data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend');
+            data.headers['host'].should.eql('example.com');
+            done();
           });
         });
       });
