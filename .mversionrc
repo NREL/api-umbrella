@@ -1,0 +1,4 @@
+{
+  "commitMessage": "Bump to v%s",
+  "tagName": "v%s"
+}
