@@ -310,6 +310,21 @@ describe('ApiUmbrellaGatekeper', function() {
             });
           });
 
+          it('matches domain with extra port information', function(done) {
+            var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
+              headers: {
+                'Host': 'foo.wild-with-dot-subdomain.foo:80',
+              },
+            });
+
+            request.get(opts, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-with-dot-subdomain');
+              data.headers['host'].should.eql('example.com');
+              done();
+            });
+          });
+
           it('replaces wildcard subdomains in backend hosts', function(done) {
             var opts = shared.buildRequestOptions('/info/wildcard-backend/', this.apiKey, {
               headers: {
@@ -386,6 +401,21 @@ describe('ApiUmbrellaGatekeper', function() {
               headers: {
                 'Host': 'foo.wild-just-dot-subdomain.foobar',
               },
+            });
+          });
+
+          it('matches domain with extra port information', function(done) {
+            var opts = shared.buildRequestOptions('/info/wildcard-subdomain/', this.apiKey, {
+              headers: {
+                'Host': 'foo.wild-just-dot-subdomain.foo:80',
+              },
+            });
+
+            request.get(opts, function(error, response, body) {
+              var data = JSON.parse(body);
+              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-just-dot-subdomain');
+              data.headers['host'].should.eql('example.com');
+              done();
             });
           });
 
