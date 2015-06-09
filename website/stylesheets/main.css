@@ -220,7 +220,7 @@ header {
 nav ul {
   list-style-type: none;
   padding: 0px;
-  margin: 16px 0px;
+  margin: 6px 0px 16px 0px;
 }
 
 nav li {
@@ -234,6 +234,7 @@ nav li.active {
 
 nav .nav-section {
   text-transform: uppercase;
+  margin-top: 16px;
   color: #444;
   font-size: 13px;
 }
