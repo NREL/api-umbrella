@@ -867,6 +867,107 @@ describe Api::V1::ApisController do
     describe "response override headers" do
       it_behaves_like "api settings header fields - create", :override_response_headers
     end
+
+    describe "sort order" do
+      before(:each) do
+        Api.delete_all
+      end
+
+      it "starts the sort_order at 0 and increments by 10,000" do
+        admin_token_auth(@admin)
+
+        attributes = FactoryGirl.attributes_for(:api)
+        3.times do |i|
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(201)
+          data = MultiJson.load(response.body)
+          data["api"]["sort_order"].should eql(i * 10_000)
+        end
+      end
+
+      it "allows saving when sort_order is pre-set to nil" do
+        admin_token_auth(@admin)
+
+        expect do
+          attributes = FactoryGirl.attributes_for(:api, :sort_order => nil)
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(201)
+          data = MultiJson.load(response.body)
+          data["api"]["sort_order"].should eql(0)
+        end.to change { Api.count }.by(1)
+      end
+
+      it "allows saving when sort_order is pre-set to number" do
+        admin_token_auth(@admin)
+
+        expect do
+          attributes = FactoryGirl.attributes_for(:api, :sort_order => 8)
+          post :create, :format => "json", :api => attributes
+          response.status.should eql(201)
+          data = MultiJson.load(response.body)
+          data["api"]["sort_order"].should eql(8)
+        end.to change { Api.count }.by(1)
+      end
+
+      it "fills in the sort_order when approaching the maximum integer range" do
+        FactoryGirl.create(:api, :sort_order => 2_147_483_600)
+
+        admin_token_auth(@admin)
+        attributes = FactoryGirl.attributes_for(:api)
+
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["sort_order"].should eql(2_147_483_624)
+
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["sort_order"].should eql(2_147_483_636)
+
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["sort_order"].should eql(2_147_483_642)
+      end
+
+      it "re-shuffles the sort_order when the maximum integer range will be exceeded" do
+        api1 = FactoryGirl.create(:api, :sort_order => 2_147_483_000)
+        api2 = FactoryGirl.create(:api, :sort_order => 2_147_483_645)
+
+        admin_token_auth(@admin)
+        attributes = FactoryGirl.attributes_for(:api)
+
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        api3_id = data["api"]["id"]
+        data["api"]["sort_order"].should eql(2_147_483_646)
+
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        api4_id = data["api"]["id"]
+        data["api"]["sort_order"].should eql(2_147_483_647)
+
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        api5_id = data["api"]["id"]
+        data["api"]["sort_order"].should eql(2_147_483_647)
+
+        api1.reload
+        api2.reload
+        api3 = Api.find(api3_id)
+        api4 = Api.find(api4_id)
+        api5 = Api.find(api5_id)
+        api1.sort_order.should eql(2_147_483_000)
+        api2.sort_order.should eql(2_147_483_644)
+        api3.sort_order.should eql(2_147_483_645)
+        api4.sort_order.should eql(2_147_483_646)
+        api5.sort_order.should eql(2_147_483_647)
+      end
+    end
   end
 
   describe "PUT update" do
@@ -1209,6 +1310,268 @@ describe Api::V1::ApisController do
           data.keys.should eql(["errors"])
         end.to_not change { Api.count }
       end
+    end
+  end
+
+  describe "PUT move_after" do
+    before(:each) do
+      Api.delete_all
+    end
+
+    it "moves the sort_order to the beginning when move_after_id is null" do
+      api1 = FactoryGirl.create(:api)
+      api2 = FactoryGirl.create(:api)
+      api3 = FactoryGirl.create(:api)
+      api4 = FactoryGirl.create(:api)
+
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(10_000)
+      api3.sort_order.should eql(20_000)
+      api4.sort_order.should eql(30_000)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api3.id, :move_after_id => nil
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api3.reload
+      api4.reload
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(10_000)
+      api3.sort_order.should eql(-10_000)
+      api4.sort_order.should eql(30_000)
+    end
+
+    it "creates a gap of 10,000 when shifting a record to the beginning" do
+      api1 = FactoryGirl.create(:api, :sort_order => 99)
+      api2 = FactoryGirl.create(:api)
+
+      api1.sort_order.should eql(99)
+      api2.sort_order.should eql(10_099)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api2.id, :move_after_id => nil
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api1.sort_order.should eql(99)
+      api2.sort_order.should eql(-9_901)
+    end
+
+    it "shifts the record into place without touching the surrounding records" do
+      api1 = FactoryGirl.create(:api)
+      api2 = FactoryGirl.create(:api)
+      api3 = FactoryGirl.create(:api)
+
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(10_000)
+      api3.sort_order.should eql(20_000)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api3.id, :move_after_id => api1.id
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api3.reload
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(10_000)
+      api3.sort_order.should eql(5_000)
+    end
+
+    it "doesn't change the sort_order if moving after the record that already precedes it and records are evenly distributed" do
+      api1 = FactoryGirl.create(:api)
+      api2 = FactoryGirl.create(:api)
+      api3 = FactoryGirl.create(:api)
+
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(10_000)
+      api3.sort_order.should eql(20_000)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api2.id, :move_after_id => api1.id
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api3.reload
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(10_000)
+      api3.sort_order.should eql(20_000)
+    end
+
+    it "may change the sort_order if moving after the record that already precedes it and records are not evenly distributed" do
+      api1 = FactoryGirl.create(:api, :sort_order => 0)
+      api2 = FactoryGirl.create(:api, :sort_order => 10_000)
+      api3 = FactoryGirl.create(:api, :sort_order => 100_000)
+
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(10_000)
+      api3.sort_order.should eql(100_000)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api2.id, :move_after_id => api1.id
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api3.reload
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(50_000)
+      api3.sort_order.should eql(100_000)
+    end
+
+    it "may change the sort_order if moving after the record that already precedes and there is no subsequent record" do
+      api1 = FactoryGirl.create(:api, :sort_order => 0)
+      api2 = FactoryGirl.create(:api, :sort_order => 3_000)
+
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(3_000)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api2.id, :move_after_id => api1.id
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(10_000)
+    end
+
+    it "reshuffles positive sort orders if moving in between two records that have no gap remaining" do
+      api1 = FactoryGirl.create(:api, :sort_order => 0)
+      api2 = FactoryGirl.create(:api, :sort_order => 1)
+      api3 = FactoryGirl.create(:api, :sort_order => 2)
+      api4 = FactoryGirl.create(:api, :sort_order => 3)
+      api5 = FactoryGirl.create(:api, :sort_order => 10)
+
+      api1.sort_order.should eql(0)
+      api2.sort_order.should eql(1)
+      api3.sort_order.should eql(2)
+      api4.sort_order.should eql(3)
+      api5.sort_order.should eql(10)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api3.id, :move_after_id => api1.id
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api3.reload
+      api4.reload
+      api5.reload
+      api1.sort_order.should eql(-1)
+      api2.sort_order.should eql(1)
+      api3.sort_order.should eql(0)
+      api4.sort_order.should eql(3)
+      api5.sort_order.should eql(10)
+    end
+
+    it "reshuffles positive sort orders near integer range if moving in between two records that have no gap remaining" do
+      api1 = FactoryGirl.create(:api, :sort_order => 2_147_483_640)
+      api2 = FactoryGirl.create(:api, :sort_order => 2_147_483_645)
+      api3 = FactoryGirl.create(:api, :sort_order => 2_147_483_646)
+      api4 = FactoryGirl.create(:api, :sort_order => 2_147_483_647)
+
+      api1.sort_order.should eql(2_147_483_640)
+      api2.sort_order.should eql(2_147_483_645)
+      api3.sort_order.should eql(2_147_483_646)
+      api4.sort_order.should eql(2_147_483_647)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api2.id, :move_after_id => api4.id
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api3.reload
+      api4.reload
+      api1.sort_order.should eql(2_147_483_640)
+      api2.sort_order.should eql(2_147_483_647)
+      api3.sort_order.should eql(2_147_483_645)
+      api4.sort_order.should eql(2_147_483_646)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api3.id, :move_after_id => nil
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api3.reload
+      api4.reload
+      api1.sort_order.should eql(2_147_483_640)
+      api2.sort_order.should eql(2_147_483_647)
+      api3.sort_order.should eql(2_147_473_640)
+      api4.sort_order.should eql(2_147_483_646)
+    end
+
+    it "reshuffles negative sort orders if moving in between two records that have no gap remaining" do
+      api1 = FactoryGirl.create(:api, :sort_order => -10)
+      api2 = FactoryGirl.create(:api, :sort_order => -9)
+      api3 = FactoryGirl.create(:api, :sort_order => -8)
+      api4 = FactoryGirl.create(:api, :sort_order => -7)
+      api5 = FactoryGirl.create(:api, :sort_order => 0)
+
+      api1.sort_order.should eql(-10)
+      api2.sort_order.should eql(-9)
+      api3.sort_order.should eql(-8)
+      api4.sort_order.should eql(-7)
+      api5.sort_order.should eql(0)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api3.id, :move_after_id => api1.id
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api3.reload
+      api4.reload
+      api5.reload
+      api1.sort_order.should eql(-10)
+      api2.sort_order.should eql(-8)
+      api3.sort_order.should eql(-9)
+      api4.sort_order.should eql(-7)
+      api5.sort_order.should eql(0)
+    end
+
+    it "reshuffles negative sort orders near integer range if moving in between two records that have no gap remaining" do
+      api1 = FactoryGirl.create(:api, :sort_order => -2_147_483_648)
+      api2 = FactoryGirl.create(:api, :sort_order => -2_147_483_647)
+      api3 = FactoryGirl.create(:api, :sort_order => -2_147_483_646)
+      api4 = FactoryGirl.create(:api, :sort_order => -2_147_483_640)
+
+      api1.sort_order.should eql(-2_147_483_648)
+      api2.sort_order.should eql(-2_147_483_647)
+      api3.sort_order.should eql(-2_147_483_646)
+      api4.sort_order.should eql(-2_147_483_640)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api3.id, :move_after_id => api1.id
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api3.reload
+      api4.reload
+      api1.sort_order.should eql(-2_147_483_648)
+      api2.sort_order.should eql(-2_147_483_646)
+      api3.sort_order.should eql(-2_147_483_647)
+      api4.sort_order.should eql(-2_147_483_640)
+
+      admin_token_auth(@admin)
+      put :move_after, :format => "json", :id => api3.id, :move_after_id => nil
+      response.status.should eql(204)
+
+      api1.reload
+      api2.reload
+      api3.reload
+      api4.reload
+      api1.sort_order.should eql(-2_147_483_647)
+      api2.sort_order.should eql(-2_147_483_646)
+      api3.sort_order.should eql(-2_147_483_648)
+      api4.sort_order.should eql(-2_147_483_640)
     end
   end
 end
