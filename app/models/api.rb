@@ -8,8 +8,11 @@ class Api
   include Mongoid::Paranoia
   include Mongoid::Delorean::Trackable
   include Mongoid::EmbeddedErrors
-  include Mongoid::Orderable
   include ApiUmbrella::AttributifyData
+
+  MAX_SORT_ORDER = 2_147_483_647
+  MIN_SORT_ORDER = -2_147_483_648
+  SORT_ORDER_GAP = 10_000
 
   # Fields
   field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
@@ -55,9 +58,8 @@ class Api
     end
   end
 
-  orderable :column => :sort_order
-
   # Callbacks
+  before_save :calculate_sort_order
   after_save :handle_rate_limit_mode
 
   # Nested attributes
@@ -101,6 +103,123 @@ class Api
     }
 
     json
+  end
+
+  def calculate_sort_order
+    if(self.sort_order.blank?)
+      self.move_to_end
+    end
+
+    true
+  end
+
+  def move_to_beginning
+    order = 0
+
+    # Find the current first sort_order value and move this record
+    # SORT_ORDER_GAP before that value.
+    first_api = Api.asc(:sort_order).first
+    if(first_api)
+      min_sort_order = first_api.sort_order
+      if(min_sort_order.present?)
+        order = min_sort_order - SORT_ORDER_GAP
+
+        # If we've hit the minimum allowed value, find an new minimum value in
+        # between.
+        if(order < MIN_SORT_ORDER)
+          order = ((min_sort_order + MIN_SORT_ORDER) / 2.0).floor
+        end
+      end
+    end
+
+    self.apply_sort_order(order)
+  end
+
+  def move_to_end
+    order = 0
+
+    # Find the current first sort_order value and move this record
+    # SORT_ORDER_GAP after that value.
+    last_api = Api.desc(:sort_order).first
+    if(last_api)
+      max_sort_order = last_api.sort_order
+      if(max_sort_order.present?)
+        order = max_sort_order + SORT_ORDER_GAP
+
+        # If we've hit the maximum allowed value, find an new maximum value in
+        # between.
+        if(order > MAX_SORT_ORDER)
+          order = ((max_sort_order + MAX_SORT_ORDER) / 2.0).ceil
+        end
+      end
+    end
+
+    self.apply_sort_order(order)
+  end
+
+  def move_after(after_api)
+    order = nil
+
+    # We're passed the API record we want to move the current record to be
+    # after (after_api). Next, look for the record following after_api. This
+    # determine the two records we want to try to sandwich the current record
+    # between.
+    after_after_api = Api.ne(:id => self.id).gt(:sort_order => after_api.sort_order).asc(:sort_order).first
+    if(after_after_api)
+      if(after_api.sort_order.present? && after_after_api.sort_order.present?)
+        order = ((after_api.sort_order + after_after_api.sort_order) / 2.0)
+        order = if(order < 0) then order.ceil else order.floor end
+      end
+    else
+      # If we're trying to move the current record after the last record in the
+      # database, then increment the sort order by SORT_ORDER_GAP.
+      if(after_api.sort_order.present?)
+        order = after_api.sort_order + SORT_ORDER_GAP
+      end
+    end
+
+    # Make sure the order hasn't outside of the allowed integer bounds.
+    if(order)
+      if(order > MAX_SORT_ORDER)
+        order = ((after_api.sort_order + MAX_SORT_ORDER) / 2.0).ceil
+      elsif(order < MIN_SORT_ORDER)
+        order = ((after_api.sort_order + MIN_SORT_ORDER) / 2.0).floor
+      end
+    end
+
+    self.apply_sort_order(order)
+  end
+
+  def apply_sort_order(order)
+    return unless(order)
+
+    # Apply the new sort_order value first.
+    self.sort_order = order
+    unless(self.new_record?)
+      self.update_attribute(:sort_order, order)
+    end
+
+    # Next look for any existing records that have conflicting sort_order
+    # values. We will then shift those existing sort_order values to be unique.
+    #
+    # Note: This iterative, recursive approach isn't efficient, but since our
+    # whole approach of having SORT_ORDER_GAP between each sort_order value,
+    # conflicts like this should be exceedingly rare.
+    conflicting_order_apis = Api.ne(:id => self.id).where(:sort_order => order)
+    if(conflicting_order_apis.any?)
+      # Shift positive rank_orders negatively, and negative rank_orders
+      # positively. This is designed so that we work away from the
+      # MAX_SORT_ORDER or MIN_SORT_ORDER values if we're bumping into our
+      # integer size limits.
+      conflicting_new_order = order - 1
+      if(order < 0)
+        conflicting_new_order = order + 1
+      end
+
+      conflicting_order_apis.each do |api|
+        api.apply_sort_order(conflicting_new_order)
+      end
+    end
   end
 
   # After the API is saved, clear out any left-over rate_limits for settings

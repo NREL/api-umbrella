@@ -47,6 +47,10 @@ class ApiPolicy < ApplicationPolicy
     show?
   end
 
+  def move_after?
+    update?
+  end
+
   def publish?
     can?("backend_publish")
   end

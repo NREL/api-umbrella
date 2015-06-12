@@ -55,6 +55,24 @@ class Api::V1::ApisController < Api::V1::BaseController
     respond_with(:api_v1, @api, :root => "api")
   end
 
+  def move_after
+    @api = Api.find(params[:id])
+    authorize(@api)
+
+    if(params[:move_after_id].present?)
+      after_api = Api.find(params[:move_after_id])
+      if(after_api)
+        authorize(after_api)
+        @api.move_after(after_api)
+      end
+    else
+      @api.move_to_beginning
+    end
+
+    @api.save
+    respond_with(:api_v1, @api, :root => "api")
+  end
+
   private
 
   def save!

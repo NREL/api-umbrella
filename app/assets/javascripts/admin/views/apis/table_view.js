@@ -18,7 +18,6 @@ Admin.ApisTableView = Ember.View.extend({
       pageLength: 50,
       rowCallback: function(row, data) {
         $(row).data('id', data.id);
-        $(row).data('sort-order', data.sort_order);
       },
       order: [[0, 'asc']],
       columns: [
@@ -98,24 +97,13 @@ Admin.ApisTableView = Ember.View.extend({
       },
       stop: _.bind(function(event, ui) {
         var row = $(ui.item);
-        var currentOrder = parseInt(row.data('sort-order'), 10);
         var previousRow = row.prev('tbody tr');
-        var moveTo = 1;
+        var moveAfterId = null;
         if(previousRow.length > 0) {
-          moveTo = parseInt($(previousRow[0]).data('sort-order'), 10);
-          if(moveTo < currentOrder) {
-            moveTo++;
-          }
-        } else {
-          var data = this.get('table').rows().data();
-          var sortOrders = _.map(_.compact(_.pluck(data, 'sort_order')), function(order) { return parseInt(order, 10); });
-          var minSortOrder = sortOrders.sort()[0];
-          if(minSortOrder && minSortOrder > 1) {
-            moveTo = minSortOrder - 1;
-          }
+          moveAfterId = $(previousRow[0]).data('id');
         }
 
-        this.saveReorder(row.data('id'), moveTo);
+        this.saveReorder(row.data('id'), moveAfterId);
       }, this),
     });
   },
@@ -132,12 +120,12 @@ Admin.ApisTableView = Ember.View.extend({
     }
   }.observes('controller.reorderActive'),
 
-  saveReorder: function(id, moveTo) {
+  saveReorder: function(id, moveAfterId) {
     this.$().dataTable().fnProcessingIndicator(true);
     $.ajax({
-      url: '/admin/apis/' + id + '/move_to.json',
+      url: '/api-umbrella/v1/apis/' + id + '/move_after.json',
       type: 'PUT',
-      data: { move_to: moveTo },
+      data: { move_after_id: moveAfterId },
     }).done(_.bind(function() {
       this.get('table').draw();
     }, this)).fail(_.bind(function() {

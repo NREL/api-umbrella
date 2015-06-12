@@ -32,7 +32,11 @@ ApiUmbrella::Application.routes.draw do
         resources :user_roles, :only => [:index]
         resources :admins
         resources :api_scopes
-        resources :apis
+        resources :apis do
+          member do
+            put "move_after"
+          end
+        end
         resources :users
         resources :website_backends
         resource :contact, :only => [:create]
@@ -61,12 +65,6 @@ ApiUmbrella::Application.routes.draw do
   match "/admin" => "admin/base#empty"
 
   namespace :admin do
-    resources :apis, :only => [] do
-      member do
-        put "move_to"
-      end
-    end
-
     resources :stats, :only => [:index] do
       collection do
         get "search"
