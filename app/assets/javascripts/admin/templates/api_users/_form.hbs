@@ -77,11 +77,12 @@
   <fieldset class="form-horizontal">
     <legend>Permissions</legend>
 
-    {{#view Admin.SelectizeView valueBinding='rolesString' contentBinding='roleOptions' optionValuePath='id' optionLabelPath='id'}}
-      {{input rolesString
-        class='row-fluid'
-        label='Roles'}}
-    {{/view}}
+    {{input rolesString as='selectize'
+      collectionBinding='roleOptions'
+      optionValuePath='id'
+      optionLabelPath='id'
+      class='row-fluid'
+      label='Roles'}}
 
     {{render 'apis/settings_allowed_ips_fields' settings}}
     {{render 'apis/settings_allowed_referers_fields' settings}}

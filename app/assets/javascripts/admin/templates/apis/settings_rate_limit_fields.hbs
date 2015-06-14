@@ -8,7 +8,7 @@
 {{#if isRateLimitModeCustom}}
   <div class="control-group">
     <div class="controls">
-      <table class="table table-striped table-condensed table-small small-form">
+      <table class="table table-striped table-condensed table-small small-form custom-rate-limits-table">
         <thead>
           <tr>
             <th>Duration</th>
@@ -32,13 +32,13 @@ X-RateLimit-Remaining: 840
             {{#each rateLimits}}
               <tr>
                 <td class="input-small">
-                  {{input-field durationInUnits inputConfig='class:input-small'}}
+                  {{input-field durationInUnits inputConfig='class:input-small rate-limit-duration-in-units'}}
                 </td>
                 <td class="input-medium" style="text-align: left;">
                   {{input-field durationUnits as='select'
                     value='durationUnits'
                     collection='controller.rateLimitDurationUnitOptions'
-                    inputConfig='class:input-small'
+                    inputConfig='class:input-small rate-limit-duration-units'
                     optionValuePath='content.id'
                     optionLabelPath='content.name'}}
                 </td>
@@ -46,13 +46,13 @@ X-RateLimit-Remaining: 840
                   {{input-field limitBy as='select'
                     value='limitBy'
                     collection='controller.rateLimitLimitByOptions'
-                    inputConfig='class:input-small'
+                    inputConfig='class:input-small rate-limit-limit-by'
                     optionValuePath='content.id'
                     optionLabelPath='content.name'}}
                 </td>
                 <td class="input-medium">
                   <div class="input-append">
-                    {{input-field limit inputConfig='class:input-small'}}
+                    {{input-field limit inputConfig='class:input-small rate-limit-limit'}}
                     <span class="add-on">requests</span>
                   </div>
                 </td>
@@ -60,7 +60,8 @@ X-RateLimit-Remaining: 840
                   {{view Admin.BooleanRadioButtonView
                     nameBinding='controller.uniqueSettingsId'
                     selectionBinding='responseHeaders'
-                    value='true'}}
+                    value='true'
+                    class='rate-limit-response-headers'}}
                 </td>
                 <td class="table-row-actions">
                   <a href="#" class="remove-action" {{action 'deleteRateLimit' this}}><i class="fa fa-times"></i>Remove</a>

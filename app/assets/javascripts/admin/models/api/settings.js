@@ -7,6 +7,7 @@ Admin.ApiSettings = Ember.Model.extend({
   disableApiKey: Ember.attr(),
   apiKeyVerificationLevel: Ember.attr(),
   requiredRoles: Ember.attr(),
+  requiredRolesOverride: Ember.attr(),
   allowedIps: Ember.attr(),
   allowedReferers: Ember.attr(),
   rateLimitMode: Ember.attr(),

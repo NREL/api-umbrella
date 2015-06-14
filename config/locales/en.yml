@@ -117,6 +117,7 @@ en:
           transition_return_error: Transitionary & return message - Optional for existing API keys, required for new API keys
           transition_return_redirect: Transitionary & return redirects - Optional for existing API keys, required for new API keys
           optional: Optional - HTTPS is optional
+        disable_api_key: API Key Checks
         disable_api_key_options:
           inherit: Inherit (default - required)
           required: Required - API keys are mandatory
@@ -127,6 +128,136 @@ en:
           none: None - API keys can be used without any verification
           transition_email: E-mail verification transition - Existing API keys will continue to work, new API keys will only work if verified
           required_email: E-mail verification required - Existing API keys will break, only new API keys will work if verified
+        required_roles: Required Roles
+        required_roles_tooltip_markdown: |-
+          Define roles that API keys must have in order to access this API. If multiple roles are set, then the API key must have all of the roles.
+        required_roles_override: Override required roles from "Global Request Settings"
+        required_roles_override_tooltip_markdown: |-
+          By default, roles defined in "Sub-URL Request Settings" will be appended to any required roles defined in the parent "Global Request Settings." Choosing this option will cause the roles defined here to clear and override any parent roles.
+        pass_api_key: Pass API Key to Backend (deprecated)
+        pass_api_key_tooltip_markdown: |-
+          Whether to pass the user's api key to this API backend.
+
+          ***Deprecated:*** This is deprecated and support of this will be removed in the future. Enabling either option is not recommend.
+
+          If your API backend needs to uniquely reference the requesting user, use the `X-Api-User-Id` HTTP header instead.
+
+          *Note:* Passing via GET query parameter with render API Umbrella's HTTP caching layer mostly ineffectual (since the cache will be maintained per API key)
+        pass_api_key_header: Via HTTP header
+        pass_api_key_param: Via GET query parameter
+        default_response_headers: Default Response Headers
+        default_response_headers_tooltip_markdown: |-
+          Define header values that will be set in the response regardless of whether the header is already set in the response.
+
+          For example, to set default CORS headers on all responses that don't explicitly set their own CORS headers:
+
+          ```
+          Access-Control-Allow-Origin: *
+          ```
+        override_response_headers: Override Response Headers
+        override_response_headers_tooltip_markdown: |-
+          Define header values that will be set in the response regardless of whether the header is already set in the response.
+
+          For example, to force CORS headers on all responses:
+
+          ```
+          Access-Control-Allow-Origin: *
+          ```
+        error_templates_json: JSON Template
+        error_templates_json_tooltip_markdown: |-
+          A <a href="http://handlebarsjs.com" target="_blank">Handlebars</a> template of the JSON error response. Available Handlebars variables are defined below in the Error Data section.
+
+          Default template:
+
+          ```
+          {
+            "error": {
+              "code": {{code}},
+              "message": {{message}}
+            }
+          }
+          ```
+        error_templates_xml: XML Template
+        error_templates_xml_tooltip_markdown: |-
+          A <a href="http://handlebarsjs.com" target="_blank">Handlebars</a> template of the XML error response. Available Handlebars variables are defined below in the Error Data section.
+
+          Default template:
+
+          ```
+          &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+          &lt;response&gt;
+            &lt;error&gt;
+              &lt;code&gt;{{code}}&lt;/code&gt;
+              &lt;message&gt;{{message}}&lt;/message&gt;
+            &lt;/error&gt;
+          &lt;/response&gt;
+          ```
+        error_templates_csv: CSV Template
+        error_templates_csv_tooltip_markdown: |-
+          A <a href="http://handlebarsjs.com" target="_blank">Handlebars</a> template of the CSV error response. Available Handlebars variables are defined below in the Error Data section.
+
+          Default template:
+
+          ```
+          Error Code,Error Message
+          {{code}},{{message}}
+          ```
+        error_data_api_key_missing: API Key Missing
+        error_data_api_key_missing_tooltip_markdown: |-
+          <a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.
+
+          Default data:
+
+          ```
+          status_code: 403
+          code: API_KEY_MISSING
+          message: No api_key was supplied. Get one at {{signupUrl}}
+          ```
+        error_data_api_key_invalid: API Key Invalid
+        error_data_api_key_invalid_tooltip_markdown: |-
+          <a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.
+
+          Default data:
+
+          ```
+          status_code: 403
+          code: API_KEY_INVALID
+          message: An invalid api_key was supplied. Get one at {{signupUrl}}
+          ```
+
+        error_data_api_key_disabled: API Key Disabled
+        error_data_api_key_disabled_tooltip_markdown: |-
+          <a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.
+
+          Default data:
+
+          ```
+          status_code: 403
+          code: API_KEY_DISABLED
+          message: The api_key supplied has been disabled. Contact us at {{contactUrl}} for assistance
+          ```
+        error_data_api_key_unauthorized: API Key Unauthorized
+        error_data_api_key_unauthorized_tooltip_markdown: |-
+          <a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.
+
+          Default data:
+
+          ```
+          status_code: 403
+          code: API_KEY_UNAUTHORIZED
+          message: The api_key supplied is not authorized to access the given service. Contact us at {{contactUrl}} for assistance
+          ```
+        error_data_over_rate_limit: Over Rate Limit
+        error_data_over_rate_limit_tooltip_markdown: |-
+          <a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.
+
+          Default data:
+
+          ```
+          status_code: 429
+          code: OVER_RATE_LIMIT
+          message: You have exceeded your rate limit. Try again later or contact us at {{contactUrl}} for assistance
+          ```
       sub_settings:
         legend: Sub-URL Request Settings
         note: Change settings for specific sub-URLs within this API.

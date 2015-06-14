@@ -41,13 +41,13 @@ http_interactions:
       Accept-Ranges:
       - bytes
       Date:
-      - Thu, 11 Jun 2015 17:04:43 GMT
+      - Sat, 13 Jun 2015 23:05:25 GMT
       Via:
       - 1.1 varnish
       Connection:
       - keep-alive
       X-Served-By:
-      - cache-atl6221-ATL
+      - cache-ord1726-ORD
       X-Cache:
       - MISS
       X-Cache-Hits:
@@ -55,7 +55,7 @@ http_interactions:
       Vary:
       - Authorization,Accept-Encoding
       Expires:
-      - Thu, 11 Jun 2015 17:09:43 GMT
+      - Sat, 13 Jun 2015 23:10:25 GMT
       Source-Age:
       - '0'
     body:
@@ -217,5 +217,5 @@ http_interactions:
           }
         ]
     http_version: 
-  recorded_at: Fri, 29 May 2015 06:26:31 GMT
+  recorded_at: Sat, 30 May 2015 09:05:50 GMT
 recorded_with: VCR 2.9.3

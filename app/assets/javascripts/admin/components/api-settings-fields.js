@@ -1,4 +1,4 @@
-Admin.ApisSettingsFieldsController = Ember.ObjectController.extend({
+Admin.ApiSettingsFieldsComponent = Ember.Component.extend({
   requireHttpsOptions: [
     { id: null, name: polyglot.t('admin.api.settings.require_https_options.inherit') },
     { id: 'required_return_error', name: polyglot.t('admin.api.settings.require_https_options.required_return_error') },
