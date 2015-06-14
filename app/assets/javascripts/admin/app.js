@@ -163,15 +163,117 @@ Ember.Handlebars.registerHelper('tooltip-field', function(property, options) {
 
 // Use a custom template for Easy Form. This adds a tooltip and wraps that in
 // the control-label div with the label.
-Ember.TEMPLATES['easyForm/wrapped_input'] = Ember.Handlebars.compile('<div class="control-label">{{label-field propertyBinding="view.property" textBinding="view.label"}}{{#if view.tooltip}}{{tooltip-field titleBinding="view.tooltip" data-tooltip-classBinding="view.tooltipClass"}}{{/if}}</div><div class="{{unbound view.controlsWrapperClass}}">{{partial "easyForm/inputControls"}}</div>');
+Ember.TEMPLATES['easyForm/wrapped_input'] = Ember.Handlebars.compile('<div class="control-label">{{label-field propertyBinding="view.property" textBinding="view.label" viewBinding="view"}}{{#if view.tooltip}}{{tooltip-field titleBinding="view.tooltip" data-tooltip-classBinding="view.tooltipClass"}}{{/if}}</div><div class="{{unbound view.controlsWrapperClass}}">{{partial "easyForm/inputControls"}}</div>');
 
-Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
-  attributeBindings: ['data-ace-mode'],
+Ember.EasyForm.Config.registerInputType('selectize', Ember.EasyForm.TextField.extend({
+  defaultOptions: [],
+
+  init: function() {
+    this._super();
+    this.set('selectizeTextInputId', this.elementId + '_selectize_text_input');
+    this.set('overrideForElementId', this.get('selectizeTextInputId'));
+  },
 
   didInsertElement: function() {
     this._super();
 
-    var aceId = this.elementId + '_ace';
+    this.$input = this.$().selectize({
+      plugins: ['restore_on_backspace', 'remove_button'],
+      delimiter: ',',
+      options: this.get('defaultOptions'),
+      valueField: 'id',
+      labelField: 'label',
+      searchField: 'label',
+      sortField: 'label',
+      onChange: _.bind(this.handleSelectizeChange, this),
+      create: true,
+
+      // Add to body so it doesn't get clipped by parent div containers.
+      dropdownParent: 'body',
+    });
+
+    this.selectize = this.$input[0].selectize;
+    this.selectize.$control_input.attr('id', this.get('selectizeTextInputId'));
+    this.selectize.$control_input.attr('data-raw-input-id', this.elementId);
+
+    var controlId = this.elementId + '_selectize_control';
+    this.selectize.$control.attr('id', controlId);
+    this.selectize.$control_input.attr('data-selectize-control-id', controlId);
+  },
+
+  defaultOptionsDidChange: function() {
+    this.set('defaultOptions', this.get('collection').map(_.bind(function(item) {
+      return {
+        id: item.get(this.get('optionValuePath')),
+        label: item.get(this.get('optionLabelPath')),
+      };
+    }, this)));
+
+    if(this.selectize) {
+      this.get('defaultOptions').forEach(_.bind(function(option) {
+        this.selectize.addOption(option);
+      }, this));
+
+      this.selectize.refreshOptions(false);
+    }
+  }.observes('collection.@each').on('init'),
+
+  // Sync the selectize input with the value binding if the value changes
+  // externally.
+  valueDidChange: function() {
+    if(this.selectize) {
+      var valueString = this.get('value');
+      if(valueString !== this.selectize.getValue()) {
+        var values = valueString;
+        if(values) {
+          values = _.uniq(values.split(','));
+
+          // Ensure the selected value is available as an option in the menu.
+          // This takes into account the fact that the default options may not
+          // be loaded yet, or they may not contain this specific option.
+          for(var i = 0; i < values.length; i++) {
+            var option = {
+              id: values[i],
+              label: values[i],
+            };
+
+            this.selectize.addOption(option);
+          }
+
+          this.selectize.refreshOptions(false);
+        }
+
+        this.selectize.setValue(values);
+      }
+    }
+  }.observes('value').on('init'),
+
+  // Update the value binding when the selectize input changes.
+  handleSelectizeChange: function(value) {
+    this.set('value', value);
+  },
+
+  willDestroyElement: function() {
+    if(this.selectize) {
+      this.selectize.destroy();
+    }
+  },
+}));
+
+Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
+  attributeBindings: ['data-ace-mode'],
+
+  init: function() {
+    this._super();
+    this.set('aceId', this.elementId + '_ace');
+    this.set('aceTextInputId', this.elementId + '_ace_text_input');
+    this.set('overrideForElementId', this.get('aceTextInputId'));
+  },
+
+  didInsertElement: function() {
+    this._super();
+
+    var aceId = this.get('aceId');
     this.$().hide();
     this.$().before('<div id="' + aceId + '" data-form-property="' + this.property + '" class="span12"></div>');
 
@@ -188,6 +290,16 @@ Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
     session.setTabSize(2);
     session.setMode('ace/mode/' + this.$().data('ace-mode'));
     session.setValue(this.$().val());
+
+    var $textElement = $(editor.textInput.getElement());
+    $textElement.attr('id', this.get('aceTextInputId'));
+    $textElement.attr('data-raw-input-id', this.elementId);
+
+    var contentId = this.elementId + '_ace_content';
+    var $content = $(editor.container).find('.ace_content');
+    $content.attr('id', contentId);
+    $textElement.attr('data-ace-content-id', contentId);
+
 
     session.on('change', function() {
       element.val(session.getValue());
@@ -280,6 +392,11 @@ _.merge($.fn.DataTable.defaults, {
 });
 
 Ember.EasyForm.Input.reopen({
+  didInsertElement: function() {
+    var forId = this.get('input-field-' + this.elementId + '.overrideForElementId') || this.get('input-field-' + this.elementId + '.elementId');
+    this.set('label-field-' + this.elementId + '.for', forId);
+  },
+
   // Observe the "showAllValidationErrors" property and show all the inline
   // input validations when this gets set to true. This allows us to show all
   // the invalid fields on the page without actually visiting each input field

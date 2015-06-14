@@ -1,6 +1,4 @@
 Admin.ApisSubSettingsFormController = Admin.NestedFormController.extend({
-  needs: ['apis_settings_fields'],
-
   titleBase: 'Sub-URL Request Settings',
 
   httpMethodOptions: [

@@ -11,6 +11,7 @@ class Api::Settings
   field :api_key_verification_level, :type => String
   field :api_key_verification_transition_start_at, :type => Time
   field :required_roles, :type => Array
+  field :required_roles_override, :type => Boolean
   field :allowed_ips, :type => Array
   field :allowed_referers, :type => Array
   field :rate_limit_mode, :type => String
@@ -60,6 +61,7 @@ class Api::Settings
     :pass_api_key_header,
     :pass_api_key_query_param,
     :required_roles,
+    :required_roles_override,
     :allowed_ips,
     :allowed_referers,
     :error_templates,

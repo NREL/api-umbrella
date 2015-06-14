@@ -472,6 +472,10 @@ td.reorder-handle {
   max-width: 600px;
 }
 
+.qtip-content p:last-child {
+  margin-bottom: 0px;
+}
+
 .query-syntax-help .example {
   text-align: right;
 }
@@ -559,4 +563,8 @@ td.reorder-handle {
   text-align: center;
   width: 80px;
   font-size: 85%;
+}
+
+.control-group-negative-top {
+  margin-top: -16px;
 }
