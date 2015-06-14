@@ -217,6 +217,78 @@ describe('formatted error responses', function() {
     });
   });
 
+  describe('invalid data', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          settings: {
+            error_data: {
+              api_key_missing: 'Foo',
+              api_key_invalid: 9,
+              api_key_unauthorized: [],
+              api_key_disabled: null,
+            },
+          },
+          sub_settings: [
+            {
+              http_method: 'any',
+              regex: '^/private',
+              settings: {
+                required_roles: ['private'],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    it('returns internal error when error data is unexpectedly a string', function(done) {
+      request.get('http://localhost:9333/hello.json', function(error, response, body) {
+        response.statusCode.should.eql(500);
+        var data = JSON.parse(body);
+        data.error.code.should.eql('INTERNAL_SERVER_ERROR');
+        done();
+      });
+    });
+
+    it('returns internal error when error data is unexpectedly a number', function(done) {
+      request.get('http://localhost:9333/hello.json?api_key=invalid-key', function(error, response, body) {
+        response.statusCode.should.eql(500);
+        var data = JSON.parse(body);
+        data.error.code.should.eql('INTERNAL_SERVER_ERROR');
+        done();
+      });
+    });
+
+    it('returns internal error when error data is unexpectedly an array', function(done) {
+      request.get('http://localhost:9333/private.json?api_key=' + this.apiKey, function(error, response, body) {
+        response.statusCode.should.eql(500);
+        var data = JSON.parse(body);
+        data.error.code.should.eql('INTERNAL_SERVER_ERROR');
+        done();
+      });
+    });
+
+    it('returns default error data when the error data is null', function(done) {
+      Factory.create('api_user', { disabled_at: new Date() }, function(user) {
+        request.get('http://localhost:9333/hello.json?api_key=' + user.api_key, function(error, response, body) {
+          response.statusCode.should.eql(500);
+          var data = JSON.parse(body);
+          data.error.code.should.eql('INTERNAL_SERVER_ERROR');
+          done();
+        });
+      });
+    });
+  });
+
   describe('invalid templates', function() {
     shared.runServer({
       apis: [
@@ -259,6 +331,5 @@ describe('formatted error responses', function() {
         done();
       });
     });
-
   });
 });
