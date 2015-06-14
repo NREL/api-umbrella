@@ -220,6 +220,7 @@ describe "apis", :js => true do
     select "None - API keys can be used without any verification", :from => "API Key Verification Requirements"
     fill_in "Required Roles", :with => "some-role"
     find(".selectize-dropdown-content div", :text => /Add some-role/).click
+    find("body").native.send_key(:Escape) # Sporadically seems necessary to reset selectize properly for second input.
     fill_in "Required Roles", :with => "some-role2"
     find(".selectize-dropdown-content div", :text => /Add some-role2/).click
     check "Via HTTP header"

@@ -249,6 +249,7 @@ describe "api users form", :js => true do
     # Permissions
     fill_in "Roles", :with => "some-user-role"
     find(".selectize-dropdown-content div", :text => /Add some-user-role/).click
+    find("body").native.send_key(:Escape) # Sporadically seems necessary to reset selectize properly for second input.
     fill_in "Roles", :with => "some-user-role2"
     find(".selectize-dropdown-content div", :text => /Add some-user-role2/).click
     fill_in "Restrict Access to IPs", :with => "127.0.0.1\n10.1.1.1/16"
