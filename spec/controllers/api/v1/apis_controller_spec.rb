@@ -395,6 +395,70 @@ describe Api::V1::ApisController do
     end
   end
 
+  shared_examples "api settings error data yaml strings" do |method, action|
+    it "returns validation error for invalid yaml" do
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :error_data_yaml_strings => {
+            :api_key_invalid => "foo: &",
+            :api_key_missing => "foo: bar\nhello: `world",
+          },
+        }),
+      })
+
+      admin_token_auth(@admin)
+      send(method, action, params.merge(:api => attributes))
+      response.status.should eql(422)
+      data = MultiJson.load(response.body)
+      data.keys.should eql(["errors"])
+      data["errors"].should eql({
+        "settings.error_data_yaml_strings.api_key_invalid" => ["YAML parsing error: (<unknown>): did not find expected alphabetic or numeric character while scanning an anchor at line 1 column 6"],
+        "settings.error_data_yaml_strings.api_key_missing" => ["YAML parsing error: (<unknown>): found character that cannot start any token while scanning for the next token at line 2 column 8"],
+      })
+    end
+
+    it "returns validation error for yaml that isn't a hash" do
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :error_data_yaml_strings => {
+            :api_key_invalid => "foo",
+          },
+        }),
+      })
+
+      admin_token_auth(@admin)
+      send(method, action, params.merge(:api => attributes))
+      response.status.should eql(422)
+      data = MultiJson.load(response.body)
+      data.keys.should eql(["errors"])
+      data["errors"].should eql({
+        "settings.error_data.api_key_invalid" => ["unexpected type (must be a hash)"],
+      })
+    end
+
+    it "accepts a yaml of hash data" do
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :error_data_yaml_strings => {
+            :api_key_invalid => "status_code: 422\nfoo: bar",
+          },
+        }),
+      })
+
+      admin_token_auth(@admin)
+      send(method, action, params.merge(:api => attributes))
+      response.status.should eql(if(action == :create) then 201 else 204 end)
+
+      api = Api.desc(:updated_at).first
+      api.settings.error_data.should eql({
+        "api_key_invalid" => {
+          "status_code" => 422,
+          "foo" => "bar",
+        },
+      })
+    end
+  end
+
   describe "GET index" do
     it "returns datatables output fields" do
       admin_token_auth(@admin)
@@ -572,6 +636,12 @@ describe Api::V1::ApisController do
   end
 
   describe "POST create" do
+    let(:params) do
+      {
+        :format => "json",
+      }
+    end
+
     describe "admin permissions" do
       it "allows superuser admins to create any api" do
         admin_token_auth(@admin)
@@ -868,6 +938,8 @@ describe Api::V1::ApisController do
       it_behaves_like "api settings header fields - create", :override_response_headers
     end
 
+    it_behaves_like "api settings error data yaml strings", :post, :create
+
     describe "sort order" do
       before(:each) do
         Api.delete_all
@@ -971,6 +1043,17 @@ describe Api::V1::ApisController do
   end
 
   describe "PUT update" do
+    before(:each) do
+      @update_api = FactoryGirl.create(:api)
+    end
+
+    let(:params) do
+      {
+        :format => "json",
+        :id => @update_api.id,
+      }
+    end
+
     describe "admin permissions" do
       it "allows superuser admins to update any api" do
         admin_token_auth(@admin)
@@ -1253,6 +1336,8 @@ describe Api::V1::ApisController do
     describe "response override headers" do
       it_behaves_like "api settings header fields - update", :override_response_headers
     end
+
+    it_behaves_like "api settings error data yaml strings", :put, :update
   end
 
   describe "DELETE destroy" do

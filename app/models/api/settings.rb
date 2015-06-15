@@ -43,6 +43,7 @@ class Api::Settings
   validates :authenticated_rate_limit_behavior,
     :inclusion => { :in => %w(all api_key_only), :allow_blank => true }
   validate :validate_error_data_yaml_strings
+  validate :validate_error_data
 
   # Nested attributes
   accepts_nested_attributes_for :headers, :rate_limits, :default_response_headers, :override_response_headers, :allow_destroy => true
@@ -210,6 +211,21 @@ class Api::Settings
           rescue Psych::SyntaxError => error
             self.errors.add("error_data_yaml_strings.#{key}", "YAML parsing error: #{error.message}")
           end
+        end
+      end
+    end
+  end
+
+  def validate_error_data
+    if(self.error_data.present?)
+      unless(self.error_data.kind_of?(Hash))
+        self.errors.add("error_data", "unexpected type (must be a hash)")
+        return false
+      end
+
+      self.error_data.each do |key, value|
+        unless(value.kind_of?(Hash))
+          self.errors.add("error_data.#{key}", "unexpected type (must be a hash)")
         end
       end
     end
