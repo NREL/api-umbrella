@@ -15,6 +15,8 @@ entry in `url_matches`
     requests will hit.
 * `apis.backend_host` - The domain name (possibly including port) which
     gatekeeper will proxy. This might be considered sensitive
+* `apis.rate_limit_bucket_name` - This provides an explicit bucket for api
+    rate limits to count against. Defaults to the `frontend_host`.
 * `apis.url_matches` - An array of path mappings between the frontend path and
     the backend path (see below)
 * `apis.settings` - A configuration object which contains various settings for

@@ -815,6 +815,27 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             frontend_host: 'localhost',
             backend_host: 'example.com',
+            rate_limit_bucket_name: 'different',
+            url_matches: [
+              {
+                frontend_prefix: '/different-key/',
+                backend_prefix: '/',
+              }
+            ]
+          },
+          {
+            frontend_host: 'localhost',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/',
+                backend_prefix: '/',
+              }
+            ],
+          },
+          {
+            frontend_host: 'some.gov',
+            backend_host: 'example.com',
             url_matches: [
               {
                 frontend_prefix: '/',
@@ -827,6 +848,52 @@ describe('ApiUmbrellaGatekeper', function() {
 
       describe('api with lower rate limits', function() {
         itBehavesLikeApiKeyRateLimits('/info/lower/', 3);
+      });
+
+      describe('different rate limit keys', function() {
+        it('counts rates for different domains differently', function(done) {
+          async.waterfall([
+            function(cb) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, cb);
+            }.bind(this),
+            function(response, body, cb) {
+              response.headers['x-ratelimit-remaining'].should.eql('4');
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, cb);
+            }.bind(this),
+            function(response, body, cb) {
+              response.headers['x-ratelimit-remaining'].should.eql('3');
+              request.get('http://localhost:9333/different-key/hello?api_key=' + this.apiKey, cb);
+            }.bind(this),
+            function(response) {
+              response.headers['x-ratelimit-remaining'].should.eql('4');
+              done();
+            }
+          ]);
+        });
+
+        it('counts rates for different keys differently', function(done) {
+          async.waterfall([
+            function(cb) {
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, cb);
+            }.bind(this),
+            function(response, body, cb) {
+              response.headers['x-ratelimit-remaining'].should.eql('4');
+              request.get('http://localhost:9333/hello?api_key=' + this.apiKey, cb);
+            }.bind(this),
+            function(response, body, cb) {
+              var options = {
+                url: 'http://localhost:9333/hello?api_key=' + this.apiKey,
+                headers: {'Host': 'some.gov'}
+              };
+              response.headers['x-ratelimit-remaining'].should.eql('3');
+              request.get(options, cb);
+            }.bind(this),
+            function(response) {
+              response.headers['x-ratelimit-remaining'].should.eql('4');
+              done();
+            }
+          ]);
+        });
       });
 
       describe('sub-settings within an api that give higher rate limits', function() {
