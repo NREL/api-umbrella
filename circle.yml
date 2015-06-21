@@ -4,8 +4,6 @@ dependencies:
     - node_modules
     - vendor
   pre:
-    - rm -rf ci_cache
-
     # Install all the API Umbrella software dependencies.
     - make install PREFIX="$(pwd)/ci_cache/build"
 
