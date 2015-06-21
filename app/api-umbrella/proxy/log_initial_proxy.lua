@@ -1,10 +1,10 @@
 local cjson = require "cjson"
 local inspect = require "inspect"
 local utf8 = require "lua-utf8"
-local log_utils = require "log_utils"
+local log_utils = require "api-umbrella.proxy.log_utils"
 local logger = require "resty.logger.socket"
-local utils = require "utils"
-local user_agent_parser = require "user_agent_parser"
+local utils = require "api-umbrella.proxy.utils"
+local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
 
 if log_utils.ignore_request() then
   return

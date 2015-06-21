@@ -7,7 +7,7 @@ local lrucache = require "resty.lrucache.pureffi"
 local shcache = require "shcache"
 local std_table = require "std.table"
 local types = require "pl.types"
-local utils = require "utils"
+local utils = require "api-umbrella.proxy.utils"
 local http = require "resty.http"
 
 local cache_computed_settings = utils.cache_computed_settings

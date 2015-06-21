@@ -1,6 +1,6 @@
 local inspect = require "inspect"
 local tablex = require "pl.tablex"
-local utils = require "utils"
+local utils = require "api-umbrella.proxy.utils"
 
 local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local deepcopy = tablex.deepcopy

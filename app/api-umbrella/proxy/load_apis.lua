@@ -1,6 +1,6 @@
 local _M = {}
 
-local api_store = require "api_store"
+local api_store = require "api-umbrella.proxy.api_store"
 local cjson = require "cjson"
 local http = require "resty.http"
 local inspect = require "inspect"
@@ -8,8 +8,8 @@ local lock = require "resty.lock"
 local plutils = require "pl.utils"
 local tablex = require "pl.tablex"
 local types = require "pl.types"
-local utils = require "utils"
-local load_backends = require "load_backends"
+local utils = require "api-umbrella.proxy.utils"
+local load_backends = require "api-umbrella.proxy.load_backends"
 
 local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings

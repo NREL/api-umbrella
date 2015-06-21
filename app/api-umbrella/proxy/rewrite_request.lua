@@ -4,7 +4,7 @@ local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
 local types = require "pl.types"
-local utils = require "utils"
+local utils = require "api-umbrella.proxy.utils"
 
 local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local gsub = ngx.re.gsub

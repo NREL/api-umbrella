@@ -1,7 +1,7 @@
 local _M = {}
 
 local cjson = require "cjson"
-local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
+local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
 local http = require "resty.http"
 local inspect = require "inspect"
 local lock = require "resty.lock"

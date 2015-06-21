@@ -1,8 +1,8 @@
-local api_store = require "api_store"
+local api_store = require "api-umbrella.proxy.api_store"
 local inspect = require "inspect"
 local stringx = require "pl.stringx"
 local types = require "pl.types"
-local utils = require "utils"
+local utils = require "api-umbrella.proxy.utils"
 
 local apis_for_host = api_store.for_host
 local append_array = utils.append_array

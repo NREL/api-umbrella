@@ -1,7 +1,7 @@
 local _M = {}
 
 local inspect = require "inspect"
-local utils = require "utils"
+local utils = require "api-umbrella.proxy.utils"
 local tablex = require "pl.tablex"
 
 local worker_version

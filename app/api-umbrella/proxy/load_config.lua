@@ -2,7 +2,7 @@ local _M = {}
 
 local inspect = require "inspect"
 local lyaml = require "lyaml"
-local utils = require "utils"
+local utils = require "api-umbrella.proxy.utils"
 
 local append_array = utils.append_array
 local log = ngx.log

@@ -1,5 +1,5 @@
 local inspect = require "inspect"
-local distributed_rate_limit_queue = require "distributed_rate_limit_queue"
+local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
 
 local function bucket_keys(user, limit, current_time, max_keys)
   local bucket_time = math.floor(current_time / limit["accuracy"]) * limit["accuracy"]

@@ -1,4 +1,4 @@
-local user_store = require "user_store"
+local user_store = require "api-umbrella.proxy.user_store"
 local inspect = require "inspect"
 local types = require "pl.types"
 

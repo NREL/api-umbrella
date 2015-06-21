@@ -1,4 +1,4 @@
-local log_utils = require "log_utils"
+local log_utils = require "api-umbrella.proxy.log_utils"
 
 if log_utils.ignore_request() then
   return

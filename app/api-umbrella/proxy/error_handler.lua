@@ -4,7 +4,7 @@ local path = require "pl.path"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
-local utils = require "utils"
+local utils = require "api-umbrella.proxy.utils"
 
 local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local deepcopy = tablex.deepcopy

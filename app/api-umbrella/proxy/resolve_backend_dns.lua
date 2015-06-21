@@ -1,6 +1,6 @@
 local _M = {}
 
-local api_store = require "api_store"
+local api_store = require "api-umbrella.proxy.api_store"
 local dyups = require "ngx.dyups"
 local inspect = require "inspect"
 local lock = require "resty.lock"

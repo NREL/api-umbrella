@@ -2,7 +2,7 @@
 
 local app_root = os.getenv("API_UMBRELLA_APP_ROOT")
 if app_root then
-  package.path = app_root .. "/lib/?.lua;" ..
+  package.path = app_root .. "/app/?.lua;" ..
     app_root .. "/vendor/share/lua/5.1/?.lua;" ..
     app_root .. "/vendor/share/lua/5.1/?/init.lua;" ..
     package.path

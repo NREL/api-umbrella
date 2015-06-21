@@ -1,16 +1,16 @@
 local start_time = ngx.now()
-local api_key_validator = require "api_key_validator"
-local api_matcher = require "api_matcher"
-local api_settings = require "api_settings"
-local error_handler = require "error_handler"
-local https_validator = require "https_validator"
-local ip_validator = require "ip_validator"
-local rate_limit = require "rate_limit"
-local referer_validator = require "referer_validator"
-local rewrite_request = require "rewrite_request"
-local role_validator = require "role_validator"
-local user_settings = require "user_settings"
-local utils = require "utils"
+local api_key_validator = require "api-umbrella.proxy.api_key_validator"
+local api_matcher = require "api-umbrella.proxy.api_matcher"
+local api_settings = require "api-umbrella.proxy.api_settings"
+local error_handler = require "api-umbrella.proxy.error_handler"
+local https_validator = require "api-umbrella.proxy.https_validator"
+local ip_validator = require "api-umbrella.proxy.ip_validator"
+local rate_limit = require "api-umbrella.proxy.rate_limit"
+local referer_validator = require "api-umbrella.proxy.referer_validator"
+local rewrite_request = require "api-umbrella.proxy.rewrite_request"
+local role_validator = require "api-umbrella.proxy.role_validator"
+local user_settings = require "api-umbrella.proxy.user_settings"
+local utils = require "api-umbrella.proxy.utils"
 
 local ngx_var = ngx.var
 

@@ -6,7 +6,7 @@ local http = require "resty.http"
 local lock = require "resty.lock"
 local std_table = require "std.table"
 local types = require "pl.types"
-local utils = require "utils"
+local utils = require "api-umbrella.proxy.utils"
 
 local cache_computed_settings = utils.cache_computed_settings
 local clone_select = std_table.clone_select

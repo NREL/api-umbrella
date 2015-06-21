@@ -1,6 +1,6 @@
 local plutils = require "pl.utils"
 local utf8 = require "lua-utf8"
-local utils = require "utils"
+local utils = require "api-umbrella.proxy.utils"
 local inspect = require "inspect"
 
 local split = plutils.split

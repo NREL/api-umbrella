@@ -1,7 +1,7 @@
 local _M = {}
 
 local inspect = require "inspect"
-local utils = require "utils"
+local utils = require "api-umbrella.proxy.utils"
 
 local append_array = utils.append_array
 local get_packed = utils.get_packed
