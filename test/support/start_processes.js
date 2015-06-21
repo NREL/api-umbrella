@@ -16,7 +16,7 @@ var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'
 
 before(function clearTestEnvDns() {
   // This included file must exist before unbound can start.
-  var configPath = path.join(config.get('etc_dir'), 'test_env/unbound/active_test.conf');
+  var configPath = path.join(config.get('etc_dir'), 'test-env/unbound/active_test.conf');
   mkdirp.sync(path.dirname(configPath));
   fs.writeFileSync(configPath, '');
 });

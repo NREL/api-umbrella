@@ -43,6 +43,8 @@ local function set_computed_config()
   end
 
   deep_merge_overwrite_arrays(config, {
+    _root_dir = os.getenv("API_UMBRELLA_ROOT"),
+    _app_root = app_root,
     mongodb = {
       _database = array_last(plutils.split(config["mongodb"]["url"], "/")),
     },

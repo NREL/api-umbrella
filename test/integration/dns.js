@@ -22,7 +22,7 @@ describe('dns backend resolving', function() {
     records.forEach(function(record) {
       configContent += 'local-data: "' + record + '"\n';
     });
-    fs.writeFileSync(path.join(config.get('etc_dir'), 'test_env/unbound/active_test.conf'), configContent);
+    fs.writeFileSync(path.join(config.get('etc_dir'), 'test-env/unbound/active_test.conf'), configContent);
 
     if(options.wait) {
       // Detect when the DNS changes have actually been read-in and nginx has

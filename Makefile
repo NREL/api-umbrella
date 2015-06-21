@@ -356,7 +356,8 @@ deps/$(TRAFFICSERVER): deps/$(TRAFFICSERVER).tar.gz
 
 deps/$(TRAFFICSERVER)/.built: deps/$(TRAFFICSERVER)
 	cd $< && ./configure \
-		--prefix=$(PREFIX)/embedded
+		--prefix=$(PREFIX)/embedded \
+		--enable-experimental-plugins
 	cd $< && make
 	touch $@
 

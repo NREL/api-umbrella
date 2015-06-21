@@ -1,6 +1,6 @@
 [hekad]
 base_dir = "{{db_dir}}/heka"
-share_dir = "/tmp/api-umbrella-build/embedded/share/heka"
+share_dir = "{{_root_dir}}/embedded/share/heka"
 
 [TcpInput]
 address = "{{heka.host}}:{{heka.port}}"
@@ -9,7 +9,7 @@ decoder = "JsonDecoder"
 
 [JsonDecoder]
 type = "SandboxDecoder"
-filename = "/vagrant/lua-integration/heka/json_decoder.lua"
+filename = "{{gatekeeper.dir}}/heka/json_decoder.lua"
 
 [RstEncoder]
 
@@ -30,7 +30,7 @@ raw_bytes_fields  = ["request_query"]
 
 [es_payload]
 type = "SandboxEncoder"
-filename = "/vagrant/lua-integration/heka/es_payload.lua"
+filename = "{{gatekeeper.dir}}/heka/es_payload.lua"
     [es_payload.config]
     es_index_from_timestamp = true
     index = "api-umbrella-logs-v1-%{%Y-%m}"

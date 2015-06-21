@@ -50,8 +50,6 @@ trafficserver:
   port: 14009
   storage:
     size: 256M
-  # install_root: /opt/api-umbrella/embedded
-  install_root: "/opt/trafficserver"
 web:
   host: 127.0.0.1
   port: 14012
