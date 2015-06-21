@@ -11,3 +11,4 @@
 /test/log/*
 /test/tmp/*
 /vendor
+/ci_cache
