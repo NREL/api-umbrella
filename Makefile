@@ -3,16 +3,16 @@ export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 PREFIX:=/tmp/api-umbrella-build
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-DNSMASQ_VERSION:=2.72
+DNSMASQ_VERSION:=2.73
 DNSMASQ:=dnsmasq-$(DNSMASQ_VERSION)
 DNSMASQ_DIGEST:=md5
-DNSMASQ_CHECKSUM:=cf82f81cf09ad3d47612985012240483
+DNSMASQ_CHECKSUM:=c2d56b11317336bc788ded4298642e2e
 DNSMASQ_URL:=http://www.thekelleys.org.uk/dnsmasq/$(DNSMASQ).tar.gz
 
-ELASTICSEARCH_VERSION:=1.5.2
+ELASTICSEARCH_VERSION:=1.6.0
 ELASTICSEARCH:=elasticsearch-$(ELASTICSEARCH_VERSION)
 ELASTICSEARCH_DIGEST:=sha1
-ELASTICSEARCH_CHECKSUM:=ffe2e46ec88f4455323112a556adaaa085669d13
+ELASTICSEARCH_CHECKSUM:=cb8522f5d3daf03ef96ed533d027c0e3d494e34b
 ELASTICSEARCH_URL:=https://download.elastic.co/elasticsearch/elasticsearch/$(ELASTICSEARCH).tar.gz
 
 FREEGEOIP_VERSION:=3.0.4
@@ -76,11 +76,11 @@ LUSTACHE_DIGEST:=md5
 LUSTACHE_CHECKSUM:=7c64dd36bbb02e71a0e60e847b70d561
 LUSTACHE_URL:=https://github.com/Olivine-Labs/lustache/archive/$(LUSTACHE_VERSION).tar.gz
 
-MONGODB_VERSION:=3.0.3
+MONGODB_VERSION:=3.0.4
 MONGODB:=mongodb-$(MONGODB_VERSION)
 MONGODB_DIGEST:=md5
-MONGODB_CHECKSUM:=67cae28e21f3fa822fc873c0240422e2
-MONGODB_URL:=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-$(MONGODB_VERSION).tgz
+MONGODB_CHECKSUM:=df7d1ed6538f3568cf6d130721694b42
+MONGODB_URL:=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-$(MONGODB_VERSION).tgz
 
 MORA_VERSION:=fb667a3342bce09e975a25b0cf090ed251b5197a
 MORA:=mora-$(MORA_VERSION)
@@ -385,48 +385,37 @@ $(PREFIX)/embedded/sbin:
 	mkdir -p $(PREFIX)/embedded/sbin
 	touch $@
 
-$(PREFIX)/embedded/sbin/dnsmasq: deps/$(DNSMASQ)
+$(PREFIX)/embedded/.installed:
+	mkdir -p $(PREFIX)/embedded/.installed
+	touch $@
+
+$(PREFIX)/embedded/.installed/$(DNSMASQ): $(PREFIX)/embedded/.installed deps/$(DNSMASQ)
 	cd deps/$(DNSMASQ) && make install PREFIX=$(PREFIX)/embedded
 	touch $@
 
-$(PREFIX)/embedded/bin/elasticsearch: deps/$(ELASTICSEARCH)
+$(PREFIX)/embedded/.installed/$(ELASTICSEARCH): $(PREFIX)/embedded/.installed deps/$(ELASTICSEARCH)
 	rsync -a deps/$(ELASTICSEARCH)/ $(PREFIX)/embedded/elasticsearch/
 	ln -sf $(PREFIX)/embedded/elasticsearch/bin/plugin $(PREFIX)/embedded/bin/plugin
 	ln -sf $(PREFIX)/embedded/elasticsearch/bin/elasticsearch $(PREFIX)/embedded/bin/elasticsearch
 	touch $@
 
-$(PREFIX)/embedded/bin/freegeoip: deps/$(FREEGEOIP)
+$(PREFIX)/embedded/.installed/$(FREEGEOIP): $(PREFIX)/embedded/.installed deps/$(FREEGEOIP)
 	cp deps/$(FREEGEOIP)/freegeoip $(PREFIX)/embedded/bin/
 	touch $@
 
-$(PREFIX)/embedded/bin/hekad: deps/$(HEKA)
+$(PREFIX)/embedded/.installed/$(HEKA): $(PREFIX)/embedded/.installed deps/$(HEKA)
 	rsync -a deps/$(HEKA)/ $(PREFIX)/embedded/
 	touch $@
 
-$(PREFIX)/embedded/include/libcidr.h: deps/$(LIBCIDR)/.built
+$(PREFIX)/embedded/.installed/$(LIBCIDR): $(PREFIX)/embedded/.installed deps/$(LIBCIDR)/.built
 	cd deps/$(LIBCIDR) && make install PREFIX=$(PREFIX)/embedded
 	touch $@
 
-$(PREFIX)/embedded/include/yaml.h: deps/$(LIBYAML)/.built
+$(PREFIX)/embedded/.installed/$(LIBYAML): $(PREFIX)/embedded/.installed deps/$(LIBYAML)/.built
 	cd deps/$(LIBYAML) && make install
 	touch $@
 
-$(PREFIX)/embedded/bin/mongo: deps/$(MONGODB)
-	rsync -a deps/$(MONGODB)/ $(PREFIX)/embedded/
-	touch $@
-
-$(PREFIX)/embedded/bin/mora: deps/gocode/src/github.com/emicklei/mora/.built
-	cp deps/gocode/bin/mora $(PREFIX)/embedded/bin/
-	touch $@
-
-$(PREFIX)/embedded/sbin/nginx: deps/$(OPENRESTY)/.built
-	cd deps/$(OPENRESTY) && make install
-	ln -sf $(PREFIX)/embedded/openresty/bin/resty $(PREFIX)/embedded/bin/resty
-	ln -sf $(PREFIX)/embedded/openresty/luajit/bin/luajit-2.1.0-alpha $(PREFIX)/embedded/bin/luajit
-	ln -sf $(PREFIX)/embedded/openresty/nginx/sbin/nginx $(PREFIX)/embedded/sbin/nginx
-	touch $@
-
-$(PREFIX)/embedded/bin/luarocks: deps/$(LUAROCKS) $(PREFIX)/embedded/sbin/nginx
+$(PREFIX)/embedded/.installed/$(LUAROCKS): $(PREFIX)/embedded/.installed deps/$(LUAROCKS) $(PREFIX)/embedded/.installed/$(OPENRESTY)
 	cd $< && ./configure \
 		--prefix=$(PREFIX)/embedded/openresty/luajit \
 		--with-lua=$(PREFIX)/embedded/openresty/luajit/ \
@@ -436,15 +425,30 @@ $(PREFIX)/embedded/bin/luarocks: deps/$(LUAROCKS) $(PREFIX)/embedded/sbin/nginx
 	ln -sf $(PREFIX)/embedded/openresty/luajit/bin/luarocks $(PREFIX)/embedded/bin/luarocks
 	touch $@
 
-$(PREFIX)/embedded/sbin/perpd: deps/$(PERP)/.built
+$(PREFIX)/embedded/.installed/$(MONGODB): $(PREFIX)/embedded/.installed deps/$(MONGODB)
+	rsync -a deps/$(MONGODB)/ $(PREFIX)/embedded/
+	touch $@
+
+$(PREFIX)/embedded/.installed/$(MORA): $(PREFIX)/embedded/.installed deps/gocode/src/github.com/emicklei/mora/.built
+	cp deps/gocode/bin/mora $(PREFIX)/embedded/bin/
+	touch $@
+
+$(PREFIX)/embedded/.installed/$(OPENRESTY): $(PREFIX)/embedded/.installed deps/$(OPENRESTY)/.built
+	cd deps/$(OPENRESTY) && make install
+	ln -sf $(PREFIX)/embedded/openresty/bin/resty $(PREFIX)/embedded/bin/resty
+	ln -sf $(PREFIX)/embedded/openresty/luajit/bin/luajit-2.1.0-alpha $(PREFIX)/embedded/bin/luajit
+	ln -sf $(PREFIX)/embedded/openresty/nginx/sbin/nginx $(PREFIX)/embedded/sbin/nginx
+	touch $@
+
+$(PREFIX)/embedded/.installed/$(PERP): $(PREFIX)/embedded/.installed deps/$(PERP)/.built
 	cd deps/$(PERP) && make install
 	touch $@
 
-$(PREFIX)/embedded/bin/trafficserver: deps/$(TRAFFICSERVER)/.built
+$(PREFIX)/embedded/.installed/$(TRAFFICSERVER): $(PREFIX)/embedded/.installed deps/$(TRAFFICSERVER)/.built
 	cd deps/$(TRAFFICSERVER) && make install
 	touch $@
 
-.INTERMEDIATE: \
+.SECONDARY: \
 	deps/$(DNSMASQ).tar.gz \
 	deps/$(DNSMASQ) \
 	deps/$(ELASTICSEARCH).tar.gz \
@@ -495,18 +499,18 @@ $(PREFIX)/embedded/bin/trafficserver: deps/$(TRAFFICSERVER)/.built
 install_dependencies: \
 	$(PREFIX)/embedded/bin \
 	$(PREFIX)/embedded/sbin \
-	$(PREFIX)/embedded/sbin/dnsmasq \
-	$(PREFIX)/embedded/bin/elasticsearch \
-	$(PREFIX)/embedded/bin/freegeoip \
-	$(PREFIX)/embedded/bin/hekad \
-	$(PREFIX)/embedded/include/libcidr.h \
-	$(PREFIX)/embedded/include/yaml.h \
-	$(PREFIX)/embedded/bin/mongo \
-	$(PREFIX)/embedded/bin/mora \
-	$(PREFIX)/embedded/sbin/nginx \
-	$(PREFIX)/embedded/bin/luarocks \
-	$(PREFIX)/embedded/sbin/perpd \
-	$(PREFIX)/embedded/bin/trafficserver
+	$(PREFIX)/embedded/.installed/$(DNSMASQ) \
+	$(PREFIX)/embedded/.installed/$(ELASTICSEARCH) \
+	$(PREFIX)/embedded/.installed/$(FREEGEOIP) \
+	$(PREFIX)/embedded/.installed/$(HEKA) \
+	$(PREFIX)/embedded/.installed/$(LIBCIDR) \
+	$(PREFIX)/embedded/.installed/$(LIBYAML) \
+	$(PREFIX)/embedded/.installed/$(LUAROCKS) \
+	$(PREFIX)/embedded/.installed/$(MONGODB) \
+	$(PREFIX)/embedded/.installed/$(MORA) \
+	$(PREFIX)/embedded/.installed/$(OPENRESTY) \
+	$(PREFIX)/embedded/.installed/$(PERP) \
+	$(PREFIX)/embedded/.installed/$(TRAFFICSERVER)
 
 vendor:
 	mkdir -p $@
@@ -528,35 +532,35 @@ PENLIGHT_VERSION:=1.3.2-2
 STDLIB:=stdlib
 STDLIB_VERSION:=41.2.0-1
 
-vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION): $(PREFIX)/embedded/bin/luarocks | vendor
+vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(INSPECT) $(INSPECT_VERSION)
 	touch $@
 
-vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): $(PREFIX)/embedded/bin/luarocks | vendor
+vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUA_CMSGPACK) $(LUA_CMSGPACK_VERSION)
 	touch $@
 
-vendor/lib/luarocks/rocks/$(LUAUTF8)/$(LUAUTF8_VERSION): $(PREFIX)/embedded/bin/luarocks | vendor
+vendor/lib/luarocks/rocks/$(LUAUTF8)/$(LUAUTF8_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUAUTF8) $(LUAUTF8_VERSION)
 	touch $@
 
-vendor/lib/luarocks/rocks/$(LUAPOSIX)/$(LUAPOSIX_VERSION): $(PREFIX)/embedded/bin/luarocks | vendor
+vendor/lib/luarocks/rocks/$(LUAPOSIX)/$(LUAPOSIX_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUAPOSIX) $(LUAPOSIX_VERSION)
 	touch $@
 
-#vendor/lib/luarocks/rocks/$(LUA_LIBCIDR_FFI)/$(LUA_LIBCIDR_FFI_VERSION): $(PREFIX)/embedded/bin/luarocks | vendor
+#vendor/lib/luarocks/rocks/$(LUA_LIBCIDR_FFI)/$(LUA_LIBCIDR_FFI_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 #	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUA_LIBCIDR_FFI) $(LUA_LIBCIDR_FFI_VERSION)
 #	touch $@
 
-vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION): $(PREFIX)/embedded/bin/luarocks | vendor
+vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install https://raw.githubusercontent.com/GUI/lyaml/multiline-strings-release/lyaml-git-1.rockspec YAML_DIR=$(PREFIX)/embedded
 	touch $@
 
-vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION): $(PREFIX)/embedded/bin/luarocks | vendor
+vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(PENLIGHT) $(PENLIGHT_VERSION)
 	touch $@
 
-vendor/lib/luarocks/rocks/$(STDLIB)/$(STDLIB_VERSION): $(PREFIX)/embedded/bin/luarocks | vendor
+vendor/lib/luarocks/rocks/$(STDLIB)/$(STDLIB_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(STDLIB) $(STDLIB_VERSION)
 	touch $@
 
