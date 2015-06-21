@@ -5,10 +5,8 @@ require('../test_helper');
 var _ = require('lodash'),
     async = require('async'),
     Factory = require('factory-lady'),
-    fs = require('fs'),
     ippp = require('ipplusplus'),
-    request = require('request'),
-    yaml = require('js-yaml');
+    request = require('request');
 
 describe('ApiUmbrellaGatekeper', function() {
   describe('rate limiting', function() {

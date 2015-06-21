@@ -948,7 +948,7 @@ describe('proxying', function() {
         gzip: true,
       });
 
-      request(options, function(error, response, body) {
+      request(options, function(error, response) {
         response.statusCode.should.eql(200);
         response.headers['content-type'].should.eql('text/plain');
         done();
@@ -964,7 +964,7 @@ describe('proxying', function() {
         gzip: true,
       });
 
-      request(options, function(error, response, body) {
+      request(options, function(error, response) {
         response.statusCode.should.eql(200);
         response.headers['content-type'].should.eql('Qwerty');
         done();

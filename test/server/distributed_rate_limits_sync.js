@@ -143,7 +143,7 @@ describe('distributed rate limit sync', function() {
 
         timesCallback();
       });
-    }, function(error) {
+    }, function() {
       if(!options.disableCountCheck) {
         totalLocalCount.should.eql(numRequests);
       }
@@ -184,8 +184,8 @@ describe('distributed rate limit sync', function() {
       },
       {
         $group: {
-          _id: "$_id",
-          count: { "$sum": "$count" },
+          _id: '$_id',
+          count: { '$sum': '$count' },
         },
       },
     ];

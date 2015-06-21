@@ -28,20 +28,6 @@ describe('caching', function() {
     }.bind(this));
   });
 
-  function trafficServerViaCode(response, code) {
-    // Parse out the via code from the Via header:
-    // https://docs.trafficserver.apache.org/en/latest/admin/faqs.en.html?highlight=post#how-do-i-interpret-the-via-header-code
-    var codes = response.headers['via'].match(/\[(.*)\]\)$/)[1];
-    if(codes) {
-      codes = codes.match(/../g);
-      for(var i = 0; i < codes.length; i++) {
-        if(codes[i][0] === code) {
-          return codes[i][1];
-        }
-      }
-    }
-  }
-
   function makeDuplicateRequests(baseUrl, options, done) {
     var id = _.uniqueId();
     options = _.merge({

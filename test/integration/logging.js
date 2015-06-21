@@ -3,18 +3,10 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
     Curler = require('curler').Curler,
-    execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
-    mkdirp = require('mkdirp'),
-    path = require('path'),
-    processEnv = require('../../lib/process_env'),
-    request = require('request'),
-    rimraf = require('rimraf');
-
-var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
+    request = require('request');
 
 describe('logging', function() {
   shared.runServer({
