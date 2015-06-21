@@ -196,7 +196,7 @@ local function do_check()
   local last_fetched_version = ngx.shared.apis:get("version") or 0
 
   local httpc = http.new()
-  local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/config_versions", {
+  local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/config_versions", {
     query = {
       extended_json = "true",
       limit = 1,

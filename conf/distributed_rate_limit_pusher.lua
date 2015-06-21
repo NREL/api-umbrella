@@ -17,7 +17,7 @@ local indexes_created = false
 local function create_indexes()
   if not indexes_created then
     local httpc = http.new()
-    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/system.indexes", {
+    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/system.indexes", {
       method = "POST",
       headers = {
         ["Content-Type"] = "application/json",
@@ -27,7 +27,7 @@ local function create_indexes()
       },
 
       body = cjson.encode({
-        ns = config["mongodb"]["database"] .. ".rate_limits",
+        ns = config["mongodb"]["_database"] .. ".rate_limits",
         key = {
           updated_at = -1,
         },
@@ -37,7 +37,7 @@ local function create_indexes()
     })
 
     local httpc = http.new()
-    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/system.indexes", {
+    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/system.indexes", {
       method = "POST",
       headers = {
         ["Content-Type"] = "application/json",
@@ -46,7 +46,7 @@ local function create_indexes()
         extended_json = "true",
       },
       body = cjson.encode({
-        ns = config["mongodb"]["database"] .. ".rate_limits",
+        ns = config["mongodb"]["_database"] .. ".rate_limits",
         key = {
           expire_at = 1,
         },
@@ -82,7 +82,7 @@ local function do_check()
     }
 
     local httpc = http.new()
-    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/rate_limits/" .. key, {
+    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/rate_limits/" .. key, {
       method = "PUT",
       headers = {
         ["Content-Type"] = "application/json",

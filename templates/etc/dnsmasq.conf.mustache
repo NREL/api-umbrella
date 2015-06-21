@@ -10,8 +10,8 @@ log-async=25
 
 cache-size=500
 
-{{#test_env?}}
+{{#_test_env?}}
 # In the test environment redirect all *.ooga domain names to a local DNS
 # server so we can use this fake TLD for implementing controlled tests.
 server=/ooga/127.0.0.1#{{unbound.port}}
-{{/test_env?}}
+{{/_test_env?}}

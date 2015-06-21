@@ -1,60 +1,13 @@
-#!/opt/api-umbrella/embedded/bin/ruby
+#!/usr/bin/env bash
 
-require "gli"
-require_relative "../lib/api-umbrella/version"
+if [ -z "$API_UMBRELLA_ROOT" ]; then
+  export API_UMBRELLA_ROOT="/opt/api-umbrella"
+fi
 
-include GLI::App
+if [ -z "$API_UMBRELLA_APP_ROOT" ]; then
+  export API_UMBRELLA_APP_ROOT=`dirname $(dirname $(readlink -f $0))`
+fi
 
-program_desc "Open source API management"
-version ApiUmbrella::VERSION
+export PATH=$API_UMBRELLA_ROOT/embedded/sbin:$API_UMBRELLA_ROOT/embedded/bin:$PATH
 
-flag [:c, :config], :desc => "Config file to use", :default_value => "/etc/api-umbrella/api-umbrella.yml"
-
-desc "Run the API Umbrella server in the foreground"
-command :run do |c|
-  c.action do |global_options, options, args|
-    require_relative "../lib/api-umbrella/cli"
-    cli = ApiUmbrella::CLI.new(global_options, options, args)
-    cli.run
-  end
-end
-
-desc "Start the API Umbrella server"
-command :start do |c|
-  c.action do |global_options, options, args|
-    require_relative "../lib/api-umbrella/cli"
-    cli = ApiUmbrella::CLI.new(global_options, options, args)
-    cli.start
-  end
-end
-
-desc "Stop the API Umbrella server"
-command :stop do |c|
-end
-
-desc "Restart the API Umbrella server"
-command :restart do |c|
-end
-
-desc "Reload the configuration of the API Umbrella server"
-command :reload do |c|
-  c.switch [:g, :gatekeeper], :desc => "Reload only the gatekeeper processes", :negatable => false
-  c.switch [:w, :web], :desc => "Reload only the web processes", :negatable => false
-end
-
-desc "Close and reopen log files in use"
-command :reopen_logs do |c|
-end
-
-desc "Show the status of the API Umbrella server"
-command :status do |c|
-end
-
-#desc "Print version and exit"
-#command :version do |c|
-#  c.action do
-#    puts "0.7.0"
-#  end
-#end
-
-exit run(ARGV)
+exec $API_UMBRELLA_APP_ROOT/bin/api-umbrella-cli "$@"

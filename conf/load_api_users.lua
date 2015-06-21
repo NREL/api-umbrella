@@ -39,7 +39,7 @@ local function do_check()
   local err
   repeat
     local httpc = http.new()
-    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["database"] .. "/api_users", {
+    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/api_users", {
       query = {
         extended_json = "true",
         limit = page_size,

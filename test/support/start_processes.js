@@ -2,7 +2,8 @@
 
 require('../test_helper');
 
-var apiUmbrellaConfig = require('api-umbrella-config'),
+var _ = require('lodash'),
+    apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
     fs = require('fs'),
     fsExtra = require('fs-extra'),
@@ -82,7 +83,13 @@ before(function apiUmbrellaStart(done) {
   // Spin up the nginx process.
   var binPath = path.resolve(__dirname, '../../bin/api-umbrella');
   var configPath = path.resolve(__dirname, '../config/test.yml');
-  global.apiUmbrellaServer = spawn(binPath, ['--config', configPath, 'run'], { stdio: 'inherit' });
+  global.apiUmbrellaServer = spawn(binPath, ['run'], {
+    stdio: 'inherit',
+    env: _.merge({}, process.env, {
+      'API_UMBRELLA_ROOT': process.env.API_UMBRELLA_ROOT,
+      'API_UMBRELLA_CONFIG': configPath,
+    }),
+  });
 
   // Wait until we're able to establish a connection before moving on.
   var healthy = false;

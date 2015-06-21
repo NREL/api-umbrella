@@ -428,6 +428,8 @@ LUA_CMSGPACK:=lua-cmsgpack
 LUA_CMSGPACK_VERSION:=0.3-2
 LUAUTF8:=luautf8
 LUAUTF8_VERSION:=0.1.0-1
+LUAPOSIX:=luaposix
+LUAPOSIX_VERSION:=33.3.1-1
 LYAML:=lyaml
 LYAML_VERSION:=5.1.4-1
 PENLIGHT:=penlight
@@ -445,6 +447,10 @@ vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): deps/$(LUAROC
 
 vendor/lib/luarocks/rocks/$(LUAUTF8)/$(LUAUTF8_VERSION): deps/$(LUAROCKS)/.installed | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUAUTF8) $(LUAUTF8_VERSION)
+	touch $@
+
+vendor/lib/luarocks/rocks/$(LUAPOSIX)/$(LUAPOSIX_VERSION): deps/$(LUAROCKS)/.installed | vendor
+	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUAPOSIX) $(LUAPOSIX_VERSION)
 	touch $@
 
 #vendor/lib/luarocks/rocks/$(LUA_LIBCIDR_FFI)/$(LUA_LIBCIDR_FFI_VERSION): deps/$(LUAROCKS)/.installed | vendor
@@ -483,6 +489,7 @@ install_app_dependencies: \
 	vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUAUTF8)/$(LUAUTF8_VERSION) \
+	vendor/lib/luarocks/rocks/$(LUAPOSIX)/$(LUAPOSIX_VERSION) \
 	vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION) \
 	vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION) \
 	vendor/lib/luarocks/rocks/$(STDLIB)/$(STDLIB_VERSION) \
