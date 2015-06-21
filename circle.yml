@@ -1,7 +1,10 @@
 dependencies:
   cache_directories:
+    - build
     - node_modules
+    - vendor
 test:
   override:
-    - npm test
-    - ./node_modules/.bin/grunt shell:coveralls
+    - make install PREFIX="$(pwd)/build"
+    - make clean
+    - API_UMBRELLA_ROOT="$(pwd)/build" npm test
