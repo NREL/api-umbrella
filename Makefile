@@ -389,33 +389,39 @@ $(PREFIX)/embedded/.installed:
 	mkdir -p $(PREFIX)/embedded/.installed
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(DNSMASQ): deps/$(DNSMASQ) $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(DNSMASQ): deps/$(DNSMASQ) | $(PREFIX)/embedded/.installed
 	cd deps/$(DNSMASQ) && make install PREFIX=$(PREFIX)/embedded
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(ELASTICSEARCH): deps/$(ELASTICSEARCH) $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(ELASTICSEARCH): deps/$(ELASTICSEARCH) | $(PREFIX)/embedded/.installed
 	rsync -a deps/$(ELASTICSEARCH)/ $(PREFIX)/embedded/elasticsearch/
 	ln -sf $(PREFIX)/embedded/elasticsearch/bin/plugin $(PREFIX)/embedded/bin/plugin
 	ln -sf $(PREFIX)/embedded/elasticsearch/bin/elasticsearch $(PREFIX)/embedded/bin/elasticsearch
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(FREEGEOIP): deps/$(FREEGEOIP) $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(FREEGEOIP): deps/$(FREEGEOIP) | $(PREFIX)/embedded/.installed
 	cp deps/$(FREEGEOIP)/freegeoip $(PREFIX)/embedded/bin/
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(HEKA): deps/$(HEKA) $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(HEKA): deps/$(HEKA) | $(PREFIX)/embedded/.installed
 	rsync -a deps/$(HEKA)/ $(PREFIX)/embedded/
+	# Trim our own distribution by removing some larger files we don't need for
+	# API Umbrella.
+	rm -f $(PREFIX)/embedded/bin/heka-cat \
+		$(PREFIX)/embedded/bin/heka-flood \
+		$(PREFIX)/embedded/bin/heka-inject \
+		$(PREFIX)/embedded/bin/heka-sbmgr
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(LIBCIDR): deps/$(LIBCIDR)/.built $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(LIBCIDR): deps/$(LIBCIDR)/.built | $(PREFIX)/embedded/.installed
 	cd deps/$(LIBCIDR) && make install PREFIX=$(PREFIX)/embedded
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(LIBYAML): deps/$(LIBYAML)/.built $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(LIBYAML): deps/$(LIBYAML)/.built | $(PREFIX)/embedded/.installed
 	cd deps/$(LIBYAML) && make install
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(LUAROCKS): deps/$(LUAROCKS) $(PREFIX)/embedded/.installed $(PREFIX)/embedded/.installed/$(OPENRESTY)
+$(PREFIX)/embedded/.installed/$(LUAROCKS): deps/$(LUAROCKS) | $(PREFIX)/embedded/.installed $(PREFIX)/embedded/.installed/$(OPENRESTY)
 	cd $< && ./configure \
 		--prefix=$(PREFIX)/embedded/openresty/luajit \
 		--with-lua=$(PREFIX)/embedded/openresty/luajit/ \
@@ -425,27 +431,39 @@ $(PREFIX)/embedded/.installed/$(LUAROCKS): deps/$(LUAROCKS) $(PREFIX)/embedded/.
 	ln -sf $(PREFIX)/embedded/openresty/luajit/bin/luarocks $(PREFIX)/embedded/bin/luarocks
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(MONGODB): deps/$(MONGODB) $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(MONGODB): deps/$(MONGODB) | $(PREFIX)/embedded/.installed
 	rsync -a deps/$(MONGODB)/ $(PREFIX)/embedded/
+	# Trim our own distribution by removing some larger files we don't need for
+	# API Umbrella.
+	rm -f $(PREFIX)/embedded/bin/bsondump \
+		$(PREFIX)/embedded/bin/mongoexport \
+		$(PREFIX)/embedded/bin/mongofiles \
+		$(PREFIX)/embedded/bin/mongoimport \
+		$(PREFIX)/embedded/bin/mongooplog \
+		$(PREFIX)/embedded/bin/mongoperf \
+		$(PREFIX)/embedded/bin/mongos
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(MORA): deps/gocode/src/github.com/emicklei/mora/.built $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(MORA): deps/gocode/src/github.com/emicklei/mora/.built | $(PREFIX)/embedded/.installed
 	cp deps/gocode/bin/mora $(PREFIX)/embedded/bin/
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(OPENRESTY): deps/$(OPENRESTY)/.built $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(OPENRESTY): deps/$(OPENRESTY)/.built | $(PREFIX)/embedded/.installed
 	cd deps/$(OPENRESTY) && make install
 	ln -sf $(PREFIX)/embedded/openresty/bin/resty $(PREFIX)/embedded/bin/resty
 	ln -sf $(PREFIX)/embedded/openresty/luajit/bin/luajit-2.1.0-alpha $(PREFIX)/embedded/bin/luajit
 	ln -sf $(PREFIX)/embedded/openresty/nginx/sbin/nginx $(PREFIX)/embedded/sbin/nginx
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(PERP): deps/$(PERP)/.built $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(PERP): deps/$(PERP)/.built | $(PREFIX)/embedded/.installed
 	cd deps/$(PERP) && make install
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $(PREFIX)/embedded/.installed
 	cd deps/$(TRAFFICSERVER) && make install
+	# Trim our own distribution by removing some larger files we don't need for
+	# API Umbrella.
+	rm -f $(PREFIX)/embedded/bin/traffic_sac
 	touch $@
 
 .SECONDARY: \
