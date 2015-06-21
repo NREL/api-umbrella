@@ -458,7 +458,7 @@ vendor/lib/luarocks/rocks/$(LUAPOSIX)/$(LUAPOSIX_VERSION): deps/$(LUAROCKS)/.ins
 #	touch $@
 
 vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION): deps/$(LUAROCKS)/.installed | vendor
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LYAML) $(LYAML_VERSION) YAML_DIR=$(PREFIX)/embedded
+	$(PREFIX)/embedded/bin/luarocks --tree=vendor install https://raw.githubusercontent.com/GUI/lyaml/multiline-strings-release/lyaml-git-1.rockspec YAML_DIR=$(PREFIX)/embedded
 	touch $@
 
 vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION): deps/$(LUAROCKS)/.installed | vendor
