@@ -35,6 +35,17 @@ describe "analytics filter logs", :js => true do
     it "updates the download link as the query parameters change" do
       FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"))
       LogItem.gateway.refresh_index!
+      default_query = JSON.generate({
+        "condition" => "AND",
+        "rules" => [{
+          "field" => "gatekeeper_denied_code",
+          "id" => "gatekeeper_denied_code",
+          "input" => "select",
+          "operator" => "is_null",
+          "type" => "string",
+          "value" => nil
+        }]
+      })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
       link = find_link("Download CSV")
@@ -46,6 +57,7 @@ describe "analytics filter logs", :js => true do
         "start_at" => "2015-01-12",
         "end_at" => "2015-01-18",
         "interval" => "day",
+        "query" => default_query,
       })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
@@ -58,9 +70,25 @@ describe "analytics filter logs", :js => true do
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "interval" => "day",
+        "query" => default_query,
       })
 
-      find("a", :text => /Filter Results/).click
+      visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
+      click_button "Delete"   # Remove the initial filter
+      click_button "Filter"
+      link = find_link("Download CSV")
+      uri = Addressable::URI.parse(link[:href])
+      uri.path.should eql("/admin/stats/logs.csv")
+      uri.query_values.should eql({
+        "tz" => "America/Denver",
+        "start_at" => "2015-01-13",
+        "end_at" => "2015-01-18",
+        "interval" => "day",
+        "query" => JSON.generate({ "condition" => "AND", "rules" => [] }),
+        "search" => "",
+      })
+
+      visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
       find("a", :text => /Switch to advanced filters/).click
       fill_in "search", :with => "response_status:200"
       click_button "Filter"
