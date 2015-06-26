@@ -4,6 +4,17 @@ Admin.StatsBaseRoute = Ember.Route.extend({
     search: '',
     start_at: moment().subtract(29, 'days').format('YYYY-MM-DD'),
     end_at: moment().format('YYYY-MM-DD'),
+    query: JSON.stringify({
+      condition: 'AND',
+      rules: [{
+        field: 'gatekeeper_denied_code',
+        id: 'gatekeeper_denied_code',
+        input: 'select',
+        operator: 'is_null',
+        type: 'string',
+        value: null
+      }]
+    })
   },
 
   model: function(params) {
