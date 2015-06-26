@@ -5,13 +5,18 @@ Admin.StatsBaseController = Ember.ObjectController.extend({
 
   actions: {
     submit: function() {
+      var query = this.get('query');
+      query.beginPropertyChanges();
+
       if($('#filter_type_advanced').css('display') === 'none') {
-        this.set('query.params.search', null);
-        this.set('query.params.query', JSON.stringify($('#query_builder').queryBuilder('getRules')));
+        query.set('params.search', '');
+        query.set('params.query', JSON.stringify($('#query_builder').queryBuilder('getRules')));
       } else {
-        this.set('query.params.query', null);
-        this.set('query.params.search', $('#filter_form input[name=search]').val());
+        query.set('params.query', '');
+        query.set('params.search', $('#filter_form input[name=search]').val());
       }
+
+      query.endPropertyChanges();
     },
   },
 });
