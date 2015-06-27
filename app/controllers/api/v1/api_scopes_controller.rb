@@ -44,6 +44,13 @@ class Api::V1::ApiScopesController < Api::V1::BaseController
     respond_with(:api_v1, @api_scope, :root => "api_scope")
   end
 
+  def destroy
+    @api_scope = ApiScope.find(params[:id])
+    authorize(@api_scope)
+    @api_scope.destroy
+    respond_with(:api_v1, @api_scope, :root => "api_scope")
+  end
+
   private
 
   def save!

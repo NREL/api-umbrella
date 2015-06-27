@@ -75,4 +75,9 @@
       {{/if}}
     </div>
   </div>
+  {{#if id}}
+    <div class="row-fluid form-extra-actions">
+      <a href="#" class="remove-action" {{action 'delete'}}><i class="fa fa-times"></i>Delete Admin</a>
+    </div>
+  {{/if}}
 {{/form-for}}

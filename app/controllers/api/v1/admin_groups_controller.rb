@@ -45,6 +45,13 @@ class Api::V1::AdminGroupsController < Api::V1::BaseController
     respond_with(:api_v1, @admin_group, :root => "admin_group")
   end
 
+  def destroy
+    @admin_group = AdminGroup.find(params[:id])
+    authorize(@admin_group)
+    @admin_group.destroy
+    respond_with(:api_v1, @admin_group, :root => "admin_group")
+  end
+
   private
 
   def save!

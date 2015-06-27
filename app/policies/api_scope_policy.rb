@@ -20,4 +20,8 @@ class ApiScopePolicy < ApplicationPolicy
   def create?
     update?
   end
+
+  def destroy?
+    update?
+  end
 end

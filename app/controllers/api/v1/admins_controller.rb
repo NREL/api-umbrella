@@ -61,6 +61,13 @@ class Api::V1::AdminsController < Api::V1::BaseController
     end
   end
 
+  def destroy
+    @admin = Admin.find(params[:id])
+    authorize(@admin)
+    @admin.destroy
+    respond_with(:api_v1, @admin, :root => "admin")
+  end
+
   private
 
   def save!

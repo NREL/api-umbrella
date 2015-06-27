@@ -14,6 +14,15 @@ Admin.AdminGroupsFormController = Ember.ObjectController.extend(Admin.Save, {
         message: 'Successfully saved the admin group "' + _.escape(this.get('model.name')) + '"',
       });
     },
+
+    delete: function() {
+      bootbox.confirm('Are you sure you want to delete this admin group?', _.bind(function(result) {
+        if(result) {
+          this.get('model').deleteRecord();
+          this.transitionToRoute('admin_groups');
+        }
+      }, this));
+    },
   },
 });
 
