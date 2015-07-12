@@ -1,8 +1,8 @@
 GIT
   remote: https://github.com/GSA-OCSIT/omniauth-myusa.git
-  revision: 82f06c163c3014a606998feaf4781258c20ea701
+  revision: d918fa88b6b8e9d835a38afea9e9efaf015a74e4
   specs:
-    omniauth-myusa (0.0.3)
+    omniauth-myusa (0.0.4)
       omniauth (~> 1.0)
       omniauth-oauth2 (~> 1.0)
 
@@ -191,7 +191,7 @@ GEM
       rspec (>= 2.14.0, < 3.1.0)
       ruby-progressbar (~> 1.4)
     handlebars-source (1.3.0)
-    hashie (3.4.1)
+    hashie (3.4.2)
     hike (1.2.3)
     htmlentities (4.3.3)
     http-cookie (1.0.2)
@@ -213,7 +213,7 @@ GEM
       rake
     json (1.8.3)
     json (1.8.3-java)
-    jwt (1.4.1)
+    jwt (1.5.1)
     kaminari (0.16.3)
       actionpack (>= 3.0.0)
       activesupport (>= 3.0.0)
@@ -244,7 +244,7 @@ GEM
     mongoid_userstamp (0.3.2)
       mongoid (>= 3.0.4)
     moped (1.5.3)
-    multi_json (1.11.1)
+    multi_json (1.11.2)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
     net-ldap (0.3.1)
@@ -284,9 +284,7 @@ GEM
     omniauth-oauth (1.0.1)
       oauth
       omniauth (~> 1.0)
-    omniauth-oauth2 (1.2.0)
-      faraday (>= 0.8, < 0.10)
-      multi_json (~> 1.3)
+    omniauth-oauth2 (1.3.1)
       oauth2 (~> 1.0)
       omniauth (~> 1.2)
     omniauth-persona (0.0.1)
@@ -323,7 +321,7 @@ GEM
     pyu-ruby-sasl (0.0.3.3)
     rabl (0.11.6)
       activesupport (>= 2.3.14)
-    rack (1.4.6)
+    rack (1.4.7)
     rack-cache (1.2)
       rack (>= 0.4)
     rack-proxy (0.5.17)
