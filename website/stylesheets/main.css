@@ -104,6 +104,12 @@ header {
   box-shadow: none;
 }
 
+@media only screen and (max-width : 320px) {
+  #headerwrap h1 {
+    font-size: 38px;
+  }
+}
+
 #headerwrap h3 {
 	color: white;
 	font-size: 30px;
