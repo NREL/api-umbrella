@@ -256,7 +256,7 @@ http {
     server_name _;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
-    log_by_lua_file '{{gatekeeper.dir}}/app/api-umbrella/proxy/hooks/log_api_backend_proxy.lua';
+    log_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/log_api_backend_proxy.lua';
 
     # Enable keep alive connections to the backend servers.
     proxy_http_version 1.1;
