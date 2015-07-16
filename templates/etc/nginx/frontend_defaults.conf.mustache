@@ -28,3 +28,23 @@ proxy_next_upstream error;
 proxy_buffering off;
 
 include ./frontend_proxy_header_defaults.conf;
+
+location @banned_pit {
+  echo_sleep {{ban.response.delay}};
+  echo "{{ban.response.message}}";
+  echo_flush;
+}
+
+location = /api-umbrella-banned {
+  internal;
+  error_page 403 ={{ban.response.status_code}} @banned_pit;
+  return 403;
+}
+
+if ($banned_ip) {
+  rewrite .* /api-umbrella-banned last;
+}
+
+if ($banned_user_agent) {
+  rewrite .* /api-umbrella-banned last;
+}

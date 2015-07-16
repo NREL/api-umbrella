@@ -7,6 +7,8 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('bans', function() {
+  shared.runServer();
+
   beforeEach(function createUser(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.user = user;
