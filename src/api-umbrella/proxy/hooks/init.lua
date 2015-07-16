@@ -3,8 +3,8 @@ DEBUG = false
 local load_config = require "api-umbrella.proxy.load_config"
 config = load_config.parse()
 
-require "api-umbrella.proxy.init_elasticsearch_templates_data"
-require "api-umbrella.proxy.init_user_agent_parser_data"
+require "api-umbrella.proxy.startup.init_elasticsearch_templates_data"
+require "api-umbrella.proxy.startup.init_user_agent_parser_data"
 
 ngx.shared.apis:set("config_id", config["config_id"])
 ngx.shared.apis:set("upstreams_inited", false)

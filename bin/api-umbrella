@@ -4,10 +4,10 @@ if [ -z "$API_UMBRELLA_ROOT" ]; then
   export API_UMBRELLA_ROOT="/opt/api-umbrella"
 fi
 
-if [ -z "$API_UMBRELLA_APP_ROOT" ]; then
-  export API_UMBRELLA_APP_ROOT=`dirname $(dirname $(readlink -f $0))`
+if [ -z "$API_UMBRELLA_SRC_ROOT" ]; then
+  export API_UMBRELLA_SRC_ROOT=`dirname $(dirname $(readlink -f $0))`
 fi
 
 export PATH=$API_UMBRELLA_ROOT/embedded/sbin:$API_UMBRELLA_ROOT/embedded/bin:$PATH
 
-exec $API_UMBRELLA_APP_ROOT/bin/api-umbrella-cli "$@"
+exec $API_UMBRELLA_SRC_ROOT/bin/api-umbrella-cli "$@"

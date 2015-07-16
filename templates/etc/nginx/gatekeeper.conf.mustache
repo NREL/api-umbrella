@@ -1,5 +1,5 @@
 set $x_api_umbrella_request_id $txid;
-log_by_lua_file '{{gatekeeper.dir}}/app/api-umbrella/proxy/log_initial_proxy.lua';
+log_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/log_initial_proxy.lua';
 
 proxy_set_header X-Api-Umbrella-Request-ID $txid;
 
@@ -22,8 +22,8 @@ proxy_buffering off;
 # appropriate to meet the Accept headers of the current client.
 gunzip on;
 
-access_by_lua_file '{{gatekeeper.dir}}/app/api-umbrella/proxy/access.lua';
-header_filter_by_lua_file '{{gatekeeper.dir}}/app/api-umbrella/proxy/header_filter.lua';
+access_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/access.lua';
+header_filter_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/header_filter.lua';
 
 set $api_umbrella_backend_scheme '';
 set $api_umbrella_backend_host '';

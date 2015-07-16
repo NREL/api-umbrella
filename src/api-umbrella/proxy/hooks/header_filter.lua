@@ -1,5 +1,5 @@
 local start_time = ngx.now()
-local rewrite_response = require "api-umbrella.proxy.rewrite_response"
+local rewrite_response = require "api-umbrella.proxy.middleware.rewrite_response"
 local utils = require "api-umbrella.proxy.utils"
 
 local settings = ngx.ctx.settings

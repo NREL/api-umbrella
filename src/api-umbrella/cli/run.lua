@@ -19,7 +19,7 @@ local tablex = require "pl.tablex"
 local types = require "pl.types"
 local unistd = require "posix.unistd"
 
-local app_root = os.getenv("API_UMBRELLA_APP_ROOT")
+local app_root = os.getenv("API_UMBRELLA_SRC_ROOT")
 
 local function read_default_config()
   local content = file.read(path.join(app_root, "config/default.yml"), true)

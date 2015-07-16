@@ -1,6 +1,6 @@
 local cjson = require "cjson"
 
-local path = os.getenv("API_UMBRELLA_APP_ROOT") .. "/config/user_agent_data.json"
+local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/user_agent_data.json"
 local f, err = io.open(path, "rb")
 if err then
   ngx.log(ngx.ERR, "failed to open file: ", err)
