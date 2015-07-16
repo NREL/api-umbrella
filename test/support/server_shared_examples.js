@@ -5,13 +5,13 @@ require('../test_helper');
 var _ = require('lodash'),
     async = require('async'),
     csv = require('csv'),
-    execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
     fs = require('fs'),
     fsExtra = require('fs-extra'),
     ippp = require('ipplusplus'),
     mergeOverwriteArrays = require('object-extend'),
     mongoose = require('mongoose'),
+    path = require('path'),
     request = require('request'),
     uuid = require('node-uuid'),
     xml2js = require('xml2js'),
@@ -29,27 +29,37 @@ _.merge(global.shared, {
   },
 
   setConfigOverrides: function setConfigOverrides(newConfig, callback) {
-    this.currentConfigOverrides = newConfig;
+    global.currentConfigOverrides = newConfig;
 
-    var runtimeConfigPath = '/tmp/api-umbrella-test/var/run/runtime_config.yml';
-    var data = fs.readFileSync(runtimeConfigPath + '.orig');
+    var testConfigPath = path.resolve(__dirname, '../config/test.yml');
+    var overridesConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
+
+    var data = fs.readFileSync(testConfigPath);
     var config = yaml.safeLoad(data.toString());
     mergeOverwriteArrays(config, newConfig);
 
     // Generate a unique ID for this config, so we can detect when it's been
     // loaded.
     config.config_id = uuid.v4();
-    this.currentConfigId = config.config_id;
+    global.currentConfigId = config.config_id;
 
     // Dump as YAML, with nulls being treated as real YAML nulls, rather than
     // the string "null" (which is js-yaml's default).
-    fs.writeFileSync(runtimeConfigPath, yaml.safeDump(config, { styles: { '!!null': 'canonical' } }));
+    fs.writeFileSync(overridesConfigPath, yaml.safeDump(config, { styles: { '!!null': 'canonical' } }));
 
-    execFile('pkill', ['-HUP', '-f', 'nginx: master'], callback);
+    shared.runCommand('reload', callback);
+  },
+
+  revertConfigOverrides: function revertConfigOverrides(callback) {
+    global.currentConfigId = undefined;
+    var testConfigPath = path.resolve(__dirname, '../config/test.yml');
+    var overridesConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
+    fsExtra.copySync(testConfigPath, overridesConfigPath);
+    shared.runCommand('reload', callback);
   },
 
   setRuntimeConfigOverrides: function setRuntimeConfigOverrides(newRuntimeConfig, callback) {
-    this.currentRuntimeConfigOverrides = newRuntimeConfig;
+    global.currentRuntimeConfigOverrides = newRuntimeConfig;
 
     if(newRuntimeConfig.apis) {
       newRuntimeConfig.apis.forEach(function(api) {
@@ -74,16 +84,30 @@ _.merge(global.shared, {
       Factory.create('config_version', {
         config: newRuntimeConfig,
       }, function(record) {
-        this.currentRuntimeConfigVersion = record.version.getTime();
+        global.currentRuntimeConfigVersion = record.version.getTime();
         callback();
-      }.bind(this));
-    }.bind(this));
+      });
+    });
+  },
+
+  revertRuntimeConfigOverrides: function revertRuntimeConfigOverrides(callback) {
+    mongoose.testConnection.model('RouterConfigVersion').remove({}, function(error) {
+      should.not.exist(error);
+
+      Factory.create('config_version', {
+        config: {},
+      }, function(record) {
+        global.currentRuntimeConfigVersion = record.version.getTime();
+        callback();
+      });
+    });
   },
 
   waitForConfig: function waitForConfig(callback) {
     var configLoaded = false;
     var timedOut = false;
-    setTimeout(function() { timedOut = true; }, 4800);
+    var timeout = setTimeout(function() { timedOut = true; }, 4800);
+    var data;
 
     async.until(function() {
       return configLoaded || timedOut;
@@ -92,17 +116,27 @@ _.merge(global.shared, {
         should.not.exist(error);
         response.statusCode.should.eql(200);
 
-        var data = JSON.parse(body);
-        if(data['runtime_config_version'] === this.currentRuntimeConfigVersion && data['config_id'] === this.currentConfigId) {
+        data = JSON.parse(body);
+        if(data['runtime_config_version'] === global.currentRuntimeConfigVersion && data['config_id'] === global.currentConfigId) {
           configLoaded = true;
+          if(timeout) {
+            clearTimeout(timeout);
+            timeout = null;
+          }
+
           return callback();
         }
 
         setTimeout(callback, 10);
-      }.bind(this));
-    }.bind(this), function() {
+      });
+    }, function() {
+      if(timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+
       if(!configLoaded) {
-        callback('configuration did not load in the expected amount of time');
+        callback('configuration did not load in the expected amount of time (global.currentRuntimeConfigVersion: ' + global.currentRuntimeConfigVersion + ' global.currentConfigId: ' + global.currentConfigId + ' data: ' + JSON.stringify(data));
       } else {
         callback();
       }
@@ -139,43 +173,36 @@ _.merge(global.shared, {
 
     if(!_.isEmpty(newConfig)) {
       before(function setupConfig(done) {
-        shared.setConfigOverrides.call(this, newConfig, done);
+        shared.setConfigOverrides(newConfig, done);
       });
 
       after(function revertConfig(done) {
-        this.currentConfigId = undefined;
-        var runtimeConfigPath = '/tmp/api-umbrella-test/var/run/runtime_config.yml';
-        fsExtra.copySync(runtimeConfigPath + '.orig', runtimeConfigPath);
-        execFile('pkill', ['-HUP', '-f', 'nginx: master'], done);
+        shared.revertConfigOverrides(done);
       });
     }
 
     if(!_.isEmpty(newRuntimeConfig)) {
       before(function setupRuntimeConfig(done) {
-        shared.setRuntimeConfigOverrides.call(this, newRuntimeConfig, done);
+        shared.setRuntimeConfigOverrides(newRuntimeConfig, done);
       });
 
       after(function revertRuntimeConfig(done) {
-        mongoose.testConnection.model('RouterConfigVersion').remove({}, function(error) {
-          should.not.exist(error);
+        // Longer timeout for our tests that change the mongodb primary server,
+        // since we have to allow time for this local test connection to
+        // reconnect to the primary.
+        this.timeout(60000);
 
-          Factory.create('config_version', {
-            config: {},
-          }, function(record) {
-            this.currentRuntimeConfigVersion = record.version.getTime();
-            done();
-          }.bind(this));
-        }.bind(this));
+        shared.revertRuntimeConfigOverrides(done);
       });
     }
 
-    before(function(done) {
+    before(function beforeWaitForConfig(done) {
       this.timeout(5000);
-      shared.waitForConfig.call(this, done);
+      shared.waitForConfig(done);
     });
-    after(function(done) {
+    after(function afterWaitForConfig(done) {
       this.timeout(5000);
-      shared.waitForConfig.call(this, done);
+      shared.waitForConfig(done);
     });
 
     beforeEach(function createDefaultApiUser(done) {

@@ -9,6 +9,8 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('failures', function() {
+  shared.runServer();
+
   describe('mongodb', function() {
     before(function fetchMongoDbReplicaSetInfo(done) {
       // Fetch the replicaset information from the mongo-orchestration.
@@ -34,7 +36,7 @@ describe('failures', function() {
       // Be sure that these tests interact with a backend published via Mongo,
       // so we can also catch errors for when the mongo-based configuration
       // data experiences failures.
-      shared.publishDbConfig({
+      shared.setRuntimeConfigOverrides({
         apis: [
           {
             _id: 'db-config',
@@ -74,7 +76,7 @@ describe('failures', function() {
 
       // Remove DB-based config after these tests, so the rest of the tests go
       // back to the file-based configs.
-      shared.removeDbConfig(done);
+      shared.revertRuntimeConfigOverrides(done);
     });
 
     after(function resetMongoDbReplicaSet(done) {

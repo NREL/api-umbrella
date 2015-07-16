@@ -80,14 +80,17 @@ before(function apiUmbrellaStart(done) {
     process.stdout.write('.');
   }, 2000);
 
-  // Spin up the nginx process.
+  var testConfigPath = path.resolve(__dirname, '../config/test.yml');
+  var overridesConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
+  fsExtra.copySync(testConfigPath, overridesConfigPath);
+
+  // Spin up the api-umbrella processes.
   var binPath = path.resolve(__dirname, '../../bin/api-umbrella');
-  var configPath = path.resolve(__dirname, '../config/test.yml');
   global.apiUmbrellaServer = spawn(binPath, ['run'], {
     stdio: 'inherit',
     env: _.merge({}, process.env, {
       'API_UMBRELLA_ROOT': process.env.API_UMBRELLA_ROOT,
-      'API_UMBRELLA_CONFIG': configPath,
+      'API_UMBRELLA_CONFIG': overridesConfigPath,
     }),
   });
 
@@ -112,9 +115,4 @@ before(function apiUmbrellaStart(done) {
     clearInterval(startWaitLog);
     done(error);
   });
-});
-
-before(function copyRuntimeConfig() {
-  var runtimeConfigPath = '/tmp/api-umbrella-test/var/run/runtime_config.yml';
-  fsExtra.copySync(runtimeConfigPath, runtimeConfigPath + '.orig');
 });

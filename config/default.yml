@@ -112,6 +112,7 @@ mongodb:
   url: "mongodb://127.0.0.1:14001/api_umbrella"
   options:
     server:
+      auto_reconnect: true
       socketOptions:
         keepAlive: 500
     replset:
@@ -125,7 +126,7 @@ mongodb:
 mora:
   host: 127.0.0.1
   port: 8181
-  timeout: 5
+  timeout: 0
 elasticsearch:
   hosts:
     - "http://127.0.0.1:14002"

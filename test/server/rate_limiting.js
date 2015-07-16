@@ -330,7 +330,7 @@ describe('ApiUmbrellaGatekeper', function() {
         request.get(url, function(error, response) {
           response.headers['x-ratelimit-limit'].should.eql('10');
 
-          var newConfig = _.cloneDeep(this.currentConfigOverrides);
+          var newConfig = _.cloneDeep(global.currentConfigOverrides);
           newConfig.apiSettings.rate_limits[0].limit = 70;
           shared.setConfigOverrides(newConfig, function() {
             shared.waitForConfig(function() {
@@ -842,7 +842,7 @@ describe('ApiUmbrellaGatekeper', function() {
           request.get(url, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql('3');
 
-            var newConfig = _.cloneDeep(this.currentRuntimeConfigOverrides);
+            var newConfig = _.cloneDeep(global.currentRuntimeConfigOverrides);
             newConfig.apis[0].settings.rate_limits[0].limit = 80;
             shared.setRuntimeConfigOverrides(newConfig, function() {
               shared.waitForConfig(function() {

@@ -10,31 +10,35 @@ var _ = require('lodash'),
     fs = require('fs'),
     path = require('path'),
     processEnv = require('../../lib/process_env'),
-    request = require('request'),
-    supervisorPid = require('../../lib/supervisor_pid'),
-    supervisorSignal = require('../../lib/supervisor_signal'),
-    yaml = require('js-yaml');
+    request = require('request');
 
 var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 describe('processes', function() {
+  shared.runServer();
+
   describe('nginx', function() {
     it('does not leak file descriptors across reloads', function(done) {
       this.timeout(40000);
 
       var execOpts = { env: processEnv.env() };
-      supervisorPid('router-nginx', function(error, parentPid) {
+      execFile('pgrep', ['-f', 'nginx: master'], function(error, stdout, stderr) {
         if(error) {
-          return done('Error fetching nginx pid: ' + error);
+          return done('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
         }
 
+        if(!stdout || !/^\d+$/.test(stdout.trim())) {
+          return done('No PID returned for nginx (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+        }
+
+        var parentPid = parseInt(stdout, 10);
         var descriptorCounts = [];
         var urandomDescriptorCounts = [];
 
         async.timesSeries(15, function(index, next) {
-          supervisorSignal('router-nginx', 'SIGHUP', function(error) {
+          execFile('pkill', ['-HUP', '-f', 'nginx: master'], function(error, stdout, stderr) {
             if(error) {
-              return next('Error reloading nginx: ' + error);
+              return next('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
             }
 
             setTimeout(function() {
@@ -100,7 +104,7 @@ describe('processes', function() {
       // Be sure that these tests interact with a backend published via Mongo,
       // so we can also catch errors for when the mongo-based configuration
       // data experiences failures.
-      shared.publishDbConfig({
+      shared.setRuntimeConfigOverrides({
         apis: [
           {
             _id: 'db-config',
@@ -148,7 +152,7 @@ describe('processes', function() {
 
       // Remove DB-based config after these tests, so the rest of the tests go
       // back to the file-based configs.
-      shared.removeDbConfig(done);
+      shared.revertRuntimeConfigOverrides(done);
     });
 
     it('updates templates with file-based config file changes', function(done) {
@@ -158,54 +162,76 @@ describe('processes', function() {
       var nginxConfig = fs.readFileSync(nginxFile).toString();
       nginxConfig.should.contain('worker_processes 4;');
 
-      var file = '/tmp/api-umbrella-test.yml';
-      var origConfig = yaml.safeLoad(fs.readFileSync(file).toString());
-      fs.writeFileSync(file, yaml.safeDump(_.merge(origConfig, {
+      shared.setConfigOverrides({
         nginx: {
           workers: 1,
         },
-      })));
-
-      this.router.reload(function(error) {
+      }, function(error) {
         should.not.exist(error);
-        nginxConfig = fs.readFileSync(nginxFile).toString();
-        nginxConfig.should.contain('worker_processes 1;');
-
-        fs.writeFileSync(file, yaml.safeDump(origConfig));
-        this.router.reload(function(error) {
+        shared.waitForConfig(function(error) {
           should.not.exist(error);
 
           nginxConfig = fs.readFileSync(nginxFile).toString();
           nginxConfig.should.contain('worker_processes 1;');
-          done();
-        }.bind(this));
-      }.bind(this));
+
+          shared.setConfigOverrides({}, function(error) {
+            should.not.exist(error);
+            shared.waitForConfig(function(error) {
+              should.not.exist(error);
+
+              nginxConfig = fs.readFileSync(nginxFile).toString();
+              nginxConfig.should.contain('worker_processes 4;');
+
+              done();
+            });
+          });
+        });
+      });
     });
 
     it('does not drop connections during reloads', function(done) {
       this.timeout(60000);
 
-      var runTests = true;
+      execFile('pgrep', ['-f', 'nginx: worker'], function(error, stdout, stderr) {
+        if(error) {
+          return done('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+        }
 
-      setTimeout(function() {
-        this.router.reload(function(error) {
+        var originalPids = stdout.split('\n').sort();
+
+        var runTests = true;
+        setTimeout(function() {
+          execFile('pkill', ['-HUP', '-f', 'nginx: master'], function(error, stdout, stderr) {
+            if(error) {
+              return done('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+            }
+
+            setTimeout(function() { runTests = false; }, 5000);
+          });
+        }.bind(this), 100);
+
+        async.whilst(function() { return runTests; }, function(whilstCallback) {
+          request.get('http://localhost:9080/db-config/hello', this.options, function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            body.should.eql('Hello World');
+
+            whilstCallback(error);
+          });
+        }.bind(this), function(error) {
           should.not.exist(error);
-          setTimeout(function() { runTests = false; }, 5000);
-        });
-      }.bind(this), 100);
 
-      async.whilst(function() { return runTests; }, function(whilstCallback) {
-        request.get('http://localhost:9080/db-config/hello', this.options, function(error, response, body) {
-          should.not.exist(error);
-          response.statusCode.should.eql(200);
-          body.should.eql('Hello World');
+          execFile('pgrep', ['-f', 'nginx: worker'], function(error, stdout, stderr) {
+            if(error) {
+              return done('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+            }
 
-          whilstCallback(error);
+            var finalPids = stdout.split('\n').sort();
+            finalPids.should.not.eql(originalPids);
+            done();
+          });
         });
-      }.bind(this), function(error) {
-        should.not.exist(error);
-        done();
-      });
+      }.bind(this));
     });
   });
 });

@@ -2,6 +2,7 @@ local _M = {}
 
 local version = require "api-umbrella.version"
 local run = require "api-umbrella.cli.run"
+local reload = require "api-umbrella.cli.reload"
 
 function _M.run()
   run()
@@ -18,6 +19,7 @@ function _M.restart()
 end
 
 function _M.reload()
+  reload()
 end
 
 function _M.reopen_logs()

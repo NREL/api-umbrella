@@ -12,7 +12,7 @@ _.merge(global.shared, {
   runDistributedRateLimitsSync: function(configOverrides) {
     beforeEach(function startConfigLoader(done) {
       this.timeout(5000);
-      var overridesPath = path.resolve(__dirname, '../config/overrides.yml');
+      var overridesPath = path.resolve(__dirname, '../config/.overrides.yml');
       fs.writeFileSync(overridesPath, yaml.dump(configOverrides || {}));
 
       apiUmbrellaConfig.loader({
