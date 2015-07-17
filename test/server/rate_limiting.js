@@ -796,6 +796,47 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             frontend_host: 'localhost',
             backend_host: 'example.com',
+            rate_limit_bucket_name: 'different',
+            url_matches: [
+              {
+                frontend_prefix: '/different-bucket/',
+                backend_prefix: '/',
+              }
+            ]
+          },
+          {
+            frontend_host: '*',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/info/wildcard/',
+                backend_prefix: '/info/wildcard/',
+              }
+            ],
+          },
+          {
+            frontend_host: 'localhost',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/',
+                backend_prefix: '/',
+              }
+            ],
+          },
+          {
+            frontend_host: 'some.gov',
+            backend_host: 'example.com',
+            url_matches: [
+              {
+                frontend_prefix: '/info/some.gov-more-specific-backend/',
+                backend_prefix: '/info/',
+              }
+            ],
+          },
+          {
+            frontend_host: 'some.gov',
+            backend_host: 'example.com',
             url_matches: [
               {
                 frontend_prefix: '/',
@@ -808,6 +849,103 @@ describe('ApiUmbrellaGatekeper', function() {
 
       describe('api with lower rate limits', function() {
         itBehavesLikeApiKeyRateLimits('/info/lower/', 3);
+      });
+
+      describe('different rate limit buckets', function() {
+        it('counts rates for api backend with explicit buckets differently', function(done) {
+          async.waterfall([
+            function(cb) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, cb);
+            }.bind(this),
+            function(response, body, cb) {
+              response.headers['x-ratelimit-remaining'].should.eql('4');
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, cb);
+            }.bind(this),
+            function(response, body, cb) {
+              response.headers['x-ratelimit-remaining'].should.eql('3');
+              request.get('http://localhost:9080/different-bucket/hello?api_key=' + this.apiKey, cb);
+            }.bind(this),
+            function(response) {
+              response.headers['x-ratelimit-remaining'].should.eql('4');
+              done();
+            }
+          ]);
+        });
+
+        it('counts rates for different domains differently', function(done) {
+          async.waterfall([
+            function(cb) {
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, cb);
+            }.bind(this),
+            function(response, body, cb) {
+              response.headers['x-ratelimit-remaining'].should.eql('4');
+              request.get('http://localhost:9080/hello?api_key=' + this.apiKey, cb);
+            }.bind(this),
+            function(response, body, cb) {
+              var options = {
+                url: 'http://localhost:9080/hello?api_key=' + this.apiKey,
+                headers: {'Host': 'some.gov'}
+              };
+              response.headers['x-ratelimit-remaining'].should.eql('3');
+              request.get(options, cb);
+            }.bind(this),
+            function(response) {
+              response.headers['x-ratelimit-remaining'].should.eql('4');
+              done();
+            }
+          ]);
+        });
+
+        it('counts rates for the same domain under multiple api backends under the same bucket', function(done) {
+          var options = {
+            url: 'http://localhost:9080/info/',
+            qs: { api_key: this.apiKey },
+            headers: {
+              'Host': 'some.gov',
+            }
+          };
+
+          async.waterfall([
+            function(cb) {
+              request.get(options, cb);
+            }.bind(this),
+            function(response, body, cb) {
+              response.headers['x-ratelimit-remaining'].should.eql('4');
+
+              options.url = 'http://localhost:9080/info/some.gov-more-specific-backend/';
+              request.get(options, cb);
+            }.bind(this),
+            function(response) {
+              response.headers['x-ratelimit-remaining'].should.eql('3');
+              done();
+            }
+          ]);
+        });
+
+        it('counts rates for different domains under a single wildcard api backend the same', function(done) {
+          var options = {
+            url: 'http://localhost:9080/info/wildcard/?api_key=' + this.apiKey,
+            headers: {
+              'Host': 'wildcard.example.wild',
+            }
+          };
+
+          async.waterfall([
+            function(cb) {
+              request.get(options, cb);
+            }.bind(this),
+            function(response, body, cb) {
+              response.headers['x-ratelimit-remaining'].should.eql('4');
+
+              options.headers['Host'] = 'wildcard2.example.wild';
+              request.get(options, cb);
+            }.bind(this),
+            function(response) {
+              response.headers['x-ratelimit-remaining'].should.eql('3');
+              done();
+            }
+          ]);
+        });
       });
 
       describe('sub-settings within an api that give higher rate limits', function() {

@@ -154,4 +154,96 @@ describe('response rewriting', function() {
       });
     });
   });
+
+  describe('rewrites redirects', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/front/end/path',
+              backend_prefix: '/backend-prefix'
+            }
+          ],
+          settings: {
+            override_response_headers: []
+          },
+          sub_settings: []
+        },
+      ],
+    });
+    describe('RewriteResponse.rewriteRedirects', function() {
+      var baseUrl = function(apiKey) { return 'http://localhost:9080/front/end/path/redirect?api_key=' + apiKey; };
+      it('does not modify the redirect if it is relative, but not to a rewrite path', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('/somewhere'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('/somewhere');
+          done();
+        });
+      });
+      it('modifies the redirect if it is relative, to a rewrite path', function(done) {
+        var apiKey = this.apiKey;
+        request.get(baseUrl(apiKey) + '&to=' + encodeURIComponent('/backend-prefix/more/here'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('/front/end/path/more/here?api_key=' + apiKey);
+          done();
+        });
+      });
+      it('does not modify the redirect if it is absolute, to an unrelated domain', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('http://other_url.com/hello'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('http://other_url.com/hello');
+          done();
+        });
+      });
+      it('modifies the redirect if it references the domain', function(done) {
+        var apiKey = this.apiKey;
+        request.get(baseUrl(apiKey) + '&to=' + encodeURIComponent('http://example.com/hello'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('http://localhost/hello?api_key=' + apiKey);
+          done();
+        });
+      });
+      it('does not override the GET params', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('/somewhere?param=example.com'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('/somewhere?param=example.com');
+          done();
+        });
+      });
+      it('only replaces the whole domain', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=' + encodeURIComponent('http://eeexample.com/hello'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('http://eeexample.com/hello');
+          done();
+        });
+      });
+      it('replaces the path', function(done) {
+        var apiKey = this.apiKey;
+        request.get(baseUrl(apiKey) + '&to=' + encodeURIComponent('http://example.com/backend-prefix/'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('http://localhost/front/end/path/?api_key=' + apiKey);
+          done();
+        });
+      });
+      it('does not interfere with existing GET params', function(done) {
+        var apiKey = this.apiKey;
+        request.get(baseUrl(apiKey) + '&to=' + encodeURIComponent('http://example.com/?some=param&and=another'), {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('http://localhost/?some=param&and=another&api_key=' + apiKey);
+          done();
+        });
+      });
+    });
+  });
 });

@@ -441,8 +441,18 @@ describe('request rewriting', function() {
           backend_host: null,
           url_matches: [
             {
-              frontend_prefix: '/info/none',
-              backend_prefix: '/info/none',
+              frontend_prefix: '/info/none-null/',
+              backend_prefix: '/info/none-null/',
+            }
+          ],
+        },
+        {
+          frontend_host: 'localhost',
+          backend_host: '',
+          url_matches: [
+            {
+              frontend_prefix: '/info/none-empty-string/',
+              backend_prefix: '/info/none-empty-string/',
             }
           ],
         },
@@ -487,8 +497,17 @@ describe('request rewriting', function() {
       }.bind(this));
     });
 
-    it('leaves the host header untouched when a backend replacement is not present', function(done) {
-      request.get('http://localhost:9080/info/none?api_key=' + this.apiKey, function(error, response, body) {
+    it('leaves the host header untouched when a backend replacement is null', function(done) {
+      request.get('http://localhost:9080/info/none-null/?api_key=' + this.apiKey, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.headers.host.should.eql('localhost:9080');
+
+        done();
+      }.bind(this));
+    });
+
+    it('leaves the host header untouched when a backend replacement is an empty string', function(done) {
+      request.get('http://localhost:9080/info/none-empty-string/?api_key=' + this.apiKey, function(error, response, body) {
         var data = JSON.parse(body);
         data.headers.host.should.eql('localhost:9080');
 

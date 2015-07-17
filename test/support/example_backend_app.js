@@ -33,6 +33,10 @@ var app = express();
 app.use(bodyParser.raw());
 app.use(function(req, res, next) {
   backendCalled = true;
+  // Allow all requests to include this prefix
+  if (req.url.indexOf('/backend-prefix/') === 0) {
+    req.url = req.url.substr('/backend-prefix'.length);
+  }
   next();
 });
 app.use(multer({
@@ -112,6 +116,11 @@ app.get('/headers/*', function(req, res) {
   res.set('X-EXISTING3', 'existing3');
   res.send('Hello World');
 });
+
+app.get('/redirect', function(req, res) {
+  res.redirect(req.query.to || '/hello');
+});
+
 
 app.all('/info/*', function(req, res) {
   var rawUrl = req.protocol + '://' + req.hostname + req.url;
