@@ -6,6 +6,111 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('routing', function() {
+  shared.runServer({
+    apis: [
+      {
+        frontend_host: 'with-apis-and-website.foo',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/example/',
+            backend_prefix: '/example/',
+          },
+        ],
+      },
+      {
+        frontend_host: 'with-apis-and-website.foo',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/info/',
+            backend_prefix: '/info/',
+          },
+        ],
+      },
+      {
+        frontend_host: 'with-apis-no-website.foo',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/example2/',
+            backend_prefix: '/example2/',
+          },
+        ],
+      },
+      {
+        frontend_host: '*.wildcard-star-dot-subdomain.foo',
+        backend_host: '*.wildcard-star-dot-replacement.foo',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/wildcard-star-dot-info/',
+            backend_prefix: '/info/',
+          }
+        ]
+      },
+      {
+        frontend_host: '.wildcard-dot-subdomain.foo',
+        backend_host: '.wildcard-dot-replacement.foo',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          }
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/wildcard-dot-info/',
+            backend_prefix: '/info/',
+          },
+        ],
+      },
+    ],
+    website_backends: [
+      {
+        frontend_host: 'with-apis-and-website.foo',
+        server_host: '127.0.0.1',
+        server_port: 9444,
+      },
+    ],
+    hosts: [
+      {
+        hostname: 'default.foo',
+        default: true,
+      },
+      {
+        hostname: 'withweb.foo',
+        enable_web_backend: true,
+      },
+      {
+        hostname: 'withoutweb.foo',
+      },
+    ],
+  });
+
   beforeEach(function() {
     this.options = {
       strictSSL: false,

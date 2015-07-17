@@ -72,7 +72,10 @@ describe('failures', function() {
     });
 
     after(function removeDbConfig(done) {
-      this.timeout(6000);
+      // Longer timeout for our tests that change the mongodb primary server,
+      // since we have to allow time for this local test connection to
+      // reconnect to the primary.
+      this.timeout(60000);
 
       // Remove DB-based config after these tests, so the rest of the tests go
       // back to the file-based configs.
