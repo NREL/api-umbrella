@@ -7,6 +7,30 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('https requirements', function() {
+  shared.runServer({
+    apis: [
+      {
+        frontend_host: 'https.foo',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/info/https/required_return_error/',
+            backend_prefix: '/info/',
+          },
+        ],
+        settings: {
+          require_https: 'required_return_error',
+        },
+      },
+    ],
+  });
+
   beforeEach(function createUser(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.apiKey = user.api_key;
@@ -22,34 +46,6 @@ describe('https requirements', function() {
 
       done();
     }.bind(this));
-  });
-
-  it('https redirects include the original host and URL including api key', function(done) {
-    var options = _.merge({}, this.options, {
-      headers: {
-        'Host': 'https.foo',
-      },
-    });
-    request.get('http://localhost:9080/info/https/required_return_redirect/?foo=bar&test1=test2&api_key=' + this.apiKey, options, function(error, response) {
-      should.not.exist(error);
-      response.statusCode.should.eql(301);
-      response.headers.location.should.eql('https://https.foo:9081/info/https/required_return_redirect/?foo=bar&test1=test2&api_key=' + this.apiKey);
-      done();
-    }.bind(this));
-  });
-
-  it('POST requests result in a 307 redirect', function(done) {
-    var options = _.merge({}, this.options, {
-      headers: {
-        'Host': 'https.foo',
-      },
-    });
-    request.post('http://localhost:9080/info/https/required_return_redirect/?foo=bar&test1=test2', options, function(error, response) {
-      should.not.exist(error);
-      response.statusCode.should.eql(307);
-      response.headers.location.should.eql('https://https.foo:9081/info/https/required_return_redirect/?foo=bar&test1=test2');
-      done();
-    });
   });
 
   it('returns the https url in the error message', function(done) {

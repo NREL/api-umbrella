@@ -27,7 +27,12 @@ return function(settings, user)
         end
       end
 
-      local https_url = "https://" .. ngx.ctx.host .. ngx.ctx.original_request_uri
+      local https_url = "https://" .. ngx.ctx.host
+      if config["https_port"] and config["https_port"] ~= 443 then
+        https_url = https_url .. ":" .. config["https_port"]
+      end
+      https_url = https_url .. ngx.ctx.original_request_uri
+
       return "https_required", {
         httpsUrl = https_url,
       }
