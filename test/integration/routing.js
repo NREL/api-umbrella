@@ -3,6 +3,7 @@
 require('../test_helper');
 
 var _ = require('lodash'),
+    Factory = require('factory-lady'),
     request = require('request');
 
 describe('routing', function() {
@@ -111,10 +112,15 @@ describe('routing', function() {
     ],
   });
 
-  beforeEach(function() {
-    this.options = {
-      strictSSL: false,
-    };
+  beforeEach(function createUser(done) {
+    Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
+      this.apiKey = user.api_key;
+      this.options = {
+        strictSSL: false,
+      };
+
+      done();
+    }.bind(this));
   });
 
   describe('web admin', function() {
@@ -255,6 +261,51 @@ describe('routing', function() {
         response.statusCode.should.eql(404);
         body.should.contain('Test 404 Not Found');
         done();
+      });
+    });
+
+    it('matches wildcards with *. syntax', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'test.wildcard-star-dot-subdomain.foo',
+          'X-Api-Key': this.apiKey,
+        },
+      });
+      request.get('http://localhost:9080/wildcard-star-dot-info/', options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.headers['host'].should.eql('test.wildcard-star-dot-replacement.foo');
+
+        options.headers['Host'] = 'wildcard-star-dot-subdomain.foo';
+        request.get('http://localhost:9080/wildcard-star-dot-info/', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          done();
+        });
+      });
+    });
+
+    it('matches wildcards with . syntax', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'test.wildcard-dot-subdomain.foo',
+          'X-Api-Key': this.apiKey,
+        },
+      });
+      request.get('http://localhost:9080/wildcard-dot-info/', options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.headers['host'].should.eql('test.wildcard-dot-replacement.foo');
+
+        options.headers['Host'] = 'wildcard-dot-subdomain.foo';
+        request.get('http://localhost:9080/wildcard-dot-info/', options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          data = JSON.parse(body);
+          data.headers['host'].should.eql('wildcard-dot-replacement.foo');
+          done();
+        });
       });
     });
 
