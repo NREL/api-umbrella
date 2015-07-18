@@ -21,4 +21,6 @@ dependencies:
     - sudo pip install mongo-orchestration==0.3.1
 test:
   override:
+    - mkdir -p $CIRCLE_TEST_REPORTS/mocha
     - API_UMBRELLA_ROOT="$(pwd)/ci_cache/build" npm test
+    - cp test/tmp/xunit.xml $CIRCLE_TEST_REPORTS/mocha/

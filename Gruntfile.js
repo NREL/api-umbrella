@@ -2,8 +2,7 @@
 
 module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-mocha-test');
-  grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-mocha-cli');
 
   grunt.initConfig({
     jshint: {
@@ -20,34 +19,26 @@ module.exports = function(grunt) {
       ],
     },
 
-    mochaTest: {
-      test: {
-        options: {
-          reporter: 'spec',
+    mochacli: {
+      options: {
+        reporter: 'mocha-multi',
 
-          // Force colors for the output of mutliTest
-          colors: true,
+        // Force colors for the output of mutliTest
+        colors: true,
 
-          // Increase the default timeout from 2 seconds to 4 seconds. We'll
-          // see if this helps with sporadic issues in the CI environment.
-          timeout: 4000,
-        },
-        src: ['test/**/*.js']
+        // Increase the default timeout from 2 seconds to 4 seconds. We'll
+        // see if this helps with sporadic issues in the CI environment.
+        timeout: 4000,
+
+        files: ['test/**/*.js']
       },
-      coverage: {
+      multi: {
         options: {
-          reporter: 'mocha-lcov-reporter',
-          quiet: true,
-          captureFile: 'test/tmp/coverage.lcov'
-        },
-        src: ['test/**/*.js'],
-      },
-    },
-
-    shell: {
-      coveralls: {
-        command: 'cat test/tmp/coverage.lcov | ./node_modules/.bin/coveralls',
-        failOnError: true
+          reporter: 'mocha-multi',
+          env: {
+            multi: 'spec=- xunit=test/tmp/xunit.xml',
+          },
+        }
       },
     },
   });
@@ -58,7 +49,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test', [
     'jshint',
-    'mochaTest',
+    'mochacli:multi',
   ]);
 
   // Run the full test suite 20 times. Only print the output when errors are
