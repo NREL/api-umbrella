@@ -82,11 +82,11 @@ MONGODB_DIGEST:=md5
 MONGODB_CHECKSUM:=df7d1ed6538f3568cf6d130721694b42
 MONGODB_URL:=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-$(MONGODB_VERSION).tgz
 
-MORA_VERSION:=fb667a3342bce09e975a25b0cf090ed251b5197a
+MORA_VERSION:=a3adc331dc78d988e4f1c2310902d56c3e612d32
 MORA:=mora-$(MORA_VERSION)
 MORA_DIGEST:=md5
-MORA_CHECKSUM:=b5e5c4dd70fcfe131826ca44afcabb1e
-MORA_URL:=https://github.com/emicklei/mora/archive/$(MORA_VERSION).tar.gz
+MORA_CHECKSUM:=6d646dfcc5b476840e767ad6bf302ebd
+MORA_URL:=https://github.com/GUI/mora/archive/$(MORA_VERSION).tar.gz
 
 NGX_TXID_VERSION:=f1c197cb9c42e364a87fbb28d5508e486592ca42
 NGX_TXID:=ngx_txid-$(NGX_TXID_VERSION)
