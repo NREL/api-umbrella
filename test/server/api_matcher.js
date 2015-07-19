@@ -8,9 +8,13 @@ describe('ApiUmbrellaGatekeper', function() {
   describe('api matching', function() {
     describe('host matching', function() {
       shared.runServer({
-        gatekeeper: {
-          default_frontend_host: 'default-host-config.example.com',
-        },
+        hosts: [
+          {
+            hostname: 'default-host-config.example.com',
+            default: true,
+          },
+        ],
+        internal_website_backends: [],
         apis: [
           {
             'frontend_host': 'localhost:7777',
@@ -101,7 +105,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/wildcard-subdomain/',
                 'backend_prefix': '/info/wildcard-subdomain/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'wildcard-just-dot-subdomain' },
+              ],
+            },
           },
           {
             'frontend_host': '*wild-without-dot-subdomain.foo',
@@ -112,7 +121,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/wildcard-subdomain/',
                 'backend_prefix': '/info/wildcard-subdomain/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'wildcard-without-dot-subdomain' },
+              ],
+            },
           },
           {
             'frontend_host': '*.wild-with-dot-subdomain.foo',
@@ -123,7 +137,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/wildcard-subdomain/',
                 'backend_prefix': '/info/wildcard-subdomain/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'wildcard-with-dot-subdomain' },
+              ],
+            },
           },
           {
             'frontend_host': '*',
@@ -166,7 +185,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/wildcard-backend/',
                 'backend_prefix': '/info/wildcard-backend/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'wildcard-backend-star-dot' },
+              ],
+            },
           },
           {
             'frontend_host': '.wildcard-backend-dot.foo',
@@ -177,7 +201,12 @@ describe('ApiUmbrellaGatekeper', function() {
                 'frontend_prefix': '/info/wildcard-backend/',
                 'backend_prefix': '/info/wildcard-backend/'
               }
-            ]
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'wildcard-backend-dot' },
+              ],
+            },
           },
           {
             'frontend_host': 'default-host-config.example.com',
@@ -198,16 +227,16 @@ describe('ApiUmbrellaGatekeper', function() {
         ],
       });
 
-      it('uses full host with port to find the matching api', function(done) {
+      it('matches the first api based only on the hostname (full host with port)', function(done) {
         var opts = shared.buildRequestOptions('/info/matching/', this.apiKey);
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-backend'].should.eql('localhost-with-port');
+          data.headers['x-backend'].should.eql('localhost-non-matching-port');
           done();
         });
       });
 
-      it('prefers the host header', function(done) {
+      it('matches the first api based only on the hostname (host with default port)', function(done) {
         var opts = shared.buildRequestOptions('/info/matching/', this.apiKey, {
           headers: {
             'Host': 'localhost:80',
@@ -216,12 +245,12 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-backend'].should.eql('localhost-default-port');
+          data.headers['x-backend'].should.eql('localhost-non-matching-port');
           done();
         });
       });
 
-      it('fills in host headers with missing ports with defaults', function(done) {
+      it('matches the first api based only on the hostname (host with no port)', function(done) {
         var opts = shared.buildRequestOptions('/info/matching/', this.apiKey, {
           headers: {
             'Host': 'localhost',
@@ -230,12 +259,12 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-backend'].should.eql('localhost-default-port');
+          data.headers['x-backend'].should.eql('localhost-non-matching-port');
           done();
         });
       });
 
-      it('determines the default ports based on the protocol', function(done) {
+      it('matches the first api based on the hostname (host with no port over https)', function(done) {
         var opts = shared.buildRequestOptions('/info/matching/', this.apiKey, {
           headers: {
             'Host': 'localhost',
@@ -245,7 +274,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
         request.get(opts, function(error, response, body) {
           var data = JSON.parse(body);
-          data.headers['x-backend'].should.eql('localhost-ssl-port');
+          data.headers['x-backend'].should.eql('localhost-non-matching-port');
           done();
         });
       });
@@ -319,7 +348,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
             request.get(opts, function(error, response, body) {
               var data = JSON.parse(body);
-              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-with-dot-subdomain');
+              data.headers['x-backend'].should.eql('wildcard-with-dot-subdomain');
               data.headers['host'].should.eql('example.com');
               done();
             });
@@ -358,7 +387,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
             request.get(opts, function(error, response, body) {
               var data = JSON.parse(body);
-              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-with-dot-subdomain');
+              data.headers['x-backend'].should.eql('wildcard-with-dot-subdomain');
               data.headers['host'].should.eql('example.com');
               done();
             });
@@ -373,7 +402,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
             request.get(opts, function(error, response, body) {
               var data = JSON.parse(body);
-              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend-star-dot');
+              data.headers['x-backend'].should.eql('wildcard-backend-star-dot');
               data.headers['host'].should.eql('foo.example.com');
               done();
             });
@@ -388,7 +417,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
             request.get(opts, function(error, response, body) {
               var data = JSON.parse(body);
-              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend-star-dot');
+              data.headers['x-backend'].should.eql('wildcard-backend-star-dot');
               data.headers['host'].should.eql('foo.bar.example.com');
               done();
             });
@@ -406,7 +435,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
             request.get(opts, function(error, response, body) {
               var data = JSON.parse(body);
-              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-just-dot-subdomain');
+              data.headers['x-backend'].should.eql('wildcard-just-dot-subdomain');
               data.headers['host'].should.eql('example.com');
               done();
             });
@@ -421,7 +450,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
             request.get(opts, function(error, response, body) {
               var data = JSON.parse(body);
-              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-just-dot-subdomain');
+              data.headers['x-backend'].should.eql('wildcard-just-dot-subdomain');
               data.headers['host'].should.eql('example.com');
               done();
             });
@@ -452,7 +481,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
             request.get(opts, function(error, response, body) {
               var data = JSON.parse(body);
-              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-just-dot-subdomain');
+              data.headers['x-backend'].should.eql('wildcard-just-dot-subdomain');
               data.headers['host'].should.eql('example.com');
               done();
             });
@@ -467,7 +496,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
             request.get(opts, function(error, response, body) {
               var data = JSON.parse(body);
-              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend-dot');
+              data.headers['x-backend'].should.eql('wildcard-backend-dot');
               data.headers['host'].should.eql('foo.example.com');
               done();
             });
@@ -482,7 +511,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
             request.get(opts, function(error, response, body) {
               var data = JSON.parse(body);
-              data.headers['x-api-umbrella-backend-id'].should.eql('wildcard-backend-dot');
+              data.headers['x-backend'].should.eql('wildcard-backend-dot');
               data.headers['host'].should.eql('example.com');
               done();
             });
@@ -550,6 +579,7 @@ describe('ApiUmbrellaGatekeper', function() {
 
     describe('prefix matching', function() {
       shared.runServer({
+        internal_website_backends: [],
         apis: [
           {
             'frontend_host': 'localhost',

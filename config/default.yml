@@ -36,7 +36,6 @@ gatekeeper:
   host: 127.0.0.1
   dir: /opt/api-umbrella/embedded/apps/gatekeeper/current
   starting_port: 14050
-  default_frontend_host:
   api_key_methods:
     - header
     - getParam
@@ -157,7 +156,6 @@ strip_cookies:
   - ^__utm.*$
   - ^_ga$
   - ^is_returning$
-default_host: localhost
 site_name: API Umbrella
 apiSettings:
   require_https: required_return_error
@@ -254,7 +252,7 @@ apiSettings:
 internal_apis:
   - _id: api-umbrella-gatekeeper-backend
     name: API Umbrella - Gatekeeper APIs
-    frontend_host: "*"
+    frontend_host: "{{default_hostname}}"
     backend_host: 127.0.0.1
     backend_protocol: http
     balance_algorithm: least_conn
@@ -263,28 +261,15 @@ internal_apis:
       - host: 127.0.0.1
         port: 14008
     url_matches:
-      - frontend_prefix: "/api-umbrella/v1/health"
-        backend_prefix: "/api-umbrella/v1/health"
-      - frontend_prefix: "/api-umbrella/v1/state"
-        backend_prefix: "/api-umbrella/v1/state"
-    settings:
-      disable_api_key: true
-      rate_limit_mode: unlimited
-      require_https: optional
-  - _id: api-umbrella-web-backend
-    name: API Umbrella - Web APIs
-    frontend_host: "*"
-    backend_host: 127.0.0.1
-    backend_protocol: http
-    balance_algorithm: least_conn
-    sort_order: 1
-    servers:
-      - host: 127.0.0.1
-        port: 14012
-    url_matches:
       - frontend_prefix: "/api-umbrella/"
         backend_prefix: "/api-umbrella/"
     sub_settings:
+      - http_method: get
+        regex: "^/api-umbrella/v1/(health|state)"
+        settings:
+          disable_api_key: true
+          rate_limit_mode: unlimited
+          require_https: optional
       - http_method: post
         regex: "^/api-umbrella/v1/users"
         settings:
@@ -295,6 +280,12 @@ internal_apis:
         settings:
           required_roles:
             - api-umbrella-contact-form
+internal_website_backends:
+  - _id: api-umbrella-website-backend
+    frontend_host: "{{default_hostname}}"
+    backend_protocol: http
+    server_host: "{{static_site.host}}"
+    server_port: "{{static_site.port}}"
 ban:
   user_agents:
   ips:

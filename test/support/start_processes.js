@@ -21,6 +21,12 @@ before(function clearTestEnvDns() {
   fs.writeFileSync(configPath, '');
 });
 
+before(function stubDummyStaticSite() {
+  mkdirp.sync(path.join(config.get('static_site.build_dir'), 'signup'));
+  fs.writeFileSync(path.join(config.get('static_site.build_dir'), 'index.html'), 'Your API Site Name');
+  fs.writeFileSync(path.join(config.get('static_site.build_dir'), 'signup/index.html'), 'API Key Signup');
+});
+
 // Trigger the mongo-orchestration setup to configure our replicaset.
 //
 // Note that this is a bit funny, since mongo-orchestration doesn't actually
@@ -94,6 +100,13 @@ before(function apiUmbrellaStart(done) {
     }),
   });
 
+  global.apiUmbrellaServer.on('close', function() {
+    if(startWaitLog) {
+      console.error('Error: api-umbrella failed to start');
+      process.exit(1);
+    }
+  });
+
   // Wait until we're able to establish a connection before moving on.
   var healthy = false;
   async.until(function() {
@@ -113,6 +126,7 @@ before(function apiUmbrellaStart(done) {
   }, function(error) {
     console.info('\n');
     clearInterval(startWaitLog);
+    startWaitLog = null;
     done(error);
   });
 });

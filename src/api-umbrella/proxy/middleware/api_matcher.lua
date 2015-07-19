@@ -6,47 +6,22 @@ local utils = require "api-umbrella.proxy.utils"
 
 local apis_for_host = api_store.for_host
 local append_array = utils.append_array
+local get_packed = utils.get_packed
 local gsub = string.gsub
 local is_empty = types.is_empty
 local set_uri = utils.set_uri
 local startswith = stringx.startswith
 
 local function apis_for_request_host()
-  -- Find APIs matching the exact host.
-  local host = ngx.ctx.host
-  local apis = apis_for_host(host) or {}
+  local apis = {}
 
-  -- Append APIs matching the host with or without the port.
-  local host_without_port = string.match(host, "(.+):")
-  if host_without_port then
-    local apis_without_port = apis_for_host(host_without_port)
-    if apis_without_port then
-      append_array(apis, apis_without_port)
+  local data = get_packed(ngx.shared.apis, "packed_data") or {}
+  if data["apis_by_host"] then
+    for _, search in ipairs(ngx.ctx.hostname_searches) do
+      if data["apis_by_host"][search] then
+        append_array(apis, data["apis_by_host"][search])
+      end
     end
-  else
-    local protocol = ngx.ctx.protocol
-    local port = (protocol == "https") and "443" or "80"
-    local host_with_default_port = host .. ":" .. port
-    local apis_with_port = apis_for_host(host_with_default_port)
-    if apis_with_port then
-      append_array(apis, apis_with_port)
-    end
-  end
-
-  -- If no APIs have been found, use the optional "default_frontend_host"
-  -- configuration to lookup the host.
-  local default_host = config["gatekeeper"]["default_frontend_host"]
-  if is_empty(apis) and default_host then
-    local default_apis = apis_for_host(default_host)
-    if default_apis then
-      apis = default_apis
-    end
-  end
-
-  -- Finally, append wildcard hosts.
-  local wildcard_apis = apis_for_host("*")
-  if wildcard_apis then
-    append_array(apis, wildcard_apis)
   end
 
   return apis
@@ -80,14 +55,23 @@ return function(user)
       set_uri(new_path)
     end
 
+    local host = api["backend_host"] or ngx.ctx.host
+    if api["_frontend_host_wildcard_regex"] then
+      local match, err = ngx.re.match(ngx.ctx.host_no_port, api["_frontend_host_wildcard_regex"], "ijo")
+      local wildcard_portion = match[1]
+      if wildcard_portion then
+        host = ngx.re.sub(host, "^([*.])", wildcard_portion, "jo")
+      end
+    end
+
     -- Set the nginx headers that will determine which nginx upstream this
     -- request gets proxied to.
     ngx.req.set_header("X-Api-Umbrella-Backend-Scheme", api["backend_protocol"] or "http")
-    ngx.req.set_header("X-Api-Umbrella-Backend-Host", api["backend_host"] or ngx.ctx.host)
+    ngx.req.set_header("X-Api-Umbrella-Backend-Host", host)
     ngx.req.set_header("X-Api-Umbrella-Backend-Id", api["_id"])
 
-    return api, url_match
+    return api
   else
-    return nil, nil, "not_found"
+    return nil, "not_found"
   end
 end

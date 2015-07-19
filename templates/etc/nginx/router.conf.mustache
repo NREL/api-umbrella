@@ -2,9 +2,9 @@ worker_processes {{nginx.workers}};
 
 daemon off;
 
-{{#_user?}}
-user {{../user}} {{../group}};
-{{/_user?}}
+{{#user}}
+user {{user}} {{group}};
+{{/user}}
 
 pid {{run_dir}}/router-nginx.pid;
 
@@ -126,112 +126,35 @@ http {
     }
   }
 
-  {{#primary_hosts}}
-  # Primary host. Serves up both APIs and web content.
+  {{#hosts}}
   server {
-    listen {{../http_port}}{{#default}} default_server{{/default}};
-    #listen [::]:{{../http_port}}{{#default}} default_server{{/default}};
+    listen {{http_port}}{{#default}} default_server{{/default}};
+    listen [::]:{{http_port}}{{#default}} default_server{{/default}};
     server_name {{hostname}};
 
-    listen {{../https_port}} ssl{{#default}} default_server{{/default}};
-    #listen [::]:{{../https_port}} ssl{{#default}} default_server{{/default}};
+    listen {{https_port}} ssl{{#default}} default_server{{/default}};
+    listen [::]:{{https_port}} ssl{{#default}} default_server{{/default}};
     {{#ssl_cert}}
     ssl_certificate {{ssl_cert}};
     ssl_certificate_key {{ssl_cert_key}};
     {{/ssl_cert}}
     {{^ssl_cert}}
-    ssl_certificate {{../../etc_dir}}/ssl/self_signed.crt;
-    ssl_certificate_key {{../../etc_dir}}/ssl/self_signed.key;
+    ssl_certificate {{etc_dir}}/ssl/self_signed.crt;
+    ssl_certificate_key {{etc_dir}}/ssl/self_signed.key;
     {{/ssl_cert}}
 
     include ./frontend_defaults.conf;
 
-    # Determine the SSL status when it's passed via X-Forwarded-Proto from the
-    # SSL terminator.
-    set $ssl_status "off";
-    if ($server_port = {{../https_port}}) {
-      set $ssl_status "on";
-    }
+    {{#rewrites}}
+    rewrite {{.}};
+    {{/rewrites}}
 
-    if ($http_x_forwarded_proto = "https") {
-      set $ssl_status "on";
-    }
-
-    # Match any required HTTPS-only pages.
-    if ($uri ~ ^/(account|admin|admins|signup)(/|$)) {
-      set $ssl_status "${ssl_status}_required";
-    }
-
-    # Force certain content to HTTPS-only.
-    if ($ssl_status = "off_required") {
-      rewrite ^ https://$host:{{../https_port}}$request_uri? permanent;
-    }
-
-    # Route the docs and other static pages to the Rails web app. This may
-    # change, so that's why we're treating it separately.
-    location ~* ^/(|about|assets|community|contact|developer|doc|docs|metrics|favicon\.ico|images|robots.txt|signup|static|__middleman|__rack)(/|$) {
-      {{#../static_site.host_header}}
-      set $proxy_host_header "{{../../static_site.host_header}}";
-      {{/../static_site.host_header}}
-      include ./frontend_proxy_header_defaults.conf;
-      proxy_pass http://api_umbrella_static_site_backend;
-    }
-
-    # Route the dynamic portions of the site to the Rails web app.
-    location ~* ^/(admin|admins|web-assets)(/|$) {
-      include ./frontend_proxy_header_defaults.conf;
-      proxy_pass http://api_umbrella_web_backend;
-    }
-
-    # Route all other requests as APIs going through the API Umbrella Gatekeeper.
     location / {
       include ./frontend_proxy_header_defaults.conf;
       include ./gatekeeper.conf;
     }
   }
-  {{/primary_hosts}}
-
-  {{#secondary_hosts}}
-  # Secondary host. Serves up only API traffic (no web page content).
-  server {
-    listen {{http_port}};
-    #listen [::]:{{http_port}};
-    server_name {{hostname}};
-
-    {{#ssl_cert}}
-    listen {{../../https_port}} ssl;
-    #listen [::]:{{../../https_port}} ssl;
-    ssl_certificate {{ssl_cert}};
-    ssl_certificate_key {{ssl_cert_key}};
-    {{/ssl_cert}}
-
-    include ./frontend_defaults.conf;
-
-    # Route all other requests as APIs going through the API Umbrella Gatekeeper.
-    location / {
-      include ./frontend_proxy_header_defaults.conf;
-      include ./gatekeeper.conf;
-    }
-  }
-  {{/secondary_hosts}}
-
-  {{^has_default_host}}
-  # Catch-all host. Serves up only API traffic (no web page content).
-  # Like secondary hosts, but minus HTTPS (since we don't know the domain).
-  server {
-    listen {{http_port}} default_server;
-    #listen [::]:{{http_port}} default_server;
-    server_name _;
-
-    include ./frontend_defaults.conf;
-
-    # Route all other requests as APIs going through the API Umbrella Gatekeeper.
-    location / {
-      include ./frontend_proxy_header_defaults.conf;
-      include ./gatekeeper.conf;
-    }
-  }
-  {{/has_default_host}}
+  {{/hosts}}
 
   {{^development_env}}
   server {

@@ -545,7 +545,7 @@ LUAUTF8_VERSION:=0.1.0-1
 LUAPOSIX:=luaposix
 LUAPOSIX_VERSION:=33.3.1-1
 LYAML:=lyaml
-LYAML_VERSION:=5.1.4-1
+LYAML_VERSION:=5.1.4-2
 PENLIGHT:=penlight
 PENLIGHT_VERSION:=1.3.2-2
 STDLIB:=stdlib
@@ -572,7 +572,7 @@ vendor/lib/luarocks/rocks/$(LUAPOSIX)/$(LUAPOSIX_VERSION): $(PREFIX)/embedded/.i
 	touch $@
 
 vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install https://raw.githubusercontent.com/GUI/lyaml/multiline-strings-release/lyaml-git-1.rockspec YAML_DIR=$(PREFIX)/embedded
+	$(PREFIX)/embedded/bin/luarocks --tree=vendor install https://raw.githubusercontent.com/GUI/lyaml/empty-null-release/lyaml-git-1.rockspec YAML_DIR=$(PREFIX)/embedded
 	touch $@
 
 vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor

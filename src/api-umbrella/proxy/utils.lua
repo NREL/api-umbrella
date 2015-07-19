@@ -313,9 +313,10 @@ function _M.set_uri(new_path, new_args)
   -- to manually put this together based on the other values since
   -- ngx.var.request_uri does not automatically update.
   if new_path or new_args then
-    ngx_ctx.request_uri = ngx_ctx.uri
     if ngx_ctx.args then
-      ngx_ctx.request_uri = ngx_ctx.request_uri .. "?" .. ngx_ctx.args
+      ngx_ctx.request_uri = ngx_ctx.uri .. "?" .. ngx_ctx.args
+    else
+      ngx_ctx.request_uri = ngx_ctx.uri
     end
   end
 end

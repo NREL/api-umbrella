@@ -1,13 +1,13 @@
 CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
 
-{{#_user?}}
+{{#user}}
 CONFIG proxy.config.admin.user_id STRING {{user}}
-{{/_user?}}
-{{^_user?}}
+{{/user}}
+{{^user}}
 # When not running as root, use the special "#-1" value to keep running as the
 # current user.
 CONFIG proxy.config.admin.user_id STRING #-1
-{{/_user?}}
+{{/user}}
 
 # Specify where to find the TrafficServer binaries, plugins, etc. Our config
 # files are in a non-default location by using TS_ROOT (this is done so that

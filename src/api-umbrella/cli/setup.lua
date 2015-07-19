@@ -5,6 +5,7 @@ local array_includes = require "api-umbrella.utils.array_includes"
 local array_last = require "api-umbrella.utils.array_last"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
+local escape_regex = require "api-umbrella.utils.escape_regex"
 local file = require "pl.file"
 local inspect = require "inspect"
 local lustache = require "lustache"
@@ -14,6 +15,7 @@ local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local path = require "pl.path"
 local plutils = require "pl.utils"
 local posix = require "posix"
+local run_command = require "api-umbrella.utils.run_command"
 local stat = require "posix.sys.stat"
 local tablex = require "pl.tablex"
 local types = require "pl.types"
@@ -42,6 +44,15 @@ local function set_computed_config()
     table.insert(trusted_proxies, "127.0.0.1")
   end
 
+  if types.is_empty(config["hosts"]) then
+    config["hosts"] = {
+      {
+        hostname = "_",
+        default = true,
+      },
+    }
+  end
+
   deep_merge_overwrite_arrays(config, {
     _root_dir = os.getenv("API_UMBRELLA_ROOT"),
     _app_root = app_root,
@@ -52,8 +63,6 @@ local function set_computed_config()
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
-    ["_user?"] = not types.is_empty(config["user"]),
-    ["_group?"] = not types.is_empty(config["group"]),
     router = {
       trusted_proxies = trusted_proxies,
     },
@@ -101,26 +110,34 @@ end
 
 local function permission_check()
   local effective_uid = unistd.geteuid()
-  if config["_user?"] then
+  if config["user"] then
     if effective_uid ~= 0 then
       print("Must be started with super-user privileges to change user to '" .. config["user"] .. "'")
       os.exit(1)
     end
 
-    if os.execute("getent passwd " .. config["user"] .. " &> /dev/null") ~= 0 then
+    local status, output, err = run_command("getent passwd " .. config["user"])
+    if status == 2 and output == "" then
       print("User '", config["user"], "' does not exist")
+      os.exit(1)
+    elseif err then
+      print(err)
       os.exit(1)
     end
   end
 
-  if config["_group?"] then
+  if config["group"] then
     if effective_uid ~= 0 then
       print("Must be started with super-user privileges to change group to '" .. config["group"] .. "'")
       os.exit(1)
     end
 
-    if os.execute("getent group " .. config["group"] .. " &> /dev/null") ~= 0 then
-      print("Group '" .. config["group"] .. "' does not exist")
+    local status, output, err = run_command("getent group " .. config["group"])
+    if status == 2 and output == "" then
+      print("Group '", config["group"], "' does not exist")
+      os.exit(1)
+    elseif err then
+      print(err)
       os.exit(1)
     end
   end
@@ -133,7 +150,7 @@ local function permission_check()
   end
 
   if effective_uid == 0 then
-    if not config["_user?"] or not config["_group?"] then
+    if not config["user"] or not config["group"] then
       print("Must define a user and group to run worker processes as when starting with with super-user privileges")
       os.exit(1)
     end
@@ -164,6 +181,33 @@ local function prepare()
 
   for _, directory in ipairs(dirs) do
     dir.makepath(directory)
+  end
+end
+
+local function generate_self_signed_cert()
+  local cert_required = false
+  if config["hosts"] then
+    for _, host in ipairs(config["hosts"]) do
+      if not host["ssl_cert"] then
+        cert_required = true
+        break
+      end
+    end
+  end
+
+  if cert_required then
+    local ssl_dir = path.join(config["etc_dir"], "ssl");
+    local ssl_key_path = path.join(ssl_dir, "self_signed.key");
+    local ssl_crt_path = path.join(ssl_dir, "self_signed.crt");
+
+    if not path.exists(ssl_key_path) or not path.exists(ssl_crt_path) then
+      dir.makepath(ssl_dir)
+      local _, _, err = run_command("openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -subj '/C=/ST=/L=/O=API Umbrella/CN=apiumbrella.example.com' -keyout " .. ssl_key_path .. " -out " ..  ssl_crt_path)
+      if err then
+        print(err)
+        os.exit(1)
+      end
+    end
   end
 end
 
@@ -199,17 +243,25 @@ end
 local function set_permissions()
   posix.chmod(config["tmp_dir"], "rwxrwxrwx")
 
-  if config["_user?"] and config["_group?"] then
+  if config["user"] and config["group"] then
     unistd.chown(path.join(config["root_dir"], "var/trafficserver"), config["user"], config["group"])
     unistd.chown(path.join(config["log_dir"], "trafficserver"), config["user"], config["group"])
-    os.execute("chown -R " .. config["user"] .. ":" .. config["group"] .. " " .. path.join(config["etc_dir"], "trafficserver"))
+    local _, _, err = run_command("chown -R " .. config["user"] .. ":" .. config["group"] .. " " .. path.join(config["etc_dir"], "trafficserver"))
+    if err then
+      print(err)
+      os.exit(1)
+    end
   end
 
   local perp_service_dirs = dir.getdirectories(path.join(config["etc_dir"], "perp"))
   for _, service_dir in ipairs(perp_service_dirs) do
     local is_hidden = (string.find(path.basename(service_dir), ".", 1, true) == 1)
     if not is_hidden then
-      os.execute("chmod +t " .. service_dir)
+      local _, _, err = run_command("chmod +t " .. service_dir)
+      if err then
+        print(err)
+        os.exit(1)
+      end
     end
   end
 end
@@ -222,6 +274,7 @@ return function(options)
   permission_check()
   write_runtime_config()
   prepare()
+  generate_self_signed_cert()
   write_templates()
   set_permissions()
 

@@ -109,6 +109,9 @@ describe('routing', function() {
       {
         hostname: 'withoutweb.foo',
       },
+      {
+        hostname: 'with-apis-and-website.foo',
+      },
     ],
   });
 

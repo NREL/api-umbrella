@@ -1,40 +1,40 @@
 local inspect = require "inspect"
 local path = require "pl.path"
+local run_command = require "api-umbrella.utils.run_command"
 local setup = require "api-umbrella.cli.setup"
-local unistd = require "posix.unistd"
 
 local config = {}
 local perp_base
 
 local function reload_perp()
-  local code = os.execute("perphup -q " .. perp_base)
-  if code ~= 0 then
-    print("Failed to reload perp")
+  local _, _, err = run_command("perphup -q " .. perp_base)
+  if err then
+    print("Failed to reload perp\n" .. err)
     os.exit(1)
   end
 end
 
 local function reload_dnsmasq()
-  local code = os.execute("perpctl -q -b " .. perp_base .. " hup dnsmasq")
-  if code ~= 0 then
-    print("Failed to reload dnsmasq")
+  local _, _, err = run_command("perpctl -q -b " .. perp_base .. " hup dnsmasq")
+  if err then
+    print("Failed to reload dnsmasq\n" .. err)
     os.exit(1)
   end
 end
 
 local function reload_trafficserver()
-  local code = os.execute("perpctl -q -b " .. perp_base .. " hup trafficserver")
-  if code ~= 0 then
-    print("Failed to reload trafficserver")
+  local _, _, err = run_command("perpctl -q -b " .. perp_base .. " hup trafficserver")
+  if err then
+    print("Failed to reload trafficserver\n" .. err)
     os.exit(1)
   end
 end
 
 
 local function reload_nginx()
-  local code = os.execute("perpctl -q -b " .. perp_base .. " hup gatekeeper-nginx")
-  if code ~= 0 then
-    print("Failed to reload nginx")
+  local _, _, err = run_command("perpctl -q -b " .. perp_base .. " hup gatekeeper-nginx")
+  if err then
+    print("Failed to reload nginx\n" .. err)
     os.exit(1)
   end
 end

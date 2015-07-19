@@ -1,6 +1,13 @@
 local start_time = ngx.now()
+
+-- Try to find the matching API backend first, since it dictates further
+-- settings and requirements.
+local api = ngx.ctx.matched_api
+if not api then
+  return true
+end
+
 local api_key_validator = require "api-umbrella.proxy.middleware.api_key_validator"
-local api_matcher = require "api-umbrella.proxy.middleware.api_matcher"
 local api_settings = require "api-umbrella.proxy.middleware.api_settings"
 local error_handler = require "api-umbrella.proxy.error_handler"
 local https_validator = require "api-umbrella.proxy.middleware.https_validator"
@@ -11,25 +18,6 @@ local rewrite_request = require "api-umbrella.proxy.middleware.rewrite_request"
 local role_validator = require "api-umbrella.proxy.middleware.role_validator"
 local user_settings = require "api-umbrella.proxy.middleware.user_settings"
 local utils = require "api-umbrella.proxy.utils"
-
-local ngx_var = ngx.var
-
--- Cache various "ngx.var" lookups that are repeated throughout the stack,
--- so they don't allocate duplicate memory during the request, and since
--- ngx.var lookups are apparently somewhat expensive.
-ngx.ctx.args = ngx_var.args
-ngx.ctx.arg_api_key = ngx_var.arg_api_key
-ngx.ctx.host = ngx_var.http_x_forwarded_host or ngx_var.http_host or ngx_var.host
-ngx.ctx.http_x_api_key = ngx_var.http_x_api_key
-ngx.ctx.port = ngx_var.http_x_forwarded_port or ngx_var.server_port
-ngx.ctx.protocol = ngx_var.http_x_forwarded_proto or ngx_var.scheme
-ngx.ctx.remote_addr = ngx_var.remote_addr
-ngx.ctx.remote_user = ngx_var.remote_user
-ngx.ctx.request_method = string.lower(ngx.var.request_method)
-ngx.ctx.original_request_uri = ngx_var.request_uri
-ngx.ctx.request_uri = ngx.ctx.original_request_uri
-ngx.ctx.original_uri = ngx_var.uri
-ngx.ctx.uri = ngx.ctx.original_uri
 
 -- When nginx is first starting or the workers are being reloaded (SIGHUP),
 -- pause the request serving until the API config and upstreams have been
@@ -57,13 +45,6 @@ if not upstreams_inited then
   if not upstreams_inited then
     ngx.log(ngx.ERR, "Failed to initialize config or upstreams within expected time. Trying to continue anyway...")
   end
-end
-
--- Try to find the matching API backend first, since it dictates further
--- settings and requirements.
-local api, url_match, err = api_matcher()
-if err then
-  return error_handler(err)
 end
 
 -- Fetch the settings from the matched API.

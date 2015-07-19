@@ -6,6 +6,25 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('url rewrites', function() {
+  shared.runServer({
+    hosts: [
+      {
+        hostname: 'default.foo',
+        rewrites: [
+          '^/admin/rewrite_me$ https://example.com/ permanent',
+          '^/hello/rewrite/(debian|el|ubuntu)/([\\d\\.]+)/(file[_-]([\\d\\.]+)-\\d+).*((\\.|_)(amd64|x86_64).(deb|rpm)) https://example.com/downloads/v$4/$3.$1$2$5? redirect',
+          '^/hello/rewrite https://example.com/something/ permanent',
+        ],
+      },
+      {
+        hostname: 'with-apis-and-website.foo',
+        rewrites: [
+          '^/example/rewrite_me$ https://example.com/ permanent',
+        ],
+      },
+    ],
+  });
+
   beforeEach(function() {
     this.options = {
       followRedirect: false,
@@ -52,10 +71,9 @@ describe('url rewrites', function() {
       response.statusCode.should.eql(301);
       response.headers.location.should.eql('https://example.com/');
 
-      request.get('http://localhost:9080/example/rewrite_me_just_kidding', options, function(error, response, body) {
+      request.get('http://localhost:9080/example/rewrite_me_just_kidding', options, function(error, response) {
         should.not.exist(error);
-        response.statusCode.should.eql(403);
-        body.should.contain('API_KEY_MISSING');
+        response.statusCode.should.eql(404);
         done();
       });
     });

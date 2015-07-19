@@ -7,7 +7,22 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('bans', function() {
-  shared.runServer();
+  shared.runServer({
+    ban: {
+      response: {
+        status_code: 418,
+        delay: 1,
+        message: 'You\'ve been banned!',
+      },
+      ips: [
+        '7.4.2.2',
+        '8.7.1.0/24',
+      ],
+      user_agents: [
+        '~*naughty',
+      ],
+    },
+  });
 
   beforeEach(function createUser(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
