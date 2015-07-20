@@ -796,13 +796,15 @@ describe('ApiUmbrellaGatekeper', function() {
           {
             frontend_host: 'localhost',
             backend_host: 'example.com',
-            rate_limit_bucket_name: 'different',
             url_matches: [
               {
                 frontend_prefix: '/different-bucket/',
                 backend_prefix: '/',
               }
-            ]
+            ],
+            settings: {
+              rate_limit_bucket_name: 'different',
+            },
           },
           {
             frontend_host: '*',

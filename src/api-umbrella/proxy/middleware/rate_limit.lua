@@ -1,7 +1,7 @@
 local inspect = require "inspect"
 local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
 
-local function bucket_keys(user, limit, current_time, max_keys)
+local function bucket_keys(settings, user, limit, current_time, max_keys)
   local bucket_time = math.floor(current_time / limit["accuracy"]) * limit["accuracy"]
   local num_buckets = math.ceil(limit["duration"] / limit["accuracy"])
 
@@ -17,6 +17,15 @@ local function bucket_keys(user, limit, current_time, max_keys)
     key_base = key_base .. ngx.ctx.remote_addr
   else
     ngx.log(ngx.ERR, "stats unknown limit by")
+  end
+
+  if settings["rate_limit_bucket_name"] then
+    key_base = key_base .. ":" .. settings["rate_limit_bucket_name"]
+  else
+    local api = ngx.ctx.matched_api
+    if api and api["frontend_host"] then
+      key_base = key_base .. ":" .. api["frontend_host"]
+    end
   end
 
   local bucket_keys = {}
@@ -60,7 +69,7 @@ local function get_remaining_for_limit(settings, user, limit, current_time)
     return nil
   end
 
-  local keys = bucket_keys(user, limit, current_time)
+  local keys = bucket_keys(settings, user, limit, current_time)
   limit["_current_time_key"] = keys[1]
 
   local remaining = limit["limit"] - 1
@@ -102,12 +111,12 @@ local function is_over_any_limits(settings, user, current_time)
   return over_limit
 end
 
-local function increment_all_limits(limits, user, current_time)
-  for _, limit in ipairs(limits) do
+local function increment_all_limits(settings, user, current_time)
+  for _, limit in ipairs(settings["rate_limits"]) do
     -- Make sure the current time key gets set in case this limit wasn't hit
     -- earlier in get_remaining_for_limit.
     if not limit["_current_time_key"] then
-      local keys = bucket_keys(user, limit, current_time, 1)
+      local keys = bucket_keys(settings, user, limit, current_time, 1)
       limit["_current_time_key"] = keys[1]
     end
 
@@ -132,6 +141,6 @@ return function(settings, user)
   if over_limit then
     return "over_rate_limit"
   else
-    increment_all_limits(settings["rate_limits"], user, current_time)
+    increment_all_limits(settings, user, current_time)
   end
 end
