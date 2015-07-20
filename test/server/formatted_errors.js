@@ -280,9 +280,9 @@ describe('formatted error responses', function() {
     it('returns default error data when the error data is null', function(done) {
       Factory.create('api_user', { disabled_at: new Date() }, function(user) {
         request.get('http://localhost:9080/hello.json?api_key=' + user.api_key, function(error, response, body) {
-          response.statusCode.should.eql(500);
+          response.statusCode.should.eql(403);
           var data = JSON.parse(body);
-          data.error.code.should.eql('INTERNAL_SERVER_ERROR');
+          data.error.code.should.eql('API_KEY_DISABLED');
           done();
         });
       });

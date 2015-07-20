@@ -3,6 +3,7 @@ local _M = {}
 local cjson = require "cjson"
 local cmsgpack = require "cmsgpack"
 local inspect = require "inspect"
+local is_array = require "api-umbrella.utils.is_array"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
@@ -17,23 +18,6 @@ local pack = cmsgpack.pack
 local split = plutils.split
 local strip = stringx.strip
 local unpack = cmsgpack.unpack
-
--- Determine if the table is an array.
---
--- In benchmarks, appears faster than moses.isArray implementation.
-function _M.is_array(obj)
-  if type(obj) ~= "table" then return false end
-
-  local count = 1
-  for key, _ in pairs(obj) do
-    if key ~= count then
-      return false
-    end
-    count = count + 1
-  end
-
-  return true
-end
 
 -- Append an array to the end of the destination array.
 --
@@ -97,7 +81,7 @@ function _M.deep_merge_overwrite_arrays(dest, src)
 
   for key, value in pairs(src) do
     if type(value) == "table" and type(dest[key]) == "table" then
-      if _M.is_array(value) then
+      if is_array(value) then
         dest[key] = value
       else
         _M.deep_merge_overwrite_arrays(dest[key], src[key])

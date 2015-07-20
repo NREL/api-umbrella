@@ -1,4 +1,5 @@
 local inspect = require "inspect"
+local is_array = require "api-umbrella.utils.is_array"
 local lustache = require "lustache"
 local path = require "pl.path"
 local plutils = require "pl.utils"
@@ -63,6 +64,16 @@ local function request_format()
 end
 
 local function render_template(template, data, format, strip_whitespace)
+  if not template or type(template) ~= "string" then
+    ngx.log(ngx.ERR, "render_template passed invalid template (not a string)")
+    return nil, "template error"
+  end
+
+  if not data or type(data) ~= "table" or is_array(data) then
+    ngx.log(ngx.ERR, "render_template passed invalid data (not a table)")
+    return nil, "template error"
+  end
+
   -- Disable Mustache HTML escaping by automatically turning all "{{var}}"
   -- references into unescaped "{{{var}}}" references. Since we're returning
   -- non-HTML errors, we don't want escaping. This lets us be a little lazy
@@ -105,7 +116,7 @@ return function(err, settings, extra_data)
   local format = request_format()
 
   local data = deepcopy(settings["error_data"][err])
-  if not data then
+  if not data or type(data) ~= "table" or is_array(data) then
     data = deepcopy(settings["error_data"]["internal_server_error"])
   end
 
