@@ -1,4 +1,14 @@
+local host_strip_port = require "api-umbrella.utils.host_strip_port"
 local inspect = require "inspect"
+local stringx = require "pl.stringx"
+local url = require "socket.url"
+local utils = require "api-umbrella.proxy.utils"
+
+local append_args = utils.append_args
+local gsub = string.gsub
+local startswith = stringx.startswith
+local url_build = url.build
+local url_parse = url.parse
 
 local function set_cache_headers()
   local cache = "MISS"
@@ -45,10 +55,49 @@ local function set_override_headers(settings)
   end
 end
 
+local function rewrite_redirects()
+  local location = ngx.header["Location"]
+  if location then
+    local parsed = url_parse(location)
+    local matched_api = ngx.ctx.matched_api
+    local host_matches = (matched_api and parsed["host"] == matched_api["_backend_host_without_port"])
+    local relative = (not parsed["host"])
+    local changed = false
+
+    if host_matches then
+      parsed["authority"] = matched_api["frontend_host"]
+      parsed["host"] = nil
+      changed = true
+    end
+
+    if host_matches or relative then
+      if matched_api and matched_api["url_matches"] then
+        for _, url_match in ipairs(matched_api["url_matches"]) do
+          if startswith(parsed["path"], url_match["backend_prefix"]) then
+            parsed["path"] = gsub(parsed["path"], url_match["_backend_prefix_matcher"], url_match["frontend_prefix"], 1)
+            changed = true
+            break
+          end
+        end
+      end
+    end
+
+    if changed and ngx.ctx.api_key then
+      parsed["query"] = append_args(parsed["query"], "api_key=" .. ngx.ctx.api_key)
+      changed = true
+    end
+
+    if changed then
+      ngx.header["Location"] = url_build(parsed)
+    end
+  end
+end
+
 return function(settings)
   if settings then
     set_cache_headers()
     set_default_headers(settings)
     set_override_headers(settings)
+    rewrite_redirects()
   end
 end

@@ -50,12 +50,17 @@ local function cache_computed_api(api)
   end
 
   if api["backend_host"] == "" then
-    api["backend_host"] = null
+    api["backend_host"] = nil
+  end
+
+  if api["backend_host"] then
+    api["_backend_host_without_port"] = host_strip_port(api["backend_host"])
   end
 
   if api["url_matches"] then
     for _, url_match in ipairs(api["url_matches"]) do
       url_match["_frontend_prefix_matcher"] = "^" .. escape(url_match["frontend_prefix"])
+      url_match["_backend_prefix_matcher"] = "^" .. escape(url_match["backend_prefix"])
     end
   end
 

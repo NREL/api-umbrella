@@ -544,6 +544,8 @@ LUAUTF8:=luautf8
 LUAUTF8_VERSION:=0.1.0-1
 LUAPOSIX:=luaposix
 LUAPOSIX_VERSION:=33.3.1-1
+LUASOCKET:=luasocket
+LUASOCKET_VERSION:=2.0.2-6
 LYAML:=lyaml
 LYAML_VERSION:=5.1.4-2
 PENLIGHT:=penlight
@@ -569,6 +571,10 @@ vendor/lib/luarocks/rocks/$(LUAUTF8)/$(LUAUTF8_VERSION): $(PREFIX)/embedded/.ins
 
 vendor/lib/luarocks/rocks/$(LUAPOSIX)/$(LUAPOSIX_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUAPOSIX) $(LUAPOSIX_VERSION)
+	touch $@
+
+vendor/lib/luarocks/rocks/$(LUASOCKET)/$(LUASOCKET_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
+	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUASOCKET) $(LUASOCKET_VERSION)
 	touch $@
 
 vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
@@ -605,6 +611,7 @@ install_app_dependencies: \
 	vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUAUTF8)/$(LUAUTF8_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUAPOSIX)/$(LUAPOSIX_VERSION) \
+	vendor/lib/luarocks/rocks/$(LUASOCKET)/$(LUASOCKET_VERSION) \
 	vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION) \
 	vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION) \
 	vendor/lib/luarocks/rocks/$(STDLIB)/$(STDLIB_VERSION) \
