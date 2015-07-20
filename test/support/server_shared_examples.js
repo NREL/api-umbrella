@@ -91,7 +91,26 @@ _.merge(global.shared, {
   },
 
   revertRuntimeConfigOverrides: function revertRuntimeConfigOverrides(callback) {
-    mongoose.testConnection.model('RouterConfigVersion').remove({}, function(error) {
+    var error;
+    var attempts = 0;
+
+    // Retry the removal cleanup a few times to help when testing mongodb
+    // replicaset changes when the javascript client might not have picked up
+    // the new primary mongodb server in the test cluster (when testing forced
+    // replicaset primary changes).
+    async.doUntil(function(callback) {
+      mongoose.testConnection.model('RouterConfigVersion').remove({}, function(e) {
+        error = e;
+        attempts++;
+        if(error) {
+          setTimeout(callback, 500);
+        } else {
+          callback();
+        }
+      });
+    }, function() {
+      return !error || attempts > 20;
+    }, function() {
       should.not.exist(error);
 
       Factory.create('config_version', {

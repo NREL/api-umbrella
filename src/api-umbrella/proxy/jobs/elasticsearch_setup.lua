@@ -22,7 +22,9 @@ local function wait_for_elasticsearch()
   local max_time = 60
   repeat
     local res, err = httpc:request_uri(elasticsearch_host .. "/_cluster/health")
-    if not err and res.body then
+    if err then
+      ngx.log(ngx.ERR, "failed to fetch cluster health from elasticsearch: ", err)
+    elseif res.body then
       local elasticsearch_health = cjson.decode(res.body)
       if elasticsearch_health["status"] == "yellow" or elasticsearch_health["status"] == "green" then
         elasticsearch_alive = true
@@ -48,6 +50,10 @@ local function create_templates()
         method = "PUT",
         body = cjson.encode(template["template"]),
       })
+
+      if err then
+        ngx.log(ngx.ERR, "failed to update elasticsearch template: ", err)
+      end
     end
   end
 
@@ -88,11 +94,17 @@ local function create_aliases()
     local res, err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"], {
       method = "PUT",
     })
+    if err then
+      ngx.log(ngx.ERR, "failed to create elasticsearch index: ", err)
+    end
 
     -- Create the alias for the index.
     local res, err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"] .. "/_alias/" .. alias["alias"], {
       method = "PUT",
     })
+    if err then
+      ngx.log(ngx.ERR, "failed to create elasticsearch index alias: ", err)
+    end
   end
 end
 

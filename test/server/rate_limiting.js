@@ -332,7 +332,8 @@ describe('ApiUmbrellaGatekeper', function() {
 
           var newConfig = _.cloneDeep(global.currentConfigOverrides);
           newConfig.apiSettings.rate_limits[0].limit = 70;
-          shared.setConfigOverrides(newConfig, function() {
+          shared.setConfigOverrides(newConfig, function(error) {
+            should.not.exist(error);
             shared.waitForConfig(function() {
               // Perform a number of requests to make sure any local worker
               // cache is cleared across all possible worker processes.
@@ -984,7 +985,8 @@ describe('ApiUmbrellaGatekeper', function() {
 
             var newConfig = _.cloneDeep(global.currentRuntimeConfigOverrides);
             newConfig.apis[0].settings.rate_limits[0].limit = 80;
-            shared.setRuntimeConfigOverrides(newConfig, function() {
+            shared.setRuntimeConfigOverrides(newConfig, function(error) {
+              should.not.exist(error);
               shared.waitForConfig(function() {
                 // Perform a number of requests to make sure any local worker
                 // cache is cleared across all possible worker processes.

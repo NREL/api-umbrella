@@ -35,6 +35,9 @@ local function create_indexes()
         background = true,
       })
     })
+    if err then
+      ngx.log(ngx.ERR, "failed to create mongodb updated_at index: ", err)
+    end
 
     local httpc = http.new()
     local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/system.indexes", {
@@ -55,6 +58,9 @@ local function create_indexes()
         background = true,
       })
     })
+    if err then
+      ngx.log(ngx.ERR, "failed to create mongodb expire_at index: ", err)
+    end
 
     indexes_created = true
   end
@@ -92,6 +98,9 @@ local function do_check()
       },
       body = cjson.encode(update),
     })
+    if err then
+      ngx.log(ngx.ERR, "failed to update rate limits in mongodb: ", err)
+    end
   end
 end
 

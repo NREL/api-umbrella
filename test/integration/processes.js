@@ -124,7 +124,10 @@ describe('processes', function() {
             ],
           },
         ],
-      }, done);
+      }, function(error) {
+        should.not.exist(error);
+        shared.waitForConfig(done);
+      });
     });
 
     beforeEach(function setOptionDefaults(done) {
@@ -152,7 +155,10 @@ describe('processes', function() {
 
       // Remove DB-based config after these tests, so the rest of the tests go
       // back to the file-based configs.
-      shared.revertRuntimeConfigOverrides(done);
+      shared.revertRuntimeConfigOverrides(function(error) {
+        should.not.exist(error);
+        shared.waitForConfig(done);
+      });
     });
 
     it('updates templates with file-based config file changes', function(done) {

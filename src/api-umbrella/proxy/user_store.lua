@@ -28,7 +28,9 @@ local function lookup_user(api_key)
     },
   })
 
-  if not err and res.body then
+  if err then
+    ngx.log(ngx.ERR, "failed to fetch user from mongodb: ", err)
+  elseif res.body then
     local response = cjson.decode(res.body)
     if response and response["data"] and response["data"][1] then
       local raw = response["data"][1]

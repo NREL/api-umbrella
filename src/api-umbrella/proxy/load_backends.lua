@@ -12,8 +12,7 @@ local split = plutils.split
 
 local upstream_checksums = {}
 
-function _M.setup_backends()
-  local apis = api_store.all_apis()
+function _M.setup_backends(apis)
   local upstreams_changed = false
   for _, api in ipairs(apis) do
     local upstream = ""
@@ -109,7 +108,7 @@ function _M.setup_backends()
   -- knowing when config changes are in place in the /api-umbrella/v1/state
   -- API).
   if upstreams_changed then
-    ngx.sleep(0.5)
+    ngx.sleep(0.7)
   end
 end
 

@@ -150,10 +150,12 @@ local function set_cached_config(apis, website_backends)
     return
   end
 
+  if not apis then
+    apis = {}
+  end
+
   local data = {
-    ["apis_by_host"] = {},
-    ["apis"] = apis or {},
-    ["website_backends"] = website_backends or {},
+    apis_by_host = {},
   }
 
   local hosts_by_name = {}
@@ -209,8 +211,8 @@ local function set_cached_config(apis, website_backends)
 
   data["hosts_by_name"] = hosts_by_name
 
+  load_backends.setup_backends(apis)
   set_packed(ngx.shared.apis, "packed_data", data)
-  load_backends.setup_backends()
 
   local ok, err = setlock:unlock()
   if not ok then
@@ -291,7 +293,9 @@ local function do_check()
   local version = nil
   local last_fetched_at = nil
 
-  if not err and res.body then
+  if err then
+    ngx.log(ngx.ERR, "failed to fetch config from database: ", err)
+  elseif res.body then
     local response = cjson.decode(res.body)
     if response and response["data"] and response["data"] and response["data"][1] then
       result = response["data"][1]
@@ -312,9 +316,7 @@ local function do_check()
       version = result["version"]["$date"]
     end
 
-    if not err then
-      last_fetched_at = ngx.now()
-    end
+    last_fetched_at = ngx.now()
   end
 
   if runtime_config_apis or runtime_config_website_backends or not ngx.shared.apis:get("version") or not loaded_version then
