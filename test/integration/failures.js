@@ -50,13 +50,16 @@ describe('failures', function() {
             ],
             url_matches: [
               {
-                frontend_prefix: '/info/db-config/',
+                frontend_prefix: '/db-config/info/',
                 backend_prefix: '/info/',
               }
             ],
           },
         ],
-      }, done);
+      }, function(error) {
+        should.not.exist(error);
+        shared.waitForConfig(done);
+      });
     });
 
     beforeEach(function setOptionDefaults() {
@@ -69,17 +72,6 @@ describe('failures', function() {
           maxSockets: 500,
         },
       };
-    });
-
-    after(function removeDbConfig(done) {
-      // Longer timeout for our tests that change the mongodb primary server,
-      // since we have to allow time for this local test connection to
-      // reconnect to the primary.
-      this.timeout(60000);
-
-      // Remove DB-based config after these tests, so the rest of the tests go
-      // back to the file-based configs.
-      shared.revertRuntimeConfigOverrides(done);
     });
 
     after(function resetMongoDbReplicaSet(done) {
@@ -104,6 +96,20 @@ describe('failures', function() {
       }.bind(this));
     });
 
+    after(function removeDbConfig(done) {
+      // Longer timeout for our tests that change the mongodb primary server,
+      // since we have to allow time for this local test connection to
+      // reconnect to the primary.
+      this.timeout(60000);
+
+      // Remove DB-based config after these tests, so the rest of the tests go
+      // back to the file-based configs.
+      shared.revertRuntimeConfigOverrides(function(error) {
+        should.not.exist(error);
+        shared.waitForConfig(done);
+      });
+    });
+
     it('does not drop connections during replicaset elections', function(done) {
       this.timeout(90000);
 
@@ -112,7 +118,7 @@ describe('failures', function() {
 
       function makeBatch(apiKeys, callback) {
         async.eachSeries(apiKeys, function(apiKey, next) {
-          request.get('http://localhost:9080/info/db-config/?api_key=' + apiKey, options, function(error, response) {
+          request.get('http://localhost:9080/db-config/info/?api_key=' + apiKey, options, function(error, response) {
             should.not.exist(error);
             response.statusCode.should.eql(200);
             setTimeout(next, 10);
