@@ -7,6 +7,7 @@ local host_strip_port = require "api-umbrella.utils.host_strip_port"
 local http = require "resty.http"
 local inspect = require "inspect"
 local lock = require "resty.lock"
+local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
 local plutils = require "pl.utils"
 local tablex = require "pl.tablex"
 local types = require "pl.types"
@@ -295,6 +296,8 @@ local function do_check()
     if response and response["data"] and response["data"] and response["data"][1] then
       result = response["data"][1]
       if result and result["config"] then
+        nillify_json_nulls(result["config"])
+
         if result["config"]["apis"] then
           runtime_config_apis = result["config"]["apis"]
           set_packed(ngx.shared.apis, "packed_runtime_config_apis", runtime_config_apis)
