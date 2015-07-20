@@ -18,14 +18,12 @@ return function(settings, user)
     -- "admin" role.
     local user_roles = user["roles"]
     if not is_empty(user_roles) then
-      if user_roles["admin"] then
-        authenticated = true
-      else
-        for _, required_role in ipairs(required_roles) do
-          if user_roles[required_role] then
-            authenticated = true
-            break
-          end
+      for _, required_role in ipairs(required_roles) do
+        if user_roles[required_role] then
+          authenticated = true
+        else
+          authenticated = false
+          break
         end
       end
     end

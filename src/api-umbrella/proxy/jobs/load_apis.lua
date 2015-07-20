@@ -120,6 +120,8 @@ local function cache_computed_sub_settings(sub_settings)
 
     if sub_setting["settings"] then
       cache_computed_settings(sub_setting["settings"])
+    else
+      sub_setting["settings"] = {}
     end
   end
 end
