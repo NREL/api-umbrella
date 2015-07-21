@@ -131,6 +131,54 @@
 <pre class="highlight plaintext"><code>X-Api-Roles: write_permissions,private_access
 </code></pre>
 
+<h3 id="x-forwarded-for">X-Forwarded-For</h3>
+
+<p>Used for identifying the original IP address of the client. See <a href="https://en.wikipedia.org/wiki/X-Forwarded-For">X-Forwarded-For</a> for usage and details.</p>
+
+<pre class="highlight plaintext"><code>X-Forwarded-For: (comma separated list)
+</code></pre>
+
+<p>Example:</p>
+
+<pre class="highlight plaintext"><code>X-Forwarded-For: 203.0.113.54, 198.51.100.18
+</code></pre>
+
+<h3 id="x-forwarded-proto">X-Forwarded-Proto</h3>
+
+<p>The original protocol of the client's request (either <code>http</code> or <code>https</code>). This can be used to determine how the client originally connected to the API regardless of what protocol is being used for API backend communication.</p>
+
+<pre class="highlight plaintext"><code>X-Forwarded-Proto: (http or https)
+</code></pre>
+
+<p>Example:</p>
+
+<pre class="highlight plaintext"><code>X-Forwarded-Proto: https
+</code></pre>
+
+<h3 id="x-forwarded-port">X-Forwarded-Port</h3>
+
+<p>The original port of the client's request (for example, <code>80</code> or <code>443</code>). This can be used to determine how the client originally connected to the API regardless of what port is being used for API backend communication.</p>
+
+<pre class="highlight plaintext"><code>X-Forwarded-Port: (number)
+</code></pre>
+
+<p>Example:</p>
+
+<pre class="highlight plaintext"><code>X-Forwarded-Port: 443
+</code></pre>
+
+<h3 id="x-api-umbrella-request-id">X-Api-Umbrella-Request-Id</h3>
+
+<p>A unique string identifier for each individual request. This can be used in log data to trace a specific request through multiple servers or proxy layers.</p>
+
+<pre class="highlight plaintext"><code>X-Api-Umbrella-Request-Id: (unique string identifier)
+</code></pre>
+
+<p>Example:</p>
+
+<pre class="highlight plaintext"><code>X-Api-Umbrella-Request-Id: aelqdj9lfoe7c2itheg0
+</code></pre>
+
 <h3 id="x-api-key-deprecated">X-Api-Key (Deprecated)</h3>
 
 <p>Currently the API passed in by the user is passed along to API backends in the <code>X-Api-Key</code> header. However, this header is deprecated and will be removed in the future. Instead, the <code>X-Api-User-Id</code> should be used if you need to uniquely identify the requesting user.</p>
