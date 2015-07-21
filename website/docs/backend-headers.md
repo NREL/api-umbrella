@@ -35,6 +35,62 @@ Example:
 X-Api-Roles: write_permissions,private_access
 ```
 
+### X-Forwarded-For
+
+Used for identifying the original IP address of the client. See [X-Forwarded-For](https://en.wikipedia.org/wiki/X-Forwarded-For) for usage and details.
+
+```
+X-Forwarded-For: (comma separated list)
+```
+
+Example:
+
+```
+X-Forwarded-For: 203.0.113.54, 198.51.100.18
+```
+
+### X-Forwarded-Proto
+
+The original protocol of the client's request (either `http` or `https`). This can be used to determine how the client originally connected to the API regardless of what protocol is being used for API backend communication.
+
+```
+X-Forwarded-Proto: (http or https)
+```
+
+Example:
+
+```
+X-Forwarded-Proto: https
+```
+
+### X-Forwarded-Port
+
+The original port of the client's request (for example, `80` or `443`). This can be used to determine how the client originally connected to the API regardless of what port is being used for API backend communication.
+
+```
+X-Forwarded-Port: (number)
+```
+
+Example:
+
+```
+X-Forwarded-Port: 443
+```
+
+### X-Api-Umbrella-Request-Id
+
+A unique string identifier for each individual request. This can be used in log data to trace a specific request through multiple servers or proxy layers.
+
+```
+X-Api-Umbrella-Request-Id: (unique string identifier)
+```
+
+Example:
+
+```
+X-Api-Umbrella-Request-Id: aelqdj9lfoe7c2itheg0
+```
+
 ### X-Api-Key (Deprecated)
 
 Currently the API passed in by the user is passed along to API backends in the `X-Api-Key` header. However, this header is deprecated and will be removed in the future. Instead, the `X-Api-User-Id` should be used if you need to uniquely identify the requesting user.
