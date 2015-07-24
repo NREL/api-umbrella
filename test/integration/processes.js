@@ -19,80 +19,103 @@ describe('processes', function() {
 
   describe('nginx', function() {
     it('does not leak file descriptors across reloads', function(done) {
-      this.timeout(40000);
+      this.timeout(50000);
 
       var execOpts = { env: processEnv.env() };
-      execFile('pgrep', ['-f', 'nginx: master'], function(error, stdout, stderr) {
-        if(error) {
-          return done('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
-        }
+      var parentPid;
+      var descriptorCounts = [];
+      var urandomDescriptorCounts = [];
 
-        if(!stdout || !/^\d+$/.test(stdout.trim())) {
-          return done('No PID returned for nginx (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
-        }
-
-        var parentPid = parseInt(stdout, 10);
-        var descriptorCounts = [];
-        var urandomDescriptorCounts = [];
-
-        async.timesSeries(15, function(index, next) {
-          execFile('pkill', ['-HUP', '-f', 'nginx: master'], function(error, stdout, stderr) {
+      async.series([
+        function(callback) {
+          // First make a number of concurrent requests to ensure that each
+          // nginx worker process is warmed up. This ensures that each worker
+          // should at least have initialized its usage of its urandom
+          // descriptors. Since we want to test that these descriptors don't
+          // grow, we first need to ensure each worker process is first fully
+          // initialized (so they don't grow due to be initialized later on in
+          // the tests).
+          async.times(50, function(index, next) {
+            request.get('http://localhost:9080/delay/500', this.options, function(error, response) {
+              response.statusCode.should.eql(200);
+              next(error);
+            });
+          }.bind(this), callback);
+        }.bind(this),
+        function(callback) {
+          execFile('pgrep', ['-f', 'nginx: master'], function(error, stdout, stderr) {
             if(error) {
-              return next('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+              return done('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
             }
 
-            setTimeout(function() {
-              execFile('lsof', ['-R', '-c', 'nginx'], execOpts, function(error, stdout, stderr) {
-                if(error) {
-                  return next('Error gathering lsof details: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
-                }
+            if(!stdout || !/^\d+$/.test(stdout.trim())) {
+              return done('No PID returned for nginx (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+            }
 
-                var lines = stdout.split('\n');
-                var descriptorCount = 0;
-                var urandomDescriptorCount = 0;
-                lines.forEach(function(line) {
-                  var columns = line.split(/\s+/);
-                  if(parseInt(columns[1], 10) === parentPid || parseInt(columns[2], 10) === parentPid) {
-                    descriptorCount++;
-
-                    if(_.contains(line, 'urandom')) {
-                      urandomDescriptorCount++;
-                    }
-                  }
-                });
-
-                descriptorCounts.push(descriptorCount);
-                urandomDescriptorCounts.push(urandomDescriptorCount);
-
-                setTimeout(function() {
-                  next(null, lines.length);
-                }, 500);
-              });
-            }, 500);
+            parentPid = parseInt(stdout, 10);
+            callback();
           });
-        }, function(error) {
-          if(error) {
-            return done(error);
-          }
+        },
+        function(callback) {
+          async.timesSeries(15, function(index, next) {
+            execFile('pkill', ['-HUP', '-f', 'nginx: master'], function(error, stdout, stderr) {
+              if(error) {
+                return next('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+              }
 
-          // Test to ensure ngx_txid isn't leaving open file descriptors around
-          // on reloads test for this patch:
-          // https://github.com/streadway/ngx_txid/pull/6
-          urandomDescriptorCounts.length.should.eql(15);
-          urandomDescriptorCounts[0].should.be.greaterThan(0);
-          _.max(urandomDescriptorCounts).should.eql(_.min(urandomDescriptorCounts));
+              setTimeout(function() {
+                execFile('lsof', ['-R', '-c', 'nginx'], execOpts, function(error, stdout, stderr) {
+                  if(error) {
+                    return next('Error gathering lsof details: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
+                  }
 
-          // A more general test to ensure that we don't see other unexpected
-          // file descriptor growth. We'll allow some growth for this test,
-          // though, just to account for small fluctuations in sockets due to
-          // other things nginx may be doing.
-          descriptorCounts.length.should.eql(15);
-          _.min(descriptorCounts).should.be.greaterThan(0);
-          var range = _.max(descriptorCounts) - _.min(descriptorCounts);
-          range.should.be.lessThan(10);
+                  var lines = stdout.split('\n');
+                  var descriptorCount = 0;
+                  var urandomDescriptorCount = 0;
+                  lines.forEach(function(line) {
+                    var columns = line.split(/\s+/);
+                    if(parseInt(columns[1], 10) === parentPid || parseInt(columns[2], 10) === parentPid) {
+                      descriptorCount++;
 
-          done();
-        });
+                      if(_.contains(line, 'urandom')) {
+                        urandomDescriptorCount++;
+                      }
+                    }
+                  });
+
+                  descriptorCounts.push(descriptorCount);
+                  urandomDescriptorCounts.push(urandomDescriptorCount);
+
+                  setTimeout(function() {
+                    next(null, lines.length);
+                  }, 500);
+                });
+              }, 1000);
+            });
+          }, callback);
+        },
+      ], function(error) {
+        if(error) {
+          return done(error);
+        }
+
+        // Test to ensure ngx_txid isn't leaving open file descriptors around
+        // on reloads test for this patch:
+        // https://github.com/streadway/ngx_txid/pull/6
+        urandomDescriptorCounts.length.should.eql(15);
+        urandomDescriptorCounts[0].should.be.greaterThan(0);
+        _.max(urandomDescriptorCounts).should.eql(_.min(urandomDescriptorCounts));
+
+        // A more general test to ensure that we don't see other unexpected
+        // file descriptor growth. We'll allow some growth for this test,
+        // though, just to account for small fluctuations in sockets due to
+        // other things nginx may be doing.
+        descriptorCounts.length.should.eql(15);
+        _.min(descriptorCounts).should.be.greaterThan(0);
+        var range = _.max(descriptorCounts) - _.min(descriptorCounts);
+        range.should.be.lessThan(10);
+
+        done();
       });
     });
   });
