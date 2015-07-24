@@ -16,11 +16,10 @@ local function apis_for_request_host()
   local apis = {}
 
   local all_apis = api_store.all_apis() or {}
+  local fallback_apis = {}
   for _, api in ipairs(all_apis) do
     local matched_host = false
-    if api["_frontend_host_normalized"] == config["_default_hostname"] then
-      matched_host = true
-    elseif api["_frontend_host_wildcard_regex"] then
+    if api["_frontend_host_wildcard_regex"] then
       local match, err = ngx.re.match(ngx.ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
       if match then
         matched_host = true
@@ -33,8 +32,12 @@ local function apis_for_request_host()
 
     if matched_host then
       table.insert(apis, api)
+    elseif api["_frontend_host_normalized"] == config["_default_hostname"] then
+      table.insert(fallback_apis, api)
     end
   end
+
+  append_array(apis, fallback_apis)
 
   return apis
 end
