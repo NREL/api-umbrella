@@ -651,7 +651,8 @@ describe('logging', function() {
         should.not.exist(error);
         record.response_status.should.eql(504);
         itLogsBaseFields(record, this.uniqueQueryId, this.user);
-        itLogsBackendFields(record);
+        record.response_time.should.be.greaterThan(58000)
+        record.response_time.should.be.lessThan(62000)
         done();
       }.bind(this));
     }.bind(this));
