@@ -1,4 +1,4 @@
-local host_strip_port = require "api-umbrella.utils.host_strip_port"
+local host_normalize = require "api-umbrella.utils.host_normalize"
 local inspect = require "inspect"
 local stringx = require "pl.stringx"
 local url = require "socket.url"
@@ -60,7 +60,7 @@ local function rewrite_redirects()
   if location then
     local parsed = url_parse(location)
     local matched_api = ngx.ctx.matched_api
-    local host_matches = (matched_api and parsed["host"] == matched_api["_backend_host_without_port"])
+    local host_matches = (matched_api and parsed["host"] == matched_api["_backend_host_normalized"])
     local relative = (not parsed["host"])
     local changed = false
 

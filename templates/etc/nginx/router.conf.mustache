@@ -130,7 +130,7 @@ http {
   server {
     listen {{http_port}}{{#default}} default_server{{/default}};
     listen [::]:{{http_port}}{{#default}} default_server{{/default}};
-    server_name {{hostname}};
+    server_name {{_nginx_server_name}};
 
     listen {{https_port}} ssl{{#default}} default_server{{/default}};
     listen [::]:{{https_port}} ssl{{#default}} default_server{{/default}};

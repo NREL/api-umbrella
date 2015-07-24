@@ -54,7 +54,9 @@ local function do_check()
     })
 
     local results = nil
-    if not err and res.body then
+    if err then
+      ngx.log(ngx.ERR, "failed to fetch rate limits from mongodb: ", err)
+    elseif res.body then
       local response = cjson.decode(res.body)
       if response and response["data"] then
         results = response["data"]

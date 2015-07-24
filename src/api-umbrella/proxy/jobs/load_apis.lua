@@ -3,7 +3,7 @@ local _M = {}
 local api_store = require "api-umbrella.proxy.api_store"
 local cjson = require "cjson"
 local escape_regex = require "api-umbrella.utils.escape_regex"
-local host_strip_port = require "api-umbrella.utils.host_strip_port"
+local host_normalize = require "api-umbrella.utils.host_normalize"
 local http = require "resty.http"
 local inspect = require "inspect"
 local lock = require "resty.lock"
@@ -16,6 +16,7 @@ local load_backends = require "api-umbrella.proxy.load_backends"
 
 local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings
+local deepcopy = tablex.deepcopy
 local escape = plutils.escape
 local get_packed = utils.get_packed
 local is_empty = types.is_empty
@@ -37,17 +38,29 @@ local new_timer = ngx.timer.at
 local log = ngx.log
 local ERR = ngx.ERR
 
+local function hostname_regex(record, key)
+  if record[key] then
+    local host = host_normalize(record[key])
+
+    local normalized_key = "_" .. key .. "_normalized"
+    record[normalized_key] = host
+
+    local wildcard_regex_key = "_" .. key .. "_wildcard_regex"
+    if string.sub(host, 1, 1)  == "." then
+      record[wildcard_regex_key] = "^(.+\\.|)" .. escape_regex(string.sub(host, 2)) .. "$"
+    elseif string.sub(host, 1, 2) == "*." then
+      record[wildcard_regex_key] = "^(.+)" .. escape_regex(string.sub(host, 2)) .. "$"
+    elseif host == "*" then
+      record[wildcard_regex_key] = "^(.+)$"
+    end
+  end
+end
+
 local function cache_computed_api(api)
   if not api then return end
 
   if api["frontend_host"] then
-    local host = host_strip_port(api["frontend_host"])
-
-    if string.sub(host, 1, 1)  == "." then
-      api["_frontend_host_wildcard_regex"] = "^(.+\\.|)" .. escape_regex(string.sub(host, 2)) .. "$"
-    elseif host == "*" or string.sub(host, 1, 2) == "*." then
-      api["_frontend_host_wildcard_regex"] = "^(.+)" .. escape_regex(string.sub(host, 2)) .. "$"
-    end
+    hostname_regex(api, "frontend_host")
   end
 
   if api["backend_host"] == "" then
@@ -55,7 +68,7 @@ local function cache_computed_api(api)
   end
 
   if api["backend_host"] then
-    api["_backend_host_without_port"] = host_strip_port(api["backend_host"])
+    api["_backend_host_normalized"] = host_normalize(api["backend_host"])
   end
 
   if api["url_matches"] then
@@ -133,8 +146,8 @@ local function cache_computed_sub_settings(sub_settings)
 end
 
 local function define_host(hosts_by_name, hostname)
-  hostname = host_strip_port(hostname or "*")
-  if not hosts_by_name[hostname] then
+  hostname = host_normalize(hostname)
+  if hostname and not hosts_by_name[hostname] then
     hosts_by_name[hostname] = {
       hostname = hostname,
     }
@@ -143,30 +156,21 @@ local function define_host(hosts_by_name, hostname)
   return hostname
 end
 
+local function sort_by_hostname_length(a, b)
+  return string.len(tostring(a["hostname"])) > string.len(tostring(b["hostname"]))
+end
 
-local function set_cached_config(apis, website_backends)
+local function set_cached_config(hosts, apis, website_backends)
   local elapsed, err = setlock:lock("set_cached_config")
   if err then
     return
   end
 
-  if not apis then
-    apis = {}
-  end
-
-  local data = {
-    apis_by_host = {},
-  }
-
   local hosts_by_name = {}
-
-  for _, host in ipairs(config["hosts"] or {}) do
-    local hostname = define_host(hosts_by_name, host["hostname"])
-
-    if host["enable_web_backend"] ~= nil then
-      hosts_by_name[hostname]["_web_backend?"] = host["enable_web_backend"]
-    else
-      hosts_by_name[hostname]["_web_backend?"] = (host["default"] == true)
+  for _, host in ipairs(hosts) do
+    local hostname = host_normalize(host["hostname"])
+    if hostname then
+      hosts_by_name[hostname] = host
     end
   end
 
@@ -180,36 +184,40 @@ local function set_cached_config(apis, website_backends)
     end
 
     define_host(hosts_by_name, api["frontend_host"])
-
-    local host = host_strip_port(api["frontend_host"])
-    if host then
-      if not data["apis_by_host"][host] then
-        data["apis_by_host"][host] = {}
-      end
-      table.insert(data["apis_by_host"][host], api)
-    end
   end
 
   for _, website_backend in ipairs(website_backends) do
-    local hostname = define_host(hosts_by_name, website_backend["frontend_host"])
-
     if not website_backend["_id"] then
       website_backend["_id"] = ndk.set_var.set_secure_random_alphanum(32)
     end
 
-    hosts_by_name[hostname]["_website_backend?"] = true
-
-    if hostname ~= "*" then
-      hosts_by_name[hostname]["website_host"] = website_backend["frontend_host"]
+    local hostname = define_host(hosts_by_name, website_backend["frontend_host"])
+    if hostname then
+      hosts_by_name[hostname]["_website_backend?"] = true
+      hosts_by_name[hostname]["_website_host"] = website_backend["frontend_host"]
+      hosts_by_name[hostname]["_website_protocol"] = website_backend["backend_protocol"] or "http"
+      hosts_by_name[hostname]["_website_server_host"] = website_backend["server_host"]
+      hosts_by_name[hostname]["_website_server_port"] = website_backend["server_port"]
+      hosts_by_name[hostname]["_website_backend_required_https_regex"] = website_backend["website_backend_required_https_regex"] or config["router"]["website_backend_required_https_regex_default"]
     end
-
-    hosts_by_name[hostname]["website_protocol"] = website_backend["backend_protocol"] or "http"
-    hosts_by_name[hostname]["server_host"] = website_backend["server_host"]
-    hosts_by_name[hostname]["server_port"] = website_backend["server_port"]
-    hosts_by_name[hostname]["website_backend_required_https_regex"] = website_backend["website_backend_required_https_regex"] or config["router"]["website_backend_required_https_regex_default"]
   end
 
-  data["hosts_by_name"] = hosts_by_name
+  hosts = tablex.values(hosts_by_name)
+  table.sort(hosts, sort_by_hostname_length)
+  for _, host in ipairs(hosts) do
+    hostname_regex(host, "hostname")
+
+    if host["enable_web_backend"] ~= nil then
+      host["_web_backend?"] = host["enable_web_backend"]
+    elseif host["_web_backend?"] == nil then
+      host["_web_backend?"] = (host["default"] == true)
+    end
+  end
+
+  local data = {
+    apis = apis,
+    hosts = hosts,
+  }
 
   load_backends.setup_backends(apis)
   set_packed(ngx.shared.apis, "packed_data", data)
@@ -340,7 +348,9 @@ local function do_check()
     append_array(all_website_backends, config_website_backends)
     append_array(all_website_backends, runtime_config_website_backends)
 
-    set_cached_config(all_apis, all_website_backends)
+    local hosts = deepcopy(config["hosts"]) or {}
+
+    set_cached_config(hosts, all_apis, all_website_backends)
   end
 
   -- Defer setting the shared variables indicating the runtime config has been

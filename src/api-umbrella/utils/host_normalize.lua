@@ -1,6 +1,6 @@
 return function(host)
   if host then
-    return string.match(host, "[^:]*")
+    return string.lower(string.match(host, "[^:]*"))
   else
     return nil
   end

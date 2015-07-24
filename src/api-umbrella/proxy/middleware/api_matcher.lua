@@ -15,12 +15,24 @@ local startswith = stringx.startswith
 local function apis_for_request_host()
   local apis = {}
 
-  local data = get_packed(ngx.shared.apis, "packed_data") or {}
-  if data["apis_by_host"] then
-    for _, search in ipairs(ngx.ctx.hostname_searches) do
-      if data["apis_by_host"][search] then
-        append_array(apis, data["apis_by_host"][search])
+  local all_apis = api_store.all_apis() or {}
+  for _, api in ipairs(all_apis) do
+    local matched_host = false
+    if api["_frontend_host_normalized"] == config["_default_hostname"] then
+      matched_host = true
+    elseif api["_frontend_host_wildcard_regex"] then
+      local match, err = ngx.re.match(ngx.ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
+      if match then
+        matched_host = true
       end
+    else
+      if ngx.ctx.host_normalized == api["_frontend_host_normalized"] then
+        matched_host = true
+      end
+    end
+
+    if matched_host then
+      table.insert(apis, api)
     end
   end
 
@@ -57,7 +69,7 @@ return function(user)
 
     local host = api["backend_host"] or ngx.ctx.host
     if api["_frontend_host_wildcard_regex"] then
-      local match, err = ngx.re.match(ngx.ctx.host_no_port, api["_frontend_host_wildcard_regex"], "ijo")
+      local match, err = ngx.re.match(ngx.ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
       local wildcard_portion = match[1]
       if wildcard_portion then
         host = ngx.re.sub(host, "^([*.])", wildcard_portion, "jo")

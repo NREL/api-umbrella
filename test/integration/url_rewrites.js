@@ -10,6 +10,7 @@ describe('url rewrites', function() {
     hosts: [
       {
         hostname: 'default.foo',
+        default: true,
         rewrites: [
           '^/admin/rewrite_me$ https://example.com/ permanent',
           '^/hello/rewrite/(debian|el|ubuntu)/([\\d\\.]+)/(file[_-]([\\d\\.]+)-\\d+).*((\\.|_)(amd64|x86_64).(deb|rpm)) https://example.com/downloads/v$4/$3.$1$2$5? redirect',
@@ -21,6 +22,9 @@ describe('url rewrites', function() {
         rewrites: [
           '^/example/rewrite_me$ https://example.com/ permanent',
         ],
+      },
+      {
+        hostname: 'withweb.foo',
       },
     ],
   });
@@ -98,7 +102,7 @@ describe('url rewrites', function() {
     });
   });
 
-  it('does not perform rewrites on other hosts', function(done) {
+  it('does not perform rewrites on other known hosts', function(done) {
     var options = _.merge({}, this.options, {
       headers: {
         'Host': 'withweb.foo',
@@ -108,6 +112,48 @@ describe('url rewrites', function() {
       should.not.exist(error);
       response.statusCode.should.eql(404);
       done();
+    });
+  });
+
+  it('performs rewrites on unknown hosts if default host is present', function(done) {
+    var options = _.merge({}, this.options, {
+      headers: {
+        'Host': 'unknown.foo',
+      },
+    });
+    request.get('http://localhost:9080/hello/rewrite?foo=bar', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(301);
+      response.headers.location.should.eql('https://example.com/something/?foo=bar');
+      done();
+    });
+  });
+
+  describe('without default host', function() {
+    shared.runServer({
+      hosts: [
+        {
+          hostname: 'default.foo',
+          rewrites: [
+            '^/admin/rewrite_me$ https://example.com/ permanent',
+            '^/hello/rewrite/(debian|el|ubuntu)/([\\d\\.]+)/(file[_-]([\\d\\.]+)-\\d+).*((\\.|_)(amd64|x86_64).(deb|rpm)) https://example.com/downloads/v$4/$3.$1$2$5? redirect',
+            '^/hello/rewrite https://example.com/something/ permanent',
+          ],
+        },
+      ],
+    });
+
+    it('does not perform rewrites on unknown hosts if default host is not present', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'withweb.foo',
+        },
+      });
+      request.get('http://localhost:9080/hello/rewrite?foo=bar', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(404);
+        done();
+      });
     });
   });
 });

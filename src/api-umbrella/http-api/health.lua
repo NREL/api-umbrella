@@ -25,20 +25,24 @@ end
 -- Check the health of the ElasticSearch cluster
 local httpc = http.new()
 local res, err = httpc:request_uri(config["elasticsearch"]["hosts"][1] .. "/_cluster/health")
-if not err and res.body then
+if err then
+  ngx.log(ngx.ERR, "failed to fetch cluster health from elasticsearch: ", err)
+elseif res.body then
   local elasticsearch_health = cjson.decode(res.body)
   response["details"]["analytics_db"] = elasticsearch_health["status"]
-end
 
--- Check to see if the ElasticSearch index aliases have been setup.
-local today = os.date("%Y-%m", ngx.time())
-local alias = "api-umbrella-logs-" .. today
-local index = "api-umbrella-logs-" .. config["log_template_version"] .. "-" .. today
-local res, err = httpc:request_uri(config["elasticsearch"]["hosts"][1] .. "/" .. index .. "/_alias/" .. alias)
-if not err and res.body then
-  local elasticsearch_alias = cjson.decode(res.body)
-  if not elasticsearch_alias["error"] then
-    response["details"]["analytics_db_setup"] = "green"
+  -- Check to see if the ElasticSearch index aliases have been setup.
+  local today = os.date("%Y-%m", ngx.time())
+  local alias = "api-umbrella-logs-" .. today
+  local index = "api-umbrella-logs-" .. config["log_template_version"] .. "-" .. today
+  local res, err = httpc:request_uri(config["elasticsearch"]["hosts"][1] .. "/" .. index .. "/_alias/" .. alias)
+  if err then
+    ngx.log(ngx.ERR, "failed to fetch elasticsearch alias details: ", err)
+  elseif res.body then
+    local elasticsearch_alias = cjson.decode(res.body)
+    if not elasticsearch_alias["error"] then
+      response["details"]["analytics_db_setup"] = "green"
+    end
   end
 end
 

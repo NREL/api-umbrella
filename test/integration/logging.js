@@ -29,23 +29,6 @@ describe('logging', function() {
         ],
       },
       {
-        _id: 'example',
-        frontend_host: 'localhost',
-        backend_host: 'localhost',
-        servers: [
-          {
-            host: '127.0.0.1',
-            port: 9444,
-          },
-        ],
-        url_matches: [
-          {
-            frontend_prefix: '/',
-            backend_prefix: '/',
-          },
-        ],
-      },
-      {
         _id: 'wildcard-frontend-host',
         frontend_host: '*',
         backend_host: 'localhost',
@@ -59,6 +42,23 @@ describe('logging', function() {
           {
             frontend_prefix: '/wildcard-info/',
             backend_prefix: '/info/',
+          },
+        ],
+      },
+      {
+        _id: 'example',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/',
+            backend_prefix: '/',
           },
         ],
       },

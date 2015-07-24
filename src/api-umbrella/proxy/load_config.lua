@@ -1,6 +1,7 @@
 local _M = {}
 
 local inspect = require "inspect"
+local host_normalize = require "api-umbrella.utils.host_normalize"
 local lyaml = require "lyaml"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local utils = require "api-umbrella.proxy.utils"
@@ -25,7 +26,7 @@ function _M.parse()
   if data["hosts"] then
     for _, host in ipairs(data["hosts"]) do
       if host["default"] and host["hostname"] then
-        default_hostname = host["hostname"]
+        default_hostname = host_normalize(host["hostname"])
         break
       end
     end

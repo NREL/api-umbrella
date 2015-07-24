@@ -44,14 +44,31 @@ local function set_computed_config()
     table.insert(trusted_proxies, "127.0.0.1")
   end
 
-  if types.is_empty(config["hosts"]) then
-    config["hosts"] = {
-      {
-        hostname = "_",
-        default = true,
-      },
-    }
+  if not config["hosts"] then
+    config["hosts"] = {}
   end
+
+  local default_host_exists = false
+  for _, host in ipairs(config["hosts"]) do
+    if host["default"] then
+      default_host_exists = true
+    end
+
+    if host["hostname"] == "*" then
+      host["_nginx_server_name"] = "_"
+    else
+      host["_nginx_server_name"] = host["hostname"]
+    end
+  end
+
+  -- Add a default fallback host that will match any hostname, but doesn't
+  -- include any host-specific settings in nginx (like rewrites). This host can
+  -- still then be used to match APIs for unknown hosts.
+  table.insert(config["hosts"], {
+    hostname = "*",
+    _nginx_server_name = "_",
+    default = (not default_host_exists),
+  })
 
   deep_merge_overwrite_arrays(config, {
     _root_dir = os.getenv("API_UMBRELLA_ROOT"),
