@@ -12,7 +12,7 @@ local url_parse = url.parse
 
 local function set_cache_headers()
   local cache = "MISS"
-  local via = ngx.var.sent_http_via
+  local via = ngx.header["Via"]
   if via then
     local match, err = ngx.re.match(via, "\\[(.+)\\]\\)")
     if match and match[1] then
@@ -30,7 +30,7 @@ local function set_cache_headers()
     end
   end
 
-  local existing_x_cache = ngx.var.sent_http_x_cache
+  local existing_x_cache = ngx.header["X-Cache"]
   if not existing_x_cache or cache == "HIT" then
     ngx.header["X-Cache"] = cache
   end
@@ -94,10 +94,12 @@ local function rewrite_redirects()
 end
 
 return function(settings)
+  set_cache_headers()
+
   if settings then
-    set_cache_headers()
     set_default_headers(settings)
     set_override_headers(settings)
-    rewrite_redirects()
   end
+
+  rewrite_redirects()
 end

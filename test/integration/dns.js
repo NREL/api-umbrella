@@ -16,6 +16,8 @@ var _ = require('lodash'),
 var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 xdescribe('dns backend resolving', function() {
+  shared.runServer();
+
   function setDnsRecords(records, options, callback) {
     // Write the unbound config file.
     var configContent = '';

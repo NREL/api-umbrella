@@ -131,7 +131,7 @@ _.merge(global.shared, {
     async.until(function() {
       return configLoaded || timedOut;
     }, function(callback) {
-      request.get('http://127.0.0.1:9080/api-umbrella/v1/state', function(error, response, body) {
+      request.get('http://127.0.0.1:9080/api-umbrella/v1/state?' + Math.random(), function(error, response, body) {
         should.not.exist(error);
         response.statusCode.should.eql(200);
 

@@ -228,48 +228,6 @@ local function set_cached_config(hosts, apis, website_backends)
   end
 end
 
-local function finalize_check(premature, version, last_fetched_at)
-  if premature then
-    return
-  end
-
-  -- Only consider this version of the config loaded and upstreams initialized
-  -- the *second* time we see it when nginx workers are starting for the first
-  -- time. This is ugly, but it's the only way I can currently figure to
-  -- prevent race conditions across processes during nginx SIGHUP reloads.
-  --
-  -- This tries to prevent the race condition where nginx gets reloaded, and
-  -- the new processes spin up while an old process was in the middle of
-  -- loading the API config. Due to how dyups works, we need to initialize all
-  -- the upstreams in the new workers before allowing requests to be processes.
-  -- This means we need to ignore the old process completing any upstream
-  -- config (since that doesn't help the new processes).
-  --
-  -- TODO: balancer_by_lua is supposedly coming soon, which I think might offer
-  -- a much cleaner way to deal with all this versus what we're currently doing
-  -- with dyups. Revisit if that gets released.
-  -- https://groups.google.com/d/msg/openresty-en/NS2dWt-xHsY/PYzi5fiiW8AJ
-  if ngx.shared.apis:get("nginx_reloading_guard") then
-    ngx.shared.apis:set("upstreams_inited", true)
-
-    if last_fetched_at then
-      ngx.shared.apis:set("last_fetched_at", ngx.now())
-    end
-
-    if version then
-      ngx.shared.apis:set("version", version)
-      loaded_version = version
-    end
-  else
-    ngx.shared.apis:set("nginx_reloading_guard", true)
-  end
-
-  local ok, err = lock:unlock()
-  if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", err)
-  end
-end
-
 local function do_check()
   local elapsed, err = lock:lock("load_apis")
   if err then
@@ -353,29 +311,33 @@ local function do_check()
     set_cached_config(hosts, all_apis, all_website_backends)
   end
 
-  -- Defer setting the shared variables indicating the runtime config has been
-  -- loaded with a timer. Since timers don't run when a process is exiting,
-  -- this is to help ensure we don't set these variables if we're in the midst
-  -- of a load that's still running on an nginx process that is exiting (due to
-  -- a SIGHUP reload).
+  -- Mark the upstreams as having been setup so that we know requests can be
+  -- fulfilled now.
   --
-  -- This tries to prevent the race condition where nginx gets reloaded, and
-  -- the new processes spin up while an old process was in the middle of
-  -- loading the API config. Due to how dyups works, we need to initialize all
-  -- the upstreams in the new workers before allowing requests to be processes.
-  -- This means we need to ignore the old process completing any upstream
-  -- config (since that doesn't help the new processes).
+  -- Note that this uses WORKER_GROUP_ID to prevent race conditions during
+  -- nginx reloads between the old worker processes and the new worker
+  -- processes.
   --
-  -- TODO: balancer_by_lua is supposedly coming soon, which I think might offer
-  -- a much cleaner way to deal with all this versus what we're currently doing
-  -- with dyups. Revisit if that gets released.
+  -- TODO: balancer_by_lua is supposedly coming soon, which I think might
+  -- offer a much cleaner way to deal with all this versus what we're
+  -- currently doing with dyups. Revisit if that gets released.
   -- https://groups.google.com/d/msg/openresty-en/NS2dWt-xHsY/PYzi5fiiW8AJ
-  local ok, err = new_timer(0, finalize_check, version, last_fetched_at)
-  if not ok then
-    if err ~= "process exiting" then
-      ngx.log(ngx.ERR, "failed to create timer: ", err)
-    end
+  ngx.shared.apis:set("upstreams_setup_complete:" .. WORKER_GROUP_ID, true)
+
+  if last_fetched_at then
+    ngx.shared.apis:set("last_fetched_at", ngx.now())
   end
+
+  if version then
+    ngx.shared.apis:set("version", version)
+    loaded_version = version
+  end
+
+  local ok, err = lock:unlock()
+  if not ok then
+    ngx.log(ngx.ERR, "failed to unlock: ", err)
+  end
+
 end
 
 local function check(premature)

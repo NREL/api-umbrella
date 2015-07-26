@@ -1,7 +1,18 @@
 export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 
+deps:
+	mkdir -p $@
+
+deps/detect_system.mk: | deps
+	scripts/detect_system > $@
+
+include deps/detect_system.mk
+
 PREFIX:=/tmp/api-umbrella-build
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
+BUNDLER_VERSION:=1.10.6
+BUNDLER:=bundler-$(BUNDLER_VERSION)
 
 DNSMASQ_VERSION:=2.73
 DNSMASQ:=dnsmasq-$(DNSMASQ_VERSION)
@@ -112,6 +123,12 @@ PERP_DIGEST:=md5
 PERP_CHECKSUM:=a2acc7425d556d9635a25addcee9edb5
 PERP_URL:=http://b0llix.net/perp/distfiles/$(PERP).tar.gz
 
+RUBY_VERSION:=2.2.2
+RUBY:=ruby-$(RUBY_VERSION)
+RUBY_DIGEST:=md5
+RUBY_CHECKSUM:=6237597dab26ec593977e5d8d7e72b45
+RUBY_URL:=https://s3.amazonaws.com/pkgr-buildpack-ruby/current/$(SYSTEM_NAME)-$(SYSTEM_VERSION)/$(RUBY).tgz
+
 TRAFFICSERVER_VERSION:=5.3.1
 TRAFFICSERVER:=trafficserver-$(TRAFFICSERVER_VERSION)
 TRAFFICSERVER_DIGEST:=md5
@@ -122,9 +139,6 @@ TRAFFICSERVER_URL:=http://mirror.olnevhost.net/pub/apache/trafficserver/$(TRAFFI
 .PHONY: all dependencies clean
 
 all: dependencies
-
-deps:
-	mkdir -p $@
 
 # dnsmasq
 deps/$(DNSMASQ).tar.gz: | deps
@@ -294,6 +308,16 @@ deps/$(PERP)/.built: deps/$(PERP)
 	cd $< && make && make strip
 	touch $@
 
+# Ruby
+deps/$(RUBY).tgz: | deps
+	curl -L -o $@ $(RUBY_URL)
+
+deps/$(RUBY): deps/$(RUBY).tgz
+	openssl $(RUBY_DIGEST) $< | grep $(RUBY_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 0 -C $@ -xf $<
+	touch $@
+
 # ElasticSearch
 deps/$(ELASTICSEARCH).tar.gz: | deps
 	curl -L -o $@ $(ELASTICSEARCH_URL)
@@ -373,6 +397,7 @@ dependencies: \
 	deps/gocode/src/github.com/emicklei/mora/.built \
 	deps/$(OPENRESTY)/.built \
 	deps/$(PERP)/.built \
+	deps/$(RUBY) \
 	deps/$(TRAFFICSERVER)/.built
 
 clean:
@@ -388,6 +413,10 @@ $(PREFIX)/embedded/sbin:
 
 $(PREFIX)/embedded/.installed:
 	mkdir -p $(PREFIX)/embedded/.installed
+	touch $@
+
+$(PREFIX)/embedded/.installed/$(BUNDLER): | $(PREFIX)/embedded/.installed $(PREFIX)/embedded/.installed/$(RUBY)
+	PATH=$(PREFIX)/embedded/bin:$(PATH) gem install bundler -v '$(BUNDLER_VERSION)' --no-rdoc --no-ri
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(DNSMASQ): deps/$(DNSMASQ) | $(PREFIX)/embedded/.installed
@@ -460,6 +489,10 @@ $(PREFIX)/embedded/.installed/$(PERP): deps/$(PERP)/.built | $(PREFIX)/embedded/
 	cd deps/$(PERP) && make install
 	touch $@
 
+$(PREFIX)/embedded/.installed/$(RUBY): deps/$(RUBY) | $(PREFIX)/embedded/.installed
+	rsync -a deps/$(RUBY)/ $(PREFIX)/embedded/
+	touch $@
+
 $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $(PREFIX)/embedded/.installed
 	cd deps/$(TRAFFICSERVER) && make install
 	# Trim our own distribution by removing some larger files we don't need for
@@ -511,6 +544,8 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(PERP).tar.gz \
 	deps/$(PERP) \
 	deps/$(PERP)/.built \
+	deps/$(RUBY).tgz \
+	deps/$(RUBY) \
 	deps/$(TRAFFICSERVER).tar.gz \
 	deps/$(TRAFFICSERVER) \
 	deps/$(TRAFFICSERVER)/.built
@@ -518,6 +553,7 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 install_dependencies: \
 	$(PREFIX)/embedded/bin \
 	$(PREFIX)/embedded/sbin \
+	$(PREFIX)/embedded/.installed/$(BUNDLER) \
 	$(PREFIX)/embedded/.installed/$(DNSMASQ) \
 	$(PREFIX)/embedded/.installed/$(ELASTICSEARCH) \
 	$(PREFIX)/embedded/.installed/$(FREEGEOIP) \
@@ -529,6 +565,7 @@ install_dependencies: \
 	$(PREFIX)/embedded/.installed/$(MORA) \
 	$(PREFIX)/embedded/.installed/$(OPENRESTY) \
 	$(PREFIX)/embedded/.installed/$(PERP) \
+	$(PREFIX)/embedded/.installed/$(RUBY) \
 	$(PREFIX)/embedded/.installed/$(TRAFFICSERVER)
 
 vendor:
@@ -552,6 +589,10 @@ PENLIGHT:=penlight
 PENLIGHT_VERSION:=1.3.2-2
 STDLIB:=stdlib
 STDLIB_VERSION:=41.2.0-1
+
+vendor/bundle: src/api-umbrella/web-app/Gemfile src/api-umbrella/web-app/Gemfile.lock | vendor $(PREFIX)/embedded/.installed/$(BUNDLER)
+	cd src/api-umbrella/web-app && PATH=$(PREFIX)/embedded/bin:$(PATH) bundle install --path=$(PWD)/vendor/bundle
+	touch $@
 
 vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(INSPECT) $(INSPECT_VERSION)
@@ -606,6 +647,7 @@ vendor/share/lua/5.1/lustache.lua: deps/$(LUSTACHE) | vendor
 	touch $@
 
 install_app_dependencies: \
+	vendor/bundle \
 	vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION) \
 	vendor/lib/luarocks/rocks/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \

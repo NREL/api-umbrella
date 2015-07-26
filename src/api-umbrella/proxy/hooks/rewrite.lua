@@ -7,9 +7,12 @@ local httpsify_current_url = require "api-umbrella.utils.httpsify_current_url"
 local utils = require "api-umbrella.proxy.utils"
 local inspect = require "inspect"
 local plutils = require "pl.utils"
+local wait_for_setup = require "api-umbrella.proxy.wait_for_setup"
 
 local get_packed = utils.get_packed
 local ngx_var = ngx.var
+
+wait_for_setup()
 
 -- Cache various "ngx.var" lookups that are repeated throughout the stack,
 -- so they don't allocate duplicate memory during the request, and since
@@ -59,6 +62,7 @@ end
 if not matched_host and default_host then
   matched_host = default_host
 end
+ngx.ctx.matched_host = matched_host
 
 if matched_host and matched_host["_web_backend?"] then
   local match, err = ngx.re.match(ngx.ctx.original_uri, config["router"]["web_backend_regex"], "ijo")

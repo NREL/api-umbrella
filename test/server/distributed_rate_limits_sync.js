@@ -13,6 +13,12 @@ var RateLimit = mongoose.testConnection.model('RateLimit');
 
 describe('distributed rate limit sync', function() {
   before(function(done) {
+    // Since this is for testing the initial startup sync, we need to insert
+    // this before calling runServer. For the rate limit inserts, we also give
+    // it a sizable buffer (45 minutes ago on a 50 minute duration, so 5
+    // minutes of buffer). This buffer ensures that the tests pass even if the
+    // startup and other tests take a while to run before we explicitly test
+    // against for the startup sync with this key.
     Factory.create('api_user', function(user) {
       this.apiKeyWithExistingCounts = user.api_key;
 
@@ -20,7 +26,7 @@ describe('distributed rate limit sync', function() {
         apiKey: this.apiKeyWithExistingCounts,
         duration: 50 * 60 * 1000, // 50 minutes
         limit: 1001,
-        updatedAt: new Date(moment().startOf('minute').toDate() - 49 * 60 * 1000), // 49min ago
+        updatedAt: new Date(moment().startOf('minute').toDate() - 45 * 60 * 1000), // 45min ago
       };
 
       setDistributedCount(97, options, function() {
@@ -151,15 +157,16 @@ describe('distributed rate limit sync', function() {
       // Delay the callback to give the local rate limits (from the actual
       // requests being made) a chance to be pushed into the distributed mongo
       // store.
-      setTimeout(callback, 300);
+      setTimeout(callback, 550);
     });
   }
 
   function setDistributedCount(count, options, callback) {
     var updatedAt = options.updatedAt || new Date();
     var bucketDate = moment(updatedAt).startOf('minute').toDate();
+    var host = options.host || 'localhost';
 
-    var key = 'apiKey:' + options.duration + ':' + options.apiKey + ':' + bucketDate.getTime();
+    var key = 'apiKey:' + options.duration + ':' + options.apiKey + ':' + host + ':' + bucketDate.getTime();
 
     RateLimit.update({
       _id: key,
@@ -173,7 +180,7 @@ describe('distributed rate limit sync', function() {
 
       // Delay the callback to give the distributed rate limit a chance to
       // propagate to the local nodes.
-      setTimeout(callback, 300);
+      setTimeout(callback, 550);
     });
   }
 
@@ -349,7 +356,7 @@ describe('distributed rate limit sync', function() {
                       expectLocalCountAfterSync(77, options, done);
                     });
                   });
-                }, 300);
+                }, 550);
               });
             });
           });

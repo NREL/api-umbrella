@@ -275,11 +275,30 @@ app.all('/cacheable-thundering-herd/:id', function(req, res) {
   }, 1000);
 });
 
+app.all('/cacheable-thundering-herd-public/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+
+  setTimeout(function() {
+    res.set('Cache-Control', 'public, max-age=60');
+    res.set('X-Unique-Output', uniqueOutput());
+    res.end(uniqueOutput());
+  }, 1000);
+});
+
+app.all('/cacheable-thundering-herd-private/:id', function(req, res) {
+  incrementCachableCallCount(req.params.id);
+
+  setTimeout(function() {
+    res.set('Cache-Control', 'private, max-age=60');
+    res.set('X-Unique-Output', uniqueOutput());
+    res.end(uniqueOutput());
+  }, 1000);
+});
+
 app.all('/cacheable-but-no-explicit-cache-thundering-herd/:id', function(req, res) {
   incrementCachableCallCount(req.params.id);
 
   setTimeout(function() {
-    res.set('Cache-Control', 'max-age=0, private, must-revalidate');
     res.set('X-Unique-Output', uniqueOutput());
     res.end(uniqueOutput());
   }, 1000);

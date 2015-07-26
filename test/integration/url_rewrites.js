@@ -7,6 +7,31 @@ var _ = require('lodash'),
 
 describe('url rewrites', function() {
   shared.runServer({
+    apis: [
+      {
+        frontend_host: 'with-apis-and-website.foo',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/api-example/',
+            backend_prefix: '/example/',
+          },
+        ],
+      },
+    ],
+    website_backends: [
+      {
+        frontend_host: 'with-apis-and-website.foo',
+        server_host: '127.0.0.1',
+        server_port: 9444,
+      },
+    ],
     hosts: [
       {
         hostname: 'default.foo',
@@ -20,7 +45,8 @@ describe('url rewrites', function() {
       {
         hostname: 'with-apis-and-website.foo',
         rewrites: [
-          '^/example/rewrite_me$ https://example.com/ permanent',
+          '^/api-example/rewrite_me$ https://example.com/ permanent',
+          '^/website-example/rewrite_me$ https://2.example.com/ permanent',
         ],
       },
       {
@@ -70,14 +96,37 @@ describe('url rewrites', function() {
         'Host': 'with-apis-and-website.foo',
       },
     });
-    request.get('http://localhost:9080/example/rewrite_me', options, function(error, response) {
+    request.get('http://localhost:9080/api-example/rewrite_me', options, function(error, response) {
       should.not.exist(error);
       response.statusCode.should.eql(301);
       response.headers.location.should.eql('https://example.com/');
 
-      request.get('http://localhost:9080/example/rewrite_me_just_kidding', options, function(error, response) {
+      request.get('http://localhost:9080/api-example/rewrite_me_just_kidding', options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(403);
+        response.headers['content-type'].should.contain('application/json');
+        body.should.contain('API_KEY_MISSING');
+        done();
+      });
+    });
+  });
+
+  it('rewrites take precendence over potential website matches', function(done) {
+    var options = _.merge({}, this.options, {
+      headers: {
+        'Host': 'with-apis-and-website.foo',
+      },
+    });
+    request.get('http://localhost:9080/website-example/rewrite_me', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(301);
+      response.headers.location.should.eql('https://2.example.com/');
+
+      request.get('http://localhost:9080/website-example/rewrite_me_just_kidding', options, function(error, response, body) {
         should.not.exist(error);
         response.statusCode.should.eql(404);
+        response.headers['content-type'].should.contain('text/html');
+        body.should.contain('Test 404 Not Found');
         done();
       });
     });
@@ -94,9 +143,11 @@ describe('url rewrites', function() {
       response.statusCode.should.eql(301);
       response.headers.location.should.eql('https://example.com/');
 
-      request.get('https://localhost:9081/admin/rewrite_me_just_kidding', options, function(error, response) {
+      request.get('https://localhost:9081/admin/rewrite_me_just_kidding', options, function(error, response, body) {
         should.not.exist(error);
         response.statusCode.should.eql(404);
+        response.headers['content-type'].should.contain('text/html');
+        body.should.contain('The page you were looking for doesn\'t exist (404)');
         done();
       });
     });

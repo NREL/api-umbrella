@@ -342,9 +342,30 @@ describe('caching', function() {
     });
   });
 
-  it('prevents thundering herds for cacheable requests', function(done) {
+  // FIXME: The Traffic Server collapsed_connection plugin currently requires
+  // the Cache-Control explicitly be marked as "public" for it to do its
+  // collapsing:
+  // https://github.com/apache/trafficserver/blob/a90403e9f6220f5511cb9d1523a4db8c27a9316f/plugins/experimental/collapsed_connection/collapsed_connection.cc#L603
+  //
+  // I think this is incorrect behavior and the plugin should be updated to use
+  // the newer TSHttpTxnIsCacheable API:
+  // https://issues.apache.org/jira/browse/TS-1622 This will allow the plugin
+  // to more accurately know whether the response is cacheable according to the
+  // more complex TrafficServer logic. We should see about submitting a pull
+  // request or filing an issue.
+  xit('prevents thundering herds for cacheable requests', function(done) {
     this.timeout(3000);
     actsLikeNotThunderingHerd('http://localhost:9080/cacheable-thundering-herd/', this.options, done);
+  });
+
+  it('prevents thundering herds for cacheable requests (cache control public)', function(done) {
+    this.timeout(3000);
+    actsLikeNotThunderingHerd('http://localhost:9080/cacheable-thundering-herd-public/', this.options, done);
+  });
+
+  it('allows thundering herds for potentially cacheable requests that return cache-control private headers', function(done) {
+    this.timeout(5000);
+    actsLikeThunderingHerd('http://localhost:9080/cacheable-thundering-herd-private/', this.options, done);
   });
 
   it('allows thundering herds for potentially cacheable requests that explicitly forbid caching', function(done) {

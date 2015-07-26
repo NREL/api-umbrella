@@ -10,8 +10,6 @@ local types = require "pl.types"
 local is_empty = types.is_empty
 local split = plutils.split
 
-local upstream_checksums = {}
-
 function _M.setup_backends(apis)
   local upstreams_changed = false
   for _, api in ipairs(apis) do
@@ -54,23 +52,24 @@ function _M.setup_backends(apis)
     local backend_id = "api_umbrella_" .. api["_id"] .. "_backend"
 
     -- Only apply the upstream if it differs from the upstream currently
-    -- installed. Since we're looping over all the APIs, this just helps
-    -- prevent unnecessary upstream changes when only a single upstream has
-    -- changed.
+    -- installed. Since we're looping over all the APIs, this helps prevent
+    -- unnecessary upstream changes.
     --
-    -- Note that the cache of current upstream checksums would ideally be a
-    -- ngx.shared table, but instead it's a local table. So this means there
-    -- will initially be some duplicate changes across each worker process the
-    -- first time an upstream is seen. But this helps prevent race conditions
-    -- with nginx is being reloaded and new processes are being started, so for
-    -- now I think this is fine.
+    -- Note that the current upstream tracking takes into account
+    -- WORKER_GROUP_ID. This is to prevent race conditions with dyups when
+    -- nginx is being reloaded. Since dyups needs to be setup after each reload
+    -- (dyups itself doesn't persist), this prevents the dyups commands that
+    -- might still be running in the old nginx workers (that are being spun
+    -- down) from interfering with the new processes spinning up (and making
+    -- them think the upstreams already setup).
     --
     -- TODO: balancer_by_lua is supposedly coming soon, which I think might
     -- offer a much cleaner way to deal with all this versus what we're
     -- currently doing with dyups. Revisit if that gets released.
     -- https://groups.google.com/d/msg/openresty-en/NS2dWt-xHsY/PYzi5fiiW8AJ
     local upstream_checksum = ngx.md5(upstream)
-    local current_upstream_checksum = upstream_checksums[backend_id]
+    local worker_group_backend_id = WORKER_GROUP_ID .. ":" .. backend_id
+    local current_upstream_checksum = ngx.shared.upstream_checksums:get(worker_group_backend_id)
     if(upstream_checksum ~= current_upstream_checksum) then
       upstreams_changed = true
 
@@ -94,7 +93,7 @@ function _M.setup_backends(apis)
         ngx.log(ngx.ERR, "Failed to setup upstream for " .. backend_id .. ". Trying to continue anyway...")
       end
 
-      upstream_checksums[backend_id] = upstream_checksum
+      ngx.shared.upstream_checksums:set(worker_group_backend_id, upstream_checksum)
     end
   end
 
@@ -108,7 +107,7 @@ function _M.setup_backends(apis)
   -- knowing when config changes are in place in the /api-umbrella/v1/state
   -- API).
   if upstreams_changed then
-    ngx.sleep(0.7)
+    ngx.sleep(0.5)
   end
 end
 

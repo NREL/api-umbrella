@@ -30,9 +30,12 @@ CONFIG proxy.config.http.transaction_no_activity_timeout_in INT 60
 CONFIG proxy.config.http.transaction_no_activity_timeout_out INT 60
 CONFIG proxy.config.http.connect_attempts_timeout INT 60
 
-# Don't retry requests when a server is not responding (we don't want to
-# overwhelm servers that may already be struggling).
-CONFIG proxy.config.http.connect_attempts_max_retries INT 0
+# Retry the connection to the backend nginx API router server if it fails. This
+# may happen when nginx is being reloaded since TrafficServer is holding
+# keep-alive connections open to the backend
+# (proxy.config.http.keep_alive_enabled_out) and the reload process may lead to
+# TrafficServer trying to re-use a connection to a killed worker.
+CONFIG proxy.config.http.connect_attempts_max_retries INT 3
 
 # Don't consider the backend down, even if some requests timeout. Since we're
 # actually funneling all of our existing traffic back through a single nginx

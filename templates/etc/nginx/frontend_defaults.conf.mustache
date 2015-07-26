@@ -1,3 +1,12 @@
+# Limit the number of simultaneous connections per IP address to {{router.global_rate_limits.ip_connections}}.
+limit_conn api_umbrella_conn_addr_zone {{router.global_rate_limits.ip_connections}};
+
+# After the {{router.global_rate_limits.ip_rate}} rate is reached, allow a sizable burst before
+# completely terminating requests at this router level. This is so we can
+# generally rely on API Umbrella Gatekeeper for rate limiting, but still
+# throttle traffic to the Gatekeeper.
+limit_req zone=api_umbrella_req_addr_zone burst={{router.global_rate_limits.ip_burst}} nodelay;
+
 # Conditional proxy headers. Don't set these x-forwarded headers if they've
 # already been set (by the SSL terminator).
 set $real_scheme $http_x_forwarded_proto;

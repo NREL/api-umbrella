@@ -124,6 +124,7 @@ describe('api key validation', function() {
           ],
           settings: {
             disable_api_key: true,
+            rate_limit_mode: 'unlimited',
           },
           sub_settings: [
             {

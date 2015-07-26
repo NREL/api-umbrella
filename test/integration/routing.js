@@ -112,6 +112,9 @@ describe('routing', function() {
       {
         hostname: 'with-apis-and-website.foo',
       },
+      {
+        hostname: 'no-apis-no-website.foo',
+      },
     ],
   });
 
@@ -352,7 +355,8 @@ describe('routing', function() {
       request.get('https://localhost:9081/api-umbrella/v1/', options, function(error, response, body) {
         should.not.exist(error);
         response.statusCode.should.eql(404);
-        body.should.contain('404 Not Found');
+        response.headers['content-type'].should.contain('application/json');
+        body.should.contain('NOT_FOUND');
         done();
       });
     });
@@ -421,7 +425,22 @@ describe('routing', function() {
       });
     });
 
-    it('routes to the default nginx 404 page for hosts that have apis but no website', function(done) {
+    it('returns the api umbrella 404 for hosts that have no website or apis', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'no-apis-no-website.foo',
+        },
+      });
+      request.get('http://localhost:9080/', options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(404);
+        response.headers['content-type'].should.contain('application/json');
+        body.should.contain('NOT_FOUND');
+        done();
+      });
+    });
+
+    it('returns the api umbrella 404 for hosts that have apis but no website', function(done) {
       var options = _.merge({}, this.options, {
         headers: {
           'Host': 'with-apis-no-website.foo',
@@ -430,8 +449,8 @@ describe('routing', function() {
       request.get('http://localhost:9080/', options, function(error, response, body) {
         should.not.exist(error);
         response.statusCode.should.eql(404);
-        body.should.contain('404 Not Found');
-        body.should.contain('nginx');
+        response.headers['content-type'].should.contain('application/json');
+        body.should.contain('NOT_FOUND');
         done();
       });
     });

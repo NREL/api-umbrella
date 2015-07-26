@@ -15,24 +15,25 @@ local startswith = stringx.startswith
 local function apis_for_request_host()
   local apis = {}
 
+  local matched_host = ngx.ctx.matched_host
   local all_apis = api_store.all_apis() or {}
   local fallback_apis = {}
   for _, api in ipairs(all_apis) do
-    local matched_host = false
+    local hostname_matches = false
     if api["_frontend_host_wildcard_regex"] then
       local match, err = ngx.re.match(ngx.ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
       if match then
-        matched_host = true
+        hostname_matches = true
       end
     else
       if ngx.ctx.host_normalized == api["_frontend_host_normalized"] then
-        matched_host = true
+        hostname_matches = true
       end
     end
 
-    if matched_host then
+    if hostname_matches then
       table.insert(apis, api)
-    elseif api["_frontend_host_normalized"] == config["_default_hostname"] then
+    elseif matched_host and matched_host["_hostname_normalized"] == api["_frontend_host_normalized"] then
       table.insert(fallback_apis, api)
     end
   end

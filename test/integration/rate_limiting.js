@@ -8,6 +8,8 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('rate limiting', function() {
+  shared.runServer();
+
   beforeEach(function createUser(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.apiKey = user.api_key;
@@ -122,7 +124,7 @@ describe('rate limiting', function() {
         }.bind(this), 1501);
       });
 
-      it('allows a burst of 100 additional requests (200 total requests) from a single IP', function(done) {
+      it('allows a burst of additional requests from a single IP', function(done) {
         this.timeout(7000);
 
         // Delay to allow the per-second rate limit to clear.
@@ -145,7 +147,7 @@ describe('rate limiting', function() {
 
         // Delay to allow the per-second rate limit to clear.
         setTimeout(function() {
-          async.times(250, function(index, callback) {
+          async.times(400, function(index, callback) {
             request.get('http://localhost:9080/info/', this.options, function(error, response) {
               callback(error, response.statusCode);
             });
@@ -154,18 +156,19 @@ describe('rate limiting', function() {
             var successes = _.filter(responseCodes, function(code) { return code === 200; });
             var overLimits = _.filter(responseCodes, function(code) { return code === 429; });
 
-            responseCodes.length.should.eql(250);
+            responseCodes.length.should.eql(400);
 
-            // The burst handling seems a bit fuzzy (or we're not making
-            // requests fast enough), so it's not a hard 200 requests where we
-            // start getting 429 errors. So instead, just make sure we
-            // generally start returning 429 errors for some requests once
-            // we're over 200 requests.
+            // The rate limiting and burst handling is a bit fuzzy since we
+            // don't know exactly when the initial rate limit has been exceeded
+            // (since nginx limits aren't based on hard counts, but instead the
+            // average rate of requests, and we also don't know how fast the
+            // nodejs tests are actually making requests). Since we don't know
+            // when the burst kicks in, just make sure we generally start
+            // returning over rate limit errors.
             successes.length.should.be.gte(200);
-            successes.length.should.be.lte(245);
+            successes.length.should.be.lte(320);
             overLimits.length.should.be.gte(1);
-            overLimits.length.should.be.lte(50);
-            (successes.length + overLimits.length).should.eql(250);
+            (successes.length + overLimits.length).should.eql(400);
 
             done();
           });
@@ -183,13 +186,13 @@ describe('rate limiting', function() {
 
         // Delay to allow the per-second rate limit to clear.
         setTimeout(function() {
-          async.times(310, function(index, callback) {
+          async.times(400, function(index, callback) {
             request.get('http://localhost:9080/info/', options, function(error, response) {
               callback(error, response.statusCode);
             });
           }.bind(this), function(error, responseCodes) {
             should.not.exist(error);
-            responseCodes.length.should.eql(310);
+            responseCodes.length.should.eql(400);
             _.uniq(responseCodes).should.eql([200]);
             done();
           });
