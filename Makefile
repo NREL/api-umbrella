@@ -314,11 +314,11 @@ deps/$(RUBY): deps/$(RUBY).tar.gz
 	touch $@
 
 deps/$(RUBY)/.built: | deps/$(RUBY)
-	cd $< && ./configure \
+	cd deps/$(RUBY) && ./configure \
 		--prefix=$(PREFIX)/embedded \
 		--enable-load-relative \
 		--disable-install-doc
-	cd $< && make
+	cd deps/$(RUBY) && make
 	touch $@
 
 # ElasticSearch
