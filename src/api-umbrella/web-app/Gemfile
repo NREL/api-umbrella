@@ -251,6 +251,9 @@ group :development, :test do
   # Include test-unit so rspec 2 can run under Ruby 2.2:
   # https://github.com/rspec/rspec-rails/issues/1273
   gem "test-unit", :require => false
+
+  # Generate output for CI.
+  gem "rspec_junit_formatter", "~> 0.2.3"
 end
 
 group :development do
