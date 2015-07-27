@@ -310,12 +310,12 @@ deps/$(RUBY).tar.gz: | deps
 deps/$(RUBY): deps/$(RUBY).tar.gz
 	openssl $(RUBY_DIGEST) $< | grep $(RUBY_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
 	mkdir -p $@
-	tar --strip-components 0 -C $@ -xf $<
+	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
 deps/$(RUBY)/.built: deps/$(RUBY)
 	cd $< && ./configure \
-		--prefix=$(PREFIX)/embedded \
+		--prefix=$(PREFIX)/embedded
 	cd $< && make
 	touch $@
 
@@ -490,7 +490,7 @@ $(PREFIX)/embedded/.installed/$(PERP): deps/$(PERP)/.built | $(PREFIX)/embedded/
 	cd deps/$(PERP) && make install
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(RUBY): deps/$(RUBY) | $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(RUBY): deps/$(RUBY)/.built | $(PREFIX)/embedded/.installed
 	cd deps/$(RUBY) && make install
 	touch $@
 
