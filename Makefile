@@ -313,7 +313,7 @@ deps/$(RUBY): deps/$(RUBY).tar.gz
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
-deps/$(RUBY)/.built: deps/$(RUBY)
+deps/$(RUBY)/.built: | deps/$(RUBY)
 	cd $< && ./configure \
 		--prefix=$(PREFIX)/embedded \
 		--enable-load-relative \
