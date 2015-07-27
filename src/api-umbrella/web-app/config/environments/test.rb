@@ -32,7 +32,9 @@ ApiUmbrella::Application.configure do
   # Print deprecation notices to the stderr
   config.active_support.deprecation = :stderr
 
-  if(ENV["PRECOMPILE_TEST_ASSETS"].to_s != "false")
+  if(ENV["FULL_STACK_TEST"].to_s == "true")
+    config.consider_all_requests_local = false
+  elsif(ENV["PRECOMPILE_TEST_ASSETS"].to_s != "false")
     # Use precompiled assets in test mode so we can properly catch errors
     # triggered by not having assets in the precompile list.
     config.assets.compile = false
