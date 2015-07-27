@@ -1,13 +1,5 @@
 export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 
-deps:
-	mkdir -p $@
-
-deps/detect_system.mk: | deps
-	scripts/detect_system > $@
-
-include deps/detect_system.mk
-
 PREFIX:=/tmp/api-umbrella-build
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
@@ -125,9 +117,9 @@ PERP_URL:=http://b0llix.net/perp/distfiles/$(PERP).tar.gz
 
 RUBY_VERSION:=2.2.2
 RUBY:=ruby-$(RUBY_VERSION)
-RUBY_DIGEST:=md5
-RUBY_CHECKSUM:=6237597dab26ec593977e5d8d7e72b45
-RUBY_URL:=https://s3.amazonaws.com/pkgr-buildpack-ruby/current/$(SYSTEM_NAME)-$(SYSTEM_VERSION)/$(RUBY).tgz
+RUBY_DIGEST:=sha256
+RUBY_CHECKSUM:=5ffc0f317e429e6b29d4a98ac521c3ce65481bfd22a8cf845fa02a7b113d9b44
+RUBY_URL:=https://cache.ruby-lang.org/pub/ruby/2.2/$(RUBY).tar.gz
 
 TRAFFICSERVER_VERSION:=5.3.1
 TRAFFICSERVER:=trafficserver-$(TRAFFICSERVER_VERSION)
@@ -139,6 +131,9 @@ TRAFFICSERVER_URL:=http://mirror.olnevhost.net/pub/apache/trafficserver/$(TRAFFI
 .PHONY: all dependencies clean
 
 all: dependencies
+
+deps:
+	mkdir -p $@
 
 # dnsmasq
 deps/$(DNSMASQ).tar.gz: | deps
@@ -309,13 +304,19 @@ deps/$(PERP)/.built: deps/$(PERP)
 	touch $@
 
 # Ruby
-deps/$(RUBY).tgz: | deps
+deps/$(RUBY).tar.gz: | deps
 	curl -L -o $@ $(RUBY_URL)
 
-deps/$(RUBY): deps/$(RUBY).tgz
+deps/$(RUBY): deps/$(RUBY).tar.gz
 	openssl $(RUBY_DIGEST) $< | grep $(RUBY_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
 	mkdir -p $@
 	tar --strip-components 0 -C $@ -xf $<
+	touch $@
+
+deps/$(RUBY)/.built: deps/$(RUBY)
+	cd $< && ./configure \
+		--prefix=$(PREFIX)/embedded \
+	cd $< && make
 	touch $@
 
 # ElasticSearch
@@ -397,7 +398,7 @@ dependencies: \
 	deps/gocode/src/github.com/emicklei/mora/.built \
 	deps/$(OPENRESTY)/.built \
 	deps/$(PERP)/.built \
-	deps/$(RUBY) \
+	deps/$(RUBY)/.built \
 	deps/$(TRAFFICSERVER)/.built
 
 clean:
@@ -490,7 +491,7 @@ $(PREFIX)/embedded/.installed/$(PERP): deps/$(PERP)/.built | $(PREFIX)/embedded/
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(RUBY): deps/$(RUBY) | $(PREFIX)/embedded/.installed
-	rsync -a deps/$(RUBY)/ $(PREFIX)/embedded/
+	cd deps/$(RUBY) && make install
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $(PREFIX)/embedded/.installed
@@ -544,8 +545,9 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(PERP).tar.gz \
 	deps/$(PERP) \
 	deps/$(PERP)/.built \
-	deps/$(RUBY).tgz \
+	deps/$(RUBY).tar.gz \
 	deps/$(RUBY) \
+	deps/$(RUBY)/.built \
 	deps/$(TRAFFICSERVER).tar.gz \
 	deps/$(TRAFFICSERVER) \
 	deps/$(TRAFFICSERVER)/.built
