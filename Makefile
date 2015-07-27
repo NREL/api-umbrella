@@ -1,5 +1,13 @@
 export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 
+# Unset some environment variables that come from RVM and may interfere with
+# gem installation in some environments (eg, CircleCI).
+unexport GEM_HOME
+unexport GEM_PATH
+unexport IRBRC
+unexport MY_RUBY_HOME
+unexport RUBY_VERSION
+
 PREFIX:=/tmp/api-umbrella-build
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
