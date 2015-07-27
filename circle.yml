@@ -38,5 +38,4 @@ test:
         pwd: src/api-umbrella/web-app
         environment:
           PATH: "../../../ci_cache/build/embedded/bin:$PATH"
-          SPEC_OPTS: "--format RspecJunitFormatter --out spec/reports/rspec.xml"
     - cp src/api-umbrella/web-app/spec/reports/web-app.xml $CIRCLE_TEST_REPORTS/rspec/
