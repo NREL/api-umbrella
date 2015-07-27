@@ -247,6 +247,10 @@ group :development, :test do
   # For caching external web requests
   gem "vcr", "~> 2.9.3", :require => false
   gem "webmock", "~> 1.21.0", :require => false
+
+  # Include test-unit so rspec 2 can run under Ruby 2.2:
+  # https://github.com/rspec/rspec-rails/issues/1273
+  gem "test-unit", :require => false
 end
 
 group :development do
