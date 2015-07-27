@@ -1,0 +1,258 @@
+source "https://rubygems.org"
+source "https://rails-assets.org"
+
+gem "rails", "~> 3.2.22"
+
+# Rails app server
+gem "puma", "~> 2.11.2"
+
+# Error notification service (optional)
+gem "rollbar", "~> 1.4.5"
+
+# Environment specific configuration
+gem "dotenv-rails", "~> 1.0.2"
+
+# Abort requests that take too long
+# Don't upgrade to 0.1 yet, since it causes issues with Capybara test:
+# https://github.com/heroku/rack-timeout/issues/55
+gem "rack-timeout", "~> 0.0.4"
+
+# For proxying HTTP requests to password-protected places for admins.
+gem "rack-proxy", "~> 0.5.17"
+
+# JSON handling
+gem "multi_json", "~> 1.11.0"
+gem "oj", "~> 2.12.1", :platforms => [:ruby]
+gem "oj_mimic_json", "~> 1.0.1", :platforms => [:ruby]
+
+# MongoDB
+gem "mongoid", "~> 3.1.6"
+
+# Created/updated userstamping
+# Hold on the 0.3 release until we tackle the migration necessary for 0.4:
+# https://github.com/tbpro/mongoid_userstamp/blob/master/CHANGELOG.md#040---2014-02-24
+gem "mongoid_userstamp", "~> 0.3.2"
+
+# Versioning for mongoid
+gem "mongoid_delorean", "~> 1.3.0"
+
+# Display deeply nested validation errors on embedded documents.
+gem "mongoid-embedded-errors", "~> 2.0.1"
+
+# Data migrations
+gem "mongoid_rails_migrations", "~> 1.0.1"
+
+# Generate UUIDs
+gem "uuidtools", "~> 2.1.4"
+
+# Database seeding
+# This branch adds mongoid compatibility:
+# https://github.com/mbleigh/seed-fu/pull/80
+gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
+
+# Elasticsearch
+gem "elasticsearch", "~> 1.0.8"
+
+# OmniAuth-based authentication
+gem "devise", "~> 3.4.0"
+gem "omniauth", "~> 1.2.1"
+gem "omniauth-cas", "~> 1.1.0"
+gem "omniauth-facebook", "~> 2.0.0"
+# Patched omniauth-github for e-mail verification:
+# https://github.com/intridea/omniauth-github/pull/41
+gem "omniauth-github", :git => "https://github.com/riking/omniauth-github.git", :branch => "all_emails"
+gem "omniauth-google-oauth2", "~> 0.2.2"
+gem "omniauth-ldap", "~> 1.0.4"
+gem "omniauth-myusa", :git => "https://github.com/GSA-OCSIT/omniauth-myusa.git"
+gem "omniauth-persona", "~> 0.0.1"
+gem "omniauth-twitter", "~> 1.0.1"
+
+# Authorization
+gem "pundit", "~> 0.3.0"
+
+# Pagination
+gem "kaminari", "~> 0.16.1"
+gem "kaminari-bootstrap", "~> 0.1.3" # Hold at bootstrap 2 version
+
+# Navigation links
+gem "tabs_on_rails", "~> 2.2.0"
+
+# Unobtrusive javascript for Rails helpers (things like delete links).
+gem "jquery-rails", "~> 3.1.0"
+
+# Views/templates for APIs
+gem "rabl", "~> 0.11.5"
+gem "jbuilder", "~> 2.2.2"
+gem "csv_builder", "~> 2.1.1"
+
+# We're not using this ourselves, but if it gets updated to 0.9.1 it seems to
+# break various things in our responses. I think the 0.9.1 release might be
+# slightly busted based on these reports:
+# https://github.com/rails-api/active_model_serializers/issues/747
+# https://github.com/rails-api/active_model_serializers/issues/746
+# Lock to 0.9.0 for now.
+gem "active_model_serializers", "0.9.0"
+
+# Country and state name lookups
+gem "countries", "~> 0.11.3"
+
+# Ember.js
+gem "ember-rails", "~> 0.15.0"
+gem "ember-source", "~> 1.7.1"
+
+# HTML diffs
+gem "diffy", "~> 3.0.7"
+
+# Use a newer version of Psych for YAML. The newer gem version does a better
+# job of making multi-line strings and strings with colons in them more human
+# readable.
+gem "psych", "~> 2.0.13", :platforms => [:ruby]
+
+# For user-inputted YAML.
+gem "safe_yaml", "~> 1.0.4", :require => "safe_yaml/load"
+
+# YAML configuration files.
+gem "rails_config", "~> 0.4.2"
+
+# Delayed jobs and background tasks
+gem "delayed_job_mongoid", "~> 2.1.0"
+gem "daemons", "~> 1.2.2"
+
+# HTML email styling
+gem "premailer-rails", "~> 1.8.0"
+
+# Localization in the admin based on the Accept-Language header
+gem "http_accept_language", "~> 2.0.5"
+
+# Markdown
+gem "kramdown", "~> 1.6.0"
+
+group :production, :staging do
+  # Log to stdout instead of file
+  gem "rails_stdout_logging", "~> 0.0.3"
+end
+
+# Gems used only for assets and not required
+# in production environments by default.
+group :assets do
+  gem 'sass-rails', '~> 3.2.6'
+
+  # Hold at sass 3.2, since newer versions lead to weird sprockets errors.
+  # Apparently fixed in newer versions of sprockets, but not the version Rails
+  # 3.2 uses:
+  # https://github.com/sass/sass/issues/1144
+  gem "sass", "~> 3.2.19"
+
+  # A Sass version of Twitter Bootstrap. This it the basis for our styles and
+  # JavaScript components.
+  gem "bootstrap-sass", "~> 2.3.2.2"
+
+  # Sass utilities and automatic image spirtes
+  gem "compass-rails", "~> 1.1.7"
+
+  # See https://github.com/sstephenson/execjs#readme for more supported runtimes
+  gem "therubyracer", "~> 0.12.2", :platforms => :ruby
+  # For JRuby, use the Node.js execjs runtime - We'll assume it's on the
+  # servers so it gets picked up by execjs. It's faster than therubyrhino.
+
+  # JavaScript compression
+  gem "uglifier", "~> 2.7.1"
+
+  # Smarter handling of compiled CSS with relative paths (like Jammit)
+  gem "sprockets-urlrewriter", "~> 0.1.2"
+
+  # Faster asset precompilation and caching.
+  # This specific version contains the CLEAN_EXPIRED_ASSETS option to speed up
+  # deployments by combining two tasks into one (particularly under JRuby).
+  gem "turbo-sprockets-rails3", "0.3.13"
+
+  # Client-side translations
+  gem "rails-assets-polyglot", "~> 0.4.1"
+
+  # Smooth scrolling to content
+  gem "rails-assets-jquery.scrollTo", "~> 1.4.14"
+
+  # Icons
+  gem "rails-assets-fontawesome", "~> 4.2.0"
+
+  # Code editor (for syntax highlighting inside textareas)
+  gem "rails-assets-ace-builds", "~> 1.1.7"
+
+  # Visual text diffs
+  gem "rails-assets-jsdiff", "~> 1.0.8"
+
+  # jQuery ajax calls wrapped in Ember promises
+  gem "rails-assets-ic-ajax", "~> 2.0.1"
+  gem "rails-assets-ember", "~> 1.7.1"
+
+  # For Markdown parsing
+  gem "rails-assets-marked", "~> 0.3.2"
+
+  gem "rails-assets-bootbox", "~> 3.3.0"
+  gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.12"
+  gem "rails-assets-datatables", "~> 1.10.2"
+  gem "rails-assets-html5shiv", "~> 3.7.0"
+  gem "rails-assets-inflection", "~> 1.4.0"
+  gem "rails-assets-jquery", "~> 1.11.2"
+  gem "rails-assets-jquery-bbq-deparam", "~> 1.2.1"
+  gem "rails-assets-jstz-detect", "~> 1.0.5"
+  gem "rails-assets-livestampjs", "~> 1.1.2"
+  gem "rails-assets-lodash", "~> 2.4.1"
+  gem "rails-assets-moment", "~> 2.8.2"
+  gem "rails-assets-numeral", "~> 1.5.3"
+  gem "rails-assets-pnotify", "~> 2.0.1"
+  gem "rails-assets-qtip2", "~> 2.2.0"
+  gem "rails-assets-selectize", "~> 0.11.2"
+  gem "rails-assets-spinjs", "~> 2.0.0"
+end
+
+# Bundle gems for the local environment. Make sure to
+# put test-only gems in this group so their generators
+# and rake tasks are available in development mode:
+group :development, :test do
+  gem "rspec-rails", "~> 2.99.0"
+  gem "factory_girl_rails", "~> 4.5.0"
+  gem "rspec-html-matchers", "~> 0.5.0"
+
+  # Rspec formatter - Prints overall progress and error details as they happen.
+  gem "fuubar", "~> 1.3.3"
+
+  # Ruby lint/style checker
+  gem "rubocop", "~> 0.27.1", :require => false
+
+  # Code coverage testing
+  gem "coveralls", "~> 0.8.0", :require => false
+
+  # Real browser testing
+  gem "capybara", "~> 2.4.4"
+
+  # Headless webkit for capybara
+  gem "poltergeist", "~> 1.6.0"
+
+  # Clean the database between tests
+  gem "database_cleaner", "~> 1.4.1"
+
+  # JavaScript lint/style checker
+  gem "jshintrb", "~> 0.3.0"
+
+  # For testing drag and drop in capybara.
+  gem "rails-assets-jquery-simulate-ext", "~> 1.3.0"
+
+  # For creating test data in elasticsearch.
+  gem "elasticsearch-persistence", "~> 0.1.7"
+
+  # For parsing URLs in tests.
+  gem "addressable", "~> 2.3.8"
+
+  # For caching external web requests
+  gem "vcr", "~> 2.9.3", :require => false
+  gem "webmock", "~> 1.21.0", :require => false
+end
+
+group :development do
+  # Deployment
+  gem "capistrano", "~> 3.3.5"
+  gem "capistrano-rails", "~> 1.1.2"
+
+  gem "awesome_print", "~> 1.6.1"
+end

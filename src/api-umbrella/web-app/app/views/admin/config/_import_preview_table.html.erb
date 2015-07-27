@@ -1,0 +1,27 @@
+<table class="table table-condensed">
+  <thead>
+    <tr>
+      <th class="text-center" style="width: 80px;">Import?</th>
+      <th>Name</th>
+      <th style="width: 320px;">ID</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% api_ids.each do |id| %>
+      <% api = if(@uploaded_apis_by_id[id]) then @uploaded_apis_by_id[id] else @local_apis_by_id[id] end %>
+      <tr>
+        <td class="text-center">
+          <%= check_box_tag("import_#{group}_api_ids[]", id, true) %>
+        </td>
+        <td><%= api["name"] %></td>
+        <td><%= api["_id"] %></td>
+      </tr>
+      <tr class="line-bottom">
+        <td></td>
+        <td colspan="2">
+          <%= import_yaml_diff(@local_apis_by_id[id], @uploaded_apis_by_id[id]) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

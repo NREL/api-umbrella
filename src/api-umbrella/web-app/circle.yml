@@ -1,0 +1,14 @@
+machine:
+  ruby:
+    version: 2.1.6
+dependencies:
+  cache_directories:
+    - ci_cache
+  post:
+    - mkdir -p ci_cache
+    - find ci_cache -maxdepth 1 -name 'elasticsearch*' -not -name 'elasticsearch-1.5.1' -exec rm -rf {} \;
+    - if [[ ! -e ci_cache/elasticsearch-1.5.1 ]]; then cd ci_cache; wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-1.5.1.tar.gz && tar -xvf elasticsearch-1.5.1.tar.gz; rm elasticsearch-1.5.1.tar.gz; fi
+    - ci_cache/elasticsearch-1.5.1/bin/elasticsearch: {background: true}
+test:
+  override:
+    - bundle exec rake

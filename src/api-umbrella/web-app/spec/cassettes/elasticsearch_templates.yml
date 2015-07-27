@@ -1,0 +1,221 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://raw.githubusercontent.com/NREL/api-umbrella-router/master/config/elasticsearch_templates.json
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Accept:
+      - "*/*; q=0.5, application/xml"
+      Accept-Encoding:
+      - gzip, deflate
+      User-Agent:
+      - Ruby
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Access-Control-Allow-Origin:
+      - https://render.githubusercontent.com
+      Content-Security-Policy:
+      - default-src 'none'
+      X-Xss-Protection:
+      - 1; mode=block
+      X-Frame-Options:
+      - deny
+      X-Content-Type-Options:
+      - nosniff
+      Strict-Transport-Security:
+      - max-age=31536000
+      Etag:
+      - '"d426630bd78408d97d4ae86d0d7a7c224849d203"'
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cache-Control:
+      - max-age=300
+      Content-Length:
+      - '3937'
+      Accept-Ranges:
+      - bytes
+      Date:
+      - Sat, 13 Jun 2015 23:05:25 GMT
+      Via:
+      - 1.1 varnish
+      Connection:
+      - keep-alive
+      X-Served-By:
+      - cache-ord1726-ORD
+      X-Cache:
+      - MISS
+      X-Cache-Hits:
+      - '0'
+      Vary:
+      - Authorization,Accept-Encoding
+      Expires:
+      - Sat, 13 Jun 2015 23:10:25 GMT
+      Source-Age:
+      - '0'
+    body:
+      encoding: ASCII-8BIT
+      string: |
+        [
+          {
+            "id": "api-umbrella-template",
+            "template": {
+              "template": "api-umbrella",
+              "mappings": {
+                "city": {
+                  "_all": {
+                    "enabled": false
+                  },
+                  "_timestamp": {
+                    "enabled": true,
+                    "path": "updated_at"
+                  },
+                  "properties": {
+                    "country": {
+                      "type": "string",
+                      "index": "not_analyzed"
+                    },
+                    "region": {
+                      "type": "string",
+                      "index": "not_analyzed"
+                    },
+                    "city": {
+                      "type": "string",
+                      "index": "not_analyzed"
+                    },
+                    "location": {
+                      "type": "geo_point",
+                      "lat_lon": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "api-umbrella-log-v1-template",
+            "template": {
+              "template": "api-umbrella-logs-v1-*",
+              "settings": {
+                "index": {
+                  "number_of_shards": 3
+                },
+                "analysis": {
+                  "analyzer": {
+                    "keyword_lowercase": {
+                      "type": "custom",
+                      "tokenizer": "keyword",
+                      "filter": ["lowercase"]
+                    },
+                    "path_hierarchy_lowercase": {
+                      "type": "custom",
+                      "tokenizer": "path_hierarchy",
+                      "filter": ["lowercase"]
+                    }
+                  }
+                }
+              },
+              "mappings": {
+                "log": {
+                  "_all": {
+                    "enabled": false
+                  },
+                  "_timestamp": {
+                    "enabled": true,
+                    "path": "request_at"
+                  },
+                  "date_detection": false,
+                  "numeric_detection": false,
+                  "dynamic_templates": [
+                    {
+                      "string_template": {
+                        "match": "*",
+                        "match_mapping_type": "string",
+                        "mapping": {
+                          "type": "string",
+                          "index": "analyzed",
+                          "analyzer": "keyword_lowercase"
+                        }
+                      }
+                    }
+                  ],
+                  "properties": {
+                    "api_key": {
+                      "type": "string",
+                      "index": "not_analyzed"
+                    },
+                    "user_id": {
+                      "type": "string",
+                      "index": "not_analyzed"
+                    },
+                    "request_at": {
+                      "type": "date"
+                    },
+                    "request_ip": {
+                      "type": "string",
+                      "index": "not_analyzed"
+                    },
+                    "request_ip_country": {
+                      "type": "string",
+                      "index": "not_analyzed"
+                    },
+                    "request_ip_region": {
+                      "type": "string",
+                      "index": "not_analyzed"
+                    },
+                    "request_ip_city": {
+                      "type": "string",
+                      "index": "not_analyzed"
+                    },
+                    "request_path_hierarchy": {
+                      "type": "string",
+                      "analyzer": "path_hierarchy_lowercase"
+                    },
+                    "request_size": {
+                      "type": "integer"
+                    },
+                    "response_status": {
+                      "type": "short"
+                    },
+                    "response_age": {
+                      "type": "integer"
+                    },
+                    "response_content_length": {
+                      "type": "integer"
+                    },
+                    "response_size": {
+                      "type": "integer"
+                    },
+                    "response_time": {
+                      "type": "integer"
+                    },
+                    "backend_response_time": {
+                      "type": "integer"
+                    },
+                    "proxy_overhead": {
+                      "type": "integer"
+                    },
+                    "internal_response_time": {
+                      "type": "float"
+                    },
+                    "internal_gatekeeper_time": {
+                      "type": "float"
+                    },
+                    "request_ip_location": {
+                      "type": "geo_point",
+                      "lat_lon": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+    http_version: 
+  recorded_at: Sat, 30 May 2015 09:05:50 GMT
+recorded_with: VCR 2.9.3

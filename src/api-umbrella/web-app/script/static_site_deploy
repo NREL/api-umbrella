@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Exit on any errors
+set -e
+
+# Print the executed commands
+set -v
+
+# Clone if new
+if [ ! -d $CHECKOUT_DIR ]; then
+  git clone $GIT_URL $CHECKOUT_DIR
+fi
+
+# Pull the latest down
+cd $CHECKOUT_DIR
+git fetch
+git reset --hard $GIT_COMMIT
+git submodule update --init --recursive
+
+# Install dependencies
+bundle install --path=vendor/bundle
+
+# Make sure the site can compile and pass any tests.
+bundle exec rake test
+
+# Deploy ahoy!
+bundle exec cap $DEPLOY_ENV deploy

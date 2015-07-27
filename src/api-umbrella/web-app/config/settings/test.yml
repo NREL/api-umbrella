@@ -1,0 +1,10 @@
+web:
+  admin:
+    auth_strategies:
+      enabled:
+        - facebook
+        - github
+        - google
+        - max.gov
+        - myusa
+        - persona
