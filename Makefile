@@ -315,7 +315,9 @@ deps/$(RUBY): deps/$(RUBY).tar.gz
 
 deps/$(RUBY)/.built: deps/$(RUBY)
 	cd $< && ./configure \
-		--prefix=$(PREFIX)/embedded
+		--prefix=$(PREFIX)/embedded \
+		--enable-load-relative \
+		--disable-install-doc
 	cd $< && make
 	touch $@
 
