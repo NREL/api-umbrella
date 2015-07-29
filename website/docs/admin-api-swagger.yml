@@ -1108,6 +1108,9 @@ definitions:
         type: string
       port:
         type: integer
+    required:
+      - host
+      - port
   ApiUrlMatch:
     type: object
     properties:
@@ -1119,6 +1122,9 @@ definitions:
         type: string
       backend_prefix:
         type: string
+    required:
+      - frontend_prefix
+      - backend_prefix
   Api:
     type: object
     properties:
@@ -1137,9 +1143,6 @@ definitions:
         type: string
       backend_host:
         type: string
-      balance_algorithm:
-        type: string
-        enum: ["least_conn", "round_robin", "ip_hash"]
       servers:
         type: array
         items:
@@ -1148,6 +1151,9 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/ApiUrlMatch"
+      balance_algorithm:
+        type: string
+        enum: ["least_conn", "round_robin", "ip_hash"]
       settings:
         $ref: "#/definitions/ApiSettings"
       sub_settings:
@@ -1166,6 +1172,14 @@ definitions:
         $ref: "#/definitions/UpdatedAt"
       updater:
         $ref: "#/definitions/AdminUpdater"
+    required:
+      - name
+      - backend_protocol
+      - frontend_host
+      - backend_host
+      - servers
+      - url_matches
+      - balance_algorithm
   ApiScope:
     type: object
     properties:
