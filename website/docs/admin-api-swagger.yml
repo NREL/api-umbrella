@@ -1,0 +1,1331 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: API Umbrella Admin API
+  description: |-
+    The admin API is accessible via `/api-umbrella/v1`. In order to access this API, you must pass:
+
+    - Your API key via one of the [supported methods](http://nrel.github.io/api-umbrella/docs/api-keys/).
+    - **AND** an admin token via the `X-Admin-Auth-Token` header.
+
+    To find the admin auth token for your admin account, login the web admin tool, and choose "My Account" under the top right gear menu. On that page, you should see your "Admin API Token" listed. Use this in conjunction with your normal API key to make requests to the admin APIs:
+
+    ```http
+    X-Api-Key: YOUR_API_KEY_HERE
+    X-Admin-Auth-Token: YOUR_ADMIN_TOKEN_HERE
+    ```
+securityDefinitions:
+  api_key:
+    type: apiKey
+    in: header
+    name: X-Api-Key
+  admin_auth_token:
+    type: apiKey
+    in: header
+    name: X-Admin-Auth-Token
+security:
+  - api_key: []
+  - admin_auth_token: []
+parameters:
+  datatables-start:
+    name: start
+    in: query
+    description: Offset for pagination (0 based - 0 is the first record)
+    required: false
+    type: integer
+  datatables-length:
+    name: length
+    in: query
+    description: Limit the number of records returned for pagination
+    required: false
+    type: integer
+  datatables-search-value:
+    name: search[value]
+    in: query
+    description: Perform a text search across all records for this string
+    required: false
+    type: string
+  datatables-order-column:
+    name: order[i][column]
+    in: query
+    description: Size of array
+    required: false
+    type: integer
+  datatables-order-dir:
+    name: order[i][dir]
+    in: query
+    description: Size of array
+    required: false
+    type: string
+    enum: ["asc", "desc"]
+  datatables-columns-data:
+    name: columns[i][data]
+    in: query
+    description: The database field name of the column displayed at index `i`
+    required: false
+    type: string
+  datatables-columns-name:
+    name: columns[i][name]
+    in: query
+    description: The human-readable name of the column displayed at index `i`
+    required: false
+    type: string
+paths:
+  /api-umbrella/v1/admin_groups:
+    get:
+      tags:
+        - admin_group
+      summary: Get a list of all admin groups.
+      description: |
+        Get a listing of all admin group records the currently authenticated admin user has permissions to.
+
+        This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
+      parameters:
+        - $ref: '#/parameters/datatables-start'
+        - $ref: '#/parameters/datatables-length'
+        - $ref: '#/parameters/datatables-search-value'
+        - $ref: '#/parameters/datatables-order-column'
+        - $ref: '#/parameters/datatables-order-dir'
+        - $ref: '#/parameters/datatables-columns-data'
+        - $ref: '#/parameters/datatables-columns-name'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              draw:
+                type: integer
+              recordsTotal:
+                type: integer
+              recordsFiltered:
+                type: integer
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/AdminGroup'
+    post:
+      tags:
+        - admin_group
+      summary: Create a new admin group.
+      parameters:
+        - in: body
+          name: body
+          description: AdminGroup object to create
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              admin_group:
+                $ref: "#/definitions/AdminGroup"
+      responses:
+        201:
+          description: Successfully created record
+  /api-umbrella/v1/admin_groups/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: UUID of the admin group
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags:
+        - admin_group
+      summary: Get the admin group
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              admin_group:
+                type: object
+                $ref: '#/definitions/AdminGroup'
+    put:
+      tags:
+        - admin_group
+      summary: Update the admin group
+      parameters:
+        - in: body
+          name: body
+          description: AdminGroup object to update
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              admin_group:
+                $ref: "#/definitions/AdminGroup"
+      responses:
+        204:
+          description: Successfully updated record
+    delete:
+      tags:
+        - admin_group
+      summary: Delete the admin group
+      responses:
+        204:
+          description: Successfully deleted record
+  /api-umbrella/v1/admin_permissions:
+    get:
+      tags:
+        - admin_permission
+      summary: Get a list of all admin permissions.
+      description: |
+        Get a listing of all admin permission records.
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              admin_permissions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    display_order:
+                      type: integer
+  /api-umbrella/v1/admins:
+    get:
+      tags:
+        - admin
+      summary: Get a list of all admin accounts.
+      description: |
+        Get a listing of all admin account records the currently authenticated admin user has permissions to.
+
+        This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
+      parameters:
+        - $ref: '#/parameters/datatables-start'
+        - $ref: '#/parameters/datatables-length'
+        - $ref: '#/parameters/datatables-search-value'
+        - $ref: '#/parameters/datatables-order-column'
+        - $ref: '#/parameters/datatables-order-dir'
+        - $ref: '#/parameters/datatables-columns-data'
+        - $ref: '#/parameters/datatables-columns-name'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              draw:
+                type: integer
+              recordsTotal:
+                type: integer
+              recordsFiltered:
+                type: integer
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Admin'
+    post:
+      tags:
+        - admin
+      summary: Create a new admin account.
+      parameters:
+        - in: body
+          name: body
+          description: Admin object to create
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              admin:
+                $ref: "#/definitions/Admin"
+      responses:
+        201:
+          description: Successfully created record
+  /api-umbrella/v1/admins/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: UUID of the admin account
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags:
+        - admin
+      summary: Get the admin account
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              admin:
+                type: object
+                $ref: '#/definitions/Admin'
+    put:
+      tags:
+        - admin
+      summary: Update the admin account
+      parameters:
+        - in: body
+          name: body
+          description: Admin object to update
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              admin:
+                $ref: "#/definitions/Admin"
+      responses:
+        204:
+          description: Successfully updated record
+    delete:
+      tags:
+        - admin
+      summary: Delete the admin account
+      responses:
+        204:
+          description: Successfully deleted record
+  /api-umbrella/v1/analytics/drilldown:
+    get:
+      tags:
+        - analytics
+      summary: Get a summary of pending configuration changes.
+      parameters:
+        - name: prefix
+          in: query
+          required: true
+          type: string
+        - name: start_at
+          in: query
+          required: true
+          type: string
+          format: date-time
+        - name: end_at
+          in: query
+          required: true
+          type: string
+          format: date-time
+        - name: interval
+          in: query
+          required: true
+          type: string
+          enum: ["month", "week", "day", "hour", "minute"]
+        - name: query
+          in: query
+          required: false
+          type: string
+          description: A string of JSON in the format [jQuery QueryBuilder](http://mistic100.github.io/jQuery-QueryBuilder/) generates for fields to filter.
+        - name: search
+          in: query
+          required: false
+          type: string
+          description: A raw elasticsearch query string.
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              breadcrumbs:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    prefix:
+                      type: string
+                    crumb:
+                      type: string
+              hits_over_time:
+                type: object
+                properties:
+                  cols:
+                    type: array
+                    items:
+                      type: object
+                  rows:
+                    type: array
+                    items:
+                      type: object
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    depth:
+                      type: integer
+                    path:
+                      type: string
+                    terminal:
+                      type: boolean
+                    descendent_prefix:
+                      type: string
+                    hits:
+                      type: integer
+  /api-umbrella/v1/api_scopes:
+    get:
+      tags:
+        - api_scope
+      summary: Get a list of all API scopes.
+      description: |
+        Get a listing of all API scope records the currently authenticated admin user has permissions to.
+
+        This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
+      parameters:
+        - $ref: '#/parameters/datatables-start'
+        - $ref: '#/parameters/datatables-length'
+        - $ref: '#/parameters/datatables-search-value'
+        - $ref: '#/parameters/datatables-order-column'
+        - $ref: '#/parameters/datatables-order-dir'
+        - $ref: '#/parameters/datatables-columns-data'
+        - $ref: '#/parameters/datatables-columns-name'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              draw:
+                type: integer
+              recordsTotal:
+                type: integer
+              recordsFiltered:
+                type: integer
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/ApiScope'
+    post:
+      tags:
+        - api_scope
+      summary: Create a new API scope.
+      parameters:
+        - in: body
+          name: body
+          description: API scope object to create
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              api_scope:
+                $ref: "#/definitions/ApiScope"
+      responses:
+        201:
+          description: Successfully created record
+  /api-umbrella/v1/api_scopes/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: UUID of the API scope
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags:
+        - api_scope
+      summary: Get the API scope
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              api_scope:
+                type: object
+                $ref: '#/definitions/ApiScope'
+    put:
+      tags:
+        - api_scope
+      summary: Update the API scope
+      parameters:
+        - in: body
+          name: body
+          description: API scope object to update
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              api_scope:
+                $ref: "#/definitions/ApiScope"
+      responses:
+        204:
+          description: Successfully updated record
+    delete:
+      tags:
+        - api_scope
+      summary: Delete the API scope
+      responses:
+        204:
+          description: Successfully deleted record
+  /api-umbrella/v1/apis:
+    get:
+      tags:
+        - api
+      summary: Get a list of all API backends.
+      description: |
+        Get a listing of all API backend records the currently authenticated admin user has permissions to.
+
+        This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
+      parameters:
+        - $ref: '#/parameters/datatables-start'
+        - $ref: '#/parameters/datatables-length'
+        - $ref: '#/parameters/datatables-search-value'
+        - $ref: '#/parameters/datatables-order-column'
+        - $ref: '#/parameters/datatables-order-dir'
+        - $ref: '#/parameters/datatables-columns-data'
+        - $ref: '#/parameters/datatables-columns-name'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              draw:
+                type: integer
+              recordsTotal:
+                type: integer
+              recordsFiltered:
+                type: integer
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Api'
+    post:
+      tags:
+        - api
+      summary: Create a new API backend.
+      parameters:
+        - in: body
+          name: body
+          description: API backend object to create
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              api:
+                $ref: "#/definitions/Api"
+      responses:
+        201:
+          description: Successfully created record
+  /api-umbrella/v1/apis/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: UUID of the API backend
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags:
+        - api
+      summary: Get the API backend
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              admin:
+                type: object
+                $ref: '#/definitions/Api'
+    put:
+      tags:
+        - api
+      summary: Update the API backend
+      parameters:
+        - in: body
+          name: body
+          description: API backend object to update
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              admin_group:
+                $ref: "#/definitions/Api"
+      responses:
+        204:
+          description: Successfully updated record
+    delete:
+      tags:
+        - api
+      summary: Delete the API backend
+      responses:
+        204:
+          description: Successfully deleted record
+  /api-umbrella/v1/config/pending_changes:
+    get:
+      tags:
+        - config
+      summary: Get a summary of pending configuration changes.
+      description: |
+        Return a summary of configuration changes for API backends and website backends that have not yet been published.
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              config:
+                title: Config
+                type: object
+                properties:
+                  apis:
+                    $ref: '#/definitions/ConfigDiffGroup'
+                  website_backends:
+                    $ref: '#/definitions/ConfigDiffGroup'
+  /api-umbrella/v1/config/publish:
+    post:
+      tags:
+        - config
+      summary: Publish API backend or website backend changes.
+      parameters:
+        - in: body
+          name: body
+          description: Object describing which API backends or website records to publish
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              config:
+                title: Config
+                type: object
+                properties:
+                  apis:
+                    $ref: '#/definitions/ConfigPublish'
+                  website_backends:
+                    $ref: '#/definitions/ConfigPublish'
+      responses:
+        201:
+          description: Successfully published changes
+          schema:
+            title: Response
+            type: object
+            properties:
+              config_version:
+                $ref: "#/definitions/ConfigVersion"
+  /api-umbrella/v1/contact:
+    post:
+      tags:
+        - contact
+      summary: Send a support e-mail to the website administrator.
+      parameters:
+        - in: body
+          name: body
+          description: Object describing which API backends or website records to publish
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              contact:
+                title: Contact
+                type: object
+                properties:
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  message:
+                    type: string
+      responses:
+        200:
+          description: Successfully sent e-mail
+          schema:
+            title: Response
+            type: object
+            properties:
+              submitted:
+                type: string
+                format: date-time
+  /api-umbrella/v1/user_roles:
+    get:
+      tags:
+        - user_role
+      summary: Get a list of all user roles available.
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              user_roles:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+  /api-umbrella/v1/users:
+    get:
+      tags:
+        - user
+      summary: Get a list of all API users/API keys.
+      description: |
+        Get a listing of all API user/API key records the currently authenticated admin user has permissions to.
+
+        This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
+      parameters:
+        - $ref: '#/parameters/datatables-start'
+        - $ref: '#/parameters/datatables-length'
+        - $ref: '#/parameters/datatables-search-value'
+        - $ref: '#/parameters/datatables-order-column'
+        - $ref: '#/parameters/datatables-order-dir'
+        - $ref: '#/parameters/datatables-columns-data'
+        - $ref: '#/parameters/datatables-columns-name'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              draw:
+                type: integer
+              recordsTotal:
+                type: integer
+              recordsFiltered:
+                type: integer
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/User'
+    post:
+      tags:
+        - user
+      summary: Create a new API user/API key.
+      parameters:
+        - in: body
+          name: body
+          description: API user object to create
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              user:
+                $ref: "#/definitions/User"
+      responses:
+        201:
+          description: Successfully created record
+  /api-umbrella/v1/users/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: UUID of the API user/API key
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags:
+        - user
+      summary: Get the API user/API key
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              user:
+                type: object
+                $ref: '#/definitions/User'
+    put:
+      tags:
+        - user
+      summary: Update the API user/API key
+      parameters:
+        - in: body
+          name: body
+          description: API user object to update
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              user:
+                $ref: "#/definitions/User"
+      responses:
+        204:
+          description: Successfully updated record
+    delete:
+      tags:
+        - user
+      summary: Delete the API user/API key
+      responses:
+        204:
+          description: Successfully deleted record
+  /api-umbrella/v1/website_backends:
+    get:
+      tags:
+        - website_backend
+      summary: Get a list of all website backends.
+      description: |
+        Get a listing of all website backend records the currently authenticated admin user has permissions to.
+
+        This API's query parameters and responses are intended to be compatible with the [DataTables server-side processing API](https://datatables.net/manual/server-side).
+      parameters:
+        - $ref: '#/parameters/datatables-start'
+        - $ref: '#/parameters/datatables-length'
+        - $ref: '#/parameters/datatables-search-value'
+        - $ref: '#/parameters/datatables-order-column'
+        - $ref: '#/parameters/datatables-order-dir'
+        - $ref: '#/parameters/datatables-columns-data'
+        - $ref: '#/parameters/datatables-columns-name'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              draw:
+                type: integer
+              recordsTotal:
+                type: integer
+              recordsFiltered:
+                type: integer
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/WebsiteBackend'
+    post:
+      tags:
+        - website_backend
+      summary: Create a new website backend.
+      parameters:
+        - in: body
+          name: body
+          description: Website backend object to create
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              website_backend:
+                $ref: "#/definitions/WebsiteBackend"
+      responses:
+        201:
+          description: Successfully created record
+  /api-umbrella/v1/website_backends/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: UUID of the website backend
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags:
+        - website_backend
+      summary: Get the website backend
+      responses:
+        200:
+          description: Successful response
+          schema:
+            title: Response
+            type: object
+            properties:
+              website_backend:
+                type: object
+                $ref: '#/definitions/WebsiteBackend'
+    put:
+      tags:
+        - website_backend
+      summary: Update the website backend
+      parameters:
+        - in: body
+          name: body
+          description: Website backend object to update
+          required: true
+          schema:
+            title: Request
+            type: object
+            properties:
+              website_backend:
+                $ref: "#/definitions/WebsiteBackend"
+      responses:
+        204:
+          description: Successfully updated record
+    delete:
+      tags:
+        - website_backend
+      summary: Delete the website backend
+      responses:
+        204:
+          description: Successfully deleted record
+definitions:
+  CreatedAt:
+    type: string
+    format: date-time
+    readOnly: true
+    description: The time the record was created (ISO 8601 format)
+  AdminCreator:
+    type: object
+    readOnly: true
+    properties:
+      username:
+        type: string
+        format: email
+        readOnly: true
+        description: E-mail address of the admin that created the record
+  UpdatedAt:
+    type: string
+    format: date-time
+    readOnly: true
+    description: The time the record was last updated (ISO 8601 format)
+  AdminUpdater:
+    type: object
+    readOnly: true
+    properties:
+      username:
+        type: string
+        format: email
+        readOnly: true
+        description: E-mail address of the admin that last updated the record
+  AdminGroup:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      name:
+        type: string
+      permission_ids:
+        type: array
+        items:
+          type: string
+      api_scope_ids:
+        type: array
+        items:
+          type: string
+          format: uuid
+      created_at:
+        $ref: "#/definitions/CreatedAt"
+      creator:
+        $ref: "#/definitions/AdminCreator"
+      updated_at:
+        $ref: "#/definitions/UpdatedAt"
+      updater:
+        $ref: "#/definitions/AdminUpdater"
+  Admin:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      username:
+        type: string
+        description: Username of the admin (typically an e-mail address)
+      group_ids:
+        type: array
+        items:
+          type: string
+      notes:
+        type: string
+      created_at:
+        $ref: "#/definitions/CreatedAt"
+      creator:
+        $ref: "#/definitions/AdminCreator"
+      updated_at:
+        $ref: "#/definitions/UpdatedAt"
+      updater:
+        $ref: "#/definitions/AdminUpdater"
+  ApiSettingsHeader:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      key:
+        type: string
+      value:
+        type: string
+  ApiRewrite:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      matcher_type:
+        type: string
+        enum: ["route", "regex"]
+      http_method:
+        type: string
+        enum: ["any", "GET", "POST", "PUT", "DELETE", "HEAD", "TRACE", "OPTIONS", "CONNECT", "PATCH"]
+      frontend_matcher:
+        type: string
+      backend_replacement:
+        type: string
+  ApiSettingsRateLimit:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      duration:
+        type: integer
+      accuracy:
+        type: integer
+      limit_by:
+        type: string
+        enum: ["ip", "apiKey"]
+      distributed:
+        type: boolean
+      response_headers:
+        type: boolean
+  ApiSettings:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      append_query_string:
+        type: string
+        description: Append query string parameters
+      headers:
+        description: Set request headers
+        type: array
+        items:
+          $ref: "#/definitions/ApiSettingsHeader"
+      headers_string:
+        type: string
+        description: Set the `headers` via a new-line separated list
+      default_response_headers:
+        type: array
+        items:
+          $ref: "#/definitions/ApiSettingsHeader"
+      default_response_headers_string:
+        type: string
+      override_response_headers:
+        type: array
+        items:
+          $ref: "#/definitions/ApiSettingsHeader"
+      override_response_headers_string:
+        type: string
+      http_basic_auth:
+        type: string
+        description: HTTP basic authentication
+      require_https:
+        type: string
+        enum: ["required_return_error", "required_return_redirect", "transition_return_error", "transition_return_redirect optional"]
+        description: HTTPS requirements
+      require_https_transition_start_at:
+        type: string
+        format: date-time
+      disable_api_key:
+        type: boolean
+      api_key_verification_level:
+        type: string
+        enum: ["none", "transition_email", "required_email"]
+      api_key_verification_transition_start_at:
+        type: string
+        format: date-time
+      required_roles:
+        type: array
+        items:
+          type: string
+      required_roles_override:
+        type: boolean
+      allowed_ips:
+        type: array
+        items:
+          type: string
+      allowed_referers:
+        type: array
+        items:
+          type: string
+      rate_limit_mode:
+        type: string
+        enum: ["unlimited", "custom"]
+      rate_limits:
+        type: array
+        items:
+          $ref: "#/definitions/ApiSettingsRateLimit"
+      anonymous_rate_limit_behavior:
+        type: string
+        enum: ["ip_fallback", "ip_only"]
+      authenticated_rate_limit_behavior:
+        type: string
+        enum: ["all", "api_key_only"]
+      pass_api_key_header:
+        type: boolean
+      pass_api_key_query_param:
+        type: boolean
+      error_templates:
+        type: object
+      error_data:
+        type: object
+      error_data_yaml_strings:
+        type: object
+  ApiSubSettings:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      http_method:
+        type: string
+        enum: ["any", "GET", "POST", "PUT", "DELETE", "HEAD", "TRACE", "OPTIONS", "CONNECT", "PATCH"]
+      regex:
+        type: string
+      settings:
+        $ref: "#/definitions/ApiSettings"
+  ApiServer:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      host:
+        type: string
+      port:
+        type: integer
+  ApiUrlMatch:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      frontend_prefix:
+        type: string
+      backend_prefix:
+        type: string
+  Api:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      name:
+        type: string
+      sort_order:
+        type: integer
+      backend_protocol:
+        type: string
+        enum: ["http", "https"]
+      frontend_host:
+        type: string
+      backend_host:
+        type: string
+      balance_algorithm:
+        type: string
+        enum: ["least_conn", "round_robin", "ip_hash"]
+      servers:
+        type: array
+        items:
+          $ref: "#/definitions/ApiServer"
+      url_matches:
+        type: array
+        items:
+          $ref: "#/definitions/ApiUrlMatch"
+      settings:
+        $ref: "#/definitions/ApiSettings"
+      sub_settings:
+        type: array
+        items:
+          $ref: "#/definitions/ApiSubSettings"
+      rewrites:
+        type: array
+        items:
+          $ref: "#/definitions/ApiRewrite"
+      created_at:
+        $ref: "#/definitions/CreatedAt"
+      creator:
+        $ref: "#/definitions/AdminCreator"
+      updated_at:
+        $ref: "#/definitions/UpdatedAt"
+      updater:
+        $ref: "#/definitions/AdminUpdater"
+  ApiScope:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      name:
+        type: string
+      host:
+        type: string
+      path_prefix:
+        type: string
+      created_at:
+        $ref: "#/definitions/CreatedAt"
+      creator:
+        $ref: "#/definitions/AdminCreator"
+      updated_at:
+        $ref: "#/definitions/UpdatedAt"
+      updater:
+        $ref: "#/definitions/AdminUpdater"
+  ConfigDiff:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      mode:
+        type: string
+        enum: ["new", "modified", "deleted", "identical"]
+      name:
+        type: string
+      active:
+        type: object
+      active_yaml:
+        type: string
+      pending:
+        type: object
+      pending_yaml:
+        type: string
+  ArrayOfConfigDiffs:
+    type: array
+    items:
+      $ref: "#/definitions/ConfigDiff"
+  ConfigDiffGroup:
+    type: object
+    properties:
+      new:
+        $ref: "#/definitions/ArrayOfConfigDiffs"
+      modified:
+        $ref: "#/definitions/ArrayOfConfigDiffs"
+      deleted:
+        $ref: "#/definitions/ArrayOfConfigDiffs"
+      identical:
+        $ref: "#/definitions/ArrayOfConfigDiffs"
+  ConfigPublish:
+    type: object
+    additionalProperties:
+      title: ConfigPublishRecord
+      type: object
+      properties:
+        publish:
+          type: string
+          enum: ["0", "1"]
+  ConfigVersion:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      verison:
+        type: string
+        format: date-time
+      config:
+        title: Config
+        type: object
+        properties:
+          apis:
+            $ref: '#/definitions/Api'
+          website_backends:
+            $ref: '#/definitions/WebsiteBackend'
+      created_at:
+        $ref: "#/definitions/CreatedAt"
+      updated_at:
+        $ref: "#/definitions/UpdatedAt"
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      first_name:
+        type: string
+      last_name:
+        type: string
+      email:
+        type: string
+      website:
+        type: string
+      use_description:
+        type: string
+      registration_source:
+        type: string
+      throttle_by_ip:
+        type: boolean
+      roles:
+        type: string
+      enabled:
+        type: string
+      api_key:
+        type: string
+        description: The full API key. This is only returned on initial user creation and to the administrator who created the user for 10 minutes after creation.
+      api_key_hides_at:
+        type: string
+        format: date-time
+        description: When an administrator creates an API key, the full API key will be returned initially, but it's suggested that the full API key be hidden after this expiration date (10 minutes after creation).
+      api_key_preview:
+        type: string
+        description: The first 6 characters of the API key. This is intended to allow administrators to identify API keys without exposing the full API keys to admins.
+      email_verified:
+        type: boolean
+      registration_ip:
+        type: string
+      registration_user_agent:
+        type: string
+      registration_referer:
+        type: string
+      registration_origin:
+        type: string
+      created_at:
+        $ref: "#/definitions/CreatedAt"
+      creator:
+        $ref: "#/definitions/AdminCreator"
+      updated_at:
+        $ref: "#/definitions/UpdatedAt"
+      updater:
+        $ref: "#/definitions/AdminUpdater"
+  WebsiteBackend:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        readOnly: true
+      frontend_host:
+        type: string
+      backend_protocol:
+        type: string
+        enum: ["http", "https"]
+      server_host:
+        type: string
+      server_port:
+        type: integer
+      created_at:
+        $ref: "#/definitions/CreatedAt"
+      creator:
+        $ref: "#/definitions/AdminCreator"
+      updated_at:
+        $ref: "#/definitions/UpdatedAt"
+      updater:
+        $ref: "#/definitions/AdminUpdater"

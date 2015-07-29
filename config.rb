@@ -82,6 +82,6 @@ set :markdown, {
   :smart_quotes => ['apos', 'apos', 'quot', 'quot'],
 }
 
-ignore "docs/admin-api.blueprint.md"
+ignore "docs/admin-api-swagger.yml"
 ignore "chef/*"
 ignore "workspace/*"
