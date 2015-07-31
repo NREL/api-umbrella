@@ -80,7 +80,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'basIC ' + new Buffer(this.apiKey + ':').toString('base64'),
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           body.should.eql('Hello World');
           done();
@@ -92,7 +92,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': '  Basic     ' + new Buffer(this.apiKey + ':').toString('base64') + '   ',
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           body.should.eql('Hello World');
           done();
@@ -104,7 +104,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'Basic ' + new Buffer(this.apiKey + ':').toString('base64') + 'zzzzz aaaa',
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           body.should.eql('Hello World');
           done();
@@ -132,7 +132,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': '',
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           response.statusCode.should.eql(403);
           body.should.include('API_KEY_MISSING');
@@ -145,7 +145,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'foo bar',
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           response.statusCode.should.eql(403);
           body.should.include('API_KEY_MISSING');
@@ -158,7 +158,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'Basic ' + new Buffer(':' + this.apiKey).toString('base64'),
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           response.statusCode.should.eql(403);
           body.should.include('API_KEY_MISSING');
@@ -171,7 +171,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'Digest ' + new Buffer(this.apiKey + ':').toString('base64'),
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           response.statusCode.should.eql(403);
           body.should.include('API_KEY_MISSING');
@@ -184,7 +184,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'Basic ' + new Buffer(this.apiKey).toString('base64'),
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           response.statusCode.should.eql(403);
           body.should.include('API_KEY_MISSING');
@@ -197,7 +197,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'Basic',
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           response.statusCode.should.eql(403);
           body.should.include('API_KEY_MISSING');
@@ -210,7 +210,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'Basic ',
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           response.statusCode.should.eql(403);
           body.should.include('API_KEY_MISSING');
@@ -223,7 +223,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'Basic z',
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           response.statusCode.should.eql(403);
           body.should.include('API_KEY_MISSING');
@@ -236,7 +236,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'Basic zF7&F@#@@',
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           response.statusCode.should.eql(403);
           body.should.include('API_KEY_MISSING');
@@ -249,7 +249,7 @@ describe('api key validation', function() {
           headers: {
             'Authorization': 'Basic /9j/4AAQSkZJRgABAQAAAQABAAD//gA',
           }
-        }
+        };
         request.get('http://localhost:9333/hello', options, function(error, response, body) {
           response.statusCode.should.eql(403);
           body.should.include('API_KEY_MISSING');
