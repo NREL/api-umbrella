@@ -1,7 +1,7 @@
 'use strict';
 
 require('../test_helper');
-require('../../lib/models/api_user');
+require('../support/models/api_user');
 
 var Factory = require('factory-lady'),
     uuid = require('node-uuid'),

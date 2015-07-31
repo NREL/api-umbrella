@@ -8,7 +8,7 @@ var async = require('async'),
     mongoose = require('mongoose'),
     request = require('request');
 
-require('../../lib/models/rate_limit_model');
+require('../support/models/rate_limit_model');
 var RateLimit = mongoose.testConnection.model('RateLimit');
 
 describe('distributed rate limit sync', function() {

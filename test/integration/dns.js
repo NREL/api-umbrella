@@ -10,7 +10,6 @@ var _ = require('lodash'),
     ipaddr = require('ipaddr.js'),
     path = require('path'),
     request = require('request'),
-    supervisorSignal = require('../../lib/supervisor_signal'),
     Tail = require('tail').Tail;
 
 var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
@@ -50,6 +49,7 @@ xdescribe('dns backend resolving', function() {
     }
 
     // Reload unbound to read the new config file.
+    /*
     supervisorSignal('test-env-unbound', 'SIGHUP', function(error) {
       if(error) {
         clearTimeout(logTailTimeout);
@@ -61,6 +61,7 @@ xdescribe('dns backend resolving', function() {
         callback();
       }
     });
+    */
   }
 
   before(function setLocalInterfaceIps() {

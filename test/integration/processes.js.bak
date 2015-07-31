@@ -9,7 +9,7 @@ var _ = require('lodash'),
     Factory = require('factory-lady'),
     fs = require('fs'),
     path = require('path'),
-    processEnv = require('../support/process_env'),
+    processEnv = require('../../lib/process_env'),
     request = require('request');
 
 var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
@@ -68,6 +68,7 @@ describe('processes', function() {
                   if(error) {
                     return next('Error gathering lsof details: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
                   }
+                  console.info(' ====== LSOF ====== ');
 
                   var lines = stdout.split('\n');
                   var descriptorCount = 0;
@@ -78,11 +79,13 @@ describe('processes', function() {
                       descriptorCount++;
 
                       if(_.contains(line, 'urandom')) {
+                        console.info(line);
                         urandomDescriptorCount++;
                       }
                     }
                   });
 
+                  console.info('urandomDescriptorCount: ' , urandomDescriptorCount);
                   descriptorCounts.push(descriptorCount);
                   urandomDescriptorCounts.push(urandomDescriptorCount);
 

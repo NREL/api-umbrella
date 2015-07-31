@@ -22,7 +22,6 @@ require('./support/factories');
 require('./support/keepalive_test_backend_app');
 
 global.shared = {};
-require('./support/config_reloader_shared_examples');
 require('./support/distributed_rate_limits_sync_shared_examples');
 require('./support/helper_functions');
 require('./support/server_shared_examples');
