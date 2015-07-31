@@ -82,7 +82,7 @@ local function create_aliases()
       alias = "api-umbrella-logs-" .. tomorrow,
       index = "api-umbrella-logs-" .. config["log_template_version"] .. "-" .. tomorrow,
     })
-    table.insert({
+    table.insert(aliases, {
       alias = "api-umbrella-logs-write-" .. tomorrow,
       index = "api-umbrella-logs-" .. config["log_template_version"] .. "-" .. tomorrow,
     })
