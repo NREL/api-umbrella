@@ -75,6 +75,42 @@ describe('api key validation', function() {
         });
       });
 
+      it('parses the basic auth scheme case insensitively', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'basIC ' + new Buffer(this.apiKey + ':').toString('base64'),
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          body.should.eql('Hello World');
+          done();
+        });
+      });
+
+      it('parses the basic auth header with extraneous spaces', function(done) {
+        var options = {
+          headers: {
+            'Authorization': '  Basic     ' + new Buffer(this.apiKey + ':').toString('base64') + '   ',
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          body.should.eql('Hello World');
+          done();
+        });
+      });
+
+      it('parses the basic auth header with extraneous trailing text', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'Basic ' + new Buffer(this.apiKey + ':').toString('base64') + 'zzzzz aaaa',
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          body.should.eql('Hello World');
+          done();
+        });
+      });
+
       it('prefers X-Api-Key over all other options', function(done) {
         request.get('http://invalid:@localhost:9333/hello?api_key=invalid', { headers: { 'X-Api-Key': this.apiKey } }, function(error, response, body) {
           body.should.eql('Hello World');
@@ -85,6 +121,138 @@ describe('api key validation', function() {
       it('prefers the GET param over basic auth username', function(done) {
         request.get('http://invalid:@localhost:9333/hello?api_key=' + this.apiKey, function(error, response, body) {
           body.should.eql('Hello World');
+          done();
+        });
+      });
+    });
+
+    describe('invalid http basic auth headers', function() {
+      it('denies requests with empty authorization header', function(done) {
+        var options = {
+          headers: {
+            'Authorization': '',
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          response.statusCode.should.eql(403);
+          body.should.include('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('denies requests with unknown authorization header', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'foo bar',
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          response.statusCode.should.eql(403);
+          body.should.include('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('denies requests using the password, rather than username', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'Basic ' + new Buffer(':' + this.apiKey).toString('base64'),
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          response.statusCode.should.eql(403);
+          body.should.include('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('denies requests with the wrong authorization scheme', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'Digest ' + new Buffer(this.apiKey + ':').toString('base64'),
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          response.statusCode.should.eql(403);
+          body.should.include('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('denies requests with basic authorization header but value does not include password separator', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'Basic ' + new Buffer(this.apiKey).toString('base64'),
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          response.statusCode.should.eql(403);
+          body.should.include('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('denies requests with basic authorization header but no value (without space)', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'Basic',
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          response.statusCode.should.eql(403);
+          body.should.include('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('denies requests with basic authorization header but no value (with space)', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'Basic ',
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          response.statusCode.should.eql(403);
+          body.should.include('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('denies requests with basic authorization header without valid base64 encoded value (decodes to empty string)', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'Basic z',
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          response.statusCode.should.eql(403);
+          body.should.include('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('denies requests with basic authorization header without valid base64 encoded value (invalid base64 characters)', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'Basic zF7&F@#@@',
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          response.statusCode.should.eql(403);
+          body.should.include('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('denies requests with basic authorization header without valid base64 encoded value (decodes to binary)', function(done) {
+        var options = {
+          headers: {
+            'Authorization': 'Basic /9j/4AAQSkZJRgABAQAAAQABAAD//gA',
+          }
+        }
+        request.get('http://localhost:9333/hello', options, function(error, response, body) {
+          response.statusCode.should.eql(403);
+          body.should.include('API_KEY_MISSING');
           done();
         });
       });
