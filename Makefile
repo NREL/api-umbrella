@@ -20,10 +20,10 @@ DNSMASQ_DIGEST:=md5
 DNSMASQ_CHECKSUM:=c2d56b11317336bc788ded4298642e2e
 DNSMASQ_URL:=http://www.thekelleys.org.uk/dnsmasq/$(DNSMASQ).tar.gz
 
-ELASTICSEARCH_VERSION:=1.6.0
+ELASTICSEARCH_VERSION:=1.7.1
 ELASTICSEARCH:=elasticsearch-$(ELASTICSEARCH_VERSION)
 ELASTICSEARCH_DIGEST:=sha1
-ELASTICSEARCH_CHECKSUM:=cb8522f5d3daf03ef96ed533d027c0e3d494e34b
+ELASTICSEARCH_CHECKSUM:=0984ae27624e57c12c33d4a559c3ebae25e74508
 ELASTICSEARCH_URL:=https://download.elastic.co/elasticsearch/elasticsearch/$(ELASTICSEARCH).tar.gz
 
 FREEGEOIP_VERSION:=3.0.4
@@ -57,10 +57,10 @@ LIBYAML_DIGEST:=md5
 LIBYAML_CHECKSUM:=5fe00cda18ca5daeb43762b80c38e06e
 LIBYAML_URL:=http://pyyaml.org/download/libyaml/yaml-$(LIBYAML_VERSION).tar.gz
 
-LUA_RESTY_HTTP_VERSION:=0.05
+LUA_RESTY_HTTP_VERSION:=0.06
 LUA_RESTY_HTTP:=lua-resty-http-$(LUA_RESTY_HTTP_VERSION)
 LUA_RESTY_HTTP_DIGEST:=md5
-LUA_RESTY_HTTP_CHECKSUM:=bf489d545d99c11f8deef769cfd5fec2
+LUA_RESTY_HTTP_CHECKSUM:=d828ba0da7bc8f39e0ce0565912aa597
 LUA_RESTY_HTTP_URL:=https://github.com/pintsized/lua-resty-http/archive/v$(LUA_RESTY_HTTP_VERSION).tar.gz
 
 LUA_RESTY_LOGGER_SOCKET_VERSION:=89864590fea7273bff37925d11e7fc4239bb2f8c
@@ -87,17 +87,17 @@ LUSTACHE_DIGEST:=md5
 LUSTACHE_CHECKSUM:=7c64dd36bbb02e71a0e60e847b70d561
 LUSTACHE_URL:=https://github.com/Olivine-Labs/lustache/archive/$(LUSTACHE_VERSION).tar.gz
 
-MONGODB_VERSION:=3.0.4
+MONGODB_VERSION:=3.0.5
 MONGODB:=mongodb-$(MONGODB_VERSION)
 MONGODB_DIGEST:=md5
-MONGODB_CHECKSUM:=df7d1ed6538f3568cf6d130721694b42
+MONGODB_CHECKSUM:=0b2d7dddc9ad3387a91501b9fc344bbe
 MONGODB_URL:=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-$(MONGODB_VERSION).tgz
 
-MORA_VERSION:=a3adc331dc78d988e4f1c2310902d56c3e612d32
+MORA_VERSION:=0c409c9cbb283708e92cc69a50281ac536f97874
 MORA:=mora-$(MORA_VERSION)
 MORA_DIGEST:=md5
-MORA_CHECKSUM:=6d646dfcc5b476840e767ad6bf302ebd
-MORA_URL:=https://github.com/GUI/mora/archive/$(MORA_VERSION).tar.gz
+MORA_CHECKSUM:=563945c899b30099543254df84b487d7
+MORA_URL:=https://github.com/emicklei/mora/archive/$(MORA_VERSION).tar.gz
 
 NGX_TXID_VERSION:=f1c197cb9c42e364a87fbb28d5508e486592ca42
 NGX_TXID:=ngx_txid-$(NGX_TXID_VERSION)
@@ -588,15 +588,15 @@ INSPECT_VERSION:=3.0-1
 LIBCIDR_FFI:=libcidr-ffi
 LIBCIDR_FFI_VERSION:=0.1.0-1
 LUA_CMSGPACK:=lua-cmsgpack
-LUA_CMSGPACK_VERSION:=0.3-2
+LUA_CMSGPACK_VERSION:=0.4.0-0
 LUAUTF8:=luautf8
-LUAUTF8_VERSION:=0.1.0-1
+LUAUTF8_VERSION:=0.1.1-1
 LUAPOSIX:=luaposix
 LUAPOSIX_VERSION:=33.3.1-1
 LUASOCKET:=luasocket
 LUASOCKET_VERSION:=2.0.2-6
 LYAML:=lyaml
-LYAML_VERSION:=5.1.4-2
+LYAML_VERSION:=6.0-1
 PENLIGHT:=penlight
 PENLIGHT_VERSION:=1.3.2-2
 STDLIB:=stdlib
@@ -631,7 +631,7 @@ vendor/lib/luarocks/rocks/$(LUASOCKET)/$(LUASOCKET_VERSION): $(PREFIX)/embedded/
 	touch $@
 
 vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install https://raw.githubusercontent.com/GUI/lyaml/empty-null-release/lyaml-git-1.rockspec YAML_DIR=$(PREFIX)/embedded
+	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LYAML) $(LYAML_VERSION) YAML_DIR=$(PREFIX)/embedded
 	touch $@
 
 vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
