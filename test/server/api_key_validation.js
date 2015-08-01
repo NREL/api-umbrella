@@ -100,18 +100,6 @@ describe('api key validation', function() {
         });
       });
 
-      it('parses the basic auth header with extraneous trailing text', function(done) {
-        var options = {
-          headers: {
-            'Authorization': 'Basic ' + new Buffer(this.apiKey + ':').toString('base64') + 'zzzzz aaaa',
-          }
-        };
-        request.get('http://localhost:9080/hello', options, function(error, response, body) {
-          body.should.eql('Hello World');
-          done();
-        });
-      });
-
       it('prefers X-Api-Key over all other options', function(done) {
         request.get('http://invalid:@localhost:9080/hello?api_key=invalid', { headers: { 'X-Api-Key': this.apiKey } }, function(error, response, body) {
           body.should.eql('Hello World');
