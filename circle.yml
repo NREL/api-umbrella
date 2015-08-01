@@ -39,3 +39,9 @@ test:
         environment:
           PATH: "../../../ci_cache/build/embedded/bin:$PATH"
     - cp src/api-umbrella/web-app/spec/reports/web-app.xml $CIRCLE_TEST_REPORTS/rspec/
+experimental:
+  notify:
+    branches:
+      ignore:
+        # Ignore the lua branches for now for notification purposes.
+        - /lua.*/
