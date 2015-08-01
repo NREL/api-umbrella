@@ -1,5 +1,5 @@
+local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local plutils = require "pl.utils"
-local utf8 = require "lua-utf8"
 local utils = require "api-umbrella.proxy.utils"
 local inspect = require "inspect"
 
@@ -87,14 +87,14 @@ function _M.set_request_hierarchy(data)
   data["request_hierarchy"] = request_hierarchy
 end
 
-function _M.recursive_utf8_escape(data)
+local function recursive_escape_uri_non_ascii(data)
   if not data then return end
 
   for key, value in pairs(data) do
     if type(value) == "string" then
-      data[key] = utf8.escape(value)
+      data[key] = escape_uri_non_ascii(value)
     elseif type(value) == "table" then
-      _M.recursive_utf8_escape(value)
+      recursive_escape_uri_non_ascii(value)
     end
   end
 end
@@ -107,7 +107,7 @@ function _M.set_url_fields(data)
   -- "request_uri" has the raw encoding of the URL as it was passed in (eg, for
   -- url escaped encodings), which we'll prefer for consistency.
   local parts = split(ngx.ctx.original_request_uri, "?", true, 2)
-  data["request_path"] = parts[1]
+  data["request_path"] = escape_uri_non_ascii(parts[1])
 
   -- Extract the query string arguments (minus "api_key" which we want to mask
   -- from logging in the URL fields that will be shown in the admin interface).
@@ -123,13 +123,13 @@ function _M.set_url_fields(data)
     -- arguments, we now might have invalid or wonky characters that will cause
     -- invalid JSON and prevent ElasticSearch from indexing the request. So run
     -- through all the arguments and escape them.
-    _M.recursive_utf8_escape(data["request_query"])
+    recursive_escape_uri_non_ascii(data["request_query"])
   end
 
   -- Construct the full URL.
   data["request_url"] = data["request_scheme"] .. "://" .. data["request_host"] .. data["request_path"]
   if args then
-    data["request_url"] = data["request_url"] .. "?" .. args
+    data["request_url"] = data["request_url"] .. "?" .. escape_uri_non_ascii(args)
   end
 end
 

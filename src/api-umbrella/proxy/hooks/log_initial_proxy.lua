@@ -1,6 +1,5 @@
 local cjson = require "cjson"
 local inspect = require "inspect"
-local utf8 = require "lua-utf8"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local logger = require "resty.logger.socket"
 local utils = require "api-umbrella.proxy.utils"
@@ -49,7 +48,6 @@ local function log_request()
     request_ip = ngx_var.remote_addr,
     request_method = ngx_var.request_method,
     request_origin = request_headers["origin"],
-    request_path = ngx_ctx.uri,
     request_referer = request_headers["referer"],
     request_scheme = ngx_var.real_scheme,
     request_size = tonumber(ngx_var.request_length),
@@ -111,11 +109,11 @@ local function log_request()
     end
   end
 
-  -- Compute the request_hierarchy field.
-  log_utils.set_request_hierarchy(data)
-
   -- Set the various URL fields.
   log_utils.set_url_fields(data)
+
+  -- Compute the request_hierarchy field.
+  log_utils.set_request_hierarchy(data)
 
   if request_headers["user-agent"] then
     local user_agent_data = user_agent_parser(request_headers["user-agent"])

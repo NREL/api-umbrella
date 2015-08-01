@@ -207,7 +207,13 @@ describe('logging', function() {
 
     delete options.qs;
 
-    var requestUrl = 'http://localhost:9080/logging-example/foo/bar/?unique_query_id=' + this.uniqueQueryId + '&url1=http%3A%2F%2Fexample.com%2F%3Ffoo%3Dbar%26foo%3Dbar%20more+stuff&url2=%ED%A1%BC&url3=https%3A//example.com/foo/%D6%D0%B9%FA%BD%AD%CB%D5%CA%A1%B8%D3%D3%DC%CF%D8%D2%BB%C2%A5%C5%CC%CA%C0%BD%F5%BB%AA%B3%C7200%D3%E0%D2%B5%D6%F7%B9%BA%C2%F2%B5%C4%C9%CC%C6%B7%B7%BF%A3%AC%D2%F2%BF%AA%B7%A2%C9%CC%C5%DC%C2%B7%D2%D1%CD%A3%B9%A420%B8%F6%D4%C2%A3%AC%D2%B5%D6%F7%C4%C3%B7%BF%CE%DE%CD%FB%C8%B4%D0%E8%BC%CC%D0%F8%B3%A5%BB%B9%D2%F8%D0%D0%B4%FB%BF%EE%A1%A3%CF%F2%CA%A1%CA%D0%CF%D8%B9%FA%BC%D2%D0%C5%B7%C3%BE%D6%B7%B4%D3%B3%BD%FC2%C4%EA%CE%DE%C8%CB%B4%A6%C0%ED%A1%A3%D4%DA%B4%CB%B0%B8%D6%D0%A3%AC%CE%D2%C3%C7%BB%B3%D2%C9%D3%D0%C8%CB%CA%A7%D6%B0%E4%C2%D6%B0/sites/default/files/googleanalytics/ga.js';
+    var url1 = 'http%3A%2F%2Fexample.com%2F%3Ffoo%3Dbar%26foo%3Dbar%20more+stuff';
+    var url2 = '%ED%A1%BC';
+    var url3Prefix = 'https%3A//example.com/foo/';
+    var url3InvalidSuffix = '%D6%D0%B9%FA%BD%AD%CB%D5%CA%A1%B8%D3%D3%DC%CF%D8%D2%BB%C2%A5%C5%CC%CA%C0%BD%F5%BB%AA%B3%C7200%D3%E0%D2%B5%D6%F7%B9%BA%C2%F2%B5%C4%C9%CC%C6%B7%B7%BF%A3%AC%D2%F2%BF%AA%B7%A2%C9%CC%C5%DC%C2%B7%D2%D1%CD%A3%B9%A420%B8%F6%D4%C2%A3%AC%D2%B5%D6%F7%C4%C3%B7%BF%CE%DE%CD%FB%C8%B4%D0%E8%BC%CC%D0%F8%B3%A5%BB%B9%D2%F8%D0%D0%B4%FB%BF%EE%A1%A3%CF%F2%CA%A1%CA%D0%CF%D8%B9%FA%BC%D2%D0%C5%B7%C3%BE%D6%B7%B4%D3%B3%BD%FC2%C4%EA%CE%DE%C8%CB%B4%A6%C0%ED%A1%A3%D4%DA%B4%CB%B0%B8%D6%D0%A3%AC%CE%D2%C3%C7%BB%B3%D2%C9%D3%D0%C8%CB%CA%A7%D6%B0%E4%C2%D6%B0/sites/default/files/googleanalytics/ga.js';
+    var url3 = url3Prefix + url3InvalidSuffix;
+
+    var requestUrl = 'http://localhost:9080/logging-example/foo/bar/?unique_query_id=' + this.uniqueQueryId + '&url1=' + url1 + '&url2=' + url2 + '&url3=' + url3;
     request.get(requestUrl, options, function(error, response) {
       should.not.exist(error);
       response.statusCode.should.eql(200);
@@ -286,9 +292,9 @@ describe('logging', function() {
           'url3',
         ]);
         record.request_query.unique_query_id.should.eql(this.uniqueQueryId);
-        record.request_query.url1.should.eql('http://example.com/?foo=bar&foo=bar more stuff');
-        (new Buffer(record.request_query.url2)).toString('base64').should.eql('77+9');
-        (new Buffer(record.request_query.url3)).toString('base64').should.eql('aHR0cHM6Ly9leGFtcGxlLmNvbS9mb28vw5bQuc+owr3CrcOLw5XKocK4w5PDk8Ocw4/DmNK7wqXDhcOMw4o9PcOHMjAww5PDoNK1w5bPnMK5wrrDgsekwrXDhMOJw4zGt8K3wr/Co8Ksw5LDksKiw4nDjMOFw5zCt8OSw5HNo8K5wqQyMMK4w7bDlMKjwqzStcOWw7fDhMO3wr/DjsOew43Du8i0w5DDqMK8w4zDkMOQw5LDuMOQ0LTHtsK/7qGjw4/Dssqhw4rDkMOP2LnHtMK8w5LDkMW3w77Wt8K007PCvcO8MsOEw6rDjsOew4jLtMKmw4Dvv73DlNq0y7DCuMOW0KPCrMOOw5LDg8e7wrPDksOJw5PDkMOIw4vKp9aww6TDgtawL3NpdGVzL2RlZmF1bHQvZmlsZXMvZ29vZ2xlYW5hbHl0aWNzL2dhLmpz');
+        record.request_query.url1.should.eql(decodeURIComponent(url1).replace('+', ' '));
+        record.request_query.url2.should.eql(url2);
+        record.request_query.url3.should.eql(decodeURIComponent(url3Prefix) + url3InvalidSuffix);
         record.request_referer.should.eql('http://example.com');
         record.request_scheme.should.eql('http');
         record.request_size.should.be.a('number');
@@ -493,15 +499,224 @@ describe('logging', function() {
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
-        record.request_query.utf8.should.eql('✓');
-        record.request_query.utf8_url_encoded.should.eql('✓');
-        record.request_query.more_utf8.should.eql('¬¶ªþ¤l');
-        record.request_query.more_utf8_hex.should.eql('¬¶ªþ¤l');
-        record.request_query.more_utf8_hex_lowercase.should.eql('¬¶ªþ¤l');
+        record.request_query.utf8.should.eql('%E2%9C%93');
+        record.request_query.utf8_url_encoded.should.eql('%E2%9C%93');
+        record.request_query.more_utf8.should.eql('%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l');
+        record.request_query.more_utf8_hex.should.eql('%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l');
+        record.request_query.more_utf8_hex_lowercase.should.eql('%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l');
         record.request_query.actual_backslash_x.should.eql('\\xAC\\xB6\\xAA\\xFE\\xA4l');
-        record.request_path.should.eql('/info/utf8/✓/encoded_utf8/%E2%9C%93/');
+        record.request_path.should.eql('/info/utf8/%E2%9C%93/encoded_utf8/%E2%9C%93/');
         record.request_url.should.contain(record.request_path);
-        record.request_url.should.endWith(args);
+        record.request_url.should.endWith('&utf8=%E2%9C%93&utf8_url_encoded=%E2%9C%93&more_utf8=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex_lowercase=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&actual_backslash_x=\\xAC\\xB6\\xAA\\xFE\\xA4l');
+        done();
+      });
+    }.bind(this));
+  });
+
+  it('url encodes valid utf8 characters in the URL path, URL query string, and HTTP headers', function(done) {
+    this.timeout(4500);
+
+    // Testing various encodings of the UTF-8 pound symbol: £
+    var urlEncoded = '%C2%A3';
+    var base64ed = 'wqM=';
+    var raw = new Buffer(base64ed, 'base64').toString();
+
+    // When in the URL path or query string, we expect the raw £ symbol to be
+    // logged as the url encoded version.
+    var expectedRawUrlEncoded = urlEncoded;
+
+    var args = 'url_encoded=' + urlEncoded + '&base64ed=' + base64ed + '&raw=' + raw;
+    request({
+      method: 'GET',
+      url: 'http://localhost:9080/info/' + urlEncoded + '/' + base64ed + '/' + raw + '/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&' + args,
+      headers: {
+        'Content-Type': urlEncoded,
+        'Referer': base64ed,
+        'Origin': raw,
+      },
+    }, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+
+        // URL query string
+        record.request_query.url_encoded.should.eql(urlEncoded);
+        record.request_query.base64ed.should.eql(base64ed);
+        record.request_query.raw.should.eql(expectedRawUrlEncoded);
+
+        // URL path
+        record.request_path.should.eql('/info/' + urlEncoded + '/' + base64ed + '/' + expectedRawUrlEncoded + '/');
+        record.request_hierarchy.should.eql([
+          '0/localhost:9080/',
+          '1/localhost:9080/info/',
+          '2/localhost:9080/info/' + urlEncoded + '/',
+          '3/localhost:9080/info/' + urlEncoded + '/' + base64ed + '/',
+          '4/localhost:9080/info/' + urlEncoded + '/' + base64ed + '/' + expectedRawUrlEncoded,
+        ]);
+
+        // Full URL
+        record.request_url.should.contain(record.request_path);
+        record.request_url.should.endWith('url_encoded=' + urlEncoded + '&base64ed=' + base64ed + '&raw=' + expectedRawUrlEncoded);
+
+        // HTTP headers
+        record.request_content_type.should.eql(urlEncoded);
+        record.request_referer.should.eql(base64ed);
+        record.request_origin.should.eql(raw);
+
+        done();
+      });
+    }.bind(this));
+  });
+
+  it('url encodes invalid utf8 characters in the URL path, URL query string, and HTTP headers', function(done) {
+    this.timeout(4500);
+
+    // Testing various encodings of the ISO-8859-1 pound symbol: £ (but since
+    // this is the ISO-8859-1 version, it's not valid UTF-8).
+    var urlEncoded = '%A3';
+    var base64ed = 'ow==';
+    var raw = new Buffer(base64ed, 'base64').toString();
+
+    // Since the encoding of this string wasn't actually a valid UTF-8 string,
+    // we expect it to get logged as the UTF-8 replacement character.
+    var expectedRawUrlEncoded = '%EF%BF%BD';
+    var expectedRawBinary = new Buffer('77+9', 'base64').toString();
+
+    var args = 'url_encoded=' + urlEncoded + '&base64ed=' + base64ed + '&raw=' + raw;
+    request({
+      method: 'GET',
+      url: 'http://localhost:9080/info/' + urlEncoded + '/' + base64ed + '/' + raw + '/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&' + args,
+      headers: {
+        'Content-Type': urlEncoded,
+        'Referer': base64ed,
+        'Origin': raw,
+      },
+    }, function(error) {
+      should.not.exist(error);
+      // Don't require 200 response. The express.js backend app seems to fail
+      // when processing some of these special characters in the path, but we
+      // don't really care for these logging purposes.
+      // response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+
+        // URL query string
+        record.request_query.url_encoded.should.eql(urlEncoded);
+        record.request_query.base64ed.should.eql(base64ed);
+        record.request_query.raw.should.eql(expectedRawUrlEncoded);
+
+        // URL path
+        record.request_path.should.eql('/info/' + urlEncoded + '/' + base64ed + '/' + expectedRawUrlEncoded + '/');
+        record.request_hierarchy.should.eql([
+          '0/localhost:9080/',
+          '1/localhost:9080/info/',
+          '2/localhost:9080/info/' + urlEncoded + '/',
+          '3/localhost:9080/info/' + urlEncoded + '/' + base64ed + '/',
+          '4/localhost:9080/info/' + urlEncoded + '/' + base64ed + '/' + expectedRawUrlEncoded,
+        ]);
+
+        // Full URL
+        record.request_url.should.contain(record.request_path);
+        record.request_url.should.endWith('url_encoded=' + urlEncoded + '&base64ed=' + base64ed + '&raw=' + expectedRawUrlEncoded);
+
+        // HTTP headers
+        record.request_content_type.should.eql(urlEncoded);
+        record.request_referer.should.eql(base64ed);
+        record.request_origin.should.eql(expectedRawBinary);
+
+        done();
+      });
+    }.bind(this));
+  });
+
+  it('decodes url escape sequences for the request_query, but not in the complete URL, path, or headers', function(done) {
+    this.timeout(4500);
+
+    var urlEncoded = 'http%3A%2F%2Fexample.com%2Fsub%2Fsub%2F%3Ffoo%3Dbar%26foo%3Dbar%20more+stuff';
+    var urlDecoded = decodeURIComponent(urlEncoded).replace('+', ' '); // nginx also decodes + as spaces
+
+    var args = 'url_encoded=' + urlEncoded;
+    request({
+      method: 'GET',
+      url: 'http://localhost:9080/info/' + urlEncoded + '/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&' + args,
+      headers: {
+        'Content-Type': urlEncoded,
+      },
+    }, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+
+        // URL query string
+        record.request_query.url_encoded.should.eql(urlDecoded);
+
+        // URL path
+        record.request_path.should.eql('/info/' + urlEncoded + '/');
+        record.request_hierarchy.should.eql([
+          '0/localhost:9080/',
+          '1/localhost:9080/info/',
+          '2/localhost:9080/info/' + urlEncoded,
+        ]);
+
+        // Full URL
+        record.request_url.should.contain(record.request_path);
+        record.request_url.should.endWith('url_encoded=' + urlEncoded);
+
+        // HTTP headers
+        record.request_content_type.should.eql(urlEncoded);
+
+        done();
+      });
+    }.bind(this));
+  });
+
+  it('logs optionally url encodable ascii strings as given (except in request_query where they are decoded)', function(done) {
+    this.timeout(4500);
+
+    var asIs = '-%2D ;%3B +%2B /%2F :%3A 0%30 >%3E {%7B';
+    var urlDecoded = decodeURIComponent(asIs).replace('+', ' '); // nginx also decodes + as spaces
+
+    var args = 'as_is=' + asIs;
+
+    // Use curl and not request for these tests, since the request library
+    // escapes all spaces as %20, which we want to avoid for this test.
+    var curl = new Curler();
+    curl.request({
+      method: 'GET',
+      url: 'http://localhost:9080/info/' + asIs + '/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&' + args,
+      headers: {
+        'Content-Type': asIs,
+      },
+    }, function(error) {
+      should.not.exist(error);
+      // Don't require 200 response. The express.js backend app seems to fail
+      // when processing some of these special characters in the path, but we
+      // don't really care for these logging purposes.
+      // response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+
+        // URL query string
+        record.request_query.as_is.should.eql(urlDecoded);
+
+        // URL path
+        record.request_path.should.eql('/info/' + asIs + '/');
+        record.request_hierarchy.should.eql([
+          '0/localhost:9080/',
+          '1/localhost:9080/info/',
+          '2/localhost:9080/info/-%2D ;%3B +%2B /',
+          '3/localhost:9080/info/-%2D ;%3B +%2B /%2F :%3A 0%30 >%3E {%7B',
+        ]);
+
+        // Full URL
+        record.request_url.should.contain(record.request_path);
+        record.request_url.should.endWith('as_is=' + asIs);
+
+        // HTTP headers
+        record.request_content_type.should.eql(asIs);
+
         done();
       });
     }.bind(this));

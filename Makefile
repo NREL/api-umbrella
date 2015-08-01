@@ -589,8 +589,6 @@ LIBCIDR_FFI:=libcidr-ffi
 LIBCIDR_FFI_VERSION:=0.1.0-1
 LUA_CMSGPACK:=lua-cmsgpack
 LUA_CMSGPACK_VERSION:=0.4.0-0
-LUAUTF8:=luautf8
-LUAUTF8_VERSION:=0.1.1-1
 LUAPOSIX:=luaposix
 LUAPOSIX_VERSION:=33.3.1-1
 LUASOCKET:=luasocket
@@ -616,10 +614,6 @@ vendor/lib/luarocks/rocks/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION): $(PREFIX)/embed
 
 vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUA_CMSGPACK) $(LUA_CMSGPACK_VERSION)
-	touch $@
-
-vendor/lib/luarocks/rocks/$(LUAUTF8)/$(LUAUTF8_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUAUTF8) $(LUAUTF8_VERSION)
 	touch $@
 
 vendor/lib/luarocks/rocks/$(LUAPOSIX)/$(LUAPOSIX_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
@@ -663,7 +657,6 @@ install_app_dependencies: \
 	vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION) \
 	vendor/lib/luarocks/rocks/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
-	vendor/lib/luarocks/rocks/$(LUAUTF8)/$(LUAUTF8_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUAPOSIX)/$(LUAPOSIX_VERSION) \
 	vendor/lib/luarocks/rocks/$(LUASOCKET)/$(LUASOCKET_VERSION) \
 	vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION) \
