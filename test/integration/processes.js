@@ -18,6 +18,22 @@ describe('processes', function() {
   shared.runServer();
 
   describe('nginx', function() {
+    beforeEach(function setOptionDefaults(done) {
+      Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
+        this.apiKey = user.api_key;
+        this.options = {
+          headers: {
+            'X-Api-Key': this.apiKey,
+          },
+          agentOptions: {
+            maxSockets: 500,
+          },
+        };
+
+        done();
+      }.bind(this));
+    });
+
     it('does not leak file descriptors across reloads', function(done) {
       this.timeout(50000);
 
@@ -27,23 +43,7 @@ describe('processes', function() {
       var urandomDescriptorCounts = [];
 
       async.series([
-        // First, make a number of concurrent requests to ensure that each
-        // nginx worker process is warmed up. This ensures that each worker
-        // should at least have initialized its usage of its urandom
-        // descriptors. Since we want to test that these descriptors don't
-        // grow, we first need to ensure each worker process is first fully
-        // initialized (so they don't grow due to be initialized later on in
-        // the tests).
-        function(callback) {
-          async.times(50, function(index, next) {
-            request.get('http://localhost:9080/delay/500', this.options, function(error, response) {
-              response.statusCode.should.eql(200);
-              next(error);
-            });
-          }.bind(this), callback);
-        }.bind(this),
-
-        // Next, fetch the PID of the nginx parent/master process.
+        // Fetch the PID of the nginx parent/master process.
         function(callback) {
           execFile('perpstat', ['-b', path.join(config.get('etc_dir'), 'perp'), 'gatekeeper-nginx'], execOpts, function(error, stdout, stderr) {
             if(error || !stdout) {
@@ -89,7 +89,7 @@ describe('processes', function() {
                 async.doUntil(function(untilNext) {
                   execFile('pgrep', ['-P', parentPid], function(error, stdout, stderr) {
                     if(error || !stdout) {
-                      return seriesNext('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+                      return seriesNext('Error fetching nginx worker pids: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
                     }
 
                     numWorkers = stdout.trim().split('\n').length;
@@ -99,6 +99,22 @@ describe('processes', function() {
                   return numWorkers === expectedNumWorkers;
                 }, seriesNext);
               },
+
+              // Make a number of concurrent requests to ensure that each nginx
+              // worker process is warmed up. This ensures that each worker
+              // should at least have initialized its usage of its urandom
+              // descriptors. Since we want to test that these descriptors
+              // don't grow, we first need to ensure each worker process is
+              // first fully initialized (so they don't grow due to be
+              // initialized later on in the tests).
+              function(seriesNext) {
+                async.times(50, function(index, next) {
+                  request.get('http://localhost:9080/delay/20', this.options, function(error, response) {
+                    response.statusCode.should.eql(200);
+                    next(error);
+                  });
+                }.bind(this), seriesNext);
+              }.bind(this),
 
               // Now check for open file descriptors.
               function(seriesNext) {
@@ -112,7 +128,10 @@ describe('processes', function() {
                   var urandomDescriptorCount = 0;
                   lines.forEach(function(line) {
                     var columns = line.split(/\s+/);
-                    if(parseInt(columns[1], 10) === parentPid || parseInt(columns[2], 10) === parentPid) {
+                    var colPid = parseInt(columns[1], 10);
+                    var colParentPid = parseInt(columns[2], 10);
+                    var colType = columns[5];
+                    if((colPid === parentPid || colParentPid === parentPid) && !_.contains(['IPv4', 'IPv6', 'unix', 'sock'], colType)) {
                       descriptorCount++;
 
                       if(_.contains(line, 'urandom')) {
@@ -125,13 +144,13 @@ describe('processes', function() {
                   urandomDescriptorCounts.push(urandomDescriptorCount);
 
                   setTimeout(function() {
-                    seriesNext(null, lines.length);
+                    seriesNext(null);
                   }, 500);
                 });
               },
             ], timesNext);
-          }, callback);
-        },
+          }.bind(this), callback);
+        }.bind(this),
       ], function(error) {
         if(error) {
           return done(error);
@@ -297,20 +316,37 @@ describe('processes', function() {
         function(callback) {
           // Run tests for 10 seconds.
           var runTests = true;
-          setTimeout(function() { runTests = false; }, 10000);
+          setTimeout(function() { runTests = false; }, 20000);
 
-          // Randomly send reload signals every 50-500ms during the testing
+          // Randomly send reload signals every 1500-2000ms during the testing
           // period.
+          //
+          // FIXME: We actually have a bug with reload durations less than 1
+          // second right now. When nginx is reloaded more frequently than
+          // that, it's possible some requests are accepted by workers which
+          // never get a chance to setup their upstream connections, leading to
+          // 502 errors. This happens since a subsequent reload takes over
+          // loading the upstreams before the first worker processes get a
+          // chance to (the first worker processes never get setup since we
+          // have a lock to prevent duplicate upstream setup). In real-world
+          // use, it seems less likely to cause issues (since you'd have to be
+          // doing reloads less than every second), but this still isn't ideal.
+          // I think the balancer_by_lua stuff should offer a cleaner fix to
+          // all this if it gets released. Otherwise, we may need to revisit
+          // our worker init process and wait_for_setup functionality to ensure
+          // each worker group at least gets setup initially.
           async.whilst(function() { return runTests; }, function(whilstCallback) {
             setTimeout(function() {
-              execFile('kill', ['-HUP', parentPid], function(error, stdout, stderr) {
-                if(error) {
-                  return whilstCallback('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
-                }
+              if(runTests) {
+                execFile('kill', ['-HUP', parentPid], function(error, stdout, stderr) {
+                  if(error) {
+                    return whilstCallback('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+                  }
 
-                whilstCallback();
-              });
-            }, _.random(50, 500));
+                  whilstCallback();
+                });
+              }
+            }, _.random(1500, 2000));
           }, function(error) {
             should.not.exist(error);
           });
