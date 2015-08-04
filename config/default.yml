@@ -87,10 +87,10 @@ router:
   dir: /opt/api-umbrella/embedded/apps/router/current
   trusted_proxies: []
   global_rate_limits:
-    ip_rate: "100r/s"
-    ip_burst: 200
+    ip_rate:
+    ip_burst:
     ip_rate_size: 8m
-    ip_connections: 50
+    ip_connections:
     ip_connections_size: 5m
   log_listener:
     port: 14006

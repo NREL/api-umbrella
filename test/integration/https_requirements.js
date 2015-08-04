@@ -39,8 +39,6 @@ describe('https requirements', function() {
         followRedirect: false,
         headers: {
           'X-Api-Key': this.apiKey,
-          'X-Disable-Router-Connection-Limits': 'yes',
-          'X-Disable-Router-Rate-Limits': 'yes',
         },
       };
 

@@ -27,14 +27,14 @@ describe('processes', function() {
       var urandomDescriptorCounts = [];
 
       async.series([
+        // First, make a number of concurrent requests to ensure that each
+        // nginx worker process is warmed up. This ensures that each worker
+        // should at least have initialized its usage of its urandom
+        // descriptors. Since we want to test that these descriptors don't
+        // grow, we first need to ensure each worker process is first fully
+        // initialized (so they don't grow due to be initialized later on in
+        // the tests).
         function(callback) {
-          // First make a number of concurrent requests to ensure that each
-          // nginx worker process is warmed up. This ensures that each worker
-          // should at least have initialized its usage of its urandom
-          // descriptors. Since we want to test that these descriptors don't
-          // grow, we first need to ensure each worker process is first fully
-          // initialized (so they don't grow due to be initialized later on in
-          // the tests).
           async.times(50, function(index, next) {
             request.get('http://localhost:9080/delay/500', this.options, function(error, response) {
               response.statusCode.should.eql(200);
@@ -42,31 +42,69 @@ describe('processes', function() {
             });
           }.bind(this), callback);
         }.bind(this),
+
+        // Next, fetch the PID of the nginx parent/master process.
         function(callback) {
-          execFile('pgrep', ['-f', 'nginx: master'], function(error, stdout, stderr) {
-            if(error) {
-              return done('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+          execFile('perpstat', ['-b', path.join(config.get('etc_dir'), 'perp'), 'gatekeeper-nginx'], execOpts, function(error, stdout, stderr) {
+            if(error || !stdout) {
+              return callback('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
             }
 
-            if(!stdout || !/^\d+$/.test(stdout.trim())) {
-              return done('No PID returned for nginx (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+            var match = stdout.match(/^\s*main:.*\(pid (\d+)\)\s*$/m);
+            if(!match) {
+              return callback('No PID returned for nginx (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
             }
 
-            parentPid = parseInt(stdout, 10);
+            parentPid = parseInt(match[1], 10);
             callback();
           });
         },
-        function(callback) {
-          async.timesSeries(15, function(index, next) {
-            execFile('pkill', ['-HUP', '-f', 'nginx: master'], function(error, stdout, stderr) {
-              if(error) {
-                return next('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
-              }
 
-              setTimeout(function() {
-                execFile('lsof', ['-R', '-c', 'nginx'], execOpts, function(error, stdout, stderr) {
+        // Now perform a number of reloads and gather file descriptor
+        // information after each one.
+        function(callback) {
+          async.timesSeries(15, function(index, timesNext) {
+            async.series([
+              // Send a reload signal to nginx.
+              function(seriesNext) {
+                execFile('kill', ['-HUP', parentPid], function(error, stdout, stderr) {
                   if(error) {
-                    return next('Error gathering lsof details: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
+                    return seriesNext('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+                  }
+
+                  // Wait a little while after sending the reload signal to
+                  // ensure the master process has had time to react.
+                  setTimeout(seriesNext, 250);
+                });
+              },
+
+              // After sending the reload signal, wait until only one set of
+              // worker processes is running. This prevents us from checking
+              // file descriptors when some of the old worker processes are
+              // still alive, but in the process of shutting down.
+              function(seriesNext) {
+                var numWorkers;
+                var expectedNumWorkers = config.get('nginx.workers') || 4;
+
+                async.doUntil(function(untilNext) {
+                  execFile('pgrep', ['-P', parentPid], function(error, stdout, stderr) {
+                    if(error || !stdout) {
+                      return seriesNext('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+                    }
+
+                    numWorkers = stdout.trim().split('\n').length;
+                    setTimeout(untilNext, 50);
+                  });
+                }, function() {
+                  return numWorkers === expectedNumWorkers;
+                }, seriesNext);
+              },
+
+              // Now check for open file descriptors.
+              function(seriesNext) {
+                execFile('lsof', ['-R', '-c', 'nginx'], function(error, stdout, stderr) {
+                  if(error) {
+                    return seriesNext('Error gathering lsof details: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
                   }
 
                   var lines = stdout.split('\n');
@@ -87,11 +125,11 @@ describe('processes', function() {
                   urandomDescriptorCounts.push(urandomDescriptorCount);
 
                   setTimeout(function() {
-                    next(null, lines.length);
+                    seriesNext(null, lines.length);
                   }, 500);
                 });
-              }, 1000);
-            });
+              },
+            ], timesNext);
           }, callback);
         },
       ], function(error) {
@@ -161,8 +199,6 @@ describe('processes', function() {
           followRedirect: false,
           headers: {
             'X-Api-Key': this.apiKey,
-            'X-Disable-Router-Connection-Limits': 'yes',
-            'X-Disable-Router-Rate-Limits': 'yes',
           },
           agentOptions: {
             maxSockets: 500,
@@ -221,46 +257,97 @@ describe('processes', function() {
     it('does not drop connections during reloads', function(done) {
       this.timeout(60000);
 
-      execFile('pgrep', ['-f', 'nginx: worker'], function(error, stdout, stderr) {
+      var execOpts = { env: processEnv.env() };
+      var parentPid;
+      var originalPids;
+      var finalPids;
+
+      async.series([
+        // Fetch the PID of the nginx parent/master process.
+        function(callback) {
+          execFile('perpstat', ['-b', path.join(config.get('etc_dir'), 'perp'), 'gatekeeper-nginx'], execOpts, function(error, stdout, stderr) {
+            if(error || !stdout) {
+              return callback('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+            }
+
+            var match = stdout.match(/^\s*main:.*\(pid (\d+)\)\s*$/m);
+            if(!match) {
+              return callback('No PID returned for nginx (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+            }
+
+            parentPid = parseInt(match[1], 10);
+            callback();
+          });
+        },
+
+        // Gather the worker ids at the start (so we can sanity check that the
+        // reloads happened).
+        function(callback) {
+          execFile('pgrep', ['-P', parentPid], function(error, stdout, stderr) {
+            if(error) {
+              return callback('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+            }
+
+            originalPids = stdout.split('\n').sort();
+            callback();
+          });
+        },
+
+        // Make requests while performing nginx reloads.
+        function(callback) {
+          // Run tests for 10 seconds.
+          var runTests = true;
+          setTimeout(function() { runTests = false; }, 10000);
+
+          // Randomly send reload signals every 50-500ms during the testing
+          // period.
+          async.whilst(function() { return runTests; }, function(whilstCallback) {
+            setTimeout(function() {
+              execFile('kill', ['-HUP', parentPid], function(error, stdout, stderr) {
+                if(error) {
+                  return whilstCallback('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+                }
+
+                whilstCallback();
+              });
+            }, _.random(50, 500));
+          }, function(error) {
+            should.not.exist(error);
+          });
+
+          // Constantly make requests.
+          async.whilst(function() { return runTests; }, function(whilstCallback) {
+            request.get('http://localhost:9080/db-config/hello', this.options, function(error, response, body) {
+              should.not.exist(error);
+              response.statusCode.should.eql(200);
+              body.should.eql('Hello World');
+
+              whilstCallback(error);
+            });
+          }.bind(this), callback);
+        }.bind(this),
+
+        // Gather the worker ids at the end (so we can sanity check that the
+        // reloads happened).
+        function(callback) {
+          execFile('pgrep', ['-P', parentPid], function(error, stdout, stderr) {
+            if(error) {
+              return callback('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+            }
+
+            finalPids = stdout.split('\n').sort();
+            callback();
+          });
+        },
+      ], function(error) {
         if(error) {
-          return done('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+          return done(error);
         }
 
-        var originalPids = stdout.split('\n').sort();
-
-        var runTests = true;
-        setTimeout(function() {
-          execFile('pkill', ['-HUP', '-f', 'nginx: master'], function(error, stdout, stderr) {
-            if(error) {
-              return done('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
-            }
-
-            setTimeout(function() { runTests = false; }, 5000);
-          });
-        }.bind(this), 100);
-
-        async.whilst(function() { return runTests; }, function(whilstCallback) {
-          request.get('http://localhost:9080/db-config/hello', this.options, function(error, response, body) {
-            should.not.exist(error);
-            response.statusCode.should.eql(200);
-            body.should.eql('Hello World');
-
-            whilstCallback(error);
-          });
-        }.bind(this), function(error) {
-          should.not.exist(error);
-
-          execFile('pgrep', ['-f', 'nginx: worker'], function(error, stdout, stderr) {
-            if(error) {
-              return done('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
-            }
-
-            var finalPids = stdout.split('\n').sort();
-            finalPids.should.not.eql(originalPids);
-            done();
-          });
-        });
-      }.bind(this));
+        should.not.exist(error);
+        finalPids.should.not.eql(originalPids);
+        done();
+      });
     });
   });
 });

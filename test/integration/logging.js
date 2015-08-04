@@ -77,8 +77,6 @@ describe('logging', function() {
       this.options = {
         headers: {
           'X-Api-Key': this.apiKey,
-          'X-Disable-Router-Connection-Limits': 'yes',
-          'X-Disable-Router-Rate-Limits': 'yes',
         },
         qs: {
           'unique_query_id': this.uniqueQueryId,

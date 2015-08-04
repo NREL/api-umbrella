@@ -74,43 +74,22 @@ http {
   include ./mime.conf;
   include ./realip.conf;
 
-  {{#_test_env?}}
-  # Allow for these nginx-based rate limits to be disabled in the test
-  # environment.
-  map $http_x_disable_router_rate_limits $rate_limit_by {
-    yes "";
-    default $binary_remote_addr;
-  }
-
-  map $http_x_disable_router_connection_limits $connection_limit_by {
-    yes "";
-    default $binary_remote_addr;
-  }
-  {{/_test_env?}}
-  {{^_test_env?}}
-  # Force the nginx-based rate limits to always be enabled in non-test
-  # environments.
-  map $http_x_disable_router_rate_limits $rate_limit_by {
-    default $binary_remote_addr;
-  }
-
-  map $http_x_disable_router_connection_limits $connection_limit_by {
-    default $binary_remote_addr;
-  }
-  {{/_test_env?}}
-
+  {{#router.global_rate_limits.ip_connections}}
   # Limit the number of simultaneous connections per IP address.
-  limit_conn_zone $connection_limit_by zone=api_umbrella_conn_addr_zone:{{router.global_rate_limits.ip_connections_size}};
+  limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:{{router.global_rate_limits.ip_connections_size}};
   limit_conn_status {{apiSettings.error_data.over_rate_limit.status_code}};
+  {{/router.global_rate_limits.ip_connections}}
 
+  {{#router.global_rate_limits.ip_rate}}
   # Rate limits per IP address.
   #
   # In general, we want to rely on the more granular and configurable rate limits
   # provided by the API Umbrella Gatekeeper, so this limit should be higher than
   # the Gatekeeper's limits. This just provides an extra line of simple defense
   # against misbehaving clients from overloading the Gatekeeper.
-  limit_req_zone $rate_limit_by zone=api_umbrella_req_addr_zone:{{router.global_rate_limits.ip_rate_size}} rate={{router.global_rate_limits.ip_rate}};
+  limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:{{router.global_rate_limits.ip_rate_size}} rate={{router.global_rate_limits.ip_rate}};
   limit_req_status {{apiSettings.error_data.over_rate_limit.status_code}};
+  {{/router.global_rate_limits.ip_rate}}
 
   # Allow any sized uploads to backends.
   client_max_body_size 0;

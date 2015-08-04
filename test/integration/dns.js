@@ -93,8 +93,6 @@ xdescribe('dns backend resolving', function() {
         followRedirect: false,
         headers: {
           'X-Api-Key': this.apiKey,
-          'X-Disable-Router-Connection-Limits': 'yes',
-          'X-Disable-Router-Rate-Limits': 'yes',
         },
         agentOptions: {
           maxSockets: 500,

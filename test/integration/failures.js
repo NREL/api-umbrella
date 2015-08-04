@@ -65,8 +65,6 @@ describe('failures', function() {
     beforeEach(function setOptionDefaults() {
       this.options = {
         headers: {
-          'X-Disable-Router-Connection-Limits': 'yes',
-          'X-Disable-Router-Rate-Limits': 'yes',
         },
         agentOptions: {
           maxSockets: 500,

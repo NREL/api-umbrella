@@ -17,6 +17,8 @@ _.extend(exports, {
         path.resolve(__dirname, '../bin'),
         path.resolve(__dirname, '../node_modules/.bin'),
         '/opt/api-umbrella/embedded/elasticsearch/bin',
+        path.join(process.env.API_UMBRELLA_ROOT, 'embedded/sbin'),
+        path.join(process.env.API_UMBRELLA_ROOT, 'embedded/bin'),
         '/opt/api-umbrella/embedded/sbin',
         '/opt/api-umbrella/embedded/bin',
         '/opt/api-umbrella/embedded/jre/bin',
