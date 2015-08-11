@@ -35,7 +35,7 @@ describe('processes', function() {
     });
 
     it('does not leak file descriptors across reloads', function(done) {
-      this.timeout(50000);
+      this.timeout(90000);
 
       var execOpts = { env: processEnv.env() };
       var parentPid;
@@ -108,8 +108,8 @@ describe('processes', function() {
               // first fully initialized (so they don't grow due to be
               // initialized later on in the tests).
               function(seriesNext) {
-                async.times(50, function(index, next) {
-                  request.get('http://localhost:9080/delay/20', this.options, function(error, response) {
+                async.timesLimit(200, 10, function(index, next) {
+                  request.get('http://localhost:9080/delay/20?' + Math.random(), this.options, function(error, response) {
                     response.statusCode.should.eql(200);
                     next(error);
                   });
@@ -124,14 +124,26 @@ describe('processes', function() {
                   }
 
                   var lines = stdout.split('\n');
+                  var logLines = [];
                   var descriptorCount = 0;
                   var urandomDescriptorCount = 0;
-                  lines.forEach(function(line) {
+                  lines.forEach(function(line, lineIndex) {
                     var columns = line.split(/\s+/);
                     var colPid = parseInt(columns[1], 10);
                     var colParentPid = parseInt(columns[2], 10);
                     var colType = columns[5];
-                    if((colPid === parentPid || colParentPid === parentPid) && !_.contains(['IPv4', 'IPv6', 'unix', 'sock'], colType)) {
+
+                    // Only count lines from the lsof output that belong to
+                    // this nginx's PID and aren't network sockets (we exclude
+                    // those when checking for leaks, since it's expected that
+                    // there's much more variation in those depending on the
+                    // requests made by tests, keepalive connections, etc).
+                    if((lineIndex === 0 || colPid === parentPid || colParentPid === parentPid) && !_.contains(['IPv4', 'IPv6', 'unix', 'sock'], colType)) {
+                      // Re-sort the columns and store for logging. The
+                      // re-sorting of columns just makes the output a bit
+                      // friendlier for tools like vimdiff.
+                      logLines.push(columns.slice(0, 1).concat(columns.slice(3)).concat(columns.slice(1, 3)).join('\t'));
+
                       descriptorCount++;
 
                       if(_.contains(line, 'urandom')) {
@@ -142,6 +154,12 @@ describe('processes', function() {
 
                   descriptorCounts.push(descriptorCount);
                   urandomDescriptorCounts.push(urandomDescriptorCount);
+
+                  // Log the outputs of each run. This is to help debugging in
+                  // the case of failures (so we can more easily identify what
+                  // specifically might be leaking).
+                  var logPath = path.join(config.get('log_dir'), 'descriptor_leak_test' + index + '.log');
+                  fs.writeFileSync(logPath, logLines.sort().join('\n'));
 
                   setTimeout(function() {
                     seriesNext(null);
@@ -170,7 +188,7 @@ describe('processes', function() {
         descriptorCounts.length.should.eql(15);
         _.min(descriptorCounts).should.be.greaterThan(0);
         var range = _.max(descriptorCounts) - _.min(descriptorCounts);
-        range.should.be.lessThan(10);
+        range.should.be.lessThan(5);
 
         done();
       });
@@ -184,7 +202,7 @@ describe('processes', function() {
       // Be sure that these tests interact with a backend published via Mongo,
       // so we can also catch errors for when the mongo-based configuration
       // data experiences failures.
-      shared.setRuntimeConfigOverrides({
+      shared.setDbConfigOverrides({
         apis: [
           {
             _id: 'db-config',
@@ -233,20 +251,20 @@ describe('processes', function() {
 
       // Remove DB-based config after these tests, so the rest of the tests go
       // back to the file-based configs.
-      shared.revertRuntimeConfigOverrides(function(error) {
+      shared.revertDbConfigOverrides(function(error) {
         should.not.exist(error);
         shared.waitForConfig(done);
       });
     });
 
-    it('updates templates with file-based config file changes', function(done) {
-      this.timeout(90000);
+    it('updates templates with file-based config changes', function(done) {
+      this.timeout(10000);
 
       var nginxFile = path.join(config.get('etc_dir'), 'nginx/router.conf');
       var nginxConfig = fs.readFileSync(nginxFile).toString();
       nginxConfig.should.contain('worker_processes 4;');
 
-      shared.setConfigOverrides({
+      shared.setFileConfigOverrides({
         nginx: {
           workers: 1,
         },
@@ -258,7 +276,7 @@ describe('processes', function() {
           nginxConfig = fs.readFileSync(nginxFile).toString();
           nginxConfig.should.contain('worker_processes 1;');
 
-          shared.setConfigOverrides({}, function(error) {
+          shared.setFileConfigOverrides({}, function(error) {
             should.not.exist(error);
             shared.waitForConfig(function(error) {
               should.not.exist(error);
@@ -270,6 +288,86 @@ describe('processes', function() {
             });
           });
         });
+      });
+    });
+
+    it('updates apis with file-based config changes', function(done) {
+      this.timeout(10000);
+
+      async.series([
+        function(callback) {
+          request.get('http://localhost:9080/file-config/info/', this.options, function(error, response) {
+            if(error) {
+              return callback(error);
+            }
+
+            response.statusCode.should.eql(404);
+            callback();
+          });
+        }.bind(this),
+        function(callback) {
+          shared.setFileConfigOverrides({
+            apis: [
+              {
+                _id: 'file-config',
+                frontend_host: 'localhost',
+                backend_host: 'localhost',
+                servers: [
+                  {
+                    host: '127.0.0.1',
+                    port: 9444,
+                  }
+                ],
+                url_matches: [
+                  {
+                    frontend_prefix: '/file-config/info/',
+                    backend_prefix: '/info/',
+                  }
+                ],
+                settings: {
+                  headers: [
+                    { key: 'X-Test-File-Config', value: 'foo' },
+                  ],
+                },
+              },
+            ],
+          }, callback);
+        },
+        function(callback) {
+          shared.waitForConfig(callback);
+        },
+        function(callback) {
+          request.get('http://localhost:9080/file-config/info/', this.options, function(error, response, body) {
+            if(error) {
+              return callback(error);
+            }
+
+            response.statusCode.should.eql(200);
+            var data = JSON.parse(body);
+            data.headers['x-test-file-config'].should.eql('foo');
+
+            callback();
+          });
+        }.bind(this),
+        function(callback) {
+          shared.setFileConfigOverrides({}, callback);
+        },
+        function(callback) {
+          shared.waitForConfig(callback);
+        },
+        function(callback) {
+          request.get('http://localhost:9080/file-config/info/', this.options, function(error, response) {
+            if(error) {
+              return callback(error);
+            }
+
+            response.statusCode.should.eql(404);
+            callback();
+          });
+        }.bind(this),
+      ], function(error) {
+        should.not.exist(error);
+        done();
       });
     });
 
@@ -318,23 +416,8 @@ describe('processes', function() {
           var runTests = true;
           setTimeout(function() { runTests = false; }, 20000);
 
-          // Randomly send reload signals every 1500-2000ms during the testing
+          // Randomly send reload signals every 5-500ms during the testing
           // period.
-          //
-          // FIXME: We actually have a bug with reload durations less than 1
-          // second right now. When nginx is reloaded more frequently than
-          // that, it's possible some requests are accepted by workers which
-          // never get a chance to setup their upstream connections, leading to
-          // 502 errors. This happens since a subsequent reload takes over
-          // loading the upstreams before the first worker processes get a
-          // chance to (the first worker processes never get setup since we
-          // have a lock to prevent duplicate upstream setup). In real-world
-          // use, it seems less likely to cause issues (since you'd have to be
-          // doing reloads less than every second), but this still isn't ideal.
-          // I think the balancer_by_lua stuff should offer a cleaner fix to
-          // all this if it gets released. Otherwise, we may need to revisit
-          // our worker init process and wait_for_setup functionality to ensure
-          // each worker group at least gets setup initially.
           async.whilst(function() { return runTests; }, function(whilstCallback) {
             setTimeout(function() {
               if(runTests) {
@@ -346,7 +429,7 @@ describe('processes', function() {
                   whilstCallback();
                 });
               }
-            }, _.random(1500, 2000));
+            }, _.random(5, 500));
           }, function(error) {
             should.not.exist(error);
           });

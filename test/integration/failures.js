@@ -36,7 +36,7 @@ describe('failures', function() {
       // Be sure that these tests interact with a backend published via Mongo,
       // so we can also catch errors for when the mongo-based configuration
       // data experiences failures.
-      shared.setRuntimeConfigOverrides({
+      shared.setDbConfigOverrides({
         apis: [
           {
             _id: 'db-config',
@@ -102,7 +102,7 @@ describe('failures', function() {
 
       // Remove DB-based config after these tests, so the rest of the tests go
       // back to the file-based configs.
-      shared.revertRuntimeConfigOverrides(function(error) {
+      shared.revertDbConfigOverrides(function(error) {
         should.not.exist(error);
         shared.waitForConfig(done);
       });

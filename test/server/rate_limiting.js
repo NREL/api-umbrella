@@ -330,9 +330,9 @@ describe('ApiUmbrellaGatekeper', function() {
         request.get(url, function(error, response) {
           response.headers['x-ratelimit-limit'].should.eql('10');
 
-          var newConfig = _.cloneDeep(global.currentConfigOverrides);
-          newConfig.apiSettings.rate_limits[0].limit = 70;
-          shared.setConfigOverrides(newConfig, function(error) {
+          var newFileConfig = _.cloneDeep(global.currentFileConfigOverrides);
+          newFileConfig.apiSettings.rate_limits[0].limit = 70;
+          shared.setFileConfigOverrides(newFileConfig, function(error) {
             should.not.exist(error);
             shared.waitForConfig(function() {
               // Perform a number of requests to make sure any local worker
@@ -983,9 +983,9 @@ describe('ApiUmbrellaGatekeper', function() {
           request.get(url, function(error, response) {
             response.headers['x-ratelimit-limit'].should.eql('3');
 
-            var newConfig = _.cloneDeep(global.currentRuntimeConfigOverrides);
-            newConfig.apis[0].settings.rate_limits[0].limit = 80;
-            shared.setRuntimeConfigOverrides(newConfig, function(error) {
+            var newDbConfig = _.cloneDeep(global.currentDbConfigOverrides);
+            newDbConfig.apis[0].settings.rate_limits[0].limit = 80;
+            shared.setDbConfigOverrides(newDbConfig, function(error) {
               should.not.exist(error);
               shared.waitForConfig(function() {
                 // Perform a number of requests to make sure any local worker

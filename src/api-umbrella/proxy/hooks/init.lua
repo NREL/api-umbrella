@@ -1,19 +1,6 @@
 DEBUG = false
 
-local load_config = require "api-umbrella.proxy.load_config"
-config = load_config.parse()
-
-require "api-umbrella.proxy.startup.init_elasticsearch_templates_data"
-require "api-umbrella.proxy.startup.init_user_agent_parser_data"
-
-ngx.shared.apis:set("config_id", config["config_id"])
-ngx.shared.apis:delete("nginx_reloading_guard")
-ngx.shared.apis:delete("version")
-ngx.shared.apis:delete("last_fetched_at")
-ngx.shared.upstream_checksums:flush_all()
-ngx.shared.stats:delete("distributed_last_fetched_at")
-ngx.shared.api_users:delete("last_fetched_at")
-ngx.shared.config:set("elasticsearch_templates_created", false)
+inspect = require "inspect"
 
 -- Generate a unique ID to represent this group of worker processes. This value
 -- will be the same amongst all the subsequently inited workers, but the value
@@ -22,6 +9,24 @@ ngx.shared.config:set("elasticsearch_templates_created", false)
 --
 -- This is used to prevent race conditions in the dyups module so that we can
 -- properly know when upstreams are setup after nginx is reloaded.
-local random = require "resty.random"
-local str = require "resty.string"
-WORKER_GROUP_ID = str.to_hex(random.bytes(8))
+WORKER_GROUP_ID, err = ngx.shared.active_config:incr("worker_group_id", 1)
+if err == "not found" then
+  WORKER_GROUP_ID = 1
+  local success, err = ngx.shared.active_config:set("worker_group_id", 1)
+  if not success then
+    ngx.log(ngx.ERR, "worker_group_id set err: ", err)
+    return
+  end
+elseif err then
+  ngx.log(ngx.ERR, "worker_group_id incr err: ", err)
+end
+
+config = require "api-umbrella.proxy.models.file_config"
+
+require "api-umbrella.proxy.startup.init_elasticsearch_templates_data"
+require "api-umbrella.proxy.startup.init_user_agent_parser_data"
+
+ngx.shared.upstream_checksums:flush_all()
+ngx.shared.stats:delete("distributed_last_fetched_at")
+ngx.shared.api_users:delete("last_fetched_at")
+ngx.shared.config:set("elasticsearch_templates_created", false)

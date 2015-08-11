@@ -1,20 +1,13 @@
 local _M = {}
 
-local inspect = require "inspect"
 local cjson = require "cjson"
 local http = require "resty.http"
 local lock = require "resty.lock"
-local std_table = require "std.table"
 local types = require "pl.types"
-local utils = require "api-umbrella.proxy.utils"
 
-local cache_computed_settings = utils.cache_computed_settings
-local clone_select = std_table.clone_select
-local invert = std_table.invert
 local is_empty = types.is_empty
-local set_packed = utils.set_packed
 
-local lock = lock:new("my_locks", {
+local check_lock = lock:new("my_locks", {
   ["timeout"] = 0,
 })
 
@@ -26,7 +19,7 @@ local log = ngx.log
 local ERR = ngx.ERR
 
 local function do_check()
-  local elapsed, err = lock:lock("load_api_users")
+  local _, err = check_lock:lock("load_api_users")
   if err then
     return
   end
@@ -80,7 +73,7 @@ local function do_check()
     api_users:set("last_fetched_at", current_fetch_time)
   end
 
-  local ok, err = lock:unlock()
+  local ok, err = check_lock:unlock()
   if not ok then
     ngx.log(ngx.ERR, "failed to unlock: ", err)
   end

@@ -34,7 +34,7 @@ ngx.ctx.uri = ngx.ctx.original_uri
 
 local matched_host
 local default_host
-local data = get_packed(ngx.shared.apis, "packed_data") or {}
+local data = get_packed(ngx.shared.active_config, "packed_data") or {}
 if data["hosts"] then
   for _, host in ipairs(data["hosts"]) do
     if host["_hostname_normalized"] == "*" and default_host then

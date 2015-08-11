@@ -26,8 +26,8 @@ local unpack = cmsgpack.unpack
 function _M.append_array(dest, src)
   if type(dest) ~= "table" or type(src) ~= "table" then return end
 
-  dest_length = #dest
-  src_length = #src
+  local dest_length = #dest
+  local src_length = #src
   for i=1, src_length do
     dest[dest_length + i] = src[i]
   end

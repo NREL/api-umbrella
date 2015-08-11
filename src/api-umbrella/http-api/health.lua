@@ -14,7 +14,7 @@ local response = {
 }
 
 -- Check to see if the APIs have been loaded.
-if ngx.shared.apis:get("last_fetched_at") then
+if ngx.shared.active_config:get("db_config_last_fetched_at") then
   response["details"]["apis_config"] = "green"
 end
 

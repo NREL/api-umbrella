@@ -5,10 +5,12 @@ require('../test_helper');
 var _ = require('lodash'),
     apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
+    execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
     fs = require('fs'),
     ipaddr = require('ipaddr.js'),
     path = require('path'),
+    processEnv = require('../support/process_env'),
     request = require('request'),
     Tail = require('tail').Tail;
 
@@ -49,19 +51,18 @@ xdescribe('dns backend resolving', function() {
     }
 
     // Reload unbound to read the new config file.
-    /*
-    supervisorSignal('test-env-unbound', 'SIGHUP', function(error) {
+    var execOpts = { env: processEnv.env() };
+    execFile('perpctl', ['-b', path.join(config.get('etc_dir'), 'perp'), 'hup', 'test-env-unbound'], execOpts, function(error, stdout, stderr) {
       if(error) {
         clearTimeout(logTailTimeout);
         logTail.unwatch();
-        return callback('Error reloading unbound: ' + error);
+        return callback('Error reloading unbound: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
       }
 
       if(!options.wait) {
         callback();
       }
     });
-    */
   }
 
   before(function setLocalInterfaceIps() {

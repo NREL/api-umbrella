@@ -28,41 +28,41 @@ _.merge(global.shared, {
       }, options);
   },
 
-  setConfigOverrides: function setConfigOverrides(newConfig, callback) {
-    global.currentConfigOverrides = newConfig;
+  setFileConfigOverrides: function setFileConfigOverrides(newFileConfig, callback) {
+    global.currentFileConfigOverrides = newFileConfig;
 
-    var testConfigPath = path.resolve(__dirname, '../config/test.yml');
-    var overridesConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
+    var testFileConfigPath = path.resolve(__dirname, '../config/test.yml');
+    var overridesFileConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
 
-    var data = fs.readFileSync(testConfigPath);
+    var data = fs.readFileSync(testFileConfigPath);
     var config = yaml.safeLoad(data.toString());
-    mergeOverwriteArrays(config, newConfig);
+    mergeOverwriteArrays(config, newFileConfig);
 
     // Generate a unique ID for this config, so we can detect when it's been
     // loaded.
-    config.config_id = uuid.v4();
-    global.currentConfigId = config.config_id;
+    config.version = parseInt(_.uniqueId(), 10);
+    global.currentFileConfigVersion = config.version;
 
     // Dump as YAML, with nulls being treated as real YAML nulls, rather than
     // the string "null" (which is js-yaml's default).
-    fs.writeFileSync(overridesConfigPath, yaml.safeDump(config, { styles: { '!!null': 'canonical' } }));
+    fs.writeFileSync(overridesFileConfigPath, yaml.safeDump(config, { styles: { '!!null': 'canonical' } }));
 
     shared.runCommand('reload', callback);
   },
 
-  revertConfigOverrides: function revertConfigOverrides(callback) {
-    global.currentConfigId = undefined;
-    var testConfigPath = path.resolve(__dirname, '../config/test.yml');
-    var overridesConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
-    fsExtra.copySync(testConfigPath, overridesConfigPath);
+  revertFileConfigOverrides: function revertFileConfigOverrides(callback) {
+    global.currentFileConfigVersion = undefined;
+    var testFileConfigPath = path.resolve(__dirname, '../config/test.yml');
+    var overridesFileConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
+    fsExtra.copySync(testFileConfigPath, overridesFileConfigPath);
     shared.runCommand('reload', callback);
   },
 
-  setRuntimeConfigOverrides: function setRuntimeConfigOverrides(newRuntimeConfig, callback) {
-    global.currentRuntimeConfigOverrides = newRuntimeConfig;
+  setDbConfigOverrides: function setDbConfigOverrides(newDbConfig, callback) {
+    global.currentDbConfigOverrides = newDbConfig;
 
-    if(newRuntimeConfig.apis) {
-      newRuntimeConfig.apis.forEach(function(api) {
+    if(newDbConfig.apis) {
+      newDbConfig.apis.forEach(function(api) {
         if(!api._id) {
           api._id = uuid.v4();
         }
@@ -82,15 +82,15 @@ _.merge(global.shared, {
       should.not.exist(error);
 
       Factory.create('config_version', {
-        config: newRuntimeConfig,
+        config: newDbConfig,
       }, function(record) {
-        global.currentRuntimeConfigVersion = record.version.getTime();
+        global.currentDbConfigVersion = record.version.getTime();
         callback();
       });
     });
   },
 
-  revertRuntimeConfigOverrides: function revertRuntimeConfigOverrides(callback) {
+  revertDbConfigOverrides: function revertDbConfigOverrides(callback) {
     var error;
     var attempts = 0;
 
@@ -116,7 +116,7 @@ _.merge(global.shared, {
       Factory.create('config_version', {
         config: {},
       }, function(record) {
-        global.currentRuntimeConfigVersion = record.version.getTime();
+        global.currentDbConfigVersion = record.version.getTime();
         callback();
       });
     });
@@ -131,12 +131,25 @@ _.merge(global.shared, {
     async.until(function() {
       return configLoaded || timedOut;
     }, function(callback) {
-      request.get('http://127.0.0.1:9080/api-umbrella/v1/state?' + Math.random(), function(error, response, body) {
+      var options = {};
+
+      // If we're performing global rate limit tests, use a different IP
+      // address for each /state API request when trying to determine if the
+      // config is published. This prevents us from accidentally hitting these
+      // global rate limits in our rapid polling requests to determine if
+      // things are ready.
+      if(global.currentFileConfigOverrides && global.currentFileConfigOverrides.router && global.currentFileConfigOverrides.router.global_rate_limits) {
+        global.autoIncrementingIpAddress = ippp.next(global.autoIncrementingIpAddress);
+        options.headers = options.headers || {};
+        options.headers['X-Forwarded-For'] = global.autoIncrementingIpAddress;
+      }
+
+      request.get('http://127.0.0.1:9080/api-umbrella/v1/state?' + Math.random(), options, function(error, response, body) {
         should.not.exist(error);
         response.statusCode.should.eql(200);
 
         data = JSON.parse(body);
-        if(data['runtime_config_version'] === global.currentRuntimeConfigVersion && data['config_id'] === global.currentConfigId) {
+        if(data['db_config_version'] === global.currentDbConfigVersion && data['file_config_version'] === global.currentFileConfigVersion) {
           configLoaded = true;
           if(timeout) {
             clearTimeout(timeout);
@@ -155,7 +168,7 @@ _.merge(global.shared, {
       }
 
       if(!configLoaded) {
-        callback('configuration did not load in the expected amount of time (global.currentRuntimeConfigVersion: ' + global.currentRuntimeConfigVersion + ' global.currentConfigId: ' + global.currentConfigId + ' data: ' + JSON.stringify(data));
+        callback('configuration did not load in the expected amount of time (global.currentDbConfigVersion: ' + global.currentDbConfigVersion + ' global.currentFileConfigVersion: ' + global.currentFileConfigVersion + ' data: ' + JSON.stringify(data));
       } else {
         callback();
       }
@@ -186,32 +199,32 @@ _.merge(global.shared, {
       ];
     }
 
-    var runtimeKeys = ['apis', 'website_backends'];
-    var newConfig = _.omit(configOverrides, runtimeKeys);
-    var newRuntimeConfig = _.pick(configOverrides, runtimeKeys);
+    var dbConfigKeys = ['apis', 'website_backends'];
+    var newFileConfig = _.omit(configOverrides, dbConfigKeys);
+    var newDbConfig = _.pick(configOverrides, dbConfigKeys);
 
-    if(!_.isEmpty(newConfig)) {
+    if(!_.isEmpty(newFileConfig)) {
       before(function setupConfig(done) {
-        shared.setConfigOverrides(newConfig, done);
+        shared.setFileConfigOverrides(newFileConfig, done);
       });
 
       after(function revertConfig(done) {
-        shared.revertConfigOverrides(done);
+        shared.revertFileConfigOverrides(done);
       });
     }
 
-    if(!_.isEmpty(newRuntimeConfig)) {
-      before(function setupRuntimeConfig(done) {
-        shared.setRuntimeConfigOverrides(newRuntimeConfig, done);
+    if(!_.isEmpty(newDbConfig)) {
+      before(function setupDbConfig(done) {
+        shared.setDbConfigOverrides(newDbConfig, done);
       });
 
-      after(function revertRuntimeConfig(done) {
+      after(function revertDbConfig(done) {
         // Longer timeout for our tests that change the mongodb primary server,
         // since we have to allow time for this local test connection to
         // reconnect to the primary.
         this.timeout(60000);
 
-        shared.revertRuntimeConfigOverrides(done);
+        shared.revertDbConfigOverrides(done);
       });
     }
 

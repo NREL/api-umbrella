@@ -597,8 +597,6 @@ LYAML:=lyaml
 LYAML_VERSION:=6.0-1
 PENLIGHT:=penlight
 PENLIGHT_VERSION:=1.3.2-2
-STDLIB:=stdlib
-STDLIB_VERSION:=41.2.0-1
 
 vendor/bundle: src/api-umbrella/web-app/Gemfile src/api-umbrella/web-app/Gemfile.lock | vendor $(PREFIX)/embedded/.installed/$(BUNDLER)
 	cd src/api-umbrella/web-app && PATH=$(PREFIX)/embedded/bin:$(PATH) bundle install --path=$(PWD)/vendor/bundle
@@ -632,10 +630,6 @@ vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION): $(PREFIX)/embedded/.i
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(PENLIGHT) $(PENLIGHT_VERSION)
 	touch $@
 
-vendor/lib/luarocks/rocks/$(STDLIB)/$(STDLIB_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(STDLIB) $(STDLIB_VERSION)
-	touch $@
-
 vendor/share/lua/5.1/resty/http.lua: deps/$(LUA_RESTY_HTTP) | vendor
 	rsync -a deps/$(LUA_RESTY_HTTP)/lib/resty/ vendor/share/lua/5.1/resty/
 	touch $@
@@ -661,7 +655,6 @@ install_app_dependencies: \
 	vendor/lib/luarocks/rocks/$(LUASOCKET)/$(LUASOCKET_VERSION) \
 	vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION) \
 	vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION) \
-	vendor/lib/luarocks/rocks/$(STDLIB)/$(STDLIB_VERSION) \
 	vendor/share/lua/5.1/lustache.lua \
 	vendor/share/lua/5.1/resty/http.lua \
 	vendor/share/lua/5.1/resty/logger/socket.lua \

@@ -66,7 +66,7 @@ return function(user)
 
   if api and url_match then
     -- Rewrite the URL prefix path.
-    new_path = gsub(request_path, url_match["_frontend_prefix_matcher"], url_match["backend_prefix"], 1)
+    local new_path = gsub(request_path, url_match["_frontend_prefix_matcher"], url_match["backend_prefix"], 1)
     if new_path ~= request_path then
       set_uri(new_path)
     end

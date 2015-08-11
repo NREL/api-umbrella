@@ -3,16 +3,14 @@ local _M = {}
 local inspect = require "inspect"
 local cmsgpack = require "cmsgpack"
 local cjson = require "cjson"
+local invert_table = require "api-umbrella.utils.invert_table"
 local lrucache = require "resty.lrucache.pureffi"
 local shcache = require "shcache"
-local std_table = require "std.table"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 local http = require "resty.http"
 
 local cache_computed_settings = utils.cache_computed_settings
-local clone_select = std_table.clone_select
-local invert = std_table.invert
 local is_empty = types.is_empty
 local get_packed = utils.get_packed
 
@@ -56,7 +54,7 @@ local function lookup_user(api_key)
       -- lookups (so we can just check if the key exists, rather than
       -- looping over each value).
       if user["roles"] then
-        user["roles"] = invert(user["roles"])
+        user["roles"] = invert_table(user["roles"])
       end
 
       if user["created_at"] and user["created_at"]["$date"] then
