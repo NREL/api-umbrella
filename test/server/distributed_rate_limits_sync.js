@@ -2,8 +2,7 @@
 
 require('../test_helper');
 
-var _ = require('lodash'),
-    async = require('async'),
+var async = require('async'),
     Factory = require('factory-lady'),
     moment = require('moment'),
     mongoose = require('mongoose'),

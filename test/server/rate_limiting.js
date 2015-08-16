@@ -1192,7 +1192,7 @@ describe('ApiUmbrellaGatekeper', function() {
                 console.warn('WARNING: X-RateLimit-Remaining header was off by 1. This should be very rare. Investigate if you see this with any regularity.');
               }
 
-              callback()
+              callback();
             });
           }.bind(this));
         }.bind(this), done);
@@ -1230,7 +1230,7 @@ describe('ApiUmbrellaGatekeper', function() {
                 console.warn('WARNING: Rate limiting was off by 1. This should be very rare. Investigate if you see this with any regularity.');
               }
 
-              callback()
+              callback();
             });
           }.bind(this));
         }.bind(this), done);
