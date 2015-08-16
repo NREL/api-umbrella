@@ -1,6 +1,5 @@
 local _M = {}
 
-local cjson = require "cjson"
 local db_config = require "api-umbrella.proxy.models.db_config"
 local active_config = require "api-umbrella.proxy.models.active_config"
 local lock = require "resty.lock"
@@ -13,12 +12,11 @@ local log = ngx.log
 local new_timer = ngx.timer.at
 
 local delay = 0.3  -- in seconds
-local check_has_completed = false
 
 local function restore_active_config_backends_after_reload()
   local restore_lock = lock:new("my_locks", { ["timeout"] = 10 })
-  local _, err = restore_lock:lock("restore_active_config_backends:" .. WORKER_GROUP_ID)
-  if err then
+  local _, lock_err = restore_lock:lock("restore_active_config_backends:" .. WORKER_GROUP_ID)
+  if lock_err then
     return
   end
 
@@ -29,9 +27,9 @@ local function restore_active_config_backends_after_reload()
     end
   end
 
-  local ok, err = restore_lock:unlock()
+  local ok, unlock_err = restore_lock:unlock()
   if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", err)
+    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
   end
 end
 
@@ -46,8 +44,8 @@ local function do_check()
   end
 
   local check_lock = lock:new("my_locks", { ["timeout"] = 0 })
-  local _, err = check_lock:lock("load_db_config_check")
-  if err then
+  local _, lock_err = check_lock:lock("load_db_config_check")
+  if lock_err then
     return
   end
 
@@ -86,9 +84,9 @@ local function do_check()
     ngx.shared.active_config:set("db_config_last_fetched_at", last_fetched_at)
   end
 
-  local ok, err = check_lock:unlock()
+  local ok, unlock_err = check_lock:unlock()
   if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", err)
+    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
   end
 end
 
@@ -102,7 +100,7 @@ local function check(premature)
     ngx.log(ngx.ERR, "failed to run api load cycle: ", err)
   end
 
-  local ok, err = new_timer(delay, check)
+  ok, err = new_timer(delay, check)
   if not ok then
     if err ~= "process exiting" then
       ngx.log(ngx.ERR, "failed to create timer: ", err)
@@ -120,7 +118,7 @@ local function setup(premature)
     ngx.log(ngx.ERR, "failed to run api load cycle: ", err)
   end
 
-  local ok, err = new_timer(0, check)
+  ok, err = new_timer(0, check)
   if not ok then
     log(ERR, "failed to create timer: ", err)
     return

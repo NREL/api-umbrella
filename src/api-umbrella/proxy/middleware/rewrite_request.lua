@@ -6,7 +6,6 @@ local tablex = require "pl.tablex"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 
-local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local gsub = ngx.re.gsub
 local is_empty = types.is_empty
 local keys = tablex.keys
@@ -133,7 +132,7 @@ local function set_http_basic_auth(settings)
   end
 end
 
-local function strip_cookies(settings)
+local function strip_cookies()
   local cookie_header = ngx.var.http_cookie
   if not cookie_header then return end
 
@@ -150,10 +149,12 @@ local function strip_cookies(settings)
     if cookie_name then
       cookie_name = strip(cookie_name)
       for _, strip_regex in ipairs(strips) do
-        local matches, err = ngx.re.match(cookie_name, strip_regex, "io")
+        local matches, match_err = ngx.re.match(cookie_name, strip_regex, "io")
         if matches then
           remove_cookie = true
           break
+        elseif match_err then
+          ngx.log(ngx.ERR, "regex error: ", match_err)
         end
       end
     end
@@ -180,7 +181,11 @@ local function url_rewrites(api)
   for _, rewrite in ipairs(api["rewrites"]) do
     if rewrite["http_method"] == "any" or rewrite["http_method"] == request_method then
       if rewrite["matcher_type"] == "regex" then
-        new_uri = gsub(new_uri, rewrite["frontend_matcher"], rewrite["backend_replacement"], "io")
+        local _, gsub_err
+        new_uri, _, gsub_err = gsub(new_uri, rewrite["frontend_matcher"], rewrite["backend_replacement"], "io")
+        if gsub_err then
+          ngx.log(ngx.ERR, "regex error: ", gsub_err)
+        end
 
       -- Route pattern matching implementation based on
       -- https://github.com/bjoerge/route-pattern
@@ -195,8 +200,7 @@ local function url_rewrites(api)
           args_length = size(args)
         end
 
-        local matches = ngx.re.match(path, rewrite["_frontend_path_regex"])
-
+        local matches, match_err = ngx.re.match(path, rewrite["_frontend_path_regex"])
         if matches then
           if rewrite["_frontend_args_length"] then
             if rewrite["_frontend_args_allow_wildcards"] or args_length == rewrite["_frontend_args_length"] then
@@ -231,7 +235,7 @@ local function url_rewrites(api)
                 matches[key] = ngx.escape_uri(value)
               end
 
-              local ok, output = pcall(lustache.render, lustache, rewrite["_backend_replacement_args"], matches)
+              ok, output = pcall(lustache.render, lustache, rewrite["_backend_replacement_args"], matches)
               if ok then
                 new_uri = new_uri .. "?" .. output
               else
@@ -239,6 +243,8 @@ local function url_rewrites(api)
               end
             end
           end
+        elseif match_err then
+          ngx.log(ngx.ERR, "regex error: ", match_err)
         end
       end
     end
@@ -259,6 +265,6 @@ return function(user, api, settings)
   append_query_string(settings)
   set_headers(settings)
   set_http_basic_auth(settings)
-  strip_cookies(settings)
+  strip_cookies()
   url_rewrites(api)
 end

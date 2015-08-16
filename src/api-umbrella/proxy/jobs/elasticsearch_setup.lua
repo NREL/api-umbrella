@@ -2,12 +2,7 @@ local _M = {}
 
 local cjson = require "cjson"
 local http = require "resty.http"
-local inspect = require "inspect"
 local lock = require "resty.lock"
-
-local lock = lock:new("my_locks", {
-  ["timeout"] = 0,
-})
 
 local delay = 3600  -- in seconds
 local new_timer = ngx.timer.at
@@ -46,11 +41,10 @@ local function create_templates()
   if elasticsearch_templates then
     local httpc = http.new()
     for _, template in ipairs(elasticsearch_templates) do
-      local res, err = httpc:request_uri(elasticsearch_host .. "/_template/" .. template["id"], {
+      local _, err = httpc:request_uri(elasticsearch_host .. "/_template/" .. template["id"], {
         method = "PUT",
         body = cjson.encode(template["template"]),
       })
-
       if err then
         ngx.log(ngx.ERR, "failed to update elasticsearch template: ", err)
       end
@@ -91,26 +85,27 @@ local function create_aliases()
   local httpc = http.new()
   for _, alias in ipairs(aliases) do
     -- Make sure the index exists.
-    local res, err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"], {
+    local _, create_err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"], {
       method = "PUT",
     })
-    if err then
-      ngx.log(ngx.ERR, "failed to create elasticsearch index: ", err)
+    if create_err then
+      ngx.log(ngx.ERR, "failed to create elasticsearch index: ", create_err)
     end
 
     -- Create the alias for the index.
-    local res, err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"] .. "/_alias/" .. alias["alias"], {
+    local _, alias_err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"] .. "/_alias/" .. alias["alias"], {
       method = "PUT",
     })
-    if err then
-      ngx.log(ngx.ERR, "failed to create elasticsearch index alias: ", err)
+    if alias_err then
+      ngx.log(ngx.ERR, "failed to create elasticsearch index alias: ", alias_err)
     end
   end
 end
 
 local function do_check()
-  local elapsed, err = lock:lock("elasticsearch_index_setup")
-  if err then
+  local check_lock = lock:new("my_locks", { ["timeout"] = 0 })
+  local _, lock_err = check_lock:lock("elasticsearch_index_setup")
+  if lock_err then
     return
   end
 
@@ -118,9 +113,9 @@ local function do_check()
   create_templates()
   create_aliases()
 
-  local ok, err = lock:unlock()
+  local ok, unlock_err = check_lock:unlock()
   if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", err)
+    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
   end
 end
 
@@ -137,7 +132,7 @@ local function check(premature)
   -- We keep running this task so that we can ensure the indexes and aliases
   -- always get created for the following day as we approach the end of the
   -- month.
-  local ok, err = new_timer(delay, check)
+  ok, err = new_timer(delay, check)
   if not ok then
     if err ~= "process exiting" then
       ngx.log(ngx.ERR, "failed to create timer: ", err)
@@ -150,7 +145,7 @@ end
 function _M.spawn()
   local ok, err = new_timer(0, check)
   if not ok then
-    log(ERR, "failed to create timer: ", err)
+    ngx.log(ngx.ERR, "failed to create timer: ", err)
     return
   end
 end

@@ -1,6 +1,5 @@
 local _M = {}
 
-local inspect = require "inspect"
 local cmsgpack = require "cmsgpack"
 local cjson = require "cjson"
 local invert_table = require "api-umbrella.utils.invert_table"
@@ -12,7 +11,6 @@ local http = require "resty.http"
 
 local cache_computed_settings = utils.cache_computed_settings
 local is_empty = types.is_empty
-local get_packed = utils.get_packed
 
 local function lookup_user(api_key)
   local httpc = http.new()
@@ -110,7 +108,7 @@ function _M.get(api_key)
     return nil
   end
 
-  local user, from_cache = shared_cache:load(api_key)
+  user = shared_cache:load(api_key)
   if user then
     local_cache:set(api_key, user, 2)
   else

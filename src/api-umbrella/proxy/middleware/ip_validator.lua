@@ -1,4 +1,3 @@
-local inspect = require "inspect"
 local cidr = require "libcidr-ffi"
 
 local settings_keys = {
@@ -19,7 +18,7 @@ local function ip_in_cidrs(ip, allowed_ips)
   return false
 end
 
-return function(settings, user)
+return function(settings)
   local ip = ngx.ctx.remote_addr
 
   -- In most cases, we check the merged "settings" object, but in this case, we

@@ -1,4 +1,3 @@
-local inspect = require "inspect"
 local is_array = require "api-umbrella.utils.is_array"
 local lustache = require "lustache"
 local path = require "pl.path"
@@ -79,7 +78,7 @@ local function render_template(template, data, format, strip_whitespace)
   -- non-HTML errors, we don't want escaping. This lets us be a little lazy
   -- with our template definitions and not worry about mustache escape details
   -- there.
-  local template = string.gsub(template, "{{([^{}]-)}}", "{{{%1}}}")
+  template = string.gsub(template, "{{([^{}]-)}}", "{{{%1}}}")
 
   if strip_whitespace then
     -- Strip leading and trailing whitespace from template, since it's easy to
@@ -105,9 +104,9 @@ local function render_template(template, data, format, strip_whitespace)
   end
 end
 
-return function(err, settings, extra_data)
+return function(denied_code, settings, extra_data)
   -- Store the gatekeeper rejection code for logging.
-  ngx.ctx.gatekeeper_denied_code = err
+  ngx.ctx.gatekeeper_denied_code = denied_code
 
   if not settings then
     settings = config["apiSettings"]
@@ -115,7 +114,7 @@ return function(err, settings, extra_data)
 
   local format = request_format()
 
-  local data = deepcopy(settings["error_data"][err])
+  local data = deepcopy(settings["error_data"][denied_code])
   if not data or type(data) ~= "table" or is_array(data) then
     data = deepcopy(settings["error_data"]["internal_server_error"])
   end
@@ -131,14 +130,14 @@ return function(err, settings, extra_data)
   end
 
   local template = settings["error_templates"][format]
-  local output, err = render_template(template, data, format, true)
+  local output, template_err = render_template(template, data, format, true)
 
   -- Allow all errors to be loaded over CORS (in case any underlying APIs are
   -- expected to be accessed over CORS then we want to make sure errors are
   -- also allowed via CORS).
   ngx.header["Access-Control-Allow-Origin"] = "*"
 
-  if not err then
+  if not template_err then
     ngx.status = status_code
     ngx.header.content_type = supported_formats[format]
     ngx.print(output)

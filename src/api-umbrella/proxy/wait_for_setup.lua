@@ -1,5 +1,3 @@
-local inspect = require "inspect"
-
 local upstreams_setup_complete = false
 
 return function()

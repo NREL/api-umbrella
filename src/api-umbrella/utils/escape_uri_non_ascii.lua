@@ -13,5 +13,10 @@ return function(string)
   -- non-UTF-8 characters). Ideally, we would probably want to only replace
   -- non-UTF-8 sequences with their URL encoded version, but this is the
   -- simpler, quicker approach.
-  return gsub(string, "[^[:ascii:]]+", escape_match, "oj")
+  local result, _, gsub_err = gsub(string, "[^[:ascii:]]+", escape_match, "oj")
+  if gsub_err then
+    ngx.log(ngx.ERR, "regex error: ", gsub_err)
+  end
+
+  return result
 end

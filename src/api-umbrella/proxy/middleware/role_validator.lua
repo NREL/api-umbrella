@@ -1,4 +1,3 @@
-local inspect = require "inspect"
 local types = require "pl.types"
 
 local is_empty = types.is_empty

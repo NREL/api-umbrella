@@ -1,4 +1,3 @@
-local inspect = require "inspect"
 local seq = require "pl.seq"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
@@ -12,7 +11,6 @@ return function(api)
   -- Fetch the default settings
   local settings = deepcopy(config["apiSettings"])
 
-
   -- Merge the base API settings on top.
   if api["settings"] then
     deep_merge_overwrite_arrays(settings, api["settings"])
@@ -24,8 +22,8 @@ return function(api)
     local request_uri = ngx.ctx.request_uri
     for _, sub_settings in ipairs(api["sub_settings"]) do
       if sub_settings["http_method"] == "any" or sub_settings["http_method"] == request_method then
-        local match, err = ngx.re.match(request_uri, sub_settings["regex"], "ijo")
-        if match then
+        local matches, match_err = ngx.re.match(request_uri, sub_settings["regex"], "ijo")
+        if matches then
           local original_required_roles
           if not sub_settings["settings"]["required_roles_override"] then
             original_required_roles = settings["required_roles"]
@@ -47,6 +45,8 @@ return function(api)
           end
 
           break
+        elseif match_err then
+          ngx.log(ngx.ERR, "regex error: ", match_err)
         end
       end
     end

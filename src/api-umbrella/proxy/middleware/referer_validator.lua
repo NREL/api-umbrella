@@ -1,5 +1,3 @@
-local inspect = require "inspect"
-
 local settings_keys = {
   "original_api_settings",
   "original_user_settings",
@@ -16,7 +14,7 @@ local function referer_in_list(referer, allowed_referers)
   return false
 end
 
-return function(settings, user)
+return function(settings)
   -- IE8-9 pseudo CORS support doesn't send Referer headers, only Origin
   -- headers. So fallback to that for checking (this isn't really the same
   -- thing as the referer, though, so this could probably use some

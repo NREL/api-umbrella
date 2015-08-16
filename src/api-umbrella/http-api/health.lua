@@ -1,6 +1,5 @@
 local cjson = require "cjson"
 local http = require "resty.http"
-local inspect = require "inspect"
 
 local response = {
   status = "red",
@@ -38,7 +37,7 @@ elseif res.body then
   local today = os.date("%Y-%m", ngx.time())
   local alias = "api-umbrella-logs-" .. today
   local index = "api-umbrella-logs-" .. config["log_template_version"] .. "-" .. today
-  local res, err = httpc:request_uri(config["elasticsearch"]["hosts"][1] .. "/" .. index .. "/_alias/" .. alias)
+  res, err = httpc:request_uri(config["elasticsearch"]["hosts"][1] .. "/" .. index .. "/_alias/" .. alias)
   if err then
     ngx.log(ngx.ERR, "failed to fetch elasticsearch alias details: ", err)
   elseif res.body then
@@ -49,7 +48,7 @@ elseif res.body then
   end
 end
 
-local res, err = httpc:request_uri("http://127.0.0.1:" .. config["web"]["port"] .. "/admin/")
+res, err = httpc:request_uri("http://127.0.0.1:" .. config["web"]["port"] .. "/admin/")
 if err then
   ngx.log(ngx.ERR, "failed to fetch web app: ", err)
 elseif res.body then

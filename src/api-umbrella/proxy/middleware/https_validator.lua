@@ -1,8 +1,4 @@
-local inspect = require "inspect"
 local httpsify_current_url = require "api-umbrella.utils.httpsify_current_url"
-local types = require "pl.types"
-
-local is_empty = types.is_empty
 
 return function(settings, user)
   local protocol = ngx.ctx.protocol

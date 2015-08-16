@@ -1,6 +1,5 @@
 local cjson = require "cjson"
 local http = require "resty.http"
-local inspect = require "inspect"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
 
 local base_url = "http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/config_versions"

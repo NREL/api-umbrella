@@ -1,5 +1,4 @@
 local cjson = require "cjson"
-local inspect = require "inspect"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local logger = require "resty.logger.socket"
 local utils = require "api-umbrella.proxy.utils"
@@ -123,7 +122,7 @@ local function log_request()
     end
   end
 
-  local bytes, err = logger.log(cjson.encode(data) .. "\n")
+  local _, err = logger.log(cjson.encode(data) .. "\n")
   if err then
     ngx.log(ngx.ERR, "failed to log message: ", err)
     return

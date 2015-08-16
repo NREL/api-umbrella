@@ -1,7 +1,6 @@
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local plutils = require "pl.utils"
 local utils = require "api-umbrella.proxy.utils"
-local inspect = require "inspect"
 
 local split = plutils.split
 

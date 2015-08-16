@@ -5,8 +5,6 @@ local error_handler = require "api-umbrella.proxy.error_handler"
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local httpsify_current_url = require "api-umbrella.utils.httpsify_current_url"
 local utils = require "api-umbrella.proxy.utils"
-local inspect = require "inspect"
-local plutils = require "pl.utils"
 local wait_for_setup = require "api-umbrella.proxy.wait_for_setup"
 
 local get_packed = utils.get_packed
@@ -41,10 +39,12 @@ if data["hosts"] then
       matched_host = default_host
       break
     elseif host["_hostname_wildcard_regex"] then
-      local match, err = ngx.re.match(ngx.ctx.host_normalized, host["_hostname_wildcard_regex"], "jo")
-      if match then
+      local matches, match_err = ngx.re.match(ngx.ctx.host_normalized, host["_hostname_wildcard_regex"], "jo")
+      if matches then
         matched_host = host
         break
+      elseif match_err then
+        ngx.log(ngx.ERR, "regex error: ", match_err)
       end
     else
       if ngx.ctx.host_normalized == host["_hostname_normalized"] then
@@ -65,18 +65,22 @@ end
 ngx.ctx.matched_host = matched_host
 
 if matched_host and matched_host["_web_backend?"] then
-  local match, err = ngx.re.match(ngx.ctx.original_uri, config["router"]["web_backend_regex"], "ijo")
-  if match then
+  local matches, match_err = ngx.re.match(ngx.ctx.original_uri, config["router"]["web_backend_regex"], "ijo")
+  if matches then
     local protocol = ngx.ctx.protocol
     if protocol ~= "https" then
-      local match, err = ngx.re.match(ngx.ctx.original_uri, config["router"]["web_backend_required_https_regex"], "ijo")
-      if match then
+      matches, match_err = ngx.re.match(ngx.ctx.original_uri, config["router"]["web_backend_required_https_regex"], "ijo")
+      if matches then
         return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
+      elseif match_err then
+        ngx.log(ngx.ERR, "regex error: ", match_err)
       end
     end
 
     ngx.var.api_umbrella_proxy_pass = "http://api_umbrella_web_backend"
     return true
+  elseif match_err then
+    ngx.log(ngx.ERR, "regex error: ", match_err)
   end
 end
 
@@ -88,8 +92,10 @@ else
   if matched_host and matched_host["_website_backend?"] then
     local protocol = ngx.ctx.protocol
     if protocol ~= "https" then
-      local match, err = ngx.re.match(ngx.ctx.original_uri, matched_host["_website_backend_required_https_regex"], "ijo")
-      if match then
+      local matches, match_err = ngx.re.match(ngx.ctx.original_uri, matched_host["_website_backend_required_https_regex"], "ijo")
+      if match_err then
+        ngx.log(ngx.ERR, "regex error: ", match_err)
+      elseif matches then
         return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
       end
     end

@@ -1,14 +1,9 @@
 local api_store = require "api-umbrella.proxy.api_store"
-local inspect = require "inspect"
 local stringx = require "pl.stringx"
-local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 
-local apis_for_host = api_store.for_host
 local append_array = utils.append_array
-local get_packed = utils.get_packed
 local gsub = string.gsub
-local is_empty = types.is_empty
 local set_uri = utils.set_uri
 local startswith = stringx.startswith
 
@@ -21,9 +16,11 @@ local function apis_for_request_host()
   for _, api in ipairs(all_apis) do
     local hostname_matches = false
     if api["_frontend_host_wildcard_regex"] then
-      local match, err = ngx.re.match(ngx.ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
-      if match then
+      local matches, match_err = ngx.re.match(ngx.ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
+      if matches then
         hostname_matches = true
+      elseif match_err then
+        ngx.log(ngx.ERR, "regex error: ", match_err)
       end
     else
       if ngx.ctx.host_normalized == api["_frontend_host_normalized"] then
@@ -60,7 +57,7 @@ local function match_api(request_path)
   end
 end
 
-return function(user)
+return function()
   local request_path = ngx.ctx.original_uri
   local api, url_match = match_api(request_path)
 
@@ -73,10 +70,18 @@ return function(user)
 
     local host = api["backend_host"] or ngx.ctx.host
     if api["_frontend_host_wildcard_regex"] then
-      local match, err = ngx.re.match(ngx.ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
-      local wildcard_portion = match[1]
-      if wildcard_portion then
-        host = ngx.re.sub(host, "^([*.])", wildcard_portion, "jo")
+      local matches, match_err = ngx.re.match(ngx.ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
+      if matches then
+        local wildcard_portion = matches[1]
+        if wildcard_portion then
+          local _, sub_err
+          host, _, sub_err = ngx.re.sub(host, "^([*.])", wildcard_portion, "jo")
+          if sub_err then
+            ngx.log(ngx.ERR, "regex error: ", sub_err)
+          end
+        end
+      elseif match_err then
+        ngx.log(ngx.ERR, "regex error: ", match_err)
       end
     end
 

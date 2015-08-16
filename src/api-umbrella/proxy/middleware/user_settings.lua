@@ -1,4 +1,3 @@
-local inspect = require "inspect"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
 

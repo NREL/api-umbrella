@@ -1,4 +1,3 @@
-local inspect = require "inspect"
 local path = require "pl.path"
 local run_command = require "api-umbrella.utils.run_command"
 local setup = require "api-umbrella.cli.setup"
@@ -39,7 +38,7 @@ local function reload_nginx()
   end
 end
 
-return function(options)
+return function()
   config = setup()
   perp_base = path.join(config["etc_dir"], "perp")
   reload_perp()

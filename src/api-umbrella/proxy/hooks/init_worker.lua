@@ -2,7 +2,6 @@ local distributed_rate_limit_puller = require "api-umbrella.proxy.jobs.distribut
 local distributed_rate_limit_pusher = require "api-umbrella.proxy.jobs.distributed_rate_limit_pusher"
 local elasticsearch_setup = require "api-umbrella.proxy.jobs.elasticsearch_setup"
 local load_api_users = require "api-umbrella.proxy.jobs.load_api_users"
-local load_backends = require "api-umbrella.proxy.load_backends"
 local load_db_config = require "api-umbrella.proxy.jobs.load_db_config"
 local resolve_backend_dns = require "api-umbrella.proxy.jobs.resolve_backend_dns"
 

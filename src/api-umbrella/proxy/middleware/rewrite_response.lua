@@ -1,5 +1,3 @@
-local host_normalize = require "api-umbrella.utils.host_normalize"
-local inspect = require "inspect"
 local stringx = require "pl.stringx"
 local url = require "socket.url"
 local utils = require "api-umbrella.proxy.utils"
@@ -14,8 +12,8 @@ local function set_cache_headers()
   local cache = "MISS"
   local via = ngx.header["Via"]
   if via then
-    local match, err = ngx.re.match(via, "\\[(.+)\\]\\)")
-    if match and match[1] then
+    local matches, match_err = ngx.re.match(via, "\\[(.+)\\]\\)")
+    if matches and matches[1] then
       -- Parse the cache status out of the Via header into a simplified X-Cache
       -- HIT/MISS value:
       -- https://docs.trafficserver.apache.org/en/latest/admin/faqs.en.html?highlight=post#how-do-i-interpret-the-via-header-code
@@ -23,10 +21,12 @@ local function set_cache_headers()
       -- Note: The XDebug TrafficServer plugin could provide similar
       -- functionality, but currently has some odd edge cases:
       -- https://issues.apache.org/jira/browse/TS-3432
-      local trafficserver_code = match[1]
+      local trafficserver_code = matches[1]
       if string.sub(trafficserver_code, 2, 2) == "H" then
         cache = "HIT"
       end
+    elseif match_err then
+      ngx.log(ngx.ERR, "regex error: ", match_err)
     end
   end
 

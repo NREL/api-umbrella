@@ -24,8 +24,8 @@ return function(user_agent)
   end
 
   for _, browser_regex in ipairs(data["browser_regexes"]) do
-    local m, err = ngx.re.match(user_agent, browser_regex["regex"], browser_regex["regex_flags"])
-    if m then
+    local matches, match_err = ngx.re.match(user_agent, browser_regex["regex"], browser_regex["regex_flags"])
+    if matches then
       local browser = data["browsers"][browser_regex["browser_id"]]
       if browser then
         result["family"] = browser["name"]
@@ -36,11 +36,13 @@ return function(user_agent)
         end
       end
 
-      if m[1] then
-        result["version"] = m[1]
+      if matches[1] then
+        result["version"] = matches[1]
       end
 
       break
+    elseif match_err then
+      ngx.log(ngx.ERR, "regex error: ", match_err)
     end
   end
 

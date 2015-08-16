@@ -5,9 +5,7 @@ local array_includes = require "api-umbrella.utils.array_includes"
 local array_last = require "api-umbrella.utils.array_last"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
-local escape_regex = require "api-umbrella.utils.escape_regex"
 local file = require "pl.file"
-local inspect = require "inspect"
 local lustache = require "lustache"
 local lyaml = require "lyaml"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
@@ -18,7 +16,6 @@ local posix = require "posix"
 local run_command = require "api-umbrella.utils.run_command"
 local stat = require "posix.sys.stat"
 local tablex = require "pl.tablex"
-local types = require "pl.types"
 local unistd = require "posix.unistd"
 
 local app_root = os.getenv("API_UMBRELLA_SRC_ROOT")
@@ -230,7 +227,7 @@ end
 
 local function write_templates()
   local template_root = path.join(app_root, "templates/etc")
-  for root, dirs, files in dir.walk(template_root) do
+  for root, _, files in dir.walk(template_root) do
     for _, filename in ipairs(files) do
       local template_path = path.join(root, filename)
 
@@ -283,7 +280,7 @@ local function set_permissions()
   end
 end
 
-return function(options)
+return function()
   read_default_config()
   read_system_config()
   set_computed_config()

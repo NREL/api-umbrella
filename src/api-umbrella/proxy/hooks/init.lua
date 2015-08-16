@@ -9,16 +9,17 @@ inspect = require "inspect"
 --
 -- This is used to prevent race conditions in the dyups module so that we can
 -- properly know when upstreams are setup after nginx is reloaded.
-WORKER_GROUP_ID, err = ngx.shared.active_config:incr("worker_group_id", 1)
-if err == "not found" then
+local incr_err
+WORKER_GROUP_ID, incr_err = ngx.shared.active_config:incr("worker_group_id", 1)
+if incr_err == "not found" then
   WORKER_GROUP_ID = 1
-  local success, err = ngx.shared.active_config:set("worker_group_id", 1)
+  local success, set_err = ngx.shared.active_config:set("worker_group_id", 1)
   if not success then
-    ngx.log(ngx.ERR, "worker_group_id set err: ", err)
+    ngx.log(ngx.ERR, "worker_group_id set err: ", set_err)
     return
   end
-elseif err then
-  ngx.log(ngx.ERR, "worker_group_id incr err: ", err)
+elseif incr_err then
+  ngx.log(ngx.ERR, "worker_group_id incr err: ", incr_err)
 end
 
 config = require "api-umbrella.proxy.models.file_config"

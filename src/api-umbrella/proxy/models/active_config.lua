@@ -89,11 +89,31 @@ local function cache_computed_api(api)
         local splatNamedParam = [[\*(\w+)]]
         local subPath = [[\*([^\w]|$)]]
 
-        local frontend_path_regex = ngx.re.gsub(path, escapeRegExp, "\\$0")
-        frontend_path_regex = ngx.re.gsub(frontend_path_regex, subPath, [[.*?$1]])
-        frontend_path_regex = ngx.re.gsub(frontend_path_regex, namedParam, [[(?<$1>[^/]+)]])
-        frontend_path_regex = ngx.re.gsub(frontend_path_regex, splatNamedParam, [[(?<$1>.*?)]])
-        frontend_path_regex = ngx.re.gsub(frontend_path_regex, "/$", "")
+        local frontend_path_regex, _, gsub_err = ngx.re.gsub(path, escapeRegExp, "\\$0")
+        if gsub_err then
+          ngx.log(ngx.ERR, "regex error: ", gsub_err)
+        end
+
+        frontend_path_regex, _, gsub_err = ngx.re.gsub(frontend_path_regex, subPath, [[.*?$1]])
+        if gsub_err then
+          ngx.log(ngx.ERR, "regex error: ", gsub_err)
+        end
+
+        frontend_path_regex, _, gsub_err = ngx.re.gsub(frontend_path_regex, namedParam, [[(?<$1>[^/]+)]])
+        if gsub_err then
+          ngx.log(ngx.ERR, "regex error: ", gsub_err)
+        end
+
+        frontend_path_regex, _, gsub_err = ngx.re.gsub(frontend_path_regex, splatNamedParam, [[(?<$1>.*?)]])
+        if gsub_err then
+          ngx.log(ngx.ERR, "regex error: ", gsub_err)
+        end
+
+        frontend_path_regex, _, gsub_err = ngx.re.gsub(frontend_path_regex, "/$", "")
+        if gsub_err then
+          ngx.log(ngx.ERR, "regex error: ", gsub_err)
+        end
+
         rewrite["_frontend_path_regex"] = "^" .. frontend_path_regex .. "/?$"
 
         if args then

@@ -1,5 +1,3 @@
-local inspect = require "inspect"
-
 -- Run a command line program and return its exit code and output.
 return function(command)
   -- Since Lua 5.1 doesn't support getting the exit code and output
