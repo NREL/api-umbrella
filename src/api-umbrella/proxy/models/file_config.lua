@@ -4,6 +4,7 @@ local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local utils = require "api-umbrella.proxy.utils"
 
 local append_array = utils.append_array
+local cache_computed_settings = utils.cache_computed_settings
 local log = ngx.log
 local ERR = ngx.ERR
 
@@ -77,6 +78,7 @@ local function read()
   local data = read_file()
   nillify_yaml_nulls(data)
   set_defaults(data)
+  cache_computed_settings(data["apiSettings"])
 
   return data
 end

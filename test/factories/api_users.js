@@ -29,7 +29,7 @@ ApiUser.prototype.save = function(callback) {
   var upsertData = {
     $set: data,
     $currentDate: {
-      updated_at: { $type: 'date' },
+      ts: { $type: 'timestamp' },
     },
   };
 

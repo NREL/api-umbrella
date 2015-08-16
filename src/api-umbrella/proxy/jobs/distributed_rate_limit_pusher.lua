@@ -3,9 +3,7 @@ local _M = {}
 local cjson = require "cjson"
 local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
 local http = require "resty.http"
-local inspect = require "inspect"
 local types = require "pl.types"
-local utils = require "api-umbrella.proxy.utils"
 
 local is_empty = types.is_empty
 
@@ -17,7 +15,7 @@ local indexes_created = false
 local function create_indexes()
   if not indexes_created then
     local httpc = http.new()
-    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/system.indexes", {
+    local _, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/system.indexes", {
       method = "POST",
       headers = {
         ["Content-Type"] = "application/json",
@@ -29,18 +27,18 @@ local function create_indexes()
       body = cjson.encode({
         ns = config["mongodb"]["_database"] .. ".rate_limits",
         key = {
-          updated_at = -1,
+          ts = -1,
         },
-        name = "updated_at",
+        name = "ts",
         background = true,
       })
     })
     if err then
-      ngx.log(ngx.ERR, "failed to create mongodb updated_at index: ", err)
+      ngx.log(ngx.ERR, "failed to create mongodb ts index: ", err)
     end
 
-    local httpc = http.new()
-    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/system.indexes", {
+    httpc = http.new()
+    _, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/system.indexes", {
       method = "POST",
       headers = {
         ["Content-Type"] = "application/json",
@@ -69,15 +67,18 @@ end
 local function do_check()
   create_indexes()
 
+  local current_save_time = ngx.now() * 1000
+
   local data = distributed_rate_limit_queue.pop()
   if is_empty(data) then
     return
   end
 
+  local success = true
   for key, count in pairs(data) do
     local update = {
       ["$currentDate"] = {
-        updated_at = true,
+        ts = { ["$type"] = "timestamp" },
       },
       ["$inc"] = {
         count = count,
@@ -88,7 +89,7 @@ local function do_check()
     }
 
     local httpc = http.new()
-    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/rate_limits/" .. key, {
+    local _, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/rate_limits/" .. key, {
       method = "PUT",
       headers = {
         ["Content-Type"] = "application/json",
@@ -100,7 +101,12 @@ local function do_check()
     })
     if err then
       ngx.log(ngx.ERR, "failed to update rate limits in mongodb: ", err)
+      success = false
     end
+  end
+
+  if success then
+    ngx.shared.stats:set("distributed_last_pushed_at", current_save_time)
   end
 end
 
@@ -114,7 +120,7 @@ local function check(premature)
     ngx.log(ngx.ERR, "failed to run backend load cycle: ", err)
   end
 
-  local ok, err = new_timer(delay, check)
+  ok, err = new_timer(delay, check)
   if not ok then
     if err ~= "process exiting" then
       ngx.log(ngx.ERR, "failed to create timer: ", err)
@@ -127,7 +133,7 @@ end
 function _M.spawn()
   local ok, err = new_timer(0, check)
   if not ok then
-    log(ERR, "failed to create timer: ", err)
+    ngx.log(ngx.ERR, "failed to create timer: ", err)
     return
   end
 end

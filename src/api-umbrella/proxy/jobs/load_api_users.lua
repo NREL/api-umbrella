@@ -4,8 +4,11 @@ local cjson = require "cjson"
 local http = require "resty.http"
 local lock = require "resty.lock"
 local types = require "pl.types"
+local utils = require "api-umbrella.proxy.utils"
 
+local get_packed = utils.get_packed
 local is_empty = types.is_empty
+local set_packed = utils.set_packed
 
 local check_lock = lock:new("my_locks", {
   ["timeout"] = 0,
@@ -19,32 +22,29 @@ local log = ngx.log
 local ERR = ngx.ERR
 
 local function do_check()
-  local _, err = check_lock:lock("load_api_users")
-  if err then
+  local _, lock_err = check_lock:lock("load_api_users")
+  if lock_err then
     return
   end
 
   local current_fetch_time = ngx.now() * 1000
-  local last_fetched_time = api_users:get("last_fetched_at") or current_fetch_time - (60 * 1000)
+  local last_fetched_timestamp = get_packed(api_users, "distributed_last_fetched_timestamp") or { t = math.floor((current_fetch_time - 60 * 1000) / 1000), i = 0 }
 
   local skip = 0
   local page_size = 250
-  local err
+  local success = true
   repeat
     local httpc = http.new()
-    local res, err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/api_users", {
+    local res, req_err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/api_users", {
       query = {
         extended_json = "true",
         limit = page_size,
         skip = skip,
         sort = "updated_at",
         query = cjson.encode({
-          updated_at = {
-            ["$gte"] = {
-              ["$date"] = last_fetched_time,
-            },
-            ["$lt"] = {
-              ["$date"] = current_fetch_time,
+          ts = {
+            ["$gt"] = {
+              ["$timestamp"] = last_fetched_timestamp,
             },
           },
         }),
@@ -52,13 +52,20 @@ local function do_check()
     })
 
     local results = nil
-    if err then
-      ngx.log(ngx.ERR, "failed to fetch users from mongodb: ", err)
+    if req_err then
+      ngx.log(ngx.ERR, "failed to fetch users from mongodb: ", req_err)
+      success = false
     elseif res.body then
       local response = cjson.decode(res.body)
       if response and response["data"] then
         results = response["data"]
-        for _, result in ipairs(results) do
+        for index, result in ipairs(results) do
+          if skip == 0 and index == 1 then
+            if result["ts"] and result["ts"]["$timestamp"] then
+              set_packed(api_users, "distributed_last_fetched_timestamp", result["ts"]["$timestamp"])
+            end
+          end
+
           if result["api_key"] then
             ngx.shared.api_users:delete(result["api_key"])
           end
@@ -69,13 +76,13 @@ local function do_check()
     skip = skip + page_size
   until is_empty(results)
 
-  if not err then
+  if success then
     api_users:set("last_fetched_at", current_fetch_time)
   end
 
-  local ok, err = check_lock:unlock()
+  local ok, unlock_err = check_lock:unlock()
   if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", err)
+    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
   end
 end
 
@@ -89,7 +96,7 @@ local function check(premature)
     ngx.log(ngx.ERR, "failed to run api fetch cycle: ", err)
   end
 
-  local ok, err = new_timer(delay, check)
+  ok, err = new_timer(delay, check)
   if not ok then
     if err ~= "process exiting" then
       ngx.log(ngx.ERR, "failed to create timer: ", err)

@@ -32,6 +32,12 @@ FREEGEOIP_DIGEST:=md5
 FREEGEOIP_CHECKSUM:=06effa101645431a4608581d6dd98970
 FREEGEOIP_URL:=https://github.com/fiorix/freegeoip/releases/download/v$(FREEGEOIP_VERSION)/$(FREEGEOIP)-linux-amd64.tar.gz
 
+GLIDE_VERSION:=0.4.1
+GLIDE:=glide-$(GLIDE_VERSION)
+GLIDE_DIGEST:=md5
+GLIDE_CHECKSUM:=354072807db96f98a835b34fb472e501
+GLIDE_URL:=https://github.com/Masterminds/glide/archive/$(GLIDE_VERSION).tar.gz
+
 GOLANG_VERSION:=1.4.2
 GOLANG:=golang-$(GOLANG_VERSION)
 GOLANG_DIGEST:=sha1
@@ -283,15 +289,17 @@ deps/$(LUSTACHE): deps/$(LUSTACHE).tar.gz
 deps/$(MORA).tar.gz: | deps
 	curl -L -o $@ $(MORA_URL)
 
-deps/gocode/src/github.com/emicklei/mora: deps/$(MORA).tar.gz
+deps/$(MORA)/mora: deps/$(MORA).tar.gz
 	openssl $(MORA_DIGEST) $< | grep $(MORA_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
 	mkdir -p $@
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
-deps/gocode/src/github.com/emicklei/mora/.built: deps/gocode/src/github.com/emicklei/mora deps/$(GOLANG)
-	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) go get
-	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) go build
+deps/$(MORA)/.built: deps/$(MORA)/mora deps/gocode/bin/glide build/mora_glide.yaml
+	cp build/mora_glide.yaml $</glide.yaml
+	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOROOT=$(ROOT_DIR)/deps/$(GOLANG) glide gopath
+	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOROOT=$(ROOT_DIR)/deps/$(GOLANG) GOPATH=`glide gopath` GOBIN=`glide gopath`/bin glide install
+	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOROOT=$(ROOT_DIR)/deps/$(GOLANG) GOPATH=`glide gopath` GOBIN=`glide gopath`/bin go install
 	touch $@
 
 # Perp
@@ -337,6 +345,21 @@ deps/$(ELASTICSEARCH): deps/$(ELASTICSEARCH).tar.gz
 	openssl $(ELASTICSEARCH_DIGEST) $< | grep $(ELASTICSEARCH_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
 	mkdir -p $@
 	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
+# Glide
+deps/$(GLIDE).tar.gz: | deps
+	curl -L -o $@ $(GLIDE_URL)
+
+deps/gocode/src/github.com/Masterminds/glide: deps/$(GLIDE).tar.gz
+	openssl $(GLIDE_DIGEST) $< | grep $(GLIDE_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
+deps/gocode/bin/glide: deps/gocode/src/github.com/Masterminds/glide deps/$(GOLANG)
+	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) go get
+	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) go build
 	touch $@
 
 # Go
@@ -405,7 +428,7 @@ dependencies: \
 	deps/$(LIBYAML)/.built \
 	deps/$(LUAROCKS) \
 	deps/$(MONGODB) \
-	deps/gocode/src/github.com/emicklei/mora/.built \
+	deps/$(MORA)/.built \
 	deps/$(OPENRESTY)/.built \
 	deps/$(PERP)/.built \
 	deps/$(RUBY)/.built \
@@ -485,8 +508,8 @@ $(PREFIX)/embedded/.installed/$(MONGODB): deps/$(MONGODB) | $(PREFIX)/embedded/.
 		$(PREFIX)/embedded/bin/mongos
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(MORA): deps/gocode/src/github.com/emicklei/mora/.built | $(PREFIX)/embedded/.installed
-	cp deps/gocode/bin/mora $(PREFIX)/embedded/bin/
+$(PREFIX)/embedded/.installed/$(MORA): deps/$(MORA)/.built | $(PREFIX)/embedded/.installed
+	cp deps/$(MORA)/mora/_vendor/bin/mora $(PREFIX)/embedded/bin/
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(OPENRESTY): deps/$(OPENRESTY)/.built | $(PREFIX)/embedded/.installed
@@ -541,8 +564,8 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(MONGODB).tar.gz \
 	deps/$(MONGODB) \
 	deps/$(MORA).tar.gz \
-	deps/gocode/src/github.com/emicklei/mora \
-	deps/gocode/src/github.com/emicklei/mora/.built \
+	deps/$(MORA) \
+	deps/$(MORA)/.built \
 	deps/$(NGX_DYUPS).tar.gz \
 	deps/$(NGX_DYUPS) \
 	deps/$(NGX_TXID).tar.gz \
@@ -662,5 +685,18 @@ install_app_dependencies: \
 
 install: install_dependencies install_app_dependencies
 
-test: install
+LUACHECK:=luacheck
+LUACHECK_VERSION:=0.11.1-1
+
+vendor/lib/luarocks/rocks/$(LUACHECK)/$(LUACHECK_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
+	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUACHECK) $(LUACHECK_VERSION)
+	touch $@
+
+install_test_dependencies: \
+	vendor/lib/luarocks/rocks/$(LUACHECK)/$(LUACHECK_VERSION)
+
+lint: install_test_dependencies
+	LUA_PATH="vendor/share/lua/5.1/?.lua;vendor/share/lua/5.1/?/init.lua;;" LUA_CPATH="vendor/lib/lua/5.1/?.so;;" ./vendor/bin/luacheck src
+
+test: install lint
 	API_UMBRELLA_ROOT=$(PREFIX) npm test

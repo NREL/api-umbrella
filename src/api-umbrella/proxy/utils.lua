@@ -2,7 +2,6 @@ local _M = {}
 
 local cjson = require "cjson"
 local cmsgpack = require "cmsgpack"
-local inspect = require "inspect"
 local is_array = require "api-umbrella.utils.is_array"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
@@ -13,10 +12,10 @@ local escape = plutils.escape
 local gsub = ngx.re.gsub
 local is_empty = types.is_empty
 local json_null = cjson.null
-local keys = tablex.keys
 local pack = cmsgpack.pack
 local split = plutils.split
 local strip = stringx.strip
+local table_keys = tablex.keys
 local unpack = cmsgpack.unpack
 
 -- Append an array to the end of the destination array.
@@ -147,7 +146,7 @@ function _M.cache_computed_settings(settings)
   lowercase_settings_header_keys(settings, "override_response_headers")
 
   if settings["append_query_string"] then
-    settings["_append_query_arg_names"] = keys(ngx.decode_args(settings["append_query_string"]))
+    settings["_append_query_arg_names"] = table_keys(ngx.decode_args(settings["append_query_string"]))
   end
 
   if settings["http_basic_auth"] then
@@ -164,6 +163,23 @@ function _M.cache_computed_settings(settings)
     settings["_require_https_transition_start_at"] = settings["require_https_transition_start_at"]["$date"]
   end
   settings["require_https_transition_start_at"] = nil
+
+  if settings["rate_limits"] then
+    for _, limit in ipairs(settings["rate_limits"]) do
+      local num_buckets = math.ceil(limit["duration"] / limit["accuracy"])
+
+      -- For each bucket in this limit, store the time difference we'll
+      -- subtract from the current time when determining each bucket's time.
+      -- Sort the items so that the most recent bucket (0 time difference)
+      -- comes last. This is to help minimize the amount of time between the
+      -- metrics fetch for the current time bucket and the incrementing of that
+      -- same bucket (see rate_limit.lua).
+      limit["_bucket_time_diffs"] = {}
+      for i = num_buckets - 1, 0, -1 do
+        table.insert(limit["_bucket_time_diffs"], i * limit["accuracy"])
+      end
+    end
+  end
 end
 
 function _M.parse_accept(header, supported_media_types)

@@ -106,7 +106,12 @@ describe('ApiUmbrellaGatekeper', function() {
       if(taskOptions && taskOptions.noResponseHeadersTest) {
         itBehavesLikeNoRateLimitResponseHeaders(path, limit, headerOverrides);
       } else {
-        itBehavesLikeRateLimitResponseHeaders(path, limit, headerOverrides);
+        var responseLimit = limit;
+        if(taskOptions && taskOptions.responseHeadersLimit) {
+          responseLimit = taskOptions.responseHeadersLimit;
+        }
+
+        itBehavesLikeRateLimitResponseHeaders(path, responseLimit, headerOverrides);
       }
     }
 
@@ -466,6 +471,34 @@ describe('ApiUmbrellaGatekeper', function() {
       });
 
       itBehavesLikeApiKeyRateLimits('/hello', 3);
+    });
+
+    describe('multiple limits exceeding the first, but not the second that returns response headers', function() {
+      shared.runServer({
+        apiSettings: {
+          rate_limits: [
+            {
+              duration: 10 * 1000, // 10 second
+              accuracy: 1000, // 1 second
+              limit_by: 'apiKey',
+              limit: 3,
+              response_headers: false,
+            },
+            {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'apiKey',
+              limit: 10,
+              response_headers: true,
+              distributed: true,
+            },
+          ]
+        }
+      });
+
+      itBehavesLikeApiKeyRateLimits('/hello', 3, {}, {
+        responseHeadersLimit: 10,
+      });
     });
 
     describe('ip based rate limits', function() {
@@ -1093,6 +1126,114 @@ describe('ApiUmbrellaGatekeper', function() {
             }.bind(this));
           }.bind(this));
         });
+      });
+    });
+
+    describe('concurrency', function() {
+      shared.runServer({
+        apiSettings: {
+          rate_limits: [
+            {
+              duration: 2 * 60 * 60 * 1000, // 2 hours
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'apiKey',
+              limit: 49,
+              distributed: false,
+              response_headers: false,
+            },
+            {
+              duration: 60 * 60 * 1000, // 1 hour
+              accuracy: 1 * 60 * 1000, // 1 minute
+              limit_by: 'apiKey',
+              limit: 52,
+              distributed: false,
+              response_headers: true,
+            },
+          ]
+        }
+      });
+
+      beforeEach(function() {
+        this.options = {
+          agentOptions: {
+            maxSockets: 500,
+          },
+        };
+      });
+
+      it('accurately reports the remaining requests when parallel requests are being made', function(done) {
+        this.timeout(30000);
+
+        async.timesLimit(60, 5, function(index, callback) {
+          Factory.create('api_user', function(user) {
+            async.times(47, function(index, timesCallback) {
+              request.get('http://localhost:9080/hello?api_key=' + user.api_key + '&index=' + index + '&rand=' + Math.random(), this.options, function(error, response) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
+
+                response.headers['x-ratelimit-limit'].should.eql('52');
+                var count = parseInt(response.headers['x-ratelimit-limit'], 10) - parseInt(response.headers['x-ratelimit-remaining'], 10);
+                timesCallback(null, count);
+              });
+            }.bind(this), function(error, counts) {
+              should.not.exist(error);
+              var totalRequestsMade = _.max(counts);
+              totalRequestsMade.should.be.gte(46);
+              totalRequestsMade.should.be.lte(47);
+
+              if(totalRequestsMade === 46) {
+                // In some rare situations our internal rate limit counters
+                // might be off since we fetch all of our rate limits and then
+                // increment them separately. The majority of race conditions
+                // should be solved, but one known issue remains that may very
+                // rarely lead to this warning (but we don't want to fail the
+                // whole test as long as it remains rare). See comments in
+                // rate_limit.lua's increment_all_limits().
+                console.warn('WARNING: X-RateLimit-Remaining header was off by 1. This should be very rare. Investigate if you see this with any regularity.');
+              }
+
+              callback()
+            });
+          }.bind(this));
+        }.bind(this), done);
+      });
+
+      it('accurately blocks requests only when the limit is exceeded when parallel requests are being made', function(done) {
+        this.timeout(30000);
+
+        async.timesLimit(60, 5, function(index, callback) {
+          Factory.create('api_user', function(user) {
+            async.times(51, function(index, timesCallback) {
+              request.get('http://localhost:9080/hello?api_key=' + user.api_key + '&index=' + index + '&rand=' + Math.random(), this.options, function(error, response) {
+                should.not.exist(error);
+                timesCallback(null, response.statusCode);
+              });
+            }.bind(this), function(error, statusCodes) {
+              should.not.exist(error);
+              statusCodes.length.should.eql(51);
+              var byCode = _.groupBy(statusCodes);
+              var successCount = (byCode[200] || []).length;
+              var overRateLimitCount = (byCode[429] || []).length;
+              successCount.should.be.gte(49);
+              successCount.should.be.lte(50);
+              overRateLimitCount.should.gte(1);
+              overRateLimitCount.should.lte(2);
+
+              if(overRateLimitCount === 1) {
+                // In some rare situations our internal rate limit counters
+                // might be off since we fetch all of our rate limits and then
+                // increment them separately. The majority of race conditions
+                // should be solved, but one known issue remains that may very
+                // rarely lead to this warning (but we don't want to fail the
+                // whole test as long as it remains rare). See comments in
+                // rate_limit.lua's increment_all_limits().
+                console.warn('WARNING: Rate limiting was off by 1. This should be very rare. Investigate if you see this with any regularity.');
+              }
+
+              callback()
+            });
+          }.bind(this));
+        }.bind(this), done);
       });
     });
   });
