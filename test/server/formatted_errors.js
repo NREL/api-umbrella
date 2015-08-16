@@ -2,7 +2,8 @@
 
 require('../test_helper');
 
-var Factory = require('factory-lady'),
+var csv = require('csv'),
+    Factory = require('factory-lady'),
     request = require('request'),
     xml2js = require('xml2js');
 
@@ -153,6 +154,7 @@ describe('formatted error responses', function() {
   });
 
   describe('api specific templates', function() {
+    var escapeTest = '\'"&><,\\';
     shared.runServer({
       apis: [
         {
@@ -166,12 +168,16 @@ describe('formatted error responses', function() {
           ],
           settings: {
             error_templates: {
-              json: '{ "code": {{code}}, "message": {{message}}, "custom": "custom hello", "newvar": {{newvar}} }',
+              json: '{ "code": {{code}}, "message": {{message}}, "custom": "custom hello", "newvar": {{newvar}}, "escape_test": {{escape_test}} }',
+              csv: '{{code}},{{escape_test}}',
+              xml: '<?xml version="1.0" encoding="UTF-8"?><escape-test>{{escape_test}}</escape-test>',
+              html: '<html><body><h1>{{escape_test}}</h1></body></html>',
             },
             error_data: {
               api_key_missing: {
                 newvar: 'foo',
                 message: 'new message',
+                escape_test: escapeTest,
               },
             },
           },
@@ -204,6 +210,47 @@ describe('formatted error responses', function() {
         data.message.should.eql('new message');
         data.code.should.eql('API_KEY_MISSING');
         done();
+      });
+    });
+
+    it('properly escapes json values', function(done) {
+      request.get('http://localhost:9080/custom/hello.json', function(error, response, body) {
+        should.not.exist(error);
+        var data = JSON.parse(body);
+        data.escape_test.should.eql(escapeTest);
+        done();
+      });
+    });
+
+    it('properly escapes xml values', function(done) {
+      request.get('http://localhost:9080/custom/hello.xml', function(error, response, body) {
+        should.not.exist(error);
+        xml2js.parseString(body, function(error, data) {
+          should.not.exist(error);
+          data['escape-test'].should.eql(escapeTest);
+          done();
+        });
+      });
+    });
+
+    it('properly escapes csv values', function(done) {
+      request.get('http://localhost:9080/custom/hello.csv', function(error, response, body) {
+        should.not.exist(error);
+        csv().from.string(body).to.array(function(data) {
+          data[0][1].should.eql(escapeTest);
+          done();
+        });
+      });
+    });
+
+    it('properly escapes html values', function(done) {
+      request.get('http://localhost:9080/custom/hello.html', function(error, response, body) {
+        should.not.exist(error);
+        xml2js.parseString(body, function(error, data) {
+          should.not.exist(error);
+          data.html.body[0].h1[0].should.eql(escapeTest);
+          done();
+        });
       });
     });
 

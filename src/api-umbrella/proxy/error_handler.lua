@@ -1,5 +1,6 @@
 local is_array = require "api-umbrella.utils.is_array"
 local lustache = require "lustache"
+local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local path = require "pl.path"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
@@ -73,12 +74,10 @@ local function render_template(template, data, format, strip_whitespace)
     return nil, "template error"
   end
 
-  -- Disable Mustache HTML escaping by automatically turning all "{{var}}"
-  -- references into unescaped "{{{var}}}" references. Since we're returning
-  -- non-HTML errors, we don't want escaping. This lets us be a little lazy
-  -- with our template definitions and not worry about mustache escape details
-  -- there.
-  template = string.gsub(template, "{{([^{}]-)}}", "{{{%1}}}")
+  -- Disable Mustache HTML escaping by default for non XML or HTML responses.
+  if format ~= "xml" and format ~= "html" then
+    template = mustache_unescape(template)
+  end
 
   if strip_whitespace then
     -- Strip leading and trailing whitespace from template, since it's easy to
@@ -92,7 +91,10 @@ local function render_template(template, data, format, strip_whitespace)
       data[key] = ndk.set_var.set_quote_json_str(value)
     end
   elseif format == "csv" then
-    -- TODO: Implement CSV escaping
+    for key, value in pairs(data) do
+      -- Quote the values for CSV output
+      data[key] = '"' .. string.gsub(value, '"', '""') .. '"'
+    end
   end
 
   local ok, output = pcall(lustache.render, lustache, template, data)

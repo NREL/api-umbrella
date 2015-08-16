@@ -3,6 +3,7 @@ local cjson = require "cjson"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local load_backends = require "api-umbrella.proxy.load_backends"
+local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local plutils = require "pl.utils"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
@@ -75,7 +76,7 @@ local function cache_computed_api(api)
       -- https://github.com/bjoerge/route-pattern
       -- TODO: Cleanup!
       if rewrite["matcher_type"] == "route" then
-        local backend_replacement = string.gsub(rewrite["backend_replacement"], "{{([^{}]-)}}", "{{{%1}}}")
+        local backend_replacement = mustache_unescape(rewrite["backend_replacement"])
         local backend_parts = split(backend_replacement, "?", true, 2)
         rewrite["_backend_replacement_path"] = backend_parts[1]
         rewrite["_backend_replacement_args"] = backend_parts[2]
