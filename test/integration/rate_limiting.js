@@ -73,7 +73,7 @@ describe('rate limiting', function() {
       });
 
       it('allows up to a configurable number of concurrent connections from a single IP', function(done) {
-        this.timeout(7000);
+        this.timeout(20000);
 
         async.times(20, function(index, callback) {
           request.get('http://localhost:9080/delay/2000', this.options, function(error, response) {
@@ -88,7 +88,7 @@ describe('rate limiting', function() {
       });
 
       it('returns 429 over rate limit error when concurrent connections from a single IP exceeds the configured number', function(done) {
-        this.timeout(7000);
+        this.timeout(20000);
 
         async.times(21, function(index, callback) {
           request.get('http://localhost:9080/delay/2000', this.options, function(error, response) {
