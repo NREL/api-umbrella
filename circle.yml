@@ -27,7 +27,7 @@ test:
   override:
     # Run the integration/gatekeeper tests.
     - mkdir -p $CIRCLE_TEST_REPORTS/mocha
-    - API_UMBRELLA_ROOT="$(pwd)/ci_cache/build" npm test
+    - make test PREFIX="$(pwd)/ci_cache/build"
     - cp test/tmp/xunit.xml $CIRCLE_TEST_REPORTS/mocha/
     # Run the web-app tests.
     - mkdir -p $CIRCLE_TEST_REPORTS/rspec

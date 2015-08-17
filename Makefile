@@ -1,5 +1,3 @@
-export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
-
 # Unset some environment variables that come from RVM and may interfere with
 # gem installation in some environments (eg, CircleCI).
 unexport GEM_HOME
@@ -8,6 +6,7 @@ unexport IRBRC
 unexport MY_RUBY_HOME
 unexport RUBY_VERSION
 
+STANDARD_PATH:=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 PREFIX:=/tmp/api-umbrella-build
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
@@ -413,7 +412,7 @@ deps/$(TRAFFICSERVER): deps/$(TRAFFICSERVER).tar.gz
 	touch $@
 
 deps/$(TRAFFICSERVER)/.built: deps/$(TRAFFICSERVER)
-	cd $< && ./configure \
+	cd $< && PATH=$(STANDARD_PATH) ./configure \
 		--prefix=$(PREFIX)/embedded \
 		--enable-experimental-plugins
 	cd $< && make
@@ -692,11 +691,16 @@ vendor/lib/luarocks/rocks/$(LUACHECK)/$(LUACHECK_VERSION): $(PREFIX)/embedded/.i
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUACHECK) $(LUACHECK_VERSION)
 	touch $@
 
+node_modules/.installed: package.json
+	npm install
+	touch $@
+
 install_test_dependencies: \
+	node_modules/.installed \
 	vendor/lib/luarocks/rocks/$(LUACHECK)/$(LUACHECK_VERSION)
 
 lint: install_test_dependencies
 	LUA_PATH="vendor/share/lua/5.1/?.lua;vendor/share/lua/5.1/?/init.lua;;" LUA_CPATH="vendor/lib/lua/5.1/?.so;;" ./vendor/bin/luacheck src
 
-test: install lint
+test: install install_test_dependencies lint
 	API_UMBRELLA_ROOT=$(PREFIX) npm test
