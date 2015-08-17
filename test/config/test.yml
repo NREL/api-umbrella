@@ -20,6 +20,8 @@ beanstalkd:
   port: 13005
 dnsmasq:
   port: 13007
+nginx:
+  access_log_options:
 gatekeeper:
   starting_port: 13050
   target: "127.0.0.1:13010"
