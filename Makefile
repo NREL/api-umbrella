@@ -294,7 +294,7 @@ deps/$(MORA)/mora: deps/$(MORA).tar.gz
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
-deps/$(MORA)/.built: deps/$(MORA)/mora deps/gocode/bin/glide build/mora_glide.yaml
+deps/$(MORA)/.built: deps/$(MORA)/mora build/mora_glide.yaml | deps/gocode/bin/glide
 	cp build/mora_glide.yaml $</glide.yaml
 	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOROOT=$(ROOT_DIR)/deps/$(GOLANG) glide gopath
 	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOROOT=$(ROOT_DIR)/deps/$(GOLANG) GOPATH=`glide gopath` GOBIN=`glide gopath`/bin glide install
@@ -540,6 +540,9 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(ELASTICSEARCH) \
 	deps/$(FREEGEOIP).tar.gz \
 	deps/$(FREEGEOIP) \
+	deps/$(GLIDE).tar.gz \
+	deps/gocode/src/github.com/Masterminds/glide \
+	deps/gocode/bin/glide \
 	deps/$(GOLANG).tar.gz \
 	deps/$(GOLANG) \
 	deps/$(HEKA).tar.gz \
@@ -563,7 +566,7 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(MONGODB).tar.gz \
 	deps/$(MONGODB) \
 	deps/$(MORA).tar.gz \
-	deps/$(MORA) \
+	deps/$(MORA)/mora \
 	deps/$(MORA)/.built \
 	deps/$(NGX_DYUPS).tar.gz \
 	deps/$(NGX_DYUPS) \
