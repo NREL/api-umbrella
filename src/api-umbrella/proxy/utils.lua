@@ -189,7 +189,7 @@ function _M.parse_accept(header, supported_media_types)
 
   local accepts = {}
   local accept_header = split(header, ",", true)
-  for _, accept_string in ipairs(accept_header) do
+  for index, accept_string in ipairs(accept_header) do
     local parts = split(accept_string, ";", true, 2)
     local media = parts[1]
     local params = parts[2]
@@ -221,6 +221,7 @@ function _M.parse_accept(header, supported_media_types)
       media_type = media_type,
       media_subtype = media_subtype,
       q = q,
+      original_index = index,
     }
 
     table.insert(accepts, accept)
@@ -237,24 +238,24 @@ function _M.parse_accept(header, supported_media_types)
       elseif (a.media_type ~= "*" and b.media_type == "*") or (a.media_subtype ~= "*" and b.media_subtype == "*") then
         return true
       else
-        return true
+        return a.original_index < b.original_index
       end
     end)
   end
 
-  for _, supported in ipairs(supported_media_types) do
-    for _, accept in ipairs(accepts) do
+  for _, accept in ipairs(accepts) do
+    for _, supported in ipairs(supported_media_types) do
       if accept.media_type == supported.media_type and accept.media_subtype == supported.media_subtype then
-        return supported.format
+        return supported
       elseif accept.media_type == supported.media_type and accept.media_subtype == "*" then
-        return supported.format
+        return supported
       elseif accept.media_type == "*" and accept.media_subtype == "*" then
-        return supported.format
-      else
-        return nil
+        return supported
       end
     end
   end
+
+  return nil
 end
 
 function _M.remove_arg(original_args, remove)

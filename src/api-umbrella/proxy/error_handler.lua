@@ -2,7 +2,6 @@ local is_array = require "api-umbrella.utils.is_array"
 local lustache = require "lustache"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local path = require "pl.path"
-local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
@@ -10,24 +9,41 @@ local utils = require "api-umbrella.proxy.utils"
 local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local deepcopy = tablex.deepcopy
 local extension = path.extension
-local split = plutils.split
 local strip = stringx.strip
 
-local supported_formats = {
-  ["json"] = "application/json",
-  ["xml"] = "application/xml",
-  ["csv"] = "text/csv",
-  ["html"] = "text/html",
+local supported_media_types = {
+  {
+    format = "json",
+    media_type = "application",
+    media_subtype = "json",
+  },
+  {
+    format = "xml",
+    media_type = "application",
+    media_subtype = "xml",
+  },
+  {
+    format = "xml",
+    media_type = "text",
+    media_subtype = "xml",
+  },
+  {
+    format = "csv",
+    media_type = "text",
+    media_subtype = "csv",
+  },
+  {
+    format = "html",
+    media_type = "text",
+    media_subtype = "html",
+  },
 }
 
-local supported_media_types = {}
-for format, media_type in pairs(supported_formats) do
-  local media_type_parts = split(media_type, "/", true)
-  table.insert(supported_media_types, {
-    format = format,
-    media_type = media_type_parts[1],
-    media_subtype = media_type_parts[2],
-  })
+local supported_formats = {}
+for _, media in ipairs(supported_media_types) do
+  if not supported_formats[media["format"]] then
+    supported_formats[media["format"]] = media["media_type"] .. "/" .. media["media_subtype"]
+  end
 end
 
 local function request_format()
@@ -37,7 +53,7 @@ local function request_format()
     if format then
       format = string.sub(format, 2)
       if supported_formats[format] then
-        return format
+        return format, supported_formats[format]
       end
     end
   end
@@ -45,22 +61,19 @@ local function request_format()
   local format_arg = ngx.var.arg_format
   if format_arg then
     if supported_formats[format_arg] then
-      return format_arg
+      return format_arg, supported_formats[format_arg]
     end
   end
-
-  -- TODO: Implement Accept header negotiation. Possibly modify something like:
-  -- https://github.com/fghibellini/nginx-http-accept-lang/blob/master/lang.lua
 
   local accept_header = ngx.var.http_accept
   if accept_header then
-    local format = utils.parse_accept(accept_header, supported_media_types)
-    if format then
-      return format
+    local media = utils.parse_accept(accept_header, supported_media_types)
+    if media then
+      return media["format"], media["media_type"] .. "/" .. media["media_subtype"]
     end
   end
 
-  return "json"
+  return "json", supported_formats["json"]
 end
 
 local function render_template(template, data, format, strip_whitespace)
@@ -114,7 +127,7 @@ return function(denied_code, settings, extra_data)
     settings = config["apiSettings"]
   end
 
-  local format = request_format()
+  local format, content_type = request_format()
 
   local data = deepcopy(settings["error_data"][denied_code])
   if not data or type(data) ~= "table" or is_array(data) then
@@ -141,7 +154,7 @@ return function(denied_code, settings, extra_data)
 
   if not template_err then
     ngx.status = status_code
-    ngx.header.content_type = supported_formats[format]
+    ngx.header.content_type = content_type
     ngx.print(output)
     return ngx.exit(ngx.HTTP_OK)
   else

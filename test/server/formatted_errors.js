@@ -14,6 +14,7 @@ describe('formatted error responses', function() {
     it('places the highest priority on the path extension', function(done) {
       var options = { headers: { 'Accept': 'application/json' } };
       request.get('http://localhost:9080/hello.xml?format=json', options, function(error, response, body) {
+        response.headers['content-type'].should.contain('application/xml');
         body.should.include('<code>API_KEY_MISSING</code>');
         done();
       });
@@ -22,6 +23,7 @@ describe('formatted error responses', function() {
     it('places second highest priority on the format query param', function(done) {
       var options = { headers: { 'Accept': 'application/json' } };
       request.get('http://localhost:9080/hello?format=xml', options, function(error, response, body) {
+        response.headers['content-type'].should.contain('application/xml');
         body.should.include('<code>API_KEY_MISSING</code>');
         done();
       });
@@ -30,6 +32,7 @@ describe('formatted error responses', function() {
     it('places third highest priority on content negotiation', function(done) {
       var options = { headers: { 'Accept': 'application/json;q=0.5,application/xml;q=0.9' } };
       request.get('http://localhost:9080/hello', options, function(error, response, body) {
+        response.headers['content-type'].should.contain('application/xml');
         body.should.include('<code>API_KEY_MISSING</code>');
         done();
       });
@@ -37,6 +40,7 @@ describe('formatted error responses', function() {
 
     it('defaults to JSON when no format is detected', function(done) {
       request.get('http://localhost:9080/hello', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.error.code.should.eql('API_KEY_MISSING');
         done();
@@ -45,6 +49,7 @@ describe('formatted error responses', function() {
 
     it('defaults to JSON when an unsupoorted format is detected', function(done) {
       request.get('http://localhost:9080/hello.mov', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.error.code.should.eql('API_KEY_MISSING');
         done();
@@ -53,6 +58,7 @@ describe('formatted error responses', function() {
 
     it('defaults to JSON when an unknown format is detected', function(done) {
       request.get('http://localhost:9080/hello.zzz', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.error.code.should.eql('API_KEY_MISSING');
         done();
@@ -62,6 +68,7 @@ describe('formatted error responses', function() {
     it('uses the path extension even if the url contains invalid query params', function(done) {
       var options = { headers: { 'Accept': 'application/json' } };
       request.get('http://localhost:9080/hello.xml?format=json&test=test&url=%ED%A1%BC', options, function(error, response, body) {
+        response.headers['content-type'].should.contain('application/xml');
         body.should.include('<code>API_KEY_MISSING</code>');
         done();
       });
@@ -69,6 +76,7 @@ describe('formatted error responses', function() {
 
     it('gracefully handles query param encoding, format[]=xml', function(done) {
       request.get('http://localhost:9080/hello?format[]=xml', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.error.code.should.eql('API_KEY_MISSING');
         done();
@@ -77,6 +85,7 @@ describe('formatted error responses', function() {
 
     it('gracefully handles query param encoding, format=xml&format=csv', function(done) {
       request.get('http://localhost:9080/hello?format=xml&format=csv', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/xml');
         body.should.include('<code>API_KEY_MISSING</code>');
         done();
       });
@@ -84,6 +93,7 @@ describe('formatted error responses', function() {
 
     it('gracefully handles query params encoding, format[key]=value', function(done) {
       request.get('http://localhost:9080/hello?format[key]=value', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.error.code.should.eql('API_KEY_MISSING');
         done();
@@ -92,9 +102,130 @@ describe('formatted error responses', function() {
 
     it('gracefully handles query params encoding, format[]=', function(done) {
       request.get('http://localhost:9080/hello?format[]=', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.error.code.should.eql('API_KEY_MISSING');
         done();
+      });
+    });
+
+    describe('content negotiation', function() {
+      it('supports application/json', function(done) {
+        var options = { headers: { 'Accept': 'application/json' } };
+        request.get('http://localhost:9080/hello', options, function(error, response, body) {
+          should.not.exist(error);
+          response.headers['content-type'].should.contain('application/json');
+          var data = JSON.parse(body);
+          data.error.code.should.eql('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('supports application/xml', function(done) {
+        var options = { headers: { 'Accept': 'application/xml' } };
+        request.get('http://localhost:9080/hello', options, function(error, response, body) {
+          should.not.exist(error);
+          response.headers['content-type'].should.contain('application/xml');
+          xml2js.parseString(body, function(error, data) {
+            data.response.error[0].code[0].should.eql('API_KEY_MISSING');
+            done();
+          });
+        });
+      });
+
+      it('supports text/xml', function(done) {
+        var options = { headers: { 'Accept': 'text/xml' } };
+        request.get('http://localhost:9080/hello', options, function(error, response, body) {
+          should.not.exist(error);
+          response.headers['content-type'].should.contain('text/xml');
+          xml2js.parseString(body, function(error, data) {
+            data.response.error[0].code[0].should.eql('API_KEY_MISSING');
+            done();
+          });
+        });
+      });
+
+      it('supports text/csv', function(done) {
+        var options = { headers: { 'Accept': 'text/csv' } };
+        request.get('http://localhost:9080/hello', options, function(error, response, body) {
+          should.not.exist(error);
+          response.headers['content-type'].should.contain('text/csv');
+          csv().from.string(body).to.array(function(data) {
+            data[1][0].should.eql('API_KEY_MISSING');
+            done();
+          });
+        });
+      });
+
+      it('supports text/html', function(done) {
+        var options = { headers: { 'Accept': 'text/html' } };
+        request.get('http://localhost:9080/hello', options, function(error, response, body) {
+          should.not.exist(error);
+          response.headers['content-type'].should.contain('text/html');
+          xml2js.parseString(body, function(error, data) {
+            should.not.exist(error);
+            data.html.body[0].h1[0].should.eql('API_KEY_MISSING');
+            done();
+          });
+        });
+      });
+
+      it('picks the type with the highest quality factor', function(done) {
+        var options = { headers: { 'Accept': 'application/json;q=0.5, application/xml;q=0.4, */*;q=0.1, text/csv;q=0.8' } };
+        request.get('http://localhost:9080/hello', options, function(error, response, body) {
+          should.not.exist(error);
+          response.headers['content-type'].should.contain('text/csv');
+          csv().from.string(body).to.array(function(data) {
+            data[1][0].should.eql('API_KEY_MISSING');
+            done();
+          });
+        });
+      });
+
+      it('picks the first supported type for wildcards', function(done) {
+        var options = { headers: { 'Accept': 'application/*;q=0.5, text/*;q=0.6' } };
+        request.get('http://localhost:9080/hello', options, function(error, response, body) {
+          should.not.exist(error);
+          response.headers['content-type'].should.contain('text/xml');
+          xml2js.parseString(body, function(error, data) {
+            data.response.error[0].code[0].should.eql('API_KEY_MISSING');
+            done();
+          });
+        });
+      });
+
+      it('picks the first type given when nothing else takes precendence', function(done) {
+        var options = { headers: { 'Accept': 'text/csv, application/json;q=0.5, application/xml, */*;q=0.1' } };
+        request.get('http://localhost:9080/hello', options, function(error, response, body) {
+          should.not.exist(error);
+          response.headers['content-type'].should.contain('text/csv');
+          csv().from.string(body).to.array(function(data) {
+            data[1][0].should.eql('API_KEY_MISSING');
+            done();
+          });
+        });
+      });
+
+      it('returns json for unknown type', function(done) {
+        var options = { headers: { 'Accept': 'text/foo' } };
+        request.get('http://localhost:9080/hello', options, function(error, response, body) {
+          should.not.exist(error);
+          response.headers['content-type'].should.contain('application/json');
+          var data = JSON.parse(body);
+          data.error.code.should.eql('API_KEY_MISSING');
+          done();
+        });
+      });
+
+      it('returns json for wildcard type', function(done) {
+        var options = { headers: { 'Accept': '*/*' } };
+        request.get('http://localhost:9080/hello', options, function(error, response, body) {
+          should.not.exist(error);
+          response.headers['content-type'].should.contain('application/json');
+          var data = JSON.parse(body);
+          data.error.code.should.eql('API_KEY_MISSING');
+          done();
+        });
       });
     });
   });
@@ -105,6 +236,7 @@ describe('formatted error responses', function() {
     it('substitutes the baseUrl variable', function(done) {
       Factory.create('api_user', { disabled_at: new Date() }, function(user) {
         request.get('http://localhost:9080/hello.json?api_key=' + user.api_key, function(error, response, body) {
+          response.headers['content-type'].should.contain('application/json');
           var data = JSON.parse(body);
           data.error.message.should.include(' http://localhost:9080/contact ');
           done();
@@ -125,6 +257,8 @@ describe('formatted error responses', function() {
 
     it('returns valid json', function(done) {
       request.get('http://localhost:9080/hello.json?format=json', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
+
         var validate = function() {
           JSON.parse(body);
         };
@@ -136,6 +270,8 @@ describe('formatted error responses', function() {
 
     it('returns valid xml', function(done) {
       request.get('http://localhost:9080/hello.xml?format=json', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/xml');
+
         var validate = function() {
           xml2js.parseString(body, { trim: false, strict: true });
         };
@@ -147,6 +283,8 @@ describe('formatted error responses', function() {
 
     it('strips leading and trailing whitespace from template', function(done) {
       request.get('http://localhost:9080/hello.xml?format=json', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/xml');
+
         body.should.eql('<?xml version="1.0" encoding="UTF-8"?><code>API_KEY_MISSING</code>');
         done();
       });
@@ -197,6 +335,7 @@ describe('formatted error responses', function() {
 
     it('returns custom error templates', function(done) {
       request.get('http://localhost:9080/custom/hello.json', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.custom.should.eql('custom hello');
         done();
@@ -205,6 +344,7 @@ describe('formatted error responses', function() {
 
     it('allows new variables to be set while still inheriting default variables', function(done) {
       request.get('http://localhost:9080/custom/hello.json', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.newvar.should.eql('foo');
         data.message.should.eql('new message');
@@ -215,6 +355,7 @@ describe('formatted error responses', function() {
 
     it('properly escapes json values', function(done) {
       request.get('http://localhost:9080/custom/hello.json', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         should.not.exist(error);
         var data = JSON.parse(body);
         data.escape_test.should.eql(escapeTest);
@@ -225,6 +366,7 @@ describe('formatted error responses', function() {
     it('properly escapes xml values', function(done) {
       request.get('http://localhost:9080/custom/hello.xml', function(error, response, body) {
         should.not.exist(error);
+        response.headers['content-type'].should.contain('application/xml');
         xml2js.parseString(body, function(error, data) {
           should.not.exist(error);
           data['escape-test'].should.eql(escapeTest);
@@ -236,6 +378,7 @@ describe('formatted error responses', function() {
     it('properly escapes csv values', function(done) {
       request.get('http://localhost:9080/custom/hello.csv', function(error, response, body) {
         should.not.exist(error);
+        response.headers['content-type'].should.contain('text/csv');
         csv().from.string(body).to.array(function(data) {
           data[0][1].should.eql(escapeTest);
           done();
@@ -246,6 +389,7 @@ describe('formatted error responses', function() {
     it('properly escapes html values', function(done) {
       request.get('http://localhost:9080/custom/hello.html', function(error, response, body) {
         should.not.exist(error);
+        response.headers['content-type'].should.contain('text/html');
         xml2js.parseString(body, function(error, data) {
           should.not.exist(error);
           data.html.body[0].h1[0].should.eql(escapeTest);
@@ -256,6 +400,7 @@ describe('formatted error responses', function() {
 
     it('uses the default error templates if not specified', function(done) {
       request.get('http://localhost:9080/hello.json', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         Object.keys(data).should.eql(['error']);
         Object.keys(data.error).sort().should.eql(['code', 'message']);
@@ -300,6 +445,7 @@ describe('formatted error responses', function() {
     it('returns internal error when error data is unexpectedly a string', function(done) {
       request.get('http://localhost:9080/hello.json', function(error, response, body) {
         response.statusCode.should.eql(500);
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.error.code.should.eql('INTERNAL_SERVER_ERROR');
         done();
@@ -309,6 +455,7 @@ describe('formatted error responses', function() {
     it('returns internal error when error data is unexpectedly a number', function(done) {
       request.get('http://localhost:9080/hello.json?api_key=invalid-key', function(error, response, body) {
         response.statusCode.should.eql(500);
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.error.code.should.eql('INTERNAL_SERVER_ERROR');
         done();
@@ -318,6 +465,7 @@ describe('formatted error responses', function() {
     it('returns internal error when error data is unexpectedly an array', function(done) {
       request.get('http://localhost:9080/private.json?api_key=' + this.apiKey, function(error, response, body) {
         response.statusCode.should.eql(500);
+        response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         data.error.code.should.eql('INTERNAL_SERVER_ERROR');
         done();
@@ -328,6 +476,7 @@ describe('formatted error responses', function() {
       Factory.create('api_user', { disabled_at: new Date() }, function(user) {
         request.get('http://localhost:9080/hello.json?api_key=' + user.api_key, function(error, response, body) {
           response.statusCode.should.eql(403);
+          response.headers['content-type'].should.contain('application/json');
           var data = JSON.parse(body);
           data.error.code.should.eql('API_KEY_DISABLED');
           done();
@@ -366,6 +515,7 @@ describe('formatted error responses', function() {
 
     it('returns empty space when variables are undefined', function(done) {
       request.get('http://localhost:9080/hello.json', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
         body.should.eql('{ "unknown":  }');
         done();
       });
@@ -374,6 +524,7 @@ describe('formatted error responses', function() {
     it('doesn\'t die when there are parsing errors in the template', function(done) {
       request.get('http://localhost:9080/hello.xml', function(error, response, body) {
         response.statusCode.should.eql(500);
+        response.headers['content-type'].should.contain('text/plain');
         body.should.eql('Internal Server Error');
         done();
       });
