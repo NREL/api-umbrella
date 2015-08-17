@@ -10,6 +10,7 @@ dependencies:
   pre:
     # Install all the API Umbrella software dependencies.
     - make install PREFIX="$(pwd)/ci_cache/build"
+    - make install_test_dependencies PREFIX="$(pwd)/ci_cache/build"
 
     # Get rid of all the intermediate downloads for building the dependencies.
     - make clean
