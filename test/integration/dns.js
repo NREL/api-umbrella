@@ -74,6 +74,11 @@ describe('dns backend resolving', function() {
       if(!finished) {
         callback('response change not detected');
       } else {
+        // After we detect the change we want, wait an additional 500ms. This
+        // is to handle the fact that even though we've seen the desired state,
+        // it may take some additional time before this update has propagated
+        // to all nginx workers. This is due to how dyups works, so we must
+        // wait a bit longer than the configured dyups_read_msg_timeout time.
         setTimeout(callback, 500);
       }
     });
@@ -743,6 +748,10 @@ describe('dns backend resolving', function() {
       });
 
       before(function() {
+        // The negative TTL caching really begins as soon as the initial
+        // configuration is put into place by runServer (since that's when the
+        // hostname is first seen and the unresolvable status is cached). So
+        // start our timer here.
         this.startTtlCounterTime = new Date();
       });
 

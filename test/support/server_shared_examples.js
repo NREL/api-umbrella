@@ -205,11 +205,13 @@ _.merge(global.shared, {
     var newDbConfig = _.pick(configOverrides, dbConfigKeys);
 
     if(!_.isEmpty(newFileConfig)) {
-      before(function setupConfig(done) {
+      before(function setupFileConfig(done) {
+        this.timeout(10000);
         shared.setFileConfigOverrides(newFileConfig, done);
       });
 
-      after(function revertConfig(done) {
+      after(function revertFileConfig(done) {
+        this.timeout(10000);
         shared.revertFileConfigOverrides(done);
       });
     }
