@@ -13,12 +13,6 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BUNDLER_VERSION:=1.10.6
 BUNDLER:=bundler-$(BUNDLER_VERSION)
 
-DNSMASQ_VERSION:=2.73
-DNSMASQ:=dnsmasq-$(DNSMASQ_VERSION)
-DNSMASQ_DIGEST:=md5
-DNSMASQ_CHECKSUM:=c2d56b11317336bc788ded4298642e2e
-DNSMASQ_URL:=http://www.thekelleys.org.uk/dnsmasq/$(DNSMASQ).tar.gz
-
 ELASTICSEARCH_VERSION:=1.7.1
 ELASTICSEARCH:=elasticsearch-$(ELASTICSEARCH_VERSION)
 ELASTICSEARCH_DIGEST:=sha1
@@ -61,6 +55,12 @@ LIBYAML:=libyaml-$(LIBYAML_VERSION)
 LIBYAML_DIGEST:=md5
 LIBYAML_CHECKSUM:=5fe00cda18ca5daeb43762b80c38e06e
 LIBYAML_URL:=http://pyyaml.org/download/libyaml/yaml-$(LIBYAML_VERSION).tar.gz
+
+LUA_RESTY_DNS_CACHE_VERSION:=691613739a32f8405e56e56547270b9f72e77c34
+LUA_RESTY_DNS_CACHE:=lua-resty-dns-cache-$(LUA_RESTY_DNS_CACHE_VERSION)
+LUA_RESTY_DNS_CACHE_DIGEST:=md5
+LUA_RESTY_DNS_CACHE_CHECKSUM:=c7304c1f434ac251246904db51423d5e
+LUA_RESTY_DNS_CACHE_URL:=https://github.com/hamishforbes/lua-resty-dns-cache/archive/$(LUA_RESTY_DNS_CACHE_VERSION).tar.gz
 
 LUA_RESTY_HTTP_VERSION:=0.06
 LUA_RESTY_HTTP:=lua-resty-http-$(LUA_RESTY_HTTP_VERSION)
@@ -148,16 +148,6 @@ all: dependencies
 deps:
 	mkdir -p $@
 
-# dnsmasq
-deps/$(DNSMASQ).tar.gz: | deps
-	curl -L -o $@ $(DNSMASQ_URL)
-
-deps/$(DNSMASQ): deps/$(DNSMASQ).tar.gz
-	openssl $(DNSMASQ_DIGEST) $< | grep $(DNSMASQ_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
 # ngx_dyups
 deps/$(NGX_DYUPS).tar.gz: | deps
 	curl -L -o $@ $(NGX_DYUPS_URL)
@@ -240,6 +230,16 @@ deps/$(LUAROCKS).tar.gz: | deps
 
 deps/$(LUAROCKS): deps/$(LUAROCKS).tar.gz
 	openssl $(LUAROCKS_DIGEST) $< | grep $(LUAROCKS_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
+# lua-resty-dns-cache
+deps/$(LUA_RESTY_DNS_CACHE).tar.gz: | deps
+	curl -L -o $@ $(LUA_RESTY_DNS_CACHE_URL)
+
+deps/$(LUA_RESTY_DNS_CACHE): deps/$(LUA_RESTY_DNS_CACHE).tar.gz
+	openssl $(LUA_RESTY_DNS_CACHE_DIGEST) $< | grep $(LUA_RESTY_DNS_CACHE_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
 	mkdir -p $@
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
@@ -419,7 +419,6 @@ deps/$(TRAFFICSERVER)/.built: deps/$(TRAFFICSERVER)
 	touch $@
 
 dependencies: \
-	deps/$(DNSMASQ) \
 	deps/$(ELASTICSEARCH) \
 	deps/$(FREEGEOIP) \
 	deps/$(HEKA) \
@@ -450,10 +449,6 @@ $(PREFIX)/embedded/.installed:
 
 $(PREFIX)/embedded/.installed/$(BUNDLER): | $(PREFIX)/embedded/.installed $(PREFIX)/embedded/.installed/$(RUBY)
 	PATH=$(PREFIX)/embedded/bin:$(PATH) gem install bundler -v '$(BUNDLER_VERSION)' --no-rdoc --no-ri
-	touch $@
-
-$(PREFIX)/embedded/.installed/$(DNSMASQ): deps/$(DNSMASQ) | $(PREFIX)/embedded/.installed
-	cd deps/$(DNSMASQ) && make install PREFIX=$(PREFIX)/embedded
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(ELASTICSEARCH): deps/$(ELASTICSEARCH) | $(PREFIX)/embedded/.installed
@@ -534,8 +529,6 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	touch $@
 
 .SECONDARY: \
-	deps/$(DNSMASQ).tar.gz \
-	deps/$(DNSMASQ) \
 	deps/$(ELASTICSEARCH).tar.gz \
 	deps/$(ELASTICSEARCH) \
 	deps/$(FREEGEOIP).tar.gz \
@@ -555,6 +548,8 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(LIBYAML)/.built \
 	deps/$(LUAROCKS).tar.gz \
 	deps/$(LUAROCKS) \
+	deps/$(LUA_RESTY_DNS_CACHE).tar.gz \
+	deps/$(LUA_RESTY_DNS_CACHE) \
 	deps/$(LUA_RESTY_HTTP).tar.gz \
 	deps/$(LUA_RESTY_HTTP) \
 	deps/$(LUA_RESTY_LOGGER_SOCKET).tar.gz \
@@ -591,7 +586,6 @@ install_dependencies: \
 	$(PREFIX)/embedded/bin \
 	$(PREFIX)/embedded/sbin \
 	$(PREFIX)/embedded/.installed/$(BUNDLER) \
-	$(PREFIX)/embedded/.installed/$(DNSMASQ) \
 	$(PREFIX)/embedded/.installed/$(ELASTICSEARCH) \
 	$(PREFIX)/embedded/.installed/$(FREEGEOIP) \
 	$(PREFIX)/embedded/.installed/$(HEKA) \
@@ -655,6 +649,10 @@ vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION): $(PREFIX)/embedded/.i
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(PENLIGHT) $(PENLIGHT_VERSION)
 	touch $@
 
+vendor/share/lua/5.1/resty/dns/cache.lua: deps/$(LUA_RESTY_DNS_CACHE) | vendor
+	rsync -a deps/$(LUA_RESTY_DNS_CACHE)/lib/resty/ vendor/share/lua/5.1/resty/
+	touch $@
+
 vendor/share/lua/5.1/resty/http.lua: deps/$(LUA_RESTY_HTTP) | vendor
 	rsync -a deps/$(LUA_RESTY_HTTP)/lib/resty/ vendor/share/lua/5.1/resty/
 	touch $@
@@ -681,6 +679,7 @@ install_app_dependencies: \
 	vendor/lib/luarocks/rocks/$(LYAML)/$(LYAML_VERSION) \
 	vendor/lib/luarocks/rocks/$(PENLIGHT)/$(PENLIGHT_VERSION) \
 	vendor/share/lua/5.1/lustache.lua \
+	vendor/share/lua/5.1/resty/dns/cache.lua \
 	vendor/share/lua/5.1/resty/http.lua \
 	vendor/share/lua/5.1/resty/logger/socket.lua \
 	vendor/share/lua/5.1/shcache.lua

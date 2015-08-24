@@ -22,6 +22,9 @@ elseif incr_err then
   ngx.log(ngx.ERR, "worker_group_id incr err: ", incr_err)
 end
 
+require "api-umbrella.proxy.startup.read_resolv"
+require "api-umbrella.proxy.startup.read_hosts"
+
 config = require "api-umbrella.proxy.models.file_config"
 
 require "api-umbrella.proxy.startup.init_elasticsearch_templates_data"

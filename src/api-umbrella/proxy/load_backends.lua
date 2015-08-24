@@ -1,5 +1,6 @@
 local _M = {}
 
+local cidr = require "libcidr-ffi"
 local dyups = require "ngx.dyups"
 local plutils = require "pl.utils"
 
@@ -9,8 +10,10 @@ local function get_server_ips(server)
   local ips
   if server["_host_is_ip?"] then
     ips = { server["host"] }
+  elseif server["_host_is_local_alias?"] then
+    ips = { ETC_HOSTS[server["host"]] }
   else
-    ips = ngx.shared.resolved_hosts:get(server["host"])
+    ips = ngx.shared.resolved_hosts:get(server["host"]) or ""
     ips = split(ips, ",", true)
   end
 
@@ -34,7 +37,15 @@ local function generate_upstream_config(api)
       local ips = get_server_ips(server)
       if ips and server["port"] then
         for _, ip in ipairs(ips) do
-          table.insert(servers, "server " .. ip .. ":" .. server["port"] .. ";")
+          local nginx_ip
+          local result = cidr.from_str(ip)
+          if result and result.proto == 2 then
+            nginx_ip = "[" .. ip .. "]"
+          else
+            nginx_ip = ip
+          end
+
+          table.insert(servers, "server " .. nginx_ip .. ":" .. server["port"] .. ";")
         end
       end
     end
@@ -114,6 +125,12 @@ function _M.setup_backends(apis)
   -- API).
   if upstreams_changed then
     ngx.sleep(0.5)
+
+    if config["app_env"] == "test" then
+      ngx.update_time()
+    end
+
+    ngx.shared.active_config:set("upstreams_last_changed_at", ngx.now() * 1000)
   end
 
   ngx.shared.active_config:set("upstreams_setup_complete:" .. WORKER_GROUP_ID, true)

@@ -5,6 +5,7 @@ local host_normalize = require "api-umbrella.utils.host_normalize"
 local load_backends = require "api-umbrella.proxy.load_backends"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local plutils = require "pl.utils"
+local resolve_backend_dns = require "api-umbrella.proxy.jobs.resolve_backend_dns"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
 
@@ -63,6 +64,8 @@ local function cache_computed_api(api)
       if server["host"] then
         if cidr.from_str(server["host"]) then
           server["_host_is_ip?"] = true
+        elseif ETC_HOSTS[server["host"]] then
+          server["_host_is_local_alias?"] = true
         end
       end
     end
@@ -271,6 +274,7 @@ function _M.set(db_config)
   local website_backends = get_combined_website_backends(file_config, db_config)
 
   local active_config = build_active_config(hosts, apis, website_backends)
+  resolve_backend_dns.resolve(active_config["apis"])
   load_backends.setup_backends(active_config["apis"])
 
   set_packed(ngx.shared.active_config, "packed_data", active_config)

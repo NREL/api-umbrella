@@ -1,10 +1,12 @@
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local lyaml = require "lyaml"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
+local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 
 local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings
+local is_empty = types.is_empty
 local log = ngx.log
 local ERR = ngx.ERR
 
@@ -72,6 +74,33 @@ local function set_defaults(data)
   data["_website_backends"] = combined_website_backends
   data["website_backends"] = nil
   data["internal_website_backends"] = nil
+
+  -- Determine the nameservers for DNS resolution. Prefer explicitly configured
+  -- nameservers, but fallback to nameservers defined in resolv.conf, and then
+  -- Google's DNS servers if nothing else is defined.
+  local nameservers
+  if data["dns_resolver"] and data["dns_resolver"]["nameservers"] then
+    nameservers = data["dns_resolver"]["nameservers"]
+  end
+  if is_empty(nameservers) then
+    nameservers = RESOLV_CONF_NAMESERVERS
+  end
+  if is_empty(nameservers) then
+    nameservers = { "8.8.8.8", "8.8.4.4" }
+  end
+
+  -- Parse the nameservers, allowing for custom DNS ports to be specified in
+  -- the OpenBSD resolv.conf format of "[IP]:port".
+  data["dns_resolver"]["_nameservers"] = {}
+  data["dns_resolver"]["nameservers"] = nil
+  for _, nameserver in ipairs(nameservers) do
+    local ip, port = string.match(nameserver, "^%[(.+)%]:(%d+)$")
+    if ip and port then
+      nameserver = { ip, port }
+    end
+
+    table.insert(data["dns_resolver"]["_nameservers"], nameserver)
+  end
 end
 
 local function read()

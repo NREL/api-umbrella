@@ -59,8 +59,5 @@ elasticsearch:
 unbound:
   port: 13100
   control_port: 13101
-dns_resolver:
-  minimum_ttl: 1
-  reload_buffer_time: 1
 apiSettings:
   require_https: optional

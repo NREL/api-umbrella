@@ -175,8 +175,9 @@ _.merge(global.shared, {
     });
   },
 
-  runServer: function(configOverrides) {
+  runServer: function(configOverrides, options) {
     configOverrides = configOverrides || {};
+    options = options || {};
     if(!configOverrides.apis) {
       configOverrides.apis = [
         {
@@ -241,13 +242,18 @@ _.merge(global.shared, {
       global.autoIncrementingIpAddress = ippp.next(global.autoIncrementingIpAddress);
       this.ipAddress = global.autoIncrementingIpAddress;
 
-      Factory.create('api_user', function(user) {
+      var userOptions = options.user || {};
+      Factory.create('api_user', userOptions, function(user) {
         this.user = user;
         this.apiKey = user.api_key;
         this.options = {
+          followRedirect: false,
           headers: {
             'X-Api-Key': this.apiKey,
-          }
+          },
+          agentOptions: {
+            maxSockets: 500,
+          },
         };
         done();
       }.bind(this));

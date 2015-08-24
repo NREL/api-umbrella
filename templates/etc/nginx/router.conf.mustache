@@ -33,6 +33,7 @@ http {
   lua_package_cpath '{{gatekeeper.dir}}/vendor/lib/lua/5.1/?.so;;';
   #lua_code_cache off;
 
+  lua_shared_dict dns_cache 1m;
   lua_shared_dict stats 10m;
   lua_shared_dict api_users 10m;
   lua_shared_dict config 1m;
