@@ -232,11 +232,11 @@ _.merge(global.shared, {
     }
 
     before(function beforeWaitForConfig(done) {
-      this.timeout(5000);
+      this.timeout(10000);
       shared.waitForConfig(done);
     });
     after(function afterWaitForConfig(done) {
-      this.timeout(5000);
+      this.timeout(10000);
       shared.waitForConfig(done);
     });
 
