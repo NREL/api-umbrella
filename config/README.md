@@ -15,8 +15,6 @@ entry in `url_matches`
     requests will hit.
 * `apis.backend_host` - The domain name (possibly including port) which
     gatekeeper will proxy. This might be considered sensitive
-* `apis.rate_limit_bucket_name` - This provides an explicit bucket for api
-    rate limits to count against. Defaults to the `frontend_host`.
 * `apis.url_matches` - An array of path mappings between the frontend path and
     the backend path (see below)
 * `apis.settings` - A configuration object which contains various settings for
@@ -34,6 +32,9 @@ of this as a prefix-only search-and-replace.
 These are the default settings to use across APIs. Individual APIs can
 override them or append to them via `apis.settings`.
 
+* `apiSettings.rate_limit_bucket_name` - This provides an explicit bucket for api
+    rate limits to count against. Defaults to the `frontend_host` associated
+    with the api.
 * `apiSettings.rate_limits` - An array of configurations for how to limit the default
     user (individual API keys might have their own restrictions/permissions).
     See below for details on these configurations
