@@ -5,7 +5,7 @@ Admin.CheckboxListItemView = Ember.Checkbox.extend({
     return _.contains(checkedValues, value);
   }.property('content', 'checkedValues.@each'),
 
-  click: function() {
+  change: function() {
     var checkedValues = this.get('checkedValues') || [];
     var value = this.get('content.id');
 
