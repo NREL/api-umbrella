@@ -18,8 +18,6 @@ heka:
   port: 13014
 beanstalkd:
   port: 13005
-dnsmasq:
-  port: 13007
 nginx:
   access_log_options:
 gatekeeper:

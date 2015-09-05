@@ -26,8 +26,6 @@ heka:
 beanstalkd:
   host: 127.0.0.1
   port: 14005
-dnsmasq:
-  port: 14007
 nginx:
   workers: 4
   worker_connections: 8192

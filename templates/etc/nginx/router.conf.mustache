@@ -26,9 +26,6 @@ http {
   scgi_temp_path {{tmp_dir}}/router-nginx-scgi_temp;
   server_tokens off;
 
-  resolver 127.0.0.1:{{dnsmasq.port}};
-  resolver_timeout 12s;
-
   lua_package_path '{{gatekeeper.dir}}/src/?.lua;{{gatekeeper.dir}}/vendor/share/lua/5.1/?.lua;{{gatekeeper.dir}}/vendor/share/lua/5.1/?/init.lua;;';
   lua_package_cpath '{{gatekeeper.dir}}/vendor/lib/lua/5.1/?.so;;';
   #lua_code_cache off;
@@ -151,6 +148,15 @@ http {
       content_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/http-api/state.lua';
     }
   }
+
+  {{#_test_env?}}
+    server {
+      listen 9450;
+      location / {
+        echo "hello";
+      }
+    }
+  {{/_test_env?}}
 
   {{#hosts}}
   server {

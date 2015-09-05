@@ -13,14 +13,6 @@ local function reload_perp()
   end
 end
 
-local function reload_dnsmasq()
-  local _, _, err = run_command("perpctl -q -b " .. perp_base .. " hup dnsmasq")
-  if err then
-    print("Failed to reload dnsmasq\n" .. err)
-    os.exit(1)
-  end
-end
-
 local function reload_trafficserver()
   local _, _, err = run_command("perpctl -q -b " .. perp_base .. " hup trafficserver")
   if err then
@@ -28,7 +20,6 @@ local function reload_trafficserver()
     os.exit(1)
   end
 end
-
 
 local function reload_nginx()
   local _, _, err = run_command("perpctl -q -b " .. perp_base .. " hup gatekeeper-nginx")
@@ -42,7 +33,6 @@ return function()
   config = setup()
   perp_base = path.join(config["etc_dir"], "perp")
   reload_perp()
-  reload_dnsmasq()
   reload_trafficserver()
   reload_nginx()
 end
