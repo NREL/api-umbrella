@@ -149,15 +149,6 @@ http {
     }
   }
 
-  {{#_test_env?}}
-    server {
-      listen 9450;
-      location / {
-        echo "hello";
-      }
-    }
-  {{/_test_env?}}
-
   {{#hosts}}
   server {
     listen {{http_port}}{{#default}} default_server{{/default}};
