@@ -835,6 +835,7 @@ describe('proxying', function() {
 
       it('removes accept-encoding containing "gzip", but not as a standalone entry ("gzipp")', function(done) {
         var options = _.merge({}, this.options, {
+          gzip: true,
           headers: {
             'Accept-Encoding': 'gzipp',
           },
@@ -850,6 +851,7 @@ describe('proxying', function() {
 
       it('removes accept-encoding if gzip is q=0', function(done) {
         var options = _.merge({}, this.options, {
+          gzip: true,
           headers: {
             'Accept-Encoding': 'gzip;q=0',
           },
@@ -865,6 +867,7 @@ describe('proxying', function() {
 
       it('removes accept-encoding if gzip is q=0.00', function(done) {
         var options = _.merge({}, this.options, {
+          gzip: true,
           headers: {
             'Accept-Encoding': 'gzip;q=0.00',
           },
@@ -880,6 +883,7 @@ describe('proxying', function() {
 
       it('keeps accept-encoding if gzip is q=0.01', function(done) {
         var options = _.merge({}, this.options, {
+          gzip: true,
           headers: {
             'Accept-Encoding': 'gzip;q=0.01',
           },
@@ -1265,22 +1269,45 @@ describe('proxying', function() {
         // multiple retry attempts when a request times out (since we don't
         // want to duplicate requests if a backend is already struggling).
         function(callback) {
-          should.not.exist(global.backendCallCounts['get-timeout']);
+          async.series([
+            function(next) {
+              request.get('http://127.0.0.1:9442/backend_call_count?id=get-timeout', function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
+                body.should.eql('0');
+                next();
+              });
+            },
+            function(next) {
+              request.get('http://localhost:9080/timeout', options, function(error, response) {
+                response.statusCode.should.eql(504);
+                next();
+              });
+            },
+            function(next) {
+              request.get('http://127.0.0.1:9442/backend_call_count?id=get-timeout', function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
 
-          request.get('http://localhost:9080/timeout', options, function(error, response) {
-            response.statusCode.should.eql(504);
+                // Ensure that the backend has only been called once.
+                body.should.eql('1');
 
-            // Ensure that the backend has only been called once.
-            global.backendCallCounts['get-timeout'].should.eql(1);
+                // Wait 15 seconds for any possible retry attempts that might be
+                // pending, and then ensure the backend has still only been called
+                // once.
+                setTimeout(next, 15000);
 
-            // Wait 15 seconds for any possible retry attempts that might be
-            // pending, and then ensure the backend has still only been called
-            // once.
-            setTimeout(function() {
-              global.backendCallCounts['get-timeout'].should.eql(1);
-              callback();
-            }, 15000);
-          });
+              });
+            },
+            function(next) {
+              request.get('http://127.0.0.1:9442/backend_call_count?id=get-timeout', function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
+                body.should.eql('1');
+                next();
+              });
+            },
+          ], callback);
         },
 
         // only sends 1 request to the backend on timeouts for POST requests
@@ -1290,22 +1317,45 @@ describe('proxying', function() {
         // non-GET requests since duplicating POST requests could be harmful
         // (multiple creates, updates, etc).
         function(callback) {
-          should.not.exist(global.backendCallCounts['post-timeout']);
+          async.series([
+            function(next) {
+              request.get('http://127.0.0.1:9442/backend_call_count?id=post-timeout', function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
+                body.should.eql('0');
+                next();
+              });
+            },
+            function(next) {
+              request.post('http://localhost:9080/timeout', options, function(error, response) {
+                response.statusCode.should.eql(504);
+                next();
+              });
+            },
+            function(next) {
+              request.get('http://127.0.0.1:9442/backend_call_count?id=post-timeout', function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
 
-          request.post('http://localhost:9080/timeout', options, function(error, response) {
-            response.statusCode.should.eql(504);
+                // Ensure that the backend has only been called once.
+                body.should.eql('1');
 
-            // Ensure that the backend has only been called once.
-            global.backendCallCounts['post-timeout'].should.eql(1);
+                // Wait 15 seconds for any possible retry attempts that might be
+                // pending, and then ensure the backend has still only been called
+                // once.
+                setTimeout(next, 15000);
 
-            // Wait 15 seconds for any possible retry attempts that might be
-            // pending, and then ensure the backend has still only been called
-            // once.
-            setTimeout(function() {
-              global.backendCallCounts['post-timeout'].should.eql(1);
-              callback();
-            }, 15000);
-          });
+              });
+            },
+            function(next) {
+              request.get('http://127.0.0.1:9442/backend_call_count?id=post-timeout', function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
+                body.should.eql('1');
+                next();
+              });
+            },
+          ], callback);
         },
 
         // only sends 1 request to the backend on timeouts that fall between
@@ -1316,22 +1366,45 @@ describe('proxying', function() {
         // still works when something times according to nginx's timeout, but
         // not varnish's longer timeout.
         function(callback) {
-          should.not.exist(global.backendCallCounts['post-between-varnish-timeout']);
+          async.series([
+            function(next) {
+              request.get('http://127.0.0.1:9442/backend_call_count?id=post-between-varnish-timeout', function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
+                body.should.eql('0');
+                next();
+              });
+            },
+            function(next) {
+              request.get('http://localhost:9080/between-varnish-timeout', options, function(error, response) {
+                response.statusCode.should.eql(504);
+                next();
+              });
+            },
+            function(next) {
+              request.get('http://127.0.0.1:9442/backend_call_count?id=post-between-varnish-timeout', function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
 
-          request.get('http://localhost:9080/between-varnish-timeout', options, function(error, response) {
-            response.statusCode.should.eql(504);
+                // Ensure that the backend has only been called once.
+                body.should.eql('1');
 
-            // Ensure that the backend has only been called once.
-            global.backendCallCounts['post-between-varnish-timeout'].should.eql(1);
+                // Wait 15 seconds for any possible retry attempts that might be
+                // pending, and then ensure the backend has still only been called
+                // once.
+                setTimeout(next, 15000);
 
-            // Wait 15 seconds for any possible retry attempts that might be
-            // pending, and then ensure the backend has still only been called
-            // once.
-            setTimeout(function() {
-              global.backendCallCounts['post-between-varnish-timeout'].should.eql(1);
-              callback();
-            }, 15000);
-          });
+              });
+            },
+            function(next) {
+              request.get('http://127.0.0.1:9442/backend_call_count?id=post-between-varnish-timeout', function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
+                body.should.eql('1');
+                next();
+              });
+            },
+          ], callback);
         },
 
         // doesn't consider the gatekeeper backends down after a bunch of

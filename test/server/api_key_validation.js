@@ -48,7 +48,6 @@ describe('api key validation', function() {
     describe('valid api key supplied', function() {
       it('calls the target app', function(done) {
         request.get('http://localhost:9080/hello?api_key=' + this.apiKey, function(error, response, body) {
-          backendCalled.should.eql(true);
           response.statusCode.should.eql(200);
           body.should.eql('Hello World');
           done();

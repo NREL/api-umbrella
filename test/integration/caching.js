@@ -108,12 +108,17 @@ describe('caching', function() {
       var responseCodes = _.pluck(results, 'responseCode');
       var bodies = _.pluck(results, 'body');
 
-      should.exist(global.backendCallCounts[id]);
-      global.backendCallCounts[id].should.eql(50);
-      bodies.length.should.eql(50);
-      _.uniq(responseCodes).should.eql([200]);
-      _.uniq(bodies).length.should.eql(50);
-      done();
+      request.get('http://127.0.0.1:9442/backend_call_count?id=' + id, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        body.should.eql('50');
+
+        bodies.length.should.eql(50);
+        _.uniq(responseCodes).should.eql([200]);
+        _.uniq(bodies).length.should.eql(50);
+
+        done();
+      });
     });
   }
 
@@ -135,11 +140,17 @@ describe('caching', function() {
       var responseCodes = _.pluck(results, 'responseCode');
       var bodies = _.pluck(results, 'body');
 
-      should.exist(global.backendCallCounts[id]);
-      global.backendCallCounts[id].should.eql(1);
-      _.uniq(responseCodes).should.eql([200]);
-      _.uniq(bodies).length.should.eql(1);
-      done();
+      request.get('http://127.0.0.1:9442/backend_call_count?id=' + id, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        body.should.eql('1');
+
+        bodies.length.should.eql(50);
+        _.uniq(responseCodes).should.eql([200]);
+        _.uniq(bodies).length.should.eql(1);
+
+        done();
+      });
     });
   }
 

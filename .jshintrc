@@ -22,7 +22,6 @@
   "globals": {
     "after": true,
     "afterEach": true,
-    "backendCalled": true,
     "before": true,
     "beforeEach": true,
     "describe": true,

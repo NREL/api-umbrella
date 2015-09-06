@@ -17,7 +17,6 @@ var _ = require('lodash'),
     xml2js = require('xml2js'),
     yaml = require('js-yaml');
 
-global.backendCalled = false;
 global.autoIncrementingIpAddress = '10.0.0.0';
 
 _.merge(global.shared, {
@@ -260,20 +259,41 @@ _.merge(global.shared, {
         done();
       }.bind(this));
     });
-
-    beforeEach(function resetBackendCalled(done) {
-      backendCalled = false;
-      done();
-    });
   },
 
   itBehavesLikeGatekeeperBlocked: function(path, statusCode, errorCode, options) {
     it('doesn\'t call the target app', function(done) {
-      request(shared.buildRequestOptions(path, this.apiKey, options), function(error) {
-        should.not.exist(error);
-        backendCalled.should.eql(false);
-        done();
-      });
+      async.series([
+        function(next) {
+          request.get('http://127.0.0.1:9442/reset_backend_called', function(error, response) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            next();
+          });
+        },
+        function(next) {
+          request.get('http://127.0.0.1:9442/backend_called', function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            body.should.eql('false');
+            next();
+          });
+        },
+        function(next) {
+          request(shared.buildRequestOptions(path, this.apiKey, options), function(error) {
+            should.not.exist(error);
+            next();
+          });
+        }.bind(this),
+        function(next) {
+          request.get('http://127.0.0.1:9442/backend_called', function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            body.should.eql('false');
+            next();
+          });
+        },
+      ], done);
     });
 
     it('returns a ' + statusCode + ' status code', function(done) {
@@ -336,11 +356,37 @@ _.merge(global.shared, {
 
   itBehavesLikeGatekeeperAllowed: function(path, options) {
     it('calls the target app', function(done) {
-      request(shared.buildRequestOptions(path, this.apiKey, options), function(error) {
-        should.not.exist(error);
-        backendCalled.should.eql(true);
-        done();
-      });
+      async.series([
+        function(next) {
+          request.get('http://127.0.0.1:9442/reset_backend_called', function(error, response) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            next();
+          });
+        },
+        function(next) {
+          request.get('http://127.0.0.1:9442/backend_called', function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            body.should.eql('false');
+            next();
+          });
+        },
+        function(next) {
+          request(shared.buildRequestOptions(path, this.apiKey, options), function(error) {
+            should.not.exist(error);
+            next();
+          });
+        }.bind(this),
+        function(next) {
+          request.get('http://127.0.0.1:9442/backend_called', function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            body.should.eql('true');
+            next();
+          });
+        },
+      ], done);
     });
 
     it('returns a successful response', function(done) {
