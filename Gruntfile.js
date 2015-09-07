@@ -4,6 +4,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-mocha-cli');
 
+  var mochaFiles = ['test/**/*.js'];
+  if(process.env['MOCHA_FILES']) {
+    mochaFiles = process.env['MOCHA_FILES'].split(/\s+/);
+  }
+
   grunt.initConfig({
     jshint: {
       options: {
@@ -30,7 +35,7 @@ module.exports = function(grunt) {
         // see if this helps with sporadic issues in the CI environment.
         timeout: 4000,
 
-        files: ['test/**/*.js']
+        files: mochaFiles,
       },
       multi: {
         options: {

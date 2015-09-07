@@ -716,4 +716,4 @@ lint: install_test_dependencies
 	LUA_PATH="vendor/share/lua/5.1/?.lua;vendor/share/lua/5.1/?/init.lua;;" LUA_CPATH="vendor/lib/lua/5.1/?.so;;" ./vendor/bin/luacheck src
 
 test: install install_test_dependencies lint
-	API_UMBRELLA_ROOT=$(PREFIX) npm test
+	API_UMBRELLA_ROOT=$(PREFIX) MOCHA_FILES="$(MOCHA_FILES)" npm test

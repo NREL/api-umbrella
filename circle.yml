@@ -30,20 +30,8 @@ dependencies:
     - sudo pip install mongo-orchestration==0.3.1
 test:
   override:
-    # Run the integration/gatekeeper tests.
-    - mkdir -p $CIRCLE_TEST_REPORTS/mocha
-    - make test PREFIX="$(pwd)/ci_cache/build"
-    - cp test/tmp/xunit.xml $CIRCLE_TEST_REPORTS/mocha/
-    # Run the web-app tests.
-    - mkdir -p $CIRCLE_TEST_REPORTS/rspec
-    # Start the version of elasticsearch bundled with API Umbrella.
-    - $(pwd)/ci_cache/build/embedded/bin/elasticsearch:
-        background: true
-    - bundle exec rake:
-        pwd: src/api-umbrella/web-app
-        environment:
-          PATH: "../../../ci_cache/build/embedded/bin:$PATH"
-    - cp src/api-umbrella/web-app/spec/reports/web-app.xml $CIRCLE_TEST_REPORTS/rspec/
+    - test/circle_parallel:
+        parallel: true
 experimental:
   notify:
     branches:
