@@ -39,6 +39,7 @@ gatekeeper:
     - header
     - getParam
     - basicAuthUsername
+  api_key_cache: true
   target: "127.0.0.1:14010"
 varnish:
   host: 127.0.0.1

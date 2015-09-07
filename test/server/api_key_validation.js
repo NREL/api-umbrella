@@ -2,13 +2,16 @@
 
 require('../test_helper');
 
-var async = require('async'),
+var _ = require('lodash'),
+    async = require('async'),
     Factory = require('factory-lady'),
     request = require('request');
 
 describe('api key validation', function() {
   describe('default settings', function() {
-    shared.runServer();
+    shared.runServer({}, {
+      user: { settings: { rate_limit_mode: 'unlimited' } },
+    });
 
     describe('no api key supplied', function() {
       beforeEach(function setupApiUser() {
@@ -129,6 +132,69 @@ describe('api key validation', function() {
             callback();
           });
         }.bind(this), done);
+      });
+
+      it('caches keys locally inside each worker process for a couple seconds', function(done) {
+        this.timeout(10000);
+
+        async.series([
+          function(next) {
+            // Fire off a number of parallel requests so we should hit all the
+            // individual worker processes.
+            async.timesLimit(100, 10, function(index, timesCallback) {
+              request.get('http://localhost:9080/hello?pre&api_key=' + this.apiKey, function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(200);
+                body.should.eql('Hello World');
+                setTimeout(timesCallback, _.random(0, 5));
+              });
+            }.bind(this), next);
+          }.bind(this),
+          function(next) {
+            this.user.disabled_at = new Date();
+            this.user.save(next);
+          }.bind(this),
+          function(next) {
+            async.timesLimit(100, 10, function(index, timesCallback) {
+              request.get('http://localhost:9080/hello?post-save&api_key=' + this.apiKey, function(error, response) {
+                setTimeout(function() {
+                  timesCallback(error, response.statusCode);
+                }, _.random(0, 5));
+              });
+            }.bind(this), function(error, statusCodes) {
+              should.not.exist(error);
+
+              statusCodes.length.should.eql(100);
+              var byCode = _.groupBy(statusCodes);
+              var successCount = (byCode[200] || []).length;
+
+              // Ensure that at least some of the responses are still successes
+              // (due to the cache). Most of the time, all the responses should be
+              // successful, but on the off-chance our initial batch of
+              // requests didn't hit some of the nginx worker processes, that
+              // means the api key won't be cached under that worker process,
+              // so it will be returning errors immediately (but that's okay,
+              // since all we're really wanting to test is the fact that the
+              // cache is present).
+              successCount.should.be.gte(1);
+
+              next();
+            });
+          }.bind(this),
+          function(next) {
+            setTimeout(next, 2100);
+          },
+          function(next) {
+            async.timesLimit(100, 10, function(index, timesCallback) {
+              request.get('http://localhost:9080/hello?post-timeout&api_key=' + this.apiKey, function(error, response, body) {
+                should.not.exist(error);
+                response.statusCode.should.eql(403);
+                body.should.include('API_KEY_DISABLED');
+                setTimeout(timesCallback, _.random(0, 5));
+              });
+            }.bind(this), next);
+          }.bind(this),
+        ], done);
       });
     });
 
@@ -609,6 +675,47 @@ describe('api key validation', function() {
 
         shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/required_email');
       });
+    });
+  });
+
+  describe('api key caching disabled', function() {
+    shared.runServer({
+      gatekeeper: {
+        api_key_cache: false,
+      }
+    }, {
+      user: { settings: { rate_limit_mode: 'unlimited' } },
+    });
+
+    it('does not cache keys locally inside each worker process', function(done) {
+      async.series([
+        function(next) {
+          // Fire off a number of parallel requests so we should hit all the
+          // individual worker processes.
+          async.timesLimit(100, 10, function(index, timesCallback) {
+            request.get('http://localhost:9080/hello?pre&api_key=' + this.apiKey, function(error, response, body) {
+              should.not.exist(error);
+              response.statusCode.should.eql(200);
+              body.should.eql('Hello World');
+              setTimeout(timesCallback, _.random(0, 5));
+            });
+          }.bind(this), next);
+        }.bind(this),
+        function(next) {
+          this.user.disabled_at = new Date();
+          this.user.save(next);
+        }.bind(this),
+        function(next) {
+          async.timesLimit(100, 10, function(index, timesCallback) {
+            request.get('http://localhost:9080/hello?post-save&api_key=' + this.apiKey, function(error, response, body) {
+              should.not.exist(error);
+              response.statusCode.should.eql(403);
+              body.should.include('API_KEY_DISABLED');
+              setTimeout(timesCallback, _.random(0, 5));
+            });
+          }.bind(this), next);
+        }.bind(this),
+      ], done);
     });
   });
 });

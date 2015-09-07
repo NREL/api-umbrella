@@ -1,8 +1,7 @@
 local _M = {}
 
-local cjson = require "cjson"
-local http = require "resty.http"
 local lock = require "resty.lock"
+local mongo = require "api-umbrella.utils.mongo"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 
@@ -27,55 +26,46 @@ local function do_check()
   local page_size = 250
   local success = true
   repeat
-    local httpc = http.new()
-    local res, req_err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/rate_limits", {
+    local results, mongo_err = mongo.find("rate_limits", {
+      limit = page_size,
+      skip = skip,
+      sort = "-ts",
       query = {
-        extended_json = "true",
-        limit = page_size,
-        skip = skip,
-        sort = "-ts",
-        query = cjson.encode({
-          ts = {
-            ["$gt"] = {
-              ["$timestamp"] = last_fetched_timestamp,
-            },
+        ts = {
+          ["$gt"] = {
+            ["$timestamp"] = last_fetched_timestamp,
           },
-        }),
+        },
       },
     })
 
-    local results = nil
-    if req_err then
-      ngx.log(ngx.ERR, "failed to fetch rate limits from mongodb: ", req_err)
+    if mongo_err then
+      ngx.log(ngx.ERR, "failed to fetch rate limits from mongodb: ", mongo_err)
       success = false
-    elseif res.body then
-      local response = cjson.decode(res.body)
-      if response and response["data"] then
-        results = response["data"]
-        for index, result in ipairs(results) do
-          if skip == 0 and index == 1 then
-            if result["ts"] and result["ts"]["$timestamp"] then
-              set_packed(ngx.shared.stats, "distributed_last_fetched_timestamp", result["ts"]["$timestamp"])
+    elseif results then
+      for index, result in ipairs(results) do
+        if skip == 0 and index == 1 then
+          if result["ts"] and result["ts"]["$timestamp"] then
+            set_packed(ngx.shared.stats, "distributed_last_fetched_timestamp", result["ts"]["$timestamp"])
+          end
+        end
+
+        local key = result["_id"]
+        local distributed_count = result["count"]
+        local local_count = ngx.shared.stats:get(key)
+        if not local_count then
+          if result["expire_at"] and result["expire_at"]["$date"] then
+            local ttl = (result["expire_at"]["$date"] - current_fetch_time) / 1000
+            local _, set_err = ngx.shared.stats:set(key, distributed_count, ttl)
+            if set_err then
+              ngx.log(ngx.ERR, "failed to set rate limit key", set_err)
             end
           end
-
-          local key = result["_id"]
-          local distributed_count = result["count"]
-          local local_count = ngx.shared.stats:get(key)
-          if not local_count then
-            if result["expire_at"] and result["expire_at"]["$date"] then
-              local ttl = (result["expire_at"]["$date"] - current_fetch_time) / 1000
-              local _, set_err = ngx.shared.stats:set(key, distributed_count, ttl)
-              if set_err then
-                ngx.log(ngx.ERR, "failed to set rate limit key", set_err)
-              end
-            end
-          elseif distributed_count > local_count then
-            local incr = distributed_count - local_count
-            local _, incr_err = ngx.shared.stats:incr(key, incr)
-            if incr_err then
-              ngx.log(ngx.ERR, "failed to increment rate limit key", incr_err)
-            end
+        elseif distributed_count > local_count then
+          local incr = distributed_count - local_count
+          local _, incr_err = ngx.shared.stats:incr(key, incr)
+          if incr_err then
+            ngx.log(ngx.ERR, "failed to increment rate limit key", incr_err)
           end
         end
       end

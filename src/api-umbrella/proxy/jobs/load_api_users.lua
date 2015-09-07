@@ -1,8 +1,7 @@
 local _M = {}
 
-local cjson = require "cjson"
-local http = require "resty.http"
 local lock = require "resty.lock"
+local mongo = require "api-umbrella.utils.mongo"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 
@@ -34,41 +33,32 @@ local function do_check()
   local page_size = 250
   local success = true
   repeat
-    local httpc = http.new()
-    local res, req_err = httpc:request_uri("http://127.0.0.1:8181/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/api_users", {
+    local results, mongo_err = mongo.find("api_users", {
+      limit = page_size,
+      skip = skip,
+      sort = "updated_at",
       query = {
-        extended_json = "true",
-        limit = page_size,
-        skip = skip,
-        sort = "updated_at",
-        query = cjson.encode({
-          ts = {
-            ["$gt"] = {
-              ["$timestamp"] = last_fetched_timestamp,
-            },
+        ts = {
+          ["$gt"] = {
+            ["$timestamp"] = last_fetched_timestamp,
           },
-        }),
+        },
       },
     })
 
-    local results = nil
-    if req_err then
-      ngx.log(ngx.ERR, "failed to fetch users from mongodb: ", req_err)
+    if mongo_err then
+      ngx.log(ngx.ERR, "failed to fetch users from mongodb: ", mongo_err)
       success = false
-    elseif res.body then
-      local response = cjson.decode(res.body)
-      if response and response["data"] then
-        results = response["data"]
-        for index, result in ipairs(results) do
-          if skip == 0 and index == 1 then
-            if result["ts"] and result["ts"]["$timestamp"] then
-              set_packed(api_users, "distributed_last_fetched_timestamp", result["ts"]["$timestamp"])
-            end
+    elseif results then
+      for index, result in ipairs(results) do
+        if skip == 0 and index == 1 then
+          if result["ts"] and result["ts"]["$timestamp"] then
+            set_packed(api_users, "distributed_last_fetched_timestamp", result["ts"]["$timestamp"])
           end
+        end
 
-          if result["api_key"] then
-            ngx.shared.api_users:delete(result["api_key"])
-          end
+        if result["api_key"] then
+          ngx.shared.api_users:delete(result["api_key"])
         end
       end
     end
