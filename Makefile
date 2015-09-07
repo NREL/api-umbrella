@@ -141,6 +141,12 @@ TRAFFICSERVER_DIGEST:=md5
 TRAFFICSERVER_CHECKSUM:=9c0e2450b1dd1bbdd63ebcc344b5a813
 TRAFFICSERVER_URL:=http://mirror.olnevhost.net/pub/apache/trafficserver/$(TRAFFICSERVER).tar.bz2
 
+UNBOUND_VERSION:=1.5.4
+UNBOUND:=unbound-$(UNBOUND_VERSION)
+UNBOUND_DIGEST:=sha256
+UNBOUND_CHECKSUM:=a1e1c1a578cf8447cb51f6033714035736a0f04444854a983123c094cc6fb137
+UNBOUND_URL:=https://www.unbound.net/downloads/$(UNBOUND).tar.gz
+
 # Define non-file/folder targets
 .PHONY: \
 	all \
@@ -437,6 +443,22 @@ deps/$(TRAFFICSERVER)/.built: deps/$(TRAFFICSERVER)
 	cd $< && make
 	touch $@
 
+# Unbound
+deps/$(UNBOUND).tar.gz: | deps
+	curl -L -o $@ $(UNBOUND_URL)
+
+deps/$(UNBOUND): deps/$(UNBOUND).tar.gz
+	openssl $(UNBOUND_DIGEST) $< | grep $(UNBOUND_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
+deps/$(UNBOUND)/.built: deps/$(UNBOUND)
+	cd $< && ./configure \
+		--prefix=$(PREFIX)/embedded
+	cd $< && make
+	touch $@
+
 dependencies: \
 	deps/$(ELASTICSEARCH) \
 	deps/$(FREEGEOIP) \
@@ -604,7 +626,7 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(TRAFFICSERVER)/.built \
 	deps/$(UNBOUND).tar.gz \
 	deps/$(UNBOUND) \
-	deps/$(UNBOUND)/.built \
+	deps/$(UNBOUND)/.built
 
 install_dependencies: \
 	$(PREFIX)/embedded/bin \
@@ -713,12 +735,6 @@ install: install_dependencies install_app_dependencies
 LUACHECK:=luacheck
 LUACHECK_VERSION:=0.11.1-1
 
-UNBOUND_VERSION:=1.5.4
-UNBOUND:=unbound-$(UNBOUND_VERSION)
-UNBOUND_DIGEST:=sha256
-UNBOUND_CHECKSUM:=a1e1c1a578cf8447cb51f6033714035736a0f04444854a983123c094cc6fb137
-UNBOUND_URL:=https://www.unbound.net/downloads/$(UNBOUND).tar.gz
-
 # luacheck
 vendor/lib/luarocks/rocks/$(LUACHECK)/$(LUACHECK_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUACHECK) $(LUACHECK_VERSION)
@@ -736,22 +752,6 @@ $(PREFIX)/embedded/bin/pip:
 
 $(PREFIX)/embedded/.installed/test-python-requirements: test/requirements.txt $(PREFIX)/embedded/bin/pip | $(PREFIX)/embedded/.installed
 	$(PREFIX)/embedded/bin/pip install -r test/requirements.txt
-	touch $@
-
-# Unbound
-deps/$(UNBOUND).tar.gz: | deps
-	curl -L -o $@ $(UNBOUND_URL)
-
-deps/$(UNBOUND): deps/$(UNBOUND).tar.gz
-	openssl $(UNBOUND_DIGEST) $< | grep $(UNBOUND_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-deps/$(UNBOUND)/.built: deps/$(UNBOUND)
-	cd $< && ./configure \
-		--prefix=$(PREFIX)/embedded
-	cd $< && make
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(UNBOUND): deps/$(UNBOUND)/.built | $(PREFIX)/embedded/.installed
