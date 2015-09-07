@@ -6,6 +6,9 @@ unexport IRBRC
 unexport MY_RUBY_HOME
 unexport RUBY_VERSION
 
+OLD_SHELL := $(SHELL)
+SHELL = $(warning [$@ ($^) ($?)])$(OLD_SHELL)
+
 STANDARD_PATH:=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 PREFIX:=/tmp/api-umbrella-build
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -141,7 +144,16 @@ TRAFFICSERVER_CHECKSUM:=9c0e2450b1dd1bbdd63ebcc344b5a813
 TRAFFICSERVER_URL:=http://mirror.olnevhost.net/pub/apache/trafficserver/$(TRAFFICSERVER).tar.bz2
 
 # Define non-file/folder targets
-.PHONY: all dependencies clean
+.PHONY: \
+	all \
+	clean \
+	dependencies \
+	install \
+	install_app_dependencies \
+	install_dependencies \
+	install_test_dependencies \
+	lint \
+	test
 
 all: dependencies
 
