@@ -48,6 +48,8 @@ trafficserver:
   port: 14009
   storage:
     size: 256M
+  embedded_server_config:
+    records: []
 web:
   host: 127.0.0.1
   port: 14012

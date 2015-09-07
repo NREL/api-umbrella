@@ -286,21 +286,25 @@ describe('caching', function() {
       this.timeout(6000);
 
       var id = _.uniqueId();
-      request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
-        parseInt(response.headers['age']).should.eql(0);
+      request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response, firstBody) {
+        parseInt(response.headers['age']).should.be.gte(0);
+        parseInt(response.headers['age']).should.be.lte(1);
 
         setTimeout(function() {
-          request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
+          request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response, body) {
+            body.should.eql(firstBody);
             parseInt(response.headers['age']).should.be.gte(1);
             parseInt(response.headers['age']).should.be.lte(2);
 
             setTimeout(function() {
-              request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
+              request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response, body) {
+                body.should.eql(firstBody);
                 parseInt(response.headers['age']).should.be.gte(2);
                 parseInt(response.headers['age']).should.be.lte(3);
 
                 setTimeout(function() {
-                  request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
+                  request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response, body) {
+                    body.should.eql(firstBody);
                     parseInt(response.headers['age']).should.be.gte(3);
                     parseInt(response.headers['age']).should.be.lte(4);
 
@@ -318,16 +322,19 @@ describe('caching', function() {
       this.timeout(6000);
 
       var id = _.uniqueId();
-      request.get('http://localhost:9080/cacheable-backend-reports-cached/' + id, this.options, function(error, response) {
-        response.headers['age'].should.eql('3');
+      request.get('http://localhost:9080/cacheable-backend-reports-cached/' + id, this.options, function(error, response, firstBody) {
+        parseInt(response.headers['age']).should.be.gte(3);
+        parseInt(response.headers['age']).should.be.lte(4);
 
         setTimeout(function() {
-          request.get('http://localhost:9080/cacheable-backend-reports-cached/' + id, this.options, function(error, response) {
+          request.get('http://localhost:9080/cacheable-backend-reports-cached/' + id, this.options, function(error, response, body) {
+            body.should.eql(firstBody);
             parseInt(response.headers['age']).should.be.gte(4);
             parseInt(response.headers['age']).should.be.lte(5);
 
             setTimeout(function() {
-              request.get('http://localhost:9080/cacheable-backend-reports-cached/' + id, this.options, function(error, response) {
+              request.get('http://localhost:9080/cacheable-backend-reports-cached/' + id, this.options, function(error, response, body) {
+                body.should.eql(firstBody);
                 parseInt(response.headers['age']).should.be.gte(7);
                 parseInt(response.headers['age']).should.be.lte(8);
 

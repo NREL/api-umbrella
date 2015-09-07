@@ -27,6 +27,17 @@ varnish:
   port: 13010
   backend:
     port: 13011
+trafficserver:
+  port: 13009
+  embedded_server_config:
+    records:
+      # In the test environment disable fuzzy revalidation since it makes
+      # things difficult to test against. For production, it seems like a
+      # decent idea to keep the feature enabled, but in the test environment,
+      # it means that 0.5% of requests might not behave as expected (since they
+      # will be re-fetched ahead of their actual TTL).
+      # See: https://docs.trafficserver.apache.org/en/latest/admin/http-proxy-caching.en.html?highlight=fuzz#fuzzy-revalidation
+      - CONFIG proxy.config.http.cache.fuzz.time INT 0
 web:
   port: 13012
 router:
