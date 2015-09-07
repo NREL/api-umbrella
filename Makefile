@@ -25,16 +25,16 @@ FREEGEOIP_DIGEST:=md5
 FREEGEOIP_CHECKSUM:=06effa101645431a4608581d6dd98970
 FREEGEOIP_URL:=https://github.com/fiorix/freegeoip/releases/download/v$(FREEGEOIP_VERSION)/$(FREEGEOIP)-linux-amd64.tar.gz
 
-GLIDE_VERSION:=0.4.1
+GLIDE_VERSION:=0.5.1
 GLIDE:=glide-$(GLIDE_VERSION)
 GLIDE_DIGEST:=md5
-GLIDE_CHECKSUM:=354072807db96f98a835b34fb472e501
+GLIDE_CHECKSUM:=aa42b90eab0b23c47283ad4f9de8dc8f
 GLIDE_URL:=https://github.com/Masterminds/glide/archive/$(GLIDE_VERSION).tar.gz
 
-GOLANG_VERSION:=1.4.2
+GOLANG_VERSION:=1.5
 GOLANG:=golang-$(GOLANG_VERSION)
 GOLANG_DIGEST:=sha1
-GOLANG_CHECKSUM:=5020af94b52b65cc9b6f11d50a67e4bae07b0aff
+GOLANG_CHECKSUM:=5817fa4b2252afdb02e11e8b9dc1d9173ef3bd5a
 GOLANG_URL:=https://storage.googleapis.com/golang/go$(GOLANG_VERSION).linux-amd64.tar.gz
 
 HEKA_VERSION:=0.9.2
@@ -298,17 +298,21 @@ deps/$(LUSTACHE): deps/$(LUSTACHE).tar.gz
 deps/$(MORA).tar.gz: | deps
 	curl -L -o $@ $(MORA_URL)
 
-deps/$(MORA)/mora: deps/$(MORA).tar.gz
+deps/$(MORA): deps/$(MORA).tar.gz
 	openssl $(MORA_DIGEST) $< | grep $(MORA_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
 	mkdir -p $@
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
-deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM): deps/$(MORA)/mora | deps/gocode/bin/glide
+deps/gocode/src/github.com/emicklei/mora: deps/$(MORA)
+	mkdir -p $@
+	rsync -a --delete-after deps/$(MORA)/ $@/
+	touch $@
+
+deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM): deps/gocode/src/github.com/emicklei/mora deps/$(GLIDE)/.built deps/$(GOLANG)
 	cp build/mora_glide.yaml $</glide.yaml
-	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOROOT=$(ROOT_DIR)/deps/$(GOLANG) glide gopath
-	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOROOT=$(ROOT_DIR)/deps/$(GOLANG) GOPATH=`glide gopath` GOBIN=`glide gopath`/bin glide install
-	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOROOT=$(ROOT_DIR)/deps/$(GOLANG) GOPATH=`glide gopath` GOBIN=`glide gopath`/bin go install
+	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) GO15VENDOREXPERIMENT=1 glide update
+	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) GO15VENDOREXPERIMENT=1 go install
 	touch $@
 
 # Perp
@@ -360,13 +364,18 @@ deps/$(ELASTICSEARCH): deps/$(ELASTICSEARCH).tar.gz
 deps/$(GLIDE).tar.gz: | deps
 	curl -L -o $@ $(GLIDE_URL)
 
-deps/gocode/src/github.com/Masterminds/glide: deps/$(GLIDE).tar.gz
+deps/$(GLIDE): deps/$(GLIDE).tar.gz
 	openssl $(GLIDE_DIGEST) $< | grep $(GLIDE_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
 	mkdir -p $@
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
-deps/gocode/bin/glide: deps/gocode/src/github.com/Masterminds/glide deps/$(GOLANG)
+deps/gocode/src/github.com/Masterminds/glide: deps/$(GLIDE)
+	mkdir -p $@
+	rsync -a --delete-after deps/$(GLIDE)/ $@/
+	touch $@
+
+deps/$(GLIDE)/.built: deps/gocode/src/github.com/Masterminds/glide deps/$(GOLANG)
 	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) go get
 	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) go build
 	touch $@
@@ -513,7 +522,7 @@ $(PREFIX)/embedded/.installed/$(MONGODB): deps/$(MONGODB) | $(PREFIX)/embedded/.
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(MORA)-$(MORA_DEPENDENCIES_CHECKSUM): deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) | $(PREFIX)/embedded/.installed
-	cp deps/$(MORA)/mora/_vendor/bin/mora $(PREFIX)/embedded/bin/
+	cp deps/gocode/bin/mora $(PREFIX)/embedded/bin/
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(OPENRESTY): deps/$(OPENRESTY)/.built | $(PREFIX)/embedded/.installed
@@ -544,8 +553,9 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(FREEGEOIP).tar.gz \
 	deps/$(FREEGEOIP) \
 	deps/$(GLIDE).tar.gz \
+	deps/$(GLIDE) \
 	deps/gocode/src/github.com/Masterminds/glide \
-	deps/gocode/bin/glide \
+	deps/$(GLIDE)/.built \
 	deps/$(GOLANG).tar.gz \
 	deps/$(GOLANG) \
 	deps/$(HEKA).tar.gz \
@@ -572,7 +582,7 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(MONGODB) \
 	deps/$(MORA).tar.gz \
 	deps/$(MORA) \
-	deps/$(MORA)/mora \
+	deps/gocode/src/github.com/emicklei/mora \
 	deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) \
 	deps/$(NGX_DYUPS).tar.gz \
 	deps/$(NGX_DYUPS) \
@@ -591,7 +601,10 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(RUBY)/.built \
 	deps/$(TRAFFICSERVER).tar.gz \
 	deps/$(TRAFFICSERVER) \
-	deps/$(TRAFFICSERVER)/.built
+	deps/$(TRAFFICSERVER)/.built \
+	deps/$(UNBOUND).tar.gz \
+	deps/$(UNBOUND) \
+	deps/$(UNBOUND)/.built \
 
 install_dependencies: \
 	$(PREFIX)/embedded/bin \
@@ -700,17 +713,56 @@ install: install_dependencies install_app_dependencies
 LUACHECK:=luacheck
 LUACHECK_VERSION:=0.11.1-1
 
+UNBOUND_VERSION:=1.5.4
+UNBOUND:=unbound-$(UNBOUND_VERSION)
+UNBOUND_DIGEST:=sha256
+UNBOUND_CHECKSUM:=a1e1c1a578cf8447cb51f6033714035736a0f04444854a983123c094cc6fb137
+UNBOUND_URL:=https://www.unbound.net/downloads/$(UNBOUND).tar.gz
+
+# luacheck
 vendor/lib/luarocks/rocks/$(LUACHECK)/$(LUACHECK_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
 	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUACHECK) $(LUACHECK_VERSION)
 	touch $@
 
+# Node test dependencies
 node_modules/.installed: package.json
 	npm install
 	touch $@
 
+# Python test dependencies (mongo-orchestration)
+$(PREFIX)/embedded/bin/pip:
+	virtualenv $(PREFIX)/embedded
+	touch $@
+
+$(PREFIX)/embedded/.installed/test-python-requirements: test/requirements.txt $(PREFIX)/embedded/bin/pip | $(PREFIX)/embedded/.installed
+	$(PREFIX)/embedded/bin/pip install -r test/requirements.txt
+	touch $@
+
+# Unbound
+deps/$(UNBOUND).tar.gz: | deps
+	curl -L -o $@ $(UNBOUND_URL)
+
+deps/$(UNBOUND): deps/$(UNBOUND).tar.gz
+	openssl $(UNBOUND_DIGEST) $< | grep $(UNBOUND_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
+deps/$(UNBOUND)/.built: deps/$(UNBOUND)
+	cd $< && ./configure \
+		--prefix=$(PREFIX)/embedded
+	cd $< && make
+	touch $@
+
+$(PREFIX)/embedded/.installed/$(UNBOUND): deps/$(UNBOUND)/.built | $(PREFIX)/embedded/.installed
+	cd deps/$(UNBOUND) && make install
+	touch $@
+
 install_test_dependencies: \
 	node_modules/.installed \
-	vendor/lib/luarocks/rocks/$(LUACHECK)/$(LUACHECK_VERSION)
+	vendor/lib/luarocks/rocks/$(LUACHECK)/$(LUACHECK_VERSION) \
+	$(PREFIX)/embedded/.installed/test-python-requirements \
+	$(PREFIX)/embedded/.installed/$(UNBOUND)
 
 lint: install_test_dependencies
 	LUA_PATH="vendor/share/lua/5.1/?.lua;vendor/share/lua/5.1/?/init.lua;;" LUA_CPATH="vendor/lib/lua/5.1/?.so;;" ./vendor/bin/luacheck src

@@ -17,16 +17,9 @@ dependencies:
     - make install_test_dependencies PREFIX="$(pwd)/ci_cache/build"
 
     # Get rid of all the intermediate downloads for building the dependencies.
+    # We don't want to store these in the CircleCI cache, since they're not
+    # needed after installing.
     - make clean
-
-    # Install the unbound package that's not included with API Umbrella, but
-    # needed to run tests. But prevent it from automatically starting up after
-    # install at the system level with the RUNLEVEL=1 variable.
-    - sudo env RUNLEVEL=1 apt-get install unbound
-
-    # Use the mongo-orchestration library for providing a testable replicaset,
-    # so we can see how the stack reacts to replicaset re-elections, etc.
-    - sudo pip install mongo-orchestration==0.3.1
 test:
   override:
     # Run the across parallel CI nodes.
@@ -36,7 +29,9 @@ test:
     # Copy the test reports into place.
     - mkdir -p $CIRCLE_TEST_REPORTS/rspec $CIRCLE_TEST_REPORTS/mocha
     - if [ -e src/api-umbrella/web-app/spec/reports/web-app.xml ]; then cp src/api-umbrella/web-app/spec/reports/web-app.xml $CIRCLE_TEST_REPORTS/rspec/; fi
+    - ls -la test/tmp/
     - if [ -e test/tmp/xunit.xml ]; then cp test/tmp/xunit.xml $CIRCLE_TEST_REPORTS/mocha/; fi
+    - find $CIRCLE_TEST_REPORTS
 experimental:
   notify:
     branches:
