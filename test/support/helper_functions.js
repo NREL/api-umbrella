@@ -21,6 +21,13 @@ _.merge(global.shared, {
         return callback('Error running api-umbrella command: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
       }
 
+      if(stdout) {
+        console.info(stdout);
+      }
+      if(stderr) {
+        console.info(stderr);
+      }
+
       callback();
     });
   },

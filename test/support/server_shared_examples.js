@@ -205,19 +205,54 @@ _.merge(global.shared, {
 
     if(!_.isEmpty(newFileConfig)) {
       before(function setupFileConfig(done) {
-        this.timeout(10000);
-        shared.setFileConfigOverrides(newFileConfig, done);
+        this.timeout(20000);
+        async.series([
+          function(next) {
+            shared.setFileConfigOverrides(newFileConfig, next);
+          },
+          function(next) {
+            // Wait for the file config changes to become active before
+            // proceeding.
+            //
+            // Note: It's important to wait for the file config changes before
+            // allowing any potential database config changes to take place.
+            // This prevents race conditions when the database changes are
+            // dependent on the file config changes and the database config
+            // changes might get read in by the old nginx workers before the
+            // nginx reload processes the new file config.
+            shared.waitForConfig(next);
+          },
+        ], done);
       });
 
       after(function revertFileConfig(done) {
-        this.timeout(10000);
-        shared.revertFileConfigOverrides(done);
+        this.timeout(20000);
+        async.series([
+          function(next) {
+            shared.revertFileConfigOverrides(next);
+          },
+          function(next) {
+            // Wait for the file config revert to become active before
+            // proceeding.
+            shared.waitForConfig(next);
+          },
+        ], done);
       });
     }
 
     if(!_.isEmpty(newDbConfig)) {
       before(function setupDbConfig(done) {
-        shared.setDbConfigOverrides(newDbConfig, done);
+        this.timeout(20000);
+        async.series([
+          function(next) {
+            shared.setDbConfigOverrides(newDbConfig, next);
+          },
+          function(next) {
+            // Wait for the database config changes to become active before
+            // proceeding.
+            shared.waitForConfig(next);
+          },
+        ], done);
       });
 
       after(function revertDbConfig(done) {
@@ -226,18 +261,18 @@ _.merge(global.shared, {
         // reconnect to the primary.
         this.timeout(60000);
 
-        shared.revertDbConfigOverrides(done);
+        async.series([
+          function(next) {
+            shared.revertDbConfigOverrides(next);
+          },
+          function(next) {
+            // Wait for the database config revert to become active before
+            // proceeding.
+            shared.waitForConfig(next);
+          },
+        ], done);
       });
     }
-
-    before(function beforeWaitForConfig(done) {
-      this.timeout(10000);
-      shared.waitForConfig(done);
-    });
-    after(function afterWaitForConfig(done) {
-      this.timeout(10000);
-      shared.waitForConfig(done);
-    });
 
     beforeEach(function createDefaultApiUser(done) {
       global.autoIncrementingIpAddress = ippp.next(global.autoIncrementingIpAddress);
