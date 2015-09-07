@@ -17,7 +17,6 @@ require('./support/start_processes');
 
 require('./support/chai');
 require('./support/database_setup');
-require('./support/example_backend_app');
 require('./support/factories');
 require('./support/keepalive_test_backend_app');
 
