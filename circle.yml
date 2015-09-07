@@ -22,7 +22,6 @@ dependencies:
     # Install the unbound package that's not included with API Umbrella, but
     # needed to run tests. But prevent it from automatically starting up after
     # install at the system level with the RUNLEVEL=1 variable.
-    - sudo apt-get update
     - sudo env RUNLEVEL=1 apt-get install unbound
 
     # Use the mongo-orchestration library for providing a testable replicaset,
