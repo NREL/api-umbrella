@@ -12,6 +12,7 @@ dependencies:
     - node_modules
     - vendor
   pre:
+    - sleep 1200
     # Install all the API Umbrella software dependencies.
     - make install --debug PREFIX="$(pwd)/ci_cache/build"
     - make install_test_dependencies --debug PREFIX="$(pwd)/ci_cache/build"
