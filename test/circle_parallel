@@ -25,10 +25,6 @@ if [ $CIRCLE_NODE_INDEX -eq "0" ]; then
   cd src/api-umbrella/web-app
   PATH="../../../ci_cache/build/embedded/bin:$PATH" bundle exec rake
 
-  # Copy the test reports into place.
-  mkdir -p $CIRCLE_TEST_REPORTS/rspec
-  cp spec/reports/web-app.xml $CIRCLE_TEST_REPORTS/rspec/
-
 # Split the rest of the tests amongst the remaining nodes.
 else
   # Subtract 1 from the totals available, since the first is being used only
@@ -49,8 +45,4 @@ else
 
   # Run the integration/gatekeeper tests.
   make test PREFIX="$(pwd)/ci_cache/build" MOCHA_FILES="${NODE_FILES[@]}"
-
-  # Copy the test reports into place.
-  mkdir -p $CIRCLE_TEST_REPORTS/mocha
-  cp test/tmp/xunit.xml $CIRCLE_TEST_REPORTS/mocha/
 fi
