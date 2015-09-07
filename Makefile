@@ -6,9 +6,6 @@ unexport IRBRC
 unexport MY_RUBY_HOME
 unexport RUBY_VERSION
 
-OLD_SHELL := $(SHELL)
-SHELL = $(warning [$@ ($^) ($?)])$(OLD_SHELL)
-
 STANDARD_PATH:=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 PREFIX:=/tmp/api-umbrella-build
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
@@ -106,6 +103,7 @@ MORA:=mora-$(MORA_VERSION)
 MORA_DIGEST:=md5
 MORA_CHECKSUM:=563945c899b30099543254df84b487d7
 MORA_URL:=https://github.com/emicklei/mora/archive/$(MORA_VERSION).tar.gz
+MORA_DEPENDENCIES_CHECKSUM:=$(shell openssl md5 build/mora_glide.yaml | sed 's/^.* //')
 
 NGX_TXID_VERSION:=f1c197cb9c42e364a87fbb28d5508e486592ca42
 NGX_TXID:=ngx_txid-$(NGX_TXID_VERSION)
@@ -300,16 +298,13 @@ deps/$(LUSTACHE): deps/$(LUSTACHE).tar.gz
 deps/$(MORA).tar.gz: | deps
 	curl -L -o $@ $(MORA_URL)
 
-deps/$(MORA):
-	mkdir -p $@
-
-deps/$(MORA)/mora: deps/$(MORA).tar.gz | deps/$(MORA)
+deps/$(MORA)/mora: deps/$(MORA).tar.gz
 	openssl $(MORA_DIGEST) $< | grep $(MORA_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
 	mkdir -p $@
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
-deps/$(MORA)/.built: deps/$(MORA)/mora build/mora_glide.yaml | deps/gocode/bin/glide
+deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM): deps/$(MORA)/mora | deps/gocode/bin/glide
 	cp build/mora_glide.yaml $</glide.yaml
 	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOROOT=$(ROOT_DIR)/deps/$(GOLANG) glide gopath
 	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOROOT=$(ROOT_DIR)/deps/$(GOLANG) GOPATH=`glide gopath` GOBIN=`glide gopath`/bin glide install
@@ -441,7 +436,7 @@ dependencies: \
 	deps/$(LIBYAML)/.built \
 	deps/$(LUAROCKS) \
 	deps/$(MONGODB) \
-	deps/$(MORA)/.built \
+	deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) \
 	deps/$(OPENRESTY)/.built \
 	deps/$(PERP)/.built \
 	deps/$(RUBY)/.built \
@@ -517,7 +512,7 @@ $(PREFIX)/embedded/.installed/$(MONGODB): deps/$(MONGODB) | $(PREFIX)/embedded/.
 		$(PREFIX)/embedded/bin/mongos
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(MORA): deps/$(MORA)/.built | $(PREFIX)/embedded/.installed
+$(PREFIX)/embedded/.installed/$(MORA)-$(MORA_DEPENDENCIES_CHECKSUM): deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) | $(PREFIX)/embedded/.installed
 	cp deps/$(MORA)/mora/_vendor/bin/mora $(PREFIX)/embedded/bin/
 	touch $@
 
@@ -578,7 +573,7 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(MORA).tar.gz \
 	deps/$(MORA) \
 	deps/$(MORA)/mora \
-	deps/$(MORA)/.built \
+	deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) \
 	deps/$(NGX_DYUPS).tar.gz \
 	deps/$(NGX_DYUPS) \
 	deps/$(NGX_TXID).tar.gz \
@@ -609,7 +604,7 @@ install_dependencies: \
 	$(PREFIX)/embedded/.installed/$(LIBYAML) \
 	$(PREFIX)/embedded/.installed/$(LUAROCKS) \
 	$(PREFIX)/embedded/.installed/$(MONGODB) \
-	$(PREFIX)/embedded/.installed/$(MORA) \
+	$(PREFIX)/embedded/.installed/$(MORA)-$(MORA_DEPENDENCIES_CHECKSUM) \
 	$(PREFIX)/embedded/.installed/$(OPENRESTY) \
 	$(PREFIX)/embedded/.installed/$(PERP) \
 	$(PREFIX)/embedded/.installed/$(RUBY) \
