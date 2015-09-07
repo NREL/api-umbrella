@@ -199,11 +199,6 @@ describe('dns backend resolving', function() {
     });
 
     it('responds successfully when an ipv6 address is given', function(done) {
-      if(global.DISABLE_IPV6_TESTS) {
-        console.warn('Skipping IPv6 tests due to lack of support on current system');
-        return done();
-      }
-
       request.get('http://localhost:9080/info/ipv6/', this.options, function(error, response) {
         should.not.exist(error);
         response.statusCode.should.eql(200);

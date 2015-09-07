@@ -2,6 +2,10 @@ general:
   artifacts:
     # Keep logs after running to help debug if errors do crop up.
     - "/tmp/api-umbrella-test/var/log"
+machine:
+  pre:
+    # Enable IPv6 on CircleCI for running IPv6 integration tests.
+    - sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0 net.ipv6.conf.default.disable_ipv6=0 net.ipv6.conf.all.disable_ipv6=0
 dependencies:
   cache_directories:
     - ci_cache
