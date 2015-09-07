@@ -300,7 +300,10 @@ deps/$(LUSTACHE): deps/$(LUSTACHE).tar.gz
 deps/$(MORA).tar.gz: | deps
 	curl -L -o $@ $(MORA_URL)
 
-deps/$(MORA)/mora: deps/$(MORA).tar.gz
+deps/$(MORA):
+	mkdir -p $@
+
+deps/$(MORA)/mora: deps/$(MORA).tar.gz | deps/$(MORA)
 	openssl $(MORA_DIGEST) $< | grep $(MORA_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
 	mkdir -p $@
 	tar --strip-components 1 -C $@ -xf $<
@@ -573,6 +576,7 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(MONGODB).tar.gz \
 	deps/$(MONGODB) \
 	deps/$(MORA).tar.gz \
+	deps/$(MORA) \
 	deps/$(MORA)/mora \
 	deps/$(MORA)/.built \
 	deps/$(NGX_DYUPS).tar.gz \
