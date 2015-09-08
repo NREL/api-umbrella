@@ -1,3 +1,9 @@
+general:
+  artifacts:
+    # Keep logs after running to help debug if errors do crop up.
+    - log
+    # Keep screenshots of capybara failures for easier debugging.
+    - tmp/capybara
 machine:
   ruby:
     version: 2.1.6

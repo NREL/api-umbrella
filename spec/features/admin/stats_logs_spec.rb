@@ -48,6 +48,8 @@ describe "analytics filter logs", :js => true do
       })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+      wait_for_loading_spinners
+      page.should have_link("Download CSV", :href => /start_at=2015-01-12/)
       link = find_link("Download CSV")
       uri = Addressable::URI.parse(link[:href])
       uri.path.should eql("/admin/stats/logs.csv")
@@ -61,6 +63,8 @@ describe "analytics filter logs", :js => true do
       })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
+      wait_for_loading_spinners
+      page.should have_link("Download CSV", :href => /start_at=2015-01-13/)
       link = find_link("Download CSV")
       uri = Addressable::URI.parse(link[:href])
       uri.path.should eql("/admin/stats/logs.csv")
@@ -73,15 +77,20 @@ describe "analytics filter logs", :js => true do
         "query" => default_query,
       })
 
-      visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
+      visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+      wait_for_loading_spinners
+      page.should have_link("Download CSV", :href => /start_at=2015-01-12/)
+      page.should have_link("Download CSV", :href => /%22rules%22%3A%5B%7B/)
       click_button "Delete"   # Remove the initial filter
       click_button "Filter"
+      wait_for_loading_spinners
+      page.should have_link("Download CSV", :href => /%22rules%22%3A%5B%5D%7D/)
       link = find_link("Download CSV")
       uri = Addressable::URI.parse(link[:href])
       uri.path.should eql("/admin/stats/logs.csv")
       uri.query_values.should eql({
         "tz" => "America/Denver",
-        "start_at" => "2015-01-13",
+        "start_at" => "2015-01-12",
         "end_at" => "2015-01-18",
         "interval" => "day",
         "query" => JSON.generate({ "condition" => "AND", "rules" => [] }),
@@ -89,9 +98,13 @@ describe "analytics filter logs", :js => true do
       })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
+      wait_for_loading_spinners
+      page.should have_link("Download CSV", :href => /start_at=2015-01-13/)
       find("a", :text => /Switch to advanced filters/).click
       fill_in "search", :with => "response_status:200"
       click_button "Filter"
+      wait_for_loading_spinners
+      page.should have_link("Download CSV", :href => /response_status%3A200/)
       link = find_link("Download CSV")
       uri = Addressable::URI.parse(link[:href])
       uri.path.should eql("/admin/stats/logs.csv")
@@ -110,6 +123,7 @@ describe "analytics filter logs", :js => true do
       LogItem.gateway.refresh_index!
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+      wait_for_loading_spinners
 
       # Wait for the ajax actions to fetch the graph and tables to both
       # complete, or else the download link seems to be flakey in Capybara.
