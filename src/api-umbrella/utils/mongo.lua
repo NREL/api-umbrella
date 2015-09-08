@@ -50,7 +50,7 @@ local function perform_query(path, query_options, http_options)
 
   -- If we get an "EOF" error from Mora, this means our query occurred during
   -- the middle of a server or replicaset change. In this case, retry the
-  -- request one more time.
+  -- request a couple more times.
   --
   -- This should be less likely in mora since
   -- https://github.com/emicklei/mora/pull/29, but it's still possible for this
@@ -61,6 +61,10 @@ local function perform_query(path, query_options, http_options)
   -- in mora itself, but in the meantime, we'll retry here.
   if err and err == "mongodb error: EOF" then
     response, err = try_query(url, http_options)
+    if err and err == "mongodb error: EOF" then
+      ngx.sleep(0.5)
+      response, err = try_query(url, http_options)
+    end
   end
 
   if err then

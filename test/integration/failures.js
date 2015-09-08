@@ -79,6 +79,7 @@ describe('failures', function() {
         ], done);
       }.bind(this));
 
+      var initialPrimaryReplicaId;
       var currentPrimaryReplicaId;
       var currentPrimaryServerId;
       function waitForPrimaryChange(callback) {
@@ -93,6 +94,10 @@ describe('failures', function() {
               currentPrimaryServerId = newPrimaryServerId;
               currentPrimaryReplicaId = data['_id'];
               primaryChanged = true;
+            }
+
+            if(initialPrimaryReplicaId === undefined) {
+              initialPrimaryReplicaId = data['_id'];
             }
 
             untilCallback();
@@ -171,6 +176,20 @@ describe('failures', function() {
         // Reset the MongoDB replicaset back to the normal state after the
         // tests are finished, so we don't leave it in a strange state for
         // subsequent tests.
+        function(next) {
+          var options = {
+            json: {
+              rsParams: {
+                priority: 99,
+              },
+            }
+          };
+          request.patch('http://127.0.0.1:13089/v1/replica_sets/test-cluster/members/' + initialPrimaryReplicaId, options, function(error, response) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            next();
+          });
+        },
         function(next) {
           var options = {
             json: {
