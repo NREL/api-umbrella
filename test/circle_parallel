@@ -46,3 +46,7 @@ else
   # Run the integration/gatekeeper tests.
   make test PREFIX="$(pwd)/ci_cache/build" MOCHA_FILES="${NODE_FILES[@]}"
 fi
+
+pwd
+ls -la test/tmp/
+ls -la src/api-umbrella/web-app/spec/reports/
