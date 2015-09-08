@@ -30,7 +30,7 @@ test:
     - mkdir -p $CIRCLE_TEST_REPORTS/rspec $CIRCLE_TEST_REPORTS/mocha
     - if [ -e src/api-umbrella/web-app/spec/reports/web-app.xml ]; then cp src/api-umbrella/web-app/spec/reports/web-app.xml $CIRCLE_TEST_REPORTS/rspec/; fi
     - ls -la test/tmp/
-    - if [ -e test/tmp/xunit.xml ]; then cp test/tmp/xunit.xml $CIRCLE_TEST_REPORTS/mocha/; fi
+    - if [ -e test/tmp/xunit$CIRCLE_NODE_INDEX.xml ]; then cp test/tmp/xunit$CIRCLE_NODE_INDEX.xml $CIRCLE_TEST_REPORTS/mocha/; fi
     - find $CIRCLE_TEST_REPORTS
 experimental:
   notify:

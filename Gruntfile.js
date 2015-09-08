@@ -41,7 +41,7 @@ module.exports = function(grunt) {
         options: {
           reporter: 'mocha-multi',
           env: {
-            multi: 'spec=- xunit=test/tmp/xunit.xml',
+            multi: 'spec=- xunit=test/tmp/xunit' + process.env['CIRCLE_NODE_INDEX'] + '.xml',
           },
         }
       },
