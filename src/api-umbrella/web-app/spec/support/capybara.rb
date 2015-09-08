@@ -1,6 +1,7 @@
 require "capybara/rspec"
 require "capybara/rails"
 require "capybara/poltergeist"
+require "capybara-screenshot/rspec"
 
 Capybara.register_driver :poltergeist do |app|
   Capybara::Poltergeist::Driver.new(app, {
@@ -12,11 +13,11 @@ Capybara.javascript_driver = :poltergeist
 
 # Set a longer timeout for places like TravisCI where things can sometimes be
 # slower.
-Capybara.default_wait_time = 15
+Capybara.default_max_wait_time = 15
 
 module CapybaraFeatureHelpers
   def wait_for_ajax
-    Timeout.timeout(Capybara.default_wait_time) do
+    Timeout.timeout(Capybara.default_max_wait_time) do
       loop until finished_all_ajax_requests?
     end
   end
@@ -29,9 +30,15 @@ module CapybaraFeatureHelpers
     sleep 1
   end
 
+  def wait_for_loading_spinners
+    page.should_not have_selector(".loading-overlay .spinner")
+    page.should_not have_selector(".dataTables_wrapper .blockOverlay")
+    page.should_not have_selector(".dataTables_wrapper .blockMsg")
+  end
+
   def wait_until
     require "timeout"
-    Timeout.timeout(Capybara.default_wait_time) do
+    Timeout.timeout(Capybara.default_max_wait_time) do
       sleep(0.1) until(value = yield) # rubocop:disable Lint/AssignmentInCondition
       value
     end

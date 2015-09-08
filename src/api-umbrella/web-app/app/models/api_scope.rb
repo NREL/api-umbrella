@@ -19,7 +19,7 @@ class ApiScope
   validates :host,
     :presence => true,
     :format => {
-      :with => CommonValidations::HOST_FORMAT,
+      :with => CommonValidations::HOST_FORMAT_WITH_WILDCARD,
       :message => :invalid_host_format,
     }
   validates :path_prefix,

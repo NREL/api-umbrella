@@ -224,7 +224,11 @@ group :development, :test do
   gem "coveralls", "~> 0.8.0", :require => false
 
   # Real browser testing
-  gem "capybara", "~> 2.4.4"
+  gem "capybara", "~> 2.5.0"
+
+  # Take screenshots and save the HTML content whenever capybara errors occur
+  # for better debugging.
+  gem "capybara-screenshot", "~> 1.0.11"
 
   # Headless webkit for capybara
   gem "poltergeist", "~> 1.6.0"

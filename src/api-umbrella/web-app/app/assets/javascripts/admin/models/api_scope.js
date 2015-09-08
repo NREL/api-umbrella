@@ -15,7 +15,7 @@ Admin.ApiScope = Ember.Model.extend(Ember.Validations.Mixin, {
     host: {
       presence: true,
       format: {
-        with: CommonValidations.host_format,
+        with: CommonValidations.host_format_with_wildcard,
         message: polyglot.t('errors.messages.invalid_host_format'),
       },
     },
