@@ -49,4 +49,4 @@ fi
 
 pwd
 ls -la test/tmp/
-ls -la src/api-umbrella/web-app/spec/reports/
+find src/api-umbrella/web-app/spec
