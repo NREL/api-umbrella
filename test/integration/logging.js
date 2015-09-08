@@ -300,7 +300,10 @@ describe('logging', function() {
         record.request_user_agent.should.eql('curl/7.37.1');
         record.request_user_agent_family.should.eql('cURL');
         record.request_user_agent_type.should.eql('Library');
-        record.response_age.should.eql(20);
+        // The age might be 1 second higher than the original response if the
+        // response happens right on the boundary of a second.
+        record.response_age.should.be.gte(20);
+        record.response_age.should.be.lte(21);
         record.response_content_type.should.eql('text/plain; charset=utf-8');
         record.response_server.should.eql('openresty');
         record.response_size.should.be.a('number');
