@@ -118,8 +118,10 @@ sub vcl_backend_fetch {
 
   # Restore the original Authorization header we temporarily moved in vcl_recv
   # to allow for caching of some requests with Authorization headers.
-  set bereq.http.Authorization = bereq.http.X-Api-Umbrella-Orig-Authorization;
-  unset bereq.http.X-Api-Umbrella-Orig-Authorization;
+  if(bereq.http.X-Api-Umbrella-Orig-Authorization) {
+    set bereq.http.Authorization = bereq.http.X-Api-Umbrella-Orig-Authorization;
+    unset bereq.http.X-Api-Umbrella-Orig-Authorization;
+  }
 }
 
 sub vcl_backend_response {
