@@ -68,6 +68,19 @@ sub vcl_recv {
   if(req.http.X-Refresh-Cache && client.ip ~ internal_networks) {
     set req.hash_always_miss = true;
   }
+
+  # Allow for caching of requests that have an "Authorization" header if it's
+  # our gatekeeper layer that has added that header. Since this type of
+  # Authorization header is applied across all requests and is just for setting
+  # up trust between API Umbrella and an API backend, caching these responses
+  # is valid and expected.
+  if(req.http.X-Api-Umbrella-Allow-Authorization-Caching == "true") {
+    # Temporarily shift the Authorization header elsewhere and wipe it, so the
+    # default vcl_recv logic will consider this a cacheable request.
+    set req.http.X-Api-Umbrella-Orig-Authorization = req.http.Authorization;
+    unset req.http.Authorization;
+    unset req.http.X-Api-Umbrella-Allow-Authorization-Caching;
+  }
 }
 
 sub vcl_hash {
@@ -102,6 +115,11 @@ sub vcl_backend_fetch {
   # http://comments.gmane.org/gmane.comp.web.varnish.misc/3621
   # http://comments.gmane.org/gmane.comp.web.varnish.dev/2352
   set bereq.http.Connection = "Close";
+
+  # Restore the original Authorization header we temporarily moved in vcl_recv
+  # to allow for caching of some requests with Authorization headers.
+  set bereq.http.Authorization = bereq.http.X-Api-Umbrella-Orig-Authorization;
+  unset bereq.http.X-Api-Umbrella-Orig-Authorization;
 }
 
 sub vcl_backend_response {

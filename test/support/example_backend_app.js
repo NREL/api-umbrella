@@ -1,6 +1,7 @@
 'use strict';
 
-var bodyParser = require('body-parser'),
+var basicAuth = require('basic-auth'),
+    bodyParser = require('body-parser'),
     compression = require('compression'),
     express = require('express'),
     fs = require('fs'),
@@ -37,6 +38,14 @@ app.get('/hello', function(req, res) {
 
 app.all('/info/*', function(req, res) {
   var rawUrl = req.protocol + '://' + req.hostname + req.url;
+  var basicAuthUsername;
+  var basicAuthPassword;
+  var credentials = basicAuth(req);
+  if(credentials) {
+    basicAuthUsername = credentials.name;
+    basicAuthPassword = credentials.pass;
+  }
+
   res.set('X-Received-Method', req.method);
   res.json({
     method: req.method,
@@ -44,6 +53,8 @@ app.all('/info/*', function(req, res) {
     local_interface_ip: req.socket.localAddress,
     raw_url: rawUrl,
     url: url.parse(rawUrl, true),
+    basic_auth_username: basicAuthUsername,
+    basic_auth_password: basicAuthPassword,
   });
 });
 

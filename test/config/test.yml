@@ -216,6 +216,17 @@ apis:
         backend_prefix: /info/
     settings:
       require_https: required_return_redirect
+  - _id: add-auth-header
+    frontend_host: localhost
+    backend_host: localhost
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /add-auth-header/
+        backend_prefix: /
+    settings:
+      http_basic_auth: somebody:secret
   - _id: example
     frontend_host: localhost
     backend_host: localhost
