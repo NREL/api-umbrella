@@ -3,9 +3,9 @@ class Contact
   include ActiveModel::MassAssignmentSecurity
   include ActiveModel::Validations
 
-  attr_accessor :name, :email, :message
+  attr_accessor :name, :email, :api, :subject, :message
 
-  attr_accessible :name, :email, :message
+  attr_accessible :name, :email, :api, :subject, :message
 
   validates :name,
     :presence => { :message => "Provide your first name." }
@@ -16,6 +16,10 @@ class Contact
       :allow_blank => true,
       :message => "Provide a valid email address.",
     }
+  validates :api,
+    :presence => { :message => "Provide the API." }
+  validates :subject,
+    :presence => { :message => "Provide a subject." }
   validates :message,
     :presence => { :message => "Provide a message." }
 
