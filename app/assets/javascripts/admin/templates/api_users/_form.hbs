@@ -26,7 +26,7 @@
         <div class="control-label">API Key</div>
         <div class="controls">
           {{#if apiKey}}
-            <span class="api-key">{{apiKey}}</span><small class="api-key-hides-at-message"> (full API key will disappear <span {{bind-attr data-livestamp="apiKeyHidesAt"}}></span>)</small>
+            <span class="api-key" {{bind-attr data-api-key='apiKey'}} {{bind-attr data-api-key-preview='apiKeyPreview'}}>{{apiKeyPreview}}</span> <a href="#" {{action 'apiKeyRevealToggle' target='view.parentView'}} class="api-key-reveal-toggle">{{t 'admin.reveal_action'}}</a>
           {{else}}
             <span class="api-key">{{apiKeyPreview}}</span>
           {{/if}}

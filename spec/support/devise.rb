@@ -1,12 +1,9 @@
 module DeviseControllerMacros
   def login_admin
-    let(:current_admin) do
-      FactoryGirl.create(:admin)
-    end
-
     before(:each) do
+      @current_admin = if(defined?(current_admin)) then current_admin else FactoryGirl.create(:admin) end
       @request.env["devise.mapping"] = Devise.mappings[:admin]
-      sign_in current_admin
+      sign_in @current_admin
     end
   end
 end

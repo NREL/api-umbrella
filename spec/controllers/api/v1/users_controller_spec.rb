@@ -229,11 +229,49 @@ describe Api::V1::UsersController do
       data["recordsFiltered"].should eql(user_count)
       data["data"].length.should eql(2)
     end
+
+    it "only returns the api key preview and not the full api key" do
+      api_user = FactoryGirl.create(:api_user)
+
+      admin_token_auth(@admin)
+      get(:index, :format => "json")
+      response.status.should eql(200)
+
+      data = MultiJson.load(response.body)
+      user = data["data"].find { |u| u["id"] == api_user.id }
+      user.keys.should_not include("api_key")
+      user.keys.should_not include("api_key_hides_at")
+      user["api_key_preview"].should eql("#{api_user.api_key[0, 6]}...")
+    end
   end
 
   describe "GET show" do
     before(:each) do
       @api_user = FactoryGirl.create(:api_user, :created_by => @admin.id)
+    end
+
+    shared_examples "allowed to view full api key" do
+      it "returns api key preview, the full api key, and a hides at date" do
+        get(:show, :id => api_user.id, :format => "json")
+        response.status.should eql(200)
+
+        data = MultiJson.load(response.body)
+        data["user"]["api_key"].should eql(api_user.api_key)
+        data["user"]["api_key_hides_at"].should eql((api_user.created_at + 2.weeks).iso8601)
+        data["user"]["api_key_preview"].should eql("#{api_user.api_key[0, 6]}...")
+      end
+    end
+
+    shared_examples "not allowed to view full api key" do
+      it "returns only the api key preview, but not the full api key or hides at date" do
+        get(:show, :id => api_user.id, :format => "json")
+        response.status.should eql(200)
+
+        data = MultiJson.load(response.body)
+        data["user"].keys.should_not include("api_key")
+        data["user"].keys.should_not include("api_key_hides_at")
+        data["user"]["api_key_preview"].should eql("#{api_user.api_key[0, 6]}...")
+      end
     end
 
     let(:params) do
@@ -285,42 +323,105 @@ describe Api::V1::UsersController do
       data["user"].keys.sort.should eql(expected_keys.sort)
     end
 
-    it "includes the full api key for newly created records by the current admin" do
-      @api_user = FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now)
+    describe "api key" do
+      describe "superuser admin is logged in" do
+        let(:current_admin) { FactoryGirl.create(:admin) }
+        login_admin
 
-      admin_token_auth(@admin)
-      get :show, params
+        describe "accounts without roles" do
+          describe "new accounts they created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now - 2.weeks + 5.minutes), :roles => nil) }
+            it_behaves_like "allowed to view full api key"
+          end
 
-      data = MultiJson.load(response.body)
-      data["user"]["api_key"].should eql(@api_user.api_key)
-      data["user"]["api_key_hides_at"].should eql((@api_user.created_at + 10.minutes).iso8601)
-      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0, 6]}...")
+          describe "old accounts they created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now - 2.weeks - 5.minutes), :roles => nil) }
+            it_behaves_like "allowed to view full api key"
+          end
+
+          describe "new accounts other admins created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => nil) }
+            it_behaves_like "allowed to view full api key"
+          end
+
+          describe "old accounts other admins created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => nil) }
+            it_behaves_like "allowed to view full api key"
+          end
+        end
+
+        describe "accounts with roles" do
+          describe "new accounts they created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => ["foo"]) }
+            it_behaves_like "allowed to view full api key"
+          end
+
+          describe "old accounts they created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => ["foo"]) }
+            it_behaves_like "allowed to view full api key"
+          end
+
+          describe "new accounts other admins created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => ["foo"]) }
+            it_behaves_like "allowed to view full api key"
+          end
+
+          describe "old accounts other admins created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => ["foo"]) }
+            it_behaves_like "allowed to view full api key"
+          end
+        end
+      end
+
+      describe "limited admin is logged in" do
+        let(:current_admin) { FactoryGirl.create(:limited_admin) }
+        login_admin
+
+        describe "accounts without roles" do
+          describe "new accounts they created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now - 2.weeks + 5.minutes), :roles => nil) }
+            it_behaves_like "allowed to view full api key"
+          end
+
+          describe "old accounts they created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now - 2.weeks - 5.minutes), :roles => nil) }
+            it_behaves_like "not allowed to view full api key"
+          end
+
+          describe "new accounts other admins created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => nil) }
+            it_behaves_like "allowed to view full api key"
+          end
+
+          describe "old accounts other admins created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => nil) }
+            it_behaves_like "not allowed to view full api key"
+          end
+        end
+
+        describe "accounts with roles" do
+          describe "new accounts they created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => ["foo"]) }
+            it_behaves_like "allowed to view full api key"
+          end
+
+          describe "old accounts they created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => ["foo"]) }
+            it_behaves_like "not allowed to view full api key"
+          end
+
+          describe "new accounts other admins created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => ["foo"]) }
+            it_behaves_like "not allowed to view full api key"
+          end
+
+          describe "old accounts other admins created" do
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => ["foo"]) }
+            it_behaves_like "not allowed to view full api key"
+          end
+        end
+      end
     end
-
-    it "omits the full api key for older records created by the current admin" do
-      @api_user = FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => (Time.now - 11.minutes))
-
-      admin_token_auth(@admin)
-      get :show, params
-
-      data = MultiJson.load(response.body)
-      data["user"].keys.should_not include("api_key")
-      data["user"].keys.should_not include("api_key_hides_at")
-      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0, 6]}...")
-    end
-
-    it "omits the full api key newly created records by another admin" do
-      @api_user = FactoryGirl.create(:api_user, :created_by => @google_admin.id, :created_at => Time.now)
-
-      admin_token_auth(@admin)
-      get :show, params
-
-      data = MultiJson.load(response.body)
-      data["user"].keys.should_not include("api_key")
-      data["user"].keys.should_not include("api_key_hides_at")
-      data["user"]["api_key_preview"].should eql("#{@api_user.api_key[0, 6]}...")
-    end
-
   end
 
   describe "POST create" do

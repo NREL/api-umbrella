@@ -20,7 +20,7 @@ if(current_admin)
              :registration_referer,
              :registration_origin
 
-  if(@api_user.created_by == current_admin.id && Time.now < @api_user.api_key_hides_at)
+  if(current_admin.superuser? || (@api_user.roles.blank? && Time.now < @api_user.api_key_hides_at) || (@api_user.created_by == current_admin.id && Time.now < @api_user.api_key_hides_at))
     attributes :api_key
     attributes :api_key_hides_at
   end
