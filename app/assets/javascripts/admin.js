@@ -28,7 +28,6 @@
 //= require vendor/jquery.slugify
 //= require moment
 //= require bootstrap-daterangepicker
-//= require livestampjs/livestamp
 //= require numeral
 //= require vendor/jquery.blockUI
 //= require vendor/jQuery-QueryBuilder/query-builder.standalone.js
