@@ -114,6 +114,7 @@ describe('formatted error responses', function() {
             error_data: {
               api_key_missing: {
                 embedded: 'base_url: {{base_url}} signup_url: {{signup_url}} contact_url: {{contact_url}}',
+                embedded_legacy: 'baseUrl: {{baseUrl}} signupUrl: {{signupUrl}} contactUrl: {{contactUrl}}',
               },
             },
             error_templates: {
@@ -124,7 +125,8 @@ describe('formatted error responses', function() {
                 '"signupUrl": {{signupUrl}},' +
                 '"contact_url": {{contact_url}},' +
                 '"contactUrl": {{contactUrl}},' +
-                '"embedded": {{embedded}} ' +
+                '"embedded": {{embedded}},' +
+                '"embedded_legacy": {{embedded_legacy}} ' +
               '}',
             },
           },
@@ -184,6 +186,14 @@ describe('formatted error responses', function() {
       request.get('http://localhost:9333/embedded.json', function(error, response, body) {
         var data = JSON.parse(body);
         data.embedded.should.eql('base_url: http://localhost:9333 signup_url: http://localhost:9333 contact_url: http://localhost:9333/contact/');
+        done();
+      });
+    });
+
+    it('substitutes legacy camel case variables embedded inside of other variables', function(done) {
+      request.get('http://localhost:9333/embedded_legacy.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.embedded_legacy.should.eql('baseUrl: http://localhost:9333 signupUrl: http://localhost:9333 contactUrl: http://localhost:9333/contact/');
         done();
       });
     });
