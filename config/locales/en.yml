@@ -204,6 +204,18 @@ en:
           Error Code,Error Message
           {{code}},{{message}}
           ```
+        error_data_common: Common (All Errors)
+        error_data_common_tooltip_markdown: |-
+          <a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to all error templates.
+
+          Default data:
+
+          ```
+          signup_url: {{base_url}}
+          contact_url: "{{base_url}}/contact/"
+          ```
+
+          `{{base_url}}` is a special variable that contains a reference to the current root URL of the domain being accessed (with no trailing slash). For example, if the API URL being accessed is `https://www.example.com/foo/bar.json` then `{{base_url}}` would be `https://www.example.com`.
         error_data_api_key_missing: API Key Missing
         error_data_api_key_missing_tooltip_markdown: |-
           <a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.
@@ -213,7 +225,7 @@ en:
           ```
           status_code: 403
           code: API_KEY_MISSING
-          message: No api_key was supplied. Get one at {{signupUrl}}
+          message: No api_key was supplied. Get one at {{signup_url}}
           ```
         error_data_api_key_invalid: API Key Invalid
         error_data_api_key_invalid_tooltip_markdown: |-
@@ -224,9 +236,8 @@ en:
           ```
           status_code: 403
           code: API_KEY_INVALID
-          message: An invalid api_key was supplied. Get one at {{signupUrl}}
+          message: An invalid api_key was supplied. Get one at {{signup_url}}
           ```
-
         error_data_api_key_disabled: API Key Disabled
         error_data_api_key_disabled_tooltip_markdown: |-
           <a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.
@@ -236,7 +247,7 @@ en:
           ```
           status_code: 403
           code: API_KEY_DISABLED
-          message: The api_key supplied has been disabled. Contact us at {{contactUrl}} for assistance
+          message: The api_key supplied has been disabled. Contact us at {{contact_url}} for assistance
           ```
         error_data_api_key_unauthorized: API Key Unauthorized
         error_data_api_key_unauthorized_tooltip_markdown: |-
@@ -247,7 +258,7 @@ en:
           ```
           status_code: 403
           code: API_KEY_UNAUTHORIZED
-          message: The api_key supplied is not authorized to access the given service. Contact us at {{contactUrl}} for assistance
+          message: The api_key supplied is not authorized to access the given service. Contact us at {{contact_url}} for assistance
           ```
         error_data_over_rate_limit: Over Rate Limit
         error_data_over_rate_limit_tooltip_markdown: |-
@@ -258,8 +269,21 @@ en:
           ```
           status_code: 429
           code: OVER_RATE_LIMIT
-          message: You have exceeded your rate limit. Try again later or contact us at {{contactUrl}} for assistance
+          message: You have exceeded your rate limit. Try again later or contact us at {{contact_url}} for assistance
           ```
+        error_data_https_required: HTTPS Required
+        error_data_https_required_tooltip_markdown: |-
+          <a href="http://en.wikipedia.org/wiki/YAML" target="_blank">YAML</a> definition of the Handlebars variables available to the error templates.
+
+          Default data:
+
+          ```
+          status_code: 400
+          code: HTTPS_REQUIRED
+          message: "Requests must be made over HTTPS. Try accessing the API at: {{https_url}}"
+          ```
+
+          `{{https_url}}` is a special variable that is available within the context of the HTTPS requirement error that contains a copy of the current URL with the URL schemed switched to HTTPS.
         allowed_ips_tooltip_markdown: |-
           Restrict this API key so that it may only be used from the specified IP addresses.
 

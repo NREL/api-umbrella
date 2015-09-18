@@ -121,7 +121,7 @@
 
       {{#with settings}}
         {{#with errorTemplates}}
-          <h4>Error Templates</h4>
+          <h4>{{t 'mongoid.attributes.api/settings.error_templates'}}</h4>
           {{input json as='ace'
             class='row-fluid'
             labelTranslation='admin.api.settings.error_templates_json'
@@ -142,7 +142,13 @@
         {{/with}}
 
         {{#with errorDataYamlStrings}}
-          <h4>Error Data</h4>
+          <h4>{{t 'mongoid.attributes.api/settings.error_data'}}</h4>
+
+          {{input common as='ace'
+            class='row-fluid'
+            labelTranslation='admin.api.settings.error_data_common'
+            tooltipTranslation='admin.api.settings.error_data_common_tooltip_markdown'
+            inputConfig='data-ace-mode:yaml'}}
 
           {{input api_key_missing as='ace'
             class='row-fluid'
@@ -172,6 +178,12 @@
             class='row-fluid'
             labelTranslation='admin.api.settings.error_data_over_rate_limit'
             tooltipTranslation='admin.api.settings.error_data_over_rate_limit_tooltip_markdown'
+            inputConfig='data-ace-mode:yaml'}}
+
+          {{input https_required as='ace'
+            class='row-fluid'
+            labelTranslation='admin.api.settings.error_data_https_required'
+            tooltipTranslation='admin.api.settings.error_data_https_required_tooltip_markdown'
             inputConfig='data-ace-mode:yaml'}}
         {{/with}}
       {{/with}}

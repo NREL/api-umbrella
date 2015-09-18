@@ -288,11 +288,13 @@ describe "apis", :js => true do
     fill_in "JSON Template", :with => '{"foo":"bar"}'
     fill_in "XML Template", :with => "<foo>bar</foo>"
     fill_in "CSV Template", :with => "foo,bar\nbar,foo"
+    fill_in "Common (All Errors)", :with => "foo0: bar0\nbar0: foo0"
     fill_in "API Key Missing", :with => "foo1: bar1\nbar1: foo1"
     fill_in "API Key Invalid", :with => "foo2: bar2\nbar2: foo2"
     fill_in "API Key Disabled", :with => "foo3: bar3\nbar3: foo3"
     fill_in "API Key Unauthorized", :with => "foo4: bar4\nbar4: foo4"
     fill_in "Over Rate Limit", :with => "foo5: bar5\nbar5: foo5"
+    fill_in "HTTPS Required", :with => "foo6: bar6\nbar6: foo6"
 
     click_button("Save")
     page.should have_content("Successfully saved")
