@@ -1,3 +1,5 @@
+server_names_hash_bucket_size {{_server_names_hash_bucket_size}};
+
 {{#each hosts}}
 server {
   listen {{../http_port}}{{#if default}} default_server{{/if}};
