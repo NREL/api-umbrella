@@ -228,6 +228,25 @@ describe('proxying', function() {
         done();
       });
     });
+
+    // I'm not exactly sure why, but when we set server_names_hash_bucket_size
+    // to 128, it actually only allows hostnames 110 characters long. Perhaps
+    // something to investigate or better understand, but in the meantime
+    // documenting current behavior.
+    it('supports hostname lengths up to 110 characters', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+        },
+      });
+
+      request.get('http://localhost:9080/long-host-info/', options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.headers.host.length.should.eql(110);
+        done();
+      });
+    });
   });
 
   // Ensure basic HTTP requests of all HTTP methods work with the entire stack

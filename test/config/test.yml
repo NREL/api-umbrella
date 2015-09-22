@@ -281,6 +281,15 @@ apis:
     url_matches:
       - frontend_prefix: /wildcard-dot-info/
         backend_prefix: /info/
+  - _id: long-frontend-host
+    frontend_host: abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij
+    backend_host: abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij
+    servers:
+      - host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - frontend_prefix: /long-host-info/
+        backend_prefix: /info/
   - _id: wildcard-frontend-host
     frontend_host: "*"
     backend_host: localhost
