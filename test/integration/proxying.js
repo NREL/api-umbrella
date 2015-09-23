@@ -90,7 +90,25 @@ describe('proxying', function() {
         ],
       },
       {
-        _id: 'example',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/add-auth-header/',
+            backend_prefix: '/',
+          },
+        ],
+        settings: {
+          http_basic_auth: 'somebody:secret',
+        },
+      },
+      {
         frontend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
         backend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
         servers: [

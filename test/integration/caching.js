@@ -8,7 +8,45 @@ var _ = require('lodash'),
     request = require('request');
 
 describe('caching', function() {
-  shared.runServer();
+  shared.runServer({
+    apis: [
+      {
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/add-auth-header/',
+            backend_prefix: '/',
+          },
+        ],
+        settings: {
+          http_basic_auth: 'somebody:secret',
+        },
+      },
+      {
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/',
+            backend_prefix: '/',
+          },
+        ],
+      },
+    ],
+  });
 
   beforeEach(function createUser(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
