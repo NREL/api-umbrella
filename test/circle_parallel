@@ -9,28 +9,20 @@ set -x
 #
 # See: https://circleci.com/docs/parallel-manual-setup
 
-# Make sure we have at least 2 nodes, or our logic to dedicate one to the Rails
-# suite won't leave any nodes for the integration tests.
-if [ $CIRCLE_NODE_TOTAL -lt "2" ]; then
-  echo "CIRCLE_NODE_TOTAL is expected to be 2 or greater for this parallel testing script to work."
-  exit 1
-fi
+# If we have multiple test node, split the tests among all the nodes except the
+# first (the first is dedicated to the Rails tests).
+#
+# If we don't have multiple nodes, run all the tests on the single node
+if [ $CIRCLE_NODE_INDEX -gt "1" ] || [ $CIRCLE_NODE_TOTAL -lt "2" ]; then
+  MOCHA_NODE_TOTAL=$CIRCLE_NODE_TOTAL
+  MOCHA_NODE_INDEX=$CIRCLE_NODE_INDEX
 
-# Run the Rails tests on the first node.
-if [ $CIRCLE_NODE_INDEX -eq "0" ]; then
-  # Start the version of elasticsearch bundled with API Umbrella.
-  nohup bash -c "$(pwd)/ci_cache/build/embedded/bin/elasticsearch &"
-
-  # Run the web-app tests
-  cd src/api-umbrella/web-app
-  PATH="../../../ci_cache/build/embedded/bin:$PATH" bundle exec rake
-
-# Split the rest of the tests amongst the remaining nodes.
-else
-  # Subtract 1 from the totals available, since the first is being used only
-  # for Rails.
-  ((MOCHA_NODE_TOTAL=CIRCLE_NODE_TOTAL-1)) || true
-  ((MOCHA_NODE_INDEX=CIRCLE_NODE_INDEX-1)) || true
+  if [ $CIRCLE_NODE_TOTAL -gt "1" ]; then
+    # Subtract 1 from the totals available, since the first is being used only
+    # for Rails.
+    ((MOCHA_NODE_TOTAL=MOCHA_NODE_TOTAL-1)) || true
+    ((MOCHA_NODE_INDEX=MOCHA_NODE_INDEX-1)) || true
+  fi
 
   # Split the test files into even groups depending on how many nodes are
   # available.
@@ -45,4 +37,14 @@ else
 
   # Run the integration/gatekeeper tests.
   make test PREFIX="$(pwd)/ci_cache/build" MOCHA_FILES="${NODE_FILES[@]}"
+fi
+
+# Run the Rails tests on the first node.
+if [ $CIRCLE_NODE_INDEX -eq "0" ]; then
+  # Start the version of elasticsearch bundled with API Umbrella.
+  nohup bash -c "$(pwd)/ci_cache/build/embedded/bin/elasticsearch &"
+
+  # Run the web-app tests
+  cd src/api-umbrella/web-app
+  PATH="../../../ci_cache/build/embedded/bin:$PATH" bundle exec rake
 fi
