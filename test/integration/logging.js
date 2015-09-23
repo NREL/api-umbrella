@@ -5,6 +5,7 @@ require('../test_helper');
 var _ = require('lodash'),
     async = require('async'),
     Curler = require('curler').Curler,
+    crypto = require('crypto'),
     Factory = require('factory-lady'),
     request = require('request');
 
@@ -342,6 +343,67 @@ describe('logging', function() {
         record.response_transfer_encoding.should.eql('chunked');
 
         done();
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs the geocoded ip related fields', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-For': '8.8.8.8',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_ip.should.eql('8.8.8.8');
+        record.request_ip_country.should.eql('US');
+        record.request_ip_region.should.eql('CA');
+        record.request_ip_city.should.eql('Mountain View');
+        record.request_ip_location.should.eql({
+          lat: 37.386,
+          lon: -122.0838,
+        });
+
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('stores the most recently seen geocode for city in a separate index', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-For': '8.8.8.8',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error) {
+        should.not.exist(error);
+        global.elasticsearch.get({
+          index: 'api-umbrella',
+          type: 'city',
+          id: crypto.createHash('sha256').update('US-CA-Mountain View').digest('hex'),
+        }, function(error, res) {
+          should.not.exist(error);
+          _.omit(res._source, 'updated_at').should.eql({
+            country: 'US',
+            region: 'CA',
+            city: 'Mountain View',
+            location: {
+              lat: 37.386,
+              lon: -122.0838,
+            },
+          });
+          done();
+        });
       }.bind(this));
     }.bind(this));
   });
