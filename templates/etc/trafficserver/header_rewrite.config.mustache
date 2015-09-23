@@ -23,11 +23,23 @@ rm-header Surrogate-Control
 add-header Cache-Control %{HEADER:X-Api-Umbrella-Orig-Cache-Control}
 rm-header X-Api-Umbrella-Orig-Cache-Control [L]
 
-# Force requests that pass along an "Authorization" header to never be cached
-# (since we don't want to accidentally cache a protected response). Varnish
-# defaults to this behavior, but TrafficServer does not, so this little rewrite
-# force that non-cacheable behavior here.
-cond %{READ_RESPONSE_HDR_HOOK}
-cond %{CLIENT-HEADER:Authorization} /.+/
-rm-header Cache-Control
-add-header Cache-Control "max-age=0, private, must-revalidate" [L]
+# Allow for caching of requests that have an "Authorization" header if it's
+# our gatekeeper layer that has added that header. Since this type of
+# Authorization header is applied across all requests and is just for setting
+# up trust between API Umbrella and an API backend, caching these responses
+# is valid and expected.
+#
+# First, shift the Authorization header onto a temporary header so
+# TrafficServer's default logic to prevent caching of requests with the
+# Authorization header doesn't kick in.
+cond %{READ_REQUEST_HDR_HOOK}
+cond %{CLIENT-HEADER:X-Api-Umbrella-Allow-Authorization-Caching} =true
+add-header X-Api-Umbrella-Orig-Authorization %{CLIENT-HEADER:Authorization}
+rm-header Authorization
+rm-header X-Api-Umbrella-Allow-Authorization-Caching
+# Second, shift the real Authorization header back into place when we actually
+# need to send an uncached request to the backend.
+cond %{SEND_REQUEST_HDR_HOOK}
+cond %{CLIENT-HEADER:X-Api-Umbrella-Orig-Authorization} /.+/
+add-header Authorization %{CLIENT-HEADER:X-Api-Umbrella-Orig-Authorization}
+rm-header X-Api-Umbrella-Orig-Authorization

@@ -61,3 +61,7 @@ if ($banned_ip) {
 if ($banned_user_agent) {
   rewrite .* /api-umbrella-banned last;
 }
+
+# Clear any headers used inside API Umbrella that should not be possible to set
+# by an external client.
+more_clear_input_headers X-Api-Umbrella-Allow-Authorization-Caching;
