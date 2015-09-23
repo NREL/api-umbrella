@@ -54,6 +54,8 @@ en:
     reorder: Reorder
     check_all: Check all
     uncheck_all: Uncheck all
+    reveal_action: (reveal)
+    hide_action: (hide)
     nav:
       admin_accounts: Admin Accounts
       admin_groups: Admin Groups

@@ -141,7 +141,7 @@ class ApiUser
   end
 
   def api_key_hides_at
-    @api_key_hides_at ||= self.created_at + 10.minutes
+    @api_key_hides_at ||= self.created_at + 2.weeks
   end
 
   private

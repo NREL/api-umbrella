@@ -196,7 +196,6 @@ group :assets do
   gem "rails-assets-jquery", "~> 1.11.2"
   gem "rails-assets-jquery-bbq-deparam", "~> 1.2.1"
   gem "rails-assets-jstz-detect", "~> 1.0.5"
-  gem "rails-assets-livestampjs", "~> 1.1.2"
   gem "rails-assets-lodash", "~> 2.4.1"
   gem "rails-assets-moment", "~> 2.8.2"
   gem "rails-assets-numeral", "~> 1.5.3"

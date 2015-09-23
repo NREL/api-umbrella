@@ -42,8 +42,8 @@ describe "api users form", :js => true do
     end
   end
 
-  describe "api key in the save notification" do
-    it "shows the api key when creating a new account" do
+  describe "api key visibility" do
+    it "shows the api key in the save notification when creating a new account" do
       visit "/admin/#/api_users/new"
 
       fill_in "E-mail", :with => "example@example.com"
@@ -58,30 +58,36 @@ describe "api users form", :js => true do
       page.should have_content(user.api_key)
     end
 
-    it "shows the api key when editing a recently created account" do
-      user = FactoryGirl.create(:api_user, :created_by => @current_admin.id)
+    it "allows the full api key to be revealed when the admin has permissions" do
+      user = FactoryGirl.create(:api_user, :created_by => @current_admin.id, :created_at => Time.now - 2.weeks + 5.minutes)
       visit "/admin/#/api_users/#{user.id}/edit"
 
-      fill_in "Last Name", :with => "Updated"
-      click_button("Save")
-
-      page.should have_content("Successfully saved the user")
-      user.reload
-      user.last_name.should eql("Updated")
+      page.should have_content(user.api_key_preview)
+      page.should_not have_content(user.api_key)
+      page.should have_link("(reveal)")
+      click_link("(reveal)")
       page.should have_content(user.api_key)
+      page.should_not have_content(user.api_key_preview)
+      page.should_not have_link("(reveal)")
+      page.should have_link("(hide)")
+      click_link("(hide)")
+      page.should have_content(user.api_key_preview)
+      page.should_not have_content(user.api_key)
+      page.should have_link("(reveal)")
     end
 
-    it "hides the api key when editing an old account" do
-      user = FactoryGirl.create(:api_user, :created_by => @current_admin.id, :created_at => Time.now - 15.minutes)
-      visit "/admin/#/api_users/#{user.id}/edit"
+    describe "limited admin is logged in" do
+      let(:current_admin) { FactoryGirl.create(:limited_admin) }
+      login_admin
 
-      fill_in "Last Name", :with => "Updated2"
-      click_button("Save")
+      it "hides the full api key when the admin does not have permissions" do
+        user = FactoryGirl.create(:api_user, :created_by => @current_admin.id, :created_at => (Time.now - 2.weeks - 5.minutes))
+        visit "/admin/#/api_users/#{user.id}/edit"
 
-      page.should have_content("Successfully saved the user")
-      user.reload
-      user.last_name.should eql("Updated2")
-      page.should_not have_content(user.api_key)
+        page.should have_content(user.api_key_preview)
+        page.should_not have_content(user.api_key)
+        page.should_not have_link("(reveal)")
+      end
     end
   end
 
