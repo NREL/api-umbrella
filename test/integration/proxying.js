@@ -91,6 +91,23 @@ describe('proxying', function() {
       },
       {
         _id: 'example',
+        frontend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+        backend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/long-host-info/',
+            backend_prefix: '/info/',
+          },
+        ],
+      },
+      {
+        _id: 'example',
         frontend_host: 'localhost',
         backend_host: 'localhost',
         servers: [
@@ -328,6 +345,25 @@ describe('proxying', function() {
         });
       });
     }
+
+    // I'm not exactly sure why, but when we set server_names_hash_bucket_size
+    // to 128, it actually only allows hostnames 110 characters long. Perhaps
+    // something to investigate or better understand, but in the meantime
+    // documenting current behavior.
+    it('supports hostname lengths up to 110 characters', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+        },
+      });
+
+      request.get('http://localhost:9080/long-host-info/', options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.headers.host.length.should.eql(110);
+        done();
+      });
+    });
   });
 
   // Ensure basic HTTP requests of all HTTP methods work with the entire stack
@@ -1432,6 +1468,35 @@ describe('proxying', function() {
           });
         },
       ], done);
+    });
+  });
+
+  describe('http basic auth', function() {
+    it('passes the original http basic auth headers to the api backend', function(done) {
+      request.get('http://foo:bar@localhost:9080/info/', this.options, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.basic_auth_username.should.eql('foo');
+        data.basic_auth_password.should.eql('bar');
+        done();
+      });
+    });
+
+    it('passes http basic auth added at the proxy layer to the api backend', function(done) {
+      request.get('http://localhost:9080/add-auth-header/info/', this.options, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.basic_auth_username.should.eql('somebody');
+        data.basic_auth_password.should.eql('secret');
+        done();
+      });
+    });
+
+    it('replaces http basic auth headers passed by the client when the api backend forces its own http basic auth', function(done) {
+      request.get('http://foo:bar@localhost:9080/add-auth-header/info/', this.options, function(error, response, body) {
+        var data = JSON.parse(body);
+        data.basic_auth_username.should.eql('somebody');
+        data.basic_auth_password.should.eql('secret');
+        done();
+      });
     });
   });
 });

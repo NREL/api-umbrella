@@ -19,7 +19,6 @@
   "dependencies": {
     "api-umbrella-config": "0.2.4",
     "async": "1.2.0",
-    "basic-auth": "1.0.0",
     "bunyan": "1.2.1",
     "bunyan-rollbar": "0.1.0",
     "cli-color": "0.3.2",
@@ -72,7 +71,6 @@
     "various-cluster": "0.1.10"
   },
   "devDependencies": {
-    "basic-auth-connect": "1.0.0",
     "body-parser": "1.9.2",
     "chai": "2.2.0",
     "chai-string": "1.1.1",

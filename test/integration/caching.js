@@ -400,13 +400,65 @@ describe('caching', function() {
     actsLikeThunderingHerd('http://localhost:9080/cacheable-thundering-herd/', options, done);
   });
 
-  it('does not cache requests with authorization header', function(done) {
+  it('does not cache requests with externally sent authorization header', function(done) {
     var options = _.merge({
       headers: {
         'Authorization': 'foo',
       },
     }, this.options);
     actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
+  });
+
+  it('caches requests that add an http basic auth header at the proxy layer', function(done) {
+    actsLikeCacheable('http://localhost:9080/add-auth-header/cacheable-cache-control-max-age/', this.options, done);
+  });
+
+  it('passes the authorization header to the backend when the auth header is added at the proxy layer (despite being stripped for caching purposes)', function(done) {
+    request.get('http://localhost:9080/add-auth-header/info/', this.options, function(error, response, body) {
+      var data = JSON.parse(body);
+      data.basic_auth_username.should.eql('somebody');
+      data.basic_auth_password.should.eql('secret');
+      done();
+    });
+  });
+
+  it('strips the internal X-Api-Umbrella-Orig-Authorization header before sending the request to the backend', function(done) {
+    request.get('http://localhost:9080/add-auth-header/info/', this.options, function(error, response, body) {
+      var data = JSON.parse(body);
+      should.not.exist(data.headers['x-api-umbrella-orig-authorization']);
+      done();
+    });
+  });
+
+  it('strips the internal X-Api-Umbrella-Allow-Authorization-Caching header before sending the request to the backend', function(done) {
+    request.get('http://localhost:9080/add-auth-header/info/', this.options, function(error, response, body) {
+      var data = JSON.parse(body);
+      should.not.exist(data.headers['x-api-umbrella-allow-authorization-caching']);
+      done();
+    });
+  });
+
+  it('caches requests that pass the api key via the authorization header', function(done) {
+    actsLikeCacheable('http://' + this.apiKey + ':@localhost:9080/cacheable-cache-control-max-age/', this.options, done);
+  });
+
+  it('does not cache requests with an externally sent authorization header that also set our internally used X-Api-Umbrella-Allow-Authorization-Caching header', function(done) {
+    var options = _.merge({
+      headers: {
+        'Authorization': 'foo',
+        'X-Api-Umbrella-Allow-Authorization-Caching': 'true',
+      },
+    }, this.options);
+    actsLikeNotCacheable('http://localhost:9080/cacheable-cache-control-max-age/', options, done);
+  });
+
+  it('does not cache requests that add an http basic auth header at the proxy layer, but also have other cache preventing charachteristics (for example, unknown cookie)', function(done) {
+    var options = _.merge({
+      headers: {
+        'Cookie': 'foo=bar',
+      },
+    }, this.options);
+    actsLikeNotCacheable('http://localhost:9080/add-auth-header/cacheable-cache-control-max-age/', options, done);
   });
 
   it('does cache requests with analytics cookies', function(done) {
