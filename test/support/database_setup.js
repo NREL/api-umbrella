@@ -13,15 +13,9 @@ var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'
 
 mongoose.testConnection = mongoose.createConnection();
 
-// Drop the mongodb database.
+// Open the mongodb database.
 before(function mongoOpen(done) {
   this.timeout(20000);
-
-  mongoose.testConnection.on('connected', function() {
-    // Drop the whole database, since that properly blocks for any active
-    // connections. The database will get re-created on demand.
-    mongoose.testConnection.db.dropDatabase(done);
-  });
 
   // Since we're calling createConnection earlier on, and then opening the
   // connection here, we need to explicitly handle whether we should call
@@ -31,6 +25,8 @@ before(function mongoOpen(done) {
   } else {
     mongoose.testConnection.open(config.get('mongodb.url'), config.get('mongodb.options'));
   }
+
+  done();
 });
 
 // Wipe the redis data.

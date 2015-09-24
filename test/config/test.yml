@@ -26,6 +26,9 @@ varnish:
     port: 13011
 web:
   port: 13012
+  admin:
+    initial_superusers:
+      - admin@example.com
 router:
   api_backends:
     port: 13011
