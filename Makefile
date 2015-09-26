@@ -19,10 +19,10 @@ ELASTICSEARCH_DIGEST:=sha1
 ELASTICSEARCH_CHECKSUM:=0984ae27624e57c12c33d4a559c3ebae25e74508
 ELASTICSEARCH_URL:=https://download.elastic.co/elasticsearch/elasticsearch/$(ELASTICSEARCH).tar.gz
 
-FREEGEOIP_VERSION:=3.0.4
+FREEGEOIP_VERSION:=3.0.5
 FREEGEOIP:=freegeoip-$(FREEGEOIP_VERSION)
 FREEGEOIP_DIGEST:=md5
-FREEGEOIP_CHECKSUM:=06effa101645431a4608581d6dd98970
+FREEGEOIP_CHECKSUM:=2d2cdfc0720526fc84ee7ae878704878
 FREEGEOIP_URL:=https://github.com/fiorix/freegeoip/releases/download/v$(FREEGEOIP_VERSION)/$(FREEGEOIP)-linux-amd64.tar.gz
 
 GLIDE_VERSION:=0.5.1
@@ -49,6 +49,18 @@ LIBCIDR:=libcidr-$(LIBCIDR_VERSION)
 LIBCIDR_DIGEST:=md5
 LIBCIDR_CHECKSUM:=c5efcc7ae114fdaa5583f58dacecd9de
 LIBCIDR_URL:=https://www.over-yonder.net/~fullermd/projects/libcidr/$(LIBCIDR).tar.xz
+
+LIBGEOIP_VERSION:=1.6.6
+LIBGEOIP:=GeoIP-$(LIBGEOIP_VERSION)
+LIBGEOIP_DIGEST:=md5
+LIBGEOIP_CHECKSUM:=91b9922dc755de30cade4517ae449444
+LIBGEOIP_URL:=https://github.com/maxmind/geoip-api-c/releases/download/v$(LIBGEOIP_VERSION)/$(LIBGEOIP).tar.gz
+
+LIBMAXMINDDB_VERSION:=1.1.1
+LIBMAXMINDDB:=libmaxminddb-$(LIBMAXMINDDB_VERSION)
+LIBMAXMINDDB_DIGEST:=md5
+LIBMAXMINDDB_CHECKSUM:=36c31f0814dbf71b210ee57c2b9ef98c
+LIBMAXMINDDB_URL:=https://github.com/maxmind/libmaxminddb/releases/download/$(LIBMAXMINDDB_VERSION)/$(LIBMAXMINDDB).tar.gz
 
 LIBYAML_VERSION:=0.1.6
 LIBYAML:=libyaml-$(LIBYAML_VERSION)
@@ -117,6 +129,12 @@ NGX_DYUPS_DIGEST:=md5
 NGX_DYUPS_CHECKSUM:=295b7cb202de069b313f4da50d6952e0
 NGX_DYUPS_URL:=https://github.com/yzprofile/ngx_http_dyups_module/archive/v$(NGX_DYUPS_VERSION).tar.gz
 
+NGX_GEOIP2_VERSION:=1.0
+NGX_GEOIP2:=ngx_http_geoip2_module-$(NGX_GEOIP2_VERSION)
+NGX_GEOIP2_DIGEST:=md5
+NGX_GEOIP2_CHECKSUM:=4c89eea53ce8318f940c03adfe0b502b
+NGX_GEOIP2_URL:=https://github.com/leev/ngx_http_geoip2_module/archive/1.0.tar.gz
+
 OPENRESTY_VERSION:=1.9.3.1
 OPENRESTY:=ngx_openresty-$(OPENRESTY_VERSION)
 OPENRESTY_DIGEST:=md5
@@ -174,6 +192,16 @@ deps/$(NGX_DYUPS): deps/$(NGX_DYUPS).tar.gz
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
+# ngx_geoip2
+deps/$(NGX_GEOIP2).tar.gz: | deps
+	curl -L -o $@ $(NGX_GEOIP2_URL)
+
+deps/$(NGX_GEOIP2): deps/$(NGX_GEOIP2).tar.gz
+	openssl $(NGX_GEOIP2_DIGEST) $< | grep $(NGX_GEOIP2_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
 # ngx_txid
 deps/$(NGX_TXID).tar.gz: | deps
 	curl -L -o $@ $(NGX_TXID_URL)
@@ -194,18 +222,26 @@ deps/$(OPENRESTY): deps/$(OPENRESTY).tar.gz
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
-deps/$(OPENRESTY)/.built: deps/$(OPENRESTY) deps/$(NGX_DYUPS) deps/$(NGX_TXID)
-	cd $< && ./configure \
+#deps/$(OPENRESTY)/.built: deps/$(OPENRESTY) deps/$(NGX_DYUPS) deps/$(NGX_GEOIP2) deps/$(NGX_TXID) deps/$(LIBGEOIP)/.built deps/$(LIBMAXMINDDB)/.built
+deps/$(OPENRESTY)/.built: deps/$(OPENRESTY) deps/$(NGX_DYUPS) deps/$(NGX_GEOIP2) deps/$(NGX_TXID) $(PREFIX)/embedded/.installed/$(LIBGEOIP) $(PREFIX)/embedded/.installed/$(LIBMAXMINDDB)
+	cd $< && env LD_RUN_PATH="$(PREFIX)/embedded/lib" \
+		LDFLAGS="-L$(PREFIX)/embedded/lib -I$(PREFIX)/embedded/include" \
+		CFLAGS="-L$(PREFIX)/embedded/lib -I$(PREFIX)/embedded/include" \
+		./configure \
 		--prefix=$(PREFIX)/embedded/openresty \
+		--with-cc-opt="-L$(PREFIX)/embedded/lib -I$(PWD)/deps/$(LIBMAXMINDDB)/src/include" \
+		--with-ld-opt="-L$(PREFIX)/embedded/lib -Wl,-rpath,$(PREFIX)/embedded/lib" \
 		--error-log-path=stderr \
 		--with-ipv6 \
 		--with-pcre-jit \
+		--with-http_geoip_module \
 		--with-http_gunzip_module \
 		--with-http_gzip_static_module \
 		--with-http_realip_module \
 		--with-http_ssl_module \
 		--with-http_stub_status_module \
 		--add-module=../$(NGX_DYUPS) \
+		--add-module=../$(NGX_GEOIP2) \
 		--add-module=../$(NGX_TXID)
 	cd $< && make
 	touch $@
@@ -222,6 +258,38 @@ deps/$(LIBCIDR): deps/$(LIBCIDR).tar.xz
 
 deps/$(LIBCIDR)/.built: deps/$(LIBCIDR)
 	cd $< && make PREFIX=$(PREFIX)/embedded
+	touch $@
+
+# libgeoip
+deps/$(LIBGEOIP).tar.xz: | deps
+	curl -L -o $@ $(LIBGEOIP_URL)
+
+deps/$(LIBGEOIP): deps/$(LIBGEOIP).tar.xz
+	openssl $(LIBGEOIP_DIGEST) $< | grep $(LIBGEOIP_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
+deps/$(LIBGEOIP)/.built: deps/$(LIBGEOIP)
+	cd $< && ./configure \
+		--prefix=$(PREFIX)/embedded
+	cd $</libGeoIP make PREFIX=$(PREFIX)/embedded
+	touch $@
+
+# libmaxminddb
+deps/$(LIBMAXMINDDB).tar.xz: | deps
+	curl -L -o $@ $(LIBMAXMINDDB_URL)
+
+deps/$(LIBMAXMINDDB): deps/$(LIBMAXMINDDB).tar.xz
+	openssl $(LIBMAXMINDDB_DIGEST) $< | grep $(LIBMAXMINDDB_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
+	mkdir -p $@
+	tar --strip-components 1 -C $@ -xf $<
+	touch $@
+
+deps/$(LIBMAXMINDDB)/.built: deps/$(LIBMAXMINDDB)
+	cd $< && ./configure \
+		--prefix=$(PREFIX)/embedded
+	cd $< make
 	touch $@
 
 # LibYAML
@@ -464,6 +532,8 @@ dependencies: \
 	deps/$(FREEGEOIP) \
 	deps/$(HEKA) \
 	deps/$(LIBCIDR)/.built \
+	deps/$(LIBGEOIP)/.built \
+	deps/$(LIBMAXMINDDB)/.built \
 	deps/$(LIBYAML)/.built \
 	deps/$(LUAROCKS) \
 	deps/$(MONGODB) \
@@ -514,6 +584,14 @@ $(PREFIX)/embedded/.installed/$(HEKA): deps/$(HEKA) | $(PREFIX)/embedded/.instal
 
 $(PREFIX)/embedded/.installed/$(LIBCIDR): deps/$(LIBCIDR)/.built | $(PREFIX)/embedded/.installed
 	cd deps/$(LIBCIDR) && make install PREFIX=$(PREFIX)/embedded
+	touch $@
+
+$(PREFIX)/embedded/.installed/$(LIBGEOIP): deps/$(LIBGEOIP)/.built | $(PREFIX)/embedded/.installed
+	cd deps/$(LIBGEOIP)/libGeoIP && make install
+	touch $@
+
+$(PREFIX)/embedded/.installed/$(LIBMAXMINDDB): deps/$(LIBMAXMINDDB)/.built | $(PREFIX)/embedded/.installed
+	cd deps/$(LIBMAXMINDDB) && make install
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(LIBYAML): deps/$(LIBYAML)/.built | $(PREFIX)/embedded/.installed
@@ -585,6 +663,12 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(LIBCIDR).tar.xz \
 	deps/$(LIBCIDR) \
 	deps/$(LIBCIDR)/.built \
+	deps/$(LIBGEOIP).tar.xz \
+	deps/$(LIBGEOIP) \
+	deps/$(LIBGEOIP)/.built \
+	deps/$(LIBMAXMINDDB).tar.xz \
+	deps/$(LIBMAXMINDDB) \
+	deps/$(LIBMAXMINDDB)/.built \
 	deps/$(LIBYAML).tar.gz \
 	deps/$(LIBYAML) \
 	deps/$(LIBYAML)/.built \
@@ -608,6 +692,8 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) \
 	deps/$(NGX_DYUPS).tar.gz \
 	deps/$(NGX_DYUPS) \
+	deps/$(NGX_GEOIP2).tar.gz \
+	deps/$(NGX_GEOIP2) \
 	deps/$(NGX_TXID).tar.gz \
 	deps/$(NGX_TXID) \
 	deps/$(OPENRESTY).tar.gz \
@@ -636,6 +722,8 @@ install_dependencies: \
 	$(PREFIX)/embedded/.installed/$(FREEGEOIP) \
 	$(PREFIX)/embedded/.installed/$(HEKA) \
 	$(PREFIX)/embedded/.installed/$(LIBCIDR) \
+	$(PREFIX)/embedded/.installed/$(LIBGEOIP) \
+	$(PREFIX)/embedded/.installed/$(LIBMAXMINDDB) \
 	$(PREFIX)/embedded/.installed/$(LIBYAML) \
 	$(PREFIX)/embedded/.installed/$(LUAROCKS) \
 	$(PREFIX)/embedded/.installed/$(MONGODB) \
