@@ -3,16 +3,14 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
+    config = require('../support/config'),
     execFile = require('child_process').execFile,
     fs = require('fs'),
     ipaddr = require('ipaddr.js'),
     path = require('path'),
     processEnv = require('../support/process_env'),
     request = require('request');
-
-var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 describe('dns backend resolving', function() {
   function setDnsRecords(records, callback) {

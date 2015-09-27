@@ -1,11 +1,9 @@
 'use strict';
 
-var apiUmbrellaConfig = require('api-umbrella-config'),
+var config = require('./config'),
     fs = require('fs'),
     path = require('path'),
     yaml = require('js-yaml');
-
-var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 fs.writeFileSync('/tmp/api-umbrella-test.yml', yaml.safeDump({
   router: {

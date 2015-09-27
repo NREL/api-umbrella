@@ -7,7 +7,7 @@ _.extend(exports, {
   envOverrides: {},
 
   supervisordConfigPath: function() {
-    var config = require('api-umbrella-config').global();
+    var config = require('./config');
     return path.join(config.get('etc_dir'), 'supervisord.conf');
   },
 

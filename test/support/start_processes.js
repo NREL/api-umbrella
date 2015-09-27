@@ -3,16 +3,14 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    apiUmbrellaConfig = require('api-umbrella-config'),
     async = require('async'),
+    config = require('./config'),
     fs = require('fs'),
     fsExtra = require('fs-extra'),
     mkdirp = require('mkdirp'),
     path = require('path'),
     request = require('request'),
     spawn = require('child_process').spawn;
-
-var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
 
 before(function clearTestEnvDns() {
   // This included file must exist before unbound can start.

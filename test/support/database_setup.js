@@ -3,12 +3,9 @@
 require('../test_helper');
 
 var _ = require('lodash'),
-    apiUmbrellaConfig = require('api-umbrella-config'),
+    config = require('./config'),
     elasticsearch = require('elasticsearch'),
-    mongoose = require('mongoose'),
-    path = require('path');
-
-var config = apiUmbrellaConfig.load(path.resolve(__dirname, '../config/test.yml'));
+    mongoose = require('mongoose');
 
 mongoose.testConnection = mongoose.createConnection();
 
