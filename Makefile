@@ -794,6 +794,7 @@ vendor/lib/luarocks/rocks/$(LUACHECK)/$(LUACHECK_VERSION): $(PREFIX)/embedded/.i
 # Node test dependencies
 node_modules/.installed: package.json
 	npm install
+	npm prune
 	touch $@
 
 # Python test dependencies (mongo-orchestration)
