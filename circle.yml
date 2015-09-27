@@ -23,6 +23,11 @@ dependencies:
     # We don't want to store these in the CircleCI cache, since they're not
     # needed after installing.
     - make clean
+compile:
+  override:
+    # Don't perform any compile tasks that CircleCI infers. We'll run our
+    # tasks.
+    - /bin/true
 test:
   override:
     # Run the across parallel CI nodes.
