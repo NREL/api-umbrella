@@ -37,7 +37,7 @@ test:
     # Copy the test reports into place.
     - mkdir -p $CIRCLE_TEST_REPORTS/rspec $CIRCLE_TEST_REPORTS/mocha:
         parallel: true
-    - if [ -e src/api-umbrella/web-app/spec/tmp/web-app.xml ]; then cp src/api-umbrella/web-app/spec/reports/web-app.xml $CIRCLE_TEST_REPORTS/rspec/; fi:
+    - if [ -e src/api-umbrella/web-app/spec/reports/web-app.xml ]; then cp src/api-umbrella/web-app/spec/reports/web-app.xml $CIRCLE_TEST_REPORTS/rspec/; fi:
         parallel: true
     - if [ -e test/tmp/xunit$CIRCLE_NODE_INDEX.xml ]; then cp test/tmp/xunit$CIRCLE_NODE_INDEX.xml $CIRCLE_TEST_REPORTS/mocha/; fi:
         parallel: true
