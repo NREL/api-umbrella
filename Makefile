@@ -260,7 +260,7 @@ deps/$(LIBCIDR)/.built: deps/$(LIBCIDR)
 deps/$(LIBMAXMINDDB).tar.gz: | deps
 	curl -L -o $@ $(LIBMAXMINDDB_URL)
 
-deps/$(LIBMAXMINDDB): deps/$(LIBMAXMINDDB).tar.xz
+deps/$(LIBMAXMINDDB): deps/$(LIBMAXMINDDB).tar.gz
 	openssl $(LIBMAXMINDDB_DIGEST) $< | grep $(LIBMAXMINDDB_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
 	mkdir -p $@
 	tar --strip-components 1 -C $@ -xf $<
