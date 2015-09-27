@@ -1,5 +1,5 @@
 # Provide default config values when a real API Umbrella config file isn't
-# passed in (via the API_UMBRELLA_CONFIG environment variable).
+# passed in (via the API_UMBRELLA_RUNTIME_CONFIG environment variable).
 
 elasticsearch:
   hosts: []

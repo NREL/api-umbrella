@@ -19,12 +19,6 @@ ELASTICSEARCH_DIGEST:=sha1
 ELASTICSEARCH_CHECKSUM:=0984ae27624e57c12c33d4a559c3ebae25e74508
 ELASTICSEARCH_URL:=https://download.elastic.co/elasticsearch/elasticsearch/$(ELASTICSEARCH).tar.gz
 
-FREEGEOIP_VERSION:=3.0.5
-FREEGEOIP:=freegeoip-$(FREEGEOIP_VERSION)
-FREEGEOIP_DIGEST:=md5
-FREEGEOIP_CHECKSUM:=2d2cdfc0720526fc84ee7ae878704878
-FREEGEOIP_URL:=https://github.com/fiorix/freegeoip/releases/download/v$(FREEGEOIP_VERSION)/$(FREEGEOIP)-linux-amd64.tar.gz
-
 GLIDE_VERSION:=0.5.1
 GLIDE:=glide-$(GLIDE_VERSION)
 GLIDE_DIGEST:=md5
@@ -49,12 +43,6 @@ LIBCIDR:=libcidr-$(LIBCIDR_VERSION)
 LIBCIDR_DIGEST:=md5
 LIBCIDR_CHECKSUM:=c5efcc7ae114fdaa5583f58dacecd9de
 LIBCIDR_URL:=https://www.over-yonder.net/~fullermd/projects/libcidr/$(LIBCIDR).tar.xz
-
-LIBGEOIP_VERSION:=1.6.6
-LIBGEOIP:=GeoIP-$(LIBGEOIP_VERSION)
-LIBGEOIP_DIGEST:=md5
-LIBGEOIP_CHECKSUM:=91b9922dc755de30cade4517ae449444
-LIBGEOIP_URL:=https://github.com/maxmind/geoip-api-c/releases/download/v$(LIBGEOIP_VERSION)/$(LIBGEOIP).tar.gz
 
 LIBMAXMINDDB_VERSION:=1.1.1
 LIBMAXMINDDB:=libmaxminddb-$(LIBMAXMINDDB_VERSION)
@@ -182,6 +170,19 @@ all: dependencies
 deps:
 	mkdir -p $@
 
+deps/GeoLite2-City.md5: | deps
+	curl -L -o $@ https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.md5
+	touch $@
+
+deps/GeoLite2-City.mmdb.gz: | deps
+	curl -L -o $@ https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz
+	touch $@
+
+deps/GeoLite2-City.mmdb: deps/GeoLite2-City.mmdb.gz deps/GeoLite2-City.md5
+	gunzip -c $< > $@
+	openssl md5 $@ | grep `cat deps/GeoLite2-City.md5` || (echo "checksum mismatch $@" && exit 1)
+	touch $@
+
 # ngx_dyups
 deps/$(NGX_DYUPS).tar.gz: | deps
 	curl -L -o $@ $(NGX_DYUPS_URL)
@@ -222,19 +223,14 @@ deps/$(OPENRESTY): deps/$(OPENRESTY).tar.gz
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
-#deps/$(OPENRESTY)/.built: deps/$(OPENRESTY) deps/$(NGX_DYUPS) deps/$(NGX_GEOIP2) deps/$(NGX_TXID) deps/$(LIBGEOIP)/.built deps/$(LIBMAXMINDDB)/.built
-deps/$(OPENRESTY)/.built: deps/$(OPENRESTY) deps/$(NGX_DYUPS) deps/$(NGX_GEOIP2) deps/$(NGX_TXID) $(PREFIX)/embedded/.installed/$(LIBGEOIP) $(PREFIX)/embedded/.installed/$(LIBMAXMINDDB)
-	cd $< && env LD_RUN_PATH="$(PREFIX)/embedded/lib" \
-		LDFLAGS="-L$(PREFIX)/embedded/lib -I$(PREFIX)/embedded/include" \
-		CFLAGS="-L$(PREFIX)/embedded/lib -I$(PREFIX)/embedded/include" \
-		./configure \
+deps/$(OPENRESTY)/.built: deps/$(OPENRESTY) deps/$(NGX_DYUPS) deps/$(NGX_GEOIP2) deps/$(NGX_TXID) deps/$(LIBMAXMINDDB)/.built
+	cd $< && ./configure \
 		--prefix=$(PREFIX)/embedded/openresty \
-		--with-cc-opt="-L$(PREFIX)/embedded/lib -I$(PWD)/deps/$(LIBMAXMINDDB)/src/include" \
-		--with-ld-opt="-L$(PREFIX)/embedded/lib -Wl,-rpath,$(PREFIX)/embedded/lib" \
+		--with-cc-opt="-I$(PWD)/deps/$(LIBMAXMINDDB)/include" \
+		--with-ld-opt="-L$(PWD)/deps/$(LIBMAXMINDDB)/src/.libs -Wl,-rpath,$(PREFIX)/embedded/lib" \
 		--error-log-path=stderr \
 		--with-ipv6 \
 		--with-pcre-jit \
-		--with-http_geoip_module \
 		--with-http_gunzip_module \
 		--with-http_gzip_static_module \
 		--with-http_realip_module \
@@ -260,24 +256,8 @@ deps/$(LIBCIDR)/.built: deps/$(LIBCIDR)
 	cd $< && make PREFIX=$(PREFIX)/embedded
 	touch $@
 
-# libgeoip
-deps/$(LIBGEOIP).tar.xz: | deps
-	curl -L -o $@ $(LIBGEOIP_URL)
-
-deps/$(LIBGEOIP): deps/$(LIBGEOIP).tar.xz
-	openssl $(LIBGEOIP_DIGEST) $< | grep $(LIBGEOIP_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-deps/$(LIBGEOIP)/.built: deps/$(LIBGEOIP)
-	cd $< && ./configure \
-		--prefix=$(PREFIX)/embedded
-	cd $</libGeoIP make PREFIX=$(PREFIX)/embedded
-	touch $@
-
 # libmaxminddb
-deps/$(LIBMAXMINDDB).tar.xz: | deps
+deps/$(LIBMAXMINDDB).tar.gz: | deps
 	curl -L -o $@ $(LIBMAXMINDDB_URL)
 
 deps/$(LIBMAXMINDDB): deps/$(LIBMAXMINDDB).tar.xz
@@ -474,16 +454,6 @@ deps/$(HEKA): deps/$(HEKA).tar.gz
 	tar --strip-components 1 -C $@ -xf $<
 	touch $@
 
-# freegeoip
-deps/$(FREEGEOIP).tar.gz: | deps
-	curl -L -o $@ $(FREEGEOIP_URL)
-
-deps/$(FREEGEOIP): deps/$(FREEGEOIP).tar.gz
-	openssl $(FREEGEOIP_DIGEST) $< | grep $(FREEGEOIP_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
 # MongoDB
 deps/$(MONGODB).tar.gz: | deps
 	curl -L -o $@ $(MONGODB_URL)
@@ -529,10 +499,9 @@ deps/$(UNBOUND)/.built: deps/$(UNBOUND)
 
 dependencies: \
 	deps/$(ELASTICSEARCH) \
-	deps/$(FREEGEOIP) \
+	deps/GeoLite2-City.mmdb \
 	deps/$(HEKA) \
 	deps/$(LIBCIDR)/.built \
-	deps/$(LIBGEOIP)/.built \
 	deps/$(LIBMAXMINDDB)/.built \
 	deps/$(LIBYAML)/.built \
 	deps/$(LUAROCKS) \
@@ -568,8 +537,9 @@ $(PREFIX)/embedded/.installed/$(ELASTICSEARCH): deps/$(ELASTICSEARCH) | $(PREFIX
 	ln -sf $(PREFIX)/embedded/elasticsearch/bin/elasticsearch $(PREFIX)/embedded/bin/elasticsearch
 	touch $@
 
-$(PREFIX)/embedded/.installed/$(FREEGEOIP): deps/$(FREEGEOIP) | $(PREFIX)/embedded/.installed
-	cp deps/$(FREEGEOIP)/freegeoip $(PREFIX)/embedded/bin/
+$(PREFIX)/embedded/.installed/GeoLite2-City.mmdb: deps/GeoLite2-City.mmdb | $(PREFIX)/embedded/.installed
+	mkdir -p $(PREFIX)/embedded/var/db/geoip2
+	rsync -a deps/GeoLite2-City.mmdb $(PREFIX)/embedded/var/db/geoip2/city.mmdb
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(HEKA): deps/$(HEKA) | $(PREFIX)/embedded/.installed
@@ -584,10 +554,6 @@ $(PREFIX)/embedded/.installed/$(HEKA): deps/$(HEKA) | $(PREFIX)/embedded/.instal
 
 $(PREFIX)/embedded/.installed/$(LIBCIDR): deps/$(LIBCIDR)/.built | $(PREFIX)/embedded/.installed
 	cd deps/$(LIBCIDR) && make install PREFIX=$(PREFIX)/embedded
-	touch $@
-
-$(PREFIX)/embedded/.installed/$(LIBGEOIP): deps/$(LIBGEOIP)/.built | $(PREFIX)/embedded/.installed
-	cd deps/$(LIBGEOIP)/libGeoIP && make install
 	touch $@
 
 $(PREFIX)/embedded/.installed/$(LIBMAXMINDDB): deps/$(LIBMAXMINDDB)/.built | $(PREFIX)/embedded/.installed
@@ -650,8 +616,9 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 .SECONDARY: \
 	deps/$(ELASTICSEARCH).tar.gz \
 	deps/$(ELASTICSEARCH) \
-	deps/$(FREEGEOIP).tar.gz \
-	deps/$(FREEGEOIP) \
+	deps/GeoLite2-City.md5 \
+	deps/GeoLite2-City.mmdb.gz \
+	deps/GeoLite2-City.mmdb \
 	deps/$(GLIDE).tar.gz \
 	deps/$(GLIDE) \
 	deps/gocode/src/github.com/Masterminds/glide \
@@ -663,10 +630,7 @@ $(PREFIX)/embedded/.installed/$(TRAFFICSERVER): deps/$(TRAFFICSERVER)/.built | $
 	deps/$(LIBCIDR).tar.xz \
 	deps/$(LIBCIDR) \
 	deps/$(LIBCIDR)/.built \
-	deps/$(LIBGEOIP).tar.xz \
-	deps/$(LIBGEOIP) \
-	deps/$(LIBGEOIP)/.built \
-	deps/$(LIBMAXMINDDB).tar.xz \
+	deps/$(LIBMAXMINDDB).tar.gz \
 	deps/$(LIBMAXMINDDB) \
 	deps/$(LIBMAXMINDDB)/.built \
 	deps/$(LIBYAML).tar.gz \
@@ -719,10 +683,9 @@ install_dependencies: \
 	$(PREFIX)/embedded/sbin \
 	$(PREFIX)/embedded/.installed/$(BUNDLER) \
 	$(PREFIX)/embedded/.installed/$(ELASTICSEARCH) \
-	$(PREFIX)/embedded/.installed/$(FREEGEOIP) \
+	$(PREFIX)/embedded/.installed/GeoLite2-City.mmdb \
 	$(PREFIX)/embedded/.installed/$(HEKA) \
 	$(PREFIX)/embedded/.installed/$(LIBCIDR) \
-	$(PREFIX)/embedded/.installed/$(LIBGEOIP) \
 	$(PREFIX)/embedded/.installed/$(LIBMAXMINDDB) \
 	$(PREFIX)/embedded/.installed/$(LIBYAML) \
 	$(PREFIX)/embedded/.installed/$(LUAROCKS) \
@@ -856,4 +819,4 @@ lint: install_test_dependencies
 	LUA_PATH="vendor/share/lua/5.1/?.lua;vendor/share/lua/5.1/?/init.lua;;" LUA_CPATH="vendor/lib/lua/5.1/?.so;;" ./vendor/bin/luacheck src
 
 test: install install_test_dependencies lint
-	API_UMBRELLA_ROOT=$(PREFIX) MOCHA_FILES="$(MOCHA_FILES)" npm test
+	API_UMBRELLA_INSTALL_ROOT=$(PREFIX) MOCHA_FILES="$(MOCHA_FILES)" npm test

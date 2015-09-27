@@ -1,5 +1,5 @@
-local config = {}
-local template_config = {}
+local config
+local template_config
 
 local array_includes = require "api-umbrella.utils.array_includes"
 local array_last = require "api-umbrella.utils.array_last"
@@ -18,10 +18,26 @@ local stat = require "posix.sys.stat"
 local tablex = require "pl.tablex"
 local unistd = require "posix.unistd"
 
-local app_root = os.getenv("API_UMBRELLA_SRC_ROOT")
+local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
+
+local function read_runtime_config()
+  local runtime_config_path = os.getenv("API_UMBRELLA_RUNTIME_CONFIG")
+  if runtime_config_path then
+    local f, err = io.open(runtime_config_path, "rb")
+    if err then
+      print("Could not open config file '" .. runtime_config_path .. "'")
+      os.exit(1)
+    end
+
+    local content = f:read("*all")
+    f:close()
+
+    config = lyaml.load(content)
+  end
+end
 
 local function read_default_config()
-  local content = file.read(path.join(app_root, "config/default.yml"), true)
+  local content = file.read(path.join(src_root_dir, "config/default.yml"), true)
   config = lyaml.load(content)
 end
 
@@ -68,8 +84,8 @@ local function set_computed_config()
   })
 
   deep_merge_overwrite_arrays(config, {
-    _root_dir = os.getenv("API_UMBRELLA_ROOT"),
-    _app_root = app_root,
+    _install_root_dir = os.getenv("API_UMBRELLA_INSTALL_ROOT"),
+    _src_root_dir = src_root_dir,
     mongodb = {
       _database = array_last(plutils.split(config["mongodb"]["url"], "/")),
     },
@@ -93,7 +109,7 @@ local function set_computed_config()
   if config["app_env"] == "test" then
     deep_merge_overwrite_arrays(config, {
       gatekeeper = {
-        dir = app_root,
+        dir = src_root_dir,
       },
     })
   end
@@ -225,8 +241,20 @@ local function generate_self_signed_cert()
   end
 end
 
+local function ensure_geoip_db()
+  -- If the city db path doesn't exist, copy it from the package installation
+  -- location to the runtime location (this path will then be overwritten by
+  -- the auto-updater so we don't touch the original packaged file).
+  local city_db_path = path.join(config["db_dir"], "geoip2/city.mmdb")
+  if not path.exists(city_db_path) then
+    local default_city_db_path = path.join(config["_install_root_dir"], "embedded/var/db/geoip2/city.mmdb")
+    dir.makepath(path.dirname(city_db_path))
+    file.copy(default_city_db_path, city_db_path)
+  end
+end
+
 local function write_templates()
-  local template_root = path.join(app_root, "templates/etc")
+  local template_root = path.join(src_root_dir, "templates/etc")
   for root, _, files in dir.walk(template_root) do
     for _, filename in ipairs(files) do
       local template_path = path.join(root, filename)
@@ -281,14 +309,19 @@ local function set_permissions()
 end
 
 return function()
-  read_default_config()
-  read_system_config()
-  set_computed_config()
+  read_runtime_config()
+  if not config then
+    read_default_config()
+    read_system_config()
+    set_computed_config()
+    write_runtime_config()
+  end
+
   set_template_config()
   permission_check()
-  write_runtime_config()
   prepare()
   generate_self_signed_cert()
+  ensure_geoip_db()
   write_templates()
   set_permissions()
 

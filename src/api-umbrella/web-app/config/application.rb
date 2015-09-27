@@ -19,18 +19,18 @@ module ApiUmbrella
   class Application < Rails::Application
     config.before_configuration do
       default_config = "/opt/api-umbrella/var/run/runtime_config.yml"
-      if(ENV["API_UMBRELLA_CONFIG"].blank? && File.exist?(default_config) && File.readable?(default_config))
-        ENV["API_UMBRELLA_CONFIG"] = default_config
+      if(ENV["API_UMBRELLA_RUNTIME_CONFIG"].blank? && File.exist?(default_config) && File.readable?(default_config))
+        ENV["API_UMBRELLA_RUNTIME_CONFIG"] = default_config
       end
 
-      if(ENV["API_UMBRELLA_CONFIG"])
-        ApiUmbrellaConfig.add_source!(ENV["API_UMBRELLA_CONFIG"])
+      if(ENV["API_UMBRELLA_RUNTIME_CONFIG"])
+        ApiUmbrellaConfig.add_source!(ENV["API_UMBRELLA_RUNTIME_CONFIG"])
         ApiUmbrellaConfig.reload!
       end
 
       # Provide default config values for arrays when a real API Umbrella
-      # config file isn't passed in (via the API_UMBRELLA_CONFIG environment
-      # variable).
+      # config file isn't passed in (via the API_UMBRELLA_RUNTIME_CONFIG
+      # environment variable).
       #
       # Most defaults should be defined in config/settings.yml, but array
       # values don't overwrite well with RailsConfig, so we'll define the array

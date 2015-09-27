@@ -11,7 +11,7 @@ local log = ngx.log
 local ERR = ngx.ERR
 
 local function read_file()
-  local f, err = io.open(os.getenv("API_UMBRELLA_CONFIG"), "rb")
+  local f, err = io.open(os.getenv("API_UMBRELLA_RUNTIME_CONFIG"), "rb")
   if err then
     log(ERR, "failed to open config file: ", err)
     return nil

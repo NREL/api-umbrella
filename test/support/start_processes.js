@@ -95,7 +95,7 @@ before(function apiUmbrellaStart(done) {
   global.apiUmbrellaServer = spawn(binPath, ['run'], {
     stdio: 'inherit',
     env: _.merge({}, process.env, {
-      'API_UMBRELLA_ROOT': process.env.API_UMBRELLA_ROOT,
+      'API_UMBRELLA_INSTALL_ROOT': process.env.API_UMBRELLA_INSTALL_ROOT,
       'API_UMBRELLA_CONFIG': overridesConfigPath,
     }),
   });

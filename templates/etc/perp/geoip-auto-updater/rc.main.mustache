@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Redirect stderr to stdout
+exec 2>&1
+
+if test ${1} = "start"; then
+  echo "starting ${2}..."
+  exec runtool -e rc.env {{_src_root_dir}}/bin/api-umbrella-geoip-auto-updater
+fi
+
+exit 0

@@ -14,7 +14,7 @@ events {
 
 error_log stderr;
 
-env API_UMBRELLA_CONFIG;
+env API_UMBRELLA_RUNTIME_CONFIG;
 
 http {
   access_log {{log_dir}}/router-access.log combined {{nginx.access_log_options}};
@@ -39,10 +39,16 @@ http {
   lua_shared_dict my_locks 100k;
   lua_shared_dict locks 5M;
   lua_shared_dict logs 10m;
+  lua_shared_dict geocode_city_cache 100k;
   lua_shared_dict upstream_checksums 200k;
 
-  #geoip_country /tmp/GeoIPv6.dat;
-  #geoip_city /tmp/GeoLiteCityv6.dat;
+  geoip2 {{db_dir}}/geoip2/city.mmdb {
+    $geoip_country country iso_code;
+    $geoip_region subdivisions 0 iso_code;
+    $geoip_city city names en;
+    $geoip_latitude location latitude;
+    $geoip_longitude location longitude;
+  }
 
   geo $banned_ip {
     default 0;
@@ -60,7 +66,6 @@ http {
 
   init_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/init.lua';
   init_worker_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/init_worker.lua';
-
 
   #proxy_cache_path /tmp/nginx-cache levels=1:2 keys_zone=backcache:8m max_size=50m;
   #proxy_cache backcache;

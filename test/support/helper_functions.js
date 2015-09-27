@@ -13,7 +13,7 @@ _.merge(global.shared, {
     var overridesConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
     execFile(binPath, [command], {
       env: _.merge({}, process.env, {
-        'API_UMBRELLA_ROOT': process.env.API_UMBRELLA_ROOT,
+        'API_UMBRELLA_INSTALL_ROOT': process.env.API_UMBRELLA_INSTALL_ROOT,
         'API_UMBRELLA_CONFIG': overridesConfigPath,
       }),
     }, function(error, stdout, stderr) {

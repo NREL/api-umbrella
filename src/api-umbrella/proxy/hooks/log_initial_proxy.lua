@@ -1,8 +1,11 @@
 local cjson = require "cjson"
+local http = require "resty.http"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local logger = require "resty.logger.socket"
-local utils = require "api-umbrella.proxy.utils"
+local sha256 = require "resty.sha256"
+local str = require "resty.string"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
+local utils = require "api-umbrella.proxy.utils"
 
 if log_utils.ignore_request() then
   return
@@ -10,6 +13,59 @@ end
 
 local ngx_ctx = ngx.ctx
 local ngx_var = ngx.var
+
+-- Cache the last geocoded location for each city in a separate index. When
+-- faceting by city names on the log index (for displaying on a map), there
+-- doesn't appear to be an easy way to fetch the associated locations for each
+-- city facet. This allows us to perform a separate lookup to fetch the
+-- pre-geocoded locations for each city.
+--
+-- The geoip stuff actually returns different geocodes for different parts of
+-- cities. This approach rolls up each city to the last geocoded location
+-- within that city, so it's not perfect, but for now it'll do.
+local function cache_city_geocode(premature, id, data)
+  if premature then
+    return
+  end
+
+  local id_hash = sha256:new()
+  id_hash:update(id)
+  id_hash = id_hash:final()
+  id_hash = str.to_hex(id_hash)
+  local record = {
+    country = data["request_ip_country"],
+    region = data["request_ip_region"],
+    city = data["request_ip_city"],
+    location = data["request_ip_location"],
+    updated_at = utils.round(ngx.now() * 1000),
+  };
+
+  local elasticsearch_host = config["elasticsearch"]["hosts"][1]
+  local index = "api-umbrella"
+  local index_type = "city"
+  local httpc = http.new()
+  local res, err = httpc:request_uri(elasticsearch_host .. "/" .. index .. "/" .. index_type .. "/" .. id_hash, {
+    method = "PUT",
+    body = cjson.encode(record),
+  })
+  if err or (res and res.status >= 400) then
+    ngx.log(ngx.ERR, "failed to cache city location in elasticsearch: ", err)
+  end
+end
+
+local function cache_new_city_geocode(data)
+  local id = data["request_ip_country"] .. "-" .. data["request_ip_region"] .. "-" .. data["request_ip_city"]
+
+  -- Only cache the first city location per startup to prevent lots of indexing
+  -- churn re-indexing the same city.
+  if not ngx.shared.geocode_city_cache:get(id) then
+    ngx.shared.geocode_city_cache:set(id, true)
+
+    -- Perform the actual cache call in a timer because the http library isn't
+    -- supported directly in the log_by_lua context.
+    ngx.timer.at(0, cache_city_geocode, id, data)
+  end
+end
 
 local function log_request()
   -- Init the resty logger socket.
@@ -45,6 +101,9 @@ local function log_request()
     request_content_type = request_headers["content-type"],
     request_host = request_headers["host"],
     request_ip = ngx_var.remote_addr,
+    request_ip_country = ngx_var.geoip_country,
+    request_ip_region = ngx_var.geoip_region,
+    request_ip_city = ngx_var.geoip_city,
     request_method = ngx_var.request_method,
     request_origin = request_headers["origin"],
     request_referer = request_headers["referer"],
@@ -122,6 +181,14 @@ local function log_request()
     end
   end
 
+  local geoip_latitude = ngx_var.geoip_latitude
+  if geoip_latitude then
+    data["request_ip_location"] = {
+      lat = tonumber(geoip_latitude),
+      lon = tonumber(ngx_var.geoip_longitude),
+    }
+  end
+
   local _, err = logger.log(cjson.encode(data) .. "\n")
   if err then
     ngx.log(ngx.ERR, "failed to log message: ", err)
@@ -129,6 +196,10 @@ local function log_request()
   end
 
   ngx.shared.logs:delete(id)
+
+  if data["request_ip_city"] and data["request_ip_location"] then
+    cache_new_city_geocode(data)
+  end
 end
 
 local ok, err = pcall(log_request)
