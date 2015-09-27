@@ -1,0 +1,20 @@
+---
+title: Administrative REST API - Documentation - API Umbrella
+header: Administrative REST API
+---
+
+<div class="swagger-section">
+  <div id="swagger-ui-container" class="swagger-ui-wrap"></div>
+</div>
+
+<%= stylesheet_link_tag "swagger" %>
+<%= javascript_include_tag "swagger" %>
+
+<script type="text/javascript">
+  window.swaggerUi = new SwaggerUi({
+    url: '<%= url_for('/docs/admin-api-swagger.yml') %>',
+    dom_id: 'swagger-ui-container'
+  });
+
+  window.swaggerUi.load();
+</script>

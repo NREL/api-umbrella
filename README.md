@@ -1,72 +1,50 @@
-# API Umbrella Gatekeeper (LUA)
+# API Umbrella
 
-API Umbrella Gatekeeper is the custom reverse proxy that's used in [API Umbrella](http://github.com/NREL/api-umbrella). 
 *This version is for development only, and is written in Lua [More informations](https://github.com/NREL/api-umbrella/issues/86)*
 
-Issues for this project are [maintained here](https://github.com/NREL/api-umbrella/issues).  
+## What Is API Umbrella?
 
-## Usage
+API Umbrella is an open source API management platform for exposing web service APIs. The basic goal of API Umbrella is to make life easier for both API creators and API consumers. How?
 
-See [Running API Umbrella](https://github.com/NREL/api-umbrella#running-api-umbrella) for setup instructions.
+* **Make life easier for API creators:** Allow API creators to focus on building APIs.
+  * **Standardize the boring stuff:** APIs can assume the boring stuff (access control, rate limiting, analytics, etc.) is already taken care if the API is being accessed, so common functionality doesn't need to be implemented in the API code.
+  * **Easy to add:** API Umbrella acts as a layer above your APIs, so your API code doesn't need to be modified to take advantage of the features provided.
+  * **Scalability:** Make it easier to scale your APIs.
+* **Make life easier for API consumers:** Let API consumers easily explore and use your APIs.
+  * **Unify disparate APIs:** Present separate APIs as a cohesive offering to API consumers. APIs running on different servers or written in different programming languages can be exposed at a single endpoint for the API consumer.
+  * **Standardize access:** All your APIs are can be accessed using the same API key credentials.
+  * **Standardize documentation:** All your APIs are documented in a single place and in a similar fashion.
 
-## Features
-####All the following informations are subject to quick change, while the LUA branch is still in active development.
+## Download
 
-### API Key Validation
+Binary packages are available for [download](http://nrel.github.io/api-umbrella/download/). Follow the quick setup instructions on the download page to begin running API Umbrella.
 
-Once a request hits API Umbrella Gatekeeper, it validates that a valid API key has been passed with the request. If a valid API key is present, the request is allowed to hit the API backend (assuming the user has not exceeded their rate limits). If the API key is missing or invalid, then Gatekeeper immediately responds to the request and the request is not permitted to access the API backend.
+## Getting Started
 
-API keys can be passed in three differnet, configurable ways:
+Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](http://nrel.github.io/api-umbrella/docs/getting-started/).
 
-- HTTP header
-- GET parameter
-- HTTP basic username
+## API Umbrella Development
 
-Currently, only simple API keys are supported, but it would be possible to extend API Umbrella Gatekeeper to support OAuth2 or other authentication mechanisms.
+Are you interested in working on the code behind API Umbrella? See our [development setup guide](http://nrel.github.io/api-umbrella/docs/development-setup/) to see how you can get a local development environment setup.
 
-API keys are stored in MongoDB.
+## Projects
 
-### Rate Limiting / Throttling
+In addition to this project, API Umbrella is made up of the following subprojects:
 
-In addition to validating API keys, API Umbrella Gatekeeper also performs rate lmiting to ensure users don't overload your API backends. Rate limiting can be performed based on the users API key, IP address, or both. Rate limits can be configured in a number of ways: 
+* [api-umbrella-gatekeeper](https://github.com/NREL/api-umbrella-gatekeeper) - The gatekeeper is a custom reverse proxy that sits in front of your APIs and efficiently validates incoming requests.
+* [api-umbrella-router](https://github.com/NREL/api-umbrella-router) - The router provides the necessary configuration to join together API Umbrealla Gatekeeper with other open source proxies.
+* [api-umbrella-web](https://github.com/NREL/api-umbrella-web) - The web component provides the website frontend and web admin tool.
+* [api-umbrella-static-site](https://github.com/NREL/api-umbrella-static-site) - The static site provides the public website content using a static site generator.
+* [api-umbrella-config](https://github.com/NREL/api-umbrella-config) - Provides configuration file parsing for the other API Umbrella components.
+* [omnibus-api-umbrella](https://github.com/NREL/omnibus-api-umbrella) - Omnibus packaging for API Umbrella
 
-- Rate limit by API key, IP address, or both.
-- Rate limit by any arbitrary rolling time window (per 1 second, per 15 minutes, per hour, per day, etc).
-- Rate limits can be configured on a per API or per user basis.
-- Rate limits can be  distributed and shared across hosting environemnts. This allowing for rate limits to still be efficiently applied if API Umbrella is distributed locally or geographically. 
+## Who's using API Umbrella?
 
-Rate limiting uses both Redis and MongoDB.
+* [api.data.gov](http://api.data.gov/)
+* [NREL Developer Network](http://developer.nrel.gov/)
 
-### Logging & Analytics
-
-Details on each incoming API request is asyncronously logged in a database to allow for near real time analytics of all your API usage. Various details are captured for each request:
-
-- Basic details like request URL.
-- Additional header information like, 
-- Geographic information on where the request originated from.
-- Response codes from the API backend, so you can look for requests that resulted in errors.
-- Performance metrics: How long each request took to respond is captured, so you can see how your API performs and look for problem areas.
-- Size metrics: Keep track of how many bytes are trasnferred for the request and the response.
-
-The [API Umbrella Web](http://github.com/NREL/api-umbrella-web) application provides an administrative interface for browsing and querying the analtyics gathered.
-
-Logs and analytics are gathered in ElasticSearch.
-
-### API Facade / Request Rewriting
-
-API Umbrella Gatekeeper can optionally modify the incoming request in a variety of ways. This allows your public facing API to differ from the backend.
-
-- URL rewriting: The incoming URL can be transformed before hitting the backend. This can be as simple as presenting the API under a different URL prefix, or as complex as providing a completely different URL structure.
-- Manipulate HTTP headers: Add or remove HTTP headers from the request before it hits the API backend. You can also used Handlebars templates to dynamic set a header value based on the request coming in: `x-original-proto: {{headers.x-forwarded-proto}}`
-
-The [API Umbrella Web](http://github.com/NREL/api-umbrella-web) application provides an administrative interface configuring the API backends and performing common types of rewriting.
+Are you using API Umbrella? [Edit this file](https://github.com/NREL/api-umbrella/blob/master/README.md) and let us know.
 
 ## License
 
-API Umbrella is open sourced under the [MIT license](https://github.com/NREL/api-umbrella-gatekeeper/blob/master/LICENSE.txt).
-
-## Acknowledgements
-
-Geographic data comes from GeoLite data created by [MaxMind](http://www.maxmind.com).
-
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/dcca3eb5f7decb43edcd988b8b923393 "githalytics.com")](http://githalytics.com/NREL/api-umbrella-gatekeeper)
+API Umbrella is open sourced under the [MIT license](https://github.com/NREL/api-umbrella/blob/master/LICENSE.txt).
