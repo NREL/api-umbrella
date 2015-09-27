@@ -716,6 +716,7 @@ PENLIGHT_VERSION:=1.3.2-2
 
 vendor/bundle: src/api-umbrella/web-app/Gemfile src/api-umbrella/web-app/Gemfile.lock | vendor $(PREFIX)/embedded/.installed/$(BUNDLER)
 	cd src/api-umbrella/web-app && PATH=$(PREFIX)/embedded/bin:$(PATH) bundle install --path=$(PWD)/vendor/bundle
+	cd src/api-umbrella/web-app && PATH=$(PREFIX)/embedded/bin:$(PATH) bundle clean
 	touch $@
 
 vendor/lib/luarocks/rocks/$(INSPECT)/$(INSPECT_VERSION): $(PREFIX)/embedded/.installed/$(LUAROCKS) | vendor
