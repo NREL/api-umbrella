@@ -13,7 +13,7 @@ set -x
 # first (the first is dedicated to the Rails tests).
 #
 # If we don't have multiple nodes, run all the tests on the single node
-if [ $CIRCLE_NODE_INDEX -gt "1" ] || [ $CIRCLE_NODE_TOTAL -lt "2" ]; then
+if [ $CIRCLE_NODE_INDEX -gt "0" ] || [ $CIRCLE_NODE_TOTAL -lt "2" ]; then
   MOCHA_NODE_TOTAL=$CIRCLE_NODE_TOTAL
   MOCHA_NODE_INDEX=$CIRCLE_NODE_INDEX
 
