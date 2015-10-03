@@ -22,7 +22,8 @@ local function set_cache_headers()
       -- functionality, but currently has some odd edge cases:
       -- https://issues.apache.org/jira/browse/TS-3432
       local trafficserver_code = matches[1]
-      if string.sub(trafficserver_code, 2, 2) == "H" then
+      local cache_lookup_code = string.sub(trafficserver_code, 2, 2)
+      if cache_lookup_code == "H" or cache_lookup_code == "R" then
         cache = "HIT"
       end
     elseif match_err then

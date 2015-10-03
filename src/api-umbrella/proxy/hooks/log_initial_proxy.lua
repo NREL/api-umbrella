@@ -111,6 +111,7 @@ local function log_request()
     request_size = tonumber(ngx_var.request_length),
     request_user_agent = request_headers["user-agent"],
     response_age = tonumber(response_headers["age"]),
+    response_cache = response_headers["x-cache"],
     response_content_encoding = response_headers["content-encoding"],
     response_content_length = tonumber(response_headers["content-length"]),
     response_content_type = response_headers["content-type"],

@@ -36,6 +36,7 @@ CONFIG proxy.config.http.connect_attempts_timeout INT 60
 # (proxy.config.http.keep_alive_enabled_out) and the reload process may lead to
 # TrafficServer trying to re-use a connection to a killed worker.
 CONFIG proxy.config.http.connect_attempts_max_retries INT 3
+CONFIG proxy.config.http.connect_attempts_max_retries_dead_server INT 3
 
 # Don't consider the backend down, even if some requests timeout. Since we're
 # actually funneling all of our existing traffic back through a single nginx

@@ -304,6 +304,21 @@ describe('caching', function() {
       }.bind(this));
     });
 
+    it('returns X-Cache: HIT for in-memory cache hits', function(done) {
+      var id = _.uniqueId();
+      // TrafficServer has two different categories for cache hits internally,
+      // in-memory RAM hits and disk hits. So make sure we account for both my
+      // making 3 requests.
+      request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function() {
+        request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function() {
+          request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {
+            response.headers['x-cache'].should.eql('HIT');
+            done();
+          });
+        }.bind(this));
+      }.bind(this));
+    });
+
     it('returns X-Cache: MISS for cache misses', function(done) {
       var id = _.uniqueId();
       request.get('http://localhost:9080/cacheable-cache-control-max-age/' + id, this.options, function(error, response) {

@@ -253,6 +253,7 @@ describe('logging', function() {
           'request_user_agent_family',
           'request_user_agent_type',
           'response_age',
+          'response_cache',
           'response_content_type',
           'response_server',
           'response_size',
@@ -305,6 +306,7 @@ describe('logging', function() {
         // response happens right on the boundary of a second.
         record.response_age.should.be.gte(20);
         record.response_age.should.be.lte(21);
+        record.response_cache.should.eql('MISS');
         record.response_content_type.should.eql('text/plain; charset=utf-8');
         record.response_server.should.eql('openresty');
         record.response_size.should.be.a('number');
@@ -956,11 +958,7 @@ describe('logging', function() {
     this.timeout(10000);
 
     async.timesSeries(3, function(index, callback) {
-      request.get('http://localhost:9080/cacheable-expires/test', this.options, function(error) {
-        setTimeout(function() {
-          callback(error);
-        }, 1050);
-      });
+      request.get('http://localhost:9080/cacheable-expires/test', this.options, callback);
     }.bind(this), function() {
       waitForLog(this.uniqueQueryId, { minCount: 3 }, function(error, response) {
         should.not.exist(error);
@@ -970,7 +968,7 @@ describe('logging', function() {
           var record = hit._source;
           record.response_status.should.eql(200);
           record.response_age.should.be.a('number');
-          if(record.response_age >= 1) {
+          if(record.response_cache === 'HIT') {
             cachedHits++;
           }
           itLogsBaseFields(record, this.uniqueQueryId, this.user);
