@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# Kill the child "sleep" processes on exit.
+cleanup() {
+  local PIDS=$(jobs -pr)
+  [ -n "$PIDS" ] && kill $PIDS
+}
+trap "cleanup" EXIT
+
 REMOTE_MD5_URL="https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.md5"
 DOWNLOAD_URL="https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz"
 FREQUENCY=86400 # Sleep for 1 day between runs
