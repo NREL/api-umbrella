@@ -141,10 +141,12 @@ RUBY_DIGEST:=sha256
 RUBY_CHECKSUM:=df795f2f99860745a416092a4004b016ccf77e8b82dec956b120f18bdc71edce
 RUBY_URL:=https://cache.ruby-lang.org/pub/ruby/2.2/$(RUBY).tar.gz
 
-TRAFFICSERVER_VERSION:=6.0.0
+# Don't move to 6.0.0 quite yet until we have a better sense of this issue:
+# http://mail-archives.apache.org/mod_mbox/trafficserver-users/201510.mbox/%3c1443975393.1364867.400869481.2BFF6EEF@webmail.messagingengine.com%3e
+TRAFFICSERVER_VERSION:=5.3.1
 TRAFFICSERVER:=trafficserver-$(TRAFFICSERVER_VERSION)
 TRAFFICSERVER_DIGEST:=md5
-TRAFFICSERVER_CHECKSUM:=4713f41adea06521078aefda77686c6e
+TRAFFICSERVER_CHECKSUM:=9c0e2450b1dd1bbdd63ebcc344b5a813
 TRAFFICSERVER_URL:=http://mirror.olnevhost.net/pub/apache/trafficserver/$(TRAFFICSERVER).tar.bz2
 
 UNBOUND_VERSION:=1.5.4
