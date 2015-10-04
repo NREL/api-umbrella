@@ -135,7 +135,7 @@ describe('api key validation', function() {
       });
 
       it('caches keys locally inside each worker process for a couple seconds', function(done) {
-        this.timeout(10000);
+        this.timeout(20000);
 
         async.series([
           function(next) {
@@ -146,7 +146,7 @@ describe('api key validation', function() {
                 should.not.exist(error);
                 response.statusCode.should.eql(200);
                 body.should.eql('Hello World');
-                setTimeout(timesCallback, _.random(0, 5));
+                setTimeout(timesCallback, _.random(5, 100));
               });
             }.bind(this), next);
           }.bind(this),
@@ -159,7 +159,7 @@ describe('api key validation', function() {
               request.get('http://localhost:9080/hello?post-save&api_key=' + this.apiKey, function(error, response) {
                 setTimeout(function() {
                   timesCallback(error, response.statusCode);
-                }, _.random(0, 5));
+                }, _.random(5, 100));
               });
             }.bind(this), function(error, statusCodes) {
               should.not.exist(error);
@@ -190,7 +190,7 @@ describe('api key validation', function() {
                 should.not.exist(error);
                 response.statusCode.should.eql(403);
                 body.should.include('API_KEY_DISABLED');
-                setTimeout(timesCallback, _.random(0, 5));
+                setTimeout(timesCallback, _.random(5, 100));
               });
             }.bind(this), next);
           }.bind(this),
