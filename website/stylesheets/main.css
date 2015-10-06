@@ -11,7 +11,7 @@ body {
 /* Titles */
 h1, h2, h3, h4, h5, h6 {
     font-family: "Raleway";
-    font-weight: 300;
+    font-weight: 500;
     color: #333;
 }
 
@@ -251,4 +251,8 @@ nav .nav-section {
 
 .platform-download p {
   font-size: 18px;
+}
+
+a.anchorjs-link, a.anchorjs-link:hover {
+  text-decoration: none;
 }

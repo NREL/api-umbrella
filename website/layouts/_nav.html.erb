@@ -9,6 +9,9 @@
 
 <div class="nav-section">Administrator Guide</div>
 <ul>
+  <li class="<%= "active" if(current_page.url == "/docs/install/") %>">
+    <%= link_to("Installation", "/docs/install.html", :relative => true) %>
+  </li>
   <li class="<%= "active" if(current_page.url == "/docs/getting-started/") %>">
     <%= link_to("Getting Started", "/docs/getting-started.html", :relative => true) %>
   </li>
