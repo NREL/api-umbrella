@@ -67,14 +67,6 @@ LIBMAXMINDDB_CHECKSUM:=36c31f0814dbf71b210ee57c2b9ef98c
 LIBMAXMINDDB_URL:=https://github.com/maxmind/libmaxminddb/releases/download/$(LIBMAXMINDDB_VERSION)/libmaxminddb-$(LIBMAXMINDDB_VERSION).tar.gz
 LIBMAXMINDDB_INSTALL_MARKER:=$(LIBMAXMINDDB_NAME)$(VERSION_SEP)$(LIBMAXMINDDB_VERSION)
 
-LIBYAML_VERSION:=0.1.6
-LIBYAML_NAME:=libyaml
-LIBYAML:=$(LIBYAML_NAME)-$(LIBYAML_VERSION)
-LIBYAML_DIGEST:=md5
-LIBYAML_CHECKSUM:=5fe00cda18ca5daeb43762b80c38e06e
-LIBYAML_URL:=http://pyyaml.org/download/libyaml/yaml-$(LIBYAML_VERSION).tar.gz
-LIBYAML_INSTALL_MARKER:=$(LIBYAML_NAME)$(VERSION_SEP)$(LIBYAML_VERSION)
-
 LUA_RESTY_DNS_CACHE_VERSION:=691613739a32f8405e56e56547270b9f72e77c34
 LUA_RESTY_DNS_CACHE_NAME:=lua-resty-dns-cache
 LUA_RESTY_DNS_CACHE:=$(LUA_RESTY_DNS_CACHE_NAME)-$(LUA_RESTY_DNS_CACHE_VERSION)
@@ -107,12 +99,12 @@ LUA_RESTY_SHCACHE_CHECKSUM:=5d3cbcf8fbad1954cdcb3826afa41afe
 LUA_RESTY_SHCACHE_URL:=https://github.com/cloudflare/lua-resty-shcache/archive/$(LUA_RESTY_SHCACHE_VERSION).tar.gz
 LUA_RESTY_SHCACHE_INSTALL_MARKER:=$(LUA_RESTY_SHCACHE_NAME)$(VERSION_SEP)$(LUA_RESTY_SHCACHE_VERSION)
 
-LUAROCKS_VERSION:=2.0.13
+LUAROCKS_VERSION:=2.2.2
 LUAROCKS_NAME:=luarocks
 LUAROCKS:=$(LUAROCKS_NAME)-$(LUAROCKS_VERSION)
 LUAROCKS_DIGEST:=md5
-LUAROCKS_CHECKSUM:=b46809e44648875e8234c2fef79783f9
-LUAROCKS_URL:=http://pkgs.fedoraproject.org/repo/pkgs/luarocks/luarocks-$(LUAROCKS_VERSION).tar.gz/$(LUAROCKS_CHECKSUM)/luarocks-$(LUAROCKS_VERSION).tar.gz
+LUAROCKS_CHECKSUM:=5a830953d27715cc955119609f8096e6
+LUAROCKS_URL:=http://luarocks.org/releases/luarocks-$(LUAROCKS_VERSION).tar.gz
 LUAROCKS_INSTALL_MARKER:=$(LUAROCKS_NAME)$(VERSION_SEP)$(LUAROCKS_VERSION)
 
 LUSTACHE_VERSION:=241b3a16f358035887c2c05c6e151c1f48401a42
@@ -320,22 +312,6 @@ deps/$(LIBMAXMINDDB): deps/$(LIBMAXMINDDB).tar.gz
 	touch $@
 
 deps/$(LIBMAXMINDDB)/.built: deps/$(LIBMAXMINDDB)
-	cd $< && ./configure \
-		--prefix=$(PREFIX)/embedded
-	cd $< && make
-	touch $@
-
-# LibYAML
-deps/$(LIBYAML).tar.gz: | deps
-	curl -L -o $@ $(LIBYAML_URL)
-
-deps/$(LIBYAML): deps/$(LIBYAML).tar.gz
-	openssl $(LIBYAML_DIGEST) $< | grep $(LIBYAML_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-deps/$(LIBYAML)/.built: deps/$(LIBYAML)
 	cd $< && ./configure \
 		--prefix=$(PREFIX)/embedded
 	cd $< && make
@@ -556,7 +532,6 @@ dependencies: \
 	deps/$(HEKA) \
 	deps/$(LIBCIDR)/.built \
 	deps/$(LIBMAXMINDDB)/.built \
-	deps/$(LIBYAML)/.built \
 	deps/$(LUAROCKS) \
 	deps/$(MONGODB) \
 	deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) \
@@ -618,18 +593,13 @@ $(INSTALLED_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER): deps/$(LIBMAXMINDDB)/.built | $
 	rm -f $(INSTALLED_DIR)/$(LIBMAXMINDDB_NAME)$(VERSION_SEP)*
 	touch $@
 
-$(INSTALLED_DIR)/$(LIBYAML_INSTALL_MARKER): deps/$(LIBYAML)/.built | $(INSTALLED_DIR)
-	cd deps/$(LIBYAML) && make install
-	rm -f $(INSTALLED_DIR)/$(LIBYAML_NAME)$(VERSION_SEP)*
-	touch $@
-
 $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER): deps/$(LUAROCKS) | $(INSTALLED_DIR) $(INSTALLED_DIR)/$(OPENRESTY_INSTALL_MARKER)
 	cd $< && ./configure \
 		--prefix=$(PREFIX)/embedded/openresty/luajit \
 		--with-lua=$(PREFIX)/embedded/openresty/luajit/ \
 		--with-lua-include=$(PREFIX)/embedded/openresty/luajit/include/luajit-2.1 \
 		--lua-suffix=jit-2.1.0-alpha
-	cd $< && env -i make && env -i make install
+	cd $< && env -i make build && env -i make install
 	ln -sf $(PREFIX)/embedded/openresty/luajit/bin/luarocks $(PREFIX)/embedded/bin/luarocks
 	rm -f $(INSTALLED_DIR)/$(LUAROCKS_NAME)$(VERSION_SEP)*
 	touch $@
@@ -699,9 +669,6 @@ $(INSTALLED_DIR)/$(TRAFFICSERVER_INSTALL_MARKER): deps/$(TRAFFICSERVER)/.built |
 	deps/$(LIBMAXMINDDB).tar.gz \
 	deps/$(LIBMAXMINDDB) \
 	deps/$(LIBMAXMINDDB)/.built \
-	deps/$(LIBYAML).tar.gz \
-	deps/$(LIBYAML) \
-	deps/$(LIBYAML)/.built \
 	deps/$(LUAROCKS).tar.gz \
 	deps/$(LUAROCKS) \
 	deps/$(LUA_RESTY_DNS_CACHE).tar.gz \
@@ -753,7 +720,6 @@ install_dependencies: \
 	$(INSTALLED_DIR)/$(HEKA_INSTALL_MARKER) \
 	$(INSTALLED_DIR)/$(LIBCIDR_INSTALL_MARKER) \
 	$(INSTALLED_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(LIBYAML_INSTALL_MARKER) \
 	$(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) \
 	$(INSTALLED_DIR)/$(MONGODB_INSTALL_MARKER) \
 	$(INSTALLED_DIR)/$(MORA_INSTALL_MARKER) \
@@ -812,7 +778,7 @@ $(LUAROCKS_DIR)/$(LUASOCKET)/$(LUASOCKET_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS
 
 $(LUAROCKS_DIR)/$(LYAML)/$(LYAML_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
 	rm -rf $(LUAROCKS_DIR)/$(LYAML)
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LYAML) $(LYAML_VERSION) YAML_DIR=$(PREFIX)/embedded
+	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LYAML) $(LYAML_VERSION)
 	touch $@
 
 $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
