@@ -40,6 +40,7 @@ dependencies:
     - killall --user $USER --wait supervisord || true
   override:
     - env PATH=/opt/api-umbrella/embedded/bin:$PATH npm install
+    - cd node_modules/geoip-lite && npm run-script updatedb
 test:
   override:
     - env PATH=/opt/api-umbrella/embedded/bin:$PATH ./node_modules/.bin/grunt
