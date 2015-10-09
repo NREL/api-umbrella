@@ -99,15 +99,102 @@ describe('formatted error responses', function() {
   });
 
   describe('data variables', function() {
-    shared.runServer();
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/',
+              backend_prefix: '/',
+            }
+          ],
+          settings: {
+            error_data: {
+              api_key_missing: {
+                embedded: 'base_url: {{base_url}} signup_url: {{signup_url}} contact_url: {{contact_url}}',
+                embedded_legacy: 'baseUrl: {{baseUrl}} signupUrl: {{signupUrl}} contactUrl: {{contactUrl}}',
+              },
+            },
+            error_templates: {
+              json: '{' +
+                '"base_url": {{base_url}},' +
+                '"baseUrl": {{baseUrl}},' +
+                '"signup_url": {{signup_url}},' +
+                '"signupUrl": {{signupUrl}},' +
+                '"contact_url": {{contact_url}},' +
+                '"contactUrl": {{contactUrl}},' +
+                '"embedded": {{embedded}},' +
+                '"embedded_legacy": {{embedded_legacy}} ' +
+              '}',
+            },
+          },
+        },
+      ],
+    });
+
+    it('substitutes the base_url variable', function(done) {
+      request.get('http://localhost:9333/base_url.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.base_url.should.eql('http://localhost:9333');
+        done();
+      });
+    });
 
     it('substitutes the baseUrl variable', function(done) {
-      Factory.create('api_user', { disabled_at: new Date() }, function(user) {
-        request.get('http://localhost:9333/hello.json?api_key=' + user.api_key, function(error, response, body) {
-          var data = JSON.parse(body);
-          data.error.message.should.include(' http://localhost:9333/contact ');
-          done();
-        });
+      request.get('http://localhost:9333/baseUrl.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.baseUrl.should.eql('http://localhost:9333');
+        done();
+      });
+    });
+
+    it('substitutes the signup_url variable', function(done) {
+      request.get('http://localhost:9333/signup_url.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.signup_url.should.eql('http://localhost:9333');
+        done();
+      });
+    });
+
+    it('substitutes the signupUrl variable', function(done) {
+      request.get('http://localhost:9333/signupUrl.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.signupUrl.should.eql('http://localhost:9333');
+        done();
+      });
+    });
+
+    it('substitutes the contact_url variable', function(done) {
+      request.get('http://localhost:9333/contact_url.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.contact_url.should.eql('http://localhost:9333/contact/');
+        done();
+      });
+    });
+
+    it('substitutes the contactUrl variable', function(done) {
+      request.get('http://localhost:9333/contactUrl.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.contactUrl.should.eql('http://localhost:9333/contact/');
+        done();
+      });
+    });
+
+    it('substitutes variables embedded inside of other variables', function(done) {
+      request.get('http://localhost:9333/embedded.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.embedded.should.eql('base_url: http://localhost:9333 signup_url: http://localhost:9333 contact_url: http://localhost:9333/contact/');
+        done();
+      });
+    });
+
+    it('substitutes legacy camel case variables embedded inside of other variables', function(done) {
+      request.get('http://localhost:9333/embedded_legacy.json', function(error, response, body) {
+        var data = JSON.parse(body);
+        data.embedded_legacy.should.eql('baseUrl: http://localhost:9333 signupUrl: http://localhost:9333 contactUrl: http://localhost:9333/contact/');
+        done();
       });
     });
   });
