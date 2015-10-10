@@ -24,6 +24,3 @@ header_filter_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/heade
 log_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/log_initial_proxy.lua';
 
 proxy_pass $api_umbrella_proxy_pass;
-#proxy_pass http://api_umbrella_trafficserver_backend;
-#proxy_pass http://api_umbrella_varnish_backend;
-#proxy_pass http://127.0.0.1:{{router.api_backends.port}};

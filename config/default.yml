@@ -11,21 +11,9 @@ rlimits:
   nproc: 20000
 http_port: 80
 https_port: 443
-root_dir: /opt/api-umbrella
-etc_dir: /opt/api-umbrella/etc
-log_dir: /opt/api-umbrella/var/log
-run_dir: /opt/api-umbrella/var/run
-tmp_dir: /opt/api-umbrella/var/tmp
-db_dir: /opt/api-umbrella/var/db
-redis:
-  host: 127.0.0.1
-  port: 14000
 heka:
   host: 127.0.0.1
   port: 14014
-beanstalkd:
-  host: 127.0.0.1
-  port: 14005
 nginx:
   workers: 4
   worker_connections: 8192
@@ -33,7 +21,6 @@ nginx:
 gatekeeper:
   workers: 4
   host: 127.0.0.1
-  dir: /opt/api-umbrella/embedded/apps/gatekeeper/current
   starting_port: 14050
   api_key_methods:
     - header
@@ -41,9 +28,6 @@ gatekeeper:
     - basicAuthUsername
   api_key_cache: true
   target: "127.0.0.1:14010"
-varnish:
-  host: 127.0.0.1
-  port: 14010
 trafficserver:
   host: 127.0.0.1
   port: 14009
@@ -54,11 +38,9 @@ trafficserver:
 web:
   host: 127.0.0.1
   port: 14012
-  dir: /opt/api-umbrella/embedded/apps/web/current
   rails_secret_token:
   devise_secret_key:
   puma:
-    bind: "unix:///opt/api-umbrella/var/run/puma.sock"
     workers: 2
     min_threads: 2
     max_threads: 24
@@ -81,12 +63,10 @@ web:
 static_site:
   host: 127.0.0.1
   port: 14013
-  dir: /opt/api-umbrella/embedded/apps/static-site/current
 router:
   api_backends:
     host: 127.0.0.1
     port: 14011
-  dir: /opt/api-umbrella/embedded/apps/router/current
   trusted_proxies: []
   global_rate_limits:
     ip_rate:
@@ -99,10 +79,6 @@ router:
   web_backend_regex: "^/(admin|admins|web-assets)(/|$)"
   web_backend_required_https_regex: "^/(admin|admins)(/|$)"
   website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
-supervisord:
-  inet_http_server:
-    host: 127.0.0.1
-    port: 14004
 hosts:
   - hostname: localhost
     default: true

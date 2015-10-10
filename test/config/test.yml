@@ -4,29 +4,15 @@ group:
 http_port: 9080
 https_port: 9081
 root_dir: /tmp/api-umbrella-test
-etc_dir: /tmp/api-umbrella-test/etc
-log_dir: /tmp/api-umbrella-test/var/log
-run_dir: /tmp/api-umbrella-test/var/run
-tmp_dir: /tmp/api-umbrella-test/var/tmp
-db_dir: /tmp/api-umbrella-test/var/db
 static_site:
   port: 13013
-  build_dir: /tmp/api-umbrella-test/static_site_build
-redis:
-  port: 13000
 heka:
   port: 13014
-beanstalkd:
-  port: 13005
 nginx:
   access_log_options:
 gatekeeper:
   starting_port: 13050
   target: "127.0.0.1:13010"
-varnish:
-  port: 13010
-  backend:
-    port: 13011
 trafficserver:
   port: 13009
   embedded_server_config:
@@ -48,9 +34,6 @@ router:
     - 10.10.10.10
   log_listener:
     port: 13006
-supervisord:
-  inet_http_server:
-    port: 13004
 mongodb:
   url: "mongodb://127.0.0.1:13090,127.0.0.1:13091/api_umbrella_test"
   embedded_server_config:

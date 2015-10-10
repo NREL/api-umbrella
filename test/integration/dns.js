@@ -21,12 +21,12 @@ describe('dns backend resolving', function() {
         records.forEach(function(record) {
           configContent += 'local-data: \'' + record + '\'\n';
         });
-        fs.writeFile(path.join(config.get('etc_dir'), 'test-env/unbound/active_test.conf'), configContent, next);
+        fs.writeFile(path.join(config.get('root_dir'), 'etc/test-env/unbound/active_test.conf'), configContent, next);
       },
       function(next) {
         // Reload unbound to read the new config file.
         var execOpts = { env: processEnv.env() };
-        execFile('perpctl', ['-b', path.join(config.get('etc_dir'), 'perp'), 'hup', 'test-env-unbound'], execOpts, function(error, stdout, stderr) {
+        execFile('perpctl', ['-b', path.join(config.get('root_dir'), 'etc/perp'), 'hup', 'test-env-unbound'], execOpts, function(error, stdout, stderr) {
           if(error) {
             return next('Error reloading unbound: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
           }

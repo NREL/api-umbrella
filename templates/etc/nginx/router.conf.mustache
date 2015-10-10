@@ -124,11 +124,6 @@ http {
     keepalive 10;
   }
 
-  upstream api_umbrella_varnish_backend {
-    server {{varnish.host}}:{{varnish.port}};
-    keepalive 10;
-  }
-
   upstream api_umbrella_trafficserver_backend {
     server {{trafficserver.host}}:{{trafficserver.port}};
     keepalive 10;

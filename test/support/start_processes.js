@@ -14,15 +14,15 @@ var _ = require('lodash'),
 
 before(function clearTestEnvDns() {
   // This included file must exist before unbound can start.
-  var configPath = path.join(config.get('etc_dir'), 'test-env/unbound/active_test.conf');
+  var configPath = path.join(config.get('root_dir'), 'etc/test-env/unbound/active_test.conf');
   mkdirp.sync(path.dirname(configPath));
   fs.writeFileSync(configPath, '');
 });
 
 before(function stubDummyStaticSite() {
-  mkdirp.sync(path.join(config.get('static_site.build_dir'), 'signup'));
-  fs.writeFileSync(path.join(config.get('static_site.build_dir'), 'index.html'), 'Your API Site Name');
-  fs.writeFileSync(path.join(config.get('static_site.build_dir'), 'signup/index.html'), 'API Key Signup');
+  mkdirp.sync(path.join(config.get('root_dir'), 'embedded/apps/static-site/current/build/signup'));
+  fs.writeFileSync(path.join(config.get('root_dir'), 'embedded/apps/static-site/current/build/index.html'), 'Your API Site Name');
+  fs.writeFileSync(path.join(config.get('root_dir'), 'embedded/apps/static-site/current/build/signup/index.html'), 'API Key Signup');
 });
 
 // Trigger the mongo-orchestration setup to configure our replicaset.

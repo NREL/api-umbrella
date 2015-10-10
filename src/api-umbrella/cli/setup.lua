@@ -52,6 +52,30 @@ local function read_system_config()
 end
 
 local function set_computed_config()
+  if not config["root_dir"] then
+    config["root_dir"] = os.getenv("API_UMBRELLA_INSTALL_ROOT") or "/opt/api-umbrella"
+  end
+
+  if not config["etc_dir"] then
+    config["etc_dir"] = path.join(config["root_dir"], "etc")
+  end
+
+  if not config["log_dir"] then
+    config["log_dir"] = path.join(config["root_dir"], "var/log")
+  end
+
+  if not config["run_dir"] then
+    config["run_dir"] = path.join(config["root_dir"], "var/run")
+  end
+
+  if not config["tmp_dir"] then
+    config["tmp_dir"] = path.join(config["root_dir"], "var/tmp")
+  end
+
+  if not config["db_dir"] then
+    config["db_dir"] = path.join(config["root_dir"], "var/db")
+  end
+
   local trusted_proxies = config["router"]["trusted_proxies"] or {}
   if not array_includes(trusted_proxies, "127.0.0.1") then
     table.insert(trusted_proxies, "127.0.0.1")
@@ -96,23 +120,20 @@ local function set_computed_config()
     router = {
       trusted_proxies = trusted_proxies,
     },
+    gatekeeper = {
+      dir = src_root_dir,
+    },
+    web = {
+      dir = path.join(src_root_dir, "src/api-umbrella/web-app"),
+      puma = {
+        bind = "unix://" .. config["run_dir"] .. "/puma.sock",
+      },
+    },
+    static_site = {
+      dir = path.join(config["root_dir"], "embedded/apps/static-site/current"),
+      build_dir = path.join(config["root_dir"], "embedded/apps/static-site/current/build"),
+    },
   })
-
-  if config["static_site"]["dir"] and not config["static_site"]["build_dir"] then
-    deep_merge_overwrite_arrays(config, {
-      static_site = {
-        build_dir = path.join(config["static_site"]["dir"], "build"),
-      },
-    })
-  end
-
-  if config["app_env"] == "test" then
-    deep_merge_overwrite_arrays(config, {
-      gatekeeper = {
-        dir = src_root_dir,
-      },
-    })
-  end
 end
 
 local function set_template_config()
@@ -199,14 +220,11 @@ local function prepare()
     config["log_dir"],
     config["run_dir"],
     config["tmp_dir"],
-    path.join(config["db_dir"], "beanstalkd"),
     path.join(config["db_dir"], "elasticsearch"),
     path.join(config["db_dir"], "mongodb"),
-    path.join(config["db_dir"], "redis"),
     path.join(config["etc_dir"], "trafficserver/snapshots"),
     path.join(config["log_dir"], "trafficserver"),
     path.join(config["root_dir"], "var/trafficserver"),
-    path.join(config["run_dir"], "varnish/api-umbrella"),
   }
 
   for _, directory in ipairs(dirs) do

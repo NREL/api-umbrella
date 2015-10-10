@@ -6,11 +6,6 @@ var _ = require('lodash'),
 _.extend(exports, {
   envOverrides: {},
 
-  supervisordConfigPath: function() {
-    var config = require('./config');
-    return path.join(config.get('etc_dir'), 'supervisord.conf');
-  },
-
   env: function() {
     return _.merge({
       'PATH': [

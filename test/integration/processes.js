@@ -43,7 +43,7 @@ describe('processes', function() {
       async.series([
         // Fetch the PID of the nginx parent/master process.
         function(callback) {
-          execFile('perpstat', ['-b', path.join(config.get('etc_dir'), 'perp'), 'gatekeeper-nginx'], execOpts, function(error, stdout, stderr) {
+          execFile('perpstat', ['-b', path.join(config.get('root_dir'), 'etc/perp'), 'gatekeeper-nginx'], execOpts, function(error, stdout, stderr) {
             if(error || !stdout) {
               return callback('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
             }
@@ -156,7 +156,7 @@ describe('processes', function() {
                   // Log the outputs of each run. This is to help debugging in
                   // the case of failures (so we can more easily identify what
                   // specifically might be leaking).
-                  var logPath = path.join(config.get('log_dir'), 'descriptor_leak_test' + index + '.log');
+                  var logPath = path.join(config.get('root_dir'), 'var/log/descriptor_leak_test' + index + '.log');
                   fs.writeFileSync(logPath, logLines.sort().join('\n'));
 
                   setTimeout(function() {
@@ -258,7 +258,7 @@ describe('processes', function() {
     it('updates templates with file-based config changes', function(done) {
       this.timeout(10000);
 
-      var nginxFile = path.join(config.get('etc_dir'), 'nginx/router.conf');
+      var nginxFile = path.join(config.get('root_dir'), 'etc/nginx/router.conf');
       var nginxConfig = fs.readFileSync(nginxFile).toString();
       nginxConfig.should.contain('worker_processes 4;');
 
@@ -380,7 +380,7 @@ describe('processes', function() {
       async.series([
         // Fetch the PID of the nginx parent/master process.
         function(callback) {
-          execFile('perpstat', ['-b', path.join(config.get('etc_dir'), 'perp'), 'gatekeeper-nginx'], execOpts, function(error, stdout, stderr) {
+          execFile('perpstat', ['-b', path.join(config.get('root_dir'), 'etc/perp'), 'gatekeeper-nginx'], execOpts, function(error, stdout, stderr) {
             if(error || !stdout) {
               return callback('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
             }

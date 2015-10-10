@@ -12,7 +12,6 @@ require('./support/env');
 var mongoose = require('mongoose');
 global.mongoose = mongoose;
 
-require('./support/delete_beanstalk');
 require('./support/start_processes');
 
 require('./support/chai');
