@@ -85,9 +85,9 @@ gem "rabl", "~> 0.11.5"
 gem "jbuilder", "~> 2.2.2"
 gem "csv_builder", "~> 2.1.1"
 
-# We're not using this ourselves, but if it gets updated to 0.9.1 it seems to
-# break various things in our responses. I think the 0.9.1 release might be
-# slightly busted based on these reports:
+# We're not using this ourselves (ember-rails is pulling it in), but if it gets
+# updated to 0.9.1 it seems to break various things in our responses. I think
+# the 0.9.1 release might be slightly busted based on these reports:
 # https://github.com/rails-api/active_model_serializers/issues/747
 # https://github.com/rails-api/active_model_serializers/issues/746
 # Lock to 0.9.0 for now.
@@ -126,6 +126,17 @@ gem "http_accept_language", "~> 2.0.5"
 
 # Markdown
 gem "kramdown", "~> 1.6.0"
+
+# Include test-unit so rspec 2 can run under Ruby 2.2:
+# https://github.com/rspec/rspec-rails/issues/1273
+#
+# Include in production bundle (not just development/test), since
+# active_model_serializers (which we don't use, but ember-rails forces as a
+# dependency) tries to monkey-patch ActionController::TestCase at load-time
+# (https://github.com/rails-api/active_model_serializers/blob/v0.9.3/lib/active_model_serializers.rb#L15).
+# This fails under Ruby 2.2 if we don't also have this test-unit gem in
+# production. Sigh...
+gem "test-unit", :require => false
 
 group :production, :staging do
   # Log to stdout instead of file
@@ -251,9 +262,6 @@ group :development, :test do
   gem "vcr", "~> 2.9.3", :require => false
   gem "webmock", "~> 1.21.0", :require => false
 
-  # Include test-unit so rspec 2 can run under Ruby 2.2:
-  # https://github.com/rspec/rspec-rails/issues/1273
-  gem "test-unit", :require => false
 
   # Generate output for CI.
   gem "rspec_junit_formatter", "~> 0.2.3"
