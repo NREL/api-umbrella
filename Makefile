@@ -7,12 +7,20 @@ unexport MY_RUBY_HOME
 unexport RUBY_VERSION
 
 STANDARD_PATH:=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
-PREFIX:=/tmp/api-umbrella-build
+PREFIX:=/opt/api-umbrella
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-INSTALLED_DIR:=$(PREFIX)/embedded/.installed
+DEPS_DIR:=$(ROOT_DIR)/build/deps
+STAGE_DIR:=$(ROOT_DIR)/build/stage
+STAGE_PREFIX:=$(STAGE_DIR)$(PREFIX)
+STAGE_MARKERS_DIR:=$(ROOT_DIR)/build/stage/.installed
 LUAROCKS_DIR:=vendor/lib/luarocks/rocks
+LUAROCKS_CMD:=LUA_PATH="$(STAGE_PREFIX)/embedded/openresty/luajit/share/lua/5.1/?.lua;$(STAGE_PREFIX)/embedded/openresty/luajit/share/lua/5.1/?/init.lua;;" $(STAGE_PREFIX)/embedded/bin/luarocks
+LUA_SHARE_DIR:=vendor/share/lua/5.1
 VERSION_SEP:=-version-
 
+#
+# Dependencies
+#
 BUNDLER_VERSION:=1.10.6
 BUNDLER_NAME:=bundler
 BUNDLER:=$(BUNDLER_NAME)-$(BUNDLER_VERSION)
@@ -190,6 +198,28 @@ TRAFFICSERVER_CHECKSUM:=9c0e2450b1dd1bbdd63ebcc344b5a813
 TRAFFICSERVER_URL:=http://mirror.olnevhost.net/pub/apache/trafficserver/trafficserver-$(TRAFFICSERVER_VERSION).tar.bz2
 TRAFFICSERVER_INSTALL_MARKER:=$(TRAFFICSERVER_NAME)$(VERSION_SEP)$(TRAFFICSERVER_VERSION)
 
+#
+# LuaRocks Dependencies
+#
+INSPECT:=inspect
+INSPECT_VERSION:=3.0-1
+LIBCIDR_FFI:=libcidr-ffi
+LIBCIDR_FFI_VERSION:=0.1.0-1
+LIBCIDR_FFI_URL:=https://raw.githubusercontent.com/GUI/lua-libcidr-ffi/master/libcidr-ffi-git-1.rockspec
+LUA_CMSGPACK:=lua-cmsgpack
+LUA_CMSGPACK_VERSION:=0.4.0-0
+LUAPOSIX:=luaposix
+LUAPOSIX_VERSION:=33.3.1-1
+LUASOCKET:=luasocket
+LUASOCKET_VERSION:=2.0.2-6
+LYAML:=lyaml
+LYAML_VERSION:=6.0-1
+PENLIGHT:=penlight
+PENLIGHT_VERSION:=1.3.2-2
+
+#
+# Test Dependencies
+#
 UNBOUND_VERSION:=1.5.4
 UNBOUND_NAME:=unbound
 UNBOUND:=$(UNBOUND_NAME)-$(UNBOUND_VERSION)
@@ -198,81 +228,343 @@ UNBOUND_CHECKSUM:=a1e1c1a578cf8447cb51f6033714035736a0f04444854a983123c094cc6fb1
 UNBOUND_URL:=https://www.unbound.net/downloads/unbound-$(UNBOUND_VERSION).tar.gz
 UNBOUND_INSTALL_MARKER:=$(UNBOUND_NAME)$(VERSION_SEP)$(UNBOUND_VERSION)
 
+#
+# LuaRocks Test Dependencies
+#
+LUACHECK:=luacheck
+LUACHECK_VERSION:=0.11.1-1
+
 # Define non-file/folder targets
 .PHONY: \
 	all \
 	clean \
 	dependencies \
 	install \
-	install_app_dependencies \
-	install_dependencies \
-	install_test_dependencies \
+	stage \
+	stage_app_dependencies \
+	stage_dependencies \
+	test_dependencies \
 	lint \
 	test
 
-all: dependencies
+define download
+	$(eval DOWNLOAD_PATH:=$@)
+	$(eval DOWNLOAD_URL:=$($(1)_URL))
+	curl -L -o $(DOWNLOAD_PATH) $(DOWNLOAD_URL)
+	touch $(DOWNLOAD_PATH)
+endef
 
-deps:
+define decompress
+	$(eval DOWNLOAD_PATH:=$<)
+	$(eval DIR:=$@)
+	$(eval CHECKSUM_TYPE:=$($(1)_DIGEST))
+	$(eval CHECKSUM:=$($(1)_CHECKSUM))
+	openssl $(CHECKSUM_TYPE) $(DOWNLOAD_PATH) | grep $(CHECKSUM) || (echo "checksum mismatch $(DOWNLOAD_PATH)" && exit 1)
+	mkdir -p $(DIR)
+	tar --strip-components 1 -C $(DIR) -xf $(DOWNLOAD_PATH)
+	touch $(DIR)
+endef
+
+define luarocks_install
+	$(eval PACKAGE:=$($(1)))
+	$(eval PACKAGE_VERSION:=$($(1)_VERSION))
+	$(LUAROCKS_CMD) --tree=vendor install $(PACKAGE) $(PACKAGE_VERSION)
+	touch $@
+endef
+
+all: stage
+
+$(DEPS_DIR):
 	mkdir -p $@
+	touch $@
 
-deps/GeoLite2-City.md5: | deps
+$(STAGE_PREFIX)/embedded/bin:
+	mkdir -p $@
+	touch $@
+
+$(STAGE_PREFIX)/embedded/sbin:
+	mkdir -p $@
+	touch $@
+
+$(STAGE_MARKERS_DIR):
+	mkdir -p $@
+	touch $@
+
+# Bundler
+$(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER): | $(STAGE_MARKERS_DIR) $(STAGE_MARKERS_DIR)/$(RUBY_INSTALL_MARKER)
+	PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) gem install bundler -v '$(BUNDLER_VERSION)' --no-rdoc --no-ri
+	rm -f $(STAGE_MARKERS_DIR)/$(BUNDLER_NAME)$(VERSION_SEP)*
+	touch $@
+
+# ElasticSearch
+$(DEPS_DIR)/$(ELASTICSEARCH).tar.gz: | $(DEPS_DIR)
+	$(call download,ELASTICSEARCH)
+
+$(DEPS_DIR)/$(ELASTICSEARCH): $(DEPS_DIR)/$(ELASTICSEARCH).tar.gz
+	$(call decompress,ELASTICSEARCH)
+
+$(STAGE_MARKERS_DIR)/$(ELASTICSEARCH_INSTALL_MARKER): $(DEPS_DIR)/$(ELASTICSEARCH) | $(STAGE_MARKERS_DIR)
+	mkdir -p $(STAGE_PREFIX)/embedded/elasticsearch
+	rsync -a $(DEPS_DIR)/$(ELASTICSEARCH)/ $(STAGE_PREFIX)/embedded/elasticsearch/
+	cd $(STAGE_PREFIX)/embedded/bin && ln -sf ../elasticsearch/bin/plugin ./plugin
+	cd $(STAGE_PREFIX)/embedded/bin && ln -sf ../elasticsearch/bin/elasticsearch ./elasticsearch
+	rm -f $(STAGE_MARKERS_DIR)/$(ELASTICSEARCH_NAME)$(VERSION_SEP)*
+	touch $@
+
+# GeoLite2-City.mmdb
+$(DEPS_DIR)/GeoLite2-City.md5: | $(DEPS_DIR)
 	curl -L -o $@ https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.md5
 	touch $@
 
-deps/GeoLite2-City.mmdb.gz: | deps
+$(DEPS_DIR)/GeoLite2-City.mmdb.gz: | $(DEPS_DIR)
 	curl -L -o $@ https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz
 	touch $@
 
-deps/GeoLite2-City.mmdb: deps/GeoLite2-City.mmdb.gz deps/GeoLite2-City.md5
+$(DEPS_DIR)/GeoLite2-City.mmdb: $(DEPS_DIR)/GeoLite2-City.mmdb.gz $(DEPS_DIR)/GeoLite2-City.md5
 	gunzip -c $< > $@
-	openssl md5 $@ | grep `cat deps/GeoLite2-City.md5` || (echo "checksum mismatch $@" && exit 1)
+	openssl md5 $@ | grep `cat $(DEPS_DIR)/GeoLite2-City.md5` || (echo "checksum mismatch $@" && exit 1)
+	touch $@
+
+$(STAGE_MARKERS_DIR)/GeoLite2-City.mmdb: $(DEPS_DIR)/GeoLite2-City.mmdb | $(STAGE_MARKERS_DIR)
+	mkdir -p $(STAGE_PREFIX)/embedded/var/db/geoip2
+	rsync -a $(DEPS_DIR)/GeoLite2-City.mmdb $(STAGE_PREFIX)/embedded/var/db/geoip2/city.mmdb
+	touch $@
+
+# Glide
+$(DEPS_DIR)/$(GLIDE).tar.gz: | $(DEPS_DIR)
+	$(call download,GLIDE)
+
+$(DEPS_DIR)/$(GLIDE): $(DEPS_DIR)/$(GLIDE).tar.gz
+	$(call decompress,GLIDE)
+
+$(DEPS_DIR)/gocode/src/github.com/Masterminds/glide: | $(DEPS_DIR)/$(GLIDE)
+	mkdir -p $@
+	rsync -a --delete-after $(DEPS_DIR)/$(GLIDE)/ $@/
+	touch $@
+
+$(DEPS_DIR)/$(GLIDE)/.built: $(DEPS_DIR)/gocode/src/github.com/Masterminds/glide $(DEPS_DIR)/$(GOLANG)
+	cd $< && PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(PATH) GOPATH=$(DEPS_DIR)/gocode GOROOT=$(DEPS_DIR)/$(GOLANG) go get
+	cd $< && PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(PATH) GOPATH=$(DEPS_DIR)/gocode GOROOT=$(DEPS_DIR)/$(GOLANG) go build
+	touch $@
+
+# Go
+$(DEPS_DIR)/$(GOLANG).tar.gz: | $(DEPS_DIR)
+	$(call download,GOLANG)
+
+$(DEPS_DIR)/$(GOLANG): $(DEPS_DIR)/$(GOLANG).tar.gz
+	$(call decompress,GOLANG)
+
+# Heka
+$(DEPS_DIR)/$(HEKA).tar.gz: | $(DEPS_DIR)
+	$(call download,HEKA)
+
+$(DEPS_DIR)/$(HEKA): $(DEPS_DIR)/$(HEKA).tar.gz
+	$(call decompress,HEKA)
+
+$(STAGE_MARKERS_DIR)/$(HEKA_INSTALL_MARKER): $(DEPS_DIR)/$(HEKA) | $(STAGE_MARKERS_DIR)
+	mkdir -p $(STAGE_PREFIX)/embedded
+	rsync -a $(DEPS_DIR)/$(HEKA)/ $(STAGE_PREFIX)/embedded/
+	# Trim our own distribution by removing some larger files we don't need for
+	# API Umbrella.
+	rm -f $(STAGE_PREFIX)/embedded/bin/heka-cat \
+		$(STAGE_PREFIX)/embedded/bin/heka-flood \
+		$(STAGE_PREFIX)/embedded/bin/heka-inject \
+		$(STAGE_PREFIX)/embedded/bin/heka-sbmgr
+	rm -f $(STAGE_MARKERS_DIR)/$(HEKA_NAME)$(VERSION_SEP)*
+	touch $@
+
+# libcidr
+$(DEPS_DIR)/$(LIBCIDR).tar.xz: | $(DEPS_DIR)
+	$(call download,LIBCIDR)
+
+$(DEPS_DIR)/$(LIBCIDR): $(DEPS_DIR)/$(LIBCIDR).tar.xz
+	$(call decompress,LIBCIDR)
+
+$(DEPS_DIR)/$(LIBCIDR)/.built: $(DEPS_DIR)/$(LIBCIDR)
+	cd $< && make PREFIX=$(PREFIX)/embedded
+	touch $@
+
+$(STAGE_MARKERS_DIR)/$(LIBCIDR_INSTALL_MARKER): $(DEPS_DIR)/$(LIBCIDR)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(LIBCIDR) && make install NO_DOCS=1 NO_EXAMPLES=1 PREFIX=$(PREFIX)/embedded DESTDIR=$(STAGE_DIR)
+	rm -f $(STAGE_PREFIX)/embedded/bin/cidrcalc
+	rm -f $(STAGE_MARKERS_DIR)/$(LIBCIDR_NAME)$(VERSION_SEP)*
+	touch $@
+
+# libmaxminddb
+$(DEPS_DIR)/$(LIBMAXMINDDB).tar.gz: | $(DEPS_DIR)
+	$(call download,LIBMAXMINDDB)
+
+$(DEPS_DIR)/$(LIBMAXMINDDB): $(DEPS_DIR)/$(LIBMAXMINDDB).tar.gz
+	$(call decompress,LIBMAXMINDDB)
+
+$(DEPS_DIR)/$(LIBMAXMINDDB)/.built: $(DEPS_DIR)/$(LIBMAXMINDDB)
+	cd $< && LDFLAGS="-Wl,-rpath,$(STAGE_PREFIX)/embedded/lib" ./configure \
+		--prefix=$(PREFIX)/embedded
+	cd $< && make
+	touch $@
+
+$(STAGE_MARKERS_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER): $(DEPS_DIR)/$(LIBMAXMINDDB)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(LIBMAXMINDDB) && make install DESTDIR=$(STAGE_DIR)
+	rm -f $(STAGE_MARKERS_DIR)/$(LIBMAXMINDDB_NAME)$(VERSION_SEP)*
+	touch $@
+
+# LuaRocks
+$(DEPS_DIR)/$(LUAROCKS).tar.gz: | $(DEPS_DIR)
+	$(call download,LUAROCKS)
+
+$(DEPS_DIR)/$(LUAROCKS): $(DEPS_DIR)/$(LUAROCKS).tar.gz
+	$(call decompress,LUAROCKS)
+
+$(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER): $(DEPS_DIR)/$(LUAROCKS) | $(STAGE_MARKERS_DIR) $(STAGE_MARKERS_DIR)/$(OPENRESTY_INSTALL_MARKER)
+	cd $< && ./configure \
+		--prefix=$(PREFIX)/embedded/openresty/luajit \
+		--with-lua=$(STAGE_PREFIX)/embedded/openresty/luajit/ \
+		--with-lua-include=$(STAGE_PREFIX)/embedded/openresty/luajit/include/luajit-2.1 \
+		--lua-suffix=jit-2.1.0-alpha
+	cd $< && env -i make build
+	cd $< && env -i make install DESTDIR=$(STAGE_DIR)
+	cd $(STAGE_PREFIX)/embedded/bin && ln -sf ../openresty/luajit/bin/luarocks ./luarocks
+	rm -f $(STAGE_MARKERS_DIR)/$(LUAROCKS_NAME)$(VERSION_SEP)*
+	touch $@
+
+# lua-resty-dns-cache
+$(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE).tar.gz: | $(DEPS_DIR)
+	$(call download,LUA_RESTY_DNS_CACHE)
+
+$(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE): $(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE).tar.gz
+	$(call decompress,LUA_RESTY_DNS_CACHE)
+
+$(LUA_SHARE_DIR)/resty/dns/cache.lua: $(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE) | vendor
+	mkdir -p $(LUA_SHARE_DIR)/resty
+	rsync -a $(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE)/lib/resty/ $(LUA_SHARE_DIR)/resty/
+	touch $@
+
+# lua-resty-http
+$(DEPS_DIR)/$(LUA_RESTY_HTTP).tar.gz: | $(DEPS_DIR)
+	$(call download,LUA_RESTY_HTTP)
+
+$(DEPS_DIR)/$(LUA_RESTY_HTTP): $(DEPS_DIR)/$(LUA_RESTY_HTTP).tar.gz
+	$(call decompress,LUA_RESTY_HTTP)
+
+$(LUA_SHARE_DIR)/resty/http.lua: $(DEPS_DIR)/$(LUA_RESTY_HTTP) | vendor
+	mkdir -p $(LUA_SHARE_DIR)/resty
+	rsync -a $(DEPS_DIR)/$(LUA_RESTY_HTTP)/lib/resty/ $(LUA_SHARE_DIR)/resty/
+	touch $@
+
+# lua-resty-logger-socket
+$(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET).tar.gz: | $(DEPS_DIR)
+	$(call download,LUA_RESTY_LOGGER_SOCKET)
+
+$(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET): $(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET).tar.gz
+	$(call decompress,LUA_RESTY_LOGGER_SOCKET)
+
+$(LUA_SHARE_DIR)/resty/logger/socket.lua: $(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET) | vendor
+	mkdir -p $(LUA_SHARE_DIR)/resty
+	rsync -a $(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET)/lib/resty/ $(LUA_SHARE_DIR)/resty/
+	touch $@
+
+# lua-resty-shcache
+$(DEPS_DIR)/$(LUA_RESTY_SHCACHE).tar.gz: | $(DEPS_DIR)
+	$(call download,LUA_RESTY_SHCACHE)
+
+$(DEPS_DIR)/$(LUA_RESTY_SHCACHE): $(DEPS_DIR)/$(LUA_RESTY_SHCACHE).tar.gz
+	$(call decompress,LUA_RESTY_SHCACHE)
+
+$(LUA_SHARE_DIR)/shcache.lua: $(DEPS_DIR)/$(LUA_RESTY_SHCACHE) | vendor
+	mkdir -p $(LUA_SHARE_DIR)
+	rsync -a $(DEPS_DIR)/$(LUA_RESTY_SHCACHE)/*.lua $(LUA_SHARE_DIR)/
+	touch $@
+
+# lustache
+$(DEPS_DIR)/$(LUSTACHE).tar.gz: | $(DEPS_DIR)
+	$(call download,LUSTACHE)
+
+$(DEPS_DIR)/$(LUSTACHE): $(DEPS_DIR)/$(LUSTACHE).tar.gz
+	$(call decompress,LUSTACHE)
+
+$(LUA_SHARE_DIR)/lustache.lua: $(DEPS_DIR)/$(LUSTACHE) | vendor
+	mkdir -p $(LUA_SHARE_DIR)
+	rsync -a $(DEPS_DIR)/$(LUSTACHE)/src/ $(LUA_SHARE_DIR)/
+	touch $@
+
+# MongoDB
+$(DEPS_DIR)/$(MONGODB).tar.gz: | $(DEPS_DIR)
+	$(call download,MONGODB)
+
+$(DEPS_DIR)/$(MONGODB): $(DEPS_DIR)/$(MONGODB).tar.gz
+	$(call decompress,MONGODB)
+
+$(STAGE_MARKERS_DIR)/$(MONGODB_INSTALL_MARKER): $(DEPS_DIR)/$(MONGODB) | $(STAGE_MARKERS_DIR)
+	mkdir -p $(STAGE_PREFIX)/embedded
+	rsync -a $(DEPS_DIR)/$(MONGODB)/ $(STAGE_PREFIX)/embedded/
+	# Trim our own distribution by removing some larger files we don't need for
+	# API Umbrella.
+	rm -f $(STAGE_PREFIX)/embedded/bin/bsondump \
+		$(STAGE_PREFIX)/embedded/bin/mongoexport \
+		$(STAGE_PREFIX)/embedded/bin/mongofiles \
+		$(STAGE_PREFIX)/embedded/bin/mongoimport \
+		$(STAGE_PREFIX)/embedded/bin/mongooplog \
+		$(STAGE_PREFIX)/embedded/bin/mongoperf \
+		$(STAGE_PREFIX)/embedded/bin/mongos
+	rm -f $(STAGE_MARKERS_DIR)/$(MONGODB_NAME)$(VERSION_SEP)*
+	touch $@
+
+# Mora
+$(DEPS_DIR)/$(MORA).tar.gz: | $(DEPS_DIR)
+	$(call download,MORA)
+
+$(DEPS_DIR)/$(MORA): $(DEPS_DIR)/$(MORA).tar.gz
+	$(call decompress,MORA)
+
+$(DEPS_DIR)/gocode/src/github.com/emicklei/mora: | $(DEPS_DIR)/$(MORA)
+	mkdir -p $@
+	rsync -a --delete-after $(DEPS_DIR)/$(MORA)/ $@/
+	touch $@
+
+$(DEPS_DIR)/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM): $(DEPS_DIR)/gocode/src/github.com/emicklei/mora $(DEPS_DIR)/$(GLIDE)/.built $(DEPS_DIR)/$(GOLANG)
+	cp build/mora_glide.yaml $</glide.yaml
+	cd $< && PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(DEPS_DIR)/gocode/bin:$(PATH) GOPATH=$(DEPS_DIR)/gocode GOROOT=$(DEPS_DIR)/$(GOLANG) GO15VENDOREXPERIMENT=1 glide update
+	cd $< && PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(DEPS_DIR)/gocode/bin:$(PATH) GOPATH=$(DEPS_DIR)/gocode GOROOT=$(DEPS_DIR)/$(GOLANG) GO15VENDOREXPERIMENT=1 go install
+	touch $@
+
+$(STAGE_MARKERS_DIR)/$(MORA_INSTALL_MARKER): $(DEPS_DIR)/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) | $(STAGE_MARKERS_DIR)
+	cp $(DEPS_DIR)/gocode/bin/mora $(STAGE_PREFIX)/embedded/bin/
+	rm -f $(STAGE_MARKERS_DIR)/$(MORA_NAME)$(VERSION_SEP)*
 	touch $@
 
 # ngx_dyups
-deps/$(NGX_DYUPS).tar.gz: | deps
-	curl -L -o $@ $(NGX_DYUPS_URL)
+$(DEPS_DIR)/$(NGX_DYUPS).tar.gz: | $(DEPS_DIR)
+	$(call download,NGX_DYUPS)
 
-deps/$(NGX_DYUPS): deps/$(NGX_DYUPS).tar.gz
-	openssl $(NGX_DYUPS_DIGEST) $< | grep $(NGX_DYUPS_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
+$(DEPS_DIR)/$(NGX_DYUPS): $(DEPS_DIR)/$(NGX_DYUPS).tar.gz
+	$(call decompress,NGX_DYUPS)
 
 # ngx_geoip2
-deps/$(NGX_GEOIP2).tar.gz: | deps
-	curl -L -o $@ $(NGX_GEOIP2_URL)
+$(DEPS_DIR)/$(NGX_GEOIP2).tar.gz: | $(DEPS_DIR)
+	$(call download,NGX_GEOIP2)
 
-deps/$(NGX_GEOIP2): deps/$(NGX_GEOIP2).tar.gz
-	openssl $(NGX_GEOIP2_DIGEST) $< | grep $(NGX_GEOIP2_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
+$(DEPS_DIR)/$(NGX_GEOIP2): $(DEPS_DIR)/$(NGX_GEOIP2).tar.gz
+	$(call decompress,NGX_GEOIP2)
 
 # ngx_txid
-deps/$(NGX_TXID).tar.gz: | deps
-	curl -L -o $@ $(NGX_TXID_URL)
+$(DEPS_DIR)/$(NGX_TXID).tar.gz: | $(DEPS_DIR)
+	$(call download,NGX_TXID)
 
-deps/$(NGX_TXID): deps/$(NGX_TXID).tar.gz
-	openssl $(NGX_TXID_DIGEST) $< | grep $(NGX_TXID_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
+$(DEPS_DIR)/$(NGX_TXID): $(DEPS_DIR)/$(NGX_TXID).tar.gz
+	$(call decompress,NGX_TXID)
 
 # OpenResty
-deps/$(OPENRESTY).tar.gz: | deps
-	curl -L -o $@ $(OPENRESTY_URL)
+$(DEPS_DIR)/$(OPENRESTY).tar.gz: | $(DEPS_DIR)
+	$(call download,OPENRESTY)
 
-deps/$(OPENRESTY): deps/$(OPENRESTY).tar.gz
-	openssl $(OPENRESTY_DIGEST) $< | grep $(OPENRESTY_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
+$(DEPS_DIR)/$(OPENRESTY): $(DEPS_DIR)/$(OPENRESTY).tar.gz
+	$(call decompress,OPENRESTY)
 
-deps/$(OPENRESTY)/.built: deps/$(OPENRESTY) deps/$(NGX_DYUPS) deps/$(NGX_GEOIP2) deps/$(NGX_TXID) deps/$(LIBMAXMINDDB)/.built
+$(DEPS_DIR)/$(OPENRESTY)/.built: $(DEPS_DIR)/$(OPENRESTY) $(DEPS_DIR)/$(NGX_DYUPS) $(DEPS_DIR)/$(NGX_GEOIP2) $(DEPS_DIR)/$(NGX_TXID) $(STAGE_MARKERS_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER)
 	cd $< && ./configure \
 		--prefix=$(PREFIX)/embedded/openresty \
-		--with-cc-opt="-I$(PWD)/deps/$(LIBMAXMINDDB)/include" \
-		--with-ld-opt="-L$(PWD)/deps/$(LIBMAXMINDDB)/src/.libs -Wl,-rpath,$(PREFIX)/embedded/lib" \
+		--with-cc-opt="-I$(STAGE_PREFIX)/embedded/include" \
+		--with-ld-opt="-L$(STAGE_PREFIX)/embedded/lib -Wl,-rpath,$(PREFIX)/embedded/lib,-rpath,$(STAGE_PREFIX)/embedded/openresty/luajit/lib,-rpath,$(STAGE_PREFIX)/embedded/lib" \
 		--error-log-path=stderr \
 		--with-ipv6 \
 		--with-pcre-jit \
@@ -287,526 +579,211 @@ deps/$(OPENRESTY)/.built: deps/$(OPENRESTY) deps/$(NGX_DYUPS) deps/$(NGX_GEOIP2)
 	cd $< && make
 	touch $@
 
-# libcidr
-deps/$(LIBCIDR).tar.xz: | deps
-	curl -L -o $@ $(LIBCIDR_URL)
-
-deps/$(LIBCIDR): deps/$(LIBCIDR).tar.xz
-	openssl $(LIBCIDR_DIGEST) $< | grep $(LIBCIDR_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-deps/$(LIBCIDR)/.built: deps/$(LIBCIDR)
-	cd $< && make PREFIX=$(PREFIX)/embedded
-	touch $@
-
-# libmaxminddb
-deps/$(LIBMAXMINDDB).tar.gz: | deps
-	curl -L -o $@ $(LIBMAXMINDDB_URL)
-
-deps/$(LIBMAXMINDDB): deps/$(LIBMAXMINDDB).tar.gz
-	openssl $(LIBMAXMINDDB_DIGEST) $< | grep $(LIBMAXMINDDB_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-deps/$(LIBMAXMINDDB)/.built: deps/$(LIBMAXMINDDB)
-	cd $< && ./configure \
-		--prefix=$(PREFIX)/embedded
-	cd $< && make
-	touch $@
-
-# LuaRocks
-deps/$(LUAROCKS).tar.gz: | deps
-	curl -L -o $@ $(LUAROCKS_URL)
-
-deps/$(LUAROCKS): deps/$(LUAROCKS).tar.gz
-	openssl $(LUAROCKS_DIGEST) $< | grep $(LUAROCKS_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-# lua-resty-dns-cache
-deps/$(LUA_RESTY_DNS_CACHE).tar.gz: | deps
-	curl -L -o $@ $(LUA_RESTY_DNS_CACHE_URL)
-
-deps/$(LUA_RESTY_DNS_CACHE): deps/$(LUA_RESTY_DNS_CACHE).tar.gz
-	openssl $(LUA_RESTY_DNS_CACHE_DIGEST) $< | grep $(LUA_RESTY_DNS_CACHE_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-# lua-resty-http
-deps/$(LUA_RESTY_HTTP).tar.gz: | deps
-	curl -L -o $@ $(LUA_RESTY_HTTP_URL)
-
-deps/$(LUA_RESTY_HTTP): deps/$(LUA_RESTY_HTTP).tar.gz
-	openssl $(LUA_RESTY_HTTP_DIGEST) $< | grep $(LUA_RESTY_HTTP_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-# lua-resty-logger-socket
-deps/$(LUA_RESTY_LOGGER_SOCKET).tar.gz: | deps
-	curl -L -o $@ $(LUA_RESTY_LOGGER_SOCKET_URL)
-
-deps/$(LUA_RESTY_LOGGER_SOCKET): deps/$(LUA_RESTY_LOGGER_SOCKET).tar.gz
-	openssl $(LUA_RESTY_LOGGER_SOCKET_DIGEST) $< | grep $(LUA_RESTY_LOGGER_SOCKET_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-# lua-resty-shcache
-deps/$(LUA_RESTY_SHCACHE).tar.gz: | deps
-	curl -L -o $@ $(LUA_RESTY_SHCACHE_URL)
-
-deps/$(LUA_RESTY_SHCACHE): deps/$(LUA_RESTY_SHCACHE).tar.gz
-	openssl $(LUA_RESTY_SHCACHE_DIGEST) $< | grep $(LUA_RESTY_SHCACHE_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-# lustache
-deps/$(LUSTACHE).tar.gz: | deps
-	curl -L -o $@ $(LUSTACHE_URL)
-
-deps/$(LUSTACHE): deps/$(LUSTACHE).tar.gz
-	openssl $(LUSTACHE_DIGEST) $< | grep $(LUSTACHE_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-# Mora
-deps/$(MORA).tar.gz: | deps
-	curl -L -o $@ $(MORA_URL)
-
-deps/$(MORA): deps/$(MORA).tar.gz
-	openssl $(MORA_DIGEST) $< | grep $(MORA_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-deps/gocode/src/github.com/emicklei/mora: | deps/$(MORA)
-	mkdir -p $@
-	rsync -a --delete-after deps/$(MORA)/ $@/
-	touch $@
-
-deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM): deps/gocode/src/github.com/emicklei/mora deps/$(GLIDE)/.built deps/$(GOLANG)
-	cp build/mora_glide.yaml $</glide.yaml
-	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) GO15VENDOREXPERIMENT=1 glide update
-	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(ROOT_DIR)/deps/gocode/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) GO15VENDOREXPERIMENT=1 go install
+$(STAGE_MARKERS_DIR)/$(OPENRESTY_INSTALL_MARKER): $(DEPS_DIR)/$(OPENRESTY)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(OPENRESTY) && make install DESTDIR=$(STAGE_DIR)
+	cd $(STAGE_PREFIX)/embedded/bin && ln -sf ../openresty/bin/resty ./resty
+	cd $(STAGE_PREFIX)/embedded/bin && ln -sf ../openresty/luajit/bin/luajit-2.1.0-alpha ./luajit
+	cd $(STAGE_PREFIX)/embedded/sbin && ln -sf ../openresty/nginx/sbin/nginx ./nginx
+	rm -f $(STAGE_MARKERS_DIR)/$(OPENRESTY_NAME)$(VERSION_SEP)*
 	touch $@
 
 # Perp
-deps/$(PERP).tar.gz: | deps
-	curl -L -o $@ $(PERP_URL)
+$(DEPS_DIR)/$(PERP).tar.gz: | $(DEPS_DIR)
+	$(call download,PERP)
 
-deps/$(PERP): deps/$(PERP).tar.gz
-	openssl $(PERP_DIGEST) $< | grep $(PERP_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
+$(DEPS_DIR)/$(PERP): $(DEPS_DIR)/$(PERP).tar.gz
+	$(call decompress,PERP)
 
-deps/$(PERP)/.built: deps/$(PERP)
+$(DEPS_DIR)/$(PERP)/.built: $(DEPS_DIR)/$(PERP)
 	sed -i -e 's#BINDIR.*#BINDIR = $(PREFIX)/embedded/bin#' $</conf.mk
 	sed -i -e 's#SBINDIR.*#SBINDIR = $(PREFIX)/embedded/sbin#' $</conf.mk
 	sed -i -e 's#MANDIR.*#MANDIR = $(PREFIX)/embedded/share/man#' $</conf.mk
 	cd $< && make && make strip
 	touch $@
 
-# Ruby
-deps/$(RUBY).tar.gz: | deps
-	curl -L -o $@ $(RUBY_URL)
-
-deps/$(RUBY): deps/$(RUBY).tar.gz
-	openssl $(RUBY_DIGEST) $< | grep $(RUBY_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
+$(STAGE_MARKERS_DIR)/$(PERP_INSTALL_MARKER): $(DEPS_DIR)/$(PERP)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(PERP) && make install DESTDIR=$(STAGE_DIR)
+	rm -f $(STAGE_MARKERS_DIR)/$(PERP_NAME)$(VERSION_SEP)*
 	touch $@
 
-deps/$(RUBY)/.built: | deps/$(RUBY)
-	cd deps/$(RUBY) && ./configure \
+# Ruby
+$(DEPS_DIR)/$(RUBY).tar.gz: | $(DEPS_DIR)
+	$(call download,RUBY)
+
+$(DEPS_DIR)/$(RUBY): $(DEPS_DIR)/$(RUBY).tar.gz
+	$(call decompress,RUBY)
+
+$(DEPS_DIR)/$(RUBY)/.built: | $(DEPS_DIR)/$(RUBY)
+	cd $(DEPS_DIR)/$(RUBY) && ./configure \
 		--prefix=$(PREFIX)/embedded \
 		--enable-load-relative \
 		--disable-install-doc
-	cd deps/$(RUBY) && make
+	cd $(DEPS_DIR)/$(RUBY) && make
 	touch $@
 
-# ElasticSearch
-deps/$(ELASTICSEARCH).tar.gz: | deps
-	curl -L -o $@ $(ELASTICSEARCH_URL)
-
-deps/$(ELASTICSEARCH): deps/$(ELASTICSEARCH).tar.gz
-	openssl $(ELASTICSEARCH_DIGEST) $< | grep $(ELASTICSEARCH_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-# Glide
-deps/$(GLIDE).tar.gz: | deps
-	curl -L -o $@ $(GLIDE_URL)
-
-deps/$(GLIDE): deps/$(GLIDE).tar.gz
-	openssl $(GLIDE_DIGEST) $< | grep $(GLIDE_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-deps/gocode/src/github.com/Masterminds/glide: | deps/$(GLIDE)
-	mkdir -p $@
-	rsync -a --delete-after deps/$(GLIDE)/ $@/
-	touch $@
-
-deps/$(GLIDE)/.built: deps/gocode/src/github.com/Masterminds/glide deps/$(GOLANG)
-	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) go get
-	cd $< && PATH=$(ROOT_DIR)/deps/$(GOLANG)/bin:$(PATH) GOPATH=$(ROOT_DIR)/deps/gocode GOROOT=$(ROOT_DIR)/deps/$(GOLANG) go build
-	touch $@
-
-# Go
-deps/$(GOLANG).tar.gz: | deps
-	curl -L -o $@ $(GOLANG_URL)
-
-deps/$(GOLANG): deps/$(GOLANG).tar.gz
-	openssl $(GOLANG_DIGEST) $< | grep $(GOLANG_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-# Heka
-deps/$(HEKA).tar.gz: | deps
-	curl -L -o $@ $(HEKA_URL)
-
-deps/$(HEKA): deps/$(HEKA).tar.gz
-	openssl $(HEKA_DIGEST) $< | grep $(HEKA_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
-
-# MongoDB
-deps/$(MONGODB).tar.gz: | deps
-	curl -L -o $@ $(MONGODB_URL)
-
-deps/$(MONGODB): deps/$(MONGODB).tar.gz
-	openssl $(MONGODB_DIGEST) $< | grep $(MONGODB_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
+$(STAGE_MARKERS_DIR)/$(RUBY_INSTALL_MARKER): $(DEPS_DIR)/$(RUBY)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(RUBY) && make install DESTDIR=$(STAGE_DIR)
+	rm -f $(STAGE_MARKERS_DIR)/$(RUBY_NAME)$(VERSION_SEP)*
 	touch $@
 
 # TrafficServer
-deps/$(TRAFFICSERVER).tar.gz: | deps
-	curl -L -o $@ $(TRAFFICSERVER_URL)
+$(DEPS_DIR)/$(TRAFFICSERVER).tar.gz: | $(DEPS_DIR)
+	$(call download,TRAFFICSERVER)
 
-deps/$(TRAFFICSERVER): deps/$(TRAFFICSERVER).tar.gz
-	openssl $(TRAFFICSERVER_DIGEST) $< | grep $(TRAFFICSERVER_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
-	touch $@
+$(DEPS_DIR)/$(TRAFFICSERVER): $(DEPS_DIR)/$(TRAFFICSERVER).tar.gz
+	$(call decompress,TRAFFICSERVER)
 
-deps/$(TRAFFICSERVER)/.built: deps/$(TRAFFICSERVER)
-	cd $< && PATH=$(STANDARD_PATH) ./configure \
+$(DEPS_DIR)/$(TRAFFICSERVER)/.built: $(DEPS_DIR)/$(TRAFFICSERVER)
+	cd $< && PATH=$(STANDARD_PATH) LDFLAGS="-Wl,-rpath,$(STAGE_PREFIX)/embedded/lib" ./configure \
 		--prefix=$(PREFIX)/embedded \
 		--enable-experimental-plugins
 	cd $< && make
 	touch $@
 
-# Unbound
-deps/$(UNBOUND).tar.gz: | deps
-	curl -L -o $@ $(UNBOUND_URL)
-
-deps/$(UNBOUND): deps/$(UNBOUND).tar.gz
-	openssl $(UNBOUND_DIGEST) $< | grep $(UNBOUND_CHECKSUM) || (echo "checksum mismatch $<" && exit 1)
-	mkdir -p $@
-	tar --strip-components 1 -C $@ -xf $<
+$(STAGE_MARKERS_DIR)/$(TRAFFICSERVER_INSTALL_MARKER): $(DEPS_DIR)/$(TRAFFICSERVER)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(TRAFFICSERVER) && make install DESTDIR=$(STAGE_DIR)
+	# Trim our own distribution by removing some larger files we don't need for
+	# API Umbrella.
+	rm -f $(STAGE_PREFIX)/embedded/bin/traffic_sac
+	rm -f $(STAGE_MARKERS_DIR)/$(TRAFFICSERVER_NAME)$(VERSION_SEP)*
 	touch $@
 
-deps/$(UNBOUND)/.built: deps/$(UNBOUND)
+# Unbound
+$(DEPS_DIR)/$(UNBOUND).tar.gz: | $(DEPS_DIR)
+	$(call download,UNBOUND)
+
+$(DEPS_DIR)/$(UNBOUND): $(DEPS_DIR)/$(UNBOUND).tar.gz
+	$(call decompress,UNBOUND)
+
+$(DEPS_DIR)/$(UNBOUND)/.built: $(DEPS_DIR)/$(UNBOUND)
 	cd $< && ./configure \
 		--prefix=$(PREFIX)/embedded
 	cd $< && make
 	touch $@
 
-dependencies: \
-	deps/$(ELASTICSEARCH) \
-	deps/GeoLite2-City.mmdb \
-	deps/$(HEKA) \
-	deps/$(LIBCIDR)/.built \
-	deps/$(LIBMAXMINDDB)/.built \
-	deps/$(LUAROCKS) \
-	deps/$(MONGODB) \
-	deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) \
-	deps/$(OPENRESTY)/.built \
-	deps/$(PERP)/.built \
-	deps/$(RUBY)/.built \
-	deps/$(TRAFFICSERVER)/.built
-
-clean:
-	rm -rf deps
-
-$(PREFIX)/embedded/bin:
-	mkdir -p $(PREFIX)/embedded/bin
+$(STAGE_MARKERS_DIR)/$(UNBOUND_INSTALL_MARKER): $(DEPS_DIR)/$(UNBOUND)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(UNBOUND) && make install DESTDIR=$(STAGE_DIR)
 	touch $@
 
-$(PREFIX)/embedded/sbin:
-	mkdir -p $(PREFIX)/embedded/sbin
+# LuaRocks - inspect
+$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+	$(call luarocks_install,INSPECT)
+
+# LuaRocks - libcidr-ffi
+$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+	$(LUAROCKS_CMD) --tree=vendor install https://raw.githubusercontent.com/GUI/lua-libcidr-ffi/master/libcidr-ffi-git-1.rockspec CIDR_DIR=$(STAGE_PREFIX)/embedded
 	touch $@
 
-$(INSTALLED_DIR):
-	mkdir -p $@
-	touch $@
+# LuaRocks - lua-cmsgpack
+$(LUAROCKS_DIR)/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+	$(call luarocks_install,LUA_CMSGPACK)
 
-$(INSTALLED_DIR)/$(BUNDLER_INSTALL_MARKER): | $(INSTALLED_DIR) $(INSTALLED_DIR)/$(RUBY_INSTALL_MARKER)
-	PATH=$(PREFIX)/embedded/bin:$(PATH) gem install bundler -v '$(BUNDLER_VERSION)' --no-rdoc --no-ri
-	rm -f $(INSTALLED_DIR)/$(BUNDLER_NAME)$(VERSION_SEP)*
-	touch $@
+# LuaRocks - luacheck
+$(LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+	$(call luarocks_install,LUACHECK)
 
-$(INSTALLED_DIR)/$(ELASTICSEARCH_INSTALL_MARKER): deps/$(ELASTICSEARCH) | $(INSTALLED_DIR)
-	rsync -a deps/$(ELASTICSEARCH)/ $(PREFIX)/embedded/elasticsearch/
-	ln -sf $(PREFIX)/embedded/elasticsearch/bin/plugin $(PREFIX)/embedded/bin/plugin
-	ln -sf $(PREFIX)/embedded/elasticsearch/bin/elasticsearch $(PREFIX)/embedded/bin/elasticsearch
-	rm -f $(INSTALLED_DIR)/$(ELASTICSEARCH_NAME)$(VERSION_SEP)*
-	touch $@
+# LuaRocks - luaposix
+$(LUAROCKS_DIR)/$(LUAPOSIX)/$(LUAPOSIX_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+	$(call luarocks_install,LUAPOSIX)
 
-$(INSTALLED_DIR)/GeoLite2-City.mmdb: deps/GeoLite2-City.mmdb | $(INSTALLED_DIR)
-	mkdir -p $(PREFIX)/embedded/var/db/geoip2
-	rsync -a deps/GeoLite2-City.mmdb $(PREFIX)/embedded/var/db/geoip2/city.mmdb
-	touch $@
+# LuaRocks - luasocket
+$(LUAROCKS_DIR)/$(LUASOCKET)/$(LUASOCKET_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+	$(call luarocks_install,LUASOCKET)
 
-$(INSTALLED_DIR)/$(HEKA_INSTALL_MARKER): deps/$(HEKA) | $(INSTALLED_DIR)
-	rsync -a deps/$(HEKA)/ $(PREFIX)/embedded/
-	# Trim our own distribution by removing some larger files we don't need for
-	# API Umbrella.
-	rm -f $(PREFIX)/embedded/bin/heka-cat \
-		$(PREFIX)/embedded/bin/heka-flood \
-		$(PREFIX)/embedded/bin/heka-inject \
-		$(PREFIX)/embedded/bin/heka-sbmgr
-	rm -f $(INSTALLED_DIR)/$(HEKA_NAME)$(VERSION_SEP)*
-	touch $@
+# LuaRocks - lyaml
+$(LUAROCKS_DIR)/$(LYAML)/$(LYAML_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+	$(call luarocks_install,LYAML)
 
-$(INSTALLED_DIR)/$(LIBCIDR_INSTALL_MARKER): deps/$(LIBCIDR)/.built | $(INSTALLED_DIR)
-	cd deps/$(LIBCIDR) && make install PREFIX=$(PREFIX)/embedded
-	rm -f $(INSTALLED_DIR)/$(LIBCIDR_NAME)$(VERSION_SEP)*
-	touch $@
-
-$(INSTALLED_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER): deps/$(LIBMAXMINDDB)/.built | $(INSTALLED_DIR)
-	cd deps/$(LIBMAXMINDDB) && make install
-	rm -f $(INSTALLED_DIR)/$(LIBMAXMINDDB_NAME)$(VERSION_SEP)*
-	touch $@
-
-$(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER): deps/$(LUAROCKS) | $(INSTALLED_DIR) $(INSTALLED_DIR)/$(OPENRESTY_INSTALL_MARKER)
-	cd $< && ./configure \
-		--prefix=$(PREFIX)/embedded/openresty/luajit \
-		--with-lua=$(PREFIX)/embedded/openresty/luajit/ \
-		--with-lua-include=$(PREFIX)/embedded/openresty/luajit/include/luajit-2.1 \
-		--lua-suffix=jit-2.1.0-alpha
-	cd $< && env -i make build && env -i make install
-	ln -sf $(PREFIX)/embedded/openresty/luajit/bin/luarocks $(PREFIX)/embedded/bin/luarocks
-	rm -f $(INSTALLED_DIR)/$(LUAROCKS_NAME)$(VERSION_SEP)*
-	touch $@
-
-$(INSTALLED_DIR)/$(MONGODB_INSTALL_MARKER): deps/$(MONGODB) | $(INSTALLED_DIR)
-	rsync -a deps/$(MONGODB)/ $(PREFIX)/embedded/
-	# Trim our own distribution by removing some larger files we don't need for
-	# API Umbrella.
-	rm -f $(PREFIX)/embedded/bin/bsondump \
-		$(PREFIX)/embedded/bin/mongoexport \
-		$(PREFIX)/embedded/bin/mongofiles \
-		$(PREFIX)/embedded/bin/mongoimport \
-		$(PREFIX)/embedded/bin/mongooplog \
-		$(PREFIX)/embedded/bin/mongoperf \
-		$(PREFIX)/embedded/bin/mongos
-	rm -f $(INSTALLED_DIR)/$(MONGODB_NAME)$(VERSION_SEP)*
-	touch $@
-
-$(INSTALLED_DIR)/$(MORA_INSTALL_MARKER): deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) | $(INSTALLED_DIR)
-	cp deps/gocode/bin/mora $(PREFIX)/embedded/bin/
-	rm -f $(INSTALLED_DIR)/$(MORA_NAME)$(VERSION_SEP)*
-	touch $@
-
-$(INSTALLED_DIR)/$(OPENRESTY_INSTALL_MARKER): deps/$(OPENRESTY)/.built | $(INSTALLED_DIR)
-	cd deps/$(OPENRESTY) && make install
-	ln -sf $(PREFIX)/embedded/openresty/bin/resty $(PREFIX)/embedded/bin/resty
-	ln -sf $(PREFIX)/embedded/openresty/luajit/bin/luajit-2.1.0-alpha $(PREFIX)/embedded/bin/luajit
-	ln -sf $(PREFIX)/embedded/openresty/nginx/sbin/nginx $(PREFIX)/embedded/sbin/nginx
-	rm -f $(INSTALLED_DIR)/$(OPENRESTY_NAME)$(VERSION_SEP)*
-	touch $@
-
-$(INSTALLED_DIR)/$(PERP_INSTALL_MARKER): deps/$(PERP)/.built | $(INSTALLED_DIR)
-	cd deps/$(PERP) && make install
-	rm -f $(INSTALLED_DIR)/$(PERP_NAME)$(VERSION_SEP)*
-	touch $@
-
-$(INSTALLED_DIR)/$(RUBY_INSTALL_MARKER): deps/$(RUBY)/.built | $(INSTALLED_DIR)
-	cd deps/$(RUBY) && make install
-	rm -f $(INSTALLED_DIR)/$(RUBY_NAME)$(VERSION_SEP)*
-	touch $@
-
-$(INSTALLED_DIR)/$(TRAFFICSERVER_INSTALL_MARKER): deps/$(TRAFFICSERVER)/.built | $(INSTALLED_DIR)
-	cd deps/$(TRAFFICSERVER) && make install
-	# Trim our own distribution by removing some larger files we don't need for
-	# API Umbrella.
-	rm -f $(PREFIX)/embedded/bin/traffic_sac
-	rm -f $(INSTALLED_DIR)/$(TRAFFICSERVER_NAME)$(VERSION_SEP)*
-	touch $@
+# LuaRocks - penlight
+$(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+	$(call luarocks_install,PENLIGHT)
 
 .SECONDARY: \
-	deps/$(ELASTICSEARCH).tar.gz \
-	deps/$(ELASTICSEARCH) \
-	deps/GeoLite2-City.md5 \
-	deps/GeoLite2-City.mmdb.gz \
-	deps/GeoLite2-City.mmdb \
-	deps/$(GLIDE).tar.gz \
-	deps/$(GLIDE) \
-	deps/gocode/src/github.com/Masterminds/glide \
-	deps/$(GLIDE)/.built \
-	deps/$(GOLANG).tar.gz \
-	deps/$(GOLANG) \
-	deps/$(HEKA).tar.gz \
-	deps/$(HEKA) \
-	deps/$(LIBCIDR).tar.xz \
-	deps/$(LIBCIDR) \
-	deps/$(LIBCIDR)/.built \
-	deps/$(LIBMAXMINDDB).tar.gz \
-	deps/$(LIBMAXMINDDB) \
-	deps/$(LIBMAXMINDDB)/.built \
-	deps/$(LUAROCKS).tar.gz \
-	deps/$(LUAROCKS) \
-	deps/$(LUA_RESTY_DNS_CACHE).tar.gz \
-	deps/$(LUA_RESTY_DNS_CACHE) \
-	deps/$(LUA_RESTY_HTTP).tar.gz \
-	deps/$(LUA_RESTY_HTTP) \
-	deps/$(LUA_RESTY_LOGGER_SOCKET).tar.gz \
-	deps/$(LUA_RESTY_LOGGER_SOCKET) \
-	deps/$(LUA_RESTY_SHCACHE).tar.gz \
-	deps/$(LUA_RESTY_SHCACHE) \
-	deps/$(LUSTACHE).tar.gz \
-	deps/$(LUSTACHE) \
-	deps/$(MONGODB).tar.gz \
-	deps/$(MONGODB) \
-	deps/$(MORA).tar.gz \
-	deps/$(MORA) \
-	deps/gocode/src/github.com/emicklei/mora \
-	deps/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) \
-	deps/$(NGX_DYUPS).tar.gz \
-	deps/$(NGX_DYUPS) \
-	deps/$(NGX_GEOIP2).tar.gz \
-	deps/$(NGX_GEOIP2) \
-	deps/$(NGX_TXID).tar.gz \
-	deps/$(NGX_TXID) \
-	deps/$(OPENRESTY).tar.gz \
-	deps/$(OPENRESTY) \
-	deps/$(OPENRESTY)/.built \
-	deps/$(LUAROCKS).tar.gz \
-	deps/$(LUAROCKS) \
-	deps/$(PERP).tar.gz \
-	deps/$(PERP) \
-	deps/$(PERP)/.built \
-	deps/$(RUBY).tar.gz \
-	deps/$(RUBY) \
-	deps/$(RUBY)/.built \
-	deps/$(TRAFFICSERVER).tar.gz \
-	deps/$(TRAFFICSERVER) \
-	deps/$(TRAFFICSERVER)/.built \
-	deps/$(UNBOUND).tar.gz \
-	deps/$(UNBOUND) \
-	deps/$(UNBOUND)/.built
-
-install_dependencies: \
-	$(PREFIX)/embedded/bin \
-	$(PREFIX)/embedded/sbin \
-	$(INSTALLED_DIR)/$(BUNDLER_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(ELASTICSEARCH_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/GeoLite2-City.mmdb \
-	$(INSTALLED_DIR)/$(HEKA_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(LIBCIDR_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(MONGODB_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(MORA_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(OPENRESTY_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(PERP_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(RUBY_INSTALL_MARKER) \
-	$(INSTALLED_DIR)/$(TRAFFICSERVER_INSTALL_MARKER)
+	$(DEPS_DIR)/$(ELASTICSEARCH).tar.gz \
+	$(DEPS_DIR)/$(ELASTICSEARCH) \
+	$(DEPS_DIR)/GeoLite2-City.md5 \
+	$(DEPS_DIR)/GeoLite2-City.mmdb.gz \
+	$(DEPS_DIR)/GeoLite2-City.mmdb \
+	$(DEPS_DIR)/$(GLIDE).tar.gz \
+	$(DEPS_DIR)/$(GLIDE) \
+	$(DEPS_DIR)/gocode/src/github.com/Masterminds/glide \
+	$(DEPS_DIR)/$(GLIDE)/.built \
+	$(DEPS_DIR)/$(GOLANG).tar.gz \
+	$(DEPS_DIR)/$(GOLANG) \
+	$(DEPS_DIR)/$(HEKA).tar.gz \
+	$(DEPS_DIR)/$(HEKA) \
+	$(DEPS_DIR)/$(LIBCIDR).tar.xz \
+	$(DEPS_DIR)/$(LIBCIDR) \
+	$(DEPS_DIR)/$(LIBCIDR)/.built \
+	$(DEPS_DIR)/$(LIBMAXMINDDB).tar.gz \
+	$(DEPS_DIR)/$(LIBMAXMINDDB) \
+	$(DEPS_DIR)/$(LIBMAXMINDDB)/.built \
+	$(DEPS_DIR)/$(LUAROCKS).tar.gz \
+	$(DEPS_DIR)/$(LUAROCKS) \
+	$(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE).tar.gz \
+	$(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE) \
+	$(DEPS_DIR)/$(LUA_RESTY_HTTP).tar.gz \
+	$(DEPS_DIR)/$(LUA_RESTY_HTTP) \
+	$(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET).tar.gz \
+	$(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET) \
+	$(DEPS_DIR)/$(LUA_RESTY_SHCACHE).tar.gz \
+	$(DEPS_DIR)/$(LUA_RESTY_SHCACHE) \
+	$(DEPS_DIR)/$(LUSTACHE).tar.gz \
+	$(DEPS_DIR)/$(LUSTACHE) \
+	$(DEPS_DIR)/$(MONGODB).tar.gz \
+	$(DEPS_DIR)/$(MONGODB) \
+	$(DEPS_DIR)/$(MORA).tar.gz \
+	$(DEPS_DIR)/$(MORA) \
+	$(DEPS_DIR)/gocode/src/github.com/emicklei/mora \
+	$(DEPS_DIR)/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) \
+	$(DEPS_DIR)/$(NGX_DYUPS).tar.gz \
+	$(DEPS_DIR)/$(NGX_DYUPS) \
+	$(DEPS_DIR)/$(NGX_GEOIP2).tar.gz \
+	$(DEPS_DIR)/$(NGX_GEOIP2) \
+	$(DEPS_DIR)/$(NGX_TXID).tar.gz \
+	$(DEPS_DIR)/$(NGX_TXID) \
+	$(DEPS_DIR)/$(OPENRESTY).tar.gz \
+	$(DEPS_DIR)/$(OPENRESTY) \
+	$(DEPS_DIR)/$(OPENRESTY)/.built \
+	$(DEPS_DIR)/$(PERP).tar.gz \
+	$(DEPS_DIR)/$(PERP) \
+	$(DEPS_DIR)/$(PERP)/.built \
+	$(DEPS_DIR)/$(RUBY).tar.gz \
+	$(DEPS_DIR)/$(RUBY) \
+	$(DEPS_DIR)/$(RUBY)/.built \
+	$(DEPS_DIR)/$(TRAFFICSERVER).tar.gz \
+	$(DEPS_DIR)/$(TRAFFICSERVER) \
+	$(DEPS_DIR)/$(TRAFFICSERVER)/.built \
+	$(DEPS_DIR)/$(UNBOUND).tar.gz \
+	$(DEPS_DIR)/$(UNBOUND) \
+	$(DEPS_DIR)/$(UNBOUND)/.built
 
 vendor:
 	mkdir -p $@
 
-INSPECT:=inspect
-INSPECT_VERSION:=3.0-1
-LIBCIDR_FFI:=libcidr-ffi
-LIBCIDR_FFI_VERSION:=0.1.0-1
-LUA_CMSGPACK:=lua-cmsgpack
-LUA_CMSGPACK_VERSION:=0.4.0-0
-LUAPOSIX:=luaposix
-LUAPOSIX_VERSION:=33.3.1-1
-LUASOCKET:=luasocket
-LUASOCKET_VERSION:=2.0.2-6
-LYAML:=lyaml
-LYAML_VERSION:=6.0-1
-PENLIGHT:=penlight
-PENLIGHT_VERSION:=1.3.2-2
-
-vendor/bundle: src/api-umbrella/web-app/Gemfile src/api-umbrella/web-app/Gemfile.lock | vendor $(INSTALLED_DIR)/$(BUNDLER_INSTALL_MARKER)
-	cd src/api-umbrella/web-app && PATH=$(PREFIX)/embedded/bin:$(PATH) bundle install --path=$(PWD)/vendor/bundle
-	cd src/api-umbrella/web-app && PATH=$(PREFIX)/embedded/bin:$(PATH) bundle clean
+vendor/bundle: src/api-umbrella/web-app/Gemfile src/api-umbrella/web-app/Gemfile.lock | vendor $(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER)
+	cd src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(ROOT_DIR)/vendor/bundle
+	cd src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle clean
 	touch $@
 
-$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
-	rm -rf $(LUAROCKS_DIR)/$(INSPECT)
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(INSPECT) $(INSPECT_VERSION)
-	touch $@
+stage_dependencies: \
+	$(STAGE_PREFIX)/embedded/bin \
+	$(STAGE_PREFIX)/embedded/sbin \
+	$(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(ELASTICSEARCH_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/GeoLite2-City.mmdb \
+	$(STAGE_MARKERS_DIR)/$(HEKA_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(LIBCIDR_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(MONGODB_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(MORA_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(OPENRESTY_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(PERP_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(RUBY_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(TRAFFICSERVER_INSTALL_MARKER)
 
-$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
-	rm -rf $(LUAROCKS_DIR)/$(LIBCIDR_FFI)
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install https://raw.githubusercontent.com/GUI/lua-libcidr-ffi/master/libcidr-ffi-git-1.rockspec CIDR_DIR=$(PREFIX)/embedded
-	touch $@
-
-$(LUAROCKS_DIR)/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
-	rm -rf $(LUAROCKS_DIR)/$(LUA_CMSGPACK)
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUA_CMSGPACK) $(LUA_CMSGPACK_VERSION)
-	touch $@
-
-$(LUAROCKS_DIR)/$(LUAPOSIX)/$(LUAPOSIX_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
-	rm -rf $(LUAROCKS_DIR)/$(LUAPOSIX)
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUAPOSIX) $(LUAPOSIX_VERSION)
-	touch $@
-
-$(LUAROCKS_DIR)/$(LUASOCKET)/$(LUASOCKET_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
-	rm -rf $(LUAROCKS_DIR)/$(LUASOCKET)
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUASOCKET) $(LUASOCKET_VERSION)
-	touch $@
-
-$(LUAROCKS_DIR)/$(LYAML)/$(LYAML_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
-	rm -rf $(LUAROCKS_DIR)/$(LYAML)
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LYAML) $(LYAML_VERSION)
-	touch $@
-
-$(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
-	rm -rf $(LUAROCKS_DIR)/$(PENLIGHT)
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(PENLIGHT) $(PENLIGHT_VERSION)
-	touch $@
-
-vendor/share/lua/5.1/resty/dns/cache.lua: deps/$(LUA_RESTY_DNS_CACHE) | vendor
-	rsync -a deps/$(LUA_RESTY_DNS_CACHE)/lib/resty/ vendor/share/lua/5.1/resty/
-	touch $@
-
-vendor/share/lua/5.1/resty/http.lua: deps/$(LUA_RESTY_HTTP) | vendor
-	rsync -a deps/$(LUA_RESTY_HTTP)/lib/resty/ vendor/share/lua/5.1/resty/
-	touch $@
-
-vendor/share/lua/5.1/resty/logger/socket.lua: deps/$(LUA_RESTY_LOGGER_SOCKET) | vendor
-	rsync -a deps/$(LUA_RESTY_LOGGER_SOCKET)/lib/resty/ vendor/share/lua/5.1/resty/
-	touch $@
-
-vendor/share/lua/5.1/shcache.lua: deps/$(LUA_RESTY_SHCACHE) | vendor
-	rsync -a deps/$(LUA_RESTY_SHCACHE)/*.lua vendor/share/lua/5.1/
-	touch $@
-
-vendor/share/lua/5.1/lustache.lua: deps/$(LUSTACHE) | vendor
-	rsync -a deps/$(LUSTACHE)/src/ vendor/share/lua/5.1/
-	touch $@
-
-install_app_dependencies: \
+stage_app_dependencies: \
 	vendor/bundle \
 	$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION) \
 	$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION) \
@@ -815,50 +792,44 @@ install_app_dependencies: \
 	$(LUAROCKS_DIR)/$(LUASOCKET)/$(LUASOCKET_VERSION) \
 	$(LUAROCKS_DIR)/$(LYAML)/$(LYAML_VERSION) \
 	$(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION) \
-	vendor/share/lua/5.1/lustache.lua \
-	vendor/share/lua/5.1/resty/dns/cache.lua \
-	vendor/share/lua/5.1/resty/http.lua \
-	vendor/share/lua/5.1/resty/logger/socket.lua \
-	vendor/share/lua/5.1/shcache.lua
+	$(LUA_SHARE_DIR)/lustache.lua \
+	$(LUA_SHARE_DIR)/resty/dns/cache.lua \
+	$(LUA_SHARE_DIR)/resty/http.lua \
+	$(LUA_SHARE_DIR)/resty/logger/socket.lua \
+	$(LUA_SHARE_DIR)/shcache.lua
 
-install: install_dependencies install_app_dependencies
+stage: stage_dependencies stage_app_dependencies
 
-LUACHECK:=luacheck
-LUACHECK_VERSION:=0.11.1-1
-
-# luacheck
-$(LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION): | $(INSTALLED_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
-	rm -rf $(LUAROCKS_DIR)/$(LUACHECK)
-	$(PREFIX)/embedded/bin/luarocks --tree=vendor install $(LUACHECK) $(LUACHECK_VERSION)
-	touch $@
+install: stage
+	mkdir -p $(DESTDIR)$(PREFIX)
+	rsync -av $(STAGE_PREFIX)/ $(DESTDIR)$(PREFIX)/
 
 # Node test dependencies
-node_modules/.installed: package.json
-	npm install
-	npm prune
+test/node_modules/.installed: test/package.json
+	cd test && npm install
+	cd test && npm prune
 	touch $@
 
 # Python test dependencies (mongo-orchestration)
-$(PREFIX)/embedded/bin/pip:
-	virtualenv $(PREFIX)/embedded
+$(STAGE_PREFIX)/embedded/bin/pip:
+	virtualenv $(STAGE_PREFIX)/embedded
 	touch $@
 
-$(INSTALLED_DIR)/test-python-requirements: test/requirements.txt $(PREFIX)/embedded/bin/pip | $(INSTALLED_DIR)
-	$(PREFIX)/embedded/bin/pip install -r test/requirements.txt
+$(STAGE_MARKERS_DIR)/test-python-requirements: test/requirements.txt $(STAGE_PREFIX)/embedded/bin/pip | $(STAGE_MARKERS_DIR)
+	$(STAGE_PREFIX)/embedded/bin/pip install -r test/requirements.txt
 	touch $@
 
-$(INSTALLED_DIR)/$(UNBOUND_INSTALL_MARKER): deps/$(UNBOUND)/.built | $(INSTALLED_DIR)
-	cd deps/$(UNBOUND) && make install
-	touch $@
-
-install_test_dependencies: \
-	node_modules/.installed \
+test_dependencies: \
+	test/node_modules/.installed \
 	$(LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION) \
-	$(INSTALLED_DIR)/test-python-requirements \
-	$(INSTALLED_DIR)/$(UNBOUND_INSTALL_MARKER)
+	$(STAGE_MARKERS_DIR)/test-python-requirements \
+	$(STAGE_MARKERS_DIR)/$(UNBOUND_INSTALL_MARKER)
 
-lint: install_test_dependencies
-	LUA_PATH="vendor/share/lua/5.1/?.lua;vendor/share/lua/5.1/?/init.lua;;" LUA_CPATH="vendor/lib/lua/5.1/?.so;;" ./vendor/bin/luacheck src
+lint: test_dependencies
+	LUA_PATH="$(LUA_SHARE_DIR)/?.lua;$(LUA_SHARE_DIR)/?/init.lua;;" LUA_CPATH="vendor/lib/lua/5.1/?.so;;" ./vendor/bin/luacheck src
 
-test: install install_test_dependencies lint
-	API_UMBRELLA_INSTALL_ROOT=$(PREFIX) MOCHA_FILES="$(MOCHA_FILES)" npm test
+test: stage test_dependencies lint
+	cd test && MOCHA_FILES="$(MOCHA_FILES)" npm test
+
+clean:
+	rm -rf $(DEPS_DIR) $(STAGE_DIR) vendor

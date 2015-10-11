@@ -1,5 +1,19 @@
 #!/usr/bin/env luajit
 
+local install_root = os.getenv("API_UMBRELLA_INSTALL_ROOT")
+if install_root then
+  package.path = install_root .. "/embedded/openresty/lualib/?.lua;" ..
+    install_root .. "/embedded/openresty/lualib/?/init.lua;" ..
+    install_root .. "/embedded/openresty/luajit/share/luajit-2.1.0-alpha/?.lua;" ..
+    install_root .. "/embedded/openresty/luajit/share/luajit-2.1.0-alpha/?/init.lua;" ..
+    install_root .. "/embedded/openresty/luajit/share/lua/5.1/?.lua;" ..
+    install_root .. "/embedded/openresty/luajit/share/lua/5.1/?/init.lua;" ..
+    package.path
+  package.cpath = install_root .. "/embedded/openresty/lualib/?.so;" ..
+    install_root .. "/embedded/openresty/luajit/lib/lua/5.1/?.so;" ..
+    package.cpath
+end
+
 local src_root = os.getenv("API_UMBRELLA_SRC_ROOT")
 if src_root then
   package.path = src_root .. "/src/?.lua;" ..

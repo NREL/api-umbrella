@@ -262,7 +262,6 @@ group :development, :test do
   gem "vcr", "~> 2.9.3", :require => false
   gem "webmock", "~> 1.21.0", :require => false
 
-
   # Generate output for CI.
   gem "rspec_junit_formatter", "~> 0.2.3"
 end

@@ -4,7 +4,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-mocha-cli');
 
-  var mochaFiles = ['test/**/*.js'];
+  var mochaFiles = [
+    'integration/**/*.js',
+    'server/**/*.js',
+  ];
   if(process.env['MOCHA_FILES']) {
     mochaFiles = process.env['MOCHA_FILES'].split(/\s+/);
   }
@@ -15,12 +18,11 @@ module.exports = function(grunt) {
         jshintrc: '.jshintrc'
       },
       all: [
-        '.eastrc',
-        'Gruntfile.js',
-        'index.js',
-        'lib/**/*.js',
-        'migrations/**/*.js',
-        'test/**/*.js',
+        '*.js',
+        'factories/**/*.js',
+        'integration/**/*.js',
+        'server/**/*.js',
+        'support/**/*.js',
       ],
     },
 
@@ -41,7 +43,7 @@ module.exports = function(grunt) {
         options: {
           reporter: 'mocha-multi',
           env: {
-            multi: 'spec=- xunit=test/tmp/xunit' + process.env['CIRCLE_NODE_INDEX'] + '.xml',
+            multi: 'spec=- xunit=tmp/xunit' + process.env['CIRCLE_NODE_INDEX'] + '.xml',
           },
         }
       },

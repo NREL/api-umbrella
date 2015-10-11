@@ -36,15 +36,15 @@ if [ $CIRCLE_NODE_INDEX -gt "0" ] || [ $CIRCLE_NODE_TOTAL -lt "2" ]; then
   done
 
   # Run the integration/gatekeeper tests.
-  make test PREFIX="$(pwd)/ci_cache/build" MOCHA_FILES="${NODE_FILES[@]}"
+  make test MOCHA_FILES="${NODE_FILES[@]}"
 fi
 
 # Run the Rails tests on the first node.
 if [ $CIRCLE_NODE_INDEX -eq "0" ]; then
   # Start the version of elasticsearch bundled with API Umbrella.
-  nohup bash -c "$(pwd)/ci_cache/build/embedded/bin/elasticsearch &"
+  nohup bash -c "$(pwd)/build/stage/opt/api-umbrella/embedded/bin/elasticsearch &"
 
   # Run the web-app tests
   cd src/api-umbrella/web-app
-  PATH="../../../ci_cache/build/embedded/bin:$PATH" bundle exec rake
+  PATH="../../../build/stage/opt/api-umbrella/embedded/bin:$PATH" bundle exec rake
 fi

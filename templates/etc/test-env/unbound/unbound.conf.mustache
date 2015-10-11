@@ -7,6 +7,7 @@ server:
   logfile: ""
   log-queries: yes
   local-zone: "." static
+  directory: {{etc_dir}}/test-env/unbound
   include: {{etc_dir}}/test-env/unbound/active_test.conf
   pidfile: {{run_dir}}/test-env-unbound.pid
 

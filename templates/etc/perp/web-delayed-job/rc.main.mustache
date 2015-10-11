@@ -5,7 +5,7 @@ exec 2>&1
 
 if test ${1} = "start"; then
   echo "starting ${2}..."
-  exec runtool -e rc.env -c {{gatekeeper.dir}}/src/api-umbrella/web-app bundle exec ./script/delayed_job --pid-dir={{run_dir}} --queues=mailers run
+  exec runtool -e rc.env -c {{_src_root_dir}}/src/api-umbrella/web-app bundle exec ./script/delayed_job --pid-dir={{run_dir}} --queues=mailers run
 fi
 
 exit 0

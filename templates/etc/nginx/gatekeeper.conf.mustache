@@ -18,9 +18,9 @@ gunzip on;
 
 set $api_umbrella_proxy_pass '';
 
-rewrite_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/rewrite.lua';
-access_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/access.lua';
-header_filter_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/header_filter.lua';
-log_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/log_initial_proxy.lua';
+rewrite_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/rewrite.lua';
+access_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/access.lua';
+header_filter_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/header_filter.lua';
+log_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/log_initial_proxy.lua';
 
 proxy_pass $api_umbrella_proxy_pass;

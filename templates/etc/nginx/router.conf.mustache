@@ -26,8 +26,8 @@ http {
   scgi_temp_path {{tmp_dir}}/router-nginx-scgi_temp;
   server_tokens off;
 
-  lua_package_path '{{gatekeeper.dir}}/src/?.lua;{{gatekeeper.dir}}/vendor/share/lua/5.1/?.lua;{{gatekeeper.dir}}/vendor/share/lua/5.1/?/init.lua;;';
-  lua_package_cpath '{{gatekeeper.dir}}/vendor/lib/lua/5.1/?.so;;';
+  lua_package_path '{{_package_path}}';
+  lua_package_cpath '{{_package_cpath}}';
   #lua_code_cache off;
 
   lua_shared_dict dns_cache 1m;
@@ -64,8 +64,8 @@ http {
     {{/ban.user_agents}}
   }
 
-  init_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/init.lua';
-  init_worker_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/init_worker.lua';
+  init_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/init.lua';
+  init_worker_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/init_worker.lua';
 
   #proxy_cache_path /tmp/nginx-cache levels=1:2 keys_zone=backcache:8m max_size=50m;
   #proxy_cache backcache;
@@ -141,11 +141,11 @@ http {
   server {
     listen 14008;
     location /api-umbrella/v1/health {
-      content_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/http-api/health.lua';
+      content_by_lua_file '{{_src_root_dir}}/src/api-umbrella/http-api/health.lua';
     }
 
     location /api-umbrella/v1/state {
-      content_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/http-api/state.lua';
+      content_by_lua_file '{{_src_root_dir}}/src/api-umbrella/http-api/state.lua';
     }
   }
 
@@ -202,7 +202,7 @@ http {
     server_name _;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
-    log_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/log_api_backend_proxy.lua';
+    log_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/log_api_backend_proxy.lua';
 
     # Enable keep alive connections to the backend servers.
     proxy_http_version 1.1;
@@ -226,7 +226,7 @@ http {
     gunzip on;
 
     location / {
-      access_by_lua_file '{{gatekeeper.dir}}/src/api-umbrella/proxy/hooks/api_backends_access.lua';
+      access_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/api_backends_access.lua';
       proxy_pass $http_x_api_umbrella_backend_scheme://api_umbrella_${http_x_api_umbrella_backend_id}_backend;
     }
   }

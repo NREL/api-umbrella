@@ -11,18 +11,14 @@ machine:
     - sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0 net.ipv6.conf.default.disable_ipv6=0 net.ipv6.conf.all.disable_ipv6=0
 dependencies:
   cache_directories:
+    - build/stage
     - ci_cache
     - node_modules
     - vendor
   override:
-    # Install all the API Umbrella software dependencies.
-    - make install PREFIX="$(pwd)/ci_cache/build"
-    - make install_test_dependencies PREFIX="$(pwd)/ci_cache/build"
-
-    # Get rid of all the intermediate downloads for building the dependencies.
-    # We don't want to store these in the CircleCI cache, since they're not
-    # needed after installing.
-    - make clean
+    # Build all the API Umbrella software dependencies.
+    - make
+    - make test_dependencies
 compile:
   override:
     # Don't perform any compile tasks that CircleCI infers. We'll run our

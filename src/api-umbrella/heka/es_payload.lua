@@ -1,5 +1,6 @@
-require "string"
+-- luacheck: globals read_config read_message add_to_payload inject_payload process_message
 
+require "string"
 local cjson = require "cjson"
 local elasticsearch = require "elasticsearch"
 

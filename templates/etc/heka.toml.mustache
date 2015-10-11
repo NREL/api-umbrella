@@ -9,28 +9,11 @@ decoder = "JsonDecoder"
 
 [JsonDecoder]
 type = "SandboxDecoder"
-filename = "{{gatekeeper.dir}}/heka/json_decoder.lua"
-
-[RstEncoder]
-
-[FileOutput]
-message_matcher = "TRUE"
-path = "/tmp/counter-output.log"
-perm = "666"
-flush_interval = 10
-encoder = "RstEncoder"
-
-[ESJsonEncoder]
-index = "api-umbrella-logs-v1-%{2006-01}"
-es_index_from_timestamp = true
-type_name = "log"
-fields = ["Fields"]
-id = "EnvVersion"
-raw_bytes_fields  = ["request_query"]
+filename = "{{_src_root_dir}}/src/api-umbrella/heka/json_decoder.lua"
 
 [es_payload]
 type = "SandboxEncoder"
-filename = "{{gatekeeper.dir}}/heka/es_payload.lua"
+filename = "{{_src_root_dir}}/src/api-umbrella/heka/es_payload.lua"
     [es_payload.config]
     es_index_from_timestamp = true
     index = "api-umbrella-logs-v1-%{%Y-%m}"
@@ -38,7 +21,7 @@ filename = "{{gatekeeper.dir}}/heka/es_payload.lua"
 
 [ElasticSearchOutput]
 message_matcher = "TRUE"
-server = "http://127.0.0.1:13002"
+server = "{{elasticsearch._first_host}}"
 flush_interval = 1000
 flush_count = 10
 encoder = "es_payload"

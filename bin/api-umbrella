@@ -1,11 +1,24 @@
 #!/usr/bin/env bash
 
-if [ -z "$API_UMBRELLA_INSTALL_ROOT" ]; then
-  export API_UMBRELLA_INSTALL_ROOT="/opt/api-umbrella"
-fi
-
+# Determine the default root of the API Umbrella source code, based on the
+# current location of this binary file.
 if [ -z "$API_UMBRELLA_SRC_ROOT" ]; then
   export API_UMBRELLA_SRC_ROOT=`dirname $(dirname $(readlink -f $0))`
+fi
+
+# Determine the default root of the API Umbrella installation (where all of our
+# dependencies are installed to).
+if [ -z "$API_UMBRELLA_INSTALL_ROOT" ]; then
+  # Default to /opt/api-umbrella unless it looks like we're working in
+  # development and we've locally compiled all of the dependencies into
+  # build/stage (via "make"). This lets us run "./bin/api-umbrella" while doing
+  # development without having to actually "make install" all the dependencies
+  # into the system-wide location.
+  if [ -d "$API_UMBRELLA_SRC_ROOT/build/stage/opt/api-umbrella" ]; then
+    export API_UMBRELLA_INSTALL_ROOT="$API_UMBRELLA_SRC_ROOT/build/stage/opt/api-umbrella"
+  else
+    export API_UMBRELLA_INSTALL_ROOT="/opt/api-umbrella"
+  fi
 fi
 
 export PATH=$API_UMBRELLA_INSTALL_ROOT/embedded/sbin:$API_UMBRELLA_INSTALL_ROOT/embedded/bin:$PATH

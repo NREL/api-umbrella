@@ -90,6 +90,7 @@ before(function apiUmbrellaStart(done) {
 
   // Spin up the api-umbrella processes.
   var binPath = path.resolve(__dirname, '../../bin/api-umbrella');
+  process.env.API_UMBRELLA_INSTALL_ROOT = path.resolve(__dirname, '../../build/stage/opt/api-umbrella');
   global.apiUmbrellaServer = spawn(binPath, ['run'], {
     stdio: 'inherit',
     env: _.merge({}, process.env, {

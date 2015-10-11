@@ -110,8 +110,13 @@ local function set_computed_config()
   deep_merge_overwrite_arrays(config, {
     _install_root_dir = os.getenv("API_UMBRELLA_INSTALL_ROOT"),
     _src_root_dir = src_root_dir,
+    _package_path = package.path,
+    _package_cpath = package.cpath,
     mongodb = {
       _database = array_last(plutils.split(config["mongodb"]["url"], "/")),
+    },
+    elasticsearch = {
+      _first_host = config["elasticsearch"]["hosts"][1],
     },
     ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
