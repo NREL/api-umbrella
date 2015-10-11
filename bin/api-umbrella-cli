@@ -1,16 +1,16 @@
 #!/usr/bin/env luajit
 
-local install_root = os.getenv("API_UMBRELLA_INSTALL_ROOT")
-if install_root then
-  package.path = install_root .. "/embedded/openresty/lualib/?.lua;" ..
-    install_root .. "/embedded/openresty/lualib/?/init.lua;" ..
-    install_root .. "/embedded/openresty/luajit/share/luajit-2.1.0-alpha/?.lua;" ..
-    install_root .. "/embedded/openresty/luajit/share/luajit-2.1.0-alpha/?/init.lua;" ..
-    install_root .. "/embedded/openresty/luajit/share/lua/5.1/?.lua;" ..
-    install_root .. "/embedded/openresty/luajit/share/lua/5.1/?/init.lua;" ..
+local embedded_root = os.getenv("API_UMBRELLA_EMBEDDED_ROOT")
+if embedded_root then
+  package.path = embedded_root .. "/openresty/lualib/?.lua;" ..
+    embedded_root .. "/openresty/lualib/?/init.lua;" ..
+    embedded_root .. "/openresty/luajit/share/luajit-2.1.0-alpha/?.lua;" ..
+    embedded_root .. "/openresty/luajit/share/luajit-2.1.0-alpha/?/init.lua;" ..
+    embedded_root .. "/openresty/luajit/share/lua/5.1/?.lua;" ..
+    embedded_root .. "/openresty/luajit/share/lua/5.1/?/init.lua;" ..
     package.path
-  package.cpath = install_root .. "/embedded/openresty/lualib/?.so;" ..
-    install_root .. "/embedded/openresty/luajit/lib/lua/5.1/?.so;" ..
+  package.cpath = embedded_root .. "/openresty/lualib/?.so;" ..
+    embedded_root .. "/openresty/luajit/lib/lua/5.1/?.so;" ..
     package.cpath
 end
 

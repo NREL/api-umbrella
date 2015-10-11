@@ -18,9 +18,9 @@ CONFIG proxy.config.admin.user_id STRING #-1
 # new proxy.config.config_dir setting
 # (https://issues.apache.org/jira/browse/TS-3192), but I wasn't able to get
 # that to quite work properly.
-CONFIG proxy.config.bin_path STRING {{_install_root_dir}}/embedded/bin
-CONFIG proxy.config.plugin.plugin_dir STRING {{_install_root_dir}}/embedded/libexec/trafficserver
-CONFIG proxy.config.body_factory.template_sets_dir STRING {{_install_root_dir}}/embedded/etc/trafficserver/body_factory
+CONFIG proxy.config.bin_path STRING {{_embedded_root_dir}}/bin
+CONFIG proxy.config.plugin.plugin_dir STRING {{_embedded_root_dir}}/libexec/trafficserver
+CONFIG proxy.config.body_factory.template_sets_dir STRING {{_embedded_root_dir}}/etc/trafficserver/body_factory
 
 # Log to the standard API Umbrella log directory location.
 CONFIG proxy.config.log.logfile_dir STRING {{log_dir}}/trafficserver

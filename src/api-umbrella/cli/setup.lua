@@ -53,7 +53,7 @@ end
 
 local function set_computed_config()
   if not config["root_dir"] then
-    config["root_dir"] = os.getenv("API_UMBRELLA_INSTALL_ROOT") or "/opt/api-umbrella"
+    config["root_dir"] = os.getenv("API_UMBRELLA_ROOT") or "/opt/api-umbrella"
   end
 
   if not config["etc_dir"] then
@@ -108,7 +108,7 @@ local function set_computed_config()
   })
 
   deep_merge_overwrite_arrays(config, {
-    _install_root_dir = os.getenv("API_UMBRELLA_INSTALL_ROOT"),
+    _embedded_root_dir = os.getenv("API_UMBRELLA_EMBEDDED_ROOT"),
     _src_root_dir = src_root_dir,
     _package_path = package.path,
     _package_cpath = package.cpath,
@@ -270,7 +270,7 @@ local function ensure_geoip_db()
   -- the auto-updater so we don't touch the original packaged file).
   local city_db_path = path.join(config["db_dir"], "geoip2/city.mmdb")
   if not path.exists(city_db_path) then
-    local default_city_db_path = path.join(config["_install_root_dir"], "embedded/var/db/geoip2/city.mmdb")
+    local default_city_db_path = path.join(config["_embedded_root_dir"], "var/db/geoip2/city.mmdb")
     dir.makepath(path.dirname(city_db_path))
     file.copy(default_city_db_path, city_db_path)
   end
@@ -306,23 +306,69 @@ local function write_templates()
 end
 
 local function set_permissions()
-  posix.chmod(config["tmp_dir"], "rwxrwxrwx")
+  local _, err
+  _, err = posix.chmod(config["tmp_dir"], "rwxrwxrwx")
+  if err then
+    print("chmod failed: ", err)
+    os.exit(1)
+  end
 
   if config["user"] and config["group"] then
-    unistd.chown(path.join(config["root_dir"], "var/trafficserver"), config["user"], config["group"])
-    unistd.chown(path.join(config["log_dir"], "trafficserver"), config["user"], config["group"])
-    local _, _, err = run_command("chown -R " .. config["user"] .. ":" .. config["group"] .. " " .. path.join(config["etc_dir"], "trafficserver"))
+    _, err = unistd.chown(path.join(config["root_dir"], "var/trafficserver"), config["user"], config["group"])
+    if err then
+      print("chown failed: ", err)
+      os.exit(1)
+    end
+
+    _, err = unistd.chown(path.join(config["log_dir"], "trafficserver"), config["user"], config["group"])
+    if err then
+      print("chown failed: ", err)
+      os.exit(1)
+    end
+
+    _, _, err = run_command("chown -R " .. config["user"] .. ":" .. config["group"] .. " " .. path.join(config["etc_dir"], "trafficserver"))
     if err then
       print(err)
       os.exit(1)
     end
   end
+end
 
-  local perp_service_dirs = dir.getdirectories(path.join(config["etc_dir"], "perp"))
-  for _, service_dir in ipairs(perp_service_dirs) do
-    local is_hidden = (string.find(path.basename(service_dir), ".", 1, true) == 1)
-    if not is_hidden then
+local function activate_services()
+  local active_services = dir.getdirectories(path.join(src_root_dir, "templates/etc/perp"))
+  tablex.transform(path.basename, active_services)
+
+  -- Loop over the perp controlled services and set the sticky permission bit
+  -- for any services that are supposed to be active (this sticky bit is how
+  -- perp determines which services to run).
+  local installed_service_dirs = dir.getdirectories(path.join(config["etc_dir"], "perp"))
+  for _, service_dir in ipairs(installed_service_dirs) do
+    local service_name = path.basename(service_dir)
+
+    -- Disable any old services that might be installed, but are no longer
+    -- present in templates/etc/perp.
+    local is_active = array_includes(active_services, service_name)
+
+    -- Disable any test-only services when not running in the test environment.
+    if string.find(service_name, "test-env", 1, true) == 1 and config["app_env"] ~= "test" then
+      is_active = false
+    end
+
+    -- Perp's hidden directories don't need the sticky bit.
+    local is_hidden = (string.find(service_name, ".", 1, true) == 1)
+    if is_hidden then
+      is_active = false
+    end
+
+    -- Set the sticky bit for any active services.
+    if is_active then
       local _, _, err = run_command("chmod +t " .. service_dir)
+      if err then
+        print(err)
+        os.exit(1)
+      end
+    else
+      local _, _, err = run_command("chmod -t " .. service_dir)
       if err then
         print(err)
         os.exit(1)
@@ -347,6 +393,7 @@ return function()
   ensure_geoip_db()
   write_templates()
   set_permissions()
+  activate_services()
 
   return config
 end

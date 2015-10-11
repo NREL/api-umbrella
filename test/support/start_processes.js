@@ -90,11 +90,11 @@ before(function apiUmbrellaStart(done) {
 
   // Spin up the api-umbrella processes.
   var binPath = path.resolve(__dirname, '../../bin/api-umbrella');
-  process.env.API_UMBRELLA_INSTALL_ROOT = path.resolve(__dirname, '../../build/stage/opt/api-umbrella');
+  process.env.API_UMBRELLA_EMBEDDED_ROOT = path.resolve(__dirname, '../../build/stage/opt/api-umbrella/embedded');
   global.apiUmbrellaServer = spawn(binPath, ['run'], {
     stdio: 'inherit',
     env: _.merge({}, process.env, {
-      'API_UMBRELLA_INSTALL_ROOT': process.env.API_UMBRELLA_INSTALL_ROOT,
+      'API_UMBRELLA_EMBEDDED_ROOT': process.env.API_UMBRELLA_EMBEDDED_ROOT,
       'API_UMBRELLA_CONFIG': overridesConfigPath,
     }),
   });
