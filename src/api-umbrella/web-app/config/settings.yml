@@ -7,7 +7,7 @@ elasticsearch:
 # hosts:
 #   - http://127.0.0.1:9200
 mongodb:
-  url: "mongodb://127.0.0.1:50217/api_umbrella_development"
+  url:
 web:
   admin:
     auth_strategies:
