@@ -13,12 +13,14 @@ local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local path = require "pl.path"
 local plutils = require "pl.utils"
 local posix = require "posix"
+local random_token = require "api-umbrella.utils.random_token"
 local run_command = require "api-umbrella.utils.run_command"
 local stat = require "posix.sys.stat"
 local tablex = require "pl.tablex"
 local unistd = require "posix.unistd"
 
 local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
+local embedded_root_dir = os.getenv("API_UMBRELLA_EMBEDDED_ROOT")
 
 local function read_runtime_config()
   local runtime_config_path = os.getenv("API_UMBRELLA_RUNTIME_CONFIG")
@@ -107,8 +109,18 @@ local function set_computed_config()
     default = (not default_host_exists),
   })
 
+  if not config["static_site"]["api_key"] then
+    local static_site_api_key_path = path.join(config["run_dir"], "static-site-api-key")
+    local api_key = file.read(static_site_api_key_path)
+    if not api_key then
+      api_key = random_token(40)
+    end
+
+    config["static_site"]["api_key"] = api_key
+  end
+
   deep_merge_overwrite_arrays(config, {
-    _embedded_root_dir = os.getenv("API_UMBRELLA_EMBEDDED_ROOT"),
+    _embedded_root_dir = embedded_root_dir,
     _src_root_dir = src_root_dir,
     _package_path = package.path,
     _package_cpath = package.cpath,
@@ -135,8 +147,8 @@ local function set_computed_config()
       },
     },
     static_site = {
-      dir = path.join(config["root_dir"], "embedded/apps/static-site/current"),
-      build_dir = path.join(config["root_dir"], "embedded/apps/static-site/current/build"),
+      dir = path.join(embedded_root_dir, "apps/static-site/current"),
+      build_dir = path.join(embedded_root_dir, "apps/static-site/current/build"),
     },
   })
 end
@@ -305,6 +317,23 @@ local function write_templates()
   end
 end
 
+local function write_static_site_key()
+  local static_site_api_key_path = path.join(config["run_dir"], "static-site-api-key")
+  file.write(static_site_api_key_path, config["static_site"]["api_key"])
+
+  local file_paths = {
+    path.join(config["static_site"]["build_dir"], "contact/index.html"),
+    path.join(config["static_site"]["build_dir"], "signup/index.html"),
+  }
+  for _, file_path in ipairs(file_paths) do
+    local content = file.read(file_path)
+    local new_content, replacements = string.gsub(content, "apiKey: '.-'", "apiKey: '" .. config["static_site"]["api_key"] .. "'")
+    if replacements > 0 then
+      file.write(file_path, new_content)
+    end
+  end
+end
+
 local function set_permissions()
   local _, err
   _, err = posix.chmod(config["tmp_dir"], "rwxrwxrwx")
@@ -392,6 +421,7 @@ return function()
   generate_self_signed_cert()
   ensure_geoip_db()
   write_templates()
+  write_static_site_key()
   set_permissions()
   activate_services()
 

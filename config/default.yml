@@ -241,8 +241,10 @@ internal_apis:
       - host: 127.0.0.1
         port: 14008
     url_matches:
-      - frontend_prefix: "/api-umbrella/"
-        backend_prefix: "/api-umbrella/"
+      - frontend_prefix: "/api-umbrella/v1/health"
+        backend_prefix: "/api-umbrella/v1/health"
+      - frontend_prefix: "/api-umbrella/v1/state"
+        backend_prefix: "/api-umbrella/v1/state"
     sub_settings:
       - http_method: get
         regex: "^/api-umbrella/v1/(health|state)"
@@ -250,6 +252,20 @@ internal_apis:
           disable_api_key: true
           rate_limit_mode: unlimited
           require_https: optional
+  - _id: api-umbrella-web-backend
+    name: API Umbrella - Web APIs
+    frontend_host: "{{default_hostname}}"
+    backend_host: 127.0.0.1
+    backend_protocol: http
+    balance_algorithm: least_conn
+    sort_order: 1
+    servers:
+      - host: "{{web.host}}"
+        port: "{{web.port}}"
+    url_matches:
+      - frontend_prefix: "/api-umbrella/"
+        backend_prefix: "/api-umbrella/"
+    sub_settings:
       - http_method: post
         regex: "^/api-umbrella/v1/users"
         settings:

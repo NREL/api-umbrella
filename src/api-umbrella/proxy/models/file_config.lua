@@ -42,6 +42,18 @@ local function set_defaults(data)
       if api["frontend_host"] == "{{default_hostname}}" then
         api["frontend_host"] = default_hostname_replacement
       end
+
+      if api["servers"] then
+        for _, server in ipairs(api["servers"]) do
+          if server["host"] == "{{web.host}}" then
+            server["host"] = data["web"]["host"]
+          end
+
+          if server["port"] == "{{web.port}}" then
+            server["port"] = data["web"]["port"]
+          end
+        end
+      end
     end
   end
 

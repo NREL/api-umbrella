@@ -118,6 +118,13 @@ describe('routing', function() {
     ],
   });
 
+  before(function createAdmin(done) {
+    Factory.create('admin', function(admin) {
+      this.adminToken = admin.authentication_token;
+      done();
+    }.bind(this));
+  });
+
   beforeEach(function createUser(done) {
     Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
       this.apiKey = user.api_key;
@@ -466,6 +473,136 @@ describe('routing', function() {
         should.not.exist(error);
         response.statusCode.should.eql(301);
         response.headers.location.should.eql('https://default.foo:9081/signup');
+        done();
+      });
+    });
+  });
+
+  describe('internal apis', function() {
+    it('routes to the gatekeeper apis for the default host', function(done) {
+      this.timeout(5000);
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'default.foo',
+          'X-Api-Key': this.apiKey,
+          'X-Admin-Auth-Token': this.adminToken,
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        response.headers['content-type'].should.contain('application/json');
+        done();
+      });
+    });
+
+    it('routes to the web apis for the default host', function(done) {
+      this.timeout(5000);
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'default.foo',
+          'X-Api-Key': this.apiKey,
+          'X-Admin-Auth-Token': this.adminToken,
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        response.headers['content-type'].should.contain('application/json');
+        done();
+      });
+    });
+
+    it('routes to the gatekeeper apis for unknown hosts when there is a default host', function(done) {
+      this.timeout(5000);
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'unknown.foo',
+          'X-Api-Key': this.apiKey,
+          'X-Admin-Auth-Token': this.adminToken,
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        response.headers['content-type'].should.contain('application/json');
+        done();
+      });
+    });
+
+    it('routes to the web apis for unknown hosts when there is a default host', function(done) {
+      this.timeout(5000);
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'unknown.foo',
+          'X-Api-Key': this.apiKey,
+          'X-Admin-Auth-Token': this.adminToken,
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        response.headers['content-type'].should.contain('application/json');
+        done();
+      });
+    });
+
+    it('does not route to the gatekeeper apis for non-default hosts that are explicitly defined', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'withoutweb.foo',
+          'X-Api-Key': this.apiKey,
+          'X-Admin-Auth-Token': this.adminToken,
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(404);
+        done();
+      });
+    });
+
+    it('does not route to the web apis for non-default hosts that are explicitly defined', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'withoutweb.foo',
+          'X-Api-Key': this.apiKey,
+          'X-Admin-Auth-Token': this.adminToken,
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(404);
+        done();
+      });
+    });
+
+    it('does not route to the gatekeeper apis for non-default hosts that have the web backend explicitly enabled', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'withweb.foo',
+          'X-Api-Key': this.apiKey,
+          'X-Admin-Auth-Token': this.adminToken,
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(404);
+        done();
+      });
+    });
+
+    it('does not route to the web apis for non-default hosts that have the web backend explicitly enabled', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'withweb.foo',
+          'X-Api-Key': this.apiKey,
+          'X-Admin-Auth-Token': this.adminToken,
+        },
+      });
+      request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(404);
         done();
       });
     });

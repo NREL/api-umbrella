@@ -19,12 +19,6 @@ before(function clearTestEnvDns() {
   fs.writeFileSync(configPath, '');
 });
 
-before(function stubDummyStaticSite() {
-  mkdirp.sync(path.join(config.get('root_dir'), 'embedded/apps/static-site/current/build/signup'));
-  fs.writeFileSync(path.join(config.get('root_dir'), 'embedded/apps/static-site/current/build/index.html'), 'Your API Site Name');
-  fs.writeFileSync(path.join(config.get('root_dir'), 'embedded/apps/static-site/current/build/signup/index.html'), 'API Key Signup');
-});
-
 // Trigger the mongo-orchestration setup to configure our replicaset.
 //
 // Note that this is a bit funny, since mongo-orchestration doesn't actually
