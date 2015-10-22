@@ -16,6 +16,7 @@ STAGE_MARKERS_DIR:=$(ROOT_DIR)/build/stage/.installed
 LUAROCKS_DIR:=vendor/lib/luarocks/rocks
 LUAROCKS_CMD:=LUA_PATH="$(STAGE_PREFIX)/embedded/openresty/luajit/share/lua/5.1/?.lua;$(STAGE_PREFIX)/embedded/openresty/luajit/share/lua/5.1/?/init.lua;;" $(STAGE_PREFIX)/embedded/bin/luarocks
 LUA_SHARE_DIR:=vendor/share/lua/5.1
+LUA_LIB_DIR:=vendor/lib/lua/5.1
 VERSION_SEP:=-version-
 RELEASE_TIMESTAMP:=$(shell date -u +%Y%m%d%H%M%S)
 
@@ -35,11 +36,11 @@ BUNDLER_NAME:=bundler
 BUNDLER:=$(BUNDLER_NAME)-$(BUNDLER_VERSION)
 BUNDLER_INSTALL_MARKER:=$(BUNDLER_NAME)$(VERSION_SEP)$(BUNDLER_VERSION)
 
-ELASTICSEARCH_VERSION:=1.7.2
+ELASTICSEARCH_VERSION:=1.7.3
 ELASTICSEARCH_NAME:=elasticsearch
 ELASTICSEARCH:=$(ELASTICSEARCH_NAME)-$(ELASTICSEARCH_VERSION)
 ELASTICSEARCH_DIGEST:=sha1
-ELASTICSEARCH_CHECKSUM:=a7c0536bd660b2921a96a37b814f9accc76f5cd9
+ELASTICSEARCH_CHECKSUM:=754b089ec0a1aae5b36b39391d5385ed7428d8f5
 ELASTICSEARCH_URL:=https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-$(ELASTICSEARCH_VERSION).tar.gz
 ELASTICSEARCH_INSTALL_MARKER:=$(ELASTICSEARCH_NAME)$(VERSION_SEP)$(ELASTICSEARCH_VERSION)
 
@@ -140,11 +141,11 @@ LUSTACHE_CHECKSUM:=7c64dd36bbb02e71a0e60e847b70d561
 LUSTACHE_URL:=https://github.com/Olivine-Labs/lustache/archive/$(LUSTACHE_VERSION).tar.gz
 LUSTACHE_INSTALL_MARKER:=$(LUSTACHE_NAME)$(VERSION_SEP)$(LUSTACHE_VERSION)
 
-MONGODB_VERSION:=3.0.6
+MONGODB_VERSION:=3.0.7
 MONGODB_NAME:=mongodb
 MONGODB:=$(MONGODB_NAME)-$(MONGODB_VERSION)
 MONGODB_DIGEST:=md5
-MONGODB_CHECKSUM:=68f58028bb98ff7b97c4b37ebc20380c
+MONGODB_CHECKSUM:=e3894b76089fa9d38901c96bc5516a14
 MONGODB_URL:=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-$(MONGODB_VERSION).tgz
 MONGODB_INSTALL_MARKER:=$(MONGODB_NAME)$(VERSION_SEP)$(MONGODB_VERSION)
 
@@ -237,11 +238,11 @@ PENLIGHT_VERSION:=1.3.2-2
 #
 # Test Dependencies
 #
-UNBOUND_VERSION:=1.5.4
+UNBOUND_VERSION:=1.5.6
 UNBOUND_NAME:=unbound
 UNBOUND:=$(UNBOUND_NAME)-$(UNBOUND_VERSION)
 UNBOUND_DIGEST:=sha256
-UNBOUND_CHECKSUM:=a1e1c1a578cf8447cb51f6033714035736a0f04444854a983123c094cc6fb137
+UNBOUND_CHECKSUM:=ad3823f5895f59da9e408ea273fcf81d8a76914c18864fba256d7f140b83e404
 UNBOUND_URL:=https://www.unbound.net/downloads/unbound-$(UNBOUND_VERSION).tar.gz
 UNBOUND_INSTALL_MARKER:=$(UNBOUND_NAME)$(VERSION_SEP)$(UNBOUND_VERSION)
 
@@ -289,6 +290,13 @@ define luarocks_install
 	touch $@
 endef
 
+define test_luarocks_install
+	$(eval PACKAGE:=$($(1)))
+	$(eval PACKAGE_VERSION:=$($(1)_VERSION))
+	$(LUAROCKS_CMD) --tree=test/vendor install $(PACKAGE) $(PACKAGE_VERSION)
+	touch $@
+endef
+
 all: stage
 
 $(DEPS_DIR):
@@ -321,7 +329,19 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core: src/api-umbrella/web-app/tmp/compiled-as
 	# current repo checkout into the release (but excluding tests, etc).
 	rm -rf $(STAGE_PREFIX)/embedded/apps/core/releases
 	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)
-	rsync -a --filter=":- $(ROOT_DIR)/.gitignore" --include="/templates/etc/perp/.boot" --exclude=".*" --exclude="/src/api-umbrella/web-app/spec" --exclude="/src/api-umbrella/web-app/app/assets" --include="/bin/***" --include="/config/***" --include="/LICENSE.txt" --include="/templates/***" --include="/src/***" --exclude="*" $(ROOT_DIR)/ $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/
+	rsync -a \
+		--filter=":- $(ROOT_DIR)/.gitignore" \
+		--include="/templates/etc/perp/.boot" \
+		--exclude=".*" \
+		--exclude="/src/api-umbrella/web-app/spec" \
+		--exclude="/src/api-umbrella/web-app/app/assets" \
+		--include="/bin/***" \
+		--include="/config/***" \
+		--include="/LICENSE.txt" \
+		--include="/templates/***" \
+		--include="/src/***" \
+		--exclude="*" \
+		$(ROOT_DIR)/ $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/
 	cd $(STAGE_PREFIX)/embedded/apps/core && ln -snf releases/$(RELEASE_TIMESTAMP) ./current
 	# Symlink the main api-umbrella binary into place.
 	mkdir -p $(STAGE_PREFIX)/bin
@@ -748,7 +768,7 @@ $(DEPS_DIR)/$(UNBOUND): $(DEPS_DIR)/$(UNBOUND).tar.gz
 
 $(DEPS_DIR)/$(UNBOUND)/.built: $(DEPS_DIR)/$(UNBOUND)
 	cd $< && ./configure \
-		--prefix=$(PREFIX)/embedded
+		--prefix=$(PREFIX)/test-env
 	cd $< && make
 	touch $@
 
@@ -770,8 +790,8 @@ $(LUAROCKS_DIR)/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): | $(STAGE_MARKERS_DIR)/
 	$(call luarocks_install,LUA_CMSGPACK)
 
 # LuaRocks - luacheck
-$(LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
-	$(call luarocks_install,LUACHECK)
+test/$(LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+	$(call test_luarocks_install,LUACHECK)
 
 # LuaRocks - luaposix
 $(LUAROCKS_DIR)/$(LUAPOSIX)/$(LUAPOSIX_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
@@ -902,7 +922,7 @@ stage: stage_dependencies stage_app_dependencies
 
 install: stage
 	mkdir -p $(DESTDIR)$(PREFIX)
-	rsync -av --delete-after --delete-excluded --exclude="/etc" --exclude="/var" --exclude="*unbound*" --exclude="embedded/bin/python*" --exclude="embedded/include/python*" --exclude="embedded/lib/python*" --exclude="*orchestration*" $(STAGE_PREFIX)/ $(DESTDIR)$(PREFIX)/
+	rsync -av --delete-after --delete-excluded --include="/embedded" --exclude="*" $(STAGE_PREFIX)/ $(DESTDIR)$(PREFIX)/
 
 # Node test dependencies
 test/node_modules/.installed: test/package.json
@@ -911,28 +931,28 @@ test/node_modules/.installed: test/package.json
 	touch $@
 
 # Python test dependencies (mongo-orchestration)
-$(STAGE_PREFIX)/embedded/bin/pip:
-	virtualenv $(STAGE_PREFIX)/embedded
+$(STAGE_PREFIX)/test-env/bin/pip:
+	virtualenv $(STAGE_PREFIX)/test-env
 	touch $@
 
-$(STAGE_MARKERS_DIR)/test-python-requirements: test/requirements.txt $(STAGE_PREFIX)/embedded/bin/pip | $(STAGE_MARKERS_DIR)
-	$(STAGE_PREFIX)/embedded/bin/pip install -r test/requirements.txt
+$(STAGE_MARKERS_DIR)/test-python-requirements: test/requirements.txt $(STAGE_PREFIX)/test-env/bin/pip | $(STAGE_MARKERS_DIR)
+	$(STAGE_PREFIX)/test-env/bin/pip install -r test/requirements.txt
 	touch $@
 
 test_dependencies: \
 	test/node_modules/.installed \
-	$(LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION) \
+	test/$(LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION) \
 	$(STAGE_MARKERS_DIR)/test-python-requirements \
 	$(STAGE_MARKERS_DIR)/$(UNBOUND_INSTALL_MARKER)
 
 lint: test_dependencies
-	LUA_PATH="$(LUA_SHARE_DIR)/?.lua;$(LUA_SHARE_DIR)/?/init.lua;;" LUA_CPATH="vendor/lib/lua/5.1/?.so;;" ./vendor/bin/luacheck src
+	LUA_PATH="test/$(LUA_SHARE_DIR)/?.lua;test/$(LUA_SHARE_DIR)/?/init.lua;;" LUA_CPATH="test/$(LUA_LIB_DIR)/?.so;;" ./test/vendor/bin/luacheck src
 
 test: stage test_dependencies lint
 	cd test && MOCHA_FILES="$(MOCHA_FILES)" npm test
 
 clean:
-	rm -rf $(DEPS_DIR) $(STAGE_DIR) vendor src/api-umbrella/web-app/.bundle
+	rm -rf $(DEPS_DIR) $(STAGE_DIR) build/package/tmp build/package/bundle vendor test/vendor test/node_modules src/api-umbrella/web-app/.bundle src/api-umbrella/web-app/tmp src/api-umbrella/web-app/log
 
 check_shared_objects:
 	find build/stage/ -type f | xargs ldd 2>&1 | grep " => " | grep -o "^[^(]*" | sort | uniq
@@ -940,4 +960,4 @@ check_shared_objects:
 package:
 	make install DESTDIR=$(ROOT_DIR)/build/package/tmp
 	cd build/package && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(ROOT_DIR)/build/package/bundle
-	cd build/package && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle exec fpm -s dir -t rpm -n api-umbrella -v 0.9.0 -C $(ROOT_DIR)/build/package/tmp -p api-umbrella_VERSION_ARCH.rpm opt/api-umbrella
+	cd build/package && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle exec fpm -s dir -t rpm -n api-umbrella -v 0.9.0 --rpm-compression xz -C $(ROOT_DIR)/build/package/tmp -p api-umbrella_VERSION_ARCH.rpm opt/api-umbrella

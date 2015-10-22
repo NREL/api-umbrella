@@ -19,7 +19,6 @@
 
 # Ignore Circle CI items, so the GitHub pages publish task can work. 
 /.ruby-version
-/vendor
 
 /build/deps
 /build/package/.bundle
@@ -32,3 +31,5 @@
 /test/log/*
 /test/tmp/*
 /ci_cache
+/vendor
+/test/vendor

@@ -151,6 +151,10 @@ local function set_computed_config()
       build_dir = path.join(embedded_root_dir, "apps/static-site/current/build"),
     },
   })
+
+  if config["app_env"] == "test" then
+    config["_test_env_install_dir"] = path.join(path.dirname(embedded_root_dir), "test-env")
+  end
 end
 
 local function set_template_config()

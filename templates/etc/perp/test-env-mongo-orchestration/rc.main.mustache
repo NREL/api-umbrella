@@ -5,6 +5,7 @@ exec 2>&1
 
 if test ${1} = "start"; then
   echo "starting ${2}..."
+  PATH="{{_test_env_install_dir}}/sbin:{{_test_env_install_dir}}/bin:$PATH"
   exec \
     runtrap test-env-mongo-orchestration ${0} \
     mongo-orchestration \
