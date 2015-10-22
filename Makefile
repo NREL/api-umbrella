@@ -307,6 +307,49 @@ $(STAGE_MARKERS_DIR):
 	mkdir -p $@
 	touch $@
 
+# api-umbrella-core
+src/api-umbrella/web-app/tmp/compiled-assets: $(shell find src/api-umbrella/web-app/app/assets -type f) vendor/bundle
+	# Compile the assets, but then move them to a temporary build directory so
+	# they aren't used when working in development mode.
+	cd $(ROOT_DIR)/src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) DEVISE_SECRET_KEY=temp RAILS_SECRET_TOKEN=temp bundle exec rake assets:precompile
+	cd $(ROOT_DIR)/src/api-umbrella/web-app && rsync -a public/web-assets/ tmp/compiled-assets
+	rm -rf $(ROOT_DIR)/src/api-umbrella/web-app/public/web-assets
+	touch $@
+
+$(STAGE_MARKERS_DIR)/api-umbrella-core: src/api-umbrella/web-app/tmp/compiled-assets | $(STAGE_MARKERS_DIR)
+	# Create a new release directory, copying the relevant source code from the
+	# current repo checkout into the release (but excluding tests, etc).
+	rm -rf $(STAGE_PREFIX)/embedded/apps/core/releases
+	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)
+	rsync -a --filter=":- $(ROOT_DIR)/.gitignore" --include="/templates/etc/perp/.boot" --exclude=".*" --exclude="/src/api-umbrella/web-app/spec" --exclude="/src/api-umbrella/web-app/app/assets" --include="/bin/***" --include="/config/***" --include="/LICENSE.txt" --include="/templates/***" --include="/src/***" --exclude="*" $(ROOT_DIR)/ $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/
+	cd $(STAGE_PREFIX)/embedded/apps/core && ln -snf releases/$(RELEASE_TIMESTAMP) ./current
+	# Symlink the main api-umbrella binary into place.
+	mkdir -p $(STAGE_PREFIX)/bin
+	cd $(STAGE_PREFIX)/bin && ln -snf ../embedded/apps/core/current/bin/api-umbrella ./api-umbrella
+	# Copy all of the vendor files into place.
+	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/vendor
+	rsync -a --delete-after $(ROOT_DIR)/vendor/ $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/
+	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP) && ln -snf ../../shared/vendor ./vendor
+	# Copy the precompiled assets into place.
+	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/public/web-assets
+	rsync -a --delete-after $(ROOT_DIR)/src/api-umbrella/web-app/tmp/compiled-assets/ $(STAGE_PREFIX)/embedded/apps/core/shared/public/web-assets/
+	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app/public && ln -snf ../../../../../../shared/public/web-assets ./web-assets
+	# Re-run the bundle install inside the release directory, but disabling
+	# non-production gem groups. Combined with the clean flag, this deletes all
+	# the test/development/asset gems we don't need for a release.
+	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=../../../vendor/bundle --clean --without="development test assets" --deployment
+	# Purge a bunch of content out of the bundler results to make for a lighter
+	# release distribution. Purge gem caches, embedded test files, and
+	# intermediate files used when compiling C gems from source. Also delete some
+	# of the duplicate .so library files for C extensions (we should only need
+	# the ones in the "extensions" directory, the rest are duplicates for legacy
+	# purposes).
+	cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/bundle && rm -rf ruby/*/cache ruby/*/gems/*/test* ruby/*/gems/*/spec ruby/*/gems/*/ext ruby/*/bundler/gems/*/test* ruby/*/bundler/gems/*/spec
+	cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/bundle && find ruby/*/gems -name "*.so" -delete
+	# Manually delete test-only lua dependencies.
+	cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor && rm -rf bin/luacheck lib/luarocks/rocks/luacheck share/lua/*/luacheck
+	touch $@
+
 # api-umbrella-static-site
 $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE).tar.gz: | $(DEPS_DIR)
 	$(call download,API_UMBRELLA_STATIC_SITE)
@@ -315,8 +358,8 @@ $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE): $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)
 	$(call decompress,API_UMBRELLA_STATIC_SITE)
 
 $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)/.built: $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE) | $(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER)
-	cd $< && bundle install --path=vendor/bundle
-	cd $< && bundle exec middleman build
+	cd $< && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=vendor/bundle
+	cd $< && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle exec middleman build
 	touch $@
 
 $(STAGE_MARKERS_DIR)/$(API_UMBRELLA_STATIC_SITE_INSTALL_MARKER): $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)/.built | $(STAGE_MARKERS_DIR)
@@ -817,12 +860,12 @@ vendor:
 vendor/bundle: src/api-umbrella/web-app/Gemfile src/api-umbrella/web-app/Gemfile.lock | vendor $(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER)
 	rm -rf src/api-umbrella/web-app/.bundle
 	cd src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(ROOT_DIR)/vendor/bundle
-	cd src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle clean
 	touch $@
 
 stage_dependencies: \
 	$(STAGE_PREFIX)/embedded/bin \
 	$(STAGE_PREFIX)/embedded/sbin \
+	$(STAGE_MARKERS_DIR)/api-umbrella-core \
 	$(STAGE_MARKERS_DIR)/$(API_UMBRELLA_STATIC_SITE_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(ELASTICSEARCH_INSTALL_MARKER) \
@@ -859,7 +902,7 @@ stage: stage_dependencies stage_app_dependencies
 
 install: stage
 	mkdir -p $(DESTDIR)$(PREFIX)
-	rsync -av $(STAGE_PREFIX)/ $(DESTDIR)$(PREFIX)/
+	rsync -av --delete-after --delete-excluded --exclude="/etc" --exclude="/var" --exclude="*unbound*" --exclude="embedded/bin/python*" --exclude="embedded/include/python*" --exclude="embedded/lib/python*" --exclude="*orchestration*" $(STAGE_PREFIX)/ $(DESTDIR)$(PREFIX)/
 
 # Node test dependencies
 test/node_modules/.installed: test/package.json
@@ -890,3 +933,11 @@ test: stage test_dependencies lint
 
 clean:
 	rm -rf $(DEPS_DIR) $(STAGE_DIR) vendor src/api-umbrella/web-app/.bundle
+
+check_shared_objects:
+	find build/stage/ -type f | xargs ldd 2>&1 | grep " => " | grep -o "^[^(]*" | sort | uniq
+
+package:
+	make install DESTDIR=$(ROOT_DIR)/build/package/tmp
+	cd build/package && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(ROOT_DIR)/build/package/bundle
+	cd build/package && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle exec fpm -s dir -t rpm -n api-umbrella -v 0.9.0 -C $(ROOT_DIR)/build/package/tmp -p api-umbrella_VERSION_ARCH.rpm opt/api-umbrella

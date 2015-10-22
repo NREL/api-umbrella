@@ -22,6 +22,9 @@
 /vendor
 
 /build/deps
+/build/package/.bundle
+/build/package/bundle
+/build/package/tmp
 /build/stage
 /log/*
 /test/node_modules
