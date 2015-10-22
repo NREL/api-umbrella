@@ -2,7 +2,6 @@ local _M = {}
 
 local cjson = require "cjson"
 local cmsgpack = require "cmsgpack"
-local is_array = require "api-umbrella.utils.is_array"
 local plutils = require "pl.utils"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
@@ -73,24 +72,6 @@ function _M.pick_where_present(dict, keys)
   end
 
   return selected
-end
-
-function _M.deep_merge_overwrite_arrays(dest, src)
-  if not src then return dest end
-
-  for key, value in pairs(src) do
-    if type(value) == "table" and type(dest[key]) == "table" then
-      if is_array(value) then
-        dest[key] = value
-      else
-        _M.deep_merge_overwrite_arrays(dest[key], src[key])
-      end
-    else
-      dest[key] = value
-    end
-  end
-
-  return dest
 end
 
 local function lowercase_settings_header_keys(settings, headers_key)

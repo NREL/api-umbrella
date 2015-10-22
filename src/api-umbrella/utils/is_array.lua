@@ -12,5 +12,11 @@ return function(obj)
     count = count + 1
   end
 
+  -- If it's an empty table, we really have no way to determine if it's an
+  -- array or not. Default to saying it's not an array.
+  if count == 1 then
+    return false
+  end
+
   return true
 end

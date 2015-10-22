@@ -5,7 +5,7 @@ local function deep_merge_overwrite_arrays(dest, src)
 
   for key, value in pairs(src) do
     if type(value) == "table" and type(dest[key]) == "table" then
-      if is_array(value) then
+      if is_array(value) or is_array(dest[key]) then
         dest[key] = value
       else
         deep_merge_overwrite_arrays(dest[key], src[key])

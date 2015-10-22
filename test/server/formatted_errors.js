@@ -325,6 +325,20 @@ describe('formatted error responses', function() {
           backend_host: 'example.com',
           url_matches: [
             {
+              frontend_prefix: '/empty/',
+              backend_prefix: '/empty/',
+            }
+          ],
+          settings: {
+            error_templates: {},
+            error_data: {},
+          },
+        },
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
               frontend_prefix: '/',
               backend_prefix: '/',
             }
@@ -398,12 +412,24 @@ describe('formatted error responses', function() {
       });
     });
 
+    it('uses the default error templates if custom error templates and data are set to an empty object', function(done) {
+      request.get('http://localhost:9080/empty/hello.json', function(error, response, body) {
+        response.headers['content-type'].should.contain('application/json');
+        var data = JSON.parse(body);
+        Object.keys(data).should.eql(['error']);
+        Object.keys(data.error).sort().should.eql(['code', 'message']);
+        data.error.code.should.eql('API_KEY_MISSING');
+        done();
+      });
+    });
+
     it('uses the default error templates if not specified', function(done) {
       request.get('http://localhost:9080/hello.json', function(error, response, body) {
         response.headers['content-type'].should.contain('application/json');
         var data = JSON.parse(body);
         Object.keys(data).should.eql(['error']);
         Object.keys(data.error).sort().should.eql(['code', 'message']);
+        data.error.code.should.eql('API_KEY_MISSING');
         done();
       });
     });
@@ -425,7 +451,7 @@ describe('formatted error responses', function() {
             error_data: {
               api_key_missing: 'Foo',
               api_key_invalid: 9,
-              api_key_unauthorized: [],
+              api_key_unauthorized: ['foo'],
               api_key_disabled: null,
             },
           },

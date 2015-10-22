@@ -24,7 +24,7 @@ mongoose.model('Admin', new mongoose.Schema({
   username: String,
   superuser: Boolean,
   authentication_token: String,
-}, { collection: 'admins' }));
+}, { collection: 'admins', minimize: false }));
 
 Factory.define('admin', mongoose.testConnection.model('Admin'), {
   _id: generateId,

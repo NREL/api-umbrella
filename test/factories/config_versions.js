@@ -11,7 +11,7 @@ mongoose.model('RouterConfigVersion', new mongoose.Schema({
     unique: true,
   },
   config: mongoose.Schema.Types.Mixed,
-}, { collection: 'config_versions' }));
+}, { collection: 'config_versions', minimize: false }));
 
 Factory.define('config_version', mongoose.testConnection.model('RouterConfigVersion'), {
   version: function(callback) {

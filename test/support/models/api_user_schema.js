@@ -22,7 +22,7 @@ module.exports = function(mongoose) {
     disabled_at: Date,
     roles: [String],
     settings: mongoose.Schema.Types.Mixed,
-  }, { collection: 'api_users' });
+  }, { collection: 'api_users', minimize: false });
 
   schema.pre('validate', function generateApiKey(next) {
     if(!this.api_key) {

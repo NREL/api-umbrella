@@ -1,9 +1,9 @@
+local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local seq = require "pl.seq"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
 
 local append_array = utils.append_array
-local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local deepcopy = tablex.deepcopy
 local unique = seq.unique
 

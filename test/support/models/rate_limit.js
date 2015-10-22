@@ -13,4 +13,4 @@ module.exports = mongoose.model('RateLimit', new mongoose.Schema({
     type: Date,
     expires: 0,
   },
-}, { collection: 'rate_limits' }));
+}, { collection: 'rate_limits', minimize: false }));

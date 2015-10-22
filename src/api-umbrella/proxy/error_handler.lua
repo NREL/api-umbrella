@@ -1,4 +1,5 @@
 local is_array = require "api-umbrella.utils.is_array"
+local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local lustache = require "lustache"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local path = require "pl.path"
@@ -6,7 +7,6 @@ local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
 
-local deep_merge_overwrite_arrays = utils.deep_merge_overwrite_arrays
 local deepcopy = tablex.deepcopy
 local extension = path.extension
 local strip = stringx.strip
@@ -132,6 +132,12 @@ return function(denied_code, settings, extra_data)
   local data = deepcopy(settings["error_data"][denied_code])
   if not data or type(data) ~= "table" or is_array(data) then
     data = deepcopy(settings["error_data"]["internal_server_error"])
+
+    -- Fallback to the built-in default template that isn't subject to any
+    -- API-specific overrides.
+    if not data or type(data) ~= "table" or is_array(data) then
+      data = deepcopy(config["apiSettings"]["error_data"]["internal_server_error"])
+    end
   end
 
   local message_data = deep_merge_overwrite_arrays({
@@ -145,6 +151,13 @@ return function(denied_code, settings, extra_data)
   end
 
   local template = settings["error_templates"][format]
+
+  -- Fallback to the built-in default data that isn't subject to any
+  -- API-specific overrides.
+  if not template or type(template) ~= "string" then
+    template = config["apiSettings"]["error_templates"][format]
+  end
+
   local output, template_err = render_template(template, data, format, true)
 
   -- Allow all errors to be loaded over CORS (in case any underlying APIs are
