@@ -3,8 +3,10 @@
 require('../test_helper');
 
 var Factory = require('factory-lady'),
-    uuid = require('node-uuid'),
-    mongoose = require('mongoose');
+    mongoose = require('mongoose'),
+    uuid = require('node-uuid');
+
+require('../../lib/models/admin');
 
 function generateId(callback) {
   callback(uuid.v4());

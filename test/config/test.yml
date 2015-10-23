@@ -26,6 +26,9 @@ trafficserver:
       - CONFIG proxy.config.http.cache.fuzz.time INT 0
 web:
   port: 13012
+  admin:
+    initial_superusers:
+      - admin@example.com
 router:
   api_backends:
     port: 13011
