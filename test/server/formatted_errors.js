@@ -267,65 +267,65 @@ describe('formatted error responses', function() {
     });
 
     it('substitutes the base_url variable', function(done) {
-      request.get('http://localhost:9333/base_url.json', function(error, response, body) {
+      request.get('http://localhost:9080/base_url.json', function(error, response, body) {
         var data = JSON.parse(body);
-        data.base_url.should.eql('http://localhost:9333');
+        data.base_url.should.eql('http://localhost:9080');
         done();
       });
     });
 
     it('substitutes the baseUrl variable', function(done) {
-      request.get('http://localhost:9333/baseUrl.json', function(error, response, body) {
+      request.get('http://localhost:9080/baseUrl.json', function(error, response, body) {
         var data = JSON.parse(body);
-        data.baseUrl.should.eql('http://localhost:9333');
+        data.baseUrl.should.eql('http://localhost:9080');
         done();
       });
     });
 
     it('substitutes the signup_url variable', function(done) {
-      request.get('http://localhost:9333/signup_url.json', function(error, response, body) {
+      request.get('http://localhost:9080/signup_url.json', function(error, response, body) {
         var data = JSON.parse(body);
-        data.signup_url.should.eql('http://localhost:9333');
+        data.signup_url.should.eql('http://localhost:9080');
         done();
       });
     });
 
     it('substitutes the signupUrl variable', function(done) {
-      request.get('http://localhost:9333/signupUrl.json', function(error, response, body) {
+      request.get('http://localhost:9080/signupUrl.json', function(error, response, body) {
         var data = JSON.parse(body);
-        data.signupUrl.should.eql('http://localhost:9333');
+        data.signupUrl.should.eql('http://localhost:9080');
         done();
       });
     });
 
     it('substitutes the contact_url variable', function(done) {
-      request.get('http://localhost:9333/contact_url.json', function(error, response, body) {
+      request.get('http://localhost:9080/contact_url.json', function(error, response, body) {
         var data = JSON.parse(body);
-        data.contact_url.should.eql('http://localhost:9333/contact/');
+        data.contact_url.should.eql('http://localhost:9080/contact/');
         done();
       });
     });
 
     it('substitutes the contactUrl variable', function(done) {
-      request.get('http://localhost:9333/contactUrl.json', function(error, response, body) {
+      request.get('http://localhost:9080/contactUrl.json', function(error, response, body) {
         var data = JSON.parse(body);
-        data.contactUrl.should.eql('http://localhost:9333/contact/');
+        data.contactUrl.should.eql('http://localhost:9080/contact/');
         done();
       });
     });
 
     it('substitutes variables embedded inside of other variables', function(done) {
-      request.get('http://localhost:9333/embedded.json', function(error, response, body) {
+      request.get('http://localhost:9080/embedded.json', function(error, response, body) {
         var data = JSON.parse(body);
-        data.embedded.should.eql('base_url: http://localhost:9333 signup_url: http://localhost:9333 contact_url: http://localhost:9333/contact/');
+        data.embedded.should.eql('base_url: http://localhost:9080 signup_url: http://localhost:9080 contact_url: http://localhost:9080/contact/');
         done();
       });
     });
 
     it('substitutes legacy camel case variables embedded inside of other variables', function(done) {
-      request.get('http://localhost:9333/embedded_legacy.json', function(error, response, body) {
+      request.get('http://localhost:9080/embedded_legacy.json', function(error, response, body) {
         var data = JSON.parse(body);
-        data.embedded_legacy.should.eql('baseUrl: http://localhost:9333 signupUrl: http://localhost:9333 contactUrl: http://localhost:9333/contact/');
+        data.embedded_legacy.should.eql('baseUrl: http://localhost:9080 signupUrl: http://localhost:9080 contactUrl: http://localhost:9080/contact/');
         done();
       });
     });

@@ -24,8 +24,10 @@ return function(settings, user)
         end
       end
 
+      local https_url = httpsify_current_url()
       return "https_required", {
-        httpsUrl = httpsify_current_url(),
+        https_url = https_url,
+        httpsUrl = https_url,
       }
     end
   end

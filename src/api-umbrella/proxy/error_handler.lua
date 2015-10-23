@@ -7,8 +7,10 @@ local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
 
+local append_array = utils.append_array
 local deepcopy = tablex.deepcopy
 local extension = path.extension
+local keys = tablex.keys
 local strip = stringx.strip
 
 local supported_media_types = {
@@ -129,21 +131,52 @@ return function(denied_code, settings, extra_data)
 
   local format, content_type = request_format()
 
-  local data = deepcopy(settings["error_data"][denied_code])
-  if not data or type(data) ~= "table" or is_array(data) then
-    data = deepcopy(settings["error_data"]["internal_server_error"])
+  local common_data = deepcopy(settings["error_data"]["common"])
+  if not common_data or type(common_data) ~= "table" or is_array(common_data) then
+    common_data = deepcopy(config["apiSettings"]["error_data"]["common"])
+  end
+
+  local error_data = deepcopy(settings["error_data"][denied_code])
+  if not error_data or type(error_data) ~= "table" or is_array(error_data) then
+    error_data = deepcopy(settings["error_data"]["internal_server_error"])
 
     -- Fallback to the built-in default template that isn't subject to any
     -- API-specific overrides.
-    if not data or type(data) ~= "table" or is_array(data) then
-      data = deepcopy(config["apiSettings"]["error_data"]["internal_server_error"])
+    if not error_data or type(error_data) ~= "table" or is_array(error_data) then
+      error_data = deepcopy(config["apiSettings"]["error_data"]["internal_server_error"])
     end
   end
 
-  local message_data = deep_merge_overwrite_arrays({
-    ["baseUrl"] = utils.base_url(),
-  }, extra_data)
-  data["message"] = render_template(data["message"], message_data)
+  local data = { base_url = utils.base_url() }
+  deep_merge_overwrite_arrays(data, common_data)
+
+  -- Support legacy camel-case capitalization of variables. Moving forward,
+  -- we're trying to clean things up and standardize on snake_case.
+  if not data["baseUrl"] then
+    data["baseUrl"] = data["base_url"]
+  end
+  if not data["signupUrl"] then
+    data["signupUrl"] = data["signup_url"]
+  end
+  if not data["contactUrl"] then
+    data["contactUrl"] = data["contact_url"]
+  end
+
+  local data_ordered_keys = keys(data)
+
+  deep_merge_overwrite_arrays(data, error_data)
+  append_array(data_ordered_keys, keys(error_data))
+
+  if extra_data then
+    deep_merge_overwrite_arrays(data, extra_data)
+    append_array(data_ordered_keys, keys(extra_data))
+  end
+
+  for _, key in ipairs(data_ordered_keys) do
+    if data[key] and type(data[key]) == "string" then
+      data[key] = render_template(data[key], data)
+    end
+  end
 
   local status_code = data["status_code"]
   if not status_code then
