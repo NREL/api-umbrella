@@ -2,4 +2,5 @@
 //= require "bootstrap"
 //= require "retina-1.1.0"
 //= require "jquery.magnific-popup"
+//= require "anchor"
 //= require "main"
