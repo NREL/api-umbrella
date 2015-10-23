@@ -1,5 +1,6 @@
 local lock = require "resty.lock"
 local mongo = require "api-umbrella.utils.mongo"
+local random_token = require "api-umbrella.utils.random_token"
 local uuid = require "resty.uuid"
 
 local function seed_api_keys()
@@ -74,6 +75,7 @@ local function seed_initial_superusers()
         _id = uuid.generate_random(),
         username = username,
         superuser = true,
+        authentication_token = random_token(40),
       })
 
       if create_err then
