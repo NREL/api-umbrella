@@ -8,12 +8,13 @@ local function start_perp(config, options)
     "-0", "api-umbrella (perpboot)",
     "-P", "/tmp/perpboot.lock",
     "perpboot",
-    perp_base
   }
 
   if options and options["background"] then
     table.insert(args, "-d")
   end
+
+  table.insert(args, perp_base)
 
   unistd.execp("runtool", args)
 
