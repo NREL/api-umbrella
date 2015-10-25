@@ -166,7 +166,7 @@ group :assets do
   gem "turbo-sprockets-rails3", "0.3.13"
 
   # Ember.js
-  gem "ember-rails", "~> 0.15.0", :require => false
+  gem "ember-rails", "~> 0.15.0"
   gem "ember-source", "~> 1.7.1"
 
   # We're not using this ourselves (ember-rails is pulling it in), but if it gets
