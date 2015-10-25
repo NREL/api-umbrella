@@ -42,9 +42,9 @@ fi
 # Run the Rails tests on the first node.
 if [ $CIRCLE_NODE_INDEX -eq "0" ]; then
   # Start the version of elasticsearch bundled with API Umbrella.
-  nohup bash -c "$(pwd)/build/stage/opt/api-umbrella/embedded/bin/elasticsearch &"
+  nohup bash -c "$(pwd)/build/work/stage/opt/api-umbrella/embedded/bin/elasticsearch &"
 
   # Run the web-app tests
   cd src/api-umbrella/web-app
-  PATH="../../../build/stage/opt/api-umbrella/embedded/bin:$PATH" bundle exec rake
+  PATH="../../../build/work/stage/opt/api-umbrella/embedded/bin:$PATH" bundle exec rake
 fi

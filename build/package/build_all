@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -e -u -x
+
+ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
+DISTS=(
+  centos:6
+)
+
+for DIST in "${DISTS[@]}"; do
+  NAME="api-umbrella-package-$DIST"
+  NAME=${NAME//[^a-zA-Z0-9_.-]/}
+
+  # Make sure we have the latest base image.
+  docker pull $DIST
+
+  # Wipe any previous build attempts.
+  docker rm $NAME
+
+  # Create the package inside the docker container for this distro.
+  docker run \
+    --name=$NAME \
+    --volume=$ROOT_DIR:/api-umbrella \
+    $DIST \
+    /bin/bash -c "cd /api-umbrella && make package"
+done

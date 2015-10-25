@@ -9,25 +9,35 @@ unexport RUBY_VERSION
 STANDARD_PATH:=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 PREFIX:=/opt/api-umbrella
 ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-DEPS_DIR:=$(ROOT_DIR)/build/deps
-STAGE_DIR:=$(ROOT_DIR)/build/stage
+BUILD_DIR:=$(ROOT_DIR)/build
+WORK_DIR:=$(BUILD_DIR)/work
+DEPS_DIR:=$(WORK_DIR)/deps
+STAGE_DIR:=$(WORK_DIR)/stage
 STAGE_PREFIX:=$(STAGE_DIR)$(PREFIX)
-STAGE_MARKERS_DIR:=$(ROOT_DIR)/build/stage/.installed
-LUAROCKS_DIR:=vendor/lib/luarocks/rocks
+STAGE_MARKERS_DIR:=$(STAGE_DIR)/.installed
+VENDOR_DIR:=$(WORK_DIR)/vendor
+BUNDLE_DIR:=$(VENDOR_DIR)/bundle
+LUAROCKS_DIR:=$(VENDOR_DIR)/lib/luarocks/rocks
 LUAROCKS_CMD:=LUA_PATH="$(STAGE_PREFIX)/embedded/openresty/luajit/share/lua/5.1/?.lua;$(STAGE_PREFIX)/embedded/openresty/luajit/share/lua/5.1/?/init.lua;;" $(STAGE_PREFIX)/embedded/bin/luarocks
-LUA_SHARE_DIR:=vendor/share/lua/5.1
-LUA_LIB_DIR:=vendor/lib/lua/5.1
+LUA_SHARE_DIR:=$(VENDOR_DIR)/share/lua/5.1
+LUA_LIB_DIR:=$(VENDOR_DIR)/lib/lua/5.1
+TEST_PREFIX:=/opt/api-umbrella/test-env
+TEST_STAGE_PREFIX:=$(STAGE_DIR)$(TEST_PREFIX)
+TEST_VENDOR_DIR:=$(WORK_DIR)/test-env/vendor
+TEST_LUAROCKS_DIR:=$(TEST_VENDOR_DIR)/lib/luarocks/rocks
+TEST_LUA_SHARE_DIR:=$(TEST_VENDOR_DIR)/share/lua/5.1
+TEST_LUA_LIB_DIR:=$(TEST_VENDOR_DIR)/lib/lua/5.1
 VERSION_SEP:=-version-
 RELEASE_TIMESTAMP:=$(shell date -u +%Y%m%d%H%M%S)
 
 #
 # Dependencies
 #
-API_UMBRELLA_STATIC_SITE_VERSION:=6970e678495f5ee8dcdd93271b869ba71d1a79a7
+API_UMBRELLA_STATIC_SITE_VERSION:=48d3d4379bb29ca37cd4e25900e793aafe0ca414
 API_UMBRELLA_STATIC_SITE_NAME:=api-umbrella-static-site
 API_UMBRELLA_STATIC_SITE:=$(API_UMBRELLA_STATIC_SITE_NAME)-$(API_UMBRELLA_STATIC_SITE_VERSION)
 API_UMBRELLA_STATIC_SITE_DIGEST:=md5
-API_UMBRELLA_STATIC_SITE_CHECKSUM:=09f9d0820cf105f45a9373b355fc5fa5
+API_UMBRELLA_STATIC_SITE_CHECKSUM:=9bcc73c1febd6d7a5aec3a6cc5e940e9
 API_UMBRELLA_STATIC_SITE_URL:=https://github.com/NREL/api-umbrella-static-site/archive/$(API_UMBRELLA_STATIC_SITE_VERSION).tar.gz
 API_UMBRELLA_STATIC_SITE_INSTALL_MARKER:=$(API_UMBRELLA_STATIC_SITE_NAME)$(VERSION_SEP)$(API_UMBRELLA_STATIC_SITE_VERSION)
 
@@ -155,7 +165,7 @@ MORA:=$(MORA_NAME)-$(MORA_VERSION)
 MORA_DIGEST:=md5
 MORA_CHECKSUM:=563945c899b30099543254df84b487d7
 MORA_URL:=https://github.com/emicklei/mora/archive/$(MORA_VERSION).tar.gz
-MORA_DEPENDENCIES_CHECKSUM:=$(shell openssl md5 build/mora_glide.yaml | sed 's/^.* //')
+MORA_DEPENDENCIES_CHECKSUM:=$(shell openssl md5 $(BUILD_DIR)/mora_glide.yaml | sed 's/^.* //')
 MORA_INSTALL_MARKER:=$(MORA_NAME)$(VERSION_SEP)$(MORA_VERSION)-$(MORA_DEPENDENCIES_CHECKSUM)
 
 NGX_TXID_VERSION:=f1c197cb9c42e364a87fbb28d5508e486592ca42
@@ -189,6 +199,14 @@ OPENRESTY_DIGEST:=md5
 OPENRESTY_CHECKSUM:=cde1f7127f6ba413ee257003e49d6d0a
 OPENRESTY_URL:=http://openresty.org/download/ngx_openresty-$(OPENRESTY_VERSION).tar.gz
 OPENRESTY_INSTALL_MARKER:=$(OPENRESTY_NAME)$(VERSION_SEP)$(OPENRESTY_VERSION)
+
+PCRE_VERSION:=8.37
+PCRE_NAME:=pcre
+PCRE:=$(PCRE_NAME)-$(PCRE_VERSION)
+PCRE_DIGEST:=md5
+PCRE_CHECKSUM:=ed91be292cb01d21bc7e526816c26981
+PCRE_URL:=http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-$(PCRE_VERSION).tar.bz2
+PCRE_INSTALL_MARKER:=$(PCRE_NAME)$(VERSION_SEP)$(PCRE_VERSION)
 
 PERP_VERSION:=2.07
 PERP_NAME:=perp
@@ -258,6 +276,7 @@ LUACHECK_VERSION:=0.11.1-1
 	clean \
 	dependencies \
 	install \
+	local_work_dir \
 	stage \
 	stage_app_dependencies \
 	stage_dependencies \
@@ -286,14 +305,14 @@ endef
 define luarocks_install
 	$(eval PACKAGE:=$($(1)))
 	$(eval PACKAGE_VERSION:=$($(1)_VERSION))
-	$(LUAROCKS_CMD) --tree=vendor install $(PACKAGE) $(PACKAGE_VERSION)
+	$(LUAROCKS_CMD) --tree=$(VENDOR_DIR) install $(PACKAGE) $(PACKAGE_VERSION)
 	touch $@
 endef
 
 define test_luarocks_install
 	$(eval PACKAGE:=$($(1)))
 	$(eval PACKAGE_VERSION:=$($(1)_VERSION))
-	$(LUAROCKS_CMD) --tree=test/vendor install $(PACKAGE) $(PACKAGE_VERSION)
+	$(LUAROCKS_CMD) --tree=$(TEST_VENDOR_DIR) install $(PACKAGE) $(PACKAGE_VERSION)
 	touch $@
 endef
 
@@ -316,15 +335,27 @@ $(STAGE_MARKERS_DIR):
 	touch $@
 
 # api-umbrella-core
-src/api-umbrella/web-app/tmp/compiled-assets: $(shell find src/api-umbrella/web-app/app/assets -type f) vendor/bundle
+$(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled: $(ROOT_DIR)/src/api-umbrella/web-app/Gemfile $(ROOT_DIR)/src/api-umbrella/web-app/Gemfile.lock | $(VENDOR_DIR) $(STAGE_MARKERS_DIR) $(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER)
+	rm -rf $(ROOT_DIR)/src/api-umbrella/web-app/.bundle
+	cd $(ROOT_DIR)/src/api-umbrella/web-app && env -i PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(BUNDLE_DIR)
+	touch $@
+
+# Rebuild when the contents of any of the asset files change. We base this on a
+# checksum of all the files, rather than timestamps, so that in our CI
+# environment we skip precompiling (it's slow), if none of the files changed
+# (but since the CI does a fresh checkout, all the timestamps on the files
+# change, so make's normal checking would trigger changes).
+WEB_ASSETS_CHECKSUM:=$(shell find $(ROOT_DIR)/src/api-umbrella/web-app/app/assets $(ROOT_DIR)/src/api-umbrella/web-app/Gemfile.lock -type f -exec cksum {} \; | sort | openssl md5 | sed 's/^.* //')
+$(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets-$(WEB_ASSETS_CHECKSUM): $(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled | $(STAGE_MARKERS_DIR)
 	# Compile the assets, but then move them to a temporary build directory so
 	# they aren't used when working in development mode.
 	cd $(ROOT_DIR)/src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) DEVISE_SECRET_KEY=temp RAILS_SECRET_TOKEN=temp bundle exec rake assets:precompile
-	cd $(ROOT_DIR)/src/api-umbrella/web-app && rsync -a public/web-assets/ tmp/compiled-assets
+	mkdir -p $(WORK_DIR)/tmp/web-assets
+	cd $(ROOT_DIR)/src/api-umbrella/web-app && rsync -a --delete-after public/web-assets/ $(WORK_DIR)/tmp/web-assets/
 	rm -rf $(ROOT_DIR)/src/api-umbrella/web-app/public/web-assets
 	touch $@
 
-$(STAGE_MARKERS_DIR)/api-umbrella-core: src/api-umbrella/web-app/tmp/compiled-assets | $(STAGE_MARKERS_DIR)
+$(STAGE_MARKERS_DIR)/api-umbrella-core: $(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets-$(WEB_ASSETS_CHECKSUM) | $(STAGE_MARKERS_DIR)
 	# Create a new release directory, copying the relevant source code from the
 	# current repo checkout into the release (but excluding tests, etc).
 	rm -rf $(STAGE_PREFIX)/embedded/apps/core/releases
@@ -348,11 +379,11 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core: src/api-umbrella/web-app/tmp/compiled-as
 	cd $(STAGE_PREFIX)/bin && ln -snf ../embedded/apps/core/current/bin/api-umbrella ./api-umbrella
 	# Copy all of the vendor files into place.
 	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/vendor
-	rsync -a --delete-after $(ROOT_DIR)/vendor/ $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/
+	rsync -a --delete-after $(VENDOR_DIR)/ $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/
 	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP) && ln -snf ../../shared/vendor ./vendor
 	# Copy the precompiled assets into place.
 	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/public/web-assets
-	rsync -a --delete-after $(ROOT_DIR)/src/api-umbrella/web-app/tmp/compiled-assets/ $(STAGE_PREFIX)/embedded/apps/core/shared/public/web-assets/
+	rsync -a --delete-after $(WORK_DIR)/tmp/web-assets/ $(STAGE_PREFIX)/embedded/apps/core/shared/public/web-assets/
 	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app/public && ln -snf ../../../../../../shared/public/web-assets ./web-assets
 	# Re-run the bundle install inside the release directory, but disabling
 	# non-production gem groups. Combined with the clean flag, this deletes all
@@ -366,8 +397,9 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core: src/api-umbrella/web-app/tmp/compiled-as
 	# purposes).
 	cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/bundle && rm -rf ruby/*/cache ruby/*/gems/*/test* ruby/*/gems/*/spec ruby/*/gems/*/ext ruby/*/bundler/gems/*/test* ruby/*/bundler/gems/*/spec
 	cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/bundle && find ruby/*/gems -name "*.so" -delete
-	# Manually delete test-only lua dependencies.
-	cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor && rm -rf bin/luacheck lib/luarocks/rocks/luacheck share/lua/*/luacheck
+	# Setup a shared symlink for web-app temp files.
+	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/web-tmp
+	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app && ln -snf ../../../../../shared/web-tmp ./tmp
 	touch $@
 
 # api-umbrella-static-site
@@ -378,8 +410,8 @@ $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE): $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)
 	$(call decompress,API_UMBRELLA_STATIC_SITE)
 
 $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)/.built: $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE) | $(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER)
-	cd $< && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=vendor/bundle
-	cd $< && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle exec middleman build
+	cd $< && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(BUNDLE_DIR)
+	cd $< && env -u BUILD_DIR PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle exec middleman build
 	touch $@
 
 $(STAGE_MARKERS_DIR)/$(API_UMBRELLA_STATIC_SITE_INSTALL_MARKER): $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)/.built | $(STAGE_MARKERS_DIR)
@@ -533,7 +565,7 @@ $(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE).tar.gz: | $(DEPS_DIR)
 $(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE): $(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE).tar.gz
 	$(call decompress,LUA_RESTY_DNS_CACHE)
 
-$(LUA_SHARE_DIR)/resty/dns/cache.lua: $(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE) | vendor
+$(LUA_SHARE_DIR)/resty/dns/cache.lua: $(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE) | $(VENDOR_DIR)
 	mkdir -p $(LUA_SHARE_DIR)/resty
 	rsync -a $(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE)/lib/resty/ $(LUA_SHARE_DIR)/resty/
 	touch $@
@@ -545,7 +577,7 @@ $(DEPS_DIR)/$(LUA_RESTY_HTTP).tar.gz: | $(DEPS_DIR)
 $(DEPS_DIR)/$(LUA_RESTY_HTTP): $(DEPS_DIR)/$(LUA_RESTY_HTTP).tar.gz
 	$(call decompress,LUA_RESTY_HTTP)
 
-$(LUA_SHARE_DIR)/resty/http.lua: $(DEPS_DIR)/$(LUA_RESTY_HTTP) | vendor
+$(LUA_SHARE_DIR)/resty/http.lua: $(DEPS_DIR)/$(LUA_RESTY_HTTP) | $(VENDOR_DIR)
 	mkdir -p $(LUA_SHARE_DIR)/resty
 	rsync -a $(DEPS_DIR)/$(LUA_RESTY_HTTP)/lib/resty/ $(LUA_SHARE_DIR)/resty/
 	touch $@
@@ -557,7 +589,7 @@ $(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET).tar.gz: | $(DEPS_DIR)
 $(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET): $(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET).tar.gz
 	$(call decompress,LUA_RESTY_LOGGER_SOCKET)
 
-$(LUA_SHARE_DIR)/resty/logger/socket.lua: $(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET) | vendor
+$(LUA_SHARE_DIR)/resty/logger/socket.lua: $(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET) | $(VENDOR_DIR)
 	mkdir -p $(LUA_SHARE_DIR)/resty
 	rsync -a $(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET)/lib/resty/ $(LUA_SHARE_DIR)/resty/
 	touch $@
@@ -569,7 +601,7 @@ $(DEPS_DIR)/$(LUA_RESTY_SHCACHE).tar.gz: | $(DEPS_DIR)
 $(DEPS_DIR)/$(LUA_RESTY_SHCACHE): $(DEPS_DIR)/$(LUA_RESTY_SHCACHE).tar.gz
 	$(call decompress,LUA_RESTY_SHCACHE)
 
-$(LUA_SHARE_DIR)/shcache.lua: $(DEPS_DIR)/$(LUA_RESTY_SHCACHE) | vendor
+$(LUA_SHARE_DIR)/shcache.lua: $(DEPS_DIR)/$(LUA_RESTY_SHCACHE) | $(VENDOR_DIR)
 	mkdir -p $(LUA_SHARE_DIR)
 	rsync -a $(DEPS_DIR)/$(LUA_RESTY_SHCACHE)/*.lua $(LUA_SHARE_DIR)/
 	touch $@
@@ -581,7 +613,7 @@ $(DEPS_DIR)/$(LUA_RESTY_UUID).tar.gz: | $(DEPS_DIR)
 $(DEPS_DIR)/$(LUA_RESTY_UUID): $(DEPS_DIR)/$(LUA_RESTY_UUID).tar.gz
 	$(call decompress,LUA_RESTY_UUID)
 
-$(LUA_SHARE_DIR)/resty/uuid.lua: $(DEPS_DIR)/$(LUA_RESTY_UUID) | vendor
+$(LUA_SHARE_DIR)/resty/uuid.lua: $(DEPS_DIR)/$(LUA_RESTY_UUID) | $(VENDOR_DIR)
 	mkdir -p $(LUA_SHARE_DIR)/resty
 	rsync -a $(DEPS_DIR)/$(LUA_RESTY_UUID)/lib/resty/ $(LUA_SHARE_DIR)/resty/
 	touch $@
@@ -593,7 +625,7 @@ $(DEPS_DIR)/$(LUSTACHE).tar.gz: | $(DEPS_DIR)
 $(DEPS_DIR)/$(LUSTACHE): $(DEPS_DIR)/$(LUSTACHE).tar.gz
 	$(call decompress,LUSTACHE)
 
-$(LUA_SHARE_DIR)/lustache.lua: $(DEPS_DIR)/$(LUSTACHE) | vendor
+$(LUA_SHARE_DIR)/lustache.lua: $(DEPS_DIR)/$(LUSTACHE) | $(VENDOR_DIR)
 	mkdir -p $(LUA_SHARE_DIR)
 	rsync -a $(DEPS_DIR)/$(LUSTACHE)/src/ $(LUA_SHARE_DIR)/
 	touch $@
@@ -633,7 +665,7 @@ $(DEPS_DIR)/gocode/src/github.com/emicklei/mora: | $(DEPS_DIR)/$(MORA)
 	touch $@
 
 $(DEPS_DIR)/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM): $(DEPS_DIR)/gocode/src/github.com/emicklei/mora $(DEPS_DIR)/$(GLIDE)/.built $(DEPS_DIR)/$(GOLANG)
-	cp build/mora_glide.yaml $</glide.yaml
+	cp $(BUILD_DIR)/mora_glide.yaml $</glide.yaml
 	cd $< && PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(DEPS_DIR)/gocode/bin:$(PATH) GOPATH=$(DEPS_DIR)/gocode GOROOT=$(DEPS_DIR)/$(GOLANG) GO15VENDOREXPERIMENT=1 glide update
 	cd $< && PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(DEPS_DIR)/gocode/bin:$(PATH) GOPATH=$(DEPS_DIR)/gocode GOROOT=$(DEPS_DIR)/$(GOLANG) GO15VENDOREXPERIMENT=1 go install
 	touch $@
@@ -671,13 +703,15 @@ $(DEPS_DIR)/$(OPENRESTY).tar.gz: | $(DEPS_DIR)
 $(DEPS_DIR)/$(OPENRESTY): $(DEPS_DIR)/$(OPENRESTY).tar.gz
 	$(call decompress,OPENRESTY)
 
-$(DEPS_DIR)/$(OPENRESTY)/.built: $(DEPS_DIR)/$(OPENRESTY) $(DEPS_DIR)/$(NGX_DYUPS) $(DEPS_DIR)/$(NGX_GEOIP2) $(DEPS_DIR)/$(NGX_TXID) $(STAGE_MARKERS_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER)
+$(DEPS_DIR)/$(OPENRESTY)/.built: $(DEPS_DIR)/$(OPENRESTY) $(DEPS_DIR)/$(NGX_DYUPS) $(DEPS_DIR)/$(NGX_GEOIP2) $(DEPS_DIR)/$(NGX_TXID) $(STAGE_MARKERS_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER) $(DEPS_DIR)/$(PCRE)
 	cd $< && ./configure \
 		--prefix=$(PREFIX)/embedded/openresty \
 		--with-cc-opt="-I$(STAGE_PREFIX)/embedded/include" \
 		--with-ld-opt="-L$(STAGE_PREFIX)/embedded/lib -Wl,-rpath,$(PREFIX)/embedded/lib,-rpath,$(STAGE_PREFIX)/embedded/openresty/luajit/lib,-rpath,$(STAGE_PREFIX)/embedded/lib" \
 		--error-log-path=stderr \
 		--with-ipv6 \
+		--with-pcre=$(DEPS_DIR)/$(PCRE) \
+		--with-pcre-conf-opt="--enable-unicode-properties" \
 		--with-pcre-jit \
 		--with-http_gunzip_module \
 		--with-http_gzip_static_module \
@@ -697,6 +731,13 @@ $(STAGE_MARKERS_DIR)/$(OPENRESTY_INSTALL_MARKER): $(DEPS_DIR)/$(OPENRESTY)/.buil
 	cd $(STAGE_PREFIX)/embedded/sbin && ln -snf ../openresty/nginx/sbin/nginx ./nginx
 	rm -f $(STAGE_MARKERS_DIR)/$(OPENRESTY_NAME)$(VERSION_SEP)*
 	touch $@
+
+# PCRE
+$(DEPS_DIR)/$(PCRE).tar.gz: | $(DEPS_DIR)
+	$(call download,PCRE)
+
+$(DEPS_DIR)/$(PCRE): $(DEPS_DIR)/$(PCRE).tar.gz
+	$(call decompress,PCRE)
 
 # Perp
 $(DEPS_DIR)/$(PERP).tar.gz: | $(DEPS_DIR)
@@ -768,7 +809,7 @@ $(DEPS_DIR)/$(UNBOUND): $(DEPS_DIR)/$(UNBOUND).tar.gz
 
 $(DEPS_DIR)/$(UNBOUND)/.built: $(DEPS_DIR)/$(UNBOUND)
 	cd $< && ./configure \
-		--prefix=$(PREFIX)/test-env
+		--prefix=$(TEST_PREFIX)
 	cd $< && make
 	touch $@
 
@@ -777,36 +818,36 @@ $(STAGE_MARKERS_DIR)/$(UNBOUND_INSTALL_MARKER): $(DEPS_DIR)/$(UNBOUND)/.built | 
 	touch $@
 
 # LuaRocks - inspect
-$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(VENDOR_DIR)
 	$(call luarocks_install,INSPECT)
 
 # LuaRocks - libcidr-ffi
-$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
-	$(LUAROCKS_CMD) --tree=vendor install https://raw.githubusercontent.com/GUI/lua-libcidr-ffi/master/libcidr-ffi-git-1.rockspec CIDR_DIR=$(STAGE_PREFIX)/embedded
+$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(VENDOR_DIR)
+	$(LUAROCKS_CMD) --tree=$(VENDOR_DIR) install https://raw.githubusercontent.com/GUI/lua-libcidr-ffi/master/libcidr-ffi-git-1.rockspec CIDR_DIR=$(STAGE_PREFIX)/embedded
 	touch $@
 
 # LuaRocks - lua-cmsgpack
-$(LUAROCKS_DIR)/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+$(LUAROCKS_DIR)/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(VENDOR_DIR)
 	$(call luarocks_install,LUA_CMSGPACK)
 
 # LuaRocks - luacheck
-test/$(LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+$(TEST_LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(TEST_VENDOR_DIR)
 	$(call test_luarocks_install,LUACHECK)
 
 # LuaRocks - luaposix
-$(LUAROCKS_DIR)/$(LUAPOSIX)/$(LUAPOSIX_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+$(LUAROCKS_DIR)/$(LUAPOSIX)/$(LUAPOSIX_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(VENDOR_DIR)
 	$(call luarocks_install,LUAPOSIX)
 
 # LuaRocks - luasocket
-$(LUAROCKS_DIR)/$(LUASOCKET)/$(LUASOCKET_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+$(LUAROCKS_DIR)/$(LUASOCKET)/$(LUASOCKET_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(VENDOR_DIR)
 	$(call luarocks_install,LUASOCKET)
 
 # LuaRocks - lyaml
-$(LUAROCKS_DIR)/$(LYAML)/$(LYAML_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+$(LUAROCKS_DIR)/$(LYAML)/$(LYAML_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(VENDOR_DIR)
 	$(call luarocks_install,LYAML)
 
 # LuaRocks - penlight
-$(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) vendor
+$(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(VENDOR_DIR)
 	$(call luarocks_install,PENLIGHT)
 
 .SECONDARY: \
@@ -874,13 +915,20 @@ $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROC
 	$(DEPS_DIR)/$(UNBOUND) \
 	$(DEPS_DIR)/$(UNBOUND)/.built
 
-vendor:
+$(VENDOR_DIR):
 	mkdir -p $@
 
-vendor/bundle: src/api-umbrella/web-app/Gemfile src/api-umbrella/web-app/Gemfile.lock | vendor $(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER)
-	rm -rf src/api-umbrella/web-app/.bundle
-	cd src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(ROOT_DIR)/vendor/bundle
-	touch $@
+$(ROOT_DIR)/vendor: | $(VENDOR_DIR)
+	ln -snf $(VENDOR_DIR) $(ROOT_DIR)/vendor
+
+$(TEST_VENDOR_DIR):
+	mkdir -p $@
+
+$(WORK_DIR):
+	mkdir -p $@
+
+$(BUILD_DIR)/local: | $(WORK_DIR)
+	ln -snf $(WORK_DIR) $(BUILD_DIR)/local
 
 stage_dependencies: \
 	$(STAGE_PREFIX)/embedded/bin \
@@ -899,10 +947,11 @@ stage_dependencies: \
 	$(STAGE_MARKERS_DIR)/$(OPENRESTY_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(PERP_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(RUBY_INSTALL_MARKER) \
-	$(STAGE_MARKERS_DIR)/$(TRAFFICSERVER_INSTALL_MARKER)
+	$(STAGE_MARKERS_DIR)/$(TRAFFICSERVER_INSTALL_MARKER) \
+	$(BUILD_DIR)/local
 
 stage_app_dependencies: \
-	vendor/bundle \
+	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled \
 	$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION) \
 	$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION) \
 	$(LUAROCKS_DIR)/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
@@ -916,48 +965,56 @@ stage_app_dependencies: \
 	$(LUA_SHARE_DIR)/resty/http.lua \
 	$(LUA_SHARE_DIR)/resty/logger/socket.lua \
 	$(LUA_SHARE_DIR)/shcache.lua \
-	$(LUA_SHARE_DIR)/resty/uuid.lua
+	$(LUA_SHARE_DIR)/resty/uuid.lua \
+	$(ROOT_DIR)/vendor
 
 stage: stage_dependencies stage_app_dependencies
 
 install: stage
-	mkdir -p $(DESTDIR)$(PREFIX)
-	rsync -av --delete-after --delete-excluded --include="/embedded" --exclude="*" $(STAGE_PREFIX)/ $(DESTDIR)$(PREFIX)/
+	mkdir -p $(DESTDIR)/usr/bin $(DESTDIR)/var/log $(DESTDIR)$(PREFIX)/etc $(DESTDIR)$(PREFIX)/var/db $(DESTDIR)$(PREFIX)/var/log $(DESTDIR)$(PREFIX)/var/run $(DESTDIR)$(PREFIX)/var/tmp
+	rsync -av $(STAGE_PREFIX)/bin/ $(DESTDIR)$(PREFIX)/bin/
+	rsync -av $(STAGE_PREFIX)/embedded/ $(DESTDIR)$(PREFIX)/embedded/
+	rsync -av --backup --suffix=".new" --exclude=".*" $(BUILD_DIR)/package/files/etc/ $(DESTDIR)/etc/
+	cd $(DESTDIR)/usr/bin && ln -snf ../..$(PREFIX)/bin/api-umbrella ./api-umbrella
+	cd $(DESTDIR)/var/log && ln -snf ../..$(PREFIX)/var/log ./api-umbrella
+	chmod 440 $(DESTDIR)/etc/sudoers.d/api-umbrella
+	chmod 1777 $(DESTDIR)$(PREFIX)/var/tmp
+	chmod 775 $(DESTDIR)$(PREFIX)/embedded/apps/core/shared/web-tmp
 
 # Node test dependencies
-test/node_modules/.installed: test/package.json
-	cd test && npm install
-	cd test && npm prune
+$(ROOT_DIR)/test/node_modules/.installed: $(ROOT_DIR)/test/package.json
+	mkdir -p $(WORK_DIR)/test-env/node_modules
+	cd $(ROOT_DIR)/test && ln -snf $(WORK_DIR)/test-env/node_modules ./node_modules
+	cd $(ROOT_DIR)/test && npm install
+	cd $(ROOT_DIR)/test && npm prune
 	touch $@
 
 # Python test dependencies (mongo-orchestration)
-$(STAGE_PREFIX)/test-env/bin/pip:
-	virtualenv $(STAGE_PREFIX)/test-env
+$(TEST_STAGE_PREFIX)/bin/pip:
+	virtualenv $(TEST_STAGE_PREFIX)
 	touch $@
 
-$(STAGE_MARKERS_DIR)/test-python-requirements: test/requirements.txt $(STAGE_PREFIX)/test-env/bin/pip | $(STAGE_MARKERS_DIR)
-	$(STAGE_PREFIX)/test-env/bin/pip install -r test/requirements.txt
+$(STAGE_MARKERS_DIR)/test-python-requirements: $(ROOT_DIR)/test/requirements.txt $(TEST_STAGE_PREFIX)/bin/pip | $(STAGE_MARKERS_DIR)
+	$(TEST_STAGE_PREFIX)/bin/pip install -r $(ROOT_DIR)/test/requirements.txt
 	touch $@
 
 test_dependencies: \
-	test/node_modules/.installed \
-	test/$(LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION) \
+	$(ROOT_DIR)/test/node_modules/.installed \
+	$(TEST_LUAROCKS_DIR)/$(LUACHECK)/$(LUACHECK_VERSION) \
 	$(STAGE_MARKERS_DIR)/test-python-requirements \
 	$(STAGE_MARKERS_DIR)/$(UNBOUND_INSTALL_MARKER)
 
 lint: test_dependencies
-	LUA_PATH="test/$(LUA_SHARE_DIR)/?.lua;test/$(LUA_SHARE_DIR)/?/init.lua;;" LUA_CPATH="test/$(LUA_LIB_DIR)/?.so;;" ./test/vendor/bin/luacheck src
+	LUA_PATH="$(TEST_LUA_SHARE_DIR)/?.lua;$(TEST_LUA_SHARE_DIR)/?/init.lua;;" LUA_CPATH="$(TEST_LUA_LIB_DIR)/?.so;;" $(TEST_VENDOR_DIR)/bin/luacheck $(ROOT_DIR)/src
 
 test: stage test_dependencies lint
 	cd test && MOCHA_FILES="$(MOCHA_FILES)" npm test
 
 clean:
-	rm -rf $(DEPS_DIR) $(STAGE_DIR) build/package/tmp build/package/bundle vendor test/vendor test/node_modules src/api-umbrella/web-app/.bundle src/api-umbrella/web-app/tmp src/api-umbrella/web-app/log
+	rm -rf $(WORK_DIR) $(ROOT_DIR)/bundle $(BUILD_DIR)/local $(ROOT_DIR)/test/node_modules $(ROOT_DIR)/src/api-umbrella/web-app/.bundle $(ROOT_DIR)/src/api-umbrella/web-app/tmp $(ROOT_DIR)/src/api-umbrella/web-app/log
 
 check_shared_objects:
-	find build/stage/ -type f | xargs ldd 2>&1 | grep " => " | grep -o "^[^(]*" | sort | uniq
+	find $(STAGE_PREFIX)/embedded -type f | xargs ldd 2>&1 | grep " => " | grep -o "^[^(]*" | sort | uniq
 
 package:
-	make install DESTDIR=$(ROOT_DIR)/build/package/tmp
-	cd build/package && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(ROOT_DIR)/build/package/bundle
-	cd build/package && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle exec fpm -s dir -t rpm -n api-umbrella -v 0.9.0 --rpm-compression xz -C $(ROOT_DIR)/build/package/tmp -p api-umbrella_VERSION_ARCH.rpm opt/api-umbrella
+	$(BUILD_DIR)/package/build

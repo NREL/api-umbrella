@@ -16,6 +16,8 @@ error_log stderr;
 
 env API_UMBRELLA_RUNTIME_CONFIG;
 
+pcre_jit on;
+
 http {
   access_log {{log_dir}}/router-access.log combined {{nginx.access_log_options}};
 

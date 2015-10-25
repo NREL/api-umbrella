@@ -190,7 +190,7 @@ local function permission_check()
 
     local status, output, err = run_command("getent passwd " .. config["user"])
     if status == 2 and output == "" then
-      print("User '", config["user"], "' does not exist")
+      print("User '" .. (config["user"] or "") .. "' does not exist")
       os.exit(1)
     elseif err then
       print(err)
@@ -206,7 +206,7 @@ local function permission_check()
 
     local status, output, err = run_command("getent group " .. config["group"])
     if status == 2 and output == "" then
-      print("Group '", config["group"], "' does not exist")
+      print("Group '" .. (config["group"] or "") .. "' does not exist")
       os.exit(1)
     elseif err then
       print(err)

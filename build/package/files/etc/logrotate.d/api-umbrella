@@ -1,0 +1,13 @@
+/opt/api-umbrella/var/log/*.log {
+  daily
+  rotate 90
+  create 644 api-umbrella api-umbrella
+  missingok
+  compress
+  delaycompress
+  notifempty
+  sharedscripts
+  postrotate
+    api-umbrella reopen-logs
+  endscript
+}
