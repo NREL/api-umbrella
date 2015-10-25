@@ -15,7 +15,10 @@ for DIST in "${DISTS[@]}"; do
   docker pull $DIST
 
   # Wipe any previous build attempts.
-  docker rm $NAME
+  EXISTING=$(docker ps -a -q --filter="name=$NAME")
+  if [ -n "$EXISTING" ]; then
+    docker rm $NAME
+  fi
 
   # Create the package inside the docker container for this distro.
   docker run \

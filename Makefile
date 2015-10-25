@@ -1,10 +1,12 @@
-# Unset some environment variables that come from RVM and may interfere with
-# gem installation in some environments (eg, CircleCI).
-unexport GEM_HOME
-unexport GEM_PATH
-unexport IRBRC
-unexport MY_RUBY_HOME
-unexport RUBY_VERSION
+# Unexport all make variables to prevent passing our own make variables down to
+# sub-processes.
+#
+# Since the bulk of what we're doing is building other projects, this prevents
+# odd issues from cropping up when building other projects and those picking up
+# our own DESTDIR or other variables that the child projects might happen to
+# use (BUILD_DIR, etc).
+unexport
+MAKEOVERRIDES=
 
 STANDARD_PATH:=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 PREFIX:=/opt/api-umbrella
@@ -278,7 +280,6 @@ LUACHECK_VERSION:=0.11.1-1
 	install \
 	local_work_dir \
 	stage \
-	stage_app_dependencies \
 	stage_dependencies \
 	test_dependencies \
 	lint \
@@ -337,7 +338,7 @@ $(STAGE_MARKERS_DIR):
 # api-umbrella-core
 $(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled: $(ROOT_DIR)/src/api-umbrella/web-app/Gemfile $(ROOT_DIR)/src/api-umbrella/web-app/Gemfile.lock | $(VENDOR_DIR) $(STAGE_MARKERS_DIR) $(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER)
 	rm -rf $(ROOT_DIR)/src/api-umbrella/web-app/.bundle
-	cd $(ROOT_DIR)/src/api-umbrella/web-app && env -i PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(BUNDLE_DIR)
+	cd $(ROOT_DIR)/src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(BUNDLE_DIR)
 	touch $@
 
 # Rebuild when the contents of any of the asset files change. We base this on a
@@ -355,7 +356,7 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets-$(WEB_ASSETS_CHECKSUM): $(STAG
 	rm -rf $(ROOT_DIR)/src/api-umbrella/web-app/public/web-assets
 	touch $@
 
-$(STAGE_MARKERS_DIR)/api-umbrella-core: $(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets-$(WEB_ASSETS_CHECKSUM) | $(STAGE_MARKERS_DIR)
+$(STAGE_MARKERS_DIR)/api-umbrella-core: $(STAGE_MARKERS_DIR)/api-umbrella-core-dependencies | $(STAGE_MARKERS_DIR)
 	# Create a new release directory, copying the relevant source code from the
 	# current repo checkout into the release (but excluding tests, etc).
 	rm -rf $(STAGE_PREFIX)/embedded/apps/core/releases
@@ -395,8 +396,8 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core: $(STAGE_MARKERS_DIR)/api-umbrella-core-w
 	# of the duplicate .so library files for C extensions (we should only need
 	# the ones in the "extensions" directory, the rest are duplicates for legacy
 	# purposes).
-	cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/bundle && rm -rf ruby/*/cache ruby/*/gems/*/test* ruby/*/gems/*/spec ruby/*/gems/*/ext ruby/*/bundler/gems/*/test* ruby/*/bundler/gems/*/spec
-	cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/bundle && find ruby/*/gems -name "*.so" -delete
+	cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/bundle && rm -rf ruby/*/cache ruby/*/gems/*/test* ruby/*/gems/*/spec ruby/*/bundler/gems/*/test* ruby/*/bundler/gems/*/spec
+	#cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/bundle && find ruby/*/gems -name "*.so" -delete
 	# Setup a shared symlink for web-app temp files.
 	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/web-tmp
 	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app && ln -snf ../../../../../shared/web-tmp ./tmp
@@ -411,7 +412,7 @@ $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE): $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)
 
 $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)/.built: $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE) | $(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER)
 	cd $< && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(BUNDLE_DIR)
-	cd $< && env -u BUILD_DIR PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle exec middleman build
+	cd $< && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle exec middleman build
 	touch $@
 
 $(STAGE_MARKERS_DIR)/$(API_UMBRELLA_STATIC_SITE_INSTALL_MARKER): $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)/.built | $(STAGE_MARKERS_DIR)
@@ -423,7 +424,7 @@ $(STAGE_MARKERS_DIR)/$(API_UMBRELLA_STATIC_SITE_INSTALL_MARKER): $(DEPS_DIR)/$(A
 
 # Bundler
 $(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER): | $(STAGE_MARKERS_DIR) $(STAGE_MARKERS_DIR)/$(RUBY_INSTALL_MARKER)
-	PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) gem install bundler -v '$(BUNDLER_VERSION)' --no-rdoc --no-ri
+	PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) gem install bundler -v '$(BUNDLER_VERSION)' --no-rdoc --no-ri --env-shebang
 	rm -f $(STAGE_MARKERS_DIR)/$(BUNDLER_NAME)$(VERSION_SEP)*
 	touch $@
 
@@ -552,8 +553,8 @@ $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER): $(DEPS_DIR)/$(LUAROCKS) | $(STA
 		--with-lua=$(STAGE_PREFIX)/embedded/openresty/luajit/ \
 		--with-lua-include=$(STAGE_PREFIX)/embedded/openresty/luajit/include/luajit-2.1 \
 		--lua-suffix=jit-2.1.0-alpha
-	cd $< && env -i make build
-	cd $< && env -i make install DESTDIR=$(STAGE_DIR)
+	cd $< && make build
+	cd $< && make install DESTDIR=$(STAGE_DIR)
 	cd $(STAGE_PREFIX)/embedded/bin && ln -snf ../openresty/luajit/bin/luarocks ./luarocks
 	rm -f $(STAGE_MARKERS_DIR)/$(LUAROCKS_NAME)$(VERSION_SEP)*
 	touch $@
@@ -930,7 +931,27 @@ $(WORK_DIR):
 $(BUILD_DIR)/local: | $(WORK_DIR)
 	ln -snf $(WORK_DIR) $(BUILD_DIR)/local
 
-stage_dependencies: \
+$(STAGE_MARKERS_DIR)/api-umbrella-core-dependencies: \
+	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets-$(WEB_ASSETS_CHECKSUM) \
+	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled \
+	$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION) \
+	$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION) \
+	$(LUAROCKS_DIR)/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
+	$(LUAROCKS_DIR)/$(LUAPOSIX)/$(LUAPOSIX_VERSION) \
+	$(LUAROCKS_DIR)/$(LUASOCKET)/$(LUASOCKET_VERSION) \
+	$(LUAROCKS_DIR)/$(LYAML)/$(LYAML_VERSION) \
+	$(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION) \
+	$(LUAROCKS_DIR)/$(UUID)/$(UUID_VERSION) \
+	$(LUA_SHARE_DIR)/lustache.lua \
+	$(LUA_SHARE_DIR)/resty/dns/cache.lua \
+	$(LUA_SHARE_DIR)/resty/http.lua \
+	$(LUA_SHARE_DIR)/resty/logger/socket.lua \
+	$(LUA_SHARE_DIR)/shcache.lua \
+	$(LUA_SHARE_DIR)/resty/uuid.lua \
+	$(ROOT_DIR)/vendor | $(STAGE_MARKERS_DIR)
+	touch $@
+
+stage: \
 	$(STAGE_PREFIX)/embedded/bin \
 	$(STAGE_PREFIX)/embedded/sbin \
 	$(STAGE_MARKERS_DIR)/api-umbrella-core \
@@ -949,26 +970,6 @@ stage_dependencies: \
 	$(STAGE_MARKERS_DIR)/$(RUBY_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(TRAFFICSERVER_INSTALL_MARKER) \
 	$(BUILD_DIR)/local
-
-stage_app_dependencies: \
-	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled \
-	$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION) \
-	$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION) \
-	$(LUAROCKS_DIR)/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
-	$(LUAROCKS_DIR)/$(LUAPOSIX)/$(LUAPOSIX_VERSION) \
-	$(LUAROCKS_DIR)/$(LUASOCKET)/$(LUASOCKET_VERSION) \
-	$(LUAROCKS_DIR)/$(LYAML)/$(LYAML_VERSION) \
-	$(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION) \
-	$(LUAROCKS_DIR)/$(UUID)/$(UUID_VERSION) \
-	$(LUA_SHARE_DIR)/lustache.lua \
-	$(LUA_SHARE_DIR)/resty/dns/cache.lua \
-	$(LUA_SHARE_DIR)/resty/http.lua \
-	$(LUA_SHARE_DIR)/resty/logger/socket.lua \
-	$(LUA_SHARE_DIR)/shcache.lua \
-	$(LUA_SHARE_DIR)/resty/uuid.lua \
-	$(ROOT_DIR)/vendor
-
-stage: stage_dependencies stage_app_dependencies
 
 install: stage
 	mkdir -p $(DESTDIR)/usr/bin $(DESTDIR)/var/log $(DESTDIR)$(PREFIX)/etc $(DESTDIR)$(PREFIX)/var/db $(DESTDIR)$(PREFIX)/var/log $(DESTDIR)$(PREFIX)/var/run $(DESTDIR)$(PREFIX)/var/tmp
@@ -1018,3 +1019,6 @@ check_shared_objects:
 
 package:
 	$(BUILD_DIR)/package/build
+
+package_all:
+	$(BUILD_DIR)/package/build_all

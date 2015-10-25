@@ -140,9 +140,6 @@ module ApiUmbrella
       config.assets.precompile << path.gsub(%r{^.*/app/assets/javascripts/}, "").gsub(/\.erb$/, "")
     end
 
-    config.ember.variant = :development
-    config.handlebars.templates_root = ["admin/templates", "templates"]
-
     # Use a file-based cache store
     config.cache_store = :file_store, "#{Rails.root}/tmp/cache"
 

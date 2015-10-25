@@ -2,13 +2,20 @@
 
 set -e -u -x
 
+ORIGINAL_ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
+TMP_ROOT_DIR=/tmp/api-umbrella
+TMP_WORK_DIR=$TMP_ROOT_DIR/build/work
+
+if [ ! -f /etc/yum.repos.d/wandisco-git.repo ]; then
+  yum -y install http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
+fi
+
 # Install system dependencies onto the build system.
 yum -y install \
   bzip2 \
   gcc \
   gcc-c++ \
   git \
-  http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm \
   libffi-devel \
   libuuid-devel \
   libxml2-devel \
@@ -22,10 +29,6 @@ yum -y install \
   tcl-devel \
   unzip \
   xz
-
-ORIGINAL_ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
-TMP_ROOT_DIR=/tmp/api-umbrella
-TMP_WORK_DIR=$TMP_ROOT_DIR/build/work
 
 # Copy the current api-umbrella code-base to a separate, temporary location.
 # This temporary location will be used for performing the packaging. We use a
@@ -71,7 +74,8 @@ for DEP in "${DEPENDENCIES[@]}"; do
 done
 
 # Use FPM to build the binary package.
-cd build/package
+cd $TMP_ROOT_DIR/build/package
+rm -f *.rpm
 PATH=$TMP_WORK_DIR/stage/opt/api-umbrella/embedded/bin:$PATH bundle install --path=$TMP_WORK_DIR/package/bundle
 PATH=$TMP_WORK_DIR/stage/opt/api-umbrella/embedded/bin:$PATH bundle exec fpm \
 		-s dir \
@@ -87,3 +91,5 @@ PATH=$TMP_WORK_DIR/stage/opt/api-umbrella/embedded/bin:$PATH bundle exec fpm \
     --before-remove ./scripts/after-remove \
     --after-remove ./scripts/after-remove \
 		.
+
+cp *.rpm $ORIGINAL_ROOT_DIR/build/package/

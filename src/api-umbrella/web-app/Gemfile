@@ -85,20 +85,8 @@ gem "rabl", "~> 0.11.5"
 gem "jbuilder", "~> 2.2.2"
 gem "csv_builder", "~> 2.1.1"
 
-# We're not using this ourselves (ember-rails is pulling it in), but if it gets
-# updated to 0.9.1 it seems to break various things in our responses. I think
-# the 0.9.1 release might be slightly busted based on these reports:
-# https://github.com/rails-api/active_model_serializers/issues/747
-# https://github.com/rails-api/active_model_serializers/issues/746
-# Lock to 0.9.0 for now.
-gem "active_model_serializers", "0.9.0"
-
 # Country and state name lookups
 gem "countries", "~> 0.11.3"
-
-# Ember.js
-gem "ember-rails", "~> 0.15.0"
-gem "ember-source", "~> 1.7.1"
 
 # HTML diffs
 gem "diffy", "~> 3.0.7"
@@ -176,6 +164,18 @@ group :assets do
   # This specific version contains the CLEAN_EXPIRED_ASSETS option to speed up
   # deployments by combining two tasks into one (particularly under JRuby).
   gem "turbo-sprockets-rails3", "0.3.13"
+
+  # Ember.js
+  gem "ember-rails", "~> 0.15.0", :require => false
+  gem "ember-source", "~> 1.7.1"
+
+  # We're not using this ourselves (ember-rails is pulling it in), but if it gets
+  # updated to 0.9.1 it seems to break various things in our responses. I think
+  # the 0.9.1 release might be slightly busted based on these reports:
+  # https://github.com/rails-api/active_model_serializers/issues/747
+  # https://github.com/rails-api/active_model_serializers/issues/746
+  # Lock to 0.9.0 for now.
+  gem "active_model_serializers", "0.9.0"
 
   # Client-side translations
   gem "rails-assets-polyglot", "~> 0.4.1"
