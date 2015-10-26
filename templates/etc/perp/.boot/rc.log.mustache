@@ -6,14 +6,16 @@
 
 ## required:
 LOGDIR={{log_dir}}/perpd
-LOGOPTS="-k 8 -s 1000000 -t -z"
+LOGOPTS="-ttt"
 ## suggested:
 
 ### --- script ---
 
 ## exec tinylog with privilege drop:
+mkdir -p ${LOGDIR}
+echo "s0\nn0" > ${LOGDIR}/config
 exec \
   runchoom \
-  tinylog ${LOGOPTS} ${LOGDIR}
+  svlogd ${LOGOPTS} ${LOGDIR}
 
 ### EOF

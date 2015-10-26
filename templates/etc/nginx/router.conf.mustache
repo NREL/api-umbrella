@@ -19,7 +19,7 @@ env API_UMBRELLA_RUNTIME_CONFIG;
 pcre_jit on;
 
 http {
-  access_log {{log_dir}}/router-access.log combined {{nginx.access_log_options}};
+  access_log {{log_dir}}/nginx/access.log combined {{nginx.access_log_options}};
 
   client_body_temp_path {{tmp_dir}}/router-nginx-client_body_temp;
   proxy_temp_path {{tmp_dir}}/router-nginx-proxy_temp;

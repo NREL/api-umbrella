@@ -226,6 +226,14 @@ RUBY_CHECKSUM:=df795f2f99860745a416092a4004b016ccf77e8b82dec956b120f18bdc71edce
 RUBY_URL:=https://cache.ruby-lang.org/pub/ruby/2.2/ruby-$(RUBY_VERSION).tar.gz
 RUBY_INSTALL_MARKER:=$(RUBY_NAME)$(VERSION_SEP)$(RUBY_VERSION)
 
+RUNIT_VERSION:=2.1.2
+RUNIT_NAME:=runit
+RUNIT:=$(RUNIT_NAME)-$(RUNIT_VERSION)
+RUNIT_DIGEST:=md5
+RUNIT_CHECKSUM:=6c985fbfe3a34608eb3c53dc719172c4
+RUNIT_URL:=http://smarden.org/runit/runit-$(RUNIT_VERSION).tar.gz
+RUNIT_INSTALL_MARKER:=$(RUNIT_NAME)$(VERSION_SEP)$(RUNIT_VERSION)
+
 # Don't move to 6.0.0 quite yet until we have a better sense of this issue:
 # http://mail-archives.apache.org/mod_mbox/trafficserver-users/201510.mbox/%3c1443975393.1364867.400869481.2BFF6EEF@webmail.messagingengine.com%3e
 TRAFFICSERVER_VERSION:=5.3.1
@@ -297,9 +305,10 @@ define decompress
 	$(eval DIR:=$@)
 	$(eval CHECKSUM_TYPE:=$($(1)_DIGEST))
 	$(eval CHECKSUM:=$($(1)_CHECKSUM))
+	$(eval ARCHIVE_DEPTH:=$(if $(2),$(2),1))
 	openssl $(CHECKSUM_TYPE) $(DOWNLOAD_PATH) | grep $(CHECKSUM) || (echo "checksum mismatch $(DOWNLOAD_PATH)" && exit 1)
 	mkdir -p $(DIR)
-	tar --strip-components 1 -C $(DIR) -xf $(DOWNLOAD_PATH)
+	tar --strip-components $(ARCHIVE_DEPTH) -C $(DIR) -xf $(DOWNLOAD_PATH)
 	touch $(DIR)
 endef
 
@@ -779,6 +788,22 @@ $(STAGE_MARKERS_DIR)/$(RUBY_INSTALL_MARKER): $(DEPS_DIR)/$(RUBY)/.built | $(STAG
 	rm -f $(STAGE_MARKERS_DIR)/$(RUBY_NAME)$(VERSION_SEP)*
 	touch $@
 
+# runit
+$(DEPS_DIR)/$(RUNIT).tar.gz: | $(DEPS_DIR)
+	$(call download,RUNIT)
+
+$(DEPS_DIR)/$(RUNIT): $(DEPS_DIR)/$(RUNIT).tar.gz
+	$(call decompress,RUNIT,2)
+
+$(DEPS_DIR)/$(RUNIT)/.built: | $(DEPS_DIR)/$(RUNIT)
+	cd $(DEPS_DIR)/$(RUNIT)/src && make svlogd
+	touch $@
+
+$(STAGE_MARKERS_DIR)/$(RUNIT_INSTALL_MARKER): $(DEPS_DIR)/$(RUNIT)/.built | $(STAGE_MARKERS_DIR)
+	mkdir -p $(STAGE_PREFIX)/embedded/bin
+	rsync -a $(DEPS_DIR)/$(RUNIT)/src/svlogd $(STAGE_PREFIX)/embedded/bin/svlogd
+	touch $@
+
 # TrafficServer
 $(DEPS_DIR)/$(TRAFFICSERVER).tar.gz: | $(DEPS_DIR)
 	$(call download,TRAFFICSERVER)
@@ -909,6 +934,9 @@ $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROC
 	$(DEPS_DIR)/$(RUBY).tar.gz \
 	$(DEPS_DIR)/$(RUBY) \
 	$(DEPS_DIR)/$(RUBY)/.built \
+	$(DEPS_DIR)/$(RUNIT).tar.gz \
+	$(DEPS_DIR)/$(RUNIT) \
+	$(DEPS_DIR)/$(RUNIT)/.built \
 	$(DEPS_DIR)/$(TRAFFICSERVER).tar.gz \
 	$(DEPS_DIR)/$(TRAFFICSERVER) \
 	$(DEPS_DIR)/$(TRAFFICSERVER)/.built \
@@ -968,6 +996,7 @@ stage: \
 	$(STAGE_MARKERS_DIR)/$(OPENRESTY_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(PERP_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(RUBY_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(RUNIT_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(TRAFFICSERVER_INSTALL_MARKER) \
 	$(BUILD_DIR)/local
 

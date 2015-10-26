@@ -5,13 +5,13 @@ local unistd = require "posix.unistd"
 local function start_perp(config, options)
   local perp_base = path.join(config["etc_dir"], "perp")
   local args = {
-    "-0", "api-umbrella (perpboot)",
-    "-P", "/tmp/perpboot.lock",
+    "-0", "api-umbrella",
+    "-P", path.join(config["run_dir"], "perpboot.pid"),
     "perpboot",
   }
 
   if options and options["background"] then
-    table.insert(args, "-d")
+    table.insert(args, 1, "-d")
   end
 
   table.insert(args, perp_base)

@@ -1,7 +1,9 @@
 #!/bin/sh
 
 if test ${1} = "start"; then
-  exec tinylog -k 50 -s 50000000 -t -z {{log_dir}}/${2}
+  mkdir -p {{log_dir}}/${2}
+  echo "s0\nn0" > {{log_dir}}/${2}/config
+  exec svlogd -ttt {{log_dir}}/${2}
 fi
 
 exit 0

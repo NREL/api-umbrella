@@ -1,161 +1,21 @@
-local config
-local template_config
-
 local array_includes = require "api-umbrella.utils.array_includes"
-local array_last = require "api-umbrella.utils.array_last"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
 local file = require "pl.file"
 local lustache = require "lustache"
 local lyaml = require "lyaml"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
-local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local path = require "pl.path"
 local plutils = require "pl.utils"
 local posix = require "posix"
-local random_token = require "api-umbrella.utils.random_token"
+local read_config = require "api-umbrella.cli.read_config"
 local run_command = require "api-umbrella.utils.run_command"
 local stat = require "posix.sys.stat"
 local tablex = require "pl.tablex"
 local unistd = require "posix.unistd"
 
-local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
-local embedded_root_dir = os.getenv("API_UMBRELLA_EMBEDDED_ROOT")
-
-local function read_runtime_config()
-  local runtime_config_path = os.getenv("API_UMBRELLA_RUNTIME_CONFIG")
-  if runtime_config_path then
-    local f, err = io.open(runtime_config_path, "rb")
-    if err then
-      print("Could not open config file '" .. runtime_config_path .. "'")
-      os.exit(1)
-    end
-
-    local content = f:read("*all")
-    f:close()
-
-    config = lyaml.load(content)
-  end
-end
-
-local function read_default_config()
-  local content = file.read(path.join(src_root_dir, "config/default.yml"), true)
-  config = lyaml.load(content)
-end
-
-local function read_system_config()
-  local content = file.read(os.getenv("API_UMBRELLA_CONFIG") or "/etc/api-umbrella/api-umbrella.yml", true)
-  if content then
-    local overrides = lyaml.load(content)
-    deep_merge_overwrite_arrays(config, overrides)
-  end
-
-  nillify_yaml_nulls(config)
-end
-
-local function set_computed_config()
-  if not config["root_dir"] then
-    config["root_dir"] = os.getenv("API_UMBRELLA_ROOT") or "/opt/api-umbrella"
-  end
-
-  if not config["etc_dir"] then
-    config["etc_dir"] = path.join(config["root_dir"], "etc")
-  end
-
-  if not config["log_dir"] then
-    config["log_dir"] = path.join(config["root_dir"], "var/log")
-  end
-
-  if not config["run_dir"] then
-    config["run_dir"] = path.join(config["root_dir"], "var/run")
-  end
-
-  if not config["tmp_dir"] then
-    config["tmp_dir"] = path.join(config["root_dir"], "var/tmp")
-  end
-
-  if not config["db_dir"] then
-    config["db_dir"] = path.join(config["root_dir"], "var/db")
-  end
-
-  local trusted_proxies = config["router"]["trusted_proxies"] or {}
-  if not array_includes(trusted_proxies, "127.0.0.1") then
-    table.insert(trusted_proxies, "127.0.0.1")
-  end
-
-  if not config["hosts"] then
-    config["hosts"] = {}
-  end
-
-  local default_host_exists = false
-  for _, host in ipairs(config["hosts"]) do
-    if host["default"] then
-      default_host_exists = true
-    end
-
-    if host["hostname"] == "*" then
-      host["_nginx_server_name"] = "_"
-    else
-      host["_nginx_server_name"] = host["hostname"]
-    end
-  end
-
-  -- Add a default fallback host that will match any hostname, but doesn't
-  -- include any host-specific settings in nginx (like rewrites). This host can
-  -- still then be used to match APIs for unknown hosts.
-  table.insert(config["hosts"], {
-    hostname = "*",
-    _nginx_server_name = "_",
-    default = (not default_host_exists),
-  })
-
-  if not config["static_site"]["api_key"] then
-    local static_site_api_key_path = path.join(config["run_dir"], "static-site-api-key")
-    local api_key = file.read(static_site_api_key_path)
-    if not api_key then
-      api_key = random_token(40)
-    end
-
-    config["static_site"]["api_key"] = api_key
-  end
-
-  deep_merge_overwrite_arrays(config, {
-    _embedded_root_dir = embedded_root_dir,
-    _src_root_dir = src_root_dir,
-    _package_path = package.path,
-    _package_cpath = package.cpath,
-    mongodb = {
-      _database = array_last(plutils.split(config["mongodb"]["url"], "/")),
-    },
-    elasticsearch = {
-      _first_host = config["elasticsearch"]["hosts"][1],
-    },
-    ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
-    ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
-    ["_service_router_enabled?"] = array_includes(config["services"], "router"),
-    ["_service_web_enabled?"] = array_includes(config["services"], "web"),
-    router = {
-      trusted_proxies = trusted_proxies,
-    },
-    gatekeeper = {
-      dir = src_root_dir,
-    },
-    web = {
-      dir = path.join(src_root_dir, "src/api-umbrella/web-app"),
-      puma = {
-        bind = "unix://" .. config["run_dir"] .. "/puma.sock",
-      },
-    },
-    static_site = {
-      dir = path.join(embedded_root_dir, "apps/static-site/current"),
-      build_dir = path.join(embedded_root_dir, "apps/static-site/current/build"),
-    },
-  })
-
-  if config["app_env"] == "test" then
-    config["_test_env_install_dir"] = path.join(path.dirname(embedded_root_dir), "test-env")
-  end
-end
+local config
+local template_config
 
 local function set_template_config()
   local runtime_config_path = path.join(config["run_dir"], "runtime_config.yml")
@@ -229,12 +89,6 @@ local function permission_check()
   end
 end
 
-local function write_runtime_config()
-  local runtime_config_path = path.join(config["run_dir"], "runtime_config.yml")
-  dir.makepath(path.dirname(runtime_config_path))
-  file.write(runtime_config_path, lyaml.dump({config}))
-end
-
 local function prepare()
   local dirs = {
     config["db_dir"],
@@ -293,7 +147,7 @@ local function ensure_geoip_db()
 end
 
 local function write_templates()
-  local template_root = path.join(src_root_dir, "templates/etc")
+  local template_root = path.join(config["_src_root_dir"], "templates/etc")
   for root, _, files in dir.walk(template_root) do
     for _, filename in ipairs(files) do
       local template_path = path.join(root, filename)
@@ -368,7 +222,7 @@ local function set_permissions()
 end
 
 local function activate_services()
-  local active_services = dir.getdirectories(path.join(src_root_dir, "templates/etc/perp"))
+  local active_services = dir.getdirectories(path.join(config["_src_root_dir"], "templates/etc/perp"))
   tablex.transform(path.basename, active_services)
 
   -- Loop over the perp controlled services and set the sticky permission bit
@@ -411,14 +265,7 @@ local function activate_services()
 end
 
 return function()
-  read_runtime_config()
-  if not config then
-    read_default_config()
-    read_system_config()
-    set_computed_config()
-    write_runtime_config()
-  end
-
+  config = read_config({ write = true })
   set_template_config()
   permission_check()
   prepare()

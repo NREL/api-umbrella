@@ -25,6 +25,13 @@ CONFIG proxy.config.body_factory.template_sets_dir STRING {{_embedded_root_dir}}
 # Log to the standard API Umbrella log directory location.
 CONFIG proxy.config.log.logfile_dir STRING {{log_dir}}/trafficserver
 
+# Use logs_xml.config for defining the logs.
+CONFIG proxy.config.log.squid_log_enabled INT 0
+
+# Rotate log files with logrotate to be consistent with all the other API
+# Umbrella components.
+CONFIG proxy.config.log.rolling_enabled INT 0
+
 # Increase timeouts to 60 seconds to match other pieces of the stack.
 CONFIG proxy.config.http.transaction_no_activity_timeout_in INT 60
 CONFIG proxy.config.http.transaction_no_activity_timeout_out INT 60

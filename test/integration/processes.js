@@ -43,7 +43,7 @@ describe('processes', function() {
       async.series([
         // Fetch the PID of the nginx parent/master process.
         function(callback) {
-          execFile('perpstat', ['-b', path.join(config.get('root_dir'), 'etc/perp'), 'gatekeeper-nginx'], execOpts, function(error, stdout, stderr) {
+          execFile('perpstat', ['-b', path.join(config.get('root_dir'), 'etc/perp'), 'nginx'], execOpts, function(error, stdout, stderr) {
             if(error || !stdout) {
               return callback('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
             }
@@ -380,7 +380,7 @@ describe('processes', function() {
       async.series([
         // Fetch the PID of the nginx parent/master process.
         function(callback) {
-          execFile('perpstat', ['-b', path.join(config.get('root_dir'), 'etc/perp'), 'gatekeeper-nginx'], execOpts, function(error, stdout, stderr) {
+          execFile('perpstat', ['-b', path.join(config.get('root_dir'), 'etc/perp'), 'nginx'], execOpts, function(error, stdout, stderr) {
             if(error || !stdout) {
               return callback('Error fetching nginx pid: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
             }
