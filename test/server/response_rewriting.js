@@ -244,6 +244,14 @@ describe('response rewriting', function() {
           done();
         });
       });
+      it('does not modify an empty redirect', function(done) {
+        request.get(baseUrl(this.apiKey) + '&to=', {followRedirect: false}, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers['location'].should.eql('');
+          done();
+        });
+      });
     });
   });
 });
