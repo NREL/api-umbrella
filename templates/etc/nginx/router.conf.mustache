@@ -6,7 +6,7 @@ daemon off;
 user {{user}} {{group}};
 {{/user}}
 
-pid {{run_dir}}/router-nginx.pid;
+pid {{run_dir}}/nginx.pid;
 
 events {
   worker_connections {{nginx.worker_connections}};
@@ -21,11 +21,11 @@ pcre_jit on;
 http {
   access_log {{log_dir}}/nginx/access.log combined {{nginx.access_log_options}};
 
-  client_body_temp_path {{tmp_dir}}/router-nginx-client_body_temp;
-  proxy_temp_path {{tmp_dir}}/router-nginx-proxy_temp;
-  fastcgi_temp_path {{tmp_dir}}/router-nginx-fastcgi_temp;
-  uwsgi_temp_path {{tmp_dir}}/router-nginx-uwsgi_temp;
-  scgi_temp_path {{tmp_dir}}/router-nginx-scgi_temp;
+  client_body_temp_path {{tmp_dir}}/nginx-client_body_temp;
+  proxy_temp_path {{tmp_dir}}/nginx-proxy_temp;
+  fastcgi_temp_path {{tmp_dir}}/nginx-fastcgi_temp;
+  uwsgi_temp_path {{tmp_dir}}/nginx-uwsgi_temp;
+  scgi_temp_path {{tmp_dir}}/nginx-scgi_temp;
   server_tokens off;
 
   lua_package_path '{{_package_path}}';

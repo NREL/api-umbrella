@@ -1,21 +1,18 @@
 #!/bin/sh
-# rc.log: perpd logger script for perpboot
-# ===
 
-### --- configure ---
+LOG_DIR="{{log_dir}}/perpd"
+LOG_OPTS="-ttt"
+LOG_CONFIG="s0\nn0"
+RUN_OPTS=""
+{{#user}}
+RUN_OPTS="$RUN_OPTS -u {{user}}"
+{{/user}}
 
-## required:
-LOGDIR={{log_dir}}/perpd
-LOGOPTS="-ttt"
-## suggested:
+mkdir -p $LOG_DIR
+echo $LOG_CONFIG > $LOG_DIR/config
+chmod 0755 $LOG_DIR
+{{#user}}
+chown -R {{user}}:{{group}} $LOG_DIR
+{{/user}}
 
-### --- script ---
-
-## exec tinylog with privilege drop:
-mkdir -p ${LOGDIR}
-echo "s0\nn0" > ${LOGDIR}/config
-exec \
-  runchoom \
-  svlogd ${LOGOPTS} ${LOGDIR}
-
-### EOF
+exec runtool $RUN_OPTS svlogd $LOG_OPTS $LOG_DIR

@@ -5,7 +5,13 @@ exec 2>&1
 
 if test ${1} = "start"; then
   echo "starting ${2}..."
-  exec mongod --config {{etc_dir}}/mongod.conf
+
+  RUN_OPTS=""
+  {{#user}}
+  RUN_OPTS="$RUN_OPTS -u {{user}}"
+  {{/user}}
+
+  exec runtool $RUN_OPTS mongod --config {{etc_dir}}/mongod.conf
 fi
 
 exit 0

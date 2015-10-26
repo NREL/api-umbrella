@@ -5,7 +5,13 @@ exec 2>&1
 
 if test ${1} = "start"; then
   echo "starting ${2}..."
-  exec mora -config {{etc_dir}}/mora.properties
+
+  RUN_OPTS=""
+  {{#user}}
+  RUN_OPTS="$RUN_OPTS -u {{user}}"
+  {{/user}}
+
+  exec runtool $RUN_OPTS mora -config {{etc_dir}}/mora.properties
 fi
 
 exit 0

@@ -201,19 +201,7 @@ local function set_permissions()
   end
 
   if config["user"] and config["group"] then
-    _, err = unistd.chown(path.join(config["root_dir"], "var/trafficserver"), config["user"], config["group"])
-    if err then
-      print("chown failed: ", err)
-      os.exit(1)
-    end
-
-    _, err = unistd.chown(path.join(config["log_dir"], "trafficserver"), config["user"], config["group"])
-    if err then
-      print("chown failed: ", err)
-      os.exit(1)
-    end
-
-    _, _, err = run_command("chown -R " .. config["user"] .. ":" .. config["group"] .. " " .. path.join(config["etc_dir"], "trafficserver"))
+    _, _, err = run_command("chown -R " .. config["user"] .. ":" .. config["group"] .. " " .. path.join(config["etc_dir"], "trafficserver") .. " " .. path.join(config["root_dir"], "var"))
     if err then
       print(err)
       os.exit(1)

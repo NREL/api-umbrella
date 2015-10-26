@@ -5,9 +5,16 @@ exec 2>&1
 
 if test ${1} = "start"; then
   echo "starting ${2}..."
+
   PATH="{{_test_env_install_dir}}/sbin:{{_test_env_install_dir}}/bin:$PATH"
+  RUN_OPTS=""
+  {{#user}}
+  RUN_OPTS="$RUN_OPTS -u {{user}}"
+  {{/user}}
+
   exec \
     runtrap test-env-mongo-orchestration ${0} \
+    runtool $RUN_OPTS \
     mongo-orchestration \
       --no-fork \
       --port 13089 \
