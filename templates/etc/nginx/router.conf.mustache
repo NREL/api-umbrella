@@ -126,11 +126,6 @@ http {
     server unix://{{run_dir}}/web-puma.sock;
   }
 
-  upstream api_umbrella_static_site_backend {
-    server {{static_site.host}}:{{static_site.port}};
-    keepalive 10;
-  }
-
   upstream api_umbrella_trafficserver_backend {
     server {{trafficserver.host}}:{{trafficserver.port}};
     keepalive 10;
