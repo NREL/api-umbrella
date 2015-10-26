@@ -16,8 +16,8 @@ dependencies:
     - build/work/vendor
   override:
     # Build all the API Umbrella software dependencies.
-    - make
-    - make test_dependencies
+    - make --debug
+    - make test_dependencies --debug
 compile:
   override:
     # Don't perform any compile tasks that CircleCI infers. We'll run our

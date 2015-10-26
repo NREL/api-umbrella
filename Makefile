@@ -356,7 +356,7 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled: $(ROOT_DIR)/src/api-umbrella
 # (but since the CI does a fresh checkout, all the timestamps on the files
 # change, so make's normal checking would trigger changes).
 WEB_ASSETS_CHECKSUM:=$(shell find $(ROOT_DIR)/src/api-umbrella/web-app/app/assets $(ROOT_DIR)/src/api-umbrella/web-app/Gemfile.lock -type f -exec cksum {} \; | sort | openssl md5 | sed 's/^.* //')
-$(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets-$(WEB_ASSETS_CHECKSUM): $(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled | $(STAGE_MARKERS_DIR)
+$(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets-$(WEB_ASSETS_CHECKSUM): | $(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled $(STAGE_MARKERS_DIR)
 	# Compile the assets, but then move them to a temporary build directory so
 	# they aren't used when working in development mode.
 	cd $(ROOT_DIR)/src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) DEVISE_SECRET_KEY=temp RAILS_SECRET_TOKEN=temp bundle exec rake assets:precompile
