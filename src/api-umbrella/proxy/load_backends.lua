@@ -11,7 +11,7 @@ local function get_server_ips(server)
   if server["_host_is_ip?"] then
     ips = { server["host"] }
   elseif server["_host_is_local_alias?"] then
-    ips = { ETC_HOSTS[server["host"]] }
+    ips = { config["dns_resolver"]["_etc_hosts"][server["host"]] }
   else
     ips = ngx.shared.resolved_hosts:get(server["host"]) or ""
     ips = split(ips, ",", true)

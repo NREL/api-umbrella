@@ -32,7 +32,9 @@ config/settings/*.local.yml
 config/environments/*.local.yml
 
 # Test coverage reports
+/spec/reports
 /coverage
 
 # Generated assets
 /public/test-assets
+/public/web-assets

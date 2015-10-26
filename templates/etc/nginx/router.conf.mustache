@@ -44,6 +44,11 @@ http {
   lua_shared_dict geocode_city_cache 100k;
   lua_shared_dict upstream_checksums 200k;
 
+  {{#dns_resolver._nameservers_nginx}}
+    resolver {{dns_resolver._nameservers_nginx}};
+    resolver_timeout 12s;
+  {{/dns_resolver._nameservers_nginx}}
+
   geoip2 {{db_dir}}/geoip2/city.mmdb {
     $geoip_country country iso_code;
     $geoip_region subdivisions 0 iso_code;

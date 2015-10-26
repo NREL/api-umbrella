@@ -64,7 +64,7 @@ local function cache_computed_api(api)
       if server["host"] then
         if cidr.from_str(server["host"]) then
           server["_host_is_ip?"] = true
-        elseif ETC_HOSTS[server["host"]] then
+        elseif config["dns_resolver"]["_etc_hosts"][server["host"]] then
           server["_host_is_local_alias?"] = true
         end
       end

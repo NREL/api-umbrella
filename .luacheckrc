@@ -1,7 +1,5 @@
 globals = {
   "DEBUG",
-  "ETC_HOSTS",
-  "RESOLV_CONF_NAMESERVERS",
   "WORKER_GROUP_ID",
   "config",
   "elasticsearch_templates",

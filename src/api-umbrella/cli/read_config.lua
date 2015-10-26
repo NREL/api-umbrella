@@ -8,11 +8,72 @@ local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local path = require "pl.path"
 local plutils = require "pl.utils"
 local random_token = require "api-umbrella.utils.random_token"
+local stringx = require "pl.stringx"
+local types = require "pl.types"
+
+local is_empty = types.is_empty
+local split = plutils.split
+local strip = stringx.strip
 
 local config
 
 local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
 local embedded_root_dir = os.getenv("API_UMBRELLA_EMBEDDED_ROOT")
+
+local function read_resolv_conf_nameservers()
+  local nameservers = {}
+
+  local resolv_path = "/etc/resolv.conf"
+  local resolv_file, err = io.open(resolv_path, "r")
+  if err then
+    print("failed to open file: ", err)
+  else
+    for line in resolv_file:lines() do
+      local nameserver = string.match(line, "^%s*nameserver%s+(.+)$")
+      if nameserver then
+        nameserver = strip(nameserver)
+        if not is_empty(nameserver) then
+          table.insert(nameservers, nameserver)
+        end
+      end
+    end
+
+    resolv_file:close()
+  end
+
+  return nameservers
+end
+
+local function read_etc_hosts()
+  local hosts = {}
+
+  local hosts_path = "/etc/hosts"
+  local hosts_file, err = io.open(hosts_path, "r")
+  if err then
+    print("failed to open file: ", err)
+  else
+    for line in hosts_file:lines() do
+      local parts = split(line, "%s+", false, 2)
+      if parts then
+        local ip = parts[1]
+        local ip_hosts = parts[2]
+        if ip and ip_hosts then
+          ip = strip(ip)
+          ip_hosts = split(strip(ip_hosts), "%s+")
+          if not is_empty(ip) and not is_empty(ip_hosts) then
+            for _, host in ipairs(ip_hosts) do
+              hosts[host] = ip
+            end
+          end
+        end
+      end
+    end
+
+    hosts_file:close()
+  end
+
+  return hosts
+end
 
 local function read_runtime_config()
   local runtime_config_path = os.getenv("API_UMBRELLA_RUNTIME_CONFIG")
@@ -110,6 +171,40 @@ local function set_computed_config()
 
     config["static_site"]["api_key"] = api_key
   end
+
+  -- Determine the nameservers for DNS resolution. Prefer explicitly configured
+  -- nameservers, but fallback to nameservers defined in resolv.conf, and then
+  -- Google's DNS servers if nothing else is defined.
+  local nameservers
+  if config["dns_resolver"] and config["dns_resolver"]["nameservers"] then
+    nameservers = config["dns_resolver"]["nameservers"]
+  end
+  if is_empty(nameservers) then
+    nameservers = read_resolv_conf_nameservers()
+  end
+  if is_empty(nameservers) then
+    nameservers = { "8.8.8.8", "8.8.4.4" }
+  end
+
+  -- Parse the nameservers, allowing for custom DNS ports to be specified in
+  -- the OpenBSD resolv.conf format of "[IP]:port".
+  config["dns_resolver"]["_nameservers"] = {}
+  config["dns_resolver"]["_nameservers_nginx"] = {}
+  for _, nameserver in ipairs(nameservers) do
+    local ip, port = string.match(nameserver, "^%[(.+)%]:(%d+)$")
+    if ip and port then
+      nameserver = { ip, port }
+      table.insert(config["dns_resolver"]["_nameservers_nginx"], ip .. ":" .. port)
+    else
+      table.insert(config["dns_resolver"]["_nameservers_nginx"], nameserver)
+    end
+
+    table.insert(config["dns_resolver"]["_nameservers"], nameserver)
+  end
+  config["dns_resolver"]["_nameservers_nginx"] = table.concat(config["dns_resolver"]["_nameservers_nginx"], " ")
+  config["dns_resolver"]["nameservers"] = nil
+
+  config["dns_resolver"]["_etc_hosts"] = read_etc_hosts()
 
   deep_merge_overwrite_arrays(config, {
     _embedded_root_dir = embedded_root_dir,
