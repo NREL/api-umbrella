@@ -8,7 +8,7 @@ limit_conn api_umbrella_conn_addr_zone {{router.global_rate_limits.ip_connection
 # completely terminating requests at this router level. This is so we can
 # generally rely on API Umbrella Gatekeeper for rate limiting, but still
 # throttle traffic to the Gatekeeper.
-limit_req zone=api_umbrella_req_addr_zone burst={{router.global_rate_limits.ip_burst}} nodelay;
+limit_req zone=api_umbrella_req_addr_zone{{#router.global_rate_limits.ip_burst}} burst={{router.global_rate_limits.ip_burst}}{{/router.global_rate_limits.ip_burst}} nodelay;
 {{/router.global_rate_limits.ip_rate}}
 
 # Conditional proxy headers. Don't set these x-forwarded headers if they've
