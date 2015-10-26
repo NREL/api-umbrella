@@ -251,7 +251,6 @@ INSPECT:=inspect
 INSPECT_VERSION:=3.0-1
 LIBCIDR_FFI:=libcidr-ffi
 LIBCIDR_FFI_VERSION:=0.1.0-1
-LIBCIDR_FFI_URL:=https://raw.githubusercontent.com/GUI/lua-libcidr-ffi/master/libcidr-ffi-git-1.rockspec
 LUA_CMSGPACK:=lua-cmsgpack
 LUA_CMSGPACK_VERSION:=0.4.0-0
 LUAPOSIX:=luaposix
@@ -853,7 +852,7 @@ $(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS
 
 # LuaRocks - libcidr-ffi
 $(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(VENDOR_DIR)
-	$(LUAROCKS_CMD) --tree=$(VENDOR_DIR) install https://raw.githubusercontent.com/GUI/lua-libcidr-ffi/master/libcidr-ffi-git-1.rockspec CIDR_DIR=$(STAGE_PREFIX)/embedded
+	$(LUAROCKS_CMD) --tree=$(VENDOR_DIR) install $(LIBCIDR_FFI) $(LIBCIDR_FFI_VERSION) CIDR_DIR=$(STAGE_PREFIX)/embedded
 	touch $@
 
 # LuaRocks - lua-cmsgpack
