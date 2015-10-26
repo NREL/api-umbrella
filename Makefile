@@ -356,13 +356,14 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled: $(ROOT_DIR)/src/api-umbrella
 # (but since the CI does a fresh checkout, all the timestamps on the files
 # change, so make's normal checking would trigger changes).
 WEB_ASSETS_CHECKSUM:=$(shell find $(ROOT_DIR)/src/api-umbrella/web-app/app/assets $(ROOT_DIR)/src/api-umbrella/web-app/Gemfile.lock -type f -exec cksum {} \; | sort | openssl md5 | sed 's/^.* //')
-$(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets-$(WEB_ASSETS_CHECKSUM): | $(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled $(STAGE_MARKERS_DIR)
+$(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets$(VERSION_SEP)$(WEB_ASSETS_CHECKSUM): | $(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled $(STAGE_MARKERS_DIR)
 	# Compile the assets, but then move them to a temporary build directory so
 	# they aren't used when working in development mode.
 	cd $(ROOT_DIR)/src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) DEVISE_SECRET_KEY=temp RAILS_SECRET_TOKEN=temp bundle exec rake assets:precompile
 	mkdir -p $(WORK_DIR)/tmp/web-assets
 	cd $(ROOT_DIR)/src/api-umbrella/web-app && rsync -a --delete-after public/web-assets/ $(WORK_DIR)/tmp/web-assets/
 	rm -rf $(ROOT_DIR)/src/api-umbrella/web-app/public/web-assets
+	rm -f $(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets$(VERSION_SEP)*
 	touch $@
 
 $(STAGE_MARKERS_DIR)/api-umbrella-core: $(STAGE_MARKERS_DIR)/api-umbrella-core-dependencies | $(STAGE_MARKERS_DIR)
@@ -431,6 +432,7 @@ $(STAGE_MARKERS_DIR)/$(API_UMBRELLA_STATIC_SITE_INSTALL_MARKER): $(DEPS_DIR)/$(A
 	mkdir -p $(STAGE_PREFIX)/embedded/apps/static-site/releases/$(RELEASE_TIMESTAMP)/build
 	rsync -a $(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)/build/ $(STAGE_PREFIX)/embedded/apps/static-site/releases/$(RELEASE_TIMESTAMP)/build/
 	cd $(STAGE_PREFIX)/embedded/apps/static-site && ln -snf releases/$(RELEASE_TIMESTAMP) ./current
+	rm -f $(STAGE_MARKERS_DIR)/$(API_UMBRELLA_STATIC_SITE_NAME)$(VERSION_SEP)*
 	touch $@
 
 # Bundler
@@ -930,6 +932,8 @@ $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROC
 	$(DEPS_DIR)/$(OPENRESTY).tar.gz \
 	$(DEPS_DIR)/$(OPENRESTY) \
 	$(DEPS_DIR)/$(OPENRESTY)/.built \
+	$(DEPS_DIR)/$(PCRE).tar.gz \
+	$(DEPS_DIR)/$(PCRE) \
 	$(DEPS_DIR)/$(PERP).tar.gz \
 	$(DEPS_DIR)/$(PERP) \
 	$(DEPS_DIR)/$(PERP)/.built \

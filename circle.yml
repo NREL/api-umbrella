@@ -13,6 +13,7 @@ dependencies:
   cache_directories:
     - build/work/stage
     - build/work/test-env
+    - build/work/tmp/web-assets
     - build/work/vendor
   override:
     # Build all the API Umbrella software dependencies.
