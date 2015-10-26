@@ -224,9 +224,41 @@ local function activate_services()
     -- present in templates/etc/perp.
     local is_active = array_includes(active_services, service_name)
 
+    -- Disable services according to the broader service groups marked as
+    -- enabled in api-umbrella.yml's "services" list.
+    if is_active then
+      if not config["_service_general_db_enabled?"] then
+        if array_includes({ "mongod" }, service_name) then
+          is_active = false
+        end
+      end
+
+      if not config["_service_log_db_enabled?"] then
+        if array_includes({ "elasticsearch" }, service_name) then
+          is_active = false
+        end
+      end
+
+      if not config["_service_router_enabled?"] then
+        if array_includes({ "geoip-auto-updater", "heka", "mora", "nginx", "trafficserver" }, service_name) then
+          is_active = false
+        end
+      end
+
+      if not config["_service_web_enabled?"] then
+        if array_includes({ "web-delayed-job", "web-puma" }, service_name) then
+          is_active = false
+        end
+      end
+    end
+
     -- Disable any test-only services when not running in the test environment.
-    if string.find(service_name, "test-env", 1, true) == 1 and config["app_env"] ~= "test" then
-      is_active = false
+    if string.find(service_name, "test-env", 1, true) == 1 then
+      if config["app_env"] == "test" then
+        is_active = true
+      else
+        is_active = false
+      end
     end
 
     -- Perp's hidden directories don't need the sticky bit.
