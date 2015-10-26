@@ -10,11 +10,12 @@ heka:
   port: 13014
 nginx:
   access_log_options:
-gatekeeper:
-  starting_port: 13050
-  target: "127.0.0.1:13010"
+  dyups:
+    port: 13005
 trafficserver:
   port: 13009
+  autoconf_port: 13007
+  management_port: 13008
   embedded_server_config:
     records:
       # In the test environment disable fuzzy revalidation since it makes
@@ -24,6 +25,8 @@ trafficserver:
       # will be re-fetched ahead of their actual TTL).
       # See: https://docs.trafficserver.apache.org/en/latest/admin/http-proxy-caching.en.html?highlight=fuzz#fuzzy-revalidation
       - CONFIG proxy.config.http.cache.fuzz.time INT 0
+api_server:
+  port: 13010
 web:
   port: 13012
   admin:
@@ -35,13 +38,13 @@ router:
   trusted_proxies:
     - 192.168.12.0/23
     - 10.10.10.10
-  log_listener:
-    port: 13006
 mongodb:
   url: "mongodb://127.0.0.1:13090,127.0.0.1:13091/api_umbrella_test"
   embedded_server_config:
     net:
       port: 13001
+mora:
+  port: 13004
 elasticsearch:
   hosts:
     - "http://127.0.0.1:13002"

@@ -18,23 +18,27 @@ nginx:
   workers: 4
   worker_connections: 8192
   access_log_options: buffer=32k flush=10s
+  dyups:
+    host: 127.0.0.1
+    port: 14005
 gatekeeper:
-  workers: 4
-  host: 127.0.0.1
-  starting_port: 14050
   api_key_methods:
     - header
     - getParam
     - basicAuthUsername
   api_key_cache: true
-  target: "127.0.0.1:14010"
 trafficserver:
   host: 127.0.0.1
   port: 14009
+  autoconf_port: 14007
+  management_port: 14008
   storage:
     size: 256M
   embedded_server_config:
     records: []
+api_server:
+  host: 127.0.0.1
+  port: 14010
 web:
   host: 127.0.0.1
   port: 14012
@@ -74,8 +78,6 @@ router:
     ip_rate_size: 8m
     ip_connections:
     ip_connections_size: 5m
-  log_listener:
-    port: 14006
   web_backend_regex: "^/(admin|admins|web-assets)(/|$)"
   web_backend_required_https_regex: "^/(admin|admins)(/|$)"
   website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
@@ -104,7 +106,7 @@ mongodb:
       port: 14001
 mora:
   host: 127.0.0.1
-  port: 8181
+  port: 14004
   timeout: 0
 elasticsearch:
   hosts:
@@ -241,8 +243,8 @@ internal_apis:
     balance_algorithm: least_conn
     sort_order: 1
     servers:
-      - host: 127.0.0.1
-        port: 14008
+      - host: "{{api_server.host}}"
+        port: "{{api_server.port}}"
     url_matches:
       - frontend_prefix: "/api-umbrella/v1/health"
         backend_prefix: "/api-umbrella/v1/health"

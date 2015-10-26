@@ -1,4 +1,7 @@
+LOCAL proxy.local.incoming_ip_to_bind STRING {{trafficserver.host}}
 CONFIG proxy.config.http.server_ports STRING {{trafficserver.port}}
+CONFIG proxy.config.admin.autoconf_port INT {{trafficserver.autoconf_port}}
+CONFIG proxy.config.process_manager.mgmt_port INT {{trafficserver.management_port}}
 
 # Use the special "#-1" value to keep running as the current user (perp will
 # handle switching the user).

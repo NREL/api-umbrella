@@ -134,14 +134,14 @@ http {
   dyups_trylock on;
   dyups_read_msg_timeout 300ms;
   server {
-    listen 8081;
+    listen {{nginx.dyups.host}}:{{nginx.dyups.port}};
     location / {
       dyups_interface;
     }
   }
 
   server {
-    listen 14008;
+    listen {{api_server.host}}:{{api_server.port}};
     location /api-umbrella/v1/health {
       content_by_lua_file '{{_src_root_dir}}/src/api-umbrella/http-api/health.lua';
     }
@@ -183,8 +183,7 @@ http {
 
   {{^development_env}}
   server {
-    listen {{static_site.port}};
-    #listen [::]:{{static_site.port}};
+    listen {{static_site.host}}:{{static_site.port}};
     server_name _;
     port_in_redirect off;
 
@@ -199,8 +198,7 @@ http {
   }
 
   server {
-    listen {{router.api_backends.port}};
-    #listen [::]:{{router.api_backends.port}};
+    listen {{router.api_backends.host}}:{{router.api_backends.port}};
     server_name _;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
@@ -234,8 +232,7 @@ http {
   }
 
   server {
-    listen {{web.port}};
-    listen [::]:{{web.port}};
+    listen {{web.host}}:{{web.port}};
     server_name _;
 
     root {{web.dir}}/public;
