@@ -966,7 +966,7 @@ $(BUILD_DIR)/local: | $(WORK_DIR)
 	ln -snf $(WORK_DIR) $(BUILD_DIR)/local
 
 $(STAGE_MARKERS_DIR)/api-umbrella-core-dependencies: \
-	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets-$(WEB_ASSETS_CHECKSUM) \
+	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets$(VERSION_SEP)$(WEB_ASSETS_CHECKSUM) \
 	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled \
 	$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION) \
 	$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION) \
