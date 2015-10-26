@@ -374,6 +374,8 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core: $(STAGE_MARKERS_DIR)/api-umbrella-core-d
 		--filter=":- $(ROOT_DIR)/.gitignore" \
 		--include="/templates/etc/perp/.boot" \
 		--exclude=".*" \
+		--exclude="/templates/etc/test-env*" \
+		--exclude="/templates/etc/perp/test-env*" \
 		--exclude="/src/api-umbrella/web-app/spec" \
 		--exclude="/src/api-umbrella/web-app/app/assets" \
 		--include="/bin/***" \
