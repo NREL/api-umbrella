@@ -16,9 +16,12 @@ dependencies:
     - build/work/tmp/web-assets
     - build/work/vendor
   override:
+    - find build
     # Build all the API Umbrella software dependencies.
     - make --debug
+    - find build
     - make test_dependencies --debug
+    - find build
 compile:
   override:
     # Don't perform any compile tasks that CircleCI infers. We'll run our
