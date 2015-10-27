@@ -1,12 +1,17 @@
-# Unexport all make variables to prevent passing our own make variables down to
-# sub-processes.
+# Unexport make variables given as command line arguments to the make command.
 #
-# Since the bulk of what we're doing is building other projects, this prevents
-# odd issues from cropping up when building other projects and those picking up
-# our own DESTDIR or other variables that the child projects might happen to
-# use (BUILD_DIR, etc).
-unexport
+# This prevents passing variables that we might set (like DESTDIR, etc) down to
+# sub-processes. We're predominately building other projects, and we don't want
+# them to automatically pick up these variables, or it can lead to lots of
+# strange build errors.
+unexport DESTDIR PREFIX ROOT_DIR BUILD_DIR WORK_DIR
 MAKEOVERRIDES=
+
+# Also unexport some problematic environment variables that might be set.
+#
+# These environment variables come from RVM (which our CircleCI environment
+# uses) which causes conflicts with our Ruby installation.
+unexport GEM_HOME GEM_PATH IRBRC MY_RUBY_HOME RUBY_VERSION
 
 STANDARD_PATH:=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
 PREFIX:=/opt/api-umbrella
