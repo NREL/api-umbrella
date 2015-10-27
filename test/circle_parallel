@@ -28,7 +28,7 @@ if [ $CIRCLE_NODE_INDEX -gt "0" ] || [ $CIRCLE_NODE_TOTAL -lt "2" ]; then
   # available.
   INDEX=0
   NODE_FILES=()
-  for TEST_FILE in $(find ./test/server ./test/integration -name "*.js" | sort); do
+  for TEST_FILE in $(cd test && find ./server ./integration -name "*.js" | sort); do
     if [ $(($INDEX % $MOCHA_NODE_TOTAL)) -eq $MOCHA_NODE_INDEX ]; then
       NODE_FILES+=" $TEST_FILE"
     fi
