@@ -244,7 +244,7 @@ describe('distributed rate limit sync', function() {
   });
 
   it('increases existing rate limits to match the distributed value', function(done) {
-    this.timeout(5000);
+    this.timeout(15000);
 
     var frozenTime = new Date();
     var options = {
@@ -270,7 +270,7 @@ describe('distributed rate limit sync', function() {
   });
 
   it('ignores rate limits when the distributed value is lower', function(done) {
-    this.timeout(5000);
+    this.timeout(15000);
 
     var frozenTime = new Date();
     var options = {
@@ -357,7 +357,7 @@ describe('distributed rate limit sync', function() {
   });
 
   it('polls for distributed changes after start', function(done) {
-    this.timeout(5000);
+    this.timeout(15000);
 
     var frozenTime = new Date();
     var options = {
