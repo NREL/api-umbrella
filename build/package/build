@@ -34,7 +34,7 @@ yum -y install \
 # This temporary location will be used for performing the packaging. We use a
 # separate location so that multiple docker build containers don't conflict
 # with the original working copy.
-rsync -av --exclude="build/work" --exclude=".git" --no-links --delete-after $ORIGINAL_ROOT_DIR/ $TMP_ROOT_DIR/
+rsync -av --exclude="build/work" --exclude=".git" --filter=":- $ORIGINAL_ROOT_DIR/.gitignore" --no-links --delete-after $ORIGINAL_ROOT_DIR/ $TMP_ROOT_DIR/
 
 # Build and install from the temporary working copy, installing into a
 # temporary root used for packaging.
