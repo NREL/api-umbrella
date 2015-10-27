@@ -4,7 +4,7 @@ source "https://rails-assets.org"
 gem "rails", "~> 3.2.22"
 
 # Rails app server
-gem "puma", "~> 2.11.2"
+gem "puma", "~> 2.14.0"
 
 # Error notification service (optional)
 gem "rollbar", "~> 1.4.5"
@@ -22,7 +22,7 @@ gem "rack-proxy", "~> 0.5.17"
 
 # JSON handling
 gem "multi_json", "~> 1.11.0"
-gem "oj", "~> 2.12.1", :platforms => [:ruby]
+gem "oj", "~> 2.13.0", :platforms => [:ruby]
 gem "oj_mimic_json", "~> 1.0.1", :platforms => [:ruby]
 
 # MongoDB
@@ -51,7 +51,7 @@ gem "uuidtools", "~> 2.1.4"
 gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
 
 # Elasticsearch
-gem "elasticsearch", "~> 1.0.8"
+gem "elasticsearch", "~> 1.0.14"
 
 # OmniAuth-based authentication
 gem "devise", "~> 3.4.0"
