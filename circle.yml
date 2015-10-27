@@ -22,6 +22,7 @@ dependencies:
     - find build
     - make test_dependencies --debug
     - find build
+    - rm -f vendor
 compile:
   override:
     # Don't perform any compile tasks that CircleCI infers. We'll run our
