@@ -315,7 +315,8 @@ GEM
       actionmailer (>= 3, < 5)
       premailer (~> 1.7, >= 1.7.9)
     psych (2.0.13)
-    puma (2.14.0)
+    puma (2.11.3)
+      rack (>= 1.1, < 2.0)
     pundit (0.3.0)
       activesupport (>= 3.0.0)
     pyu-ruby-sasl (0.0.3.3)
@@ -560,7 +561,7 @@ DEPENDENCIES
   poltergeist (~> 1.6.0)
   premailer-rails (~> 1.8.0)
   psych (~> 2.0.13)
-  puma (~> 2.14.0)
+  puma (~> 2.11.3)
   pundit (~> 0.3.0)
   rabl (~> 0.11.5)
   rack-proxy (~> 0.5.17)
@@ -610,3 +611,6 @@ DEPENDENCIES
   uuidtools (~> 2.1.4)
   vcr (~> 2.9.3)
   webmock (~> 1.21.0)
+
+BUNDLED WITH
+   1.10.6
