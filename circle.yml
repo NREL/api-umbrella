@@ -16,12 +16,11 @@ dependencies:
     - build/work/tmp/web-assets
     - build/work/vendor
   override:
-    - find build
     # Build all the API Umbrella software dependencies.
     - make --debug
-    - find build
     - make test_dependencies --debug
-    - find build
+    # Remove the "vendor" symlink (to the cached build/work/vendor), since this
+    # symlink seems to mess up CircleCI's caching.
     - rm -f vendor
 compile:
   override:
