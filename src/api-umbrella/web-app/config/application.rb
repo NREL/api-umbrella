@@ -140,6 +140,14 @@ module ApiUmbrella
       config.assets.precompile << path.gsub(%r{^.*/app/assets/javascripts/}, "").gsub(/\.erb$/, "")
     end
 
+    # Setup ember and handlebars, but only when it's being required (so
+    # development and test, but only production when running assets:precompile
+    # with RAILS_GROUPS=assets).
+    if(config.respond_to?(:ember))
+      config.ember.variant = :development
+      config.handlebars.templates_root = ["admin/templates", "templates"]
+    end
+
     # Use a file-based cache store
     config.cache_store = :file_store, "#{Rails.root}/tmp/cache"
 
