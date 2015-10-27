@@ -351,6 +351,7 @@ $(STAGE_MARKERS_DIR):
 # api-umbrella-core
 $(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled: $(ROOT_DIR)/src/api-umbrella/web-app/Gemfile $(ROOT_DIR)/src/api-umbrella/web-app/Gemfile.lock | $(VENDOR_DIR) $(STAGE_MARKERS_DIR) $(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER)
 	rm -rf $(ROOT_DIR)/src/api-umbrella/web-app/.bundle
+	env
 	cd $(ROOT_DIR)/src/api-umbrella/web-app && PATH=$(STAGE_PREFIX)/embedded/bin:$(PATH) bundle install --path=$(BUNDLE_DIR)
 	touch $@
 
