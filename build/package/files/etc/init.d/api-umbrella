@@ -22,29 +22,51 @@ if [ -d /var/lock/subsys ]; then
   LOCKFILE=/var/lock/subsys/$NAME
 fi
 
+. /etc/rc.d/init.d/functions
+
 start() {
+  echo -n $"Starting $NAME: "
   api-umbrella start
   RETVAL=$?
-  [ $RETVAL -eq 0 ] && touch $LOCKFILE
+  if [ $RETVAL -eq 0 ]; then
+    touch $LOCKFILE
+    success $"$NAME startup"
+  else
+    failure $"$NAME startup"
+  fi
+  echo
   return $RETVAL
 }
 
 stop() {
+  echo -n $"Stopping $NAME: "
   api-umbrella stop
   RETVAL=$?
-  [ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+  if [ $RETVAL -eq 0 ]; then
+    rm -f $LOCKFILE
+    success $"$NAME shutdown"
+  else
+    failure $"$NAME shutdown"
+  fi
+  echo
   return $RETVAL
 }
 
 restart() {
-  api-umbrella restart
-  RETVAL=$?
-  return $RETVAL
+  stop
+  start
 }
 
 reload() {
+  echo -n $"Reloading $NAME: "
   api-umbrella reload
   RETVAL=$?
+  if [ $RETVAL -eq 0 ]; then
+    success $"Reloading $NAME"
+  else
+    failure $"Reloading $NAME"
+  fi
+  echo
   return $RETVAL
 }
 
