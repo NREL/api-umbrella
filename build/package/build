@@ -6,6 +6,15 @@ ORIGINAL_ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && 
 TMP_ROOT_DIR=/tmp/api-umbrella
 TMP_WORK_DIR=$TMP_ROOT_DIR/build/work
 
+VERSION=$(sed 's/^return "\([0-9\.]*\).*"$/\1/' $ORIGINAL_ROOT_DIR/src/api-umbrella/version.lua)
+PRE=$(grep -o "\-pre[0-9]*" $ORIGINAL_ROOT_DIR/src/api-umbrella/version.lua)
+if [ "$PRE" == "" ]; then
+  ITERATION="1"
+else
+  ITERATION="0.1$PRE"
+fi
+RPM_DIST=$(rpm --query centos-release | grep -o "el[0-9]")
+
 if [ ! -f /etc/yum.repos.d/wandisco-git.repo ]; then
   yum -y install http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
 fi
@@ -78,18 +87,20 @@ cd $TMP_ROOT_DIR/build/package
 rm -f *.rpm
 PATH=$TMP_WORK_DIR/stage/opt/api-umbrella/embedded/bin:$PATH bundle install --path=$TMP_WORK_DIR/package/bundle
 PATH=$TMP_WORK_DIR/stage/opt/api-umbrella/embedded/bin:$PATH bundle exec fpm \
-		-s dir \
-		-t rpm \
-		-n api-umbrella \
-		-v 0.9.0 \
-		--rpm-compression xz \
-		-C $TMP_WORK_DIR/package/root \
-		-p api-umbrella_VERSION_ARCH.rpm \
-    $DEPENDENCIES_ARGS \
-		--config-files etc/api-umbrella/api-umbrella.yml \
-    --after-install ./scripts/after-install \
-    --before-remove ./scripts/after-remove \
-    --after-remove ./scripts/after-remove \
-		.
+  -t rpm \
+  -s dir \
+  -C $TMP_WORK_DIR/package/root \
+  --name api-umbrella \
+  --version $VERSION \
+  --iteration $ITERATION \
+  --rpm-compression xz \
+  --rpm-dist $RPM_DIST \
+  --package NAME-VERSION-ITERATION.DIST.ARCH.TYPE.rpm \
+  $DEPENDENCIES_ARGS \
+  --config-files etc/api-umbrella/api-umbrella.yml \
+  --after-install ./scripts/after-install \
+  --before-remove ./scripts/after-remove \
+  --after-remove ./scripts/after-remove \
+  .
 
 cp *.rpm $ORIGINAL_ROOT_DIR/build/package/
