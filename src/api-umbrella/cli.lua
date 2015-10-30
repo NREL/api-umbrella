@@ -76,6 +76,7 @@ COMMANDS
     status      - Show the status of the API Umbrella server
     reopen-logs - Close and reopen log files in use
     ls          - List the processes running under API Umbrella
+    version     - Print the API Umbrella version number
     help        - Shows a list of commands or help for one command]])
 end
 
