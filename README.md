@@ -1,5 +1,7 @@
 # API Umbrella
 
+*This version is for development only, and is written in Lua [More informations](https://github.com/NREL/api-umbrella/issues/86)*
+
 ## What Is API Umbrella?
 
 API Umbrella is an open source API management platform for exposing web service APIs. The basic goal of API Umbrella is to make life easier for both API creators and API consumers. How?

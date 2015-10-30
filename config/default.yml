@@ -1,0 +1,296 @@
+app_env: production
+services:
+  - general_db
+  - log_db
+  - router
+  - web
+user: api-umbrella
+group: api-umbrella
+rlimits:
+  nofile: 100000
+  nproc: 20000
+http_port: 80
+https_port: 443
+heka:
+  host: 127.0.0.1
+  port: 14014
+nginx:
+  workers: 4
+  worker_connections: 8192
+  access_log_options: buffer=32k flush=10s
+  dyups:
+    host: 127.0.0.1
+    port: 14005
+gatekeeper:
+  api_key_methods:
+    - header
+    - getParam
+    - basicAuthUsername
+  api_key_cache: true
+trafficserver:
+  host: 127.0.0.1
+  port: 14009
+  autoconf_port: 14007
+  management_port: 14008
+  storage:
+    size: 256M
+  embedded_server_config:
+    records: []
+api_server:
+  host: 127.0.0.1
+  port: 14010
+web:
+  host: 127.0.0.1
+  port: 14012
+  rails_secret_token:
+  devise_secret_key:
+  puma:
+    workers: 2
+    min_threads: 2
+    max_threads: 24
+  admin:
+    initial_superusers: []
+    auth_strategies:
+      enabled:
+        - github
+        - google
+        - persona
+      facebook:
+        client_id:
+        client_secret:
+      github:
+        client_id:
+        client_secret:
+      google:
+        client_id:
+        client_secret:
+static_site:
+  host: 127.0.0.1
+  port: 14013
+router:
+  api_backends:
+    host: 127.0.0.1
+    port: 14011
+  trusted_proxies: []
+  global_rate_limits:
+    ip_rate:
+    ip_burst:
+    ip_rate_size: 8m
+    ip_connections:
+    ip_connections_size: 5m
+  web_backend_regex: "^/(admin|admins|web-assets)(/|$)"
+  web_backend_required_https_regex: "^/(admin|admins)(/|$)"
+  website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
+hosts:
+  - hostname: localhost
+    default: true
+dns_resolver:
+  negative_ttl: 60
+  max_stale: 86400
+  timeout: 2000
+  retries: 3
+mongodb:
+  url: "mongodb://127.0.0.1:14001/api_umbrella"
+  options:
+    server:
+      auto_reconnect: true
+      socketOptions:
+        keepAlive: 500
+    replset:
+      socketOptions:
+        keepAlive: 500
+  embedded_server_config:
+    processManagement:
+      fork: false
+    net:
+      port: 14001
+mora:
+  host: 127.0.0.1
+  port: 14004
+  timeout: 0
+elasticsearch:
+  hosts:
+    - "http://127.0.0.1:14002"
+  embedded_server_env:
+    heap_size: 512m
+  embedded_server_config:
+    http:
+      port: 14002
+    transport:
+      tcp:
+        port: 14003
+    cluster:
+      name: api-umbrella
+    indices:
+      fielddata:
+        cache:
+          size: 40%
+      breaker:
+        fielddata:
+          limit: 60%
+    # Disable Groovy scripting for security: CVE-2015-1427
+    script:
+      groovy:
+        sandbox:
+          enabled: false
+log_template_version: v1
+strip_cookies:
+  - ^__utm.*$
+  - ^_ga$
+  - ^is_returning$
+site_name: API Umbrella
+apiSettings:
+  require_https: required_return_error
+  rate_limits:
+    - duration: 1000
+      accuracy: 500
+      limit_by: ip
+      limit: 50
+      distributed: false
+    - duration: 1000
+      accuracy: 500
+      limit_by: apiKey
+      limit: 20
+      distributed: false
+    - duration: 15000
+      accuracy: 1000
+      limit_by: ip
+      limit: 250
+      distributed: true
+    - duration: 15000
+      accuracy: 1000
+      limit_by: apiKey
+      limit: 150
+      distributed: true
+    - duration: 3600000
+      accuracy: 60000
+      limit_by: apiKey
+      limit: 1000
+      distributed: true
+      response_headers: true
+  error_templates:
+    json: |-
+      {
+        "error": {
+          "code": {{code}},
+          "message": {{message}}
+        }
+      }
+    xml: |-
+      <?xml version="1.0" encoding="UTF-8"?>
+      <response>
+        <error>
+          <code>{{code}}</code>
+          <message>{{message}}</message>
+        </error>
+      </response>
+    csv: |-
+      Error Code,Error Message
+      {{code}},{{message}}
+    html: |-
+      <html>
+        <body>
+          <h1>{{code}}</h1>
+          <p>{{message}}</p>
+        </body>
+      </html>
+  error_data:
+    common:
+      signup_url: "{{base_url}}"
+      contact_url: "{{base_url}}/contact/"
+    not_found:
+      status_code: 404
+      code: NOT_FOUND
+      message: The requested URL was not found on this server.
+    api_key_missing:
+      status_code: 403
+      code: API_KEY_MISSING
+      message: No api_key was supplied. Get one at {{signup_url}}
+    api_key_invalid:
+      status_code: 403
+      code: API_KEY_INVALID
+      message: An invalid api_key was supplied. Get one at {{signup_url}}
+    api_key_disabled:
+      status_code: 403
+      code: API_KEY_DISABLED
+      message: The api_key supplied has been disabled. Contact us at {{contact_url}} for assistance
+    api_key_unverified:
+      status_code: 403
+      code: API_KEY_UNVERIFIED
+      message: The api_key supplied has not been verified yet. Please check your e-mail to verify the API key. Contact us at {{contact_url}} for assistance
+    api_key_unauthorized:
+      status_code: 403
+      code: API_KEY_UNAUTHORIZED
+      message: The api_key supplied is not authorized to access the given service. Contact us at {{contact_url}} for assistance
+    over_rate_limit:
+      status_code: 429
+      code: OVER_RATE_LIMIT
+      message: You have exceeded your rate limit. Try again later or contact us at {{contact_url}} for assistance
+    internal_server_error:
+      status_code: 500
+      code: INTERNAL_SERVER_ERROR
+      message: An unexpected error has occurred. Try again later or contact us at {{contact_url}} for assistance
+    https_required:
+      status_code: 400
+      code: HTTPS_REQUIRED
+      message: "Requests must be made over HTTPS. Try accessing the API at: {{https_url}}"
+internal_apis:
+  - _id: api-umbrella-gatekeeper-backend
+    name: API Umbrella - Gatekeeper APIs
+    frontend_host: "{{default_hostname}}"
+    backend_host: 127.0.0.1
+    backend_protocol: http
+    balance_algorithm: least_conn
+    sort_order: 1
+    servers:
+      - host: "{{api_server.host}}"
+        port: "{{api_server.port}}"
+    url_matches:
+      - frontend_prefix: "/api-umbrella/v1/health"
+        backend_prefix: "/api-umbrella/v1/health"
+      - frontend_prefix: "/api-umbrella/v1/state"
+        backend_prefix: "/api-umbrella/v1/state"
+    sub_settings:
+      - http_method: get
+        regex: "^/api-umbrella/v1/(health|state)"
+        settings:
+          disable_api_key: true
+          rate_limit_mode: unlimited
+          require_https: optional
+  - _id: api-umbrella-web-backend
+    name: API Umbrella - Web APIs
+    frontend_host: "{{default_hostname}}"
+    backend_host: 127.0.0.1
+    backend_protocol: http
+    balance_algorithm: least_conn
+    sort_order: 1
+    servers:
+      - host: "{{web.host}}"
+        port: "{{web.port}}"
+    url_matches:
+      - frontend_prefix: "/api-umbrella/"
+        backend_prefix: "/api-umbrella/"
+    sub_settings:
+      - http_method: post
+        regex: "^/api-umbrella/v1/users"
+        settings:
+          required_roles:
+            - api-umbrella-key-creator
+      - http_method: post
+        regex: "^/api-umbrella/v1/contact"
+        settings:
+          required_roles:
+            - api-umbrella-contact-form
+internal_website_backends:
+  - _id: api-umbrella-website-backend
+    frontend_host: "{{default_hostname}}"
+    backend_protocol: http
+    server_host: "{{static_site.host}}"
+    server_port: "{{static_site.port}}"
+ban:
+  user_agents:
+  ips:
+  response:
+    status_code: 403
+    delay: 0
+    message: "Please contact us for assistance."

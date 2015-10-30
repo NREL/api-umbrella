@@ -1,0 +1,26 @@
+set $x_api_umbrella_request_id $txid;
+proxy_set_header X-Api-Umbrella-Request-ID $txid;
+
+keepalive_timeout 10s;
+
+# Normalize the Accept-Encoding header to increase cache hit rates.
+# We're not currently using TrafficServer, but this is based on what it does by
+# default:
+# https://docs.trafficserver.apache.org/en/latest/reference/configuration/records.config.en.html?highlight=gzip#proxy-config-http-normalize-ae-gzip 
+proxy_set_header Accept-Encoding $normalized_accept_encoding;
+
+# Don't buffer proxied requests to allow for streaming APIs.
+proxy_buffering off;
+
+# If the backend only returns gzipped responses, decompress them as
+# appropriate to meet the Accept headers of the current client.
+gunzip on;
+
+set $api_umbrella_proxy_pass '';
+
+rewrite_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/rewrite.lua';
+access_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/access.lua';
+header_filter_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/header_filter.lua';
+log_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/log_initial_proxy.lua';
+
+proxy_pass $api_umbrella_proxy_pass;

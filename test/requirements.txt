@@ -1,0 +1,5 @@
+bottle==0.12.8
+CherryPy==3.8.0
+mongo-orchestration==0.4
+pymongo==3.0.3
+wheel==0.24.0

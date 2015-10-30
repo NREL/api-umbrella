@@ -1,0 +1,58 @@
+{
+  "id": "repl0",
+  "rsSettings": {
+    "heartbeatTimeoutSecs": 1
+  },
+  "members": [
+    {
+      "procParams": {
+        "dbpath": "/tmp/api-umbrella-test/var/db/mongodb-13090",
+        "logpath": "/tmp/api-umbrella-test/var/log/mongod-13090.log",
+        "nohttpinterface": true,
+        "nojournal": true,
+        "noprealloc": true,
+        "nssize": 1,
+        "oplogSize": 10,
+        "port": 13090,
+        "smallfiles": true
+      },
+      "rsParams": {
+        "priority": 99
+      }
+    },
+    {
+      "procParams": {
+        "dbpath": "/tmp/api-umbrella-test/var/db/mongodb-13091",
+        "ipv6": true,
+        "logpath": "/tmp/api-umbrella-test/var/log/mongod-13091.log",
+        "nohttpinterface": true,
+        "nojournal": true,
+        "noprealloc": true,
+        "nssize": 1,
+        "oplogSize": 10,
+        "port": 13091,
+        "smallfiles": true
+      },
+      "rsParams": {
+        "priority": 1.1
+      }
+    },
+    {
+      "procParams": {
+        "dbpath": "/tmp/api-umbrella-test/var/db/mongodb-13092",
+        "ipv6": true,
+        "logpath": "/tmp/api-umbrella-test/var/log/mongod-13092.log",
+        "nohttpinterface": true,
+        "nojournal": true,
+        "noprealloc": true,
+        "nssize": 1,
+        "oplogSize": 10,
+        "port": 13092,
+        "smallfiles": true
+      },
+      "rsParams": {
+        "arbiterOnly": true
+      }
+    }
+  ]
+}

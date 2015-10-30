@@ -1,0 +1,103 @@
+#!/bin/bash
+#
+# api-umbrella
+#
+# chkconfig: - 85 15
+# description: API Umbrella
+# processname: api-umbrella
+# config: /etc/api-umbrella/api-umbrella.yml
+
+### BEGIN INIT INFO
+# Provides:          api-umbrella
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: API Umbrella
+### END INIT INFO
+
+NAME=api-umbrella
+LOCKFILE=/var/lock/$NAME
+if [ -d /var/lock/subsys ]; then
+  LOCKFILE=/var/lock/subsys/$NAME
+fi
+
+. /etc/rc.d/init.d/functions
+
+start() {
+  echo -n $"Starting $NAME: "
+  api-umbrella start
+  RETVAL=$?
+  if [ $RETVAL -eq 0 ]; then
+    touch $LOCKFILE
+    success $"$NAME startup"
+  else
+    failure $"$NAME startup"
+  fi
+  echo
+  return $RETVAL
+}
+
+stop() {
+  echo -n $"Stopping $NAME: "
+  api-umbrella stop
+  RETVAL=$?
+  if [ $RETVAL -eq 0 ]; then
+    rm -f $LOCKFILE
+    success $"$NAME shutdown"
+  else
+    failure $"$NAME shutdown"
+  fi
+  echo
+  return $RETVAL
+}
+
+restart() {
+  stop
+  start
+}
+
+reload() {
+  echo -n $"Reloading $NAME: "
+  api-umbrella reload
+  RETVAL=$?
+  if [ $RETVAL -eq 0 ]; then
+    success $"Reloading $NAME"
+  else
+    failure $"Reloading $NAME"
+  fi
+  echo
+  return $RETVAL
+}
+
+status() {
+  api-umbrella status
+  RETVAL=$?
+  return $RETVAL
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  status)
+    status
+    ;;
+  restart)
+    restart
+    ;;
+  reload)
+    reload
+    ;;
+  condrestart)
+    [ -f $LOCKFILE ] && restart || :
+    ;;
+  *)
+    echo "Usage: $NAME {start|stop|status|reload|restart|condrestart}"
+    exit 1
+    ;;
+esac
+exit $?

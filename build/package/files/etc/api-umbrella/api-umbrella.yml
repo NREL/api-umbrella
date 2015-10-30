@@ -1,0 +1,29 @@
+# services:
+#   - general_db
+#   - log_db
+#   - router
+#   - web
+# web:
+#   admin:
+#     initial_superusers:
+#       - your.email@example.com
+#     auth_strategies:
+#       enabled:
+#         - github
+#         - google
+#         - persona
+#       github:
+#         client_id:
+#         client_secret:
+#       google:
+#         client_id:
+#         client_secret:
+# elasticsearch:
+#   hosts:
+#     - http://127.0.0.1:14002
+# mongodb:
+#   url: mongodb://127.0.0.1:14001/api_umbrella
+# nginx:
+#   workers: 4
+# gatekeeper:
+#   workers: 4

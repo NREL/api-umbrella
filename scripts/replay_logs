@@ -1,0 +1,101 @@
+#!/usr/bin/env ruby
+
+# This script parses existing "router.log" files on an API Umbrella server and
+# looks to find a random sampling of distinct API URLs that have previously
+# been accessed successfully. It then replays those requests against the
+# localhost connection and checks their responses for success.
+#
+# This can be used as a quick and dirty way to perform sanity checks on an API
+# Umbrella production server during system upgrades (mainly when the upgrade
+# involves low-level routing changes to ensure the API Umbrella upgrade doesn't
+# affect routing). It should be used on a server that's out of load balancing
+# rotation before bring it back online.
+#
+# You'll need an API key for running the tests then point it at the router.log
+# file to sample:
+# API_KEY=$API_KEY_FOR_TESTS LOG_FILE=/var/log/api-umbrella/router.log ./scripts/replay_logs
+require "json"
+require "net/http"
+require "net/https"
+require "uri"
+
+api_key = ENV["API_KEY"]
+if(api_key.to_s.empty?)
+  puts "You must specify the API_KEY environment variable"
+  exit 1
+end
+
+log_file = ENV["LOG_FILE"]
+if(log_file.to_s.empty?)
+  puts "You must specify the LOG_FILE environment variable"
+  exit 1
+end
+
+class RandomLine
+  def initialize(fn)
+    @file = File.open(fn,'r')
+    @positions = []
+    position = 0
+    @file.lines.each do |line|
+      if(line =~ /"source":"initial_router"/ && line =~ /"req_method":"GET"/ && line =~ /"req_basic_auth_username":"-"/ && line =~ /"res_status":"[23]/)
+        @positions << position
+      end
+      position += line.length
+    end
+    @positions.shuffle!
+  end
+
+  def pick
+    if(@positions.length > 0)
+      @file.seek(@positions.pop)
+      @file.gets
+    end
+  end
+end
+
+r = RandomLine.new(log_file)
+
+urls = []
+unique_prefixes = {}
+while(urls.length < 500 && line = r.pick)
+  data = JSON.parse(line)
+  url = "#{data["req_scheme"]}://#{data["req_host"]}#{data["req_uri"]}"
+  prefix = "#{data["req_scheme"]}://#{data["req_host"]}#{data["req_uri"].split("/")[0..2].join("/")}"
+  prefix = prefix.split("?", 2).first
+  unique_prefixes[prefix] ||= 0
+  if(unique_prefixes[prefix] < 10)
+    unique_prefixes[prefix] += 1
+    urls << url
+    puts "#{data["res_status"]}: #{url}"
+  end
+end
+
+puts "Total URLs: #{urls.length}"
+puts "Unique URL Prefixes: #{unique_prefixes.keys.length}"
+
+puts unique_prefixes.inspect
+
+urls.each do |url|
+  if(url.include?("api_key="))
+    url.gsub!(/api_key=\w+/, "api_key=#{api_key}")
+  elsif(url.include?("?"))
+    url << "&api_key=#{api_key}"
+  else
+    url << "?api_key=#{api_key}"
+  end
+
+  uri = URI.parse(url)
+  http = Net::HTTP.new("127.0.0.1", uri.port)
+  if(url =~ /^https/)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+  end
+  request = Net::HTTP::Get.new(uri.request_uri, "Host" => uri.host)
+  response = http.request(request)
+  puts "#{response.code}: #{url}"
+  if(response.code.to_i < 200 || response.code.to_i > 399)
+    puts "WARNING: BAD RESPONSE: #{response.body}"
+  end
+
+  sleep 0.5
+end

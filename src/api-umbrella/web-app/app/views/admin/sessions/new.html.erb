@@ -1,0 +1,67 @@
+<div class="row-fluid">
+  <div class="span4 offset4">
+    <h1>Admin Login</h1>
+  </div>
+</div>
+
+<% if(!resource_class.omniauth_providers.include?(:developer) && Admin.count == 0) %>
+  <div class="alert alert-error">
+    <strong>No admins currently exist.</strong><br>
+    Initial admin accounts may be defined in <code>/etc/api-umbrella/api-umbrella.yml</code> (see the <code>web.admin.initial_superusers</code> section)
+  </div>
+<% end %>
+
+<div class="admin-logins">
+  <%- resource_class.omniauth_providers.each do |provider| %>
+    <% if(provider == :persona) %>
+      <form id="persona_form" action="/admins/auth/persona/callback">
+        <input type="hidden" name="assertion"/>
+        <div class="row-fluid">
+          <div class="span4 offset4">
+            <button type="submit" class="btn btn-primary btn-block">Login with <%= t(provider, :scope => [:omniauth_providers]) %></button>
+          </div>
+        </div>
+      </form>
+    <% else %>
+      <% strategy = Devise.omniauth_configs[provider].strategy %>
+      <% if(strategy.respond_to?(:client_secret) && strategy.client_secret.blank?) %>
+        <div class="alert alert-error">
+          <%= t(provider, :scope => [:omniauth_providers]) %> authentication provider not yet configured.<br>
+          Access tokens must be defined in <code>/etc/api-umbrella/api-umbrella.yml</code> (see the <code>web.admin.auth_strategies</code> section)
+        </div>
+        <div class="row-fluid">
+          <div class="span4 offset4">
+            <button class="btn btn-primary btn-block" disabled="disabled">Login with <%= t(provider, :scope => [:omniauth_providers]) %></button>
+          </div>
+        </div>
+      <% else %>
+        <div class="row-fluid">
+          <div class="span4 offset4">
+            <%= link_to "Login with #{t(provider, :scope => [:omniauth_providers])}", omniauth_authorize_path(resource_name, provider), :class => "btn btn-primary btn-block" %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  <% end -%>
+</div>
+
+<script src="https://login.persona.org/include.js" type="text/javascript"></script>
+<script type="text/javascript">
+  function loginViaEmail() {
+    navigator.id.get(function(assertion) {
+      if(assertion) {
+        $("input[name=assertion]").val(assertion);
+        $("form").submit();
+      } else {
+        window.location = "#{failure_path}"
+      }
+    });  
+  }
+
+  $(function() {
+    $("button").click(function() {
+      loginViaEmail();
+      return false;
+    });
+  });
+</script>

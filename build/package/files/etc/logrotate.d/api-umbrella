@@ -1,0 +1,28 @@
+# Rotate all the perp stdout/stderr logs, as well as any logs that can be
+# reopend via the "api-umbrella reopen-logs" command.
+/opt/api-umbrella/var/log/*/current /opt/api-umbrella/var/log/nginx/*.log {
+  daily
+  rotate 90
+  create 644 api-umbrella api-umbrella
+  missingok
+  compress
+  delaycompress
+  notifempty
+  sharedscripts
+  postrotate
+    api-umbrella reopen-logs
+  endscript
+}
+
+# Rotate any remaining logs that can't be reopened, so we have to use the
+# "copytruncate" strategy.
+/opt/api-umbrella/var/log/elasticsearch/*.log /opt/api-umbrella/var/log/trafficserver/*.blog /opt/api-umbrella/var/log/trafficserver/*.log /opt/api-umbrella/var/log/trafficserver/*.out {
+  daily
+  rotate 90
+  create 644 api-umbrella api-umbrella
+  missingok
+  compress
+  delaycompress
+  notifempty
+  copytruncate
+}

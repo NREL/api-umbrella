@@ -17,9 +17,16 @@
 # Ignore bundler config
 /.bundle
 
-# Ignore the build directory for the website
-/build
-
 # Ignore Circle CI items, so the GitHub pages publish task can work. 
 /.ruby-version
+
+/build/local
+/build/package/.bundle
+/build/work
+/log/*
+/test/node_modules
+/test/config/.overrides.yml
+/test/log/*
+/test/tmp/*
+/ci_cache
 /vendor

@@ -1,0 +1,61 @@
+app_env: test
+user:
+group:
+http_port: 9080
+https_port: 9081
+root_dir: /tmp/api-umbrella-test
+static_site:
+  port: 13013
+heka:
+  port: 13014
+nginx:
+  access_log_options:
+  dyups:
+    port: 13005
+trafficserver:
+  port: 13009
+  autoconf_port: 13007
+  management_port: 13008
+  embedded_server_config:
+    records:
+      # In the test environment disable fuzzy revalidation since it makes
+      # things difficult to test against. For production, it seems like a
+      # decent idea to keep the feature enabled, but in the test environment,
+      # it means that 0.5% of requests might not behave as expected (since they
+      # will be re-fetched ahead of their actual TTL).
+      # See: https://docs.trafficserver.apache.org/en/latest/admin/http-proxy-caching.en.html?highlight=fuzz#fuzzy-revalidation
+      - CONFIG proxy.config.http.cache.fuzz.time INT 0
+api_server:
+  port: 13010
+web:
+  port: 13012
+  admin:
+    initial_superusers:
+      - initial.admin@example.com
+router:
+  api_backends:
+    port: 13011
+  trusted_proxies:
+    - 192.168.12.0/23
+    - 10.10.10.10
+mongodb:
+  url: "mongodb://127.0.0.1:13090,127.0.0.1:13091/api_umbrella_test"
+  embedded_server_config:
+    net:
+      port: 13001
+mora:
+  port: 13004
+elasticsearch:
+  hosts:
+    - "http://127.0.0.1:13002"
+  embedded_server_config:
+    http:
+      port: 13002
+    transport:
+      tcp:
+        port: 13003
+unbound:
+  port: 13100
+  control_port: 13101
+apiSettings:
+  require_https: optional

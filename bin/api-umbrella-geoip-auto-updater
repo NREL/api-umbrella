@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+# Kill the child "sleep" processes on exit.
+cleanup() {
+  local PIDS=$(jobs -pr)
+  [ -n "$PIDS" ] && kill $PIDS
+}
+trap "cleanup" EXIT
+
+REMOTE_MD5_URL="https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.md5"
+DOWNLOAD_URL="https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz"
+FREQUENCY=86400 # Sleep for 1 day between runs
+
+while true; do
+  CURRENT_PATH=$API_UMBRELLA_DB_DIR/geoip2/city.mmdb
+  CURRENT_MD5=$(openssl md5 $CURRENT_PATH | awk '{print $2}')
+  REMOTE_MD5=$(curl -s -S -L $REMOTE_MD5_URL)
+
+  if [ "${#REMOTE_MD5}" != "32" ]; then
+    echo "$REMOTE_MD5_URL did not contain a valid MD5 checksum. Received:"
+    echo $REMOTE_MD5
+  elif [ "$REMOTE_MD5" == "$CURRENT_MD5" ]; then
+    echo "$CURRENT_PATH is already up to date (checksum: $CURRENT_MD5)"
+  else
+    echo "Downloading new file..."
+    UNZIP_PATH=$(mktemp -t api-umbrella-geoip-auto-updater.XXXXXXXXXX)
+    DOWNLOAD_PATH="$UNZIP_PATH.gz"
+
+    curl -s -S -L -o $DOWNLOAD_PATH $DOWNLOAD_URL
+    gunzip -c $DOWNLOAD_PATH > $UNZIP_PATH
+    UNZIP_MD5=$(openssl md5 $UNZIP_PATH | awk '{print $2}')
+
+    if [ "$REMOTE_MD5" != "$UNZIP_MD5" ]; then
+      echo "The download file did not match the expected checksum."
+      echo "Download URL: $DOWNLOAD_URL"
+      echo "Expected checksum: $REMOTE_MD5"
+      echo "Actual checksum: $UNZIP_MD5"
+      ls -lh $DOWNLOAD_PATH $UNZIP_PATH
+    else
+      mv $UNZIP_PATH $CURRENT_PATH
+      echo "Installed new $CURRENT_PATH"
+
+      $API_UMBRELLA_SRC_ROOT/bin/api-umbrella reload
+      if [ $? == 0 ]; then
+        echo "Reloaded api-umbrella"
+      else
+        echo "Reloading api-umbrella failed"
+      fi
+    fi
+
+    rm -f $DOWNLOAD_PATH $UNZIP_PATH
+  fi
+
+  sleep $FREQUENCY
+done

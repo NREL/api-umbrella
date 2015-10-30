@@ -1,0 +1,50 @@
+#!/bin/bash
+set -e
+set -x
+
+# Split up the tests between the available CI testing nodes.
+#
+# Our Rails tests will run on one node. The rest of our gatekeeper and
+# integration tests will be split up among the remaining nodes.
+#
+# See: https://circleci.com/docs/parallel-manual-setup
+
+# If we have multiple test node, split the tests among all the nodes except the
+# first (the first is dedicated to the Rails tests).
+#
+# If we don't have multiple nodes, run all the tests on the single node
+if [ $CIRCLE_NODE_INDEX -gt "0" ] || [ $CIRCLE_NODE_TOTAL -lt "2" ]; then
+  MOCHA_NODE_TOTAL=$CIRCLE_NODE_TOTAL
+  MOCHA_NODE_INDEX=$CIRCLE_NODE_INDEX
+
+  if [ $CIRCLE_NODE_TOTAL -gt "1" ]; then
+    # Subtract 1 from the totals available, since the first is being used only
+    # for Rails.
+    ((MOCHA_NODE_TOTAL=MOCHA_NODE_TOTAL-1)) || true
+    ((MOCHA_NODE_INDEX=MOCHA_NODE_INDEX-1)) || true
+  fi
+
+  # Split the test files into even groups depending on how many nodes are
+  # available.
+  INDEX=0
+  NODE_FILES=()
+  for TEST_FILE in $(cd test && find ./server ./integration -name "*.js" | sort); do
+    if [ $(($INDEX % $MOCHA_NODE_TOTAL)) -eq $MOCHA_NODE_INDEX ]; then
+      NODE_FILES+=" $TEST_FILE"
+    fi
+    ((INDEX=INDEX+1)) || true
+  done
+
+  # Run the integration/gatekeeper tests.
+  make test MOCHA_FILES="${NODE_FILES[@]}"
+fi
+
+# Run the Rails tests on the first node.
+if [ $CIRCLE_NODE_INDEX -eq "0" ]; then
+  # Start the version of elasticsearch bundled with API Umbrella.
+  nohup bash -c "$(pwd)/build/work/stage/opt/api-umbrella/embedded/bin/elasticsearch &"
+
+  # Run the web-app tests
+  cd src/api-umbrella/web-app
+  PATH="../../../build/work/stage/opt/api-umbrella/embedded/bin:$PATH" bundle exec rake
+fi

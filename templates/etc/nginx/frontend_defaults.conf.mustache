@@ -1,0 +1,67 @@
+{{#router.global_rate_limits.ip_connections}}
+# Limit the number of simultaneous connections per IP address to {{router.global_rate_limits.ip_connections}}.
+limit_conn api_umbrella_conn_addr_zone {{router.global_rate_limits.ip_connections}};
+{{/router.global_rate_limits.ip_connections}}
+
+{{#router.global_rate_limits.ip_rate}}
+# After the {{router.global_rate_limits.ip_rate}} rate is reached, allow a sizable burst before
+# completely terminating requests at this router level. This is so we can
+# generally rely on API Umbrella Gatekeeper for rate limiting, but still
+# throttle traffic to the Gatekeeper.
+limit_req zone=api_umbrella_req_addr_zone{{#router.global_rate_limits.ip_burst}} burst={{router.global_rate_limits.ip_burst}}{{/router.global_rate_limits.ip_burst}} nodelay;
+{{/router.global_rate_limits.ip_rate}}
+
+# Conditional proxy headers. Don't set these x-forwarded headers if they've
+# already been set (by the SSL terminator).
+set $real_scheme $http_x_forwarded_proto;
+if ($real_scheme = "") {
+  set $real_scheme $scheme;
+}
+
+set $real_port $http_x_forwarded_port;
+if ($real_port = "") {
+  set $real_port $server_port;
+}
+
+# Setup a variable for appending to the host header when the port is
+# non-default (non 80 or 443) and needs to be appended to host headers.
+set $non_default_port_suffix "";
+set $scheme_and_port "$real_scheme:$real_port";
+if ($scheme_and_port !~ "^(http:80|https:443)$") {
+  set $non_default_port_suffix ":$real_port";
+}
+
+# Only retry backends in the event of connection errors (and not also
+# connection timeouts as is the default). This prevents slow backend timeouts
+# triggering multiple requests (since there are usually multiple gatekeeper
+# processes setup).
+proxy_next_upstream error;
+
+# Don't buffer proxied requests to allow for streaming APIs.
+proxy_buffering off;
+
+include ./frontend_proxy_header_defaults.conf;
+
+location @banned_pit {
+  echo_sleep {{ban.response.delay}};
+  echo "{{ban.response.message}}";
+  echo_flush;
+}
+
+location = /api-umbrella-banned {
+  internal;
+  error_page 403 ={{ban.response.status_code}} @banned_pit;
+  return 403;
+}
+
+if ($banned_ip) {
+  rewrite .* /api-umbrella-banned last;
+}
+
+if ($banned_user_agent) {
+  rewrite .* /api-umbrella-banned last;
+}
+
+# Clear any headers used inside API Umbrella that should not be possible to set
+# by an external client.
+more_clear_input_headers X-Api-Umbrella-Allow-Authorization-Caching;

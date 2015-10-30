@@ -1,0 +1,4 @@
+--color
+--backtrace
+--format Fuubar
+--format RspecJunitFormatter --out spec/reports/web-app.xml

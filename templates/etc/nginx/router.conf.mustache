@@ -1,0 +1,252 @@
+worker_processes {{nginx.workers}};
+
+daemon off;
+
+{{#user}}
+user {{user}} {{group}};
+{{/user}}
+
+pid {{run_dir}}/nginx.pid;
+
+events {
+  worker_connections {{nginx.worker_connections}};
+}
+
+error_log stderr;
+
+env API_UMBRELLA_RUNTIME_CONFIG;
+
+pcre_jit on;
+
+http {
+  access_log {{log_dir}}/nginx/access.log combined {{nginx.access_log_options}};
+
+  client_body_temp_path {{tmp_dir}}/nginx-client_body_temp;
+  proxy_temp_path {{tmp_dir}}/nginx-proxy_temp;
+  fastcgi_temp_path {{tmp_dir}}/nginx-fastcgi_temp;
+  uwsgi_temp_path {{tmp_dir}}/nginx-uwsgi_temp;
+  scgi_temp_path {{tmp_dir}}/nginx-scgi_temp;
+  server_tokens off;
+
+  lua_package_path '{{_package_path}}';
+  lua_package_cpath '{{_package_cpath}}';
+  #lua_code_cache off;
+
+  lua_shared_dict dns_cache 1m;
+  lua_shared_dict stats 10m;
+  lua_shared_dict api_users 10m;
+  lua_shared_dict config 1m;
+  lua_shared_dict resolved_hosts 1m;
+  lua_shared_dict active_config 5m;
+  lua_shared_dict my_locks 100k;
+  lua_shared_dict locks 5M;
+  lua_shared_dict logs 10m;
+  lua_shared_dict geocode_city_cache 100k;
+  lua_shared_dict upstream_checksums 200k;
+
+  {{#dns_resolver._nameservers_nginx}}
+    resolver {{dns_resolver._nameservers_nginx}};
+    resolver_timeout 12s;
+  {{/dns_resolver._nameservers_nginx}}
+
+  geoip2 {{db_dir}}/geoip2/city.mmdb {
+    $geoip_country country iso_code;
+    $geoip_region subdivisions 0 iso_code;
+    $geoip_city city names en;
+    $geoip_latitude location latitude;
+    $geoip_longitude location longitude;
+  }
+
+  geo $banned_ip {
+    default 0;
+    {{#ban.ips}}
+    {{.}} 1;
+    {{/ban.ips}}
+  }
+
+  map $http_user_agent $banned_user_agent {
+    default 0;
+    {{#ban.user_agents}}
+    "{{.}}" 1;
+    {{/ban.user_agents}}
+  }
+
+  init_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/init.lua';
+  init_worker_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/init_worker.lua';
+
+  #proxy_cache_path /tmp/nginx-cache levels=1:2 keys_zone=backcache:8m max_size=50m;
+  #proxy_cache backcache;
+  #proxy_cache_lock on;
+  #proxy_cache_key "$scheme$request_method$host$request_uri$is_args$args";
+  #add_header X-Cache $upstream_cache_status;
+  #proxy_cache_valid 5m;
+
+  lua_check_client_abort on;
+  if_modified_since off;
+
+  include ./mime.conf;
+  include ./realip.conf;
+
+  {{#router.global_rate_limits.ip_connections}}
+  # Limit the number of simultaneous connections per IP address.
+  limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:{{router.global_rate_limits.ip_connections_size}};
+  limit_conn_status {{apiSettings.error_data.over_rate_limit.status_code}};
+  {{/router.global_rate_limits.ip_connections}}
+
+  {{#router.global_rate_limits.ip_rate}}
+  # Rate limits per IP address.
+  #
+  # In general, we want to rely on the more granular and configurable rate limits
+  # provided by the API Umbrella Gatekeeper, so this limit should be higher than
+  # the Gatekeeper's limits. This just provides an extra line of simple defense
+  # against misbehaving clients from overloading the Gatekeeper.
+  limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:{{router.global_rate_limits.ip_rate_size}} rate={{router.global_rate_limits.ip_rate}};
+  limit_req_status {{apiSettings.error_data.over_rate_limit.status_code}};
+  {{/router.global_rate_limits.ip_rate}}
+
+  # Allow any sized uploads to backends.
+  client_max_body_size 0;
+
+  keepalive_timeout 30s;
+
+  gzip on;
+  gzip_comp_level 2;
+  gzip_disable msie6;
+  gzip_min_length 1000;
+  gzip_proxied any;
+  gzip_types application/atom+xml application/javascript application/json application/rss+xml application/x-javascript application/xml text/css text/csv text/javascript text/plain text/xml;
+  gzip_vary on;
+
+  upstream api_umbrella_web_backend {
+    server {{web.host}}:{{web.port}};
+    keepalive 10;
+  }
+
+  upstream puma {
+    server unix://{{run_dir}}/web-puma.sock;
+  }
+
+  upstream api_umbrella_trafficserver_backend {
+    server {{trafficserver.host}}:{{trafficserver.port}};
+    keepalive 10;
+  }
+
+  dyups_trylock on;
+  dyups_read_msg_timeout 300ms;
+  server {
+    listen {{nginx.dyups.host}}:{{nginx.dyups.port}};
+    location / {
+      dyups_interface;
+    }
+  }
+
+  server {
+    listen {{api_server.host}}:{{api_server.port}};
+    location /api-umbrella/v1/health {
+      content_by_lua_file '{{_src_root_dir}}/src/api-umbrella/http-api/health.lua';
+    }
+
+    location /api-umbrella/v1/state {
+      content_by_lua_file '{{_src_root_dir}}/src/api-umbrella/http-api/state.lua';
+    }
+  }
+
+  {{#hosts}}
+  server {
+    listen {{http_port}}{{#default}} default_server{{/default}};
+    listen [::]:{{http_port}}{{#default}} default_server{{/default}};
+    server_name {{_nginx_server_name}};
+
+    listen {{https_port}} ssl{{#default}} default_server{{/default}};
+    listen [::]:{{https_port}} ssl{{#default}} default_server{{/default}};
+    {{#ssl_cert}}
+    ssl_certificate {{ssl_cert}};
+    ssl_certificate_key {{ssl_cert_key}};
+    {{/ssl_cert}}
+    {{^ssl_cert}}
+    ssl_certificate {{etc_dir}}/ssl/self_signed.crt;
+    ssl_certificate_key {{etc_dir}}/ssl/self_signed.key;
+    {{/ssl_cert}}
+
+    include ./frontend_defaults.conf;
+
+    {{#rewrites}}
+    rewrite {{.}};
+    {{/rewrites}}
+
+    location / {
+      include ./frontend_proxy_header_defaults.conf;
+      include ./gatekeeper.conf;
+    }
+  }
+  {{/hosts}}
+
+  {{^development_env}}
+  server {
+    listen {{static_site.host}}:{{static_site.port}};
+    server_name _;
+    port_in_redirect off;
+
+    root {{static_site.build_dir}};
+  }
+  {{/development_env}}
+
+  map $http_accept_encoding $normalized_accept_encoding {
+    "~(^|,) *gzip *; *q=0[\.0]* *($|,)" "";
+    "~(^|,) *gzip *($|,|;)" gzip;
+    default "";
+  }
+
+  server {
+    listen {{router.api_backends.host}}:{{router.api_backends.port}};
+    server_name _;
+
+    set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
+    log_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/log_api_backend_proxy.lua';
+
+    # Enable keep alive connections to the backend servers.
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+
+    proxy_set_header Host $http_x_api_umbrella_backend_host;
+    proxy_set_header X-Api-Umbrella-Backend-Scheme "";
+    proxy_set_header X-Api-Umbrella-Backend-Host "";
+    proxy_set_header X-Api-Umbrella-Backend-Id "";
+
+    # Only retry backends in the event of connection errors (and not also
+    # connection timeouts as is the default). This prevents slow backend timeouts
+    # triggering multiple requests if multiple backends are defined.
+    proxy_next_upstream error;
+
+    # Don't buffer proxied requests to allow for streaming APIs.
+    proxy_buffering off;
+
+    # If the backend only returns gzipped responses, decompress them as
+    # appropriate to meet the Accept headers of the current client.
+    gunzip on;
+
+    location / {
+      access_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/api_backends_access.lua';
+      proxy_pass $http_x_api_umbrella_backend_scheme://api_umbrella_${http_x_api_umbrella_backend_id}_backend;
+    }
+  }
+
+  server {
+    listen {{web.host}}:{{web.port}};
+    server_name _;
+
+    root {{web.dir}}/public;
+
+    # Serve non-static resources with Puma.
+    try_files $uri/index.html $uri.html $uri @app;
+    location @app {
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_pass http://puma;
+    }
+  }
+
+  {{#_test_env?}}
+    include ./test_backends.conf;
+  {{/_test_env?}}
+}

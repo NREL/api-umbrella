@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Redirect stderr to stdout
+exec 2>&1
+
+if test ${1} = "start"; then
+  echo "starting ${2}..."
+
+  PATH="{{_test_env_install_dir}}/sbin:{{_test_env_install_dir}}/bin:$PATH"
+  RUN_OPTS=""
+  {{#user}}
+  RUN_OPTS="$RUN_OPTS -u {{user}}"
+  {{/user}}
+
+  exec runtool $RUN_OPTS unbound -c {{etc_dir}}/test-env/unbound/unbound.conf
+fi
+
+exit 0

@@ -1,0 +1,11 @@
+csv << [
+  "Path",
+  "Hits",
+]
+
+@result.drilldown.each do |bucket|
+  csv << [
+    bucket[:path],
+    bucket[:hits],
+  ]
+end
