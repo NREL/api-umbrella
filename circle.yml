@@ -40,9 +40,3 @@ test:
         parallel: true
     - if [ -e test/tmp/xunit$CIRCLE_NODE_INDEX.xml ]; then cp test/tmp/xunit$CIRCLE_NODE_INDEX.xml $CIRCLE_TEST_REPORTS/mocha/; fi:
         parallel: true
-experimental:
-  notify:
-    branches:
-      ignore:
-        # Ignore the lua branches for now for notification purposes.
-        - /lua.*/
