@@ -176,9 +176,6 @@ local function write_templates()
 end
 
 local function write_static_site_key()
-  local static_site_api_key_path = path.join(config["run_dir"], "static-site-api-key")
-  file.write(static_site_api_key_path, config["static_site"]["api_key"])
-
   local file_paths = {
     path.join(config["static_site"]["build_dir"], "contact/index.html"),
     path.join(config["static_site"]["build_dir"], "signup/index.html"),

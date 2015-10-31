@@ -20,6 +20,8 @@ local config
 local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
 local embedded_root_dir = os.getenv("API_UMBRELLA_EMBEDDED_ROOT")
 
+-- Fetch the DNS nameservers in use on this server out of the /etc/resolv.conf
+-- file.
 local function read_resolv_conf_nameservers()
   local nameservers = {}
 
@@ -44,6 +46,8 @@ local function read_resolv_conf_nameservers()
   return nameservers
 end
 
+-- Fetch any local /etc/hosts aliases in place on this server (for use in
+-- resolving things like "localhost" and other potential aliases).
 local function read_etc_hosts()
   local hosts = {}
 
@@ -75,6 +79,13 @@ local function read_etc_hosts()
   return hosts
 end
 
+-- Read the runtime config file. This is a fully combined and merged config
+-- file that reflects the active configuration that is available to a running
+-- API Umbrella process.
+--
+-- This combines the default config with server-specific overrides
+-- (/etc/api-umbrella/api-umbrella.yml), along with internally computed config
+-- variables.
 local function read_runtime_config()
   local runtime_config_path = os.getenv("API_UMBRELLA_RUNTIME_CONFIG")
   if runtime_config_path then
@@ -91,11 +102,51 @@ local function read_runtime_config()
   end
 end
 
+-- Read the default, global config for API Umbrella defined in the internal
+-- config/default.yml file.
 local function read_default_config()
   local content = file.read(path.join(src_root_dir, "config/default.yml"), true)
   config = lyaml.load(content)
 end
 
+-- Handle setup of random secret tokens that should be be unique for API
+-- Umbrella installations, but should be persisted across restarts.
+--
+-- In a multi-server setup, these secret tokens will likely need to be
+-- explicitly given in the server's /etc/api-umbrella/api-umbrella.yml file so
+-- the secrets match across servers, but this provides defaults for a
+-- single-server installation.
+local function set_cached_random_tokens()
+  -- Generate random tokens for this server.
+  local cached = {
+    web = {
+      rails_secret_token = random_token(128),
+      devise_secret_key = random_token(128),
+    },
+    static_site = {
+      api_key = random_token(40),
+    },
+  }
+
+  -- See if there were any previous values for these random tokens on this
+  -- server. If so, use any of those values that might be present instead.
+  local file_path = path.join(os.getenv("API_UMBRELLA_ROOT") or "/opt/api-umbrella", "var/run/cached_random_config_values.yml")
+  local content = file.read(file_path, true)
+  if content then
+    deep_merge_overwrite_arrays(cached, lyaml.load(content))
+  end
+
+  -- Persist whatever the state of the tokens is now.
+  file.write(file_path, lyaml.dump({cached}))
+
+  -- Merge these random tokens onto the config. Note that this happens before
+  -- we read the system config (/etc/api-umbrella/api-umbrella.yml), so if
+  -- these values are defined there, these random values will be overwritten.
+  deep_merge_overwrite_arrays(config, cached)
+end
+
+-- Read the /etc/api-umbrella/api-umbrella.yml config file that provides
+-- server-specific overrides for API Umbrella configuration.
 local function read_system_config()
   local content = file.read(os.getenv("API_UMBRELLA_CONFIG") or "/etc/api-umbrella/api-umbrella.yml", true)
   if content then
@@ -106,6 +157,14 @@ local function read_system_config()
   nillify_yaml_nulls(config)
 end
 
+-- After all the primary config is read from files and combined, perform
+-- additional setup for configuration variables that are computed based on
+-- other configuration variables. Since these values are computed, they
+-- typically aren't subject to defining or overriding in any of the config
+-- files.
+--
+-- For configuration variables that are computed and the user cannot override
+-- in the config files, we denote those with an underscore prefix in the name.
 local function set_computed_config()
   if not config["root_dir"] then
     config["root_dir"] = os.getenv("API_UMBRELLA_ROOT") or "/opt/api-umbrella"
@@ -161,16 +220,6 @@ local function set_computed_config()
     _nginx_server_name = "_",
     default = (not default_host_exists),
   })
-
-  if not config["static_site"]["api_key"] then
-    local static_site_api_key_path = path.join(config["run_dir"], "static-site-api-key")
-    local api_key = file.read(static_site_api_key_path)
-    if not api_key then
-      api_key = random_token(40)
-    end
-
-    config["static_site"]["api_key"] = api_key
-  end
 
   -- Determine the nameservers for DNS resolution. Prefer explicitly configured
   -- nameservers, but fallback to nameservers defined in resolv.conf, and then
@@ -244,6 +293,11 @@ local function set_computed_config()
   end
 end
 
+-- Write out the combined and merged config to the runtime file.
+--
+-- This runtime config reflects the full state of the available config and can
+-- be used by other API Umbrella processes for reading the config (without
+-- having to actually merge and combine again).
 local function write_runtime_config()
   local runtime_config_path = path.join(config["run_dir"], "runtime_config.yml")
   dir.makepath(path.dirname(runtime_config_path))
@@ -251,12 +305,18 @@ local function write_runtime_config()
 end
 
 return function(options)
+  -- If fetching config for the first time in this process, try to load the
+  -- runtime file for the existing combined/merged config.
   if not config then
     read_runtime_config()
   end
 
+  -- If no runtime config is present, or if we're forcing a runtime config
+  -- write (such as during a reload), then do all parsing & merging before
+  -- writing the runtime config.
   if not config or (options and options["write"]) then
     read_default_config()
+    set_cached_random_tokens()
     read_system_config()
     set_computed_config()
 

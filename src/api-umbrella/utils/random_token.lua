@@ -8,13 +8,13 @@ local alpha_numeric  = {
 
 local alpha_numeric_size = #alpha_numeric
 
-return function(length)
-  if ngx then
-    math.randomseed(ngx.time())
-  else
-    math.randomseed(os.time())
-  end
+if ngx then
+  math.randomseed(ngx.time())
+else
+  math.randomseed(os.time())
+end
 
+return function(length)
   local token = {}
   for i = 1, length do
     token[i] = alpha_numeric[math.random(alpha_numeric_size)]
