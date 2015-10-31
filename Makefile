@@ -730,6 +730,7 @@ $(DEPS_DIR)/$(OPENRESTY)/.built: $(DEPS_DIR)/$(OPENRESTY) $(DEPS_DIR)/$(NGX_DYUP
 		--error-log-path=stderr \
 		--with-ipv6 \
 		--with-pcre=$(DEPS_DIR)/$(PCRE) \
+		--with-pcre-opt="-g" \
 		--with-pcre-conf-opt="--enable-unicode-properties" \
 		--with-pcre-jit \
 		--with-http_gunzip_module \
