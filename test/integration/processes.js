@@ -419,13 +419,7 @@ describe('processes', function() {
           async.whilst(function() { return runTests; }, function(whilstCallback) {
             setTimeout(function() {
               if(runTests) {
-                execFile('kill', ['-HUP', parentPid], function(error, stdout, stderr) {
-                  if(error) {
-                    return whilstCallback('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
-                  }
-
-                  whilstCallback();
-                });
+                shared.runCommand('reload', whilstCallback);
               }
             }, _.random(5, 500));
           }, function(error) {
