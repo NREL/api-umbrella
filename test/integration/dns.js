@@ -12,6 +12,12 @@ var _ = require('lodash'),
     processEnv = require('../support/process_env'),
     request = require('request');
 
+// When checking to make sure we adhere to TTLs on the domain names, add a
+// buffer to our timing calculations. This is to account for some fuzziness in
+// our timings between what's happening in nginx and our test requests being
+// made.
+var TTL_BUFFER = 1.3;
+
 describe('dns backend resolving', function() {
   function setDnsRecords(records, callback) {
     async.series([
@@ -387,8 +393,8 @@ describe('dns backend resolving', function() {
           function(next) {
             var endTtlCounterTime = new Date();
             var duration = endTtlCounterTime - startTtlCounterTime;
-            duration.should.be.gte((ttl - 1) * 1000);
-            duration.should.be.lte((ttl + 1) * 1000);
+            duration.should.be.gte((ttl - TTL_BUFFER) * 1000);
+            duration.should.be.lte((ttl + TTL_BUFFER) * 1000);
             next();
           },
         ], done);
@@ -416,8 +422,8 @@ describe('dns backend resolving', function() {
           function(next) {
             var endTtlCounterTime = new Date();
             var duration = endTtlCounterTime - startTtlCounterTime;
-            duration.should.be.gte((ttl - 1) * 1000);
-            duration.should.be.lte((ttl + 1) * 1000);
+            duration.should.be.gte((ttl - TTL_BUFFER) * 1000);
+            duration.should.be.lte((ttl + TTL_BUFFER) * 1000);
             next();
           },
         ], done);
@@ -700,8 +706,8 @@ describe('dns backend resolving', function() {
           function(next) {
             var endTtlCounterTime = new Date();
             var duration = endTtlCounterTime - startTtlCounterTime;
-            duration.should.be.gte((ttl - 1 + maxStale) * 1000);
-            duration.should.be.lte((ttl + 1 + maxStale) * 1000);
+            duration.should.be.gte((ttl - TTL_BUFFER + maxStale) * 1000);
+            duration.should.be.lte((ttl + TTL_BUFFER + maxStale) * 1000);
             next();
           },
         ], done);
@@ -768,8 +774,8 @@ describe('dns backend resolving', function() {
           function(next) {
             var endTtlCounterTime = new Date();
             var duration = endTtlCounterTime - this.startTtlCounterTime;
-            duration.should.be.gte((negativeTtl - 1) * 1000);
-            duration.should.be.lte((negativeTtl + 1) * 1000);
+            duration.should.be.gte((negativeTtl - TTL_BUFFER) * 1000);
+            duration.should.be.lte((negativeTtl + TTL_BUFFER) * 1000);
             next();
           }.bind(this),
         ], done);
