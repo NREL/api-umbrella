@@ -126,11 +126,13 @@ function _M.cache_computed_settings(settings)
   lowercase_settings_header_keys(settings, "default_response_headers")
   lowercase_settings_header_keys(settings, "override_response_headers")
 
-  if settings["append_query_string"] then
+  if not is_empty(settings["append_query_string"]) then
     settings["_append_query_arg_names"] = table_keys(ngx.decode_args(settings["append_query_string"]))
+  elseif settings["append_query_string"] then
+    settings["append_query_string"] = nil
   end
 
-  if settings["http_basic_auth"] then
+  if not is_empty(settings["http_basic_auth"]) then
     settings["_http_basic_auth_header"] = "Basic " .. ngx.encode_base64(settings["http_basic_auth"])
   end
   settings["http_basic_auth"] = nil

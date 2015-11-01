@@ -587,6 +587,19 @@ describe('request rewriting', function() {
           backend_host: 'example.com',
           url_matches: [
             {
+              frontend_prefix: '/info/empty-append/',
+              backend_prefix: '/info/empty-append/',
+            }
+          ],
+          settings: {
+            append_query_string: '',
+          },
+        },
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
               frontend_prefix: '/',
               backend_prefix: '/',
             }
@@ -653,6 +666,16 @@ describe('request rewriting', function() {
             'add_param1': 'test1',
             'add_param2': 'test2',
           });
+
+          done();
+        });
+      });
+
+      it('does not pass along extra query strings when the value is an empty string', function(done) {
+        request.get('http://localhost:9080/info/empty-append/?foo=bar', this.options, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          data.url.path.should.eql('/info/empty-append/?foo=bar');
 
           done();
         });
@@ -887,6 +910,19 @@ describe('request rewriting', function() {
             },
           ],
         },
+        {
+          frontend_host: 'localhost',
+          backend_host: 'example.com',
+          url_matches: [
+            {
+              frontend_prefix: '/info/empty-auth/',
+              backend_prefix: '/info/empty-auth/',
+            }
+          ],
+          settings: {
+            http_basic_auth: '',
+          },
+        },
       ],
     });
 
@@ -911,6 +947,16 @@ describe('request rewriting', function() {
         request.get('http://localhost:9080/auth/?api_key=' + this.apiKey, options, function(error, response, body) {
           response.statusCode.should.eql(200);
           body.should.eql('somebody');
+
+          done();
+        });
+      });
+
+      it('does not pass along http auth when the value is an empty string', function(done) {
+        request.get('http://localhost:9080/info/empty-auth/?api_key=' + this.apiKey, function(error, response, body) {
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          should.not.exist(data.headers['authorization']);
 
           done();
         });
