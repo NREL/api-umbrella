@@ -7,7 +7,7 @@ fi
 # Determine the default root of the API Umbrella source code, based on the
 # current location of this binary file.
 if [ -z "$API_UMBRELLA_SRC_ROOT" ]; then
-  export API_UMBRELLA_SRC_ROOT=`dirname $(dirname $(readlink -f $0))`
+  export API_UMBRELLA_SRC_ROOT=$(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd))
 fi
 
 # Determine the default root of the API Umbrella installation (where all of our
