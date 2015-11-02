@@ -74,21 +74,6 @@ function _M.pick_where_present(dict, keys)
   return selected
 end
 
-local function lowercase_settings_header_keys(settings, headers_key)
-  local computed_headers_key = "_" .. headers_key
-  if not is_empty(settings[headers_key]) then
-    settings[computed_headers_key] = {}
-    for _, header in ipairs(settings[headers_key]) do
-      if header["key"] then
-        header["key"] = string.lower(header["key"])
-      end
-
-      table.insert(settings[computed_headers_key], header)
-    end
-  end
-  settings[headers_key] = nil
-end
-
 function _M.cache_computed_settings(settings)
   if not settings then return end
 
@@ -122,9 +107,15 @@ function _M.cache_computed_settings(settings)
   end
   settings["headers"] = nil
 
-  -- Lowercase header keys to match ngx.resp.getHeaders() output.
-  lowercase_settings_header_keys(settings, "default_response_headers")
-  lowercase_settings_header_keys(settings, "override_response_headers")
+  if not is_empty(settings["default_response_headers"]) then
+    settings["_default_response_headers"] = settings["default_response_headers"]
+  end
+  settings["default_response_headers"] = nil
+
+  if not is_empty(settings["override_response_headers"]) then
+    settings["_override_response_headers"] = settings["override_response_headers"]
+  end
+  settings["override_response_headers"] = nil
 
   if not is_empty(settings["append_query_string"]) then
     settings["_append_query_arg_names"] = table_keys(ngx.decode_args(settings["append_query_string"]))
