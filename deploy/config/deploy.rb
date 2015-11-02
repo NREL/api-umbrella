@@ -59,6 +59,21 @@ set :default_env, fetch(:default_env, {}).merge({
 # set :keep_releases, 5
 
 namespace :deploy do
+  task :bundle do
+    on roles(:app) do
+      within "#{release_path}/src/api-umbrella/web-app" do
+        execute :bundle, :install,
+          "--gemfile=#{release_path}/src/api-umbrella/web-app/Gemfile",
+          "--path=#{shared_path}/vendor/bundle",
+          '--without="development test"',
+          "--deployment",
+          "--clean"
+      end
+    end
+  end
+  before :updated, :bundle
+  before :reverted, :bundle
+
   # The ember-rails gem's handling of temp files isn't ideal when multiple users
   # might touch the files. So for now, just make these temp files globally
   # writable. See:
