@@ -231,6 +231,17 @@ describe('distributed rate limit sync', function() {
     });
   }
 
+  function expectDbRateLimitRecord(options, callback) {
+    RateLimit.collection.findOne({ _id: new RegExp(':' + options.apiKey + ':') }, function(error, doc) {
+      should.not.exist(error);
+      doc.ts.should.be.an('object');
+      doc.ts._bsontype.should.eql('Timestamp');
+      doc.count.should.be.a('number');
+      doc.expire_at.should.be.a('date');
+      callback();
+    });
+  }
+
   it('sets new rate limits to the distributed value', function(done) {
     var options = {
       apiKey: this.apiKey,
@@ -304,6 +315,33 @@ describe('distributed rate limit sync', function() {
 
     makeRequests(27, options, function() {
       expectDistributedCountAfterSync(27, options, done);
+    });
+  });
+
+  it('sets the expected rate limit record after making requests', function(done) {
+    var options = {
+      apiKey: this.apiKey,
+      duration: 50 * 60 * 1000, // 50 minutes
+      limit: 1001,
+    };
+
+    makeRequests(27, options, function() {
+      expectDistributedCountAfterSync(27, options, function(error) {
+        should.not.exist(error);
+        expectDbRateLimitRecord(options, done);
+      });
+    });
+  });
+
+  it('sets the expected rate limit record when preseeding the database during tests', function(done) {
+    var options = {
+      apiKey: this.apiKey,
+      duration: 50 * 60 * 1000, // 50 minutes
+      limit: 1001,
+    };
+
+    setDistributedCount(143, options, function() {
+      expectDbRateLimitRecord(options, done);
     });
   });
 

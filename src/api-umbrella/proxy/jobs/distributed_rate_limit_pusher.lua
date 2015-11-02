@@ -62,7 +62,9 @@ local function do_check()
         count = count,
       },
       ["$setOnInsert"] = {
-        expire_at = ngx.now() * 1000 + 60000,
+        expire_at = {
+          ["$date"] = ngx.now() * 1000 + 60000,
+        },
       },
     })
     if err then
