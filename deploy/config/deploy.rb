@@ -1,15 +1,14 @@
-require "dotenv"
-Dotenv.load
-
 # config valid only for current version of Capistrano
-lock "3.3.5"
+lock "3.4.0"
 
-set :application, "web"
-set :repo_url, "https://github.com/NREL/api-umbrella-web.git"
-set :branch, "master"
+set :application, "api-umbrella"
+set :repo_url, "https://github.com/NREL/api-umbrella.git"
 
-# Default deploy_to directory is /var/www/my_app
-set :deploy_to, "/opt/api-umbrella/embedded/apps/web"
+# Default branch is :master
+# ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
+
+# Default deploy_to directory is /var/www/my_app_name
+set :deploy_to, "/opt/api-umbrella/embedded/apps/core"
 
 # Default value for :scm is :git
 # set :scm, :git
@@ -24,13 +23,18 @@ set :log_level, :info
 # set :pty, true
 
 # Default value for :linked_files is []
-# set :linked_files, %w{config/database.yml}
+# set :linked_files, fetch(:linked_files, []).push("config/database.yml", "config/secrets.yml")
 
 # Default value for linked_dirs is []
-set :linked_dirs, %w(bin log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system)
+set :linked_dirs, fetch(:linked_dirs, []).push(
+  "build/work",
+  "src/api-umbrella/web-app/public/web-assets",
+  "src/api-umbrella/web-app/tmp",
+  "vendor"
+)
 
 # Default value for default_env is {}
-fetch(:default_env).merge!({
+set :default_env, fetch(:default_env, {}).merge(
   "PATH" => "/opt/api-umbrella/bin:/opt/api-umbrella/embedded/bin:$PATH",
 
   # Reset Ruby related environment variables. This is in case the system being
@@ -49,15 +53,20 @@ fetch(:default_env).merge!({
 })
 
 # Default value for keep_releases is 5
-set :keep_releases, 15
-
-set :ssh_options, {
-  :forward_agent => true,
-}
-
-set :assets_prefix, "web-assets"
+# set :keep_releases, 5
 
 namespace :deploy do
+  desc "Reload application"
+  task :install_lua_dependencies do
+    on roles(:app) do
+      within release_path do
+        execute "make lua_vendor_dependencies VENDOR_DIR=vendor"
+      end
+    end
+  end
+  before :updated, :install_lua_dependencies
+  before :reverted, :install_lua_dependencies
+
   # The ember-rails gem's handling of temp files isn't ideal when multiple users
   # might touch the files. So for now, just make these temp files globally
   # writable. See:
@@ -65,18 +74,16 @@ namespace :deploy do
   # https://github.com/emberjs/ember-rails/pull/357
   task :ember_permissions do
     on roles(:app) do
-      execute "mkdir -p #{release_path}/tmp/ember-rails && chmod -R 777 #{release_path}/tmp/ember-rails"
+      execute "mkdir -p #{release_path}/src/api-umbrella/web-app/tmp/ember-rails && chmod -R 777 #{release_path}/src/api-umbrella/web-app/tmp/ember-rails"
     end
   end
-
   after :updated, :ember_permissions
 
-  desc "Restart application"
-  task :restart do
+  desc "Reload application"
+  task :reload do
     on roles(:app), :in => :sequence, :wait => 5 do
-      execute :sudo, "api-umbrella reload --web"
+      execute :sudo, "api-umbrella reload"
     end
   end
-
-  after :publishing, :restart
+  after :publishing, :reload
 end

@@ -291,6 +291,7 @@ LUACHECK_VERSION:=0.11.1-1
 	dependencies \
 	install \
 	local_work_dir \
+	lua_vendor_dependencies \
 	stage \
 	stage_dependencies \
 	test_dependencies \
@@ -400,9 +401,9 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core: $(STAGE_MARKERS_DIR)/api-umbrella-core-d
 	rsync -a --delete-after $(VENDOR_DIR)/ $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/
 	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP) && ln -snf ../../shared/vendor ./vendor
 	# Copy the precompiled assets into place.
-	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/public/web-assets
+	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/src/api-umbrella/web-app/public/web-assets
 	rsync -a --delete-after $(WORK_DIR)/tmp/web-assets/ $(STAGE_PREFIX)/embedded/apps/core/shared/public/web-assets/
-	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app/public && ln -snf ../../../../../../shared/public/web-assets ./web-assets
+	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app/public && ln -snf ../../../../../../shared/src/api-umbrella/web-app/public/web-assets ./web-assets
 	# Re-run the bundle install inside the release directory, but disabling
 	# non-production gem groups. Combined with the clean flag, this deletes all
 	# the test/development/asset gems we don't need for a release.
@@ -416,8 +417,8 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core: $(STAGE_MARKERS_DIR)/api-umbrella-core-d
 	cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/bundle && rm -rf ruby/*/cache ruby/*/gems/*/test* ruby/*/gems/*/spec ruby/*/bundler/gems/*/test* ruby/*/bundler/gems/*/spec
 	#cd $(STAGE_PREFIX)/embedded/apps/core/shared/vendor/bundle && find ruby/*/gems -name "*.so" -delete
 	# Setup a shared symlink for web-app temp files.
-	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/web-tmp
-	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app && ln -snf ../../../../../shared/web-tmp ./tmp
+	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
+	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app && ln -snf ../../../../../src/api-umbrella/web-app/tmp ./tmp
 	touch $@
 
 # api-umbrella-static-site
@@ -971,9 +972,7 @@ $(WORK_DIR):
 $(BUILD_DIR)/local: | $(WORK_DIR)
 	ln -snf $(WORK_DIR) $(BUILD_DIR)/local
 
-$(STAGE_MARKERS_DIR)/api-umbrella-core-dependencies: \
-	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets$(VERSION_SEP)$(WEB_ASSETS_CHECKSUM) \
-	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled \
+$(STAGE_MARKERS_DIR)/api-umbrella-core-lua-dependencies: \
 	$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION) \
 	$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION) \
 	$(LUAROCKS_DIR)/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
@@ -987,7 +986,15 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core-dependencies: \
 	$(LUA_SHARE_DIR)/resty/http.lua \
 	$(LUA_SHARE_DIR)/resty/logger/socket.lua \
 	$(LUA_SHARE_DIR)/shcache.lua \
-	$(LUA_SHARE_DIR)/resty/uuid.lua \
+	$(LUA_SHARE_DIR)/resty/uuid.lua | $(VENDOR_DIR)
+	touch $@
+
+lua_vendor_dependencies: $(STAGE_MARKERS_DIR)/api-umbrella-core-lua-dependencies
+
+$(STAGE_MARKERS_DIR)/api-umbrella-core-dependencies: \
+	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-assets$(VERSION_SEP)$(WEB_ASSETS_CHECKSUM) \
+	$(STAGE_MARKERS_DIR)/api-umbrella-core-web-bundled \
+	$(STAGE_MARKERS_DIR)/api-umbrella-core-lua-dependencies \
 	$(ROOT_DIR)/vendor | $(STAGE_MARKERS_DIR)
 	touch $@
 
@@ -1021,7 +1028,7 @@ install: stage
 	cd $(DESTDIR)/var/log && ln -snf ../..$(PREFIX)/var/log ./api-umbrella
 	chmod 440 $(DESTDIR)/etc/sudoers.d/api-umbrella
 	chmod 1777 $(DESTDIR)$(PREFIX)/var/tmp
-	chmod 775 $(DESTDIR)$(PREFIX)/embedded/apps/core/shared/web-tmp
+	chmod 775 $(DESTDIR)$(PREFIX)/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
 
 # Node test dependencies
 $(ROOT_DIR)/test/node_modules/.installed: $(ROOT_DIR)/test/package.json

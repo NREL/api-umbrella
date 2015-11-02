@@ -23,6 +23,7 @@
 /build/local
 /build/package/.bundle
 /build/work
+/deploy/.env
 /log/*
 /test/node_modules
 /test/config/.overrides.yml

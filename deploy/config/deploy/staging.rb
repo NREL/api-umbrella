@@ -7,5 +7,4 @@ servers = ENV["API_UMBRELLA_STAGING_ROUTER_SERVERS"].to_s.split(",").map do |ser
 end
 
 role :app, servers
-role :web, servers
-role :db, []
+role :db, servers.first
