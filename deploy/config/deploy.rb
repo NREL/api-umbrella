@@ -1,3 +1,6 @@
+require "dotenv"
+Dotenv.load
+
 # config valid only for current version of Capistrano
 lock "3.4.0"
 
@@ -34,7 +37,7 @@ set :linked_dirs, fetch(:linked_dirs, []).push(
 )
 
 # Default value for default_env is {}
-set :default_env, fetch(:default_env, {}).merge(
+set :default_env, fetch(:default_env, {}).merge({
   "PATH" => "/opt/api-umbrella/bin:/opt/api-umbrella/embedded/bin:$PATH",
 
   # Reset Ruby related environment variables. This is in case the system being
@@ -56,17 +59,6 @@ set :default_env, fetch(:default_env, {}).merge(
 # set :keep_releases, 5
 
 namespace :deploy do
-  desc "Reload application"
-  task :install_lua_dependencies do
-    on roles(:app) do
-      within release_path do
-        execute "make lua_vendor_dependencies VENDOR_DIR=vendor"
-      end
-    end
-  end
-  before :updated, :install_lua_dependencies
-  before :reverted, :install_lua_dependencies
-
   # The ember-rails gem's handling of temp files isn't ideal when multiple users
   # might touch the files. So for now, just make these temp files globally
   # writable. See:
