@@ -410,6 +410,89 @@ describe('logging', function() {
     }.bind(this));
   });
 
+  it('logs request and caches locations where geocoding returns a city and country, but no region', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-For': '42.61.81.163',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_ip.should.eql('42.61.81.163');
+        record.request_ip_country.should.eql('SG');
+        should.not.exist(record.request_ip_region);
+        record.request_ip_city.should.eql('Singapore');
+        record.request_ip_location.should.eql({
+          lat: 1.2931,
+          lon: 103.8558,
+        });
+
+        global.elasticsearch.get({
+          index: 'api-umbrella',
+          type: 'city',
+          id: crypto.createHash('sha256').update('SG--Singapore').digest('hex'),
+        }, function(error, res) {
+          should.not.exist(error);
+          _.omit(res._source, 'updated_at').should.eql({
+            country: 'SG',
+            city: 'Singapore',
+            location: {
+              lat: 1.2931,
+              lon: 103.8558,
+            },
+          });
+          done();
+        });
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs request and caches locations where geocoding returns a country, but no city or region', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-For': '182.50.152.193',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_ip.should.eql('182.50.152.193');
+        record.request_ip_country.should.eql('SG');
+        should.not.exist(record.request_ip_region);
+        should.not.exist(record.request_ip_city);
+        record.request_ip_location.should.eql({
+          lat: 1.3667,
+          lon: 103.8,
+        });
+
+        global.elasticsearch.get({
+          index: 'api-umbrella',
+          type: 'city',
+          id: crypto.createHash('sha256').update('SG--').digest('hex'),
+        }, function(error, res) {
+          should.not.exist(error);
+          _.omit(res._source, 'updated_at').should.eql({
+            country: 'SG',
+            location: {
+              lat: 1.3667,
+              lon: 103.8,
+            },
+          });
+          done();
+        });
+      }.bind(this));
+    }.bind(this));
+  });
+
   it('logs the accept-encoding header prior to normalization', function(done) {
     this.timeout(4500);
     var options = _.merge({}, this.options, {

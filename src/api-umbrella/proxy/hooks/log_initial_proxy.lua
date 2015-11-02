@@ -54,7 +54,7 @@ local function cache_city_geocode(premature, id, data)
 end
 
 local function cache_new_city_geocode(data)
-  local id = data["request_ip_country"] .. "-" .. data["request_ip_region"] .. "-" .. data["request_ip_city"]
+  local id = (data["request_ip_country"] or "") .. "-" .. (data["request_ip_region"] or "") .. "-" .. (data["request_ip_city"] or "")
 
   -- Only cache the first city location per startup to prevent lots of indexing
   -- churn re-indexing the same city.
@@ -198,7 +198,7 @@ local function log_request()
 
   ngx.shared.logs:delete(id)
 
-  if data["request_ip_city"] and data["request_ip_location"] then
+  if data["request_ip_location"] then
     cache_new_city_geocode(data)
   end
 end
