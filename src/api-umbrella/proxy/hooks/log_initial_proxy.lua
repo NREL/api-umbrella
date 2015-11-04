@@ -40,12 +40,17 @@ local function cache_city_geocode(premature, id, data)
     updated_at = utils.round(ngx.now() * 1000),
   };
 
-  local elasticsearch_host = config["elasticsearch"]["hosts"][1]
+  local elasticsearch_server = config["elasticsearch"]["_servers"][1]
   local index = "api-umbrella"
   local index_type = "city"
+
   local httpc = http.new()
-  local res, err = httpc:request_uri(elasticsearch_host .. "/" .. index .. "/" .. index_type .. "/" .. id_hash, {
+  httpc:set_timeout(45000)
+  httpc:connect(elasticsearch_server["host"], elasticsearch_server["port"])
+
+  local res, err = httpc:request({
     method = "PUT",
+    path = (elasticsearch_server["path"] or "") .. "/" .. index .. "/" .. index_type .. "/" .. id_hash,
     body = cjson.encode(record),
   })
   if err or (res and res.status >= 400) then

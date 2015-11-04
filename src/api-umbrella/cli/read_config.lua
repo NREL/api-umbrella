@@ -10,10 +10,12 @@ local plutils = require "pl.utils"
 local random_token = require "api-umbrella.utils.random_token"
 local stringx = require "pl.stringx"
 local types = require "pl.types"
+local url = require "socket.url"
 
 local is_empty = types.is_empty
 local split = plutils.split
 local strip = stringx.strip
+local url_parse = url.parse
 
 local config
 
@@ -254,6 +256,27 @@ local function set_computed_config()
   config["dns_resolver"]["nameservers"] = nil
 
   config["dns_resolver"]["_etc_hosts"] = read_etc_hosts()
+
+  config["elasticsearch"]["_servers"] = {}
+  if config["elasticsearch"]["hosts"] then
+    for _, elasticsearch_url in ipairs(config["elasticsearch"]["hosts"]) do
+      local parsed, parse_err = url_parse(elasticsearch_url)
+      if not parsed or parse_err then
+        print("failed to parse: ", elasticsearch_url, parse_err)
+      else
+        parsed["port"] = tonumber(parsed["port"])
+        if not parsed["port"] then
+          if parsed["scheme"] == "https" then
+            parsed["port"] = 443
+          elseif parsed["scheme"] == "http" then
+            parsed["port"] = 80
+          end
+        end
+
+        table.insert(config["elasticsearch"]["_servers"], parsed)
+      end
+    end
+  end
 
   deep_merge_overwrite_arrays(config, {
     _embedded_root_dir = embedded_root_dir,

@@ -3,26 +3,44 @@ local http = require "resty.http"
 
 local _M = {}
 
-local function try_query(url, http_options)
+local function try_query(path, http_options)
+  if not http_options then
+    http_options = {}
+  end
+  http_options["path"] = "/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/" .. path
+
   local httpc = http.new()
-  local res, err = httpc:request_uri(url, http_options)
+  httpc:set_timeout(45000)
+  httpc:connect(config["mora"]["host"], config["mora"]["port"])
+
+  local res, err = httpc:request(http_options)
   if err then
     err = "mongodb query failed: " .. err
     return nil, err
   end
 
-  if not res.body or res.headers["Content-Type"] ~= "application/json" then
-    err = "mongodb unexpected response format: " .. (res.body or nil)
+  local body, body_err = res:read_body()
+  if not body then
+    return nil, body_err
+  end
+
+  local keepalive_ok, keepalive_err = httpc:set_keepalive()
+  if not keepalive_ok then
+    ngx.log(ngx.ERR, keepalive_err)
+  end
+
+  if not body or res.headers["Content-Type"] ~= "application/json" then
+    err = "mongodb unexpected response format: " .. (body or nil)
     return nil, err
   end
 
-  local response = cjson.decode(res.body)
+  local response = cjson.decode(body)
   if not response["success"] then
-    err = "mongodb error"
+    local mongodb_err = "mongodb error"
     if response["error"] and response["error"]["name"] then
-      err = err .. ": " .. response["error"]["name"]
+      mongodb_err = mongodb_err .. ": " .. response["error"]["name"]
     end
-    return nil, err
+    return nil, mongodb_err
   end
 
   return response
@@ -45,8 +63,7 @@ local function perform_query(path, query_options, http_options)
 
   http_options["query"] = query_options
 
-  local url = "http://127.0.0.1:" .. config["mora"]["port"] .. "/docs/api_umbrella/" .. config["mongodb"]["_database"] .. "/" .. path
-  local response, err = try_query(url, http_options)
+  local response, err = try_query(path, http_options)
 
   -- If we get an "EOF" error from Mora, this means our query occurred during
   -- the middle of a server or replicaset change. In this case, retry the
@@ -60,10 +77,10 @@ local function perform_query(path, query_options, http_options)
   -- errors. I'm not entirely sure whether we should try to address the issue
   -- in mora itself, but in the meantime, we'll retry here.
   if err and err == "mongodb error: EOF" then
-    response, err = try_query(url, http_options)
+    response, err = try_query(path, http_options)
     if err and err == "mongodb error: EOF" then
       ngx.sleep(0.5)
-      response, err = try_query(url, http_options)
+      response, err = try_query(path, http_options)
     end
   end
 
