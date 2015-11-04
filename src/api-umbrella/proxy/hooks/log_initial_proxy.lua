@@ -129,7 +129,8 @@ local function log_request()
 
   -- Check for log data set by the separate api backend proxy
   -- (log_api_backend_proxy.lua). This is used for timing information.
-  local backend_response_time = ngx.shared.logs:get(id .. "_upstream_response_time")
+  local log_timing_id = id .. "_upstream_response_time"
+  local backend_response_time = ngx.shared.logs:get(log_timing_id)
   if backend_response_time then
     data["backend_response_time"] = backend_response_time
 
@@ -196,7 +197,9 @@ local function log_request()
     return
   end
 
-  ngx.shared.logs:delete(id)
+  if backend_response_time then
+    ngx.shared.logs:delete(log_timing_id)
+  end
 
   if data["request_ip_location"] then
     cache_new_city_geocode(data)
