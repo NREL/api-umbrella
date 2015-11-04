@@ -182,7 +182,7 @@ function _M.parse_accept(header, supported_media_types)
         local param_key = strip(param_parts[1] or "")
         local param_value = strip(param_parts[2] or "")
         if param_key == "q" then
-          q = tonumber(param_value)
+          q = tonumber(param_value) or 0
         end
       end
     end

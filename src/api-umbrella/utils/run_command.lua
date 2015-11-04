@@ -17,7 +17,7 @@ return function(command)
   status = tonumber(status)
 
   local err = nil
-  if status ~= 0 then
+  if not status or status ~= 0 then
     err = "Executing command failed: " .. command .. "\n\n" .. output
   end
 

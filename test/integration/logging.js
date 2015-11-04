@@ -1107,4 +1107,72 @@ describe('logging', function() {
       }.bind(this));
     }.bind(this));
   });
+
+  describe('global rate limits', function() {
+    shared.runServer({
+      router: {
+        global_rate_limits: {
+          ip_connections: 5
+        },
+      },
+    });
+
+    it('logs requests rejected by global rate limits', function(done) {
+      this.timeout(10000);
+
+      var uniqueQueryIds = [];
+      var actualResponseCodes = [];
+      var loggedResponseCodes = [];
+
+      async.series([
+        function(next) {
+          async.times(8, function(index, callback) {
+            var uniqueQueryId = generateUniqueQueryId();
+            uniqueQueryIds.push(uniqueQueryId);
+
+            var options = _.merge({}, this.options, {
+              qs: {
+                'unique_query_id': uniqueQueryId,
+              },
+            });
+
+            request.get('http://localhost:9080/delay/2000', options, function(error, response) {
+              if(!error) {
+                actualResponseCodes.push(response.statusCode);
+              }
+
+              callback(error);
+            });
+          }.bind(this), next);
+        }.bind(this),
+        function(next) {
+          async.each(uniqueQueryIds, function(uniqueQueryId, callback) {
+            waitForLog(uniqueQueryId, function(error, response, hit, record) {
+              if(!error) {
+                loggedResponseCodes.push(record.response_status);
+              }
+
+              callback(error);
+            });
+          }, next);
+        },
+      ], function(error) {
+        should.not.exist(error);
+
+        var actualSuccesses = _.filter(actualResponseCodes, function(code) { return code === 200; });
+        var actualOverLimits = _.filter(actualResponseCodes, function(code) { return code === 429; });
+        var loggedSuccesses = _.filter(loggedResponseCodes, function(code) { return code === 200; });
+        var loggedOverLimits = _.filter(loggedResponseCodes, function(code) { return code === 429; });
+
+        actualResponseCodes.length.should.eql(8);
+        actualSuccesses.length.should.eql(5);
+        actualOverLimits.length.should.eql(3);
+        loggedResponseCodes.length.should.eql(8);
+        loggedSuccesses.length.should.eql(5);
+        loggedOverLimits.length.should.eql(3);
+
+        done();
+      });
+    });
+  });
 });

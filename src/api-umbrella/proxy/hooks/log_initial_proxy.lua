@@ -95,7 +95,7 @@ local function log_request()
     api_key = ngx_ctx.api_key,
     request_accept = request_headers["accept"],
     request_accept_encoding = request_headers["accept-encoding"],
-    request_at = (ngx_var.msec - tonumber(ngx_var.request_time)),
+    request_at = (ngx_var.msec - (tonumber(ngx_var.request_time) or 0)),
     request_basic_auth_username = ngx_var.remote_user,
     request_connection = request_headers["connection"],
     request_content_type = request_headers["content-type"],
@@ -137,7 +137,7 @@ local function log_request()
     -- First we compare the upstream times from this initial proxy to the
     -- backend api router proxy. Note that we don't use the "request_time"
     -- variables, since that could be affected by slow clients.
-    data["proxy_overhead"] = tonumber(ngx_var.upstream_response_time) - backend_response_time
+    data["proxy_overhead"] = (tonumber(ngx_var.upstream_response_time) or 0) - backend_response_time
 
     -- Since we're using the upstream response times for determining overhead,
     -- next add in the amount of time we've calculated that we've used
