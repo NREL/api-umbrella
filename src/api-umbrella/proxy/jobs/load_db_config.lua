@@ -14,7 +14,7 @@ local new_timer = ngx.timer.at
 local delay = 0.3  -- in seconds
 
 local function restore_active_config_backends_after_reload()
-  local restore_lock = lock:new("my_locks", { ["timeout"] = 10 })
+  local restore_lock = lock:new("locks", { ["timeout"] = 10 })
   local _, lock_err = restore_lock:lock("restore_active_config_backends:" .. WORKER_GROUP_ID)
   if lock_err then
     return
@@ -43,7 +43,7 @@ local function do_check()
     return
   end
 
-  local check_lock = lock:new("my_locks", { ["timeout"] = 0 })
+  local check_lock = lock:new("locks", { ["timeout"] = 0 })
   local _, lock_err = check_lock:lock("load_db_config_check")
   if lock_err then
     return

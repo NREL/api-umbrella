@@ -70,7 +70,7 @@ function _M.resolve(apis)
 end
 
 local function do_check()
-  local check_lock = lock:new("my_locks", { ["timeout"] = 0 })
+  local check_lock = lock:new("locks", { ["timeout"] = 0 })
   local _, lock_err = check_lock:lock("resolve_backend_dns")
   if lock_err then
     return

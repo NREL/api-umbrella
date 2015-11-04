@@ -95,7 +95,7 @@ local function seed_initial_superusers()
 end
 
 local function seed()
-  local seed_lock = lock:new("my_locks", { ["timeout"] = 0 })
+  local seed_lock = lock:new("locks", { ["timeout"] = 0 })
   local _, lock_err = seed_lock:lock("seed_database")
   if lock_err then
     return

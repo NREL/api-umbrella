@@ -35,7 +35,7 @@ end
 
 local function create_templates()
   -- Template creation only needs to be run once on startup or reload.
-  local created = ngx.shared.config:get("elasticsearch_templates_created")
+  local created = ngx.shared.active_config:get("elasticsearch_templates_created")
   if created then return end
 
   if elasticsearch_templates then
@@ -51,7 +51,7 @@ local function create_templates()
     end
   end
 
-  ngx.shared.config:set("elasticsearch_templates_created", true)
+  ngx.shared.active_config:set("elasticsearch_templates_created", true)
 end
 
 local function create_aliases()
@@ -103,7 +103,7 @@ local function create_aliases()
 end
 
 local function do_check()
-  local check_lock = lock:new("my_locks", { ["timeout"] = 0 })
+  local check_lock = lock:new("locks", { ["timeout"] = 0 })
   local _, lock_err = check_lock:lock("elasticsearch_index_setup")
   if lock_err then
     return

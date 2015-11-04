@@ -9,7 +9,7 @@ local get_packed = utils.get_packed
 local is_empty = types.is_empty
 local set_packed = utils.set_packed
 
-local check_lock = lock:new("my_locks", {
+local check_lock = lock:new("locks", {
   ["timeout"] = 0,
 })
 

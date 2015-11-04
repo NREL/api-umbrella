@@ -13,7 +13,7 @@ local delay = 0.25  -- in seconds
 local new_timer = ngx.timer.at
 
 local function do_check()
-  local check_lock = lock:new("my_locks", { ["timeout"] = 0 })
+  local check_lock = lock:new("locks", { ["timeout"] = 0 })
   local _, lock_err = check_lock:lock("distributed_rate_limit_puller")
   if lock_err then
     return

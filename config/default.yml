@@ -21,6 +21,25 @@ nginx:
   dyups:
     host: 127.0.0.1
     port: 14005
+  shared_dicts:
+    active_config:
+      size: 600k
+    api_users:
+      size: 3m
+    dns_cache:
+      size: 300k
+    geocode_city_cache:
+      size: 100k
+    locks:
+      size: 20k
+    logs:
+      size: 5m
+    resolved_hosts:
+      size: 100k
+    stats:
+      size: 10m
+    upstream_checksums:
+      size: 200k
 gatekeeper:
   api_key_methods:
     - header
