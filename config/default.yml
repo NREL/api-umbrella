@@ -15,7 +15,7 @@ heka:
   host: 127.0.0.1
   port: 14014
 nginx:
-  workers: 4
+  workers: auto
   worker_connections: 8192
   access_log_options: buffer=32k flush=10s
   dyups:
