@@ -402,7 +402,7 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core: $(STAGE_MARKERS_DIR)/api-umbrella-core-d
 	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP) && ln -snf ../../shared/vendor ./vendor
 	# Copy the precompiled assets into place.
 	mkdir -p $(STAGE_PREFIX)/embedded/apps/core/shared/src/api-umbrella/web-app/public/web-assets
-	rsync -a --delete-after $(WORK_DIR)/tmp/web-assets/ $(STAGE_PREFIX)/embedded/apps/core/shared/public/web-assets/
+	rsync -a --delete-after $(WORK_DIR)/tmp/web-assets/ $(STAGE_PREFIX)/embedded/apps/core/shared/src/api-umbrella/web-app/public/web-assets/
 	cd $(STAGE_PREFIX)/embedded/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app/public && ln -snf ../../../../../../shared/src/api-umbrella/web-app/public/web-assets ./web-assets
 	# Re-run the bundle install inside the release directory, but disabling
 	# non-production gem groups. Combined with the clean flag, this deletes all
@@ -1021,9 +1021,9 @@ stage: \
 
 install: stage
 	mkdir -p $(DESTDIR)/usr/bin $(DESTDIR)/var/log $(DESTDIR)$(PREFIX)/etc $(DESTDIR)$(PREFIX)/var/db $(DESTDIR)$(PREFIX)/var/log $(DESTDIR)$(PREFIX)/var/run $(DESTDIR)$(PREFIX)/var/tmp
-	rsync -av $(STAGE_PREFIX)/bin/ $(DESTDIR)$(PREFIX)/bin/
-	rsync -av $(STAGE_PREFIX)/embedded/ $(DESTDIR)$(PREFIX)/embedded/
-	rsync -av --backup --suffix=".new" --exclude=".*" $(BUILD_DIR)/package/files/etc/ $(DESTDIR)/etc/
+	rsync -rltDv $(STAGE_PREFIX)/bin/ $(DESTDIR)$(PREFIX)/bin/
+	rsync -rltDv $(STAGE_PREFIX)/embedded/ $(DESTDIR)$(PREFIX)/embedded/
+	rsync -rltDv --backup --suffix=".new" --exclude=".*" $(BUILD_DIR)/package/files/etc/ $(DESTDIR)/etc/
 	cd $(DESTDIR)/usr/bin && ln -snf ../..$(PREFIX)/bin/api-umbrella ./api-umbrella
 	cd $(DESTDIR)/var/log && ln -snf ../..$(PREFIX)/var/log ./api-umbrella
 	chmod 440 $(DESTDIR)/etc/sudoers.d/api-umbrella
