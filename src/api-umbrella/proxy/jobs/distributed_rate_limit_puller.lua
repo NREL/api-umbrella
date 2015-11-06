@@ -1,6 +1,5 @@
 local _M = {}
 
-local lock = require "resty.lock"
 local mongo = require "api-umbrella.utils.mongo"
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local types = require "pl.types"
@@ -81,7 +80,7 @@ local function check(premature)
 
   -- here we subtract the lock expiration time by 1ms to prevent
   -- a race condition with the next timer event.
-  local ok, err = interval_lock('distributed-last-pull', interval - 0.001,
+  local ok, err = interval_lock('distributed-last-pull', delay - 0.001,
                                 do_check)
   if not ok then
     ngx.log(ngx.ERR, "failed to run backend load cycle: ", err)
