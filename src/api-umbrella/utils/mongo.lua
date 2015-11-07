@@ -99,6 +99,13 @@ function _M.find(collection, query_options)
     results = response["data"]
   end
 
+  -- If the error is simply no results (this seems to only be triggered on a
+  -- query for the "_id" field), don't return an error, since we don't consider
+  -- this an error, per-say, the results will just be empty.
+  if err == "mongodb error: not found" then
+    err = nil
+  end
+
   return results, err
 end
 

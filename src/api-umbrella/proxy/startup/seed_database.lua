@@ -3,7 +3,7 @@ local mongo = require "api-umbrella.utils.mongo"
 local random_token = require "api-umbrella.utils.random_token"
 local uuid = require "resty.uuid"
 
-local function seed_api_keys()
+local function seed_static_site_api_key()
   local user, user_err = mongo.first("api_users", {
     query = {
       api_key = config["static_site"]["api_key"],
@@ -48,6 +48,45 @@ local function seed_api_keys()
           },
         },
       },
+      created_at = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } },
+      updated_at = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } },
+    })
+
+    if create_err then
+      ngx.log(ngx.ERR, "failed to create api user: ", create_err)
+      return
+    end
+  end
+end
+
+local function seed_web_admin_api_key()
+  local user, user_err = mongo.first("api_users", {
+    query = {
+      email = "web.admin.ajax@internal.apiumbrella",
+    },
+  })
+
+  if user_err then
+    ngx.log(ngx.ERR, "failed to query api_users: ", user_err)
+    return
+  end
+
+  if not user then
+    local _, create_err = mongo.create("api_users", {
+      _id = uuid.generate_random(),
+      api_key = random_token(40),
+      email = "web.admin.ajax@internal.apiumbrella",
+      first_name = "API Umbrella Admin",
+      last_name = "Key",
+      use_description = "An API key for the API Umbrella admin to use for internal ajax requests.",
+      terms_and_conditions = "1",
+      registration_source = "seed",
+      settings = {
+        _id = uuid.generate_random(),
+        rate_limit_mode = "unlimited",
+      },
+      created_at = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } },
+      updated_at = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } },
     })
 
     if create_err then
@@ -76,6 +115,8 @@ local function seed_initial_superusers()
         username = username,
         superuser = true,
         authentication_token = random_token(40),
+        created_at = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } },
+        updated_at = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } },
       })
 
       if create_err then
@@ -84,10 +125,70 @@ local function seed_initial_superusers()
       end
     elseif admin and not admin["superuser"] then
       admin["superuser"] = true
+      admin["updated_at"] = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } }
       local _, update_err = mongo.update("admins", admin["_id"], admin)
 
       if update_err then
         ngx.log(ngx.ERR, "failed to update admin: ", update_err)
+        break
+      end
+    end
+  end
+end
+
+local function seed_admin_permissions()
+  local permissions = {
+    {
+      _id = "analytics",
+      name = "Analytics",
+      display_order = 1,
+    },
+    {
+      _id = "user_view",
+      name = "API Users - View",
+      display_order = 2,
+    },
+    {
+      _id = "user_manage",
+      name = "API Users - Manage",
+      display_order = 3,
+    },
+    {
+      _id = "admin_manage",
+      name = "Admin Accounts - View & Manage",
+      display_order = 4,
+    },
+    {
+      _id = "backend_manage",
+      name = "API Backend Configuration - View & Manage",
+      display_order = 5,
+    },
+    {
+      _id = "backend_publish",
+      name = "API Backend Configuration - Publish",
+      display_order = 6,
+    },
+  }
+
+  for _, data in ipairs(permissions) do
+    local permission, permission_err = mongo.first("admin_permissions", {
+      query = {
+        _id = data["_id"],
+      },
+    })
+
+    if permission_err then
+      ngx.log(ngx.ERR, "failed to query admin_permissions: ", permission_err)
+      break
+    end
+
+    if not permission then
+      data["created_at"] = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } }
+      data["updated_at"] = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } }
+      local _, create_err = mongo.create("admin_permissions", data)
+
+      if create_err then
+        ngx.log(ngx.ERR, "failed to create admin_permission: ", create_err)
         break
       end
     end
@@ -101,8 +202,10 @@ local function seed()
     return
   end
 
-  seed_api_keys()
+  seed_static_site_api_key()
+  seed_web_admin_api_key()
   seed_initial_superusers()
+  seed_admin_permissions()
 end
 
 return function()
