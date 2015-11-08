@@ -136,7 +136,7 @@ describe('request rewriting', function() {
           'url',
         ]);
         data.url.query.test.should.eql('foo& bar');
-        (new Buffer(data.url.query.url)).toString('base64').should.eql('77+9');
+        (new Buffer(data.url.query.url)).toString('base64').should.eql('7aG8');
 
         done();
       }.bind(this));
