@@ -106,7 +106,7 @@ local function log_request()
     request_content_type = request_headers["content-type"],
     request_host = request_headers["host"],
     request_ip = ngx_var.remote_addr,
-    request_ip_country = ngx_var.geoip_country,
+    request_ip_country = ngx_var.geoip_city_country_code,
     request_ip_region = ngx_var.geoip_region,
     request_ip_city = ngx_var.geoip_city,
     request_method = ngx_var.request_method,
@@ -186,6 +186,13 @@ local function log_request()
       data["request_user_agent_family"] = user_agent_data["family"]
       data["request_user_agent_type"] = user_agent_data["type"]
     end
+  end
+
+  -- The geoip database returns "00" for unknown regions sometimes:
+  -- http://maxmind.com/download/geoip/kml/index.html Remove these and treat
+  -- these as nil.
+  if data["request_ip_region"] == "00" then
+    data["request_ip_region"] = nil
   end
 
   local geoip_latitude = ngx_var.geoip_latitude

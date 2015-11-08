@@ -94,13 +94,13 @@ LIBCIDR_CHECKSUM:=c5efcc7ae114fdaa5583f58dacecd9de
 LIBCIDR_URL:=https://www.over-yonder.net/~fullermd/projects/libcidr/libcidr-$(LIBCIDR_VERSION).tar.xz
 LIBCIDR_INSTALL_MARKER:=$(LIBCIDR_NAME)$(VERSION_SEP)$(LIBCIDR_VERSION)
 
-LIBMAXMINDDB_VERSION:=1.1.1
-LIBMAXMINDDB_NAME:=libmaxminddb
-LIBMAXMINDDB:=$(LIBMAXMINDDB_NAME)-$(LIBMAXMINDDB_VERSION)
-LIBMAXMINDDB_DIGEST:=md5
-LIBMAXMINDDB_CHECKSUM:=36c31f0814dbf71b210ee57c2b9ef98c
-LIBMAXMINDDB_URL:=https://github.com/maxmind/libmaxminddb/releases/download/$(LIBMAXMINDDB_VERSION)/libmaxminddb-$(LIBMAXMINDDB_VERSION).tar.gz
-LIBMAXMINDDB_INSTALL_MARKER:=$(LIBMAXMINDDB_NAME)$(VERSION_SEP)$(LIBMAXMINDDB_VERSION)
+LIBGEOIP_VERSION:=1.6.7
+LIBGEOIP_NAME:=libgeoip
+LIBGEOIP:=$(LIBGEOIP_NAME)-$(LIBGEOIP_VERSION)
+LIBGEOIP_DIGEST:=md5
+LIBGEOIP_CHECKSUM:=4c8e1923fdf6257013178de7f025527f
+LIBGEOIP_URL:=https://github.com/maxmind/geoip-api-c/releases/download/v$(LIBGEOIP_VERSION)/GeoIP-$(LIBGEOIP_VERSION).tar.gz
+LIBGEOIP_INSTALL_MARKER:=$(LIBGEOIP_NAME)$(VERSION_SEP)$(LIBGEOIP_VERSION)
 
 LUA_RESTY_DNS_CACHE_VERSION:=691613739a32f8405e56e56547270b9f72e77c34
 LUA_RESTY_DNS_CACHE_NAME:=lua-resty-dns-cache
@@ -190,14 +190,6 @@ NGX_DYUPS_DIGEST:=md5
 NGX_DYUPS_CHECKSUM:=295b7cb202de069b313f4da50d6952e0
 NGX_DYUPS_URL:=https://github.com/yzprofile/ngx_http_dyups_module/archive/v$(NGX_DYUPS_VERSION).tar.gz
 NGX_DYUPS_INSTALL_MARKER:=$(NGX_DYUPS_NAME)$(VERSION_SEP)$(NGX_DYUPS_VERSION)
-
-NGX_GEOIP2_VERSION:=1.0
-NGX_GEOIP2_NAME:=ngx_http_geoip2_module
-NGX_GEOIP2:=$(NGX_GEOIP2_NAME)-$(NGX_GEOIP2_VERSION)
-NGX_GEOIP2_DIGEST:=md5
-NGX_GEOIP2_CHECKSUM:=4c89eea53ce8318f940c03adfe0b502b
-NGX_GEOIP2_URL:=https://github.com/leev/ngx_http_geoip2_module/archive/1.0.tar.gz
-NGX_GEOIP2_INSTALL_MARKER:=$(NGX_GEOIP2_NAME)$(VERSION_SEP)$(NGX_GEOIP2_VERSION)
 
 OPENRESTY_VERSION:=1.9.3.1
 OPENRESTY_NAME:=openresty
@@ -462,23 +454,18 @@ $(STAGE_MARKERS_DIR)/$(ELASTICSEARCH_INSTALL_MARKER): $(DEPS_DIR)/$(ELASTICSEARC
 	rm -f $(STAGE_MARKERS_DIR)/$(ELASTICSEARCH_NAME)$(VERSION_SEP)*
 	touch $@
 
-# GeoLite2-City.mmdb
-$(DEPS_DIR)/GeoLite2-City.md5: | $(DEPS_DIR)
-	curl -L -o $@ https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.md5
+# GeoLiteCityv6.dat
+$(DEPS_DIR)/GeoLiteCityv6.dat.gz: | $(DEPS_DIR)
+	curl -L -o $@ https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz
 	touch $@
 
-$(DEPS_DIR)/GeoLite2-City.mmdb.gz: | $(DEPS_DIR)
-	curl -L -o $@ https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz
-	touch $@
-
-$(DEPS_DIR)/GeoLite2-City.mmdb: $(DEPS_DIR)/GeoLite2-City.mmdb.gz $(DEPS_DIR)/GeoLite2-City.md5
+$(DEPS_DIR)/GeoLiteCityv6.dat: $(DEPS_DIR)/GeoLiteCityv6.dat.gz
 	gunzip -c $< > $@
-	openssl md5 $@ | grep `cat $(DEPS_DIR)/GeoLite2-City.md5` || (echo "checksum mismatch $@" && exit 1)
 	touch $@
 
-$(STAGE_MARKERS_DIR)/GeoLite2-City.mmdb: $(DEPS_DIR)/GeoLite2-City.mmdb | $(STAGE_MARKERS_DIR)
-	mkdir -p $(STAGE_PREFIX)/embedded/var/db/geoip2
-	rsync -a $(DEPS_DIR)/GeoLite2-City.mmdb $(STAGE_PREFIX)/embedded/var/db/geoip2/city.mmdb
+$(STAGE_MARKERS_DIR)/GeoLiteCityv6.dat: $(DEPS_DIR)/GeoLiteCityv6.dat | $(STAGE_MARKERS_DIR)
+	mkdir -p $(STAGE_PREFIX)/embedded/var/db/geoip
+	rsync -a $(DEPS_DIR)/GeoLiteCityv6.dat $(STAGE_PREFIX)/embedded/var/db/geoip/city-v6.dat
 	touch $@
 
 # Glide
@@ -541,22 +528,22 @@ $(STAGE_MARKERS_DIR)/$(LIBCIDR_INSTALL_MARKER): $(DEPS_DIR)/$(LIBCIDR)/.built | 
 	rm -f $(STAGE_MARKERS_DIR)/$(LIBCIDR_NAME)$(VERSION_SEP)*
 	touch $@
 
-# libmaxminddb
-$(DEPS_DIR)/$(LIBMAXMINDDB).tar.gz: | $(DEPS_DIR)
-	$(call download,LIBMAXMINDDB)
+# libgeoip
+$(DEPS_DIR)/$(LIBGEOIP).tar.gz: | $(DEPS_DIR)
+	$(call download,LIBGEOIP)
 
-$(DEPS_DIR)/$(LIBMAXMINDDB): $(DEPS_DIR)/$(LIBMAXMINDDB).tar.gz
-	$(call decompress,LIBMAXMINDDB)
+$(DEPS_DIR)/$(LIBGEOIP): $(DEPS_DIR)/$(LIBGEOIP).tar.gz
+	$(call decompress,LIBGEOIP)
 
-$(DEPS_DIR)/$(LIBMAXMINDDB)/.built: $(DEPS_DIR)/$(LIBMAXMINDDB)
+$(DEPS_DIR)/$(LIBGEOIP)/.built: $(DEPS_DIR)/$(LIBGEOIP)
 	cd $< && LDFLAGS="-Wl,-rpath,$(STAGE_PREFIX)/embedded/lib" ./configure \
 		--prefix=$(PREFIX)/embedded
 	cd $< && make
 	touch $@
 
-$(STAGE_MARKERS_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER): $(DEPS_DIR)/$(LIBMAXMINDDB)/.built | $(STAGE_MARKERS_DIR)
-	cd $(DEPS_DIR)/$(LIBMAXMINDDB) && make install DESTDIR=$(STAGE_DIR)
-	rm -f $(STAGE_MARKERS_DIR)/$(LIBMAXMINDDB_NAME)$(VERSION_SEP)*
+$(STAGE_MARKERS_DIR)/$(LIBGEOIP_INSTALL_MARKER): $(DEPS_DIR)/$(LIBGEOIP)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(LIBGEOIP) && make install DESTDIR=$(STAGE_DIR)
+	rm -f $(STAGE_MARKERS_DIR)/$(LIBGEOIP_NAME)$(VERSION_SEP)*
 	touch $@
 
 # LuaRocks
@@ -702,13 +689,6 @@ $(DEPS_DIR)/$(NGX_DYUPS).tar.gz: | $(DEPS_DIR)
 $(DEPS_DIR)/$(NGX_DYUPS): $(DEPS_DIR)/$(NGX_DYUPS).tar.gz
 	$(call decompress,NGX_DYUPS)
 
-# ngx_geoip2
-$(DEPS_DIR)/$(NGX_GEOIP2).tar.gz: | $(DEPS_DIR)
-	$(call download,NGX_GEOIP2)
-
-$(DEPS_DIR)/$(NGX_GEOIP2): $(DEPS_DIR)/$(NGX_GEOIP2).tar.gz
-	$(call decompress,NGX_GEOIP2)
-
 # ngx_txid
 $(DEPS_DIR)/$(NGX_TXID).tar.gz: | $(DEPS_DIR)
 	$(call download,NGX_TXID)
@@ -723,7 +703,7 @@ $(DEPS_DIR)/$(OPENRESTY).tar.gz: | $(DEPS_DIR)
 $(DEPS_DIR)/$(OPENRESTY): $(DEPS_DIR)/$(OPENRESTY).tar.gz
 	$(call decompress,OPENRESTY)
 
-$(DEPS_DIR)/$(OPENRESTY)/.built: $(DEPS_DIR)/$(OPENRESTY) $(DEPS_DIR)/$(NGX_DYUPS) $(DEPS_DIR)/$(NGX_GEOIP2) $(DEPS_DIR)/$(NGX_TXID) $(STAGE_MARKERS_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER) $(DEPS_DIR)/$(PCRE)
+$(DEPS_DIR)/$(OPENRESTY)/.built: $(DEPS_DIR)/$(OPENRESTY) $(DEPS_DIR)/$(NGX_DYUPS) $(DEPS_DIR)/$(NGX_TXID) $(STAGE_MARKERS_DIR)/$(LIBGEOIP_INSTALL_MARKER) $(DEPS_DIR)/$(PCRE)
 	cd $< && ./configure \
 		--prefix=$(PREFIX)/embedded/openresty \
 		--with-cc-opt="-I$(STAGE_PREFIX)/embedded/include" \
@@ -734,13 +714,13 @@ $(DEPS_DIR)/$(OPENRESTY)/.built: $(DEPS_DIR)/$(OPENRESTY) $(DEPS_DIR)/$(NGX_DYUP
 		--with-pcre-opt="-g" \
 		--with-pcre-conf-opt="--enable-unicode-properties" \
 		--with-pcre-jit \
+		--with-http_geoip_module \
 		--with-http_gunzip_module \
 		--with-http_gzip_static_module \
 		--with-http_realip_module \
 		--with-http_ssl_module \
 		--with-http_stub_status_module \
 		--add-module=../$(NGX_DYUPS) \
-		--add-module=../$(NGX_GEOIP2) \
 		--add-module=../$(NGX_TXID)
 	cd $< && make
 	touch $@
@@ -893,9 +873,8 @@ $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROC
 	$(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE)/.built \
 	$(DEPS_DIR)/$(ELASTICSEARCH).tar.gz \
 	$(DEPS_DIR)/$(ELASTICSEARCH) \
-	$(DEPS_DIR)/GeoLite2-City.md5 \
-	$(DEPS_DIR)/GeoLite2-City.mmdb.gz \
-	$(DEPS_DIR)/GeoLite2-City.mmdb \
+	$(DEPS_DIR)/GeoLiteCityv6.dat.gz \
+	$(DEPS_DIR)/GeoLiteCityv6.dat \
 	$(DEPS_DIR)/$(GLIDE).tar.gz \
 	$(DEPS_DIR)/$(GLIDE) \
 	$(DEPS_DIR)/gocode/src/github.com/Masterminds/glide \
@@ -907,9 +886,9 @@ $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROC
 	$(DEPS_DIR)/$(LIBCIDR).tar.xz \
 	$(DEPS_DIR)/$(LIBCIDR) \
 	$(DEPS_DIR)/$(LIBCIDR)/.built \
-	$(DEPS_DIR)/$(LIBMAXMINDDB).tar.gz \
-	$(DEPS_DIR)/$(LIBMAXMINDDB) \
-	$(DEPS_DIR)/$(LIBMAXMINDDB)/.built \
+	$(DEPS_DIR)/$(LIBGEOIP).tar.gz \
+	$(DEPS_DIR)/$(LIBGEOIP) \
+	$(DEPS_DIR)/$(LIBGEOIP)/.built \
 	$(DEPS_DIR)/$(LUAROCKS).tar.gz \
 	$(DEPS_DIR)/$(LUAROCKS) \
 	$(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE).tar.gz \
@@ -932,8 +911,6 @@ $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROC
 	$(DEPS_DIR)/$(MORA)/.built-$(MORA_DEPENDENCIES_CHECKSUM) \
 	$(DEPS_DIR)/$(NGX_DYUPS).tar.gz \
 	$(DEPS_DIR)/$(NGX_DYUPS) \
-	$(DEPS_DIR)/$(NGX_GEOIP2).tar.gz \
-	$(DEPS_DIR)/$(NGX_GEOIP2) \
 	$(DEPS_DIR)/$(NGX_TXID).tar.gz \
 	$(DEPS_DIR)/$(NGX_TXID) \
 	$(DEPS_DIR)/$(OPENRESTY).tar.gz \
@@ -1005,10 +982,10 @@ stage: \
 	$(STAGE_MARKERS_DIR)/$(API_UMBRELLA_STATIC_SITE_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(ELASTICSEARCH_INSTALL_MARKER) \
-	$(STAGE_MARKERS_DIR)/GeoLite2-City.mmdb \
+	$(STAGE_MARKERS_DIR)/GeoLiteCityv6.dat \
 	$(STAGE_MARKERS_DIR)/$(HEKA_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(LIBCIDR_INSTALL_MARKER) \
-	$(STAGE_MARKERS_DIR)/$(LIBMAXMINDDB_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(LIBGEOIP_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(MONGODB_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(MORA_INSTALL_MARKER) \

@@ -46,13 +46,7 @@ http {
     resolver_timeout 12s;
   {{/dns_resolver._nameservers_nginx}}
 
-  geoip2 {{db_dir}}/geoip2/city.mmdb {
-    $geoip_country country iso_code;
-    $geoip_region subdivisions 0 iso_code;
-    $geoip_city city names en;
-    $geoip_latitude location latitude;
-    $geoip_longitude location longitude;
-  }
+  geoip_city {{db_dir}}/geoip/city-v6.dat;
 
   geo $banned_ip {
     default 0;

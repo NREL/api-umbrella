@@ -138,9 +138,9 @@ local function ensure_geoip_db()
   -- If the city db path doesn't exist, copy it from the package installation
   -- location to the runtime location (this path will then be overwritten by
   -- the auto-updater so we don't touch the original packaged file).
-  local city_db_path = path.join(config["db_dir"], "geoip2/city.mmdb")
+  local city_db_path = path.join(config["db_dir"], "geoip/city-v6.dat")
   if not path.exists(city_db_path) then
-    local default_city_db_path = path.join(config["_embedded_root_dir"], "var/db/geoip2/city.mmdb")
+    local default_city_db_path = path.join(config["_embedded_root_dir"], "var/db/geoip/city-v6.dat")
     dir.makepath(path.dirname(city_db_path))
     file.copy(default_city_db_path, city_db_path)
   end

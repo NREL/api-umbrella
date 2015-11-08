@@ -349,7 +349,7 @@ describe('logging', function() {
     }.bind(this));
   });
 
-  it('logs the geocoded ip related fields', function(done) {
+  it('logs the geocoded ip related fields for ipv4 address', function(done) {
     this.timeout(4500);
     var options = _.merge({}, this.options, {
       headers: {
@@ -367,8 +367,62 @@ describe('logging', function() {
         record.request_ip_region.should.eql('CA');
         record.request_ip_city.should.eql('Mountain View');
         record.request_ip_location.should.eql({
-          lat: 37.386,
-          lon: -122.0838,
+          lat: 37.3845,
+          lon: -122.0881,
+        });
+
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs the geocoded ip related fields for ipv6 address', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-For': '2001:4860:4860::8888',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_ip.should.eql('2001:4860:4860::8888');
+        record.request_ip_country.should.eql('US');
+        should.not.exist(record.request_ip_region);
+        should.not.exist(record.request_ip_city);
+        record.request_ip_location.should.eql({
+          lat: 38,
+          lon: -97,
+        });
+
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs the geocoded ip related fields for ipv4 mapped ipv6 address', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-For': '0:0:0:0:0:ffff:808:808',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_ip.should.eql('::ffff:8.8.8.8');
+        record.request_ip_country.should.eql('US');
+        record.request_ip_region.should.eql('CA');
+        record.request_ip_city.should.eql('Mountain View');
+        record.request_ip_location.should.eql({
+          lat: 37.3845,
+          lon: -122.0881,
         });
 
         done();
@@ -400,8 +454,8 @@ describe('logging', function() {
             region: 'CA',
             city: 'Mountain View',
             location: {
-              lat: 37.386,
-              lon: -122.0838,
+              lat: 37.3845,
+              lon: -122.0881,
             },
           });
           done();
