@@ -282,6 +282,7 @@ LUACHECK_VERSION:=0.11.1-1
 	clean \
 	dependencies \
 	install \
+	after_install \
 	local_work_dir \
 	lua_vendor_dependencies \
 	stage \
@@ -1008,6 +1009,9 @@ install: stage
 	cd $(DESTDIR)/var/log && ln -snf ../..$(PREFIX)/var/log ./api-umbrella
 	chmod 1777 $(DESTDIR)$(PREFIX)/var/tmp
 	chmod 775 $(DESTDIR)$(PREFIX)/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
+
+after_install:
+	$(BUILD_DIR)/package/scripts/after-install
 
 # Node test dependencies
 $(ROOT_DIR)/test/node_modules/.installed: $(ROOT_DIR)/test/package.json

@@ -1,5 +1,0 @@
-site "https://supermarket.getchef.com/api/v1"
-
-cookbook "api-umbrella",
-  :git => "https://github.com/NREL-cookbooks/api-umbrella.git",
-  :ref => "v0.8.0"
