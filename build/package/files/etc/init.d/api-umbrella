@@ -24,6 +24,8 @@ fi
 
 . /etc/rc.d/init.d/functions
 
+[ -f /etc/sysconfig/api-umbrella ] && . /etc/sysconfig/api-umbrella
+
 start() {
   echo -n $"Starting $NAME: "
   api-umbrella start
