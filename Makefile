@@ -1002,9 +1002,9 @@ install: stage
 	rsync -rltDv $(STAGE_PREFIX)/bin/ $(DESTDIR)$(PREFIX)/bin/
 	rsync -rltDv $(STAGE_PREFIX)/embedded/ $(DESTDIR)$(PREFIX)/embedded/
 	install --backup=numbered -D -m 644 $(BUILD_DIR)/package/files/etc/api-umbrella/api-umbrella.yml $(DESTDIR)/etc/api-umbrella/api-umbrella.yml
-	install -m 755 $(BUILD_DIR)/package/files/etc/init.d/api-umbrella $(DESTDIR)/etc/init.d/api-umbrella
-	install -m 644 $(BUILD_DIR)/package/files/etc/logrotate.d/api-umbrella $(DESTDIR)/etc/logrotate.d/api-umbrella
-	install -m 440 $(BUILD_DIR)/package/files/etc/sudoers.d/api-umbrella $(DESTDIR)/etc/sudoers.d/api-umbrella
+	install -D -m 755 $(BUILD_DIR)/package/files/etc/init.d/api-umbrella $(DESTDIR)/etc/init.d/api-umbrella
+	install -D -m 644 $(BUILD_DIR)/package/files/etc/logrotate.d/api-umbrella $(DESTDIR)/etc/logrotate.d/api-umbrella
+	install -D -m 440 $(BUILD_DIR)/package/files/etc/sudoers.d/api-umbrella $(DESTDIR)/etc/sudoers.d/api-umbrella
 	cd $(DESTDIR)/usr/bin && ln -snf ../..$(PREFIX)/bin/api-umbrella ./api-umbrella
 	cd $(DESTDIR)/var/log && ln -snf ../..$(PREFIX)/var/log ./api-umbrella
 	chmod 1777 $(DESTDIR)$(PREFIX)/var/tmp
