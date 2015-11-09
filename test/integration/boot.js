@@ -49,7 +49,7 @@ describe('boot', function() {
         user.api_key.should.match(apiKeyRegex);
         user.email.should.eql('web.admin.ajax@internal.apiumbrella');
         user.registration_source.should.eql('seed');
-        user.roles.should.eql([]);
+        user.roles.should.eql(['api-umbrella-key-creator']);
         user.settings._id.should.match(uuidRegex);
         user.settings.rate_limit_mode.should.eql('unlimited');
         should.not.exist(user.settings.rate_limits);
