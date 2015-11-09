@@ -175,9 +175,12 @@ describe('processes', function() {
         // Test to ensure ngx_txid isn't leaving open file descriptors around
         // on reloads test for this patch:
         // https://github.com/streadway/ngx_txid/pull/6
+        // Allow for some small fluctuations in the /dev/urandom sockets, since
+        // other nginx modules might also be using them.
         urandomDescriptorCounts.length.should.eql(15);
         urandomDescriptorCounts[0].should.be.greaterThan(0);
-        _.max(urandomDescriptorCounts).should.eql(_.min(urandomDescriptorCounts));
+        var range = _.max(urandomDescriptorCounts) - _.min(urandomDescriptorCounts);
+        range.should.be.lte(config.get('nginx.workers'))
 
         // A more general test to ensure that we don't see other unexpected
         // file descriptor growth. We'll allow some growth for this test,
@@ -185,8 +188,8 @@ describe('processes', function() {
         // other things nginx may be doing.
         descriptorCounts.length.should.eql(15);
         _.min(descriptorCounts).should.be.greaterThan(0);
-        var range = _.max(descriptorCounts) - _.min(descriptorCounts);
-        range.should.be.lessThan(5);
+        range = _.max(descriptorCounts) - _.min(descriptorCounts);
+        range.should.be.lte(config.get('nginx.workers'))
 
         done();
       });
