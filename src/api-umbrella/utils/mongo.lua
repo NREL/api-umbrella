@@ -105,7 +105,7 @@ function _M.find(collection, query_options)
     -- "data" attribute. For consistency sake, still wrap these single record
     -- query responses in an array (so both _id and other types of queries are
     -- compatible with the _M.first function).
-    if not is_empty(results) and not response["next_url"] then
+    if results and not results[1] and not is_empty(results) then
       results = { results }
     end
   end
