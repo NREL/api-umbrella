@@ -10,7 +10,6 @@ local is_empty = types.is_empty
 local set_packed = utils.set_packed
 
 local delay = 0.25  -- in seconds
-local new_timer = ngx.timer.at
 
 local function do_check()
   local current_fetch_time = ngx.now() * 1000
