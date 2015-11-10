@@ -13,10 +13,10 @@ _M.mutex_exec = function(name, fn)
   if lock_err then
     return true, nil
   else
-    results = pcall(fn)
+    local results = pcall(fn)
     local ok, unlock_err = check_lock:unlock()
     if not ok then
-      ngnx.log(ngx.ERR, "failed to unlock: ", unlock_err)
+      ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
     end
     return results
   end
@@ -48,7 +48,7 @@ end
 -- @param fn - function to execute when the next timeout occurs
 _M.repeat_exec = function(interval, fn)
   -- schedule the next call
-  ok, err = ngx.timer.at(interval, function()
+  local ok, err = ngx.timer.at(interval, function()
     _M.repeat_exec(interval, fn)
   end)
   if not ok and err ~= "process exiting" then
