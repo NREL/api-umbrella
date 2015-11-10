@@ -73,35 +73,8 @@ local function do_check()
   end
 end
 
-local function check(premature)
-  if premature then
-    return
-  end
-
-  -- here we subtract the lock expiration time by 1ms to prevent
-  -- a race condition with the next timer event.
-  local ok, err = interval_lock('distributed-last-pull', delay - 0.001,
-                                do_check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to run backend load cycle: ", err)
-  end
-
-  ok, err = new_timer(delay, check)
-  if not ok then
-    if err ~= "process exiting" then
-      ngx.log(ngx.ERR, "failed to create timer: ", err)
-    end
-
-    return
-  end
-end
-
 function _M.spawn()
-  local ok, err = new_timer(0, check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to create timer: ", err)
-    return
-  end
+  interval_lock.repeat_with_mutex('distributed-last-pull', delay, do_check)
 end
 
 return _M
