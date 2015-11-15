@@ -25,17 +25,4 @@ if src_root then
 end
 
 local cli = require "api-umbrella.cli"
-
-local command = arg[1]
-if not command then
-  command = "help"
-else
-  command = string.gsub(command, "-", "_")
-end
-
-if cli[command] then
-  cli[command]()
-else
-  print("Unknown command: " .. (arg[1] or "") .. "\n\n")
-  cli.help()
-end
+cli()

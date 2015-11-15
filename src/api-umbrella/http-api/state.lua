@@ -10,4 +10,5 @@ local response = {
   upstreams_last_changed_at = ngx.shared.active_config:get("upstreams_last_changed_at"),
 }
 
+ngx.header["Content-Type"] = "application/json"
 ngx.say(cjson.encode(response))

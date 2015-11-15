@@ -5,6 +5,7 @@ require('../test_helper');
 var _ = require('lodash'),
     async = require('async'),
     config = require('./config'),
+    execFile = require('child_process').execFile,
     fs = require('fs'),
     fsExtra = require('fs-extra'),
     mkdirp = require('mkdirp'),
@@ -100,21 +101,25 @@ before(function apiUmbrellaStart(done) {
     }
   });
 
-  // Wait until we're able to establish a connection before moving on.
+  // Wait until API Umbrella is fully ready and the mongo-orchestration has
+  // completed.
   var healthy = false;
   async.until(function() {
     return healthy && global.mongoOrchestrationReady;
   }, function(callback) {
-    request.get('http://127.0.0.1:9080/api-umbrella/v1/health', function(error, response, body) {
-      if(!error && response && response.statusCode === 200) {
-        var data = JSON.parse(body);
-        if(data['status'] === 'green') {
-          healthy = true;
-          return callback();
-        }
+    execFile(binPath, ['health', '--wait-for-status', 'green'], {
+      env: _.merge({}, process.env, {
+        'API_UMBRELLA_EMBEDDED_ROOT': process.env.API_UMBRELLA_EMBEDDED_ROOT,
+        'API_UMBRELLA_CONFIG': overridesConfigPath,
+      }),
+    }, function(error, stdout, stderr) {
+      if(error) {
+        error = 'Error waiting for api umbrella to start: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')';
+      } else {
+        healthy = true;
       }
 
-      setTimeout(callback, 100);
+      callback(error);
     });
   }, function(error) {
     console.info('\n');

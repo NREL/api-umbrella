@@ -26,4 +26,28 @@ for DIST in "${DISTS[@]}"; do
     --volume=$ROOT_DIR:/api-umbrella \
     $DIST \
     /bin/bash -c "cd /api-umbrella && make package"
+
+  # Delete the container once we're done with it.
+  docker rm $NAME
+
+  VERIFY_NAME="$NAME-verify"
+
+  # Wipe any previous verify attempts.
+  EXISTING=$(docker ps -a -q --filter="name=$VERIFY_NAME")
+  if [ -n "$EXISTING" ]; then
+    docker rm $VERIFY_NAME
+  fi
+
+  # Spin up a new container to verify the freshly built package. We do this
+  # inside a separate container so we can ensure the package includes all the
+  # necessary dependencies and we're not missing any dependencies we might have
+  # installed just for building.
+  docker run \
+    --name=$VERIFY_NAME \
+    --volume=$ROOT_DIR:/api-umbrella \
+    $DIST \
+    /bin/bash -c "cd /api-umbrella && make verify_package"
+
+  # Delete the verify container once we're done.
+  docker rm $VERIFY_NAME
 done

@@ -244,6 +244,8 @@ TRAFFICSERVER_INSTALL_MARKER:=$(TRAFFICSERVER_NAME)$(VERSION_SEP)$(TRAFFICSERVER
 #
 # LuaRocks Dependencies
 #
+ARGPARSE:=argparse
+ARGPARSE_VERSION:=0.4.1-1
 INSPECT:=inspect
 INSPECT_VERSION:=3.0-1
 LIBCIDR_FFI:=libcidr-ffi
@@ -835,6 +837,10 @@ $(STAGE_MARKERS_DIR)/$(UNBOUND_INSTALL_MARKER): $(DEPS_DIR)/$(UNBOUND)/.built | 
 	cd $(DEPS_DIR)/$(UNBOUND) && make install DESTDIR=$(STAGE_DIR)
 	touch $@
 
+# LuaRocks - argparse
+$(LUAROCKS_DIR)/$(ARGPARSE)/$(ARGPARSE_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(VENDOR_DIR)
+	$(call luarocks_install,ARGPARSE)
+
 # LuaRocks - inspect
 $(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION): | $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) $(VENDOR_DIR)
 	$(call luarocks_install,INSPECT)
@@ -951,6 +957,7 @@ $(BUILD_DIR)/local: | $(WORK_DIR)
 	ln -snf $(WORK_DIR) $(BUILD_DIR)/local
 
 $(STAGE_MARKERS_DIR)/api-umbrella-core-lua-dependencies: \
+	$(LUAROCKS_DIR)/$(ARGPARSE)/$(ARGPARSE_VERSION) \
 	$(LUAROCKS_DIR)/$(INSPECT)/$(INSPECT_VERSION) \
 	$(LUAROCKS_DIR)/$(LIBCIDR_FFI)/$(LIBCIDR_FFI_VERSION) \
 	$(LUAROCKS_DIR)/$(LUA_CMSGPACK)/$(LUA_CMSGPACK_VERSION) \
@@ -1050,6 +1057,9 @@ check_shared_objects:
 
 package:
 	$(BUILD_DIR)/package/build
+
+verify_package:
+	$(BUILD_DIR)/verify_package/run
 
 package_all:
 	$(BUILD_DIR)/package/build_all
