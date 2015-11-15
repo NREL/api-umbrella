@@ -724,7 +724,8 @@ $(DEPS_DIR)/$(OPENRESTY)/.built: $(DEPS_DIR)/$(OPENRESTY) $(DEPS_DIR)/$(NGX_DYUP
 		--with-http_ssl_module \
 		--with-http_stub_status_module \
 		--add-module=../$(NGX_DYUPS) \
-		--add-module=../$(NGX_TXID)
+		--add-module=../$(NGX_TXID) \
+		--with-dtrace-probes
 	cd $< && make
 	touch $@
 

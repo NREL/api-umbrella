@@ -34,6 +34,7 @@ yum -y install \
   patch \
   pcre-devel \
   rpm-build \
+  systemtap-sdt-devel \
   tar \
   tcl-devel \
   unzip \
