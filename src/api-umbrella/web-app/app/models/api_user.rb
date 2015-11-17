@@ -155,8 +155,9 @@ class ApiUser
     operation = if(new_record?) then :insert else :update end
     result = Operations.send(operation, self, options).prepare do
       # Extract all the attributes to set, but omit the special "ts" attribute
-      # that will be handled by $currentDate.
-      doc = as_document.except("ts")
+      # that will be handled by $currentDate. Also exclude "_id", since it's
+      # part of the upsert find.
+      doc = as_document.except("ts", "_id")
 
       # Perform the upsert, setting "ts" mongo server-side to the $currentDate.
       collection.find({ :_id => self.id }).update({
