@@ -11,7 +11,6 @@ module.exports = function(mongoose) {
       type: String,
       index: { unique: true },
     },
-    created_at: Date,
     first_name: String,
     last_name: String,
     email: String,
@@ -22,6 +21,8 @@ module.exports = function(mongoose) {
     disabled_at: Date,
     roles: [String],
     settings: mongoose.Schema.Types.Mixed,
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now },
   }, { collection: 'api_users', minimize: false });
 
   schema.pre('validate', function generateApiKey(next) {
