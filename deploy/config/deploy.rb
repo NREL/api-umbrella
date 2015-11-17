@@ -90,6 +90,7 @@ namespace :deploy do
   task :reload do
     on roles(:app), :in => :sequence, :wait => 5 do
       execute :sudo, "api-umbrella reload"
+      execute "api-umbrella health --wait-for-status green"
     end
   end
   after :publishing, :reload
