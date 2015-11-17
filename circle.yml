@@ -17,6 +17,10 @@ dependencies:
     - build/work/test-env
     - build/work/tmp/web-assets
     - build/work/vendor
+  pre:
+    # Stop the older MongoDB 2.4 version in favor of the one bundled with API
+    # Umbrella.
+    - sudo stop mongodb
   override:
     # Build all the API Umbrella software dependencies.
     - make --debug

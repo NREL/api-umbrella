@@ -41,6 +41,9 @@ fi
 
 # Run the Rails tests on the first node.
 if [ $CIRCLE_NODE_INDEX -eq "0" ]; then
+  # Start the version of mongod bundled with API Umbrella.
+  nohup bash -c "sudo $(pwd)/build/work/stage/opt/api-umbrella/embedded/bin/mongod --config /etc/mongodb.conf &"
+
   # Start the version of elasticsearch bundled with API Umbrella.
   nohup bash -c "$(pwd)/build/work/stage/opt/api-umbrella/embedded/bin/elasticsearch &"
 
