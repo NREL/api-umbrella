@@ -19,7 +19,13 @@ env API_UMBRELLA_RUNTIME_CONFIG;
 pcre_jit on;
 
 http {
-  access_log {{log_dir}}/nginx/access.log combined {{nginx.access_log_options}};
+  log_format combined_extended '$remote_addr - $remote_user [$time_local] '
+    '"$request" $status $body_bytes_sent '
+    '"$http_referer" "$http_user_agent" '
+    '$x_api_umbrella_request_id '
+    '$scheme://$host:$server_port '
+    '$request_time $sent_http_x_cache';
+  access_log {{log_dir}}/nginx/access.log combined_extended {{nginx.access_log_options}};
 
   client_body_temp_path {{tmp_dir}}/nginx-client_body_temp;
   proxy_temp_path {{tmp_dir}}/nginx-proxy_temp;
@@ -133,6 +139,8 @@ http {
 
   server {
     listen {{api_server.host}}:{{api_server.port}};
+    set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
+
     location /api-umbrella/v1/health {
       content_by_lua_file '{{_src_root_dir}}/src/api-umbrella/http-api/health.lua';
     }
@@ -226,6 +234,7 @@ http {
     listen {{web.host}}:{{web.port}};
     server_name _;
 
+    set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
     root {{web.dir}}/public;
 
     # Serve non-static resources with Puma.
