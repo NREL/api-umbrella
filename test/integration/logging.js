@@ -4,6 +4,7 @@ require('../test_helper');
 
 var _ = require('lodash'),
     async = require('async'),
+    config = require('../support/config'),
     Curler = require('curler').Curler,
     crypto = require('crypto'),
     Factory = require('factory-lady'),
@@ -1101,8 +1102,8 @@ describe('logging', function() {
   });
 
   it('logs requests that time out before responding', function(done) {
-    this.timeout(90000);
-    request.get('http://localhost:9080/delay/65000', this.options, function(error, response) {
+    this.timeout(30000);
+    request.get('http://localhost:9080/delay/' + (config.get('nginx.proxy_connect_timeout') * 1000 + 3000), this.options, function(error, response) {
       should.not.exist(error);
       response.statusCode.should.eql(504);
 
@@ -1110,8 +1111,8 @@ describe('logging', function() {
         should.not.exist(error);
         record.response_status.should.eql(504);
         itLogsBaseFields(record, this.uniqueQueryId, this.user);
-        record.response_time.should.be.greaterThan(58000);
-        record.response_time.should.be.lessThan(62000);
+        record.response_time.should.be.greaterThan(config.get('nginx.proxy_connect_timeout') * 1000 - 2000);
+        record.response_time.should.be.lessThan(config.get('nginx.proxy_connect_timeout') * 1000 + 2000);
         done();
       }.bind(this));
     }.bind(this));

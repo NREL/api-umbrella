@@ -4,6 +4,7 @@ require('../test_helper');
 
 var _ = require('lodash'),
     async = require('async'),
+    config = require('../support/config'),
     Curler = require('curler').Curler,
     execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
@@ -806,7 +807,7 @@ describe('proxying', function() {
     // remains compatible with this scenario of streaming gzipped, chunked
     // responses.
     it('successfully responds when dealing with large-ish, gzipped, chunked responses', function(done) {
-      this.timeout(120000);
+      this.timeout(20000);
 
       var options = _.merge({}, this.options, {
         gzip: true,
@@ -1216,69 +1217,69 @@ describe('proxying', function() {
       });
     });
 
-    it('behaves with 60-second connection timeouts', function(done) {
-      this.timeout(90000);
+    it('behaves with configurable connection timeouts', function(done) {
+      this.timeout(40000);
 
       var options = this.options;
 
-      // Parallelize all the 60-second timeout tests. Ideally these would be
+      // Parallelize all the timeout tests. Ideally these would be
       // represented as separate tests, but since mocha doesn't support
       // parallel tests, running these serially can quickly add up. So until
       // there's a better option, we'll run all these inside a single test in
       // parallel.
       async.parallel([
-        // times out after 60 seconds if a backend is non-responsive for GET
+        // times out after 10 seconds if a backend is non-responsive for GET
         // requests
         function(callback) {
           var startTime = Date.now();
-          request.get('http://localhost:9080/delay/65000', options, function(error, response) {
+          request.get('http://localhost:9080/delay/' + (config.get('nginx.proxy_connect_timeout') * 1000 + 5000), options, function(error, response) {
             response.statusCode.should.eql(504);
 
             var duration = Date.now() - startTime;
-            duration.should.be.greaterThan(60000);
-            duration.should.be.lessThan(65000);
+            duration.should.be.greaterThan(config.get('nginx.proxy_connect_timeout') * 1000);
+            duration.should.be.lessThan(config.get('nginx.proxy_connect_timeout') * 1000 + 5000);
             callback();
           });
         },
 
-        // times out after 60 seconds if a backend is non-responsive for
+        // times out after 10 seconds if a backend is non-responsive for
         // non-GET requests
         function(callback) {
           var startTime = Date.now();
-          request.post('http://localhost:9080/delay/65000', options, function(error, response) {
+          request.post('http://localhost:9080/delay/' + (config.get('nginx.proxy_connect_timeout') * 1000 + 5000), options, function(error, response) {
             response.statusCode.should.eql(504);
 
             var duration = Date.now() - startTime;
-            duration.should.be.greaterThan(60000);
-            duration.should.be.lessThan(65000);
+            duration.should.be.greaterThan(config.get('nginx.proxy_connect_timeout') * 1000);
+            duration.should.be.lessThan(config.get('nginx.proxy_connect_timeout') * 1000 + 5000);
             callback();
           });
         },
 
-        // doesn't time out if a backend starts sending the request within 60
+        // doesn't time out if a backend starts sending the request within 10
         // seconds
         function(callback) {
-          request.get('http://localhost:9080/delays/57000/65000', options, function(error, response, body) {
+          request.get('http://localhost:9080/delays/' + (config.get('nginx.proxy_read_timeout') * 1000 - 2000) + '/' + (config.get('nginx.proxy_connect_timeout') * 1000 + 5000), options, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('firstdone');
             callback();
           });
         },
 
-        // doesn't time out if a backend sends chunks at least once every 60
+        // doesn't time out if a backend sends chunks at least once every 10
         // seconds
         function(callback) {
-          request.get('http://localhost:9080/delays/7000/65000', options, function(error, response, body) {
+          request.get('http://localhost:9080/delays/' + (config.get('nginx.proxy_read_timeout') * 1000 - 8000) + '/' + (config.get('nginx.proxy_read_timeout') * 1000), options, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('firstdone');
             callback();
           });
         },
 
-        // closes the response if the backend waits more than 60 seconds
+        // closes the response if the backend waits more than 10 seconds
         // between sending chunks
         function(callback) {
-          request.get('http://localhost:9080/delays/3000/65000', options, function(error, response, body) {
+          request.get('http://localhost:9080/delays/' + (config.get('nginx.proxy_read_timeout') * 1000 - 8000) + '/' + (config.get('nginx.proxy_read_timeout') * 1000 + 2000), options, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('first');
             callback();
@@ -1295,14 +1296,14 @@ describe('proxying', function() {
           var start = new Date();
           async.parallel([
             function(request_callback) {
-              request.get('http://localhost:9080/delay/10000', options, function(error, response) {
+              request.get('http://localhost:9080/delay/5000', options, function(error, response) {
                 response.statusCode.should.eql(200);
                 request_callback();
               });
             },
             function(request_callback) {
               setTimeout(function() {
-                request.post('http://localhost:9080/delay/10000', options, function(error, response) {
+                request.post('http://localhost:9080/delay/5000', options, function(error, response) {
                   response.statusCode.should.eql(200);
                   request_callback();
                 });
@@ -1311,8 +1312,8 @@ describe('proxying', function() {
           ], function() {
             var end = new Date();
             var duration = end - start;
-            duration.should.be.greaterThan(10000);
-            duration.should.be.lessThan(15000);
+            duration.should.be.greaterThan(5000);
+            duration.should.be.lessThan(9000);
             callback();
           });
         },
@@ -1346,11 +1347,10 @@ describe('proxying', function() {
                 // Ensure that the backend has only been called once.
                 body.should.eql('1');
 
-                // Wait 15 seconds for any possible retry attempts that might be
+                // Wait 5 seconds for any possible retry attempts that might be
                 // pending, and then ensure the backend has still only been called
                 // once.
-                setTimeout(next, 15000);
-
+                setTimeout(next, 5000);
               });
             },
             function(next) {
@@ -1394,11 +1394,10 @@ describe('proxying', function() {
                 // Ensure that the backend has only been called once.
                 body.should.eql('1');
 
-                // Wait 15 seconds for any possible retry attempts that might be
+                // Wait 5 seconds for any possible retry attempts that might be
                 // pending, and then ensure the backend has still only been called
                 // once.
-                setTimeout(next, 15000);
-
+                setTimeout(next, 5000);
               });
             },
             function(next) {
@@ -1443,10 +1442,10 @@ describe('proxying', function() {
                 // Ensure that the backend has only been called once.
                 body.should.eql('1');
 
-                // Wait 15 seconds for any possible retry attempts that might be
+                // Wait 5 seconds for any possible retry attempts that might be
                 // pending, and then ensure the backend has still only been called
                 // once.
-                setTimeout(next, 15000);
+                setTimeout(next, 5000);
 
               });
             },
@@ -1470,7 +1469,7 @@ describe('proxying', function() {
         // rotation.
         function(callback) {
           async.times(50, function(index, timesCallback) {
-            request.post('http://localhost:9080/delay/65000', options, timesCallback);
+            request.post('http://localhost:9080/delay/' + (config.get('nginx.proxy_connect_timeout') * 1000 + 5000), options, timesCallback);
           }, function() {
             async.times(50, function(index, timesCallback) {
               request.get('http://localhost:9080/info/', options, function(error, response) {
