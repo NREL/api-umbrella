@@ -547,6 +547,48 @@ describe('logging', function() {
     }.bind(this));
   });
 
+  it('logs requests and caches city when geocoding returns a city with accent characters', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-For': '212.55.61.5',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_ip.should.eql('212.55.61.5');
+        record.request_ip_country.should.eql('FO');
+        should.not.exist(record.request_ip_region);
+        record.request_ip_city.should.eql('Tórshavn');
+        record.request_ip_location.should.eql({
+          lat: 62.0167,
+          lon: -6.7667,
+        });
+
+        global.elasticsearch.get({
+          index: 'api-umbrella',
+          type: 'city',
+          id: crypto.createHash('sha256').update('FO--Tórshavn', 'utf8').digest('hex'),
+        }, function(error, res) {
+          should.not.exist(error);
+          _.omit(res._source, 'updated_at').should.eql({
+            country: 'FO',
+            city: 'Tórshavn',
+            location: {
+              lat: 62.0167,
+              lon: -6.7667,
+            },
+          });
+          done();
+        });
+      }.bind(this));
+    }.bind(this));
+  });
+
   it('logs the accept-encoding header prior to normalization', function(done) {
     this.timeout(4500);
     var options = _.merge({}, this.options, {
