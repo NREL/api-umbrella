@@ -16,7 +16,10 @@ local function health(options, config)
   if not body then
     local err = response_code
     return status, exit_code, err
-  elseif headers["content-type"] == "application/json" then
+  elseif headers["content-type"] ~= "application/json" then
+    local err = "nginx error"
+    return status, exit_code, err
+  else
     local data = cjson.decode(body)
     if data["status"] then
       status = data["status"]
