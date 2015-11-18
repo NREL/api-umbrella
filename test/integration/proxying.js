@@ -1279,7 +1279,7 @@ describe('proxying', function() {
         // closes the response if the backend waits more than 10 seconds
         // between sending chunks
         function(callback) {
-          request.get('http://localhost:9080/delays/' + (config.get('nginx.proxy_read_timeout') * 1000 - 8000) + '/' + (config.get('nginx.proxy_read_timeout') * 1000 + 2000), options, function(error, response, body) {
+          request.get('http://localhost:9080/delays/' + (config.get('nginx.proxy_read_timeout') * 1000 - 8000) + '/' + (config.get('nginx.proxy_read_timeout') * 1000 + 4000), options, function(error, response, body) {
             response.statusCode.should.eql(200);
             body.should.eql('first');
             callback();
