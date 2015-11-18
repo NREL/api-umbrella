@@ -30,10 +30,10 @@ CONFIG proxy.config.log.squid_log_enabled INT 0
 # Umbrella components.
 CONFIG proxy.config.log.rolling_enabled INT 0
 
-# Increase timeouts to 60 seconds to match other pieces of the stack.
-CONFIG proxy.config.http.transaction_no_activity_timeout_in INT 60
-CONFIG proxy.config.http.transaction_no_activity_timeout_out INT 60
-CONFIG proxy.config.http.connect_attempts_timeout INT 60
+# Increase timeouts to match the timeouts in other pieces of the stack.
+CONFIG proxy.config.http.transaction_no_activity_timeout_in INT {{trafficserver._transaction_no_activity_timeout_in}}
+CONFIG proxy.config.http.transaction_no_activity_timeout_out INT {{trafficserver._transaction_no_activity_timeout_out}}
+CONFIG proxy.config.http.connect_attempts_timeout INT {{trafficserver._connect_attempts_timeout}}
 
 # Retry the connection to the backend nginx API router server if it fails. This
 # may happen when nginx is being reloaded since TrafficServer is holding

@@ -220,6 +220,11 @@ http {
     # Don't buffer proxied requests to allow for streaming APIs.
     proxy_buffering off;
 
+    # Set proxy timeouts.
+    proxy_connect_timeout {{nginx.proxy_connect_timeout}}s;
+    proxy_read_timeout {{nginx.proxy_read_timeout}}s;
+    proxy_send_timeout {{nginx.proxy_send_timeout}}s;
+
     # If the backend only returns gzipped responses, decompress them as
     # appropriate to meet the Accept headers of the current client.
     gunzip on;
