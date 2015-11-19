@@ -191,7 +191,13 @@ end
 
 local function set_permissions()
   local _, err
-  _, err = posix.chmod(config["tmp_dir"], "rwxrwxrwx")
+  _, _, err = run_command("chmod 1777 " .. config["tmp_dir"])
+  if err then
+    print("chmod failed: ", err)
+    os.exit(1)
+  end
+
+  _, _, err = run_command("chmod 1777 " .. path.join(config["_src_root_dir"], "src/api-umbrella/web-app/tmp"))
   if err then
     print("chmod failed: ", err)
     os.exit(1)
