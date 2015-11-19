@@ -77,16 +77,7 @@ namespace :deploy do
   task :lua_deps do
     on roles(:app) do
       within release_path do
-        env = {
-          "LUA_PATH" => "/opt/api-umbrella/embedded/openresty/luajit/share/lua/5.1/?.lua;/opt/api-umbrella/embedded/openresty/luajit/share/lua/5.1/?/init.lua;;",
-          "LUAROCKS_CMD" => "luarocks",
-          "VENDOR_DIR" => "#{shared_path}/vendor",
-          "EMBEDDED_DIR" => "/opt/api-umbrella/embedded",
-        }
-
-        with(env) do
-          execute :make, "install_lua_deps"
-        end
+        execute :make, "install_lua_vendor_deps LUA_PATH='/opt/api-umbrella/embedded/openresty/luajit/share/lua/5.1/?.lua;/opt/api-umbrella/embedded/openresty/luajit/share/lua/5.1/?/init.lua;;' LUAROCKS_CMD=/opt/api-umbrella/embedded/bin/luarocks VENDOR_DIR=#{shared_path}/vendor EMBEDDED_DIR=/opt/api-umbrella/embedded"
       end
     end
   end
