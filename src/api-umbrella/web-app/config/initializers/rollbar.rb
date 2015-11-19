@@ -1,6 +1,5 @@
 if(ApiUmbrellaConfig[:rollbar] && ApiUmbrellaConfig[:rollbar][:web_token].present?)
   require 'rollbar'
-  require 'rollbar/rails'
   Rollbar.configure do |config|
     # Without configuration, Rollbar is enabled in all environments.
     # To disable in specific environments, set config.enabled=false.
@@ -34,13 +33,16 @@ if(ApiUmbrellaConfig[:rollbar] && ApiUmbrellaConfig[:rollbar][:web_token].presen
     #
     # You can also specify a callable, which will be called with the exception instance.
     # config.exception_level_filters.merge!('MyCriticalException' => lambda { |e| 'critical' })
+    config.exception_level_filters.merge!({
+      "ActionController::RoutingError" => "ignore",
+    })
 
     # Enable asynchronous reporting (uses girl_friday or Threading if girl_friday
     # is not installed)
     # config.use_async = true
     # Supply your own async handler:
     # config.async_handler = Proc.new { |payload|
-    #  Thread.new { Rollbar.process_payload(payload) }
+    #  Thread.new { Rollbar.process_from_async_handler(payload) }
     # }
 
     # Enable asynchronous reporting (using sucker_punch)
@@ -49,6 +51,6 @@ if(ApiUmbrellaConfig[:rollbar] && ApiUmbrellaConfig[:rollbar][:web_token].presen
     # Enable delayed reporting (using Sidekiq)
     # config.use_sidekiq
     # You can supply custom Sidekiq options:
-    # config.use_sidekiq 'queue' => 'my_queue'
+    # config.use_sidekiq 'queue' => 'default'
   end
 end
