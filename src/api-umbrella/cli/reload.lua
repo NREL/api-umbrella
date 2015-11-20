@@ -2,6 +2,9 @@ local path = require "pl.path"
 local run_command = require "api-umbrella.utils.run_command"
 local setup = require "api-umbrella.cli.setup"
 local status = require "api-umbrella.cli.status"
+local types = require "pl.types"
+
+local is_empty = types.is_empty
 
 local function reload_perp(perp_base)
   local _, _, err = run_command("perphup " .. perp_base)
@@ -43,7 +46,9 @@ local function reload_nginx(perp_base)
   end
 end
 
-return function()
+return function(options)
+  options["reload"] = nil
+
   local running = status()
   if not running then
     print("api-umbrella is stopped")
@@ -55,12 +60,12 @@ return function()
 
   reload_perp(perp_base)
 
-  if config["_service_web_enabled?"] then
+  if config["_service_web_enabled?"] and (is_empty(options) or options["web"]) then
     reload_web_delayed_job(perp_base)
     reload_web_puma(perp_base)
   end
 
-  if config["_service_router_enabled?"] then
+  if config["_service_router_enabled?"] and (is_empty(options) or options["router"]) then
     reload_trafficserver(perp_base)
     reload_nginx(perp_base)
   end

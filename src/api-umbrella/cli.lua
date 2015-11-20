@@ -27,9 +27,9 @@ function _M.restart()
   _M.start()
 end
 
-function _M.reload()
+function _M.reload(args)
   local reload = require "api-umbrella.cli.reload"
-  reload()
+  reload(args)
 end
 
 function _M.status()
@@ -85,8 +85,12 @@ parser:command("stop")
 parser:command("restart")
   :description("Restart the API Umbrella server.")
 
-parser:command("reload")
+local reload_command = parser:command("reload")
   :description("Reload the configuration of the API Umbrella server.")
+reload_command:flag("--router")
+  :description("Reload only the router processes")
+reload_command:flag("--web")
+  :description("Reload only the web processes")
 
 parser:command("status")
   :description("Show the status of the API Umbrella server.")

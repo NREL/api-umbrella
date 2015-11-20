@@ -440,7 +440,7 @@ describe('processes', function() {
           async.whilst(function() { return runTests; }, function(whilstCallback) {
             setTimeout(function() {
               if(runTests) {
-                shared.runCommand('reload', whilstCallback);
+                shared.runCommand(['reload', '--router'], whilstCallback);
               }
             }, _.random(5, 500));
           }, function(error) {
