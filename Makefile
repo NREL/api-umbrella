@@ -421,7 +421,7 @@ $(STAGE_MARKERS_DIR)/api-umbrella-core: $(STAGE_MARKERS_DIR)/api-umbrella-core-d
 	#cd $(EMBEDDED_DIR)/apps/core/shared/vendor/bundle && find ruby/*/gems -name "*.so" -delete
 	# Setup a shared symlink for web-app temp files.
 	mkdir -p $(EMBEDDED_DIR)/apps/core/shared/src/api-umbrella/web-app/tmp
-	cd $(EMBEDDED_DIR)/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app && ln -snf ../../../../../src/api-umbrella/web-app/tmp ./tmp
+	cd $(EMBEDDED_DIR)/apps/core/releases/$(RELEASE_TIMESTAMP)/src/api-umbrella/web-app && ln -snf ../../../../../shared/src/api-umbrella/web-app/tmp ./tmp
 	touch $@
 
 # api-umbrella-static-site
