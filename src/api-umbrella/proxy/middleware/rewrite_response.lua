@@ -8,11 +8,11 @@ local startswith = stringx.startswith
 local url_build = url.build
 local url_parse = url.parse
 
-local function set_cache_headers()
+local function set_cache_header()
   local cache = "MISS"
   local via = ngx.header["Via"]
   if via then
-    local matches, match_err = ngx.re.match(via, "\\[(.+)\\]\\)")
+    local matches, match_err = ngx.re.match(via, "ApacheTrafficServer \\[([^\\]]+)\\]", "jo")
     if matches and matches[1] then
       -- Parse the cache status out of the Via header into a simplified X-Cache
       -- HIT/MISS value:
@@ -34,6 +34,22 @@ local function set_cache_headers()
   local existing_x_cache = ngx.header["X-Cache"]
   if not existing_x_cache or cache == "HIT" then
     ngx.header["X-Cache"] = cache
+  end
+end
+
+local function set_via_header()
+  local via = ngx.header["Via"]
+  if via then
+    -- Replace the server hostname or hex-encoded IP address in the Via header
+    -- TrafficServer appends with an alias of "api-umbrella". We have to return
+    -- some name here to be compliant with the Via header specification, but we
+    -- don't want to expose internal machine names or IPs.
+    local new_via, _, err = ngx.re.sub(via, "(http/[0-9\\.]+) [^ ]+ (\\(ApacheTrafficServer[^\\)]*\\))$", "$1 api-umbrella $2", "jo")
+    if new_via then
+      ngx.header["Via"] = new_via
+    elseif err then
+      ngx.log(ngx.ERR, "regex error: ", err)
+    end
   end
 end
 
@@ -102,7 +118,8 @@ local function rewrite_redirects()
 end
 
 return function(settings)
-  set_cache_headers()
+  set_cache_header()
+  set_via_header()
 
   if settings then
     set_default_headers(settings)

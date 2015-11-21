@@ -67,7 +67,20 @@ CONFIG proxy.config.cache.enable_read_while_writer INT 0
 # hit or not.
 CONFIG proxy.config.http.insert_response_via_str INT 2
 
-# Don't override the "Server" response header with at TrafficServer signature.
+# Do not include the Via headers on the requests to the backend servers. This
+# is for two reasons:
+# - It may disable gzip responses from underlying API backend servers by
+#   default: https://community.akamai.com/community/web-performance/blog/2015/05/06/beware-the-via-header-disabled-compression-can-have-a-performance-impact
+# - It prevents API Umbrella from making circular requests to itself as an API
+#   backend (which is admittedly an edge-case, but we had some usage of this):
+#   https://issues.apache.org/jira/browse/TS-2298
+CONFIG proxy.config.http.insert_request_via_str INT 0
+
+# Don't include the TrafficServer version number in the Via headers.
+CONFIG proxy.config.http.request_via_str STRING ApacheTrafficServer
+CONFIG proxy.config.http.response_via_str STRING ApacheTrafficServer
+
+# Don't override the "Server" response header with the TrafficServer signature.
 CONFIG proxy.config.http.response_server_enabled INT 0
 
 # Additional custom configuration

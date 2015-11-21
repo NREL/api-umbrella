@@ -126,6 +126,46 @@ describe('proxying', function() {
         ],
       },
       {
+        _id: 'circular-backend',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/circular-backend/',
+            backend_prefix: '/info/circular-example/',
+          },
+        ],
+        settings: {
+          disable_api_key: true,
+        },
+      },
+      {
+        _id: 'circular-frontend',
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9080,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/circular/',
+            backend_prefix: '/circular-backend/',
+          },
+        ],
+        settings: {
+          disable_api_key: true,
+        },
+      },
+      {
         _id: 'example',
         frontend_host: 'localhost',
         backend_host: 'localhost',
@@ -1512,6 +1552,52 @@ describe('proxying', function() {
         var data = JSON.parse(body);
         data.basic_auth_username.should.eql('somebody');
         data.basic_auth_password.should.eql('secret');
+        done();
+      });
+    });
+  });
+
+  describe('via request header', function() {
+    it('does not pass the via header header to backends', function(done) {
+      request.get('http://localhost:9080/info/', this.options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        should.not.exist(data.headers['via']);
+        done();
+      });
+    });
+  });
+
+  describe('via response header', function() {
+    it('returns the trafficserver via header, including cache decoding information, but ommitting trafficserver version and replacing the host information', function(done) {
+      request.get('http://localhost:9080/info/?cache-busting=' + _.uniqueId(), this.options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        response.headers['via'].should.eql('http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ])');
+        done();
+      });
+    });
+
+    it('appends the trafficserver via header to other via headers the backend returns', function(done) {
+      request.get('http://localhost:9080/via-header/?cache-busting=' + _.uniqueId(), this.options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        response.headers['via'].should.eql('1.0 fred, 1.1 nowhere.com (Apache/1.1), http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ])');
+        done();
+      });
+    });
+  });
+
+  describe('circular requests', function() {
+    it('allows an api umbrella backend server to reference the same api umbrella instance', function(done) {
+      var uniqueId = _.uniqueId();
+      request.get('http://localhost:9080/circular/?cache-busting=' + uniqueId, this.options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        response.headers['via'].should.eql('http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ]), http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ])');
+        var data = JSON.parse(body);
+        data.url.path.should.eql('/info/circular-example/?cache-busting=' + uniqueId);
         done();
       });
     });
