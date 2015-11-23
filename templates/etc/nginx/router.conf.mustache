@@ -104,7 +104,7 @@ http {
   # Allow any sized uploads to backends.
   client_max_body_size 0;
 
-  keepalive_timeout 30s;
+  keepalive_timeout {{nginx.keepalive_timeout}}s;
 
   gzip on;
   gzip_comp_level 2;
