@@ -7,6 +7,15 @@ GIT
       omniauth-oauth2 (~> 1.0)
 
 GIT
+  remote: https://github.com/GUI/omniauth-cas.git
+  revision: ad88e1ef548430cf68c7a5dd9a9725e304b19f56
+  branch: rexml
+  specs:
+    omniauth-cas (1.1.0)
+      addressable (~> 2.3)
+      omniauth (~> 1.2.0)
+
+GIT
   remote: https://github.com/GUI/seed-fu.git
   revision: 616758da2962b5870869a35a374ee6c890a7b33b
   branch: mongoid
@@ -255,7 +264,7 @@ GEM
       net-ssh (>= 2.6.5)
     net-ssh (2.9.2)
     netrc (0.10.3)
-    nokogiri (1.6.6.2)
+    nokogiri (1.6.6.4)
       mini_portile (~> 0.6.0)
     oauth (0.4.7)
     oauth2 (1.0.0)
@@ -269,10 +278,6 @@ GEM
     omniauth (1.2.2)
       hashie (>= 1.2, < 4)
       rack (~> 1.0)
-    omniauth-cas (1.1.0)
-      addressable (~> 2.3)
-      nokogiri (~> 1.5)
-      omniauth (~> 1.2.0)
     omniauth-facebook (2.0.1)
       omniauth-oauth2 (~> 1.2)
     omniauth-google-oauth2 (0.2.6)
@@ -550,7 +555,7 @@ DEPENDENCIES
   oj (~> 2.13.0)
   oj_mimic_json (~> 1.0.1)
   omniauth (~> 1.2.1)
-  omniauth-cas (~> 1.1.0)
+  omniauth-cas (~> 1.1.0)!
   omniauth-facebook (~> 2.0.0)
   omniauth-github!
   omniauth-google-oauth2 (~> 0.2.2)

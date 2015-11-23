@@ -56,7 +56,7 @@ gem "elasticsearch", "~> 1.0.14"
 # OmniAuth-based authentication
 gem "devise", "~> 3.4.0"
 gem "omniauth", "~> 1.2.1"
-gem "omniauth-cas", "~> 1.1.0"
+gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml"
 gem "omniauth-facebook", "~> 2.0.0"
 # Patched omniauth-github for e-mail verification:
 # https://github.com/intridea/omniauth-github/pull/41
