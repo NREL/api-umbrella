@@ -1,9 +1,10 @@
 local _M = {}
 
-local db_config = require "api-umbrella.proxy.models.db_config"
 local active_config = require "api-umbrella.proxy.models.active_config"
-local lock = require "resty.lock"
+local db_config = require "api-umbrella.proxy.models.db_config"
+local interval_lock = require "api-umbrella.utils.interval_lock"
 local load_backends = require "api-umbrella.proxy.load_backends"
+local lock = require "resty.lock"
 local utils = require "api-umbrella.proxy.utils"
 
 local ERR = ngx.ERR
@@ -43,12 +44,6 @@ local function do_check()
     return
   end
 
-  local check_lock = lock:new("locks", { ["timeout"] = 0 })
-  local _, lock_err = check_lock:lock("load_db_config_check")
-  if lock_err then
-    return
-  end
-
   -- Query for database config versions that are newer than the previously
   -- fetched version.
   local last_fetched_version = ngx.shared.active_config:get("db_version") or 0
@@ -83,29 +78,6 @@ local function do_check()
   if last_fetched_at then
     ngx.shared.active_config:set("db_config_last_fetched_at", last_fetched_at)
   end
-
-  local ok, unlock_err = check_lock:unlock()
-  if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
-  end
-end
-
-local function check(premature)
-  if premature then
-    return
-  end
-
-  local ok, err = pcall(do_check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to run api load cycle: ", err)
-  end
-
-  ok, err = new_timer(delay, check)
-  if not ok then
-    if err ~= "process exiting" then
-      ngx.log(ngx.ERR, "failed to create timer: ", err)
-    end
-  end
 end
 
 local function setup(premature)
@@ -118,11 +90,7 @@ local function setup(premature)
     ngx.log(ngx.ERR, "failed to run api load cycle: ", err)
   end
 
-  ok, err = new_timer(0, check)
-  if not ok then
-    log(ERR, "failed to create timer: ", err)
-    return
-  end
+  interval_lock.repeat_with_mutex('load_db_config_check', delay, do_check)
 end
 
 function _M.spawn()
