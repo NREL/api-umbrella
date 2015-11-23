@@ -552,6 +552,7 @@ DEPENDENCIES
   mongoid_rails_migrations (~> 1.0.1)
   mongoid_userstamp (~> 0.3.2)
   multi_json (~> 1.11.0)
+  nokogiri (~> 1.6.6.4)
   oj (~> 2.13.0)
   oj_mimic_json (~> 1.0.1)
   omniauth (~> 1.2.1)
