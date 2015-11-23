@@ -1,0 +1,43 @@
+DEPENDENCIES
+  api-umbrella
+    git: https://github.com/NREL-cookbooks/api-umbrella.git
+    revision: c4173b996cd13d1a39219e7e9f201a395876d5c4
+    branch: lua
+
+GRAPH
+  7-zip (1.0.2)
+    windows (>= 1.2.2)
+  api-umbrella (0.7.1)
+    build-essential (>= 0.0.0)
+    nodejs (>= 0.0.0)
+    phantomjs (>= 0.0.0)
+    sudo (>= 0.0.0)
+    ulimit (>= 0.0.0)
+    yum (>= 0.0.0)
+    yum-epel (>= 0.0.0)
+  apt (2.9.2)
+  ark (0.9.0)
+    7-zip (>= 0.0.0)
+    windows (>= 0.0.0)
+  build-essential (2.2.4)
+  chef_handler (1.2.0)
+  chocolatey (0.4.1)
+    windows (~> 1.31)
+  homebrew (1.13.0)
+    build-essential (>= 2.1.2)
+  nodejs (2.4.2)
+    apt (>= 0.0.0)
+    ark (>= 0.0.0)
+    build-essential (>= 0.0.0)
+    homebrew (>= 0.0.0)
+    yum-epel (>= 0.0.0)
+  phantomjs (1.0.3)
+    build-essential (>= 0.0.0)
+    chocolatey (>= 0.0.0)
+  sudo (2.7.2)
+  ulimit (0.3.3)
+  windows (1.38.3)
+    chef_handler (>= 0.0.0)
+  yum (3.8.2)
+  yum-epel (0.6.4)
+    yum (~> 3.2)

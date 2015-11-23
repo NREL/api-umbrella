@@ -278,6 +278,31 @@ local function set_computed_config()
     end
   end
 
+  -- Setup the request/response timeouts for the different pieces of the stack.
+  -- Since we traverse multiple proxies, we want to make sure the timeouts of
+  -- the different proxies are kept in sync.
+  --
+  -- We will actually stagger the timeouts slightly at each proxy layer to
+  -- prevent race conditions. Since the flow of the requests looks like:
+  --
+  -- [incoming request] => [initial nginx proxy] => [trafficserver] => [api routing nginx proxy] => [api backends]
+  --
+  -- Our real timeouts defined in the config file will be enforced at the "api
+  -- routing nginx proxy" layer. We increase our timeouts on the proxies
+  -- further out to prevent race conditions if all the pieces of the stack
+  -- timeout at the exact same time. This results in a timeout error regardless
+  -- of which stack returns the timeout error, but by staggering them, it makes
+  -- it more predictable and easier to test against if we always know the api
+  -- router is what should trigger the initial timeout. This also prevents the
+  -- proxies further back in the stack from thinking the client unexpectedly
+  -- hung up on the request.
+  config["trafficserver"]["_connect_attempts_timeout"] = config["nginx"]["proxy_connect_timeout"] + 1
+  config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"] + 1
+  config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_send_timeout"] + 1
+  config["nginx"]["_initial_proxy_connect_timeout"] = config["nginx"]["proxy_connect_timeout"] + 2
+  config["nginx"]["_initial_proxy_read_timeout"] = config["nginx"]["proxy_read_timeout"] + 2
+  config["nginx"]["_initial_proxy_send_timeout"] = config["nginx"]["proxy_send_timeout"] + 2
+
   deep_merge_overwrite_arrays(config, {
     _embedded_root_dir = embedded_root_dir,
     _src_root_dir = src_root_dir,

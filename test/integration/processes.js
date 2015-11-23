@@ -33,7 +33,7 @@ describe('processes', function() {
     });
 
     it('does not leak file descriptors across reloads', function(done) {
-      this.timeout(90000);
+      this.timeout(100000);
 
       var execOpts = { env: processEnv.env() };
       var parentPid;
@@ -62,27 +62,12 @@ describe('processes', function() {
         // information after each one.
         function(callback) {
           async.timesSeries(15, function(index, timesNext) {
+            var originalChildPids = [];
+
             async.series([
-              // Send a reload signal to nginx.
+              // Get the list of original nginx worker process PIDs on startup.
               function(seriesNext) {
-                execFile('kill', ['-HUP', parentPid], function(error, stdout, stderr) {
-                  if(error) {
-                    return seriesNext('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
-                  }
-
-                  // Wait a little while after sending the reload signal to
-                  // ensure the master process has had time to react.
-                  setTimeout(seriesNext, 250);
-                });
-              },
-
-              // After sending the reload signal, wait until only one set of
-              // worker processes is running. This prevents us from checking
-              // file descriptors when some of the old worker processes are
-              // still alive, but in the process of shutting down.
-              function(seriesNext) {
-                var numWorkers;
-                var expectedNumWorkers = config.get('nginx.workers') || 4;
+                var expectedNumWorkers = config.get('nginx.workers');
 
                 async.doUntil(function(untilNext) {
                   execFile('pgrep', ['-P', parentPid], function(error, stdout, stderr) {
@@ -90,11 +75,44 @@ describe('processes', function() {
                       return seriesNext('Error fetching nginx worker pids: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
                     }
 
-                    numWorkers = stdout.trim().split('\n').length;
+                    originalChildPids = stdout.trim().split('\n');
                     setTimeout(untilNext, 50);
                   });
                 }, function() {
-                  return numWorkers === expectedNumWorkers;
+                  return originalChildPids.length === expectedNumWorkers;
+                }, seriesNext);
+              },
+
+              // Send a reload signal to nginx.
+              function(seriesNext) {
+                execFile('kill', ['-HUP', parentPid], function(error, stdout, stderr) {
+                  if(error) {
+                    return seriesNext('Error reloading nginx: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+                  }
+
+                  seriesNext();
+                });
+              },
+
+              // After sending the reload signal, wait until only the new set
+              // of worker processes is running. This prevents us from checking
+              // file descriptors when some of the old worker processes are
+              // still alive, but in the process of shutting down.
+              function(seriesNext) {
+                var newChildPids = [];
+                var expectedNumWorkers = config.get('nginx.workers');
+
+                async.doUntil(function(untilNext) {
+                  execFile('pgrep', ['-P', parentPid], function(error, stdout, stderr) {
+                    if(error || !stdout) {
+                      return seriesNext('Error fetching nginx worker pids: ' + error + ' (STDOUT: ' + stdout + ', STDERR: ' + stderr + ')');
+                    }
+
+                    newChildPids = stdout.trim().split('\n');
+                    setTimeout(untilNext, 50);
+                  });
+                }, function() {
+                  return _.intersection(newChildPids, originalChildPids).length === 0 && newChildPids.length === expectedNumWorkers;
                 }, seriesNext);
               },
 
@@ -175,9 +193,12 @@ describe('processes', function() {
         // Test to ensure ngx_txid isn't leaving open file descriptors around
         // on reloads test for this patch:
         // https://github.com/streadway/ngx_txid/pull/6
+        // Allow for some small fluctuations in the /dev/urandom sockets, since
+        // other nginx modules might also be using them.
         urandomDescriptorCounts.length.should.eql(15);
         urandomDescriptorCounts[0].should.be.greaterThan(0);
-        _.max(urandomDescriptorCounts).should.eql(_.min(urandomDescriptorCounts));
+        var range = _.max(urandomDescriptorCounts) - _.min(urandomDescriptorCounts);
+        range.should.be.lte(config.get('nginx.workers') * 2);
 
         // A more general test to ensure that we don't see other unexpected
         // file descriptor growth. We'll allow some growth for this test,
@@ -185,8 +206,8 @@ describe('processes', function() {
         // other things nginx may be doing.
         descriptorCounts.length.should.eql(15);
         _.min(descriptorCounts).should.be.greaterThan(0);
-        var range = _.max(descriptorCounts) - _.min(descriptorCounts);
-        range.should.be.lessThan(5);
+        range = _.max(descriptorCounts) - _.min(descriptorCounts);
+        range.should.be.lte(config.get('nginx.workers') * 2);
 
         done();
       });
@@ -260,7 +281,7 @@ describe('processes', function() {
 
       var nginxFile = path.join(config.get('root_dir'), 'etc/nginx/router.conf');
       var nginxConfig = fs.readFileSync(nginxFile).toString();
-      nginxConfig.should.contain('worker_processes 4;');
+      nginxConfig.should.contain('worker_processes ' + config.get('nginx.workers') + ';');
 
       shared.setFileConfigOverrides({
         nginx: {
@@ -280,7 +301,7 @@ describe('processes', function() {
               should.not.exist(error);
 
               nginxConfig = fs.readFileSync(nginxFile).toString();
-              nginxConfig.should.contain('worker_processes 4;');
+              nginxConfig.should.contain('worker_processes ' + config.get('nginx.workers') + ';');
 
               done();
             });
@@ -419,7 +440,7 @@ describe('processes', function() {
           async.whilst(function() { return runTests; }, function(whilstCallback) {
             setTimeout(function() {
               if(runTests) {
-                shared.runCommand('reload', whilstCallback);
+                shared.runCommand(['reload', '--router'], whilstCallback);
               }
             }, _.random(5, 500));
           }, function(error) {

@@ -39,6 +39,10 @@ return function()
 
   local config = read_config()
   local perp_base = path.join(config["etc_dir"], "perp")
+
   reopen_perp_logs(perp_base)
-  reopen_nginx(perp_base)
+
+  if config["_service_router_enabled?"] then
+    reopen_nginx(perp_base)
+  end
 end

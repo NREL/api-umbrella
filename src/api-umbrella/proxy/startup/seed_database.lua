@@ -1,23 +1,15 @@
+local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local lock = require "resty.lock"
 local mongo = require "api-umbrella.utils.mongo"
 local random_token = require "api-umbrella.utils.random_token"
 local uuid = require "resty.uuid"
 
+local nowMongoDate = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } }
+
 local function seed_api_keys()
-  local user, user_err = mongo.first("api_users", {
-    query = {
-      api_key = config["static_site"]["api_key"],
-    },
-  })
-
-  if user_err then
-    ngx.log(ngx.ERR, "failed to query api_users: ", user_err)
-    return
-  end
-
-  if not user then
-    local _, create_err = mongo.create("api_users", {
-      _id = uuid.generate_random(),
+  local keys = {
+    -- static.site.ajax@internal.apiumbrella
+    {
       api_key = config["static_site"]["api_key"],
       email = "static.site.ajax@internal.apiumbrella",
       first_name = "API Umbrella Static Site",
@@ -48,11 +40,60 @@ local function seed_api_keys()
           },
         },
       },
+    },
+
+    -- web.admin.ajax@internal.apiumbrella
+    {
+      email = "web.admin.ajax@internal.apiumbrella",
+      first_name = "API Umbrella Admin",
+      last_name = "Key",
+      use_description = "An API key for the API Umbrella admin to use for internal ajax requests.",
+      terms_and_conditions = "1",
+      registration_source = "seed",
+      roles = { "api-umbrella-key-creator" },
+      settings = {
+        _id = uuid.generate_random(),
+        rate_limit_mode = "unlimited",
+      },
+    },
+  }
+
+  for _, data in ipairs(keys) do
+    local user, user_err = mongo.first("api_users", {
+      query = {
+        email = data["email"],
+      },
+      sort = "created_at",
     })
 
-    if create_err then
-      ngx.log(ngx.ERR, "failed to create api user: ", create_err)
-      return
+    if user_err then
+      ngx.log(ngx.ERR, "failed to query api_users: ", user_err)
+      break
+    end
+
+    if user then
+      deep_merge_overwrite_arrays(user, data)
+      if not user["api_key"] then
+        user["api_key"] = random_token(40)
+      end
+      user["updated_at"] = nowMongoDate
+
+      local _, update_err = mongo.update("api_users", user["_id"], user)
+      if update_err then
+        ngx.log(ngx.ERR, "failed to update record in api_users: ", update_err)
+      end
+    else
+      data["_id"] = uuid.generate_random()
+      if not data["api_key"] then
+        data["api_key"] = random_token(40)
+      end
+      data["created_at"] = nowMongoDate
+      data["updated_at"] = nowMongoDate
+
+      local _, create_err = mongo.create("api_users", data)
+      if create_err then
+        ngx.log(ngx.ERR, "failed to create record in api_users: ", create_err)
+      end
     end
   end
 end
@@ -70,25 +111,97 @@ local function seed_initial_superusers()
       break
     end
 
-    if not admin then
-      local _, create_err = mongo.create("admins", {
-        _id = uuid.generate_random(),
-        username = username,
-        superuser = true,
-        authentication_token = random_token(40),
-      })
+    local data = {
+      username = username,
+      superuser = true,
+    }
 
-      if create_err then
-        ngx.log(ngx.ERR, "failed to create admin: ", create_err)
-        break
+    if admin then
+      deep_merge_overwrite_arrays(admin, data)
+      if not admin["authentication_token"] then
+        admin["authentication_token"] = random_token(40)
       end
-    elseif admin and not admin["superuser"] then
-      admin["superuser"] = true
-      local _, update_err = mongo.update("admins", admin["_id"], admin)
+      admin["updated_at"] = nowMongoDate
 
+      local _, update_err = mongo.update("admins", admin["_id"], admin)
       if update_err then
-        ngx.log(ngx.ERR, "failed to update admin: ", update_err)
-        break
+        ngx.log(ngx.ERR, "failed to update record in admins: ", update_err)
+      end
+    else
+      data["_id"] = uuid.generate_random()
+      data["authentication_token"] = random_token(40)
+      data["created_at"] = nowMongoDate
+      data["updated_at"] = nowMongoDate
+
+      local _, create_err = mongo.create("admins", data)
+      if create_err then
+        ngx.log(ngx.ERR, "failed to create record in admins: ", create_err)
+      end
+    end
+  end
+end
+
+local function seed_admin_permissions()
+  local permissions = {
+    {
+      _id = "analytics",
+      name = "Analytics",
+      display_order = 1,
+    },
+    {
+      _id = "user_view",
+      name = "API Users - View",
+      display_order = 2,
+    },
+    {
+      _id = "user_manage",
+      name = "API Users - Manage",
+      display_order = 3,
+    },
+    {
+      _id = "admin_manage",
+      name = "Admin Accounts - View & Manage",
+      display_order = 4,
+    },
+    {
+      _id = "backend_manage",
+      name = "API Backend Configuration - View & Manage",
+      display_order = 5,
+    },
+    {
+      _id = "backend_publish",
+      name = "API Backend Configuration - Publish",
+      display_order = 6,
+    },
+  }
+
+  for _, data in ipairs(permissions) do
+    local permission, permission_err = mongo.first("admin_permissions", {
+      query = {
+        ["_id"] = data["_id"],
+      },
+    })
+
+    if permission_err then
+      ngx.log(ngx.ERR, "failed to query admin_permissions: ", permission_err)
+      break
+    end
+
+    if permission then
+      deep_merge_overwrite_arrays(permission, data)
+      permission["updated_at"] = nowMongoDate
+
+      local _, update_err = mongo.update("admin_permissions", permission["_id"], permission)
+      if update_err then
+        ngx.log(ngx.ERR, "failed to update record in admin_permissions: ", update_err)
+      end
+    else
+      data["created_at"] = nowMongoDate
+      data["updated_at"] = nowMongoDate
+
+      local _, create_err = mongo.create("admin_permissions", data)
+      if create_err then
+        ngx.log(ngx.ERR, "failed to create record in admin_permissions: ", create_err)
       end
     end
   end
@@ -103,6 +216,7 @@ local function seed()
 
   seed_api_keys()
   seed_initial_superusers()
+  seed_admin_permissions()
 end
 
 return function()

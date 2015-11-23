@@ -46,7 +46,7 @@ _.merge(global.shared, {
     // the string "null" (which is js-yaml's default).
     fs.writeFileSync(overridesFileConfigPath, yaml.safeDump(config, { styles: { '!!null': 'canonical' } }));
 
-    shared.runCommand('reload', callback);
+    shared.runCommand(['reload', '--router'], callback);
   },
 
   revertFileConfigOverrides: function revertFileConfigOverrides(callback) {
@@ -54,7 +54,7 @@ _.merge(global.shared, {
     var testFileConfigPath = path.resolve(__dirname, '../config/test.yml');
     var overridesFileConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
     fsExtra.copySync(testFileConfigPath, overridesFileConfigPath);
-    shared.runCommand('reload', callback);
+    shared.runCommand(['reload', '--router'], callback);
   },
 
   setDbConfigOverrides: function setDbConfigOverrides(newDbConfig, callback) {

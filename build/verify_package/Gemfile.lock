@@ -1,0 +1,52 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    diff-lcs (1.2.5)
+    mime-types (1.25.1)
+    multi_json (1.11.2)
+    net-scp (1.2.1)
+      net-ssh (>= 2.6.5)
+    net-ssh (2.9.2)
+    net-telnet (0.1.1)
+    rake (10.4.2)
+    rest-client (1.6.9)
+      mime-types (~> 1.16)
+    rspec (3.4.0)
+      rspec-core (~> 3.4.0)
+      rspec-expectations (~> 3.4.0)
+      rspec-mocks (~> 3.4.0)
+    rspec-core (3.4.0)
+      rspec-support (~> 3.4.0)
+    rspec-expectations (3.4.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.4.0)
+    rspec-its (1.2.0)
+      rspec-core (>= 3.0.0)
+      rspec-expectations (>= 3.0.0)
+    rspec-mocks (3.4.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.4.0)
+    rspec-support (3.4.0)
+    serverspec (2.24.3)
+      multi_json
+      rspec (~> 3.0)
+      rspec-its
+      specinfra (~> 2.43)
+    sfl (2.2)
+    specinfra (2.44.1)
+      net-scp
+      net-ssh (~> 2.7)
+      net-telnet
+      sfl
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  multi_json (~> 1.11.2)
+  rake (~> 10.4.2)
+  rest-client (~> 1.6.9)
+  serverspec (~> 2.24.3)
+
+BUNDLED WITH
+   1.10.6

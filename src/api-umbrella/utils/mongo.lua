@@ -1,5 +1,8 @@
 local cjson = require "cjson"
 local http = require "resty.http"
+local types = require "pl.types"
+
+local is_empty = types.is_empty
 
 local _M = {}
 
@@ -97,6 +100,21 @@ function _M.find(collection, query_options)
   local results = {}
   if not err and response and response["data"] then
     results = response["data"]
+
+    -- Queries on the "_id" field only return a single result directly on the
+    -- "data" attribute. For consistency sake, still wrap these single record
+    -- query responses in an array (so both _id and other types of queries are
+    -- compatible with the _M.first function).
+    if results and not results[1] and not is_empty(results) then
+      results = { results }
+    end
+  end
+
+  -- If the error is simply no results (this seems to only be triggered on a
+  -- query for the "_id" field), don't return an error, since we don't consider
+  -- this an error, per-say, the results will just be empty.
+  if err == "mongodb error: not found" then
+    err = nil
   end
 
   return results, err

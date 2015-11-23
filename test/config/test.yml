@@ -12,8 +12,11 @@ nginx:
   # We default the number of workers to the number of CPU cores, but keep this
   # hard-coded for test purposes so we have a more stable baseline and ensure
   # our tests always run with multiple workers.
-  workers: 4
+  workers: 2
   access_log_options:
+  proxy_connect_timeout: 10
+  proxy_read_timeout: 10
+  proxy_send_timeout: 10
   dyups:
     port: 13005
 trafficserver:

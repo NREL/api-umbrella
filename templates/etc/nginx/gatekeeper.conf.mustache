@@ -12,6 +12,11 @@ proxy_set_header Accept-Encoding $normalized_accept_encoding;
 # Don't buffer proxied requests to allow for streaming APIs.
 proxy_buffering off;
 
+# Set proxy timeouts.
+proxy_connect_timeout {{nginx._initial_proxy_connect_timeout}}s;
+proxy_read_timeout {{nginx._initial_proxy_read_timeout}}s;
+proxy_send_timeout {{nginx._initial_proxy_send_timeout}}s;
+
 # If the backend only returns gzipped responses, decompress them as
 # appropriate to meet the Accept headers of the current client.
 gunzip on;

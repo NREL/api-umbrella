@@ -74,6 +74,16 @@ namespace :deploy do
   before :updated, :bundle
   before :reverted, :bundle
 
+  task :lua_deps do
+    on roles(:app) do
+      within release_path do
+        execute :make, "install_lua_vendor_deps LUA_PATH='/opt/api-umbrella/embedded/openresty/luajit/share/lua/5.1/?.lua;/opt/api-umbrella/embedded/openresty/luajit/share/lua/5.1/?/init.lua;;' LUAROCKS_CMD=/opt/api-umbrella/embedded/bin/luarocks VENDOR_DIR=#{shared_path}/vendor EMBEDDED_DIR=/opt/api-umbrella/embedded"
+      end
+    end
+  end
+  before :updated, :lua_deps
+  before :reverted, :lua_deps
+
   # The ember-rails gem's handling of temp files isn't ideal when multiple users
   # might touch the files. So for now, just make these temp files globally
   # writable. See:
@@ -90,6 +100,7 @@ namespace :deploy do
   task :reload do
     on roles(:app), :in => :sequence, :wait => 5 do
       execute :sudo, "api-umbrella reload"
+      execute "api-umbrella health --wait-for-status green"
     end
   end
   after :publishing, :reload

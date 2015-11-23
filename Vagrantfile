@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-plugins = { "vagrant-omnibus" => nil, "vagrant-librarian-chef" => nil }
+plugins = { "vagrant-berkshelf" => nil }
 
 plugins.each do |plugin, version|
   unless(Vagrant.has_plugin?(plugin))
@@ -14,7 +14,7 @@ end
 
 # Allow picking a different Vagrant base box:
 # API_UMBRELLA_VAGRANT_BOX="chef/debian-7.4" vagrant up
-BOX = ENV["API_UMBRELLA_VAGRANT_BOX"] || "nrel/CentOS-6.6-x86_64"
+BOX = ENV["API_UMBRELLA_VAGRANT_BOX"] || "nrel/CentOS-6.7-x86_64"
 
 # Allow adjusting the memory and cores when starting the VM:
 MEMORY = (ENV["API_UMBRELLA_VAGRANT_MEMORY"] || "2048").to_i
@@ -65,25 +65,20 @@ Vagrant.configure("2") do |config|
     # Adjust memory used by the VM.
     vb.customize ["modifyvm", :id, "--memory", MEMORY]
     vb.customize ["modifyvm", :id, "--cpus", CORES]
+
+    # Keep the virtual machine's clock better in sync to prevent drift (by
+    # default VirtualBox only syncs if the clocks get more than 20 minutes out
+    # of sync).
+    vb.customize ["guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 1000]
   end
 
   # Use the user's local SSH keys for git access.
   config.ssh.forward_agent = true
 
-  # Use the chef-librarian plugin to install chef cookbooks and dependencies.
-  config.librarian_chef.enabled = true
-  config.librarian_chef.cheffile_dir = "chef"
-
-  # Install chef via the vagrant-omnibus plugin.
-  config.omnibus.chef_version = "12.2.1"
-
   # Enable provisioning with chef solo, specifying a cookbooks path, roles
   # path, and data_bags path (all relative to this Vagrantfile), and adding
   # some recipes and/or roles.
   config.vm.provision :chef_solo do |chef|
-    chef.cookbooks_path = "chef/cookbooks"
-    chef.formatter = "doc"
-
     chef.run_list = [
       "recipe[api-umbrella::development]",
     ]

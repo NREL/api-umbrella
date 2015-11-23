@@ -7,7 +7,6 @@ local lyaml = require "lyaml"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local path = require "pl.path"
 local plutils = require "pl.utils"
-local posix = require "posix"
 local read_config = require "api-umbrella.cli.read_config"
 local run_command = require "api-umbrella.utils.run_command"
 local stat = require "posix.sys.stat"
@@ -138,9 +137,9 @@ local function ensure_geoip_db()
   -- If the city db path doesn't exist, copy it from the package installation
   -- location to the runtime location (this path will then be overwritten by
   -- the auto-updater so we don't touch the original packaged file).
-  local city_db_path = path.join(config["db_dir"], "geoip2/city.mmdb")
+  local city_db_path = path.join(config["db_dir"], "geoip/city-v6.dat")
   if not path.exists(city_db_path) then
-    local default_city_db_path = path.join(config["_embedded_root_dir"], "var/db/geoip2/city.mmdb")
+    local default_city_db_path = path.join(config["_embedded_root_dir"], "var/db/geoip/city-v6.dat")
     dir.makepath(path.dirname(city_db_path))
     file.copy(default_city_db_path, city_db_path)
   end
@@ -191,7 +190,13 @@ end
 
 local function set_permissions()
   local _, err
-  _, err = posix.chmod(config["tmp_dir"], "rwxrwxrwx")
+  _, _, err = run_command("chmod 1777 " .. config["tmp_dir"])
+  if err then
+    print("chmod failed: ", err)
+    os.exit(1)
+  end
+
+  _, _, err = run_command("chmod 1777 " .. path.join(config["_src_root_dir"], "src/api-umbrella/web-app/tmp"))
   if err then
     print("chmod failed: ", err)
     os.exit(1)

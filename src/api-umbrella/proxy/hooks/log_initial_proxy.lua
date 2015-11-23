@@ -1,4 +1,5 @@
-local cjson = require "cjson"
+local iconv = require "iconv"
+local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_encode_json"
 local http = require "resty.http"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local logger = require "resty.logger.socket"
@@ -51,7 +52,7 @@ local function cache_city_geocode(premature, id, data)
   local res, err = httpc:request({
     method = "PUT",
     path = (elasticsearch_server["path"] or "") .. "/" .. index .. "/" .. index_type .. "/" .. id_hash,
-    body = cjson.encode(record),
+    body = elasticsearch_encode_json(record),
   })
   if err or (res and res.status >= 400) then
     ngx.log(ngx.ERR, "failed to cache city location in elasticsearch: ", err)
@@ -93,6 +94,18 @@ local function log_request()
   local request_headers = ngx.req.get_headers();
   local response_headers = ngx.resp.get_headers();
 
+  -- The GeoIP module returns ISO-8859-1 encoded city names, but we need UTF-8
+  -- for inserting into ElasticSearch.
+  local geoip_city = ngx_var.geoip_city
+  if geoip_city then
+    local encoding_converter = iconv.new("utf-8//IGNORE", "iso-8859-1")
+    local geoip_city_encoding_err
+    geoip_city, geoip_city_encoding_err  = encoding_converter:iconv(geoip_city)
+    if geoip_city_encoding_err then
+      ngx.log(ngx.ERR, "encoding error for geoip city: ", geoip_city_encoding_err, geoip_city)
+    end
+  end
+
   -- Put together the basic log data.
   local id = ngx_var.x_api_umbrella_request_id
   local data = {
@@ -106,9 +119,9 @@ local function log_request()
     request_content_type = request_headers["content-type"],
     request_host = request_headers["host"],
     request_ip = ngx_var.remote_addr,
-    request_ip_country = ngx_var.geoip_country,
+    request_ip_country = ngx_var.geoip_city_country_code,
     request_ip_region = ngx_var.geoip_region,
-    request_ip_city = ngx_var.geoip_city,
+    request_ip_city = geoip_city,
     request_method = ngx_var.request_method,
     request_origin = request_headers["origin"],
     request_referer = request_headers["referer"],
@@ -188,6 +201,13 @@ local function log_request()
     end
   end
 
+  -- The geoip database returns "00" for unknown regions sometimes:
+  -- http://maxmind.com/download/geoip/kml/index.html Remove these and treat
+  -- these as nil.
+  if data["request_ip_region"] == "00" then
+    data["request_ip_region"] = nil
+  end
+
   local geoip_latitude = ngx_var.geoip_latitude
   if geoip_latitude then
     data["request_ip_location"] = {
@@ -196,7 +216,7 @@ local function log_request()
     }
   end
 
-  local _, err = logger.log(cjson.encode(data) .. "\n")
+  local _, err = logger.log(elasticsearch_encode_json(data) .. "\n")
   if err then
     ngx.log(ngx.ERR, "failed to log message: ", err)
     return

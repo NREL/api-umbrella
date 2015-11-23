@@ -106,7 +106,7 @@ describe('bans', function() {
       response.statusCode.should.eql(418);
       body.should.eql('You\'ve been banned!\n');
       var duration = Date.now() - startTime;
-      duration.should.be.greaterThan(1000);
+      duration.should.be.gte(1000 - 10);
       duration.should.be.lessThan(2000);
 
       done();

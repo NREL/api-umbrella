@@ -19,7 +19,7 @@ function killApiUmbrellaServer(callback) {
 }
 
 after(function stopProcesses(done) {
-  this.timeout(30000);
+  this.timeout(60000);
   killApiUmbrellaServer(done);
 });
 

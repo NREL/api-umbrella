@@ -2,11 +2,30 @@ local path = require "pl.path"
 local run_command = require "api-umbrella.utils.run_command"
 local setup = require "api-umbrella.cli.setup"
 local status = require "api-umbrella.cli.status"
+local types = require "pl.types"
+
+local is_empty = types.is_empty
 
 local function reload_perp(perp_base)
   local _, _, err = run_command("perphup " .. perp_base)
   if err then
     print("Failed to reload perp\n" .. err)
+    os.exit(1)
+  end
+end
+
+local function reload_web_delayed_job(perp_base)
+  local _, _, err = run_command("perpctl -b " .. perp_base .. " term web-delayed-job")
+  if err then
+    print("Failed to reload web-delayed-job\n" .. err)
+    os.exit(1)
+  end
+end
+
+local function reload_web_puma(perp_base)
+  local _, _, err = run_command("perpctl -b " .. perp_base .. " 2 web-puma")
+  if err then
+    print("Failed to reload web-puma\n" .. err)
     os.exit(1)
   end
 end
@@ -27,7 +46,9 @@ local function reload_nginx(perp_base)
   end
 end
 
-return function()
+return function(options)
+  options["reload"] = nil
+
   local running = status()
   if not running then
     print("api-umbrella is stopped")
@@ -36,7 +57,16 @@ return function()
 
   local config = setup()
   local perp_base = path.join(config["etc_dir"], "perp")
+
   reload_perp(perp_base)
-  reload_trafficserver(perp_base)
-  reload_nginx(perp_base)
+
+  if config["_service_web_enabled?"] and (is_empty(options) or options["web"]) then
+    reload_web_delayed_job(perp_base)
+    reload_web_puma(perp_base)
+  end
+
+  if config["_service_router_enabled?"] and (is_empty(options) or options["router"]) then
+    reload_trafficserver(perp_base)
+    reload_nginx(perp_base)
+  end
 end

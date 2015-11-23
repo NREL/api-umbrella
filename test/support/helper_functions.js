@@ -8,10 +8,10 @@ var _ = require('lodash'),
     request = require('request');
 
 _.merge(global.shared, {
-  runCommand: function(command, callback) {
+  runCommand: function(args, callback) {
     var binPath = path.resolve(__dirname, '../../bin/api-umbrella');
     var overridesConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
-    execFile(binPath, [command], {
+    execFile(binPath, args, {
       env: _.merge({}, process.env, {
         'API_UMBRELLA_EMBEDDED_ROOT': process.env.API_UMBRELLA_EMBEDDED_ROOT,
         'API_UMBRELLA_CONFIG': overridesConfigPath,

@@ -144,6 +144,38 @@ class ApiUser
     @api_key_hides_at ||= self.created_at + 2.weeks
   end
 
+  # Override the save method to add an "ts" timestamp using MongoDB's
+  # $currentDate and upsert features (this ensures the timestamps are set on
+  # the server and therefore not subject to clock drift on the clients--this is
+  # important in this case, since we use "ts" to detect when changes have
+  # been made to the user collection).
+  def save(options = {})
+    # Use Mongoid's default Operation methods to perform all the normal
+    # create/update callbacks.
+    operation = if(new_record?) then :insert else :update end
+    result = Operations.send(operation, self, options).prepare do
+      # Extract all the attributes to set, but omit the special "ts" attribute
+      # that will be handled by $currentDate. Also exclude "_id", since it's
+      # part of the upsert find.
+      doc = as_document.except("ts", "_id")
+
+      # Perform the upsert, setting "ts" mongo server-side to the $currentDate.
+      collection.find({ :_id => self.id }).update({
+        "$set" => doc,
+        "$currentDate" => {
+          "ts" => { "$type" => "timestamp" },
+        },
+      }, [:upsert])
+    end
+
+    # Respond with true or false depending on whether the operation succeeded.
+    if(operation == :insert)
+      !new_record?
+    else
+      result
+    end
+  end
+
   private
 
   def normalize_terms_and_conditions

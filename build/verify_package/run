@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e -u -x
+
+ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
+
+# Install the local package that just got built.
+yum -y install $ROOT_DIR/build/package/*.rpm
+
+# Start the service
+/etc/init.d/api-umbrella start
+
+# Make sure API Umbrella starts successfully and wait for a "green" status
+# indicating everything is spun up
+api-umbrella health --wait-for-status green
+
+# Install the test package dependencies.
+yum -y install rubygems sudo
+gem install bundler --no-rdoc --no-ri
+
+# Disable the sudoers requiretty so some of the sudo tests can work inside a
+# docker run.
+sed -i -e "s/^Defaults *requiretty/#Defaults requiretty/g" /etc/sudoers
+
+cd $ROOT_DIR/build/verify_package
+
+# Install the test gem dependencies.
+bundle
+
+# Run the serverspec suite.
+bundle exec rake spec

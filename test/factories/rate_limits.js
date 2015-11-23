@@ -8,10 +8,10 @@ var Factory = require('factory-lady'),
 
 var RateLimit = mongoose.testConnection.model('RateLimit');
 
-// Override the save method to add an "updated_at" timestamp using MongoDB's
+// Override the save method to add an "ts" timestamp using MongoDB's
 // $currentDate and upsert features (this ensures the timestamps are set on the
 // server and therefore not subject to clock drift on the clients--this is
-// important in this case, since we use updated_at to detect when changes have
+// important in this case, since we use "ts" to detect when changes have
 // been made to the user collection).
 RateLimit.prototype.save = function(callback) {
   var data = this.toObject();

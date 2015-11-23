@@ -4,6 +4,7 @@ require('../test_helper');
 
 var _ = require('lodash'),
     async = require('async'),
+    config = require('../support/config'),
     Curler = require('curler').Curler,
     crypto = require('crypto'),
     Factory = require('factory-lady'),
@@ -349,7 +350,7 @@ describe('logging', function() {
     }.bind(this));
   });
 
-  it('logs the geocoded ip related fields', function(done) {
+  it('logs the geocoded ip related fields for ipv4 address', function(done) {
     this.timeout(4500);
     var options = _.merge({}, this.options, {
       headers: {
@@ -367,8 +368,62 @@ describe('logging', function() {
         record.request_ip_region.should.eql('CA');
         record.request_ip_city.should.eql('Mountain View');
         record.request_ip_location.should.eql({
-          lat: 37.386,
-          lon: -122.0838,
+          lat: 37.3845,
+          lon: -122.0881,
+        });
+
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs the geocoded ip related fields for ipv6 address', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-For': '2001:4860:4860::8888',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_ip.should.eql('2001:4860:4860::8888');
+        record.request_ip_country.should.eql('US');
+        should.not.exist(record.request_ip_region);
+        should.not.exist(record.request_ip_city);
+        record.request_ip_location.should.eql({
+          lat: 38,
+          lon: -97,
+        });
+
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs the geocoded ip related fields for ipv4 mapped ipv6 address', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-For': '0:0:0:0:0:ffff:808:808',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_ip.should.eql('::ffff:8.8.8.8');
+        record.request_ip_country.should.eql('US');
+        record.request_ip_region.should.eql('CA');
+        record.request_ip_city.should.eql('Mountain View');
+        record.request_ip_location.should.eql({
+          lat: 37.3845,
+          lon: -122.0881,
         });
 
         done();
@@ -400,8 +455,8 @@ describe('logging', function() {
             region: 'CA',
             city: 'Mountain View',
             location: {
-              lat: 37.386,
-              lon: -122.0838,
+              lat: 37.3845,
+              lon: -122.0881,
             },
           });
           done();
@@ -485,6 +540,48 @@ describe('logging', function() {
             location: {
               lat: 1.3667,
               lon: 103.8,
+            },
+          });
+          done();
+        });
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('logs requests and caches city when geocoding returns a city with accent characters', function(done) {
+    this.timeout(4500);
+    var options = _.merge({}, this.options, {
+      headers: {
+        'X-Forwarded-For': '212.55.61.5',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_ip.should.eql('212.55.61.5');
+        record.request_ip_country.should.eql('FO');
+        should.not.exist(record.request_ip_region);
+        record.request_ip_city.should.eql('Tórshavn');
+        record.request_ip_location.should.eql({
+          lat: 62.0167,
+          lon: -6.7667,
+        });
+
+        global.elasticsearch.get({
+          index: 'api-umbrella',
+          type: 'city',
+          id: crypto.createHash('sha256').update('FO--Tórshavn', 'utf8').digest('hex'),
+        }, function(error, res) {
+          should.not.exist(error);
+          _.omit(res._source, 'updated_at').should.eql({
+            country: 'FO',
+            city: 'Tórshavn',
+            location: {
+              lat: 62.0167,
+              lon: -6.7667,
             },
           });
           done();
@@ -1005,8 +1102,8 @@ describe('logging', function() {
   });
 
   it('logs requests that time out before responding', function(done) {
-    this.timeout(90000);
-    request.get('http://localhost:9080/delay/65000', this.options, function(error, response) {
+    this.timeout(30000);
+    request.get('http://localhost:9080/delay/' + (config.get('nginx.proxy_connect_timeout') * 1000 + 3000), this.options, function(error, response) {
       should.not.exist(error);
       response.statusCode.should.eql(504);
 
@@ -1014,8 +1111,8 @@ describe('logging', function() {
         should.not.exist(error);
         record.response_status.should.eql(504);
         itLogsBaseFields(record, this.uniqueQueryId, this.user);
-        record.response_time.should.be.greaterThan(58000);
-        record.response_time.should.be.lessThan(62000);
+        record.response_time.should.be.greaterThan(config.get('nginx.proxy_connect_timeout') * 1000 - 2000);
+        record.response_time.should.be.lessThan(config.get('nginx.proxy_connect_timeout') * 1000 + 2000);
         done();
       }.bind(this));
     }.bind(this));

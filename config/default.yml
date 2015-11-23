@@ -18,6 +18,9 @@ nginx:
   workers: auto
   worker_connections: 8192
   access_log_options: buffer=32k flush=10s
+  proxy_connect_timeout: 60
+  proxy_read_timeout: 60
+  proxy_send_timeout: 60
   dyups:
     host: 127.0.0.1
     port: 14005
