@@ -73,7 +73,7 @@ local function do_check()
 end
 
 function _M.spawn()
-  interval_lock.repeat_with_mutex('distributed-last-pull', delay, do_check)
+  interval_lock.repeat_with_mutex('distributed_rate_limit_puller', delay, do_check)
 end
 
 return _M
