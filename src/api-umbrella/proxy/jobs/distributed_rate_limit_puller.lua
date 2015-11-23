@@ -1,7 +1,7 @@
 local _M = {}
 
-local mongo = require "api-umbrella.utils.mongo"
 local interval_lock = require "api-umbrella.utils.interval_lock"
+local mongo = require "api-umbrella.utils.mongo"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 
