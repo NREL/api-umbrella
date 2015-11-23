@@ -1,13 +1,13 @@
 local _M = {}
 
 local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
+local interval_lock = require "api-umbrella.utils.interval_lock"
 local mongo = require "api-umbrella.utils.mongo"
 local types = require "pl.types"
 
 local is_empty = types.is_empty
 
 local delay = 0.25  -- in seconds
-local new_timer = ngx.timer.at
 
 local indexes_created = false
 
@@ -78,32 +78,8 @@ local function do_check()
   end
 end
 
-local function check(premature)
-  if premature then
-    return
-  end
-
-  local ok, err = pcall(do_check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to run backend load cycle: ", err)
-  end
-
-  ok, err = new_timer(delay, check)
-  if not ok then
-    if err ~= "process exiting" then
-      ngx.log(ngx.ERR, "failed to create timer: ", err)
-    end
-
-    return
-  end
-end
-
 function _M.spawn()
-  local ok, err = new_timer(0, check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to create timer: ", err)
-    return
-  end
+  interval_lock.repeat_with_mutex('distributed_rate_limit_pusher', delay, do_check)
 end
 
 return _M
