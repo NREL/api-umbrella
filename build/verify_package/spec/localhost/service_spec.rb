@@ -12,7 +12,7 @@ describe "api-umbrella" do
   end
 
   it "runs the service" do
-    expect(service("api-umbrella")).to be_running
+    expect(service("api-umbrella")).to be_running.under(:init)
   end
 
   it "enables the service" do
@@ -90,24 +90,39 @@ describe "api-umbrella" do
 
   it "can be stopped and started again" do
     # Stop
-    command_result = command("/etc/init.d/api-umbrella stop 2>&1")
+    command_result = command("/etc/init.d/api-umbrella stop")
     expect(command_result.exit_status).to eql(0)
     expect(command_result.stderr).to eql("")
-    expect(command_result.stdout).to include("OK")
 
     # Check status
-    expect(service("api-umbrella")).to_not be_running
+    expect(service("api-umbrella")).to_not be_running.under(:init)
     expect(command("/etc/init.d/api-umbrella status").stdout).to include("is stopped")
 
     # Start again
-    command_result = command("/etc/init.d/api-umbrella start 2>&1")
+    command_result = command("/etc/init.d/api-umbrella start")
     expect(command_result.exit_status).to eql(0)
     expect(command_result.stderr).to eql("")
-    expect(command_result.stdout).to include("OK")
-    expect(service("api-umbrella")).to be_running
+    expect(service("api-umbrella")).to be_running.under(:init)
 
     # Wait for API Umbrella to become fully started and health again, to ensure
     # subsequent tests don't fail.
+    expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
+  end
+
+  it "includes a success message in the init script output" do
+    # We want to check to make sure the standard init.d success message is
+    # being printed, but the exact message varies depending on the distro (it
+    # should either be "OK" or "done"). We must pass this through socat to
+    # capture pty output to account for Debian's default init helpers
+    # repositioning the output to print at the beginning of the line.
+    command_result = command(%(socat -u 'exec:"/etc/init.d/api-umbrella stop",pty' -))
+    expect(command_result.exit_status).to eql(0)
+    expect(command_result.stdout).to match(/\b(OK|done)\b/i)
+
+    command_result = command(%(socat -u 'exec:"/etc/init.d/api-umbrella start",pty' -))
+    expect(command_result.exit_status).to eql(0)
+    expect(command_result.stdout).to match(/\b(OK|done)\b/i)
+
     expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
   end
 

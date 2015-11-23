@@ -295,7 +295,24 @@ LUACHECK_VERSION:=0.11.1-1
 	stage_dependencies \
 	test_dependencies \
 	lint \
-	test
+	test \
+	check_shared_objects \
+	download_deps \
+	package \
+	verify_package \
+	package_docker_centos6 \
+	verify_package_docker_centos6 \
+	package_docker_centos7 \
+	verify_package_docker_centos7 \
+	package_docker_ubuntu1204 \
+	verify_package_docker_ubuntu1204 \
+	package_docker_ubuntu1404 \
+	verify_package_docker_ubuntu1404 \
+	package_docker_debian7 \
+	verify_package_docker_debian7 \
+	package_docker_debian8 \
+	verify_package_docker_debian8 \
+	all_packages
 
 define download
 	$(eval DOWNLOAD_PATH:=$@)
@@ -738,8 +755,7 @@ $(DEPS_DIR)/$(OPENRESTY)/.built: $(DEPS_DIR)/$(OPENRESTY) $(DEPS_DIR)/$(NGX_DYUP
 		--with-http_ssl_module \
 		--with-http_stub_status_module \
 		--add-module=../$(NGX_DYUPS) \
-		--add-module=../$(NGX_TXID) \
-		--with-dtrace-probes
+		--add-module=../$(NGX_TXID)
 	cd $< && make
 	touch $@
 
@@ -960,6 +976,36 @@ $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(VENDOR_DIR)
 	$(DEPS_DIR)/$(UNBOUND) \
 	$(DEPS_DIR)/$(UNBOUND)/.built
 
+download_deps: \
+	$(DEPS_DIR)/$(API_UMBRELLA_STATIC_SITE).tar.gz \
+	$(DEPS_DIR)/$(ELASTICSEARCH).tar.gz \
+	$(DEPS_DIR)/GeoLiteCityv6.dat.gz \
+	$(DEPS_DIR)/$(GLIDE).tar.gz \
+	$(DEPS_DIR)/$(GOLANG).tar.gz \
+	$(DEPS_DIR)/$(HEKA).tar.gz \
+	$(DEPS_DIR)/$(LIBCIDR).tar.xz \
+	$(DEPS_DIR)/$(LIBGEOIP).tar.gz \
+	$(DEPS_DIR)/$(LUAROCKS).tar.gz \
+	$(DEPS_DIR)/$(LUA_RESTY_DNS_CACHE).tar.gz \
+	$(DEPS_DIR)/$(LUA_RESTY_HTTP).tar.gz \
+	$(DEPS_DIR)/$(LUA_RESTY_LOGGER_SOCKET).tar.gz \
+	$(DEPS_DIR)/$(LUA_RESTY_SHCACHE).tar.gz \
+	$(DEPS_DIR)/$(LUA_RESTY_UUID).tar.gz \
+	$(DEPS_DIR)/$(LUSTACHE).tar.gz \
+	$(DEPS_DIR)/$(MONGODB).tar.gz \
+	$(DEPS_DIR)/$(MORA).tar.gz \
+	$(DEPS_DIR)/$(NGX_DYUPS).tar.gz \
+	$(DEPS_DIR)/$(NGX_TXID).tar.gz \
+	$(DEPS_DIR)/$(OPENRESTY).tar.gz \
+	$(DEPS_DIR)/$(PCRE).tar.gz \
+	$(DEPS_DIR)/$(PERP).tar.gz \
+	$(DEPS_DIR)/$(RUBY).tar.gz \
+	$(DEPS_DIR)/$(RUNIT).tar.gz \
+	$(DEPS_DIR)/$(TRAFFICSERVER).tar.gz
+
+.NOTPARALLEL: \
+	download_deps
+
 $(VENDOR_DIR):
 	mkdir -p $@
 
@@ -1087,5 +1133,47 @@ package:
 verify_package:
 	$(BUILD_DIR)/verify_package/run
 
-package_all:
-	$(BUILD_DIR)/package/build_all
+package_docker_centos6: download_deps
+	DIST=centos:6 $(BUILD_DIR)/package/build_and_verify_with_docker
+
+verify_package_docker_centos6: download_deps
+	DIST=centos:6 $(BUILD_DIR)/verify_package/run_with_docker
+
+package_docker_centos7: download_deps
+	DIST=centos:7 $(BUILD_DIR)/package/build_and_verify_with_docker
+
+verify_package_docker_centos7: download_deps
+	DIST=centos:7 $(BUILD_DIR)/verify_package/run_with_docker
+
+package_docker_ubuntu1204: download_deps
+	DIST=ubuntu:12.04 $(BUILD_DIR)/package/build_and_verify_with_docker
+
+verify_package_docker_ubuntu1204: download_deps
+	DIST=ubuntu:12.04 $(BUILD_DIR)/verify_package/run_with_docker
+
+package_docker_ubuntu1404: download_deps
+	DIST=ubuntu:14.04 $(BUILD_DIR)/package/build_and_verify_with_docker
+
+verify_package_docker_ubuntu1404: download_deps
+	DIST=ubuntu:14.04 $(BUILD_DIR)/verify_package/run_with_docker
+
+package_docker_debian7: download_deps
+	DIST=debian:7 $(BUILD_DIR)/package/build_and_verify_with_docker
+
+verify_package_docker_debian7: download_deps
+	DIST=debian:7 $(BUILD_DIR)/verify_package/run_with_docker
+
+package_docker_debian8: download_deps
+	DIST=debian:8 $(BUILD_DIR)/package/build_and_verify_with_docker
+
+verify_package_docker_debian8: download_deps
+	DIST=debian:8 $(BUILD_DIR)/verify_package/run_with_docker
+
+all_packages: \
+	download_deps \
+	package_docker_centos6 \
+	package_docker_centos7 \
+	package_docker_ubuntu1204 \
+	package_docker_ubuntu1404 \
+	package_docker_debian7 \
+	package_docker_debian8

@@ -13,95 +13,190 @@ if [ "$PRE" == "" ]; then
 else
   ITERATION="0.1.$PRE"
 fi
-RPM_DIST=$(rpm --query centos-release | grep -o "el[0-9]")
 
-if [ ! -f /etc/yum.repos.d/wandisco-git.repo ]; then
-  yum -y install http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
+FPM_ARGS=""
+
+if command -v yum &> /dev/null; then
+  PACKAGE_TYPE="rpm"
+  PACKAGE_DEPENDENCIES=(
+    # General
+    bash
+    glibc
+    libffi
+    libyaml
+    ncurses-libs
+    openssl
+    pcre
+    zlib
+
+    # lua-resty-uuid requires "libuuid.so", so we have to instal the -devel
+    # package (libuuid provides "libuuid.so.1").
+    libuuid-devel
+
+    # TrafficServer
+    libxml2
+    tcl
+
+    # ElasticSearch
+    java-1.8.0-openjdk-headless
+    # For getopt, should no longer be necessary in ElasticSearch 2:
+    # https://github.com/elastic/elasticsearch/pull/12165
+    util-linux-ng
+    which
+
+    # init.d script helpers
+    initscripts
+  )
+  BUILD_DEPENDENCIES=(
+    bzip2
+    curl
+    gcc
+    gcc-c++
+    git
+    libffi-devel
+    libuuid-devel
+    libxml2-devel
+    libyaml-devel
+    make
+    ncurses-devel
+    openssl
+    openssl-devel
+    patch
+    pcre-devel
+    rpm-build
+    rsync
+    tar
+    tcl-devel
+    unzip
+    xz
+  )
+  RPM_DIST=$(rpm --query centos-release | grep -o "el[0-9]")
+  FPM_ARGS="$FPM_ARGS --rpm-dist $RPM_DIST --rpm-compression xz"
+
+  if [ "$RPM_DIST" == "el6" ]; then
+    if [ ! -f /etc/yum.repos.d/wandisco-git.repo ]; then
+      yum -y install http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
+    fi
+  fi
+
+  yum -y install ${PACKAGE_DEPENDENCIES[*]} ${BUILD_DEPENDENCIES[*]}
+elif command -v dpkg &> /dev/null; then
+  PACKAGE_TYPE="deb"
+  PACKAGE_DEPENDENCIES=(
+    # General
+    bash
+    libc6
+    libyaml-0-2
+    libncurses5
+    openssl
+    libpcre3
+    zlib1g
+
+    # lua-resty-uuid requires "libuuid.so", so we have to instal the -dev
+    # package (libuuid1 provides "libuuid.so.1").
+    uuid-dev
+
+    # TrafficServer
+    libxml2
+    tcl
+
+    # ElasticSearch
+    openjdk-7-jre-headless
+
+    # init.d script helpers
+    sysvinit-utils
+    lsb-base
+  )
+  BUILD_DEPENDENCIES=(
+    bzip2
+    curl
+    gcc
+    g++
+    git
+    libffi-dev
+    uuid-dev
+    libxml2-dev
+    libyaml-dev
+    make
+    libncurses5-dev
+    openssl
+    libssl-dev
+    patch
+    libpcre3-dev
+    rsync
+    tar
+    tcl-dev
+    unzip
+    xz-utils
+  )
+  FPM_ARGS="$FPM_ARGS --deb-compression xz"
+
+  if [ "$DIST" == "debian:7" ]; then
+    PACKAGE_DEPENDENCIES+=("libffi5")
+  else
+    PACKAGE_DEPENDENCIES+=("libffi6")
+  fi
+
+  apt-get update
+  apt-get -y install ${PACKAGE_DEPENDENCIES[*]} ${BUILD_DEPENDENCIES[*]}
+else
+  echo "Unknown build system"
+  exit 1
 fi
-
-# Install system dependencies onto the build system.
-yum -y install \
-  bzip2 \
-  gcc \
-  gcc-c++ \
-  git \
-  libffi-devel \
-  libuuid-devel \
-  libxml2-devel \
-  libyaml-devel \
-  ncurses-devel \
-  openssl-devel \
-  patch \
-  pcre-devel \
-  rpm-build \
-  systemtap-sdt-devel \
-  tar \
-  tcl-devel \
-  unzip \
-  xz
 
 # Copy the current api-umbrella code-base to a separate, temporary location.
 # This temporary location will be used for performing the packaging. We use a
 # separate location so that multiple docker build containers don't conflict
 # with the original working copy.
-rsync -av --exclude="build/work" --exclude=".git" --filter=":- $ORIGINAL_ROOT_DIR/.gitignore" --no-links --delete-after $ORIGINAL_ROOT_DIR/ $TMP_ROOT_DIR/
+rsync -av \
+  --include="build" \
+  --include="build/work" \
+  --include="build/work/deps" \
+  --include="build/work/deps/*.gz" \
+  --include="build/work/deps/*.xz" \
+  --exclude="build/work/deps/*" \
+  --exclude="build/work/*" \
+  --exclude=".git" \
+  --filter=":- $ORIGINAL_ROOT_DIR/.gitignore" \
+  --no-links \
+  --delete-after \
+  $ORIGINAL_ROOT_DIR/ $TMP_ROOT_DIR/
+
+rm -rf $TMP_ROOT_DIR/build/package/dist
+mkdir -p $TMP_ROOT_DIR/build/package/dist/$DIST
 
 # Build and install from the temporary working copy, installing into a
 # temporary root used for packaging.
 cd $TMP_ROOT_DIR
 make install DESTDIR=$TMP_WORK_DIR/package/root
 
-# Define dependencies for the api-umbrella package.
-DEPENDENCIES=(
-  # General
-  bash
-  glibc
-  libffi
-  libyaml
-  ncurses-libs
-  openssl
-  pcre
-  zlib
-
-  # lua-resty-uuid requires "libuuid.so", so we have to instal the -devel
-  # package (libuuid provides "libuuid.so.1").
-  libuuid-devel
-
-  # TrafficServer
-  libxml2
-  tcl
-
-  # ElasticSearch
-  java-1.8.0-openjdk
-  # For getopt, should no longer be necessary in ElasticSearch 2:
-  # https://github.com/elastic/elasticsearch/pull/12165
-  util-linux-ng
-  which
-)
-DEPENDENCIES_ARGS=""
-for DEP in "${DEPENDENCIES[@]}"; do
-  DEPENDENCIES_ARGS="$DEPENDENCIES_ARGS -d $DEP"
+for DEP in "${PACKAGE_DEPENDENCIES[@]}"; do
+  FPM_ARGS="$FPM_ARGS -d $DEP"
 done
 
 # Use FPM to build the binary package.
 cd $TMP_ROOT_DIR/build/package
-rm -f *.rpm
 PATH=$TMP_WORK_DIR/stage/opt/api-umbrella/embedded/bin:$PATH bundle install --path=$TMP_WORK_DIR/package/bundle
-PATH=$TMP_WORK_DIR/stage/opt/api-umbrella/embedded/bin:$PATH bundle exec fpm \
-  -t rpm \
+
+cd $TMP_ROOT_DIR/build/package/dist/$DIST
+PATH=$TMP_WORK_DIR/stage/opt/api-umbrella/embedded/bin:$PATH \
+BUNDLE_GEMFILE=$TMP_ROOT_DIR/build/package/Gemfile \
+XZ_OPT=-9 \
+bundle exec fpm \
+  -t $PACKAGE_TYPE \
   -s dir \
   -C $TMP_WORK_DIR/package/root \
   --verbose \
   --name api-umbrella \
   --version $VERSION \
   --iteration $ITERATION \
-  --rpm-compression xz \
-  --rpm-dist $RPM_DIST \
-  $DEPENDENCIES_ARGS \
   --config-files etc/api-umbrella/api-umbrella.yml \
-  --after-install ./scripts/after-install \
-  --before-remove ./scripts/after-remove \
-  --after-remove ./scripts/after-remove \
+  --after-install $TMP_ROOT_DIR/build/package/scripts/after-install \
+  --before-remove $TMP_ROOT_DIR/build/package/scripts/after-remove \
+  --after-remove $TMP_ROOT_DIR/build/package/scripts/after-remove \
+  $FPM_ARGS \
   .
 
-cp *.rpm $ORIGINAL_ROOT_DIR/build/package/
+rm -rf $ORIGINAL_ROOT_DIR/build/package/dist/$DIST
+mkdir -p $ORIGINAL_ROOT_DIR/build/package/dist
+cp -r $TMP_ROOT_DIR/build/package/dist/$DIST $ORIGINAL_ROOT_DIR/build/package/dist/

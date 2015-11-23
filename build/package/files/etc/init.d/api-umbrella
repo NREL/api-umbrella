@@ -17,40 +17,65 @@
 ### END INIT INFO
 
 NAME=api-umbrella
-LOCKFILE=/var/lock/$NAME
-if [ -d /var/lock/subsys ]; then
-  LOCKFILE=/var/lock/subsys/$NAME
+DESC="API Umbrella"
+
+if [ -f /etc/rc.d/init.d/functions ]; then
+  . /etc/rc.d/init.d/functions
+elif [ -f /lib/lsb/init-functions ]; then
+  . /lib/lsb/init-functions
 fi
 
-. /etc/rc.d/init.d/functions
-
-[ -f /etc/sysconfig/api-umbrella ] && . /etc/sysconfig/api-umbrella
+if [ -f /etc/sysconfig/api-umbrella ]; then
+  . /etc/sysconfig/api-umbrella
+elif [ -f /etc/default/api-umbrella ]; then
+  . /etc/default/api-umbrella
+fi
 
 start() {
-  echo -n $"Starting $NAME: "
+  if type log_daemon_msg > /dev/null 2>&1; then
+    log_daemon_msg "Starting $DESC" "$NAME"
+  else
+    echo -n $"Starting $NAME: "
+  fi
+
   api-umbrella start
   RETVAL=$?
-  if [ $RETVAL -eq 0 ]; then
-    touch $LOCKFILE
-    success $"$NAME startup"
-  else
-    failure $"$NAME startup"
+
+  if type log_end_msg > /dev/null 2>&1; then
+    log_end_msg $RETVAL
+  elif type success > /dev/null 2>&1; then
+    if [ $RETVAL -eq 0 ]; then
+      success $"$NAME startup"
+    else
+      failure $"$NAME startup"
+    fi
+    echo
   fi
-  echo
+
   return $RETVAL
 }
 
 stop() {
-  echo -n $"Stopping $NAME: "
+  if type log_daemon_msg > /dev/null 2>&1; then
+    log_daemon_msg "Stopping $DESC" "$NAME"
+  else
+    echo -n $"Stopping $NAME: "
+  fi
+
   api-umbrella stop
   RETVAL=$?
-  if [ $RETVAL -eq 0 ]; then
-    rm -f $LOCKFILE
-    success $"$NAME shutdown"
-  else
-    failure $"$NAME shutdown"
+
+  if type log_end_msg > /dev/null 2>&1; then
+    log_end_msg $RETVAL
+  elif type success > /dev/null 2>&1; then
+    if [ $RETVAL -eq 0 ]; then
+      success $"$NAME shutdown"
+    else
+      failure $"$NAME shutdown"
+    fi
+    echo
   fi
-  echo
+
   return $RETVAL
 }
 
@@ -60,15 +85,26 @@ restart() {
 }
 
 reload() {
-  echo -n $"Reloading $NAME: "
+  if type log_daemon_msg > /dev/null 2>&1; then
+    log_daemon_msg "Reloading $DESC" "$NAME"
+  else
+    echo -n $"Reloading $NAME: "
+  fi
+
   api-umbrella reload
   RETVAL=$?
-  if [ $RETVAL -eq 0 ]; then
-    success $"Reloading $NAME"
-  else
-    failure $"Reloading $NAME"
+
+  if type log_end_msg > /dev/null 2>&1; then
+    log_end_msg $RETVAL
+  elif type success > /dev/null 2>&1; then
+    if [ $RETVAL -eq 0 ]; then
+      success $"$NAME reload"
+    else
+      failure $"$NAME reload"
+    fi
+    echo
   fi
-  echo
+
   return $RETVAL
 }
 
@@ -95,7 +131,7 @@ case "$1" in
     reload
     ;;
   condrestart)
-    [ -f $LOCKFILE ] && restart || :
+    status > /dev/null 2>&1 && restart || :
     ;;
   *)
     echo "Usage: $NAME {start|stop|status|reload|restart|condrestart}"

@@ -22,6 +22,7 @@
 
 /build/local
 /build/package/.bundle
+/build/package/dist
 /build/work
 /deploy/.env
 /log/*

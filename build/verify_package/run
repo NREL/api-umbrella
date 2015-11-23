@@ -5,7 +5,16 @@ set -e -u -x
 ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
 
 # Install the local package that just got built.
-yum -y install $ROOT_DIR/build/package/*.rpm
+if command -v yum > /dev/null 2>&1; then
+  yum -y install $ROOT_DIR/build/package/dist/$DIST/*
+elif command -v dpkg > /dev/null 2>&1; then
+  apt-get update
+  apt-get -y install uuid-dev
+  dpkg -i $ROOT_DIR/build/package/dist/$DIST/* || apt-get install -y -f
+else
+  echo "Unknown build system"
+  exit 1
+fi
 
 # Start the service
 /etc/init.d/api-umbrella start
@@ -15,12 +24,23 @@ yum -y install $ROOT_DIR/build/package/*.rpm
 api-umbrella health --wait-for-status green
 
 # Install the test package dependencies.
-yum -y install rubygems sudo
+if command -v yum > /dev/null 2>&1; then
+  yum -y install epel-release
+  yum -y install \
+    rubygems \
+    socat \
+    sudo
+elif command -v dpkg > /dev/null 2>&1; then
+  apt-get -y install \
+    net-tools \
+    ruby \
+    socat \
+    sudo
+  if [ "$DIST" == "ubuntu:12.04" ] || [ "$DIST" == "debian:7" ]; then
+    apt-get -y install rubygems
+  fi
+fi
 gem install bundler --no-rdoc --no-ri
-
-# Disable the sudoers requiretty so some of the sudo tests can work inside a
-# docker run.
-sed -i -e "s/^Defaults *requiretty/#Defaults requiretty/g" /etc/sudoers
 
 cd $ROOT_DIR/build/verify_package
 
