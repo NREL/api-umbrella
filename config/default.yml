@@ -43,7 +43,7 @@ nginx:
     resolved_hosts:
       size: 100k
     stats:
-      size: 10m
+      size: 20m
     upstream_checksums:
       size: 200k
 gatekeeper:
