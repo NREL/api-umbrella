@@ -187,7 +187,7 @@ describe('logging', function() {
   }
 
   it('logs all the expected response fileds (for a non-chunked, non-gzipped response)', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'Accept': 'text/plain; q=0.5, text/html',
@@ -331,7 +331,7 @@ describe('logging', function() {
   });
 
   it('logs the extra expected fields for chunked or gzip responses', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       gzip: true,
     });
@@ -351,7 +351,7 @@ describe('logging', function() {
   });
 
   it('logs the geocoded ip related fields for ipv4 address', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'X-Forwarded-For': '8.8.8.8',
@@ -378,7 +378,7 @@ describe('logging', function() {
   });
 
   it('logs the geocoded ip related fields for ipv6 address', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'X-Forwarded-For': '2001:4860:4860::8888',
@@ -405,7 +405,7 @@ describe('logging', function() {
   });
 
   it('logs the geocoded ip related fields for ipv4 mapped ipv6 address', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'X-Forwarded-For': '0:0:0:0:0:ffff:808:808',
@@ -432,7 +432,7 @@ describe('logging', function() {
   });
 
   it('stores the most recently seen geocode for city in a separate index', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'X-Forwarded-For': '8.8.8.8',
@@ -466,7 +466,7 @@ describe('logging', function() {
   });
 
   it('logs request and caches locations where geocoding returns a city and country, but no region', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'X-Forwarded-For': '42.61.81.163',
@@ -508,7 +508,7 @@ describe('logging', function() {
   });
 
   it('logs request and caches locations where geocoding returns a country, but no city or region', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'X-Forwarded-For': '182.50.152.193',
@@ -549,7 +549,7 @@ describe('logging', function() {
   });
 
   it('logs requests and caches city when geocoding returns a city with accent characters', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'X-Forwarded-For': '212.55.61.5',
@@ -591,7 +591,7 @@ describe('logging', function() {
   });
 
   it('logs the accept-encoding header prior to normalization', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'Accept-Encoding': 'compress, gzip',
@@ -610,7 +610,7 @@ describe('logging', function() {
   });
 
   it('logs the external connection header and not the one used internally', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'Connection': 'close',
@@ -629,7 +629,7 @@ describe('logging', function() {
   });
 
   it('logs the host used to access the site for a wildcard api', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'Host': 'unknown.foo',
@@ -648,7 +648,7 @@ describe('logging', function() {
   });
 
   it('logs request scheme when hit directly', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       strictSSL: false,
     });
@@ -665,7 +665,7 @@ describe('logging', function() {
   });
 
   it('logs request scheme when forwarded from an external load balancer via X-Forwarded-Proto', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'X-Forwarded-Proto': 'https',
@@ -684,7 +684,7 @@ describe('logging', function() {
   });
 
   it('logs headers that contain quotes (to account for json escaping in nginx logs)', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'Referer': 'http://example.com/"foo\'bar',
@@ -710,7 +710,7 @@ describe('logging', function() {
   });
 
   it('logs headers that contain special characters', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'Referer': 'http://example.com/!\\*^%#[]',
@@ -729,7 +729,7 @@ describe('logging', function() {
   });
 
   it('logs requests with utf8 characters in the URL', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
 
     // Use curl and not request for these tests, since the request library
     // calls url.parse which has a bug that causes backslashes to become
@@ -759,7 +759,7 @@ describe('logging', function() {
   });
 
   it('url encodes valid utf8 characters in the URL path, URL query string, and HTTP headers', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
 
     // Testing various encodings of the UTF-8 pound symbol: £
     var urlEncoded = '%C2%A3';
@@ -815,7 +815,7 @@ describe('logging', function() {
   });
 
   it('url encodes invalid utf8 characters in the URL path, URL query string, and HTTP headers', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
 
     // Testing various encodings of the ISO-8859-1 pound symbol: £ (but since
     // this is the ISO-8859-1 version, it's not valid UTF-8).
@@ -876,7 +876,7 @@ describe('logging', function() {
   });
 
   it('decodes url escape sequences for the request_query, but not in the complete URL, path, or headers', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
 
     var urlEncoded = 'http%3A%2F%2Fexample.com%2Fsub%2Fsub%2F%3Ffoo%3Dbar%26foo%3Dbar%20more+stuff';
     var urlDecoded = decodeURIComponent(urlEncoded).replace('+', ' '); // nginx also decodes + as spaces
@@ -918,7 +918,7 @@ describe('logging', function() {
   });
 
   it('logs optionally url encodable ascii strings as given (except in request_query where they are decoded)', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
 
     var asIs = '-%2D ;%3B +%2B /%2F :%3A 0%30 >%3E {%7B';
     var urlDecoded = decodeURIComponent(asIs).replace('+', ' '); // nginx also decodes + as spaces
@@ -968,7 +968,7 @@ describe('logging', function() {
   });
 
   it('logs requests with backslashes and slashes', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
 
     // Use curl and not request for these tests, since the request library
     // calls url.parse which has a bug that causes backslashes to become
@@ -994,7 +994,7 @@ describe('logging', function() {
   });
 
   it('logs the request_at field as a date', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
 
     request.get('http://localhost:9080/info/', this.options, function(error, response) {
       should.not.exist(error);
@@ -1022,7 +1022,7 @@ describe('logging', function() {
   });
 
   it('successfully logs query strings when the field first indexed was a date, but later queries are not (does not attempt to map fields into dates)', function(done) {
-    this.timeout(15000);
+    this.timeout(30000);
 
     var options = _.merge({}, this.options, {
       qs: {
@@ -1068,7 +1068,7 @@ describe('logging', function() {
   });
 
   it('successfully logs query strings when the field first indexed was a number, but later queries are not (does not attempt to map fields into numbers)', function(done) {
-    this.timeout(15000);
+    this.timeout(30000);
 
     var options = _.merge({}, this.options, {
       qs: {
@@ -1119,7 +1119,7 @@ describe('logging', function() {
   });
 
   it('logs requests that are canceled before completing', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       timeout: 500,
     });
@@ -1162,7 +1162,7 @@ describe('logging', function() {
   });
 
   it('logs requests denied by the gatekeeper', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
         'X-Api-Key': 'INVALID_KEY',
@@ -1190,7 +1190,7 @@ describe('logging', function() {
   });
 
   it('logs requests when the api backend is down', function(done) {
-    this.timeout(4500);
+    this.timeout(10000);
     request.get('http://localhost:9080/down', this.options, function(error, response) {
       should.not.exist(error);
       response.statusCode.should.eql(502);
