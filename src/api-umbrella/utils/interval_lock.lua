@@ -75,13 +75,25 @@ end
 -- @param interval - minimum time in between executions (seconds)
 -- @param fn - function to execute
 _M.repeat_with_mutex = function(name, interval, fn)
-  _M.repeat_exec(interval, function()
-    _M.mutex_exec(name, function()
-      -- here we subtract the lock expiration time by 1ms to prevent
-      -- a race condition with the next timer event.
-      _M.timeout_exec(name, interval - 0.001, fn)
+  -- Wrap the initial call in an immediate timer, so we know we're always
+  -- executing fn() within the context of a timer (since some nginx APIs may
+  -- not be available in other contexts, like init_worker_by_lua).
+  local ok, err = ngx.timer.at(0, function(premature)
+    if premature then
+      return
+    end
+
+    _M.repeat_exec(interval, function()
+      _M.mutex_exec(name, function()
+        -- here we subtract the lock expiration time by 1ms to prevent
+        -- a race condition with the next timer event.
+        _M.timeout_exec(name, interval - 0.001, fn)
+      end)
     end)
   end)
+  if not ok and err ~= "process exiting" then
+    ngx.log(ngx.ERR, "failed to create timer: ", err)
+  end
 end
 
 return _M
