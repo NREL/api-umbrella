@@ -41,6 +41,7 @@ http {
   lua_shared_dict api_users {{nginx.shared_dicts.api_users.size}};
   lua_shared_dict dns_cache {{nginx.shared_dicts.dns_cache.size}};
   lua_shared_dict geocode_city_cache {{nginx.shared_dicts.geocode_city_cache.size}};
+  lua_shared_dict interval_locks {{nginx.shared_dicts.interval_locks.size}};
   lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
   lua_shared_dict logs {{nginx.shared_dicts.logs.size}};
   lua_shared_dict resolved_hosts {{nginx.shared_dicts.resolved_hosts.size}};

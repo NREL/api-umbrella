@@ -34,6 +34,8 @@ nginx:
       size: 300k
     geocode_city_cache:
       size: 100k
+    interval_locks:
+      size: 20k
     locks:
       size: 20k
     logs:

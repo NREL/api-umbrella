@@ -1,6 +1,6 @@
 local _M = {}
 
-local lock = require "resty.lock"
+local interval_lock = require "api-umbrella.utils.interval_lock"
 local mongo = require "api-umbrella.utils.mongo"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
@@ -10,15 +10,8 @@ local is_empty = types.is_empty
 local set_packed = utils.set_packed
 
 local delay = 0.25  -- in seconds
-local new_timer = ngx.timer.at
 
 local function do_check()
-  local check_lock = lock:new("locks", { ["timeout"] = 0 })
-  local _, lock_err = check_lock:lock("distributed_rate_limit_puller")
-  if lock_err then
-    return
-  end
-
   local current_fetch_time = ngx.now() * 1000
   local last_fetched_timestamp = get_packed(ngx.shared.stats, "distributed_last_fetched_timestamp") or { t = 0, i = 0 }
 
@@ -77,39 +70,10 @@ local function do_check()
   if success then
     ngx.shared.stats:set("distributed_last_pulled_at", current_fetch_time)
   end
-
-  local ok, unlock_err = check_lock:unlock()
-  if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
-  end
-end
-
-local function check(premature)
-  if premature then
-    return
-  end
-
-  local ok, err = pcall(do_check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to run backend load cycle: ", err)
-  end
-
-  ok, err = new_timer(delay, check)
-  if not ok then
-    if err ~= "process exiting" then
-      ngx.log(ngx.ERR, "failed to create timer: ", err)
-    end
-
-    return
-  end
 end
 
 function _M.spawn()
-  local ok, err = new_timer(0, check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to create timer: ", err)
-    return
-  end
+  interval_lock.repeat_with_mutex('distributed_rate_limit_puller', delay, do_check)
 end
 
 return _M

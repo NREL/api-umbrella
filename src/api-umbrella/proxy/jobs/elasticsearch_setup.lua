@@ -2,10 +2,9 @@ local _M = {}
 
 local cjson = require "cjson"
 local http = require "resty.http"
-local lock = require "resty.lock"
+local interval_lock = require "api-umbrella.utils.interval_lock"
 
 local delay = 3600  -- in seconds
-local new_timer = ngx.timer.at
 
 local elasticsearch_host = config["elasticsearch"]["hosts"][1]
 
@@ -103,51 +102,13 @@ local function create_aliases()
 end
 
 local function do_check()
-  local check_lock = lock:new("locks", { ["timeout"] = 0 })
-  local _, lock_err = check_lock:lock("elasticsearch_index_setup")
-  if lock_err then
-    return
-  end
-
   wait_for_elasticsearch()
   create_templates()
   create_aliases()
-
-  local ok, unlock_err = check_lock:unlock()
-  if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
-  end
-end
-
-local function check(premature)
-  if premature then
-    return
-  end
-
-  local ok, err = pcall(do_check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to run api load cycle: ", err)
-  end
-
-  -- We keep running this task so that we can ensure the indexes and aliases
-  -- always get created for the following day as we approach the end of the
-  -- month.
-  ok, err = new_timer(delay, check)
-  if not ok then
-    if err ~= "process exiting" then
-      ngx.log(ngx.ERR, "failed to create timer: ", err)
-    end
-
-    return
-  end
 end
 
 function _M.spawn()
-  local ok, err = new_timer(0, check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to create timer: ", err)
-    return
-  end
+  interval_lock.repeat_with_mutex('elasticsearch_index_setup', delay, do_check)
 end
 
 return _M

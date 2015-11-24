@@ -1,6 +1,6 @@
 local _M = {}
 
-local lock = require "resty.lock"
+local interval_lock = require "api-umbrella.utils.interval_lock"
 local mongo = require "api-umbrella.utils.mongo"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
@@ -9,23 +9,11 @@ local get_packed = utils.get_packed
 local is_empty = types.is_empty
 local set_packed = utils.set_packed
 
-local check_lock = lock:new("locks", {
-  ["timeout"] = 0,
-})
-
 local api_users = ngx.shared.api_users
 
 local delay = 1 -- in seconds
-local new_timer = ngx.timer.at
-local log = ngx.log
-local ERR = ngx.ERR
 
 local function do_check()
-  local _, lock_err = check_lock:lock("load_api_users")
-  if lock_err then
-    return
-  end
-
   local current_fetch_time = ngx.now() * 1000
   local last_fetched_timestamp = get_packed(api_users, "distributed_last_fetched_timestamp") or { t = math.floor((current_fetch_time - 60 * 1000) / 1000), i = 0 }
 
@@ -69,39 +57,10 @@ local function do_check()
   if success then
     api_users:set("last_fetched_at", current_fetch_time)
   end
-
-  local ok, unlock_err = check_lock:unlock()
-  if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
-  end
-end
-
-local function check(premature)
-  if premature then
-    return
-  end
-
-  local ok, err = pcall(do_check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to run api fetch cycle: ", err)
-  end
-
-  ok, err = new_timer(delay, check)
-  if not ok then
-    if err ~= "process exiting" then
-      ngx.log(ngx.ERR, "failed to create timer: ", err)
-    end
-
-    return
-  end
 end
 
 function _M.spawn()
-  local ok, err = new_timer(0, check)
-  if not ok then
-    log(ERR, "failed to create timer: ", err)
-    return
-  end
+  interval_lock.repeat_with_mutex('load_api_users', delay, do_check)
 end
 
 return _M

@@ -2,16 +2,13 @@ local _M = {}
 
 local api_store = require "api-umbrella.proxy.api_store"
 local dns_cache = require "resty.dns.cache"
+local interval_lock = require "api-umbrella.utils.interval_lock"
 local load_backends = require "api-umbrella.proxy.load_backends"
-local lock = require "resty.lock"
 local types = require "pl.types"
 
 local is_empty = types.is_empty
 
 local delay = 1 -- in seconds
-local new_timer = ngx.timer.at
-local log = ngx.log
-local ERR = ngx.ERR
 
 function _M.resolve(apis)
   local dns_changed = false
@@ -70,50 +67,15 @@ function _M.resolve(apis)
 end
 
 local function do_check()
-  local check_lock = lock:new("locks", { ["timeout"] = 0 })
-  local _, lock_err = check_lock:lock("resolve_backend_dns")
-  if lock_err then
-    return
-  end
-
   local apis = api_store.all_apis()
   local dns_changed = _M.resolve(apis)
   if dns_changed then
     load_backends.setup_backends(apis)
   end
-
-  local ok, unlock_err = check_lock:unlock()
-  if not ok then
-    ngx.log(ngx.ERR, "failed to unlock: ", unlock_err)
-  end
-end
-
-local function check(premature)
-  if premature then
-    return
-  end
-
-  local ok, err = pcall(do_check)
-  if not ok then
-    ngx.log(ngx.ERR, "failed to run resolve backend dns cycle: ", err)
-  end
-
-  ok, err = new_timer(delay, check)
-  if not ok then
-    if err ~= "process exiting" then
-      ngx.log(ngx.ERR, "failed to create timer: ", err)
-    end
-
-    return
-  end
 end
 
 function _M.spawn()
-  local ok, err = new_timer(0, check)
-  if not ok then
-    log(ERR, "failed to create timer: ", err)
-    return
-  end
+  interval_lock.repeat_with_mutex('resolve_backend_dns', delay, do_check)
 end
 
 return _M
