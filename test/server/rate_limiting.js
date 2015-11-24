@@ -1103,7 +1103,7 @@ describe('ApiUmbrellaGatekeper', function() {
         itBehavesLikeApiKeyRateLimits('/hello', 10);
 
         it('allows rate limits to be changed live (within 2 seconds)', function(done) {
-          this.timeout(4000);
+          this.timeout(8000);
 
           var url = 'http://localhost:9080/hello?api_key=' + this.apiKey;
           request.get(url, function(error, response) {
