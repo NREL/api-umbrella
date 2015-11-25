@@ -763,7 +763,7 @@ $(DEPS_DIR)/$(OPENRESTY)/.built: $(DEPS_DIR)/$(OPENRESTY) $(DEPS_DIR)/$(NGX_DYUP
 $(STAGE_MARKERS_DIR)/$(OPENRESTY_INSTALL_MARKER): $(DEPS_DIR)/$(OPENRESTY)/.built | $(STAGE_MARKERS_DIR)
 	cd $(DEPS_DIR)/$(OPENRESTY) && make install DESTDIR=$(STAGE_DIR)
 	cd $(EMBEDDED_DIR)/bin && ln -snf ../openresty/bin/resty ./resty
-	cd $(EMBEDDED_DIR)/bin && ln -snf ../openresty/luajit/bin/luajit-2.1.0-alpha ./luajit
+	cd $(EMBEDDED_DIR)/bin && ln -snf ../openresty/luajit/bin/luajit-2.1.0-beta1 ./luajit
 	cd $(EMBEDDED_DIR)/sbin && ln -snf ../openresty/nginx/sbin/nginx ./nginx
 	rm -f $(STAGE_MARKERS_DIR)/$(OPENRESTY_NAME)$(VERSION_SEP)*
 	touch $@
