@@ -252,6 +252,12 @@ local function activate_services()
           is_active = false
         end
       end
+
+      if not config["_service_nginx_reloader_enabled?"] then
+        if array_includes({ "nginx-reloader" }, service_name) then
+          is_active = false
+        end
+      end
     end
 
     -- Disable any test-only services when not running in the test environment.
