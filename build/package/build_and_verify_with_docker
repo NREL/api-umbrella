@@ -27,3 +27,5 @@ docker run \
 # necessary dependencies and we're not missing any dependencies we might have
 # installed just for building.
 $ROOT_DIR/build/verify_package/run_with_docker
+
+echo "Completed package build and verification for $DIST"
