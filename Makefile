@@ -587,7 +587,7 @@ $(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER): $(DEPS_DIR)/$(LUAROCKS) | $(STA
 		--prefix=$(PREFIX)/embedded/openresty/luajit \
 		--with-lua=$(EMBEDDED_DIR)/openresty/luajit \
 		--with-lua-include=$(EMBEDDED_DIR)/openresty/luajit/include/luajit-2.1 \
-		--lua-suffix=jit-2.1.0-alpha
+		--lua-suffix=jit-2.1.0-beta1
 	cd $< && make build
 	cd $< && make install DESTDIR=$(STAGE_DIR)
 	cd $(EMBEDDED_DIR)/bin && ln -snf ../openresty/luajit/bin/luarocks ./luarocks

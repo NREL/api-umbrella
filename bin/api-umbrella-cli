@@ -4,8 +4,8 @@ local embedded_root = os.getenv("API_UMBRELLA_EMBEDDED_ROOT")
 if embedded_root then
   package.path = embedded_root .. "/openresty/lualib/?.lua;" ..
     embedded_root .. "/openresty/lualib/?/init.lua;" ..
-    embedded_root .. "/openresty/luajit/share/luajit-2.1.0-alpha/?.lua;" ..
-    embedded_root .. "/openresty/luajit/share/luajit-2.1.0-alpha/?/init.lua;" ..
+    embedded_root .. "/openresty/luajit/share/luajit-2.1.0-beta1/?.lua;" ..
+    embedded_root .. "/openresty/luajit/share/luajit-2.1.0-beta1/?/init.lua;" ..
     embedded_root .. "/openresty/luajit/share/lua/5.1/?.lua;" ..
     embedded_root .. "/openresty/luajit/share/lua/5.1/?/init.lua;" ..
     package.path
