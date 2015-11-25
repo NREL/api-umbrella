@@ -1004,9 +1004,6 @@ download_deps: \
 	$(DEPS_DIR)/$(RUNIT).tar.gz \
 	$(DEPS_DIR)/$(TRAFFICSERVER).tar.gz
 
-.NOTPARALLEL: \
-	download_deps
-
 $(VENDOR_DIR):
 	mkdir -p $@
 
