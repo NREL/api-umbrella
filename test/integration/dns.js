@@ -707,7 +707,9 @@ describe('dns backend resolving', function() {
             var endTtlCounterTime = new Date();
             var duration = endTtlCounterTime - startTtlCounterTime;
             duration.should.be.gte((ttl - TTL_BUFFER + maxStale) * 1000);
-            duration.should.be.lte((ttl + TTL_BUFFER + maxStale) * 1000);
+            // Double the TTL buffer factor on this test, to account for
+            // further fuzziness with the timings of the stale record too.
+            duration.should.be.lte((ttl + (TTL_BUFFER * 2) + maxStale) * 1000);
             next();
           },
         ], done);
