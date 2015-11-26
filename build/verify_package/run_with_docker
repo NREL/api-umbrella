@@ -8,7 +8,10 @@ CONTAINER_NAME="api-umbrella-package-$DIST-verify"
 CONTAINER_NAME=${CONTAINER_NAME//[^a-zA-Z0-9_.-]/}
 
 # Wipe any previous build attempts.
-docker ps -a -q --filter="name=$CONTAINER_NAME" | xargs --no-run-if-empty docker rm -f
+EXISTING=$(docker ps -a -q --filter="name=$CONTAINER_NAME")
+if [ "$EXISTING" != "" ]; then
+  docker rm -f $EXISTING
+fi
 
 docker run \
   --name=$CONTAINER_NAME \

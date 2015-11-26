@@ -11,7 +11,10 @@ CONTAINER_NAME=${CONTAINER_NAME//[^a-zA-Z0-9_.-]/}
 docker pull $DOCKER_IMAGE
 
 # Wipe any previous build attempts.
-docker ps -a -q --filter="name=$CONTAINER_NAME" | xargs --no-run-if-empty docker rm -f
+EXISTING=$(docker ps -a -q --filter="name=$CONTAINER_NAME")
+if [ "$EXISTING" != "" ]; then
+  docker rm -f $EXISTING
+fi
 
 # Create the package inside the docker container for this distro.
 docker run \
