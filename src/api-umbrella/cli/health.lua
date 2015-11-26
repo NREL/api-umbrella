@@ -27,6 +27,9 @@ local function health(options, config)
       if response_code == 200 and status ~= "red" then
         exit_code = 0
       end
+    else
+      local err = "nginx error"
+      return status, exit_code, err
     end
   end
 
