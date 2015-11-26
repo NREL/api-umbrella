@@ -48,8 +48,8 @@ fi
 
 chown -R $USER:$GROUP /opt/api-umbrella/etc /opt/api-umbrella/var
 chown -R $DEPLOY_USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps
-chown -R $USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps/core/shared/web-tmp
-chmod 775 /opt/api-umbrella/embedded/apps/core/shared/web-tmp
+chown -R $USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
+chmod 775 /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
 
 # Install service, but don't activate.
 if command -v chkconfig > /dev/null 2>&1; then
