@@ -49,9 +49,9 @@ function _M.reopen_logs()
   reopen_logs()
 end
 
-function _M.ls()
-  local ls = require "api-umbrella.cli.ls"
-  ls()
+function _M.processes()
+  local processes = require "api-umbrella.cli.processes"
+  processes()
 end
 
 function _M.health(args)
@@ -98,8 +98,8 @@ parser:command("status")
 parser:command("reopen-logs")
   :description("Close and reopen log files in use.")
 
-parser:command("ls")
-  :description("List the processes running under API Umbrella.")
+parser:command("processes")
+  :description("List the status of the processes running under API Umbrella.")
 
 local health_command = parser:command("health")
   :description("Print the health of the API Umbrella services.")
