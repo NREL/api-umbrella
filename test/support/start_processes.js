@@ -107,7 +107,7 @@ before(function apiUmbrellaStart(done) {
   async.until(function() {
     return healthy && global.mongoOrchestrationReady;
   }, function(callback) {
-    execFile(binPath, ['health', '--wait-for-status', 'green'], {
+    execFile(binPath, ['health', '--wait-for-status', 'green', '--wait-timeout', '90'], {
       env: _.merge({}, process.env, {
         'API_UMBRELLA_EMBEDDED_ROOT': process.env.API_UMBRELLA_EMBEDDED_ROOT,
         'API_UMBRELLA_CONFIG': overridesConfigPath,
