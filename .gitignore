@@ -32,3 +32,5 @@
 /test/tmp/*
 /ci_cache
 /vendor
+/website/build
+/docs/_build

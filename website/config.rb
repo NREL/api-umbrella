@@ -20,9 +20,6 @@
 # page "/path/to/file.html", :layout => :otherlayout
 #
 # A path which all have the same layout
-with_layout :docs do
-  page "/docs/*"
-end
 
 # Proxy pages (http://middlemanapp.com/basics/dynamic-pages/)
 # proxy "/this-page-has-no-template.html", "/template-file.html", :locals => {
@@ -72,8 +69,6 @@ end
 
 activate :directory_indexes
 
-activate :syntax
-
 set :markdown_engine, :kramdown
 set :markdown, {
   :input => 'GFM',
@@ -82,3 +77,17 @@ set :markdown, {
 
 ignore "chef/*"
 ignore "workspace/*"
+
+redirect "docs/admin-api.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/admin-customize-public-website.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/api-keys.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/api-scopes.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/architecture.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/backend-headers.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/caching.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/deployment.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/development-setup.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/getting-started.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/index.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "docs/smtp-configuration.html", :to => "https://api-umbrella.readthedocs.org/en/latest/"
+redirect "download.html", :to => "install.html"

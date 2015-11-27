@@ -1,0 +1,40 @@
+.rst-content pre.literal-block {
+  padding: 12px;
+  font-size: 12px;
+}
+
+.swagger-section {
+  margin-top: 20px;
+}
+
+.swagger-section ul {
+  padding: 0px;
+}
+
+.swagger-section .container {
+  padding: 0px;
+  width: auto;
+}
+
+.swagger-section h2 {
+  margin: 0px;
+}
+
+.rst-content .section .swagger-section ul {
+  line-height: normal;
+}
+
+.rst-content .section .swagger-section ul li {
+  list-style-type: inherit;
+  margin-left: 0px;
+}
+
+.rst-content .section .swagger-section code {
+  border-style: none;
+  white-space: pre;
+  font-size: 12px;
+}
+
+.rst-content .section .swagger-section p {
+  font-size: inherit;
+}

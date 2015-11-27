@@ -42,8 +42,8 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="<%= "active" if(current_page.url == "/") %>"><%= link_to("Home", "/index.html", :relative => true) %></li>
-            <li class="<%= "active" if(current_page.url =~ %r{^/download/}) %>"><%= link_to("Download", "/download.html", :relative => true) %></li>
-            <li class="<%= "active" if(current_page.url =~ %r{^/docs/}) %>"><%= link_to("Documentation", "/docs/install.html", :relative => true) %></li>
+            <li class="<%= "active" if(current_page.url =~ %r{^/install/}) %>"><%= link_to("Install", "/install.html", :relative => true) %></li>
+            <li class="<%= "active" if(current_page.url =~ %r{^/docs/}) %>"><%= link_to("Documentation", "https://api-umbrella.readthedocs.org") %></li>
           </ul>
         </div>
       </div>
