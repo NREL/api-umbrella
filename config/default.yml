@@ -104,12 +104,10 @@ router:
     ip_rate_size: 8m
     ip_connections:
     ip_connections_size: 5m
-  web_backend_regex: "^/(admin|admins|web-assets)(/|$)"
-  web_backend_required_https_regex: "^/(admin|admins)(/|$)"
+  web_app_host: "*"
+  web_app_backend_regex: "^/(admin|admins|web-assets)(/|$)"
+  web_app_backend_required_https_regex: "^/(admin|admins)(/|$)"
   website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
-hosts:
-  - hostname: localhost
-    default: true
 dns_resolver:
   negative_ttl: 60
   max_stale: 86400
@@ -263,7 +261,7 @@ apiSettings:
 internal_apis:
   - _id: api-umbrella-gatekeeper-backend
     name: API Umbrella - Gatekeeper APIs
-    frontend_host: "{{default_hostname}}"
+    frontend_host: "{{router.web_app_host}}"
     backend_host: 127.0.0.1
     backend_protocol: http
     balance_algorithm: least_conn
@@ -285,7 +283,7 @@ internal_apis:
           require_https: optional
   - _id: api-umbrella-web-backend
     name: API Umbrella - Web APIs
-    frontend_host: "{{default_hostname}}"
+    frontend_host: "{{router.web_app_host}}"
     backend_host: 127.0.0.1
     backend_protocol: http
     balance_algorithm: least_conn
@@ -309,7 +307,7 @@ internal_apis:
             - api-umbrella-contact-form
 internal_website_backends:
   - _id: api-umbrella-website-backend
-    frontend_host: "{{default_hostname}}"
+    frontend_host: "{{router.web_app_host}}"
     backend_protocol: http
     server_host: "{{static_site.host}}"
     server_port: "{{static_site.port}}"

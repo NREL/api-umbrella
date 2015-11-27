@@ -1,4 +1,4 @@
-local api_store = require "api-umbrella.proxy.api_store"
+local matches_hostname = require "api-umbrella.utils.matches_hostname"
 local stringx = require "pl.stringx"
 local utils = require "api-umbrella.proxy.utils"
 
@@ -7,42 +7,29 @@ local gsub = string.gsub
 local set_uri = utils.set_uri
 local startswith = stringx.startswith
 
-local function apis_for_request_host()
+local function apis_for_request_host(active_config)
   local apis = {}
 
-  local matched_host = ngx.ctx.matched_host
-  local all_apis = api_store.all_apis() or {}
-  local fallback_apis = {}
+  local all_apis = active_config["apis"] or {}
+  local apis_for_default_host = {}
   for _, api in ipairs(all_apis) do
-    local hostname_matches = false
-    if api["_frontend_host_wildcard_regex"] then
-      local matches, match_err = ngx.re.match(ngx.ctx.host_normalized, api["_frontend_host_wildcard_regex"], "jo")
-      if matches then
-        hostname_matches = true
-      elseif match_err then
-        ngx.log(ngx.ERR, "regex error: ", match_err)
-      end
-    else
-      if ngx.ctx.host_normalized == api["_frontend_host_normalized"] then
-        hostname_matches = true
-      end
-    end
-
-    if hostname_matches then
+    if matches_hostname(api["_frontend_host_normalized"], api["_frontend_host_wildcard_regex"]) then
       table.insert(apis, api)
-    elseif matched_host and matched_host["_hostname_normalized"] == api["_frontend_host_normalized"] then
-      table.insert(fallback_apis, api)
+    elseif api["_frontend_host_normalized"] == config["_default_hostname_normalized"]then
+      table.insert(apis_for_default_host, api)
     end
   end
 
-  append_array(apis, fallback_apis)
+  -- If a default host exists, append its APIs to the end sot hey have a lower
+  -- matching precedence than any APIs that actually match the host.
+  append_array(apis, apis_for_default_host)
 
   return apis
 end
 
-local function match_api(request_path)
+local function match_api(active_config, request_path)
   -- Find the API backends that match this host.
-  local apis = apis_for_request_host()
+  local apis = apis_for_request_host(active_config)
 
   -- Search through each API backend for the first that matches the URL path
   -- prefix.
@@ -57,9 +44,9 @@ local function match_api(request_path)
   end
 end
 
-return function()
+return function(active_config)
   local request_path = ngx.ctx.original_uri
-  local api, url_match = match_api(request_path)
+  local api, url_match = match_api(active_config, request_path)
 
   if api and url_match then
     -- Rewrite the URL prefix path.

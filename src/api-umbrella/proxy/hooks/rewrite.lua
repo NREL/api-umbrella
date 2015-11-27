@@ -3,9 +3,11 @@ local start_time = ngx.now()
 local api_matcher = require "api-umbrella.proxy.middleware.api_matcher"
 local error_handler = require "api-umbrella.proxy.error_handler"
 local host_normalize = require "api-umbrella.utils.host_normalize"
-local httpsify_current_url = require "api-umbrella.utils.httpsify_current_url"
+local redirect_matches_to_https = require "api-umbrella.utils.redirect_matches_to_https"
 local utils = require "api-umbrella.proxy.utils"
 local wait_for_setup = require "api-umbrella.proxy.wait_for_setup"
+local web_app_matcher = require "api-umbrella.proxy.middleware.web_app_matcher"
+local website_matcher = require "api-umbrella.proxy.middleware.website_matcher"
 
 local get_packed = utils.get_packed
 local ngx_var = ngx.var
@@ -30,83 +32,42 @@ ngx.ctx.request_uri = ngx.ctx.original_request_uri
 ngx.ctx.original_uri = ngx_var.uri
 ngx.ctx.uri = ngx.ctx.original_uri
 
-local matched_host
-local default_host
-local data = get_packed(ngx.shared.active_config, "packed_data") or {}
-if data["hosts"] then
-  for _, host in ipairs(data["hosts"]) do
-    if host["_hostname_normalized"] == "*" and default_host then
-      matched_host = default_host
-      break
-    elseif host["_hostname_wildcard_regex"] then
-      local matches, match_err = ngx.re.match(ngx.ctx.host_normalized, host["_hostname_wildcard_regex"], "jo")
-      if matches then
-        matched_host = host
-        break
-      elseif match_err then
-        ngx.log(ngx.ERR, "regex error: ", match_err)
-      end
-    else
-      if ngx.ctx.host_normalized == host["_hostname_normalized"] then
-        matched_host = host
-        break
-      end
-    end
-
-    if host["default"] and not default_host then
-      default_host = host
-    end
-  end
+local function route_to_web_app()
+  redirect_matches_to_https(config["router"]["web_app_backend_required_https_regex"])
+  ngx.var.api_umbrella_proxy_pass = "http://api_umbrella_web_app_backend"
 end
 
-if not matched_host and default_host then
-  matched_host = default_host
-end
-ngx.ctx.matched_host = matched_host
-
-if matched_host and matched_host["_web_backend?"] then
-  local matches, match_err = ngx.re.match(ngx.ctx.original_uri, config["router"]["web_backend_regex"], "ijo")
-  if matches then
-    local protocol = ngx.ctx.protocol
-    if protocol ~= "https" then
-      matches, match_err = ngx.re.match(ngx.ctx.original_uri, config["router"]["web_backend_required_https_regex"], "ijo")
-      if matches then
-        return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
-      elseif match_err then
-        ngx.log(ngx.ERR, "regex error: ", match_err)
-      end
-    end
-
-    ngx.var.api_umbrella_proxy_pass = "http://api_umbrella_web_backend"
-    return true
-  elseif match_err then
-    ngx.log(ngx.ERR, "regex error: ", match_err)
-  end
-end
-
-local api, err = api_matcher()
-if api then
+local function route_to_api(api)
   ngx.ctx.matched_api = api
   ngx.var.api_umbrella_proxy_pass = "http://api_umbrella_trafficserver_backend"
-else
-  if matched_host and matched_host["_website_backend?"] then
-    local protocol = ngx.ctx.protocol
-    if protocol ~= "https" then
-      local matches, match_err = ngx.re.match(ngx.ctx.original_uri, matched_host["_website_backend_required_https_regex"], "ijo")
-      if match_err then
-        ngx.log(ngx.ERR, "regex error: ", match_err)
-      elseif matches then
-        return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
-      end
-    end
 
-    ngx.var.api_umbrella_proxy_pass = matched_host["_website_protocol"] .. "://" .. matched_host["_website_server_host"] .. ":" .. matched_host["_website_server_port"]
-    return true
-  end
-
-  return error_handler(err)
+  -- Compute how much time we spent in Lua processing during this phase of the
+  -- request.
+  utils.overhead_timer(start_time)
 end
 
--- Compute how much time we spent in Lua processing during this phase of the
--- request.
-utils.overhead_timer(start_time)
+local function route_to_website(website)
+  redirect_matches_to_https(website["website_backend_required_https_regex"] or config["router"]["website_backend_required_https_regex_default"])
+  ngx.var.api_umbrella_proxy_pass = (website["backend_protocol"] or "http") .. "://" .. website["server_host"] .. ":" .. website["server_port"]
+end
+
+local web_app = web_app_matcher()
+if web_app then
+  route_to_web_app()
+else
+  local active_config = get_packed(ngx.shared.active_config, "packed_data") or {}
+
+  local api, api_err = api_matcher(active_config)
+  if api then
+    route_to_api(api)
+  elseif api_err == "not_found" then
+    local website, website_err = website_matcher(active_config)
+    if website then
+      route_to_website(website)
+    else
+      error_handler(website_err)
+    end
+  else
+    error_handler(api_err)
+  end
+end

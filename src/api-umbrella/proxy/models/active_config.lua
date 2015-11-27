@@ -158,31 +158,11 @@ local function cache_computed_sub_settings(sub_settings)
   end
 end
 
-local function define_host(hosts_by_name, hostname)
-  hostname = host_normalize(hostname)
-  if hostname and not hosts_by_name[hostname] then
-    hosts_by_name[hostname] = {
-      hostname = hostname,
-    }
-  end
-
-  return hostname
+local function sort_by_frontend_host_length(a, b)
+  return string.len(tostring(a["frontend_host"])) > string.len(tostring(b["frontend_host"]))
 end
 
-local function sort_by_hostname_length(a, b)
-  return string.len(tostring(a["hostname"])) > string.len(tostring(b["hostname"]))
-end
-
-local function parse_hosts(hosts, hosts_by_name)
-  for _, host in ipairs(hosts) do
-    local hostname = host_normalize(host["hostname"])
-    if hostname then
-      hosts_by_name[hostname] = host
-    end
-  end
-end
-
-local function parse_apis(apis, hosts_by_name)
+local function parse_apis(apis)
   for _, api in ipairs(apis) do
     if not api["_id"] then
       api["_id"] = ngx.md5(cjson.encode(api))
@@ -191,53 +171,30 @@ local function parse_apis(apis, hosts_by_name)
     cache_computed_api(api)
     cache_computed_settings(api["settings"])
     cache_computed_sub_settings(api["sub_settings"])
-    define_host(hosts_by_name, api["frontend_host"])
   end
 end
 
-local function parse_website_backends(website_backends, hosts_by_name)
+local function parse_website_backends(website_backends)
   for _, website_backend in ipairs(website_backends) do
     if not website_backend["_id"] then
       website_backend["_id"] = ndk.set_var.set_secure_random_alphanum(32)
     end
 
-    local hostname = define_host(hosts_by_name, website_backend["frontend_host"])
-    if hostname then
-      hosts_by_name[hostname]["_website_backend?"] = true
-      hosts_by_name[hostname]["_website_host"] = website_backend["frontend_host"]
-      hosts_by_name[hostname]["_website_protocol"] = website_backend["backend_protocol"] or "http"
-      hosts_by_name[hostname]["_website_server_host"] = website_backend["server_host"]
-      hosts_by_name[hostname]["_website_server_port"] = website_backend["server_port"]
-      hosts_by_name[hostname]["_website_backend_required_https_regex"] = website_backend["website_backend_required_https_regex"] or config["router"]["website_backend_required_https_regex_default"]
-    end
-  end
-end
-
-local function build_all_hosts(hosts_by_name)
-  local hosts = tablex.values(hosts_by_name)
-  table.sort(hosts, sort_by_hostname_length)
-  for _, host in ipairs(hosts) do
-    set_hostname_regex(host, "hostname")
-
-    if host["enable_web_backend"] ~= nil then
-      host["_web_backend?"] = host["enable_web_backend"]
-    elseif host["_web_backend?"] == nil then
-      host["_web_backend?"] = (host["default"] == true)
+    if website_backend["frontend_host"] then
+      set_hostname_regex(website_backend, "frontend_host")
     end
   end
 
-  return hosts
+  table.sort(website_backends, sort_by_frontend_host_length)
 end
 
-local function build_active_config(hosts, apis, website_backends)
-  local hosts_by_name = {}
-  parse_hosts(hosts, hosts_by_name)
-  parse_apis(apis, hosts_by_name)
-  parse_website_backends(website_backends, hosts_by_name)
+local function build_active_config(apis, website_backends)
+  parse_apis(apis)
+  parse_website_backends(website_backends)
 
   local active_config = {
     apis = apis,
-    hosts = build_all_hosts(hosts_by_name),
+    websites = website_backends,
   }
 
   return active_config
@@ -269,11 +226,10 @@ function _M.set(db_config)
     db_config = {}
   end
 
-  local hosts = deepcopy(file_config["hosts"]) or {}
   local apis = get_combined_apis(file_config, db_config)
   local website_backends = get_combined_website_backends(file_config, db_config)
 
-  local active_config = build_active_config(hosts, apis, website_backends)
+  local active_config = build_active_config(apis, website_backends)
   resolve_backend_dns.resolve(active_config["apis"])
   load_backends.setup_backends(active_config["apis"])
 

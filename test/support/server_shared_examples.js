@@ -282,7 +282,7 @@ _.merge(global.shared, {
       Factory.create('api_user', userOptions, function(user) {
         this.user = user;
         this.apiKey = user.api_key;
-        this.options = {
+        this.options = _.merge({}, {
           followRedirect: false,
           headers: {
             'X-Api-Key': this.apiKey,
@@ -290,7 +290,12 @@ _.merge(global.shared, {
           agentOptions: {
             maxSockets: 500,
           },
-        };
+        }, this.optionsOverrides || {});
+
+        if(this.options.headers['X-Api-Key'] === null) {
+          delete this.options.headers['X-Api-Key'];
+        }
+
         done();
       }.bind(this));
     });

@@ -1,11 +1,12 @@
 local _M = {}
 
-local api_store = require "api-umbrella.proxy.api_store"
 local dns_cache = require "resty.dns.cache"
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local load_backends = require "api-umbrella.proxy.load_backends"
 local types = require "pl.types"
+local utils = require "api-umbrella.proxy.utils"
 
+local get_packed = utils.get_packed
 local is_empty = types.is_empty
 
 local delay = 1 -- in seconds
@@ -67,7 +68,8 @@ function _M.resolve(apis)
 end
 
 local function do_check()
-  local apis = api_store.all_apis()
+  local active_config = get_packed(ngx.shared.active_config, "packed_data") or {}
+  local apis = active_config["apis"] or {}
   local dns_changed = _M.resolve(apis)
   if dns_changed then
     load_backends.setup_backends(apis)

@@ -4,120 +4,10 @@ require('../test_helper');
 
 var _ = require('lodash'),
     Factory = require('factory-lady'),
+    path = require('path'),
     request = require('request');
 
 describe('routing', function() {
-  shared.runServer({
-    apis: [
-      {
-        frontend_host: 'with-apis-and-website.foo',
-        backend_host: 'localhost',
-        servers: [
-          {
-            host: '127.0.0.1',
-            port: 9444,
-          },
-        ],
-        url_matches: [
-          {
-            frontend_prefix: '/example/',
-            backend_prefix: '/example/',
-          },
-        ],
-      },
-      {
-        frontend_host: 'with-apis-and-website.foo',
-        backend_host: 'localhost',
-        servers: [
-          {
-            host: '127.0.0.1',
-            port: 9444,
-          },
-        ],
-        url_matches: [
-          {
-            frontend_prefix: '/info/',
-            backend_prefix: '/info/',
-          },
-        ],
-      },
-      {
-        frontend_host: 'with-apis-no-website.foo',
-        backend_host: 'localhost',
-        servers: [
-          {
-            host: '127.0.0.1',
-            port: 9444,
-          },
-        ],
-        url_matches: [
-          {
-            frontend_prefix: '/example2/',
-            backend_prefix: '/example2/',
-          },
-        ],
-      },
-      {
-        frontend_host: '*.wildcard-star-dot-subdomain.foo',
-        backend_host: '*.wildcard-star-dot-replacement.foo',
-        servers: [
-          {
-            host: '127.0.0.1',
-            port: 9444,
-          },
-        ],
-        url_matches: [
-          {
-            frontend_prefix: '/wildcard-star-dot-info/',
-            backend_prefix: '/info/',
-          }
-        ]
-      },
-      {
-        frontend_host: '.wildcard-dot-subdomain.foo',
-        backend_host: '.wildcard-dot-replacement.foo',
-        servers: [
-          {
-            host: '127.0.0.1',
-            port: 9444,
-          }
-        ],
-        url_matches: [
-          {
-            frontend_prefix: '/wildcard-dot-info/',
-            backend_prefix: '/info/',
-          },
-        ],
-      },
-    ],
-    website_backends: [
-      {
-        frontend_host: 'with-apis-and-website.foo',
-        server_host: '127.0.0.1',
-        server_port: 9444,
-      },
-    ],
-    hosts: [
-      {
-        hostname: 'default.foo',
-        default: true,
-      },
-      {
-        hostname: 'withweb.foo',
-        enable_web_backend: true,
-      },
-      {
-        hostname: 'withoutweb.foo',
-      },
-      {
-        hostname: 'with-apis-and-website.foo',
-      },
-      {
-        hostname: 'no-apis-no-website.foo',
-      },
-    ],
-  });
-
   before(function createAdmin(done) {
     Factory.create('admin', function(admin) {
       this.adminToken = admin.authentication_token;
@@ -125,173 +15,120 @@ describe('routing', function() {
     }.bind(this));
   });
 
-  beforeEach(function createUser(done) {
-    Factory.create('api_user', { settings: { rate_limit_mode: 'unlimited' } }, function(user) {
-      this.apiKey = user.api_key;
-      this.options = {
-        strictSSL: false,
-      };
-
-      done();
-    }.bind(this));
+  beforeEach(function setDefaultOptions() {
+    this.optionsOverrides = {
+      strictSSL: false,
+      headers: {
+        'X-Api-Key': null,
+      },
+    };
   });
 
   describe('web admin', function() {
-    it('routes to the admin app for the default host', function(done) {
-      this.timeout(5000);
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'default.foo',
-        },
-      });
-      request.get('https://localhost:9081/admin/login', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        body.should.contain('Admin Login');
-        done();
-      });
-    });
+    describe('web app host default wildcard', function() {
+      shared.runServer();
 
-    it('routes to the admin app for unknown hosts when there is a default host', function(done) {
-      this.timeout(5000);
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'unknown.foo',
-        },
-      });
-      request.get('https://localhost:9081/admin/login', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        body.should.contain('Admin Login');
-        done();
-      });
-    });
-
-    it('does not route to the admin app for non-default hosts that are explicitly defined', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'withoutweb.foo',
-        },
-      });
-      request.get('https://localhost:9081/admin/login', options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(404);
-        done();
-      });
-    });
-
-    it('allows for routing to the web admin for non-default hosts if explicitly enabled', function(done) {
-      this.timeout(5000);
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'withweb.foo',
-        },
-      });
-      request.get('https://localhost:9081/admin/login', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        body.should.contain('Admin Login');
-        done();
-      });
-    });
-
-    it('redirects to https for the admin', function(done) {
-      var options = _.merge({}, this.options, {
-        followRedirect: false,
-        headers: {
-          'Host': 'default.foo',
-        },
-      });
-      request.get('http://localhost:9080/admin/login', options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(301);
-        response.headers.location.should.eql('https://default.foo:9081/admin/login');
-        done();
-      });
-    });
-
-    it('redirects to the same host when performing the https redirect for the admin', function(done) {
-      var options = _.merge({}, this.options, {
-        followRedirect: false,
-        headers: {
-          'Host': 'unknown.foo',
-        },
-      });
-      request.get('http://localhost:9080/admin/login', options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(301);
-        response.headers.location.should.eql('https://unknown.foo:9081/admin/login');
-        done();
-      });
-    });
-
-    it('redirects to the same host when performing the login redirect for the admin', function(done) {
-      this.timeout(5000);
-      var options = _.merge({}, this.options, {
-        followRedirect: false,
-        headers: {
-          'Host': 'unknown.foo',
-        },
-      });
-      request.get('https://localhost:9081/admin/', options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(302);
-        response.headers.location.should.eql('https://unknown.foo:9081/admin/login');
-        done();
-      });
-    });
-  });
-
-  describe('api backends', function() {
-    it('routes to the apis for any path prefixes matching apis', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'with-apis-and-website.foo',
-        },
-      });
-      request.get('http://localhost:9080/example/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(403);
-        body.should.contain('API_KEY_MISSING');
-
-        request.get('http://localhost:9080/info/test/extra/stuff', options, function(error, response, body) {
+      it('routes to the admin app', function(done) {
+        this.timeout(5000);
+        request.get('https://localhost:9081/admin/login', this.options, function(error, response, body) {
           should.not.exist(error);
-          response.statusCode.should.eql(403);
-          body.should.contain('API_KEY_MISSING');
+          response.statusCode.should.eql(200);
+          body.should.contain('Admin Login');
+          done();
+        });
+      });
+
+      it('routes to the admin app for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+          },
+        });
+        request.get('https://localhost:9081/admin/login', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Admin Login');
+          done();
+        });
+      });
+
+      it('redirects to https for the admin', function(done) {
+        var options = _.merge({}, this.options, {
+          followRedirect: false,
+          headers: {
+            'Host': 'default.foo',
+          },
+        });
+        request.get('http://localhost:9080/admin/login', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(301);
+          response.headers.location.should.eql('https://default.foo:9081/admin/login');
+          done();
+        });
+      });
+
+      it('redirects to the same host when performing the https redirect for the admin', function(done) {
+        var options = _.merge({}, this.options, {
+          followRedirect: false,
+          headers: {
+            'Host': 'unknown.foo',
+          },
+        });
+        request.get('http://localhost:9080/admin/login', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(301);
+          response.headers.location.should.eql('https://unknown.foo:9081/admin/login');
+          done();
+        });
+      });
+
+      it('redirects to the same host when performing the login redirect for the admin', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          followRedirect: false,
+          headers: {
+            'Host': 'unknown.foo',
+          },
+        });
+        request.get('https://localhost:9081/admin/', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(302);
+          response.headers.location.should.eql('https://unknown.foo:9081/admin/login');
           done();
         });
       });
     });
 
-    it('matches url prefxies case-sensitively', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'with-apis-and-website.foo',
+    describe('web app host explicitly defined', function() {
+      shared.runServer({
+        router: {
+          web_app_host: '127.0.0.1',
         },
       });
-      request.get('http://localhost:9080/EXAMPLE/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(404);
-        body.should.contain('Test 404 Not Found');
-        done();
-      });
-    });
 
-    it('matches wildcards with *. syntax', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'test.wildcard-star-dot-subdomain.foo',
-          'X-Api-Key': this.apiKey,
-        },
+      it('routes to the admin app for the defined host', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': '127.0.0.1',
+          },
+        });
+        request.get('https://localhost:9081/admin/login', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Admin Login');
+          done();
+        });
       });
-      request.get('http://localhost:9080/wildcard-star-dot-info/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        var data = JSON.parse(body);
-        data.headers['host'].should.eql('test.wildcard-star-dot-replacement.foo');
 
-        options.headers['Host'] = 'wildcard-star-dot-subdomain.foo';
-        request.get('http://localhost:9080/wildcard-star-dot-info/', options, function(error, response) {
+      it('does not route to the admin app for unknown hosts', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+          },
+        });
+        request.get('https://localhost:9081/admin/login', options, function(error, response) {
           should.not.exist(error);
           response.statusCode.should.eql(404);
           done();
@@ -299,310 +136,1200 @@ describe('routing', function() {
       });
     });
 
-    it('matches wildcards with . syntax', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'test.wildcard-dot-subdomain.foo',
-          'X-Api-Key': this.apiKey,
-        },
+    describe('conflicting api prefix', function() {
+      shared.runServer({
+        apis: [
+          {
+            frontend_host: 'localhost',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/admin/',
+                backend_prefix: '/info/',
+              },
+            ],
+          },
+        ],
       });
-      request.get('http://localhost:9080/wildcard-dot-info/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        var data = JSON.parse(body);
-        data.headers['host'].should.eql('test.wildcard-dot-replacement.foo');
 
-        options.headers['Host'] = 'wildcard-dot-subdomain.foo';
-        request.get('http://localhost:9080/wildcard-dot-info/', options, function(error, response, body) {
+      it('gives precedence to the admin app over apis prefixes', function(done) {
+        this.timeout(5000);
+        request.get('https://localhost:9081/admin/login', this.options, function(error, response, body) {
+          should.not.exist(error);
           response.statusCode.should.eql(200);
-          data = JSON.parse(body);
-          data.headers['host'].should.eql('wildcard-dot-replacement.foo');
+          body.should.contain('Admin Login');
           done();
         });
-      });
-    });
-
-    it('routes to the api-umbrella internal apis for the default host', function(done) {
-      var options = _.merge({}, this.options, {
-        followRedirect: false,
-        headers: {
-          'Host': 'default.foo',
-        },
-      });
-      request.get('https://localhost:9081/api-umbrella/v1/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(403);
-        body.should.contain('API_KEY_MISSING');
-        done();
-      });
-    });
-
-    it('routes to the api-umbrella internal apis for unknown hosts when there is a default host', function(done) {
-      var options = _.merge({}, this.options, {
-        followRedirect: false,
-        headers: {
-          'Host': 'unknown.foo',
-        },
-      });
-      request.get('https://localhost:9081/api-umbrella/v1/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(403);
-        body.should.contain('API_KEY_MISSING');
-        done();
-      });
-    });
-
-    it('does not route to the api-umbrella internal apis for non-default hosts that are explicitly defined', function(done) {
-      var options = _.merge({}, this.options, {
-        followRedirect: false,
-        headers: {
-          'Host': 'with-apis-no-website.foo',
-        },
-      });
-      request.get('https://localhost:9081/api-umbrella/v1/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(404);
-        response.headers['content-type'].should.contain('application/json');
-        body.should.contain('NOT_FOUND');
-        done();
       });
     });
   });
 
   describe('website backends', function() {
-    it('routes to the default static site website for the default host', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'default.foo',
-        },
+    describe('web app host default wildcard', function() {
+      shared.runServer({
+        apis: [
+          {
+            frontend_host: 'with-apis-no-website.foo',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/example2/',
+                backend_prefix: '/info/',
+              },
+            ],
+          },
+        ],
+        website_backends: [
+          {
+            frontend_host: 'website.foo',
+            server_host: '127.0.0.1',
+            server_port: 9443,
+          },
+        ],
       });
-      request.get('http://localhost:9080/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        body.should.contain('Your API Site Name');
 
-        request.get('https://localhost:9081/signup/', options, function(error, response, body) {
+      it('routes to the default static website', function(done) {
+        request.get('http://localhost:9080/', this.options, function(error, response, body) {
           should.not.exist(error);
           response.statusCode.should.eql(200);
-          body.should.contain('API Key Signup');
+          body.should.contain('Your API Site Name');
+
+          request.get('https://localhost:9081/signup/', this.options, function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            body.should.contain('API Key Signup');
+            done();
+          });
+        }.bind(this));
+      });
+
+      it('routes to a custom website backend when it is defined for a specific hostname', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'website.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Test Website Home Page');
+          done();
+        });
+      });
+
+      it('routes to the website backend for any url path not matched by the apis or web admin', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'website.foo',
+          },
+        });
+        request.get('http://localhost:9080/sjkdlfjksdlfj', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          body.should.contain('Test Website 404 Not Found');
+          done();
+        });
+      });
+
+      it('routes to the default static website for unknown hosts that have no website or apis', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Your API Site Name');
+          done();
+        });
+      });
+
+      it('routes to the default static website for hosts that have apis but no website', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'with-apis-no-website.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Your API Site Name');
+
+          request.get('http://localhost:9080/example2/', options, function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(403);
+            body.should.contain('API_KEY_MISSING');
+
+            done();
+          });
+        });
+      });
+
+      it('redirects to https for the signup page by default', function(done) {
+        var options = _.merge({}, this.options, {
+          followRedirect: false,
+          headers: {
+            'Host': 'default.foo',
+          },
+        });
+        request.get('http://localhost:9080/signup', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(301);
+          response.headers.location.should.eql('https://default.foo:9081/signup');
           done();
         });
       });
     });
 
-    it('routes to the default static site website for unknown hosts when there is a default host', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'unknown.foo',
+    describe('web app host explicitly defined', function() {
+      shared.runServer({
+        apis: [
+          {
+            frontend_host: 'with-apis-no-website.foo',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/example2/',
+                backend_prefix: '/info/',
+              },
+            ],
+          },
+        ],
+        router: {
+          web_app_host: '127.0.0.1',
         },
       });
-      request.get('http://localhost:9080/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        body.should.contain('Your API Site Name');
-        done();
+
+      it('routes to the default static website for the defined host', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': '127.0.0.1',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Your API Site Name');
+          done();
+        }.bind(this));
+      });
+
+      it('returns the api umbrella 404 for unknown hosts that have no website or apis', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          response.headers['content-type'].should.contain('application/json');
+          body.should.contain('NOT_FOUND');
+          done();
+        });
+      });
+
+      it('returns the api umbrella 404 for hosts that have apis but no website', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'with-apis-no-website.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          response.headers['content-type'].should.contain('application/json');
+          body.should.contain('NOT_FOUND');
+
+          request.get('http://localhost:9080/example2/', options, function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(403);
+            body.should.contain('API_KEY_MISSING');
+
+            done();
+          });
+        });
       });
     });
 
-    it('routes to a custom website backend when it is defined for a specific hostname', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'with-apis-and-website.foo',
-        },
+    describe('web app host default wildcard and default host set', function() {
+      shared.runServer({
+        apis: [
+          {
+            frontend_host: 'with-apis-no-website.foo',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/example2/',
+                backend_prefix: '/info/',
+              },
+            ],
+          },
+        ],
+        website_backends: [
+          {
+            frontend_host: 'website.foo',
+            server_host: '127.0.0.1',
+            server_port: 9443,
+          },
+        ],
+        hosts: [
+          {
+            hostname: 'website.foo',
+            default: true,
+          },
+        ],
       });
-      request.get('http://localhost:9080/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        body.should.contain('Test Home Page');
-        done();
+
+      it('routes to the default static website', function(done) {
+        request.get('http://localhost:9080/', this.options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Your API Site Name');
+          done();
+        }.bind(this));
       });
+
+      it('routes to a custom website backend when it is defined for a specific hostname', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'website.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Test Website Home Page');
+          done();
+        });
+      });
+
+      it('routes to the website backend for any url path not matched by the apis or web admin', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'website.foo',
+          },
+        });
+        request.get('http://localhost:9080/sjkdlfjksdlfj', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          body.should.contain('Test Website 404 Not Found');
+          done();
+        });
+      });
+
+      it('routes to the default static website for unknown hosts that have no website or apis', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Your API Site Name');
+          done();
+        });
+      });
+
+      it('routes to the default static website for hosts that have apis but no website', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'with-apis-no-website.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Your API Site Name');
+
+          request.get('http://localhost:9080/example2/', options, function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(403);
+            body.should.contain('API_KEY_MISSING');
+
+            done();
+          });
+        });
+      });
+
     });
 
-    it('routes to the website backend for any url not matched by the apis or web admin', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'with-apis-and-website.foo',
+    describe('web app host explicitly defined and default host set', function() {
+      shared.runServer({
+        apis: [
+          {
+            frontend_host: 'with-apis-no-website.foo',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/example2/',
+                backend_prefix: '/info/',
+              },
+            ],
+          },
+        ],
+        website_backends: [
+          {
+            frontend_host: 'website.foo',
+            server_host: '127.0.0.1',
+            server_port: 9443,
+          },
+        ],
+        router: {
+          web_app_host: '127.0.0.1',
         },
+        hosts: [
+          {
+            hostname: 'website.foo',
+            default: true,
+          },
+        ],
       });
-      request.get('http://localhost:9080/sjkdlfjksdlfj', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(404);
-        body.should.contain('Test 404 Not Found');
-        done();
-      });
-    });
 
-    it('returns the api umbrella 404 for hosts that have no website or apis', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'no-apis-no-website.foo',
-        },
+      it('routes to the website backend set by the default host', function(done) {
+        request.get('http://localhost:9080/', this.options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Test Website Home Page');
+          done();
+        }.bind(this));
       });
-      request.get('http://localhost:9080/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(404);
-        response.headers['content-type'].should.contain('application/json');
-        body.should.contain('NOT_FOUND');
-        done();
-      });
-    });
 
-    it('returns the api umbrella 404 for hosts that have apis but no website', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'with-apis-no-website.foo',
-        },
+      it('routes to a custom website backend when it is defined for a specific hostname', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'website.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Test Website Home Page');
+          done();
+        });
       });
-      request.get('http://localhost:9080/', options, function(error, response, body) {
-        should.not.exist(error);
-        response.statusCode.should.eql(404);
-        response.headers['content-type'].should.contain('application/json');
-        body.should.contain('NOT_FOUND');
-        done();
-      });
-    });
 
-    it('redirects to https for the signup page by default', function(done) {
-      var options = _.merge({}, this.options, {
-        followRedirect: false,
-        headers: {
-          'Host': 'default.foo',
-        },
+      it('routes to the website backend for any url path not matched by the apis or web admin', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'website.foo',
+          },
+        });
+        request.get('http://localhost:9080/sjkdlfjksdlfj', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          body.should.contain('Test Website 404 Not Found');
+          done();
+        });
       });
-      request.get('http://localhost:9080/signup', options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(301);
-        response.headers.location.should.eql('https://default.foo:9081/signup');
-        done();
+
+      it('routes to the website backend set by the default host for unknown hosts that have no website or apis', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Test Website Home Page');
+          done();
+        });
+      });
+
+      it('routes to the website backend set by the default host for hosts that have apis but no website', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'with-apis-no-website.foo',
+          },
+        });
+        request.get('http://localhost:9080/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Test Website Home Page');
+
+          request.get('http://localhost:9080/example2/', options, function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(403);
+            body.should.contain('API_KEY_MISSING');
+
+            done();
+          });
+        });
       });
     });
   });
 
-  describe('internal apis', function() {
-    it('routes to the gatekeeper apis for the default host', function(done) {
-      this.timeout(5000);
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'default.foo',
-          'X-Api-Key': this.apiKey,
-          'X-Admin-Auth-Token': this.adminToken,
+  describe('api backends', function() {
+    describe('web app host default wildcard', function() {
+      shared.runServer({
+        apis: [
+          {
+            frontend_host: 'apis.foo',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/hello/',
+                backend_prefix: '/hello/',
+              },
+            ],
+          },
+        ],
+      });
+
+      it('routes to the internal gatekeeper apis', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to the internal gatekeeper apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to the internal web app apis', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to the internal web app apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to configured apis for a given host', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'apis.foo',
+            'X-Api-Key': this.apiKey,
+          },
+        });
+        request.get('https://localhost:9081/hello/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.eql('Hello World');
+          done();
+        });
+      });
+
+      it('does not route to configured apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+          },
+        });
+        request.get('https://localhost:9081/hello/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          response.headers['content-type'].should.contain('text/html');
+          body.should.contain('nginx');
+          done();
+        });
+      });
+
+      it('does not impact routing to the admin', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': '127.0.0.1',
+          },
+        });
+        request.get('https://localhost:9081/admin/login', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Admin Login');
+
+          options.headers['Host'] = 'unknown.foo';
+          request.get('https://localhost:9081/admin/login', options, function(error, response) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+
+            done();
+          });
+        });
+      });
+    });
+
+    describe('web app host explicitly defined', function() {
+      shared.runServer({
+        apis: [
+          {
+            frontend_host: 'apis.foo',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/hello/',
+                backend_prefix: '/hello/',
+              },
+            ],
+          },
+        ],
+        router: {
+          web_app_host: '127.0.0.1',
         },
       });
-      request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+
+      it('routes to the internal gatekeeper apis for the defined host', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': '127.0.0.1',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('does not route to the internal gatekeeper apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to the internal web app apis for the defined host', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': '127.0.0.1',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('does not route to the internal web app apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to configured apis for a given host', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'apis.foo',
+            'X-Api-Key': this.apiKey,
+          },
+        });
+        request.get('https://localhost:9081/hello/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.eql('Hello World');
+          done();
+        });
+      });
+
+      it('does not route to configured apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+          },
+        });
+        request.get('https://localhost:9081/hello/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          response.headers['content-type'].should.contain('application/json');
+          body.should.contain('NOT_FOUND');
+          done();
+        });
+      });
+
+      it('does not impact routing to the admin', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': '127.0.0.1',
+          },
+        });
+        request.get('https://localhost:9081/admin/login', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Admin Login');
+
+          options.headers['Host'] = 'unknown.foo';
+          request.get('https://localhost:9081/admin/login', options, function(error, response) {
+            should.not.exist(error);
+            response.statusCode.should.eql(404);
+
+            done();
+          });
+        });
+      });
+    });
+
+    describe('web app host default wildcard and default host set', function() {
+      shared.runServer({
+        apis: [
+          {
+            frontend_host: 'apis.foo',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/hello/',
+                backend_prefix: '/hello/',
+              },
+            ],
+          },
+          {
+            frontend_host: 'other.foo',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/hello/',
+                backend_prefix: '/info/other/',
+              },
+            ],
+          },
+        ],
+        hosts: [
+          {
+            hostname: 'apis.foo',
+            default: true,
+          },
+        ],
+      });
+
+      it('routes to the internal gatekeeper apis', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to the internal gatekeeper apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to the internal web app apis', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to the internal web app apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to configured apis for a given host', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'apis.foo',
+            'X-Api-Key': this.apiKey,
+          },
+        });
+        request.get('https://localhost:9081/hello/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.eql('Hello World');
+          done();
+        });
+      });
+
+      it('routes to the default host apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+          },
+        });
+        request.get('https://localhost:9081/hello/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.eql('Hello World');
+          done();
+        });
+      });
+
+      it('does not impact routing to the admin', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': '127.0.0.1',
+          },
+        });
+        request.get('https://localhost:9081/admin/login', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Admin Login');
+
+          options.headers['Host'] = 'unknown.foo';
+          request.get('https://localhost:9081/admin/login', options, function(error, response) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+
+            done();
+          });
+        });
+      });
+
+      it('prefers the apis matching the hostname before the default hostname', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'other.foo',
+            'X-Api-Key': this.apiKey,
+          },
+        });
+        request.get('https://localhost:9081/hello/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          data.url.path.should.eql('/info/other/');
+          done();
+        });
+      });
+    });
+
+    describe('web app host explicitly defined and default host set', function() {
+      shared.runServer({
+        apis: [
+          {
+            frontend_host: 'apis.foo',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/hello/',
+                backend_prefix: '/hello/',
+              },
+            ],
+          },
+          {
+            frontend_host: 'other.foo',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/hello/',
+                backend_prefix: '/info/other/',
+              },
+            ],
+          },
+        ],
+        router: {
+          web_app_host: '127.0.0.1',
+        },
+        hosts: [
+          {
+            hostname: 'apis.foo',
+            default: true,
+          },
+        ],
+      });
+
+      it('routes to the internal gatekeeper apis for the defined host', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': '127.0.0.1',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('does not route to the internal gatekeeper apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to the internal web app apis for the defined host', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': '127.0.0.1',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('does not route to the internal web app apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+            'X-Admin-Auth-Token': this.adminToken,
+          },
+        });
+        request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(404);
+          response.headers['content-type'].should.contain('application/json');
+          done();
+        });
+      });
+
+      it('routes to configured apis for a given host', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'apis.foo',
+            'X-Api-Key': this.apiKey,
+          },
+        });
+        request.get('https://localhost:9081/hello/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.eql('Hello World');
+          done();
+        });
+      });
+
+      it('routes to the default host apis for unknown hosts', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'unknown.foo',
+            'X-Api-Key': this.apiKey,
+          },
+        });
+        request.get('https://localhost:9081/hello/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.eql('Hello World');
+          done();
+        });
+      });
+
+      it('does not impact routing to the admin', function(done) {
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': '127.0.0.1',
+          },
+        });
+        request.get('https://localhost:9081/admin/login', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          body.should.contain('Admin Login');
+
+          options.headers['Host'] = 'unknown.foo';
+          request.get('https://localhost:9081/admin/login', options, function(error, response) {
+            should.not.exist(error);
+            response.statusCode.should.eql(404);
+
+            done();
+          });
+        });
+      });
+
+      it('prefers the apis matching the hostname before the default hostname', function(done) {
+        this.timeout(5000);
+        var options = _.merge({}, this.options, {
+          headers: {
+            'Host': 'other.foo',
+            'X-Api-Key': this.apiKey,
+          },
+        });
+        request.get('https://localhost:9081/hello/', options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          data.url.path.should.eql('/info/other/');
+          done();
+        });
+      });
+    });
+
+    describe('conflicting api prefix', function() {
+      shared.runServer({
+        apis: [
+          {
+            frontend_host: 'localhost',
+            backend_host: 'localhost',
+            servers: [
+              {
+                host: '127.0.0.1',
+                port: 9444,
+              },
+            ],
+            url_matches: [
+              {
+                frontend_prefix: '/api-umbrella/',
+                backend_prefix: '/info/',
+              },
+            ],
+          },
+        ],
+      });
+
+      it('gives precedence to the internal apis over other apis', function(done) {
+        this.timeout(5000);
+        request.get('https://localhost:9081/api-umbrella/v1/state.json', this.options, function(error, response, body) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          var data = JSON.parse(body);
+          should.exist(data.db_config_version);
+          done();
+        });
+      });
+    });
+  });
+
+  describe('host ssl certificates', function() {
+    shared.runServer({
+      hosts: [
+        {
+          hostname: 'ssl.foo',
+          ssl_cert: path.resolve(__dirname, '../config/ssl_test.crt'),
+          ssl_cert_key: path.resolve(__dirname, '../config/ssl_test.key'),
+        },
+      ],
+    });
+
+    it('returns the internal, self-signed certificate by default', function(done) {
+      request.get('https://localhost:9081/', this.options, function(error, response, body) {
         should.not.exist(error);
-        response.statusCode.should.eql(200);
-        response.headers['content-type'].should.contain('application/json');
+        var cert = response.socket.getPeerCertificate();
+        cert.subject.should.eql({ O: 'API Umbrella', CN: 'apiumbrella.example.com' });
         done();
       });
     });
 
-    it('routes to the web apis for the default host', function(done) {
-      this.timeout(5000);
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'default.foo',
-          'X-Api-Key': this.apiKey,
-          'X-Admin-Auth-Token': this.adminToken,
-        },
-      });
-      request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        response.headers['content-type'].should.contain('application/json');
-        done();
-      });
-    });
-
-    it('routes to the gatekeeper apis for unknown hosts when there is a default host', function(done) {
-      this.timeout(5000);
+    it('returns the internal, self-signed certificate for unknown hosts', function(done) {
       var options = _.merge({}, this.options, {
         headers: {
           'Host': 'unknown.foo',
-          'X-Api-Key': this.apiKey,
-          'X-Admin-Auth-Token': this.adminToken,
         },
       });
-      request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
+      request.get('https://localhost:9081/', options, function(error, response, body) {
         should.not.exist(error);
-        response.statusCode.should.eql(200);
-        response.headers['content-type'].should.contain('application/json');
+        var cert = response.socket.getPeerCertificate();
+        cert.subject.should.eql({ O: 'API Umbrella', CN: 'apiumbrella.example.com' });
         done();
       });
     });
 
-    it('routes to the web apis for unknown hosts when there is a default host', function(done) {
-      this.timeout(5000);
+    it('uses SNI to return other certs configured on other domains', function(done) {
       var options = _.merge({}, this.options, {
         headers: {
-          'Host': 'unknown.foo',
-          'X-Api-Key': this.apiKey,
-          'X-Admin-Auth-Token': this.adminToken,
+          'Host': 'ssl.foo',
         },
       });
-      request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
+      request.get('https://localhost:9081/', options, function(error, response, body) {
         should.not.exist(error);
-        response.statusCode.should.eql(200);
-        response.headers['content-type'].should.contain('application/json');
-        done();
-      });
-    });
-
-    it('does not route to the gatekeeper apis for non-default hosts that are explicitly defined', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'withoutweb.foo',
-          'X-Api-Key': this.apiKey,
-          'X-Admin-Auth-Token': this.adminToken,
-        },
-      });
-      request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(404);
-        done();
-      });
-    });
-
-    it('does not route to the web apis for non-default hosts that are explicitly defined', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'withoutweb.foo',
-          'X-Api-Key': this.apiKey,
-          'X-Admin-Auth-Token': this.adminToken,
-        },
-      });
-      request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(404);
-        done();
-      });
-    });
-
-    it('does not route to the gatekeeper apis for non-default hosts that have the web backend explicitly enabled', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'withweb.foo',
-          'X-Api-Key': this.apiKey,
-          'X-Admin-Auth-Token': this.adminToken,
-        },
-      });
-      request.get('https://localhost:9081/api-umbrella/v1/state.json', options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(404);
-        done();
-      });
-    });
-
-    it('does not route to the web apis for non-default hosts that have the web backend explicitly enabled', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'withweb.foo',
-          'X-Api-Key': this.apiKey,
-          'X-Admin-Auth-Token': this.adminToken,
-        },
-      });
-      request.get('https://localhost:9081/api-umbrella/v1/users.json', options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(404);
+        var cert = response.socket.getPeerCertificate();
+        cert.subject.should.eql({ O: 'API Umbrella', CN: 'ssltest.example.com' });
         done();
       });
     });

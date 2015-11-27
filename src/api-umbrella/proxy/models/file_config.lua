@@ -32,13 +32,12 @@ local function set_defaults(data)
     end
   end
 
-  data["_default_hostname"] = default_hostname
+  data["_default_hostname_normalized"] = default_hostname
 
-  local default_hostname_replacement = default_hostname or "localhost"
   if data["internal_apis"] then
     for _, api in ipairs(data["internal_apis"]) do
-      if api["frontend_host"] == "{{default_hostname}}" then
-        api["frontend_host"] = default_hostname_replacement
+      if api["frontend_host"] == "{{router.web_app_host}}" then
+        api["frontend_host"] = data["router"]["web_app_host"]
       end
 
       if api["servers"] then
@@ -61,8 +60,8 @@ local function set_defaults(data)
 
   if data["internal_website_backends"] then
     for _, website in ipairs(data["internal_website_backends"]) do
-      if website["frontend_host"] == "{{default_hostname}}" then
-        website["frontend_host"] = default_hostname_replacement
+      if website["frontend_host"] == "{{router.web_app_host}}" then
+        website["frontend_host"] = data["router"]["web_app_host"]
       end
 
       if website["server_host"] == "{{static_site.host}}" then
