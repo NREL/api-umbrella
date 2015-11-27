@@ -10,7 +10,9 @@ group :development do
   gem "wdm", "~> 0.1.0", :platforms => [:mswin, :mingw]
 
   # Deploy to GitHub Pages
-  gem "middleman-gh-pages", "~> 0.0.3"
+  # Fork allows customizing the PROJECT_ROOT:
+  # https://github.com/edgecase/middleman-gh-pages/pull/23
+  gem "middleman-gh-pages", "~> 0.0.3", :git => "https://github.com/elthariel/middleman-gh-pages.git"
 
   # Markdown
   gem "kramdown", "~> 1.5.0"
