@@ -1298,7 +1298,7 @@ describe('routing', function() {
     });
 
     it('returns the internal, self-signed certificate by default', function(done) {
-      request.get('https://localhost:9081/', this.options, function(error, response, body) {
+      request.get('https://localhost:9081/', this.options, function(error, response) {
         should.not.exist(error);
         var cert = response.socket.getPeerCertificate();
         cert.subject.should.eql({ O: 'API Umbrella', CN: 'apiumbrella.example.com' });
@@ -1312,7 +1312,7 @@ describe('routing', function() {
           'Host': 'unknown.foo',
         },
       });
-      request.get('https://localhost:9081/', options, function(error, response, body) {
+      request.get('https://localhost:9081/', options, function(error, response) {
         should.not.exist(error);
         var cert = response.socket.getPeerCertificate();
         cert.subject.should.eql({ O: 'API Umbrella', CN: 'apiumbrella.example.com' });
@@ -1326,7 +1326,7 @@ describe('routing', function() {
           'Host': 'ssl.foo',
         },
       });
-      request.get('https://localhost:9081/', options, function(error, response, body) {
+      request.get('https://localhost:9081/', options, function(error, response) {
         should.not.exist(error);
         var cert = response.socket.getPeerCertificate();
         cert.subject.should.eql({ O: 'API Umbrella', CN: 'ssltest.example.com' });
