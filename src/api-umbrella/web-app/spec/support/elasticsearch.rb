@@ -1,6 +1,9 @@
 require "support/vcr"
 
-client = Elasticsearch::Client.new
+client = Elasticsearch::Client.new({
+  :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
+  :logger => Rails.logger
+})
 
 # Fetch the elasticsearch template file from the router project. Cache it with
 # VCR, but periodically re-record it to make sure we stay up-to-date.
