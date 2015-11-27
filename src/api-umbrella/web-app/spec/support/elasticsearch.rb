@@ -5,16 +5,13 @@ client = Elasticsearch::Client.new({
   :logger => Rails.logger
 })
 
-# Fetch the elasticsearch template file from the router project. Cache it with
-# VCR, but periodically re-record it to make sure we stay up-to-date.
-VCR.use_cassette("elasticsearch_templates", :re_record_interval => 1.day) do
-  templates = MultiJson.load(RestClient.get("https://raw.githubusercontent.com/NREL/api-umbrella-router/master/config/elasticsearch_templates.json"))
-  templates.each do |template|
-    client.indices.put_template({
-      :name => template["id"],
-      :body => template["template"],
-    })
-  end
+templates = MultiJson.load(File.read(File.expand_path("../../../../../../config/elasticsearch_templates.json", __FILE__)))
+puts templates.inspect
+templates.each do |template|
+  client.indices.put_template({
+    :name => template["id"],
+    :body => template["template"],
+  })
 end
 
 # For simplicity sake, we're assuming our tests only deal with a few explicit
