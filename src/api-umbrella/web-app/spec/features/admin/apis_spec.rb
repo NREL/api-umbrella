@@ -184,6 +184,11 @@ describe "apis", :js => true do
     end
   end
 
+  it "defaults the frontend host to the current url's hostname" do
+    visit "/admin/#/apis/new"
+    page.should have_field("Frontend Host", :with => "127.0.0.1")
+  end
+
   it "fills out and saves all the expected fields" do
     visit "/admin/#/apis/new"
 
