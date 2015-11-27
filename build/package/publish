@@ -1,0 +1,54 @@
+#!/bin/bash
+
+set -e -u -x
+
+ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
+VERSION=$(sed 's/^return "\([0-9\.]*\).*"$/\1/' $ROOT_DIR/src/api-umbrella/version.lua)
+PRE=$(grep -o "pre[0-9]*" $ORIGINAL_ROOT_DIR/src/api-umbrella/version.lua) || true
+if [ "$PRE" == "" ]; then
+  ITERATION="1"
+else
+  ITERATION="0.1.$PRE"
+fi
+
+PACKAGES=(
+  build/package/dist/centos:6/api-umbrella-$VERSION-$ITERATION.el6.x86_64.rpm
+  build/package/dist/centos:7/api-umbrella-$VERSION-$ITERATION.el7.x86_64.rpm
+  build/package/dist/debian:7/api-umbrella_$VERSION-$ITERATION~wheezy_amd64.deb
+  build/package/dist/debian:8/api-umbrella_$VERSION-$ITERATION~jessie_amd64.deb
+  build/package/dist/ubuntu:12.04/api-umbrella_$VERSION-$ITERATION~precise_amd64.deb
+  build/package/dist/ubuntu:14.04/api-umbrella_$VERSION-$ITERATION~trusty_amd64.deb
+)
+
+for PACKAGE in "${PACKAGES[@]}"; do
+  if [ ! -f "$PACKAGE" ]; then
+    echo "Expected package for current version does not exist: $PACKAGE"
+    exit 1
+  fi
+done
+
+for PACKAGE in "${PACKAGES[@]}"; do
+  CURL_ARGS=""
+  FILE_PATH=$(basename $PACKAGE)
+
+  if [[ "$PACKAGE" == *"centos"* ]]; then
+    [[ "$FILE_PATH" =~ \.(el[0-9])\. ]]
+    echo "${BASH_REMATCH[1]}"
+    REPO="api-umbrella-${BASH_REMATCH[1]}"
+  elif [[ "$PACKAGE" == *"debian"* ]]; then
+    REPO=api-umbrella-debian
+  elif [[ "$PACKAGE" == *"ubuntu"* ]]; then
+    REPO=api-umbrella-ubuntu
+  fi
+
+  if [[ "$PACKAGE" == *"debian"* || "$PACKAGE" == *"ubuntu"* ]]; then
+    [[ "$FILE_PATH" =~ ~([a-z]+)_ ]]
+    CURL_ARGS="$CURL_ARGS -H 'X-Bintray-Debian-Distribution: ${BASH_REMATCH[1]}'"
+    [[ "$FILE_PATH" =~ _([a-z0-9]+)\.deb ]]
+    CURL_ARGS="$CURL_ARGS -H 'X-Bintray-Debian-Architecture: ${BASH_REMATCH[1]}'"
+    CURL_ARGS="$CURL_ARGS -H 'X-Bintray-Debian-Component: main'"
+    FILE_PATH="pool/main/a/api-umbrella/$FILE_PATH"
+  fi
+
+  curl -X PUT --user $BINTRAY_USERNAME:$BINTRAY_API_KEY --upload-file "$PACKAGE" $CURL_ARGS "https://api.bintray.com/content/nrel/$REPO/api-umbrella/$VERSION/$FILE_PATH"
+done

@@ -1175,3 +1175,6 @@ all_packages: \
 	package_docker_ubuntu1404 \
 	package_docker_debian7 \
 	package_docker_debian8
+
+publish_all_packages:
+	$(BUILD_DIR)/package/publish

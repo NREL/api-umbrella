@@ -117,6 +117,7 @@ elif command -v dpkg &> /dev/null; then
     uuid-dev
     libxml2-dev
     libyaml-dev
+    lsb-release
     make
     libncurses5-dev
     openssl
@@ -139,6 +140,8 @@ elif command -v dpkg &> /dev/null; then
 
   apt-get update
   apt-get -y install ${PACKAGE_DEPENDENCIES[*]} ${BUILD_DEPENDENCIES[*]}
+
+  ITERATION="$ITERATION~$(lsb_release --codename --short)"
 else
   echo "Unknown build system"
   exit 1
@@ -189,7 +192,7 @@ bundle exec fpm \
   --verbose \
   --name api-umbrella \
   --version $VERSION \
-  --iteration $ITERATION \
+  --iteration "$ITERATION" \
   --config-files etc/api-umbrella/api-umbrella.yml \
   --after-install $TMP_ROOT_DIR/build/package/scripts/after-install \
   --before-remove $TMP_ROOT_DIR/build/package/scripts/after-remove \
