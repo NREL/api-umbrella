@@ -1,5 +1,48 @@
 # API Umbrella Change Log
 
+## 0.9.0 (2015-11-27)
+
+This is a significant upgrade to API Umbrella's internals, but should be backwards compatible with previous installations. It should be faster, more efficient, and more resilient, so upgrading is recommended.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you must first stop API Umbrella manually (`sudo /etc/init.d/api-umbrella stop`) before installing the new package.
+
+### Highlights
+
+* **Internal rewrite:** The core API Umbrella proxy functionality has been rewritten in Lua embedded inside nginx. This simplifies the codebase, brings better performance, and reduces system requirements. (See [#86](https://github.com/NREL/api-umbrella/issues/86) and [#183](https://github.com/NREL/api-umbrella/pull/183))
+* **Improved analytics logging:** Analytics logging is now faster. If a backlog occurs in logging requests, memory usage no longer grows. (See [api.data.gov#233](https://github.com/18F/api.data.gov/issues/233))
+* **Resiliency:** API Umbrella caches some data locally so it can continue to operate even if the databases behind the scenes temporarily fail. (See [#183](https://github.com/NREL/api-umbrella/pull/183))
+* **CLI improvements:** The `api-umbrella` CLI tool should be better behaved at starting and stopping all the processes as expected. Reloads should always pickup config file changes (See [#183](https://github.com/NREL/api-umbrella/pull/183) and [api.data.gov#221](https://github.com/18F/api.data.gov/issues/221))
+* **Packaging improvements:** Binary packages are now available via apt or yum repos for easier installation (See [#183](https://github.com/NREL/api-umbrella/pull/183))
+* **DNS and keep-alive improvements:** How API Umbrella detects DNS changes in backend hosts has been simplified and improved. This should allow for better keep-alive connection support. (See [#183](https://github.com/NREL/api-umbrella/pull/183))
+
+### Everything Else
+
+* **Fix bug causing 404s after publishing API backends:** If a default host was not set, publishing new API backends could make the admin inaccessible. (See [#192](https://github.com/NREL/api-umbrella/issues/192) and [#193](https://github.com/NREL/api-umbrella/issues/193))
+* **Add concept of API key accounts with verified e-mail addresses:** APIs can now choose to restrict access to only API keys that have verified e-mail addresses. (See [api.data.gov#225](https://github.com/18F/api.data.gov/issues/225))
+* **Fix initial admin accounts missing API token:** The initial superuser accounts created via the config file did not have a token for making admin API requests. (See [#95](https://github.com/NREL/api-umbrella/issues/95) and [#135](https://github.com/NREL/api-umbrella/issues/135))
+* **Support wildcard frontend/backend hostnames:** API Backends can be configured with wildcard hostnames. (See [api.data.gov#240](https://github.com/18F/api.data.gov/issues/240))
+* **Allow admins to view full API keys:** Superuser admin accounts can now view full API keys in the admin tool. (See [api.data.gov#276](https://github.com/18F/api.data.gov/issues/276))
+* **Log why API Umbrella rejects requests in the analytics:** In the analytics screens, now you can see why API Umbrella rejected a request (for example, over rate limit, invalid API key, etc). (See [api.data.gov#226](https://github.com/18F/api.data.gov/issues/226))
+* **Add missing delete actions to admin items:** Add the ability to delete admins, admin groups, api scopes, and website backends. (See [#134](https://github.com/NREL/api-umbrella/issues/134) and [#152](https://github.com/NREL/api-umbrella/issues/152))
+* **Fix bug when invalid YAML entered into backend config:** If invalid YAML was entered into the API backend config, it could cause the API to go down. (See [#153](https://github.com/NREL/api-umbrella/issues/153))
+* **Add CSV download for all admin accounts:** The entire list of admin accounts can be downloaded in a CSV. (See [api.data.gov#182](https://github.com/18F/api.data.gov/issues/182))
+* **Per domain rate limits:** If API Umbrella is serving multiple domains, it now defaults to keeping rate limits for each domain separate. (See [api-umbrella-gatekeeper#19](https://github.com/NREL/api-umbrella-gatekeeper/pull/19))
+* **Allow for longer hostnames:** Longer hostnames can now be used with API frontends. (See [#168](https://github.com/NREL/api-umbrella/issues/168))
+* **Fix API Drilldown not respecting time zone:** In the analytics system, the API Drilldown chart wasn't using the user's timezone like the other analytics charts. (See [api.data.gov#217](https://github.com/18F/api.data.gov/issues/217))
+* **Add optional LDAP authentication for admin:** The admin can now be configured to use LDAP. (See [#131](https://github.com/NREL/api-umbrella/issues/131))
+* **Allow for system-wide IP or user agent blocks:** IPs or user agents can now be configured to be blocked at the server level. (See [api.data.gov#220](https://github.com/18F/api.data.gov/issues/220))
+* **Allow for system-wide redirects:** HTTP redirects can now be configured at the server level. (See [api.data.gov#239](https://github.com/18F/api.data.gov/issues/239))
+* **Log metadata about registration origins:** If the signup form is being used across different domains, the origin of the signup is now logged. (See [api.data.gov#218](https://github.com/18F/api.data.gov/issues/218))
+* **Fix handling of unexpected `format` param:** If the `format` was of an unexpected type, it could cause issues when returning an error response. (See [api.data.gov#223](https://github.com/18F/api.data.gov/issues/223))
+* **Fix handling of unexpected `Authorization` header:** If the `Authorization` header was of an unexpected type, it could cause the request to fail. (See [api.data.gov#266](https://github.com/18F/api.data.gov/issues/266))
+* **Fix null selector options in analytics query builder:** In the analytics query builder, the "is null" or "is not null" options did not work properly. (See [api.data.gov#230](https://github.com/18F/api.data.gov/issues/230))
+* **Analytics views now default to exclude over rate limit requests:** In the analytics screens, over rate limit requests are no longer displayed by default (but can still be viewed if needed). (See [api.data.gov#241](https://github.com/18F/api.data.gov/issues/241))
+* **Fix admin account creation in Firefox:** Creating new admin accounts was not functioning in Firefox. (See [api.data.gov#271](https://github.com/18F/api.data.gov/issues/271))
+* **Allow for response caching when `Authorization` header is passed:** If the `Authorization` header is part of the API backend configuration, caching of these responses is now allowed. (See [api.data.gov#281](https://github.com/18F/api.data.gov/issues/281))
+* **Allow for easier customization of contact URLs:** Custom contact URLs are now easier to set for individual API backends (See [api.data.gov#285](https://github.com/18F/api.data.gov/issues/285))
+
 ## 0.8.0 (2015-04-26)
 
 This update fixes a couple of security issues and a few important bugs. It's highly recommended anyone running earlier versions upgrade to v0.8.0.
