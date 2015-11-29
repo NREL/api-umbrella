@@ -42,6 +42,7 @@ API Umbrella is an open source API management platform for exposing web service 
    server/smtp-config
    server/multi-server
    server/listen-ports
+   server/logs
 
 .. toctree::
    :caption: API Consumer Documentation
