@@ -2,7 +2,7 @@
 
 ## Installation
 
-### Installing From Binary Packages (Recommended)
+### Installing From Binary Packages
 
 **Debian 8 (Jessie)**
 
@@ -50,21 +50,22 @@ $ sudo apt-get update
 $ sudo apt-get install api-umbrella
 ```
 
-### Installing From Source Code
-
-If a binary package is not available or you would like to compile API Umbrella from source, 
-
-```sh
-$ curl -OLJ https://github.com/NREL/api-umbrella/archive/v0.9.0.tar.gz
-$ tar -xvf api-umbrella-0.9.0.tar.gz
-$ cd api-umbrella-0.9.0
-$ make
-$ sudo make install
-```
-
 ### Installing With Chef
 
 If you use [Chef](https://www.chef.io) for managing your servers, we provide a [cookbook](https://github.com/NREL-cookbooks/api-umbrella) that can be used to install the binary packages and configure API Umbrella.
+
+### Running With Docker
+
+In this simple example, the API Umbrella configuration can be stored in the `config/api-umbrella.yml` file on host machine. This gets mounted as `/etc/api-umbrella/api-umbrella.yml` inside the container, which is the path for the configuration file the rest of the documentation will reference.
+
+```sh
+$ mkdir config && touch config/api-umbrella.yml
+$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v $PWD/config:/etc/api-umbrella nrel/api-umbrella
+```
+
+### Installing From Source Code
+
+Installing from a binary package is recommended, if available ([let us know](https://github.com/NREL/api-umbrella/issues/new) if you'd like to see binary packages for other platforms). However, if a binary package is not available you can [compile from source](../developer/compiling-from-source.html).
 
 ## Setup
 
