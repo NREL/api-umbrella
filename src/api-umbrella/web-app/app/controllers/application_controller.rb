@@ -35,6 +35,20 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  helper_method :csv_time
+  def csv_time(time)
+    if(time)
+      case(time)
+      when String
+        time = Time.parse(time)
+      when Numeric
+        time = Time.at(time / 1000.0)
+      end
+
+      time.utc.strftime("%Y-%m-%d %H:%M:%S")
+    end
+  end
+
   # This allows us to support IE8-9 and their shimmed pseudo-CORS support. This
   # parses the post body as form data, even if the content-type is text/plain
   # or unknown.

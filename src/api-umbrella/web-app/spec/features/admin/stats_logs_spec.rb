@@ -119,7 +119,8 @@ describe "analytics filter logs", :js => true do
     end
 
     it "successfully downloads a csv" do
-      FactoryGirl.create_list(:log_item, 10, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_method => "OPTIONS")
+      FactoryGirl.create_list(:log_item, 5, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_method => "OPTIONS")
+      FactoryGirl.create_list(:log_item, 5, :request_at => 1421413588000, :request_method => "OPTIONS")
       LogItem.gateway.refresh_index!
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"

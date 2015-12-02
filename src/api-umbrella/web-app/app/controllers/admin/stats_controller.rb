@@ -74,7 +74,7 @@ class Admin::StatsController < Admin::BaseController
         send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.strftime("%b %-e %Y")}).#{params[:format]}")
         self.response_body = CsvStreamer.new(@search.client, scroll_id, headers) do |row|
           [
-            Time.parse(row["request_at"]).utc.strftime("%Y-%m-%d %H:%M:%S"),
+            csv_time(row["request_at"]),
             row["request_method"],
             row["request_host"],
             row["request_url"],
