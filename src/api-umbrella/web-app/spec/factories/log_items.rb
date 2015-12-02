@@ -1,5 +1,10 @@
 require "elasticsearch/persistence/model"
 
+Elasticsearch::Persistence.client = Elasticsearch::Client.new({
+  :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
+  :logger => Rails.logger
+})
+
 class LogItem
   include Elasticsearch::Persistence::Model
 
