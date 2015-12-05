@@ -1,12 +1,10 @@
 class Api::V1::AdminPermissionsController < Api::V1::BaseController
-  respond_to :json
-
   skip_after_filter :verify_authorized, :only => [:index]
 
   def index
     @admin_permissions = AdminPermission.sorted.all.to_a
     @admin_permissions.map! { |permission| permission.as_json }
 
-    respond_with(:api_v1, @admin_permissions, :root => "admin_permissions")
+    render(:json => { "admin_permissions" => @admin_permissions })
   end
 end
