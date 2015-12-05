@@ -5,6 +5,8 @@ class Api::V1::AdminPermissionsController < Api::V1::BaseController
 
   def index
     @admin_permissions = AdminPermission.sorted.all.to_a
+    @admin_permissions.map! { |permission| permission.as_json }
+
     respond_with(:api_v1, @admin_permissions, :root => "admin_permissions")
   end
 end
