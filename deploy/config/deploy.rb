@@ -96,6 +96,17 @@ namespace :deploy do
   end
   after :updated, :ember_permissions
 
+  task :compile_assets do
+    on roles(:app) do
+      within("#{release_path}/src/api-umbrella/web-app") do
+        with "RAILS_ENV" => fetch(:stage) do
+          execute :rake, "assets:precompile"
+        end
+      end
+    end
+  end
+  after :updated, :compile_assets
+
   desc "Reload application"
   task :reload do
     on roles(:app), :in => :sequence, :wait => 5 do
