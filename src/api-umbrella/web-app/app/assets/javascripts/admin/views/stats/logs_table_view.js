@@ -148,6 +148,30 @@ Admin.LogsTableView = Ember.View.extend({
           defaultContent: '-',
           render: Admin.DataTablesHelpers.renderEscaped,
         },
+        {
+          data: 'request_user_agent_family',
+          title: 'User Agent Family',
+          defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'request_user_agent_type',
+          title: 'User Agent Type',
+          defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'request_referer',
+          title: 'Referer',
+          defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
+        },
+        {
+          data: 'request_origin',
+          title: 'Origin',
+          defaultContent: '-',
+          render: Admin.DataTablesHelpers.renderEscaped,
+        },
       ]
     });
   },

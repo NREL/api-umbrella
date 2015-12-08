@@ -89,6 +89,10 @@ class Admin::StatsController < Admin::BaseController
             row["response_content_type"],
             row["request_accept_encoding"],
             row["request_user_agent"],
+            row["request_user_agent_family"],
+            row["request_user_agent_type"],
+            row["request_referer"],
+            row["request_origin"],
           ]
         end
       end

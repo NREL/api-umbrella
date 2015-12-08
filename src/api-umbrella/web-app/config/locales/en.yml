@@ -365,8 +365,28 @@ en:
         request_user_agent:
           label: 'Request: User Agent'
           description_markdown: |-
-            The user agent of the requestor.
+            The full user agent string of the requestor.
             *Example:* `curl/7.33.0`
+        request_user_agent_family:
+          label: 'Request: User Agent Family'
+          description_markdown: |-
+            The overall family of the user agent.
+            *Example:* `Chrome`
+        request_user_agent_type:
+          label: 'Request: User Agent Type'
+          description_markdown: |-
+            The type of user agent.
+            *Example:* `Browser`
+        request_referer:
+          label: 'Request: Referer'
+          description_markdown: |-
+            The `Referer` header sent on the request
+            *Example:* `https://example.com/foo`
+        request_origin:
+          label: 'Request: Origin'
+          description_markdown: |-
+            The `Origin` header sent on the request
+            *Example:* `https://example.com`
         api_key:
           label: 'User: API Key'
           description_markdown: |-
