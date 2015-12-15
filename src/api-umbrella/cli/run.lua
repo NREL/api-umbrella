@@ -4,7 +4,7 @@ local status = require "api-umbrella.cli.status"
 local unistd = require "posix.unistd"
 
 local function start_perp(config, options)
-  local running, pid = status()
+  local running, _ = status()
   if running then
     print "api-umbrella is already running"
     if options and options["background"] then
