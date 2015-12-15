@@ -173,6 +173,7 @@ RSpec.shared_examples("package upgrade") do |package_version|
         expect(command_result.stderr).to eql("")
 
         expect(service("api-umbrella")).to be_running.under(:init)
+        expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
       end
 
       it_behaves_like "installed"
@@ -193,6 +194,9 @@ RSpec.shared_examples("package upgrade") do |package_version|
         expect(command_result.exit_status).to eql(0)
         expect(command_result.stderr).to eql("")
         expect(service("api-umbrella")).to be_running.under(:init)
+        if(package_version >= "0.9.0")
+          expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
+        end
 
         command_result = command("/etc/init.d/api-umbrella status")
         expect(command_result.stdout).to match(/pid \d+/)
@@ -220,10 +224,12 @@ RSpec.shared_examples("package upgrade") do |package_version|
           expect(command_result.stderr).to eql("")
 
           expect(service("api-umbrella")).to be_running.under(:init)
+          expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
         end
       else
         it "restarts the service during the upgrade" do
           expect(service("api-umbrella")).to be_running.under(:init)
+          expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
 
           command_result = command("/etc/init.d/api-umbrella status")
           expect(command_result.stdout).to match(/pid \d+/)
