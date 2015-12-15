@@ -12,6 +12,14 @@ ITERATION="$API_UMBRELLA_VERSION_PACKAGE_ITERATION"
 
 FPM_ARGS=()
 
+# Workaround for systemd-container issues when building inside of Docker:
+# https://github.com/CentOS/sig-cloud-instance-images/issues/26#issuecomment-121797899
+# It sounds like this should no longer be an issue in the next centos:7
+# container release.
+if [ "$DIST" == "centos-7" ]; then
+  yum -y swap -- remove systemd-container systemd-container-libs -- install systemd systemd-libs
+fi
+
 if command -v yum &> /dev/null; then
   PACKAGE_TYPE="rpm"
   PACKAGE_DEPENDENCIES=(
