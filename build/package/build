@@ -6,13 +6,9 @@ ORIGINAL_ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && 
 TMP_ROOT_DIR=/tmp/api-umbrella
 TMP_WORK_DIR=$TMP_ROOT_DIR/build/work
 
-VERSION=$(sed 's/^return "\([0-9\.]*\).*"$/\1/' $ORIGINAL_ROOT_DIR/src/api-umbrella/version.lua)
-PRE=$(grep -o "pre[0-9]*" $ORIGINAL_ROOT_DIR/src/api-umbrella/version.lua) || true
-if [ "$PRE" == "" ]; then
-  ITERATION="1"
-else
-  ITERATION="0.1.$PRE"
-fi
+source $ORIGINAL_ROOT_DIR/src/api-umbrella/version.sh
+VERSION="$API_UMBRELLA_VERSION_BASE"
+ITERATION="$API_UMBRELLA_VERSION_PACKAGE_ITERATION"
 
 FPM_ARGS=()
 

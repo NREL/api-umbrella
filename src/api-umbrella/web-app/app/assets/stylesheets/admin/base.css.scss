@@ -568,3 +568,13 @@ td.reorder-handle {
 .control-group-negative-top {
   margin-top: -16px;
 }
+
+#version_footer .row-fluid {
+  border-top: 1px solid #ddd;
+  text-align: center;
+  margin-top: 3em;
+  margin-bottom: 1em;
+  padding-top: 1em;
+  font-size: 11px;
+  color: #777;
+}

@@ -60,8 +60,7 @@ function _M.health(args)
 end
 
 function _M.version()
-  local version = require "api-umbrella.version"
-  print(version)
+  print(os.getenv("API_UMBRELLA_VERSION"))
   os.exit(0)
 end
 

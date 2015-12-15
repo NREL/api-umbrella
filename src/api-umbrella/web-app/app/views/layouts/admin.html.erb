@@ -91,6 +91,11 @@
 
       <%= yield %>
     </div>
+    <div id="version_footer" class="container-fluid">
+      <div class="row-fluid">
+        API Umbrella Version <%= ENV["API_UMBRELLA_VERSION"] %>
+      </div>
+    </div>
 
     <div id="loading_overlay" style="display: none;"></div>
   </body>
