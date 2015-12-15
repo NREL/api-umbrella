@@ -14,11 +14,16 @@ return function(command)
   handle:close()
 
   local output, status = string.match(all_output, "^(.*)===STATUS_CODE:(%d+)\n$")
-  status = tonumber(status)
-
   local err = nil
-  if not status or status ~= 0 then
-    err = "Executing command failed: " .. command .. "\n\n" .. output
+  if output == nil and status == nil then
+    -- This means we never got the "STATUS_CODE" output, so the entire
+    -- sub-processes must have gotten killed off.
+    err = "Executing command failed: " .. command .. "\n\nCommand exited prematurely. Was it killed by an external process?"
+  else
+    status = tonumber(status)
+    if not status or status ~= 0 then
+      err = "Executing command failed: " .. command .. "\n\n" .. output
+    end
   end
 
   return status, output, err

@@ -14,7 +14,7 @@ else
   ITERATION="0.1.$PRE"
 fi
 
-FPM_ARGS=""
+FPM_ARGS=()
 
 if command -v yum &> /dev/null; then
   PACKAGE_TYPE="rpm"
@@ -71,7 +71,8 @@ if command -v yum &> /dev/null; then
     xz
   )
   RPM_DIST=$(rpm --query centos-release | grep -o "el[0-9]")
-  FPM_ARGS="$FPM_ARGS --rpm-dist $RPM_DIST --rpm-compression xz"
+  FPM_ARGS+=("--rpm-dist" "$RPM_DIST")
+  FPM_ARGS+=("--rpm-compression" "xz")
 
   if [ "$RPM_DIST" == "el6" ]; then
     if [ ! -f /etc/yum.repos.d/wandisco-git.repo ]; then
@@ -130,9 +131,10 @@ elif command -v dpkg &> /dev/null; then
     unzip
     xz-utils
   )
-  FPM_ARGS="$FPM_ARGS --deb-compression xz"
+  FPM_ARGS+=("--deb-compression" "xz")
+  FPM_ARGS+=("--deb-no-default-config-files")
 
-  if [ "$DIST" == "debian:7" ]; then
+  if [ "$DIST" == "debian-7" ]; then
     PACKAGE_DEPENDENCIES+=("libffi5")
   else
     PACKAGE_DEPENDENCIES+=("libffi6")
@@ -174,7 +176,7 @@ cd $TMP_ROOT_DIR
 make install DESTDIR=$TMP_WORK_DIR/package/root
 
 for DEP in "${PACKAGE_DEPENDENCIES[@]}"; do
-  FPM_ARGS="$FPM_ARGS -d $DEP"
+  FPM_ARGS+=("-d" "$DEP")
 done
 
 # Use FPM to build the binary package.
@@ -195,9 +197,11 @@ bundle exec fpm \
   --iteration "$ITERATION" \
   --config-files etc/api-umbrella/api-umbrella.yml \
   --after-install $TMP_ROOT_DIR/build/package/scripts/after-install \
-  --before-remove $TMP_ROOT_DIR/build/package/scripts/after-remove \
+  --before-remove $TMP_ROOT_DIR/build/package/scripts/before-remove \
   --after-remove $TMP_ROOT_DIR/build/package/scripts/after-remove \
-  $FPM_ARGS \
+  --directories /etc/api-umbrella \
+  --directories /opt/api-umbrella \
+  ${FPM_ARGS[*]} \
   .
 
 rm -rf $ORIGINAL_ROOT_DIR/build/package/dist/$DIST

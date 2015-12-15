@@ -60,7 +60,7 @@ return function(options)
   local running = status()
   if not running then
     print("api-umbrella is stopped")
-    os.exit(1)
+    os.exit(7)
   end
 
   local config = setup()

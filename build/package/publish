@@ -12,12 +12,12 @@ else
 fi
 
 PACKAGES=(
-  build/package/dist/centos:6/api-umbrella-$VERSION-$ITERATION.el6.x86_64.rpm
-  build/package/dist/centos:7/api-umbrella-$VERSION-$ITERATION.el7.x86_64.rpm
-  build/package/dist/debian:7/api-umbrella_$VERSION-$ITERATION~wheezy_amd64.deb
-  build/package/dist/debian:8/api-umbrella_$VERSION-$ITERATION~jessie_amd64.deb
-  build/package/dist/ubuntu:12.04/api-umbrella_$VERSION-$ITERATION~precise_amd64.deb
-  build/package/dist/ubuntu:14.04/api-umbrella_$VERSION-$ITERATION~trusty_amd64.deb
+  build/package/dist/centos-6/api-umbrella-$VERSION-$ITERATION.el6.x86_64.rpm
+  build/package/dist/centos-7/api-umbrella-$VERSION-$ITERATION.el7.x86_64.rpm
+  build/package/dist/debian-7/api-umbrella_$VERSION-$ITERATION~wheezy_amd64.deb
+  build/package/dist/debian-8/api-umbrella_$VERSION-$ITERATION~jessie_amd64.deb
+  build/package/dist/ubuntu-12.04/api-umbrella_$VERSION-$ITERATION~precise_amd64.deb
+  build/package/dist/ubuntu-14.04/api-umbrella_$VERSION-$ITERATION~trusty_amd64.deb
 )
 
 for PACKAGE in "${PACKAGES[@]}"; do

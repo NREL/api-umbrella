@@ -114,6 +114,10 @@ status() {
   return $RETVAL
 }
 
+status_quiet() {
+  status > /dev/null 2>&1
+}
+
 case "$1" in
   start)
     start
@@ -131,7 +135,8 @@ case "$1" in
     reload
     ;;
   condrestart)
-    status > /dev/null 2>&1 && restart || :
+    status_quiet || exit 0
+    restart
     ;;
   *)
     echo "Usage: $NAME {start|stop|status|reload|restart|condrestart}"

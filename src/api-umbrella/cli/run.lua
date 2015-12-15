@@ -1,8 +1,19 @@
 local path = require "pl.path"
 local setup = require "api-umbrella.cli.setup"
+local status = require "api-umbrella.cli.status"
 local unistd = require "posix.unistd"
 
 local function start_perp(config, options)
+  local running, pid = status()
+  if running then
+    print "api-umbrella is already running"
+    if options and options["background"] then
+      os.exit(0)
+    else
+      os.exit(1)
+    end
+  end
+
   local perp_base = path.join(config["etc_dir"], "perp")
   local args = {
     "-0", "api-umbrella",

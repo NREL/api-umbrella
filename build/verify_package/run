@@ -9,7 +9,6 @@ if command -v yum > /dev/null 2>&1; then
   yum -y install $ROOT_DIR/build/package/dist/$DIST/*
 elif command -v dpkg > /dev/null 2>&1; then
   apt-get update
-  apt-get -y install uuid-dev
   dpkg -i $ROOT_DIR/build/package/dist/$DIST/* || apt-get install -y -f
 else
   echo "Unknown build system"
@@ -24,6 +23,10 @@ fi
 api-umbrella health --wait-for-status green
 
 # Install the test package dependencies.
+#
+# Note: We do this after installing and starting API Umbrella to ensure that
+# API Umbrella can start on its own (and we're not accidentally depending on
+# any of these test dependencies).
 if command -v yum > /dev/null 2>&1; then
   yum -y install epel-release
   yum -y install \
@@ -36,7 +39,7 @@ elif command -v dpkg > /dev/null 2>&1; then
     ruby \
     socat \
     sudo
-  if [ "$DIST" == "ubuntu:12.04" ] || [ "$DIST" == "debian:7" ]; then
+  if [ "$DIST" == "ubuntu-12.04" ] || [ "$DIST" == "debian-7" ]; then
     apt-get -y install rubygems
   fi
 fi
@@ -48,4 +51,4 @@ cd $ROOT_DIR/build/verify_package
 bundle
 
 # Run the serverspec suite.
-bundle exec rake spec
+env ROOT_DIR=$ROOT_DIR DIST=$DIST bundle exec rake spec

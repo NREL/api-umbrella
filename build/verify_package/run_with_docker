@@ -3,7 +3,7 @@
 set -e -u -x
 
 ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
-DOCKER_IMAGE=$DIST
+DOCKER_IMAGE=${DIST/-/:}
 CONTAINER_NAME="api-umbrella-package-$DIST-verify"
 CONTAINER_NAME=${CONTAINER_NAME//[^a-zA-Z0-9_.-]/}
 

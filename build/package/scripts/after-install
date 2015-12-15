@@ -1,63 +1,105 @@
 #!/bin/bash
-#
-# Perform necessary api-umbrella setup steps
-# after package is installed.
-#
 
-function error_exit {
-  echo "api-umbrella: ${1:-"Unknown Error"}" 1>&2
-  exit 1
-}
+set -e -u
 
-USER=api-umbrella
-GROUP=api-umbrella
-DEPLOY_USER=api-umbrella-deploy
-DEPLOY_GROUP=api-umbrella-deploy
+CONFIGURE=false
+RESTART_SERVICE=false
 
-getent group $GROUP > /dev/null || groupadd -r $GROUP
-getent passwd $USER > /dev/null || \
-  useradd -r -g $GROUP -s /sbin/nologin \
-    -d /opt/api-umbrella -c "API Umbrella user" $USER
+case "$1" in
+  # dpkg
+  configure)
+    CONFIGURE=true
 
-getent group $DEPLOY_GROUP > /dev/null || groupadd -r $DEPLOY_GROUP
-getent passwd $DEPLOY_USER > /dev/null || \
-  useradd -r -g $DEPLOY_GROUP -s /bin/bash \
-    -d /home/$DEPLOY_USER -c "API Umbrella deployment user" $DEPLOY_USER
+    # Upgrade
+    if [ -n $2 ]; then
+      RESTART_SERVICE=true
+    fi
 
-# Add the deploy user to the app group, so the deploy user can read config
-# files.
-if ! groups $DEPLOY_USER | grep -q -E "\s$GROUP(\s|$)"; then
-  usermod -a -G $GROUP $DEPLOY_USER
+    ;;
+  abort-deconfigure|abort-remove|abort-upgrade)
+    ;;
+
+  # rpm
+  1) # install
+    CONFIGURE=true
+    ;;
+  2) # upgrade
+    CONFIGURE=true
+    ;;
+esac
+
+if [ "$CONFIGURE" = "true" ]; then
+  USER=api-umbrella
+  GROUP=api-umbrella
+  DEPLOY_USER=api-umbrella-deploy
+  DEPLOY_GROUP=api-umbrella-deploy
+
+  # Create the main user & group.
+  if ! getent group $GROUP > /dev/null; then
+    groupadd -r $GROUP
+  fi
+  if ! getent passwd $USER > /dev/null; then
+    useradd -r -g $GROUP -s /sbin/nologin \
+      -d /opt/api-umbrella -c "API Umbrella user" $USER
+  fi
+
+  # Create the deploy user & group.
+  if ! getent group $DEPLOY_GROUP > /dev/null; then
+    groupadd -r $DEPLOY_GROUP
+  fi
+  if ! getent passwd $DEPLOY_USER > /dev/null; then
+    useradd -r -g $DEPLOY_GROUP -s /bin/bash \
+      -d /home/$DEPLOY_USER -c "API Umbrella deployment user" $DEPLOY_USER
+  fi
+
+  # Add the deploy user to the app group, so the deploy user can read config
+  # files.
+  if ! groups $DEPLOY_USER | grep -q -E "\s$GROUP(\s|$)"; then
+    usermod -a -G $GROUP $DEPLOY_USER
+  fi
+
+  # Fix previously created deploy user that couldn't actually login.
+  if getent passwd $DEPLOY_USER | grep -q "/sbin/nologin"; then
+    usermod -d /home/$DEPLOY_USER -s /bin/bash $DEPLOY_USER
+  fi
+
+  # Create an empty .ssh/authorized_keys file with proper permissions if it
+  # doesn't already exist.
+  if [ ! -f /home/$DEPLOY_USER/.ssh/authorized_keys ]; then
+    mkdir -p /home/$DEPLOY_USER/.ssh
+    touch /home/$DEPLOY_USER/.ssh/authorized_keys
+    chown -R $DEPLOY_USER:$DEPLOY_GROUP /home/$DEPLOY_USER
+    chmod 700 /home/$DEPLOY_USER
+    chmod 700 /home/$DEPLOY_USER/.ssh
+    chmod 600 /home/$DEPLOY_USER/.ssh/authorized_keys
+  fi
+
+  # Set file permissions
+  chown -R $USER:$GROUP /opt/api-umbrella/etc /opt/api-umbrella/var
+  chown -R $DEPLOY_USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps
+  chown -R $USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
+  chmod 775 /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
+
+  # Re-create symlinks that may have inadvertently been cleaned up by the API
+  # Umbrella v0.8 and v0.9 after-remove scripts during upgrades (this should be
+  # fixed by the v0.10 after-remove script, so at some point, we can probably
+  # remove this logic).
+  if [ ! -f /usr/bin/api-umbrella ]; then
+    cd /usr/bin && ln -snf ../../opt/api-umbrella/bin/api-umbrella ./api-umbrella
+  fi
+  if [ ! -f /var/log/api-umbrella ]; then
+    cd /var/log && ln -snf ../../opt/api-umbrella/var/log ./api-umbrella
+  fi
+
+  # Install service, but don't activate.
+  if command -v chkconfig > /dev/null 2>&1; then
+    chkconfig --add api-umbrella
+  elif command -v update-rc.d > /dev/null 2>&1; then
+    update-rc.d api-umbrella defaults 85 15 > /dev/null
+  fi
 fi
 
-# Fix previously created deploy user that couldn't actually login.
-if getent passwd $DEPLOY_USER | grep -q "/sbin/nologin"; then
-  usermod -d /home/$DEPLOY_USER -s /bin/bash $DEPLOY_USER
+if [ "$RESTART_SERVICE" = "true" ]; then
+  # On upgrades, restart the service if it's currently running.
+  /etc/init.d/api-umbrella condrestart
 fi
-
-# Create an empty .ssh/authorized_keys file with proper permissions if it
-# doesn't already exist.
-if [ ! -f /home/$DEPLOY_USER/.ssh/authorized_keys ]; then
-  mkdir -p /home/$DEPLOY_USER/.ssh
-  touch /home/$DEPLOY_USER/.ssh/authorized_keys
-  chown -R $DEPLOY_USER:$DEPLOY_GROUP /home/$DEPLOY_USER
-  chmod 700 /home/$DEPLOY_USER
-  chmod 700 /home/$DEPLOY_USER/.ssh
-  chmod 600 /home/$DEPLOY_USER/.ssh/authorized_keys
-fi
-
-chown -R $USER:$GROUP /opt/api-umbrella/etc /opt/api-umbrella/var
-chown -R $DEPLOY_USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps
-chown -R $USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
-chmod 775 /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
-
-# Install service, but don't activate.
-if command -v chkconfig > /dev/null 2>&1; then
-  chkconfig --add api-umbrella || error_exit "Cannot enable api-umbrella service"
-elif command -v update-rc.d > /dev/null 2>&1; then
-  update-rc.d api-umbrella defaults 85 15 || error_exit "Cannot enable api-umbrella service"
-else
-  error_exit "No supported init tool found."
-fi
-
-exit 0

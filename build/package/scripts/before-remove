@@ -1,30 +1,33 @@
 #!/bin/bash
-#
-# Perform necessary api-umbrella setup steps
-# prior to installing package.
-#
 
-function error_exit {
-  echo "api-umbrella: ${1:-"Unknown Error"}" 1>&2
-  exit 1
-}
+set -e -u
 
-function stop_service {
-  /etc/init.d/api-umbrella status > /dev/null 2>&1 || return 0
-  /etc/init.d/api-umbrella stop > /dev/null 2>&1 || error_exit "Cannot stop api-umbrella service"
-}
+STOP_SERVICE=false
+REMOVE_SERVICE=false
 
-# On RedHat RPM systems, when an upgrade is performed, the old package is
-# removed after the newer one is installed. Only perform stops on full
-# removals.
-#
-# See: http://tickets.opscode.com/browse/CHEF-3022
-if [ ! -f /etc/redhat-release -a ! -f /etc/fedora-release -a ! -f /etc/system-release ]; then
-  # Non-RPM system: Stop before removal
-  stop_service
-elif [ "$1" -eq "0" ]; then
-  # RPM system: Uninstalling (not upgrading)
-  stop_service
+case "$1" in
+  # dpkg
+  remove)
+    STOP_SERVICE=true
+    ;;
+  deconfigure|failed-upgrade|upgrade)
+    ;;
+
+  # rpm
+  0) # uninstall
+    STOP_SERVICE=true
+    REMOVE_SERVICE=true
+    ;;
+  1) # upgrade
+    ;;
+esac
+
+if [ "$STOP_SERVICE" = "true" ]; then
+  /etc/init.d/api-umbrella stop || true
 fi
 
-exit 0
+if [ "$REMOVE_SERVICE" = "true" ]; then
+  if command -v chkconfig > /dev/null 2>&1; then
+    chkconfig --del api-umbrella
+  fi
+fi

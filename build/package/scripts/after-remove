@@ -1,42 +1,74 @@
 #!/bin/bash
-#
-# Perform necessary api-umbrella removal steps
-# after package is uninstalled.
-#
 
-function error_exit {
-  echo "api-umbrella: ${1:-"Unknown Error"}" 1>&2
-  exit 1
-}
+set -e -u
 
-function remove_service {
-  if command -v chkconfig > /dev/null 2>&1; then
-    chkconfig --del api-umbrella > /dev/null 2>&1
-  elif command -v update-rc.d > /dev/null 2>&1; then
-    update-rc.d api-umbrella remove > /dev/null 2>&1
-  fi
+REMOVE_ACCOUNTS=false
+REMOVE_DATA=false
+REMOVE_FILES=false
+REMOVE_SERVICE=false
+RESTART_SERVICE=false
 
-  rm -f /usr/bin/api-umbrella
-  rm -f /var/log/api-umbrella
-  rmdir /etc/api-umbrella > /dev/null 2>&1 # Delete directory if empty.
-}
+case "$1" in
+  # dpkg
+  remove)
+    REMOVE_FILES=true
+    REMOVE_SERVICE=true
+    ;;
+  purge)
+    REMOVE_ACCOUNTS=true
+    REMOVE_DATA=true
+    ;;
+  abort-install|abort-upgrade|disappear|failed-upgrade|upgrade)
+    ;;
 
-# On RedHat RPM systems, when an upgrade is performed, the old package is
-# removed after the newer one is installed. Only perform cleanup on full
-# removals.
-#
-# See: http://tickets.opscode.com/browse/CHEF-3022
-if [ ! -f /etc/redhat-release -a ! -f /etc/fedora-release -a ! -f /etc/system-release ]; then
-  # Non-RPM system: Go ahead with removal
-  remove_service
-elif [ "$1" -eq "0" ]; then
-  # RPM system: Uninstalling (not upgrading)
-  remove_service
-elif [ "$1" -eq "1" ]; then
-  # RPM system: Upgrading (not uninstalling)
-  # Restart, but only if started.
-  /etc/init.d/api-umbrella status > /dev/null 2>&1 || exit 0
-  /etc/init.d/api-umbrella restart > /dev/null 2>&1 || error_exit "Cannot restart api-umbrella service"
+  # rpm
+  0) # uninstall
+    REMOVE_FILES=true
+    ;;
+  1) # upgrade
+    RESTART_SERVICE=true
+    ;;
+esac
+
+if [ "$REMOVE_FILES" = "true" ]; then
+  rm -f /usr/bin/api-umbrella /var/log/api-umbrella
+  rmdir /etc/api-umbrella > /dev/null 2>&1 || true # Delete directory if empty.
 fi
 
-exit 0
+if [ "$REMOVE_SERVICE" = "true" ]; then
+  if command -v update-rc.d > /dev/null 2>&1; then
+    update-rc.d api-umbrella remove > /dev/null
+  fi
+fi
+
+if [ "$REMOVE_DATA" = "true" ]; then
+  rm -rf /etc/api-umbrella /opt/api-umbrella
+fi
+
+if [ "$REMOVE_ACCOUNTS" = "true" ]; then
+  USER=api-umbrella
+  GROUP=api-umbrella
+  DEPLOY_USER=api-umbrella-deploy
+  DEPLOY_GROUP=api-umbrella-deploy
+
+  if getent passwd $DEPLOY_USER > /dev/null; then
+    userdel $DEPLOY_USER
+  fi
+
+  if getent passwd $USER > /dev/null; then
+    userdel $USER
+  fi
+
+  if getent group $DEPLOY_GROUP > /dev/null; then
+    groupdel $DEPLOY_GROUP
+  fi
+
+  if getent group $GROUP > /dev/null; then
+    groupdel $GROUP
+  fi
+fi
+
+if [ "$RESTART_SERVICE" = "true" ]; then
+  # On upgrades, restart the service if it's currently running.
+  /etc/init.d/api-umbrella condrestart
+fi
