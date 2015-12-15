@@ -50,6 +50,9 @@ if command -v yum &> /dev/null; then
 
     # init.d script helpers
     initscripts
+
+    # For pkill/pgrep used for legacy status/stop commands.
+    procps
   )
   BUILD_DEPENDENCIES=(
     bzip2
@@ -111,6 +114,9 @@ elif command -v dpkg &> /dev/null; then
     # init.d script helpers
     sysvinit-utils
     lsb-base
+
+    # For pkill/pgrep used for legacy status/stop commands.
+    procps
   )
   BUILD_DEPENDENCIES=(
     bzip2
