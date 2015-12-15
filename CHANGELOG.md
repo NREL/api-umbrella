@@ -1,5 +1,25 @@
 # API Umbrella Change Log
 
+## 0.10.0 (2015-12-15)
+
+This is a small update that fixes a few bugs and adds a couple small new features.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` using your package manager.
+
+### Added
+
+* **Make additional fields visible in the admin analytics:** The HTTP referer, Origin header, user agent family, and user agent type fields are now visible in analytics views for individual requests. ([#201](https://github.com/NREL/api-umbrella/issues/201))
+* **Show version number in admin:** In the admin footer, the current API Umbrella version number is now displayed. ([#169](https://github.com/NREL/api-umbrella/issues/169))
+
+### Fixed
+
+* **Fixes to packages:** Various fixes and improvements to the `.rpm` and `.deb` packages to allow for easier package upgrades. ([#200](https://github.com/NREL/api-umbrella/issues/200))
+* **Fix CSV downloads of admin analytics reports:** The CSV downloads of the Filter Logs results in the analytics admin was broken in the v0.9 release ([api.data.gov#298](https://github.com/18F/api.data.gov/issues/298))
+* **Fix admin issues with admin groups and roles:** Admin groups management and role auto-completion were both broken in the v0.9 release ([api.data.gov#299](https://github.com/18F/api.data.gov/issues/299))
+* **Better service start/stop error handling:** Better error messages if the trying to start the service when already started or stop the service when already stopped. ([#203](https://github.com/NREL/api-umbrella/issues/203))
+
 ## 0.9.0 (2015-11-27)
 
 This is a significant upgrade to API Umbrella's internals, but should be backwards compatible with previous installations. It should be faster, more efficient, and more resilient, so upgrading is recommended.
