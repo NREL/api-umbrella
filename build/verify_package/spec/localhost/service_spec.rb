@@ -501,6 +501,11 @@ describe "api-umbrella" do
     end
   end
 
-  it_behaves_like "package upgrade", "0.8.0"
+  # We don't have Debian 8 builds of API Umbrella v0.8, so skip testing that
+  # upgrade path for Debian 8.
+  if(ENV["DIST"] != "debian-8")
+    it_behaves_like "package upgrade", "0.8.0"
+  end
+
   it_behaves_like "package upgrade", "0.9.0"
 end
