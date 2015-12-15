@@ -13,11 +13,14 @@ if [ "$EXISTING" != "" ]; then
   docker rm -f $EXISTING
 fi
 
+# Run inside a privileged container so the ulimit settings that API Umbrella
+# v0.8 attempt work (needed so we can test upgrades from v0.8).
 docker run \
   --name=$CONTAINER_NAME \
   --volume=$ROOT_DIR:/api-umbrella \
   --env="DIST=$DIST" \
   --tty \
   --rm \
+  --privileged \
   $DOCKER_IMAGE \
   /bin/bash -c "cd /api-umbrella && ./build/verify_package/run"
