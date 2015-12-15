@@ -1192,11 +1192,17 @@ verify_package: download_verify_package_deps
 package_docker_centos6: download_deps download_verify_package_deps
 	DIST=centos-6 $(BUILD_DIR)/package/build_and_verify_with_docker
 
+package_docker_centos6_logged:
+	DIST=centos-6 $(BUILD_DIR)/package/build_and_verify_with_docker_logged
+
 verify_package_docker_centos6: download_deps download_verify_package_deps
 	DIST=centos-6 $(BUILD_DIR)/verify_package/run_with_docker
 
 package_docker_centos7: download_deps download_verify_package_deps
 	DIST=centos-7 $(BUILD_DIR)/package/build_and_verify_with_docker
+
+package_docker_centos7_logged:
+	DIST=centos-7 $(BUILD_DIR)/package/build_and_verify_with_docker_logged
 
 verify_package_docker_centos7: download_deps download_verify_package_deps
 	DIST=centos-7 $(BUILD_DIR)/verify_package/run_with_docker
@@ -1204,11 +1210,17 @@ verify_package_docker_centos7: download_deps download_verify_package_deps
 package_docker_ubuntu1204: download_deps download_verify_package_deps
 	DIST=ubuntu-12.04 $(BUILD_DIR)/package/build_and_verify_with_docker
 
+package_docker_ubuntu1204_logged:
+	DIST=ubuntu-12.04 $(BUILD_DIR)/package/build_and_verify_with_docker_logged
+
 verify_package_docker_ubuntu1204: download_deps download_verify_package_deps
 	DIST=ubuntu-12.04 $(BUILD_DIR)/verify_package/run_with_docker
 
 package_docker_ubuntu1404: download_deps download_verify_package_deps
 	DIST=ubuntu-14.04 $(BUILD_DIR)/package/build_and_verify_with_docker
+
+package_docker_ubuntu1404_logged: download_deps download_verify_package_deps
+	DIST=ubuntu-14.04 $(BUILD_DIR)/package/build_and_verify_with_docker_logged
 
 verify_package_docker_ubuntu1404: download_deps download_verify_package_deps
 	DIST=ubuntu-14.04 $(BUILD_DIR)/verify_package/run_with_docker
@@ -1216,23 +1228,29 @@ verify_package_docker_ubuntu1404: download_deps download_verify_package_deps
 package_docker_debian7: download_deps download_verify_package_deps
 	DIST=debian-7 $(BUILD_DIR)/package/build_and_verify_with_docker
 
+package_docker_debian7_logged: download_deps download_verify_package_deps
+	DIST=debian-7 $(BUILD_DIR)/package/build_and_verify_with_docker_logged
+
 verify_package_docker_debian7: download_deps download_verify_package_deps
 	DIST=debian-7 $(BUILD_DIR)/verify_package/run_with_docker
 
 package_docker_debian8: download_deps download_verify_package_deps
 	DIST=debian-8 $(BUILD_DIR)/package/build_and_verify_with_docker
 
+package_docker_debian8_logged: download_deps download_verify_package_deps
+	DIST=debian-8 $(BUILD_DIR)/package/build_and_verify_with_docker_logged
+
 verify_package_docker_debian8: download_deps download_verify_package_deps
 	DIST=debian-8 $(BUILD_DIR)/verify_package/run_with_docker
 
 all_packages: \
 	download_deps \
-	package_docker_centos6 \
-	package_docker_centos7 \
-	package_docker_ubuntu1204 \
-	package_docker_ubuntu1404 \
-	package_docker_debian7 \
-	package_docker_debian8
+	package_docker_centos6_logged \
+	package_docker_centos7_logged \
+	package_docker_ubuntu1204_logged \
+	package_docker_ubuntu1404_logged \
+	package_docker_debian7_logged \
+	package_docker_debian8_logged
 
 publish_all_packages:
 	$(BUILD_DIR)/package/publish
