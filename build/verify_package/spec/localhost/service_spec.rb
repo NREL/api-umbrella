@@ -190,6 +190,15 @@ RSpec.shared_examples("package upgrade") do |package_version|
       end
 
       it "starts the service before the upgrade" do
+        # The Docker image of centos 7 we use for testing seems to be missing
+        # the /run/lock directory (which /var/lock symlinks to). The API
+        # Umbrella v0.8.0 init.d script relies on touching
+        # /var/lock/api-umbrella, so make sure this directory exists prior to
+        # running the legacy start script.
+        if(ENV["DIST"] == "centos-7" && package_version == "0.8.0")
+          FileUtils.mkdir_p("/run/lock")
+        end
+
         command_result = command("/etc/init.d/api-umbrella start")
         expect(command_result.exit_status).to eql(0)
         expect(command_result.stderr).to eql("")
