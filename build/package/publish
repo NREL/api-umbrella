@@ -38,6 +38,9 @@ for PACKAGE in "${PACKAGES[@]}"; do
     REPO=api-umbrella-ubuntu
   fi
 
+  CURL_ARGS+=("--user" "$BINTRAY_USERNAME:$BINTRAY_API_KEY")
+  CURL_ARGS+=("--upload-file" "$PACKAGE")
+  CURL_ARGS+=("--fail")
   if [[ "$PACKAGE" == *"debian"* || "$PACKAGE" == *"ubuntu"* ]]; then
     [[ "$FILE_PATH" =~ ~([a-z]+)_ ]]
     CURL_ARGS+=("-H" "X-Bintray-Debian-Distribution: ${BASH_REMATCH[1]}")
@@ -47,5 +50,5 @@ for PACKAGE in "${PACKAGES[@]}"; do
     FILE_PATH="pool/main/a/api-umbrella/$FILE_PATH"
   fi
 
-  curl -X PUT --user $BINTRAY_USERNAME:$BINTRAY_API_KEY --upload-file "$PACKAGE" --fail "${CURL_ARGS[@]}" "https://api.bintray.com/content/nrel/$REPO/api-umbrella/$VERSION/$FILE_PATH"
+  curl -X PUT "${CURL_ARGS[@]}" "https://api.bintray.com/content/nrel/$REPO/api-umbrella/$VERSION/$FILE_PATH"
 done
