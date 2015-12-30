@@ -19,7 +19,7 @@ On each server you wish to deploy to, you must setup SSH keys so that you can de
 ### On Your Computer
 
 - Ensure you have SSH keys: You must have SSH keys setup on your local computer (or wherever you're deploying from). If you do not have SSH keys, see steps 1 & 2 from GitHub's [Generating SSH keys](https://help.github.com/articles/generating-ssh-keys/) guide for instructions.
-- Copy your public key: Copy the contents of your public key (often at `~/.ssh/id_rsa.pub`). For more tips on copying, or alternative locations for your public key, see step 3 from GitHub's [Generating SSH keys](https://help.github.com/articles/generating-ssh-keys/#step-3-add-your-ssh-key-to-your-account) guide.
+- Copy your public key: Copy the contents of your public key (often at `~/.ssh/id_rsa.pub`). For more tips on copying, or alternative locations for your public key, see step 4 from GitHub's [Generating SSH keys](https://help.github.com/articles/generating-ssh-keys/#step-4-add-your-ssh-key-to-your-account) guide.
 
 ### On Each Server
 

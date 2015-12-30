@@ -1,6 +1,6 @@
 # Development Setup
 
-The easiest way to get started with API Umbrella development is to use [Vagrant](http://vagrantup.com/) to setup a local development environment.
+The easiest way to get started with API Umbrella development is to use [Vagrant](http://www.vagrantup.com/) to setup a local development environment.
 
 ## Prerequisites
 

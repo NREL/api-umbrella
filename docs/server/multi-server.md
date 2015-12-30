@@ -27,7 +27,7 @@ The services available are:
 
 ## Suggested Server Setups
 
-In general, you'll need at least 3 servers in a multi-server setup since the database servers need an odd number of members for failover and voting purposes (see [MongoDB Replica Set Strategies](http://docs.mongodb.org/manual/core/replica-set-architectures/#deploy-an-odd-number-of-members)). Here are some possible server setups:
+In general, you'll need at least 3 servers in a multi-server setup since the database servers need an odd number of members for failover and voting purposes (see [MongoDB Replica Set Strategies](https://docs.mongodb.org/manual/core/replica-set-architectures/#deploy-an-odd-number-of-members)). Here are some possible server setups:
 
 - 3 servers with all services running on all servers:
   - 3 servers with `router`, `web`, `general_db`, and `log_db` services enabled.
