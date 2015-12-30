@@ -4,7 +4,7 @@ Limits are placed on the number of API requests you may make using your API key.
 
 - **Hourly Limit:** 1,000 requests per hour
 
-For each API key, these limits are applied across all API requests. Exceeding these limits will lead to your API key being temporarily blocked from making further requests. The block will automatically be lifted by waiting an hour. If you need higher rate limits, [contact us](/contact).
+For each API key, these limits are applied across all API requests. Exceeding these limits will lead to your API key being temporarily blocked from making further requests. The block will automatically be lifted by waiting an hour.
 
 ## How Do I See My Current Usage?
 
