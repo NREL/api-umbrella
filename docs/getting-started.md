@@ -65,7 +65,7 @@ $ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v $PWD/config:/etc/api-
 
 ### Installing From Source Code
 
-Installing from a binary package is recommended, if available ([let us know](https://github.com/NREL/api-umbrella/issues/new) if you'd like to see binary packages for other platforms). However, if a binary package is not available you can [compile from source](../developer/compiling-from-source.html).
+Installing from a binary package is recommended, if available ([let us know](https://github.com/NREL/api-umbrella/issues/new) if you'd like to see binary packages for other platforms). However, if a binary package is not available you can [compile from source](developer/compiling-from-source.html).
 
 ## Setup
 
