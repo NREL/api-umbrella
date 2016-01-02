@@ -1,11 +1,20 @@
 import Ember from 'ember';
+import Resolver from 'ember/resolver';
+import loadInitializers from 'ember/load-initializers';
+import config from './config/environment';
 
-var Admin = Ember.Application.create({
-  LOG_TRANSITIONS: true,
-  LOG_TRANSITIONS_INTERNAL: true,
+let App;
 
-  rootElement: '#content'
+Ember.MODEL_FACTORY_INJECTIONS = true;
+
+App = Ember.Application.extend({
+  modulePrefix: config.modulePrefix,
+  podModulePrefix: config.podModulePrefix,
+  Resolver
 });
+
+loadInitializers(App, config.modulePrefix);
+
 //= require_self
 //= require ./common_validations
 //= require_tree ./models
@@ -489,4 +498,4 @@ Admin.DataTablesHelpers = {
   },
 };
 
-export default Admin;
+export default App;
