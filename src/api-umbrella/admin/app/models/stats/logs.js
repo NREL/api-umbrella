@@ -1,12 +1,11 @@
 import Ember from 'ember';
 
-Admin.StatsLogs = Ember.Object.extend(Ember.Evented, {
+export default Ember.Object.extend(Ember.Evented, {
   hits_over_time: null,
   stats: null,
   facets: null,
   logs: null,
-});
-Admin.StatsLogs.reopenClass({
+}).reopenClass({
   find: function(params) {
     var promise = Ember.Deferred.create();
 
@@ -23,5 +22,3 @@ Admin.StatsLogs.reopenClass({
     return promise;
   },
 });
-
-export default undefined;

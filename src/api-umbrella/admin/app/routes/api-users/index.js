@@ -1,4 +1,4 @@
-Admin.ApiUsersIndexRoute = Admin.ApiUsersBaseRoute.extend({
-});
+import Base from './base';
 
-export default undefined;
+export default Base.extend({
+});

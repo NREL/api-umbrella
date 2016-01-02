@@ -1,14 +1,13 @@
-import Ember from 'ember';
+import { Model, attr } from 'ember-model';
 
-Admin.AdminPermission = Ember.Model.extend({
-  id: Ember.attr(),
-  name: Ember.attr()
+export default Model.extend({
+  id: attr(),
+  name: attr()
+}).reopenClass({
+  url: '/api-umbrella/v1/admin_permissions',
+  rootKey: 'admin_permission',
+  collectionKey: 'admin_permissions',
+  primaryKey: 'id',
+  camelizeKeys: true,
+  adapter: Admin.APIUmbrellaRESTAdapter.create(),
 });
-Admin.AdminPermission.url = '/api-umbrella/v1/admin_permissions';
-Admin.AdminPermission.rootKey = 'admin_permission';
-Admin.AdminPermission.collectionKey = 'admin_permissions';
-Admin.AdminPermission.primaryKey = 'id';
-Admin.AdminPermission.camelizeKeys = true;
-Admin.AdminPermission.adapter = Admin.APIUmbrellaRESTAdapter.create();
-
-export default undefined;

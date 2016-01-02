@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.StatsBaseController = Ember.ObjectController.extend({
+export default Ember.ObjectController.extend({
   needs: ['application'],
 
   query: null,
@@ -22,5 +22,3 @@ Admin.StatsBaseController = Ember.ObjectController.extend({
     },
   },
 });
-
-export default undefined;

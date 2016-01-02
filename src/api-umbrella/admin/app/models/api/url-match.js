@@ -1,10 +1,11 @@
 import Ember from 'ember';
+import { Model, attr } from 'ember-model';
 
-Admin.ApiUrlMatch = Ember.Model.extend(Ember.Validations.Mixin,{
-  id: Ember.attr(),
-  sortOrder: Ember.attr(Number),
-  frontendPrefix: Ember.attr(),
-  backendPrefix: Ember.attr(),
+export default Model.extend(Ember.Validations.Mixin, {
+  id: attr(),
+  sortOrder: attr(Number),
+  frontendPrefix: attr(),
+  backendPrefix: attr(),
 
   validations: {
     frontendPrefix: {
@@ -26,8 +27,7 @@ Admin.ApiUrlMatch = Ember.Model.extend(Ember.Validations.Mixin,{
   backendPrefixWithDefault: function() {
     return this.get('backendPrefix') || this.get('frontendPrefix');
   }.property('backendPrefix', 'frontendPrefix'),
+}).reopenClass({
+  primaryKey: 'id',
+  camelizeKeys: true,
 });
-Admin.ApiUrlMatch.primaryKey = 'id';
-Admin.ApiUrlMatch.camelizeKeys = true;
-
-export default undefined;

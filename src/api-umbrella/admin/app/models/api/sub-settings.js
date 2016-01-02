@@ -1,12 +1,12 @@
-import Ember from 'ember';
+import { Model, attr, belongsTo } from 'ember-model';
 
-Admin.ApiSubSettings = Ember.Model.extend({
-  id: Ember.attr(),
-  sortOrder: Ember.attr(Number),
-  httpMethod: Ember.attr(),
-  regex: Ember.attr(),
+export default Model.extend({
+  id: attr(),
+  sortOrder: attr(Number),
+  httpMethod: attr(),
+  regex: attr(),
 
-  settings: Ember.belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
+  settings: belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
 
   init: function() {
     this._super();
@@ -23,8 +23,7 @@ Admin.ApiSubSettings = Ember.Model.extend({
       this.set('settings', Admin.ApiSettings.create());
     }
   },
+}).reopenClass({
+  primaryKey: 'id',
+  camelizeKeys: true,
 });
-Admin.ApiSubSettings.primaryKey = 'id';
-Admin.ApiSubSettings.camelizeKeys = true;
-
-export default undefined;

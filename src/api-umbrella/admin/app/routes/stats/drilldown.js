@@ -1,4 +1,6 @@
-Admin.StatsDrilldownRoute = Admin.StatsBaseRoute.extend({
+import Base from './base';
+
+export default Base.extend({
   init: function() {
     _.defaults(this.defaultQueryParams, {
       interval: 'day',
@@ -55,10 +57,3 @@ Admin.StatsDrilldownRoute = Admin.StatsBaseRoute.extend({
     return valid;
   },
 });
-Admin.StatsDrilldownDefaultRoute = Admin.StatsDrilldownRoute.extend({
-  renderTemplate: function() {
-    this.render('stats/drilldown', { controller: 'statsDrilldownDefault' });
-  }
-});
-
-export default undefined;

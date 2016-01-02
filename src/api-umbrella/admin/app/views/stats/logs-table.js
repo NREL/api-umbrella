@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.LogsTableView = Ember.View.extend({
+export default Ember.View.extend({
   tagName: 'table',
 
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
@@ -188,5 +188,3 @@ Admin.LogsTableView = Ember.View.extend({
     Ember.run.once(this, 'redrawTable');
   }.observes('controller.query.params.query', 'controller.query.params.search', 'controller.query.params.start_at', 'controller.query.params.end_at'),
 });
-
-export default undefined;

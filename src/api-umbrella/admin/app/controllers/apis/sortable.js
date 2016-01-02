@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.ApisSortableController = Ember.ArrayController.extend({
+export default Ember.ArrayController.extend({
   reorderable: function() {
     var length = this.get('length');
     return (length && length > 1);
@@ -47,5 +47,3 @@ Admin.ApisSortableController = Ember.ArrayController.extend({
     });
   },
 });
-
-export default undefined;

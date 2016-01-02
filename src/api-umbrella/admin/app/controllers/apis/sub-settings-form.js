@@ -1,4 +1,6 @@
-Admin.ApisSubSettingsFormController = Admin.NestedFormController.extend({
+import NestedForm from './nested-form';
+
+export default NestedForm.extend({
   titleBase: 'Sub-URL Request Settings',
 
   httpMethodOptions: [
@@ -14,5 +16,3 @@ Admin.ApisSubSettingsFormController = Admin.NestedFormController.extend({
     { id: 'PATCH', name: 'PATCH' },
   ],
 });
-
-export default undefined;

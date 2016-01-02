@@ -1,2 +1,56 @@
-{{outlet}}
-{{render 'modal'}}
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container-fluid">
+      <span class="brand">API Umbrella</span>
+      <ul class="nav">
+        <li class="nav-home"><a href="/admin">Dashboard</a></li>
+          <li class="dropdown nav-analytics"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Analytics <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><a href="#/stats/drilldown"><i class="fa fa-sitemap"></i> API Drilldown</a></li>
+              <li><a href="#/stats/logs"><i class="fa fa-signal"></i> Filter Logs</a></li>
+              <li><a href="#/stats/users"><i class="fa fa-user"></i> By Users</a></li>
+              <li><a href="#/stats/map"><i class="fa fa-map-marker"></i> By Location</a></li>
+            </ul>
+</li>              <li class="dropdown nav-users"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Users <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li><a href="#/api_users"><i class="fa fa-user"></i> API Users</a></li>
+                <li><a href="#/admins"><i class="fa fa-user"></i> Admin Accounts</a></li>
+                <li class="divider"></li>
+                <li role="presentation" class="dropdown-header">Permissions Management</li>
+                  <li><a href="#/api_scopes"><i class="fa fa-lock"></i> API Scopes</a></li>
+                <li><a href="#/admin_groups"><i class="fa fa-group"></i> Admin Groups</a></li>
+            </ul>
+</li>              <li class="dropdown nav-config"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Configuration <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              <li><a href="#/apis"><i class="fa fa-gear"></i> API Backends</a></li>
+              <li><a href="#/website_backends"><i class="fa fa-gear"></i> Website Backends</a></li>
+              <li><a href="#/config/publish"><i class="fa fa-upload"></i> Publish Changes</a></li>
+              <li class="divider"></li>
+              <li><a href="/admin/config/import_export"><i class="fa fa-exchange"></i> Import/Export</a></li>
+            </ul>
+</li></ul>
+      <ul class="nav pull-right">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-gear"></i> <b class="caret"></b></a>
+          <ul class="dropdown-menu">
+            <li><a href="#/admins/dc8f9694-12a8-49b4-81e2-6f378fd37d50/edit">My Account</a></li>
+            <li><a href="/admin/logout">Logout</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div id="content" class="container-fluid">
+  {{outlet}}
+  {{! render 'modal'}}
+</div>
+
+<div id="version_footer" class="container-fluid">
+  <div class="row-fluid">
+    API Umbrella Version {{API_UMBRELLA_VERSION}}
+  </div>
+</div>
+
+<div id="loading_overlay" style="display: none;"></div>

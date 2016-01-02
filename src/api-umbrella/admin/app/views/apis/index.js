@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.ApisIndexView = Ember.View.extend({
+export default Ember.View.extend({
   handleReorderChange: function() {
     var $container = this.$();
     if($container) {
@@ -14,5 +14,3 @@ Admin.ApisIndexView = Ember.View.extend({
     }
   }.observes('controller.reorderActive'),
 });
-
-export default undefined;

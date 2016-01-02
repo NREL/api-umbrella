@@ -1,10 +1,9 @@
 import Ember from 'ember';
 
-Admin.StatsMap = Ember.Object.extend(Ember.Evented, {
+export default Ember.Object.extend(Ember.Evented, {
   regions: null,
   map_regions: null,
-});
-Admin.StatsMap.reopenClass({
+}).reopenClass({
   find: function(params) {
     var promise = Ember.Deferred.create();
 
@@ -21,5 +20,3 @@ Admin.StatsMap.reopenClass({
     return promise;
   },
 });
-
-export default undefined;

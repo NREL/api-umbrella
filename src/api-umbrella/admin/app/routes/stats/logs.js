@@ -1,4 +1,6 @@
-Admin.StatsLogsRoute = Admin.StatsBaseRoute.extend({
+import Base from './base';
+
+export default Base.extend({
   init: function() {
     _.defaults(this.defaultQueryParams, {
       interval: 'day',
@@ -54,10 +56,3 @@ Admin.StatsLogsRoute = Admin.StatsBaseRoute.extend({
     return valid;
   },
 });
-Admin.StatsLogsDefaultRoute = Admin.StatsLogsRoute.extend({
-  renderTemplate: function() {
-    this.render('stats/logs', { controller: 'statsLogsDefault' });
-  }
-});
-
-export default undefined;

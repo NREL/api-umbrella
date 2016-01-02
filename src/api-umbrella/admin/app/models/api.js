@@ -1,22 +1,23 @@
 import Ember from 'ember';
+import { Model, attr, belongsTo, hasMany } from 'ember-model';
 
-Admin.Api = Ember.Model.extend(Ember.Validations.Mixin, {
-  name: Ember.attr(),
-  sortOrder: Ember.attr(Number),
-  backendProtocol: Ember.attr(),
-  frontendHost: Ember.attr(),
-  backendHost: Ember.attr(),
-  balanceAlgorithm: Ember.attr(),
-  createdAt: Ember.attr(),
-  updatedAt: Ember.attr(),
-  creator: Ember.attr(),
-  updater: Ember.attr(),
+export default Model.extend(Ember.Validations.Mixin, {
+  name: attr(),
+  sortOrder: attr(Number),
+  backendProtocol: attr(),
+  frontendHost: attr(),
+  backendHost: attr(),
+  balanceAlgorithm: attr(),
+  createdAt: attr(),
+  updatedAt: attr(),
+  creator: attr(),
+  updater: attr(),
 
-  servers: Ember.hasMany('Admin.ApiServer', { key: 'servers', embedded: true }),
-  urlMatches: Ember.hasMany('Admin.ApiUrlMatch', { key: 'url_matches', embedded: true }),
-  settings: Ember.belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
-  subSettings: Ember.hasMany('Admin.ApiSubSettings', { key: 'sub_settings', embedded: true }),
-  rewrites: Ember.hasMany('Admin.ApiRewrite', { key: 'rewrites', embedded: true }),
+  servers: hasMany('Admin.ApiServer', { key: 'servers', embedded: true }),
+  urlMatches: hasMany('Admin.ApiUrlMatch', { key: 'url_matches', embedded: true }),
+  settings: belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
+  subSettings: hasMany('Admin.ApiSubSettings', { key: 'sub_settings', embedded: true }),
+  rewrites: hasMany('Admin.ApiRewrite', { key: 'rewrites', embedded: true }),
 
   validations: {
     name: {
@@ -74,12 +75,11 @@ Admin.Api = Ember.Model.extend(Ember.Validations.Mixin, {
     // correct for subsequent form renderings in this current session.
     Admin.ApiUserRole.clearCache();
   },
+}).reopenClass({
+  url: '/api-umbrella/v1/apis',
+  rootKey: 'api',
+  collectionKey: 'data',
+  primaryKey: 'id',
+  camelizeKeys: true,
+  adapter: Admin.APIUmbrellaRESTAdapter.create(),
 });
-Admin.Api.url = '/api-umbrella/v1/apis';
-Admin.Api.rootKey = 'api';
-Admin.Api.collectionKey = 'data';
-Admin.Api.primaryKey = 'id';
-Admin.Api.camelizeKeys = true;
-Admin.Api.adapter = Admin.APIUmbrellaRESTAdapter.create();
-
-export default undefined;

@@ -1,7 +1,5 @@
 import Ember from 'ember';
 
-Admin.ApplicationController = Ember.ObjectController.extend({
+export default Ember.ObjectController.extend({
   isLoading: null,
 });
-
-export default undefined;

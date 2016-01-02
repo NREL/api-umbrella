@@ -1,4 +1,6 @@
-Admin.WebsiteBackendsEditRoute = Admin.WebsiteBackendsBaseRoute.extend({
+import Base from 'base';
+
+export default Base.extend({
   model: function(params) {
     // Clear the record cache, so this is always fetched from the server (to
     // account for two users simultaneously editing the same record).
@@ -7,5 +9,3 @@ Admin.WebsiteBackendsEditRoute = Admin.WebsiteBackendsBaseRoute.extend({
     return Admin.WebsiteBackend.find(params.websiteBackendId);
   },
 });
-
-export default undefined;

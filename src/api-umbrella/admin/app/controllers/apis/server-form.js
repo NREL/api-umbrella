@@ -1,5 +1,5 @@
-Admin.ApisServerFormController = Admin.NestedFormController.extend({
+import NestedForm from './nested-form';
+
+export default NestedForm.extend({
   titleBase: 'Server',
 });
-
-export default undefined;

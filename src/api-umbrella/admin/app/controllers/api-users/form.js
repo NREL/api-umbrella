@@ -1,6 +1,7 @@
+import App from '../../app';
 import Ember from 'ember';
 
-Admin.ApiUsersFormController = Ember.ObjectController.extend(Admin.Save, {
+export default Ember.ObjectController.extend(App.Save, {
   throttleByIpOptions: [
     { id: false, name: 'Rate limit by API key' },
     { id: true, name: 'Rate limit by IP address' },
@@ -33,7 +34,3 @@ Admin.ApiUsersFormController = Ember.ObjectController.extend(Admin.Save, {
     },
   },
 });
-Admin.ApiUsersEditController = Admin.ApiUsersFormController.extend();
-Admin.ApiUsersNewController = Admin.ApiUsersFormController.extend();
-
-export default undefined;

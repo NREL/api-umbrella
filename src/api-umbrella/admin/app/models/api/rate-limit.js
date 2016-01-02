@@ -1,14 +1,15 @@
 import Ember from 'ember';
+import { Model, attr } from 'ember-model';
 
-Admin.ApiRateLimit = Ember.Model.extend({
-  id: Ember.attr(),
-  duration: Ember.attr(Number),
-  limitBy: Ember.attr(),
-  limit: Ember.attr(),
-  responseHeaders: Ember.attr(),
+export default Model.extend({
+  id: attr(),
+  duration: attr(Number),
+  limitBy: attr(),
+  limit: attr(),
+  responseHeaders: attr(),
 
-  //durationUnits: Ember.attr(),
-  //durationInUnits: Ember.attr(Number),
+  //durationUnits: attr(),
+  //durationInUnits: attr(Number),
 
   init: function() {
     this._super();
@@ -63,8 +64,7 @@ Admin.ApiRateLimit = Ember.Model.extend({
     json.duration = this.get('durationFromUnits');
     return json;
   },
+}).reopenClass({
+  primaryKey: 'id',
+  camelizeKeys: true,
 });
-Admin.ApiRateLimit.primaryKey = 'id';
-Admin.ApiRateLimit.camelizeKeys = true;
-
-export default undefined;

@@ -1,4 +1,6 @@
-Admin.StatsDrilldownController = Admin.StatsBaseController.extend({
+import Base from './base';
+
+export default Base.extend({
   breadcrumbs: function() {
     var crumbs = [];
 
@@ -26,10 +28,3 @@ Admin.StatsDrilldownController = Admin.StatsBaseController.extend({
     return '/api-umbrella/v1/analytics/drilldown.csv?' + $.param(this.get('query.params')) + '&api_key=' + webAdminAjaxApiKey;
   }.property('query.params', 'query.params.query', 'query.params.search', 'query.params.start_at', 'query.params.end_at', 'query.params.prefix'),
 });
-Admin.StatsDrilldownDefaultController = Admin.StatsDrilldownController.extend({
-  renderTemplate: function() {
-    this.render('stats/drilldown');
-  }
-});
-
-export default undefined;

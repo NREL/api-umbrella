@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.LoadingOverlayView = Ember.View.extend({
+export default Ember.View.extend({
   classNames: ['loading-overlay'],
   attributeBindings: ['style'],
   style: 'display: none;',
@@ -55,5 +55,3 @@ Admin.LoadingOverlayView = Ember.View.extend({
     }
   }.observes('isLoading'),
 });
-
-export default undefined;

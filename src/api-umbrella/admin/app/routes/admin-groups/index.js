@@ -1,4 +1,4 @@
-Admin.AdminGroupsIndexRoute = Admin.AdminGroupsBaseRoute.extend({
-});
+import Base from './base';
 
-export default undefined;
+export default Base.extend({
+});

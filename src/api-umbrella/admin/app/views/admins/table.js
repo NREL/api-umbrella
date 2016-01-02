@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.AdminsTableView = Ember.View.extend({
+export default Ember.View.extend({
   tagName: 'table',
 
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
@@ -69,5 +69,3 @@ Admin.AdminsTableView = Ember.View.extend({
     }.bind(this));
   },
 });
-
-export default undefined;

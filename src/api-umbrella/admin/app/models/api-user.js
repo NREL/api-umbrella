@@ -1,32 +1,33 @@
 import Ember from 'ember';
+import { Model, attr, belongsTo } from 'ember-model';
 
-Admin.ApiUser = Ember.Model.extend(Ember.Validations.Mixin, {
-  id: Ember.attr(),
-  apiKey: Ember.attr(),
-  apiKeyHidesAt: Ember.attr(),
-  apiKeyPreview: Ember.attr(),
-  firstName: Ember.attr(),
-  lastName: Ember.attr(),
-  email: Ember.attr(),
-  emailVerified: Ember.attr(),
-  website: Ember.attr(),
-  useDescription: Ember.attr(),
-  registrationSource: Ember.attr(),
-  termsAndConditions: Ember.attr(),
-  sendWelcomeEmail: Ember.attr(),
-  throttleByIp: Ember.attr(),
-  roles: Ember.attr(),
-  enabled: Ember.attr(),
-  createdAt: Ember.attr(),
-  updatedAt: Ember.attr(),
-  creator: Ember.attr(),
-  updater: Ember.attr(),
-  registrationIp: Ember.attr(),
-  registrationUserAgent: Ember.attr(),
-  registrationReferer: Ember.attr(),
-  registrationOrigin: Ember.attr(),
+export default Model.extend(Ember.Validations.Mixin, {
+  id: attr(),
+  apiKey: attr(),
+  apiKeyHidesAt: attr(),
+  apiKeyPreview: attr(),
+  firstName: attr(),
+  lastName: attr(),
+  email: attr(),
+  emailVerified: attr(),
+  website: attr(),
+  useDescription: attr(),
+  registrationSource: attr(),
+  termsAndConditions: attr(),
+  sendWelcomeEmail: attr(),
+  throttleByIp: attr(),
+  roles: attr(),
+  enabled: attr(),
+  createdAt: attr(),
+  updatedAt: attr(),
+  creator: attr(),
+  updater: attr(),
+  registrationIp: attr(),
+  registrationUserAgent: attr(),
+  registrationReferer: attr(),
+  registrationOrigin: attr(),
 
-  settings: Ember.belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
+  settings: belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
 
   validations: {
     firstName: {
@@ -89,12 +90,11 @@ Admin.ApiUser = Ember.Model.extend(Ember.Validations.Mixin, {
     // correct for subsequent form renderings in this current session.
     Admin.ApiUserRole.clearCache();
   },
+}).reopenClass({
+  url: '/api-umbrella/v1/users',
+  rootKey: 'user',
+  collectionKey: 'data',
+  primaryKey: 'id',
+  camelizeKeys: true,
+  adapter: Admin.APIUmbrellaRESTAdapter.create(),
 });
-Admin.ApiUser.url = '/api-umbrella/v1/users';
-Admin.ApiUser.rootKey = 'user';
-Admin.ApiUser.collectionKey = 'data';
-Admin.ApiUser.primaryKey = 'id';
-Admin.ApiUser.camelizeKeys = true;
-Admin.ApiUser.adapter = Admin.APIUmbrellaRESTAdapter.create();
-
-export default undefined;

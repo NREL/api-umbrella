@@ -1,4 +1,6 @@
-Admin.ApisUrlMatchFormController = Admin.NestedFormController.extend({
+import NestedForm from './nested-form';
+
+export default NestedForm.extend({
   titleBase: 'Matching URL Prefix',
   exampleSuffix: 'example.json?param=value',
 
@@ -14,5 +16,3 @@ Admin.ApisUrlMatchFormController = Admin.NestedFormController.extend({
     return root + prefix + this.get('exampleSuffix');
   }.property('backendPrefix', 'frontendPrefix'),
 });
-
-export default undefined;

@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.ApisSettingsRateLimitFieldsController = Ember.ObjectController.extend({
+export default Ember.ObjectController.extend({
   rateLimitModeOptions: [
     { id: null, name: 'Default rate limits' },
     { id: 'custom', name: 'Custom rate limits' },
@@ -48,5 +48,3 @@ Admin.ApisSettingsRateLimitFieldsController = Ember.ObjectController.extend({
     },
   },
 });
-
-export default undefined;

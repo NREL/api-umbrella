@@ -1,5 +1,3 @@
 import Ember from 'ember';
 
-Admin.LoadingRoute = Ember.Route.extend({});
-
-export default undefined;
+export default Ember.Route.extend({});

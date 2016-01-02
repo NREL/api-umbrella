@@ -1,6 +1,7 @@
+import App from '../../app';
 import Ember from 'ember';
 
-Admin.ApiScopesFormController = Ember.ObjectController.extend(Admin.Save, {
+export default Ember.ObjectController.extend(App.Save, {
   actions: {
     submit: function() {
       this.save({
@@ -19,7 +20,3 @@ Admin.ApiScopesFormController = Ember.ObjectController.extend(Admin.Save, {
     },
   },
 });
-Admin.ApiScopesEditController = Admin.ApiScopesFormController.extend();
-Admin.ApiScopesNewController = Admin.ApiScopesFormController.extend();
-
-export default undefined;

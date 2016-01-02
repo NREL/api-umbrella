@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.StatsUsersTableView = Ember.View.extend({
+export default Ember.View.extend({
   tagName: 'table',
 
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
@@ -86,5 +86,3 @@ Admin.StatsUsersTableView = Ember.View.extend({
     this.$().DataTable().draw();
   }.observes('controller.query.params.query', 'controller.query.params.search', 'controller.query.params.start_at', 'controller.query.params.end_at'),
 });
-
-export default undefined;

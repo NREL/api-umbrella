@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.ApiScopesTableView = Ember.View.extend({
+export default Ember.View.extend({
   tagName: 'table',
 
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
@@ -41,5 +41,3 @@ Admin.ApiScopesTableView = Ember.View.extend({
     });
   },
 });
-
-export default undefined;

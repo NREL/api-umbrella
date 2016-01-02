@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.NestedFormController = Ember.ObjectController.extend(Ember.Evented, {
+export default Ember.ObjectController.extend(Ember.Evented, {
   needs: ['modal'],
 
   titleBase: null,
@@ -66,5 +66,3 @@ Admin.NestedFormController = Ember.ObjectController.extend(Ember.Evented, {
     },
   },
 });
-
-export default undefined;

@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.StatsBaseRoute = Ember.Route.extend({
+export default Ember.Route.extend({
   defaultQueryParams: {
     tz: jstz.determine().name(),
     search: '',
@@ -90,5 +90,3 @@ Admin.StatsBaseRoute = Ember.Route.extend({
     },
   },
 });
-
-export default undefined;

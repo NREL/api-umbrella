@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.AdminsIndexController = Ember.ObjectController.extend({
+export default Ember.ObjectController.extend({
   queryParams: null,
 
   downloadUrl: function() {
@@ -16,5 +16,3 @@ Admin.AdminsIndexController = Ember.ObjectController.extend({
     }
   }
 });
-
-export default undefined;

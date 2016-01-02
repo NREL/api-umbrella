@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-Admin.ConfigPublishRoute = Ember.Route.extend({
+export default Ember.Route.extend({
   model: function() {
     return ic.ajax.request('/api-umbrella/v1/config/pending_changes');
   },
@@ -49,5 +49,3 @@ Admin.ConfigPublishRoute = Ember.Route.extend({
     },
   },
 });
-
-export default undefined;

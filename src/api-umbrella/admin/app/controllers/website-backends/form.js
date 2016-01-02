@@ -1,6 +1,7 @@
+import App from '../../app';
 import Ember from 'ember';
 
-Admin.WebsiteBackendsFormController = Ember.ObjectController.extend(Admin.Save, {
+export default Ember.ObjectController.extend(App.Save, {
   backendProtocolOptions: [
     { id: 'http', name: 'http' },
     { id: 'https', name: 'https' },
@@ -38,7 +39,3 @@ Admin.WebsiteBackendsFormController = Ember.ObjectController.extend(Admin.Save, 
     },
   },
 });
-Admin.WebsiteBackendsEditController = Admin.WebsiteBackendsFormController.extend();
-Admin.WebsiteBackendsNewController = Admin.WebsiteBackendsFormController.extend();
-
-export default undefined;

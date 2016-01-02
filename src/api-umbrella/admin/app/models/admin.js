@@ -1,27 +1,26 @@
-import Ember from 'ember';
+import { Model, attr } from 'ember-model';
 
-Admin.Admin = Ember.Model.extend({
-  id: Ember.attr(),
-  username: Ember.attr(),
-  email: Ember.attr(),
-  name: Ember.attr(),
-  superuser: Ember.attr(),
-  groupIds: Ember.attr(),
-  signInCount: Ember.attr(),
-  lastSignInAt: Ember.attr(),
-  lastSignInIp: Ember.attr(),
-  lastSignInProvider: Ember.attr(),
-  authenticationToken: Ember.attr(),
-  createdAt: Ember.attr(),
-  updatedAt: Ember.attr(),
-  creator: Ember.attr(),
-  updater: Ember.attr(),
+export default Model.extend({
+  id: attr(),
+  username: attr(),
+  email: attr(),
+  name: attr(),
+  superuser: attr(),
+  groupIds: attr(),
+  signInCount: attr(),
+  lastSignInAt: attr(),
+  lastSignInIp: attr(),
+  lastSignInProvider: attr(),
+  authenticationToken: attr(),
+  createdAt: attr(),
+  updatedAt: attr(),
+  creator: attr(),
+  updater: attr(),
+}).reopenClass({
+  url: '/api-umbrella/v1/admins',
+  rootKey: 'admin',
+  collectionKey: 'data',
+  primaryKey: 'id',
+  camelizeKeys: true,
+  adapter: Admin.APIUmbrellaRESTAdapter.create(),
 });
-Admin.Admin.url = '/api-umbrella/v1/admins';
-Admin.Admin.rootKey = 'admin';
-Admin.Admin.collectionKey = 'data';
-Admin.Admin.primaryKey = 'id';
-Admin.Admin.camelizeKeys = true;
-Admin.Admin.adapter = Admin.APIUmbrellaRESTAdapter.create();
-
-export default undefined;

@@ -1,9 +1,9 @@
-Admin.ApisUrlMatchesController = Admin.ApisSortableController.extend({
+import Sortable from './sortable';
+
+export default Sortable.extend({
   actions: {
     reorderUrlMatches: function() {
       this.reorderCollection('url_matches');
     },
   },
 });
-
-export default undefined;

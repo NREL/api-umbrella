@@ -1,9 +1,8 @@
 import Ember from 'ember';
 
-Admin.StatsDrilldown = Ember.Object.extend(Ember.Evented, {
+export default Ember.Object.extend(Ember.Evented, {
   results: null,
-});
-Admin.StatsDrilldown.reopenClass({
+}).reopenClass({
   find: function(params) {
     var promise = Ember.Deferred.create();
 
@@ -20,5 +19,3 @@ Admin.StatsDrilldown.reopenClass({
     return promise;
   },
 });
-
-export default undefined;

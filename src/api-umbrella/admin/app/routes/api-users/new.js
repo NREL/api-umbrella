@@ -1,7 +1,7 @@
-Admin.ApiUsersNewRoute = Admin.ApiUsersBaseRoute.extend({
+import Base from './base';
+
+export default Base.extend({
   model: function() {
     return Admin.ApiUser.create();
   },
 });
-
-export default undefined;

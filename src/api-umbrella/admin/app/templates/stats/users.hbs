@@ -1,10 +1,10 @@
-{{view Admin.StatsQueryFormView}}
+{{view 'stats/query-form'}}
 
 <div id="results_table">
-  {{view Admin.StatsUsersTableView}}
+  {{view 'stats/users-table'}}
 </div>
 <div class="results-table-actions">
   <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
 </div>
 
-{{view Admin.LoadingOverlayView isLoadingBinding='controllers.application.isLoading'}}
+{{view 'loading-overlay' isLoadingBinding='controllers.application.isLoading'}}

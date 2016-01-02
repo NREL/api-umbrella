@@ -1,14 +1,15 @@
 import Ember from 'ember';
+import { Model, attr } from 'ember-model';
 
-Admin.ApiScope = Ember.Model.extend(Ember.Validations.Mixin, {
-  id: Ember.attr(),
-  name: Ember.attr(),
-  host: Ember.attr(),
-  pathPrefix: Ember.attr(),
-  createdAt: Ember.attr(),
-  updatedAt: Ember.attr(),
-  creator: Ember.attr(),
-  updater: Ember.attr(),
+export default Model.extend(Ember.Validations.Mixin, {
+  id: attr(),
+  name: attr(),
+  host: attr(),
+  pathPrefix: attr(),
+  createdAt: attr(),
+  updatedAt: attr(),
+  creator: attr(),
+  updater: attr(),
 
   validations: {
     name: {
@@ -33,12 +34,11 @@ Admin.ApiScope = Ember.Model.extend(Ember.Validations.Mixin, {
   displayName: function() {
     return this.get('name') + ' - ' + this.get('host') + this.get('pathPrefix');
   }.property('name', 'host', 'pathPrefix')
+}).reopenClass({
+  url: '/api-umbrella/v1/api_scopes',
+  rootKey: 'api_scope',
+  collectionKey: 'data',
+  primaryKey: 'id',
+  camelizeKeys: true,
+  adapter: Admin.APIUmbrellaRESTAdapter.create(),
 });
-Admin.ApiScope.url = '/api-umbrella/v1/api_scopes';
-Admin.ApiScope.rootKey = 'api_scope';
-Admin.ApiScope.collectionKey = 'data';
-Admin.ApiScope.primaryKey = 'id';
-Admin.ApiScope.camelizeKeys = true;
-Admin.ApiScope.adapter = Admin.APIUmbrellaRESTAdapter.create();
-
-export default undefined;

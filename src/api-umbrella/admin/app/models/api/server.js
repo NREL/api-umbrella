@@ -1,9 +1,10 @@
 import Ember from 'ember';
+import { Model, attr } from 'ember-model';
 
-Admin.ApiServer = Ember.Model.extend(Ember.Validations.Mixin, {
-  id: Ember.attr(),
-  host: Ember.attr(),
-  port: Ember.attr(Number),
+export default Model.extend(Ember.Validations.Mixin, {
+  id: attr(),
+  host: attr(),
+  port: attr(Number),
 
   validations: {
     host: {
@@ -22,8 +23,7 @@ Admin.ApiServer = Ember.Model.extend(Ember.Validations.Mixin, {
   hostWithPort: function() {
     return _.compact([this.get('host'), this.get('port')]).join(':');
   }.property('host', 'port'),
+}).reopenClass({
+  primaryKey: 'id',
+  camelizeKeys: true,
 });
-Admin.ApiServer.primaryKey = 'id';
-Admin.ApiServer.camelizeKeys = true;
-
-export default undefined;

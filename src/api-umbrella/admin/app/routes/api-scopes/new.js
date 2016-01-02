@@ -1,7 +1,7 @@
-Admin.ApiScopesNewRoute = Admin.ApiScopesBaseRoute.extend({
+import Base from './base';
+
+export default Base.extend({
   model: function() {
     return Admin.ApiScope.create();
   },
 });
-
-export default undefined;

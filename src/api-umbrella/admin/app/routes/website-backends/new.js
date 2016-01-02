@@ -1,9 +1,9 @@
-Admin.WebsiteBackendsNewRoute = Admin.WebsiteBackendsBaseRoute.extend({
+import Base from 'base';
+
+export default Base.extend({
   model: function() {
     return Admin.WebsiteBackend.create({
       serverPort: 80,
     });
   },
 });
-
-export default undefined;

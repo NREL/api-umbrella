@@ -1,4 +1,6 @@
-Admin.ApisRewriteFormController = Admin.NestedFormController.extend({
+import NestedForm from './nested-form';
+
+export default NestedForm.extend({
   titleBase: 'Rewrite',
 
   matcherTypeOptions: [
@@ -19,5 +21,3 @@ Admin.ApisRewriteFormController = Admin.NestedFormController.extend({
     { id: 'PATCH', name: 'PATCH' },
   ],
 });
-
-export default undefined;

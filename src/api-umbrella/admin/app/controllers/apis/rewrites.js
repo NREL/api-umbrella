@@ -1,9 +1,9 @@
-Admin.ApisRewritesController = Admin.ApisSortableController.extend({
+import Sortable from './sortable';
+
+export default Sortable.extend({
   actions: {
     reorderRewrites: function() {
       this.reorderCollection('rewrites');
     },
   },
 });
-
-export default undefined;

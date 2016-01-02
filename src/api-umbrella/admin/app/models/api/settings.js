@@ -1,28 +1,28 @@
-import Ember from 'ember';
+import { Model, attr, hasMany } from 'ember-model';
 
-Admin.ApiSettings = Ember.Model.extend({
-  id: Ember.attr(),
-  appendQueryString: Ember.attr(),
-  headersString: Ember.attr(),
-  httpBasicAuth: Ember.attr(),
-  requireHttps: Ember.attr(),
-  disableApiKey: Ember.attr(),
-  apiKeyVerificationLevel: Ember.attr(),
-  requiredRoles: Ember.attr(),
-  requiredRolesOverride: Ember.attr(),
-  allowedIps: Ember.attr(),
-  allowedReferers: Ember.attr(),
-  rateLimitMode: Ember.attr(),
-  anonymousRateLimitBehavior: Ember.attr(),
-  authenticatedRateLimitBehavior: Ember.attr(),
-  passApiKeyHeader: Ember.attr(),
-  passApiKeyQueryParam: Ember.attr(),
-  defaultResponseHeadersString: Ember.attr(),
-  overrideResponseHeadersString: Ember.attr(),
-  errorTemplates: Ember.attr(),
-  errorDataYamlStrings: Ember.attr(),
+export default Model.extend({
+  id: attr(),
+  appendQueryString: attr(),
+  headersString: attr(),
+  httpBasicAuth: attr(),
+  requireHttps: attr(),
+  disableApiKey: attr(),
+  apiKeyVerificationLevel: attr(),
+  requiredRoles: attr(),
+  requiredRolesOverride: attr(),
+  allowedIps: attr(),
+  allowedReferers: attr(),
+  rateLimitMode: attr(),
+  anonymousRateLimitBehavior: attr(),
+  authenticatedRateLimitBehavior: attr(),
+  passApiKeyHeader: attr(),
+  passApiKeyQueryParam: attr(),
+  defaultResponseHeadersString: attr(),
+  overrideResponseHeadersString: attr(),
+  errorTemplates: attr(),
+  errorDataYamlStrings: attr(),
 
-  rateLimits: Ember.hasMany('Admin.ApiRateLimit', { key: 'rate_limits', embedded: true }),
+  rateLimits: hasMany('Admin.ApiRateLimit', { key: 'rate_limits', embedded: true }),
 
   init: function() {
     this._super();
@@ -104,8 +104,7 @@ Admin.ApiSettings = Ember.Model.extend({
   isRateLimitModeCustom: function() {
     return (this.get('rateLimitMode') === 'custom');
   }.property('rateLimitMode'),
+}).reopenClass({
+  primaryKey: 'id',
+  camelizeKeys: true,
 });
-Admin.ApiSettings.primaryKey = 'id';
-Admin.ApiSettings.camelizeKeys = true;
-
-export default undefined;

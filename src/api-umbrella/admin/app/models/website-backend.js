@@ -1,11 +1,12 @@
 import Ember from 'ember';
+import { Model, attr } from 'ember-model';
 
-Admin.WebsiteBackend = Ember.Model.extend(Ember.Validations.Mixin, {
-  id: Ember.attr(),
-  frontendHost: Ember.attr(),
-  backendProtocol: Ember.attr(),
-  serverHost: Ember.attr(),
-  serverPort: Ember.attr(Number),
+export default Model.extend(Ember.Validations.Mixin, {
+  id: attr(),
+  frontendHost: attr(),
+  backendProtocol: attr(),
+  serverHost: attr(),
+  serverPort: attr(Number),
 
   validations: {
     frontendHost: {
@@ -30,12 +31,11 @@ Admin.WebsiteBackend = Ember.Model.extend(Ember.Validations.Mixin, {
       numericality: true,
     },
   },
+}).reopenClass({
+  url: '/api-umbrella/v1/website_backends',
+  rootKey: 'website_backend',
+  collectionKey: 'data',
+  primaryKey: 'id',
+  camelizeKeys: true,
+  adapter: Admin.APIUmbrellaRESTAdapter.create(),
 });
-Admin.WebsiteBackend.url = '/api-umbrella/v1/website_backends';
-Admin.WebsiteBackend.rootKey = 'website_backend';
-Admin.WebsiteBackend.collectionKey = 'data';
-Admin.WebsiteBackend.primaryKey = 'id';
-Admin.WebsiteBackend.camelizeKeys = true;
-Admin.WebsiteBackend.adapter = Admin.APIUmbrellaRESTAdapter.create();
-
-export default undefined;

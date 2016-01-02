@@ -1,13 +1,12 @@
-import Ember from 'ember';
+import { Model, attr } from 'ember-model';
 
-Admin.ApiUserRole = Ember.Model.extend({
-  id: Ember.attr(),
+export default Model.extend({
+  id: attr(),
+}).reopenClass({
+  url: '/api-umbrella/v1/user_roles',
+  rootKey: 'user_roles',
+  collectionKey: 'user_roles',
+  primaryKey: 'id',
+  camelizeKeys: true,
+  adapter: Admin.APIUmbrellaRESTAdapter.create(),
 });
-Admin.ApiUserRole.url = '/api-umbrella/v1/user_roles';
-Admin.ApiUserRole.rootKey = 'user_roles';
-Admin.ApiUserRole.collectionKey = 'user_roles';
-Admin.ApiUserRole.primaryKey = 'id';
-Admin.ApiUserRole.camelizeKeys = true;
-Admin.ApiUserRole.adapter = Admin.APIUmbrellaRESTAdapter.create();
-
-export default undefined;

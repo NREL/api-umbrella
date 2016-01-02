@@ -11,7 +11,7 @@
         <label>Scopes</label>
       </div>
       <div class="controls">
-        {{view Admin.CheckboxListView checkedValuesBinding='apiScopeIds' contentBinding='apiScopeOptions'}}
+        {{view 'checkbox-list' checkedValuesBinding='apiScopeIds' contentBinding='apiScopeOptions'}}
       </div>
     </div>
 
@@ -20,7 +20,7 @@
         <label>Permissions</label>
       </div>
       <div class="controls">
-        {{view Admin.CheckboxListView checkedValuesBinding='permissionIds' contentBinding='permissionOptions'}}
+        {{view 'checkbox-list' checkedValuesBinding='permissionIds' contentBinding='permissionOptions'}}
       </div>
     </div>
   </fieldset>

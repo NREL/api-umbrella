@@ -1,7 +1,7 @@
-Admin.AdminGroupsNewRoute = Admin.AdminGroupsBaseRoute.extend({
+import Base from './base';
+
+export default Base.extend({
   model: function() {
     return Admin.AdminGroup.create();
   },
 });
-
-export default undefined;
