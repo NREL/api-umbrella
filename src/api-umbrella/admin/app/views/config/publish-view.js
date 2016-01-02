@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ConfigPublishView = Ember.View.extend({
   didInsertElement: function() {
     this.$toggleCheckboxesLink = $('#toggle_checkboxes');
@@ -66,3 +68,5 @@ Admin.ConfigPublishView = Ember.View.extend({
     }
   }
 });
+
+export default undefined;

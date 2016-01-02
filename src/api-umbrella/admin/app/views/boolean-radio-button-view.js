@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.BooleanRadioButtonView = Ember.View.extend({
   tagName: 'input',
   type: 'radio',
@@ -23,3 +25,5 @@ Admin.BooleanRadioButtonView = Ember.View.extend({
     return !!this.get('selection');
   }.property()
 });
+
+export default undefined;

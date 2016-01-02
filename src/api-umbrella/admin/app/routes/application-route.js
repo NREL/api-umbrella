@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApplicationRoute = Ember.Route.extend({
   actions: {
     openModal: function(template) {
@@ -19,3 +21,5 @@ Admin.ApplicationRoute = Ember.Route.extend({
     },
   },
 });
+
+export default undefined;

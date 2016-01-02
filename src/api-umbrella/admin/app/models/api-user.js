@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApiUser = Ember.Model.extend(Ember.Validations.Mixin, {
   id: Ember.attr(),
   apiKey: Ember.attr(),
@@ -88,10 +90,11 @@ Admin.ApiUser = Ember.Model.extend(Ember.Validations.Mixin, {
     Admin.ApiUserRole.clearCache();
   },
 });
-
 Admin.ApiUser.url = '/api-umbrella/v1/users';
 Admin.ApiUser.rootKey = 'user';
 Admin.ApiUser.collectionKey = 'data';
 Admin.ApiUser.primaryKey = 'id';
 Admin.ApiUser.camelizeKeys = true;
 Admin.ApiUser.adapter = Admin.APIUmbrellaRESTAdapter.create();
+
+export default undefined;

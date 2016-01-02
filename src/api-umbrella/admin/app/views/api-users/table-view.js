@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApiUsersTableView = Ember.View.extend({
   tagName: 'table',
 
@@ -65,3 +67,5 @@ Admin.ApiUsersTableView = Ember.View.extend({
     });
   },
 });
+
+export default undefined;

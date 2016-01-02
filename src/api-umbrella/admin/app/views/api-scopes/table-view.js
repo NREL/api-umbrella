@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApiScopesTableView = Ember.View.extend({
   tagName: 'table',
 
@@ -39,3 +41,5 @@ Admin.ApiScopesTableView = Ember.View.extend({
     });
   },
 });
+
+export default undefined;

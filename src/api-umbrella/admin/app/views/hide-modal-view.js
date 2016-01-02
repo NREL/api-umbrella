@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.HideModalView = Ember.View.extend({
   render: function() {
   },
@@ -6,3 +8,5 @@ Admin.HideModalView = Ember.View.extend({
     $('.modal').modal('hide');
   }
 });
+
+export default undefined;

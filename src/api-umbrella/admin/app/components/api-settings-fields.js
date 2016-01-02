@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApiSettingsFieldsComponent = Ember.Component.extend({
   requireHttpsOptions: [
     { id: null, name: polyglot.t('admin.api.settings.require_https_options.inherit') },
@@ -27,3 +29,5 @@ Admin.ApiSettingsFieldsComponent = Ember.Component.extend({
     // model to refresh the options.
   }.property().cacheable(false),
 });
+
+export default undefined;

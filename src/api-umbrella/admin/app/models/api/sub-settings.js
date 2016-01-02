@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApiSubSettings = Ember.Model.extend({
   id: Ember.attr(),
   sortOrder: Ember.attr(Number),
@@ -22,6 +24,7 @@ Admin.ApiSubSettings = Ember.Model.extend({
     }
   },
 });
-
 Admin.ApiSubSettings.primaryKey = 'id';
 Admin.ApiSubSettings.camelizeKeys = true;
+
+export default undefined;

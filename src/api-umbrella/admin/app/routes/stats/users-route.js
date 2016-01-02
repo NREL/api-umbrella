@@ -14,9 +14,10 @@ Admin.StatsUsersRoute = Admin.StatsBaseRoute.extend({
     }
   }.observes('query.params.query', 'query.params.search', 'query.params.start_at', 'query.params.end_at'),
 });
-
 Admin.StatsUsersDefaultRoute = Admin.StatsUsersRoute.extend({
   renderTemplate: function() {
     this.render('stats/users', { controller: 'statsUsersDefault' });
   }
 });
+
+export default undefined;

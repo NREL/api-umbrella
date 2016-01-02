@@ -54,9 +54,10 @@ Admin.StatsLogsRoute = Admin.StatsBaseRoute.extend({
     return valid;
   },
 });
-
 Admin.StatsLogsDefaultRoute = Admin.StatsLogsRoute.extend({
   renderTemplate: function() {
     this.render('stats/logs', { controller: 'statsLogsDefault' });
   }
 });
+
+export default undefined;

@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApiRewrite = Ember.Model.extend({
   id: Ember.attr(),
   sortOrder: Ember.attr(Number),
@@ -6,6 +8,7 @@ Admin.ApiRewrite = Ember.Model.extend({
   frontendMatcher: Ember.attr(),
   backendReplacement: Ember.attr(),
 });
-
 Admin.ApiRewrite.primaryKey = 'id';
 Admin.ApiRewrite.camelizeKeys = true;
+
+export default undefined;

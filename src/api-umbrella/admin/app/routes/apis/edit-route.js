@@ -8,3 +8,4 @@ Admin.ApisEditRoute = Admin.ApisBaseRoute.extend({
   },
 });
 
+export default undefined;

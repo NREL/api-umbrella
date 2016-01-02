@@ -55,9 +55,10 @@ Admin.StatsDrilldownRoute = Admin.StatsBaseRoute.extend({
     return valid;
   },
 });
-
 Admin.StatsDrilldownDefaultRoute = Admin.StatsDrilldownRoute.extend({
   renderTemplate: function() {
     this.render('stats/drilldown', { controller: 'statsDrilldownDefault' });
   }
 });
+
+export default undefined;

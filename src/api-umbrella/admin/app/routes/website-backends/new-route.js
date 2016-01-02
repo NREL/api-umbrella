@@ -6,3 +6,4 @@ Admin.WebsiteBackendsNewRoute = Admin.WebsiteBackendsBaseRoute.extend({
   },
 });
 
+export default undefined;

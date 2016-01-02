@@ -4,3 +4,4 @@ Admin.AdminGroupsNewRoute = Admin.AdminGroupsBaseRoute.extend({
   },
 });
 
+export default undefined;

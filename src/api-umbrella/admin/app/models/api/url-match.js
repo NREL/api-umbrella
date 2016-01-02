@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApiUrlMatch = Ember.Model.extend(Ember.Validations.Mixin,{
   id: Ember.attr(),
   sortOrder: Ember.attr(Number),
@@ -25,6 +27,7 @@ Admin.ApiUrlMatch = Ember.Model.extend(Ember.Validations.Mixin,{
     return this.get('backendPrefix') || this.get('frontendPrefix');
   }.property('backendPrefix', 'frontendPrefix'),
 });
-
 Admin.ApiUrlMatch.primaryKey = 'id';
 Admin.ApiUrlMatch.camelizeKeys = true;
+
+export default undefined;

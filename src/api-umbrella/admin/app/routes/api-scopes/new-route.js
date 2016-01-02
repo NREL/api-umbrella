@@ -4,3 +4,4 @@ Admin.ApiScopesNewRoute = Admin.ApiScopesBaseRoute.extend({
   },
 });
 
+export default undefined;

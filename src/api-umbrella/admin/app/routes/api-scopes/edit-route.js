@@ -7,3 +7,5 @@ Admin.ApiScopesEditRoute = Admin.ApiScopesBaseRoute.extend({
     return Admin.ApiScope.find(params.apiScopeId);
   },
 });
+
+export default undefined;

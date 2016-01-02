@@ -7,3 +7,5 @@ Admin.ApiUsersEditRoute = Admin.ApiUsersBaseRoute.extend({
     return Admin.ApiUser.find(params.apiUserId);
   },
 });
+
+export default undefined;

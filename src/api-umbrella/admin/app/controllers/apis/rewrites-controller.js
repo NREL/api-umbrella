@@ -5,3 +5,5 @@ Admin.ApisRewritesController = Admin.ApisSortableController.extend({
     },
   },
 });
+
+export default undefined;

@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.AdminsFormController = Ember.ObjectController.extend(Admin.Save, {
   groupOptions: function() {
     return Admin.AdminGroup.find();
@@ -25,6 +27,7 @@ Admin.AdminsFormController = Ember.ObjectController.extend(Admin.Save, {
     },
   },
 });
-
 Admin.AdminsEditController = Admin.AdminsFormController.extend();
 Admin.AdminsNewController = Admin.AdminsFormController.extend();
+
+export default undefined;

@@ -5,3 +5,5 @@ Admin.ApisSubSettingsController = Admin.ApisSortableController.extend({
     },
   },
 });
+
+export default undefined;

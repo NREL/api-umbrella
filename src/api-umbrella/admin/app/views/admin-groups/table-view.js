@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.AdminGroupsTableView = Ember.View.extend({
   tagName: 'table',
 
@@ -38,3 +40,5 @@ Admin.AdminGroupsTableView = Ember.View.extend({
     });
   },
 });
+
+export default undefined;

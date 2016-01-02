@@ -19,3 +19,5 @@ Admin.ApisRewriteFormController = Admin.NestedFormController.extend({
     { id: 'PATCH', name: 'PATCH' },
   ],
 });
+
+export default undefined;

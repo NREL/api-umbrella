@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ConfigPublishRecordView = Ember.View.extend({
   actions: {
     toggleConfigDiff: function(id) {
@@ -5,3 +7,5 @@ Admin.ConfigPublishRecordView = Ember.View.extend({
     }
   }
 });
+
+export default undefined;

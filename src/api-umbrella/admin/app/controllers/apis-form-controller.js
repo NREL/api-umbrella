@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApisFormController = Ember.ObjectController.extend(Admin.Save, {
   needs: [
     'apis_server_form',
@@ -119,6 +121,7 @@ Admin.ApisFormController = Ember.ObjectController.extend(Admin.Save, {
     });
   },
 });
-
 Admin.ApisEditController = Admin.ApisFormController.extend();
 Admin.ApisNewController = Admin.ApisFormController.extend();
+
+export default undefined;

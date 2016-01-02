@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.AdminGroupsFormController = Ember.ObjectController.extend(Admin.Save, {
   apiScopeOptions: function() {
     return Admin.ApiScope.find();
@@ -25,6 +27,7 @@ Admin.AdminGroupsFormController = Ember.ObjectController.extend(Admin.Save, {
     },
   },
 });
-
 Admin.AdminGroupsEditController = Admin.AdminGroupsFormController.extend();
 Admin.AdminGroupsNewController = Admin.AdminGroupsFormController.extend();
+
+export default undefined;

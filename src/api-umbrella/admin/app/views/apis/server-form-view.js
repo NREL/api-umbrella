@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApisServerFormView = Ember.View.extend({
   templateName: 'apis/server_form',
 
@@ -8,3 +10,5 @@ Admin.ApisServerFormView = Ember.View.extend({
     }
   }
 });
+
+export default undefined;

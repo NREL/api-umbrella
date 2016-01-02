@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.StatsDrilldownChartView = Ember.View.extend({
   data: [],
 
@@ -89,3 +91,5 @@ Admin.StatsDrilldownChartView = Ember.View.extend({
     this.chart.draw(this.dataTable, this.chartOptions);
   },
 });
+
+export default undefined;

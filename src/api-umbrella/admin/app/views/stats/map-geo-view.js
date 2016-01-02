@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.StatsMapGeoView = Ember.View.extend({
   data: [],
 
@@ -79,3 +81,5 @@ Admin.StatsMapGeoView = Ember.View.extend({
     this.chart.draw(this.dataTable, this.chartOptions);
   },
 });
+
+export default undefined;

@@ -4,3 +4,4 @@ Admin.ApiUsersNewRoute = Admin.ApiUsersBaseRoute.extend({
   },
 });
 
+export default undefined;

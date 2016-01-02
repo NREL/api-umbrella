@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.Api = Ember.Model.extend(Ember.Validations.Mixin, {
   name: Ember.attr(),
   sortOrder: Ember.attr(Number),
@@ -73,10 +75,11 @@ Admin.Api = Ember.Model.extend(Ember.Validations.Mixin, {
     Admin.ApiUserRole.clearCache();
   },
 });
-
 Admin.Api.url = '/api-umbrella/v1/apis';
 Admin.Api.rootKey = 'api';
 Admin.Api.collectionKey = 'data';
 Admin.Api.primaryKey = 'id';
 Admin.Api.camelizeKeys = true;
 Admin.Api.adapter = Admin.APIUmbrellaRESTAdapter.create();
+
+export default undefined;

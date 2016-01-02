@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.WebsiteBackend = Ember.Model.extend(Ember.Validations.Mixin, {
   id: Ember.attr(),
   frontendHost: Ember.attr(),
@@ -29,10 +31,11 @@ Admin.WebsiteBackend = Ember.Model.extend(Ember.Validations.Mixin, {
     },
   },
 });
-
 Admin.WebsiteBackend.url = '/api-umbrella/v1/website_backends';
 Admin.WebsiteBackend.rootKey = 'website_backend';
 Admin.WebsiteBackend.collectionKey = 'data';
 Admin.WebsiteBackend.primaryKey = 'id';
 Admin.WebsiteBackend.camelizeKeys = true;
 Admin.WebsiteBackend.adapter = Admin.APIUmbrellaRESTAdapter.create();
+
+export default undefined;

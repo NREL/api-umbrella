@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.AdminGroup = Ember.Model.extend(Ember.Validations.Mixin, {
   id: Ember.attr(),
   name: Ember.attr(),
@@ -14,10 +16,11 @@ Admin.AdminGroup = Ember.Model.extend(Ember.Validations.Mixin, {
     },
   },
 });
-
 Admin.AdminGroup.url = '/api-umbrella/v1/admin_groups';
 Admin.AdminGroup.rootKey = 'admin_group';
 Admin.AdminGroup.collectionKey = 'data';
 Admin.AdminGroup.primaryKey = 'id';
 Admin.AdminGroup.camelizeKeys = true;
 Admin.AdminGroup.adapter = Admin.APIUmbrellaRESTAdapter.create();
+
+export default undefined;

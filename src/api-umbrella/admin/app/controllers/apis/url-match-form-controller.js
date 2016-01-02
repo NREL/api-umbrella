@@ -14,3 +14,5 @@ Admin.ApisUrlMatchFormController = Admin.NestedFormController.extend({
     return root + prefix + this.get('exampleSuffix');
   }.property('backendPrefix', 'frontendPrefix'),
 });
+
+export default undefined;

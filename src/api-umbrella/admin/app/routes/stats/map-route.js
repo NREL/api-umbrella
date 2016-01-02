@@ -20,9 +20,10 @@ Admin.StatsMapRoute = Admin.StatsBaseRoute.extend({
     }
   }.observes('query.params.query', 'query.params.search', 'query.params.start_at', 'query.params.end_at', 'query.params.region'),
 });
-
 Admin.StatsMapDefaultRoute = Admin.StatsMapRoute.extend({
   renderTemplate: function() {
     this.render('stats/map', { controller: 'statsMapDefault' });
   }
 });
+
+export default undefined;

@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApiUsersEditView = Ember.View.extend({
   willDestroyElement: function() {
     if(this.apiKeyHideTimeout) {
@@ -22,3 +24,5 @@ Admin.ApiUsersEditView = Ember.View.extend({
     },
   },
 });
+
+export default undefined;

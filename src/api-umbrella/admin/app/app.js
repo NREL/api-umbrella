@@ -1,3 +1,11 @@
+import Ember from 'ember';
+
+var Admin = Ember.Application.create({
+  LOG_TRANSITIONS: true,
+  LOG_TRANSITIONS_INTERNAL: true,
+
+  rootElement: '#content'
+});
 //= require_self
 //= require ./common_validations
 //= require_tree ./models
@@ -15,7 +23,6 @@
 
 // Set Bootbox defaults.
 bootbox.animate(false);
-
 // PNotify Defaults.
 _.merge(PNotify.prototype.options, {
   styling: 'bootstrap2',
@@ -29,7 +36,6 @@ _.merge(PNotify.prototype.options, {
     sticker: false
   }
 });
-
 (function() {
   var versionParts = Ember.VERSION.split('.');
   var major = parseInt(versionParts[0], 10);
@@ -79,14 +85,6 @@ _.merge(PNotify.prototype.options, {
     },
   });
 })();
-
-window.Admin = Ember.Application.create({
-  LOG_TRANSITIONS: true,
-  LOG_TRANSITIONS_INTERNAL: true,
-
-  rootElement: '#content'
-});
-
 function eachTranslatedAttribute(object, fn) {
   var isTranslatedAttribute = /(.+)Translation$/,
       isTranslatedAttributeMatch;
@@ -99,7 +97,6 @@ function eachTranslatedAttribute(object, fn) {
     }
   }
 }
-
 // Override existing Ember.EasyForm.processOptions to use our polyglot
 // translations instead of Ember.i18n for the special *Translation fields.
 //
@@ -122,14 +119,12 @@ Ember.EasyForm.processOptions = function(property, options) {
 
   return options;
 };
-
 Ember.EasyForm.Tooltip = Ember.EasyForm.BaseView.extend({
   tagName: 'a',
   attributeBindings: ['title', 'rel', 'data-tooltip-class'],
   template: Ember.Handlebars.compile('<i class="fa fa-question-circle"></i>'),
   rel: 'tooltip',
 });
-
 Ember.Handlebars.registerBoundHelper('formatDate', function(date, format) {
   if(!format || !_.isString(format)) {
     format = 'YYYY-MM-DD HH:mm Z';
@@ -141,30 +136,24 @@ Ember.Handlebars.registerBoundHelper('formatDate', function(date, format) {
     return '';
   }
 });
-
 Ember.Handlebars.helper('formatNumber', function(number) {
   return numeral(number).format('0,0');
 });
-
 Ember.Handlebars.helper('inflect', function(word, number) {
   return inflection.inflect(word, number);
 });
-
 // i18n helper via polyglot library
 Ember.Handlebars.registerHelper('t', function(property, options) {
   return polyglot.t(property, options.hash);
 });
-
 Ember.Handlebars.registerHelper('tooltip-field', function(property, options) {
   options = Ember.EasyForm.processOptions(property, options);
   options.hash.viewName = 'tooltip-field-'+options.data.view.elementId;
   return Ember.Handlebars.helpers.view.call(this, Ember.EasyForm.Tooltip, options);
 });
-
 // Use a custom template for Easy Form. This adds a tooltip and wraps that in
 // the control-label div with the label.
 Ember.TEMPLATES['easyForm/wrapped_input'] = Ember.Handlebars.compile('<div class="control-label">{{label-field propertyBinding="view.property" textBinding="view.label" viewBinding="view"}}{{#if view.tooltip}}{{tooltip-field titleBinding="view.tooltip" data-tooltip-classBinding="view.tooltipClass"}}{{/if}}</div><div class="{{unbound view.controlsWrapperClass}}">{{partial "easyForm/inputControls"}}</div>');
-
 Ember.EasyForm.Config.registerInputType('selectize', Ember.EasyForm.TextField.extend({
   defaultOptions: [],
 
@@ -259,7 +248,6 @@ Ember.EasyForm.Config.registerInputType('selectize', Ember.EasyForm.TextField.ex
     }
   },
 }));
-
 Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
   attributeBindings: ['data-ace-mode'],
 
@@ -307,7 +295,6 @@ Ember.EasyForm.Config.registerInputType('ace', Ember.EasyForm.TextArea.extend({
     });
   },
 }));
-
 Ember.EasyForm.Config.registerWrapper('default', {
   formClass: '',
   fieldErrorClass: 'error',
@@ -317,7 +304,6 @@ Ember.EasyForm.Config.registerWrapper('default', {
   wrapControls: true,
   controlsWrapperClass: 'controls'
 });
-
 Admin.APIUmbrellaRESTAdapter = Ember.RESTAdapter.extend({
   ajaxSettings: function(url, method) {
     return {
@@ -330,12 +316,10 @@ Admin.APIUmbrellaRESTAdapter = Ember.RESTAdapter.extend({
     };
   }
 });
-
 $.ajaxPrefilter(function(options) {
   options.headers = options.headers || {};
   options.headers['X-Api-Key'] = webAdminAjaxApiKey;
 });
-
 // DataTables plugin to programmatically show the processing indidicator.
 // https://datatables.net/plug-ins/api#fnProcessingIndicator
 jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff )
@@ -346,8 +330,6 @@ jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff 
   }
   this.oApi._fnProcessingDisplay( oSettings, onoff );
 };
-
-
 // Defaults for DataTables.
 _.merge($.fn.DataTable.defaults, {
   // Don't show the DataTables processing message. We'll handle the processing
@@ -390,7 +372,6 @@ _.merge($.fn.DataTable.defaults, {
     }
   },
 });
-
 Ember.EasyForm.Input.reopen({
   didInsertElement: function() {
     var forId = this.get('input-field-' + this.elementId + '.overrideForElementId') || this.get('input-field-' + this.elementId + '.elementId');
@@ -413,7 +394,6 @@ Ember.EasyForm.Input.reopen({
     }
   }.observes('context.showAllValidationErrors'),
 });
-
 Ember.EasyForm.Form.reopen({
   submit: function(event) {
     if (event) {
@@ -443,7 +423,6 @@ Ember.EasyForm.Form.reopen({
     }
   },
 });
-
 // A mixin that provides the default ajax save behavior for our forms.
 Admin.Save = Ember.Mixin.create({
   save: function(options) {
@@ -480,7 +459,6 @@ Admin.Save = Ember.Mixin.create({
     }, this));
   },
 });
-
 Admin.DataTablesHelpers = {
   renderEscaped: function(value, type) {
     if(type === 'display' && value) {
@@ -510,3 +488,5 @@ Admin.DataTablesHelpers = {
     return value;
   },
 };
+
+export default Admin;

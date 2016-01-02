@@ -47,3 +47,5 @@ Admin.Router.map(function() {
     this.route('edit', { path: '/:websiteBackendId/edit' });
   });
 });
+
+export default undefined;

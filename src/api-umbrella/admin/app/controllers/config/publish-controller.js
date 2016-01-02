@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ConfigPublishController = Ember.Controller.extend({
   hasChanges: function() {
     var newApis = this.get('model.config.apis.new');
@@ -14,3 +16,5 @@ Admin.ConfigPublishController = Ember.Controller.extend({
     }
   }.property('model.config.apis.new.@each', 'model.config.apis.modified.@each', 'model.config.apis.deleted.@each', 'model.config.website_backends.new.@each', 'model.config.website_backends.modified.@each', 'model.config.website_backends.deleted.@each'),
 });
+
+export default undefined;

@@ -7,3 +7,5 @@ Admin.AdminGroupsEditRoute = Admin.AdminGroupsBaseRoute.extend({
     return Admin.AdminGroup.find(params.adminGroupId);
   },
 });
+
+export default undefined;

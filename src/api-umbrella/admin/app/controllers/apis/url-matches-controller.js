@@ -5,3 +5,5 @@ Admin.ApisUrlMatchesController = Admin.ApisSortableController.extend({
     },
   },
 });
+
+export default undefined;

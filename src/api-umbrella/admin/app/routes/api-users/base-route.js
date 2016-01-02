@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApiUsersBaseRoute = Ember.Route.extend({
   setupController: function(controller, model) {
     controller.set('model', model);
@@ -6,3 +8,5 @@ Admin.ApiUsersBaseRoute = Ember.Route.extend({
     $('ul.nav li.nav-users').addClass('active');
   },
 });
+
+export default undefined;

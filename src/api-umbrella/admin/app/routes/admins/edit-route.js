@@ -7,3 +7,5 @@ Admin.AdminsEditRoute = Admin.AdminsBaseRoute.extend({
     return Admin.Admin.find(params.adminId);
   },
 });
+
+export default undefined;

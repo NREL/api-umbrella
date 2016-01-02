@@ -8,3 +8,4 @@ Admin.WebsiteBackendsEditRoute = Admin.WebsiteBackendsBaseRoute.extend({
   },
 });
 
+export default undefined;

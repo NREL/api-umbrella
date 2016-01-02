@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.StatsIntervalChartView = Ember.View.extend({
   data: [],
 
@@ -95,3 +97,5 @@ Admin.StatsIntervalChartView = Ember.View.extend({
     this.chart.draw(this.dataTable, this.chartOptions);
   },
 });
+
+export default undefined;

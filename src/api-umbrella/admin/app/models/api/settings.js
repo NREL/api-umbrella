@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApiSettings = Ember.Model.extend({
   id: Ember.attr(),
   appendQueryString: Ember.attr(),
@@ -103,6 +105,7 @@ Admin.ApiSettings = Ember.Model.extend({
     return (this.get('rateLimitMode') === 'custom');
   }.property('rateLimitMode'),
 });
-
 Admin.ApiSettings.primaryKey = 'id';
 Admin.ApiSettings.camelizeKeys = true;
+
+export default undefined;

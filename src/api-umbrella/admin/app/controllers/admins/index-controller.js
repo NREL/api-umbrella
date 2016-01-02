@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.AdminsIndexController = Ember.ObjectController.extend({
   queryParams: null,
 
@@ -14,3 +16,5 @@ Admin.AdminsIndexController = Ember.ObjectController.extend({
     }
   }
 });
+
+export default undefined;

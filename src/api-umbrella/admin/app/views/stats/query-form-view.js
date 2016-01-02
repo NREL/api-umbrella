@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.StatsQueryFormView = Ember.View.extend({
   templateName: 'stats/_query_form',
 
@@ -335,3 +337,5 @@ Admin.StatsQueryFormView = Ember.View.extend({
     },
   },
 });
+
+export default undefined;

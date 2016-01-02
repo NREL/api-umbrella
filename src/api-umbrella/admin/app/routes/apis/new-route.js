@@ -6,3 +6,4 @@ Admin.ApisNewRoute = Admin.ApisBaseRoute.extend({
   },
 });
 
+export default undefined;

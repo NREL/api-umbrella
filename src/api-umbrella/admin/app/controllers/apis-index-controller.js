@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApisIndexController = Ember.ArrayController.extend({
   reorderActive: false,
 
@@ -7,3 +9,5 @@ Admin.ApisIndexController = Ember.ArrayController.extend({
     },
   },
 });
+
+export default undefined;

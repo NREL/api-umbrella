@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.StatsDrilldownTableView = Ember.View.extend({
   tagName: 'table',
 
@@ -52,3 +54,5 @@ Admin.StatsDrilldownTableView = Ember.View.extend({
     table.rows.add(this.get('model.results')).draw();
   }.observes('model.results'),
 });
+
+export default undefined;

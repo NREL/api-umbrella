@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 Admin.ApisTableView = Ember.View.extend({
   tagName: 'table',
   classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
@@ -134,3 +136,5 @@ Admin.ApisTableView = Ember.View.extend({
     }, this));
   },
 });
+
+export default undefined;
