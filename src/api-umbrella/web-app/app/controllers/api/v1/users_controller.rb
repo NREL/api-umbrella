@@ -24,6 +24,7 @@ class Api::V1::UsersController < Api::V1::BaseController
         { :email => /#{params["search"]["value"]}/i },
         { :api_key => /#{params["search"]["value"]}/i },
         { :registration_source => /#{params["search"]["value"]}/i },
+        { :roles => /#{params["search"]["value"]}/i },
         { :_id => /#{params["search"]["value"]}/i },
       ])
     end
