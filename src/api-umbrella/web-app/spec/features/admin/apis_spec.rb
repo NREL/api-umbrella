@@ -414,4 +414,31 @@ describe "apis", :js => true do
     find_by_id(find_field("Over Rate Limit")["data-raw-input-id"], :visible => :all).value.should eql("foo5: bar5\nbar5: foo5")
     find_by_id(find_field("Over Rate Limit")["data-ace-content-id"]).text.should eql("foo5: bar5 bar5: foo5")
   end
+
+  it "edits custom rate limits" do
+    api = FactoryGirl.create(:api, {
+      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting),
+    })
+    visit "/admin/#/apis/#{api.id}/edit"
+
+    find("legend a", :text => /Global Request Settings/).click
+    within(".custom-rate-limits-table") do
+      find(".rate-limit-duration-in-units").value.should eql("1")
+      find(".rate-limit-duration-units").value.should eql("minutes")
+      find(".rate-limit-limit-by").value.should eql("ip")
+      find(".rate-limit-limit").value.should eql("500")
+      find(".rate-limit-response-headers").checked?.should eql(true)
+
+      find(".rate-limit-limit").set("200")
+    end
+
+    click_button("Save")
+    page.should have_content("Successfully saved")
+
+    api.reload
+
+    api.settings.rate_limits.length.should eql(1)
+    rate_limits = api.settings.rate_limits.first
+    rate_limits.limit.should eql(200)
+  end
 end

@@ -37,7 +37,7 @@ child :settings => :settings do
   attributes :allowed_referers
 
   child :rate_limits, :object_root => false do
-    attributes *Api::RateLimit.fields.keys
+    attributes(*Api::RateLimit.fields.keys + ["id"])
   end
 end
 

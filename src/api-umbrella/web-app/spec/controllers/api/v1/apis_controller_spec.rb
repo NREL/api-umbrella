@@ -633,6 +633,38 @@ describe Api::V1::ApisController do
     describe "response override headers" do
       it_behaves_like "api settings header fields - show", :override_response_headers
     end
+
+    describe "rate limits" do
+      it "returns embedded custom limit objects" do
+        api = FactoryGirl.create(:api, {
+          :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting),
+        })
+
+        admin_token_auth(@admin)
+        get :show, :format => "json", :id => api.id
+
+        response.status.should eql(200)
+        data = MultiJson.load(response.body)
+        data["api"]["settings"]["rate_limits"].length.should eql(1)
+        rate_limit = data["api"]["settings"]["rate_limits"].first
+        rate_limit.keys.sort.should eql([
+          "id",
+          "accuracy",
+          "distributed",
+          "duration",
+          "limit",
+          "limit_by",
+          "response_headers",
+        ].sort)
+        rate_limit["id"].should be_a_uuid
+        rate_limit["accuracy"].should eql(5000)
+        rate_limit["distributed"].should eql(true)
+        rate_limit["duration"].should eql(60000)
+        rate_limit["limit"].should eql(500)
+        rate_limit["limit_by"].should eql("ip")
+        rate_limit["response_headers"].should eql(true)
+      end
+    end
   end
 
   describe "POST create" do

@@ -409,6 +409,42 @@ describe Api::V1::UsersController do
       data["user"].keys.sort.should eql(expected_keys.sort)
     end
 
+    describe "rate limits" do
+      it "returns embedded custom limit objects" do
+        user = FactoryGirl.create(:custom_rate_limit_api_user)
+
+        admin_token_auth(@admin)
+        get :show, :format => "json", :id => user.id
+
+        response.status.should eql(200)
+        data = MultiJson.load(response.body)
+        data["user"]["settings"]["rate_limits"].length.should eql(1)
+        rate_limit = data["user"]["settings"]["rate_limits"].first
+        rate_limit.keys.sort.should eql([
+          "id",
+          # Legacy _id field we never meant to return (everything else returns
+          # just "id"), but we accidentally did in this embedded case. Keep
+          # returning for backwards compatibility, but should remove for V2 of
+          # APIs.
+          "_id",
+          "accuracy",
+          "distributed",
+          "duration",
+          "limit",
+          "limit_by",
+          "response_headers",
+        ].sort)
+        rate_limit["id"].should be_a_uuid
+        rate_limit["_id"].should eql(rate_limit["id"])
+        rate_limit["accuracy"].should eql(5000)
+        rate_limit["distributed"].should eql(true)
+        rate_limit["duration"].should eql(60000)
+        rate_limit["limit"].should eql(500)
+        rate_limit["limit_by"].should eql("ip")
+        rate_limit["response_headers"].should eql(true)
+      end
+    end
+
     describe "api key" do
       describe "superuser admin is logged in" do
         let(:current_admin) { FactoryGirl.create(:admin) }

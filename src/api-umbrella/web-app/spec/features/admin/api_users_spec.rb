@@ -291,4 +291,29 @@ describe "api users form", :js => true do
     page.should have_field("Restrict Access to HTTP Referers", :with => "*.example.com/*\n*//example2.com/*")
     page.should have_select("Account Enabled", :selected => "Disabled")
   end
+
+  it "edits custom rate limits" do
+    user = FactoryGirl.create(:custom_rate_limit_api_user)
+    visit "/admin/#/api_users/#{user.id}/edit"
+
+    within(".custom-rate-limits-table") do
+      find(".rate-limit-duration-in-units").value.should eql("1")
+      find(".rate-limit-duration-units").value.should eql("minutes")
+      find(".rate-limit-limit-by").value.should eql("ip")
+      find(".rate-limit-limit").value.should eql("500")
+      find(".rate-limit-response-headers").checked?.should eql(true)
+
+      find(".rate-limit-limit").set("200")
+    end
+
+    click_button("Save")
+    page.should have_content("Successfully saved")
+
+    user.reload
+
+    user.settings.rate_limits.length.should eql(1)
+    rate_limits = user.settings.rate_limits.first
+    rate_limits.limit.should eql(200)
+  end
+
 end

@@ -19,5 +19,11 @@ FactoryGirl.define do
       use_description '"><script class="xss-test">alert("Hello use_description");</script>'
       registration_source '"><script class="xss-test">alert("Hello registration_source");</script>'
     end
+
+    factory :custom_rate_limit_api_user do
+      settings do
+        FactoryGirl.attributes_for(:custom_rate_limit_api_setting)
+      end
+    end
   end
 end
