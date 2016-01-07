@@ -6,7 +6,6 @@ client = Elasticsearch::Client.new({
 })
 
 templates = MultiJson.load(File.read(File.expand_path("../../../../../../config/elasticsearch_templates.json", __FILE__)))
-puts templates.inspect
 templates.each do |template|
   client.indices.put_template({
     :name => template["id"],
