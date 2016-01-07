@@ -16,7 +16,8 @@ class Api::RateLimit
   # Validations
   validates :duration,
     :presence => true,
-    :numericality => { :greater_than => 0 }
+    :numericality => { :greater_than => 0 },
+    :uniqueness => { :scope => :limit_by }
   validates :accuracy,
     :presence => true,
     :numericality => { :greater_than => 0 }

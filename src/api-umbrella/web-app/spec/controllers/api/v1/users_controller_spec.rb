@@ -727,6 +727,53 @@ describe Api::V1::UsersController do
       end
     end
 
+    describe "custom rate limits" do
+      it "cannot create limits of the same duration and limit_by" do
+        admin_token_auth(@admin)
+
+        expect do
+          attributes = FactoryGirl.attributes_for(:api_user, {
+            :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting, {
+              :rate_limits => [
+                FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
+                FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 20),
+              ],
+            }),
+          })
+
+          put :create, :format => "json", :user => attributes
+
+          response.status.should eql(422)
+          data = MultiJson.load(response.body)
+          data.keys.should eql(["errors"])
+        end.to_not change { ApiUser.count }
+      end
+
+      it "can create limits of the same duration with different limit_by" do
+        admin_token_auth(@admin)
+
+        expect do
+          attributes = FactoryGirl.attributes_for(:api_user, {
+            :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting, {
+              :rate_limits => [
+                FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
+                FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "apiKey", :limit => 20),
+              ],
+            }),
+          })
+
+          put :create, :format => "json", :user => attributes
+
+          response.status.should eql(201)
+          data = MultiJson.load(response.body)
+          data["user"]["settings"]["rate_limits"].length.should eql(2)
+
+          user = ApiUser.find(data["user"]["id"])
+          user.settings.rate_limits.length.should eql(2)
+        end.to change { ApiUser.count }.by(1)
+      end
+    end
+
     describe "welcome e-mail" do
       before(:each) do
         Delayed::Worker.delay_jobs = false
