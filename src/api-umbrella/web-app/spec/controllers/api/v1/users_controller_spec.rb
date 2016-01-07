@@ -262,89 +262,41 @@ describe Api::V1::UsersController do
     end
 
     describe "search" do
-      it "searches through first names as wildcard, case-insensitive" do
-        api_user = FactoryGirl.create(:api_user, :first_name => "FirstNameSearchTest")
+      shared_examples "wildcard, case-insensitive search over field" do |field, value, search|
+        it "matches on #{field}" do
+          api_user = FactoryGirl.create(:api_user, field => value)
 
-        admin_token_auth(@admin)
-        get(:index, :format => "json", :search => { :value => "IRSTNAMEsearchT" })
-        response.status.should eql(200)
+          admin_token_auth(@admin)
+          get(:index, :format => "json", :search => { :value => search })
+          response.status.should eql(200)
 
-        data = MultiJson.load(response.body)
-        data["recordsTotal"].should eql(1)
-        data["data"].first["id"].should eql(api_user.id)
+          data = MultiJson.load(response.body)
+          data["recordsTotal"].should eql(1)
+          data["data"].length.should eql(1)
+          data["data"].first["id"].should eql(api_user.id)
+        end
+
+        it "excludes non-matching results on #{field}" do
+          api_user = FactoryGirl.create(:api_user, field => value)
+
+          admin_token_auth(@admin)
+          get(:index, :format => "json", :search => { :value => "#{search}extra" })
+          response.status.should eql(200)
+
+          data = MultiJson.load(response.body)
+          data["recordsTotal"].should eql(0)
+          data["data"].length.should eql(0)
+        end
       end
 
-      it "searches through last names as wildcard, case-insensitive" do
-        api_user = FactoryGirl.create(:api_user, :last_name => "LastNameSearchTest")
-
-        admin_token_auth(@admin)
-        get(:index, :format => "json", :search => { :value => "astnamesearcht" })
-        response.status.should eql(200)
-
-        data = MultiJson.load(response.body)
-        data["recordsTotal"].should eql(1)
-        data["data"].first["id"].should eql(api_user.id)
-      end
-
-      it "searches through emails as wildcard, case-insensitive" do
-        api_user = FactoryGirl.create(:api_user, :email => "EmailSearchTest@example.com")
-
-        admin_token_auth(@admin)
-        get(:index, :format => "json", :search => { :value => "mailsearchtest@example" })
-        response.status.should eql(200)
-
-        data = MultiJson.load(response.body)
-        data["recordsTotal"].should eql(1)
-        data["data"].first["id"].should eql(api_user.id)
-      end
-
-      it "searches through api keys as wildcard, case-insensitive" do
-        api_user = FactoryGirl.create(:api_user, :api_key => "API_KEY_SEARCH_TEST")
-
-        admin_token_auth(@admin)
-        get(:index, :format => "json", :search => { :value => "_key_search_tes" })
-        response.status.should eql(200)
-
-        data = MultiJson.load(response.body)
-        data["recordsTotal"].should eql(1)
-        data["data"].first["id"].should eql(api_user.id)
-      end
-
-      it "searches through registration sources as wildcard, case-insensitive" do
-        api_user = FactoryGirl.create(:api_user, :registration_source => "RegistrationSourceSearchTest")
-
-        admin_token_auth(@admin)
-        get(:index, :format => "json", :search => { :value => "registrationsourcesearchtest" })
-        response.status.should eql(200)
-
-        data = MultiJson.load(response.body)
-        data["recordsTotal"].should eql(1)
-        data["data"].first["id"].should eql(api_user.id)
-      end
-
-      it "searches through roles as wildcard, case-insensitive" do
-        api_user = FactoryGirl.create(:api_user, :roles => ["RoleSearchTest1", "RoleSearchTest2", "RoleSearchTest3"])
-
-        admin_token_auth(@admin)
-        get(:index, :format => "json", :search => { :value => "olesearchtest3" })
-        response.status.should eql(200)
-
-        data = MultiJson.load(response.body)
-        data["recordsTotal"].should eql(1)
-        data["data"].first["id"].should eql(api_user.id)
-      end
-
-      it "searches through ids as wildcard, case-insensitive" do
-        api_user = FactoryGirl.create(:api_user, :id => "381f2ad2-493b-4750-994d-a046fa6eae70")
-
-        admin_token_auth(@admin)
-        get(:index, :format => "json", :search => { :value => "994D-A046" })
-        response.status.should eql(200)
-
-        data = MultiJson.load(response.body)
-        data["recordsTotal"].should eql(1)
-        data["data"].first["id"].should eql(api_user.id)
-      end
+      it_behaves_like "wildcard, case-insensitive search over field", :first_name, "FirstNameSearchTest", "IRSTNAMEsearchT"
+      it_behaves_like "wildcard, case-insensitive search over field", :last_name, "LastNameSearchTest", "astnamesearcht"
+      it_behaves_like "wildcard, case-insensitive search over field", :email, "EmailSearchTest@example.com", "mailsearchtest@example"
+      it_behaves_like "wildcard, case-insensitive search over field", :api_key, "API_KEY_SEARCH_TEST", "_key_search_tes"
+      it_behaves_like "wildcard, case-insensitive search over field", :registration_source, "RegistrationSourceSearchTest", "registrationsourcesearchtest"
+      it_behaves_like "wildcard, case-insensitive search over field", :registration_source, "RegistrationSourceSearchTest", "registrationsourcesearchtest"
+      it_behaves_like "wildcard, case-insensitive search over field", :roles, ["RoleSearchTest1", "RoleSearchTest2", "RoleSearchTest3"], "olesearchtest3"
+      it_behaves_like "wildcard, case-insensitive search over field", :roles, "381f2ad2-493b-4750-994d-a046fa6eae70", "994D-A046"
     end
   end
 
