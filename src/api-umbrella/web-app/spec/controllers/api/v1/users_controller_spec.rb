@@ -277,7 +277,7 @@ describe Api::V1::UsersController do
         end
 
         it "excludes non-matching results on #{field}" do
-          api_user = FactoryGirl.create(:api_user, field => value)
+          FactoryGirl.create(:api_user, field => value)
 
           admin_token_auth(@admin)
           get(:index, :format => "json", :search => { :value => "#{search}extra" })
