@@ -88,17 +88,22 @@ class Api
     Hash[self.attributes]
   end
 
-  def as_json(options)
+  def as_json(options = {})
     options[:methods] ||= []
     options[:methods] += [:error_data_yaml_strings, :headers_string, :default_response_headers_string, :override_response_headers_string]
 
     json = super(options)
 
-    json["api"]["creator"] = {
+    root = json
+    if(options[:root])
+      root = json[options[:root]]
+    end
+
+    root["creator"] = {
       "username" => (self.creator.username if(self.creator))
     }
 
-    json["api"]["updater"] = {
+    root["updater"] = {
       "username" => (self.updater.username if(self.updater))
     }
 
