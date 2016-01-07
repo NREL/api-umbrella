@@ -417,7 +417,7 @@ describe "apis", :js => true do
 
   it "edits custom rate limits" do
     api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting),
+      :settings => FactoryGirl.build(:custom_rate_limit_api_setting),
     })
     visit "/admin/#/apis/#{api.id}/edit"
 
@@ -438,7 +438,7 @@ describe "apis", :js => true do
     api.reload
 
     api.settings.rate_limits.length.should eql(1)
-    rate_limits = api.settings.rate_limits.first
-    rate_limits.limit.should eql(200)
+    rate_limit = api.settings.rate_limits.first
+    rate_limit.limit.should eql(200)
   end
 end

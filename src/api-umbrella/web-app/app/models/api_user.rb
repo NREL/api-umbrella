@@ -76,6 +76,7 @@ class ApiUser
   # Callbacks
   before_validation :normalize_terms_and_conditions
   after_save :handle_rate_limit_mode
+  after_save :touch_server_side_timestamp
 
   # Ensure the api key is generated (even if validations are disabled)
   before_validation :generate_api_key, :on => :create
@@ -144,38 +145,6 @@ class ApiUser
     @api_key_hides_at ||= self.created_at + 2.weeks
   end
 
-  # Override the save method to add an "ts" timestamp using MongoDB's
-  # $currentDate and upsert features (this ensures the timestamps are set on
-  # the server and therefore not subject to clock drift on the clients--this is
-  # important in this case, since we use "ts" to detect when changes have
-  # been made to the user collection).
-  def save(options = {})
-    # Use Mongoid's default Operation methods to perform all the normal
-    # create/update callbacks.
-    operation = if(new_record?) then :insert else :update end
-    result = Operations.send(operation, self, options).prepare do
-      # Extract all the attributes to set, but omit the special "ts" attribute
-      # that will be handled by $currentDate. Also exclude "_id", since it's
-      # part of the upsert find.
-      doc = as_document.except("ts", "_id")
-
-      # Perform the upsert, setting "ts" mongo server-side to the $currentDate.
-      collection.find({ :_id => self.id }).update({
-        "$set" => doc,
-        "$currentDate" => {
-          "ts" => { "$type" => "timestamp" },
-        },
-      }, [:upsert])
-    end
-
-    # Respond with true or false depending on whether the operation succeeded.
-    if(operation == :insert)
-      !new_record?
-    else
-      result
-    end
-  end
-
   private
 
   def normalize_terms_and_conditions
@@ -211,5 +180,28 @@ class ApiUser
     end
 
     true
+  end
+
+  # After making any change, fire an additional query to update the record's
+  # "ts" field with the server-side timestamp. This ensures the timestamps are
+  # set on the server and therefore not subject to clock drift on different
+  # clients. This is important for us, since we use "ts" to detect when changes
+  # have been made to the user collection for detecting changes and clearing
+  # caches in the proxy part of the app.
+  #
+  # Ideally we'd make this part of single atomic upsert operation for the
+  # document's actual create/update. However, an earlier attempt to override
+  # the #save method to do this as a single operation led to issues, since it
+  # was hard to replicate Mongoid's handling for embedded documents flagged for
+  # destruction. But since the actual timestamps on these aren't very
+  # important, performing a second touch operation should be fine (we just care
+  # that all of the records get touched with consistent server-side
+  # timestamps).
+  def touch_server_side_timestamp
+    collection.find({ :_id => self.id }).update({
+      "$currentDate" => {
+        "ts" => { "$type" => "timestamp" },
+      },
+    })
   end
 end

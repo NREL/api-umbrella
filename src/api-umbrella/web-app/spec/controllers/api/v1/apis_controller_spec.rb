@@ -634,10 +634,10 @@ describe Api::V1::ApisController do
       it_behaves_like "api settings header fields - show", :override_response_headers
     end
 
-    describe "rate limits" do
+    describe "custom rate limits" do
       it "returns embedded custom limit objects" do
         api = FactoryGirl.create(:api, {
-          :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting),
+          :settings => FactoryGirl.build(:custom_rate_limit_api_setting),
         })
 
         admin_token_auth(@admin)
@@ -1367,6 +1367,57 @@ describe Api::V1::ApisController do
 
     describe "response override headers" do
       it_behaves_like "api settings header fields - update", :override_response_headers
+    end
+
+    describe "custom rate limits" do
+      it "updates embedded custom rate limit records" do
+        admin_token_auth(@admin)
+        api = FactoryGirl.create(:api, {
+          :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+            :rate_limits => [
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+            ],
+          }),
+        })
+
+        attributes = api.as_json
+        attributes["settings"]["rate_limits"][0]["limit"] = 50
+        attributes["settings"]["rate_limits"][1]["limit"] = 75
+
+        put :update, :format => "json", :id => api.id, :api => attributes
+
+        api.reload
+        api.settings.rate_limits.length.should eql(2)
+        api.settings.rate_limits[0].duration.should eql(5000)
+        api.settings.rate_limits[0].limit.should eql(50)
+        api.settings.rate_limits[1].duration.should eql(10000)
+        api.settings.rate_limits[1].limit.should eql(75)
+      end
+
+      it "removes embedded custom rate limit records" do
+        admin_token_auth(@admin)
+        api = FactoryGirl.create(:api, {
+          :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+            :rate_limits => [
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+            ],
+          }),
+        })
+
+        attributes = api.as_json
+        attributes["settings"]["rate_limits"] = [
+          FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000, :limit => 5),
+        ]
+
+        put :update, :format => "json", :id => api.id, :api => attributes
+
+        api.reload
+        api.settings.rate_limits.length.should eql(1)
+        api.settings.rate_limits[0].duration.should eql(1000)
+        api.settings.rate_limits[0].limit.should eql(5)
+      end
     end
 
     it_behaves_like "api settings error data yaml strings", :put, :update

@@ -22,7 +22,7 @@ FactoryGirl.define do
 
     factory :custom_rate_limit_api_user do
       settings do
-        FactoryGirl.attributes_for(:custom_rate_limit_api_setting)
+        FactoryGirl.build(:custom_rate_limit_api_setting)
       end
     end
   end

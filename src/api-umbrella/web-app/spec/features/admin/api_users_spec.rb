@@ -312,8 +312,34 @@ describe "api users form", :js => true do
     user.reload
 
     user.settings.rate_limits.length.should eql(1)
-    rate_limits = user.settings.rate_limits.first
-    rate_limits.limit.should eql(200)
+    rate_limit = user.settings.rate_limits.first
+    rate_limit.limit.should eql(200)
   end
 
+  it "removes custom rate limits" do
+    user = FactoryGirl.create(:api_user, {
+      :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+        :rate_limits => [
+          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+          FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+        ],
+      }),
+    })
+
+    user.settings.rate_limits.length.should eql(2)
+
+    visit "/admin/#/api_users/#{user.id}/edit"
+
+    first(".custom-rate-limits-table a", :text => /Remove/).click
+    click_link("OK")
+
+    click_button("Save")
+    page.should have_content("Successfully saved")
+
+    user.reload
+
+    user.settings.rate_limits.length.should eql(1)
+    rate_limit = user.settings.rate_limits.first
+    rate_limit.limit.should eql(20)
+  end
 end

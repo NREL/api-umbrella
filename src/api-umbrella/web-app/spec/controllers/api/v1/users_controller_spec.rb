@@ -214,6 +214,23 @@ describe Api::V1::UsersController do
     end
   end
 
+  shared_examples "server-side timestamps" do |method, action|
+    it "maintains the `ts` field with a server-side last modified timestamp" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api_user)
+
+      expect do
+        send(method, action, params.merge(:user => attributes))
+        response.status.should eql(success_response_status)
+        data = MultiJson.load(response.body)
+        user = ApiUser.find(data["user"]["id"])
+        user.ts.should be_kind_of(Moped::BSON::Timestamp)
+        user.ts.seconds.should be_within(2).of(Time.now.to_i)
+        user.ts.increment.should be_kind_of(Numeric)
+      end.to change { ApiUser.count }.by(success_record_change_count)
+    end
+  end
+
   describe "GET index" do
     it "paginates results" do
       FactoryGirl.create_list(:api_user, 10)
@@ -565,6 +582,7 @@ describe Api::V1::UsersController do
     it_behaves_like "admin token access", :post, :create
     it_behaves_like "api key role access", :post, :create
     it_behaves_like "admin role permissions", :post, :create
+    it_behaves_like "server-side timestamps", :post, :create
 
     it "performs an create" do
       admin_token_auth(@admin)
@@ -988,6 +1006,7 @@ describe Api::V1::UsersController do
     it_behaves_like "admin token access", :put, :update
     it_behaves_like "no api key role access", :put, :update
     it_behaves_like "admin role permissions", :put, :update
+    it_behaves_like "server-side timestamps", :put, :update
 
     it "performs an update" do
       admin_token_auth(@admin)
@@ -1005,6 +1024,57 @@ describe Api::V1::UsersController do
       put :update, params.merge(:id => user.id)
       data = MultiJson.load(response.body)
       data["user"]["registration_source"].should eql("something")
+    end
+
+    describe "custom rate limits" do
+      it "updates embedded custom rate limit records" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user, {
+          :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+            :rate_limits => [
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+            ],
+          }),
+        })
+
+        attributes = user.as_json
+        attributes["settings"]["rate_limits"][0]["limit"] = 50
+        attributes["settings"]["rate_limits"][1]["limit"] = 75
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.rate_limits.length.should eql(2)
+        user.settings.rate_limits[0].duration.should eql(5000)
+        user.settings.rate_limits[0].limit.should eql(50)
+        user.settings.rate_limits[1].duration.should eql(10000)
+        user.settings.rate_limits[1].limit.should eql(75)
+      end
+
+      it "removes embedded custom rate limit records" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user, {
+          :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+            :rate_limits => [
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+            ],
+          }),
+        })
+
+        attributes = user.as_json
+        attributes["settings"]["rate_limits"] = [
+          FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000, :limit => 5),
+        ]
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.rate_limits.length.should eql(1)
+        user.settings.rate_limits[0].duration.should eql(1000)
+        user.settings.rate_limits[0].limit.should eql(5)
+      end
     end
   end
 end
