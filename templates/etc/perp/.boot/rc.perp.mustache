@@ -7,6 +7,12 @@ PERPD_OPTS=""
 
 ### --- script ---
 
+# Attempt to set hard limit values (if not root, this will generate a warning).
+# The runlimit call below will set the soft values to the maximum hard limit
+# allowed (regardless of whether root or not).
+ulimit -Hn {{rlimits.nofile}} || true
+ulimit -Hu {{rlimits.nproc}} || true
+
 ## exec perpd:
 ##   * options as configured above
 ##   * runchoom(8) abate linux oom-killer
