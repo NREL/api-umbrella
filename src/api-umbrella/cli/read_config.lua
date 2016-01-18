@@ -309,7 +309,7 @@ local function set_computed_config()
     _package_path = package.path,
     _package_cpath = package.cpath,
     mongodb = {
-      _database = array_last(plutils.split(config["mongodb"]["url"], "/")),
+      _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
     },
     elasticsearch = {
       _first_host = config["elasticsearch"]["hosts"][1],
