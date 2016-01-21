@@ -523,4 +523,5 @@ describe "api-umbrella" do
   end
 
   it_behaves_like "package upgrade", "0.9.0"
+  it_behaves_like "package upgrade", "0.10.0"
 end

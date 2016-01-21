@@ -1134,6 +1134,10 @@ $(DEPS_DIR)/verify_package/centos-6/api-umbrella-0.9.0-1.el6.x86_64.rpm:
 	mkdir -p $(shell dirname $@)
 	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-el6/api-umbrella-0.9.0-1.el6.x86_64.rpm
 
+$(DEPS_DIR)/verify_package/centos-6/api-umbrella-0.10.0-1.el6.x86_64.rpm:
+	mkdir -p $(shell dirname $@)
+	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-el6/api-umbrella-0.10.0-1.el6.x86_64.rpm
+
 $(DEPS_DIR)/verify_package/centos-7/api-umbrella-0.8.0-1.el7.x86_64.rpm:
 	mkdir -p $(shell dirname $@)
 	curl -L -o $@ http://sourceforge.net/projects/api-umbrella/files/el/7/api-umbrella-0.8.0-1.el7.x86_64.rpm/download
@@ -1141,6 +1145,10 @@ $(DEPS_DIR)/verify_package/centos-7/api-umbrella-0.8.0-1.el7.x86_64.rpm:
 $(DEPS_DIR)/verify_package/centos-7/api-umbrella-0.9.0-1.el7.x86_64.rpm:
 	mkdir -p $(shell dirname $@)
 	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-el7/api-umbrella-0.9.0-1.el7.x86_64.rpm
+
+$(DEPS_DIR)/verify_package/centos-7/api-umbrella-0.10.0-1.el7.x86_64.rpm:
+	mkdir -p $(shell dirname $@)
+	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-el7/api-umbrella-0.10.0-1.el7.x86_64.rpm
 
 $(DEPS_DIR)/verify_package/ubuntu-12.04/api-umbrella_0.8.0-1_amd64.deb:
 	mkdir -p $(shell dirname $@)
@@ -1150,6 +1158,10 @@ $(DEPS_DIR)/verify_package/ubuntu-12.04/api-umbrella_0.9.0-1~precise_amd64.deb:
 	mkdir -p $(shell dirname $@)
 	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-ubuntu/pool/main/a/api-umbrella/api-umbrella_0.9.0-1%7Eprecise_amd64.deb
 
+$(DEPS_DIR)/verify_package/ubuntu-12.04/api-umbrella_0.10.0-1~precise_amd64.deb:
+	mkdir -p $(shell dirname $@)
+	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-ubuntu/pool/main/a/api-umbrella/api-umbrella_0.10.0-1%7Eprecise_amd64.deb
+
 $(DEPS_DIR)/verify_package/ubuntu-14.04/api-umbrella_0.8.0-1_amd64.deb:
 	mkdir -p $(shell dirname $@)
 	curl -L -o $@ http://sourceforge.net/projects/api-umbrella/files/ubuntu/14.04/api-umbrella_0.8.0-1_amd64.deb/download
@@ -1157,6 +1169,10 @@ $(DEPS_DIR)/verify_package/ubuntu-14.04/api-umbrella_0.8.0-1_amd64.deb:
 $(DEPS_DIR)/verify_package/ubuntu-14.04/api-umbrella_0.9.0-1~trusty_amd64.deb:
 	mkdir -p $(shell dirname $@)
 	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-ubuntu/pool/main/a/api-umbrella/api-umbrella_0.9.0-1%7Etrusty_amd64.deb
+
+$(DEPS_DIR)/verify_package/ubuntu-14.04/api-umbrella_0.10.0-1~trusty_amd64.deb:
+	mkdir -p $(shell dirname $@)
+	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-ubuntu/pool/main/a/api-umbrella/api-umbrella_0.10.0-1%7Etrusty_amd64.deb
 
 $(DEPS_DIR)/verify_package/debian-7/api-umbrella_0.8.0-1_amd64.deb:
 	mkdir -p $(shell dirname $@)
@@ -1166,22 +1182,36 @@ $(DEPS_DIR)/verify_package/debian-7/api-umbrella_0.9.0-1~wheezy_amd64.deb:
 	mkdir -p $(shell dirname $@)
 	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-debian/pool/main/a/api-umbrella/api-umbrella_0.9.0-1%7Ewheezy_amd64.deb
 
+$(DEPS_DIR)/verify_package/debian-7/api-umbrella_0.10.0-1~wheezy_amd64.deb:
+	mkdir -p $(shell dirname $@)
+	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-debian/pool/main/a/api-umbrella/api-umbrella_0.10.0-1%7Ewheezy_amd64.deb
+
 $(DEPS_DIR)/verify_package/debian-8/api-umbrella_0.9.0-1~jessie_amd64.deb:
 	mkdir -p $(shell dirname $@)
 	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-debian/pool/main/a/api-umbrella/api-umbrella_0.9.0-1%7Ejessie_amd64.deb
 
+$(DEPS_DIR)/verify_package/debian-8/api-umbrella_0.10.0-1~jessie_amd64.deb:
+	mkdir -p $(shell dirname $@)
+	curl -L -o $@ https://bintray.com/artifact/download/nrel/api-umbrella-debian/pool/main/a/api-umbrella/api-umbrella_0.10.0-1%7Ejessie_amd64.deb
+
 download_verify_package_deps: \
 	$(DEPS_DIR)/verify_package/centos-6/api-umbrella-0.8.0-1.el6.x86_64.rpm \
 	$(DEPS_DIR)/verify_package/centos-6/api-umbrella-0.9.0-1.el6.x86_64.rpm \
+	$(DEPS_DIR)/verify_package/centos-6/api-umbrella-0.10.0-1.el6.x86_64.rpm \
 	$(DEPS_DIR)/verify_package/centos-7/api-umbrella-0.8.0-1.el7.x86_64.rpm \
 	$(DEPS_DIR)/verify_package/centos-7/api-umbrella-0.9.0-1.el7.x86_64.rpm \
+	$(DEPS_DIR)/verify_package/centos-7/api-umbrella-0.10.0-1.el7.x86_64.rpm \
 	$(DEPS_DIR)/verify_package/ubuntu-12.04/api-umbrella_0.8.0-1_amd64.deb \
 	$(DEPS_DIR)/verify_package/ubuntu-12.04/api-umbrella_0.9.0-1~precise_amd64.deb \
+	$(DEPS_DIR)/verify_package/ubuntu-12.04/api-umbrella_0.10.0-1~precise_amd64.deb \
 	$(DEPS_DIR)/verify_package/ubuntu-14.04/api-umbrella_0.8.0-1_amd64.deb \
 	$(DEPS_DIR)/verify_package/ubuntu-14.04/api-umbrella_0.9.0-1~trusty_amd64.deb \
+	$(DEPS_DIR)/verify_package/ubuntu-14.04/api-umbrella_0.10.0-1~trusty_amd64.deb \
 	$(DEPS_DIR)/verify_package/debian-7/api-umbrella_0.8.0-1_amd64.deb \
 	$(DEPS_DIR)/verify_package/debian-7/api-umbrella_0.9.0-1~wheezy_amd64.deb \
-	$(DEPS_DIR)/verify_package/debian-8/api-umbrella_0.9.0-1~jessie_amd64.deb
+	$(DEPS_DIR)/verify_package/debian-7/api-umbrella_0.10.0-1~wheezy_amd64.deb \
+	$(DEPS_DIR)/verify_package/debian-8/api-umbrella_0.9.0-1~jessie_amd64.deb \
+	$(DEPS_DIR)/verify_package/debian-8/api-umbrella_0.10.0-1~jessie_amd64.deb
 
 package:
 	$(BUILD_DIR)/package/build
