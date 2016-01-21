@@ -24,6 +24,7 @@ To build packages for the current API Umbrella version:
 $ git clone https://github.com/NREL/api-umbrella.git
 $ cd api-umbrella
 $ make download_deps
+$ make -j8 download_verify_package_deps
 $ make -j8 all_packages # Adjust concurrency with -j flag as desired
 ```
 
