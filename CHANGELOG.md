@@ -1,6 +1,6 @@
 # API Umbrella Change Log
 
-## 0.11.0 (2015-01-20)
+## 0.11.0 (2016-01-20)
 
 This is a small update that fixes a few bugs, adds a couple small new features, and updates some dependencies for security purposes. Upgrading is recommended.
 
