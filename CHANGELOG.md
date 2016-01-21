@@ -1,5 +1,46 @@
 # API Umbrella Change Log
 
+## 0.11.0 (2015-01-20)
+
+This is a small update that fixes a few bugs, adds a couple small new features, and updates some dependencies for security purposes. Upgrading is recommended.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` package using your package manager.
+
+### Added
+
+* **Search user role names in admin user search:** In the admin search interface for users, role names assigned to users are now searched too. ([api.data.gov#302](https://github.com/18F/api.data.gov/issues/302))
+* **Allow for nginx's `server_names_hash_bucket_size` option to be set:** If you've explicitly defined `hosts` in the API Umbrella config with longer hostnames, you can now adjust the `nginx.server_names_hash_bucket_size` setting in `/etc/api-umbrella/api-umbrella.yml` to accommodate longer hostnames. ([#208](https://github.com/NREL/api-umbrella/issues/208))
+* **Documentation on MongoDB authentication:** Add [documentation](http://api-umbrella.readthedocs.org/en/latest/server/db-config.html#mongodb-authentication) on configuring API Umbrella to use a MongoDB server with authentication.  ([#206](https://github.com/NREL/api-umbrella/issues/206))
+
+### Changed
+
+* **Upgrade bundled software dependencies:**
+  * Elasticsearch 1.7.3 -> 1.7.4
+  * MongoDB 3.0.7 -> 3.0.8
+  * OpenResty 1.9.3.2 -> 1.9.7.1
+  * Ruby 2.2.3 -> 2.2.4
+
+### Fixed
+
+* **Fix editing users with custom rate limits:** There were a few bugs related to editing custom rate limits on users that broke in the v0.9 release. ([api.data.gov#303](https://github.com/18F/api.data.gov/issues/303), [api.data.gov#304](https://github.com/18F/api.data.gov/issues/304), [api.data.gov#306](https://github.com/18F/api.data.gov/issues/306))
+* **Fix MongoDB connections when additional options are given:** If the `mongodb.url` setting contained additional query string options, it could cause connection failures. ([#206](https://github.com/NREL/api-umbrella/issues/206))
+* **Fix logging requests containing multiple `User-Agent` headers:** If a request contained multiple `User-Agent` HTTP headers, the request would fail to be logged to the analytics database. ([api.data.gov#309](https://github.com/18F/api.data.gov/issues/309))
+* **Raise default resource limits when starting processes:** Restore functionality that went missing in the v0.9 release that raised the `nofile` and `noproc` resource limits to a configurable number.
+
+### Security
+
+We've updated several dependencies with reported security issues. We're not aware of these security issues impacting API Umbrella in any significant way, but upgrading is still recommended.
+
+* Update bundled Ruby to 2.2.4 ([CVE-2015-7551](https://www.ruby-lang.org/en/news/2015/12/16/unsafe-tainted-string-usage-in-fiddle-and-dl-cve-2015-7551/))
+* Recompiled Go dependencies with Go 1.5.3 ([CVE-2015-8618](https://groups.google.com/forum/#!topic/golang-announce/MEATuOi_ei4))
+* Updated Gem dependencies with reported vulnerabilities:
+  * jquery-rails ([CVE-2015-1840](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2015-1840))
+  * mail ([OSVDB-131677](http://rubysec.com/advisories/OSVDB-131677/))
+  * net-ldap ([OSVDB-106108](http://osvdb.org/show/osvdb/106108))
+  * nokogiri ([CVE-2015-5312](https://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2015-5312), [CVE-2015-7499](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2015-7499))
+
 ## 0.10.0 (2015-12-15)
 
 This is a small update that fixes a few bugs and adds a couple small new features.
