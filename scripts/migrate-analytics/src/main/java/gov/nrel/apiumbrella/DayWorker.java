@@ -138,9 +138,10 @@ public class DayWorker implements Runnable {
   private ParquetWriter<GenericRecord> getParquetWriter() {
     if(this.parquetWriter == null) {
       try {
-        // Create a new file in /dir/YYYY-MM/YYYY-MM-DD.par
+        // Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par
         Path path = Paths.get(App.DIR,
-          ISODateTimeFormat.yearMonth().print(this.date),
+          this.date.toString("YYYY"),
+          this.date.toString("MM"),
           this.startDateString + ".par");
         Files.createDirectories(path.getParent());
 
