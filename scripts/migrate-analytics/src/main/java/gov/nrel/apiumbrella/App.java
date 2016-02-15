@@ -1,5 +1,7 @@
 package gov.nrel.apiumbrella;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -8,8 +10,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.LogManager;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -190,10 +194,15 @@ public class App {
     return first;
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws SecurityException, IOException {
     // Prevent noisy parquet logging.
-    System.setProperty("org.apache.parquet.handlers", "java.util.logging.ConsoleHandler");
-    System.setProperty("java.util.logging.ConsoleHandler.level", "SEVERE");
+    Properties props = new Properties();
+    props.setProperty("org.apache.parquet.handlers", "java.util.logging.ConsoleHandler");
+    props.setProperty("java.util.logging.ConsoleHandler.level", "SEVERE");
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    props.store(out, "");
+    LogManager logManager = LogManager.getLogManager();
+    logManager.readConfiguration(new ByteArrayInputStream(out.toByteArray()));
 
     // Setup defaults for logging to migrate.log.
     System.setProperty("org.slf4j.simpleLogger.logFile", "migrate.log");
