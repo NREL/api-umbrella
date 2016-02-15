@@ -27,6 +27,8 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -41,6 +43,8 @@ import io.searchbox.core.SearchScroll;
 import io.searchbox.params.Parameters;
 
 public class DayWorker implements Runnable {
+  final Logger logger = LoggerFactory.getLogger(DayWorker.class);
+
   private DateTime date;
   private String startDateString;
   private String endDateString;
@@ -104,7 +108,7 @@ public class DayWorker implements Runnable {
 
       JestResult result = client.execute(search);
       if(!result.isSucceeded()) {
-        System.out.println(result.getErrorMessage());
+        logger.error(result.getErrorMessage());
         System.exit(1);
       }
 
@@ -120,7 +124,7 @@ public class DayWorker implements Runnable {
         SearchScroll scroll = new SearchScroll.Builder(scrollId, "1m").build();
         result = client.execute(scroll);
         if(!result.isSucceeded()) {
-          System.out.println(result.getErrorMessage());
+          logger.error(result.getErrorMessage());
           System.exit(1);
         }
 
@@ -133,7 +137,7 @@ public class DayWorker implements Runnable {
         parquetWriter.close();
       }
     } catch(Exception e) {
-      e.printStackTrace();
+      logger.error("Unexpected error", e);
       System.exit(1);
     }
   }
@@ -156,7 +160,7 @@ public class DayWorker implements Runnable {
           .withValidation(false)
           .build();
       } catch(IOException e) {
-        e.printStackTrace();
+        logger.error("Unexpected error", e);
         System.exit(1);
       }
     }
@@ -178,10 +182,7 @@ public class DayWorker implements Runnable {
     NumberFormat numberFormatter = NumberFormat.getNumberInstance(Locale.US);
     DateTime firstRequestAt = this.parseTimestamp(
       hits.get(0).getAsJsonObject().get("_source").getAsJsonObject().get("request_at"));
-    System.out.println(String.format(
-      "%s | Thread %2s | Processing %s to %s | %10s / %10s | %12s | %s",
-      new DateTime(),
-      Thread.currentThread().getId(),
+    logger.info(String.format("Processing %s to %s | %10s / %10s | %12s | %s",
       this.startDateString,
       this.endDateString,
       numberFormatter.format(this.totalProcessedHits),
@@ -261,8 +262,7 @@ public class DayWorker implements Runnable {
                 value.getAsString().replace(":80:80/", ":80/").replace("://[", "://").replace("]/",
                   "/"));
             } catch(MalformedURLException e2) {
-              System.out.println("Thread " + Thread.currentThread().getId());
-              System.out.println(hit);
+              logger.error(hit.toString());
               throw(e2);
             }
           }
@@ -272,7 +272,7 @@ public class DayWorker implements Runnable {
           // are actually https.
           String requestScheme = source.get("request_scheme").getAsString();
           if(!url.getProtocol().equals(requestScheme)) {
-            System.out.println("WARNING: request_url's scheme (" + url.getProtocol()
+            logger.warn("request_url's scheme (" + url.getProtocol()
               + ") does not match request_scheme (" + requestScheme + ")");
           }
           log.put("request_url_scheme", requestScheme);
@@ -284,8 +284,8 @@ public class DayWorker implements Runnable {
           String requestHost = source.get("request_host").getAsString().toLowerCase();
           String urlHost = url.getHost().toLowerCase();
           if(!urlHost.equals(requestHost)) {
-            System.out.println("WARNING: request_url's host (" + url.getHost()
-              + ") does not match request_host (" + requestHost + ")");
+            logger.warn("request_url's host (" + url.getHost() + ") does not match request_host ("
+              + requestHost + ")");
           }
           log.put("request_url_host", urlHost);
 
@@ -331,10 +331,9 @@ public class DayWorker implements Runnable {
             encodedRequestPath = encodedRequestPath.replace("%25", "%");
 
             if(!encodedUrlPath.equals(encodedRequestPath)) {
-
-              System.out.println("WARNING: request_url's path (" + url.getPath() + " - "
-                + encodedUrlPath + ") does not match request_path (" + requestPath + " - "
-                + encodedRequestPath + ")");
+              logger.warn("request_url's path (" + url.getPath() + " - " + encodedUrlPath
+                + ") does not match request_path (" + requestPath + " - " + encodedRequestPath
+                + ")");
             }
           }
           log.put("request_url_path", url.getPath());
@@ -399,8 +398,8 @@ public class DayWorker implements Runnable {
             compareUrl = buffer.toString();
 
             if(!compareUrl.equals(reassmbledUrl)) {
-              System.out.println("WARNING: request_url (" + value.getAsString()
-                + " - " + compareUrl + ") does not match reassembled URL (" + reassmbledUrl + ")");
+              logger.warn("request_url (" + value.getAsString() + " - " + compareUrl
+                + ") does not match reassembled URL (" + reassmbledUrl + ")");
             }
           }
 
@@ -460,8 +459,8 @@ public class DayWorker implements Runnable {
               }
             }
           } catch(Exception e) {
-            System.out.println("Eror on field: " + key);
-            System.out.println(e.getMessage());
+            logger.error("Eror on field: " + key);
+            logger.error(e.getMessage());
             throw(e);
           }
         }
@@ -469,9 +468,8 @@ public class DayWorker implements Runnable {
 
       this.getParquetWriter().write(log);
     } catch(Exception e) {
-      System.out.println("Error on hit: " + hit);
-      System.out.println(e.getMessage());
-      System.out.println("Error on thread: " + Thread.currentThread().getId());
+      logger.error("Error on hit: " + hit);
+      logger.error(e.getMessage());
       throw(e);
     }
   }

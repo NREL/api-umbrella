@@ -19,6 +19,8 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 
@@ -66,6 +68,8 @@ public class App {
     // Junk field we've seen on some old data.
     "_type" }));
 
+  final Logger logger = LoggerFactory.getLogger(App.class);
+
   private Schema schema;
   private HashSet<String> schemaIntFields;
   private HashSet<String> schemaDoubleFields;
@@ -89,7 +93,7 @@ public class App {
     executor.shutdown();
     while(!executor.isTerminated()) {
     }
-    System.out.println("Finished all threads");
+    logger.info("Finished all threads");
   }
 
   protected Schema getSchema() {
@@ -163,7 +167,7 @@ public class App {
     try {
       JestResult result = client.execute(aliases);
       if(!result.isSucceeded()) {
-        System.out.println(result.getErrorMessage());
+        logger.error(result.getErrorMessage());
         System.exit(1);
       }
 
@@ -187,6 +191,20 @@ public class App {
   }
 
   public static void main(String[] args) {
+    // Prevent noisy parquet logging.
+    System.setProperty("org.apache.parquet.handlers", "java.util.logging.ConsoleHandler");
+    System.setProperty("java.util.logging.ConsoleHandler.level", "SEVERE");
+
+    // Setup defaults for logging to migrate.log.
+    System.setProperty("org.slf4j.simpleLogger.logFile", "migrate.log");
+    System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");
+    System.setProperty("org.slf4j.simpleLogger.log.gov.nrel.apiumbrella", "info");
+    System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
+    System.setProperty("org.slf4j.simpleLogger.dateTimeFormat", "yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    System.setProperty("org.slf4j.simpleLogger.showLogName", "false");
+
+    System.out.println("Logging to migrate.log...");
+
     new App();
   }
 }
