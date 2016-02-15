@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
@@ -404,7 +405,25 @@ public class DayWorker implements Runnable {
             } else if(this.schemaBooleanFields.contains(key)) {
               log.put(key, value.getAsBoolean());
             } else {
-              log.put(key, value.getAsString());
+              try {
+                log.put(key, value.getAsString());
+              } catch(IllegalStateException e) {
+                // Handle some unexpected array types by comma-delimiting the
+                // values.
+                if(value.isJsonArray()) {
+                  StringBuffer buffer = new StringBuffer();
+                  Iterator<JsonElement> iter = value.getAsJsonArray().iterator();
+                  while(iter.hasNext()) {
+                    buffer.append(iter.next().getAsString());
+                    if(iter.hasNext()) {
+                      buffer.append(", ");
+                    }
+                  }
+                  log.put(key, buffer.toString());
+                } else {
+                  throw(e);
+                }
+              }
             }
           } catch(Exception e) {
             System.out.println("Eror on field: " + key);
