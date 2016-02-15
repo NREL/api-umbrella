@@ -13,6 +13,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -316,8 +318,12 @@ public class DayWorker implements Runnable {
             // Before throwing a warning, ignore some semi-common URL encoding
             // differences between the full URL and the request_path field
             // (where we're comfortable with the encoding of the full URL's
-            // version).
-            String encodedUrlPath = URLEncoder.encode(url.getPath(), "UTF-8");
+            // version). Also deal with missing hash fragment details.
+            String encodedUrlPath = url.getPath();
+            if(url.getRef() != null && url.getQuery() == null) {
+              encodedUrlPath += "#" + url.getRef();
+            }
+            encodedUrlPath = URLEncoder.encode(encodedUrlPath, "UTF-8");
             encodedUrlPath = encodedUrlPath.replace("%25", "%");
 
             String encodedRequestPath = requestPath.replaceAll("/(x[0-9])", "\\\\$1");
@@ -325,6 +331,7 @@ public class DayWorker implements Runnable {
             encodedRequestPath = encodedRequestPath.replace("%25", "%");
 
             if(!encodedUrlPath.equals(encodedRequestPath)) {
+
               System.out.println("WARNING: request_url's path (" + url.getPath() + " - "
                 + encodedUrlPath + ") does not match request_path (" + requestPath + " - "
                 + encodedRequestPath + ")");
@@ -376,12 +383,24 @@ public class DayWorker implements Runnable {
           // new URL composed of the various parts.
           if(!value.getAsString().equals(reassmbledUrl)) {
             // Ignore some of the default ports for comparison.
-            if(!value.getAsString().replaceFirst(":(80|443|50090)/", "/").equals(reassmbledUrl)) {
-              // Ignore url encoding of the hash fragment.
-              if(!value.getAsString().replaceFirst("#", "%23").equals(reassmbledUrl)) {
-                System.out.println("WARNING: request_url (" + value.getAsString()
-                  + ") does not match reassembled URL (" + reassmbledUrl + ")");
-              }
+            String compareUrl = value.getAsString().replaceFirst(":(80|443|50090)/", "/");
+
+            // Ignore url encoding of the hash fragment.
+            compareUrl = compareUrl.replaceFirst("#", "%23");
+
+            // Ignore case-sensitivity on the Host.
+            Pattern pattern = Pattern.compile("://(.+?)/");
+            Matcher matcher = pattern.matcher(compareUrl);
+            StringBuffer buffer = new StringBuffer();
+            while(matcher.find()) {
+              matcher.appendReplacement(buffer, "://" + matcher.group(1).toLowerCase() + "/");
+            }
+            matcher.appendTail(buffer);
+            compareUrl = buffer.toString();
+
+            if(!compareUrl.equals(reassmbledUrl)) {
+              System.out.println("WARNING: request_url (" + value.getAsString()
+                + " - " + compareUrl + ") does not match reassembled URL (" + reassmbledUrl + ")");
             }
           }
 
