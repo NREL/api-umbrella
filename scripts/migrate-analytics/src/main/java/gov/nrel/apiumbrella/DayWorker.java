@@ -392,7 +392,7 @@ public class DayWorker implements Runnable {
             Matcher matcher = pattern.matcher(compareUrl);
             StringBuffer buffer = new StringBuffer();
             while(matcher.find()) {
-              matcher.appendReplacement(buffer, "://" + matcher.group(1).toLowerCase() + "/");
+              matcher.appendReplacement(buffer, Matcher.quoteReplacement("://" + matcher.group(1).toLowerCase() + "/"));
             }
             matcher.appendTail(buffer);
             compareUrl = buffer.toString();
