@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -204,8 +205,7 @@ public class DayWorker implements Runnable {
       log.put("id", hit.get("_id"));
 
       // Loop over each attribute in the source data, assigning each value to
-      // the
-      // new data record.
+      // the new data record.
       for(Map.Entry<String, JsonElement> entry : source.entrySet()) {
         String key = entry.getKey();
 
@@ -247,8 +247,7 @@ public class DayWorker implements Runnable {
           // separate fields (versus the duplicative separate fields plus a full
           // URL field). The full URL field sometimes differs in the data versus
           // the individual fields, so we want to make sure we're transferring
-          // the
-          // best data possible and not losing anything in the process.
+          // the best data possible and not losing anything in the process.
           URL url;
           try {
             url = new URL(value.getAsString());
@@ -280,12 +279,13 @@ public class DayWorker implements Runnable {
           // accurate than the separate request_host field (it seems to better
           // handle some odd invalid hostnames, which probably don't actually
           // matter too much).
-          String requestHost = source.get("request_host").getAsString();
-          if(!url.getHost().equals(requestHost)) {
+          String requestHost = source.get("request_host").getAsString().toLowerCase();
+          String urlHost = url.getHost().toLowerCase();
+          if(!urlHost.equals(requestHost)) {
             System.out.println("WARNING: request_url's host (" + url.getHost()
               + ") does not match request_host (" + requestHost + ")");
           }
-          log.put("request_url_host", url.getHost());
+          log.put("request_url_host", urlHost);
 
           // As a new field, store the port used. Most of the time this will be
           // the default 80 or 443, depending on the scheme.
@@ -310,12 +310,25 @@ public class DayWorker implements Runnable {
           }
 
           // Store the path extracted from the full URL, since it seems to be
-          // more
-          // accurate at dealing with odd URL encoding issues.
+          // more accurate at dealing with odd URL encoding issues.
           String requestPath = source.get("request_path").getAsString();
           if(!url.getPath().equals(requestPath)) {
-            System.out.println("WARNING: request_url's path (" + url.getPath()
-              + ") does not match request_path (" + requestPath + ")");
+            // Before throwing a warning, ignore some semi-common URL encoding
+            // differences between the full URL and the request_path field
+            // (where we're comfortable with the encoding of the full URL's
+            // version).
+            String encodedUrlPath = URLEncoder.encode(url.getPath(), "UTF-8");
+            encodedUrlPath = encodedUrlPath.replace("%25", "%");
+
+            String encodedRequestPath = requestPath.replaceAll("/(x[0-9])", "\\\\$1");
+            encodedRequestPath = URLEncoder.encode(encodedRequestPath, "UTF-8");
+            encodedRequestPath = encodedRequestPath.replace("%25", "%");
+
+            if(!encodedUrlPath.equals(encodedRequestPath)) {
+              System.out.println("WARNING: request_url's path (" + url.getPath() + " - "
+                + encodedUrlPath + ") does not match request_path (" + requestPath + " - "
+                + encodedRequestPath + ")");
+            }
           }
           log.put("request_url_path", url.getPath());
 
@@ -327,9 +340,8 @@ public class DayWorker implements Runnable {
           // flag that something's fishy with the URL encoding, since our
           // server-side logs can't possible contain fragment information. So
           // we'll assume this information actually represents something
-          // following
-          // a URL-encoded hash fragment, and append that to the appropriate
-          // place.
+          // following a URL-encoded hash fragment, and append that to the
+          // appropriate place.
           String urlRef = url.getRef();
           if(urlRef != null) {
             if(log.get("request_url_query") != null) {
@@ -365,8 +377,11 @@ public class DayWorker implements Runnable {
           if(!value.getAsString().equals(reassmbledUrl)) {
             // Ignore some of the default ports for comparison.
             if(!value.getAsString().replaceFirst(":(80|443|50090)/", "/").equals(reassmbledUrl)) {
-              System.out.println("WARNING: request_url (" + value.getAsString()
-                + ") does not match reassembled URL (" + reassmbledUrl + ")");
+              // Ignore url encoding of the hash fragment.
+              if(!value.getAsString().replaceFirst("#", "%23").equals(reassmbledUrl)) {
+                System.out.println("WARNING: request_url (" + value.getAsString()
+                  + ") does not match reassembled URL (" + reassmbledUrl + ")");
+              }
             }
           }
 
