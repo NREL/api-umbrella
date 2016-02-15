@@ -20,6 +20,7 @@ import org.apache.parquet.avro.AvroParquetWriter;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -50,7 +51,6 @@ public class DayWorker implements Runnable {
   ParquetWriter<GenericRecord> parquetWriter;
   DateTimeFormatter dateTimeParser = ISODateTimeFormat.dateTimeParser();
   DateTimeFormatter dateFormatter = ISODateTimeFormat.date();
-  DateTimeFormatter dateTimeFormatter = ISODateTimeFormat.dateTime();
 
   public DayWorker(App app, DateTime date) {
     this.app = app;
@@ -172,13 +172,12 @@ public class DayWorker implements Runnable {
 
     BigInteger globalHits = this.app.incrementGlobalHits(pageHits);
     NumberFormat numberFormatter = NumberFormat.getNumberInstance(Locale.US);
-    String firstRequestAt = hits
+    DateTime firstRequestAt = this.parseTimestamp(hits
       .get(0)
       .getAsJsonObject()
       .get("_source")
       .getAsJsonObject()
-      .get("request_at")
-      .getAsString();
+      .get("request_at"));
     System.out.println(String.format(
       "%s | Thread %2s | Processing %s to %s | %10s / %10s | %12s | %s",
       new DateTime(),
@@ -229,8 +228,8 @@ public class DayWorker implements Runnable {
         // Split up the timestamp into several fields for better compatibility
         // with the Kylin's cube's that will be created (which doesn't support
         // timestamps yet).
-        DateTime requestAt = this.dateTimeParser.parseDateTime(value.getAsString());
-        log.put("request_at", this.dateTimeFormatter.print(requestAt));
+        DateTime requestAt = this.parseTimestamp(value);
+        log.put("request_at", requestAt.getMillis());
         log.put("request_at_year", requestAt.getYear());
         log.put("request_at_month", requestAt.getMonthOfYear());
         log.put("request_at_date", this.dateFormatter.print(requestAt));
@@ -421,6 +420,14 @@ public class DayWorker implements Runnable {
       System.out.println("Thread " + Thread.currentThread().getId());
       System.out.println(hit);
       throw(e);
+    }
+  }
+
+  private DateTime parseTimestamp(JsonElement value) {
+    if(value.getAsJsonPrimitive().isNumber()) {
+      return new DateTime(value.getAsLong(), DateTimeZone.UTC);
+    } else {
+      return this.dateTimeParser.parseDateTime(value.getAsString());
     }
   }
 }

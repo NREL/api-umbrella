@@ -8,7 +8,7 @@
     },
     {
       "name": "request_at",
-      "type": "string"
+      "type": "long"
     },
     {
       "name": "request_at_year",
