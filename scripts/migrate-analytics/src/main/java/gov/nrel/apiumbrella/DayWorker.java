@@ -12,7 +12,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -173,12 +172,8 @@ public class DayWorker implements Runnable {
 
     BigInteger globalHits = this.app.incrementGlobalHits(pageHits);
     NumberFormat numberFormatter = NumberFormat.getNumberInstance(Locale.US);
-    DateTime firstRequestAt = this.parseTimestamp(hits
-      .get(0)
-      .getAsJsonObject()
-      .get("_source")
-      .getAsJsonObject()
-      .get("request_at"));
+    DateTime firstRequestAt = this.parseTimestamp(
+      hits.get(0).getAsJsonObject().get("_source").getAsJsonObject().get("request_at"));
     System.out.println(String.format(
       "%s | Thread %2s | Processing %s to %s | %10s / %10s | %12s | %s",
       new DateTime(),
@@ -201,225 +196,229 @@ public class DayWorker implements Runnable {
   private void processHit(JsonObject hit) throws Exception {
     JsonObject source = hit.get("_source").getAsJsonObject();
 
-    // For each hit, create a new Avro record to serialize it into the new
-    // format for parquet storage.
-    GenericRecord log = new GenericData.Record(schema);
-    log.put("id", hit.get("_id"));
+    try {
+      // For each hit, create a new Avro record to serialize it into the new
+      // format for parquet storage.
+      GenericRecord log = new GenericData.Record(schema);
+      log.put("id", hit.get("_id"));
 
-    // Loop over each attribute in the source data, assigning each value to the
-    // new data record.
-    for(Map.Entry<String, JsonElement> entry : source.entrySet()) {
-      String key = entry.getKey();
+      // Loop over each attribute in the source data, assigning each value to
+      // the
+      // new data record.
+      for(Map.Entry<String, JsonElement> entry : source.entrySet()) {
+        String key = entry.getKey();
 
-      // Skip this field if we've explicitly marked it as not migrating.
-      if(App.SKIP_FIELDS.contains(key)) {
-        continue;
-      }
+        // Skip this field if we've explicitly marked it as not migrating.
+        if(App.SKIP_FIELDS.contains(key)) {
+          continue;
+        }
 
-      JsonElement value = entry.getValue();
+        JsonElement value = entry.getValue();
 
-      // Skip setting anything if the value is null.
-      if(value == null || value.isJsonNull()) {
-        continue;
-      }
+        // Skip setting anything if the value is null.
+        if(value == null || value.isJsonNull()) {
+          continue;
+        }
 
-      // Handle special processing for certain fields.
-      switch(key) {
-      case "request_at":
-        // Split up the timestamp into several fields for better compatibility
-        // with the Kylin's cube's that will be created (which doesn't support
-        // timestamps yet).
-        DateTime requestAt = this.parseTimestamp(value);
-        log.put("request_at", requestAt.getMillis());
-        log.put("request_at_year", requestAt.getYear());
-        log.put("request_at_month", requestAt.getMonthOfYear());
-        log.put("request_at_date", this.dateFormatter.print(requestAt));
-        log.put("request_at_hour", requestAt.getHourOfDay());
-        log.put("request_at_minute", requestAt.getMinuteOfHour());
-        value = null;
-        break;
-      case "request_ip_location":
-        // Flatten the location object into two separate fields.
-        log.put("request_ip_lat", value.getAsJsonObject().get("lat").getAsDouble());
-        log.put("request_ip_lon", value.getAsJsonObject().get("lon").getAsDouble());
-        value = null;
-        break;
-      case "request_url":
-        // Perform various cleanup and sanity checks on storing the URL as
-        // separate fields (versus the duplicative separate fields plus a full
-        // URL field). The full URL field sometimes differs in the data versus
-        // the individual fields, so we want to make sure we're transferring the
-        // best data possible and not losing anything in the process.
-        URL url;
-        try {
-          url = new URL(value.getAsString());
-        } catch(MalformedURLException e) {
+        // Handle special processing for certain fields.
+        switch(key) {
+        case "request_at":
+          // Split up the timestamp into several fields for better compatibility
+          // with the Kylin's cube's that will be created (which doesn't support
+          // timestamps yet).
+          DateTime requestAt = this.parseTimestamp(value);
+          log.put("request_at", requestAt.getMillis());
+          log.put("request_at_year", requestAt.getYear());
+          log.put("request_at_month", requestAt.getMonthOfYear());
+          log.put("request_at_date", this.dateFormatter.print(requestAt));
+          log.put("request_at_hour", requestAt.getHourOfDay());
+          log.put("request_at_minute", requestAt.getMinuteOfHour());
+          value = null;
+          break;
+        case "request_ip_location":
+          // Flatten the location object into two separate fields.
+          log.put("request_ip_lat", value.getAsJsonObject().get("lat").getAsDouble());
+          log.put("request_ip_lon", value.getAsJsonObject().get("lon").getAsDouble());
+          value = null;
+          break;
+        case "request_url":
+          // Perform various cleanup and sanity checks on storing the URL as
+          // separate fields (versus the duplicative separate fields plus a full
+          // URL field). The full URL field sometimes differs in the data versus
+          // the individual fields, so we want to make sure we're transferring
+          // the
+          // best data possible and not losing anything in the process.
+          URL url;
           try {
-            // Cleanup some oddities in some invalid URLs seen (I think from
-            // localhost testing).
-            url = new URL(value
-              .getAsString()
-              .replace(":80:80/", ":80/")
-              .replace("://[", "://")
-              .replace("]/", "/"));
-          } catch(MalformedURLException e2) {
-            System.out.println("Thread " + Thread.currentThread().getId());
-            System.out.println(hit);
-            throw(e2);
+            url = new URL(value.getAsString());
+          } catch(MalformedURLException e) {
+            try {
+              // Cleanup some oddities in some invalid URLs seen (I think from
+              // localhost testing).
+              url = new URL(
+                value.getAsString().replace(":80:80/", ":80/").replace("://[", "://").replace("]/",
+                  "/"));
+            } catch(MalformedURLException e2) {
+              System.out.println("Thread " + Thread.currentThread().getId());
+              System.out.println(hit);
+              throw(e2);
+            }
           }
-        }
 
-        // Store the original request_scheme, since that seems to be more
-        // accurate than sometimes incorrect http:// urls on request_url that
-        // are actually https.
-        String requestScheme = source.get("request_scheme").getAsString();
-        if(!url.getProtocol().equals(requestScheme)) {
-          System.out.println("WARNING: request_url's scheme (" + url.getProtocol()
-            + ") does not match request_scheme (" + requestScheme + ")");
-        }
-        log.put("request_url_scheme", requestScheme);
+          // Store the original request_scheme, since that seems to be more
+          // accurate than sometimes incorrect http:// urls on request_url that
+          // are actually https.
+          String requestScheme = source.get("request_scheme").getAsString();
+          if(!url.getProtocol().equals(requestScheme)) {
+            System.out.println("WARNING: request_url's scheme (" + url.getProtocol()
+              + ") does not match request_scheme (" + requestScheme + ")");
+          }
+          log.put("request_url_scheme", requestScheme);
 
-        // Store the host extracted from the full URL, since that seems more
-        // accurate than the separate request_host field (it seems to better
-        // handle some odd invalid hostnames, which probably don't actually
-        // matter too much).
-        String requestHost = source.get("request_host").getAsString();
-        if(!url.getHost().equals(requestHost)) {
-          System.out.println("WARNING: request_url's host (" + url.getHost()
-            + ") does not match request_host (" + requestHost + ")");
-        }
-        log.put("request_url_host", url.getHost());
+          // Store the host extracted from the full URL, since that seems more
+          // accurate than the separate request_host field (it seems to better
+          // handle some odd invalid hostnames, which probably don't actually
+          // matter too much).
+          String requestHost = source.get("request_host").getAsString();
+          if(!url.getHost().equals(requestHost)) {
+            System.out.println("WARNING: request_url's host (" + url.getHost()
+              + ") does not match request_host (" + requestHost + ")");
+          }
+          log.put("request_url_host", url.getHost());
 
-        // As a new field, store the port used. Most of the time this will be
-        // the default 80 or 443, depending on the scheme.
-        int urlPort = url.getPort();
-        if(log.get("request_url_scheme").equals("https") && urlPort == 80) {
-          log.put("request_url_port", 443);
-        } else {
-          // If the port isn't set, or it's 50090, set it to the default port
-          // based on the scheme. We're ignoring port 50090, since this is
-          // present on some of our rather old imported logs, and was an
-          // internal-only port that was used (but was never public, so this
-          // isn't accurate).
-          if(urlPort == -1 || urlPort == 50090) {
-            if(log.get("request_url_scheme").equals("https")) {
-              log.put("request_url_port", 443);
+          // As a new field, store the port used. Most of the time this will be
+          // the default 80 or 443, depending on the scheme.
+          int urlPort = url.getPort();
+          if(log.get("request_url_scheme").equals("https") && urlPort == 80) {
+            log.put("request_url_port", 443);
+          } else {
+            // If the port isn't set, or it's 50090, set it to the default port
+            // based on the scheme. We're ignoring port 50090, since this is
+            // present on some of our rather old imported logs, and was an
+            // internal-only port that was used (but was never public, so this
+            // isn't accurate).
+            if(urlPort == -1 || urlPort == 50090) {
+              if(log.get("request_url_scheme").equals("https")) {
+                log.put("request_url_port", 443);
+              } else {
+                log.put("request_url_port", 80);
+              }
             } else {
-              log.put("request_url_port", 80);
+              log.put("request_url_port", urlPort);
+            }
+          }
+
+          // Store the path extracted from the full URL, since it seems to be
+          // more
+          // accurate at dealing with odd URL encoding issues.
+          String requestPath = source.get("request_path").getAsString();
+          if(!url.getPath().equals(requestPath)) {
+            System.out.println("WARNING: request_url's path (" + url.getPath()
+              + ") does not match request_path (" + requestPath + ")");
+          }
+          log.put("request_url_path", url.getPath());
+
+          // Store the query string extracted from the full URL.
+          String requestQuery = url.getQuery();
+          log.put("request_url_query", requestQuery);
+
+          // If a hash fragment is present in the full URL, this is actually a
+          // flag that something's fishy with the URL encoding, since our
+          // server-side logs can't possible contain fragment information. So
+          // we'll assume this information actually represents something
+          // following
+          // a URL-encoded hash fragment, and append that to the appropriate
+          // place.
+          String urlRef = url.getRef();
+          if(urlRef != null) {
+            if(log.get("request_url_query") != null) {
+              log.put("request_url_query", log.get("request_url_query") + "%23" + urlRef);
+            } else {
+              log.put("request_url_path", log.get("request_url_path") + "%23" + urlRef);
+            }
+          }
+
+          // Re-assemble the URL based on all of our newly stored individual
+          // componetns.
+          String reassmbledUrl = log.get("request_url_scheme") + "://"
+            + log.get("request_url_host");
+          if(log.get("request_url_scheme").equals("http")) {
+            if((Integer) log.get("request_url_port") != 80) {
+              reassmbledUrl = reassmbledUrl + ":" + log.get("request_url_port");
+            }
+          } else if(log.get("request_url_scheme").equals("https")) {
+            if((Integer) log.get("request_url_port") != 443) {
+              reassmbledUrl = reassmbledUrl + ":" + log.get("request_url_port");
             }
           } else {
-            log.put("request_url_port", urlPort);
-          }
-        }
-
-        // Store the path extracted from the full URL, since it seems to be more
-        // accurate at dealing with odd URL encoding issues.
-        String requestPath = source.get("request_path").getAsString();
-        if(!url.getPath().equals(requestPath)) {
-          System.out.println("WARNING: request_url's path (" + url.getPath()
-            + ") does not match request_path (" + requestPath + ")");
-        }
-        log.put("request_url_path", url.getPath());
-
-        // Store the query string extracted from the full URL.
-        String requestQuery = url.getQuery();
-        log.put("request_url_query", requestQuery);
-
-        // If a hash fragment is present in the full URL, this is actually a
-        // flag that something's fishy with the URL encoding, since our
-        // server-side logs can't possible contain fragment information. So
-        // we'll assume this information actually represents something following
-        // a URL-encoded hash fragment, and append that to the appropriate
-        // place.
-        String urlRef = url.getRef();
-        if(urlRef != null) {
-          if(log.get("request_url_query") != null) {
-            log.put("request_url_query", log.get("request_url_query") + "%23" + urlRef);
-          } else {
-            log.put("request_url_path", log.get("request_url_path") + "%23" + urlRef);
-          }
-        }
-
-        // Re-assemble the URL based on all of our newly stored individual
-        // componetns.
-        String reassmbledUrl = log.get("request_url_scheme") + "://" + log.get("request_url_host");
-        if(log.get("request_url_scheme").equals("http")) {
-          if((Integer) log.get("request_url_port") != 80) {
             reassmbledUrl = reassmbledUrl + ":" + log.get("request_url_port");
           }
-        } else if(log.get("request_url_scheme").equals("https")) {
-          if((Integer) log.get("request_url_port") != 443) {
-            reassmbledUrl = reassmbledUrl + ":" + log.get("request_url_port");
+          reassmbledUrl = reassmbledUrl + log.get("request_url_path");
+          if(requestQuery != null) {
+            reassmbledUrl = reassmbledUrl + "?" + log.get("request_url_query");
           }
-        } else {
-          reassmbledUrl = reassmbledUrl + ":" + log.get("request_url_port");
-        }
-        reassmbledUrl = reassmbledUrl + log.get("request_url_path");
-        if(requestQuery != null) {
-          reassmbledUrl = reassmbledUrl + "?" + log.get("request_url_query");
+
+          // As a last sanity check to make sure we're not throwing away data as
+          // part of this migration, compare the original full URL string to the
+          // new URL composed of the various parts.
+          if(!value.getAsString().equals(reassmbledUrl)) {
+            // Ignore some of the default ports for comparison.
+            if(!value.getAsString().replaceFirst(":(80|443|50090)/", "/").equals(reassmbledUrl)) {
+              System.out.println("WARNING: request_url (" + value.getAsString()
+                + ") does not match reassembled URL (" + reassmbledUrl + ")");
+            }
+          }
+
+          value = null;
+          break;
+
+        // The following are some renamed fields to better normalize the new
+        // storage schema.
+        case "response_time":
+          key = "timer_response";
+          break;
+        case "backend_response_time":
+          key = "timer_backend_response";
+          break;
+        case "internal_gatekeeper_time":
+          key = "timer_internal";
+          break;
+        case "proxy_overhead":
+          key = "timer_proxy_overhead";
+          break;
+        case "gatekeeper_denied_code":
+          key = "denied_reason";
+          break;
+        case "imported":
+          key = "log_imported";
+          break;
         }
 
-        // As a last sanity check to make sure we're not throwing away data as
-        // part of this migration, compare the original full URL string to the
-        // new URL composed of the various parts.
-        if(!value.getAsString().equals(reassmbledUrl)) {
-          // Ignore some of the default ports for comparison.
-          if(!value.getAsString().replaceFirst(":(80|443|50090)/", "/").equals(reassmbledUrl)) {
-            System.out.println("WARNING: request_url (" + value.getAsString()
-              + ") does not match reassembled URL (" + reassmbledUrl + ")");
+        if(value != null) {
+          // Set the value on the new record, performing type-casting as needed.
+          try {
+            if(this.schemaIntFields.contains(key)) {
+              log.put(key, value.getAsInt());
+            } else if(this.schemaDoubleFields.contains(key)) {
+              log.put(key, value.getAsDouble());
+            } else if(this.schemaBooleanFields.contains(key)) {
+              log.put(key, value.getAsBoolean());
+            } else {
+              log.put(key, value.getAsString());
+            }
+          } catch(Exception e) {
+            System.out.println("Eror on field: " + key);
+            System.out.println(e.getMessage());
+            throw(e);
           }
         }
-
-        value = null;
-        break;
-
-      // The following are some renamed fields to better normalize the new
-      // storage schema.
-      case "response_time":
-        key = "timer_response";
-        break;
-      case "backend_response_time":
-        key = "timer_backend_response";
-        break;
-      case "internal_gatekeeper_time":
-        key = "timer_internal";
-        break;
-      case "proxy_overhead":
-        key = "timer_proxy_overhead";
-        break;
-      case "gatekeeper_denied_code":
-        key = "denied_reason";
-        break;
-      case "imported":
-        key = "log_imported";
-        break;
       }
 
-      if(value != null) {
-        // Set the value on the new record, performing type-casting as needed.
-        try {
-          if(this.schemaIntFields.contains(key)) {
-            log.put(key, value.getAsInt());
-          } else if(this.schemaDoubleFields.contains(key)) {
-            log.put(key, value.getAsDouble());
-          } else if(this.schemaBooleanFields.contains(key)) {
-            log.put(key, value.getAsBoolean());
-          } else {
-            log.put(key, value.getAsString());
-          }
-        } catch(AvroRuntimeException e) {
-          System.out.println("Thread " + Thread.currentThread().getId());
-          System.out.println(hit);
-          throw(e);
-        }
-      }
-    }
-
-    try {
       this.getParquetWriter().write(log);
     } catch(Exception e) {
-      System.out.println("Thread " + Thread.currentThread().getId());
-      System.out.println(hit);
+      System.out.println("Error on hit: " + hit);
+      System.out.println(e.getMessage());
+      System.out.println("Error on thread: " + Thread.currentThread().getId());
       throw(e);
     }
   }
