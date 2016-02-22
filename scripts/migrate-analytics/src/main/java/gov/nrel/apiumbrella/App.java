@@ -197,8 +197,17 @@ public class App {
   public static void main(String[] args) throws SecurityException, IOException {
     // Prevent noisy parquet logging.
     Properties props = new Properties();
-    props.setProperty("org.apache.parquet.handlers", "java.util.logging.ConsoleHandler");
+    props.setProperty("parquet.handlers", "java.util.logging.ConsoleHandler");
     props.setProperty("java.util.logging.ConsoleHandler.level", "SEVERE");
+
+    props.setProperty("org.apache.hadoop.io.compress.CodecPool.handlers",
+      "java.util.logging.ConsoleHandler");
+    props.setProperty("org.apache.hadoop.io.compress.handlers", "java.util.logging.ConsoleHandler");
+    props.setProperty("CodecPool.handlers", "java.util.logging.ConsoleHandler");
+    props.setProperty("compress.CodecPool.handlers", "java.util.logging.ConsoleHandler");
+    props.setProperty("compress.handlers", "java.util.logging.ConsoleHandler");
+    props.setProperty("log4j.rootLogger", "OFF");
+
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     props.store(out, "");
     LogManager logManager = LogManager.getLogManager();

@@ -1,6 +1,10 @@
 package gov.nrel.apiumbrella;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -11,17 +15,20 @@ import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.avro.Schema;
+import org.apache.avro.file.CodecFactory;
+import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.parquet.avro.AvroParquetWriter;
-import org.apache.parquet.hadoop.ParquetWriter;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
+import org.apache.avro.io.DatumWriter;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
@@ -41,6 +48,9 @@ import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchScroll;
 import io.searchbox.params.Parameters;
+import parquet.avro.AvroParquetWriter;
+import parquet.hadoop.ParquetWriter;
+import parquet.hadoop.metadata.CompressionCodecName;
 
 public class DayWorker implements Runnable {
   final Logger logger = LoggerFactory.getLogger(DayWorker.class);
@@ -49,6 +59,7 @@ public class DayWorker implements Runnable {
   private String startDateString;
   private String endDateString;
   private Schema schema;
+  private List<Schema.Field> schemaFields;
   private HashSet<String> schemaIntFields;
   private HashSet<String> schemaDoubleFields;
   private HashSet<String> schemaBooleanFields;
@@ -56,6 +67,9 @@ public class DayWorker implements Runnable {
   private int totalProcessedHits = 0;
   private int totalHits;
   ParquetWriter<GenericRecord> parquetWriter;
+  private DataFileWriter<GenericRecord> avroWriter;
+  // private Writer orcWriter;
+  private BufferedWriter tsvWriter;
   DateTimeFormatter dateTimeParser = ISODateTimeFormat.dateTimeParser();
   DateTimeFormatter dateFormatter = ISODateTimeFormat.date();
 
@@ -63,6 +77,7 @@ public class DayWorker implements Runnable {
     this.app = app;
     this.date = date;
     this.schema = app.getSchema();
+    this.schemaFields = this.schema.getFields();
     this.schemaIntFields = app.getSchemaIntFields();
     this.schemaDoubleFields = app.getSchemaDoubleFields();
     this.schemaBooleanFields = app.getSchemaBooleanFields();
@@ -77,8 +92,8 @@ public class DayWorker implements Runnable {
       JestClientFactory factory = new JestClientFactory();
       factory.setHttpClientConfig(new HttpClientConfig.Builder(App.ELASTICSEARCH_URL)
         .multiThreaded(true)
-        .connTimeout(10000)
-        .readTimeout(30000)
+        .connTimeout(60000)
+        .readTimeout(120000)
         .build());
       JestClient client = factory.getObject();
 
@@ -103,7 +118,7 @@ public class DayWorker implements Runnable {
       Search search = new Search.Builder(query)
         .addIndex(indexName)
         .setParameter(Parameters.SIZE, App.PAGE_SIZE)
-        .setParameter(Parameters.SCROLL, "1m")
+        .setParameter(Parameters.SCROLL, "3m")
         .build();
 
       JestResult result = client.execute(search);
@@ -121,7 +136,7 @@ public class DayWorker implements Runnable {
           break;
         }
 
-        SearchScroll scroll = new SearchScroll.Builder(scrollId, "1m").build();
+        SearchScroll scroll = new SearchScroll.Builder(scrollId, "3m").build();
         result = client.execute(scroll);
         if(!result.isSucceeded()) {
           logger.error(result.getErrorMessage());
@@ -136,6 +151,12 @@ public class DayWorker implements Runnable {
       if(this.parquetWriter != null) {
         parquetWriter.close();
       }
+      if(this.avroWriter != null) {
+        this.avroWriter.close();
+      }
+      if(this.tsvWriter != null) {
+        this.tsvWriter.close();
+      }
     } catch(Exception e) {
       logger.error("Unexpected error", e);
       System.exit(1);
@@ -147,18 +168,15 @@ public class DayWorker implements Runnable {
       try {
         // Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par
         Path path = Paths.get(App.DIR,
-          this.date.toString("YYYY"),
-          this.date.toString("MM"),
+          "request_at_year=" + this.date.toString("YYYY"),
+          "request_at_month=" + this.date.getMonthOfYear(),
+          "request_at_date=" + this.startDateString,
           this.startDateString + ".par");
         Files.createDirectories(path.getParent());
 
-        this.parquetWriter = AvroParquetWriter
-          .<GenericRecord> builder(new org.apache.hadoop.fs.Path(path.toString()))
-          .withSchema(schema)
-          .withCompressionCodec(CompressionCodecName.SNAPPY)
-          .withDictionaryEncoding(true)
-          .withValidation(false)
-          .build();
+        this.parquetWriter = new AvroParquetWriter<GenericRecord>(
+          new org.apache.hadoop.fs.Path(path.toString()), this.schema, CompressionCodecName.GZIP,
+          AvroParquetWriter.DEFAULT_BLOCK_SIZE, AvroParquetWriter.DEFAULT_PAGE_SIZE);
       } catch(IOException e) {
         logger.error("Unexpected error", e);
         System.exit(1);
@@ -167,6 +185,68 @@ public class DayWorker implements Runnable {
 
     return this.parquetWriter;
   }
+
+  private BufferedWriter getTsvWriter() {
+    if(this.tsvWriter == null) {
+      try {
+        // Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par
+        Path path = Paths.get(App.DIR,
+          "tsv",
+          this.date.toString("YYYY"),
+          this.date.toString("MM"),
+          this.startDateString + ".tsv.gz");
+        Files.createDirectories(path.getParent());
+
+        GZIPOutputStream gzip = new GZIPOutputStream(new FileOutputStream(path.toString()));
+        this.tsvWriter = new BufferedWriter(new OutputStreamWriter(gzip, "UTF-8"));
+      } catch(IOException e) {
+        logger.error("Unexpected error", e);
+        System.exit(1);
+      }
+    }
+
+    return this.tsvWriter;
+  }
+
+  private DataFileWriter<GenericRecord> getAvroWriter() {
+    if(this.avroWriter == null) {
+      try {
+        // Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par
+        Path path = Paths.get(App.DIR,
+          this.date.toString("YYYY"),
+          this.date.toString("MM"),
+          this.startDateString + ".avro");
+        Files.createDirectories(path.getParent());
+
+        DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
+        this.avroWriter = new DataFileWriter<GenericRecord>(datumWriter);
+        this.avroWriter.setCodec(CodecFactory.snappyCodec());
+        this.avroWriter.setFlushOnEveryBlock(false);
+        this.avroWriter.create(this.schema, new File(path.toString()));
+      } catch(IOException e) {
+        logger.error("Unexpected error", e);
+        System.exit(1);
+      }
+    }
+
+    return this.avroWriter;
+  }
+
+  /*
+   * private Writer getOrcWriter() { if(this.orcWriter == null) { try { //
+   * Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par Path path =
+   * Paths.get(App.DIR, "orc", this.date.toString("YYYY"),
+   * this.date.toString("MM"), this.startDateString + ".avro");
+   * Files.createDirectories(path.getParent());
+   * 
+   * Configuration conf = new Configuration(); WriterOptions options =
+   * OrcFile.writerOptions(conf); options.compress(CompressionKind.SNAPPY);
+   * this.orcWriter = OrcFile.createWriter(new
+   * org.apache.hadoop.fs.Path(path.toString()), options); } catch(IOException
+   * e) { logger.error("Unexpected error", e); System.exit(1); } }
+   * 
+   * return this.orcWriter; }
+   */
 
   private boolean processResult(JestResult result) throws Exception {
     JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
@@ -205,7 +285,7 @@ public class DayWorker implements Runnable {
       // For each hit, create a new Avro record to serialize it into the new
       // format for parquet storage.
       GenericRecord log = new GenericData.Record(schema);
-      log.put("id", hit.get("_id"));
+      log.put("id", hit.get("_id").getAsString());
 
       // Loop over each attribute in the source data, assigning each value to
       // the new data record.
@@ -392,7 +472,8 @@ public class DayWorker implements Runnable {
             Matcher matcher = pattern.matcher(compareUrl);
             StringBuffer buffer = new StringBuffer();
             while(matcher.find()) {
-              matcher.appendReplacement(buffer, Matcher.quoteReplacement("://" + matcher.group(1).toLowerCase() + "/"));
+              matcher.appendReplacement(buffer,
+                Matcher.quoteReplacement("://" + matcher.group(1).toLowerCase() + "/"));
             }
             matcher.appendTail(buffer);
             compareUrl = buffer.toString();
@@ -467,6 +548,15 @@ public class DayWorker implements Runnable {
       }
 
       this.getParquetWriter().write(log);
+      // this.getAvroWriter().append(log);
+      // this.getOrcWriter().addRowBatch(log);
+      /*
+       * for(int i = 0; i < this.schemaFields.size(); i++) { if(i > 0) {
+       * this.getTsvWriter().write("\t"); } Object value =
+       * log.get(this.schemaFields.get(i).name()); if(value != null) {
+       * this.getTsvWriter().write(value.toString()); } }
+       * this.getTsvWriter().write("\n");
+       */
     } catch(Exception e) {
       logger.error("Error on hit: " + hit);
       logger.error(e.getMessage());
