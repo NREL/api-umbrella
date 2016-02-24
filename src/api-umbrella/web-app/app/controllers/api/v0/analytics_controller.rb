@@ -102,7 +102,10 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
 
     # Try to ignore some of the baseline monitoring traffic. Only include
     # successful responses.
-    search.search!("!request_user_agent:check_http* AND !request_user_agent:NewRelicPinger* AND !request_user_agent:Site24x7* AND response_status:[200 TO 399]")
+    if(ApiUmbrellaConfig[:web][:analytics_v0_summary_filter].present?)
+      search.search!(ApiUmbrellaConfig[:web][:analytics_v0_summary_filter])
+    end
+
     search.exclude_imported!
     search.filter_by_date_range!
     search.aggregate_by_interval!
