@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -23,12 +25,27 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.avro.Schema;
+import org.apache.avro.Schema.Field;
 import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile;
+import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterOptions;
+import org.apache.hadoop.hive.ql.io.orc.Writer;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.BooleanWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
@@ -60,6 +77,7 @@ public class DayWorker implements Runnable {
   private String endDateString;
   private Schema schema;
   private List<Schema.Field> schemaFields;
+  private HashMap<String, Schema.Type> schemaFieldTypes;
   private HashSet<String> schemaIntFields;
   private HashSet<String> schemaDoubleFields;
   private HashSet<String> schemaBooleanFields;
@@ -68,7 +86,7 @@ public class DayWorker implements Runnable {
   private int totalHits;
   ParquetWriter<GenericRecord> parquetWriter;
   private DataFileWriter<GenericRecord> avroWriter;
-  // private Writer orcWriter;
+  private Writer orcWriter;
   private BufferedWriter tsvWriter;
   DateTimeFormatter dateTimeParser = ISODateTimeFormat.dateTimeParser();
   DateTimeFormatter dateFormatter = ISODateTimeFormat.date();
@@ -78,6 +96,7 @@ public class DayWorker implements Runnable {
     this.date = date;
     this.schema = app.getSchema();
     this.schemaFields = this.schema.getFields();
+    this.schemaFieldTypes = app.getSchemaFieldTypes();
     this.schemaIntFields = app.getSchemaIntFields();
     this.schemaDoubleFields = app.getSchemaDoubleFields();
     this.schemaBooleanFields = app.getSchemaBooleanFields();
@@ -157,6 +176,9 @@ public class DayWorker implements Runnable {
       if(this.tsvWriter != null) {
         this.tsvWriter.close();
       }
+      if(this.orcWriter != null) {
+        this.orcWriter.close();
+      }
     } catch(Exception e) {
       logger.error("Unexpected error", e);
       System.exit(1);
@@ -221,7 +243,7 @@ public class DayWorker implements Runnable {
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         this.avroWriter = new DataFileWriter<GenericRecord>(datumWriter);
         this.avroWriter.setCodec(CodecFactory.snappyCodec());
-        this.avroWriter.setFlushOnEveryBlock(false);
+        // this.avroWriter.setFlushOnEveryBlock(false);
         this.avroWriter.create(this.schema, new File(path.toString()));
       } catch(IOException e) {
         logger.error("Unexpected error", e);
@@ -232,21 +254,50 @@ public class DayWorker implements Runnable {
     return this.avroWriter;
   }
 
-  /*
-   * private Writer getOrcWriter() { if(this.orcWriter == null) { try { //
-   * Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par Path path =
-   * Paths.get(App.DIR, "orc", this.date.toString("YYYY"),
-   * this.date.toString("MM"), this.startDateString + ".avro");
-   * Files.createDirectories(path.getParent());
-   * 
-   * Configuration conf = new Configuration(); WriterOptions options =
-   * OrcFile.writerOptions(conf); options.compress(CompressionKind.SNAPPY);
-   * this.orcWriter = OrcFile.createWriter(new
-   * org.apache.hadoop.fs.Path(path.toString()), options); } catch(IOException
-   * e) { logger.error("Unexpected error", e); System.exit(1); } }
-   * 
-   * return this.orcWriter; }
-   */
+  private Writer getOrcWriter() throws IOException {
+    if(this.orcWriter == null) {
+      // Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par
+      Path path = Paths.get(App.DIR,
+        "request_at_year=" + this.date.toString("YYYY"),
+        "request_at_month=" + this.date.getMonthOfYear(),
+        "request_at_date=" + this.startDateString,
+        this.startDateString + ".orc");
+      Files.createDirectories(path.getParent());
+
+      ArrayList<StructField> orcFields = new ArrayList<StructField>();
+      for(int i = 0; i < this.schemaFields.size(); i++) {
+        Field field = this.schemaFields.get(i);
+        Schema.Type type = this.schemaFieldTypes.get(field.name());
+
+        ObjectInspector inspector;
+        if(type == Schema.Type.INT) {
+          inspector = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+        } else if(type == Schema.Type.LONG) {
+          inspector = PrimitiveObjectInspectorFactory.writableLongObjectInspector;
+        } else if(type == Schema.Type.DOUBLE) {
+          inspector = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
+        } else if(type == Schema.Type.BOOLEAN) {
+          inspector = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
+        } else if(type == Schema.Type.STRING) {
+          inspector = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+        } else {
+          throw new IOException("Unknown type: " + type.toString());
+        }
+
+        orcFields.add(new OrcField(field.name(), inspector, i));
+      }
+
+      Configuration conf = new Configuration();
+      WriterOptions options = OrcFile.writerOptions(conf);
+      options.compress(CompressionKind.ZLIB);
+      options.inspector(new OrcRowInspector(orcFields));
+
+      this.orcWriter = OrcFile.createWriter(new org.apache.hadoop.fs.Path(path.toString()),
+        options);
+    }
+
+    return this.orcWriter;
+  }
 
   private boolean processResult(JestResult result) throws Exception {
     JsonArray hits = result.getJsonObject().getAsJsonObject("hits").getAsJsonArray("hits");
@@ -418,6 +469,15 @@ public class DayWorker implements Runnable {
           }
           log.put("request_url_path", url.getPath());
 
+          String[] pathLevels = StringUtils.split(url.getPath(), "/", 6);
+          for(int i = 0; i < pathLevels.length; i++) {
+            String pathLevel = pathLevels[i];
+            if(i < pathLevels.length - 1) {
+              pathLevel = pathLevel + "/";
+            }
+            log.put("request_url_path_level" + (i + 1), pathLevel);
+          }
+
           // Store the query string extracted from the full URL.
           String requestQuery = url.getQuery();
           log.put("request_url_query", requestQuery);
@@ -547,11 +607,36 @@ public class DayWorker implements Runnable {
         }
       }
 
-      this.getParquetWriter().write(log);
+      // this.getParquetWriter().write(log);
       // this.getAvroWriter().append(log);
       // this.getOrcWriter().addRowBatch(log);
+      OrcRow orcRecord = new OrcRow(this.schemaFields.size());
+      for(int i = 0; i < this.schemaFields.size(); i++) {
+        Field field = this.schemaFields.get(i);
+        Schema.Type type = this.schemaFieldTypes.get(field.name());
+        Object rawValue = log.get(field.name());
+        Object value;
+
+        if(rawValue != null) {
+          if(type == Schema.Type.INT) {
+            value = new IntWritable((int) rawValue);
+          } else if(type == Schema.Type.LONG) {
+            value = new LongWritable((long) rawValue);
+          } else if(type == Schema.Type.DOUBLE) {
+            value = new DoubleWritable((double) rawValue);
+          } else if(type == Schema.Type.BOOLEAN) {
+            value = new BooleanWritable((boolean) rawValue);
+          } else if(type == Schema.Type.STRING) {
+            value = new Text((String) rawValue);
+          } else {
+            throw new IOException("Unknown type: " + type.toString());
+          }
+
+          orcRecord.setFieldValue(i, value);
+        }
+      }
+      this.getOrcWriter().addRow(orcRecord);
       /*
-       * for(int i = 0; i < this.schemaFields.size(); i++) { if(i > 0) {
        * this.getTsvWriter().write("\t"); } Object value =
        * log.get(this.schemaFields.get(i).name()); if(value != null) {
        * this.getTsvWriter().write(value.toString()); } }

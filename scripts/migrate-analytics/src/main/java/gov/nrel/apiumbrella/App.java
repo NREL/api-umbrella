@@ -7,10 +7,11 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.LogManager;
@@ -44,6 +45,7 @@ public class App {
   protected static int CONCURRENCY = Integer
     .parseInt(System.getProperty("apiumbrella.concurrency", "4"));
   protected static String START_DATE = System.getProperty("apiumbrella.start_date");
+  protected static String END_DATE = System.getProperty("apiumbrella.end_date");
 
   // Define fields we won't migrate to the new database.
   protected static final Set<String> SKIP_FIELDS = new HashSet<String>(Arrays.asList(new String[] {
@@ -75,6 +77,7 @@ public class App {
   final Logger logger = LoggerFactory.getLogger(App.class);
 
   private Schema schema;
+  private HashMap<String, Schema.Type> schemaFieldTypes;
   private HashSet<String> schemaIntFields;
   private HashSet<String> schemaDoubleFields;
   private HashSet<String> schemaBooleanFields;
@@ -84,10 +87,10 @@ public class App {
     ExecutorService executor = Executors.newFixedThreadPool(CONCURRENCY);
 
     DateTime date = this.getStartDate();
-    DateTime now = new DateTime();
+    DateTime endDate = this.getEndDate();
     getSchema();
     detectSchemaFields();
-    while(date.isBefore(now)) {
+    while(date.isBefore(endDate)) {
       Runnable worker = new DayWorker(this, date);
       executor.execute(worker);
 
@@ -113,6 +116,10 @@ public class App {
     return this.schema;
   }
 
+  protected HashMap<String, Schema.Type> getSchemaFieldTypes() {
+    return this.schemaFieldTypes;
+  }
+
   protected HashSet<String> getSchemaIntFields() {
     return this.schemaIntFields;
   }
@@ -126,6 +133,7 @@ public class App {
   }
 
   private void detectSchemaFields() {
+    this.schemaFieldTypes = new HashMap<String, Schema.Type>();
     this.schemaIntFields = new HashSet<String>();
     this.schemaDoubleFields = new HashSet<String>();
     this.schemaBooleanFields = new HashSet<String>();
@@ -141,6 +149,7 @@ public class App {
         }
       }
 
+      this.schemaFieldTypes.put(field.name(), type);
       if(type == Schema.Type.INT) {
         this.schemaIntFields.add(field.name());
       } else if(type == Schema.Type.DOUBLE) {
@@ -192,6 +201,15 @@ public class App {
     }
 
     return first;
+  }
+
+  private DateTime getEndDate() {
+    if(END_DATE != null) {
+      DateTimeFormatter dateParser = ISODateTimeFormat.dateParser();
+      return dateParser.parseDateTime(END_DATE);
+    }
+
+    return new DateTime();
   }
 
   public static void main(String[] args) throws SecurityException, IOException {

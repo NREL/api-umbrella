@@ -59,6 +59,30 @@
       "type": "string"
     },
     {
+      "name": "request_url_path_level1",
+      "type": ["null", "string"]
+    },
+    {
+      "name": "request_url_path_level2",
+      "type": ["null", "string"]
+    },
+    {
+      "name": "request_url_path_level3",
+      "type": ["null", "string"]
+    },
+    {
+      "name": "request_url_path_level4",
+      "type": ["null", "string"]
+    },
+    {
+      "name": "request_url_path_level5",
+      "type": ["null", "string"]
+    },
+    {
+      "name": "request_url_path_level6",
+      "type": ["null", "string"]
+    },
+    {
       "name": "request_url_query",
       "type": ["null", "string"]
     },
