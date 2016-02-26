@@ -12,16 +12,47 @@
   <name>convert</name>
   <url>http://maven.apache.org</url>
   <dependencies>
+    <!-- ElasticSearch connections -->
+    <dependency>
+      <groupId>io.searchbox</groupId>
+      <artifactId>jest</artifactId>
+      <version>2.0.0</version>
+    </dependency>
+    <!-- Avro for providing a data model to put data into for validation 
+      purposes before outputting in the actual data format -->
+    <dependency>
+      <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <version>1.8.0</version>
+    </dependency>
+    <!-- Hadoop for ORC file output. v2.6 to match version used in HDP 2.2, 
+      which is what Kylin wants -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-core</artifactId>
-      <version>1.2.1</version>
+      <artifactId>hadoop-client</artifactId>
+      <version>2.6.4</version>
     </dependency>
+    <!-- For parsing/outputing time -->
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>2.9.2</version>
+    </dependency>
+    <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.16</version>
+    </dependency>
+    <!-- Hive for ORC file output. v0.14 to match version used in HDP 2.2, 
+      which is what Kylin wants -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>0.14.0</version>
     </dependency>
+    <!-- Explicit calcite dependency versions due to invalid versions in 
+      hive-exec: https://issues.apache.org/jira/browse/HIVE-8857 -->
     <dependency>
       <groupId>org.apache.calcite</groupId>
       <artifactId>calcite-core</artifactId>
@@ -32,29 +63,10 @@
       <artifactId>calcite-avatica</artifactId>
       <version>0.9.2-incubating</version>
     </dependency>
-    <dependency>
-      <groupId>com.twitter</groupId>
-      <artifactId>parquet-avro</artifactId>
-      <version>1.5.0</version>
-    </dependency>
-    <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
-      <version>2.9.2</version>
-    </dependency>
-    <dependency>
-      <groupId>io.searchbox</groupId>
-      <artifactId>jest</artifactId>
-      <version>2.0.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.7.16</version>
-    </dependency>
   </dependencies>
   <build>
     <resources>
+      <!-- Include the avro schema file in the jar -->
       <resource>
         <directory>src/avro</directory>
         <includes>
@@ -63,6 +75,7 @@
       </resource>
     </resources>
     <plugins>
+      <!-- Build a self-contained jar -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -75,11 +88,14 @@
             </goals>
             <configuration>
               <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                <transformer
+                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>gov.nrel.apiumbrella.App</mainClass>
                 </transformer>
               </transformers>
               <filters>
+                <!-- Exclude manifest signature files to prevent invalid 
+                  signature erorrs http://stackoverflow.com/a/6743609 -->
                 <filter>
                   <artifact>*:*</artifact>
                   <excludes>

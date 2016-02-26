@@ -1,7 +1,5 @@
 package gov.nrel.apiumbrella;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -10,11 +8,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.LogManager;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -213,24 +209,6 @@ public class App {
   }
 
   public static void main(String[] args) throws SecurityException, IOException {
-    // Prevent noisy parquet logging.
-    Properties props = new Properties();
-    props.setProperty("parquet.handlers", "java.util.logging.ConsoleHandler");
-    props.setProperty("java.util.logging.ConsoleHandler.level", "SEVERE");
-
-    props.setProperty("org.apache.hadoop.io.compress.CodecPool.handlers",
-      "java.util.logging.ConsoleHandler");
-    props.setProperty("org.apache.hadoop.io.compress.handlers", "java.util.logging.ConsoleHandler");
-    props.setProperty("CodecPool.handlers", "java.util.logging.ConsoleHandler");
-    props.setProperty("compress.CodecPool.handlers", "java.util.logging.ConsoleHandler");
-    props.setProperty("compress.handlers", "java.util.logging.ConsoleHandler");
-    props.setProperty("log4j.rootLogger", "OFF");
-
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    props.store(out, "");
-    LogManager logManager = LogManager.getLogManager();
-    logManager.readConfiguration(new ByteArrayInputStream(out.toByteArray()));
-
     // Setup defaults for logging to migrate.log.
     System.setProperty("org.slf4j.simpleLogger.logFile", "migrate.log");
     System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");

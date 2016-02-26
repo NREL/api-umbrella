@@ -1,10 +1,6 @@
 package gov.nrel.apiumbrella;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -12,6 +8,7 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,16 +19,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPOutputStream;
 
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Field;
-import org.apache.avro.file.CodecFactory;
-import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.io.DatumWriter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
@@ -39,6 +31,8 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterOptions;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -65,9 +59,6 @@ import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.core.Search;
 import io.searchbox.core.SearchScroll;
 import io.searchbox.params.Parameters;
-import parquet.avro.AvroParquetWriter;
-import parquet.hadoop.ParquetWriter;
-import parquet.hadoop.metadata.CompressionCodecName;
 
 public class DayWorker implements Runnable {
   final Logger logger = LoggerFactory.getLogger(DayWorker.class);
@@ -84,12 +75,12 @@ public class DayWorker implements Runnable {
   private App app;
   private int totalProcessedHits = 0;
   private int totalHits;
-  ParquetWriter<GenericRecord> parquetWriter;
-  private DataFileWriter<GenericRecord> avroWriter;
   private Writer orcWriter;
-  private BufferedWriter tsvWriter;
   DateTimeFormatter dateTimeParser = ISODateTimeFormat.dateTimeParser();
   DateTimeFormatter dateFormatter = ISODateTimeFormat.date();
+  private HashSet<String> schemaPartitionFields = new HashSet<String>();
+  private HashSet<String> schemaShortFields = new HashSet<String>();
+  private HashSet<String> schemaTimestampFields = new HashSet<String>();
 
   public DayWorker(App app, DateTime date) {
     this.app = app;
@@ -100,6 +91,26 @@ public class DayWorker implements Runnable {
     this.schemaIntFields = app.getSchemaIntFields();
     this.schemaDoubleFields = app.getSchemaDoubleFields();
     this.schemaBooleanFields = app.getSchemaBooleanFields();
+
+    // Explicitly define which fields we'll be partitioning by, since these
+    // don't need to be sorted in the output file (since they're part of the
+    // file path, it's duplicative to store this data in the file).
+    this.schemaPartitionFields.add("request_at_year");
+    this.schemaPartitionFields.add("request_at_month");
+    this.schemaPartitionFields.add("request_at_date");
+
+    // Define fields we want to store as short/smallints. Since Avro doesn't
+    // support these in its schema, but ORC does, we need to explicitly list
+    // these.
+    this.schemaShortFields.add("request_at_year");
+    this.schemaShortFields.add("request_at_month");
+    this.schemaShortFields.add("request_at_hour");
+    this.schemaShortFields.add("request_at_minute");
+    this.schemaShortFields.add("response_status");
+
+    // Define which "long" fields we actually want to treat as timestamps for
+    // storage into the ORC file.
+    this.schemaTimestampFields.add("request_at");
 
     this.startDateString = this.dateFormatter.print(this.date);
     DateTime tomorrow = this.date.plus(Period.days(1));
@@ -165,17 +176,8 @@ public class DayWorker implements Runnable {
         scrollId = result.getJsonObject().get("_scroll_id").getAsString();
       }
 
-      // Close the parquet file (but only if it exists, so we skip over days
+      // Close the data file (but only if it exists, so we skip over days
       // with no data).
-      if(this.parquetWriter != null) {
-        parquetWriter.close();
-      }
-      if(this.avroWriter != null) {
-        this.avroWriter.close();
-      }
-      if(this.tsvWriter != null) {
-        this.tsvWriter.close();
-      }
       if(this.orcWriter != null) {
         this.orcWriter.close();
       }
@@ -183,75 +185,6 @@ public class DayWorker implements Runnable {
       logger.error("Unexpected error", e);
       System.exit(1);
     }
-  }
-
-  private ParquetWriter<GenericRecord> getParquetWriter() {
-    if(this.parquetWriter == null) {
-      try {
-        // Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par
-        Path path = Paths.get(App.DIR,
-          "request_at_year=" + this.date.toString("YYYY"),
-          "request_at_month=" + this.date.getMonthOfYear(),
-          "request_at_date=" + this.startDateString,
-          this.startDateString + ".par");
-        Files.createDirectories(path.getParent());
-
-        this.parquetWriter = new AvroParquetWriter<GenericRecord>(
-          new org.apache.hadoop.fs.Path(path.toString()), this.schema, CompressionCodecName.GZIP,
-          AvroParquetWriter.DEFAULT_BLOCK_SIZE, AvroParquetWriter.DEFAULT_PAGE_SIZE);
-      } catch(IOException e) {
-        logger.error("Unexpected error", e);
-        System.exit(1);
-      }
-    }
-
-    return this.parquetWriter;
-  }
-
-  private BufferedWriter getTsvWriter() {
-    if(this.tsvWriter == null) {
-      try {
-        // Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par
-        Path path = Paths.get(App.DIR,
-          "tsv",
-          this.date.toString("YYYY"),
-          this.date.toString("MM"),
-          this.startDateString + ".tsv.gz");
-        Files.createDirectories(path.getParent());
-
-        GZIPOutputStream gzip = new GZIPOutputStream(new FileOutputStream(path.toString()));
-        this.tsvWriter = new BufferedWriter(new OutputStreamWriter(gzip, "UTF-8"));
-      } catch(IOException e) {
-        logger.error("Unexpected error", e);
-        System.exit(1);
-      }
-    }
-
-    return this.tsvWriter;
-  }
-
-  private DataFileWriter<GenericRecord> getAvroWriter() {
-    if(this.avroWriter == null) {
-      try {
-        // Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par
-        Path path = Paths.get(App.DIR,
-          this.date.toString("YYYY"),
-          this.date.toString("MM"),
-          this.startDateString + ".avro");
-        Files.createDirectories(path.getParent());
-
-        DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
-        this.avroWriter = new DataFileWriter<GenericRecord>(datumWriter);
-        this.avroWriter.setCodec(CodecFactory.snappyCodec());
-        // this.avroWriter.setFlushOnEveryBlock(false);
-        this.avroWriter.create(this.schema, new File(path.toString()));
-      } catch(IOException e) {
-        logger.error("Unexpected error", e);
-        System.exit(1);
-      }
-    }
-
-    return this.avroWriter;
   }
 
   private Writer getOrcWriter() throws IOException {
@@ -267,13 +200,25 @@ public class DayWorker implements Runnable {
       ArrayList<StructField> orcFields = new ArrayList<StructField>();
       for(int i = 0; i < this.schemaFields.size(); i++) {
         Field field = this.schemaFields.get(i);
+        if(this.schemaPartitionFields.contains(field.name())) {
+          continue;
+        }
+
         Schema.Type type = this.schemaFieldTypes.get(field.name());
 
         ObjectInspector inspector;
         if(type == Schema.Type.INT) {
-          inspector = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+          if(this.schemaShortFields.contains(field.name())) {
+            inspector = PrimitiveObjectInspectorFactory.writableShortObjectInspector;
+          } else {
+            inspector = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+          }
         } else if(type == Schema.Type.LONG) {
-          inspector = PrimitiveObjectInspectorFactory.writableLongObjectInspector;
+          if(this.schemaTimestampFields.contains(field.name())) {
+            inspector = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+          } else {
+            inspector = PrimitiveObjectInspectorFactory.writableLongObjectInspector;
+          }
         } else if(type == Schema.Type.DOUBLE) {
           inspector = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
         } else if(type == Schema.Type.BOOLEAN) {
@@ -334,7 +279,7 @@ public class DayWorker implements Runnable {
 
     try {
       // For each hit, create a new Avro record to serialize it into the new
-      // format for parquet storage.
+      // format for storage.
       GenericRecord log = new GenericData.Record(schema);
       log.put("id", hit.get("_id").getAsString());
 
@@ -475,6 +420,9 @@ public class DayWorker implements Runnable {
             if(i < pathLevels.length - 1) {
               pathLevel = pathLevel + "/";
             }
+            if(i == 0 && pathLevel != "/") {
+              pathLevel = "/" + pathLevel;
+            }
             log.put("request_url_path_level" + (i + 1), pathLevel);
           }
 
@@ -607,21 +555,30 @@ public class DayWorker implements Runnable {
         }
       }
 
-      // this.getParquetWriter().write(log);
-      // this.getAvroWriter().append(log);
-      // this.getOrcWriter().addRowBatch(log);
       OrcRow orcRecord = new OrcRow(this.schemaFields.size());
       for(int i = 0; i < this.schemaFields.size(); i++) {
         Field field = this.schemaFields.get(i);
+        if(this.schemaPartitionFields.contains(field.name())) {
+          continue;
+        }
+
         Schema.Type type = this.schemaFieldTypes.get(field.name());
         Object rawValue = log.get(field.name());
         Object value;
 
         if(rawValue != null) {
           if(type == Schema.Type.INT) {
-            value = new IntWritable((int) rawValue);
+            if(this.schemaShortFields.contains(field.name())) {
+              value = new ShortWritable(((Integer) rawValue).shortValue());
+            } else {
+              value = new IntWritable((int) rawValue);
+            }
           } else if(type == Schema.Type.LONG) {
-            value = new LongWritable((long) rawValue);
+            if(this.schemaTimestampFields.contains(field.name())) {
+              value = new TimestampWritable(new Timestamp((long) rawValue));
+            } else {
+              value = new LongWritable((long) rawValue);
+            }
           } else if(type == Schema.Type.DOUBLE) {
             value = new DoubleWritable((double) rawValue);
           } else if(type == Schema.Type.BOOLEAN) {
@@ -635,13 +592,8 @@ public class DayWorker implements Runnable {
           orcRecord.setFieldValue(i, value);
         }
       }
+
       this.getOrcWriter().addRow(orcRecord);
-      /*
-       * this.getTsvWriter().write("\t"); } Object value =
-       * log.get(this.schemaFields.get(i).name()); if(value != null) {
-       * this.getTsvWriter().write(value.toString()); } }
-       * this.getTsvWriter().write("\n");
-       */
     } catch(Exception e) {
       logger.error("Error on hit: " + hit);
       logger.error(e.getMessage());
