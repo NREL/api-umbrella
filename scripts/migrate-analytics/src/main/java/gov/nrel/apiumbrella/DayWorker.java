@@ -8,7 +8,6 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +31,6 @@ import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterOptions;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -80,7 +78,6 @@ public class DayWorker implements Runnable {
   DateTimeFormatter dateFormatter = ISODateTimeFormat.date();
   private HashSet<String> schemaPartitionFields = new HashSet<String>();
   private HashSet<String> schemaShortFields = new HashSet<String>();
-  private HashSet<String> schemaTimestampFields = new HashSet<String>();
 
   public DayWorker(App app, DateTime date) {
     this.app = app;
@@ -107,10 +104,6 @@ public class DayWorker implements Runnable {
     this.schemaShortFields.add("request_at_hour");
     this.schemaShortFields.add("request_at_minute");
     this.schemaShortFields.add("response_status");
-
-    // Define which "long" fields we actually want to treat as timestamps for
-    // storage into the ORC file.
-    this.schemaTimestampFields.add("request_at");
 
     this.startDateString = this.dateFormatter.print(this.date);
     DateTime tomorrow = this.date.plus(Period.days(1));
@@ -214,11 +207,7 @@ public class DayWorker implements Runnable {
             inspector = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
           }
         } else if(type == Schema.Type.LONG) {
-          if(this.schemaTimestampFields.contains(field.name())) {
-            inspector = PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
-          } else {
-            inspector = PrimitiveObjectInspectorFactory.writableLongObjectInspector;
-          }
+          inspector = PrimitiveObjectInspectorFactory.writableLongObjectInspector;
         } else if(type == Schema.Type.DOUBLE) {
           inspector = PrimitiveObjectInspectorFactory.writableDoubleObjectInspector;
         } else if(type == Schema.Type.BOOLEAN) {
@@ -574,11 +563,7 @@ public class DayWorker implements Runnable {
               value = new IntWritable((int) rawValue);
             }
           } else if(type == Schema.Type.LONG) {
-            if(this.schemaTimestampFields.contains(field.name())) {
-              value = new TimestampWritable(new Timestamp((long) rawValue));
-            } else {
-              value = new LongWritable((long) rawValue);
-            }
+            value = new LongWritable((long) rawValue);
           } else if(type == Schema.Type.DOUBLE) {
             value = new DoubleWritable((double) rawValue);
           } else if(type == Schema.Type.BOOLEAN) {
