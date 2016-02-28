@@ -24,15 +24,13 @@ class LogResultSql
     raw_result["aggregations"]
   end
 
-  def column_indexes
-    unless @column_indexes
-      @column_indexes = {}
-      raw_result["columnMetas"].each_with_index do |meta, index|
-        @column_indexes[meta["label"].downcase] = index
-      end
+  def column_indexes(query_name)
+    column_indexes = {}
+    raw_result[query_name]["columnMetas"].each_with_index do |meta, index|
+      column_indexes[meta["label"].downcase] = index
     end
 
-    @column_indexes
+    column_indexes
   end
 
   def hits_over_time

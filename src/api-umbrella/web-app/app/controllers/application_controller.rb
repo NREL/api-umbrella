@@ -73,9 +73,12 @@ class ApplicationController < ActionController::Base
 
   def set_time_zone
     old_time_zone = Time.zone
-    if(params[:tz].present?)
-      Time.zone = params[:tz]
-    end
+    # FIXME: Need to account for hard-coded timezone for the pre-aggregated
+    # Kylin results.
+    Time.zone = "UTC"
+    #if(params[:tz].present?)
+    #  Time.zone = params[:tz]
+    #end
 
     yield
   ensure

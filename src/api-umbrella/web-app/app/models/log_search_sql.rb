@@ -50,6 +50,22 @@ class LogSearchSql
     end
 
     @interval = options[:interval]
+    case(@interval)
+    when "minute"
+      raise "TODO"
+    when "hour"
+      @interval_field = "CAST(request_at_date AS CHAR(10)) || '-' || CAST(request_at_hour AS CHAR(2))"
+      @interval_field_format = "%Y-%m-%d-%H"
+    when "day"
+      @interval_field = "request_at_date"
+      @interval_field_format = "%Y-%m-%d"
+    when "week"
+      raise "TODO"
+    when "month"
+      @interval_field = "CAST(request_at_year AS CHAR(4)) || '-' || CAST(request_at_month AS CHAR(2))"
+      @interval_field_format = "%Y-%m"
+    end
+
     @region = options[:region]
 
     @query = {
@@ -58,6 +74,8 @@ class LogSearchSql
       :group_by => [],
       :order_by => [],
     }
+
+    @query_results = {}
 
     @query_options = {
       :size => 0,
@@ -68,47 +86,60 @@ class LogSearchSql
     @result_processors = []
   end
 
+  def execute_query(query_name, query = {})
+    unless @query_results[query_name]
+      select = @query[:select] + (query[:select] || [])
+      sql = "SELECT #{select.join(", ")} FROM api_umbrella.logs"
+
+      where = @query[:where] + (query[:where] || [])
+      if(where.present?)
+        sql << " WHERE #{where.map { |clause| "(#{clause})" }.join(" AND ")}"
+      end
+
+      group_by = @query[:group_by] + (query[:group_by] || [])
+      if(group_by.present?)
+        sql << " GROUP BY #{group_by.join(", ")}"
+      end
+
+      order_by = @query[:order_by] + (query[:order_by] || [])
+      if(order_by.present?)
+        sql << " ORDER BY #{order_by.join(", ")}"
+      end
+
+      conn = Faraday.new(:url => "http://kylin.host") do |faraday|
+        faraday.response :logger
+        faraday.adapter Faraday.default_adapter
+        faraday.basic_auth "ADMIN", "KYLIN"
+      end
+
+      Rails.logger.info(sql)
+      response = conn.post do |req|
+        req.url "/kylin/api/query"
+        req.headers["Content-Type"] = "application/json"
+        req.body = MultiJson.dump({
+          :acceptPartial => false,
+          :project => "api_umbrella",
+          :sql => sql,
+        })
+      end
+
+      if(response.status != 200)
+        Rails.logger.error(response.body)
+        raise "Error"
+      end
+
+      @query_results[query_name] = MultiJson.load(response.body)
+    end
+
+    @query_results[query_name]
+  end
+
   def result
-    sql = "SELECT #{@query[:select].join(", ")} FROM api_umbrella_logs"
-
-    if(@query[:where].present?)
-      sql << " WHERE #{@query[:where].map { |where| "(#{where})" }.join(" AND ")}"
+    if(@query_results.empty?)
+      execute_query(:default)
     end
 
-    if(@query[:group_by].present?)
-      sql << " GROUP BY #{@query[:group_by].join(", ")}"
-    end
-
-    if(@query[:order_by].present?)
-      sql << " ORDER BY #{@query[:order_by].join(", ")}"
-    end
-
-    conn = Faraday.new(:url => "http://kylin.host") do |faraday|
-      #faraday.request  :logger
-      faraday.response :logger
-      faraday.adapter  Faraday.default_adapter  # make requests with Net::HTTP
-      faraday.basic_auth "ADMIN", "KYLIN"
-    end
-
-    Rails.logger.info(sql)
-    response = conn.post do |req|
-      req.url "/kylin/api/query"
-      req.headers["Content-Type"] = "application/json"
-      req.body = MultiJson.dump({
-        :acceptPartial => false,
-        :project => "api_umbrella",
-        :sql => sql,
-      })
-    end
-
-    if(response.status != 200)
-      Rails.logger.error(response.body)
-      raise "Error"
-    end
-
-    raw_result = MultiJson.load(response.body)
-
-    @result = LogResultSql.new(self, raw_result)
+    @result = LogResultSql.new(self, @query_results)
   end
 
   def permission_scope!(scopes)
@@ -148,7 +179,6 @@ class LogSearchSql
       filters = []
       query["rules"].each do |rule|
         filter = {}
-        Rails.logger.info("RULE: #{rule.inspect}")
 
         field = rule["field"]
         if(LEGACY_FIELDS[field])
@@ -224,7 +254,6 @@ class LogSearchSql
 
         filters << filter
       end
-      Rails.logger.info("FILTERS: #{filters.inspect}")
 
       if(filters.present?)
         where = filters.map { |where| "(#{where})" }
@@ -258,12 +287,8 @@ class LogSearchSql
   end
 
   def filter_by_date_range!
-    @query[:where] << @sequel.literal(Sequel.lit("request_at_year >= :start_time_year AND request_at_month >= :start_time_month AND request_at_date >= :start_time_date AND request_at_year <= :end_time_year AND request_at_month <= :end_time_month AND request_at_date <= :end_time_date", {
-      :start_time_year => @start_time.year,
-      :start_time_month => @start_time.month,
+    @query[:where] << @sequel.literal(Sequel.lit("request_at_date >= :start_time_date AND request_at_date <= :end_time_date", {
       :start_time_date => @start_time.strftime("%Y-%m-%d"),
-      :end_time_year => @end_time.year,
-      :end_time_month => @end_time.month,
       :end_time_date => @end_time.strftime("%Y-%m-%d"),
     }))
   end
@@ -303,58 +328,189 @@ class LogSearchSql
   end
 
   def aggregate_by_drilldown!(prefix, size = 0)
-    @query[:aggregations][:drilldown] = {
-      :terms => {
-        :field => "request_hierarchy",
-        :size => size,
-        :include => "^#{Regexp.escape(prefix)}.*",
-      },
+    @drilldown_prefix_segments = prefix.split("/")
+    @drilldown_depth = @drilldown_prefix_segments[0].to_i
+
+    # Define the hierarchy of fields that will be involved in this query given
+    # the depth.
+    @drilldown_fields = ["request_url_host"]
+    (1..@drilldown_depth).each do |i|
+      @drilldown_fields << "request_url_path_level#{i}"
+    end
+    @drilldown_depth_field = @drilldown_fields.last
+
+    # Define common parts of the query for all drilldown queries.
+    @drilldown_common_query = {
+      :select => ["COUNT(*) AS hits"],
+      :where => [],
+      :group_by => [],
     }
+    @drilldown_fields.each_with_index do |field, index|
+      # If we're grouping by the top-level of the hierarchy (the hostname), we
+      # need to perform some custom logic to determine whether the hostname has
+      # any children data.
+      #
+      # For all the request_url_path_level* fields, we store the value with a
+      # trailing slash if there's further parts of the hierarchy. This gives us
+      # an easy way to determine whether the specific level is the terminating
+      # level of the hierarchy. In other words, this gives us a way to
+      # distinguish traffic ending in /foo versus /foo/bar (where /foo is a
+      # parent level). Since the host field doesn't follow this convention, we
+      # must emulate it here by looking at the level1 path to see if it's NULL
+      # or NOT NULL, and append the appropriate slash.
+      if(@drilldown_depth == 0)
+        @drilldown_common_query[:select] << "request_url_host || CASE WHEN request_url_path_level1 IS NULL THEN '' ELSE '/' END AS request_url_host"
+        @drilldown_common_query[:group_by] << "request_url_host, CASE WHEN request_url_path_level1 IS NULL THEN '' ELSE '/' END"
+      else
+        @drilldown_common_query[:select] << field
+        @drilldown_common_query[:group_by] << field
+      end
+      @drilldown_common_query[:where] << "#{field} IS NOT NULL"
+
+      # Match all the parts of the host and path that are part of the prefix.
+      prefix_match_value = @drilldown_prefix_segments[index + 1]
+      if prefix_match_value
+        # Since we're only interested in matching the parent values, all of the
+        # request_url_path_level* fields should have trailing slashes (since
+        # that denotes that there's child data). request_url_path_level1 should
+        # also have a slash prefix (since it's the beginning of the path).
+        if(index == 1)
+          prefix_match_value = "/#{prefix_match_value}/"
+        elsif(index > 1)
+          prefix_match_value = "#{prefix_match_value}/"
+        end
+        @drilldown_common_query[:where] << @sequel.literal(Sequel.lit("#{field} = ?", prefix_match_value))
+      end
+    end
+
+    execute_query(:drilldown, {
+      :select => @drilldown_common_query[:select],
+      :where => @drilldown_common_query[:where],
+      :group_by => @drilldown_common_query[:group_by],
+      :order_by => ["hits DESC"],
+    })
+
+    # Massage the query into the aggregation format matching our old
+    # elasticsearch queries.
+    @result_processors << Proc.new do |result|
+      buckets = []
+      column_indexes = result.column_indexes(:drilldown)
+      result.raw_result[:drilldown]["results"].each do |row|
+        buckets << {
+          "key" => build_drilldown_prefix_from_result(row, column_indexes),
+          "doc_count" => row[column_indexes["hits"]].to_i,
+        }
+      end
+
+      result.raw_result["aggregations"] ||= {}
+      result.raw_result["aggregations"]["drilldown"] ||= {}
+      result.raw_result["aggregations"]["drilldown"]["buckets"] = buckets
+    end
   end
 
   def aggregate_by_drilldown_over_time!(prefix)
-    @query[:query][:filtered][:filter][:bool][:must] <<                 {
-      :prefix => {
-        :request_hierarchy => prefix,
-      },
-    }
+    # Grab the top 10 paths out of the query previously done inside
+    # #aggregate_by_drilldown!
+    #
+    # A sub-query would probably be more efficient, but I'm still experiencing
+    # this error in Kylin 1.2: https://issues.apache.org/jira/browse/KYLIN-814
+    top_paths = []
+    top_path_indexes = {}
+    column_indexes = result.column_indexes(:drilldown)
+    @query_results[:drilldown]["results"][0,10].each_with_index do |row, index|
+      value = row[column_indexes[@drilldown_depth_field]]
+      top_path_indexes[value] = index
+      if(@drilldown_depth == 0)
+        value = value.chomp("/")
+      end
+      top_paths << value
+    end
 
-    @query[:aggregations][:top_path_hits_over_time] = {
-      :terms => {
-        :field => "request_hierarchy",
-        :size => 10,
-        :include => "^#{Regexp.escape(prefix)}.*",
-      },
-      :aggregations => {
-        :drilldown_over_time => {
-          :date_histogram => {
-            :field => "request_at",
-            :interval => @interval,
-            :time_zone => Time.zone.name,
-            :pre_zone_adjust_large_interval => true,
-            :min_doc_count => 0,
-            :extended_bounds => {
-              :min => @start_time.iso8601,
-              :max => @end_time.iso8601,
+    # Get a date-based breakdown of the traffic to the top 10 paths.
+    execute_query(:top_path_hits_over_time, {
+      :select => @drilldown_common_query[:select] + ["#{@interval_field} AS interval_field"],
+      :where => @drilldown_common_query[:where] + [
+        @sequel.literal(Sequel.lit("#{@drilldown_depth_field} IN ?", top_paths)),
+      ],
+      :group_by => @drilldown_common_query[:group_by] + [@interval_field],
+      :order_by => ["interval_field"],
+    })
+
+    # Get a date-based breakdown of the traffic to all paths. This is used to
+    # come up with how much to allocate to the "Other" category (by subtracting
+    # away the top 10 traffic). This probably isn't the best way to go about
+    # this in SQL-land, but this is how we did things in ElasticSearch, so for
+    # now, keep with that same approach.
+    #
+    # Since we want a sum of all the traffic, we need to remove the last level
+    # of group by and selects (since that would give us per-path breakdowns,
+    # and we only want totals).
+    all_drilldown_select = @drilldown_common_query[:select][0..-2]
+    all_drilldown_group_by = @drilldown_common_query[:group_by][0..-2]
+    execute_query(:hits_over_time, {
+      :select => all_drilldown_select + ["#{@interval_field} AS interval_field"],
+      :where => @drilldown_common_query[:where],
+      :group_by => all_drilldown_group_by + [@interval_field],
+      :order_by => ["interval_field"],
+    })
+
+    # Massage the top_path_hits_over_time query into the aggregation format
+    # matching our old elasticsearch queries.
+    @result_processors << Proc.new do |result|
+      buckets = []
+      column_indexes = result.column_indexes(:top_path_hits_over_time)
+      result.raw_result[:top_path_hits_over_time]["results"].each do |row|
+        # Store the hierarchy breakdown in the order of overall traffic (so the
+        # path with the most traffic is always at the bottom of the graph).
+        path_index = top_path_indexes[row[column_indexes[@drilldown_depth_field]]]
+        unless buckets[path_index]
+          buckets[path_index] = {
+            "key" => build_drilldown_prefix_from_result(row, column_indexes),
+            "doc_count" => 0,
+            "drilldown_over_time" => {
+              "time_buckets" => {},
             },
-          },
-        },
-      },
-    }
+          }
+        end
 
-    @query[:aggregations][:hits_over_time] = {
-      :date_histogram => {
-        :field => "request_at",
-        :interval => @interval,
-        :time_zone => Time.zone.name,
-        :pre_zone_adjust_large_interval => true,
-        :min_doc_count => 0,
-        :extended_bounds => {
-          :min => @start_time.iso8601,
-          :max => @end_time.iso8601,
-        },
-      },
-    }
+        hits = row[column_indexes["hits"]].to_i
+        time = Time.strptime(row[column_indexes["interval_field"]], @interval_field_format)
+
+        buckets[path_index]["doc_count"] += hits
+        buckets[path_index]["drilldown_over_time"]["time_buckets"][time.to_i] = {
+          "key" => time.to_i * 1000,
+          "key_as_string" => time.utc.iso8601,
+          "doc_count" => hits,
+        }
+      end
+
+      buckets.each do |bucket|
+        bucket["drilldown_over_time"]["buckets"] = fill_in_time_buckets(bucket["drilldown_over_time"].delete("time_buckets"))
+      end
+
+      result.raw_result["aggregations"] ||= {}
+      result.raw_result["aggregations"]["top_path_hits_over_time"] ||= {}
+      result.raw_result["aggregations"]["top_path_hits_over_time"]["buckets"] = buckets
+    end
+
+    # Massage the hits_over_time query into the aggregation format matching our
+    # old elasticsearch queries.
+    @result_processors << Proc.new do |result|
+      time_buckets = {}
+      column_indexes = result.column_indexes(:hits_over_time)
+      result.raw_result[:hits_over_time]["results"].each do |row|
+        time = Time.strptime(row[column_indexes["interval_field"]], @interval_field_format)
+        time_buckets[time.to_i] = {
+          "key" => time.to_i * 1000,
+          "key_as_string" => time.utc.iso8601,
+          "doc_count" => row[column_indexes["hits"]].to_i,
+        }
+      end
+
+      result.raw_result["aggregations"] ||= {}
+      result.raw_result["aggregations"]["hits_over_time"] ||= {}
+      result.raw_result["aggregations"]["hits_over_time"]["buckets"] = fill_in_time_buckets(time_buckets)
+    end
   end
 
   def aggregate_by_interval!
@@ -497,18 +653,18 @@ class LogSearchSql
 
     @result_processors << Proc.new do |result|
       buckets = []
-      result.raw_result["results"].each do |row|
-        last_request_at = Time.at(row[result.column_indexes["last_request_at"]].to_i / 1000.0)
+      column_indexes = result.column_indexes(:default)
+      result.raw_result[:default]["results"].each do |row|
+        last_request_at = Time.at(row[column_indexes["last_request_at"]].to_i / 1000.0)
         buckets << {
-          "key" => row[result.column_indexes["user_id"]],
-          "doc_count" => row[result.column_indexes["hits"]].to_i,
+          "key" => row[column_indexes["user_id"]],
+          "doc_count" => row[column_indexes["hits"]].to_i,
           "last_request_at" => {
-            "value" => row[result.column_indexes["last_request_at"]].to_f,
-            "value_as_string" => Time.at(row[result.column_indexes["last_request_at"]].to_i / 1000.0).iso8601,
+            "value" => row[column_indexes["last_request_at"]].to_f,
+            "value_as_string" => Time.at(row[column_indexes["last_request_at"]].to_i / 1000.0).iso8601,
           },
         }
       end
-      Rails.logger.info("PROC BUCKETS: #{buckets.inspect}")
 
       result.raw_result["aggregations"] ||= {}
       result.raw_result["aggregations"]["user_stats"] ||= {}
@@ -530,5 +686,41 @@ class LogSearchSql
     end
 
     @indexes
+  end
+
+  def fill_in_time_buckets(time_buckets)
+    time = @start_time
+    case @interval
+    when "minute"
+      time = time.change(:sec => 0)
+    else
+      time = time.send(:"beginning_of_#{@interval}")
+    end
+
+    buckets = []
+    while(time <= @end_time)
+      time_bucket = time_buckets[time.to_i]
+      unless time_bucket
+        time_bucket = {
+          "key" => time.to_i * 1000,
+          "key_as_string" => time.utc.iso8601,
+          "doc_count" => 0,
+        }
+      end
+
+      buckets << time_bucket
+
+      time += 1.send(:"#{@interval}")
+    end
+
+    buckets
+  end
+
+  def build_drilldown_prefix_from_result(row, column_indexes)
+    key = [@drilldown_depth.to_s]
+    @drilldown_fields.each do |field|
+      key << row[column_indexes[field]]
+    end
+    File.join(key)
   end
 end
