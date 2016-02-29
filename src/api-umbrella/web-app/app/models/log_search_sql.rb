@@ -406,11 +406,13 @@ class LogSearchSql
     end
 
     # Get a date-based breakdown of the traffic to the top 10 paths.
+    top_path_where = []
+    if(top_paths.any?)
+      top_path_where << @sequel.literal(Sequel.lit("#{@drilldown_depth_field} IN ?", top_paths))
+    end
     execute_query(:top_path_hits_over_time, {
       :select => @drilldown_common_query[:select] + ["#{@interval_field} AS interval_field"],
-      :where => @drilldown_common_query[:where] + [
-        @sequel.literal(Sequel.lit("#{@drilldown_depth_field} IN ?", top_paths)),
-      ],
+      :where => @drilldown_common_query[:where] + top_path_where,
       :group_by => @drilldown_common_query[:group_by] + [@interval_field],
       :order_by => ["interval_field"],
     })
