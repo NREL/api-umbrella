@@ -9,7 +9,7 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def search
-    @search = LogSearch.new({
+    @search = LogSearchSql.new({
       :start_time => params[:start_at],
       :end_time => params[:end_at],
       :interval => params[:interval],

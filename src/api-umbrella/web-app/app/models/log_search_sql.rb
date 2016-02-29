@@ -101,6 +101,16 @@ class LogSearchSql
         sql << " ORDER BY #{order_by.join(", ")}"
       end
 
+      limit = query[:limit] || @query[:limit]
+      if(limit.present?)
+        sql << " LIMIT #{limit}"
+      end
+
+      offset = query[:offset] || @query[:offset]
+      if(offset.present?)
+        sql << " OFFSET #{offset}"
+      end
+
       conn = Faraday.new(:url => "http://kylin.host") do |faraday|
         faraday.response :logger
         faraday.adapter Faraday.default_adapter
@@ -130,7 +140,7 @@ class LogSearchSql
   end
 
   def result
-    if(@query_results.empty?)
+    if(@query_results.empty? || @default_query_needed)
       execute_query(:default)
     end
 
@@ -152,7 +162,21 @@ class LogSearchSql
   end
 
   def search_type!(search_type)
-    @query_options[:search_type] = search_type
+    if(search_type == "count")
+      @default_query_needed = true
+      @query[:select] << "COUNT(*) AS total_count"
+
+      @result_processors << Proc.new do |result|
+        count = 0
+        column_indexes = result.column_indexes(:default)
+        result.raw_result[:default]["results"].each do |row|
+          count = row[column_indexes["total_count"]].to_i
+        end
+
+        result.raw_result["hits"] ||= {}
+        result.raw_result["hits"]["total"] = count
+      end
+    end
   end
 
   def search!(query_string)
@@ -496,9 +520,8 @@ class LogSearchSql
 
   def aggregate_by_interval!
     execute_query(:hits_over_time, {
-      :select => all_drilldown_select + ["#{@interval_field} AS interval_field"],
-      :where => @drilldown_common_query[:where],
-      :group_by => all_drilldown_group_by + [@interval_field],
+      :select => ["COUNT(*) AS hits", "#{@interval_field} AS interval_field"],
+      :group_by => [@interval_field],
       :order_by => ["interval_field"],
     })
 
@@ -599,34 +622,105 @@ class LogSearchSql
   end
 
   def aggregate_by_term!(field, size)
-    @query[:aggregations]["top_#{field.to_s.pluralize}"] = {
-      :terms => {
-        :field => field.to_s,
-        :size => size,
-        :shard_size => size * 4,
-      },
-    }
+    field = field.to_s
 
-    @query[:aggregations]["value_count_#{field.to_s.pluralize}"] = {
-      :value_count => {
-        :field => field.to_s,
-      },
-    }
+    query_name_top = :"aggregate_by_term_#{field}_top"
+    execute_query(query_name_top, {
+      :select => ["COUNT(*) AS hits", @sequel.quote_identifier(field)],
+      :where => ["#{@sequel.quote_identifier(field)} IS NOT NULL"],
+      :group_by => [@sequel.quote_identifier(field)],
+      :order_by => ["hits DESC"],
+      :limit => size,
+    })
 
-    @query[:aggregations]["missing_#{field.to_s.pluralize}"] = {
-      :missing => {
-        :field => field.to_s,
-      },
-    }
+    query_name_count = :"aggregate_by_term_#{field}_count"
+    execute_query(query_name_count, {
+      :select => ["COUNT(*) AS hits"],
+    })
+
+    query_name_null_count = :"aggregate_by_term_#{field}_null_count"
+    execute_query(query_name_null_count, {
+      :select => ["COUNT(*) AS hits"],
+      :where => ["#{@sequel.quote_identifier(field)} IS NULL"],
+    })
+
+    @result_processors << Proc.new do |result|
+      buckets = []
+      column_indexes = result.column_indexes(query_name_top)
+      result.raw_result[query_name_top]["results"].each do |row|
+        buckets << {
+          "key" => row[column_indexes[field]],
+          "doc_count" => row[column_indexes["hits"]].to_i,
+        }
+      end
+
+      result.raw_result["aggregations"] ||= {}
+      result.raw_result["aggregations"]["top_#{field.pluralize}"] ||= {}
+      result.raw_result["aggregations"]["top_#{field.pluralize}"]["buckets"] = buckets
+    end
+
+    @result_processors << Proc.new do |result|
+      count = 0
+      column_indexes = result.column_indexes(query_name_count)
+      result.raw_result[query_name_count]["results"].each do |row|
+        count = row[column_indexes["hits"]].to_i
+      end
+
+      result.raw_result["aggregations"] ||= {}
+      result.raw_result["aggregations"]["value_count_#{field.pluralize}"] ||= {}
+      result.raw_result["aggregations"]["value_count_#{field.pluralize}"]["value"] = count
+    end
+
+    @result_processors << Proc.new do |result|
+      count = 0
+      column_indexes = result.column_indexes(query_name_null_count)
+      result.raw_result[query_name_null_count]["results"].each do |row|
+        count = row[column_indexes["hits"]].to_i
+      end
+
+      result.raw_result["aggregations"] ||= {}
+      result.raw_result["aggregations"]["missing_#{field.pluralize}"] ||= {}
+      result.raw_result["aggregations"]["missing_#{field.pluralize}"]["doc_count"] = count
+    end
   end
 
   def aggregate_by_cardinality!(field)
-    @query[:select] << "COUNT(DISTINCT #{@sequel.quote_identifier(field)})"
+    field = field.to_s
+    @default_query_needed = true
+    @query[:select] << "COUNT(DISTINCT #{@sequel.quote_identifier(field)}) AS #{@sequel.quote_identifier("#{field}_distinct_count")}"
+
+    @result_processors << Proc.new do |result|
+      count = 0
+      column_indexes = result.column_indexes(:default)
+      result.raw_result[:default]["results"].each do |row|
+        count = row[column_indexes["#{field}_distinct_count"]].to_i
+      end
+
+      result.raw_result["aggregations"] ||= {}
+      result.raw_result["aggregations"]["unique_#{field.pluralize}"] ||= {}
+      result.raw_result["aggregations"]["unique_#{field.pluralize}"]["value"] = count
+    end
   end
 
   def aggregate_by_users!(size)
     aggregate_by_term!(:user_id, size)
     aggregate_by_cardinality!(:user_id)
+
+    @result_processors << Proc.new do |result|
+      result.raw_result["aggregations"]["missing_user_emails"] = result.raw_result["aggregations"].delete("missing_user_ids")
+      result.raw_result["aggregations"]["top_user_emails"] = result.raw_result["aggregations"].delete("top_user_ids")
+      result.raw_result["aggregations"]["unique_user_emails"] = result.raw_result["aggregations"].delete("unique_user_ids")
+      result.raw_result["aggregations"]["value_count_user_emails"] = result.raw_result["aggregations"].delete("value_count_user_ids")
+
+      user_ids = result.raw_result["aggregations"]["top_user_emails"]["buckets"].map { |bucket| bucket["key"] }
+      users_by_id = ApiUser.where(:id.in => user_ids).group_by { |u| u.id }
+      result.raw_result["aggregations"]["top_user_emails"]["buckets"].each do |bucket|
+        user = users_by_id[bucket["key"]]
+        if(user && user.first)
+          bucket["key"] = user.first.email
+        end
+      end
+    end
   end
 
   def aggregate_by_request_ip!(size)
@@ -674,7 +768,20 @@ class LogSearchSql
   end
 
   def aggregate_by_response_time_average!
-    @query[:select] << "AVG(timer_response)"
+    @default_query_needed = true
+    @query[:select] << "AVG(timer_response) AS average_timer_response"
+
+    @result_processors << Proc.new do |result|
+      average = 0
+      column_indexes = result.column_indexes(:default)
+      result.raw_result[:default]["results"].each do |row|
+        average = row[column_indexes["average_timer_response"]].to_f
+      end
+
+      result.raw_result["aggregations"] ||= {}
+      result.raw_result["aggregations"]["response_time_average"] ||= {}
+      result.raw_result["aggregations"]["response_time_average"]["value"] = average
+    end
   end
 
   private
