@@ -2,7 +2,7 @@ require "active_record"
 
 class LogSearchSql
   attr_accessor :query, :query_options
-  attr_reader :client, :start_time, :end_time, :interval, :region, :country, :state, :result_processors
+  attr_reader :start_time, :end_time, :interval, :region, :country, :state, :result_processors
 
   CASE_SENSITIVE_FIELDS = [
     "api_key",
@@ -29,11 +29,6 @@ class LogSearchSql
 
   def initialize(options = {})
     @sequel = Sequel.connect("mock://postgresql")
-
-    @client = Elasticsearch::Client.new({
-      :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
-      :logger => Rails.logger
-    })
 
     @start_time = options[:start_time]
     unless(@start_time.kind_of?(Time))
@@ -279,11 +274,7 @@ class LogSearchSql
   end
 
   def exclude_imported!
-    @query[:query][:filtered][:filter][:bool][:must_not] << {
-      :exists => {
-        :field => "imported",
-      },
-    }
+    @query[:where] << "log_imported <> true"
   end
 
   def filter_by_date_range!
@@ -302,29 +293,17 @@ class LogSearchSql
   end
 
   def filter_by_api_key!(api_key)
-    @query[:query][:filtered][:filter][:bool][:must] << {
-      :term => {
-        :api_key => api_key,
-      },
-    }
+    user = ApiUser.where(:api_key => api_key).first
+    @query[:where] << @sequel.literal(Sequel.lit("user_id = ?", user.id))
   end
 
   def filter_by_user!(user_email)
-    @query[:query][:filtered][:filter][:bool][:must] << {
-      :term => {
-        :user => {
-          :user_email => user_email,
-        },
-      },
-    }
+    user = ApiUser.where(:email => user_email).first
+    @query[:where] << @sequel.literal(Sequel.lit("user_id = ?", user.id))
   end
 
   def filter_by_user_ids!(user_ids)
-    @query[:query][:filtered][:filter][:bool][:must] << {
-      :terms => {
-        :user_id => user_ids,
-      },
-    }
+    @query[:where] << @sequel.literal(Sequel.lit("user_id IN ?", user_ids))
   end
 
   def aggregate_by_drilldown!(prefix, size = 0)
@@ -514,19 +493,31 @@ class LogSearchSql
   end
 
   def aggregate_by_interval!
-    @query[:aggregations][:hits_over_time] = {
-      :date_histogram => {
-        :field => "request_at",
-        :interval => @interval,
-        :time_zone => Time.zone.name,
-        :pre_zone_adjust_large_interval => true,
-        :min_doc_count => 0,
-        :extended_bounds => {
-          :min => @start_time.iso8601,
-          :max => @end_time.iso8601,
-        },
-      },
-    }
+    execute_query(:hits_over_time, {
+      :select => all_drilldown_select + ["#{@interval_field} AS interval_field"],
+      :where => @drilldown_common_query[:where],
+      :group_by => all_drilldown_group_by + [@interval_field],
+      :order_by => ["interval_field"],
+    })
+
+    # Massage the hits_over_time query into the aggregation format matching our
+    # old elasticsearch queries.
+    @result_processors << Proc.new do |result|
+      time_buckets = {}
+      column_indexes = result.column_indexes(:hits_over_time)
+      result.raw_result[:hits_over_time]["results"].each do |row|
+        time = Time.strptime(row[column_indexes["interval_field"]], @interval_field_format)
+        time_buckets[time.to_i] = {
+          "key" => time.to_i * 1000,
+          "key_as_string" => time.utc.iso8601,
+          "doc_count" => row[column_indexes["hits"]].to_i,
+        }
+      end
+
+      result.raw_result["aggregations"] ||= {}
+      result.raw_result["aggregations"]["hits_over_time"] ||= {}
+      result.raw_result["aggregations"]["hits_over_time"]["buckets"] = fill_in_time_buckets(time_buckets)
+    end
   end
 
   def aggregate_by_region!
@@ -547,18 +538,42 @@ class LogSearchSql
   end
 
   def aggregate_by_region_field!(field)
+    @query[:aggregations] ||= {}
     @query[:aggregations][:regions] = {
       :terms => {
         :field => field.to_s,
-        :size => 500,
       },
     }
 
-    @query[:aggregations][:missing_regions] = {
-      :missing => {
-        :field => field.to_s,
-      },
-    }
+    field = field.to_s
+    @query[:select] << "COUNT(*) AS hits"
+    @query[:select] << @sequel.quote_identifier(field)
+    @query[:group_by] << @sequel.quote_identifier(field)
+
+    @result_processors << Proc.new do |result|
+      buckets = []
+      null_count = 0
+      column_indexes = result.column_indexes(:default)
+      result.raw_result[:default]["results"].each do |row|
+        region = row[column_indexes[field]]
+        hits = row[column_indexes["hits"]].to_i
+        if(region.nil?)
+          null_count = hits
+        else
+          buckets << {
+            "key" => region,
+            "doc_count" => hits,
+          }
+        end
+      end
+
+      result.raw_result["aggregations"] ||= {}
+      result.raw_result["aggregations"]["regions"] ||= {}
+      result.raw_result["aggregations"]["regions"]["buckets"] = buckets
+
+      result.raw_result["aggregations"]["missing_regions"] ||= {}
+      result.raw_result["aggregations"]["missing_regions"]["doc_count"] = null_count
+    end
   end
 
   def aggregate_by_country!
@@ -566,29 +581,18 @@ class LogSearchSql
   end
 
   def aggregate_by_country_regions!(country)
-    @query[:query][:filtered][:filter][:bool][:must] << {
-      :term => { :request_ip_country => country },
-    }
-
+    @query[:where] << @sequel.literal(Sequel.lit("request_ip_country = ?", country))
     aggregate_by_region_field!(:request_ip_region)
   end
 
   def aggregate_by_us_state_cities!(country, state)
-    @query[:query][:filtered][:filter][:bool][:must] << {
-      :term => { :request_ip_country => country },
-    }
-    @query[:query][:filtered][:filter][:bool][:must] << {
-      :term => { :request_ip_region => state },
-    }
-
+    @query[:where] << @sequel.literal(Sequel.lit("request_ip_country = ?", country))
+    @query[:where] << @sequel.literal(Sequel.lit("request_ip_region = ?", state))
     aggregate_by_region_field!(:request_ip_city)
   end
 
   def aggregate_by_country_cities!(country)
-    @query[:query][:filtered][:filter][:bool][:must] << {
-      :term => { :request_ip_country => country },
-    }
-
+    @query[:where] << @sequel.literal(Sequel.lit("request_ip_country = ?", country))
     aggregate_by_region_field!(:request_ip_city)
   end
 
@@ -615,17 +619,12 @@ class LogSearchSql
   end
 
   def aggregate_by_cardinality!(field)
-    @query[:aggregations]["unique_#{field.to_s.pluralize}"] = {
-      :cardinality => {
-        :field => field.to_s,
-        :precision_threshold => 100,
-      },
-    }
+    @query[:select] << "COUNT(DISTINCT #{@sequel.quote_identifier(field)})"
   end
 
   def aggregate_by_users!(size)
-    aggregate_by_term!(:user_email, size)
-    aggregate_by_cardinality!(:user_email)
+    aggregate_by_term!(:user_id, size)
+    aggregate_by_cardinality!(:user_id)
   end
 
   def aggregate_by_request_ip!(size)

@@ -107,34 +107,17 @@ class LogResultSql
         @cities = {}
 
         if @city_names.any?
-          query = {
-            :filter => {
-              :and => [],
-            },
-          }
-
-          query[:filter][:and] << {
-            :term => { :country => @search.country },
-          }
-
+          cities = LogCityLocation.where(:country => @search.country)
           if @search.state
-            query[:filter][:and] << {
-              :term => { :region => @search.state },
-            }
+            cities = cities.where(:region => @search.state)
           end
+          #cities = cities.where(:city => @city_names)
 
-          query[:filter][:and] << {
-            :terms => { :city => @city_names },
-          }
-
-          city_results = @search.client.search({
-            :index => "api-umbrella",
-            :size => 500,
-            :body => query,
-          })
-
-          city_results["hits"]["hits"].each do |result|
-            @cities[result["_source"]["city"]] = result["_source"]["location"]
+          cities.each do |city|
+            @cities[city.city] = {
+              "lat" => city.location["coordinates"][1],
+              "lon" => city.location["coordinates"][0],
+            }
           end
         end
       end

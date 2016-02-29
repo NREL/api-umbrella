@@ -1,9 +1,9 @@
 local iconv = require "iconv"
 local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_encode_json"
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
-local http = require "resty.http"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local logger = require "resty.logger.socket"
+local mongo = require "api-umbrella.utils.mongo"
 local sha256 = require "resty.sha256"
 local str = require "resty.string"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
@@ -35,28 +35,23 @@ local function cache_city_geocode(premature, id, data)
   id_hash = id_hash:final()
   id_hash = str.to_hex(id_hash)
   local record = {
+    _id = id_hash,
     country = data["request_ip_country"],
     region = data["request_ip_region"],
     city = data["request_ip_city"],
-    location = data["request_ip_location"],
-    updated_at = utils.round(ngx.now() * 1000),
-  };
+    location = {
+      type = "Point",
+      coordinates = {
+        data["request_ip_location"]["lon"],
+        data["request_ip_location"]["lat"],
+      },
+    },
+    updated_at = { ["$date"] = { ["$numberLong"] = tostring(ngx.now() * 1000) } },
+  }
 
-  local elasticsearch_server = config["elasticsearch"]["_servers"][1]
-  local index = "api-umbrella"
-  local index_type = "city"
-
-  local httpc = http.new()
-  httpc:set_timeout(45000)
-  httpc:connect(elasticsearch_server["host"], elasticsearch_server["port"])
-
-  local res, err = httpc:request({
-    method = "PUT",
-    path = (elasticsearch_server["path"] or "") .. "/" .. index .. "/" .. index_type .. "/" .. id_hash,
-    body = elasticsearch_encode_json(record),
-  })
-  if err or (res and res.status >= 400) then
-    ngx.log(ngx.ERR, "failed to cache city location in elasticsearch: ", err)
+  local _, err = mongo.update("log_city_locations", record["_id"], record)
+  if err then
+    ngx.log(ngx.ERR, "failed to cache city location: ", err)
   end
 end
 

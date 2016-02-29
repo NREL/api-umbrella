@@ -193,7 +193,7 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def map
-    @search = LogSearch.new({
+    @search = LogSearchSql.new({
       :start_time => params[:start_at],
       :end_time => params[:end_at],
       :region => params[:region],
