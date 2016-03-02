@@ -92,16 +92,16 @@ public class DayWorker implements Runnable {
     // Explicitly define which fields we'll be partitioning by, since these
     // don't need to be sorted in the output file (since they're part of the
     // file path, it's duplicative to store this data in the file).
-    this.schemaPartitionFields.add("request_at_year");
-    this.schemaPartitionFields.add("request_at_month");
-    this.schemaPartitionFields.add("request_at_date");
+    this.schemaPartitionFields.add("request_at_tz_year");
+    this.schemaPartitionFields.add("request_at_tz_month");
+    this.schemaPartitionFields.add("request_at_tz_date");
 
     // Define fields we want to store as short/smallints. Since Avro doesn't
     // support these in its schema, but ORC does, we need to explicitly list
     // these.
-    this.schemaShortFields.add("request_at_year");
-    this.schemaShortFields.add("request_at_month");
-    this.schemaShortFields.add("request_at_hour");
+    this.schemaShortFields.add("request_at_tz_year");
+    this.schemaShortFields.add("request_at_tz_month");
+    this.schemaShortFields.add("request_at_tz_hour");
     this.schemaShortFields.add("request_at_minute");
     this.schemaShortFields.add("response_status");
 
@@ -184,9 +184,9 @@ public class DayWorker implements Runnable {
     if(this.orcWriter == null) {
       // Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par
       Path path = Paths.get(App.DIR,
-        "request_at_year=" + this.date.toString("YYYY"),
-        "request_at_month=" + this.date.getMonthOfYear(),
-        "request_at_date=" + this.startDateString,
+        "request_at_tz_year=" + this.date.toString("YYYY"),
+        "request_at_tz_month=" + this.date.getMonthOfYear(),
+        "request_at_tz_date=" + this.startDateString,
         this.startDateString + ".orc");
       Files.createDirectories(path.getParent());
 
@@ -297,10 +297,11 @@ public class DayWorker implements Runnable {
           // timestamps yet).
           DateTime requestAt = this.parseTimestamp(value);
           log.put("request_at", requestAt.getMillis());
-          log.put("request_at_year", requestAt.getYear());
-          log.put("request_at_month", requestAt.getMonthOfYear());
-          log.put("request_at_date", this.dateFormatter.print(requestAt));
-          log.put("request_at_hour", requestAt.getHourOfDay());
+          log.put("request_at_tz_offset", App.TIMEZONE.getOffset(requestAt.getMillis()));
+          log.put("request_at_tz_year", requestAt.getYear());
+          log.put("request_at_tz_month", requestAt.getMonthOfYear());
+          log.put("request_at_tz_date", this.dateFormatter.print(requestAt));
+          log.put("request_at_tz_hour", requestAt.getHourOfDay());
           log.put("request_at_minute", requestAt.getMinuteOfHour());
           value = null;
           break;
@@ -587,10 +588,12 @@ public class DayWorker implements Runnable {
   }
 
   private DateTime parseTimestamp(JsonElement value) {
+    DateTime date;
     if(value.getAsJsonPrimitive().isNumber()) {
-      return new DateTime(value.getAsLong(), DateTimeZone.UTC);
+      date = new DateTime(value.getAsLong(), DateTimeZone.UTC);
     } else {
-      return this.dateTimeParser.parseDateTime(value.getAsString());
+      date = this.dateTimeParser.parseDateTime(value.getAsString());
     }
+    return date.withZone(App.TIMEZONE);
   }
 }

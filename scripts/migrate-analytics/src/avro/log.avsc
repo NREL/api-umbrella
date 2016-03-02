@@ -11,19 +11,23 @@
       "type": "long"
     },
     {
-      "name": "request_at_year",
+      "name": "request_at_tz_offset",
       "type": "int"
     },
     {
-      "name": "request_at_month",
+      "name": "request_at_tz_year",
       "type": "int"
     },
     {
-      "name": "request_at_date",
+      "name": "request_at_tz_month",
+      "type": "int"
+    },
+    {
+      "name": "request_at_tz_date",
       "type": "string"
     },
     {
-      "name": "request_at_hour",
+      "name": "request_at_tz_hour",
       "type": "int"
     },
     {

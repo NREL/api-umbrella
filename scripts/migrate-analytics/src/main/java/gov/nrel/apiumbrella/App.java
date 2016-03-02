@@ -42,6 +42,7 @@ public class App {
     .parseInt(System.getProperty("apiumbrella.concurrency", "4"));
   protected static String START_DATE = System.getProperty("apiumbrella.start_date");
   protected static String END_DATE = System.getProperty("apiumbrella.end_date");
+  protected static DateTimeZone TIMEZONE = DateTimeZone.forID(System.getProperty("apiumbrella.timezone", "UTC"));
 
   // Define fields we won't migrate to the new database.
   protected static final Set<String> SKIP_FIELDS = new HashSet<String>(Arrays.asList(new String[] {
