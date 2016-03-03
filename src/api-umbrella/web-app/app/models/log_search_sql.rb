@@ -11,6 +11,10 @@ class LogSearchSql
     "request_ip_city",
   ]
 
+  NOT_NULL_FIELDS = [
+    "request_ip",
+  ]
+
   LEGACY_FIELDS = {
     "request_scheme" => "request_url_scheme",
     "request_host" => "request_url_host",
@@ -70,6 +74,7 @@ class LogSearchSql
       :order_by => [],
     }
 
+    @queries = {}
     @query_results = {}
 
     @query_options = {
@@ -140,8 +145,8 @@ class LogSearchSql
   end
 
   def result
-    if(@query_results.empty? || @default_query_needed)
-      execute_query(:default)
+    if(@query_results.empty? || @queries[:default])
+      execute_query(:default, @queries[:default])
     end
 
     @result = LogResultSql.new(self, @query_results)
@@ -163,8 +168,9 @@ class LogSearchSql
 
   def search_type!(search_type)
     if(search_type == "count")
-      @default_query_needed = true
-      @query[:select] << "COUNT(*) AS total_count"
+      @queries[:default] ||= {}
+      @queries[:default][:select] ||= []
+      @queries[:default][:select] << "COUNT(*) AS total_count"
 
       @result_processors << Proc.new do |result|
         count = 0
@@ -468,6 +474,14 @@ class LogSearchSql
         # Store the hierarchy breakdown in the order of overall traffic (so the
         # path with the most traffic is always at the bottom of the graph).
         path_index = top_path_indexes[row[column_indexes[@drilldown_depth_field]]]
+
+        # If the path index isn't set, skip this result for top hit processing.
+        # This can happen when we're grouping by the top-level host, since our
+        # query to match results returns everything matching the top hostnames,
+        # however we may only be considering "example.com/" vs "example.com" as
+        # part of the top hits.
+        next unless(path_index)
+
         unless buckets[path_index]
           buckets[path_index] = {
             "key" => build_drilldown_prefix_from_result(row, column_indexes),
@@ -639,10 +653,14 @@ class LogSearchSql
     })
 
     query_name_null_count = :"aggregate_by_term_#{field}_null_count"
-    execute_query(query_name_null_count, {
-      :select => ["COUNT(*) AS hits"],
-      :where => ["#{@sequel.quote_identifier(field)} IS NULL"],
-    })
+    # Optimization: Skip IS NULL query for any NOT NULL columns, since it
+    # will always be 0.
+    if(!NOT_NULL_FIELDS.include?(field))
+      execute_query(query_name_null_count, {
+        :select => ["COUNT(*) AS hits"],
+        :where => ["#{@sequel.quote_identifier(field)} IS NULL"],
+      })
+    end
 
     @result_processors << Proc.new do |result|
       buckets = []
@@ -673,9 +691,12 @@ class LogSearchSql
 
     @result_processors << Proc.new do |result|
       count = 0
-      column_indexes = result.column_indexes(query_name_null_count)
-      result.raw_result[query_name_null_count]["results"].each do |row|
-        count = row[column_indexes["hits"]].to_i
+      # Still populate the NOT NULL fields with a 0 value for compatibility.
+      if(!NOT_NULL_FIELDS.include?(field))
+        column_indexes = result.column_indexes(query_name_null_count)
+        result.raw_result[query_name_null_count]["results"].each do |row|
+          count = row[column_indexes["hits"]].to_i
+        end
       end
 
       result.raw_result["aggregations"] ||= {}
@@ -686,8 +707,9 @@ class LogSearchSql
 
   def aggregate_by_cardinality!(field)
     field = field.to_s
-    @default_query_needed = true
-    @query[:select] << "COUNT(DISTINCT #{@sequel.quote_identifier(field)}) AS #{@sequel.quote_identifier("#{field}_distinct_count")}"
+    @queries[:default] ||= {}
+    @queries[:default][:select] ||= []
+    @queries[:default][:select] << "COUNT(DISTINCT #{@sequel.quote_identifier(field)}) AS #{@sequel.quote_identifier("#{field}_distinct_count")}"
 
     @result_processors << Proc.new do |result|
       count = 0
@@ -768,8 +790,9 @@ class LogSearchSql
   end
 
   def aggregate_by_response_time_average!
-    @default_query_needed = true
-    @query[:select] << "AVG(timer_response) AS average_timer_response"
+    @queries[:default] ||= {}
+    @queries[:default][:select] ||= []
+    @queries[:default][:select] << "AVG(timer_response) AS average_timer_response"
 
     @result_processors << Proc.new do |result|
       average = 0
