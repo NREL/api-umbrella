@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
@@ -505,6 +506,33 @@ public class DayWorker implements Runnable {
         case "imported":
           key = "log_imported";
           break;
+        }
+
+        // Handle empty strings values.
+        if(value != null && value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()
+          && value.getAsJsonPrimitive().getAsString().equals("")) {
+          switch(key) {
+          // Replace empty string request_ips with 127.0.0.1. There's not a lot
+          // of these empty string values, but since this is considered a
+          // required field moving forward, let's make sure we have at least
+          // some real value in there.
+          case "request_ip":
+            logger.warn(key
+              + " contains empty string value: replacing with 127.0.0.1 since NULLs are not allowed on this field: "
+              + hit);
+            value = new JsonPrimitive("127.0.0.1");
+            break;
+
+          // Set empty string values to null.
+          //
+          // I think in all of our cases, nulls are more appropriate, we just
+          // have empty strings in some of our source data due to various
+          // migrations. Kylin (v1.2) also seems to treat empty strings as NULLs
+          // in the rollups, so for consistency sake, we'll avoid them.
+          default:
+            value = null;
+            break;
+          }
         }
 
         if(value != null) {
