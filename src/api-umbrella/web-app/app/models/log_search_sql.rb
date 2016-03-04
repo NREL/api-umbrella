@@ -110,11 +110,6 @@ class LogSearchSql
       sql << " LIMIT #{limit}"
     end
 
-    offset = query[:offset] || @query[:offset]
-    if(offset.present?)
-      sql << " OFFSET #{offset}"
-    end
-
     sql
   end
 
@@ -199,10 +194,14 @@ class LogSearchSql
     unless @query_results[query_name]
       sql = build_query(query)
 
-      begin
-        results = execute_kylin(sql)
-      rescue
+      if(@needs_presto)
         results = execute_presto(sql)
+      else
+        begin
+          results = execute_kylin(sql)
+        rescue
+          results = execute_presto(sql)
+        end
       end
 
       @query_results[query_name] = results
@@ -364,10 +363,22 @@ class LogSearchSql
   end
 
   def limit!(size)
-    @query_options[:size] = size
+    @query[:limit] = size
   end
 
   def sort!(sort)
+    sort.each do |s|
+      field = s.keys.first
+      order = s.values.first
+      if(order == "desc" || order == "asc")
+        order = order.upcase
+      else
+        order = "ASC"
+      end
+
+      @query[:order_by] << "#{@sequel.quote_identifier(field)} #{order}"
+    end
+
     @query[:sort] = sort
   end
 
@@ -872,6 +883,25 @@ class LogSearchSql
       result.raw_result["aggregations"] ||= {}
       result.raw_result["aggregations"]["response_time_average"] ||= {}
       result.raw_result["aggregations"]["response_time_average"]["value"] = average
+    end
+  end
+
+  def select_records!
+    @needs_presto = true
+    @query[:select] << "*"
+
+    @result_processors << Proc.new do |result|
+      hits = []
+      columns = result.raw_result[:default]["columnMetas"].map { |m| m["label"].downcase }
+      result.raw_result[:default]["results"].each do |row|
+        data = Hash[columns.zip(row)]
+        data["request_url"] = "#{data["request_url_scheme"]}://#{data["request_url_host"]}:#{data["request_url_port"]}#{data["request_url_path"]}?#{data["request_url_query"]}"
+        hits << { "_source" => data }
+      end
+
+      result.raw_result["hits"] ||= {}
+      result.raw_result["hits"]["total"] = hits.length
+      result.raw_result["hits"]["hits"] = hits
     end
   end
 

@@ -30,8 +30,12 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def logs
-    @search = LogSearch.new({
-      :start_time => params[:start_at],
+    @search = LogSearchSql.new({
+      # TODO: For the SQL fetching, set start_time to end_time to limit to last
+      # 24 hours. If we do end up limiting it to the last 24 hours by default,
+      # figure out a better way to document this and still allow downloading
+      # the full data set.
+      :start_time => params[:end_at],
       :end_time => params[:end_at],
       :interval => params[:interval],
     })
@@ -48,6 +52,7 @@ class Admin::StatsController < Admin::BaseController
     @search.filter_by_date_range!
     @search.offset!(offset)
     @search.limit!(limit)
+    @search.select_records!
 
     sort = datatables_sort
     if(sort.any?)
