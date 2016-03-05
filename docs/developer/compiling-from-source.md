@@ -10,6 +10,7 @@ Installing from a [binary package](../getting-started.html#installation) is reco
   - CentOS:
     - bash
     - bzip2
+    - cmake
     - curl
     - gcc
     - gcc-c++
@@ -44,6 +45,7 @@ Installing from a [binary package](../getting-started.html#installation) is reco
   - Ubuntu:
     - bash
     - bzip2
+    - cmake
     - curl
     - g++
     - gcc

@@ -79,13 +79,10 @@ GOLANG_CHECKSUM:=43afe0c5017e502630b1aea4d44b8a7f059bf60d7f29dfd58db454d4e4e0ae5
 GOLANG_URL:=https://storage.googleapis.com/golang/go$(GOLANG_VERSION).linux-amd64.tar.gz
 GOLANG_INSTALL_MARKER:=$(GOLANG_NAME)$(VERSION_SEP)$(GOLANG_VERSION)
 
-HEKA_VERSION:=0.9.2
-HEKA_VERSION_UNDERSCORE:=$(shell echo $(HEKA_VERSION) | sed -e 's/\./_/g')
+HEKA_VERSION:=0.10.0
 HEKA_NAME:=heka
 HEKA:=$(HEKA_NAME)-$(HEKA_VERSION)
-HEKA_DIGEST:=md5
-HEKA_CHECKSUM:=864625dff702306eba1494149ff903ee
-HEKA_URL:=https://github.com/mozilla-services/heka/releases/download/v$(HEKA_VERSION)/heka-$(HEKA_VERSION_UNDERSCORE)-linux-amd64.tar.gz
+HEKA_GIT_URL:=https://github.com/mozilla-services/heka.git
 HEKA_INSTALL_MARKER:=$(HEKA_NAME)$(VERSION_SEP)$(HEKA_VERSION)
 
 LIBCIDR_VERSION:=1.2.3
@@ -523,21 +520,50 @@ $(DEPS_DIR)/$(GOLANG): $(DEPS_DIR)/$(GOLANG).tar.gz
 	$(call decompress,GOLANG)
 
 # Heka
-$(DEPS_DIR)/$(HEKA).tar.gz: | $(DEPS_DIR)
-	$(call download,HEKA)
+$(DEPS_DIR)/$(HEKA):
+	git clone $(HEKA_GIT_URL) $@
+	touch $@
 
-$(DEPS_DIR)/$(HEKA): $(DEPS_DIR)/$(HEKA).tar.gz
-	$(call decompress,HEKA)
+$(DEPS_DIR)/$(HEKA)/.built: $(DEPS_DIR)/$(HEKA) $(DEPS_DIR)/$(GOLANG)
+	cd $< && git checkout v$(HEKA_VERSION) && git checkout .
+	# Install cmake file for which heka plugins to install.
+	cp $(BUILD_DIR)/heka_plugin_loader.cmake $</cmake/plugin_loader.cmake
+	# Fix inability to override CMAKE_INSTALL_PREFIX:
+	# https://github.com/mozilla-services/heka/pull/1869
+	sed -i -e 's#^set(CMAKE_INSTALL_PREFIX.*#if(NOT DEFINED CMAKE_INSTALL_PREFIX)\n  set(CMAKE_INSTALL_PREFIX $${CMAKE_PROJECT_NAME})\nendif()#' $</CMakeLists.txt
+	# Call cmake directly instead of using the wrapper build.sh script so that we
+	# can set options like CMAKE_INSTALL_PREFIX
+	cd $< && source ./env.sh && mkdir -p build
+	cd $< && source ./env.sh && cd build && \
+		PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(DEPS_DIR)/gocode/bin:$(PATH) \
+		GOROOT=$(DEPS_DIR)/$(GOLANG) \
+		CMAKE_INSTALL_PREFIX=$(PREFIX)/embedded \
+		cmake \
+			-DCMAKE_BUILD_TYPE=release \
+			-DCMAKE_INSTALL_PREFIX=$(PREFIX)/embedded \
+			-DINCLUDE_DOCKER_PLUGINS=false \
+			-DINCLUDE_GEOIP=false \
+			-DSPHINX_BUILD_EXECUTABLE=false ..
+	cd $< && source ./env.sh && cd build && \
+		PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(DEPS_DIR)/gocode/bin:$(PATH) \
+		GOROOT=$(DEPS_DIR)/$(GOLANG) \
+		make
+	touch $@
 
-$(STAGE_MARKERS_DIR)/$(HEKA_INSTALL_MARKER): $(DEPS_DIR)/$(HEKA) | $(STAGE_MARKERS_DIR)
-	mkdir -p $(EMBEDDED_DIR)
-	rsync -a $(DEPS_DIR)/$(HEKA)/ $(EMBEDDED_DIR)/
+$(STAGE_MARKERS_DIR)/$(HEKA_INSTALL_MARKER): $(DEPS_DIR)/$(HEKA)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(HEKA) && source ./env.sh && cd build && \
+		PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(DEPS_DIR)/gocode/bin:$(PATH) \
+		GOROOT=$(DEPS_DIR)/$(GOLANG) \
+		make install DESTDIR=$(STAGE_DIR)
 	# Trim our own distribution by removing some larger files we don't need for
 	# API Umbrella.
-	rm -f $(EMBEDDED_DIR)/bin/heka-cat \
+	rm -f $(EMBEDDED_DIR)/bin/hekabench_cbuf_counter.lua \
+		$(EMBEDDED_DIR)/bin/heka-cat \
 		$(EMBEDDED_DIR)/bin/heka-flood \
 		$(EMBEDDED_DIR)/bin/heka-inject \
-		$(EMBEDDED_DIR)/bin/heka-sbmgr
+		$(EMBEDDED_DIR)/bin/heka-logstreamer \
+		$(EMBEDDED_DIR)/bin/heka-sbmgr \
+		$(EMBEDDED_DIR)/bin/sbmgr.toml
 	rm -f $(STAGE_MARKERS_DIR)/$(HEKA_NAME)$(VERSION_SEP)*
 	touch $@
 
@@ -925,8 +951,8 @@ $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(VENDOR_DIR)
 	$(DEPS_DIR)/$(GLIDE)/.built \
 	$(DEPS_DIR)/$(GOLANG).tar.gz \
 	$(DEPS_DIR)/$(GOLANG) \
-	$(DEPS_DIR)/$(HEKA).tar.gz \
 	$(DEPS_DIR)/$(HEKA) \
+	$(DEPS_DIR)/$(HEKA)/.built \
 	$(DEPS_DIR)/$(LIBCIDR).tar.xz \
 	$(DEPS_DIR)/$(LIBCIDR) \
 	$(DEPS_DIR)/$(LIBCIDR)/.built \
@@ -984,7 +1010,7 @@ download_deps: \
 	$(DEPS_DIR)/GeoLiteCityv6.dat.gz \
 	$(DEPS_DIR)/$(GLIDE).tar.gz \
 	$(DEPS_DIR)/$(GOLANG).tar.gz \
-	$(DEPS_DIR)/$(HEKA).tar.gz \
+	$(DEPS_DIR)/$(HEKA) \
 	$(DEPS_DIR)/$(LIBCIDR).tar.xz \
 	$(DEPS_DIR)/$(LIBGEOIP).tar.gz \
 	$(DEPS_DIR)/$(LUAROCKS).tar.gz \
