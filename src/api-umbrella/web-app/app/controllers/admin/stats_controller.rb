@@ -30,12 +30,13 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def logs
+    # TODO: For the SQL fetching, set start_time to end_time to limit to last
+    # 24 hours. If we do end up limiting it to the last 24 hours by default,
+    # figure out a better way to document this and still allow downloading
+    # the full data set.
+    start_time = Time.zone.parse(params[:end_at]) - 1.day
     @search = LogSearchSql.new({
-      # TODO: For the SQL fetching, set start_time to end_time to limit to last
-      # 24 hours. If we do end up limiting it to the last 24 hours by default,
-      # figure out a better way to document this and still allow downloading
-      # the full data set.
-      :start_time => params[:end_at],
+      :start_time => start_time,
       :end_time => params[:end_at],
       :interval => params[:interval],
     })
