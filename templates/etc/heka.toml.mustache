@@ -9,21 +9,54 @@ decoder = "JsonDecoder"
 
 [JsonDecoder]
 type = "SandboxDecoder"
-filename = "{{_src_root_dir}}/src/api-umbrella/heka/json_decoder.lua"
+filename = "lua_decoders/json.lua"
 
-[es_payload]
-type = "SandboxEncoder"
-filename = "{{_src_root_dir}}/src/api-umbrella/heka/es_payload.lua"
-    [es_payload.config]
-    es_index_from_timestamp = true
-    index = "api-umbrella-logs-v1-%{%Y-%m}"
-    type_name = "log"
+  [JsonDecoder.config]
+  type = "api_umbrella_log"
+  # Turn all of the JSON fields into Heka Message Fields.
+  map_fields = true
+  # Pull out the timestamp from the message (this is the nanoseconds version of
+  # the "request_at" field). By explicitly setting this, we ensure that the
+  # ElasticSearch output mechanism stores the record in the proper time-based
+  # index (based on request_at, rather than the time Heka receives the log).
+  Timestamp = "_heka_timestamp"
+
+[ESJsonEncoder]
+es_index_from_timestamp = true
+index = "api-umbrella-logs-v1-%{%Y-%m}"
+type_name = "log"
+fields = ["DynamicFields"]
 
 [ElasticSearchOutput]
 message_matcher = "TRUE"
 server = "{{elasticsearch._first_host}}"
 flush_interval = 1000
 flush_count = 10
-encoder = "es_payload"
+encoder = "ESJsonEncoder"
 use_buffering = true
-queue_max_buffer_size = 0
+
+[TsvEncoder]
+type = "SandboxEncoder"
+filename = "{{_src_root_dir}}/src/api-umbrella/heka/tsv_encoder.lua"
+
+[RstEncoder]
+
+[FlumeOutput]
+type = "TcpOutput"
+message_matcher = "TRUE"
+address = "ec2-52-90-11-128.compute-1.amazonaws.com:41415"
+encoder = "TsvEncoder"
+use_buffering = true
+
+[FileOutput]
+message_matcher = "TRUE"
+path = "/tmp/heka.log"
+encoder = "RstEncoder"
+use_buffering = true
+
+[TsvFileOutput]
+type = "FileOutput"
+message_matcher = "TRUE"
+path = "/tmp/heka-tsv.log"
+encoder = "TsvEncoder"
+use_buffering = true

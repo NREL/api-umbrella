@@ -1,0 +1,31 @@
+agent.sources = tcp-listener
+agent.channels = file-channel
+agent.sinks = hdfs-sink
+
+agent.channels.file-channel.type = file
+
+agent.sources.tcp-listener.type = netcat
+agent.sources.tcp-listener.channels = file-channel
+agent.sources.tcp-listener.bind = 0.0.0.0
+agent.sources.tcp-listener.port = 41415
+agent.sources.tcp-listener.max-line-length = 5000
+
+agent.sources.tcp-listener.interceptors = timestamp-extractor
+agent.sources.tcp-listener.interceptors.timestamp-extractor.type = regex_extractor
+agent.sources.tcp-listener.interceptors.timestamp-extractor.regex = ^\\w+\\t(\\d+)
+agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers = timestamp-serializer
+agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers.timestamp-serializer.type = org.apache.flume.interceptor.RegexExtractorInterceptorPassThroughSerializer
+agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers.timestamp-serializer.name = timestamp
+
+agent.sinks.hdfs-sink.type = hdfs
+agent.sinks.hdfs-sink.channel = file-channel
+agent.sinks.hdfs-sink.hdfs.path = /tmp/flume-test/request_at_year=%Y/request_at_month=%n/request_at_date=%Y-%m-%d
+agent.sinks.hdfs-sink.hdfs.fileSuffix = .tsv.gz
+# Use "_" prefix for files currently being written to. This prevent Hive from
+# picking these files up before they're fully written (otherwise, the partial
+# gzip state results in invalid data).
+agent.sinks.hdfs-sink.hdfs.inUsePrefix = _
+agent.sinks.hdfs-sink.hdfs.rollInterval = 10
+agent.sinks.hdfs-sink.hdfs.codeC = gzip
+agent.sinks.hdfs-sink.hdfs.fileType = CompressedStream
+agent.sinks.hdfs-sink.hdfs.timeZone = UTC

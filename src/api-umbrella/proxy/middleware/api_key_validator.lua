@@ -51,8 +51,6 @@ return function(settings)
 
   -- Store user details for logging.
   ngx.ctx.user_id = user["id"]
-  ngx.ctx.user_email = user["email"]
-  ngx.ctx.user_registration_source = user["registration_source"]
 
   -- Check to make sure the user isn't disabled.
   if user["disabled_at"] then
