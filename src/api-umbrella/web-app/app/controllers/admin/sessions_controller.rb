@@ -8,6 +8,21 @@ class Admin::SessionsController < Devise::SessionsController
     admin_path
   end
 
+  def auth
+    response = {
+      "authenticated" => !!current_admin
+    }
+
+    if current_admin
+      response["admin"] = current_admin.as_json
+      response["api_key"] = ApiUser.where(:email => "web.admin.ajax@internal.apiumbrella").order_by(:created_at.asc).first.api_key
+    end
+
+    respond_to do|format|
+      format.json { render(:json => response) }
+    end
+  end
+
   private
 
   def set_locale

@@ -60,6 +60,7 @@ ApiUmbrella::Application.routes.draw do
   devise_scope :admin do
     get "/admin/login" => "admin/sessions#new", :as => :new_admin_session
     get "/admin/logout" => "admin/sessions#destroy", :as => :destroy_admin_session
+    get "/admin/auth" => "admin/sessions#auth"
   end
 
   match "/admin" => "admin/base#empty"
