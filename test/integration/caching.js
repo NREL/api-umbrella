@@ -40,6 +40,70 @@ describe('caching', function() {
         ],
         url_matches: [
           {
+            frontend_prefix: '/cacheable-backend-port/prefix/foo/',
+            backend_prefix: '/cacheable-backend-port/',
+          },
+        ],
+      },
+      {
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9441,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/cacheable-backend-port/prefix/bar/',
+            backend_prefix: '/cacheable-backend-port/',
+          },
+        ],
+      },
+      {
+        frontend_host: 'localhost',
+        backend_host: 'foo.example',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/cacheable-backend-host/prefix/foo/',
+            backend_prefix: '/cacheable-backend-host/',
+          },
+        ],
+      },
+      {
+        frontend_host: 'localhost',
+        backend_host: 'bar.example',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
+            frontend_prefix: '/cacheable-backend-host/prefix/bar/',
+            backend_prefix: '/cacheable-backend-host/',
+          },
+        ],
+      },
+      {
+        frontend_host: 'localhost',
+        backend_host: 'localhost',
+        servers: [
+          {
+            host: '127.0.0.1',
+            port: 9444,
+          },
+        ],
+        url_matches: [
+          {
             frontend_prefix: '/',
             backend_prefix: '/',
           },
@@ -235,6 +299,62 @@ describe('caching', function() {
     request.get('http://localhost:9080/cacheable-surrogate-control-and-cache-control/' + _.uniqueId(), this.options, function(error, response) {
       response.headers['cache-control'].should.eql('max-age=0, private, must-revalidate');
       done();
+    });
+  });
+
+  describe('frontends with different paths but colliding backend paths', function() {
+    it('distinguishes between backends with identical paths but different hosts', function(done) {
+      var uniqueId = _.uniqueId();
+      var fooUrl = 'http://localhost:9080/cacheable-backend-host/prefix/foo/' + uniqueId;
+      var barUrl = 'http://localhost:9080/cacheable-backend-host/prefix/bar/' + uniqueId;
+
+      async.series([
+        function(next) {
+          request(fooUrl, this.options, function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            response.headers['x-cache'].should.eql('MISS');
+            body.should.eql('foo.example');
+            next();
+          });
+        }.bind(this),
+        function(next) {
+          request(barUrl, this.options, function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            response.headers['x-cache'].should.eql('MISS');
+            body.should.eql('bar.example');
+            next();
+          });
+        }.bind(this),
+      ], done);
+    });
+
+    it('distinguishes between backends with identical paths and hosts, but belonging to different API backends (separated by ports)', function(done) {
+      var uniqueId = _.uniqueId();
+      var fooUrl = 'http://localhost:9080/cacheable-backend-port/prefix/foo/' + uniqueId;
+      var barUrl = 'http://localhost:9080/cacheable-backend-port/prefix/bar/' + uniqueId;
+
+      async.series([
+        function(next) {
+          request(fooUrl, this.options, function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            response.headers['x-cache'].should.eql('MISS');
+            body.should.eql('9444');
+            next();
+          });
+        }.bind(this),
+        function(next) {
+          request(barUrl, this.options, function(error, response, body) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            response.headers['x-cache'].should.eql('MISS');
+            body.should.eql('9441');
+            next();
+          });
+        }.bind(this),
+      ], done);
     });
   });
 
