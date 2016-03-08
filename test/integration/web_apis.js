@@ -560,7 +560,7 @@ describe('web apis', function() {
         },
       });
 
-      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response, body) {
+      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response) {
         should.not.exist(error);
         response.statusCode.should.eql(401);
         done();
@@ -574,7 +574,7 @@ describe('web apis', function() {
         },
       });
 
-      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response, body) {
+      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response) {
         should.not.exist(error);
         response.statusCode.should.eql(201);
         done();
@@ -589,7 +589,7 @@ describe('web apis', function() {
         },
       });
 
-      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response, body) {
+      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response) {
         should.not.exist(error);
         response.statusCode.should.eql(403);
         done();
@@ -604,7 +604,7 @@ describe('web apis', function() {
         },
       });
 
-      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response, body) {
+      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response) {
         should.not.exist(error);
         response.statusCode.should.eql(201);
         done();
@@ -619,7 +619,7 @@ describe('web apis', function() {
         },
       });
 
-      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response, body) {
+      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response) {
         should.not.exist(error);
         response.statusCode.should.eql(201);
         done();
