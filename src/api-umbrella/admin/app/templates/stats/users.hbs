@@ -1,0 +1,10 @@
+{{view 'stats/query-form'}}
+
+<div id="results_table">
+  {{view 'stats/users-table'}}
+</div>
+<div class="results-table-actions">
+  <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
+</div>
+
+{{view 'loading-overlay' isLoadingBinding='controllers.application.isLoading'}}

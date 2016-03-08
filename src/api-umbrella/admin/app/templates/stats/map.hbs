@@ -1,0 +1,22 @@
+{{view 'stats/query-form'}}
+
+<div id="map_container">
+  {{#each breadcrumbs}}
+    {{#if linkQuery}}
+      {{#link-to 'stats.map' linkQuery}}{{name}}{{/link-to}} /
+    {{else}}
+      {{name}}
+    {{/if}}
+  {{/each}}
+
+  {{view 'stats/map-geo' modelBinding='model'}}
+</div>
+
+<div id="results_table">
+  {{view 'stats/map-table' modelBinding='model'}}
+</div>
+<div class="results-table-actions">
+  <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
+</div>
+
+{{view 'loading-overlay' isLoadingBinding='controllers.application.isLoading'}}
