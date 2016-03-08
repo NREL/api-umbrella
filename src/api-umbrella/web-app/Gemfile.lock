@@ -24,6 +24,16 @@ GIT
       activesupport (>= 3.1, <= 4.2)
 
 GIT
+  remote: https://github.com/intridea/omniauth-ldap.git
+  revision: 9d36cdb9f3d4da040ab6f7aff54450392b78f5eb
+  specs:
+    omniauth-ldap (1.0.4)
+      net-ldap (~> 0.3)
+      omniauth (~> 1.0)
+      pyu-ruby-sasl (~> 0.0.3.1)
+      rubyntlm (~> 0.3)
+
+GIT
   remote: https://github.com/riking/omniauth-github.git
   revision: 8d1f8b665501dd27bae941ea8e128597b7e8edea
   branch: all_emails
@@ -31,6 +41,15 @@ GIT
     omniauth-github (1.1.2)
       omniauth (~> 1.0)
       omniauth-oauth2 (~> 1.1)
+
+GIT
+  remote: https://github.com/wktk/mail.git
+  revision: 9a7826f7889ebe502969054b162f23344eed0c1c
+  branch: 2-5-stable
+  specs:
+    mail (2.5.4)
+      mime-types (~> 1.16)
+      treetop (~> 1.4.8)
 
 GEM
   remote: https://rubygems.org/
@@ -202,7 +221,7 @@ GEM
       rspec (>= 2.14.0, < 3.1.0)
       ruby-progressbar (~> 1.4)
     handlebars-source (1.3.0)
-    hashie (3.4.2)
+    hashie (3.4.3)
     hike (1.2.3)
     htmlentities (4.3.3)
     http-cookie (1.0.2)
@@ -215,7 +234,7 @@ GEM
       activesupport (>= 3.0.0, < 5)
       multi_json (~> 1.2)
     journey (1.0.4)
-    jquery-rails (3.1.2)
+    jquery-rails (3.1.4)
       railties (>= 3.0, < 5.0)
       thor (>= 0.14, < 2.0)
     jshintrb (0.3.0)
@@ -234,11 +253,8 @@ GEM
     launchy (2.4.3)
       addressable (~> 2.3)
     libv8 (3.16.14.13)
-    mail (2.5.4)
-      mime-types (~> 1.16)
-      treetop (~> 1.4.8)
     mime-types (1.25.1)
-    mini_portile (0.6.2)
+    mini_portile2 (2.0.0)
     mongoid (3.1.7)
       activemodel (~> 3.2)
       moped (~> 1.4)
@@ -259,13 +275,13 @@ GEM
     multi_json (1.11.2)
     multi_xml (0.5.5)
     multipart-post (2.0.0)
-    net-ldap (0.3.1)
+    net-ldap (0.13.0)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-ssh (2.9.2)
     netrc (0.10.3)
-    nokogiri (1.6.6.4)
-      mini_portile (~> 0.6.0)
+    nokogiri (1.6.7.2)
+      mini_portile2 (~> 2.0.0.rc2)
     oauth (0.4.7)
     oauth2 (1.0.0)
       faraday (>= 0.8, < 0.10)
@@ -283,11 +299,6 @@ GEM
     omniauth-google-oauth2 (0.2.6)
       omniauth (> 1.0)
       omniauth-oauth2 (~> 1.1)
-    omniauth-ldap (1.0.4)
-      net-ldap (~> 0.3.1)
-      omniauth (~> 1.0)
-      pyu-ruby-sasl (~> 0.0.3.1)
-      rubyntlm (~> 0.1.1)
     omniauth-oauth (1.0.1)
       oauth
       omniauth (~> 1.0)
@@ -328,7 +339,7 @@ GEM
     rabl (0.11.6)
       activesupport (>= 2.3.14)
     rack (1.4.7)
-    rack-cache (1.2)
+    rack-cache (1.5.1)
       rack (>= 0.4)
     rack-proxy (0.5.17)
       rack
@@ -401,7 +412,7 @@ GEM
       rdoc (~> 3.4)
       thor (>= 0.14.6, < 2.0)
     rainbow (2.0.0)
-    rake (10.4.2)
+    rake (10.5.0)
     rdoc (3.12.2)
       json (~> 1.4)
     ref (2.0.0)
@@ -445,7 +456,7 @@ GEM
       rainbow (>= 1.99.1, < 3.0)
       ruby-progressbar (~> 1.4)
     ruby-progressbar (1.7.5)
-    rubyntlm (0.1.1)
+    rubyntlm (0.5.2)
     safe_yaml (1.0.4)
     sass (3.2.19)
     sass-rails (3.2.6)
@@ -541,18 +552,19 @@ DEPENDENCIES
   fuubar (~> 1.3.3)
   http_accept_language (~> 2.0.5)
   jbuilder (~> 2.2.2)
-  jquery-rails (~> 3.1.0)
+  jquery-rails (~> 3.1.4)
   jshintrb (~> 0.3.0)
   kaminari (~> 0.16.1)
   kaminari-bootstrap (~> 0.1.3)
   kramdown (~> 1.6.0)
+  mail (~> 2.5.4)!
   mongoid (~> 3.1.6)
   mongoid-embedded-errors (~> 2.0.1)
   mongoid_delorean (~> 1.3.0)
   mongoid_rails_migrations (~> 1.0.1)
   mongoid_userstamp (~> 0.3.2)
   multi_json (~> 1.11.0)
-  nokogiri (~> 1.6.6.4)
+  nokogiri (~> 1.6.7.2)
   oj (~> 2.13.0)
   oj_mimic_json (~> 1.0.1)
   omniauth (~> 1.2.1)
@@ -560,7 +572,7 @@ DEPENDENCIES
   omniauth-facebook (~> 2.0.0)
   omniauth-github!
   omniauth-google-oauth2 (~> 0.2.2)
-  omniauth-ldap (~> 1.0.4)
+  omniauth-ldap (~> 1.0.4)!
   omniauth-myusa!
   omniauth-persona (~> 0.0.1)
   omniauth-twitter (~> 1.0.1)

@@ -100,7 +100,7 @@ namespace :deploy do
     on roles(:app) do
       within("#{release_path}/src/api-umbrella/web-app") do
         with "RAILS_ENV" => fetch(:stage) do
-          execute :rake, "assets:precompile"
+          execute :bundle, "exec", "rake", "assets:precompile"
         end
       end
     end

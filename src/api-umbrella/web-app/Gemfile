@@ -62,7 +62,10 @@ gem "omniauth-facebook", "~> 2.0.0"
 # https://github.com/intridea/omniauth-github/pull/41
 gem "omniauth-github", :git => "https://github.com/riking/omniauth-github.git", :branch => "all_emails"
 gem "omniauth-google-oauth2", "~> 0.2.2"
-gem "omniauth-ldap", "~> 1.0.4"
+# Latest from git to loosen net-ldap dependency
+# (https://github.com/intridea/omniauth-ldap/pull/46) so we can bump net-ldap
+# for OSVDB-106108
+gem "omniauth-ldap", "~> 1.0.4", :git => "https://github.com/intridea/omniauth-ldap.git"
 gem "omniauth-myusa", :git => "https://github.com/GSA-OCSIT/omniauth-myusa.git"
 gem "omniauth-persona", "~> 0.0.1"
 gem "omniauth-twitter", "~> 1.0.1"
@@ -78,7 +81,7 @@ gem "kaminari-bootstrap", "~> 0.1.3" # Hold at bootstrap 2 version
 gem "tabs_on_rails", "~> 2.2.0"
 
 # Unobtrusive javascript for Rails helpers (things like delete links).
-gem "jquery-rails", "~> 3.1.0"
+gem "jquery-rails", "~> 3.1.4"
 
 # Views/templates for APIs
 gem "rabl", "~> 0.11.5"
@@ -110,7 +113,11 @@ gem "daemons", "~> 1.2.2"
 # nokogiri is a soft-dependency for premailer-rails so we need to explicitly
 # include it here.
 gem "premailer-rails", "~> 1.8.0"
-gem "nokogiri", "~> 1.6.6.4"
+gem "nokogiri", "~> 1.6.7.2"
+
+# Pull from git branch to get security patch for OSVDB-131677:
+# https://github.com/mikel/mail/pull/950
+gem "mail", "~> 2.5.4", :git => "https://github.com/wktk/mail.git", :branch => "2-5-stable"
 
 # Localization in the admin based on the Accept-Language header
 gem "http_accept_language", "~> 2.0.5"

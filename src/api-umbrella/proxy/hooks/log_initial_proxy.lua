@@ -1,5 +1,6 @@
 local iconv = require "iconv"
 local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_encode_json"
+local flatten_headers = require "api-umbrella.utils.flatten_headers"
 local http = require "resty.http"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local logger = require "resty.logger.socket"
@@ -91,8 +92,8 @@ local function log_request()
   end
 
   -- Fetch all the request and response headers.
-  local request_headers = ngx.req.get_headers();
-  local response_headers = ngx.resp.get_headers();
+  local request_headers = flatten_headers(ngx.req.get_headers());
+  local response_headers = flatten_headers(ngx.resp.get_headers());
 
   -- The GeoIP module returns ISO-8859-1 encoded city names, but we need UTF-8
   -- for inserting into ElasticSearch.

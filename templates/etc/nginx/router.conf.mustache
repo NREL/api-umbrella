@@ -115,6 +115,10 @@ http {
   gzip_types application/atom+xml application/javascript application/json application/rss+xml application/x-javascript application/xml text/css text/csv text/javascript text/plain text/xml;
   gzip_vary on;
 
+  {{#nginx.server_names_hash_bucket_size}}
+    server_names_hash_bucket_size {{nginx.server_names_hash_bucket_size}};
+  {{/nginx.server_names_hash_bucket_size}}
+
   upstream api_umbrella_web_app_backend {
     server {{web.host}}:{{web.port}};
     keepalive 10;

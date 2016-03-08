@@ -993,6 +993,137 @@ describe('logging', function() {
     }.bind(this));
   });
 
+  describe('multiple request header handling', function() {
+    var multipleForbidden = {
+      'Content-Type': 'request_content_type',
+      'Referer': 'request_referer',
+      'User-Agent': 'request_user_agent',
+
+      // These headers should technically be tested too, but they're difficult
+      // to test since HTTP clients and servers don't want to set multiple
+      // values. So for now, we'll assume these are being properly handled in
+      // src/api-umbrella/utils/flatten_headers.lua.
+      //
+      // 'Authorization': 'request_basic_auth_username',
+      // 'Host': 'request_host',
+    };
+
+    var multipleAllowed = {
+      'Accept': 'request_accept',
+      'Accept-Encoding': 'request_accept_encoding',
+      'Connection': 'request_connection',
+      'Origin': 'request_origin',
+    };
+
+    _.each(multipleForbidden, function(logField, header) {
+      it('logs only the first header for ' + header, function(done) {
+        this.timeout(10000);
+
+        var options = _.merge({}, this.options);
+        options.qs['header'] = header;
+        options.headers[header] = ['11', '22'];
+
+        request.get('http://localhost:9080/logging-multiple-request-headers/', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+
+          waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+            should.not.exist(error);
+            record[logField].toString().should.eql('11');
+            done();
+          });
+        });
+      });
+    });
+
+    _.each(multipleAllowed, function(logField, header) {
+      it('logs all headers (comma delimited) ' + header, function(done) {
+        this.timeout(10000);
+
+        var options = _.merge({}, this.options);
+        options.qs['header'] = header;
+        options.headers[header] = ['11', '22'];
+
+        request.get('http://localhost:9080/logging-multiple-request-headers/', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+
+          waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+            should.not.exist(error);
+            record[logField].toString().should.eql('11, 22');
+            done();
+          });
+        });
+      });
+    });
+  });
+
+  describe('multiple response header handling', function() {
+    var multipleForbidden = {
+      'Age': 'response_age',
+
+      // These headers should technically be tested too, but they're difficult
+      // to test since HTTP clients and servers don't want to set multiple
+      // values. So for now, we'll assume these are being properly handled in
+      // src/api-umbrella/utils/flatten_headers.lua.
+      //
+      // 'Content-Length': 'response_content_length',
+      // 'Content-Type': 'response_content_type',
+    };
+
+    var multipleAllowed = {
+      'X-Cache': 'response_cache',
+
+      // These headers should technically be tested too, but they're difficult
+      // to test since HTTP clients and servers don't want to set multiple
+      // values. So for now, we'll assume these are being properly handled in
+      // src/api-umbrella/utils/flatten_headers.lua.
+      //
+      // 'Content-Encoding': 'response_content_encoding',
+      // 'Transfer-Encoding': 'response_transfer_encoding',
+    };
+
+    _.each(multipleForbidden, function(logField, header) {
+      it('logs only the first header for ' + header, function(done) {
+        this.timeout(10000);
+
+        var options = _.merge({}, this.options);
+        options.qs['header'] = header;
+
+        request.get('http://localhost:9080/logging-multiple-response-headers/', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+
+          waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+            should.not.exist(error);
+            record[logField].toString().should.eql('11');
+            done();
+          });
+        });
+      });
+    });
+
+    _.each(multipleAllowed, function(logField, header) {
+      it('logs all headers (comma delimited) ' + header, function(done) {
+        this.timeout(10000);
+
+        var options = _.merge({}, this.options);
+        options.qs['header'] = header;
+
+        request.get('http://localhost:9080/logging-multiple-response-headers/', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+
+          waitForLog(options.qs.unique_query_id, function(error, response, hit, record) {
+            should.not.exist(error);
+            record[logField].toString().should.eql('11, 22');
+            done();
+          });
+        });
+      });
+    });
+  });
+
   it('logs the request_at field as a date', function(done) {
     this.timeout(10000);
 

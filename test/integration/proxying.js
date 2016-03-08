@@ -110,8 +110,8 @@ describe('proxying', function() {
         },
       },
       {
-        frontend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
-        backend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+        frontend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+        backend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
         servers: [
           {
             host: '127.0.0.1',
@@ -405,21 +405,17 @@ describe('proxying', function() {
       });
     }
 
-    // I'm not exactly sure why, but when we set server_names_hash_bucket_size
-    // to 128, it actually only allows hostnames 110 characters long. Perhaps
-    // something to investigate or better understand, but in the meantime
-    // documenting current behavior.
-    it('supports hostname lengths up to 110 characters', function(done) {
+    it('supports long hostnames without additional config when part of api backend hosts', function(done) {
       var options = _.merge({}, this.options, {
         headers: {
-          'Host': 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+          'Host': 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
         },
       });
 
       request.get('http://localhost:9080/long-host-info/', options, function(error, response, body) {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
-        data.headers.host.length.should.eql(110);
+        data.headers.host.length.should.eql(200);
         done();
       });
     });
@@ -1598,6 +1594,52 @@ describe('proxying', function() {
         response.headers['via'].should.eql('http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ]), http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ])');
         var data = JSON.parse(body);
         data.url.path.should.eql('/info/circular-example/?cache-busting=' + uniqueId);
+        done();
+      });
+    });
+  });
+
+  describe('long hostnames defined in "hosts" config require "nginx.server_names_hash_bucket_size" option to be adjusted', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+          backend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+          servers: [
+            {
+              host: '127.0.0.1',
+              port: 9444,
+            },
+          ],
+          url_matches: [
+            {
+              frontend_prefix: '/long-host-in-hosts-info/',
+              backend_prefix: '/info/',
+            },
+          ],
+        },
+      ],
+      hosts: [
+        {
+          hostname: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+        },
+      ],
+      nginx: {
+        server_names_hash_bucket_size: 200,
+      },
+    });
+
+    it('supports long hostnames', function(done) {
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Host': 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
+        },
+      });
+
+      request.get('http://localhost:9080/long-host-in-hosts-info/', options, function(error, response, body) {
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.headers.host.length.should.eql(200);
         done();
       });
     });

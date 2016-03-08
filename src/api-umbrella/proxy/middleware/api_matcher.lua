@@ -78,6 +78,25 @@ return function(active_config)
     ngx.req.set_header("X-Api-Umbrella-Backend-Host", host)
     ngx.req.set_header("X-Api-Umbrella-Backend-Id", api["_id"])
 
+    -- Set the host on the request that we forward onto the caching server to
+    -- the API backend ID. In combination with TrafficServer's
+    -- proxy.config.url_remap.pristine_host_hdr option, this ensures that each
+    -- API backend's cache remains separate (even if the URL paths are the
+    -- same).
+    --
+    -- The real host that gets forwarded onto the backend is eventually
+    -- replaced with the proper host stored in the X-Api-Umbrella-Backend-Host
+    -- header. But we use the backend ID here for generating the cache key,
+    -- rather than the real host so that separate backends on the same host but
+    -- using different ports also remain in separate cache buckets.
+    --
+    -- TrafficServer 6.1+'s cachekey plugin might be a slightly more elegant
+    -- way to base the cache key on the arbitrary X-Api-Umbrella-Backend-Id
+    -- header once we upgrade to TrafficServer 6. However, since we're
+    -- replacing the host afterwards anyway, using this fake temporary host to
+    -- affect the cache key should be fine.
+    ngx.var.proxy_host_header = api["_id"]
+
     return api
   else
     return nil, "not_found"
