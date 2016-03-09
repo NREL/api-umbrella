@@ -10,15 +10,17 @@ set(EXTERNAL_DESTDIR_EMBEDDED <INSTALL_DIR>/dest${EXTERNAL_PREFIX_EMBEDDED})
 set(VENDOR_DIR ${EXTERNAL_DESTDIR_EMBEDDED}/apps/core/shared/vendor)
 set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
 set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
-MESSAGE( STATUS "CMAKE_BINARY_DIR:         " ${CMAKE_BINARY_DIR} )
-MESSAGE( STATUS "EP_PREFIX:         " ${EP_PREFIX} )
 set(LUAROCKS_CMD env LUA_PATH='${EXTERNAL_DESTDIR_EMBEDDED}/openresty/luajit/share/lua/5.1/?.lua;${EXTERNAL_DESTDIR_EMBEDDED}/openresty/luajit/share/lua/5.1/?/init.lua;;' ${EXTERNAL_DESTDIR_EMBEDDED}/bin/luarocks)
+execute_process(COMMAND date -u +%Y%m%d%H%M%S OUTPUT_VARIABLE RELEASE_TIMESTAMP OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 include(ExternalProject)
 
+set(API_UMBRELLA_STATIC_SITE_VERSION 265714dbee04efa14f4d83e1f78f06ec492d9c6e)
 set(BUNDLER_VERSION 1.11.2)
 set(ELASTICSEARCH_VERSION 1.7.5)
+set(GLIDE_VERSION 0.9.1)
 set(GOLANG_VERSION 1.5.3)
+set(HEKA_VERSION 0.9.2)
 set(LIBCIDR_VERSION 1.2.3)
 set(LIBGEOIP_VERSION 1.6.9)
 set(LUAROCKS_VERSION 2.3.0)
@@ -30,6 +32,7 @@ set(LUAROCK_LIBCIDR_VERSION 0.1.0-1)
 set(LUAROCK_LUACHECK_VERSION 0.14.0-1)
 set(LUAROCK_LUAPOSIX_VERSION 33.4.0-1)
 set(LUAROCK_LUASOCKET_VERSION 2.0.2-6)
+set(LUAROCK_LUSTACHE_VERSION 1.3.1-0)
 set(LUAROCK_LYAML_VERSION 6.0-1)
 set(LUAROCK_PENLIGHT_VERSION 1.3.2-2)
 set(LUAROCK_RESTY_HTTP_VERSION 0.07-0)
@@ -37,6 +40,7 @@ set(LUA_RESTY_DNS_CACHE_VERSION 691613739a32f8405e56e56547270b9f72e77c34)
 set(LUA_RESTY_LOGGER_SOCKET_VERSION d435ea6052c0d252cf7f89fe4b7cb9c69306de93)
 set(LUA_RESTY_SHCACHE_VERSION fb2e275c2cdca08eaa34a7b73375e41ac3eff200)
 set(LUA_RESTY_UUID_VERSION 70a01d8a6c2cd7ef8bbe622658b58ec30b6b90d4)
+set(MONGODB_VERSION 3.0.9)
 set(MORA_VERSION fea22d544a961ef5cd66dde405cf452b1ae33d2c)
 set(NGX_DYUPS_VERSION 3683b0031c86d5d240bc0b7caf215dff29597fb2)
 set(NGX_TXID_VERSION f1c197cb9c42e364a87fbb28d5508e486592ca42)
@@ -48,15 +52,23 @@ set(RUNIT_VERSION 2.1.2)
 set(TRAFFICSERVER_VERSION 5.3.2)
 set(UNBOUND_VERSION 1.5.8)
 
+function(require_program name)
+  find_program(${name} ${name})
+  if(NOT ${name})
+    MESSAGE(FATAL_ERROR "Could not find ${name}")
+  endif()
+endfunction(require_program)
+
 find_package(LibXml2 REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(LIBUUID REQUIRED uuid)
 pkg_search_module(LIBFFI REQUIRED libffi)
+require_program(rsync)
 
 function(luarocks_install package version)
   ExternalProject_Add(
     luarock_${package}
-    DEPENDS luarocks
+    DEPENDS luarocks ${ARGV3}
     DOWNLOAD_COMMAND cd <SOURCE_DIR> && curl -OL https://luarocks.org/${package}-${version}.rockspec
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
@@ -64,6 +76,9 @@ function(luarocks_install package version)
   )
 endfunction(luarocks_install)
 
+#
+# ElasticSearch: Analytics database
+#
 ExternalProject_Add(
   elasticsearch
   URL https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
@@ -75,6 +90,22 @@ ExternalProject_Add(
     COMMAND cd ${EXTERNAL_DESTDIR_EMBEDDED}/bin && ln -snf ../elasticsearch/bin/elasticsearch ./elasticsearch
 )
 
+string(REPLACE "." "_" HEKA_VERSION_UNDERSCORE ${HEKA_VERSION})
+ExternalProject_Add(
+  heka
+  URL https://github.com/mozilla-services/heka/releases/download/v${HEKA_VERSION}/heka-${HEKA_VERSION_UNDERSCORE}-linux-amd64.tar.gz
+  URL_HASH MD5=864625dff702306eba1494149ff903ee
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND rsync -a <SOURCE_DIR>/ ${EXTERNAL_DESTDIR_EMBEDDED}/
+    # Trim our own distribution by removing some larger files we don't need for
+    # API Umbrella.
+    COMMAND rm -f ${EXTERNAL_DESTDIR_EMBEDDED}/bin/heka-cat ${EXTERNAL_DESTDIR_EMBEDDED}/bin/heka-flood ${EXTERNAL_DESTDIR_EMBEDDED}/bin/heka-inject ${EXTERNAL_DESTDIR_EMBEDDED}/bin/heka-sbmgr
+)
+
+#
+# libcidr: CIDR IP calculations for libcidr-ffi LuaRock
+#
 ExternalProject_Add(
   libcidr
   URL https://www.over-yonder.net/~fullermd/projects/libcidr/libcidr-${LIBCIDR_VERSION}.tar.xz
@@ -88,6 +119,17 @@ ExternalProject_Add(
   INSTALL_COMMAND make install NO_DOCS=1 NO_EXAMPLES=1 PREFIX=${EXTERNAL_PREFIX_EMBEDDED} DESTDIR=${EXTERNAL_DESTDIR}
 )
 
+#
+# libgeoip & GeoLiteCityv6.dat: GeoIP locations
+#
+ExternalProject_Add(
+  libgeoip
+  URL https://github.com/maxmind/geoip-api-c/releases/download/v${LIBGEOIP_VERSION}/GeoIP-${LIBGEOIP_VERSION}.tar.gz
+  URL_HASH MD5=7475942dc8155046dddb4846f587a7e6
+  CONFIGURE_COMMAND env LDFLAGS=-Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib <SOURCE_DIR>/configure --prefix=${EXTERNAL_PREFIX_EMBEDDED}
+  INSTALL_COMMAND make install DESTDIR=${EXTERNAL_DESTDIR}
+)
+
 ExternalProject_Add(
   geolitecity
   DOWNLOAD_COMMAND cd <SOURCE_DIR> && curl -OL https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz
@@ -97,6 +139,25 @@ ExternalProject_Add(
   INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/GeoLiteCityv6.dat ${EXTERNAL_DESTDIR_EMBEDDED}/var/db/geoip/city-v6.dat
 )
 
+#
+# MongoDB: General database
+#
+ExternalProject_Add(
+  mongodb
+  URL https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB_VERSION}.tgz
+  URL_HASH MD5=a71882a0d96267ed3064199d2dfbe5e0
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND rsync -a <SOURCE_DIR>/ ${EXTERNAL_DESTDIR_EMBEDDED}/
+    # Trim our own distribution by removing some larger files we don't need for
+    # API Umbrella.
+    COMMAND rm -f ${EXTERNAL_DESTDIR_EMBEDDED}/bin/bsondump ${EXTERNAL_DESTDIR_EMBEDDED}/bin/mongoexport ${EXTERNAL_DESTDIR_EMBEDDED}/bin/mongofiles ${EXTERNAL_DESTDIR_EMBEDDED}/bin/mongoimport ${EXTERNAL_DESTDIR_EMBEDDED}/bin/mongooplog ${EXTERNAL_DESTDIR_EMBEDDED}/bin/mongoperf ${EXTERNAL_DESTDIR_EMBEDDED}/bin/mongos
+)
+
+#
+# Mora: HTTP API for MongoDB (allowing OpenResty connectivity)
+# Built with Go & Glide for dependencies
+#
 ExternalProject_Add(
   golang
   URL https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-amd64.tar.gz
@@ -111,7 +172,7 @@ set(GOLANG_SOURCE_DIR ${SOURCE_DIR})
 ExternalProject_Add(
   glide
   DEPENDS golang
-  URL https://github.com/Masterminds/glide/releases/download/0.9.1/glide-0.9.1-linux-amd64.tar.gz
+  URL https://github.com/Masterminds/glide/releases/download/${GLIDE_VERSION}/glide-${GLIDE_VERSION}-linux-amd64.tar.gz
   URL_HASH MD5=6120ed13c8f048801b255e1f8a4819c3
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
@@ -136,14 +197,11 @@ ExternalProject_Add(
   INSTALL_COMMAND install -D -m 755 ${CMAKE_SOURCE_DIR}/gocode/bin/mora ${EXTERNAL_DESTDIR_EMBEDDED}/bin/mora
 )
 
-ExternalProject_Add(
-  libgeoip
-  URL https://github.com/maxmind/geoip-api-c/releases/download/v${LIBGEOIP_VERSION}/GeoIP-${LIBGEOIP_VERSION}.tar.gz
-  URL_HASH MD5=7475942dc8155046dddb4846f587a7e6
-  CONFIGURE_COMMAND env LDFLAGS=-Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib <SOURCE_DIR>/configure --prefix=${EXTERNAL_PREFIX_EMBEDDED}
-  INSTALL_COMMAND make install DESTDIR=${EXTERNAL_DESTDIR}
-)
+#
+# OpenResty and nginx plugins
+#
 
+# ngx_dyups: Dynamic upstream handling for handling DNS changes
 ExternalProject_Add(
   ngx_dyups
   GIT_REPOSITORY https://github.com/yzprofile/ngx_http_dyups_module.git
@@ -156,6 +214,7 @@ ExternalProject_Add(
 ExternalProject_Get_Property(ngx_dyups SOURCE_DIR)
 set(NGX_DYUPS_SOURCE_DIR ${SOURCE_DIR})
 
+# ngx_txid: Generate unique request IDs
 ExternalProject_Add(
   ngx_txid
   GIT_REPOSITORY https://github.com/streadway/ngx_txid.git
@@ -168,6 +227,7 @@ ExternalProject_Add(
 ExternalProject_Get_Property(ngx_txid SOURCE_DIR)
 set(NGX_TXID_SOURCE_DIR ${SOURCE_DIR})
 
+# Pull in newer version of PCRE (8.20+) for OpenResty to enable PCRE JIT.
 ExternalProject_Add(
   pcre
   URL http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-${PCRE_VERSION}.tar.bz2
@@ -192,6 +252,9 @@ ExternalProject_Add(
     COMMAND mkdir -p ${EXTERNAL_DESTDIR_EMBEDDED}/sbin && cd ${EXTERNAL_DESTDIR_EMBEDDED}/sbin && ln -snf ../openresty/nginx/sbin/nginx ./nginx
 )
 
+#
+# LuaRocks: Lua dependency management
+#
 ExternalProject_Add(
   luarocks
   DEPENDS openresty
@@ -204,48 +267,9 @@ ExternalProject_Add(
     COMMAND cd ${EXTERNAL_DESTDIR_EMBEDDED}/bin && ln -snf ../openresty/luajit/bin/luarocks ./luarocks
 )
 
-luarocks_install(lua-resty-http ${LUAROCK_RESTY_HTTP_VERSION})
-luarocks_install(argparse ${LUAROCK_ARGPARSE_VERSION})
-luarocks_install(inspect ${LUAROCK_INSPECT_VERSION})
-luarocks_install(libcidr-ffi ${LUAROCK_LIBCIDR_VERSION} CIDR_DIR=${EXTERNAL_DESTDIR_EMBEDDED})
-luarocks_install(lua-cmsgpack ${LUAROCK_CMSGPACK_VERSION})
-luarocks_install(lua-iconv ${LUAROCK_ICONV_VERSION})
-luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION})
-luarocks_install(luasocket ${LUAROCK_LUASOCKET_VERSION})
-luarocks_install(lyaml ${LUAROCK_LYAML_VERSION})
-luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION})
-luarocks_install(luacheck ${LUAROCK_LUACHECK_VERSION})
-
-ExternalProject_Add(
-  lua_resty_dns_cache
-  GIT_REPOSITORY https://github.com/hamishforbes/lua-resty-dns-cache.git
-  GIT_TAG ${LUA_RESTY_DNS_CACHE_VERSION}
-  UPDATE_COMMAND ""
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/lib/resty/dns/cache.lua   ${VENDOR_LUA_DIR}/resty/dns/cache.lua
-)
-
-ExternalProject_Add(
-  lua_resty_logger_socket
-  GIT_REPOSITORY https://github.com/cloudflare/lua-resty-logger-socket.git
-  GIT_TAG ${LUA_RESTY_LOGGER_SOCKET_VERSION}
-  UPDATE_COMMAND ""
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/lib/resty/logger/socket.lua  ${VENDOR_LUA_DIR}/resty/logger/socket.lua
-)
-
-ExternalProject_Add(
-  lua_resty_shcache
-  GIT_REPOSITORY https://github.com/cloudflare/lua-resty-shcache.git
-  GIT_TAG ${LUA_RESTY_SHCACHE_VERSION}
-  UPDATE_COMMAND ""
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/shcache.lua  ${VENDOR_LUA_DIR}/shcache.lua
-)
-
+#
+# Perp: Process supervision and control
+#
 ExternalProject_Add(
   perp
   URL http://b0llix.net/perp/distfiles/perp-${PERP_VERSION}.tar.gz
@@ -260,6 +284,20 @@ ExternalProject_Add(
   INSTALL_COMMAND make install DESTDIR=${EXTERNAL_DESTDIR}
 )
 
+# runit's svlogd as alternative to perp's tinylog with more features.
+ExternalProject_Add(
+  runit
+  URL http://smarden.org/runit/runit-${RUNIT_VERSION}.tar.gz
+  URL_HASH MD5=6c985fbfe3a34608eb3c53dc719172c4
+  BUILD_IN_SOURCE 1
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND cd runit-${RUNIT_VERSION}/src && make svlogd
+  INSTALL_COMMAND install -D -m 755 runit-${RUNIT_VERSION}/src/svlogd ${EXTERNAL_DESTDIR_EMBEDDED}/bin/svlogd
+)
+
+#
+# Ruby & Bundler: For Rails web-app component
+#
 ExternalProject_Add(
   ruby
   URL https://cache.ruby-lang.org/pub/ruby/2.2/ruby-${RUBY_VERSION}.tar.bz2
@@ -277,25 +315,91 @@ ExternalProject_Add(
   INSTALL_COMMAND env PATH=${EXTERNAL_DESTDIR_EMBEDDED}/bin:$ENV{PATH} gem install <SOURCE_DIR>/bundler-${BUNDLER_VERSION}.gem --no-rdoc --no-ri --env-shebang --local
 )
 
-ExternalProject_Add(
-  runit
-  URL http://smarden.org/runit/runit-${RUNIT_VERSION}.tar.gz
-  URL_HASH MD5=6c985fbfe3a34608eb3c53dc719172c4
-  BUILD_IN_SOURCE 1
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND cd runit-${RUNIT_VERSION}/src && make svlogd
-  INSTALL_COMMAND install -D -m 755 runit-${RUNIT_VERSION}/src/svlogd ${EXTERNAL_DESTDIR_EMBEDDED}/bin/svlogd
-)
-
+#
+# TrafficServer: HTTP caching server
+#
 ExternalProject_Add(
   trafficserver
   URL http://mirror.olnevhost.net/pub/apache/trafficserver/trafficserver-${TRAFFICSERVER_VERSION}.tar.bz2
   URL_HASH MD5=c8e5f3e81da643ea79cba0494ed37d45
   CONFIGURE_COMMAND env SPHINXBUILD=false LDFLAGS=-Wl,-rpath,${EXTERNAL_DESTDIR_EMBEDDED}/lib <SOURCE_DIR>/configure --prefix=${EXTERNAL_PREFIX_EMBEDDED} --enable-experimental-plugins
   INSTALL_COMMAND make install DESTDIR=${EXTERNAL_DESTDIR}
+    # Trim our own distribution by removing some larger files we don't need for
+    # API Umbrella.
     COMMAND rm -f ${EXTERNAL_DESTDIR_EMBEDDED}/bin/traffic_sac
 )
 
+#
+# LuaRock app dependencies
+#
+luarocks_install(lua-resty-http ${LUAROCK_RESTY_HTTP_VERSION})
+luarocks_install(argparse ${LUAROCK_ARGPARSE_VERSION})
+luarocks_install(inspect ${LUAROCK_INSPECT_VERSION})
+luarocks_install(libcidr-ffi ${LUAROCK_LIBCIDR_VERSION} CIDR_DIR=${EXTERNAL_DESTDIR_EMBEDDED} libcidr)
+luarocks_install(lua-cmsgpack ${LUAROCK_CMSGPACK_VERSION})
+luarocks_install(lua-iconv ${LUAROCK_ICONV_VERSION})
+luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION})
+luarocks_install(luasocket ${LUAROCK_LUASOCKET_VERSION})
+luarocks_install(lustache ${LUAROCK_LUSTACHE_VERSION})
+luarocks_install(lyaml ${LUAROCK_LYAML_VERSION})
+luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION})
+
+#
+# Other Lua app dependencies (non-luarocks)
+#
+ExternalProject_Add(
+  lua_resty_dns_cache
+  GIT_REPOSITORY https://github.com/hamishforbes/lua-resty-dns-cache.git
+  GIT_TAG ${LUA_RESTY_DNS_CACHE_VERSION}
+  UPDATE_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/lib/resty/dns/cache.lua ${VENDOR_LUA_DIR}/resty/dns/cache.lua
+)
+
+ExternalProject_Add(
+  lua_resty_logger_socket
+  GIT_REPOSITORY https://github.com/cloudflare/lua-resty-logger-socket.git
+  GIT_TAG ${LUA_RESTY_LOGGER_SOCKET_VERSION}
+  UPDATE_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/lib/resty/logger/socket.lua ${VENDOR_LUA_DIR}/resty/logger/socket.lua
+)
+
+ExternalProject_Add(
+  lua_resty_shcache
+  GIT_REPOSITORY https://github.com/cloudflare/lua-resty-shcache.git
+  GIT_TAG ${LUA_RESTY_SHCACHE_VERSION}
+  UPDATE_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/shcache.lua ${VENDOR_LUA_DIR}/shcache.lua
+)
+
+#
+# api-umbrella-static-site: Example website content
+#
+ExternalProject_Add(
+  api_umbrella_static_site
+  GIT_REPOSITORY https://github.com/NREL/api-umbrella-static-site.git
+  GIT_TAG ${API_UMBRELLA_STATIC_SITE_VERSION}
+  BUILD_IN_SOURCE 1
+  UPDATE_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND env PATH=${EXTERNAL_DESTDIR_EMBEDDED}/bin:$ENV{PATH} bundle install --path=<SOURCE_DIR>/vendor/bundle
+    COMMAND env PATH=${EXTERNAL_DESTDIR_EMBEDDED}/bin:$ENV{PATH} bundle exec middleman build
+  INSTALL_COMMAND rm -rf ${EXTERNAL_DESTDIR_EMBEDDED}/apps/static-site/releases
+    COMMAND mkdir -p ${EXTERNAL_DESTDIR_EMBEDDED}/apps/static-site/releases/${RELEASE_TIMESTAMP}/build
+    COMMAND rsync -a <SOURCE_DIR>/build/ ${EXTERNAL_DESTDIR_EMBEDDED}/apps/static-site/releases/${RELEASE_TIMESTAMP}/build/
+    COMMAND cd ${EXTERNAL_DESTDIR_EMBEDDED}/apps/static-site && ln -snf releases/${RELEASE_TIMESTAMP} ./current
+)
+
+#
+# Test Environment
+#
+
+# Unbound: Local DNS server for testing DNS changes
 ExternalProject_Add(
   unbound
   URL http://www.unbound.net/downloads/unbound-${UNBOUND_VERSION}.tar.gz
@@ -303,3 +407,15 @@ ExternalProject_Add(
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>/test
   INSTALL_COMMAND make install
 )
+
+luarocks_install(luacheck ${LUAROCK_LUACHECK_VERSION})
+
+install(
+  DIRECTORY ${CMAKE_SOURCE_DIR}/build/cmake/dest/${CMAKE_INSTALL_PREFIX}/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}
+  USE_SOURCE_PERMISSIONS
+)
+install(PROGRAMS ${CMAKE_SOURCE_DIR}/build/package/files/etc/init.d/api-umbrella DESTINATION /etc/init.d)
+install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/logrotate.d/api-umbrella DESTINATION /etc/logrotate.d)
+install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/sudoers.d/api-umbrella DESTINATION /etc/sudoers.d)
+install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/api-umbrella/api-umbrella.yml DESTINATION /etc/api-umbrella RENAME api-umbrella.yml.default)
