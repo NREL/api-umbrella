@@ -410,6 +410,9 @@ ExternalProject_Add(
 
 luarocks_install(luacheck ${LUAROCK_LUACHECK_VERSION})
 
+#
+# Installation
+#
 install(
   DIRECTORY ${CMAKE_SOURCE_DIR}/build/cmake/dest/${CMAKE_INSTALL_PREFIX}/
   DESTINATION ${CMAKE_INSTALL_PREFIX}
@@ -419,3 +422,25 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/build/package/files/etc/init.d/api-umbrella
 install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/logrotate.d/api-umbrella DESTINATION /etc/logrotate.d)
 install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/sudoers.d/api-umbrella DESTINATION /etc/sudoers.d)
 install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/api-umbrella/api-umbrella.yml DESTINATION /etc/api-umbrella RENAME api-umbrella.yml.default)
+
+#
+# Packaging
+#
+set(CPACK_PACKAGE_VERSION_MAJOR 0)
+set(CPACK_PACKAGE_VERSION_MINOR 12)
+set(CPACK_PACKAGE_VERSION_PATCH 0)
+set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE.txt)
+SET(CPACK_SET_DESTDIR ON)
+
+find_program(DPKG_EXECUTABLE dpkg PATH_SUFFIXES bin)
+find_program(RPMBUILD_EXECUTABLE rpmbuild PATH_SUFFIXES bin)
+if(RPMBUILD_EXECUTABLE)
+  set(CPACK_GENERATOR ${CPACK_GENERATOR} "RPM")
+  set(CPACK_RPM_COMPRESSION_TYPE xz)
+  #set(CPACK_RPM_PACKAGE_REQUIRES )
+  set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/build/package/scripts/after-install)
+  set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/build/package/scripts/before-remove)
+  set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE ${CMAKE_SOURCE_DIR}/build/package/scripts/after-remove)
+endif()
+
+include(CPack)

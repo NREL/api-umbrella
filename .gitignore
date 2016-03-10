@@ -24,6 +24,8 @@
 /CMakeCache.txt
 /CMakeFiles
 /CMakeScripts
+/CPackConfig.cmake
+/CPackSourceConfig.cmake
 /Makefile
 /cmake_install.cmake
 /build/cmake
