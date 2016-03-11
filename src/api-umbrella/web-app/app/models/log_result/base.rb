@@ -1,15 +1,9 @@
-class LogResultSql
+class LogResult::Base
   attr_reader :raw_result
 
   def initialize(search, raw_result)
     @search = search
     @raw_result = raw_result
-
-    if(search.result_processors.present?)
-      search.result_processors.each do |processor|
-        processor.call(self)
-      end
-    end
   end
 
   def total
@@ -22,15 +16,6 @@ class LogResultSql
 
   def aggregations
     raw_result["aggregations"]
-  end
-
-  def column_indexes(query_name)
-    column_indexes = {}
-    raw_result[query_name]["columnMetas"].each_with_index do |meta, index|
-      column_indexes[meta["label"].downcase] = index
-    end
-
-    column_indexes
   end
 
   def hits_over_time

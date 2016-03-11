@@ -9,7 +9,7 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def search
-    @search = LogSearchSql.new({
+    @search = LogSearch.factory({
       :start_time => params[:start_at],
       :end_time => params[:end_at],
       :interval => params[:interval],
@@ -35,7 +35,7 @@ class Admin::StatsController < Admin::BaseController
     # figure out a better way to document this and still allow downloading
     # the full data set.
     start_time = Time.zone.parse(params[:end_at]) - 1.day
-    @search = LogSearchSql.new({
+    @search = LogSearch.factory({
       :start_time => start_time,
       :end_time => params[:end_at],
       :interval => params[:interval],
@@ -106,7 +106,7 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def users
-    @search = LogSearchSql.new({
+    @search = LogSearch.factory({
       :start_time => params[:start_at],
       :end_time => params[:end_at],
     })
@@ -199,7 +199,7 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def map
-    @search = LogSearchSql.new({
+    @search = LogSearch.factory({
       :start_time => params[:start_at],
       :end_time => params[:end_at],
       :region => params[:region],

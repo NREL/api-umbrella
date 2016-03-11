@@ -1,15 +1,5 @@
-require "active_record"
-
-class LogSearchSql
-  attr_accessor :query, :query_options
-  attr_reader :start_time, :end_time, :interval, :region, :country, :state, :result_processors
-
-  CASE_SENSITIVE_FIELDS = [
-    "api_key",
-    "request_ip_country",
-    "request_ip_region",
-    "request_ip_city",
-  ]
+class LogSearch::Sql < LogSearch::Base
+  attr_reader :result_processors
 
   NOT_NULL_FIELDS = [
     "request_ip",
@@ -32,23 +22,10 @@ class LogSearchSql
   }
 
   def initialize(options = {})
+    super
+
     @sequel = Sequel.connect("mock://postgresql")
 
-    @start_time = options[:start_time]
-    unless(@start_time.kind_of?(Time))
-      @start_time = Time.zone.parse(@start_time)
-    end
-
-    @end_time = options[:end_time]
-    unless(@end_time.kind_of?(Time))
-      @end_time = Time.zone.parse(@end_time).end_of_day
-    end
-
-    if(@end_time > Time.zone.now)
-      @end_time = Time.zone.now
-    end
-
-    @interval = options[:interval]
     case(@interval)
     when "minute"
       raise "TODO"
@@ -64,8 +41,6 @@ class LogSearchSql
       @interval_field = "CAST(request_at_year AS CHAR(4)) || '-' || CAST(request_at_month AS CHAR(2))"
       @interval_field_format = "%Y-%m"
     end
-
-    @region = options[:region]
 
     @query = {
       :select => [],
@@ -215,7 +190,7 @@ class LogSearchSql
       execute_query(:default, @queries[:default] || {})
     end
 
-    @result = LogResultSql.new(self, @query_results)
+    @result = LogResult.factory(self, @query_results)
   end
 
   def permission_scope!(scopes)
@@ -638,23 +613,6 @@ class LogSearchSql
     end
   end
 
-  def aggregate_by_region!
-    case(@region)
-    when "world"
-      aggregate_by_country!
-    when "US"
-      @country = @region
-      aggregate_by_country_regions!(@region)
-    when /^(US)-([A-Z]{2})$/
-      @country = Regexp.last_match[1]
-      @state = Regexp.last_match[2]
-      aggregate_by_us_state_cities!(@country, @state)
-    else
-      @country = @region
-      aggregate_by_country_cities!(@region)
-    end
-  end
-
   def aggregate_by_region_field!(field)
     @query[:aggregations] ||= {}
     @query[:aggregations][:regions] = {
@@ -692,10 +650,6 @@ class LogSearchSql
       result.raw_result["aggregations"]["missing_regions"] ||= {}
       result.raw_result["aggregations"]["missing_regions"]["doc_count"] = null_count
     end
-  end
-
-  def aggregate_by_country!
-    aggregate_by_region_field!(:request_ip_country)
   end
 
   def aggregate_by_country_regions!(country)
@@ -906,16 +860,6 @@ class LogSearchSql
   end
 
   private
-
-  def indexes
-    unless @indexes
-      date_range = @start_time.utc.to_date..@end_time.utc.to_date
-      @indexes = date_range.map { |date| "api-umbrella-logs-#{date.strftime("%Y-%m")}" }
-      @indexes.uniq!
-    end
-
-    @indexes
-  end
 
   def fill_in_time_buckets(time_buckets)
     time = @start_time

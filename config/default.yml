@@ -157,6 +157,8 @@ elasticsearch:
       groovy:
         sandbox:
           enabled: false
+analytics:
+  adapter: kylin
 log_template_version: v1
 strip_cookies:
   - ^__utm.*$
