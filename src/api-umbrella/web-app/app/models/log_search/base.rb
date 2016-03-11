@@ -9,6 +9,12 @@ class LogSearch::Base
     "request_ip_city",
   ]
 
+  def self.policy_class
+    # Set the Pundit policy class to be the same for all LogSearch::Base child
+    # classes.
+    LogSearchPolicy
+  end
+
   def initialize(options = {})
     @start_time = options[:start_time]
     unless(@start_time.kind_of?(Time))
@@ -49,9 +55,5 @@ class LogSearch::Base
 
   def aggregate_by_country!
     aggregate_by_region_field!(:request_ip_country)
-  end
-
-  def self.policy_class
-    LogSearchPolicy
   end
 end

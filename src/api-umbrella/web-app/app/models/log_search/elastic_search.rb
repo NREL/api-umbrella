@@ -1,8 +1,8 @@
-class LogSearch::Elasticsearch < LogSearch::Base
+class LogSearch::ElasticSearch < LogSearch::Base
   def initialize(options = {})
     super
 
-    @client = Elasticsearch::Client.new({
+    @client = ::Elasticsearch::Client.new({
       :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
       :logger => Rails.logger
     })
@@ -59,8 +59,8 @@ class LogSearch::Elasticsearch < LogSearch::Base
       },
     }
 
-    scopes.each do |scope|
-      filter[:bool][:should] << scope
+    scopes["rules"].each do |rule|
+      filter[:bool][:should] << parse_query_builder(rule)
     end
 
     @query[:query][:filtered][:filter][:bool][:must] << filter
@@ -84,6 +84,15 @@ class LogSearch::Elasticsearch < LogSearch::Base
     if(query.kind_of?(String) && query.present?)
       query = MultiJson.load(query)
     end
+
+    filter = parse_query_builder(query)
+    if(filter.present?)
+      @query[:query][:filtered][:filter][:bool][:must] << filter
+    end
+  end
+
+  def parse_query_builder(query)
+    query_filter = nil
 
     if(query.present?)
       filters = []
@@ -173,14 +182,16 @@ class LogSearch::Elasticsearch < LogSearch::Base
       end
 
       if(filters.present?)
-        condition = if(query["condition"] == "OR") then :or else :and end
-        filter = {
-          condition => filters
+        condition = if(query["condition"] == "OR") then :should else :must end
+        query_filter = {
+          :bool => {
+            condition => filters
+          },
         }
-
-        @query[:query][:filtered][:filter][:bool][:must] << filter
       end
     end
+
+    query_filter
   end
 
   def offset!(from)
@@ -441,6 +452,10 @@ class LogSearch::Elasticsearch < LogSearch::Base
         :field => :response_time,
       },
     }
+  end
+
+  def select_records!
+    # no-op: Method needed for SQL adapters only.
   end
 
   private

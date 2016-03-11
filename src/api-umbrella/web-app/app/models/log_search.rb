@@ -2,7 +2,7 @@ class LogSearch
   def self.factory(options = {})
     case(ApiUmbrellaConfig[:analytics][:adapter])
     when "elasticsearch"
-      LogSearch::Elasticsearch.new(options)
+      LogSearch::ElasticSearch.new(options)
     when "kylin"
       LogSearch::Kylin.new(options)
     when "postgresql"

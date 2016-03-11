@@ -97,17 +97,12 @@ class LogSearch::Sql < LogSearch::Base
   end
 
   def permission_scope!(scopes)
-    filter = {
-      :bool => {
-        :should => []
-      },
-    }
-
-    scopes.each do |scope|
-      filter[:bool][:should] << scope
+    filter = []
+    scopes["rules"].each do |rule|
+      filter << parse_query_builder(rule)
     end
 
-    @query[:query][:filtered][:filter][:bool][:must] << filter
+    @query[:where] << filter.join(" OR ")
   end
 
   def search_type!(search_type)
@@ -143,6 +138,15 @@ class LogSearch::Sql < LogSearch::Base
     if(query.kind_of?(String) && query.present?)
       query = MultiJson.load(query)
     end
+
+    filter = parse_query_builder(query)
+    if(filter.present?)
+      @query[:where] << filter
+    end
+  end
+
+  def parse_query_builder(query)
+    query_filter = nil
 
     if(query.present?)
       filters = []
@@ -215,6 +219,41 @@ class LogSearch::Sql < LogSearch::Base
           raise "unknown filter operator: #{rule["operator"]} (rule: #{rule.inspect})"
         end
 
+        if(field == "request_url_path" && ["equal", "not_equal", "begins_with", "not_begins_with"].include?(rule["operator"]))
+          level_filters = []
+          levels = value.split(%r{/+}, 6).reject { |l| l.blank? }
+          levels.each_with_index do |level, index|
+            level_field = "request_url_path_level#{index + 1}"
+
+            level_value = level.dup
+            if(index == 0)
+              level_value = "/#{level_value}"
+            end
+            if(index < levels.length - 1)
+              level_value = "#{level_value}/"
+            end
+
+            if(index < levels.length - 1)
+              if(["not_equal", "not_begins_with"].include?(rule["operator"]))
+                level_operator = "<>"
+              else
+                level_operator = "="
+              end
+            else
+              level_operator = operator
+            end
+
+            level_filter = "#{@sequel.quote_identifier(level_field)} #{level_operator}"
+            unless(level_value.nil?)
+              level_filter << " #{@sequel.literal(level_value)}"
+            end
+
+            level_filters << level_filter
+          end
+
+          filter = level_filters.join(" AND ")
+        end
+
         unless(filter)
           filter = "#{@sequel.quote_identifier(field)} #{operator}"
           unless(value.nil?)
@@ -228,12 +267,14 @@ class LogSearch::Sql < LogSearch::Base
       if(filters.present?)
         where = filters.map { |where| "(#{where})" }
         if(query["condition"] == "OR")
-          @query[:where] << where.join(" OR ")
+          query_filter = where.join(" OR ")
         else
-          @query[:where] << where.join(" AND ")
+          query_filter = where.join(" AND ")
         end
       end
     end
+
+    query_filter
   end
 
   def offset!(from)

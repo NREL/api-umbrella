@@ -73,13 +73,7 @@ class ApplicationController < ActionController::Base
 
   def set_time_zone
     old_time_zone = Time.zone
-    # FIXME: Need to account for hard-coded timezone for the pre-aggregated
-    # Kylin results.
-    Time.zone = "UTC"
-    #if(params[:tz].present?)
-    #  Time.zone = params[:tz]
-    #end
-
+    Time.zone = ApiUmbrellaConfig[:analytics][:timezone]
     yield
   ensure
     Time.zone = old_time_zone

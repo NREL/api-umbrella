@@ -159,6 +159,7 @@ elasticsearch:
           enabled: false
 analytics:
   adapter: kylin
+  timezone: UTC
 log_template_version: v1
 strip_cookies:
   - ^__utm.*$
