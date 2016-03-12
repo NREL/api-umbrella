@@ -13,6 +13,7 @@ filename = "lua_decoders/json.lua"
 
   [JsonDecoder.config]
   type = "api_umbrella_log"
+  payload_keep = true
   # Turn all of the JSON fields into Heka Message Fields.
   map_fields = true
   # Pull out the timestamp from the message (this is the nanoseconds version of
@@ -20,6 +21,13 @@ filename = "lua_decoders/json.lua"
   # ElasticSearch output mechanism stores the record in the proper time-based
   # index (based on request_at, rather than the time Heka receives the log).
   Timestamp = "_heka_timestamp"
+
+#[FlumeBatchFilter]
+#type = "SandboxFilter"
+#filename = "{{_src_root_dir}}/src/api-umbrella/heka/flume_batch_filter.lua"
+#message_matcher = "Type == 'api_umbrella_log'"
+#ticker_interval = 5
+#use_buffering = true
 
 [ESJsonEncoder]
 es_index_from_timestamp = true
@@ -41,11 +49,20 @@ filename = "{{_src_root_dir}}/src/api-umbrella/heka/tsv_encoder.lua"
 
 [RstEncoder]
 
+[PayloadEncoder]
+
 [FlumeOutput]
 type = "TcpOutput"
 message_matcher = "TRUE"
-address = "ec2-52-90-11-128.compute-1.amazonaws.com:41415"
+address = "{{flume.host}}:{{flume.port}}"
 encoder = "TsvEncoder"
+keep_alive = false
+reconnect_after = 1
+#type = "HttpOutput"
+#message_matcher = "Fields[payload_name] == 'flume_batch'"
+#address = "http://{{flume.host}}:{{flume.port}}"
+#encoder = "PayloadEncoder"
+#http_timeout = 5000
 use_buffering = true
 
 [FileOutput]
@@ -59,4 +76,11 @@ type = "FileOutput"
 message_matcher = "TRUE"
 path = "/tmp/heka-tsv.log"
 encoder = "TsvEncoder"
+use_buffering = true
+
+[HttpFileOutput]
+type = "FileOutput"
+message_matcher = "Fields[payload_name] == 'flume_batch'"
+path = "/tmp/heka-http.log"
+encoder = "PayloadEncoder"
 use_buffering = true

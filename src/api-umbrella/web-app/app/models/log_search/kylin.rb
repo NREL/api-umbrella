@@ -1,6 +1,6 @@
 class LogSearch::Kylin < LogSearch::Sql
   def execute_kylin(sql)
-    @kylin_conn ||= Faraday.new(:url => "http://kylin.host") do |faraday|
+    @kylin_conn ||= Faraday.new(:url => "http://#{ApiUmbrellaConfig[:kylin][:host]}:#{ApiUmbrellaConfig[:kylin][:port]}") do |faraday|
       faraday.response :logger
       faraday.adapter Faraday.default_adapter
       faraday.basic_auth "ADMIN", "KYLIN"
@@ -26,7 +26,7 @@ class LogSearch::Kylin < LogSearch::Sql
   end
 
   def execute_presto(sql)
-    @presto_conn ||= Faraday.new(:url => "http://presto.host") do |faraday|
+    @presto_conn ||= Faraday.new(:url => "http://#{ApiUmbrellaConfig[:presto][:host]}:#{ApiUmbrellaConfig[:presto][:port]}") do |faraday|
       faraday.response :logger
       faraday.adapter Faraday.default_adapter
     end

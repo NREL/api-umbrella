@@ -1,13 +1,19 @@
 agent.sources = tcp-listener
-agent.channels = file-channel
-agent.sinks = hdfs-sink
+agent.channels = memory-channel file-channel
+agent.sinks = logger-sink hive-sink
 
+agent.channels.memory-channel.type = memory
 agent.channels.file-channel.type = file
 
+#agent.sources.http-listener.type = http
+#agent.sources.http-listener.channels = memory-channel
+#agent.sources.http-listener.bind = 0.0.0.0
+#agent.sources.http-listener.port = 14016
+
 agent.sources.tcp-listener.type = netcat
-agent.sources.tcp-listener.channels = file-channel
+agent.sources.tcp-listener.channels = memory-channel
 agent.sources.tcp-listener.bind = 0.0.0.0
-agent.sources.tcp-listener.port = 41415
+agent.sources.tcp-listener.port = 14016
 agent.sources.tcp-listener.max-line-length = 5000
 
 agent.sources.tcp-listener.interceptors = timestamp-extractor
@@ -17,8 +23,12 @@ agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers = timest
 agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers.timestamp-serializer.type = org.apache.flume.interceptor.RegexExtractorInterceptorPassThroughSerializer
 agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers.timestamp-serializer.name = timestamp
 
+agent.sinks.logger-sink.type = logger
+agent.sinks.logger-sink.channel = memory-channel
+agent.sinks.logger-sink.maxBytesToLog = 5000
+
 agent.sinks.hdfs-sink.type = hdfs
-agent.sinks.hdfs-sink.channel = file-channel
+agent.sinks.hdfs-sink.channel = memory-channel
 agent.sinks.hdfs-sink.hdfs.path = /tmp/flume-test/request_at_year=%Y/request_at_month=%n/request_at_date=%Y-%m-%d
 agent.sinks.hdfs-sink.hdfs.fileSuffix = .tsv.gz
 # Use "_" prefix for files currently being written to. This prevent Hive from
@@ -29,3 +39,15 @@ agent.sinks.hdfs-sink.hdfs.rollInterval = 10
 agent.sinks.hdfs-sink.hdfs.codeC = gzip
 agent.sinks.hdfs-sink.hdfs.fileType = CompressedStream
 agent.sinks.hdfs-sink.hdfs.timeZone = UTC
+
+agent.sinks.hive-sink.type = hive
+agent.sinks.hive-sink.channel = memory-channel
+agent.sinks.hive-sink.hive.metastore = thrift://127.0.0.1:9083
+agent.sinks.hive-sink.hive.database = api_umbrella
+agent.sinks.hive-sink.hive.table = logs_flume
+# agent.sinks.hive-sink.hive.partition = %{request_at_year},%{request_at_month},%{request_at_date}
+agent.sinks.hive-sink.useLocalTimeStamp = false
+# agent.sinks.hive-sink.serializer = JSON
+agent.sinks.hive-sink.serializer = DELIMITED
+agent.sinks.hive-sink.serializer.delimiter = "\t"
+agent.sinks.hive-sink.serializer.fieldnames = id,request_at,request_at_hour

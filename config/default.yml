@@ -160,6 +160,15 @@ elasticsearch:
 analytics:
   adapter: kylin
   timezone: UTC
+kylin:
+  host: 127.0.0.1
+  port: 14006
+presto:
+  host: 127.0.0.1
+  port: 14015
+flume:
+  host: 127.0.0.1
+  port: 14016
 log_template_version: v1
 strip_cookies:
   - ^__utm.*$
