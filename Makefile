@@ -79,12 +79,6 @@ GOLANG_CHECKSUM:=43afe0c5017e502630b1aea4d44b8a7f059bf60d7f29dfd58db454d4e4e0ae5
 GOLANG_URL:=https://storage.googleapis.com/golang/go$(GOLANG_VERSION).linux-amd64.tar.gz
 GOLANG_INSTALL_MARKER:=$(GOLANG_NAME)$(VERSION_SEP)$(GOLANG_VERSION)
 
-HEKA_VERSION:=0.10.0
-HEKA_NAME:=heka
-HEKA:=$(HEKA_NAME)-$(HEKA_VERSION)
-HEKA_GIT_URL:=https://github.com/mozilla-services/heka.git
-HEKA_INSTALL_MARKER:=$(HEKA_NAME)$(VERSION_SEP)$(HEKA_VERSION)
-
 LIBCIDR_VERSION:=1.2.3
 LIBCIDR_NAME:=libcidr
 LIBCIDR:=$(LIBCIDR_NAME)-$(LIBCIDR_VERSION)
@@ -100,6 +94,22 @@ LIBGEOIP_DIGEST:=md5
 LIBGEOIP_CHECKSUM:=7475942dc8155046dddb4846f587a7e6
 LIBGEOIP_URL:=https://github.com/maxmind/geoip-api-c/releases/download/v$(LIBGEOIP_VERSION)/GeoIP-$(LIBGEOIP_VERSION).tar.gz
 LIBGEOIP_INSTALL_MARKER:=$(LIBGEOIP_NAME)$(VERSION_SEP)$(LIBGEOIP_VERSION)
+
+LIBFASTJSON_VERSION:=0.99.2
+LIBFASTJSON_NAME:=libfastjson
+LIBFASTJSON:=$(LIBFASTJSON_NAME)-$(LIBFASTJSON_VERSION)
+LIBFASTJSON_DIGEST:=md5
+LIBFASTJSON_CHECKSUM:=72c71fcc8ca9f6d2fd84a42f27f21124
+LIBFASTJSON_URL:=https://github.com/rsyslog/libfastjson/archive/v$(LIBFASTJSON_VERSION).tar.gz
+LIBFASTJSON_INSTALL_MARKER:=$(LIBFASTJSON_NAME)$(VERSION_SEP)$(LIBFASTJSON_VERSION)
+
+LIBRDKAFKA_VERSION:=0.8.6
+LIBRDKAFKA_NAME:=librdkafka
+LIBRDKAFKA:=$(LIBRDKAFKA_NAME)-$(LIBRDKAFKA_VERSION)
+LIBRDKAFKA_DIGEST:=md5
+LIBRDKAFKA_CHECKSUM:=1b77543f9be82d3f700c0ef98f494990
+LIBRDKAFKA_URL:=https://github.com/edenhill/librdkafka/archive/$(LIBRDKAFKA_VERSION).tar.gz
+LIBRDKAFKA_INSTALL_MARKER:=$(LIBRDKAFKA_NAME)$(VERSION_SEP)$(LIBRDKAFKA_VERSION)
 
 LUA_RESTY_DNS_CACHE_VERSION:=691613739a32f8405e56e56547270b9f72e77c34
 LUA_RESTY_DNS_CACHE_NAME:=lua-resty-dns-cache
@@ -230,6 +240,14 @@ RUNIT_DIGEST:=md5
 RUNIT_CHECKSUM:=6c985fbfe3a34608eb3c53dc719172c4
 RUNIT_URL:=http://smarden.org/runit/runit-$(RUNIT_VERSION).tar.gz
 RUNIT_INSTALL_MARKER:=$(RUNIT_NAME)$(VERSION_SEP)$(RUNIT_VERSION)
+
+RSYSLOG_VERSION:=8.14.0
+RSYSLOG_NAME:=rsyslog
+RSYSLOG:=$(RSYSLOG_NAME)-$(RSYSLOG_VERSION)
+RSYSLOG_DIGEST:=sha256
+RSYSLOG_CHECKSUM:=443b5b1d2b84f5cd429d06d230af7fb2352336fa6449cb6484dbd4418a7ae7c2
+RSYSLOG_URL:=http://www.rsyslog.com/files/download/rsyslog/rsyslog-$(RSYSLOG_VERSION).tar.gz
+RSYSLOG_INSTALL_MARKER:=$(RSYSLOG_NAME)$(VERSION_SEP)$(RSYSLOG_VERSION)
 
 # Don't move to 6.0.0 quite yet until we have a better sense of this issue:
 # http://mail-archives.apache.org/mod_mbox/trafficserver-users/201510.mbox/%3c1443975393.1364867.400869481.2BFF6EEF@webmail.messagingengine.com%3e
@@ -519,54 +537,6 @@ $(DEPS_DIR)/$(GOLANG).tar.gz: | $(DEPS_DIR)
 $(DEPS_DIR)/$(GOLANG): $(DEPS_DIR)/$(GOLANG).tar.gz
 	$(call decompress,GOLANG)
 
-# Heka
-$(DEPS_DIR)/$(HEKA):
-	git clone $(HEKA_GIT_URL) $@
-	touch $@
-
-$(DEPS_DIR)/$(HEKA)/.built: $(DEPS_DIR)/$(HEKA) $(DEPS_DIR)/$(GOLANG)
-	cd $< && git checkout v$(HEKA_VERSION) && git checkout .
-	# Install cmake file for which heka plugins to install.
-	cp $(BUILD_DIR)/heka_plugin_loader.cmake $</cmake/plugin_loader.cmake
-	# Fix inability to override CMAKE_INSTALL_PREFIX:
-	# https://github.com/mozilla-services/heka/pull/1869
-	sed -i -e 's#^set(CMAKE_INSTALL_PREFIX.*#if(NOT DEFINED CMAKE_INSTALL_PREFIX)\n  set(CMAKE_INSTALL_PREFIX $${CMAKE_PROJECT_NAME})\nendif()#' $</CMakeLists.txt
-	# Call cmake directly instead of using the wrapper build.sh script so that we
-	# can set options like CMAKE_INSTALL_PREFIX
-	cd $< && source ./env.sh && mkdir -p build
-	cd $< && source ./env.sh && cd build && \
-		PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(DEPS_DIR)/gocode/bin:$(PATH) \
-		GOROOT=$(DEPS_DIR)/$(GOLANG) \
-		CMAKE_INSTALL_PREFIX=$(PREFIX)/embedded \
-		cmake \
-			-DCMAKE_BUILD_TYPE=release \
-			-DCMAKE_INSTALL_PREFIX=$(PREFIX)/embedded \
-			-DINCLUDE_DOCKER_PLUGINS=false \
-			-DINCLUDE_GEOIP=false \
-			-DSPHINX_BUILD_EXECUTABLE=false ..
-	cd $< && source ./env.sh && cd build && \
-		PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(DEPS_DIR)/gocode/bin:$(PATH) \
-		GOROOT=$(DEPS_DIR)/$(GOLANG) \
-		make
-	touch $@
-
-$(STAGE_MARKERS_DIR)/$(HEKA_INSTALL_MARKER): $(DEPS_DIR)/$(HEKA)/.built | $(STAGE_MARKERS_DIR)
-	cd $(DEPS_DIR)/$(HEKA) && source ./env.sh && cd build && \
-		PATH=$(DEPS_DIR)/$(GOLANG)/bin:$(DEPS_DIR)/gocode/bin:$(PATH) \
-		GOROOT=$(DEPS_DIR)/$(GOLANG) \
-		make install DESTDIR=$(STAGE_DIR)
-	# Trim our own distribution by removing some larger files we don't need for
-	# API Umbrella.
-	rm -f $(EMBEDDED_DIR)/bin/hekabench_cbuf_counter.lua \
-		$(EMBEDDED_DIR)/bin/heka-cat \
-		$(EMBEDDED_DIR)/bin/heka-flood \
-		$(EMBEDDED_DIR)/bin/heka-inject \
-		$(EMBEDDED_DIR)/bin/heka-logstreamer \
-		$(EMBEDDED_DIR)/bin/heka-sbmgr \
-		$(EMBEDDED_DIR)/bin/sbmgr.toml
-	rm -f $(STAGE_MARKERS_DIR)/$(HEKA_NAME)$(VERSION_SEP)*
-	touch $@
-
 # libcidr
 $(DEPS_DIR)/$(LIBCIDR).tar.xz: | $(DEPS_DIR)
 	$(call download,LIBCIDR)
@@ -600,6 +570,41 @@ $(DEPS_DIR)/$(LIBGEOIP)/.built: $(DEPS_DIR)/$(LIBGEOIP)
 $(STAGE_MARKERS_DIR)/$(LIBGEOIP_INSTALL_MARKER): $(DEPS_DIR)/$(LIBGEOIP)/.built | $(STAGE_MARKERS_DIR)
 	cd $(DEPS_DIR)/$(LIBGEOIP) && make install DESTDIR=$(STAGE_DIR)
 	rm -f $(STAGE_MARKERS_DIR)/$(LIBGEOIP_NAME)$(VERSION_SEP)*
+	touch $@
+
+# json-c
+$(DEPS_DIR)/$(LIBFASTJSON).tar.gz: | $(DEPS_DIR)
+	$(call download,LIBFASTJSON)
+
+$(DEPS_DIR)/$(LIBFASTJSON): $(DEPS_DIR)/$(LIBFASTJSON).tar.gz
+	$(call decompress,LIBFASTJSON)
+
+$(DEPS_DIR)/$(LIBFASTJSON)/.built: $(DEPS_DIR)/$(LIBFASTJSON)
+	cd $< && sh autogen.sh
+	cd $< && ./configure \
+		--prefix=$(PREFIX)/embedded
+	cd $< && make
+	touch $@
+
+$(STAGE_MARKERS_DIR)/$(LIBFASTJSON_INSTALL_MARKER): $(DEPS_DIR)/$(LIBFASTJSON)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(LIBFASTJSON) && make install DESTDIR=$(STAGE_DIR)
+	touch $@
+
+# librdkafka
+$(DEPS_DIR)/$(LIBRDKAFKA).tar.gz: | $(DEPS_DIR)
+	$(call download,LIBRDKAFKA)
+
+$(DEPS_DIR)/$(LIBRDKAFKA): $(DEPS_DIR)/$(LIBRDKAFKA).tar.gz
+	$(call decompress,LIBRDKAFKA)
+
+$(DEPS_DIR)/$(LIBRDKAFKA)/.built: $(DEPS_DIR)/$(LIBRDKAFKA)
+	cd $< && ./configure \
+		--prefix=$(PREFIX)/embedded
+	cd $< && make
+	touch $@
+
+$(STAGE_MARKERS_DIR)/$(LIBRDKAFKA_INSTALL_MARKER): $(DEPS_DIR)/$(LIBRDKAFKA)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(LIBRDKAFKA) && make install DESTDIR=$(STAGE_DIR)
 	touch $@
 
 # LuaRocks
@@ -857,6 +862,35 @@ $(STAGE_MARKERS_DIR)/$(RUNIT_INSTALL_MARKER): $(DEPS_DIR)/$(RUNIT)/.built | $(ST
 	rsync -a $(DEPS_DIR)/$(RUNIT)/src/svlogd $(EMBEDDED_DIR)/bin/svlogd
 	touch $@
 
+# rsyslog
+$(DEPS_DIR)/$(RSYSLOG).tar.gz: | $(DEPS_DIR)
+	$(call download,RSYSLOG)
+
+$(DEPS_DIR)/$(RSYSLOG): $(DEPS_DIR)/$(RSYSLOG).tar.gz
+	$(call decompress,RSYSLOG)
+
+$(DEPS_DIR)/$(RSYSLOG)/.built: | $(DEPS_DIR)/$(RSYSLOG) $(STAGE_MARKERS_DIR)/$(LIBFASTJSON_INSTALL_MARKER) $(STAGE_MARKERS_DIR)/$(LIBRDKAFKA_INSTALL_MARKER)
+	cd $(DEPS_DIR)/$(RSYSLOG) && \
+		LIBESTR_LIBS="-L/lib64 -lestr" \
+		LIBESTR_CFLAGS="-I/usr/include" \
+		CFLAGS="-I$(EMBEDDED_DIR)/include" \
+		LDFLAGS="-L$(EMBEDDED_DIR)/lib -Wl,-rpath,$(PREFIX)/embedded/lib,-rpath,$(EMBEDDED_DIR)/lib" \
+		./configure \
+			--prefix=$(PREFIX)/embedded \
+			--disable-liblogging-stdlog \
+			--enable-imptcp \
+			--enable-mmjsonparse \
+			--enable-mmutf8fix \
+			--enable-elasticsearch \
+			--enable-omkafka
+	cd $(DEPS_DIR)/$(RSYSLOG) && make
+	touch $@
+
+$(STAGE_MARKERS_DIR)/$(RSYSLOG_INSTALL_MARKER): $(DEPS_DIR)/$(RSYSLOG)/.built | $(STAGE_MARKERS_DIR)
+	cd $(DEPS_DIR)/$(RSYSLOG) && make install DESTDIR=$(STAGE_DIR)
+	rm -f $(STAGE_MARKERS_DIR)/$(RSYSLOG_NAME)$(VERSION_SEP)*
+	touch $@
+
 # TrafficServer
 $(DEPS_DIR)/$(TRAFFICSERVER).tar.gz: | $(DEPS_DIR)
 	$(call download,TRAFFICSERVER)
@@ -951,8 +985,6 @@ $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(VENDOR_DIR)
 	$(DEPS_DIR)/$(GLIDE)/.built \
 	$(DEPS_DIR)/$(GOLANG).tar.gz \
 	$(DEPS_DIR)/$(GOLANG) \
-	$(DEPS_DIR)/$(HEKA) \
-	$(DEPS_DIR)/$(HEKA)/.built \
 	$(DEPS_DIR)/$(LIBCIDR).tar.xz \
 	$(DEPS_DIR)/$(LIBCIDR) \
 	$(DEPS_DIR)/$(LIBCIDR)/.built \
@@ -997,6 +1029,9 @@ $(LUAROCKS_DIR)/$(PENLIGHT)/$(PENLIGHT_VERSION): | $(VENDOR_DIR)
 	$(DEPS_DIR)/$(RUNIT).tar.gz \
 	$(DEPS_DIR)/$(RUNIT) \
 	$(DEPS_DIR)/$(RUNIT)/.built \
+	$(DEPS_DIR)/$(RSYSLOG).tar.gz \
+	$(DEPS_DIR)/$(RSYSLOG) \
+	$(DEPS_DIR)/$(RSYSLOG)/.built \
 	$(DEPS_DIR)/$(TRAFFICSERVER).tar.gz \
 	$(DEPS_DIR)/$(TRAFFICSERVER) \
 	$(DEPS_DIR)/$(TRAFFICSERVER)/.built \
@@ -1010,7 +1045,6 @@ download_deps: \
 	$(DEPS_DIR)/GeoLiteCityv6.dat.gz \
 	$(DEPS_DIR)/$(GLIDE).tar.gz \
 	$(DEPS_DIR)/$(GOLANG).tar.gz \
-	$(DEPS_DIR)/$(HEKA) \
 	$(DEPS_DIR)/$(LIBCIDR).tar.xz \
 	$(DEPS_DIR)/$(LIBGEOIP).tar.gz \
 	$(DEPS_DIR)/$(LUAROCKS).tar.gz \
@@ -1029,6 +1063,7 @@ download_deps: \
 	$(DEPS_DIR)/$(PERP).tar.gz \
 	$(DEPS_DIR)/$(RUBY).tar.bz2 \
 	$(DEPS_DIR)/$(RUNIT).tar.gz \
+	$(DEPS_DIR)/$(RSYSLOG).tar.gz \
 	$(DEPS_DIR)/$(TRAFFICSERVER).tar.gz
 
 $(VENDOR_DIR):
@@ -1086,7 +1121,6 @@ stage: \
 	$(STAGE_MARKERS_DIR)/$(BUNDLER_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(ELASTICSEARCH_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/GeoLiteCityv6.dat \
-	$(STAGE_MARKERS_DIR)/$(HEKA_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(LIBCIDR_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(LIBGEOIP_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(LUAROCKS_INSTALL_MARKER) \
@@ -1096,6 +1130,7 @@ stage: \
 	$(STAGE_MARKERS_DIR)/$(PERP_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(RUBY_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(RUNIT_INSTALL_MARKER) \
+	$(STAGE_MARKERS_DIR)/$(RSYSLOG_INSTALL_MARKER) \
 	$(STAGE_MARKERS_DIR)/$(TRAFFICSERVER_INSTALL_MARKER) \
 	$(BUILD_DIR)/local
 

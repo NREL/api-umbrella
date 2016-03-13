@@ -11,9 +11,6 @@ rlimits:
   nproc: 20000
 http_port: 80
 https_port: 443
-heka:
-  host: 127.0.0.1
-  port: 14014
 nginx:
   workers: auto
   worker_connections: 8192
@@ -108,6 +105,9 @@ router:
   web_app_backend_regex: "^/(admin|admins|web-assets)(/|$)"
   web_app_backend_required_https_regex: "^/(admin|admins)(/|$)"
   website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
+rsyslog:
+  host: 127.0.0.1
+  port: 14014
 dns_resolver:
   negative_ttl: 60
   max_stale: 86400
@@ -169,6 +169,8 @@ presto:
 flume:
   host: 127.0.0.1
   port: 14016
+kafka:
+  brokers: []
 log_template_version: v1
 strip_cookies:
   - ^__utm.*$

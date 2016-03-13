@@ -1,0 +1,94 @@
+global(workDirectory="{{db_dir}}/rsyslog")
+
+# Load Modules
+module(load="imtcp" MaxSessions="500")
+module(load="mmjsonparse")
+module(load="mmutf8fix")
+module(load="omelasticsearch")
+
+# TCP Input
+input(type="imtcp" address="{{rsyslog.host}}" port="{{rsyslog.port}}")
+
+# Ensure we have only valid UTF-8 characters in the log message (otherwise
+# ElasticSearch is unhappy).
+action(type="mmutf8fix")
+
+# Parse the JSON data out of the @cee-enhanced logs.
+action(type="mmjsonparse")
+
+# Define the ElasticSearch-based output.
+# This aliases some of the logged fields to different names for backwards
+# compatibility with the ElasticSearch data.
+set $!usr!es!api_key = $!legacy_api_key;
+set $!usr!es!gatekeeper_denied_code = $!denied_reason;
+set $!usr!es!request_accept = $!request_accept;
+set $!usr!es!request_accept_encoding = $!request_accept_encoding;
+set $!usr!es!request_at = $!request_at;
+set $!usr!es!request_basic_auth_username = $!request_basic_auth_username;
+set $!usr!es!request_connection = $!request_connection;
+set $!usr!es!request_content_type = $!request_content_type;
+set $!usr!es!request_ip = $!request_ip;
+set $!usr!es!request_ip_city = $!request_ip_city;
+set $!usr!es!request_ip_country = $!request_ip_country;
+set $!usr!es!request_ip_location = $!request_ip_location;
+set $!usr!es!request_ip_region = $!request_ip_region;
+set $!usr!es!request_method = $!request_method;
+set $!usr!es!request_origin = $!request_origin;
+set $!usr!es!request_referer = $!request_referer;
+set $!usr!es!request_size = $!request_size;
+set $!usr!es!request_url = $!request_url;
+set $!usr!es!request_hierarchy = $!request_url_hierarchy;
+set $!usr!es!request_host = $!request_url_host;
+set $!usr!es!request_path = $!request_url_path;
+set $!usr!es!request_query = $!legacy_request_url_query_hash;
+set $!usr!es!request_scheme = $!request_url_scheme;
+set $!usr!es!request_user_agent = $!request_user_agent;
+set $!usr!es!request_user_agent_family = $!request_user_agent_family;
+set $!usr!es!request_user_agent_type = $!request_user_agent_type;
+set $!usr!es!response_age = $!response_age;
+set $!usr!es!response_cache = $!response_cache;
+set $!usr!es!response_content_encoding = $!response_content_encoding;
+set $!usr!es!response_content_length = $!response_content_length;
+set $!usr!es!response_content_type = $!response_content_type;
+set $!usr!es!response_server = $!response_server;
+set $!usr!es!response_size = $!response_size;
+set $!usr!es!response_status = $!response_status;
+set $!usr!es!response_transfer_encoding = $!response_transfer_encoding;
+set $!usr!es!backend_response_time = $!timer_backend_response;
+set $!usr!es!internal_gatekeeper_time = $!timer_internal;
+set $!usr!es!proxy_overhead = $!timer_proxy_overhead;
+set $!usr!es!response_time = $!timer_response;
+set $!usr!es!user_email = $!legacy_user_email;
+set $!usr!es!user_id = $!user_id;
+set $!usr!es!user_registration_source = $!legacy_user_registration_source;
+
+# Define templates for ElasticSearch output.
+template(name="elasticsearch-index" type="string" string="api-umbrella-logs-v1-%timereported:1:10:date-rfc3339%")
+template(name="elasticsearch-id" type="subtree" subtree="$!id")
+template(name="elasticsearch-record" type="list") {
+  property(name="$!usr!es")
+}
+
+# Output to ElasticSearch.
+# A disk-assisted memory queue is used for buffering.
+local0.info action(
+  type="omelasticsearch"
+  server="{{elasticsearch._first_server.host}}"
+  serverport="{{elasticsearch._first_server.port}}"
+  searchIndex="elasticsearch-index"
+  dynSearchIndex="on"
+  searchType="log"
+  template="elasticsearch-record"
+  bulkmode="on"
+  bulkId="elasticsearch-id"
+  dynBulkId="on"
+  asyncrepl="off"
+  queue.type="LinkedList"
+  queue.filename="queue-elasticsearch"
+  queue.checkpointinterval="10"
+  queue.syncqueuefiles="on"
+  queue.saveonshutdown="on"
+  queue.highwatermark="100"
+  queue.lowwatermark="50"
+  action.resumeRetryCount="-1"
+)

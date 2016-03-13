@@ -16,6 +16,11 @@ end
 local ngx_ctx = ngx.ctx
 local ngx_var = ngx.var
 
+local syslog_facility = 16 -- local0
+local syslog_severity = 6 -- info
+local syslog_priority = (syslog_facility * 8) + syslog_severity
+local syslog_version = 1
+
 -- Cache the last geocoded location for each city in a separate index. When
 -- faceting by city names on the log index (for displaying on a map), there
 -- doesn't appear to be an easy way to fetch the associated locations for each
@@ -73,8 +78,8 @@ local function log_request()
   -- Init the resty logger socket.
   if not logger.initted() then
     local ok, err = logger.init{
-      host = config["heka"]["host"],
-      port = config["heka"]["port"],
+      host = config["rsyslog"]["host"],
+      port = config["rsyslog"]["port"],
       flush_limit = 4096, -- 4KB
       drop_limit = 10485760, -- 10MB
       periodic_flush = 0.1,
@@ -137,6 +142,11 @@ local function log_request()
     timer_internal = ngx_ctx.internal_overhead,
     timer_response = tonumber(ngx_var.request_time),
     user_id = ngx_ctx.user_id,
+
+    -- Deprecated
+    legacy_api_key = ngx_ctx.api_key,
+    legacy_user_email = ngx_ctx.user_email,
+    legacy_user_registration_source = ngx_ctx.user_registration_source,
   }
 
   -- Check for log data set by the separate api backend proxy
@@ -205,10 +215,19 @@ local function log_request()
     data["request_ip_lon"] = tonumber(ngx_var.geoip_longitude)
   end
 
-  -- Convert to nanoseconds for heka timestamp parsing.
-  data["_heka_timestamp"] = data["request_at"] * 1e6
+  local syslog_message = "<" .. syslog_priority .. ">"
+    .. syslog_version
+    .. " " .. os.date("!%Y-%m-%dT%TZ", data["request_at"] / 1000) -- timestamp
+    .. " -" -- hostname
+    .. " api-umbrella" -- app-name
+    .. " -" -- procid
+    .. " -" -- msgid
+    .. " -" -- structured-data
+    .. " @cee:" -- CEE-enhanced logging for rsyslog to parse JSON
+    .. elasticsearch_encode_json(data) -- JSON data
+    .. "\n"
 
-  local _, err = logger.log(elasticsearch_encode_json(data) .. "\n")
+  local _, err = logger.log(syslog_message)
   if err then
     ngx.log(ngx.ERR, "failed to log message: ", err)
     return

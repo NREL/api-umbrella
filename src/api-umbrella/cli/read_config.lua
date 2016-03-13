@@ -312,7 +312,7 @@ local function set_computed_config()
       _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
     },
     elasticsearch = {
-      _first_host = config["elasticsearch"]["hosts"][1],
+      _first_server = config["elasticsearch"]["_servers"][1],
     },
     ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),

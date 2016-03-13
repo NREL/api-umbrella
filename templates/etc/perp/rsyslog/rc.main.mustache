@@ -11,7 +11,7 @@ if test ${1} = "start"; then
   RUN_OPTS="$RUN_OPTS -u {{user}}"
   {{/user}}
 
-  exec runtool $RUN_OPTS hekad -config={{etc_dir}}/heka.toml
+  exec runtool $RUN_OPTS rsyslogd -n -f {{etc_dir}}/rsyslog.conf -i {{run_dir}}/rsyslogd.pid
 fi
 
 exit 0

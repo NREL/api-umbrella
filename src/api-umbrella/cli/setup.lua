@@ -96,6 +96,7 @@ local function prepare()
     config["tmp_dir"],
     path.join(config["db_dir"], "elasticsearch"),
     path.join(config["db_dir"], "mongodb"),
+    path.join(config["db_dir"], "rsyslog"),
     path.join(config["etc_dir"], "trafficserver/snapshots"),
     path.join(config["log_dir"], "trafficserver"),
     path.join(config["root_dir"], "var/trafficserver"),
@@ -242,7 +243,7 @@ local function activate_services()
       end
 
       if not config["_service_router_enabled?"] then
-        if array_includes({ "geoip-auto-updater", "heka", "mora", "nginx", "trafficserver" }, service_name) then
+        if array_includes({ "geoip-auto-updater", "mora", "nginx", "rsyslog", "trafficserver" }, service_name) then
           is_active = false
         end
       end

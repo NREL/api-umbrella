@@ -70,7 +70,6 @@ local function set_url_hierarchy(data)
   -- Split the path by slashes limiting to 6 levels deep (everything beyond
   -- the 6th level will be included on the 6th level string). This is to
   -- prevent us from having to have unlimited depths for flattened SQL storage.
-  ngx.log(ngx.ERR, "CLEANED PATH: " .. inspect(cleaned_path))
   local path_parts = split(cleaned_path, "/", true, 6)
 
   -- Setup top-level host hierarchy for ElasticSearch storage.
@@ -81,7 +80,6 @@ local function set_url_hierarchy(data)
   end
   table.insert(data["request_url_hierarchy"], host_token)
 
-  ngx.log(ngx.ERR, "PATH PARTS: " .. inspect(path_parts))
   local path_level = "/"
   for index, _ in ipairs(path_parts) do
     path_level = path_level .. path_parts[index]
@@ -126,6 +124,7 @@ function _M.set_url_fields(data)
   -- reflect the original URL (and not after any internal rewriting).
   if parts[2] then
     data["request_url_query"] = escape_uri_non_ascii(parts[2])
+    data["legacy_request_url_query_hash"] = ngx.decode_args(data["request_url_query"])
   end
 
   set_url_hierarchy(data)
