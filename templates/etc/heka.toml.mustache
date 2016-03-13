@@ -51,18 +51,29 @@ filename = "{{_src_root_dir}}/src/api-umbrella/heka/tsv_encoder.lua"
 
 [PayloadEncoder]
 
-[FlumeOutput]
-type = "TcpOutput"
-message_matcher = "TRUE"
-address = "{{flume.host}}:{{flume.port}}"
-encoder = "TsvEncoder"
-keep_alive = false
-reconnect_after = 1
-#type = "HttpOutput"
-#message_matcher = "Fields[payload_name] == 'flume_batch'"
-#address = "http://{{flume.host}}:{{flume.port}}"
-#encoder = "PayloadEncoder"
-#http_timeout = 5000
+#[FlumeOutput]
+#type = "TcpOutput"
+#message_matcher = "TRUE"
+#address = "{{flume.host}}:{{flume.port}}"
+#encoder = "TsvEncoder"
+#keep_alive = false
+#reconnect_after = 1
+##type = "HttpOutput"
+##message_matcher = "Fields[payload_name] == 'flume_batch'"
+##address = "http://{{flume.host}}:{{flume.port}}"
+##encoder = "PayloadEncoder"
+##http_timeout = 5000
+#use_buffering = true
+
+[KafkaOutput]
+message_matcher = "Type == 'api_umbrella_log'"
+topic = "api_umbrella_logs"
+addrs = [
+  {{#kafka.brokers}}
+    "{{host}}:{{port}}",
+  {{/kafka.brokers}}
+]
+encoder = "PayloadEncoder"
 use_buffering = true
 
 [FileOutput]
