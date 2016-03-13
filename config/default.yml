@@ -171,6 +171,7 @@ flume:
   port: 14016
 kafka:
   brokers: []
+  topic: api_umbrella_logs
 log_template_version: v1
 strip_cookies:
   - ^__utm.*$

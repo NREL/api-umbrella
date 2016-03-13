@@ -278,6 +278,12 @@ local function set_computed_config()
     end
   end
 
+  config["kafka"]["_rsyslog_broker"] = {}
+  for _, broker in ipairs(config["kafka"]["brokers"]) do
+    table.insert(config["kafka"]["_rsyslog_broker"], '"' .. broker["host"] .. ":" .. broker["port"] .. '"')
+  end
+  config["kafka"]["_rsyslog_broker"] = table.concat(config["kafka"]["_rsyslog_broker"], ",")
+
   -- Setup the request/response timeouts for the different pieces of the stack.
   -- Since we traverse multiple proxies, we want to make sure the timeouts of
   -- the different proxies are kept in sync.

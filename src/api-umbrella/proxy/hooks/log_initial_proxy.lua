@@ -3,6 +3,7 @@ local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_enco
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
 local log_utils = require "api-umbrella.proxy.log_utils"
 local logger = require "resty.logger.socket"
+local luatz = require "luatz"
 local mongo = require "api-umbrella.utils.mongo"
 local sha256 = require "resty.sha256"
 local str = require "resty.string"
@@ -20,6 +21,8 @@ local syslog_facility = 16 -- local0
 local syslog_severity = 6 -- info
 local syslog_priority = (syslog_facility * 8) + syslog_severity
 local syslog_version = 1
+
+local timezone = luatz.get_tz(config["analytics"]["timezone"])
 
 -- Cache the last geocoded location for each city in a separate index. When
 -- faceting by city names on the log index (for displaying on a map), there
@@ -148,6 +151,17 @@ local function log_request()
     legacy_user_email = ngx_ctx.user_email,
     legacy_user_registration_source = ngx_ctx.user_registration_source,
   }
+
+  local utc_sec = data["request_at"]
+  local tz_offset = timezone:find_current(utc_sec).gmtoff
+  local tz_sec = utc_sec + tz_offset
+  local tz_time = os.date("!*t", tz_sec)
+  data["request_at_tz_offset"] = tz_offset * 1000
+  data["request_at_tz_year"] = tz_time["year"]
+  data["request_at_tz_month"] = tz_time["month"]
+  data["request_at_tz_date"] = os.date("!%Y-%m-%d", tz_sec)
+  data["request_at_tz_hour"] = tz_time["hour"]
+  data["request_at_minute"] = tz_time["min"]
 
   -- Check for log data set by the separate api backend proxy
   -- (log_api_backend_proxy.lua). This is used for timing information.
