@@ -3,12 +3,12 @@
   "name": "Log",
   "fields": [
     {
-      "name": "id",
-      "type": "string"
-    },
-    {
       "name": "request_at",
       "type": "long"
+    },
+    {
+      "name": "id",
+      "type": "string"
     },
     {
       "name": "request_at_tz_offset",
@@ -23,6 +23,10 @@
       "type": "int"
     },
     {
+      "name": "request_at_tz_week",
+      "type": "int"
+    },
+    {
       "name": "request_at_tz_date",
       "type": "string"
     },
@@ -31,7 +35,7 @@
       "type": "int"
     },
     {
-      "name": "request_at_minute",
+      "name": "request_at_tz_minute",
       "type": "int"
     },
     {

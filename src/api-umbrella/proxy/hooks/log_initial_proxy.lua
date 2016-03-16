@@ -159,9 +159,10 @@ local function log_request()
   data["request_at_tz_offset"] = tz_offset * 1000
   data["request_at_tz_year"] = tz_time["year"]
   data["request_at_tz_month"] = tz_time["month"]
+  data["request_at_tz_week"] = tonumber(os.date("!%V", tz_sec))
   data["request_at_tz_date"] = os.date("!%Y-%m-%d", tz_sec)
   data["request_at_tz_hour"] = tz_time["hour"]
-  data["request_at_minute"] = tz_time["min"]
+  data["request_at_tz_minute"] = tz_time["min"]
 
   -- Check for log data set by the separate api backend proxy
   -- (log_api_backend_proxy.lua). This is used for timing information.

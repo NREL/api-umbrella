@@ -95,6 +95,7 @@ public class DayWorker implements Runnable {
     // file path, it's duplicative to store this data in the file).
     this.schemaPartitionFields.add("request_at_tz_year");
     this.schemaPartitionFields.add("request_at_tz_month");
+    this.schemaPartitionFields.add("request_at_tz_week");
     this.schemaPartitionFields.add("request_at_tz_date");
 
     // Define fields we want to store as short/smallints. Since Avro doesn't
@@ -102,8 +103,9 @@ public class DayWorker implements Runnable {
     // these.
     this.schemaShortFields.add("request_at_tz_year");
     this.schemaShortFields.add("request_at_tz_month");
+    this.schemaShortFields.add("request_at_tz_week");
     this.schemaShortFields.add("request_at_tz_hour");
-    this.schemaShortFields.add("request_at_minute");
+    this.schemaShortFields.add("request_at_tz_minute");
     this.schemaShortFields.add("response_status");
 
     this.startDateString = this.dateFormatter.print(this.date);
@@ -301,9 +303,10 @@ public class DayWorker implements Runnable {
           log.put("request_at_tz_offset", App.TIMEZONE.getOffset(requestAt.getMillis()));
           log.put("request_at_tz_year", requestAt.getYear());
           log.put("request_at_tz_month", requestAt.getMonthOfYear());
+          log.put("request_at_tz_week", requestAt.getWeekOfWeekyear());
           log.put("request_at_tz_date", this.dateFormatter.print(requestAt));
           log.put("request_at_tz_hour", requestAt.getHourOfDay());
-          log.put("request_at_minute", requestAt.getMinuteOfHour());
+          log.put("request_at_tz_minute", requestAt.getMinuteOfHour());
           value = null;
           break;
         case "request_ip_location":

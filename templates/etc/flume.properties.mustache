@@ -1,53 +1,39 @@
-agent.sources = tcp-listener
-agent.channels = memory-channel file-channel
-agent.sinks = logger-sink hive-sink
+agent.sources = kafka-source
+agent.channels = file-channel
+agent.sinks = hdfs-sink
 
-agent.channels.memory-channel.type = memory
+# Use file storage for buffering data.
 agent.channels.file-channel.type = file
 
-#agent.sources.http-listener.type = http
-#agent.sources.http-listener.channels = memory-channel
-#agent.sources.http-listener.bind = 0.0.0.0
-#agent.sources.http-listener.port = 14016
+# Pull data from Kafka (which rsyslog is pumping data into).
+agent.sources.kafka-source.type = org.apache.flume.source.kafka.KafkaSource
+agent.sources.kafka-source.channels = file-channel
+agent.sources.kafka-source.zookeeperConnect = 127.0.0.1:2181
+agent.sources.kafka-source.groupId = api-umbrella-flume
+agent.sources.kafka-source.topic = api_umbrella_logs
 
-agent.sources.tcp-listener.type = netcat
-agent.sources.tcp-listener.channels = memory-channel
-agent.sources.tcp-listener.bind = 0.0.0.0
-agent.sources.tcp-listener.port = 14016
-agent.sources.tcp-listener.max-line-length = 5000
-
+# Extract the request_at timestamp from the data. Expected to be the first
+# column of data.
 agent.sources.tcp-listener.interceptors = timestamp-extractor
 agent.sources.tcp-listener.interceptors.timestamp-extractor.type = regex_extractor
-agent.sources.tcp-listener.interceptors.timestamp-extractor.regex = ^\\w+\\t(\\d+)
+agent.sources.tcp-listener.interceptors.timestamp-extractor.regex = ^(\\d+)
 agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers = timestamp-serializer
 agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers.timestamp-serializer.type = org.apache.flume.interceptor.RegexExtractorInterceptorPassThroughSerializer
 agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers.timestamp-serializer.name = timestamp
 
-agent.sinks.logger-sink.type = logger
-agent.sinks.logger-sink.channel = memory-channel
-agent.sinks.logger-sink.maxBytesToLog = 5000
-
+# Write data to HDFS.
 agent.sinks.hdfs-sink.type = hdfs
-agent.sinks.hdfs-sink.channel = memory-channel
-agent.sinks.hdfs-sink.hdfs.path = /tmp/flume-test/request_at_year=%Y/request_at_month=%n/request_at_date=%Y-%m-%d
-agent.sinks.hdfs-sink.hdfs.fileSuffix = .tsv.gz
+agent.sinks.hdfs-sink.channel = file-channel
+agent.sinks.hdfs-sink.hdfs.path = /tmp/flume-test/take2
 # Use "_" prefix for files currently being written to. This prevent Hive from
 # picking these files up before they're fully written (otherwise, the partial
 # gzip state results in invalid data).
 agent.sinks.hdfs-sink.hdfs.inUsePrefix = _
-agent.sinks.hdfs-sink.hdfs.rollInterval = 10
-agent.sinks.hdfs-sink.hdfs.codeC = gzip
+# Write compressed tsv files.
 agent.sinks.hdfs-sink.hdfs.fileType = CompressedStream
-agent.sinks.hdfs-sink.hdfs.timeZone = UTC
-
-agent.sinks.hive-sink.type = hive
-agent.sinks.hive-sink.channel = memory-channel
-agent.sinks.hive-sink.hive.metastore = thrift://127.0.0.1:9083
-agent.sinks.hive-sink.hive.database = api_umbrella
-agent.sinks.hive-sink.hive.table = logs_flume
-# agent.sinks.hive-sink.hive.partition = %{request_at_year},%{request_at_month},%{request_at_date}
-agent.sinks.hive-sink.useLocalTimeStamp = false
-# agent.sinks.hive-sink.serializer = JSON
-agent.sinks.hive-sink.serializer = DELIMITED
-agent.sinks.hive-sink.serializer.delimiter = "\t"
-agent.sinks.hive-sink.serializer.fieldnames = id,request_at,request_at_hour
+agent.sinks.hdfs-sink.hdfs.codeC = gzip
+agent.sinks.hdfs-sink.hdfs.fileSuffix = .tsv.gz
+# Write out the file ever 30 seconds.
+agent.sinks.hdfs-sink.hdfs.rollInterval = 30
+agent.sinks.hdfs-sink.hdfs.rollSize = 0
+agent.sinks.hdfs-sink.hdfs.rollCount = 0
