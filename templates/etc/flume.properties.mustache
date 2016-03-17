@@ -14,17 +14,17 @@ agent.sources.kafka-source.topic = api_umbrella_logs
 
 # Extract the request_at timestamp from the data. Expected to be the first
 # column of data.
-agent.sources.tcp-listener.interceptors = timestamp-extractor
-agent.sources.tcp-listener.interceptors.timestamp-extractor.type = regex_extractor
-agent.sources.tcp-listener.interceptors.timestamp-extractor.regex = ^(\\d+)
-agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers = timestamp-serializer
-agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers.timestamp-serializer.type = org.apache.flume.interceptor.RegexExtractorInterceptorPassThroughSerializer
-agent.sources.tcp-listener.interceptors.timestamp-extractor.serializers.timestamp-serializer.name = timestamp
+agent.sources.kafka-source.interceptors = timestamp-extractor
+agent.sources.kafka-source.interceptors.timestamp-extractor.type = regex_extractor
+agent.sources.kafka-source.interceptors.timestamp-extractor.regex = ^(\\d+)
+agent.sources.kafka-source.interceptors.timestamp-extractor.serializers = timestamp-serializer
+agent.sources.kafka-source.interceptors.timestamp-extractor.serializers.timestamp-serializer.type = org.apache.flume.interceptor.RegexExtractorInterceptorPassThroughSerializer
+agent.sources.kafka-source.interceptors.timestamp-extractor.serializers.timestamp-serializer.name = timestamp
 
 # Write data to HDFS.
 agent.sinks.hdfs-sink.type = hdfs
 agent.sinks.hdfs-sink.channel = file-channel
-agent.sinks.hdfs-sink.hdfs.path = /tmp/flume-test/take2
+agent.sinks.hdfs-sink.hdfs.path = /tmp/flume-test/take4/request_at_tz_date=%Y-%m-%d/request_at_tz_hour_minute=%H-%M
 # Use "_" prefix for files currently being written to. This prevent Hive from
 # picking these files up before they're fully written (otherwise, the partial
 # gzip state results in invalid data).
@@ -33,7 +33,9 @@ agent.sinks.hdfs-sink.hdfs.inUsePrefix = _
 agent.sinks.hdfs-sink.hdfs.fileType = CompressedStream
 agent.sinks.hdfs-sink.hdfs.codeC = gzip
 agent.sinks.hdfs-sink.hdfs.fileSuffix = .tsv.gz
-# Write out the file ever 30 seconds.
-agent.sinks.hdfs-sink.hdfs.rollInterval = 30
+# Write out the file ever 15 seconds.
+agent.sinks.hdfs-sink.hdfs.rollInterval = 15
 agent.sinks.hdfs-sink.hdfs.rollSize = 0
 agent.sinks.hdfs-sink.hdfs.rollCount = 0
+#agent.sinks.hdfs-sink.hdfs.timeZone = {{analytics.timezone}}
+agent.sinks.hdfs-sink.hdfs.timeZone = America/New_York
