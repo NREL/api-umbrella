@@ -60,10 +60,11 @@ public class DayWorker implements Runnable {
   private DateTime date;
   private String startDateString;
   private String endDateString;
-  private LogSchema schema;
+  private static LogSchema schema;
   private App app;
   private int totalProcessedHits = 0;
   private int totalHits;
+  private static WriterOptions orcWriterOptions;
   private Writer orcWriter;
   DateTimeFormatter dateTimeParser = ISODateTimeFormat.dateTimeParser();
   DateTimeFormatter dateFormatter = ISODateTimeFormat.date();
@@ -71,7 +72,7 @@ public class DayWorker implements Runnable {
   public DayWorker(App app, DateTime date) {
     this.app = app;
     this.date = date;
-    this.schema = new LogSchema();
+    schema = new LogSchema();
 
     this.startDateString = this.dateFormatter.print(this.date);
     DateTime tomorrow = this.date.plus(Period.days(1));
@@ -136,6 +137,7 @@ public class DayWorker implements Runnable {
       // with no data).
       if (this.orcWriter != null) {
         this.orcWriter.close();
+        this.orcWriter = null;
       }
     } catch (Exception e) {
       logger.error("Unexpected error", e);
@@ -143,15 +145,8 @@ public class DayWorker implements Runnable {
     }
   }
 
-  private Writer getOrcWriter() throws IOException {
-    if (this.orcWriter == null) {
-      // Create a new file in /dir/YYYY/MM/WW/YYYY-MM-DD.par
-      Path path = new Path(
-          App.HDFS_URI + Paths.get(App.DIR, "request_at_tz_year=" + this.date.toString("YYYY"),
-              "request_at_tz_month=" + this.date.getMonthOfYear(),
-              "request_at_tz_week=" + this.date.getWeekOfWeekyear(),
-              "request_at_tz_date=" + this.startDateString, this.startDateString + ".orc"));
-
+  private static WriterOptions getOrcWriterOptions() throws IOException {
+    if (orcWriterOptions == null) {
       ArrayList<StructField> orcFields = new ArrayList<StructField>();
       for (int i = 0; i < schema.getNonPartitionFieldsList().size(); i++) {
         String field = schema.getNonPartitionFieldsList().get(i);
@@ -184,11 +179,23 @@ public class DayWorker implements Runnable {
       conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
       conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
 
-      WriterOptions options = OrcFile.writerOptions(conf);
-      options.compress(CompressionKind.ZLIB);
-      options.inspector(new OrcRowInspector(orcFields));
+      orcWriterOptions = OrcFile.writerOptions(conf);
+      orcWriterOptions.compress(CompressionKind.ZLIB);
+      orcWriterOptions.inspector(new OrcRowInspector(orcFields));
+    }
 
-      this.orcWriter = OrcFile.createWriter(path, options);
+    return orcWriterOptions;
+  }
+
+  private Writer getOrcWriter() throws IOException {
+    if (this.orcWriter == null) {
+      // Create a new file in /dir/YYYY/MM/WW/YYYY-MM-DD.par
+      Path path = new Path(
+          App.HDFS_URI + Paths.get(App.DIR, "request_at_tz_year=" + this.date.toString("YYYY"),
+              "request_at_tz_month=" + this.date.getMonthOfYear(),
+              "request_at_tz_week=" + this.date.getWeekOfWeekyear(),
+              "request_at_tz_date=" + this.startDateString, this.startDateString + ".orc"));
+      this.orcWriter = OrcFile.createWriter(path, getOrcWriterOptions());
     }
 
     return this.orcWriter;
