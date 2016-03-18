@@ -13,9 +13,12 @@ public class LogSchema {
   private Schema schema;
   private HashMap<String, Schema.Type> fieldTypes;
   private ArrayList<String> fieldNames;
-  private HashSet<String> partitionFields = new HashSet<String>();
+  private ArrayList<String> partitionFields = new ArrayList<String>();
   private ArrayList<String> nonPartitionFields = new ArrayList<String>();
+  private ArrayList<String> livePartitionFields = new ArrayList<String>();
+  private ArrayList<String> liveNonPartitionFields = new ArrayList<String>();
   private HashSet<String> shortFields = new HashSet<String>();
+  private HashSet<String> dateFields = new HashSet<String>();
 
   public LogSchema() {
     fieldTypes = new HashMap<String, Schema.Type>();
@@ -40,11 +43,20 @@ public class LogSchema {
     // file path, it's duplicative to store this data in the file).
     partitionFields.add("request_at_tz_year");
     partitionFields.add("request_at_tz_month");
+    partitionFields.add("request_at_tz_week");
     partitionFields.add("request_at_tz_date");
+
+    livePartitionFields.add("request_at_tz_date");
+    livePartitionFields.add("request_at_tz_hour_minute");
+    fieldTypes.put("request_at_tz_hour_minute", Schema.Type.STRING);
 
     for (String name : fieldNames) {
       if (!partitionFields.contains(name)) {
         nonPartitionFields.add(name);
+      }
+
+      if (!livePartitionFields.contains(name)) {
+        liveNonPartitionFields.add(name);
       }
     }
 
@@ -53,9 +65,12 @@ public class LogSchema {
     // these.
     shortFields.add("request_at_tz_year");
     shortFields.add("request_at_tz_month");
+    shortFields.add("request_at_tz_week");
     shortFields.add("request_at_tz_hour");
-    shortFields.add("request_at_minute");
+    shortFields.add("request_at_tz_minute");
     shortFields.add("response_status");
+
+    dateFields.add("request_at_tz_date");
   }
 
   protected Schema getSchema() {
@@ -75,15 +90,48 @@ public class LogSchema {
     return fieldTypes.get(field);
   }
 
+  protected String getFieldHiveType(String field) {
+    Type type = getFieldType(field);
+    if (type == Schema.Type.INT) {
+      if (shortFields.contains(field)) {
+        return "SMALLINT";
+      } else {
+        return "INT";
+      }
+    } else if (type == Schema.Type.LONG) {
+      return "BIGINT";
+    } else if (type == Schema.Type.DOUBLE) {
+      return "DOUBLE";
+    } else if (type == Schema.Type.BOOLEAN) {
+      return "BOOLEAN";
+    } else if (type == Schema.Type.STRING) {
+      if (dateFields.contains(field)) {
+        return "DATE";
+      } else {
+        return "STRING";
+      }
+    } else {
+      return null;
+    }
+  }
+
   protected ArrayList<String> getFieldNames() {
     return fieldNames;
   }
 
-  protected HashSet<String> getPartitioFields() {
+  protected ArrayList<String> getPartitionFieldsList() {
     return partitionFields;
   }
 
-  protected ArrayList<String> getNonPartitionFields() {
+  protected ArrayList<String> getNonPartitionFieldsList() {
     return nonPartitionFields;
+  }
+
+  protected ArrayList<String> getLivePartitionFieldsList() {
+    return livePartitionFields;
+  }
+
+  protected ArrayList<String> getLiveNonPartitionFieldsList() {
+    return liveNonPartitionFields;
   }
 }

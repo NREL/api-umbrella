@@ -21,6 +21,12 @@
       <artifactId>joda-time</artifactId>
       <version>2.9.2</version>
     </dependency>
+    <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.16</version>
+    </dependency>
     <!-- Avro for providing a data model to put data into for validation 
       purposes before outputting in the actual data format -->
     <dependency>
@@ -28,23 +34,8 @@
       <artifactId>avro</artifactId>
       <version>1.8.0</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.kafka</groupId>
-      <artifactId>kafka_2.8.0</artifactId>
-      <version>0.8.1.1</version>
-    </dependency>
     <!-- Hive for ORC file output. v0.14 to match version used in HDP 2.2, 
       which is what Kylin wants -->
-    <dependency>
-      <groupId>org.apache.hive.hcatalog</groupId>
-      <artifactId>hive-hcatalog-streaming</artifactId>
-      <version>0.14.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-exec</artifactId>
-      <version>0.14.0</version>
-    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-jdbc</artifactId>
@@ -55,59 +46,9 @@
       <artifactId>hadoop-client</artifactId>
       <version>2.6.0</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-hdfs</artifactId>
-      <version>2.6.0</version>
-    </dependency>
-    <!-- Explicit calcite dependency versions due to invalid versions in 
-      hive-exec: https://issues.apache.org/jira/browse/HIVE-8857 -->
-    <dependency>
-      <groupId>org.apache.calcite</groupId>
-      <artifactId>calcite-core</artifactId>
-      <version>0.9.2-incubating</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.calcite</groupId>
-      <artifactId>calcite-avatica</artifactId>
-      <version>0.9.2-incubating</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.6.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.zookeeper</groupId>
-      <artifactId>zookeeper</artifactId>
-      <version>3.3.4</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.sun.jmx</groupId>
-          <artifactId>jmxri</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.sun.jdmk</groupId>
-          <artifactId>jmxtools</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>javax.jms</groupId>
-          <artifactId>jms</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
   </dependencies>
 
   <build>
-    <resources>
-      <!-- Include the avro schema file in the jar -->
-      <resource>
-        <directory>src/avro</directory>
-        <includes>
-          <include>**/*.avsc</include>
-        </includes>
-      </resource>
-    </resources>
     <plugins>
       <!-- Build a self-contained jar -->
       <plugin>
