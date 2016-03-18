@@ -146,9 +146,10 @@ public class DayWorker implements Runnable {
 
   private Writer getOrcWriter() throws IOException {
     if (this.orcWriter == null) {
-      // Create a new file in /dir/YYYY/MM/YYYY-MM-DD.par
+      // Create a new file in /dir/YYYY/MM/WW/YYYY-MM-DD.par
       Path path = Paths.get(App.DIR, "request_at_tz_year=" + this.date.toString("YYYY"),
           "request_at_tz_month=" + this.date.getMonthOfYear(),
+          "request_at_tz_week=" + this.date.getWeekOfWeekyear(),
           "request_at_tz_date=" + this.startDateString, this.startDateString + ".orc");
       Files.createDirectories(path.getParent());
 
