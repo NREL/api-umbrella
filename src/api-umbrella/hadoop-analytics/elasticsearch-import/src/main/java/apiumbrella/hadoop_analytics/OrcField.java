@@ -1,4 +1,4 @@
-package gov.nrel.apiumbrella;
+package apiumbrella.hadoop_analytics;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;

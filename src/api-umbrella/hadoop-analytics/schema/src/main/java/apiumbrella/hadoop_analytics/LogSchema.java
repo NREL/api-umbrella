@@ -75,7 +75,7 @@ public class LogSchema {
 
   protected Schema getSchema() {
     if (schema == null) {
-      InputStream is = App.class.getClassLoader().getResourceAsStream("log.avsc");
+      InputStream is = Schema.class.getClassLoader().getResourceAsStream("log.avsc");
       try {
         schema = new Schema.Parser().parse(is);
       } catch (IOException e) {

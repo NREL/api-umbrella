@@ -1,4 +1,4 @@
-package gov.nrel.apiumbrella;
+package apiumbrella.hadoop_analytics;
 
 import java.util.ArrayList;
 import java.util.List;

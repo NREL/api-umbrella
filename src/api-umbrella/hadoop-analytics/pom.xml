@@ -2,10 +2,10 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>apiumbrella</groupId>
+  <groupId>api-umbrella.hadoop-analytics</groupId>
   <artifactId>hadoop-analytics</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
 
   <name>hadoop-analytics</name>
   <url>http://maven.apache.org</url>
@@ -15,77 +15,14 @@
   </properties>
 
   <dependencies>
-    <!-- For parsing/outputing time -->
-    <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
-      <version>2.9.2</version>
-    </dependency>
-    <!-- Logging -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.7.16</version>
-    </dependency>
-    <!-- Avro for providing a data model to put data into for validation 
-      purposes before outputting in the actual data format -->
-    <dependency>
-      <groupId>org.apache.avro</groupId>
-      <artifactId>avro</artifactId>
-      <version>1.8.0</version>
-    </dependency>
-    <!-- Hive for ORC file output. v0.14 to match version used in HDP 2.2, 
-      which is what Kylin wants -->
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-jdbc</artifactId>
-      <version>0.14.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-client</artifactId>
-      <version>2.6.0</version>
-    </dependency>
   </dependencies>
 
   <build>
-    <plugins>
-      <!-- Build a self-contained jar -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>2.4.3</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <transformers>
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                <transformer
-                  implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>apiumbrella.hadoop_analytics.App</mainClass>
-                </transformer>
-              </transformers>
-              <filters>
-                <!-- Exclude manifest signature files to prevent invalid 
-                  signature erorrs http://stackoverflow.com/a/6743609 -->
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
   </build>
+
+  <modules>
+    <module>elasticsearch-import</module>
+    <module>processor</module>
+    <module>schema</module>
+  </modules>
 </project>

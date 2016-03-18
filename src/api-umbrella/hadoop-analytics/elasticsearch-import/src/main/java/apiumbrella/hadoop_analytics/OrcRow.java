@@ -1,4 +1,4 @@
-package gov.nrel.apiumbrella;
+package apiumbrella.hadoop_analytics;
 
 // From https://gist.github.com/omalley/ccabae7cccac28f64812
 public class OrcRow {

@@ -1,4 +1,4 @@
-package gov.nrel.apiumbrella;
+package apiumbrella.hadoop_analytics;
 
 import java.io.IOException;
 import java.io.InputStream;

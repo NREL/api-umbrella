@@ -1,29 +1,36 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>api-umbrella.hadoop-analytics</groupId>
+    <artifactId>hadoop-analytics</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>elasticsearch-import</artifactId>
+  <packaging>jar</packaging>
+
+  <name>elasticsearch-import</name>
+  <url>http://maven.apache.org</url>
+
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>gov.nrel.apiumbrella</groupId>
-  <artifactId>convert</artifactId>
-  <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>convert</name>
-  <url>http://maven.apache.org</url>
+
   <dependencies>
+    <!-- Log schema -->
+    <dependency>
+      <groupId>api-umbrella.hadoop-analytics</groupId>
+      <artifactId>schema</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
     <!-- ElasticSearch connections -->
     <dependency>
       <groupId>io.searchbox</groupId>
       <artifactId>jest</artifactId>
       <version>2.0.0</version>
-    </dependency>
-    <!-- Avro for providing a data model to put data into for validation 
-      purposes before outputting in the actual data format -->
-    <dependency>
-      <groupId>org.apache.avro</groupId>
-      <artifactId>avro</artifactId>
-      <version>1.8.0</version>
     </dependency>
     <!-- Hadoop for ORC file output. v2.6 to match version used in HDP 2.2, 
       which is what Kylin wants -->
@@ -65,15 +72,6 @@
     </dependency>
   </dependencies>
   <build>
-    <resources>
-      <!-- Include the avro schema file in the jar -->
-      <resource>
-        <directory>src/avro</directory>
-        <includes>
-          <include>**/*.avsc</include>
-        </includes>
-      </resource>
-    </resources>
     <plugins>
       <!-- Build a self-contained jar -->
       <plugin>
