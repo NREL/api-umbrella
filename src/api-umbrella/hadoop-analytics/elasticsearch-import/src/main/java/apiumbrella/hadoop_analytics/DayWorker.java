@@ -5,8 +5,6 @@ import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -21,6 +19,7 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.CompressionKind;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.WriterOptions;
@@ -147,11 +146,11 @@ public class DayWorker implements Runnable {
   private Writer getOrcWriter() throws IOException {
     if (this.orcWriter == null) {
       // Create a new file in /dir/YYYY/MM/WW/YYYY-MM-DD.par
-      Path path = Paths.get(App.DIR, "request_at_tz_year=" + this.date.toString("YYYY"),
-          "request_at_tz_month=" + this.date.getMonthOfYear(),
-          "request_at_tz_week=" + this.date.getWeekOfWeekyear(),
-          "request_at_tz_date=" + this.startDateString, this.startDateString + ".orc");
-      Files.createDirectories(path.getParent());
+      Path path = new Path(
+          App.HDFS_URI + Paths.get(App.DIR, "request_at_tz_year=" + this.date.toString("YYYY"),
+              "request_at_tz_month=" + this.date.getMonthOfYear(),
+              "request_at_tz_week=" + this.date.getWeekOfWeekyear(),
+              "request_at_tz_date=" + this.startDateString, this.startDateString + ".orc"));
 
       ArrayList<StructField> orcFields = new ArrayList<StructField>();
       for (int i = 0; i < schema.getNonPartitionFieldsList().size(); i++) {
@@ -181,12 +180,15 @@ public class DayWorker implements Runnable {
       }
 
       Configuration conf = new Configuration();
+      // Fix for hadoop jar ordering: http://stackoverflow.com/a/21118824
+      conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
+      conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
+
       WriterOptions options = OrcFile.writerOptions(conf);
       options.compress(CompressionKind.ZLIB);
       options.inspector(new OrcRowInspector(orcFields));
 
-      this.orcWriter =
-          OrcFile.createWriter(new org.apache.hadoop.fs.Path(path.toString()), options);
+      this.orcWriter = OrcFile.createWriter(path, options);
     }
 
     return this.orcWriter;

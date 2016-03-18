@@ -2,7 +2,6 @@ package apiumbrella.hadoop_analytics;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -29,8 +28,10 @@ import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.indices.aliases.GetAliases;
 
 public class App {
+  protected static final String HDFS_URI =
+      System.getProperty("apiumbrella.hdfs_uri", "hdfs://127.0.0.1:8020");
   protected static String DIR =
-      System.getProperty("apiumbrella.dir", Paths.get("/tmp", "api-umbrella-logs").toString());
+      System.getProperty("apiumbrella.dir", "/apps/api-umbrella/logs");
   protected static String ELASTICSEARCH_URL =
       System.getProperty("apiumbrella.elasticsearch_url", "http://localhost:9200");
   protected static int PAGE_SIZE =
@@ -67,6 +68,8 @@ public class App {
   private BigInteger globalHits = BigInteger.valueOf(0);
 
   public App() {
+    System.out.println("Logging to log/elasticsearch-import.log...");
+
     ExecutorService executor = Executors.newFixedThreadPool(CONCURRENCY);
 
     DateTime date = this.getStartDate();
@@ -137,11 +140,6 @@ public class App {
   }
 
   public static void main(String[] args) throws SecurityException, IOException {
-    // Setup defaults for logging to migrate.log.
-
-
-    System.out.println("Logging to migrate.log...");
-
     new App();
   }
 }

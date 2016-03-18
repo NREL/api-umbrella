@@ -3,6 +3,7 @@ package apiumbrella.hadoop_analytics;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -87,9 +88,11 @@ public class ConvertLiveDataToOrc implements Runnable {
       Class.forName("org.apache.hive.jdbc.HiveDriver");
 
       Configuration conf = new Configuration();
-      conf.addResource(new Path("/usr/hdp/current/hadoop-client/conf/core-site.xml"));
-      fileSystem = FileSystem.get(conf);
+      // Fix for hadoop jar ordering: http://stackoverflow.com/a/21118824
+      conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
+      conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
 
+      fileSystem = FileSystem.get(new URI(HDFS_URI), conf);
       if (fileSystem.exists(LAST_MIGRATED_MARKER)) {
         FSDataInputStream markerInputStream = fileSystem.open(LAST_MIGRATED_MARKER);
         lastMigratedPartitionTime = Long.parseLong(IOUtils.toString(markerInputStream), 10);

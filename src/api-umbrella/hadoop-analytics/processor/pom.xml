@@ -43,6 +43,8 @@
       <artifactId>hive-jdbc</artifactId>
       <version>0.14.0</version>
     </dependency>
+    <!-- Hadoop for ORC file output. v2.6 to match version used in HDP 2.2, 
+      which is what Kylin wants -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-client</artifactId>
