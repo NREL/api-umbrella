@@ -90,10 +90,14 @@ public class LogSchema {
     return fieldTypes.get(field);
   }
 
+  protected boolean isFieldTypeShort(String field) {
+    return shortFields.contains(field);
+  }
+
   protected String getFieldHiveType(String field) {
     Type type = getFieldType(field);
     if (type == Schema.Type.INT) {
-      if (shortFields.contains(field)) {
+      if (isFieldTypeShort(field)) {
         return "SMALLINT";
       } else {
         return "INT";

@@ -72,12 +72,6 @@ public class App {
     "_type" }));
 
   final Logger logger = LoggerFactory.getLogger(App.class);
-
-  private Schema schema;
-  private HashMap<String, Schema.Type> schemaFieldTypes;
-  private HashSet<String> schemaIntFields;
-  private HashSet<String> schemaDoubleFields;
-  private HashSet<String> schemaBooleanFields;
   private BigInteger globalHits = BigInteger.valueOf(0);
 
   public App() {
@@ -85,8 +79,6 @@ public class App {
 
     DateTime date = this.getStartDate();
     DateTime endDate = this.getEndDate();
-    getSchema();
-    detectSchemaFields();
     while(date.isBefore(endDate)) {
       Runnable worker = new DayWorker(this, date);
       executor.execute(worker);
@@ -98,63 +90,6 @@ public class App {
     while(!executor.isTerminated()) {
     }
     logger.info("Finished all threads");
-  }
-
-  protected Schema getSchema() {
-    if(this.schema == null) {
-      InputStream is = App.class.getClassLoader().getResourceAsStream("log.avsc");
-      try {
-        this.schema = new Schema.Parser().parse(is);
-      } catch(IOException e) {
-        e.printStackTrace();
-        System.exit(1);
-      }
-    }
-    return this.schema;
-  }
-
-  protected HashMap<String, Schema.Type> getSchemaFieldTypes() {
-    return this.schemaFieldTypes;
-  }
-
-  protected HashSet<String> getSchemaIntFields() {
-    return this.schemaIntFields;
-  }
-
-  protected HashSet<String> getSchemaDoubleFields() {
-    return this.schemaDoubleFields;
-  }
-
-  protected HashSet<String> getSchemaBooleanFields() {
-    return this.schemaBooleanFields;
-  }
-
-  private void detectSchemaFields() {
-    this.schemaFieldTypes = new HashMap<String, Schema.Type>();
-    this.schemaIntFields = new HashSet<String>();
-    this.schemaDoubleFields = new HashSet<String>();
-    this.schemaBooleanFields = new HashSet<String>();
-
-    for(Schema.Field field : getSchema().getFields()) {
-      Schema.Type type = field.schema().getType();
-      if(type == Schema.Type.UNION) {
-        for(Schema unionSchema : field.schema().getTypes()) {
-          if(unionSchema.getType() != Schema.Type.NULL) {
-            type = unionSchema.getType();
-            break;
-          }
-        }
-      }
-
-      this.schemaFieldTypes.put(field.name(), type);
-      if(type == Schema.Type.INT) {
-        this.schemaIntFields.add(field.name());
-      } else if(type == Schema.Type.DOUBLE) {
-        this.schemaDoubleFields.add(field.name());
-      } else if(type == Schema.Type.BOOLEAN) {
-        this.schemaBooleanFields.add(field.name());
-      }
-    }
   }
 
   protected synchronized BigInteger incrementGlobalHits(Integer total) {
@@ -211,12 +146,7 @@ public class App {
 
   public static void main(String[] args) throws SecurityException, IOException {
     // Setup defaults for logging to migrate.log.
-    System.setProperty("org.slf4j.simpleLogger.logFile", "migrate.log");
-    System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");
-    System.setProperty("org.slf4j.simpleLogger.log.gov.nrel.apiumbrella", "info");
-    System.setProperty("org.slf4j.simpleLogger.showDateTime", "true");
-    System.setProperty("org.slf4j.simpleLogger.dateTimeFormat", "yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-    System.setProperty("org.slf4j.simpleLogger.showLogName", "false");
+
 
     System.out.println("Logging to migrate.log...");
 

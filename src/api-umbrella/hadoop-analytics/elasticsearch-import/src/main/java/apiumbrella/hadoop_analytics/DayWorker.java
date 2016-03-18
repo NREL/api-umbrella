@@ -65,12 +65,7 @@ public class DayWorker implements Runnable {
   private DateTime date;
   private String startDateString;
   private String endDateString;
-  private Schema schema;
-  private List<Schema.Field> schemaFields;
-  private HashMap<String, Schema.Type> schemaFieldTypes;
-  private HashSet<String> schemaIntFields;
-  private HashSet<String> schemaDoubleFields;
-  private HashSet<String> schemaBooleanFields;
+  private LogSchema schema;
   private App app;
   private int totalProcessedHits = 0;
   private int totalHits;
@@ -83,30 +78,7 @@ public class DayWorker implements Runnable {
   public DayWorker(App app, DateTime date) {
     this.app = app;
     this.date = date;
-    this.schema = app.getSchema();
-    this.schemaFields = this.schema.getFields();
-    this.schemaFieldTypes = app.getSchemaFieldTypes();
-    this.schemaIntFields = app.getSchemaIntFields();
-    this.schemaDoubleFields = app.getSchemaDoubleFields();
-    this.schemaBooleanFields = app.getSchemaBooleanFields();
-
-    // Explicitly define which fields we'll be partitioning by, since these
-    // don't need to be sorted in the output file (since they're part of the
-    // file path, it's duplicative to store this data in the file).
-    this.schemaPartitionFields.add("request_at_tz_year");
-    this.schemaPartitionFields.add("request_at_tz_month");
-    this.schemaPartitionFields.add("request_at_tz_week");
-    this.schemaPartitionFields.add("request_at_tz_date");
-
-    // Define fields we want to store as short/smallints. Since Avro doesn't
-    // support these in its schema, but ORC does, we need to explicitly list
-    // these.
-    this.schemaShortFields.add("request_at_tz_year");
-    this.schemaShortFields.add("request_at_tz_month");
-    this.schemaShortFields.add("request_at_tz_week");
-    this.schemaShortFields.add("request_at_tz_hour");
-    this.schemaShortFields.add("request_at_tz_minute");
-    this.schemaShortFields.add("response_status");
+    this.schema = new LogSchema();
 
     this.startDateString = this.dateFormatter.print(this.date);
     DateTime tomorrow = this.date.plus(Period.days(1));
@@ -194,17 +166,13 @@ public class DayWorker implements Runnable {
       Files.createDirectories(path.getParent());
 
       ArrayList<StructField> orcFields = new ArrayList<StructField>();
-      for(int i = 0; i < this.schemaFields.size(); i++) {
-        Field field = this.schemaFields.get(i);
-        if(this.schemaPartitionFields.contains(field.name())) {
-          continue;
-        }
-
-        Schema.Type type = this.schemaFieldTypes.get(field.name());
+      for(int i = 0; i < schema.getNonPartitionFieldsList().size(); i++) {
+        String field = schema.getNonPartitionFieldsList().get(i);
+        Schema.Type type = schema.getFieldType(field);
 
         ObjectInspector inspector;
         if(type == Schema.Type.INT) {
-          if(this.schemaShortFields.contains(field.name())) {
+          if(schema.isFieldTypeShort(field)) {
             inspector = PrimitiveObjectInspectorFactory.writableShortObjectInspector;
           } else {
             inspector = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
@@ -221,7 +189,7 @@ public class DayWorker implements Runnable {
           throw new IOException("Unknown type: " + type.toString());
         }
 
-        orcFields.add(new OrcField(field.name(), inspector, i));
+        orcFields.add(new OrcField(field, inspector, i));
       }
 
       Configuration conf = new Configuration();
@@ -272,7 +240,7 @@ public class DayWorker implements Runnable {
     try {
       // For each hit, create a new Avro record to serialize it into the new
       // format for storage.
-      GenericRecord log = new GenericData.Record(schema);
+      GenericRecord log = new GenericData.Record(schema.getSchema());
       log.put("id", hit.get("_id").getAsString());
 
       // Loop over each attribute in the source data, assigning each value to
@@ -541,11 +509,14 @@ public class DayWorker implements Runnable {
         if(value != null) {
           // Set the value on the new record, performing type-casting as needed.
           try {
-            if(this.schemaIntFields.contains(key)) {
+            Schema.Type type = schema.getFieldType(key);
+            if(type == Schema.Type.INT) {
               log.put(key, value.getAsInt());
-            } else if(this.schemaDoubleFields.contains(key)) {
+            } else if(type == Schema.Type.LONG) {
+              log.put(key, value.getAsLong());
+            } else if(type == Schema.Type.DOUBLE) {
               log.put(key, value.getAsDouble());
-            } else if(this.schemaBooleanFields.contains(key)) {
+            } else if(type == Schema.Type.BOOLEAN) {
               log.put(key, value.getAsBoolean());
             } else {
               try {
@@ -576,20 +547,16 @@ public class DayWorker implements Runnable {
         }
       }
 
-      OrcRow orcRecord = new OrcRow(this.schemaFields.size());
-      for(int i = 0; i < this.schemaFields.size(); i++) {
-        Field field = this.schemaFields.get(i);
-        if(this.schemaPartitionFields.contains(field.name())) {
-          continue;
-        }
-
-        Schema.Type type = this.schemaFieldTypes.get(field.name());
-        Object rawValue = log.get(field.name());
+      OrcRow orcRecord = new OrcRow(schema.getNonPartitionFieldsList().size());
+      for(int i = 0; i < schema.getNonPartitionFieldsList().size(); i++) {
+        String field = schema.getNonPartitionFieldsList().get(i);
+        Schema.Type type = schema.getFieldType(field);
+        Object rawValue = log.get(field);
         Object value;
 
         if(rawValue != null) {
           if(type == Schema.Type.INT) {
-            if(this.schemaShortFields.contains(field.name())) {
+            if(this.schemaShortFields.contains(field)) {
               value = new ShortWritable(((Integer) rawValue).shortValue());
             } else {
               value = new IntWritable((int) rawValue);
