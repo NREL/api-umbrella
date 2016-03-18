@@ -13,7 +13,7 @@ public class OrcRow {
   }
 
   void setNumFields(int newSize) {
-    if(newSize != columns.length) {
+    if (newSize != columns.length) {
       Object[] oldColumns = columns;
       columns = new Object[newSize];
       System.arraycopy(oldColumns, 0, columns, 0, oldColumns.length);

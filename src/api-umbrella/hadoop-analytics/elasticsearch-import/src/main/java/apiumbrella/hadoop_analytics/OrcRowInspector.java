@@ -22,8 +22,8 @@ public class OrcRowInspector extends SettableStructObjectInspector {
 
   @Override
   public StructField getStructFieldRef(String s) {
-    for(StructField field : fields) {
-      if(field.getFieldName().equalsIgnoreCase(s)) {
+    for (StructField field : fields) {
+      if (field.getFieldName().equalsIgnoreCase(s)) {
         return field;
       }
     }
@@ -32,12 +32,12 @@ public class OrcRowInspector extends SettableStructObjectInspector {
 
   @Override
   public Object getStructFieldData(Object object, StructField field) {
-    if(object == null) {
+    if (object == null) {
       return null;
     }
     int offset = ((OrcField) field).offset;
     OrcRow struct = (OrcRow) object;
-    if(offset >= struct.columns.length) {
+    if (offset >= struct.columns.length) {
       return null;
     }
 
@@ -46,12 +46,12 @@ public class OrcRowInspector extends SettableStructObjectInspector {
 
   @Override
   public List<Object> getStructFieldsDataAsList(Object object) {
-    if(object == null) {
+    if (object == null) {
       return null;
     }
     OrcRow struct = (OrcRow) object;
     List<Object> result = new ArrayList<Object>(struct.columns.length);
-    for(Object child : struct.columns) {
+    for (Object child : struct.columns) {
       result.add(child);
     }
     return result;
@@ -61,9 +61,9 @@ public class OrcRowInspector extends SettableStructObjectInspector {
   public String getTypeName() {
     StringBuilder buffer = new StringBuilder();
     buffer.append("struct<");
-    for(int i = 0; i < fields.size(); ++i) {
+    for (int i = 0; i < fields.size(); ++i) {
       StructField field = fields.get(i);
-      if(i != 0) {
+      if (i != 0) {
         buffer.append(",");
       }
       buffer.append(field.getFieldName());
@@ -89,7 +89,7 @@ public class OrcRowInspector extends SettableStructObjectInspector {
     OrcRow orcStruct = (OrcRow) struct;
     int offset = ((OrcField) field).offset;
     // if the offset is bigger than our current number of fields, grow it
-    if(orcStruct.columns.length <= offset) {
+    if (orcStruct.columns.length <= offset) {
       orcStruct.setNumFields(offset + 1);
     }
     orcStruct.setFieldValue(offset, fieldValue);
@@ -98,20 +98,20 @@ public class OrcRowInspector extends SettableStructObjectInspector {
 
   @Override
   public boolean equals(Object o) {
-    if(o == null || o.getClass() != getClass()) {
+    if (o == null || o.getClass() != getClass()) {
       return false;
-    } else if(o == this) {
+    } else if (o == this) {
       return true;
     } else {
       List<StructField> other = ((OrcRowInspector) o).fields;
-      if(other.size() != fields.size()) {
+      if (other.size() != fields.size()) {
         return false;
       }
-      for(int i = 0; i < fields.size(); ++i) {
+      for (int i = 0; i < fields.size(); ++i) {
         StructField left = other.get(i);
         StructField right = fields.get(i);
-        if(!(left.getFieldName().equalsIgnoreCase(right.getFieldName())
-          && left.getFieldObjectInspector().equals(right.getFieldObjectInspector()))) {
+        if (!(left.getFieldName().equalsIgnoreCase(right.getFieldName())
+            && left.getFieldObjectInspector().equals(right.getFieldObjectInspector()))) {
           return false;
         }
       }
