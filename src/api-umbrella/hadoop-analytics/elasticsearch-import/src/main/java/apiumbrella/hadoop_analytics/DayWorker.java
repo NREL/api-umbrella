@@ -57,9 +57,8 @@ import io.searchbox.params.Parameters;
 public class DayWorker implements Runnable {
   final Logger logger = LoggerFactory.getLogger(DayWorker.class);
 
-  private DateTime date;
-  private String startDateString;
-  private String endDateString;
+  private DateTime dayStartTime;
+  private DateTime dayEndTime;
   private static LogSchema schema;
   private App app;
   private int totalProcessedHits = 0;
@@ -67,16 +66,14 @@ public class DayWorker implements Runnable {
   private static WriterOptions orcWriterOptions;
   private Writer orcWriter;
   DateTimeFormatter dateTimeParser = ISODateTimeFormat.dateTimeParser();
-  DateTimeFormatter dateFormatter = ISODateTimeFormat.date();
+  DateTimeFormatter dateTimeFormatter = ISODateTimeFormat.dateTime().withZone(App.TIMEZONE);
+  DateTimeFormatter dateFormatter = ISODateTimeFormat.date().withZone(App.TIMEZONE);
 
   public DayWorker(App app, DateTime date) {
     this.app = app;
-    this.date = date;
+    dayStartTime = date;
+    dayEndTime = this.dayStartTime.plus(Period.days(1));
     schema = new LogSchema();
-
-    this.startDateString = this.dateFormatter.print(this.date);
-    DateTime tomorrow = this.date.plus(Period.days(1));
-    this.endDateString = this.dateFormatter.print(tomorrow);
   }
 
   public void run() {
@@ -95,18 +92,23 @@ public class DayWorker implements Runnable {
           "      \"filter\":{" + //
           "        \"range\":{" + //
           "          \"request_at\":{" + //
-          "            \"gte\":\"" + this.startDateString + "\"," + //
-          "            \"lt\":\"" + this.endDateString + "\"" + //
+          "            \"gte\":" + this.dayStartTime.getMillis() + "," + //
+          "            \"lt\":" + this.dayEndTime.getMillis() + //
           "          }" + //
           "        }" + //
           "      }" + //
           "    }" + //
           "  }" + //
           "}";
-      String indexName = "api-umbrella-logs-" + ISODateTimeFormat.yearMonth().print(this.date);
-      Search search =
-          new Search.Builder(query).addIndex(indexName).setParameter(Parameters.SIZE, App.PAGE_SIZE)
-              .setParameter(Parameters.SCROLL, "3m").build();
+      // Query the indexes that cover this day (this may involve multiple indexes on month
+      // boundaries, if we're converting into a timezone, since the indexes are UTC-based).
+      String startTimeIndex = "api-umbrella-logs-"
+          + ISODateTimeFormat.yearMonth().withZone(DateTimeZone.UTC).print(dayStartTime);
+      String endTimeIndex = "api-umbrella-logs-"
+          + ISODateTimeFormat.yearMonth().withZone(DateTimeZone.UTC).print(dayEndTime);
+      Search search = new Search.Builder(query).ignoreUnavailable(true).addIndex(startTimeIndex)
+          .addIndex(endTimeIndex).setParameter(Parameters.SIZE, App.PAGE_SIZE)
+          .setParameter(Parameters.SCROLL, "3m").build();
 
       JestResult result = client.execute(search);
       if (!result.isSucceeded()) {
@@ -189,12 +191,13 @@ public class DayWorker implements Runnable {
 
   private Writer getOrcWriter() throws IOException {
     if (this.orcWriter == null) {
+      String date = dateFormatter.print(dayStartTime);
       // Create a new file in /dir/YYYY/MM/WW/YYYY-MM-DD.par
       Path path = new Path(
-          App.HDFS_URI + Paths.get(App.DIR, "request_at_tz_year=" + this.date.toString("YYYY"),
-              "request_at_tz_month=" + this.date.getMonthOfYear(),
-              "request_at_tz_week=" + this.date.getWeekOfWeekyear(),
-              "request_at_tz_date=" + this.startDateString, this.startDateString + ".orc"));
+          App.HDFS_URI + Paths.get(App.DIR, "request_at_tz_year=" + dayStartTime.toString("YYYY"),
+              "request_at_tz_month=" + dayStartTime.getMonthOfYear(),
+              "request_at_tz_week=" + dayStartTime.getWeekOfWeekyear(),
+              "request_at_tz_date=" + date, date + ".orc"));
       this.orcWriter = OrcFile.createWriter(path, getOrcWriterOptions());
     }
 
@@ -215,8 +218,8 @@ public class DayWorker implements Runnable {
     NumberFormat numberFormatter = NumberFormat.getNumberInstance(Locale.US);
     DateTime firstRequestAt = this.parseTimestamp(
         hits.get(0).getAsJsonObject().get("_source").getAsJsonObject().get("request_at"));
-    logger.info(String.format("Processing %s to %s | %10s / %10s | %12s | %s", this.startDateString,
-        this.endDateString, numberFormatter.format(this.totalProcessedHits),
+    logger.info(String.format("Processing %s to %s | %10s / %10s | %12s | %s", this.dayStartTime,
+        this.dayEndTime, numberFormatter.format(this.totalProcessedHits),
         numberFormatter.format(this.totalHits), numberFormatter.format(globalHits),
         firstRequestAt));
 

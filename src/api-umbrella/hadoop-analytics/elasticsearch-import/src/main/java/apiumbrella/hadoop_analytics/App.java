@@ -30,8 +30,7 @@ import io.searchbox.indices.aliases.GetAliases;
 public class App {
   protected static final String HDFS_URI =
       System.getProperty("apiumbrella.hdfs_uri", "hdfs://127.0.0.1:8020");
-  protected static String DIR =
-      System.getProperty("apiumbrella.dir", "/apps/api-umbrella/logs");
+  protected static String DIR = System.getProperty("apiumbrella.dir", "/apps/api-umbrella/logs");
   protected static String ELASTICSEARCH_URL =
       System.getProperty("apiumbrella.elasticsearch_url", "http://localhost:9200");
   protected static int PAGE_SIZE =
@@ -94,7 +93,7 @@ public class App {
 
   private DateTime getStartDate() {
     if (START_DATE != null) {
-      DateTimeFormatter dateParser = ISODateTimeFormat.dateParser();
+      DateTimeFormatter dateParser = ISODateTimeFormat.dateParser().withZone(TIMEZONE);
       return dateParser.parseDateTime(START_DATE);
     }
 
@@ -115,8 +114,9 @@ public class App {
         Pattern pattern = Pattern.compile("^api-umbrella.*-([0-9]{4})-([0-9]{2})$");
         Matcher matches = pattern.matcher(entry.getKey());
         if (matches.find()) {
-          DateTime indexDate = new DateTime(Integer.parseInt(matches.group(1)),
-              Integer.parseInt(matches.group(2)), 1, 0, 0, 0, DateTimeZone.UTC);
+          DateTime indexDate =
+              new DateTime(Integer.parseInt(matches.group(1)), Integer.parseInt(matches.group(2)),
+                  1, 0, 0, 0, DateTimeZone.UTC).withZone(TIMEZONE).withTime(0, 0, 0, 0);
           if (first == null || indexDate.isBefore(first)) {
             first = indexDate;
           }
@@ -132,7 +132,7 @@ public class App {
 
   private DateTime getEndDate() {
     if (END_DATE != null) {
-      DateTimeFormatter dateParser = ISODateTimeFormat.dateParser();
+      DateTimeFormatter dateParser = ISODateTimeFormat.dateParser().withZone(TIMEZONE);
       return dateParser.parseDateTime(END_DATE);
     }
 
