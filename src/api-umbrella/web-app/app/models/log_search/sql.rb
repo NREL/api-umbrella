@@ -30,15 +30,15 @@ class LogSearch::Sql < LogSearch::Base
     when "minute"
       raise "TODO"
     when "hour"
-      @interval_field = "CAST(request_at_date AS CHAR(10)) || '-' || CAST(request_at_hour AS CHAR(2))"
+      @interval_field = "CAST(request_at_tz_date AS CHAR(10)) || '-' || CAST(request_at_tz_hour AS CHAR(2))"
       @interval_field_format = "%Y-%m-%d-%H"
     when "day"
-      @interval_field = "request_at_date"
+      @interval_field = "request_at_tz_date"
       @interval_field_format = "%Y-%m-%d"
     when "week"
       raise "TODO"
     when "month"
-      @interval_field = "CAST(request_at_year AS CHAR(4)) || '-' || CAST(request_at_month AS CHAR(2))"
+      @interval_field = "CAST(request_at_tz_year AS CHAR(4)) || '-' || CAST(request_at_tz_month AS CHAR(2))"
       @interval_field_format = "%Y-%m"
     end
 
@@ -306,7 +306,7 @@ class LogSearch::Sql < LogSearch::Base
   end
 
   def filter_by_date_range!
-    @query[:where] << @sequel.literal(Sequel.lit("request_at_date >= CAST(:start_time_date AS DATE) AND request_at_date <= CAST(:end_time_date AS DATE)", {
+    @query[:where] << @sequel.literal(Sequel.lit("request_at_tz_date >= CAST(:start_time_date AS DATE) AND request_at_tz_date <= CAST(:end_time_date AS DATE)", {
       :start_time_date => @start_time.strftime("%Y-%m-%d"),
       :end_time_date => @end_time.strftime("%Y-%m-%d"),
     }))
