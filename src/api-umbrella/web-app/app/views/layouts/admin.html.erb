@@ -27,7 +27,6 @@
         <div class="container-fluid">
           <span class="brand">API Umbrella</span>
           <%= tabs_tag(:builder => BootstrapNavbarTabBuilder, :link_current => true, :open_tabs => { :class => "nav" }) do |tab| %>
-            <%= tab.home t("admin.nav.dashboard"), admin_path, :class => "nav-home" %>
             <% if(current_admin.can?("analytics")) %>
               <%= tab.analytics(%(#{t("admin.nav.analytics")} <b class="caret"></b>).html_safe, "#", :class => "dropdown nav-analytics", :link_html => { :class => "dropdown-toggle", "data-toggle" => "dropdown" }) do %>
                 <ul class="dropdown-menu">
