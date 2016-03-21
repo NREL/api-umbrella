@@ -10,275 +10,24 @@ hive> exit;
 $ sudo -u hive hadoop fs -ls -R /apps/api-umbrella/logs | grep "\.orc$" | grep -o "[^ ]*$" | sort -V | sed -e "s/.*request_at_tz_year=\([0-9]\+\).*request_at_tz_month=\([0-9]\+\).*request_at_tz_week=\([0-9]\+\).*request_at_tz_date=\([0-9\-]\+\).*/ALTER TABLE api_umbrella.logs ADD IF NOT EXISTS PARTITION(request_at_tz_year=\1, request_at_tz_month=\2, request_at_tz_week=\3, request_at_tz_date='\4');/" > /tmp/api_umbrella_load_partitions.sql
 $ sudo -u hive hive -f /tmp/api_umbrella_load_partitions.sql && rm /tmp/api_umbrella_load_partitions.sql
 
-$ curl 'http://localhost:7070/kylin/api/tables/api_umbrella.logs/api_umbrella' -H 'Content-Type: application/json;charset=UTF-8' --data-binary '{}'
-$ echo '{"cubeDescData":"{
-  \"name\": \"logs_cube\",
+$ curl 'http://ADMIN:KYLIN@localhost:7070/kylin/api/projects' -H 'Content-Type: application/json;charset=UTF-8' --data-binary '{"name":"api_umbrella","description":""}'
+$ curl 'http://ADMIN:KYLIN@localhost:7070/kylin/api/tables/api_umbrella.logs/api_umbrella' -H 'Content-Type: application/json;charset=UTF-8' --data-binary '{}'
+$ echo '{"modelDescData":"{
+  \"name\": \"logs_model\",
   \"description\": \"\",
+  \"fact_table\": \"API_UMBRELLA.LOGS\",
+  \"lookups\": [],
+  \"filter_condition\": \"\",
+  \"capacity\": \"MEDIUM\",
   \"dimensions\": [
     {
-      \"name\": \"REQUEST_AT_HIERARCHY\",
       \"table\": \"API_UMBRELLA.LOGS\",
-      \"hierarchy\": true,
-      \"derived\": null,
-      \"column\": [
-        \"REQUEST_AT_YEAR\",
-        \"REQUEST_AT_MONTH\",
-        \"REQUEST_AT_DATE\",
-        \"REQUEST_AT_HOUR\"
-      ],
-      \"id\": 1
-    },
-    {
-      \"name\": \"REQUEST_URL_HIERARCHY\",
-      \"table\": \"API_UMBRELLA.LOGS\",
-      \"hierarchy\": true,
-      \"derived\": null,
-      \"column\": [
-        \"REQUEST_URL_HOST\",
-        \"REQUEST_URL_PATH_LEVEL1\",
-        \"REQUEST_URL_PATH_LEVEL2\",
-        \"REQUEST_URL_PATH_LEVEL3\",
-        \"REQUEST_URL_PATH_LEVEL4\",
-        \"REQUEST_URL_PATH_LEVEL5\",
-        \"REQUEST_URL_PATH_LEVEL6\"
-      ],
-      \"id\": 2
-    },
-    {
-      \"name\": \"USER_ID\",
-      \"table\": \"API_UMBRELLA.LOGS\",
-      \"hierarchy\": false,
-      \"derived\": null,
-      \"column\": [
-        \"USER_ID\"
-      ],
-      \"id\": 3
-    },
-    {
-      \"name\": \"REQUEST_IP\",
-      \"table\": \"API_UMBRELLA.LOGS\",
-      \"hierarchy\": false,
-      \"derived\": null,
-      \"column\": [
-        \"REQUEST_IP\"
-      ],
-      \"id\": 4
-    },
-    {
-      \"name\": \"RESPONSE_STATUS_HIERARCHY\",
-      \"table\": \"API_UMBRELLA.LOGS\",
-      \"hierarchy\": true,
-      \"derived\": null,
-      \"column\": [
-        \"RESPONSE_STATUS\",
-        \"DENIED_REASON\"
-      ],
-      \"id\": 5
-    },
-    {
-      \"name\": \"REQUEST_METHOD\",
-      \"table\": \"API_UMBRELLA.LOGS\",
-      \"hierarchy\": false,
-      \"derived\": null,
-      \"column\": [
-        \"REQUEST_METHOD\"
-      ],
-      \"id\": 6
-    },
-    {
-      \"name\": \"REQUEST_IP_GEO_HIERARCHY\",
-      \"table\": \"API_UMBRELLA.LOGS\",
-      \"hierarchy\": true,
-      \"derived\": null,
-      \"column\": [
-        \"REQUEST_IP_COUNTRY\",
-        \"REQUEST_IP_REGION\",
-        \"REQUEST_IP_CITY\"
-      ],
-      \"id\": 7
-    }
-  ],
-  \"measures\": [
-    {
-      \"id\": 1,
-      \"name\": \"_COUNT_\",
-      \"function\": {
-        \"expression\": \"COUNT\",
-        \"returntype\": \"bigint\",
-        \"parameter\": {
-          \"type\": \"constant\",
-          \"value\": \"1\"
-        }
-      }
-    },
-    {
-      \"id\": 2,
-      \"name\": \"COUNT_DISTINCT_USER_ID\",
-      \"function\": {
-        \"expression\": \"COUNT_DISTINCT\",
-        \"returntype\": \"hllc12\",
-        \"parameter\": {
-          \"type\": \"column\",
-          \"value\": \"USER_ID\"
-        }
-      }
-    },
-    {
-      \"id\": 3,
-      \"name\": \"COUNT_DISTINCT_REQUEST_IP\",
-      \"function\": {
-        \"expression\": \"COUNT_DISTINCT\",
-        \"returntype\": \"hllc12\",
-        \"parameter\": {
-          \"type\": \"column\",
-          \"value\": \"REQUEST_IP\"
-        }
-      }
-    },
-    {
-      \"id\": 4,
-      \"name\": \"SUM_TIMER_RESPONSE\",
-      \"function\": {
-        \"expression\": \"SUM\",
-        \"returntype\": \"decimal\",
-        \"parameter\": {
-          \"type\": \"column\",
-          \"value\": \"TIMER_RESPONSE\"
-        }
-      }
-    },
-    {
-      \"id\": 5,
-      \"name\": \"MAX_REQUEST_AT\",
-      \"function\": {
-        \"expression\": \"MAX\",
-        \"returntype\": \"bigint\",
-        \"parameter\": {
-          \"type\": \"column\",
-          \"value\": \"REQUEST_AT\"
-        }
-      }
-    }
-  ],
-  \"rowkey\": {
-    \"rowkey_columns\": [
-      {
-        \"column\": \"REQUEST_AT_YEAR\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": true
-      },
-      {
-        \"column\": \"REQUEST_AT_MONTH\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": true
-      },
-      {
-        \"column\": \"REQUEST_AT_DATE\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": true
-      },
-      {
-        \"column\": \"REQUEST_AT_HOUR\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_URL_HOST\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_URL_PATH_LEVEL1\",
-        \"length\": \"40\",
-        \"dictionary\": \"false\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_URL_PATH_LEVEL2\",
-        \"length\": \"40\",
-        \"dictionary\": \"false\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_URL_PATH_LEVEL3\",
-        \"length\": \"40\",
-        \"dictionary\": \"false\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_URL_PATH_LEVEL4\",
-        \"length\": \"40\",
-        \"dictionary\": \"false\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_URL_PATH_LEVEL5\",
-        \"length\": \"40\",
-        \"dictionary\": \"false\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_URL_PATH_LEVEL6\",
-        \"length\": \"40\",
-        \"dictionary\": \"false\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"USER_ID\",
-        \"length\": \"36\",
-        \"dictionary\": \"false\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_IP\",
-        \"length\": \"45\",
-        \"dictionary\": \"false\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"RESPONSE_STATUS\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"DENIED_REASON\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_METHOD\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_IP_COUNTRY\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_IP_REGION\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": false
-      },
-      {
-        \"column\": \"REQUEST_IP_CITY\",
-        \"length\": 0,
-        \"dictionary\": \"true\",
-        \"mandatory\": false
-      }
-    ],
-    \"aggregation_groups\": [
-      [
+      \"columns\": [
+        \"REQUEST_AT_TZ_YEAR\",
+        \"REQUEST_AT_TZ_MONTH\",
+        \"REQUEST_AT_TZ_WEEK\",
+        \"REQUEST_AT_TZ_DATE\",
+        \"REQUEST_AT_TZ_HOUR\",
         \"REQUEST_URL_HOST\",
         \"REQUEST_URL_PATH_LEVEL1\",
         \"REQUEST_URL_PATH_LEVEL2\",
@@ -289,23 +38,306 @@ $ echo '{"cubeDescData":"{
         \"USER_ID\",
         \"REQUEST_IP\",
         \"RESPONSE_STATUS\",
-        \"DENIED_REASON\"
-      ],
-      [
-        \"REQUEST_AT_HOUR\"
-      ],
-      [
-        \"REQUEST_METHOD\"
-      ],
-      [
+        \"DENIED_REASON\",
+        \"REQUEST_METHOD\",
         \"REQUEST_IP_COUNTRY\",
         \"REQUEST_IP_REGION\",
         \"REQUEST_IP_CITY\"
       ]
+    }
+  ],
+  \"metrics\": [
+    \"USER_ID\",
+    \"REQUEST_IP\",
+    \"TIMER_RESPONSE\",
+    \"REQUEST_AT\"
+  ],
+  \"partition_desc\": {
+    \"partition_date_column\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_DATE\",
+    \"partition_date_format\": \"yyyy-MM-dd\",
+    \"partition_date_start\": null,
+    \"partition_type\": \"APPEND\"
+  },
+  \"last_modified\": 0
+}","project":"api_umbrella"}' | perl -p -e 's/\n/\\n/' | curl -v -XPOST -H "Content-Type: application/json;charset=UTF-8" --data-binary @- "http://ADMIN:KYLIN@localhost:7070/kylin/api/models"
+
+$ echo '{"cubeDescData":"{
+  \"name\": \"logs_cube\",
+  \"model_name\": \"logs_model\",
+  \"description\": \"\",
+  \"dimensions\": [
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_HOUR\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_AT_TZ_HOUR\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.USER_ID\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"USER_ID\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.DENIED_REASON\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"DENIED_REASON\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_METHOD\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_METHOD\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_URL_HOST\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_URL_HOST\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_URL_PATH_LEVEL1\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_URL_PATH_LEVEL1\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_URL_PATH_LEVEL2\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_URL_PATH_LEVEL2\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_URL_PATH_LEVEL3\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_URL_PATH_LEVEL3\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_URL_PATH_LEVEL4\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_URL_PATH_LEVEL4\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_URL_PATH_LEVEL5\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_URL_PATH_LEVEL5\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_URL_PATH_LEVEL6\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_URL_PATH_LEVEL6\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_IP\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_IP\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_IP_COUNTRY\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_IP_COUNTRY\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_IP_REGION\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_IP_REGION\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_IP_CITY\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_IP_CITY\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.RESPONSE_STATUS\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"RESPONSE_STATUS\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_YEAR\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_AT_TZ_YEAR\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_MONTH\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_AT_TZ_MONTH\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_WEEK\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_AT_TZ_WEEK\",
+      \"derived\": null
+    },
+    {
+      \"name\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_DATE\",
+      \"table\": \"API_UMBRELLA.LOGS\",
+      \"column\": \"REQUEST_AT_TZ_DATE\",
+      \"derived\": null
+    }
+  ],
+  \"measures\": [
+    {
+      \"name\": \"_COUNT_\",
+      \"function\": {
+        \"expression\": \"COUNT\",
+        \"parameter\": {
+          \"type\": \"constant\",
+          \"value\": \"1\",
+          \"next_parameter\": null
+        },
+        \"returntype\": \"bigint\"
+      },
+      \"dependent_measure_ref\": null
+    },
+    {
+      \"name\": \"COUNT_DISTINCT_USER_ID\",
+      \"function\": {
+        \"expression\": \"COUNT_DISTINCT\",
+        \"parameter\": {
+          \"type\": \"column\",
+          \"value\": \"USER_ID\",
+          \"next_parameter\": null
+        },
+        \"returntype\": \"hllc12\"
+      },
+      \"dependent_measure_ref\": null
+    },
+    {
+      \"name\": \"COUNT_DISTINCT_REQUEST_IP\",
+      \"function\": {
+        \"expression\": \"COUNT_DISTINCT\",
+        \"parameter\": {
+          \"type\": \"column\",
+          \"value\": \"REQUEST_IP\",
+          \"next_parameter\": null
+        },
+        \"returntype\": \"hllc12\"
+      },
+      \"dependent_measure_ref\": null
+    },
+    {
+      \"name\": \"SUM_TIMER_RESPONSE\",
+      \"function\": {
+        \"expression\": \"SUM\",
+        \"parameter\": {
+          \"type\": \"column\",
+          \"value\": \"TIMER_RESPONSE\",
+          \"next_parameter\": null
+        },
+        \"returntype\": \"decimal\"
+      },
+      \"dependent_measure_ref\": null
+    },
+    {
+      \"name\": \"MAX_REQUEST_AT\",
+      \"function\": {
+        \"expression\": \"MAX\",
+        \"parameter\": {
+          \"type\": \"column\",
+          \"value\": \"REQUEST_AT\",
+          \"next_parameter\": null
+        },
+        \"returntype\": \"bigint\"
+      },
+      \"dependent_measure_ref\": null
+    }
+  ],
+  \"rowkey\": {
+    \"rowkey_columns\": [
+      {
+        \"column\": \"REQUEST_AT_TZ_YEAR\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_AT_TZ_MONTH\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_AT_TZ_WEEK\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_AT_TZ_DATE\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_AT_TZ_HOUR\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_URL_HOST\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_URL_PATH_LEVEL1\",
+        \"encoding\": \"fixed_length:40\"
+      },
+      {
+        \"column\": \"REQUEST_URL_PATH_LEVEL2\",
+        \"encoding\": \"fixed_length:40\"
+      },
+      {
+        \"column\": \"REQUEST_URL_PATH_LEVEL3\",
+        \"encoding\": \"fixed_length:40\"
+      },
+      {
+        \"column\": \"REQUEST_URL_PATH_LEVEL4\",
+        \"encoding\": \"fixed_length:40\"
+      },
+      {
+        \"column\": \"REQUEST_URL_PATH_LEVEL5\",
+        \"encoding\": \"fixed_length:40\"
+      },
+      {
+        \"column\": \"REQUEST_URL_PATH_LEVEL6\",
+        \"encoding\": \"fixed_length:40\"
+      },
+      {
+        \"column\": \"USER_ID\",
+        \"encoding\": \"fixed_length:36\"
+      },
+      {
+        \"column\": \"REQUEST_IP\",
+        \"encoding\": \"fixed_length:45\"
+      },
+      {
+        \"column\": \"RESPONSE_STATUS\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"DENIED_REASON\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_METHOD\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_IP_COUNTRY\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_IP_REGION\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_IP_CITY\",
+        \"encoding\": \"dict\"
+      }
     ]
   },
-  \"notify_list\": [],
-  \"capacity\": \"\",
   \"hbase_mapping\": {
     \"column_family\": [
       {
@@ -335,25 +367,77 @@ $ echo '{"cubeDescData":"{
       }
     ]
   },
-  \"retention_range\": \"0\",
-  \"project\": \"api_umbrella\",
+  \"aggregation_groups\": [
+    {
+      \"includes\": [
+        \"REQUEST_AT_TZ_YEAR\",
+        \"REQUEST_AT_TZ_MONTH\",
+        \"REQUEST_AT_TZ_WEEK\",
+        \"REQUEST_AT_TZ_DATE\",
+        \"REQUEST_AT_TZ_HOUR\",
+        \"REQUEST_URL_HOST\",
+        \"REQUEST_URL_PATH_LEVEL1\",
+        \"REQUEST_URL_PATH_LEVEL2\",
+        \"REQUEST_URL_PATH_LEVEL3\",
+        \"REQUEST_URL_PATH_LEVEL4\",
+        \"REQUEST_URL_PATH_LEVEL5\",
+        \"REQUEST_URL_PATH_LEVEL6\",
+        \"USER_ID\",
+        \"REQUEST_IP\",
+        \"RESPONSE_STATUS\",
+        \"DENIED_REASON\",
+        \"REQUEST_METHOD\",
+        \"REQUEST_IP_COUNTRY\",
+        \"REQUEST_IP_REGION\",
+        \"REQUEST_IP_CITY\"
+      ],
+      \"select_rule\": {
+        \"hierarchy_dims\": [
+          [
+            \"REQUEST_URL_HOST\",
+            \"REQUEST_URL_PATH_LEVEL1\",
+            \"REQUEST_URL_PATH_LEVEL2\",
+            \"REQUEST_URL_PATH_LEVEL3\",
+            \"REQUEST_URL_PATH_LEVEL4\",
+            \"REQUEST_URL_PATH_LEVEL5\",
+            \"REQUEST_URL_PATH_LEVEL6\"
+          ],
+          [
+            \"REQUEST_IP_COUNTRY\",
+            \"REQUEST_IP_REGION\",
+            \"REQUEST_IP_CITY\"
+          ],
+          [
+            \"RESPONSE_STATUS\",
+            \"DENIED_REASON\"
+          ]
+        ],
+        \"mandatory_dims\": [
+          \"REQUEST_AT_TZ_YEAR\",
+          \"REQUEST_AT_TZ_MONTH\",
+          \"REQUEST_AT_TZ_WEEK\",
+          \"REQUEST_AT_TZ_DATE\"
+        ],
+        \"joint_dims\": [
+          [
+            \"REQUEST_AT_TZ_HOUR\",
+            \"USER_ID\",
+            \"REQUEST_IP\",
+            \"REQUEST_METHOD\"
+          ]
+        ]
+      }
+    }
+  ],
+  \"notify_list\": [],
+  \"status_need_notify\": [],
+  \"partition_date_start\": 1281916800000,
   \"auto_merge_time_ranges\": [
     604800000,
     2419200000
   ],
-  \"model_name\": \"logs_cube\"
-}","modelDescData":"{
-  \"name\": \"logs_cube\",
-  \"fact_table\": \"API_UMBRELLA.LOGS\",
-  \"lookups\": [],
-  \"filter_condition\": \"\",
-  \"capacity\": \"MEDIUM\",
-  \"partition_desc\": {
-    \"partition_date_column\": \"API_UMBRELLA.LOGS.REQUEST_AT_DATE\",
-    \"partition_date_start\": 1281916800000,
-    \"partition_type\": \"APPEND\",
-    \"partition_date_format\": \"yyyy-MM-dd\"
-  },
-  \"last_modified\": 0
-}","project":"api_umbrella"}' | perl -p -e 's/\n/\\n/' | curl -v -XPOST -H "Content-Type: application/json;charset=UTF-8" --data-binary @- "http://ADMIN:KYLIN@localhost:7070/kylin/api/cubes" 
+  \"retention_range\": 0,
+  \"engine_type\": 2,
+  \"storage_type\": 2
+}","cubeName":"logs_cube","project":"api_umbrella","streamingCube":false}' | perl -p -e 's/\n/\\n/' | curl -v -XPOST -H "Content-Type: application/json;charset=UTF-8" --data-binary @- "http://ADMIN:KYLIN@localhost:7070/kylin/api/cubes"
 ```
