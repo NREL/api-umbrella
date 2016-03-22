@@ -1,0 +1,10 @@
+coordinator=true
+node-scheduler.include-coordinator=true
+http-server.http.port=8081
+query.max-memory=2GB
+query.max-memory-per-node=1GB
+discovery-server.enabled=true
+discovery.uri=http://example.net:8081
+
+# Limit how long individual queries can run.
+query.max-run-time=60s
