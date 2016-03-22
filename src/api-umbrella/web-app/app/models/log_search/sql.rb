@@ -491,7 +491,7 @@ class LogSearch::Sql < LogSearch::Base
         end
 
         hits = row[column_indexes["hits"]].to_i
-        time = Time.strptime(row[column_indexes["interval_field"]], @interval_field_format)
+        time = strptime_in_zone(row[column_indexes["interval_field"]], @interval_field_format)
 
         buckets[path_index]["doc_count"] += hits
         buckets[path_index]["drilldown_over_time"]["time_buckets"][time.to_i] = {
@@ -516,7 +516,7 @@ class LogSearch::Sql < LogSearch::Base
       time_buckets = {}
       column_indexes = result.column_indexes(:hits_over_time)
       result.raw_result[:hits_over_time]["results"].each do |row|
-        time = Time.strptime(row[column_indexes["interval_field"]], @interval_field_format)
+        time = strptime_in_zone(row[column_indexes["interval_field"]], @interval_field_format)
         time_buckets[time.to_i] = {
           "key" => time.to_i * 1000,
           "key_as_string" => time.utc.iso8601,
@@ -543,7 +543,7 @@ class LogSearch::Sql < LogSearch::Base
       time_buckets = {}
       column_indexes = result.column_indexes(:hits_over_time)
       result.raw_result[:hits_over_time]["results"].each do |row|
-        time = Time.strptime(row[column_indexes["interval_field"]], @interval_field_format)
+        time = strptime_in_zone(row[column_indexes["interval_field"]], @interval_field_format)
         time_buckets[time.to_i] = {
           "key" => time.to_i * 1000,
           "key_as_string" => time.utc.iso8601,
@@ -839,5 +839,16 @@ class LogSearch::Sql < LogSearch::Base
       key << row[column_indexes[field]]
     end
     File.join(key)
+  end
+
+  # Perform strptime in the current timezone. Based on time-zone aware strptime
+  # that's present in Rails 5 (but not Rails 3):
+  # https://github.com/rails/rails/pull/19618
+  #
+  # If the current timezone is US Eastern, this allows for parsing something
+  # like "2016-03-21" into "2016-03-21 04:00:00 UTC"
+  def strptime_in_zone(string, format)
+    t = Time.strptime(string, format)
+    Time.zone.local(t.year, t.month, t.mday, t.hour, t.min, t.sec, t.usec)
   end
 end
