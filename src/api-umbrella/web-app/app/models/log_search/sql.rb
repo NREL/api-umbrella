@@ -36,7 +36,8 @@ class LogSearch::Sql < LogSearch::Base
       @interval_field = "request_at_tz_date"
       @interval_field_format = "%Y-%m-%d"
     when "week"
-      raise "TODO"
+      @interval_field = "CAST(request_at_tz_year AS CHAR(4)) || '-' || CAST(request_at_tz_week AS CHAR(2))"
+      @interval_field_format = "%G-%V"
     when "month"
       @interval_field = "CAST(request_at_tz_year AS CHAR(4)) || '-' || CAST(request_at_tz_month AS CHAR(2))"
       @interval_field_format = "%Y-%m"
@@ -848,7 +849,7 @@ class LogSearch::Sql < LogSearch::Base
   # If the current timezone is US Eastern, this allows for parsing something
   # like "2016-03-21" into "2016-03-21 04:00:00 UTC"
   def strptime_in_zone(string, format)
-    t = Time.strptime(string, format)
-    Time.zone.local(t.year, t.month, t.mday, t.hour, t.min, t.sec, t.usec)
+    t = DateTime.strptime(string, format)
+    Time.zone.local(t.year, t.month, t.mday, t.hour, t.min, t.sec)
   end
 end
