@@ -94,7 +94,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     summary[:users_by_month].sort_by! { |data| [data[:year], data[:month]] }
 
     # Fetch the hits by month.
-    search = LogSearch.new({
+    search = LogSearch.factory({
       :start_time => start_time,
       :end_time => Time.now,
       :interval => "month",

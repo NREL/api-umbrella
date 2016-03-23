@@ -127,11 +127,72 @@ class LogSearch::Sql < LogSearch::Base
 
   def search!(query_string)
     if(query_string.present?)
-      @query[:query][:filtered][:query] = {
-        :query_string => {
-          :query => query_string
-        },
+      parser = LuceneQueryParser::Parser.new
+
+      # LuceneQueryParser doesn't support the "!" alias for NOT. This is a
+      # quick hack, but we should address in the gem for better parsing
+      # accuracy (otherwise, this could replace ! inside strings).
+      query_string.gsub!("!", " NOT ")
+
+      data = parser.parse(query_string)
+
+      query = {
+        "condition" => "AND",
+        "rules" => [],
       }
+
+      data.each do |expression|
+        rule = {
+          "id" => expression[:field].to_s,
+          "field" => expression[:field].to_s,
+          "operator" => "equal",
+          "value" => expression[:term].to_s,
+        }
+
+        if(expression[:term])
+          rule["value"] = expression[:term].to_s
+          if(rule["value"].end_with?("*"))
+            rule["value"].gsub!(/\*$/, "")
+            rule["operator"] = "begins_with"
+          elsif(rule["value"].start_with?("*"))
+            rule["value"].gsub!(/^\*/, "")
+            rule["operator"] = "ends_with"
+          else
+            rule["operator"] = "equal"
+          end
+
+          if(expression[:op].to_s == "NOT")
+            rule["operator"] = "not_#{rule["operator"]}"
+          end
+
+          query["rules"] << rule
+        elsif(expression[:inclusive_range])
+          query["rules"] << rule.merge({
+            "operator" => "greater_or_equal",
+            "value" => expression[:inclusive_range][:from].to_s,
+          })
+
+          query["rules"] << rule.merge({
+            "operator" => "less_or_equal",
+            "value" => expression[:inclusive_range][:to].to_s,
+          })
+        elsif(expression[:exclusive_range])
+          query["rules"] << rule.merge({
+            "operator" => "greater",
+            "value" => expression[:exclusive_range][:from].to_s,
+          })
+
+          query["rules"] << rule.merge({
+            "operator" => "less",
+            "value" => expression[:exclusive_range][:to].to_s,
+          })
+        end
+      end
+
+      filter = parse_query_builder(query)
+      if(filter.present?)
+        @query[:where] << filter
+      end
     end
   end
 
@@ -193,6 +254,12 @@ class LogSearch::Sql < LogSearch::Base
         when "not_begins_with"
           operator = "NOT LIKE"
           value = "#{value}%"
+        when "ends_with"
+          operator = "LIKE"
+          value = "%#{value}"
+        when "not_ends_with"
+          operator = "NOT LIKE"
+          value = "%#{value}"
         when "contains"
           operator = "LIKE"
           value = "%#{value}%"

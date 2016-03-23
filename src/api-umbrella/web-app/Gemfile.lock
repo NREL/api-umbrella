@@ -51,6 +51,14 @@ GIT
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
 
+GIT
+  remote: https://github.com/zerowidth/lucene_query_parser.git
+  revision: ef723c40103203a55f85b3ec02743b17d4d5e773
+  specs:
+    lucene_query_parser (0.0.2)
+      parslet
+      rainbow
+
 GEM
   remote: https://rubygems.org/
   remote: https://rails-assets.org/
@@ -98,6 +106,7 @@ GEM
       ember-source (>= 1.0, < 2)
       execjs (>= 1.2, < 3)
     bcrypt (3.1.10)
+    blankslate (3.1.3)
     bootstrap-sass (2.3.2.2)
       sass (~> 3.2)
     builder (3.0.4)
@@ -316,6 +325,8 @@ GEM
     orm_adapter (0.5.0)
     parser (2.2.0.3)
       ast (>= 1.1, < 3.0)
+    parslet (1.7.1)
+      blankslate (>= 2.0, <= 4.0)
     poltergeist (1.6.0)
       capybara (~> 2.1)
       cliver (~> 0.3.1)
@@ -558,6 +569,7 @@ DEPENDENCIES
   kaminari (~> 0.16.1)
   kaminari-bootstrap (~> 0.1.3)
   kramdown (~> 1.6.0)
+  lucene_query_parser!
   mail (~> 2.5.4)!
   mongoid (~> 3.1.6)
   mongoid-embedded-errors (~> 2.0.1)
@@ -633,4 +645,4 @@ DEPENDENCIES
   webmock (~> 1.21.0)
 
 BUNDLED WITH
-   1.10.6
+   1.11.2
