@@ -47,6 +47,11 @@ class LogSearch::Kylin < LogSearch::Sql
     }
     while(response.status == 200)
       query_result = MultiJson.load(response.body)
+      if(query_result["stats"] && query_result["stats"]["state"] == "FAILED")
+        Rails.logger.error(response.body)
+        raise "Presto Error"
+      end
+
       if(results["columnMetas"].empty? && query_result["columns"])
         results["columnMetas"] = query_result["columns"].map do |column|
           {
