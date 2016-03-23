@@ -297,14 +297,8 @@ internal_apis:
     sub_settings:
       - http_method: post
         regex: "^/api-umbrella/v1/users"
-        settings:
-          required_roles:
-            - api-umbrella-key-creator
       - http_method: post
         regex: "^/api-umbrella/v1/contact"
-        settings:
-          required_roles:
-            - api-umbrella-contact-form
 internal_website_backends:
   - _id: api-umbrella-website-backend
     frontend_host: "{{router.web_app_host}}"

@@ -83,6 +83,10 @@ CONFIG proxy.config.http.response_via_str STRING ApacheTrafficServer
 # Don't override the "Server" response header with the TrafficServer signature.
 CONFIG proxy.config.http.response_server_enabled INT 0
 
+# Retain the Host header we send to trafficserver for cache key purposes so
+# that each host gets cached separately.
+CONFIG proxy.config.url_remap.pristine_host_hdr INT 1
+
 # Additional custom configuration
 {{#trafficserver.embedded_server_config.records}}
 {{.}}

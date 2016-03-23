@@ -538,4 +538,92 @@ describe('web apis', function() {
       }.bind(this),
     ], done);
   });
+
+  describe('performs "api-umbrella-key-creator" role checks in the web app, not the proxy layer, so that the role logic can be conditional', function() {
+    beforeEach(function() {
+      this.userOptions = _.merge({}, this.options, {
+        json: {
+          user: {
+            first_name: 'John',
+            last_name: 'Doe',
+            email: 'john@example.com',
+            terms_and_conditions: true,
+          },
+        },
+      });
+    });
+
+    it('rejects requests from normal keys without the role', function(done) {
+      var options = _.merge({}, this.userOptions, {
+        headers: {
+          'X-Api-Key': this.apiKey,
+        },
+      });
+
+      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(401);
+        done();
+      });
+    });
+
+    it('allows requests from normal keys with the role', function(done) {
+      var options = _.merge({}, this.userOptions, {
+        headers: {
+          'X-Api-Key': this.keyCreatorApiKey,
+        },
+      });
+
+      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(201);
+        done();
+      });
+    });
+
+    it('rejects requests from admin accounts without an api key', function(done) {
+      var options = _.merge({}, this.userOptions, {
+        headers: {
+          'X-Admin-Auth-Token': this.adminToken,
+          'X-Api-Key': null,
+        },
+      });
+
+      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(403);
+        done();
+      });
+    });
+
+    it('allows requests from admin accounts without the role', function(done) {
+      var options = _.merge({}, this.userOptions, {
+        headers: {
+          'X-Admin-Auth-Token': this.adminToken,
+          'X-Api-Key': this.apiKey,
+        },
+      });
+
+      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(201);
+        done();
+      });
+    });
+
+    it('allows requests from admin accounts with the role', function(done) {
+      var options = _.merge({}, this.userOptions, {
+        headers: {
+          'X-Admin-Auth-Token': this.adminToken,
+          'X-Api-Key': this.apiKey,
+        },
+      });
+
+      request.post('http://localhost:9080/api-umbrella/v1/users', options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(201);
+        done();
+      });
+    });
+  });
 });
