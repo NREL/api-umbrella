@@ -28,7 +28,8 @@ class LogSearch::Sql < LogSearch::Base
 
     case(@interval)
     when "minute"
-      raise "TODO"
+      @interval_field = "request_at_tz_minute"
+      @interval_field_format = "%Y-%m-%d %H:%M:%S"
     when "hour"
       @interval_field = "request_at_tz_hour"
       @interval_field_format = "%Y-%m-%d %H:%M:%S"
