@@ -44,6 +44,9 @@ gem "mongoid-embedded-errors", "~> 2.0.1"
 # Data migrations
 gem "mongoid_rails_migrations", "~> 1.0.1"
 
+# Rails cache store using mongo.
+gem "mongoid-store", "~> 0.4.4"
+
 # Generate UUIDs
 gem "uuidtools", "~> 2.1.4"
 

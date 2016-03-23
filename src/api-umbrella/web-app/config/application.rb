@@ -148,8 +148,9 @@ module ApiUmbrella
       config.handlebars.templates_root = ["admin/templates", "templates"]
     end
 
-    # Use a file-based cache store
-    config.cache_store = :file_store, "#{Rails.root}/tmp/cache"
+    # Use a mongo-based cache store (this ensures the cache can be shared
+    # amongst multiple servers).
+    config.cache_store = :mongoid_store
 
     config.action_mailer.raise_delivery_errors = true
     config.action_mailer.default_url_options = {
