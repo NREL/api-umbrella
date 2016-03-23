@@ -1,0 +1,19 @@
+package: .
+import:
+- package: github.com/compose/mejson
+- package: github.com/emicklei/go-restful
+  version: ~1.2.0
+  subpackages:
+  - swagger
+- package: github.com/emicklei/mora
+  subpackages:
+  - api/documents
+  - api/response
+  - api/statistics
+  - session
+- package: github.com/magiconair/properties
+  version: ~1.6.0
+- package: gopkg.in/mgo.v2
+  version: r2016.02.04
+  subpackages:
+  - bson

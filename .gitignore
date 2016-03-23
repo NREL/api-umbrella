@@ -20,6 +20,16 @@
 # Ignore Circle CI items, so the GitHub pages publish task can work. 
 /.ruby-version
 
+# CMake
+/CMakeCache.txt
+/CMakeFiles
+/CMakeScripts
+/CPackConfig.cmake
+/CPackSourceConfig.cmake
+/Makefile
+/cmake_install.cmake
+/build/cmake
+
 /build/local
 /build/package/.bundle
 /build/package/dist
