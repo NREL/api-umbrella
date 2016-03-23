@@ -16,15 +16,15 @@
     },
     {
       "name": "request_at_tz_year",
-      "type": "int"
+      "type": "string"
     },
     {
       "name": "request_at_tz_month",
-      "type": "int"
+      "type": "string"
     },
     {
       "name": "request_at_tz_week",
-      "type": "int"
+      "type": "string"
     },
     {
       "name": "request_at_tz_date",
@@ -32,11 +32,11 @@
     },
     {
       "name": "request_at_tz_hour",
-      "type": "int"
+      "type": "string"
     },
     {
       "name": "request_at_tz_minute",
-      "type": "int"
+      "type": "string"
     },
     {
       "name": "user_id",

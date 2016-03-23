@@ -155,14 +155,25 @@ local function log_request()
   local utc_sec = data["request_at"]
   local tz_offset = timezone:find_current(utc_sec).gmtoff
   local tz_sec = utc_sec + tz_offset
-  local tz_time = os.date("!*t", tz_sec)
+  local tz_time = os.date("!%Y-%m-%d %H:%M:00", tz_sec)
+
+  -- Determine the first day in the ISO week (the most recent Monday).
+  local tz_week = luatz.gmtime(tz_sec)
+  if tz_week.wday == 1 then
+    tz_week.day = tz_week.day - 6
+    tz_week:normalize()
+  elseif tz_week.wday > 2 then
+    tz_week.day = tz_week.day - tz_week.wday + 2
+    tz_week:normalize()
+  end
+
   data["request_at_tz_offset"] = tz_offset * 1000
-  data["request_at_tz_year"] = tz_time["year"]
-  data["request_at_tz_month"] = tz_time["month"]
-  data["request_at_tz_week"] = tonumber(os.date("!%V", tz_sec))
-  data["request_at_tz_date"] = os.date("!%Y-%m-%d", tz_sec)
-  data["request_at_tz_hour"] = tz_time["hour"]
-  data["request_at_tz_minute"] = tz_time["min"]
+  data["request_at_tz_year"] = string.sub(tz_time, 1, 4) .. "-01-01" -- YYYY-01-01
+  data["request_at_tz_month"] = string.sub(tz_time, 1, 7) .. "-01" -- YYYY-MM-01
+  data["request_at_tz_week"] = tz_week:strftime("%Y-%m-%d") -- YYYY-MM-DD of first day in ISO week.
+  data["request_at_tz_date"] = string.sub(tz_time, 1, 10) -- YYYY-MM-DD
+  data["request_at_tz_hour"] = string.sub(tz_time, 1, 13) .. ":00:00" -- YYYY-MM-DD HH:00:00
+  data["request_at_tz_minute"] = tz_time -- YYYY-MM-DD HH:MM:00
 
   -- Check for log data set by the separate api backend proxy
   -- (log_api_backend_proxy.lua). This is used for timing information.

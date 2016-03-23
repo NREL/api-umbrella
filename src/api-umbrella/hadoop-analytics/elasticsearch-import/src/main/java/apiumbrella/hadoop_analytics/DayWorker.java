@@ -36,6 +36,7 @@ import org.apache.hadoop.io.Text;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
+import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
@@ -66,7 +67,8 @@ public class DayWorker implements Runnable {
   private static WriterOptions orcWriterOptions;
   private Writer orcWriter;
   DateTimeFormatter dateTimeParser = ISODateTimeFormat.dateTimeParser();
-  DateTimeFormatter dateTimeFormatter = ISODateTimeFormat.dateTime().withZone(App.TIMEZONE);
+  DateTimeFormatter dateTimeFormatter =
+      DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(App.TIMEZONE);
   DateTimeFormatter dateFormatter = ISODateTimeFormat.date().withZone(App.TIMEZONE);
 
   public DayWorker(App app, DateTime date) {
@@ -193,11 +195,11 @@ public class DayWorker implements Runnable {
     if (this.orcWriter == null) {
       String date = dateFormatter.print(dayStartTime);
       // Create a new file in /dir/YYYY/MM/WW/YYYY-MM-DD.par
-      Path path = new Path(
-          App.HDFS_URI + Paths.get(App.DIR, "request_at_tz_year=" + dayStartTime.toString("YYYY"),
-              "request_at_tz_month=" + dayStartTime.getMonthOfYear(),
-              "request_at_tz_week=" + dayStartTime.getWeekOfWeekyear(),
-              "request_at_tz_date=" + date, date + ".orc"));
+      Path path = new Path(App.HDFS_URI + Paths.get(App.DIR,
+          "request_at_tz_year=" + dateFormatter.print(dayStartTime.withDayOfYear(1)),
+          "request_at_tz_month=" + dateFormatter.print(dayStartTime.withDayOfMonth(1)),
+          "request_at_tz_week=" + dateFormatter.print(dayStartTime.withDayOfWeek(1)),
+          "request_at_tz_date=" + date, date + ".orc"));
       this.orcWriter = OrcFile.createWriter(path, getOrcWriterOptions());
     }
 
@@ -266,12 +268,14 @@ public class DayWorker implements Runnable {
             DateTime requestAt = this.parseTimestamp(value);
             log.put("request_at", requestAt.getMillis());
             log.put("request_at_tz_offset", App.TIMEZONE.getOffset(requestAt.getMillis()));
-            log.put("request_at_tz_year", requestAt.getYear());
-            log.put("request_at_tz_month", requestAt.getMonthOfYear());
-            log.put("request_at_tz_week", requestAt.getWeekOfWeekyear());
-            log.put("request_at_tz_date", this.dateFormatter.print(requestAt));
-            log.put("request_at_tz_hour", requestAt.getHourOfDay());
-            log.put("request_at_tz_minute", requestAt.getMinuteOfHour());
+            log.put("request_at_tz_year", dateFormatter.print(requestAt.withDayOfYear(1)));
+            log.put("request_at_tz_month", dateFormatter.print(requestAt.withDayOfMonth(1)));
+            log.put("request_at_tz_week", dateFormatter.print(requestAt.withDayOfWeek(1)));
+            log.put("request_at_tz_date", dateFormatter.print(requestAt));
+            log.put("request_at_tz_hour", dateTimeFormatter
+                .print(requestAt.withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0)));
+            log.put("request_at_tz_minute",
+                dateTimeFormatter.print(requestAt.withSecondOfMinute(0).withMillisOfSecond(0)));
             value = null;
             break;
           case "request_ip_location":

@@ -30,17 +30,17 @@ class LogSearch::Sql < LogSearch::Base
     when "minute"
       raise "TODO"
     when "hour"
-      @interval_field = "CAST(request_at_tz_date AS CHAR(10)) || '-' || CAST(request_at_tz_hour AS CHAR(2))"
-      @interval_field_format = "%Y-%m-%d-%H"
+      @interval_field = "request_at_tz_hour"
+      @interval_field_format = "%Y-%m-%d %H:%M:%S"
     when "day"
       @interval_field = "request_at_tz_date"
       @interval_field_format = "%Y-%m-%d"
     when "week"
-      @interval_field = "CAST(request_at_tz_year AS CHAR(4)) || '-' || CAST(request_at_tz_week AS CHAR(2))"
-      @interval_field_format = "%G-%V"
+      @interval_field = "request_at_tz_week"
+      @interval_field_format = "%Y-%m-%d"
     when "month"
-      @interval_field = "CAST(request_at_tz_year AS CHAR(4)) || '-' || CAST(request_at_tz_month AS CHAR(2))"
-      @interval_field_format = "%Y-%m"
+      @interval_field = "request_at_tz_month"
+      @interval_field_format = "%Y-%m-%d"
     end
 
     @query = {
