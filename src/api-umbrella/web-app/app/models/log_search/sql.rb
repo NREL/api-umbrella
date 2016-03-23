@@ -247,7 +247,9 @@ class LogSearch::Sql < LogSearch::Base
         when "equal"
           operator = "="
         when "not_equal"
-          operator = "<>"
+          # Use IS DISTINCT FROM instead of <> (aka !=), since we want to treat
+          # NULL values as not equal to the given value.
+          operator = "IS DISTINCT FROM"
         when "begins_with"
           operator = "LIKE"
           value = "#{value}%"
@@ -303,7 +305,7 @@ class LogSearch::Sql < LogSearch::Base
 
             if(index < levels.length - 1)
               if(["not_equal", "not_begins_with"].include?(rule["operator"]))
-                level_operator = "<>"
+                level_operator = "IS DISTINCT FROM"
               else
                 level_operator = "="
               end
@@ -370,7 +372,7 @@ class LogSearch::Sql < LogSearch::Base
   end
 
   def exclude_imported!
-    @query[:where] << "log_imported <> true"
+    @query[:where] << "log_imported IS DISTINCT FROM true"
   end
 
   def filter_by_date_range!
