@@ -38,6 +38,7 @@ set(LIBCIDR_VERSION 1.2.3)
 set(LIBCIDR_HASH c5efcc7ae114fdaa5583f58dacecd9de)
 set(LIBGEOIP_VERSION 1.6.9)
 set(LIBGEOIP_HASH 7475942dc8155046dddb4846f587a7e6)
+# Hold at 0.8 - 0.9 doesn't seem to be compatible with rsyslog.
 set(LIBRDKAFKA_VERSION 0.8.6)
 set(LIBRDKAFKA_HASH 1b77543f9be82d3f700c0ef98f494990)
 set(LUAROCKS_VERSION 2.3.0)
@@ -78,10 +79,14 @@ set(PERP_VERSION 2.07)
 set(PERP_HASH a2acc7425d556d9635a25addcee9edb5)
 set(RUBY_VERSION 2.2.4)
 set(RUBY_HASH 31203696adbfdda6f2874a2de31f7c5a1f3bcb6628f4d1a241de21b158cd5c76)
+# Hold at rsyslog 8.14.0 until ElasticSearch issues are fixed (hopefully 8.18):
+# https://github.com/rsyslog/rsyslog/issues/748
 set(RSYSLOG_VERSION 8.14.0)
 set(RSYSLOG_HASH 443b5b1d2b84f5cd429d06d230af7fb2352336fa6449cb6484dbd4418a7ae7c2)
 set(RUNIT_VERSION 2.1.2)
 set(RUNIT_HASH 6c985fbfe3a34608eb3c53dc719172c4)
+# Don't move to TrafficServer 6 until we can verify keepalive behavior:
+# https://issues.apache.org/jira/browse/TS-3959
 set(TRAFFICSERVER_VERSION 5.3.2)
 set(TRAFFICSERVER_HASH c8e5f3e81da643ea79cba0494ed37d45)
 set(UNBOUND_VERSION 1.5.8)
