@@ -19,12 +19,6 @@ options = {
 
 plugins = { "vagrant-berkshelf" => nil }
 
-# If NFS is being used, use the vagrant-bindfs plugin to fix file permission
-# issues within the guest VM.
-if(options[:nfs])
-  plugins["vagrant-bindfs"] = nil
-end
-
 plugins.each do |plugin, version|
   unless(Vagrant.has_plugin?(plugin))
     error = "The '#{plugin}' plugin is not installed. Try running:\n"
@@ -61,13 +55,10 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
+  config.vm.synced_folder ".", "/vagrant", :nfs => options[:nfs]
   if(options[:nfs])
-    config.vm.synced_folder ".", "/mnt/vagrant-nfs", :type => "nfs"
     config.nfs.map_uid = Process.uid
     config.nfs.map_gid = Process.gid
-    config.bindfs.bind_folder "/mnt/vagrant-nfs", "/vagrant"
-  else
-    config.vm.synced_folder ".", "/vagrant"
   end
 
   # Provider-specific configuration so you can fine-tune various

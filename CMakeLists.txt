@@ -34,12 +34,12 @@ set(GLIDE_VERSION 0.9.3)
 set(GLIDE_HASH 220deb37963873d92dca4d21d450e8b0)
 set(GOLANG_VERSION 1.5.3)
 set(GOLANG_HASH 43afe0c5017e502630b1aea4d44b8a7f059bf60d7f29dfd58db454d4e4e0ae53)
-set(HEKA_VERSION 0.9.2)
-set(HEKA_HASH 864625dff702306eba1494149ff903ee)
 set(LIBCIDR_VERSION 1.2.3)
 set(LIBCIDR_HASH c5efcc7ae114fdaa5583f58dacecd9de)
 set(LIBGEOIP_VERSION 1.6.9)
 set(LIBGEOIP_HASH 7475942dc8155046dddb4846f587a7e6)
+set(LIBRDKAFKA_VERSION 0.8.6)
+set(LIBRDKAFKA_HASH 1b77543f9be82d3f700c0ef98f494990)
 set(LUAROCKS_VERSION 2.3.0)
 set(LUAROCKS_HASH a38126684cf42b7d0e7a3c7cf485defb)
 set(LUAROCK_ARGPARSE_VERSION 0.4.1-1)
@@ -50,6 +50,7 @@ set(LUAROCK_LIBCIDR_VERSION 0.1.0-1)
 set(LUAROCK_LUACHECK_VERSION 0.14.0-1)
 set(LUAROCK_LUAPOSIX_VERSION 33.4.0-1)
 set(LUAROCK_LUASOCKET_VERSION 2.0.2-6)
+set(LUAROCK_LUATZ_VERSION 0.3-1)
 set(LUAROCK_LUSTACHE_VERSION 1.3.1-0)
 set(LUAROCK_LYAML_VERSION 6.0-1)
 set(LUAROCK_PENLIGHT_VERSION 1.3.2-2)
@@ -77,6 +78,8 @@ set(PERP_VERSION 2.07)
 set(PERP_HASH a2acc7425d556d9635a25addcee9edb5)
 set(RUBY_VERSION 2.2.4)
 set(RUBY_HASH 31203696adbfdda6f2874a2de31f7c5a1f3bcb6628f4d1a241de21b158cd5c76)
+set(RSYSLOG_VERSION 8.14.0)
+set(RSYSLOG_HASH 443b5b1d2b84f5cd429d06d230af7fb2352336fa6449cb6484dbd4418a7ae7c2)
 set(RUNIT_VERSION 2.1.2)
 set(RUNIT_HASH 6c985fbfe3a34608eb3c53dc719172c4)
 set(TRAFFICSERVER_VERSION 5.3.2)
@@ -120,19 +123,6 @@ ExternalProject_Add(
   INSTALL_COMMAND rsync -a <SOURCE_DIR>/ ${STAGE_EMBEDDED_DIR}/elasticsearch/
     COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../elasticsearch/bin/plugin ./plugin
     COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../elasticsearch/bin/elasticsearch ./elasticsearch
-)
-
-string(REPLACE "." "_" HEKA_VERSION_UNDERSCORE ${HEKA_VERSION})
-ExternalProject_Add(
-  heka
-  URL https://github.com/mozilla-services/heka/releases/download/v${HEKA_VERSION}/heka-${HEKA_VERSION_UNDERSCORE}-linux-amd64.tar.gz
-  URL_HASH MD5=${HEKA_HASH}
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND rsync -a <SOURCE_DIR>/ ${STAGE_EMBEDDED_DIR}/
-    # Trim our own distribution by removing some larger files we don't need for
-    # API Umbrella.
-    COMMAND rm -f ${STAGE_EMBEDDED_DIR}/bin/heka-cat ${STAGE_EMBEDDED_DIR}/bin/heka-flood ${STAGE_EMBEDDED_DIR}/bin/heka-inject ${STAGE_EMBEDDED_DIR}/bin/heka-sbmgr
 )
 
 #
@@ -346,6 +336,27 @@ ExternalProject_Add(
 )
 
 #
+# RSYSLOG: Log buffering and processing
+#
+ExternalProject_Add(
+  librdkafka
+  URL https://github.com/edenhill/librdkafka/archive/${LIBRDKAFKA_VERSION}.tar.gz
+  URL_HASH MD5=${LIBRDKAFKA_HASH}
+  BUILD_IN_SOURCE 1
+  CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED}
+  INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
+)
+
+ExternalProject_Add(
+  rsyslog
+  DEPENDS librdkafka
+  URL http://www.rsyslog.com/download/files/download/rsyslog/rsyslog-${RSYSLOG_VERSION}.tar.gz
+  URL_HASH SHA256=${RSYSLOG_HASH}
+  CONFIGURE_COMMAND env "LIBESTR_LIBS=-L/lib64 -lestr" "LIBESTR_CFLAGS=-I/usr/include -I${STAGE_EMBEDDED_DIR}/include" "LDFLAGS=-L${STAGE_EMBEDDED_DIR}/lib -Wl,-rpath,${INSTALL_PREFIX_EMBEDDED}/lib,-rpath,${STAGE_EMBEDDED_DIR}/lib" <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED} --disable-liblogging-stdlog --enable-imptcp --enable-mmjsonparse --enable-mmutf8fix --enable-elasticsearch --enable-omkafka
+  INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
+)
+
+#
 # TrafficServer: HTTP caching server
 #
 ExternalProject_Add(
@@ -370,6 +381,7 @@ luarocks_install(lua-cmsgpack ${LUAROCK_CMSGPACK_VERSION})
 luarocks_install(lua-iconv ${LUAROCK_ICONV_VERSION})
 luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION})
 luarocks_install(luasocket ${LUAROCK_LUASOCKET_VERSION})
+luarocks_install(luatz ${LUAROCK_LUATZ_VERSION})
 luarocks_install(lustache ${LUAROCK_LUSTACHE_VERSION})
 luarocks_install(lyaml ${LUAROCK_LYAML_VERSION})
 luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION})
@@ -455,8 +467,9 @@ add_custom_command(
   DEPENDS web_app_bundle_install ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/app/assets/**/*
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app
   COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} DEVISE_SECRET_KEY=temp RAILS_SECRET_TOKEN=temp bundle exec rake assets:precompile
-    COMMAND rm -rf tmp/web-assets
-    COMMAND mv public/web-assets tmp/web-assets
+    COMMAND mkdir -p tmp/web-assets
+    COMMAND rsync -a --delete-after public/web-assets/ tmp/web-assets/
+    COMMAND rm -rf public/web-assets
     COMMAND touch tmp/web-assets
 )
 add_custom_target(web_app_assets_precompile ALL DEPENDS ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/tmp/web-assets)
@@ -475,9 +488,9 @@ add_custom_command(
     COMMAND mkdir -p ${STAGE_PREFIX_DIR}/bin
     COMMAND cd ${STAGE_PREFIX_DIR}/bin && ln -snf ../embedded/apps/core/current/bin/api-umbrella ./api-umbrella
     # Copy all of the vendor files into place.
-    #COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core/shared/vendor
+    COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core/shared/vendor
     #COMMAND rsync -a --delete-after $(VENDOR_DIR)/ ${STAGE_EMBEDDED_DIR}/apps/core/shared/vendor/
-    #COMMAND cd ${STAGE_EMBEDDED_DIR}/apps/core/releases/${RELEASE_TIMESTAMP} && ln -snf ../../shared/vendor ./vendor
+    COMMAND cd ${STAGE_EMBEDDED_DIR}/apps/core/releases/${RELEASE_TIMESTAMP} && ln -snf ../../shared/vendor ./vendor
     # Copy the precompiled assets into place.
     COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core/shared/src/api-umbrella/web-app/public/web-assets
     COMMAND rsync -a --delete-after ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/tmp/web-assets/ ${STAGE_EMBEDDED_DIR}/apps/core/shared/src/api-umbrella/web-app/public/web-assets/
