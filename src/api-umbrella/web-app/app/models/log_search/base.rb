@@ -16,6 +16,7 @@ class LogSearch::Base
   end
 
   def initialize(options = {})
+    @options = options
     @start_time = options[:start_time]
     unless(@start_time.kind_of?(Time))
       @start_time = Time.zone.parse(@start_time)
