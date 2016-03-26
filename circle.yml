@@ -23,6 +23,7 @@ dependencies:
     - sudo stop mongodb
   override:
     # Build all the API Umbrella software dependencies.
+    - cmake .
     - make --debug
     - make test_dependencies --debug
     # Remove the "vendor" symlink (to the cached build/work/vendor), since this
