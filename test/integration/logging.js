@@ -8,6 +8,7 @@ var _ = require('lodash'),
     Curler = require('curler').Curler,
     crypto = require('crypto'),
     Factory = require('factory-lady'),
+    mongoose = require('mongoose'),
     request = require('request');
 
 describe('logging', function() {
@@ -495,7 +496,7 @@ describe('logging', function() {
           lon: 103.8558,
         });
 
-        var id = crypto.createHash('sha256').update('SG--Singapore').digest('hex')
+        var id = crypto.createHash('sha256').update('SG--Singapore').digest('hex');
         mongoose.testConnection.model('LogCityLocation').find({
           _id: id,
         }, function(error, locations) {
