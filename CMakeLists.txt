@@ -6,7 +6,8 @@ set(CMAKE_INSTALL_PREFIX /opt/api-umbrella)
 set(INSTALL_PREFIX_EMBEDDED ${CMAKE_INSTALL_PREFIX}/embedded)
 
 # Where to install cmake ExternalProjects.
-set_directory_properties(PROPERTIES EP_PREFIX build/cmake)
+set(EP_PREFIX build/cmake)
+set_directory_properties(PROPERTIES EP_PREFIX ${EP_PREFIX})
 
 # Where to stage installations during "make" phase.
 set(STAGE_DIR ${CMAKE_SOURCE_DIR}/${EP_PREFIX}/stage)
@@ -19,6 +20,8 @@ set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
 set(LUAROCKS_CMD env LUA_PATH='${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?.lua;${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?/init.lua;;' ${STAGE_EMBEDDED_DIR}/bin/luarocks)
 
 # Where to install test-only dependencies.
+set(TEST_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/test-env)
+set(TEST_STAGE_PREFIX_DIR ${STAGE_DIR}${TEST_INSTALL_PREFIX})
 set(TEST_VENDOR_DIR ${CMAKE_SOURCE_DIR}/build/test-env)
 set(TEST_VENDOR_LUA_SHARE_DIR ${TEST_VENDOR_DIR}/share/lua/5.1)
 set(TEST_VENDOR_LUA_LIB_DIR ${TEST_VENDOR_DIR}/lib/lua/5.1)
@@ -356,7 +359,7 @@ ExternalProject_Add(
 )
 
 #
-# RSYSLOG: Log buffering and processing
+# rsyslog: Log buffering and processing
 #
 ExternalProject_Add(
   librdkafka
@@ -467,10 +470,24 @@ ExternalProject_Add(
   unbound
   URL http://www.unbound.net/downloads/unbound-${UNBOUND_VERSION}.tar.gz
   URL_HASH SHA256=${UNBOUND_HASH}
-  CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>/test
-  INSTALL_COMMAND make install
+  CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${TEST_INSTALL_PREFIX}
+  INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
 )
 
+# Python test dependencies (mongo-orchestration)
+add_custom_command(
+  OUTPUT ${TEST_STAGE_PREFIX_DIR}/bin/pip
+  COMMAND virtualenv ${TEST_STAGE_PREFIX_DIR}
+)
+add_custom_target(test_virtualenv ALL DEPENDS ${TEST_STAGE_PREFIX_DIR}/bin/pip)
+add_custom_command(
+  OUTPUT ${TEST_STAGE_PREFIX_DIR}/bin/mongo-orchestration
+  DEPENDS ${TEST_STAGE_PREFIX_DIR}/bin/pip ${CMAKE_SOURCE_DIR}/test/requirements.txt
+  COMMAND ${TEST_STAGE_PREFIX_DIR}/bin/pip install -r ${CMAKE_SOURCE_DIR}/test/requirements.txt
+)
+add_custom_target(test_pip_install ALL DEPENDS ${TEST_STAGE_PREFIX_DIR}/bin/mongo-orchestration)
+
+# Luarocks test dependencies
 test_luarocks_install(luacheck ${LUAROCK_LUACHECK_VERSION})
 
 add_custom_command(
