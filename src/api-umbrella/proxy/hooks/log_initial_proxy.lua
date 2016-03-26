@@ -50,8 +50,8 @@ local function cache_city_geocode(premature, id, data)
     location = {
       type = "Point",
       coordinates = {
-        data["request_ip_location"]["lon"],
-        data["request_ip_location"]["lat"],
+        data["request_ip_lon"],
+        data["request_ip_lat"],
       },
     },
     updated_at = { ["$date"] = { ["$numberLong"] = tostring(ngx.now() * 1000) } },
@@ -239,6 +239,11 @@ local function log_request()
   if geoip_latitude then
     data["request_ip_lat"] = tonumber(geoip_latitude)
     data["request_ip_lon"] = tonumber(ngx_var.geoip_longitude)
+
+    data["legacy_request_ip_location"] = {
+      lat = data["request_ip_lat"],
+      lon = data["request_ip_lon"],
+    }
   end
 
   local syslog_message = "<" .. syslog_priority .. ">"
@@ -263,7 +268,7 @@ local function log_request()
     ngx.shared.logs:delete(log_timing_id)
   end
 
-  if data["request_ip_location"] then
+  if data["request_ip_lat"] then
     cache_new_city_geocode(data)
   end
 end

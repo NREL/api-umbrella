@@ -4,9 +4,6 @@ global(workDirectory="{{db_dir}}/rsyslog")
 module(load="imtcp" MaxSessions="500")
 module(load="mmjsonparse")
 module(load="mmutf8fix")
-module(load="omelasticsearch")
-module(load="omkafka")
-module(load="omhttpfs")
 
 # TCP Input
 input(type="imtcp" address="{{rsyslog.host}}" port="{{rsyslog.port}}")
@@ -18,32 +15,38 @@ action(type="mmutf8fix")
 # Parse the JSON data out of the @cee-enhanced logs.
 action(type="mmjsonparse")
 
+{{#analytics._output_elasticsearch?}}
+module(load="omelasticsearch")
+
 # Define the ElasticSearch-based output.
 # This aliases some of the logged fields to different names for backwards
 # compatibility with the ElasticSearch data.
 set $!usr!es!api_key = $!legacy_api_key;
+set $!usr!es!backend_response_time = $!timer_backend_response;
 set $!usr!es!gatekeeper_denied_code = $!denied_reason;
+set $!usr!es!internal_gatekeeper_time = $!timer_internal;
+set $!usr!es!proxy_overhead = $!timer_proxy_overhead;
 set $!usr!es!request_accept = $!request_accept;
 set $!usr!es!request_accept_encoding = $!request_accept_encoding;
 set $!usr!es!request_at = $!request_at;
 set $!usr!es!request_basic_auth_username = $!request_basic_auth_username;
 set $!usr!es!request_connection = $!request_connection;
 set $!usr!es!request_content_type = $!request_content_type;
+set $!usr!es!request_hierarchy = $!request_url_hierarchy;
+set $!usr!es!request_host = $!request_url_host;
 set $!usr!es!request_ip = $!request_ip;
 set $!usr!es!request_ip_city = $!request_ip_city;
 set $!usr!es!request_ip_country = $!request_ip_country;
-set $!usr!es!request_ip_location = $!request_ip_location;
+set $!usr!es!request_ip_location = $!legacy_request_ip_location;
 set $!usr!es!request_ip_region = $!request_ip_region;
 set $!usr!es!request_method = $!request_method;
 set $!usr!es!request_origin = $!request_origin;
-set $!usr!es!request_referer = $!request_referer;
-set $!usr!es!request_size = $!request_size;
-set $!usr!es!request_url = $!request_url;
-set $!usr!es!request_hierarchy = $!request_url_hierarchy;
-set $!usr!es!request_host = $!request_url_host;
 set $!usr!es!request_path = $!request_url_path;
 set $!usr!es!request_query = $!legacy_request_url_query_hash;
+set $!usr!es!request_referer = $!request_referer;
 set $!usr!es!request_scheme = $!request_url_scheme;
+set $!usr!es!request_size = $!request_size;
+set $!usr!es!request_url = $!legacy_request_url;
 set $!usr!es!request_user_agent = $!request_user_agent;
 set $!usr!es!request_user_agent_family = $!request_user_agent_family;
 set $!usr!es!request_user_agent_type = $!request_user_agent_type;
@@ -55,17 +58,14 @@ set $!usr!es!response_content_type = $!response_content_type;
 set $!usr!es!response_server = $!response_server;
 set $!usr!es!response_size = $!response_size;
 set $!usr!es!response_status = $!response_status;
-set $!usr!es!response_transfer_encoding = $!response_transfer_encoding;
-set $!usr!es!backend_response_time = $!timer_backend_response;
-set $!usr!es!internal_gatekeeper_time = $!timer_internal;
-set $!usr!es!proxy_overhead = $!timer_proxy_overhead;
 set $!usr!es!response_time = $!timer_response;
+set $!usr!es!response_transfer_encoding = $!response_transfer_encoding;
 set $!usr!es!user_email = $!legacy_user_email;
 set $!usr!es!user_id = $!user_id;
 set $!usr!es!user_registration_source = $!legacy_user_registration_source;
 
 # Define templates for ElasticSearch output.
-template(name="elasticsearch-index" type="string" string="api-umbrella-logs-v1-%timereported:1:10:date-rfc3339%")
+template(name="elasticsearch-index" type="string" string="api-umbrella-logs-v1-%timereported:1:7:date-rfc3339%")
 template(name="elasticsearch-id" type="subtree" subtree="$!id")
 template(name="elasticsearch-json-record" type="list") {
   property(name="$!usr!es")
@@ -94,6 +94,10 @@ local0.info action(
   queue.lowwatermark="50"
   action.resumeRetryCount="-1"
 )
+{{/analytics._output_elasticsearch?}}
+
+{{#analytics._output_kylin?}}
+module(load="omkafka")
 
 # Define the SQL-based output.
 set $!usr!sql!denied_reason = $!denied_reason;
@@ -114,7 +118,8 @@ set $!usr!sql!request_content_type = $!request_content_type;
 set $!usr!sql!request_ip = $!request_ip;
 set $!usr!sql!request_ip_city = $!request_ip_city;
 set $!usr!sql!request_ip_country = $!request_ip_country;
-set $!usr!sql!request_ip_location = $!request_ip_location;
+set $!usr!sql!request_ip_lat = $!request_ip_lat;
+set $!usr!sql!request_ip_lon = $!request_ip_lon;
 set $!usr!sql!request_ip_region = $!request_ip_region;
 set $!usr!sql!request_method = $!request_method;
 set $!usr!sql!request_origin = $!request_origin;
@@ -222,6 +227,7 @@ local0.info action(
   queue.lowwatermark="50"
   action.resumeRetryCount="-1"
 )
+{{/analytics._output_kylin?}}
 
 # Output to local file for redundancy until we prove the new system out.
 template(name="sql-json-record" type="list") {

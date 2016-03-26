@@ -6,11 +6,11 @@ local split = plutils.split
 local _M = {}
 
 _M.MSEC_FIELDS = {
-  "backend_response_time",
-  "internal_gatekeeper_time",
-  "proxy_overhead",
   "request_at",
-  "response_time",
+  "timer_backend_response",
+  "timer_internal",
+  "timer_proxy_overhead",
+  "timer_response",
 }
 
 function _M.ignore_request()
@@ -107,6 +107,18 @@ local function set_url_hierarchy(data)
   end
 end
 
+local function recursive_escape_uri_non_ascii(data)
+  if not data then return end
+
+  for key, value in pairs(data) do
+    if type(value) == "string" then
+      data[key] = escape_uri_non_ascii(value)
+    elseif type(value) == "table" then
+      recursive_escape_uri_non_ascii(value)
+    end
+  end
+end
+
 function _M.set_url_fields(data)
   -- Extract just the path portion of the URL.
   --
@@ -125,6 +137,17 @@ function _M.set_url_fields(data)
   if parts[2] then
     data["request_url_query"] = escape_uri_non_ascii(parts[2])
     data["legacy_request_url_query_hash"] = ngx.decode_args(data["request_url_query"])
+
+    -- Since we decoded the argument string to construct the table of
+    -- arguments, we now might have invalid or wonky characters that will cause
+    -- invalid JSON and prevent ElasticSearch from indexing the request. So run
+    -- through all the arguments and escape them.
+    recursive_escape_uri_non_ascii(data["legacy_request_url_query_hash"])
+  end
+
+  data["legacy_request_url"] = data["request_url_scheme"] .. "://" .. data["request_url_host"] .. data["request_url_path"]
+  if data["request_url_query"] then
+    data["legacy_request_url"] = data["legacy_request_url"] .. "?" .. data["request_url_query"]
   end
 
   set_url_hierarchy(data)

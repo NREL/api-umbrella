@@ -158,7 +158,7 @@ elasticsearch:
         sandbox:
           enabled: false
 analytics:
-  adapter: kylin
+  adapter: elasticsearch
   timezone: UTC
 kylin:
   host: 127.0.0.1

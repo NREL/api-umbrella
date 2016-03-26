@@ -16,8 +16,12 @@ set(STAGE_EMBEDDED_DIR ${STAGE_DIR}${INSTALL_PREFIX_EMBEDDED})
 # Where to install app-level vendor dependencies.
 set(VENDOR_DIR ${STAGE_EMBEDDED_DIR}/apps/core/shared/vendor)
 set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
-set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
 set(LUAROCKS_CMD env LUA_PATH='${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?.lua;${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?/init.lua;;' ${STAGE_EMBEDDED_DIR}/bin/luarocks)
+
+# Where to install test-only dependencies.
+set(TEST_VENDOR_DIR ${CMAKE_SOURCE_DIR}/build/test-env)
+set(TEST_VENDOR_LUA_SHARE_DIR ${TEST_VENDOR_DIR}/share/lua/5.1)
+set(TEST_VENDOR_LUA_LIB_DIR ${TEST_VENDOR_DIR}/lib/lua/5.1)
 
 # Define a timestamped release name for our app installations.
 execute_process(COMMAND date -u +%Y%m%d%H%M%S OUTPUT_VARIABLE RELEASE_TIMESTAMP OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -114,7 +118,18 @@ function(luarocks_install package version)
     BUILD_COMMAND ""
     INSTALL_COMMAND ${STAGE_EMBEDDED_DIR}/bin/luarocks --tree=${VENDOR_DIR} install ${package} ${version} ${ARGV2}
   )
-endfunction(luarocks_install)
+endfunction()
+
+function(test_luarocks_install package version)
+  ExternalProject_Add(
+    luarock_${package}
+    DEPENDS luarocks ${ARGV3}
+    DOWNLOAD_COMMAND cd <SOURCE_DIR> && curl -OL https://luarocks.org/${package}-${version}.rockspec
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ${STAGE_EMBEDDED_DIR}/bin/luarocks --tree=${TEST_VENDOR_DIR} install ${package} ${version} ${ARGV2}
+  )
+endfunction()
 
 #
 # ElasticSearch: Analytics database
@@ -456,7 +471,7 @@ ExternalProject_Add(
   INSTALL_COMMAND make install
 )
 
-luarocks_install(luacheck ${LUAROCK_LUACHECK_VERSION})
+test_luarocks_install(luacheck ${LUAROCK_LUACHECK_VERSION})
 
 add_custom_command(
   OUTPUT ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/vendor/bundle
@@ -517,7 +532,6 @@ add_custom_command(
 )
 add_custom_target(core_release ALL DEPENDS ${STAGE_EMBEDDED_DIR}/apps/core/releases/${RELEASE_TIMESTAMP})
 
-
 #
 # Installation
 #
@@ -530,6 +544,26 @@ install(PROGRAMS ${CMAKE_SOURCE_DIR}/build/package/files/etc/init.d/api-umbrella
 install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/logrotate.d/api-umbrella DESTINATION /etc/logrotate.d)
 install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/sudoers.d/api-umbrella DESTINATION /etc/sudoers.d)
 install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/api-umbrella/api-umbrella.yml DESTINATION /etc/api-umbrella RENAME api-umbrella.yml.default)
+
+#
+# Testing
+#
+
+# Lint
+add_custom_target(
+  lint
+  env LUA_PATH=${TEST_VENDOR_LUA_SHARE_DIR}/?.lua$<SEMICOLON>${TEST_VENDOR_LUA_SHARE_DIR}/?/init.lua$<SEMICOLON>$<SEMICOLON> LUA_CPATH=${TEST_VENDOR_LUA_LIB_DIR}/?.so$<SEMICOLON>$<SEMICOLON> ${TEST_VENDOR_DIR}/bin/luacheck ${CMAKE_SOURCE_DIR}/src
+  VERBATIM
+)
+
+# Test
+add_custom_target(
+  test
+  env MOCHA_FILES=$ENV{MOCHA_FILES} npm test
+  DEPENDS lint
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test
+  VERBATIM
+)
 
 #
 # Packaging

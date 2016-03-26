@@ -278,6 +278,10 @@ local function set_computed_config()
     end
   end
 
+  if not config["analytics"]["outputs"] then
+    config["analytics"]["outputs"] = { config["analytics"]["adapter"] }
+  end
+
   config["kafka"]["_rsyslog_broker"] = {}
   for _, broker in ipairs(config["kafka"]["brokers"]) do
     table.insert(config["kafka"]["_rsyslog_broker"], '"' .. broker["host"] .. ":" .. broker["port"] .. '"')
@@ -314,6 +318,10 @@ local function set_computed_config()
     _src_root_dir = src_root_dir,
     _package_path = package.path,
     _package_cpath = package.cpath,
+    analytics = {
+      ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
+      ["_output_kylin?"] = array_includes(config["analytics"]["outputs"], "kylin"),
+    },
     mongodb = {
       _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
     },

@@ -219,18 +219,13 @@ describe('logging', function() {
       response.statusCode.should.eql(200);
 
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
         var fields = _.keys(record).sort();
-
-        // Varnish randomly turns some non-chunked responses into chunked
-        // responses, so these header may crop up, but we'll ignore these for
-        // this test's purposes.
-        // See: https://www.varnish-cache.org/trac/ticket/1506
-        // TODO: Remove if Varnish changes its behavior.
-        fields = _.without(fields, 'response_transfer_encoding', 'response_content_length');
 
         fields.should.eql([
           'api_key',
           'backend_response_time',
+          'gatekeeper_denied_code',
           'internal_gatekeeper_time',
           'proxy_overhead',
           'request_accept',
@@ -242,6 +237,10 @@ describe('logging', function() {
           'request_hierarchy',
           'request_host',
           'request_ip',
+          'request_ip_city',
+          'request_ip_country',
+          'request_ip_location',
+          'request_ip_region',
           'request_method',
           'request_origin',
           'request_path',
@@ -255,11 +254,14 @@ describe('logging', function() {
           'request_user_agent_type',
           'response_age',
           'response_cache',
+          'response_content_encoding',
+          'response_content_length',
           'response_content_type',
           'response_server',
           'response_size',
           'response_status',
           'response_time',
+          'response_transfer_encoding',
           'user_email',
           'user_id',
           'user_registration_source',
@@ -444,19 +446,25 @@ describe('logging', function() {
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error) {
         should.not.exist(error);
-        global.elasticsearch.get({
-          index: 'api-umbrella',
-          type: 'city',
-          id: crypto.createHash('sha256').update('US-CA-Mountain View').digest('hex'),
-        }, function(error, res) {
+        var id = crypto.createHash('sha256').update('US-CA-Mountain View').digest('hex');
+        mongoose.testConnection.model('LogCityLocation').find({
+          _id: id,
+        }, function(error, locations) {
           should.not.exist(error);
-          _.omit(res._source, 'updated_at').should.eql({
+          locations.length.should.eql(1);
+          var location = locations[0].toObject();
+          location.updated_at.should.be.a('date');
+          _.omit(location, 'updated_at').should.eql({
+            _id: id,
             country: 'US',
             region: 'CA',
             city: 'Mountain View',
             location: {
-              lat: 37.3845,
-              lon: -122.0881,
+              type: 'Point',
+              coordinates: [
+                -122.0881,
+                37.3845,
+              ],
             },
           });
           done();
@@ -487,18 +495,24 @@ describe('logging', function() {
           lon: 103.8558,
         });
 
-        global.elasticsearch.get({
-          index: 'api-umbrella',
-          type: 'city',
-          id: crypto.createHash('sha256').update('SG--Singapore').digest('hex'),
-        }, function(error, res) {
+        var id = crypto.createHash('sha256').update('SG--Singapore').digest('hex')
+        mongoose.testConnection.model('LogCityLocation').find({
+          _id: id,
+        }, function(error, locations) {
           should.not.exist(error);
-          _.omit(res._source, 'updated_at').should.eql({
+          locations.length.should.eql(1);
+          var location = locations[0].toObject();
+          location.updated_at.should.be.a('date');
+          _.omit(location, 'updated_at').should.eql({
+            _id: id,
             country: 'SG',
             city: 'Singapore',
             location: {
-              lat: 1.2931,
-              lon: 103.8558,
+              type: 'Point',
+              coordinates: [
+                103.8558,
+                1.2931,
+              ],
             },
           });
           done();
@@ -529,17 +543,23 @@ describe('logging', function() {
           lon: 103.8,
         });
 
-        global.elasticsearch.get({
-          index: 'api-umbrella',
-          type: 'city',
-          id: crypto.createHash('sha256').update('SG--').digest('hex'),
-        }, function(error, res) {
+        var id = crypto.createHash('sha256').update('SG--').digest('hex');
+        mongoose.testConnection.model('LogCityLocation').find({
+          _id: id,
+        }, function(error, locations) {
           should.not.exist(error);
-          _.omit(res._source, 'updated_at').should.eql({
+          locations.length.should.eql(1);
+          var location = locations[0].toObject();
+          location.updated_at.should.be.a('date');
+          _.omit(location, 'updated_at').should.eql({
+            _id: id,
             country: 'SG',
             location: {
-              lat: 1.3667,
-              lon: 103.8,
+              type: 'Point',
+              coordinates: [
+                103.8,
+                1.3667,
+              ],
             },
           });
           done();
@@ -570,18 +590,24 @@ describe('logging', function() {
           lon: -6.7667,
         });
 
-        global.elasticsearch.get({
-          index: 'api-umbrella',
-          type: 'city',
-          id: crypto.createHash('sha256').update('FO--Tórshavn', 'utf8').digest('hex'),
-        }, function(error, res) {
+        var id = crypto.createHash('sha256').update('FO--Tórshavn', 'utf8').digest('hex');
+        mongoose.testConnection.model('LogCityLocation').find({
+          _id: id,
+        }, function(error, locations) {
           should.not.exist(error);
-          _.omit(res._source, 'updated_at').should.eql({
+          locations.length.should.eql(1);
+          var location = locations[0].toObject();
+          location.updated_at.should.be.a('date');
+          _.omit(location, 'updated_at').should.eql({
+            _id: id,
             country: 'FO',
             city: 'Tórshavn',
             location: {
-              lat: 62.0167,
-              lon: -6.7667,
+              type: 'Point',
+              coordinates: [
+                -6.7667,
+                62.0167,
+              ],
             },
           });
           done();
