@@ -28,9 +28,7 @@
 /CPackSourceConfig.cmake
 /Makefile
 /cmake_install.cmake
-/build/cmake
 
-/build/local
 /build/package/.bundle
 /build/package/dist
 /build/package/logs
