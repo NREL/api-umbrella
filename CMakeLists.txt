@@ -139,8 +139,8 @@ endfunction()
 #
 ExternalProject_Add(
   elasticsearch
-  URL https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
   URL_HASH SHA1=${ELASTICSEARCH_HASH}
+  URL https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND rsync -a <SOURCE_DIR>/ ${STAGE_EMBEDDED_DIR}/elasticsearch/
@@ -153,8 +153,8 @@ ExternalProject_Add(
 #
 ExternalProject_Add(
   libcidr
-  URL https://www.over-yonder.net/~fullermd/projects/libcidr/libcidr-${LIBCIDR_VERSION}.tar.xz
   URL_HASH MD5=${LIBCIDR_HASH}
+  URL https://www.over-yonder.net/~fullermd/projects/libcidr/libcidr-${LIBCIDR_VERSION}.tar.xz
   # Rename file to tar.gz as a weird hack for CMake 2.8 not supporting tar.xz
   # files (but this still manages to work, at least if xz is installed).
   DOWNLOAD_NAME libcidr-${LIBCIDR_VERSION}.tar.gz
@@ -169,8 +169,8 @@ ExternalProject_Add(
 #
 ExternalProject_Add(
   libgeoip
-  URL https://github.com/maxmind/geoip-api-c/releases/download/v${LIBGEOIP_VERSION}/GeoIP-${LIBGEOIP_VERSION}.tar.gz
   URL_HASH MD5=${LIBGEOIP_HASH}
+  URL https://github.com/maxmind/geoip-api-c/releases/download/v${LIBGEOIP_VERSION}/GeoIP-${LIBGEOIP_VERSION}.tar.gz
   CONFIGURE_COMMAND env LDFLAGS=-Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED}
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
 )
@@ -189,8 +189,8 @@ ExternalProject_Add(
 #
 ExternalProject_Add(
   mongodb
-  URL https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB_VERSION}.tgz
   URL_HASH MD5=${MONGODB_HASH}
+  URL https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${MONGODB_VERSION}.tgz
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND rsync -a <SOURCE_DIR>/ ${STAGE_EMBEDDED_DIR}/
@@ -205,8 +205,8 @@ ExternalProject_Add(
 #
 ExternalProject_Add(
   golang
-  URL https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-amd64.tar.gz
   URL_HASH SHA256=${GOLANG_HASH}
+  URL https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-amd64.tar.gz
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
@@ -217,8 +217,8 @@ set(GOLANG_SOURCE_DIR ${SOURCE_DIR})
 ExternalProject_Add(
   glide
   DEPENDS golang
-  URL https://github.com/Masterminds/glide/releases/download/${GLIDE_VERSION}/glide-${GLIDE_VERSION}-linux-amd64.tar.gz
   URL_HASH MD5=${GLIDE_HASH}
+  URL https://github.com/Masterminds/glide/releases/download/${GLIDE_VERSION}/glide-${GLIDE_VERSION}-linux-amd64.tar.gz
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
@@ -229,8 +229,8 @@ set(GLIDE_SOURCE_DIR ${SOURCE_DIR})
 ExternalProject_Add(
   mora
   DEPENDS glide
-  URL https://github.com/emicklei/mora/archive/${MORA_VERSION}.tar.gz
   URL_HASH MD5=${MORA_HASH}
+  URL https://github.com/emicklei/mora/archive/${MORA_VERSION}.tar.gz
   SOURCE_DIR ${CMAKE_SOURCE_DIR}/gocode/src/github.com/emicklei/mora
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND ""
@@ -253,8 +253,8 @@ ExternalProject_Add_Step(
 # ngx_dyups: Dynamic upstream handling for handling DNS changes
 ExternalProject_Add(
   ngx_dyups
-  URL https://github.com/yzprofile/ngx_http_dyups_module/archive/${NGX_DYUPS_VERSION}.tar.gz
   URL_HASH MD5=${NGX_DYUPS_HASH}
+  URL https://github.com/yzprofile/ngx_http_dyups_module/archive/${NGX_DYUPS_VERSION}.tar.gz
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
@@ -265,8 +265,8 @@ set(NGX_DYUPS_SOURCE_DIR ${SOURCE_DIR})
 # ngx_txid: Generate unique request IDs
 ExternalProject_Add(
   ngx_txid
-  URL https://github.com/streadway/ngx_txid/archive/${NGX_TXID_VERSION}.tar.gz
   URL_HASH MD5=${NGX_TXID_HASH}
+  URL https://github.com/streadway/ngx_txid/archive/${NGX_TXID_VERSION}.tar.gz
   UPDATE_COMMAND ""
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
@@ -278,8 +278,8 @@ set(NGX_TXID_SOURCE_DIR ${SOURCE_DIR})
 # Pull in newer version of PCRE (8.20+) for OpenResty to enable PCRE JIT.
 ExternalProject_Add(
   pcre
-  URL http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-${PCRE_VERSION}.tar.bz2
   URL_HASH MD5=${PCRE_HASH}
+  URL http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-${PCRE_VERSION}.tar.bz2
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
@@ -290,8 +290,8 @@ set(PCRE_SOURCE_DIR ${SOURCE_DIR})
 ExternalProject_Add(
   openresty
   DEPENDS libgeoip ngx_dyups ngx_txid pcre
-  URL https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz
   URL_HASH MD5=${OPENRESTY_HASH}
+  URL https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED}/openresty --with-cc-opt=-I${STAGE_EMBEDDED_DIR}/include "--with-ld-opt=-L${STAGE_EMBEDDED_DIR}/lib -Wl,-rpath,${INSTALL_PREFIX_EMBEDDED}/lib,-rpath,${STAGE_EMBEDDED_DIR}/openresty/luajit/lib,-rpath,${STAGE_EMBEDDED_DIR}/lib" --error-log-path=stderr --with-ipv6 --with-pcre=${PCRE_SOURCE_DIR} --with-pcre-opt=-g --with-pcre-conf-opt=--enable-unicode-properties --with-pcre-jit --with-http_geoip_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_realip_module --with-http_ssl_module --with-http_stub_status_module --add-module=${NGX_DYUPS_SOURCE_DIR} --add-module=${NGX_TXID_SOURCE_DIR}
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
@@ -306,8 +306,8 @@ ExternalProject_Add(
 ExternalProject_Add(
   luarocks
   DEPENDS openresty
-  URL http://luarocks.org/releases/luarocks-${LUAROCKS_VERSION}.tar.gz
   URL_HASH MD5=${LUAROCKS_HASH}
+  URL http://luarocks.org/releases/luarocks-${LUAROCKS_VERSION}.tar.gz
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED}/openresty/luajit --with-lua=${STAGE_EMBEDDED_DIR}/openresty/luajit --with-lua-include=${STAGE_EMBEDDED_DIR}/openresty/luajit/include/luajit-2.1 --lua-suffix=jit-2.1.0-beta1
   BUILD_COMMAND make build
@@ -320,8 +320,8 @@ ExternalProject_Add(
 #
 ExternalProject_Add(
   perp
-  URL http://b0llix.net/perp/distfiles/perp-${PERP_VERSION}.tar.gz
   URL_HASH MD5=${PERP_HASH}
+  URL http://b0llix.net/perp/distfiles/perp-${PERP_VERSION}.tar.gz
   PATCH_COMMAND sed -i -e "s%BINDIR.*%BINDIR = ${INSTALL_PREFIX_EMBEDDED}/bin%" conf.mk
     COMMAND sed -i -e "s%SBINDIR.*%SBINDIR = ${INSTALL_PREFIX_EMBEDDED}/sbin%" conf.mk
     COMMAND sed -i -e "s%MANDIR.*%MANDIR = ${INSTALL_PREFIX_EMBEDDED}/share/man%" conf.mk
@@ -335,8 +335,8 @@ ExternalProject_Add(
 # runit's svlogd as alternative to perp's tinylog with more features.
 ExternalProject_Add(
   runit
-  URL http://smarden.org/runit/runit-${RUNIT_VERSION}.tar.gz
   URL_HASH MD5=${RUNIT_HASH}
+  URL http://smarden.org/runit/runit-${RUNIT_VERSION}.tar.gz
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND ""
   BUILD_COMMAND cd runit-${RUNIT_VERSION}/src && make svlogd
@@ -348,8 +348,8 @@ ExternalProject_Add(
 #
 ExternalProject_Add(
   ruby
-  URL https://cache.ruby-lang.org/pub/ruby/2.2/ruby-${RUBY_VERSION}.tar.bz2
   URL_HASH SHA256=${RUBY_HASH}
+  URL https://cache.ruby-lang.org/pub/ruby/2.2/ruby-${RUBY_VERSION}.tar.bz2
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED} --enable-load-relative --disable-install-doc
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
 )
@@ -368,8 +368,8 @@ ExternalProject_Add(
 #
 ExternalProject_Add(
   librdkafka
-  URL https://github.com/edenhill/librdkafka/archive/${LIBRDKAFKA_VERSION}.tar.gz
   URL_HASH MD5=${LIBRDKAFKA_HASH}
+  URL https://github.com/edenhill/librdkafka/archive/${LIBRDKAFKA_VERSION}.tar.gz
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED}
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
@@ -378,8 +378,8 @@ ExternalProject_Add(
 ExternalProject_Add(
   rsyslog
   DEPENDS librdkafka
-  URL http://www.rsyslog.com/download/files/download/rsyslog/rsyslog-${RSYSLOG_VERSION}.tar.gz
   URL_HASH SHA256=${RSYSLOG_HASH}
+  URL http://www.rsyslog.com/download/files/download/rsyslog/rsyslog-${RSYSLOG_VERSION}.tar.gz
   CONFIGURE_COMMAND env "LIBESTR_LIBS=-L/lib64 -lestr" "LIBESTR_CFLAGS=-I/usr/include -I${STAGE_EMBEDDED_DIR}/include" "LDFLAGS=-L${STAGE_EMBEDDED_DIR}/lib -Wl,-rpath,${INSTALL_PREFIX_EMBEDDED}/lib,-rpath,${STAGE_EMBEDDED_DIR}/lib" <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED} --disable-liblogging-stdlog --enable-imptcp --enable-mmjsonparse --enable-mmutf8fix --enable-elasticsearch --enable-omkafka
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
 )
@@ -389,8 +389,8 @@ ExternalProject_Add(
 #
 ExternalProject_Add(
   trafficserver
-  URL http://mirror.olnevhost.net/pub/apache/trafficserver/trafficserver-${TRAFFICSERVER_VERSION}.tar.bz2
   URL_HASH MD5=${TRAFFICSERVER_HASH}
+  URL http://mirror.olnevhost.net/pub/apache/trafficserver/trafficserver-${TRAFFICSERVER_VERSION}.tar.bz2
   CONFIGURE_COMMAND env SPHINXBUILD=false LDFLAGS=-Wl,-rpath,${STAGE_EMBEDDED_DIR}/lib <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED} --enable-experimental-plugins
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
     # Trim our own distribution by removing some larger files we don't need for
