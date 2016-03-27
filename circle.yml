@@ -28,8 +28,8 @@ dependencies:
   override:
     # Build all the API Umbrella software dependencies.
     - env PATH=build/work/cmake-3.4.3/bin:$PATH cmake .
-    - make --debug
-    - make test_dependencies --debug
+    - make VERBOSE=1
+    - make test_dependencies VERBOSE=1
     # Remove the "vendor" symlink (to the cached build/work/vendor), since this
     # symlink seems to mess up CircleCI's caching.
     - rm -f vendor

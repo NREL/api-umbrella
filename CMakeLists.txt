@@ -17,7 +17,7 @@ set(STAGE_EMBEDDED_DIR ${STAGE_DIR}${INSTALL_PREFIX_EMBEDDED})
 # Where to install app-level vendor dependencies.
 set(VENDOR_DIR ${STAGE_EMBEDDED_DIR}/apps/core/shared/vendor)
 set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
-set(LUAROCKS_CMD env LUA_PATH='${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?.lua;${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?/init.lua;;' ${STAGE_EMBEDDED_DIR}/bin/luarocks)
+set(LUAROCKS_CMD env LUA_PATH=${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?.lua$<SEMICOLON>${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?/init.lua$<SEMICOLON>$<SEMICOLON> ${STAGE_EMBEDDED_DIR}/bin/luarocks)
 
 # Where to install test-only dependencies.
 set(TEST_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/test-env)
@@ -119,7 +119,7 @@ function(luarocks_install package version)
     DOWNLOAD_COMMAND cd <SOURCE_DIR> && curl -OL https://luarocks.org/${package}-${version}.rockspec
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
-    INSTALL_COMMAND ${STAGE_EMBEDDED_DIR}/bin/luarocks --tree=${VENDOR_DIR} install ${package} ${version} ${ARGV2}
+    INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${VENDOR_DIR} install ${package} ${version} ${ARGV2}
   )
 endfunction()
 
@@ -130,7 +130,7 @@ function(test_luarocks_install package version)
     DOWNLOAD_COMMAND cd <SOURCE_DIR> && curl -OL https://luarocks.org/${package}-${version}.rockspec
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
-    INSTALL_COMMAND ${STAGE_EMBEDDED_DIR}/bin/luarocks --tree=${TEST_VENDOR_DIR} install ${package} ${version} ${ARGV2}
+    INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${TEST_VENDOR_DIR} install ${package} ${version} ${ARGV2}
   )
 endfunction()
 
