@@ -21,6 +21,9 @@ dependencies:
     # Stop the older MongoDB 2.4 version in favor of the one bundled with API
     # Umbrella.
     - sudo stop mongodb
+    # Install a newer version of CMake than is available on Ubuntu 12.04 (we
+    # need 2.8.10+ for ExternalProject_Add URL_HASH compatibility).
+    - sudo add-apt-repository ppa:george-edison55/precise-backports; sudo apt-get update; sudo apt-get install cmake
   override:
     # Build all the API Umbrella software dependencies.
     - cmake .
