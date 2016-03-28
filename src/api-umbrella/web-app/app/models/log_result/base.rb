@@ -96,7 +96,7 @@ class LogResult::Base
           if @search.state
             cities = cities.where(:region => @search.state)
           end
-          #cities = cities.where(:city => @city_names)
+          cities = cities.where(:city.in => @city_names)
 
           cities.each do |city|
             @cities[city.city] = {
