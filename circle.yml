@@ -13,10 +13,7 @@ machine:
     version: 0.10.40
 dependencies:
   cache_directories:
-    - build/work/cmake-3.4.3
-    - build/work/stage
-    - build/work/test-env
-    - build/work/tmp/web-assets
+    - build/work
     - test/node_modules
   pre:
     # Stop the older MongoDB 2.4 version in favor of the one bundled with API
