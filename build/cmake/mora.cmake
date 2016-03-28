@@ -28,14 +28,14 @@ ExternalProject_Add(
   DEPENDS glide
   URL https://github.com/emicklei/mora/archive/${MORA_VERSION}.tar.gz
   URL_HASH MD5=${MORA_HASH}
-  SOURCE_DIR ${CMAKE_SOURCE_DIR}/gocode/src/github.com/emicklei/mora
+  SOURCE_DIR ${WORK_DIR}/gocode/src/github.com/emicklei/mora
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND ""
   BUILD_COMMAND cp ${CMAKE_SOURCE_DIR}/build/mora/glide.yaml <SOURCE_DIR>/glide.yaml
     COMMAND cp ${CMAKE_SOURCE_DIR}/build/mora/glide.lock <SOURCE_DIR>/glide.lock
-    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${CMAKE_SOURCE_DIR}/gocode/bin:$ENV{PATH} GOPATH=${CMAKE_SOURCE_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} GO15VENDOREXPERIMENT=1 glide install
-    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${CMAKE_SOURCE_DIR}/gocode/bin:$ENV{PATH} GOPATH=${CMAKE_SOURCE_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} GO15VENDOREXPERIMENT=1 go install
-  INSTALL_COMMAND install -D -m 755 ${CMAKE_SOURCE_DIR}/gocode/bin/mora ${STAGE_EMBEDDED_DIR}/bin/mora
+    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} GO15VENDOREXPERIMENT=1 glide install
+    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} GO15VENDOREXPERIMENT=1 go install
+  INSTALL_COMMAND install -D -m 755 ${WORK_DIR}/gocode/bin/mora ${STAGE_EMBEDDED_DIR}/bin/mora
 )
 ExternalProject_Add_Step(
   mora mora_rebuild_on_glide_file_changes

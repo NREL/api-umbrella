@@ -8,9 +8,10 @@ set(INSTALL_PREFIX_EMBEDDED ${CMAKE_INSTALL_PREFIX}/embedded)
 # Where to install cmake ExternalProjects.
 set(EP_PREFIX build/work)
 set_directory_properties(PROPERTIES EP_PREFIX ${EP_PREFIX})
+set(WORK_DIR ${CMAKE_SOURCE_DIR}/${EP_PREFIX})
 
 # Where to stage installations during "make" phase.
-set(STAGE_DIR ${CMAKE_SOURCE_DIR}/${EP_PREFIX}/stage)
+set(STAGE_DIR ${WORK_DIR}/stage)
 set(STAGE_PREFIX_DIR ${STAGE_DIR}${CMAKE_INSTALL_PREFIX})
 set(STAGE_EMBEDDED_DIR ${STAGE_DIR}${INSTALL_PREFIX_EMBEDDED})
 
@@ -20,7 +21,7 @@ set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
 set(LUAROCKS_CMD env LUA_PATH=${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?.lua$<SEMICOLON>${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?/init.lua$<SEMICOLON>$<SEMICOLON> ${STAGE_EMBEDDED_DIR}/bin/luarocks)
 
 # Where to install test-only dependencies.
-set(TEST_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/build/work/test-env)
+set(TEST_INSTALL_PREFIX ${WORK_DIR}/test-env)
 set(TEST_VENDOR_DIR ${TEST_INSTALL_PREFIX}/vendor)
 set(TEST_VENDOR_LUA_SHARE_DIR ${TEST_VENDOR_DIR}/share/lua/5.1)
 set(TEST_VENDOR_LUA_LIB_DIR ${TEST_VENDOR_DIR}/lib/lua/5.1)
