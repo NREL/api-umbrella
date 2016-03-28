@@ -20,8 +20,8 @@ ExternalProject_Add(
 # build that from source anyway (since there are no system packages for that).
 ExternalProject_Add(
   json-c
-  URL https://s3.amazonaws.com/json-c_releases/releases/json-c-${JSON_C_VERSION}-nodoc.tar.gz
-  URL_HASH SHA256=${JSON_C_HASH}
+  URL https://github.com/json-c/json-c/archive/${JSON_C_VERSION}.tar.gz
+  URL_HASH MD5=${JSON_C_HASH}
   BUILD_IN_SOURCE 1
   # Run autoreconf to fix issues with the bundled configure file being built
   # with specific versions of autoreconf and libtool that might be newer than
@@ -49,6 +49,6 @@ ExternalProject_Add(
   # --with-moddirs required to allow things to work in staged location, as well
   # as install location. Extra CFLAGS are needed when --with-moddirs is given
   # (since these default values go missing).
-  CONFIGURE_COMMAND env "LIBESTR_LIBS=-L${STAGE_EMBEDDED_DIR}/lib -lestr" "LIBESTR_CFLAGS=-I${STAGE_EMBEDDED_DIR}/include" "CFLAGS=-I<SOURCE_DIR> -I<SOURCE_DIR>/grammar" LDFLAGS=-L${STAGE_EMBEDDED_DIR}/lib <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED} --with-moddirs=${STAGE_EMBEDDED_DIR}/lib/rsyslog --disable-liblogging-stdlog --disable-libgcrypt --enable-imptcp --enable-mmjsonparse --enable-mmutf8fix --enable-elasticsearch --enable-omkafka
+  CONFIGURE_COMMAND env LIBESTR_CFLAGS=-I${STAGE_EMBEDDED_DIR}/include "LIBESTR_LIBS=-L${STAGE_EMBEDDED_DIR}/lib -lestr" JSON_C_CFLAGS=-I${STAGE_EMBEDDED_DIR}/include/json-c "JSON_C_LIBS=-L${STAGE_EMBEDDED_DIR}/lib -ljson-c" "CFLAGS=-I<SOURCE_DIR> -I<SOURCE_DIR>/grammar" LDFLAGS=-L${STAGE_EMBEDDED_DIR}/lib <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED} --with-moddirs=${STAGE_EMBEDDED_DIR}/lib/rsyslog --disable-liblogging-stdlog --disable-libgcrypt --enable-imptcp --enable-mmjsonparse --enable-mmutf8fix --enable-elasticsearch --enable-omkafka
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
 )
