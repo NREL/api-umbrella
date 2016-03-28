@@ -30,6 +30,7 @@ ExternalProject_Add(
   DEPENDS libestr librdkafka
   URL http://www.rsyslog.com/download/files/download/rsyslog/rsyslog-${RSYSLOG_VERSION}.tar.gz
   URL_HASH SHA256=${RSYSLOG_HASH}
-  CONFIGURE_COMMAND env "LIBESTR_LIBS=-L${STAGE_EMBEDDED_DIR}/lib -lestr" "LIBESTR_CFLAGS=-I${STAGE_EMBEDDED_DIR}/include" "LDFLAGS=-L${STAGE_EMBEDDED_DIR}/lib -Wl,-rpath,${INSTALL_PREFIX_EMBEDDED}/lib,-rpath,${STAGE_EMBEDDED_DIR}/lib" <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED} --disable-liblogging-stdlog --disable-libgcrypt --enable-imptcp --enable-mmjsonparse --enable-mmutf8fix --enable-elasticsearch --enable-omkafka
+  BUILD_IN_SOURCE 1
+  CONFIGURE_COMMAND env "LIBESTR_LIBS=-L${STAGE_EMBEDDED_DIR}/lib -lestr" "LIBESTR_CFLAGS=-I${STAGE_EMBEDDED_DIR}/include" "CFLAGS=-I<SOURCE_DIR> -I<SOURCE_DIR>/grammar" LDFLAGS=-L${STAGE_EMBEDDED_DIR}/lib <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED} --with-moddirs=${STAGE_EMBEDDED_DIR}/lib/rsyslog --disable-liblogging-stdlog --disable-libgcrypt --enable-imptcp --enable-mmjsonparse --enable-mmutf8fix --enable-elasticsearch --enable-omkafka
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
 )
