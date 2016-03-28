@@ -113,7 +113,7 @@ class LogSearch::Sql < LogSearch::Base
       @queries[:default][:select] ||= []
       @queries[:default][:select] << "COUNT(*) AS total_count"
 
-      @result_processors << Proc.new do |result|
+      @result_processors << proc do |result|
         count = 0
         column_indexes = result.column_indexes(:default)
         result.raw_result[:default]["results"].each do |row|
@@ -214,8 +214,6 @@ class LogSearch::Sql < LogSearch::Base
     if(query.present?)
       filters = []
       query["rules"].each do |rule|
-        filter = {}
-
         field = rule["field"]
         if(LEGACY_FIELDS[field])
           field = LEGACY_FIELDS[field]
@@ -336,7 +334,7 @@ class LogSearch::Sql < LogSearch::Base
       end
 
       if(filters.present?)
-        where = filters.map { |where| "(#{where})" }
+        where = filters.map { |w| "(#{w})" }
         if(query["condition"] == "OR")
           query_filter = where.join(" OR ")
         else
@@ -470,7 +468,7 @@ class LogSearch::Sql < LogSearch::Base
 
     # Massage the query into the aggregation format matching our old
     # elasticsearch queries.
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       buckets = []
       column_indexes = result.column_indexes(:drilldown)
       result.raw_result[:drilldown]["results"].each do |row|
@@ -495,7 +493,7 @@ class LogSearch::Sql < LogSearch::Base
     top_paths = []
     top_path_indexes = {}
     column_indexes = result.column_indexes(:drilldown)
-    @query_results[:drilldown]["results"][0,10].each_with_index do |row, index|
+    @query_results[:drilldown]["results"][0, 10].each_with_index do |row, index|
       value = row[column_indexes[@drilldown_depth_field]]
       top_path_indexes[value] = index
       if(@drilldown_depth == 0)
@@ -536,7 +534,7 @@ class LogSearch::Sql < LogSearch::Base
 
     # Massage the top_path_hits_over_time query into the aggregation format
     # matching our old elasticsearch queries.
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       buckets = []
       column_indexes = result.column_indexes(:top_path_hits_over_time)
       result.raw_result[:top_path_hits_over_time]["results"].each do |row|
@@ -583,7 +581,7 @@ class LogSearch::Sql < LogSearch::Base
 
     # Massage the hits_over_time query into the aggregation format matching our
     # old elasticsearch queries.
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       time_buckets = {}
       column_indexes = result.column_indexes(:hits_over_time)
       result.raw_result[:hits_over_time]["results"].each do |row|
@@ -610,7 +608,7 @@ class LogSearch::Sql < LogSearch::Base
 
     # Massage the hits_over_time query into the aggregation format matching our
     # old elasticsearch queries.
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       time_buckets = {}
       column_indexes = result.column_indexes(:hits_over_time)
       result.raw_result[:hits_over_time]["results"].each do |row|
@@ -641,7 +639,7 @@ class LogSearch::Sql < LogSearch::Base
     @query[:select] << @sequel.quote_identifier(field)
     @query[:group_by] << @sequel.quote_identifier(field)
 
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       buckets = []
       null_count = 0
       column_indexes = result.column_indexes(:default)
@@ -710,7 +708,7 @@ class LogSearch::Sql < LogSearch::Base
       })
     end
 
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       buckets = []
       column_indexes = result.column_indexes(query_name_top)
       result.raw_result[query_name_top]["results"].each do |row|
@@ -725,7 +723,7 @@ class LogSearch::Sql < LogSearch::Base
       result.raw_result["aggregations"]["top_#{field.pluralize}"]["buckets"] = buckets
     end
 
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       count = 0
       column_indexes = result.column_indexes(query_name_count)
       result.raw_result[query_name_count]["results"].each do |row|
@@ -737,7 +735,7 @@ class LogSearch::Sql < LogSearch::Base
       result.raw_result["aggregations"]["value_count_#{field.pluralize}"]["value"] = count
     end
 
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       count = 0
       # Still populate the NOT NULL fields with a 0 value for compatibility.
       if(!NOT_NULL_FIELDS.include?(field))
@@ -759,7 +757,7 @@ class LogSearch::Sql < LogSearch::Base
     @queries[:default][:select] ||= []
     @queries[:default][:select] << "COUNT(DISTINCT #{@sequel.quote_identifier(field)}) AS #{@sequel.quote_identifier("#{field}_distinct_count")}"
 
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       count = 0
       column_indexes = result.column_indexes(:default)
       result.raw_result[:default]["results"].each do |row|
@@ -776,7 +774,7 @@ class LogSearch::Sql < LogSearch::Base
     aggregate_by_term!(:user_id, size)
     aggregate_by_cardinality!(:user_id)
 
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       result.raw_result["aggregations"]["missing_user_emails"] = result.raw_result["aggregations"].delete("missing_user_ids")
       result.raw_result["aggregations"]["top_user_emails"] = result.raw_result["aggregations"].delete("top_user_ids")
       result.raw_result["aggregations"]["unique_user_emails"] = result.raw_result["aggregations"].delete("unique_user_ids")
@@ -816,11 +814,10 @@ class LogSearch::Sql < LogSearch::Base
       end
     end
 
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       buckets = []
       column_indexes = result.column_indexes(:default)
       result.raw_result[:default]["results"].each do |row|
-        last_request_at = Time.at(row[column_indexes["last_request_at"]].to_i / 1000.0)
         buckets << {
           "key" => row[column_indexes["user_id"]],
           "doc_count" => row[column_indexes["hits"]].to_i,
@@ -842,7 +839,7 @@ class LogSearch::Sql < LogSearch::Base
     @queries[:default][:select] ||= []
     @queries[:default][:select] << "AVG(timer_response) AS average_timer_response"
 
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       average = 0
       column_indexes = result.column_indexes(:default)
       result.raw_result[:default]["results"].each do |row|
@@ -859,7 +856,7 @@ class LogSearch::Sql < LogSearch::Base
     @needs_presto = true
     @query[:select] << "*"
 
-    @result_processors << Proc.new do |result|
+    @result_processors << proc do |result|
       hits = []
       columns = result.raw_result[:default]["columnMetas"].map { |m| m["label"].downcase }
       result.raw_result[:default]["results"].each do |row|

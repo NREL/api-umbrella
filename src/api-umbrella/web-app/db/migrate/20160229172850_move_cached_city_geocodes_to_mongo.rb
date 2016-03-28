@@ -13,7 +13,7 @@ class MoveCachedCityGeocodesToMongo < Mongoid::Migration
       :size => 500,
     })
 
-    while result = client.scroll(:scroll_id => result["_scroll_id"], :scroll => "2m") and !result["hits"]["hits"].empty? do
+    while result = client.scroll(:scroll_id => result["_scroll_id"], :scroll => "2m") && !result["hits"]["hits"].empty? # rubocop:disable Lint/AssignmentInCondition
       result["hits"]["hits"].each do |hit|
         LogCityLocation.create!({
           :_id => hit["_id"],
