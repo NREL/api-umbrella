@@ -4,5 +4,5 @@ ExternalProject_Add(
   URL http://www.unbound.net/downloads/unbound-${UNBOUND_VERSION}.tar.gz
   URL_HASH SHA256=${UNBOUND_HASH}
   CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${TEST_INSTALL_PREFIX}
-  INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
+  INSTALL_COMMAND make install
 )

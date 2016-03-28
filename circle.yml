@@ -17,7 +17,7 @@ dependencies:
     - build/work/stage
     - build/work/test-env
     - build/work/tmp/web-assets
-    - build/work/vendor
+    - test/node_modules
   pre:
     # Stop the older MongoDB 2.4 version in favor of the one bundled with API
     # Umbrella.
@@ -29,7 +29,6 @@ dependencies:
     # Build all the API Umbrella software dependencies.
     - env PATH=build/work/cmake-3.4.3/bin:$PATH cmake .
     - make VERBOSE=1
-    - make test_dependencies VERBOSE=1
     # Remove the "vendor" symlink (to the cached build/work/vendor), since this
     # symlink seems to mess up CircleCI's caching.
     - rm -f vendor

@@ -20,9 +20,8 @@ set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
 set(LUAROCKS_CMD env LUA_PATH=${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?.lua$<SEMICOLON>${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?/init.lua$<SEMICOLON>$<SEMICOLON> ${STAGE_EMBEDDED_DIR}/bin/luarocks)
 
 # Where to install test-only dependencies.
-set(TEST_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/test-env)
-set(TEST_STAGE_PREFIX_DIR ${STAGE_DIR}${TEST_INSTALL_PREFIX})
-set(TEST_VENDOR_DIR ${CMAKE_SOURCE_DIR}/build/test-env)
+set(TEST_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/build/work/test-env)
+set(TEST_VENDOR_DIR ${TEST_INSTALL_PREFIX}/vendor)
 set(TEST_VENDOR_LUA_SHARE_DIR ${TEST_VENDOR_DIR}/share/lua/5.1)
 set(TEST_VENDOR_LUA_LIB_DIR ${TEST_VENDOR_DIR}/lib/lua/5.1)
 

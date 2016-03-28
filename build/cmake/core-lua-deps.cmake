@@ -1,10 +1,11 @@
 # LuaRock app dependencies
-luarocks_install(lua-resty-http ${LUAROCK_RESTY_HTTP_VERSION})
 luarocks_install(argparse ${LUAROCK_ARGPARSE_VERSION})
 luarocks_install(inspect ${LUAROCK_INSPECT_VERSION})
 luarocks_install(libcidr-ffi ${LUAROCK_LIBCIDR_VERSION} CIDR_DIR=${STAGE_EMBEDDED_DIR} libcidr)
 luarocks_install(lua-cmsgpack ${LUAROCK_CMSGPACK_VERSION})
 luarocks_install(lua-iconv ${LUAROCK_ICONV_VERSION})
+luarocks_install(lua-resty-http ${LUAROCK_RESTY_HTTP_VERSION})
+luarocks_install(lua-resty-uuid ${LUAROCK_RESTY_UUID_VERSION})
 luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION})
 luarocks_install(luasocket ${LUAROCK_LUASOCKET_VERSION})
 luarocks_install(luatz ${LUAROCK_LUATZ_VERSION})

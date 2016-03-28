@@ -1,3 +1,11 @@
+add_custom_command(
+  OUTPUT ${CMAKE_SOURCE_DIR}/test/node_modules
+  DEPENDS ${CMAKE_SOURCE_DIR}/test/package.json
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test
+  COMMAND npm install
+    COMMAND npm prune
+)
+
 # CMake policy CMP0037 business to allow target named "test".
 cmake_policy(PUSH)
 if(POLICY CMP0037)
@@ -6,9 +14,8 @@ endif()
 add_custom_target(
   test
   env MOCHA_FILES=$ENV{MOCHA_FILES} npm test
-  DEPENDS lint
+  DEPENDS lint ${CMAKE_SOURCE_DIR}/test/node_modules
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test
   VERBATIM
 )
 cmake_policy(POP)
-

@@ -352,7 +352,7 @@ local function set_computed_config()
   })
 
   if config["app_env"] == "test" then
-    config["_test_env_install_dir"] = path.join(path.dirname(embedded_root_dir), "test-env")
+    config["_test_env_install_dir"] = path.join(src_root_dir, "build/work/test-env")
   end
 end
 
