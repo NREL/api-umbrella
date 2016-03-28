@@ -11,7 +11,34 @@ if test ${1} = "start"; then
   RUN_OPTS="$RUN_OPTS -u {{user}}"
   {{/user}}
 
-  exec runtool $RUN_OPTS rsyslogd -n -f {{etc_dir}}/rsyslog.conf -i {{run_dir}}/rsyslogd.pid
+  exec \
+    runtrap rsyslogd ${0} \
+    runtool $RUN_OPTS \
+    rsyslogd \
+      -n \
+      -f {{etc_dir}}/rsyslog.conf \
+      -i {{run_dir}}/rsyslogd.pid
+fi
+
+# Use runtrap to handle the normal SIGTERM perp sends when rsyslogd is supposed
+# to stop. For some reason rsyslogd seems to require multiple kill attempts to
+# close cleanly (not all the time, but most of the time). Need to debug and
+# file a bug with rsyslog, but as a workaround, send a few SIGTERMs to rsyslogd
+# to try to get it to shutdown cleanly. If it can't, then escalate to more
+# harsh kill signals.
+if test ${1} = "trap" && test ${5} = "SIGTERM"; then
+  echo "stopping ${2}..."
+  PID=${3}
+  SIGNALS=(TERM TERM TERM TERM TERM TERM INT QUIT ABRT KILL)
+  for SIGNAL in "${SIGNALS[@]}"; do
+    echo "attempting to stop ${2} (pid $PID) with signal $SIGNAL"
+    kill -$SIGNAL $PID
+    if ps --no-headers -p $PID | grep -v defunct > /dev/null; then
+      sleep 1
+    else
+      break
+    fi
+  done
 fi
 
 exit 0
