@@ -18,35 +18,32 @@ end
 module ApiUmbrella
   class Application < Rails::Application
     config.before_configuration do
-      default_config = "/opt/api-umbrella/var/run/runtime_config.yml"
-      if(ENV["API_UMBRELLA_RUNTIME_CONFIG"].blank? && File.exist?(default_config) && File.readable?(default_config))
-        ENV["API_UMBRELLA_RUNTIME_CONFIG"] = default_config
+      config_file = ENV["API_UMBRELLA_RUNTIME_CONFIG"]
+
+      # In non-test environments, load the system-wide runtime_config.yml file
+      # if it exists and the API_UMBRELLA_RUNTIME_CONFIG environment variable
+      # isn't set (this allows for more easily running "rails console" on
+      # without having to specify this environment variable). We don't set this
+      # in the test environment, since we don't want development environment
+      # config to be used in test (assuming you're testing from the same
+      # machine you're developing on).
+      if(config_file.blank? && Rails.env != "test")
+        default_runtime_config_file = "/opt/api-umbrella/var/run/runtime_config.yml"
+        if(File.exist?(default_runtime_config_file) && File.readable?(default_runtime_config_file))
+          config_file = default_runtime_config_file
+        end
       end
 
-      if(ENV["API_UMBRELLA_RUNTIME_CONFIG"])
-        ApiUmbrellaConfig.add_source!(ENV["API_UMBRELLA_RUNTIME_CONFIG"])
-        ApiUmbrellaConfig.reload!
+      # If no config environment variable is set and we're not using the
+      # default runtime config file, then fall back to the default.yml file at
+      # the top-level of the api-umbrella repo.
+      if(config_file.blank?)
+        config_file = File.expand_path("../../../../../config/default.yml", __FILE__)
       end
 
-      # Provide default config values for arrays when a real API Umbrella
-      # config file isn't passed in (via the API_UMBRELLA_RUNTIME_CONFIG
-      # environment variable).
-      #
-      # Most defaults should be defined in config/settings.yml, but array
-      # values don't overwrite well with RailsConfig, so we'll define the array
-      # default values here. Revisit if RailsConfig addresses this so arrays
-      # can overwrite, rather than append:
-      # https://github.com/railsconfig/rails_config/issues/12
-      if(ApiUmbrellaConfig[:elasticsearch][:hosts].blank?)
-        ApiUmbrellaConfig[:elasticsearch][:hosts] = ["http://127.0.0.1:9200"]
-      end
-
-      if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].blank?)
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled] = [
-          "github",
-          "persona",
-        ]
-      end
+      # Load the YAML config in.
+      ApiUmbrellaConfig.prepend_source!(config_file)
+      ApiUmbrellaConfig.reload!
 
       require "js_locale_helper"
     end

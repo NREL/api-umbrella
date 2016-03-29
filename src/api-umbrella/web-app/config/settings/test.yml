@@ -8,3 +8,5 @@ web:
         - max.gov
         - myusa
         - persona
+analytics:
+  timezone: America/Denver

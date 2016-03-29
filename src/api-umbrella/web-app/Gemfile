@@ -108,7 +108,7 @@ gem "psych", "~> 2.0.13", :platforms => [:ruby]
 gem "safe_yaml", "~> 1.0.4", :require => "safe_yaml/load"
 
 # YAML configuration files.
-gem "rails_config", "~> 0.4.2"
+gem "config", "~> 1.1.0"
 
 # Delayed jobs and background tasks
 gem "delayed_job_mongoid", "~> 2.1.0"

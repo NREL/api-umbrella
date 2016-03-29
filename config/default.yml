@@ -78,6 +78,8 @@ web:
         - github
         - google
         - persona
+      cas:
+        options:
       facebook:
         client_id:
         client_secret:
@@ -85,6 +87,11 @@ web:
         client_id:
         client_secret:
       google:
+        client_id:
+        client_secret:
+      ldap:
+        options:
+      myusa:
         client_id:
         client_secret:
 static_site:
