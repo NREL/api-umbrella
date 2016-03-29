@@ -1,9 +1,8 @@
 require "csv"
 
 class CsvStreamer
-  def initialize(client, scroll_id, headers = [], &row_block)
-    @client = client
-    @scroll_id = scroll_id
+  def initialize(result, headers = [], &row_block)
+    @result = result
     @headers = headers
     @row_block = row_block
   end
@@ -15,20 +14,12 @@ class CsvStreamer
       @buffer << @headers
     end
 
-    while(scroll = @client.scroll(:scroll_id => @scroll_id, :scroll => "10m")) # rubocop:disable Lint/LiteralInCondition
-      @scroll_id = scroll["_scroll_id"]
-      hits = scroll["hits"]["hits"]
+    @result.bulk_each do |row|
+      @buffer << @row_block.call(row)
 
-      # Break when elasticsearch returns empty hits (we've reached the end).
-      break if hits.empty?
-
-      hits.each do |hit|
-        @buffer << @row_block.call(hit["_source"])
-
-        # Buffer output in groups of 50 rows.
-        if(@buffer.length >= 50)
-          yield(flush_buffer)
-        end
+      # Buffer output in groups of 50 rows.
+      if(@buffer.length >= 50)
+        yield(flush_buffer)
       end
     end
 

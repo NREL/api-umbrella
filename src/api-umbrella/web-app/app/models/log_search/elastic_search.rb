@@ -1,4 +1,6 @@
 class LogSearch::ElasticSearch < LogSearch::Base
+  attr_reader :client
+
   def initialize(options = {})
     super
 

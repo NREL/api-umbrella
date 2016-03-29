@@ -34,7 +34,10 @@ class Admin::StatsController < Admin::BaseController
     # 24 hours. If we do end up limiting it to the last 24 hours by default,
     # figure out a better way to document this and still allow downloading
     # the full data set.
-    start_time = Time.zone.parse(params[:end_at]) - 1.day
+    start_time = params[:start_at]
+    if(ApiUmbrellaConfig[:analytics][:adapter] == "kylin")
+      start_time = Time.zone.parse(params[:end_at]) - 1.day
+    end
     @search = LogSearch.factory({
       :start_time => start_time,
       :end_time => params[:end_at],
@@ -74,11 +77,10 @@ class Admin::StatsController < Admin::BaseController
         # http://stackoverflow.com/a/10252798/222487
         response.headers["Last-Modified"] = Time.now.httpdate
 
-        scroll_id = @result.raw_result["_scroll_id"]
         headers = ["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Reason Denied", "Response Time", "Content Type", "Accept Encoding", "User Agent"]
 
         send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.strftime("%b %-e %Y")}).#{params[:format]}")
-        self.response_body = CsvStreamer.new(@search.client, scroll_id, headers) do |row|
+        self.response_body = CsvStreamer.new(@result, headers) do |row|
           [
             csv_time(row["request_at"]),
             row["request_method"],
