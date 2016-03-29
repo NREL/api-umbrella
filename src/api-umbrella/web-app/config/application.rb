@@ -45,6 +45,24 @@ module ApiUmbrella
       ApiUmbrellaConfig.prepend_source!(config_file)
       ApiUmbrellaConfig.reload!
 
+      # Set the default host used for web application links (for mailers,
+      # contact URLs, etc).
+      #
+      # By default, pick this up from the `hosts` array where `default` has
+      # been set to true (this gets put on `_default_hostname` for easier
+      # access). But still allow the web host to be explicitly set via
+      # `web.default_host`.
+      if(ApiUmbrellaConfig[:web][:default_host].blank?)
+        ApiUmbrellaConfig[:web][:default_host] = ApiUmbrellaConfig[:_default_hostname]
+
+        # Fallback to something that will at least generate valid URLs if
+        # there's no default, or the default is "*" (since in this context, a
+        # wildcard doesn't make sense for generating URLs).
+        if(ApiUmbrellaConfig[:web][:default_host].blank? || ApiUmbrellaConfig[:web][:default_host] == "*")
+          ApiUmbrellaConfig[:web][:default_host] = "localhost"
+        end
+      end
+
       require "js_locale_helper"
     end
 
@@ -151,7 +169,7 @@ module ApiUmbrella
 
     config.action_mailer.raise_delivery_errors = true
     config.action_mailer.default_url_options = {
-      :host => ApiUmbrellaConfig[:default_host],
+      :host => ApiUmbrellaConfig[:web][:default_host],
     }
 
     if(ApiUmbrellaConfig[:web] && ApiUmbrellaConfig[:web][:mailer] && ApiUmbrellaConfig[:web][:mailer][:smtp_settings])

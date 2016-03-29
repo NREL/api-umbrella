@@ -1,5 +1,5 @@
 class ApiUserMailer < ActionMailer::Base
-  default :from => "noreply@#{ApiUmbrellaConfig[:default_host]}"
+  default :from => "noreply@#{ApiUmbrellaConfig[:web][:default_host]}"
 
   def signup_email(user, options)
     @user = user
@@ -9,10 +9,10 @@ class ApiUserMailer < ActionMailer::Base
       @formatted_example_api_url = options[:example_api_url].gsub("api_key={{api_key}}", "<strong>api_key=#{@user.api_key}</strong>")
     end
 
-    @contact_url = options[:contact_url].presence || "http://#{ApiUmbrellaConfig[:default_host]}/contact/"
+    @contact_url = options[:contact_url].presence || "http://#{ApiUmbrellaConfig[:web][:default_host]}/contact/"
     site_name = options[:site_name].presence || ApiUmbrellaConfig[:site_name]
 
-    from = options[:email_from_address].presence || "noreply@#{ApiUmbrellaConfig[:default_host]}"
+    from = options[:email_from_address].presence || "noreply@#{ApiUmbrellaConfig[:web][:default_host]}"
     if(options[:email_from_name].present?)
       from = "#{options[:email_from_name]} <#{from}>"
     end

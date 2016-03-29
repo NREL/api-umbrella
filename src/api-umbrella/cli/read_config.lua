@@ -3,6 +3,7 @@ local array_last = require "api-umbrella.utils.array_last"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
 local file = require "pl.file"
+local host_normalize = require "api-umbrella.utils.host_normalize"
 local lyaml = require "lyaml"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local path = require "pl.path"
@@ -222,6 +223,21 @@ local function set_computed_config()
     _nginx_server_name = "_",
     default = (not default_host_exists),
   })
+
+  local default_hostname
+  if config["hosts"] then
+    for _, host in ipairs(config["hosts"]) do
+      if host["default"] and host["hostname"] then
+        default_hostname = host["hostname"]
+        break
+      end
+    end
+  end
+
+  if default_hostname then
+    config["_default_hostname"] = default_hostname
+    config["_default_hostname_normalized"] = host_normalize(default_hostname)
+  end
 
   -- Determine the nameservers for DNS resolution. Prefer explicitly configured
   -- nameservers, but fallback to nameservers defined in resolv.conf, and then
