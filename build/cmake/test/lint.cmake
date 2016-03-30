@@ -7,5 +7,5 @@ add_custom_target(
 add_custom_target(
   lint
   COMMAND ${CMAKE_BUILD_TOOL} all
-    COMMAND ${CMAKE_BUILD_TOOL} luacheck
+  COMMAND ${CMAKE_BUILD_TOOL} luacheck
 )
