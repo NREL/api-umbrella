@@ -5,7 +5,6 @@ ExternalProject_Add(
   URL https://github.com/NREL/api-umbrella-static-site/archive/${API_UMBRELLA_STATIC_SITE_VERSION}.tar.gz
   URL_HASH MD5=${API_UMBRELLA_STATIC_SITE_HASH}
   BUILD_IN_SOURCE 1
-  UPDATE_COMMAND ""
   CONFIGURE_COMMAND ""
   BUILD_COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} bundle install --path=<SOURCE_DIR>/vendor/bundle
     COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} bundle exec middleman build

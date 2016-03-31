@@ -17,7 +17,6 @@ ExternalProject_Add(
   ngx_txid
   URL https://github.com/streadway/ngx_txid/archive/${NGX_TXID_VERSION}.tar.gz
   URL_HASH MD5=${NGX_TXID_HASH}
-  UPDATE_COMMAND ""
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
