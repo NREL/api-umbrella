@@ -282,6 +282,9 @@ group :development, :test do
 
   # Generate output for CI.
   gem "rspec_junit_formatter", "~> 0.2.3"
+
+  # For running the api-umbrella process as a background process during tests.
+  gem "childprocess", "~> 0.5.9"
 end
 
 group :development do

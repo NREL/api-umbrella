@@ -8,6 +8,10 @@ require 'rspec/rails'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
+#
+# Make sure the integration start processes support file gets required first,
+# so it has an opportunity to set up it's callbacks to start processes first.
+require Rails.root.join("spec/support/integration_start_processes.rb")
 Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 
 RSpec.configure do |config|

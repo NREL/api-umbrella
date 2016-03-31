@@ -141,7 +141,8 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/test/unbound.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/mongo-orchestration.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/lua-deps.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/lint.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/test/npm-test.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/test/test-proxy.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/test/test-web-app.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/test.cmake)
 
 #
