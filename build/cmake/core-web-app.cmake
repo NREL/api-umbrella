@@ -1,11 +1,11 @@
 add_custom_command(
-  OUTPUT ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/vendor/bundle
+  OUTPUT ${WORK_DIR}/vendor/bundle
   DEPENDS bundler ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile.lock
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app
-  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} bundle install --clean --path=vendor/bundle
-    COMMAND touch vendor/bundle
+  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} bundle install --clean --path=${WORK_DIR}/vendor/bundle
+    COMMAND touch ${WORK_DIR}/vendor/bundle
 )
-add_custom_target(web_app_bundle_install ALL DEPENDS ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/vendor/bundle)
+add_custom_target(web_app_bundle_install ALL DEPENDS ${WORK_DIR}/vendor/bundle)
 
 add_custom_command(
   OUTPUT ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/tmp/web-assets
