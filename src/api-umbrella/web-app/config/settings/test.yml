@@ -20,8 +20,8 @@ elasticsearch:
     # Remove the default setting using rails config's knockout_prefix ("--").
     - "--http://127.0.0.1:14002"
     - "http://127.0.0.1:13002"
-<% else %>
-# If not running as part of the integrate test suite, then we assume a
+<% elsif(!ENV["FULL_STACK_TEST"]) %>
+# If not running as part of the integration test suite, then we assume a
 # developer is just running the rails tests a standalone command. In that case,
 # we'll connect to the default API Umbrella ports for databases that we assume
 # are running in the development environment. The only difference is MongoDB,
