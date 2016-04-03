@@ -32,6 +32,8 @@
 /build/package/.bundle
 /build/package/dist
 /build/package/logs
+/build/scripts/.bundle
+/build/scripts/vendor
 /build/work
 /deploy/.env
 /log/*
