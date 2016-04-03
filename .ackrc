@@ -1,6 +1,3 @@
---ignore-dir=admin-bak
---ignore-dir=workspace
---ignore-dir=ember-easy-form
 --ignore-dir=build/work
 --ignore-dir=build/package/dist
 --ignore-dir=src/api-umbrella/web-app/public/web-assets
