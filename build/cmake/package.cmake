@@ -3,6 +3,11 @@ set(CPACK_PACKAGE_VERSION_MINOR 12)
 set(CPACK_PACKAGE_VERSION_PATCH 0)
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE.txt)
 
+SET(CPACK_INSTALL_CMAKE_PROJECTS
+  ${CMAKE_SOURCE_DIR} "api-umbrella" "core" "/"
+  ${CMAKE_SOURCE_DIR} "api-umbrella" "hadoop-analytics" "/"
+)
+
 if(EXISTS "/etc/redhat-release")
   set(CPACK_GENERATOR RPM)
   set(CPACK_RPM_COMPRESSION_TYPE xz)

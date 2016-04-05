@@ -2,10 +2,23 @@ install(
   DIRECTORY ${STAGE_PREFIX_DIR}/
   DESTINATION ${CMAKE_INSTALL_PREFIX}
   USE_SOURCE_PERMISSIONS
+  COMPONENT core
 )
-install(PROGRAMS ${CMAKE_SOURCE_DIR}/build/package/files/etc/init.d/api-umbrella DESTINATION /etc/init.d)
-install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/logrotate.d/api-umbrella DESTINATION /etc/logrotate.d)
-install(FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/sudoers.d/api-umbrella DESTINATION /etc/sudoers.d)
+install(
+  PROGRAMS ${CMAKE_SOURCE_DIR}/build/package/files/etc/init.d/api-umbrella
+  DESTINATION /etc/init.d
+  COMPONENT core
+)
+install(
+  FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/logrotate.d/api-umbrella
+  DESTINATION /etc/logrotate.d
+  COMPONENT core
+)
+install(
+  FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/sudoers.d/api-umbrella
+  DESTINATION /etc/sudoers.d
+  COMPONENT core
+)
 
 # If /etc/api-umbrella/api-umbrella.yml doesn't exist, install it.
 #
@@ -25,4 +38,11 @@ install(
     file(INSTALL ${CMAKE_SOURCE_DIR}/build/package/files/etc/api-umbrella/api-umbrella.yml DESTINATION /etc/api-umbrella RENAME api-umbrella.yml.default)
   endif()
   "
+)
+
+install(
+  DIRECTORY ${HADOOP_ANALYTICS_STAGE_PREFIX_DIR}/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}
+  USE_SOURCE_PERMISSIONS
+  COMPONENT hadoop-analytics
 )

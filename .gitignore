@@ -21,6 +21,7 @@
 /.ruby-version
 
 # CMake
+/_CPack_Packages
 /CMakeCache.txt
 /CMakeFiles
 /CMakeScripts
