@@ -6,5 +6,5 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND mkdir -p ${HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR}/kylin
-    COMMAND rsync -a <SOURCE_DIR>/ ${HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR}/kylin/
+    COMMAND rsync -a --exclude=/sample_cube --delete-after --delete-excluded <SOURCE_DIR>/ ${HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR}/kylin/
 )
