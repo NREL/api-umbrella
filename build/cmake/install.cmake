@@ -31,13 +31,14 @@ install(
 # https://cmake.org/Bug/view.php?id=12646
 install(
   CODE "
-  if(NOT EXISTS /etc/api-umbrella/api-umbrella.yml)
+  if(NOT EXISTS \$ENV{DESTDIR}/etc/api-umbrella/api-umbrella.yml)
     file(INSTALL ${CMAKE_SOURCE_DIR}/build/package/files/etc/api-umbrella/api-umbrella.yml DESTINATION /etc/api-umbrella)
   else()
-    message(STATUS \"Skipping: /etc/api-umbrella/api-umbrella.yml\")
+    message(STATUS \"Skipping: \$ENV{DESTDIR}/etc/api-umbrella/api-umbrella.yml\")
     file(INSTALL ${CMAKE_SOURCE_DIR}/build/package/files/etc/api-umbrella/api-umbrella.yml DESTINATION /etc/api-umbrella RENAME api-umbrella.yml.default)
   endif()
   "
+  COMPONENT core
 )
 
 install(
@@ -45,4 +46,14 @@ install(
   DESTINATION ${CMAKE_INSTALL_PREFIX}
   USE_SOURCE_PERMISSIONS
   COMPONENT hadoop-analytics
+)
+
+add_custom_target(
+  install-core
+  COMMAND ${CMAKE_COMMAND} -D CMAKE_INSTALL_COMPONENT=core -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+)
+
+add_custom_target(
+  install-hadoop-analytics
+  COMMAND ${CMAKE_COMMAND} -D CMAKE_INSTALL_COMPONENT=hadoop-analytics -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
 )

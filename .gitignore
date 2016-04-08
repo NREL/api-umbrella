@@ -31,8 +31,8 @@
 /cmake_install.cmake
 
 /build/package/.bundle
-/build/package/dist
 /build/package/logs
+/build/package/vendor
 /build/scripts/.bundle
 /build/scripts/vendor
 /build/work
