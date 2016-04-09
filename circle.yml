@@ -24,7 +24,7 @@ dependencies:
     - if [[ ! -e build/work/cmake-3.4.3/bin/cmake ]]; then mkdir -p build/work/cmake-3.4.3 && curl -L https://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz | tar --strip-components 1 -C build/work/cmake-3.4.3 -xz; fi
   override:
     # Build all the API Umbrella software dependencies.
-    - env PATH=build/work/cmake-3.4.3/bin:$PATH cmake .
+    - env PATH=build/work/cmake-3.4.3/bin:$PATH ./configure --enable-test-dependencies
     - make VERBOSE=1
     # Remove the "vendor" symlink (to the cached build/work/vendor), since this
     # symlink seems to mess up CircleCI's caching.
