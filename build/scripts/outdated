@@ -131,6 +131,9 @@ repos = {
   "perp" => {
     :http => "http://b0llix.net/perp/site.cgi?page=download",
   },
+  "presto" => {
+    :git => "https://github.com/facebook/presto.git",
+  },
   "ruby" => {
     :git => "https://github.com/ruby/ruby.git",
     :constraint => "~> 2.2.4",

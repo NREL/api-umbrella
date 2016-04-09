@@ -60,6 +60,8 @@ set(PCRE_VERSION 8.38)
 set(PCRE_HASH 00aabbfe56d5a48b270f999b508c5ad2)
 set(PERP_VERSION 2.07)
 set(PERP_HASH a2acc7425d556d9635a25addcee9edb5)
+set(PRESTO_VERSION 0.144)
+set(PRESTO_HASH bf0bad6556e81473b35b9b2968d57300)
 set(RUBY_VERSION 2.2.4)
 set(RUBY_HASH 31203696adbfdda6f2874a2de31f7c5a1f3bcb6628f4d1a241de21b158cd5c76)
 # Hold at rsyslog 8.14.0 until ElasticSearch issues are fixed (hopefully 8.18):
