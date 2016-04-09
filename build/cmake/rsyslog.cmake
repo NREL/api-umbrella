@@ -31,24 +31,51 @@ ExternalProject_Add(
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
 )
 
-ExternalProject_Add(
-  librdkafka
-  URL https://github.com/edenhill/librdkafka/archive/${LIBRDKAFKA_VERSION}.tar.gz
-  URL_HASH MD5=${LIBRDKAFKA_HASH}
-  BUILD_IN_SOURCE 1
-  CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED}
-  INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
-)
+if(ENABLE_HADOOP_ANALYTICS)
+  ExternalProject_Add(
+    librdkafka
+    URL https://github.com/edenhill/librdkafka/archive/${LIBRDKAFKA_VERSION}.tar.gz
+    URL_HASH MD5=${LIBRDKAFKA_HASH}
+    BUILD_IN_SOURCE 1
+    CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED}
+    INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
+  )
+endif()
+
+list(APPEND RSYSLOG_DEPENDS libestr)
+if(ENABLE_HADOOP_ANALYTICS)
+  list(APPEND RSYSLOG_DEPENDS librdkafka)
+endif()
+
+# --with-moddirs required to allow things to work in staged location, as well
+# as install location. Extra CFLAGS are needed when --with-moddirs is given
+# (since these default values go missing).
+list(APPEND RSYSLOG_CONFIGURE_CMD env)
+list(APPEND RSYSLOG_CONFIGURE_CMD LIBESTR_CFLAGS=-I${STAGE_EMBEDDED_DIR}/include)
+list(APPEND RSYSLOG_CONFIGURE_CMD "LIBESTR_LIBS=-L${STAGE_EMBEDDED_DIR}/lib -lestr")
+list(APPEND RSYSLOG_CONFIGURE_CMD JSON_C_CFLAGS=-I${STAGE_EMBEDDED_DIR}/include/json-c)
+list(APPEND RSYSLOG_CONFIGURE_CMD "JSON_C_LIBS=-L${STAGE_EMBEDDED_DIR}/lib -ljson-c")
+list(APPEND RSYSLOG_CONFIGURE_CMD "CFLAGS=-I<SOURCE_DIR> -I<SOURCE_DIR>/grammar")
+list(APPEND RSYSLOG_CONFIGURE_CMD LDFLAGS=-L${STAGE_EMBEDDED_DIR}/lib)
+list(APPEND RSYSLOG_CONFIGURE_CMD <SOURCE_DIR>/configure)
+list(APPEND RSYSLOG_CONFIGURE_CMD --prefix=${INSTALL_PREFIX_EMBEDDED})
+list(APPEND RSYSLOG_CONFIGURE_CMD --with-moddirs=${STAGE_EMBEDDED_DIR}/lib/rsyslog)
+list(APPEND RSYSLOG_CONFIGURE_CMD --disable-liblogging-stdlog)
+list(APPEND RSYSLOG_CONFIGURE_CMD --disable-libgcrypt)
+list(APPEND RSYSLOG_CONFIGURE_CMD --enable-imptcp)
+list(APPEND RSYSLOG_CONFIGURE_CMD --enable-mmjsonparse)
+list(APPEND RSYSLOG_CONFIGURE_CMD --enable-mmutf8fix)
+list(APPEND RSYSLOG_CONFIGURE_CMD --enable-elasticsearch)
+if(ENABLE_HADOOP_ANALYTICS)
+  list(APPEND RSYSLOG_CONFIGURE_CMD --enable-omkafka)
+endif()
 
 ExternalProject_Add(
   rsyslog
-  DEPENDS libestr librdkafka
+  DEPENDS ${RSYSLOG_DEPENDS}
   URL http://www.rsyslog.com/download/files/download/rsyslog/rsyslog-${RSYSLOG_VERSION}.tar.gz
   URL_HASH SHA256=${RSYSLOG_HASH}
   BUILD_IN_SOURCE 1
-  # --with-moddirs required to allow things to work in staged location, as well
-  # as install location. Extra CFLAGS are needed when --with-moddirs is given
-  # (since these default values go missing).
-  CONFIGURE_COMMAND env LIBESTR_CFLAGS=-I${STAGE_EMBEDDED_DIR}/include "LIBESTR_LIBS=-L${STAGE_EMBEDDED_DIR}/lib -lestr" JSON_C_CFLAGS=-I${STAGE_EMBEDDED_DIR}/include/json-c "JSON_C_LIBS=-L${STAGE_EMBEDDED_DIR}/lib -ljson-c" "CFLAGS=-I<SOURCE_DIR> -I<SOURCE_DIR>/grammar" LDFLAGS=-L${STAGE_EMBEDDED_DIR}/lib <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED} --with-moddirs=${STAGE_EMBEDDED_DIR}/lib/rsyslog --disable-liblogging-stdlog --disable-libgcrypt --enable-imptcp --enable-mmjsonparse --enable-mmutf8fix --enable-elasticsearch --enable-omkafka
+  CONFIGURE_COMMAND ${RSYSLOG_CONFIGURE_CMD}
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
 )

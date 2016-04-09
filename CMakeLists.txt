@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
 project(api-umbrella)
 
+option(ENABLE_HADOOP_ANALYTICS "Build dependencies for Hadoop analytics" off)
+option(ENABLE_TEST_DEPENDENCIES "Build dependencies for running tests" off)
+
 # Installation prefix
-set(CMAKE_INSTALL_PREFIX /opt/api-umbrella)
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX /opt/api-umbrella CACHE PATH "default install path" FORCE)
+endif()
 set(INSTALL_PREFIX_EMBEDDED ${CMAKE_INSTALL_PREFIX}/embedded)
 
 # Where to install cmake ExternalProjects.
@@ -49,8 +54,6 @@ require_program(rsync)
 
 include(${CMAKE_SOURCE_DIR}/build/cmake/versions.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/elasticsearch.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/flume.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/kylin.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/libcidr.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/libgeoip.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/mongodb.cmake)
@@ -58,7 +61,6 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/mora.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/openresty.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/luarocks.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/perp.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/presto.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/runit_svlogd.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/ruby.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/rsyslog.cmake)
@@ -67,13 +69,20 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/static-site.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-lua-deps.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-web-app.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core.cmake)
+if(ENABLE_HADOOP_ANALYTICS)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/flume.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/kylin.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/presto.cmake)
+endif()
 
 #
 # Testing
 #
-include(${CMAKE_SOURCE_DIR}/build/cmake/test/unbound.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/test/mongo-orchestration.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/test/lua-deps.cmake)
+if(ENABLE_TEST_DEPENDENCIES)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/test/unbound.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/test/mongo-orchestration.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/test/lua-deps.cmake)
+endif()
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/lint.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/test-proxy.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/test-web-app.cmake)

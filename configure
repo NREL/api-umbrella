@@ -33,6 +33,9 @@ if [ -e "${TOP_SRCDIR}/.configure-custom.sh" ]; then
     . "${TOP_SRCDIR}/.configure-custom.sh"
 fi
 
+PREFIX=/opt/api-umbrella
+ENABLE_VARS="hadoop-analytics|on|ENABLE_HADOOP_ANALYTICS test-dependencies|on|ENABLE_TEST_DEPENDENCIES"
+
 quote() {
     echo "$1" | sed -e "s|'|'\\\\''|g; 1s/^/'/; \$s/\$/'/"
 }
@@ -100,26 +103,10 @@ prefix_to_offset() {
 print_help() {
     cat <<EOF >&2
   -h, --help              display this help and exit
-  --disable-debug         disable debugging mode
   --pass-thru             pass remaining arguments through to CMake
 
   --prefix=PREFIX         install architecture-independent files in PREFIX
                           [$PREFIX]
-  --bindir=DIR            user executables [PREFIX/bin]
-  --sbindir=DIR           system admin executables [PREFIX/sbin]
-  --libexecdir=DIR        program executables [PREFIX/libexec]
-  --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
-  --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
-  --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --libdir=DIR            object code libraries [PREFIX/lib]
-  --includedir=DIR        C header files [PREFIX/include]
-  --oldincludedir=DIR     C header files for non-gcc [/usr/include]
-  --datarootdir=DIR       read-only arch.-independent data root [PREFIX/share]
-  --datadir=DIR           read-only architecture-independent data [DATAROOTDIR]
-  --infodir=DIR           info documentation [DATAROOTDIR/info]
-  --localedir=DIR         locale-dependent data [DATAROOTDIR/locale]
-  --mandir=DIR            man documentation [DATAROOTDIR/man]
-  --docdir=DIR            documentation root [DATAROOTDIR/doc/PROJECT_NAME]
 EOF
 
     first=y
@@ -312,4 +299,4 @@ if [ "x${LDFLAGS}" != "x" ]; then
     done
 fi
 
-eval "cmake ${TOP_SRCDIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_INSTALL_LIBDIR=${LIBDIR} ${CMAKE_ARGS}"
+eval "cmake ${TOP_SRCDIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${PREFIX} ${CMAKE_ARGS}"
