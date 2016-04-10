@@ -78,7 +78,10 @@ ExternalProject_Add(
   # Patch OpenResty 1.9.7.4 so OpenSSL 1.0.2g doesn't spew tons of SSL_shutdown
   # errors in the logs. Shouldn't be necessary once OpenResty 1.9.12+ comes out.
   # See: https://trac.nginx.org/nginx/ticket/901
-  BUILD_COMMAND patch -d build/nginx-1.9.7 -p1 < ${CMAKE_SOURCE_DIR}/build/patches/openresty/0001-SSL-avoid-calling-SSL_shutdown-during-handshake-tick.patch
+  BUILD_COMMAND grep -q "OpenSSL 1.0.2f complains" <SOURCE_DIR>/build/nginx-1.9.7/src/event/ngx_event_openssl.c || patch -d build/nginx-1.9.7 --forward -p1 < ${CMAKE_SOURCE_DIR}/build/patches/openresty/0001-SSL-avoid-calling-SSL_shutdown-during-handshake-tick.patch
+    # Wipe the .openssl directory inside the openssl dir, or else openresty
+    # will fail to build on rebuilds: https://trac.nginx.org/nginx/ticket/583
+    COMMAND cd ${OPENSSL_SOURCE_DIR} && rm -rf .openssl
     COMMAND make
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
     COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../openresty/bin/resty ./resty
