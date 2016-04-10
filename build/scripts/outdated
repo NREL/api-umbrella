@@ -163,11 +163,11 @@ repos = {
 luarocks_manifest = JSON.load(open("https://luarocks.org/manifest.json"))
 
 def luarock_version_to_semver(version)
-  version.gsub(/-(\d+)$/, '.\1')
+  version.gsub(/-(\d+)$/, '.0.0.\1')
 end
 
 def semver_to_luarock_version(version)
-  version.gsub(/\.(\d+)$/, '-\1')
+  version.gsub(/\.0\.0\.(\d+)$/, '-\1')
 end
 
 def tag_to_semver(name, tag)
