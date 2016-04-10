@@ -8,7 +8,7 @@ add_custom_command(
 
 add_custom_target(
   test-proxy-target
-  env MOCHA_FILES=$ENV{MOCHA_FILES} npm test
+  COMMAND npm test
   DEPENDS ${CMAKE_SOURCE_DIR}/test/node_modules
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test
 )
