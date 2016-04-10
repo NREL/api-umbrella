@@ -99,6 +99,14 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/install.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/package.cmake)
 
 #
+# Clean Task
+#
+add_custom_target(
+  distclean
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/build/cmake/distclean.cmake
+)
+
+#
 # Outdated Dependencies Check
 #
 include(${CMAKE_SOURCE_DIR}/build/cmake/outdated.cmake)

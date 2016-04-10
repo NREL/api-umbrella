@@ -1,7 +1,7 @@
 # Kylin: Hadoop-based analytics database
 ExternalProject_Add(
   kylin
-  URL https://archive.apache.org/dist/kylin/apache-kylin-${KYLIN_VERSION}/apache-kylin-${KYLIN_VERSION}-bin.tar.gz
+  URL http://mirrors.sonic.net/apache/kylin/apache-kylin-${KYLIN_VERSION}/apache-kylin-${KYLIN_VERSION}-bin.tar.gz
   URL_HASH MD5=${KYLIN_HASH}
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""

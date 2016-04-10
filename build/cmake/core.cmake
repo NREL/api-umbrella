@@ -12,11 +12,12 @@ add_custom_command(
     COMMAND mkdir -p ${STAGE_PREFIX_DIR}/bin
     COMMAND cd ${STAGE_PREFIX_DIR}/bin && ln -snf ../embedded/apps/core/current/bin/api-umbrella ./api-umbrella
     # Copy all of the vendor files into place.
+    COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core/shared/vendor
     COMMAND rsync -a --delete-after ${VENDOR_DIR}/ ${STAGE_EMBEDDED_DIR}/apps/core/shared/vendor/
     COMMAND cd ${STAGE_EMBEDDED_DIR}/apps/core/releases/${RELEASE_TIMESTAMP} && ln -snf ../../shared/vendor ./vendor
     # Copy the precompiled assets into place.
     COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core/shared/src/api-umbrella/web-app/public/web-assets
-    COMMAND rsync -a --delete-after ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/tmp/web-assets/ ${STAGE_EMBEDDED_DIR}/apps/core/shared/src/api-umbrella/web-app/public/web-assets/
+    COMMAND rsync -a --delete-after ${WORK_DIR}/tmp/web-app-precompiled-assets/ ${STAGE_EMBEDDED_DIR}/apps/core/shared/src/api-umbrella/web-app/public/web-assets/
     COMMAND cd ${STAGE_EMBEDDED_DIR}/apps/core/releases/${RELEASE_TIMESTAMP}/src/api-umbrella/web-app/public && ln -snf ../../../../../../shared/src/api-umbrella/web-app/public/web-assets ./web-assets
     # Re-run the bundle install inside the release directory, but disabling
     # non-production gem groups. Combined with the clean flag, this deletes all
