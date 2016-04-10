@@ -179,7 +179,7 @@ add_custom_command(
   DEPENDS ${CMAKE_SOURCE_DIR}/build/package/Gemfile ${CMAKE_SOURCE_DIR}/build/package/Gemfile.lock
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/build/package
   COMMAND bundle install --clean --path=${CMAKE_SOURCE_DIR}/build/package/vendor/bundle
-    COMMAND touch ${CMAKE_SOURCE_DIR}/build/package/vendor/bundle
+    COMMAND touch -c ${CMAKE_SOURCE_DIR}/build/package/vendor/bundle
 )
 
 set(FPM_ARGS)
