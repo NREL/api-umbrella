@@ -1,5 +1,5 @@
 add_custom_command(
-  OUTPUT ${WORK_DIR}/vendor/bundle
+  OUTPUT ${WORK_DIR}/vendor/bundle ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/.bundle/config
   DEPENDS bundler ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile.lock
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app
   COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} bundle install --clean --path=${WORK_DIR}/vendor/bundle
