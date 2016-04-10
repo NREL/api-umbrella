@@ -36,7 +36,4 @@ fi
 
 export PATH=$API_UMBRELLA_EMBEDDED_ROOT/sbin:$API_UMBRELLA_EMBEDDED_ROOT/bin:$PATH
 
-source $API_UMBRELLA_SRC_ROOT/src/api-umbrella/version.sh
-export API_UMBRELLA_VERSION
-
 exec $API_UMBRELLA_SRC_ROOT/bin/api-umbrella-cli "$@"
