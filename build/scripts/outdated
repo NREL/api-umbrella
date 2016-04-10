@@ -88,6 +88,9 @@ repos = {
   "luarock_penlight" => {
     :luarock => "penlight",
   },
+  "luarock_resty_auto_ssl" => {
+    :luarock => "lua-resty-auto-ssl",
+  },
   "luarock_resty_http" => {
     :luarock => "lua-resty-http",
   },
@@ -124,6 +127,10 @@ repos = {
   },
   "openresty" => {
     :git => "https://github.com/openresty/openresty.git",
+  },
+  "openssl" => {
+    :git => "https://github.com/openssl/openssl.git",
+    :string_version => true,
   },
   "pcre" => {
     :http => "http://ftp.csx.cam.ac.uk/pub/software/programming/pcre/",
@@ -182,7 +189,7 @@ def tag_to_semver(name, tag)
   case(name)
   when "golang"
     tag.gsub!(/^go/, "")
-  when "ruby"
+  when "openssl", "ruby"
     tag.gsub!(/_/, ".")
   end
 
@@ -251,6 +258,11 @@ versions_content.each_line do |line|
     tags.map! { |f| tag_to_semver(name, File.basename(f, ".tar")) }
   end
 
+  case(name)
+  when "openssl"
+    tags.select! { |tag| tag =~ /^\d+\.\d+\.\d+[a-z]?$/ }
+  end
+
   tags.compact!
   tags.uniq!
   tags.each do |tag|
@@ -295,9 +307,9 @@ puts ""
 
 versions.each do |name, info|
   name_column = name.ljust(32)
-  if(info[:wanted_version] != info[:current_version])
+  if(info[:wanted_version].to_s != info[:current_version].to_s)
     print Rainbow(name_column).red
-  elsif(info[:current_version] != info[:latest_version])
+  elsif(info[:current_version].to_s != info[:latest_version].to_s)
     print Rainbow(name_column).yellow
   else
     print name_column

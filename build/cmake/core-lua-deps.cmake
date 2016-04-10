@@ -4,6 +4,7 @@ luarocks_install(inspect ${LUAROCK_INSPECT_VERSION})
 luarocks_install(libcidr-ffi ${LUAROCK_LIBCIDR_VERSION} CIDR_DIR=${STAGE_EMBEDDED_DIR} libcidr)
 luarocks_install(lua-cmsgpack ${LUAROCK_CMSGPACK_VERSION})
 luarocks_install(lua-iconv ${LUAROCK_ICONV_VERSION})
+luarocks_install(lua-resty-auto-ssl ${LUAROCK_RESTY_AUTO_SSL_VERSION})
 luarocks_install(lua-resty-http ${LUAROCK_RESTY_HTTP_VERSION})
 luarocks_install(lua-resty-uuid ${LUAROCK_RESTY_UUID_VERSION})
 luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION})
@@ -43,5 +44,5 @@ ExternalProject_Add(
 
 add_custom_target(
   core-lua-deps
-  DEPENDS luarock_argparse luarock_inspect luarock_libcidr-ffi luarock_lua-cmsgpack luarock_lua-iconv luarock_lua-resty-http luarock_lua-resty-uuid luarock_luaposix luarock_luasocket luarock_luatz luarock_lustache luarock_lyaml luarock_penlight lua_resty_dns_cache lua_resty_logger_socket lua_resty_shcache
+  DEPENDS luarock_argparse luarock_inspect luarock_libcidr-ffi luarock_lua-cmsgpack luarock_lua-iconv luarock_lua-resty-auto-ssl luarock_lua-resty-http luarock_lua-resty-uuid luarock_luaposix luarock_luasocket luarock_luatz luarock_lustache luarock_lyaml luarock_penlight lua_resty_dns_cache lua_resty_logger_socket lua_resty_shcache
 )
