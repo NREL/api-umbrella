@@ -35,6 +35,10 @@ dependencies:
     # Build all the API Umbrella software dependencies.
     - env PATH=build/work/cmake-3.4.3/bin:$PATH ./configure --enable-test-dependencies
     - make
+    # Remove the download archives, since we don't need to cache these in
+    # CircleCI, and doing so also leads to multiple versions being kept around
+    # whenever we bump our dependency versions.
+    - make clean-download-archives
 compile:
   override:
     # Don't perform any compile tasks that CircleCI infers. We'll run our
