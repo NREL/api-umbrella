@@ -19,6 +19,12 @@ dependencies:
     # Install a newer version of CMake than is available on Ubuntu 12.04 (we
     # need 2.8.10+ for ExternalProject_Add URL_HASH compatibility).
     - if [[ ! -e build/work/cmake-3.4.3/bin/cmake ]]; then mkdir -p build/work/cmake-3.4.3 && curl -L https://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz | tar --strip-components 1 -C build/work/cmake-3.4.3 -xz; fi
+    # Set the local file timestamps based on when they were last modified in
+    # git. This helps prevent unnecessary rebuilds in the CI environment, since
+    # make is dependent on file timestamps and every CI test run operates on a
+    # fresh clone.
+    - if [[ ! -e build/work/git-restore-mtime ]]; then curl https://raw.githubusercontent.com/MestreLion/git-tools/0fc841a3e49d041576e5b21d1644c8df2d2ef801/git-restore-mtime > build/work/git-restore-mtime && chmod +x build/work/git-restore-mtime; fi
+    - ./build/work/git-restore-mtime -f .
   override:
     # Build all the API Umbrella software dependencies.
     - env PATH=build/work/cmake-3.4.3/bin:$PATH ./configure --enable-test-dependencies
