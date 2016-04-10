@@ -248,9 +248,6 @@ group :development, :test do
   # Ruby lint/style checker
   gem "rubocop", "~> 0.27.1", :require => false
 
-  # Code coverage testing
-  gem "coveralls", "~> 0.8.0", :require => false
-
   # Real browser testing
   gem "capybara", "~> 2.5.0"
 
