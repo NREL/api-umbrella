@@ -5,7 +5,6 @@ add_custom_command(
 	# Create a new release directory, copying the relevant source code from the
 	# current repo checkout into the release (but excluding tests, etc).
   COMMAND rm -rf ${STAGE_EMBEDDED_DIR}/apps/core/releases
-    COMMAND env
     COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core/releases/${RELEASE_TIMESTAMP}
     COMMAND	rsync -a --delete-after --delete-excluded "--filter=:- ${CMAKE_SOURCE_DIR}/.gitignore" --include=/templates/etc/perp/.boot --exclude=.* --exclude=/templates/etc/test-env* --exclude=/templates/etc/perp/test-env* --exclude=/src/api-umbrella/web-app/spec --exclude=/src/api-umbrella/web-app/app/assets --exclude=/src/api-umbrella/hadoop-analytics --include=/bin/*** --include=/config/*** --include=/LICENSE.txt --include=/templates/*** --include=/src/*** --exclude=* ${CMAKE_SOURCE_DIR}/ ${STAGE_EMBEDDED_DIR}/apps/core/releases/${RELEASE_TIMESTAMP}/
     COMMAND cd ${STAGE_EMBEDDED_DIR}/apps/core && ln -snf releases/${RELEASE_TIMESTAMP} ./current
