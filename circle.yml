@@ -14,6 +14,9 @@ machine:
 dependencies:
   cache_directories:
     - build/work
+    - CMakeCache.txt
+    - CMakeFiles
+    - cmake_install.cmake
     - test/node_modules
   pre:
     # Install a newer version of CMake than is available on Ubuntu 12.04 (we
