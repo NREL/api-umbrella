@@ -16,9 +16,6 @@ dependencies:
     - build/work
     - test/node_modules
   pre:
-    # Stop the older MongoDB 2.4 version in favor of the one bundled with API
-    # Umbrella.
-    - sudo stop mongodb
     # Install a newer version of CMake than is available on Ubuntu 12.04 (we
     # need 2.8.10+ for ExternalProject_Add URL_HASH compatibility).
     - if [[ ! -e build/work/cmake-3.4.3/bin/cmake ]]; then mkdir -p build/work/cmake-3.4.3 && curl -L https://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz | tar --strip-components 1 -C build/work/cmake-3.4.3 -xz; fi
