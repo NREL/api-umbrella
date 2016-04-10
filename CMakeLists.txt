@@ -24,7 +24,7 @@ set(HADOOP_ANALYTICS_STAGE_PREFIX_DIR ${HADOOP_ANALYTICS_STAGE_DIR}${CMAKE_INSTA
 set(HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR ${HADOOP_ANALYTICS_STAGE_DIR}${INSTALL_PREFIX_EMBEDDED})
 
 # Where to install app-level vendor dependencies.
-set(VENDOR_DIR ${STAGE_EMBEDDED_DIR}/apps/core/shared/vendor)
+set(VENDOR_DIR ${WORK_DIR}/vendor)
 set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
 set(LUAROCKS_CMD env LUA_PATH=${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?.lua$<SEMICOLON>${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?/init.lua$<SEMICOLON>$<SEMICOLON> ${STAGE_EMBEDDED_DIR}/bin/luarocks)
 

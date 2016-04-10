@@ -1,6 +1,6 @@
 add_custom_command(
   OUTPUT ${STAGE_EMBEDDED_DIR}/apps/core/releases/${RELEASE_TIMESTAMP}
-  DEPENDS web_app_assets_precompile
+  DEPENDS web_app_assets_precompile core-lua-deps
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app
 	# Create a new release directory, copying the relevant source code from the
 	# current repo checkout into the release (but excluding tests, etc).
@@ -12,7 +12,7 @@ add_custom_command(
     COMMAND mkdir -p ${STAGE_PREFIX_DIR}/bin
     COMMAND cd ${STAGE_PREFIX_DIR}/bin && ln -snf ../embedded/apps/core/current/bin/api-umbrella ./api-umbrella
     # Copy all of the vendor files into place.
-    COMMAND rsync -a --delete-after ${WORK_DIR}/vendor/ ${STAGE_EMBEDDED_DIR}/apps/core/shared/vendor/
+    COMMAND rsync -a --delete-after ${VENDOR_DIR}/ ${STAGE_EMBEDDED_DIR}/apps/core/shared/vendor/
     COMMAND cd ${STAGE_EMBEDDED_DIR}/apps/core/releases/${RELEASE_TIMESTAMP} && ln -snf ../../shared/vendor ./vendor
     # Copy the precompiled assets into place.
     COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core/shared/src/api-umbrella/web-app/public/web-assets
