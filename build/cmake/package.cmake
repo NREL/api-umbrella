@@ -252,8 +252,14 @@ add_custom_target(
   COMMAND rm -rf ${WORK_DIR}/package-dest-hadoop-analytics
 )
 
+# CMake policy CMP0037 to allow target named "test".
+cmake_policy(PUSH)
+if(POLICY CMP0037)
+  cmake_policy(SET CMP0037 OLD)
+endif()
 add_custom_target(
   package
   COMMAND ${CMAKE_BUILD_TOOL} package-core
   COMMAND ${CMAKE_BUILD_TOOL} package-hadoop-analytics
 )
+cmake_policy(POP)
