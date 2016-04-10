@@ -37,6 +37,16 @@ set(TEST_VENDOR_LUA_LIB_DIR ${TEST_VENDOR_DIR}/lib/lua/5.1)
 # Define a timestamped release name for our app installations.
 execute_process(COMMAND date -u +%Y%m%d%H%M%S OUTPUT_VARIABLE RELEASE_TIMESTAMP OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+# Unset some problematic environment variables that might be set.
+#
+# These environment variables come from RVM (which our CircleCI environment
+# uses) which causes conflicts with our Ruby installation.
+unset(ENV{GEM_HOME})
+unset(ENV{GEM_PATH})
+unset(ENV{IRBRC})
+unset(ENV{MY_RUBY_HOME})
+unset(ENV{RUBY_VERSION})
+
 include(ExternalProject)
 
 function(require_program name)
