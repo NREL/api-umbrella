@@ -242,6 +242,12 @@ local function activate_services()
         end
       end
 
+      if not config["_service_hadoop_db_enabled?"] then
+        if array_includes({ "flume", "kylin", "presto" }, service_name) then
+          is_active = false
+        end
+      end
+
       if not config["_service_router_enabled?"] then
         if array_includes({ "geoip-auto-updater", "mora", "nginx", "rsyslog", "trafficserver" }, service_name) then
           is_active = false

@@ -346,6 +346,7 @@ local function set_computed_config()
     },
     ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
+    ["_service_hadoop_db_enabled?"] = array_includes(config["services"], "hadoop_db"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
     ["_service_nginx_reloader_enabled?"] = (array_includes(config["services"], "router") and config["nginx"]["_reloader_frequency"]),
