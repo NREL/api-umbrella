@@ -1,3 +1,5 @@
+find_package(Java 1.7 REQUIRED COMPONENTS Runtime)
+
 # Elasticsearch: Analytics database
 ExternalProject_Add(
   elasticsearch

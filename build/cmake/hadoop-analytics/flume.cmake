@@ -1,3 +1,5 @@
+find_package(Java 1.7 REQUIRED COMPONENTS Runtime)
+
 # Flume: Hadoop log buffering and writing
 ExternalProject_Add(
   flume

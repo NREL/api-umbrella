@@ -1,3 +1,5 @@
+find_package(Java 1.7 REQUIRED COMPONENTS Runtime)
+
 # Presto: ANSI-SQL queries against Hadoop Hive tables.
 ExternalProject_Add(
   presto

@@ -1,3 +1,5 @@
+find_package(Java 1.7 REQUIRED COMPONENTS Runtime)
+
 # Kylin: Hadoop-based analytics database
 ExternalProject_Add(
   kylin
