@@ -1,3 +1,5 @@
+require "mail_sanitizer"
+
 class ApiUserMailer < ActionMailer::Base
   default :from => "noreply@#{ApiUmbrellaConfig[:default_host]}"
 
@@ -18,7 +20,7 @@ class ApiUserMailer < ActionMailer::Base
     end
 
     mail :subject => "Your #{site_name} API key",
-      :from => from,
-      :to => user.email
+      :from => MailSanitizer.sanitize_address(from),
+      :to => MailSanitizer.sanitize_address(user.email)
   end
 end
