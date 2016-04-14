@@ -25,17 +25,6 @@ Once you have API Umbrella up and running, there are a variety of things you can
 
 Are you interested in working on the code behind API Umbrella? See our [development setup guide](http://nrel.github.io/api-umbrella/docs/development-setup/) to see how you can get a local development environment setup.
 
-## Projects
-
-In addition to this project, API Umbrella is made up of the following subprojects:
-
-* [api-umbrella-gatekeeper](https://github.com/NREL/api-umbrella-gatekeeper) - The gatekeeper is a custom reverse proxy that sits in front of your APIs and efficiently validates incoming requests.
-* [api-umbrella-router](https://github.com/NREL/api-umbrella-router) - The router provides the necessary configuration to join together API Umbrealla Gatekeeper with other open source proxies.
-* [api-umbrella-web](https://github.com/NREL/api-umbrella-web) - The web component provides the website frontend and web admin tool.
-* [api-umbrella-static-site](https://github.com/NREL/api-umbrella-static-site) - The static site provides the public website content using a static site generator.
-* [api-umbrella-config](https://github.com/NREL/api-umbrella-config) - Provides configuration file parsing for the other API Umbrella components.
-* [omnibus-api-umbrella](https://github.com/NREL/omnibus-api-umbrella) - Omnibus packaging for API Umbrella
-
 ## Who's using API Umbrella?
 
 * [api.data.gov](http://api.data.gov/)
