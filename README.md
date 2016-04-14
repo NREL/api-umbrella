@@ -15,15 +15,15 @@ API Umbrella is an open source API management platform for exposing web service 
 
 ## Download
 
-Binary packages are available for [download](http://nrel.github.io/api-umbrella/download/). Follow the quick setup instructions on the download page to begin running API Umbrella.
+Binary packages are available for [download](https://apiumbrella.io/install/). Follow the quick setup instructions on the download page to begin running API Umbrella.
 
 ## Getting Started
 
-Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](http://nrel.github.io/api-umbrella/docs/getting-started/).
+Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](https://api-umbrella.readthedocs.org/en/latest/getting-started.html).
 
 ## API Umbrella Development
 
-Are you interested in working on the code behind API Umbrella? See our [development setup guide](http://nrel.github.io/api-umbrella/docs/development-setup/) to see how you can get a local development environment setup.
+Are you interested in working on the code behind API Umbrella? See our [development setup guide](https://api-umbrella.readthedocs.org/en/latest/developer/dev-setup.html) to see how you can get a local development environment setup.
 
 ## Who's using API Umbrella?
 
