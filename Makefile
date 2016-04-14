@@ -486,7 +486,14 @@ $(STAGE_MARKERS_DIR)/$(ELASTICSEARCH_INSTALL_MARKER): $(DEPS_DIR)/$(ELASTICSEARC
 
 # GeoLiteCityv6.dat
 $(DEPS_DIR)/GeoLiteCityv6.dat.gz: | $(DEPS_DIR)
-	curl -L -o $@ https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz
+	# FIXME: The 20160412 version of the GeoLiteCityv6.dat file is corrupt. This
+	# replaces it with the 20160405 version that we happened to still have a copy
+	# of. See https://github.com/18F/api.data.gov/issues/327
+	#
+	# This isn't ideal, and this doesn't fix the auto-updater, but this at least
+	# lets us build packages that won't be broken on initial run. We've contacted
+	# MaxMind, so hopefully the next release will be fixed.
+	curl -L -o $@ https://www.dropbox.com/s/h23d5ef9chulgxf/GeoLiteCityv6.dat.gz?dl=0
 	touch $@
 
 $(DEPS_DIR)/GeoLiteCityv6.dat: $(DEPS_DIR)/GeoLiteCityv6.dat.gz
