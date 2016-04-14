@@ -71,11 +71,11 @@ GLIDE_CHECKSUM:=7ba5bc7407dab2d463d12659450cdea8
 GLIDE_URL:=https://github.com/Masterminds/glide/archive/$(GLIDE_VERSION).tar.gz
 GLIDE_INSTALL_MARKER:=$(GLIDE_NAME)$(VERSION_SEP)$(GLIDE_VERSION)
 
-GOLANG_VERSION:=1.5.3
+GOLANG_VERSION:=1.5.4
 GOLANG_NAME:=golang
 GOLANG:=$(GOLANG_NAME)-$(GOLANG_VERSION)
 GOLANG_DIGEST:=sha256
-GOLANG_CHECKSUM:=43afe0c5017e502630b1aea4d44b8a7f059bf60d7f29dfd58db454d4e4e0ae53
+GOLANG_CHECKSUM:=a3358721210787dc1e06f5ea1460ae0564f22a0fbd91be9dcd947fb1d19b9560
 GOLANG_URL:=https://storage.googleapis.com/golang/go$(GOLANG_VERSION).linux-amd64.tar.gz
 GOLANG_INSTALL_MARKER:=$(GOLANG_NAME)$(VERSION_SEP)$(GOLANG_VERSION)
 
@@ -193,13 +193,13 @@ NGX_DYUPS_CHECKSUM:=3e5580abad9cc45f52c2e2ccc3c35e48
 NGX_DYUPS_URL:=https://github.com/yzprofile/ngx_http_dyups_module/archive/$(NGX_DYUPS_VERSION).tar.gz
 NGX_DYUPS_INSTALL_MARKER:=$(NGX_DYUPS_NAME)$(VERSION_SEP)$(NGX_DYUPS_VERSION)
 
-OPENRESTY_VERSION:=1.9.7.1
+OPENRESTY_VERSION:=1.9.7.4
 OPENRESTY_BUILD_REVISION:=1
 OPENRESTY_NAME:=openresty
 OPENRESTY:=$(OPENRESTY_NAME)-$(OPENRESTY_VERSION)-$(OPENRESTY_BUILD_REVISION)
 OPENRESTY_DIGEST:=md5
-OPENRESTY_CHECKSUM:=7bc29aa81af962c610f0d07656df85d9
-OPENRESTY_URL:=http://openresty.org/download/ngx_openresty-$(OPENRESTY_VERSION).tar.gz
+OPENRESTY_CHECKSUM:=6e2d4a39c530524111ea50e3de67043a
+OPENRESTY_URL:=http://openresty.org/download/openresty-$(OPENRESTY_VERSION).tar.gz
 OPENRESTY_INSTALL_MARKER:=$(OPENRESTY_NAME)$(VERSION_SEP)$(OPENRESTY_VERSION)
 
 PCRE_VERSION:=8.38
@@ -486,7 +486,14 @@ $(STAGE_MARKERS_DIR)/$(ELASTICSEARCH_INSTALL_MARKER): $(DEPS_DIR)/$(ELASTICSEARC
 
 # GeoLiteCityv6.dat
 $(DEPS_DIR)/GeoLiteCityv6.dat.gz: | $(DEPS_DIR)
-	curl -L -o $@ https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz
+	# FIXME: The 20160412 version of the GeoLiteCityv6.dat file is corrupt. This
+	# replaces it with the 20160405 version that we happened to still have a copy
+	# of. See https://github.com/18F/api.data.gov/issues/327
+	#
+	# This isn't ideal, and this doesn't fix the auto-updater, but this at least
+	# lets us build packages that won't be broken on initial run. We've contacted
+	# MaxMind, so hopefully the next release will be fixed.
+	curl -L -o $@ https://www.dropbox.com/s/h23d5ef9chulgxf/GeoLiteCityv6.dat.gz?dl=0
 	touch $@
 
 $(DEPS_DIR)/GeoLiteCityv6.dat: $(DEPS_DIR)/GeoLiteCityv6.dat.gz

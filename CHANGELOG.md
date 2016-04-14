@@ -1,5 +1,28 @@
 # API Umbrella Change Log
 
+## 0.11.1 (2016-04-14)
+
+This is a small update that fixes a couple bugs (one important one if you use the HTTP cache), makes a couple small tweaks, and updates some dependencies for security purposes. Upgrading is recommended.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` package using your package manager.
+
+### Changed
+
+* **Upgrade bundled software dependencies:**
+  * OpenResty 1.9.7.1 -> 1.9.7.4 (Security updates: CVE-2016-0742, CVE-2016-0746, and CVE-2016-0747)
+  * Rails 3.2.22 -> 3.2.22.2 (Security updates: CVE-2015-7576, CVE-2016-0751, CVE-2015-7577, CVE-2016-0752, CVE-2016-0753, CVE-2015-7581, CVE-2016-2097, and CVE-2016-2098)
+  * Rebuild Mora and Heka with Go 1.5.4 (Security update: CVE-2016-3959)
+* **Remove empty "Dashboard" link from the admin:** The "Dashboard" link has never had any content, so we've removed it from the admin navigation. ([api.data.gov#323](https://github.com/18F/api.data.gov/issues/323))
+* **Make the optional public metrics API more configurable:** If enabled, the public metrics API's filters are now more easily configurable. ([api.data.gov#313](https://github.com/18F/api.data.gov/issues/313))
+
+### Fixed
+
+* **Resolve possible HTTP cache conflicts:** If API Umbrella is configured with multiple API backends that utilize the same frontend host and same backend URL path prefix, then if either API backend returned cacheable responses, then it's possible the responses would get mixed up. Upgrading is highly recommended if you utilize the HTTP cache and have multiple API backends utilizing the same URL path prefix. ([api.data.gov#322](https://github.com/18F/api.data.gov/issues/322))
+* **Don't require API key roles for accessing admin APIs if admin token is used:** If accessing the administrative APIs using an admin authentication token, then the API key no longer needs any special roles assigned. This was a regression that ocurred in API Umbrella v0.9.0. ([#217](https://github.com/NREL/api-umbrella/issues/217))
+* **Fix potential mail security issue:** OSVDB-131677.
+
 ## 0.11.0 (2016-01-20)
 
 This is a small update that fixes a few bugs, adds a couple small new features, and updates some dependencies for security purposes. Upgrading is recommended.
