@@ -181,4 +181,4 @@ make package
 
 rm -rf $ORIGINAL_ROOT_DIR/build/work/packages/$DIST
 mkdir -p $ORIGINAL_ROOT_DIR/build/work/packages/$DIST
-cp $TMP_ROOT_DIR/build/work/packages/* $ORIGINAL_ROOT_DIR/build/work/packages/$DIST/
+cp -r $TMP_ROOT_DIR/build/work/packages/* $ORIGINAL_ROOT_DIR/build/work/packages/$DIST/

@@ -119,7 +119,7 @@ RSpec.shared_examples("package upgrade") do |package_version|
 
   def install_package(version)
     if(version == :current)
-      package_path = "#{ENV["ROOT_DIR"]}/build/package/dist/#{ENV["DIST"]}/*"
+      package_path = "#{ENV["ROOT_DIR"]}/build/work/packages/#{ENV["DIST"]}/core/*"
     else
       package_path = "#{ENV["ROOT_DIR"]}/build/work/deps/verify_package/#{ENV["DIST"]}/*#{version}*"
     end
@@ -528,4 +528,6 @@ describe "api-umbrella" do
 
   it_behaves_like "package upgrade", "0.9.0"
   it_behaves_like "package upgrade", "0.10.0"
+  it_behaves_like "package upgrade", "0.11.0"
+  it_behaves_like "package upgrade", "0.11.1"
 end

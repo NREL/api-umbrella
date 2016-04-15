@@ -17,6 +17,7 @@ install(
 install(
   FILES ${CMAKE_SOURCE_DIR}/build/package/files/etc/sudoers.d/api-umbrella
   DESTINATION /etc/sudoers.d
+  PERMISSIONS OWNER_READ GROUP_READ
   COMPONENT core
 )
 
