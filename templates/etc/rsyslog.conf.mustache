@@ -88,10 +88,9 @@ local0.info action(
   queue.type="LinkedList"
   queue.filename="queue-elasticsearch"
   queue.checkpointinterval="10"
-  queue.syncqueuefiles="on"
   queue.saveonshutdown="on"
-  queue.highwatermark="100"
-  queue.lowwatermark="50"
+  queue.highwatermark="10000"
+  queue.lowwatermark="2000"
   action.resumeRetryCount="-1"
 )
 {{/analytics._output_elasticsearch?}}
@@ -221,28 +220,27 @@ local0.info action(
   queue.type="LinkedList"
   queue.filename="queue-kafka"
   queue.checkpointinterval="10"
-  queue.syncqueuefiles="on"
   queue.saveonshutdown="on"
-  queue.highwatermark="100"
-  queue.lowwatermark="50"
+  queue.highwatermark="10000"
+  queue.lowwatermark="2000"
   action.resumeRetryCount="-1"
 )
 {{/analytics._output_kylin?}}
 
 # Output to local file for redundancy until we prove the new system out.
-template(name="sql-json-record" type="list") {
-  property(name="$!usr!sql") constant(value="\n")
+template(name="all-json-record" type="list") {
+  property(name="$!all-json") constant(value="\n")
 }
 local0.info action(
   type="omfile"
-  file="{{log_dir}}/rsyslog/requests.log"
-  template="sql-json-record"
+  file="{{log_dir}}/rsyslog/requests.log.gz"
+  template="all-json-record"
   queue.type="LinkedList"
   queue.filename="queue-file"
   queue.checkpointinterval="10"
-  queue.syncqueuefiles="on"
   queue.saveonshutdown="on"
-  queue.highwatermark="100"
-  queue.lowwatermark="50"
+  queue.highwatermark="10000"
+  queue.lowwatermark="2000"
+  zipLevel="3"
   action.resumeRetryCount="-1"
 )
