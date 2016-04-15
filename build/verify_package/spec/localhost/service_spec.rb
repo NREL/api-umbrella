@@ -291,6 +291,10 @@ describe "api-umbrella" do
     expect(port(443)).to be_listening.on("0.0.0.0").with("tcp")
   end
 
+  it "listens on port 14014 with rsyslog" do
+    expect(port(14014)).to be_listening.on("127.0.0.1").with("tcp")
+  end
+
   it "signup page loads" do
     response = RestClient::Request.execute(:method => :get, :url => "https://localhost/signup/", :verify_ssl => false)
     expect(response).to include("API Key Signup")

@@ -14,10 +14,10 @@ fi
 
 # Install the local package that just got built.
 if command -v yum > /dev/null 2>&1; then
-  yum -y install $ROOT_DIR/build/package/dist/$DIST/*
+  yum -y install $ROOT_DIR/build/work/packages/$DIST/*
 elif command -v dpkg > /dev/null 2>&1; then
   apt-get update
-  dpkg -i $ROOT_DIR/build/package/dist/$DIST/* || apt-get install -y -f
+  dpkg -i $ROOT_DIR/build/work/packages/$DIST/* || apt-get install -y -f
 else
   echo "Unknown build system"
   exit 1

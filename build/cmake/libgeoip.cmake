@@ -3,7 +3,7 @@ ExternalProject_Add(
   libgeoip
   URL https://github.com/maxmind/geoip-api-c/releases/download/v${LIBGEOIP_VERSION}/GeoIP-${LIBGEOIP_VERSION}.tar.gz
   URL_HASH MD5=${LIBGEOIP_HASH}
-  CONFIGURE_COMMAND env LDFLAGS=-Wl,-rpath,${CMAKE_INSTALL_PREFIX}/lib <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED}
+  CONFIGURE_COMMAND env LDFLAGS=-Wl,-rpath,${STAGE_EMBEDDED_DIR}/lib <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED}
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
 )
 

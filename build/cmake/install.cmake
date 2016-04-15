@@ -42,6 +42,39 @@ install(
 )
 
 install(
+  CODE "
+  message(STATUS \"Directories: \$ENV{DESTDIR}/usr/bin \$ENV{DESTDIR}/var/log \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/etc \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/db \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/log \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/run \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/tmp\")
+  execute_process(
+    WORKING_DIRECTORY \$ENV{DESTDIR}/usr/bin
+    COMMAND mkdir -p \$ENV{DESTDIR}/usr/bin \$ENV{DESTDIR}/var/log \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/etc \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/db \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/log \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/run \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/tmp
+  )
+  message(STATUS \"Installing: \$ENV{DESTDIR}/usr/bin/api-umbrella\")
+  execute_process(
+    WORKING_DIRECTORY \$ENV{DESTDIR}/usr/bin
+    COMMAND ln -snf ../..${CMAKE_INSTALL_PREFIX}/bin/api-umbrella ./api-umbrella
+  )
+  message(STATUS \"Installing: \$ENV{DESTDIR}/var/log/api-umbrella\")
+  execute_process(
+    WORKING_DIRECTORY \$ENV{DESTDIR}/var/log
+    COMMAND ln -snf ../..${CMAKE_INSTALL_PREFIX}/var/log ./api-umbrella
+  )
+  message(STATUS \"Replacing: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/openresty/luajit/bin/luarocks-5.1 \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/openresty/luajit/bin/luarocks-admin-5.1 \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/openresty/luajit/share/lua/5.1/luarocks/site_config.lua\")
+  execute_process(
+    COMMAND sed -i \"s#${STAGE_DIR}##g\" \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/openresty/luajit/bin/luarocks-5.1 \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/openresty/luajit/bin/luarocks-admin-5.1 \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/openresty/luajit/share/lua/5.1/luarocks/site_config.lua
+  )
+  message(STATUS \"Permissions: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/tmp\")
+  execute_process(
+    COMMAND chmod 1777 \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/tmp
+  )
+  message(STATUS \"Permissions: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core/shared/src/api-umbrella/web-app/tmp\")
+  execute_process(
+    COMMAND chmod 775 \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
+  )
+  "
+  COMPONENT core
+)
+
+install(
   DIRECTORY ${HADOOP_ANALYTICS_STAGE_PREFIX_DIR}/
   DESTINATION ${CMAKE_INSTALL_PREFIX}
   USE_SOURCE_PERMISSIONS
