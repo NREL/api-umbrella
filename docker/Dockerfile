@@ -1,6 +1,6 @@
 FROM debian:jessie
 
-ENV API_UMBRELLA_VERSION 0.10.0-1~jessie
+ENV API_UMBRELLA_VERSION 0.11.1-1~jessie
 
 # Install API Umbrella
 RUN echo "deb http://dl.bintray.com/nrel/api-umbrella-debian jessie main" >> /etc/apt/sources.list.d/api-umbrella.list
