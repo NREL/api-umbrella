@@ -1,6 +1,9 @@
 # rsyslog: Log buffering and processing
 
 find_package(CURL REQUIRED)
+require_program(autoconf)
+require_program(automake)
+require_program(libtool)
 pkg_check_modules(LIBUUID REQUIRED uuid)
 
 # Build libestr dependency for rsyslog, since Ubuntu 12.04's package is too old

@@ -10,163 +10,18 @@ endif()
 
 if(EXISTS "/etc/redhat-release")
   set(PACKAGE_TYPE rpm)
-  set(
-    CORE_PACKAGE_DEPENDENCIES
-
-    # General
-    bash
-    glibc
-    libffi
-    libyaml
-    ncurses-libs
-    openssl
-    pcre
-    zlib
-
-    # lua-resty-uuid requires "libuuid.so", so we have to instal the -devel
-    # package (libuuid provides "libuuid.so.1").
-    libuuid-devel
-
-    # TrafficServer
-    libxml2
-    tcl
-
-    # ElasticSearch
-    java-1.8.0-openjdk-headless
-    # For getopt, should no longer be necessary in ElasticSearch 2:
-    # https://github.com/elastic/elasticsearch/pull/12165
-    util-linux-ng
-    which
-
-    # init.d script helpers
-    initscripts
-
-    # For pkill/pgrep used for legacy status/stop commands.
-    procps
-  )
-  set(
-    HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES
-    java-1.8.0-openjdk-headless
-  )
-  set(
-    BUILD_DEPENDENCIES
-    bzip2
-    curl
-    gcc
-    gcc-c++
-    git
-    libffi-devel
-    libuuid-devel
-    libxml2-devel
-    libyaml-devel
-    make
-    ncurses-devel
-    openssl
-    openssl-devel
-    patch
-    pcre-devel
-    rpm-build
-    rsync
-    tar
-    tcl-devel
-    unzip
-    xz
-  )
 
   execute_process(
     COMMAND rpm --query centos-release
     OUTPUT_VARIABLE RPM_DIST
   )
   STRING(REGEX MATCH "el[0-9]+" RPM_DIST ${RPM_DIST})
-
-  if(RPM_DIST EQUAL el6)
-    if(NOT EXISTS /etc/yum.repos.d/wandisco-git.repo)
-      list(INSERT BUILD_DEPENDENCIES 0 http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm)
-    endif()
-  endif()
-
-  add_custom_target(
-    package_install_system_dependencies
-    COMMAND yum -y install ${CORE_PACKAGE_DEPENDENCIES} ${HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES} ${BUILD_DEPENDENCIES}
-  )
 elseif(EXISTS "/etc/debian_version")
   set(PACKAGE_TYPE deb)
-
-  set(
-    CORE_PACKAGE_DEPENDENCIES
-
-    # General
-    bash
-    libc6
-    libyaml-0-2
-    libncurses5
-    openssl
-    libpcre3
-    zlib1g
-
-    # lua-resty-uuid requires "libuuid.so", so we have to instal the -dev
-    # package (libuuid1 provides "libuuid.so.1").
-    uuid-dev
-
-    # TrafficServer
-    libxml2
-    tcl
-
-    # ElasticSearch
-    openjdk-7-jre-headless
-
-    # init.d script helpers
-    sysvinit-utils
-    lsb-base
-
-    # For pkill/pgrep used for legacy status/stop commands.
-    procps
-  )
-  set(
-    HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES
-    openjdk-7-jre-headless
-  )
-  set(
-    BUILD_DEPENDENCIES
-    bzip2
-    cmake
-    curl
-    gcc
-    g++
-    git
-    libffi-dev
-    uuid-dev
-    libxml2-dev
-    libyaml-dev
-    lsb-release
-    make
-    libncurses5-dev
-    openssl
-    libssl-dev
-    patch
-    libpcre3-dev
-    rsync
-    tar
-    tcl-dev
-    unzip
-    xz-utils
-  )
 
   execute_process(
     COMMAND lsb_release --codename --short
     OUTPUT_VARIABLE RELEASE_NAME
-  )
-
-  if(RELEASE_NAME STREQUAL wheezy)
-    list(APPEND CORE_PACKAGE_DEPENDENCIES libffi5)
-  else()
-    list(APPEND CORE_PACKAGE_DEPENDENCIES libffi6)
-  endif()
-
-  add_custom_target(
-    package_install_system_dependencies
-    COMMAND apt-get update
-    COMMAND apt-get -y install ${CORE_PACKAGE_DEPENDENCIES} ${HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES} ${BUILD_DEPENDENCIES}
   )
 
   set(PACKAGE_VERSION_ITERATION "${PACKAGE_VERSION_ITERATION}~${RELEASE_NAME}")
@@ -176,9 +31,9 @@ endif()
 
 add_custom_command(
   OUTPUT ${CMAKE_SOURCE_DIR}/build/package/vendor/bundle
-  DEPENDS ${CMAKE_SOURCE_DIR}/build/package/Gemfile ${CMAKE_SOURCE_DIR}/build/package/Gemfile.lock
+  DEPENDS ${CMAKE_SOURCE_DIR}/build/package/Gemfile ${CMAKE_SOURCE_DIR}/build/package/Gemfile.lock bundler
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/build/package
-  COMMAND bundle install --clean --path=${CMAKE_SOURCE_DIR}/build/package/vendor/bundle
+  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} bundle install --clean --path=${CMAKE_SOURCE_DIR}/build/package/vendor/bundle
     COMMAND touch -c ${CMAKE_SOURCE_DIR}/build/package/vendor/bundle
 )
 
@@ -213,9 +68,10 @@ add_custom_target(
   package-core
   DEPENDS ${CMAKE_SOURCE_DIR}/build/package/vendor/bundle
   COMMAND rm -rf ${WORK_DIR}/package-dest-core
+  COMMAND make
   COMMAND make install-core DESTDIR=${WORK_DIR}/package-dest-core
   COMMAND mkdir -p ${WORK_DIR}/packages
-  COMMAND cd ${WORK_DIR}/packages && env BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/build/package/Gemfile XZ_OPT=-9 bundle exec fpm ${FPM_ARGS} .
+  COMMAND cd ${WORK_DIR}/packages && env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/build/package/Gemfile XZ_OPT=-9 bundle exec fpm ${FPM_ARGS} .
   COMMAND rm -rf ${WORK_DIR}/package-dest-core
 )
 
@@ -246,9 +102,10 @@ add_custom_target(
   package-hadoop-analytics
   DEPENDS ${CMAKE_SOURCE_DIR}/build/package/vendor/bundle
   COMMAND rm -rf ${WORK_DIR}/package-dest-hadoop-analytics
+  COMMAND make
   COMMAND make install-hadoop-analytics DESTDIR=${WORK_DIR}/package-dest-hadoop-analytics
   COMMAND mkdir -p ${WORK_DIR}/packages
-  COMMAND cd ${WORK_DIR}/packages && env BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/build/package/Gemfile XZ_OPT=-9 bundle exec fpm ${FPM_ARGS} .
+  COMMAND cd ${WORK_DIR}/packages && env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/build/package/Gemfile XZ_OPT=-9 bundle exec fpm ${FPM_ARGS} .
   COMMAND rm -rf ${WORK_DIR}/package-dest-hadoop-analytics
 )
 
