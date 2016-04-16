@@ -1,41 +1,43 @@
-agent.sources = kafka-source
-agent.channels = file-channel
-agent.sinks = hdfs-sink
+api-umbrella-agent.sources = kafka-source
+api-umbrella-agent.channels = file-channel
+api-umbrella-agent.sinks = hdfs-sink
 
 # Use file storage for buffering data.
-agent.channels.file-channel.type = file
+api-umbrella-agent.channels.file-channel.type = file
+api-umbrella-agent.channels.file-channel.checkpointDir = {{db_dir}}/flume/file-channel/checkpoint
+api-umbrella-agent.channels.file-channel.dataDirs = {{db_dir}}/flume/file-channel/data
 
 # Pull data from Kafka (which rsyslog is pumping data into).
-agent.sources.kafka-source.type = org.apache.flume.source.kafka.KafkaSource
-agent.sources.kafka-source.channels = file-channel
-agent.sources.kafka-source.zookeeperConnect = 127.0.0.1:2181
-agent.sources.kafka-source.groupId = api-umbrella-flume
-agent.sources.kafka-source.topic = api_umbrella_logs
+api-umbrella-agent.sources.kafka-source.type = org.apache.flume.source.kafka.KafkaSource
+api-umbrella-agent.sources.kafka-source.channels = file-channel
+api-umbrella-agent.sources.kafka-source.zookeeperConnect = 127.0.0.1:2181
+api-umbrella-agent.sources.kafka-source.groupId = api-umbrella-flume
+api-umbrella-agent.sources.kafka-source.topic = api_umbrella_logs
 
 # Extract the request_at timestamp from the data. Expected to be the first
 # column of data.
-agent.sources.kafka-source.interceptors = timestamp-extractor
-agent.sources.kafka-source.interceptors.timestamp-extractor.type = regex_extractor
-agent.sources.kafka-source.interceptors.timestamp-extractor.regex = ^(\\d+)
-agent.sources.kafka-source.interceptors.timestamp-extractor.serializers = timestamp-serializer
-agent.sources.kafka-source.interceptors.timestamp-extractor.serializers.timestamp-serializer.type = org.apache.flume.interceptor.RegexExtractorInterceptorPassThroughSerializer
-agent.sources.kafka-source.interceptors.timestamp-extractor.serializers.timestamp-serializer.name = timestamp
+api-umbrella-agent.sources.kafka-source.interceptors = timestamp-extractor
+api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.type = regex_extractor
+api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.regex = ^(\\d+)
+api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.serializers = timestamp-serializer
+api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.serializers.timestamp-serializer.type = org.apache.flume.interceptor.RegexExtractorInterceptorPassThroughSerializer
+api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.serializers.timestamp-serializer.name = timestamp
 
 # Write data to HDFS.
-agent.sinks.hdfs-sink.type = hdfs
-agent.sinks.hdfs-sink.channel = file-channel
-agent.sinks.hdfs-sink.hdfs.path = /apps/api-umbrella/logs-live/request_at_tz_date=%Y-%m-%d/request_at_tz_hour_minute=%H-%M
+api-umbrella-agent.sinks.hdfs-sink.type = hdfs
+api-umbrella-agent.sinks.hdfs-sink.channel = file-channel
+api-umbrella-agent.sinks.hdfs-sink.hdfs.path = /apps/api-umbrella/logs-live/request_at_tz_date=%Y-%m-%d/request_at_tz_hour_minute=%H-%M
 # Use "_" prefix for files currently being written to. This prevent Hive from
 # picking these files up before they're fully written (otherwise, the partial
 # gzip state results in invalid data).
-agent.sinks.hdfs-sink.hdfs.inUsePrefix = _
+api-umbrella-agent.sinks.hdfs-sink.hdfs.inUsePrefix = _
 # Write compressed tsv files.
-agent.sinks.hdfs-sink.hdfs.fileType = CompressedStream
-agent.sinks.hdfs-sink.hdfs.codeC = gzip
-agent.sinks.hdfs-sink.hdfs.fileSuffix = .tsv.gz
+api-umbrella-agent.sinks.hdfs-sink.hdfs.fileType = CompressedStream
+api-umbrella-agent.sinks.hdfs-sink.hdfs.codeC = gzip
+api-umbrella-agent.sinks.hdfs-sink.hdfs.fileSuffix = .tsv.gz
 # Write out the file ever 15 seconds.
-agent.sinks.hdfs-sink.hdfs.rollInterval = 15
-agent.sinks.hdfs-sink.hdfs.rollSize = 0
-agent.sinks.hdfs-sink.hdfs.rollCount = 0
-#agent.sinks.hdfs-sink.hdfs.timeZone = {{analytics.timezone}}
-agent.sinks.hdfs-sink.hdfs.timeZone = America/New_York
+api-umbrella-agent.sinks.hdfs-sink.hdfs.rollInterval = 15
+api-umbrella-agent.sinks.hdfs-sink.hdfs.rollSize = 0
+api-umbrella-agent.sinks.hdfs-sink.hdfs.rollCount = 0
+#api-umbrella-agent.sinks.hdfs-sink.hdfs.timeZone = {{analytics.timezone}}
+api-umbrella-agent.sinks.hdfs-sink.hdfs.timeZone = America/New_York
