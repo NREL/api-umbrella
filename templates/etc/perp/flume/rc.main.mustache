@@ -15,7 +15,8 @@ if test ${1} = "start"; then
     agent \
     --name api-umbrella-agent \
     --conf {{_embedded_root_dir}}/flume/conf \
-    --conf-file {{etc_dir}}/flume.properties
+    --conf-file {{etc_dir}}/flume.properties \
+    -Dflume.log.dir={{log_dir}}/flume
 fi
 
 exit 0
