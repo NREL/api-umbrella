@@ -63,13 +63,13 @@ public class LogSchema {
     // Define fields we want to store as short/smallints. Since Avro doesn't
     // support these in its schema, but ORC does, we need to explicitly list
     // these.
-    shortFields.add("request_at_tz_year");
-    shortFields.add("request_at_tz_month");
-    shortFields.add("request_at_tz_week");
     shortFields.add("request_at_tz_hour");
     shortFields.add("request_at_tz_minute");
     shortFields.add("response_status");
 
+    dateFields.add("request_at_tz_year");
+    dateFields.add("request_at_tz_month");
+    dateFields.add("request_at_tz_week");
     dateFields.add("request_at_tz_date");
   }
 

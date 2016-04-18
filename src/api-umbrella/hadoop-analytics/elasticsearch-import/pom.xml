@@ -73,6 +73,7 @@
     </dependency>
   </dependencies>
   <build>
+    <directory>${buildDir}/elasticsearch-import</directory>
     <plugins>
       <!-- Build a self-contained jar -->
       <plugin>

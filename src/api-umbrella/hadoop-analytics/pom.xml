@@ -12,12 +12,14 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <buildDir>target</buildDir>
   </properties>
 
   <dependencies>
   </dependencies>
 
   <build>
+    <directory>${buildDir}</directory>
   </build>
 
   <modules>

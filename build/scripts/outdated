@@ -109,6 +109,9 @@ repos = {
     :git => "https://github.com/cloudflare/lua-resty-shcache.git",
     :git_ref => "master",
   },
+  "maven" => {
+    :git => "https://github.com/apache/maven.git",
+  },
   "mongodb" => {
     :git => "https://github.com/mongodb/mongo.git",
     :constraint => "~> 3.0.10",

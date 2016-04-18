@@ -17,6 +17,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <build>
+    <directory>${buildDir}/schema</directory>
+  </build>
+
   <dependencies>
     <!-- Avro for providing a data model to put data into for validation 
       purposes before outputting in the actual data format -->

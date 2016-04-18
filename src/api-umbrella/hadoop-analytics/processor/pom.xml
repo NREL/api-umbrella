@@ -53,6 +53,7 @@
   </dependencies>
 
   <build>
+    <directory>${buildDir}/processor</directory>
     <plugins>
       <!-- Build a self-contained jar -->
       <plugin>

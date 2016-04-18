@@ -78,6 +78,7 @@ if(ENABLE_HADOOP_ANALYTICS)
   include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/flume.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/kylin.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/presto.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/processor.cmake)
 endif()
 
 #

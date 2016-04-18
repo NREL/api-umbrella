@@ -59,7 +59,7 @@ public class ConvertLiveDataToOrc implements Runnable {
   private static final String HDFS_ROOT = "/apps/api-umbrella";
   private static final String HDFS_LOGS_ROOT = HDFS_ROOT + "/logs";
   private static final String HDFS_LOGS_LIVE_ROOT = HDFS_ROOT + "/logs-live";
-  private static final String LOGS_TABLE_NAME = "api_umbrella.logs_archive";
+  private static final String LOGS_TABLE_NAME = "api_umbrella.logs";
   private static final String LOGS_LIVE_TABLE_NAME = "api_umbrella.logs_live";
   private static final Path LAST_MIGRATED_MARKER =
       new Path(HDFS_URI + HDFS_ROOT + "/.logs-live-last-migrated-partition-time");
@@ -116,27 +116,27 @@ public class ConvertLiveDataToOrc implements Runnable {
           logger.info("Migrating partition: " + partition);
 
           PreparedStatement addPartition = connection.prepareStatement(getAddPartitionSql());
-          addPartition.setInt(1, partition.getYear());
-          addPartition.setInt(2, partition.getMonthOfYear());
-          addPartition.setInt(3, partition.getWeekOfWeekyear());
-          addPartition.setString(4, this.dateFormatter.print(partition));
+          addPartition.setString(1, dateFormatter.print(partition.withDayOfYear(1)));
+          addPartition.setString(2, dateFormatter.print(partition.withDayOfMonth(1)));
+          addPartition.setString(3, dateFormatter.print(partition.withDayOfWeek(1)));
+          addPartition.setString(4, dateFormatter.print(partition));
           addPartition.executeUpdate();
           addPartition.close();
 
           PreparedStatement addLivePartition =
               connection.prepareStatement(getAddLivePartitionSql());
-          addLivePartition.setString(1, this.dateFormatter.print(partition));
-          addLivePartition.setString(2, this.hourMinuteFormatter.print(partition));
+          addLivePartition.setString(1, dateFormatter.print(partition));
+          addLivePartition.setString(2, hourMinuteFormatter.print(partition));
           addLivePartition.executeUpdate();
           addLivePartition.close();
 
           PreparedStatement migrate = connection.prepareStatement(getMigrateSql());
-          migrate.setInt(1, partition.getYear());
-          migrate.setInt(2, partition.getMonthOfYear());
-          migrate.setInt(3, partition.getWeekOfWeekyear());
-          migrate.setString(4, this.dateFormatter.print(partition));
-          migrate.setString(5, this.dateFormatter.print(partition));
-          migrate.setString(6, this.hourMinuteFormatter.print(partition));
+          migrate.setString(1, dateFormatter.print(partition.withDayOfYear(1)));
+          migrate.setString(2, dateFormatter.print(partition.withDayOfMonth(1)));
+          migrate.setString(3, dateFormatter.print(partition.withDayOfWeek(1)));
+          migrate.setString(4, dateFormatter.print(partition));
+          migrate.setString(5, dateFormatter.print(partition));
+          migrate.setString(6, hourMinuteFormatter.print(partition));
           migrate.executeUpdate();
           migrate.close();
 

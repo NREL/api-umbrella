@@ -11,9 +11,9 @@ if test ${1} = "start"; then
   RUN_OPTS="$RUN_OPTS -u {{user}}"
   {{/user}}
 
-  exec runtool $RUN_OPTS {{_embedded_root_dir}}/presto/bin/launcher \
+  exec runtool $RUN_OPTS {{_embedded_root_dir}}/presto/bin/launcher run \
     --node-config={{etc_dir}}/presto/node.properties \
-    --jvm-config={{etc_dir}}/presto/jvm.properties \
+    --jvm-config={{etc_dir}}/presto/jvm.config \
     --config={{etc_dir}}/presto/config.properties
 fi
 
