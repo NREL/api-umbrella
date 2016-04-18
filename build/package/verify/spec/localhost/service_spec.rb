@@ -119,9 +119,9 @@ RSpec.shared_examples("package upgrade") do |package_version|
 
   def install_package(version)
     if(version == :current)
-      package_path = "#{ENV["ROOT_DIR"]}/build/work/packages/#{ENV["DIST"]}/core/*"
+      package_path = "#{ENV["SOURCE_DIR"]}/build/work/package/current/#{ENV["DIST"]}/core/*"
     else
-      package_path = "#{ENV["ROOT_DIR"]}/build/work/deps/verify_package/#{ENV["DIST"]}/*#{version}*"
+      package_path = "#{ENV["SOURCE_DIR"]}/build/work/package/archives/#{version}/#{ENV["DIST"]}/core/*"
     end
 
     case(os[:family])
@@ -523,11 +523,11 @@ describe "api-umbrella" do
   # We don't have Debian 8 builds of API Umbrella v0.8, so skip testing that
   # upgrade path for Debian 8.
   if(ENV["DIST"] != "debian-8")
-    it_behaves_like "package upgrade", "0.8.0"
+    it_behaves_like "package upgrade", "0.8.0-1"
   end
 
-  it_behaves_like "package upgrade", "0.9.0"
-  it_behaves_like "package upgrade", "0.10.0"
-  it_behaves_like "package upgrade", "0.11.0"
-  it_behaves_like "package upgrade", "0.11.1"
+  it_behaves_like "package upgrade", "0.9.0-1"
+  it_behaves_like "package upgrade", "0.10.0-1"
+  it_behaves_like "package upgrade", "0.11.0-1"
+  it_behaves_like "package upgrade", "0.11.1-1"
 end

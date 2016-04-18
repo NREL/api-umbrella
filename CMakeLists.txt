@@ -13,7 +13,12 @@ set(INSTALL_PREFIX_EMBEDDED ${CMAKE_INSTALL_PREFIX}/embedded)
 # Where to install cmake ExternalProjects.
 set(EP_PREFIX build/work)
 set_directory_properties(PROPERTIES EP_PREFIX ${EP_PREFIX})
-set(WORK_DIR ${CMAKE_SOURCE_DIR}/${EP_PREFIX})
+set(WORK_DIR ${CMAKE_BINARY_DIR}/${EP_PREFIX})
+
+# Directory to store "stamp" files indicating when a step was completed or last
+# touched.
+set(STAMP_DIR ${WORK_DIR}/stamp)
+execute_process(COMMAND mkdir -p ${STAMP_DIR})
 
 # Where to stage installations during "make" phase.
 set(STAGE_DIR ${WORK_DIR}/stage)

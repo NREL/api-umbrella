@@ -1,12 +1,4 @@
-#!/bin/bash
-
-set -e -u -x
-
-ORIGINAL_ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
-TMP_ROOT_DIR=/tmp/api-umbrella
-TMP_WORK_DIR=$TMP_ROOT_DIR/build/work
-
-if command -v yum &> /dev/null; then
+if [ -f /etc/redhat-release ]; then
   CORE_PACKAGE_DEPENDENCIES=(
     # General
     bash
@@ -70,16 +62,7 @@ if command -v yum &> /dev/null; then
     unzip
     xz
   )
-
-  if rpm --query centos-release | grep el6; then
-    if [ ! -f /etc/yum.repos.d/wandisco-git.repo ]; then
-      yum -y install http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
-    fi
-  fi
-
-  yum -y install ${CORE_PACKAGE_DEPENDENCIES[*]} ${HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES[*]} ${BUILD_DEPENDENCIES[*]}
-elif command -v dpkg &> /dev/null; then
-  PACKAGE_TYPE="deb"
+elif [ -f /etc/debian_version ]; then
   CORE_PACKAGE_DEPENDENCIES=(
     # General
     bash
@@ -145,40 +128,13 @@ elif command -v dpkg &> /dev/null; then
   else
     CORE_PACKAGE_DEPENDENCIES+=("libffi6")
   fi
-
-  apt-get update
-  apt-get -y install ${CORE_PACKAGE_DEPENDENCIES[*]} ${HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES[*]} ${BUILD_DEPENDENCIES[*]}
 else
   echo "Unknown build system"
   exit 1
 fi
 
-# Copy the current api-umbrella code-base to a separate, temporary location.
-# This temporary location will be used for performing the packaging. We use a
-# separate location so that multiple docker build containers don't conflict
-# with the original working copy.
-rsync -av \
-  --include="build" \
-  --include="build/work" \
-  --include="build/work/deps" \
-  --include="build/work/deps/*.gz" \
-  --include="build/work/deps/*.xz" \
-  --exclude="build/work/deps/*" \
-  --exclude="build/work/*" \
-  --exclude=".git" \
-  --filter=":- $ORIGINAL_ROOT_DIR/.gitignore" \
-  --no-links \
-  --delete-after \
-  $ORIGINAL_ROOT_DIR/ $TMP_ROOT_DIR/
-
-rm -rf $TMP_ROOT_DIR/build/work/packages
-
-# Build and install from the temporary working copy, installing into a
-# temporary root used for packaging.
-cd $TMP_ROOT_DIR
-./configure --enable-hadoop-analytics
-make package
-
-rm -rf $ORIGINAL_ROOT_DIR/build/work/packages/$DIST
-mkdir -p $ORIGINAL_ROOT_DIR/build/work/packages/$DIST
-cp -r $TMP_ROOT_DIR/build/work/packages/* $ORIGINAL_ROOT_DIR/build/work/packages/$DIST/
+ALL_DEPENDENCIES=(
+  "${CORE_PACKAGE_DEPENDENCIES[*]}"
+  "${HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES[*]}"
+  "${BUILD_DEPENDENCIES[*]}"
+)

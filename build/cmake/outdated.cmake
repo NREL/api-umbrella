@@ -1,14 +1,15 @@
 add_custom_command(
-  OUTPUT ${CMAKE_SOURCE_DIR}/build/scripts/vendor/bundle
-  DEPENDS ${CMAKE_SOURCE_DIR}/build/scripts/Gemfile ${CMAKE_SOURCE_DIR}/build/scripts/Gemfile.lock bundler
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/build/scripts
-  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} bundle install --clean --path=${CMAKE_SOURCE_DIR}/build/scripts/vendor/bundle
-    COMMAND touch -c ${CMAKE_SOURCE_DIR}/build/scripts/vendor/bundle
+  OUTPUT ${STAMP_DIR}/outdated-bundle
+  DEPENDS
+    bundler
+    ${CMAKE_SOURCE_DIR}/build/scripts/Gemfile
+    ${CMAKE_SOURCE_DIR}/build/scripts/Gemfile.lock
+  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/build/scripts/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/src/outdated/.bundle bundle install --clean --path=${WORK_DIR}/src/outdated/bundle
+  COMMAND touch ${STAMP_DIR}/outdated-bundle
 )
 
 add_custom_target(
   outdated
-  DEPENDS ${CMAKE_SOURCE_DIR}/build/scripts/vendor/bundle
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/build/scripts
-  COMMAND ${CMAKE_SOURCE_DIR}/build/scripts/outdated
+  DEPENDS ${STAMP_DIR}/outdated-bundle
+  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/build/scripts/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/src/outdated/.bundle ${CMAKE_SOURCE_DIR}/build/scripts/outdated
 )

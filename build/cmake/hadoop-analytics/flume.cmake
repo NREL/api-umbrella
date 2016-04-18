@@ -8,5 +8,5 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND mkdir -p ${HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR}/flume
-    COMMAND rsync -a --exclude=/docs --exclude=/tools --delete-after --delete-excluded <SOURCE_DIR>/ ${HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR}/flume/
+    COMMAND rsync -a -v --exclude=/docs --exclude=/tools --delete-after --delete-excluded <SOURCE_DIR>/ ${HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR}/flume/
 )

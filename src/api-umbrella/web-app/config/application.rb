@@ -109,6 +109,18 @@ module ApiUmbrella
     # parameters by using an attr_accessible or attr_protected declaration.
     # config.active_record.whitelist_attributes = true
 
+    if(ENV["RAILS_TMP_PATH"].present?)
+      paths["tmp"] = ENV["RAILS_TMP_PATH"]
+      tmp_assets_cache_path = File.join(ENV["RAILS_TMP_PATH"], "cache/assets")
+      FileUtils.mkdir_p(tmp_assets_cache_path)
+      config.assets.cache_store = [:file_store, tmp_assets_cache_path]
+      config.sass.cache_location = File.join(ENV["RAILS_TMP_PATH"], "cache/sass")
+    end
+
+    if(ENV["RAILS_PUBLIC_PATH"].present?)
+      paths["public"] = ENV["RAILS_PUBLIC_PATH"]
+    end
+
     # Enable the asset pipeline
     config.assets.enabled = true
 

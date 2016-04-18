@@ -42,7 +42,25 @@ ExternalProject_Add(
   INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/shcache.lua ${VENDOR_LUA_DIR}/shcache.lua
 )
 
-add_custom_target(
-  core-lua-deps
-  DEPENDS luarock_argparse luarock_inspect luarock_libcidr-ffi luarock_lua-cmsgpack luarock_lua-iconv luarock_lua-resty-auto-ssl luarock_lua-resty-http luarock_lua-resty-uuid luarock_luaposix luarock_luasocket luarock_luatz luarock_lustache luarock_lyaml luarock_penlight lua_resty_dns_cache lua_resty_logger_socket lua_resty_shcache
+add_custom_command(
+  OUTPUT ${STAMP_DIR}/core-lua-deps
+  DEPENDS
+    luarock_argparse
+    luarock_inspect
+    luarock_libcidr-ffi
+    luarock_lua-cmsgpack
+    luarock_lua-iconv
+    luarock_lua-resty-auto-ssl
+    luarock_lua-resty-http
+    luarock_lua-resty-uuid
+    luarock_luaposix
+    luarock_luasocket
+    luarock_luatz
+    luarock_lustache
+    luarock_lyaml
+    luarock_penlight
+    lua_resty_dns_cache
+    lua_resty_logger_socket
+    lua_resty_shcache
+  COMMAND touch ${STAMP_DIR}/core-lua-deps
 )

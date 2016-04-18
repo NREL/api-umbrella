@@ -26,12 +26,8 @@
 /Makefile
 /cmake_install.cmake
 
-/build/package/.bundle
-/build/package/logs
-/build/package/vendor
-/build/scripts/.bundle
-/build/scripts/vendor
 /build/work
+/build/package/verify/.rnd
 /deploy/.env
 /log/*
 /test/node_modules

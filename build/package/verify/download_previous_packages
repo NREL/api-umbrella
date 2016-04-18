@@ -1,0 +1,118 @@
+#!/bin/bash
+#
+# Download previous API Umbrella packages so the verify scripts can test
+# package upgrades.
+#
+
+set -e -u
+
+SOURCE_DIR="$(dirname $(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd))))"
+
+PREVIOUS_VERSIONS=(
+  0.8.0-1
+  0.9.0-1
+  0.10.0-1
+  0.11.0-1
+  0.11.1-1
+)
+
+DISTROS=(
+  centos-6
+  centos-7
+  ubuntu-12.04
+  ubuntu-14.04
+  debian-7
+  debian-8
+)
+
+SOURCEFORGE_URL_ROOT="http://pilotfiber.dl.sourceforge.net/project/api-umbrella"
+BINTRAY_URL_ROOT="https://bintray.com/artifact/download/nrel"
+CHECKSUMS=$(cat $SOURCE_DIR/sha256sums.txt)
+
+for DIST in "${DISTROS[@]}"; do
+  for VERSION in "${PREVIOUS_VERSIONS[@]}"; do
+    FILENAME=""
+    URL_PREFIX=""
+    URL_FILENAME=""
+
+    case "$DIST" in
+      centos-6)
+        FILENAME="api-umbrella-${VERSION}.el6.x86_64.rpm"
+        if [ "$VERSION" == "0.8.0-1" ]; then
+          URL_PREFIX="$SOURCEFORGE_URL_ROOT/el/6"
+        else
+          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-el6"
+        fi
+        ;;
+      centos-7)
+        FILENAME="api-umbrella-${VERSION}.el7.x86_64.rpm"
+        if [ "$VERSION" == "0.8.0-1" ]; then
+          URL_PREFIX="$SOURCEFORGE_URL_ROOT/el/7"
+        else
+          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-el7"
+        fi
+        ;;
+      ubuntu-12.04)
+        FILENAME="api-umbrella_${VERSION}~precise_amd64.deb"
+        if [ "$VERSION" == "0.8.0-1" ]; then
+          URL_FILENAME="api-umbrella_${VERSION}_amd64.deb"
+          URL_PREFIX="$SOURCEFORGE_URL_ROOT/ubuntu/12.04"
+        else
+          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-ubuntu/pool/main/a/api-umbrella"
+        fi
+        ;;
+      ubuntu-14.04)
+        FILENAME="api-umbrella_${VERSION}~trusty_amd64.deb"
+        if [ "$VERSION" == "0.8.0-1" ]; then
+          URL_FILENAME="api-umbrella_${VERSION}_amd64.deb"
+          URL_PREFIX="$SOURCEFORGE_URL_ROOT/ubuntu/14.04"
+        else
+          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-ubuntu/pool/main/a/api-umbrella"
+        fi
+        ;;
+      debian-7)
+        FILENAME="api-umbrella_${VERSION}~wheezy_amd64.deb"
+        if [ "$VERSION" == "0.8.0-1" ]; then
+          URL_FILENAME="api-umbrella_${VERSION}_amd64.deb"
+          URL_PREFIX="$SOURCEFORGE_URL_ROOT/debian/7"
+        else
+          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-debian/pool/main/a/api-umbrella"
+        fi
+        ;;
+      debian-8)
+        FILENAME="api-umbrella_${VERSION}~jessie_amd64.deb"
+        if [ "$VERSION" == "0.8.0-1" ]; then
+          # No Debian 8 packages for API Umbrella v0.8.
+          FILENAME=""
+        else
+          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-debian/pool/main/a/api-umbrella"
+        fi
+        ;;
+    esac
+
+    if [ -n "$FILENAME" ]; then
+      if [ -z "$URL_FILENAME" ]; then
+        URL_FILENAME="$FILENAME"
+      fi
+
+      DOWNLOAD_DIR="$SOURCE_DIR/build/work/package/archives/$VERSION/$DIST/core"
+      DOWNLOAD_PATH="$DOWNLOAD_DIR/$FILENAME"
+      echo $DOWNLOAD_PATH
+      if [ ! -f "$DOWNLOAD_PATH" ]; then
+        URL="$URL_PREFIX/$URL_FILENAME"
+        mkdir -p $DOWNLOAD_DIR
+        echo $URL
+        curl -f -L -o $DOWNLOAD_PATH -C - $URL
+      fi
+
+      cd $DOWNLOAD_DIR
+      FILE_CHECKSUM=$(openssl dgst -sha256 $FILENAME)
+      if [[ -z "$FILE_CHECKSUM" ]] || [[ $CHECKSUMS != *$FILE_CHECKSUM* ]]; then
+        echo "Checksum mismatch for $DOWNLOAD_PATH"
+        echo $FILE_CHECKSUM
+        echo "Verify that the file downloaded successfully."
+        exit 1
+      fi
+    fi
+  done
+done

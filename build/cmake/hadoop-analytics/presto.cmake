@@ -8,5 +8,5 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND mkdir -p ${HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR}/presto
-    COMMAND rsync -a --include=/plugin/hive-hadoop2 --include=/plugin/jmx --exclude=/plugin/* --delete-after --delete-excluded <SOURCE_DIR>/ ${HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR}/presto/
+    COMMAND rsync -a -v --include=/plugin/hive-hadoop2 --include=/plugin/jmx --exclude=/plugin/* --delete-after --delete-excluded <SOURCE_DIR>/ ${HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR}/presto/
 )

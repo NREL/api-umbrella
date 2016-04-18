@@ -2,7 +2,7 @@
 
 set -e -u -x
 
-ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
+SOURCE_DIR="$(dirname $(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd))))"
 DOCKER_IMAGE=${DIST/-/:}
 CONTAINER_NAME="api-umbrella-package-$DIST-verify"
 CONTAINER_NAME=${CONTAINER_NAME//[^a-zA-Z0-9_.-]/}
@@ -17,10 +17,12 @@ fi
 # v0.8 attempt work (needed so we can test upgrades from v0.8).
 docker run \
   --name=$CONTAINER_NAME \
-  --volume=$ROOT_DIR:/api-umbrella \
+  --volume=$SOURCE_DIR:/api-umbrella \
   --env="DIST=$DIST" \
   --tty \
   --rm \
   --privileged \
   $DOCKER_IMAGE \
-  /bin/bash -c "cd /api-umbrella && ./build/verify_package/run"
+  /bin/bash -c "/api-umbrella/build/package/verify/docker_script"
+
+echo "Completed package verification for $DIST"

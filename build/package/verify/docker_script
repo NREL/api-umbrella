@@ -2,22 +2,15 @@
 
 set -e -u -x
 
-ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
-
-# Workaround for systemd-container issues when building inside of Docker:
-# https://github.com/CentOS/sig-cloud-instance-images/issues/26#issuecomment-121797899
-# It sounds like this should no longer be an issue in the next centos:7
-# container release.
-if [ "$DIST" == "centos-7" ]; then
-  yum -y swap -- remove systemd-container systemd-container-libs -- install systemd systemd-libs
-fi
+SOURCE_DIR="$(dirname $(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd))))"
 
 # Install the local package that just got built.
+CURRENT_PACKAGE=$SOURCE_DIR/build/work/package/current/$DIST/core/*
 if command -v yum > /dev/null 2>&1; then
-  yum -y install $ROOT_DIR/build/work/packages/$DIST/core/*
+  yum -y install $CURRENT_PACKAGE
 elif command -v dpkg > /dev/null 2>&1; then
   apt-get update
-  dpkg -i $ROOT_DIR/build/work/packages/$DIST/core/* || apt-get install -y -f
+  dpkg -i $CURRENT_PACKAGE || apt-get install -y -f
 else
   echo "Unknown build system"
   exit 1
@@ -35,13 +28,13 @@ api-umbrella health --wait-for-status green
 # Note: We do this after installing and starting API Umbrella to ensure that
 # API Umbrella can start on its own (and we're not accidentally depending on
 # any of these test dependencies).
-if command -v yum > /dev/null 2>&1; then
+if [ -f /etc/redhat-release ]; then
   yum -y install epel-release
   yum -y install \
     rubygems \
     socat \
     sudo
-elif command -v dpkg > /dev/null 2>&1; then
+elif [ -f /etc/debian_version ]; then
   apt-get -y install \
     net-tools \
     ruby \
@@ -53,10 +46,16 @@ elif command -v dpkg > /dev/null 2>&1; then
 fi
 gem install bundler --no-rdoc --no-ri
 
-cd $ROOT_DIR/build/verify_package
+# Perform an out-of-source build (so the same source directory can be used for
+# multiple parallel docker builds).
+BUILD_DIR=/tmp/api-umbrella-$DIST
+rm -rf $BUILD_DIR
+mkdir -p $BUILD_DIR
+cd $BUILD_DIR
 
 # Install the test gem dependencies.
-bundle
+BUNDLE_GEMFILE=$SOURCE_DIR/build/package/verify/Gemfile BUNDLE_APP_CONFIG=$BUILD_DIR/.bundle bundle install --clean --path=$BUILD_DIR/bundle
 
 # Run the serverspec suite.
-env ROOT_DIR=$ROOT_DIR DIST=$DIST bundle exec rake spec
+cd $SOURCE_DIR/build/package/verify
+BUNDLE_GEMFILE=$SOURCE_DIR/build/package/verify/Gemfile BUNDLE_APP_CONFIG=$BUILD_DIR/.bundle SOURCE_DIR=$SOURCE_DIR DIST=$DIST bundle exec rake spec
