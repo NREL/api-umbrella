@@ -79,6 +79,11 @@ if [ "$CONFIGURE" = "true" ]; then
   chown -R $DEPLOY_USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps
   chown -R $USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
   chmod 775 /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
+  if [ -d /opt/api-umbrella/embedded/kylin ]; then
+    chown $USER:$GROUP /opt/api-umbrella/embedded/kylin/tomcat/temp \
+      /opt/api-umbrella/embedded/kylin/tomcat/webapps \
+      /opt/api-umbrella/embedded/kylin/tomcat/logs \
+  fi
 
   # Re-create symlinks that may have inadvertently been cleaned up by the API
   # Umbrella v0.8 and v0.9 after-remove scripts during upgrades (this should be

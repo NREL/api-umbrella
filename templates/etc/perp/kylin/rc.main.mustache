@@ -11,7 +11,7 @@ if test ${1} = "start"; then
   RUN_OPTS="$RUN_OPTS -u {{user}}"
   {{/user}}
 
-  exec runtool $RUN_OPTS {{_embedded_root_dir}}/kylin/bin/kylin.sh
+  exec runtool $RUN_OPTS {{etc_dir}}/perp/kylin/rc.run
 fi
 
 exit 0

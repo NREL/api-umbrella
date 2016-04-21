@@ -169,7 +169,7 @@ analytics:
   timezone: UTC
 kylin:
   host: 127.0.0.1
-  port: 14006
+  port: 7070
 presto:
   host: 127.0.0.1
   port: 14015
