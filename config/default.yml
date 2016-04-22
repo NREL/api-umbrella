@@ -176,6 +176,8 @@ presto:
 flume:
   host: 127.0.0.1
   port: 14016
+  embedded_server_config:
+    java_opts:
 kafka:
   brokers: []
   topic: api_umbrella_logs

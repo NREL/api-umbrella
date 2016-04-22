@@ -6,6 +6,7 @@ api-umbrella-agent.sinks = hdfs-sink
 api-umbrella-agent.channels.file-channel.type = file
 api-umbrella-agent.channels.file-channel.checkpointDir = {{db_dir}}/flume/file-channel/checkpoint
 api-umbrella-agent.channels.file-channel.dataDirs = {{db_dir}}/flume/file-channel/data
+api-umbrella-agent.channels.file-channel.use-fast-replay = true
 
 # Pull data from Kafka (which rsyslog is pumping data into).
 api-umbrella-agent.sources.kafka-source.type = org.apache.flume.source.kafka.KafkaSource
