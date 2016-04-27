@@ -425,7 +425,7 @@ GEM
     ref (2.0.0)
     responders (1.1.2)
       railties (>= 3.2, < 4.2)
-    rollbar (2.6.1)
+    rollbar (2.10.0)
       multi_json
     rspec (2.99.0)
       rspec-core (~> 2.99.0)
@@ -606,7 +606,7 @@ DEPENDENCIES
   rails-assets-selectize (~> 0.11.2)!
   rails-assets-spinjs (~> 2.0.0)!
   rails_stdout_logging (~> 0.0.3)
-  rollbar (~> 2.6.1)
+  rollbar (~> 2.10.0)
   rspec-html-matchers (~> 0.5.0)
   rspec-rails (~> 2.99.0)
   rspec_junit_formatter (~> 0.2.3)
