@@ -199,6 +199,44 @@ describe Admin::StatsController do
   end
 
   describe "GET logs" do
+    it "strips the api_key from the request_url on the JSON response" do
+      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_url => "http://127.0.0.1/with_api_key/?foo=bar&api_key=secret")
+      LogItem.gateway.refresh_index!
+
+      get :logs, {
+        "format" => "json",
+        "tz" => "America/Denver",
+        "start_at" => "2015-01-13",
+        "end_at" => "2015-01-18",
+        "interval" => "day",
+        "start" => "0",
+        "length" => "10",
+      }
+
+      response.status.should eql(200)
+      data = MultiJson.load(response.body)
+      data["recordsTotal"].should eql(1)
+      data["data"][0]["request_url"].should eql("/with_api_key/?foo=bar")
+    end
+
+    it "strips the api_key from the request_url on the CSV response" do
+      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_url => "http://127.0.0.1/with_api_key/?api_key=secret&foo=bar")
+      LogItem.gateway.refresh_index!
+
+      get :logs, {
+        "format" => "csv",
+        "tz" => "America/Denver",
+        "start_at" => "2015-01-13",
+        "end_at" => "2015-01-18",
+        "interval" => "day",
+        "start" => "0",
+        "length" => "10",
+      }
+
+      response.status.should eql(200)
+      response.body.should include(",http://127.0.0.1/with_api_key/?foo=bar,")
+    end
+
     it "downloads a CSV that requires an elasticsearch scan and scroll query" do
       FactoryGirl.create_list(:log_item, 1005, :request_at => Time.parse("2015-01-16T06:06:28.816Z"))
       LogItem.gateway.refresh_index!
