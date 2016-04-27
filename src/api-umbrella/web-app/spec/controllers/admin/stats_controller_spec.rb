@@ -200,7 +200,7 @@ describe Admin::StatsController do
 
   describe "GET logs" do
     it "strips the api_key from the request_url on the JSON response" do
-      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_url => "http://127.0.0.1/with_api_key/?foo=bar&api_key=secret")
+      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_url => "http://127.0.0.1/with_api_key/?foo=bar&api_key=my_secret_key", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" })
       LogItem.gateway.refresh_index!
 
       get :logs, {
@@ -214,13 +214,16 @@ describe Admin::StatsController do
       }
 
       response.status.should eql(200)
-      data = MultiJson.load(response.body)
+      body = response.body
+      data = MultiJson.load(body)
       data["recordsTotal"].should eql(1)
       data["data"][0]["request_url"].should eql("/with_api_key/?foo=bar")
+      data["data"][0]["request_query"].should eql({ "foo" => "bar" })
+      body.should_not include("my_secret_key")
     end
 
     it "strips the api_key from the request_url on the CSV response" do
-      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_url => "http://127.0.0.1/with_api_key/?api_key=secret&foo=bar")
+      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_url => "http://127.0.0.1/with_api_key/?api_key=my_secret_key&foo=bar", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" })
       LogItem.gateway.refresh_index!
 
       get :logs, {
@@ -234,7 +237,9 @@ describe Admin::StatsController do
       }
 
       response.status.should eql(200)
-      response.body.should include(",http://127.0.0.1/with_api_key/?foo=bar,")
+      body = response.body
+      body.should include(",http://127.0.0.1/with_api_key/?foo=bar,")
+      body.should_not include("my_secret_key")
     end
 
     it "downloads a CSV that requires an elasticsearch scan and scroll query" do
