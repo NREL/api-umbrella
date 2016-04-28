@@ -77,8 +77,12 @@ if [ "$CONFIGURE" = "true" ]; then
   # Set file permissions
   chown -R $USER:$GROUP /opt/api-umbrella/etc /opt/api-umbrella/var
   chown -R $DEPLOY_USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps
+  mkdir -p /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache
   chown -R $USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
-  chmod 775 /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
+  mkdir -p /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/ember-rails /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/assets /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/sass
+  chown -R $DEPLOY_USER:$GROUP /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/ember-rails /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/assets /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/sass
+  chmod -R 775 /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/ember-rails /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/assets /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/sass
+  chmod 1777 /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
   if [ -d /opt/api-umbrella/embedded/kylin ]; then
     chown $USER:$GROUP /opt/api-umbrella/embedded/kylin/tomcat/temp \
       /opt/api-umbrella/embedded/kylin/tomcat/webapps \
