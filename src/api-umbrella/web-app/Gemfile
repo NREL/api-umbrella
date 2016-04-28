@@ -274,6 +274,15 @@ group :development, :test do
 
   # Generate output for CI.
   gem "rspec_junit_formatter", "~> 0.2.3"
+
+  # Check for security issues on gem dependencies.
+  #
+  # Use this fork for .bundlerauditignore support:
+  # https://github.com/rubysec/bundler-audit/pull/122
+  gem "bundler-audit", :git => "https://github.com/rickypai/bundler-audit.git", :branch => "rpai/ignorefile"
+
+  # Check for application security issues.
+  gem "brakeman"
 end
 
 group :development do

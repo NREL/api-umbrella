@@ -19,13 +19,13 @@ class Api::V1::UsersController < Api::V1::BaseController
 
     if(params["search"] && params["search"]["value"].present?)
       @api_users = @api_users.or([
-        { :first_name => /#{params["search"]["value"]}/i },
-        { :last_name => /#{params["search"]["value"]}/i },
-        { :email => /#{params["search"]["value"]}/i },
-        { :api_key => /#{params["search"]["value"]}/i },
-        { :registration_source => /#{params["search"]["value"]}/i },
-        { :roles => /#{params["search"]["value"]}/i },
-        { :_id => /#{params["search"]["value"]}/i },
+        { :first_name => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :last_name => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :email => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :api_key => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :registration_source => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :roles => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :_id => /#{Regexp.escape(params["search"]["value"])}/i },
       ])
     end
   end
