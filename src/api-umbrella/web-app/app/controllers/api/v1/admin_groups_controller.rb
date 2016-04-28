@@ -20,7 +20,7 @@ class Api::V1::AdminGroupsController < Api::V1::BaseController
 
     if(params[:search] && params[:search][:value].present?)
       @admin_groups = @admin_groups.or([
-        { :name => /#{params[:search][:value]}/i },
+        { :name => /#{Regexp.escape(params[:search][:value])}/i },
       ])
     end
 

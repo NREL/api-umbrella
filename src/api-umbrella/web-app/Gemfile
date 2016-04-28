@@ -285,6 +285,15 @@ group :development, :test do
 
   # For running the api-umbrella process as a background process during tests.
   gem "childprocess", "~> 0.5.9"
+
+  # Check for security issues on gem dependencies.
+  #
+  # Use this fork for .bundlerauditignore support:
+  # https://github.com/rubysec/bundler-audit/pull/122
+  gem "bundler-audit", :git => "https://github.com/rickypai/bundler-audit.git", :branch => "rpai/ignorefile"
+
+  # Check for application security issues.
+  gem "brakeman"
 end
 
 group :development do

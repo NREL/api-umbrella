@@ -16,13 +16,13 @@ class Api::V1::ApisController < Api::V1::BaseController
 
     if(params["search"] && params["search"]["value"].present?)
       @apis = @apis.or([
-        { :name => /#{params["search"]["value"]}/i },
-        { :frontend_host => /#{params["search"]["value"]}/i },
-        { :backend_host => /#{params["search"]["value"]}/i },
-        { :"url_matches.backend_prefix" => /#{params["search"]["value"]}/i },
-        { :"url_matches.frontend_prefix" => /#{params["search"]["value"]}/i },
-        { :"servers.host" => /#{params["search"]["value"]}/i },
-        { :_id => /#{params["search"]["value"]}/i },
+        { :name => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :frontend_host => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :backend_host => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :"url_matches.backend_prefix" => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :"url_matches.frontend_prefix" => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :"servers.host" => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :_id => /#{Regexp.escape(params["search"]["value"])}/i },
       ])
     end
 
