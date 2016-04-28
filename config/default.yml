@@ -168,9 +168,11 @@ analytics:
   adapter: elasticsearch
   timezone: UTC
 kylin:
+  protocol: http
   host: 127.0.0.1
   port: 7070
 presto:
+  protocol: http
   host: 127.0.0.1
   port: 14015
 flume:

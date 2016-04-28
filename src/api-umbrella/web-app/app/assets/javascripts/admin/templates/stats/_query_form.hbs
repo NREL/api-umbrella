@@ -4,6 +4,8 @@
       <a id="filter_toggle" {{action 'toggleFilters' target='view'}}><i class="fa fa-caret-right"></i>{{t 'admin.stats.filter_results'}}</a>
     </div>
     <div class="span8 filter-times">
+      <label class="checkbox" style="display: inline-block; font-size: 12px; margin: 0px 40px 0px 0px; color: #666; position: relative; top: 2px;">{{view Ember.Checkbox checkedBinding="view.isBetaAnalytics" action="toggleBetaAnalytics" target="view"}} Beta Analytics</label>
+
       {{#if view.enableInterval}}
         <div id="interval_buttons" class="btn-group" data-toggle="buttons-radio">
           <button type="button" class="btn btn-mini" value="minute" {{action 'clickInterval' 'minute' target='view'}}>{{t 'admin.stats.minute'}}</button>

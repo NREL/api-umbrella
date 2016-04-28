@@ -1,11 +1,11 @@
 class LogResult
   def self.factory(search, raw_result)
-    case(ApiUmbrellaConfig[:analytics][:adapter])
-    when "elasticsearch"
+    case(search)
+    when LogSearch::ElasticSearch
       LogResult::ElasticSearch.new(search, raw_result)
-    when "kylin"
+    when LogSearch::Kylin
       LogResult::Kylin.new(search, raw_result)
-    when "postgresql"
+    when LogSearch::Postgresql
       LogResult::Postgresql.new(search, raw_result)
     end
   end

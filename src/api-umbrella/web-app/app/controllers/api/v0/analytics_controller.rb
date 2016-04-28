@@ -1,4 +1,5 @@
 class Api::V0::AnalyticsController < Api::V1::BaseController
+  before_filter :set_analytics_adapter
   skip_before_filter :authenticate_admin!, :only => [:summary]
   skip_after_filter :verify_authorized, :only => [:summary]
 
@@ -94,7 +95,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     summary[:users_by_month].sort_by! { |data| [data[:year], data[:month]] }
 
     # Fetch the hits by month.
-    search = LogSearch.factory({
+    search = LogSearch.factory(@analytics_adapter, {
       :start_time => start_time,
       :end_time => Time.now,
       :interval => "month",

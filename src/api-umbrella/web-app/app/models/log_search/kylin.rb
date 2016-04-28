@@ -1,9 +1,12 @@
 class LogSearch::Kylin < LogSearch::Sql
   def execute_kylin(sql)
-    @kylin_conn ||= Faraday.new(:url => "http://#{ApiUmbrellaConfig[:kylin][:host]}:#{ApiUmbrellaConfig[:kylin][:port]}") do |faraday|
+    @kylin_conn ||= Faraday.new(:url => "#{ApiUmbrellaConfig[:kylin][:protocol]}://#{ApiUmbrellaConfig[:kylin][:host]}:#{ApiUmbrellaConfig[:kylin][:port]}") do |faraday|
       faraday.response :logger
       faraday.adapter Faraday.default_adapter
       faraday.basic_auth "ADMIN", "KYLIN"
+    end
+    if(ApiUmbrellaConfig[:kylin][:auth])
+      @kylin_conn.basic_auth(ApiUmbrellaConfig[:kylin][:auth][:username], ApiUmbrellaConfig[:kylin][:auth][:password])
     end
 
     Rails.logger.info(sql)
@@ -26,9 +29,12 @@ class LogSearch::Kylin < LogSearch::Sql
   end
 
   def execute_presto(sql)
-    @presto_conn ||= Faraday.new(:url => "http://#{ApiUmbrellaConfig[:presto][:host]}:#{ApiUmbrellaConfig[:presto][:port]}") do |faraday|
+    @presto_conn ||= Faraday.new(:url => "#{ApiUmbrellaConfig[:presto][:protocol]}://#{ApiUmbrellaConfig[:presto][:host]}:#{ApiUmbrellaConfig[:presto][:port]}") do |faraday|
       faraday.response :logger
       faraday.adapter Faraday.default_adapter
+    end
+    if(ApiUmbrellaConfig[:presto][:auth])
+      @presto_conn.basic_auth(ApiUmbrellaConfig[:presto][:auth][:username], ApiUmbrellaConfig[:presto][:auth][:password])
     end
 
     Rails.logger.info(sql)

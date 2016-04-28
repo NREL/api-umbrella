@@ -3,13 +3,14 @@ require "csv_streamer"
 class Admin::StatsController < Admin::BaseController
   set_tab :analytics
 
+  before_filter :set_analytics_adapter
   around_filter :set_time_zone
 
   def index
   end
 
   def search
-    @search = LogSearch.factory({
+    @search = LogSearch.factory(@analytics_adapter, {
       :start_time => params[:start_at],
       :end_time => params[:end_at],
       :interval => params[:interval],
@@ -35,10 +36,10 @@ class Admin::StatsController < Admin::BaseController
     # figure out a better way to document this and still allow downloading
     # the full data set.
     start_time = params[:start_at]
-    if(ApiUmbrellaConfig[:analytics][:adapter] == "kylin")
+    if(@analytics_adapter == "kylin")
       start_time = Time.zone.parse(params[:end_at]) - 1.day
     end
-    @search = LogSearch.factory({
+    @search = LogSearch.factory(@analytics_adapter, {
       :start_time => start_time,
       :end_time => params[:end_at],
       :interval => params[:interval],
@@ -108,7 +109,7 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def users
-    @search = LogSearch.factory({
+    @search = LogSearch.factory(@analytics_adapter, {
       :start_time => params[:start_at],
       :end_time => params[:end_at],
     })
@@ -201,7 +202,7 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def map
-    @search = LogSearch.factory({
+    @search = LogSearch.factory(@analytics_adapter, {
       :start_time => params[:start_at],
       :end_time => params[:end_at],
       :region => params[:region],
