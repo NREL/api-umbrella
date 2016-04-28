@@ -1,10 +1,13 @@
 local _M = {}
 
+local array_last = require "api-umbrella.utils.array_last"
 local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
 local mongo = require "api-umbrella.utils.mongo"
+local plutils = require "pl.utils"
 local types = require "pl.types"
 
 local is_empty = types.is_empty
+local split = plutils.split
 
 local delay = 0.25  -- in seconds
 local new_timer = ngx.timer.at
@@ -54,6 +57,9 @@ local function do_check()
 
   local success = true
   for key, count in pairs(data) do
+    local key_parts = split(key, ":", true)
+    local duration = tonumber(key_parts[2])
+    local bucket_start_time = tonumber(array_last(key_parts))
     local _, err = mongo.update("rate_limits", key, {
       ["$currentDate"] = {
         ts = { ["$type"] = "timestamp" },
@@ -62,8 +68,10 @@ local function do_check()
         count = count,
       },
       ["$setOnInsert"] = {
+        -- Set this key to automatically expire after the bucket's duration,
+        -- plus 60 seconds as a small buffer.
         expire_at = {
-          ["$date"] = ngx.now() * 1000 + 60000,
+          ["$date"] = { ["$numberLong"] = tostring(bucket_start_time + duration + 60000) },
         },
       },
     })

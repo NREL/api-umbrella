@@ -24,6 +24,7 @@ describe('distributed rate limit sync', function() {
       var options = {
         apiKey: this.apiKeyWithExistingCounts,
         duration: 50 * 60 * 1000, // 50 minutes
+        accuracy: 1 * 60 * 1000, // 1 minute
         limit: 1001,
         updatedAt: new Date(moment().startOf('minute').toDate() - 45 * 60 * 1000), // 45min ago
       };
@@ -110,6 +111,22 @@ describe('distributed rate limit sync', function() {
               ],
             },
           },
+          {
+            http_method: 'any',
+            regex: '^/info/specific/long-duration-bucket/',
+            settings: {
+              rate_limits: [
+                {
+                  duration: 24 * 60 * 60 * 1000, // 1 day
+                  accuracy: 60 * 60 * 1000, // 1 hour
+                  limit_by: 'apiKey',
+                  limit: 1005,
+                  distributed: true,
+                  response_headers: true,
+                }
+              ],
+            },
+          },
         ],
       },
       {
@@ -173,16 +190,15 @@ describe('distributed rate limit sync', function() {
 
   function setDistributedCount(count, options, callback) {
     var updatedAt = options.updatedAt || new Date();
-    var bucketDate = moment(updatedAt).startOf('minute').toDate();
+    var bucketDate = Math.floor(updatedAt.getTime() / options.accuracy) * options.accuracy;
     var host = options.host || 'localhost';
 
-    var key = 'apiKey:' + options.duration + ':' + options.apiKey + ':' + host + ':' + bucketDate.getTime();
+    var key = 'apiKey:' + options.duration + ':' + options.apiKey + ':' + host + ':' + bucketDate;
 
     Factory.create('rate_limit', {
       _id: key,
-      time: bucketDate,
       count: count,
-      expire_at: updatedAt.getTime() + 60 * 60 * 1000,
+      expire_at: bucketDate + options.duration + 60 * 1000,
     }, function() {
       // Delay the callback to give the distributed rate limit a chance to
       // propagate to the local nodes.
@@ -193,7 +209,10 @@ describe('distributed rate limit sync', function() {
   function expectDistributedCountAfterSync(expectedCount, options, callback) {
     var pipeline = [
       {
-        $match: { _id: new RegExp(':' + options.apiKey + ':') },
+        $match: {
+          _id: new RegExp(':' + options.apiKey + ':'),
+          expire_at: { '$gte': new Date() },
+        },
       },
       {
         $group: {
@@ -246,6 +265,7 @@ describe('distributed rate limit sync', function() {
     var options = {
       apiKey: this.apiKey,
       duration: 50 * 60 * 1000, // 50 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1001,
     };
 
@@ -261,6 +281,7 @@ describe('distributed rate limit sync', function() {
     var options = {
       apiKey: this.apiKey,
       duration: 50 * 60 * 1000, // 50 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1001,
 
       // Freeze the time to ensure that the makeRequests and
@@ -287,6 +308,7 @@ describe('distributed rate limit sync', function() {
     var options = {
       apiKey: this.apiKey,
       duration: 50 * 60 * 1000, // 50 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1001,
 
       // Freeze the time to ensure that the makeRequests and
@@ -310,6 +332,7 @@ describe('distributed rate limit sync', function() {
     var options = {
       apiKey: this.apiKey,
       duration: 50 * 60 * 1000, // 50 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1001,
     };
 
@@ -322,6 +345,7 @@ describe('distributed rate limit sync', function() {
     var options = {
       apiKey: this.apiKey,
       duration: 50 * 60 * 1000, // 50 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1001,
     };
 
@@ -337,6 +361,7 @@ describe('distributed rate limit sync', function() {
     var options = {
       apiKey: this.apiKey,
       duration: 50 * 60 * 1000, // 50 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1001,
     };
 
@@ -349,6 +374,7 @@ describe('distributed rate limit sync', function() {
     var options = {
       apiKey: this.apiKey,
       duration: 12 * 60 * 1000, // 12 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1004,
       urlPath: '/info/specific/non-distributed/',
     };
@@ -362,6 +388,7 @@ describe('distributed rate limit sync', function() {
     var options = {
       apiKey: this.apiKey,
       duration: 45 * 60 * 1000, // 45 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1002,
       urlPath: '/info/specific/',
     };
@@ -375,6 +402,7 @@ describe('distributed rate limit sync', function() {
     var options = {
       apiKey: this.apiKey,
       duration: 48 * 60 * 1000, // 48 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1003,
       urlPath: '/info/specific/subsettings/',
     };
@@ -384,10 +412,45 @@ describe('distributed rate limit sync', function() {
     });
   });
 
+  it('syncs local rate limits for longer duration buckets when requests take place in the past, but within bucket time', function(done) {
+    var options = {
+      apiKey: this.apiKey,
+      duration: 24 * 60 * 60 * 1000, // 1 day
+      accuracy: 60 * 60 * 1000, // 1 hour
+      limit: 1005,
+      urlPath: '/info/specific/long-duration-bucket/',
+      requestOptions: {
+        headers: { 'X-Fake-Time': Date.now() - 8 * 60 * 60 * 1000 },
+      },
+    };
+
+    makeRequests(4, options, function() {
+      expectDistributedCountAfterSync(4, options, done);
+    });
+  });
+
+  it('does not sync local rate limits for longer duration buckets when requests take place prior to the bucket time', function(done) {
+    var options = {
+      apiKey: this.apiKey,
+      duration: 24 * 60 * 60 * 1000, // 1 day
+      accuracy: 60 * 60 * 1000, // 1 hour
+      limit: 1005,
+      urlPath: '/info/specific/long-duration-bucket/',
+      requestOptions: {
+        headers: { 'X-Fake-Time': Date.now() - 48 * 60 * 60 * 1000 },
+      },
+    };
+
+    makeRequests(3, options, function() {
+      expectDistributedCountAfterSync(0, options, done);
+    });
+  });
+
   it('performs a sync for the entire duration (but not outside the duration) on start', function(done) {
     var options = {
       apiKey: this.apiKeyWithExistingCounts,
       duration: 50 * 60 * 1000, // 50 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1001,
     };
 
@@ -401,6 +464,7 @@ describe('distributed rate limit sync', function() {
     var options = {
       apiKey: this.apiKey,
       duration: 50 * 60 * 1000, // 50 minutes
+      accuracy: 1 * 60 * 1000, // 1 minute
       limit: 1001,
 
       // Freeze the time to ensure that the makeRequests and
