@@ -419,9 +419,9 @@ public class ConvertLiveDataToOrc implements Runnable {
        * manually be dealt with.
        */
       if (activePartition.getMillis() < lastMigratedPartitionTime) {
-        logger.error("Partition with active files is unexpectedly older than the the most recently "
+        logger.error("Partition with active files is unexpectedly older than the most recently "
             + "processed data. This means older data is being populated in the live data files. "
-            + "This data will not automatically be processed. Manual cleanups is required. "
+            + "This data will not automatically be processed. Manual cleanup is required. "
             + "Partition: " + activePartition);
       }
     }
