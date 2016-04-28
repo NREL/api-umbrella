@@ -20,8 +20,8 @@ class Api::V1::WebsiteBackendsController < Api::V1::BaseController
 
     if(params[:search] && params[:search][:value].present?)
       @website_backends = @website_backends.or([
-        { :frontend_host => /#{params[:search][:value]}/i },
-        { :server_host => /#{params[:search][:value]}/i },
+        { :frontend_host => /#{Regexp.escape(params[:search][:value])}/i },
+        { :server_host => /#{Regexp.escape(params[:search][:value])}/i },
       ])
     end
   end

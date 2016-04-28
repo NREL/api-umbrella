@@ -3,6 +3,7 @@ general:
     # Keep logs after running to help debug if errors do crop up.
     - /tmp/api-umbrella-test/var/log
     - src/api-umbrella/web-app/log
+    - src/api-umbrella/web-app/brakeman.html
     # Keep screenshots of capybara failures for easier debugging.
     - src/api-umbrella/web-app/tmp/capybara
 machine:
