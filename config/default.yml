@@ -175,6 +175,12 @@ presto:
   protocol: http
   host: 127.0.0.1
   port: 14015
+  embedded_server_config:
+    http_port: 14015
+    max_memory: 2GB
+    max_memory_per_node: 1GB
+    discovery_uri: http://localhost:14015
+    query_max_run_time: 60s
 flume:
   host: 127.0.0.1
   port: 14016
