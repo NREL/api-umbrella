@@ -49,6 +49,11 @@ local function do_check()
         if not local_count then
           if result["expire_at"] and result["expire_at"]["$date"] then
             local ttl = (result["expire_at"]["$date"] - current_fetch_time) / 1000
+            if ttl < 0 then
+              ngx.log(ngx.ERR, "distributed_rate_limit_puller ttl unexpectedly less than 0 (key: " .. key .. " ttl: " .. ttl .. ")")
+              ttl = 3600
+            end
+
             local _, set_err = ngx.shared.stats:set(key, distributed_count, ttl)
             if set_err then
               ngx.log(ngx.ERR, "failed to set rate limit key", set_err)
