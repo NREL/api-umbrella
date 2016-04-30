@@ -75,7 +75,7 @@ gem "omniauth-persona", "~> 0.0.1"
 gem "omniauth-twitter", "~> 1.0.1"
 
 # Authorization
-gem "pundit", "~> 0.3.0"
+gem "pundit", "~> 1.1.0"
 
 # Pagination
 gem "kaminari", "~> 0.16.1"
