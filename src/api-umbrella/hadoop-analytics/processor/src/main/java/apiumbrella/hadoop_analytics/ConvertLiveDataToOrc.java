@@ -151,14 +151,14 @@ public class ConvertLiveDataToOrc implements Runnable {
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.error("convert error", e);
     } finally {
       try {
         if (connection != null) {
           connection.close();
         }
       } catch (SQLException e) {
-        e.printStackTrace();
+        logger.error("convert error", e);
       }
     }
     logger.debug("Finish processing");
