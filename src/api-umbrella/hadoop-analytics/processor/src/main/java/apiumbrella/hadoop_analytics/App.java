@@ -5,13 +5,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.joda.time.DateTimeZone;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class App {
   protected static DateTimeZone TIMEZONE =
       DateTimeZone.forID(System.getProperty("apiumbrella.timezone", "UTC"));
-  final Logger logger = LoggerFactory.getLogger(App.class);
 
   public App() {
     Runnable convert = new ConvertLiveDataToOrc(this);
@@ -24,6 +21,10 @@ public class App {
   }
 
   public static void main(String[] args) {
+    if (System.getProperty("apiumbrella.log_level") == null) {
+      System.setProperty("apiumbrella.log_level", "INFO");
+    }
+
     new App();
   }
 }

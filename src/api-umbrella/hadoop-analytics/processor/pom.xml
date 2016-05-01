@@ -33,8 +33,8 @@
     <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.7.16</version>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.21</version>
     </dependency>
     <!-- Hive for ORC file output. v0.14 to match version used in HDP 2.2, 
       which is what Kylin wants -->

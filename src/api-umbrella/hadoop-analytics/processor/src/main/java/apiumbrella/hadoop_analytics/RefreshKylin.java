@@ -1,6 +1,7 @@
 package apiumbrella.hadoop_analytics;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -15,6 +16,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -36,7 +38,7 @@ public class RefreshKylin implements Runnable {
   private HttpClient client;
 
   public RefreshKylin(App app) {
-    logger = app.logger;
+    logger = LoggerFactory.getLogger(this.getClass());
 
     client = new HttpClient();
     UsernamePasswordCredentials credentials =
@@ -113,8 +115,12 @@ public class RefreshKylin implements Runnable {
     JsonArray segments = null;
     try {
       client.executeMethod(method);
-      JsonObject result =
-          new JsonParser().parse(method.getResponseBodyAsString()).getAsJsonObject();
+      int responseStatus = method.getStatusLine().getStatusCode();
+      InputStreamReader responseBody = new InputStreamReader(method.getResponseBodyAsStream());
+      if (responseStatus != 200) {
+        logger.error("Failed to get job status: " + responseStatus + " - " + responseBody);
+      }
+      JsonObject result = new JsonParser().parse(responseBody).getAsJsonObject();
       segments = result.get("segments").getAsJsonArray();
     } catch (HttpException e) {
       logger.error("getSegments error", e);
@@ -123,8 +129,6 @@ public class RefreshKylin implements Runnable {
     } catch (IOException e) {
       logger.error("getSegments error", e);
     }
-
-    logger.debug("getSegments 5");
 
     return segments;
   }
@@ -143,8 +147,12 @@ public class RefreshKylin implements Runnable {
       RequestEntity entity = new StringRequestEntity(data.toString(), "application/json", "UTF-8");
       method.setRequestEntity(entity);
       client.executeMethod(method);
-      JsonObject result =
-          new JsonParser().parse(method.getResponseBodyAsString()).getAsJsonObject();
+      int responseStatus = method.getStatusLine().getStatusCode();
+      InputStreamReader responseBody = new InputStreamReader(method.getResponseBodyAsStream());
+      if (responseStatus != 200) {
+        logger.error("Failed to get job status: " + responseStatus + " - " + responseBody);
+      }
+      JsonObject result = new JsonParser().parse(responseBody).getAsJsonObject();
       String jobUuid = result.get("uuid").getAsString();
       waitForJob(jobUuid);
     } catch (HttpException e) {
@@ -164,8 +172,12 @@ public class RefreshKylin implements Runnable {
     String status = null;
     try {
       client.executeMethod(method);
-      JsonObject result =
-          new JsonParser().parse(method.getResponseBodyAsString()).getAsJsonObject();
+      int responseStatus = method.getStatusLine().getStatusCode();
+      InputStreamReader responseBody = new InputStreamReader(method.getResponseBodyAsStream());
+      if (responseStatus != 200) {
+        logger.error("Failed to get job status: " + responseStatus + " - " + responseBody);
+      }
+      JsonObject result = new JsonParser().parse(responseBody).getAsJsonObject();
       status = result.get("job_status").getAsString();
     } catch (HttpException e) {
       logger.error("getJobStatus error", e);

@@ -27,6 +27,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for migrating the live log data into permanent ORC storage (with likely
@@ -81,7 +82,7 @@ public class ConvertLiveDataToOrc implements Runnable {
 
   public ConvertLiveDataToOrc(App app) {
     logSchema = new LogSchema();
-    logger = app.logger;
+    logger = LoggerFactory.getLogger(this.getClass());
 
     try {
       // Load the Hive JDBC class.
