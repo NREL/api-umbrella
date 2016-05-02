@@ -196,7 +196,7 @@ public class RefreshKylin implements Runnable {
 
   private void waitForJob(String jobUuid) {
     try {
-      while (getJobStatus(jobUuid) != "FINISHED") {
+      while (!getJobStatus(jobUuid).equals("FINISHED")) {
         Thread.sleep(10000);
       }
     } catch (InterruptedException ex) {
