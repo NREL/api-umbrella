@@ -21,6 +21,10 @@ public class App {
   }
 
   public static void main(String[] args) {
+    if (System.getProperty("apiumbrella.root_log_level") == null) {
+      System.setProperty("apiumbrella.root_log_level", "WARN");
+    }
+
     if (System.getProperty("apiumbrella.log_level") == null) {
       System.setProperty("apiumbrella.log_level", "INFO");
     }
