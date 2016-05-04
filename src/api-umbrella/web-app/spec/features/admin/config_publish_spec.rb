@@ -5,6 +5,7 @@ describe "config publish", :js => true do
 
   before(:each) do
     Api.delete_all
+    WebsiteBackend.delete_all
     ConfigVersion.delete_all
   end
 

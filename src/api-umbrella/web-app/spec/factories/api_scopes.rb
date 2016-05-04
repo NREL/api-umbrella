@@ -29,5 +29,15 @@ FactoryGirl.define do
     factory :bing_maps_api_scope do
       path_prefix "/bing/maps"
     end
+
+    factory :amazon_api_scope do
+      host "amazon.com"
+      path_prefix "/"
+    end
+
+    factory :amazon_books_api_scope do
+      host "amazon.com"
+      path_prefix "/books"
+    end
   end
 end

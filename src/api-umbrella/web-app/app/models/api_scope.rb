@@ -42,4 +42,8 @@ class ApiScope
   def display_name
     "#{self.name} - #{self.host}#{self.path_prefix}"
   end
+
+  def root?
+    (self.path_prefix.blank? || self.path_prefix == "/")
+  end
 end
