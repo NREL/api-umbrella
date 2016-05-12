@@ -12,7 +12,6 @@ repos = {
   },
   "bundler" => {
     :git => "https://github.com/bundler/bundler.git",
-    :constraint => "~> 1.11.2",
   },
   "elasticsearch" => {
     :git => "https://github.com/elasticsearch/elasticsearch.git",
@@ -26,7 +25,6 @@ repos = {
   },
   "golang" => {
     :git => "https://go.googlesource.com/go",
-    :constraint => "~> 1.5.3",
   },
   "json_c" => {
     :git => "https://github.com/json-c/json-c.git",
