@@ -41,6 +41,7 @@ set(TEST_VENDOR_LUA_LIB_DIR ${TEST_VENDOR_DIR}/lib/lua/5.1)
 
 # Define a timestamped release name for our app installations.
 execute_process(COMMAND date -u +%Y%m%d%H%M%S OUTPUT_VARIABLE RELEASE_TIMESTAMP OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND date -u +%Y%m%d OUTPUT_VARIABLE RELEASE_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 include(ExternalProject)
 
