@@ -34,7 +34,7 @@ if [ -f /etc/redhat-release ]; then
   HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES=(
     java-1.8.0-openjdk-headless
   )
-  BUILD_DEPENDENCIES=(
+  CORE_BUILD_DEPENDENCIES=(
     autoconf
     automake
     bzip2
@@ -61,6 +61,9 @@ if [ -f /etc/redhat-release ]; then
     tcl-devel
     unzip
     xz
+  )
+  HADOOP_ANALYTICS_BUILD_DEPENDENCIES=(
+    java-1.8.0-openjdk-devel
   )
 elif [ -f /etc/debian_version ]; then
   CORE_PACKAGE_DEPENDENCIES=(
@@ -94,7 +97,7 @@ elif [ -f /etc/debian_version ]; then
   HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES=(
     openjdk-7-jre-headless
   )
-  BUILD_DEPENDENCIES=(
+  CORE_BUILD_DEPENDENCIES=(
     autoconf
     automake
     bzip2
@@ -122,6 +125,9 @@ elif [ -f /etc/debian_version ]; then
     unzip
     xz-utils
   )
+  HADOOP_ANALYTICS_BUILD_DEPENDENCIES=(
+    openjdk-7-jdk-headless
+  )
 
   if lsb_release --codename --short | grep wheezy; then
     CORE_PACKAGE_DEPENDENCIES+=("libffi5")
@@ -136,5 +142,6 @@ fi
 ALL_DEPENDENCIES=(
   "${CORE_PACKAGE_DEPENDENCIES[*]}"
   "${HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES[*]}"
-  "${BUILD_DEPENDENCIES[*]}"
+  "${CORE_BUILD_DEPENDENCIES[*]}"
+  "${HADOOP_ANALYTICS_BUILD_DEPENDENCIES[*]}"
 )
