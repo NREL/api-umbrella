@@ -1,11 +1,4 @@
-FILE(REMOVE_RECURSE
-  build/package/.bundle
-  build/package/vendor
-  build/scripts/.bundle
-  build/scripts/vendor
-  build/work
-  cmake_install.cmake
-  CMakeCache.txt
-  CMakeFiles
-  test/node_modules
+add_custom_target(
+  distclean
+  COMMAND ${CMAKE_SOURCE_DIR}/build/scripts/distclean
 )

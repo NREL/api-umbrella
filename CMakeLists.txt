@@ -109,10 +109,7 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/package.cmake)
 # Clean Task
 #
 include(${CMAKE_SOURCE_DIR}/build/cmake/clean-download-archives.cmake)
-add_custom_target(
-  distclean
-  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/build/cmake/distclean.cmake
-)
+include(${CMAKE_SOURCE_DIR}/build/cmake/distclean.cmake)
 
 #
 # Outdated Dependencies Check
