@@ -21,5 +21,5 @@ ExternalProject_Add(
   INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/GeoLiteCityv6.dat ${STAGE_EMBEDDED_DIR}/var/db/geoip/city-v6.dat
     # Since we re-download every day as a separate project name, this cleans up
     # any old downloads in the work directory.
-    COMMAND find ${WORK_DIR}/src -maxdepth 1 -name geolitecity* -not -name geolitecity-${RELEASE_DATE}* -print | xargs rm -r
+    COMMAND find ${WORK_DIR}/src -maxdepth 1 -name geolitecity* -not -name geolitecity-${RELEASE_DATE}* -print -exec rm -rf {} $<SEMICOLON>
 )
