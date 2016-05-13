@@ -290,10 +290,10 @@ group :development, :test do
   #
   # Use this fork for .bundlerauditignore support:
   # https://github.com/rubysec/bundler-audit/pull/122
-  gem "bundler-audit", :git => "https://github.com/rickypai/bundler-audit.git", :branch => "rpai/ignorefile"
+  gem "bundler-audit", :git => "https://github.com/rickypai/bundler-audit.git", :branch => "rpai/ignorefile", :require => false
 
   # Check for application security issues.
-  gem "brakeman"
+  gem "brakeman", :require => false
 end
 
 group :development do
