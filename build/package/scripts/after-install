@@ -86,7 +86,7 @@ if [ "$CONFIGURE" = "true" ]; then
   if [ -d /opt/api-umbrella/embedded/kylin ]; then
     chown $USER:$GROUP /opt/api-umbrella/embedded/kylin/tomcat/temp \
       /opt/api-umbrella/embedded/kylin/tomcat/webapps \
-      /opt/api-umbrella/embedded/kylin/tomcat/logs \
+      /opt/api-umbrella/embedded/kylin/tomcat/logs
   fi
 
   # Re-create symlinks that may have inadvertently been cleaned up by the API
