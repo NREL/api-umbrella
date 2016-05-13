@@ -3,6 +3,7 @@ Admin.AdminGroup = Ember.Model.extend(Ember.Validations.Mixin, {
   name: Ember.attr(),
   apiScopeIds: Ember.attr(),
   permissionIds: Ember.attr(),
+  admins: Ember.attr(),
   createdAt: Ember.attr(),
   updatedAt: Ember.attr(),
   creator: Ember.attr(),
