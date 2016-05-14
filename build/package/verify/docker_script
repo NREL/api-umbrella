@@ -2,15 +2,15 @@
 
 set -e -u -x
 
-SOURCE_DIR="$(dirname $(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd))))"
+source_dir="$(dirname "$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")")"
 
 # Install the local package that just got built.
-CURRENT_PACKAGE=$SOURCE_DIR/build/work/package/current/$DIST/core/*
+current_package_dir="$source_dir/build/work/package/current/$DIST/core"
 if command -v yum > /dev/null 2>&1; then
-  yum -y install $CURRENT_PACKAGE
+  yum -y install "$current_package_dir"/*.rpm
 elif command -v dpkg > /dev/null 2>&1; then
   apt-get update
-  dpkg -i $CURRENT_PACKAGE || apt-get install -y -f
+  dpkg -i "$current_package_dir"/*.deb || apt-get install -y -f
 else
   echo "Unknown build system"
   exit 1
@@ -48,14 +48,14 @@ gem install bundler --no-rdoc --no-ri
 
 # Perform an out-of-source build (so the same source directory can be used for
 # multiple parallel docker builds).
-BUILD_DIR=/tmp/api-umbrella-$DIST
-rm -rf $BUILD_DIR
-mkdir -p $BUILD_DIR
-cd $BUILD_DIR
+build_dir=/tmp/api-umbrella-$DIST
+rm -rf "$build_dir"
+mkdir -p "$build_dir"
+cd "$build_dir"
 
 # Install the test gem dependencies.
-BUNDLE_GEMFILE=$SOURCE_DIR/build/package/verify/Gemfile BUNDLE_APP_CONFIG=$BUILD_DIR/.bundle bundle install --clean --path=$BUILD_DIR/bundle
+BUNDLE_GEMFILE="$source_dir/build/package/verify/Gemfile" BUNDLE_APP_CONFIG="$build_dir/.bundle" bundle install --clean --path="$build_dir/bundle"
 
 # Run the serverspec suite.
-cd $SOURCE_DIR/build/package/verify
-BUNDLE_GEMFILE=$SOURCE_DIR/build/package/verify/Gemfile BUNDLE_APP_CONFIG=$BUILD_DIR/.bundle SOURCE_DIR=$SOURCE_DIR DIST=$DIST bundle exec rake spec
+cd "$source_dir/build/package/verify"
+BUNDLE_GEMFILE="$source_dir/build/package/verify/Gemfile" BUNDLE_APP_CONFIG="$build_dir/.bundle" SOURCE_DIR="$source_dir" DIST="$DIST" bundle exec rake spec

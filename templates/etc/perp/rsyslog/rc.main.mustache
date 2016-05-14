@@ -3,21 +3,22 @@
 # Redirect stderr to stdout
 exec 2>&1
 
-if test ${1} = "start"; then
+if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
+  api_umbrella_user="{{user}}"
 
-  RUN_OPTS=""
-  {{#user}}
-  RUN_OPTS="$RUN_OPTS -u {{user}}"
-  {{/user}}
+  run_args=()
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
 
   exec \
-    runtrap rsyslogd ${0} \
-    runtool $RUN_OPTS \
+    runtrap rsyslogd "${0}" \
+    runtool "${run_args[@]}" \
     rsyslogd \
       -n \
-      -f {{etc_dir}}/rsyslog.conf \
-      -i {{run_dir}}/rsyslogd.pid
+      -f "{{etc_dir}}/rsyslog.conf" \
+      -i "{{run_dir}}/rsyslogd.pid"
 fi
 
 # Use runtrap to handle the normal SIGTERM perp sends when rsyslogd is supposed
@@ -26,14 +27,15 @@ fi
 # file a bug with rsyslog, but as a workaround, send a few SIGTERMs to rsyslogd
 # to try to get it to shutdown cleanly. If it can't, then escalate to more
 # harsh kill signals.
-if test ${1} = "trap" && test ${5} = "SIGTERM"; then
+if [ "${1}" = "trap" ] && [ "${5}" = "SIGTERM" ]; then
   echo "stopping ${2}..."
-  PID=${3}
-  SIGNALS=(TERM TERM TERM TERM TERM TERM INT QUIT ABRT KILL)
-  for SIGNAL in "${SIGNALS[@]}"; do
-    echo "attempting to stop ${2} (pid $PID) with signal $SIGNAL"
-    kill -$SIGNAL $PID
-    if ps --no-headers -p $PID | grep -v defunct > /dev/null; then
+  pid="${3}"
+  signals=(TERM TERM TERM TERM TERM TERM INT QUIT ABRT KILL)
+  for signal in "${signals[@]}"; do
+    echo "attempting to stop ${2} (pid $pid) with signal $signal"
+    kill "-$signal" "$pid"
+    # shellcheck disable=SC2009
+    if ps --no-headers -p "$pid" | grep -v defunct > /dev/null; then
       sleep 1
     else
       break

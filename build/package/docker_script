@@ -2,27 +2,27 @@
 
 set -e -u -x
 
-SOURCE_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
+source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
 # Install any system dependencies for building.
-$SOURCE_DIR/build/scripts/install_build_dependencies
+"$source_dir/build/scripts/install_build_dependencies"
 
 # Wipe any cmake files in the source directory, so we can perform an
 # out-of-source build.
-rm -rf $SOURCE_DIR/cmake_install.cmake $SOURCE_DIR/CMakeCache.txt $SOURCE_DIR/CMakeFiles $SOURCE_DIR/Makefile
+rm -rf "$source_dir/cmake_install.cmake" "$source_dir/CMakeCache.txt" "$source_dir/CMakeFiles" "$source_dir/Makefile"
 
 # Perform an out-of-source build (so the same source directory can be used for
 # multiple parallel docker builds).
-BUILD_DIR=/tmp/api-umbrella-$DIST
-rm -rf $BUILD_DIR
-mkdir -p $BUILD_DIR
-cd $BUILD_DIR
-$SOURCE_DIR/configure --enable-hadoop-analytics
+build_dir="/tmp/api-umbrella-$DIST"
+rm -rf "$build_dir"
+mkdir -p "$build_dir"
+cd "$build_dir"
+"$source_dir/configure" --enable-hadoop-analytics
 make
 make package
 
 # Copy the packages for this distro back to the source directory so it's
 # available on the host machine, outside the docker build container.
-rm -rf $SOURCE_DIR/build/work/package/current/$DIST
-mkdir -p $SOURCE_DIR/build/work/package/current/$DIST
-cp -r $BUILD_DIR/build/work/package/build/* $SOURCE_DIR/build/work/package/current/$DIST/
+rm -rf "$source_dir/build/work/package/current/$DIST"
+mkdir -p "$source_dir/build/work/package/current/$DIST"
+cp -r "$build_dir/build/work/package/build"/* "$source_dir/build/work/package/current/$DIST/"

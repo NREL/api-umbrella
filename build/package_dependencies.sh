@@ -1,5 +1,7 @@
+#!/bin/bash
+
 if [ -f /etc/redhat-release ]; then
-  CORE_PACKAGE_DEPENDENCIES=(
+  core_package_dependencies=(
     # General
     bash
     glibc
@@ -31,10 +33,10 @@ if [ -f /etc/redhat-release ]; then
     # For pkill/pgrep used for legacy status/stop commands.
     procps
   )
-  HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES=(
+  hadoop_analytics_package_dependencies=(
     java-1.8.0-openjdk-headless
   )
-  CORE_BUILD_DEPENDENCIES=(
+  core_build_dependencies=(
     autoconf
     automake
     bzip2
@@ -62,11 +64,11 @@ if [ -f /etc/redhat-release ]; then
     unzip
     xz
   )
-  HADOOP_ANALYTICS_BUILD_DEPENDENCIES=(
+  hadoop_analytics_build_dependencies=(
     java-1.8.0-openjdk-devel
   )
 elif [ -f /etc/debian_version ]; then
-  CORE_PACKAGE_DEPENDENCIES=(
+  core_package_dependencies=(
     # General
     bash
     libc6
@@ -94,10 +96,10 @@ elif [ -f /etc/debian_version ]; then
     # For pkill/pgrep used for legacy status/stop commands.
     procps
   )
-  HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES=(
+  hadoop_analytics_package_dependencies=(
     openjdk-7-jre-headless
   )
-  CORE_BUILD_DEPENDENCIES=(
+  core_build_dependencies=(
     autoconf
     automake
     bzip2
@@ -125,23 +127,24 @@ elif [ -f /etc/debian_version ]; then
     unzip
     xz-utils
   )
-  HADOOP_ANALYTICS_BUILD_DEPENDENCIES=(
+  hadoop_analytics_build_dependencies=(
     openjdk-7-jdk-headless
   )
 
   if lsb_release --codename --short | grep wheezy; then
-    CORE_PACKAGE_DEPENDENCIES+=("libffi5")
+    core_package_dependencies+=("libffi5")
   else
-    CORE_PACKAGE_DEPENDENCIES+=("libffi6")
+    core_package_dependencies+=("libffi6")
   fi
 else
   echo "Unknown build system"
   exit 1
 fi
 
-ALL_DEPENDENCIES=(
-  "${CORE_PACKAGE_DEPENDENCIES[*]}"
-  "${HADOOP_ANALYTICS_PACKAGE_DEPENDENCIES[*]}"
-  "${CORE_BUILD_DEPENDENCIES[*]}"
-  "${HADOOP_ANALYTICS_BUILD_DEPENDENCIES[*]}"
+# shellcheck disable=SC2034
+all_dependencies=(
+  "${core_package_dependencies[*]}"
+  "${hadoop_analytics_package_dependencies[*]}"
+  "${core_build_dependencies[*]}"
+  "${hadoop_analytics_build_dependencies[*]}"
 )
