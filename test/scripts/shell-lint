@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -u -x
+set -e -u
 
 source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
@@ -22,11 +22,15 @@ for shell in "${shells[@]}"; do
 
   if [ "${#shell_files[@]}" != 0 ]; then
     for ignore in "${ignore_files[@]}"; do
-      shell_files=(${shell_files[@]/#$ignore})
+      if [ "${#shell_files[@]}" != 0 ]; then
+        shell_files=(${shell_files[@]/#$ignore})
+      fi
     done
 
     if [ "${#shell_files[@]}" != 0 ]; then
+      echo -n "Linting ($shell): ${shell_files[*]}... "
       shellcheck -s "$shell" "${shell_files[@]}"
+      echo "Valid"
     fi
   fi
 done
