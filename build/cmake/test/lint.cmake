@@ -8,7 +8,7 @@ add_custom_target(
 
 add_custom_target(
   shell-lint-target
-  COMMAND ${CMAKE_SOURCE_DIR}/build/scripts/shell-lint
+  COMMAND ${CMAKE_SOURCE_DIR}/test/scripts/shell-lint
 )
 
 add_custom_target(

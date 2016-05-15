@@ -2,6 +2,10 @@
 
 set -e -u -x
 
+source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
+
+PATH="$source_dir/build/work/test-env/bin:$PATH"
+
 # Ignore certain vendored files for linting.
 ignore_files=(
   "configure"
