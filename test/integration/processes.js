@@ -134,7 +134,7 @@ describe('processes', function() {
 
               // Now check for open file descriptors.
               function(seriesNext) {
-                execFile('lsof', ['-R', '-c', 'nginx'], function(error, stdout, stderr) {
+                execFile('lsof', ['-n', '-P', '-l', '-R', '-c', 'nginx'], function(error, stdout, stderr) {
                   if(error) {
                     return seriesNext('Error gathering lsof details: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
                   }
