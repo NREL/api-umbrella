@@ -181,6 +181,11 @@ local function write_static_site_key()
     path.join(config["static_site"]["build_dir"], "signup/index.html"),
   }
   for _, file_path in ipairs(file_paths) do
+    if not path.exists(file_path) then
+      print("File does not exist: " .. file_path)
+      os.exit(1)
+    end
+
     local content = file.read(file_path)
     local new_content, replacements = string.gsub(content, "apiKey: '.-'", "apiKey: '" .. config["static_site"]["api_key"] .. "'")
     if replacements > 0 then
