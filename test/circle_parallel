@@ -36,7 +36,7 @@ if [ "$CIRCLE_NODE_INDEX" -gt "0" ] || [ "$CIRCLE_NODE_TOTAL" -lt "2" ]; then
   node_files=()
   for test_file in $(cd test && find ./server ./integration -name "*.js" | sort); do
     if [ $((index % mocha_node_total)) -eq $mocha_node_index ]; then
-      node_files+=" $test_file"
+      node_files+=("$test_file")
     fi
     ((index=index+1)) || true
   done
