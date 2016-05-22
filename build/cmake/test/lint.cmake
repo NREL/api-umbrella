@@ -7,7 +7,13 @@ add_custom_target(
 )
 
 add_custom_target(
+  shell-lint-target
+  COMMAND ${CMAKE_SOURCE_DIR}/test/scripts/shell-lint
+)
+
+add_custom_target(
   lint
   COMMAND ${CMAKE_BUILD_TOOL} all
   COMMAND ${CMAKE_BUILD_TOOL} lint-target
+  COMMAND ${CMAKE_BUILD_TOOL} shell-lint-target
 )

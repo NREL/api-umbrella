@@ -6,9 +6,9 @@
 
 set -e -u
 
-SOURCE_DIR="$(dirname $(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd))))"
+source_dir="$(dirname "$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")")"
 
-PREVIOUS_VERSIONS=(
+previous_versions=(
   0.8.0-1
   0.9.0-1
   0.10.0-1
@@ -16,7 +16,7 @@ PREVIOUS_VERSIONS=(
   0.11.1-1
 )
 
-DISTROS=(
+distros=(
   centos-6
   centos-7
   ubuntu-12.04
@@ -25,91 +25,91 @@ DISTROS=(
   debian-8
 )
 
-SOURCEFORGE_URL_ROOT="http://pilotfiber.dl.sourceforge.net/project/api-umbrella"
-BINTRAY_URL_ROOT="https://bintray.com/artifact/download/nrel"
-CHECKSUMS=$(cat $SOURCE_DIR/sha256sums.txt)
+sourceforge_url_root="http://pilotfiber.dl.sourceforge.net/project/api-umbrella"
+bintray_url_root="https://bintray.com/artifact/download/nrel"
+checksums="$(cat "$source_dir/sha256sums.txt")"
 
-for DIST in "${DISTROS[@]}"; do
-  for VERSION in "${PREVIOUS_VERSIONS[@]}"; do
-    FILENAME=""
-    URL_PREFIX=""
-    URL_FILENAME=""
+for dist in "${distros[@]}"; do
+  for version in "${previous_versions[@]}"; do
+    filename=""
+    url_prefix=""
+    url_filename=""
 
-    case "$DIST" in
+    case "$dist" in
       centos-6)
-        FILENAME="api-umbrella-${VERSION}.el6.x86_64.rpm"
-        if [ "$VERSION" == "0.8.0-1" ]; then
-          URL_PREFIX="$SOURCEFORGE_URL_ROOT/el/6"
+        filename="api-umbrella-${version}.el6.x86_64.rpm"
+        if [ "$version" == "0.8.0-1" ]; then
+          url_prefix="$sourceforge_url_root/el/6"
         else
-          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-el6"
+          url_prefix="$bintray_url_root/api-umbrella-el6"
         fi
         ;;
       centos-7)
-        FILENAME="api-umbrella-${VERSION}.el7.x86_64.rpm"
-        if [ "$VERSION" == "0.8.0-1" ]; then
-          URL_PREFIX="$SOURCEFORGE_URL_ROOT/el/7"
+        filename="api-umbrella-${version}.el7.x86_64.rpm"
+        if [ "$version" == "0.8.0-1" ]; then
+          url_prefix="$sourceforge_url_root/el/7"
         else
-          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-el7"
+          url_prefix="$bintray_url_root/api-umbrella-el7"
         fi
         ;;
       ubuntu-12.04)
-        FILENAME="api-umbrella_${VERSION}~precise_amd64.deb"
-        if [ "$VERSION" == "0.8.0-1" ]; then
-          URL_FILENAME="api-umbrella_${VERSION}_amd64.deb"
-          URL_PREFIX="$SOURCEFORGE_URL_ROOT/ubuntu/12.04"
+        filename="api-umbrella_${version}~precise_amd64.deb"
+        if [ "$version" == "0.8.0-1" ]; then
+          url_filename="api-umbrella_${version}_amd64.deb"
+          url_prefix="$sourceforge_url_root/ubuntu/12.04"
         else
-          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-ubuntu/pool/main/a/api-umbrella"
+          url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
         fi
         ;;
       ubuntu-14.04)
-        FILENAME="api-umbrella_${VERSION}~trusty_amd64.deb"
-        if [ "$VERSION" == "0.8.0-1" ]; then
-          URL_FILENAME="api-umbrella_${VERSION}_amd64.deb"
-          URL_PREFIX="$SOURCEFORGE_URL_ROOT/ubuntu/14.04"
+        filename="api-umbrella_${version}~trusty_amd64.deb"
+        if [ "$version" == "0.8.0-1" ]; then
+          url_filename="api-umbrella_${version}_amd64.deb"
+          url_prefix="$sourceforge_url_root/ubuntu/14.04"
         else
-          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-ubuntu/pool/main/a/api-umbrella"
+          url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
         fi
         ;;
       debian-7)
-        FILENAME="api-umbrella_${VERSION}~wheezy_amd64.deb"
-        if [ "$VERSION" == "0.8.0-1" ]; then
-          URL_FILENAME="api-umbrella_${VERSION}_amd64.deb"
-          URL_PREFIX="$SOURCEFORGE_URL_ROOT/debian/7"
+        filename="api-umbrella_${version}~wheezy_amd64.deb"
+        if [ "$version" == "0.8.0-1" ]; then
+          url_filename="api-umbrella_${version}_amd64.deb"
+          url_prefix="$sourceforge_url_root/debian/7"
         else
-          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-debian/pool/main/a/api-umbrella"
+          url_prefix="$bintray_url_root/api-umbrella-debian/pool/main/a/api-umbrella"
         fi
         ;;
       debian-8)
-        FILENAME="api-umbrella_${VERSION}~jessie_amd64.deb"
-        if [ "$VERSION" == "0.8.0-1" ]; then
+        filename="api-umbrella_${version}~jessie_amd64.deb"
+        if [ "$version" == "0.8.0-1" ]; then
           # No Debian 8 packages for API Umbrella v0.8.
-          FILENAME=""
+          filename=""
         else
-          URL_PREFIX="$BINTRAY_URL_ROOT/api-umbrella-debian/pool/main/a/api-umbrella"
+          url_prefix="$bintray_url_root/api-umbrella-debian/pool/main/a/api-umbrella"
         fi
         ;;
     esac
 
-    if [ -n "$FILENAME" ]; then
-      if [ -z "$URL_FILENAME" ]; then
-        URL_FILENAME="$FILENAME"
+    if [ -n "$filename" ]; then
+      if [ -z "$url_filename" ]; then
+        url_filename="$filename"
       fi
 
-      DOWNLOAD_DIR="$SOURCE_DIR/build/work/package/archives/$VERSION/$DIST/core"
-      DOWNLOAD_PATH="$DOWNLOAD_DIR/$FILENAME"
-      echo $DOWNLOAD_PATH
-      if [ ! -f "$DOWNLOAD_PATH" ]; then
-        URL="$URL_PREFIX/$URL_FILENAME"
-        mkdir -p $DOWNLOAD_DIR
-        echo $URL
-        curl -f -L -o $DOWNLOAD_PATH -C - $URL
+      download_dir="$source_dir/build/work/package/archives/$version/$dist/core"
+      download_path="$download_dir/$filename"
+      echo "$download_path"
+      if [ ! -f "$download_path" ]; then
+        url="$url_prefix/$url_filename"
+        mkdir -p "$download_dir"
+        echo "$url"
+        curl -f -L -o "$download_path" -C - "$url"
       fi
 
-      cd $DOWNLOAD_DIR
-      FILE_CHECKSUM=$(openssl dgst -sha256 $FILENAME)
-      if [[ -z "$FILE_CHECKSUM" ]] || [[ $CHECKSUMS != *$FILE_CHECKSUM* ]]; then
-        echo "Checksum mismatch for $DOWNLOAD_PATH"
-        echo $FILE_CHECKSUM
+      cd "$download_dir"
+      file_checksum=$(openssl dgst -sha256 $filename)
+      if [[ -z "$file_checksum" ]] || [[ $checksums != *$file_checksum* ]]; then
+        echo "Checksum mismatch for $download_path"
+        echo "$file_checksum"
         echo "Verify that the file downloaded successfully."
         exit 1
       fi

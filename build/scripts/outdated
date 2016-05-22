@@ -152,6 +152,9 @@ repos = {
   "runit" => {
     :http => "http://smarden.org/runit/install.html",
   },
+  "shellcheck" => {
+    :git => "https://github.com/koalaman/shellcheck.git",
+  },
   "trafficserver" => {
     :git => "https://github.com/apache/trafficserver.git",
     :constraint => "~> 5.3.2",

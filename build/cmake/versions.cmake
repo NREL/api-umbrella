@@ -75,6 +75,8 @@ set(RSYSLOG_VERSION 8.14.0)
 set(RSYSLOG_HASH 443b5b1d2b84f5cd429d06d230af7fb2352336fa6449cb6484dbd4418a7ae7c2)
 set(RUNIT_VERSION 2.1.2)
 set(RUNIT_HASH 6c985fbfe3a34608eb3c53dc719172c4)
+set(SHELLCHECK_VERSION 0.4.3)
+set(SHELLCHECK_HASH 27bacd94775b62c654a3a2f753da576e)
 # Don't move to TrafficServer 6 until we can verify keepalive behavior:
 # https://issues.apache.org/jira/browse/TS-3959
 set(TRAFFICSERVER_VERSION 5.3.2)

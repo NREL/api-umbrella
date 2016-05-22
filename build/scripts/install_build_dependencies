@@ -2,9 +2,10 @@
 
 set -e -u -x
 
-SOURCE_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
+source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
-source $SOURCE_DIR/build/package_dependencies.sh
+# shellcheck source=build/package_dependencies.sh
+source "$source_dir/build/package_dependencies.sh"
 
 if [ -f /etc/redhat-release ]; then
   # Building Go libraries from gopkg.in (which Mora has a dependency on),
@@ -17,10 +18,10 @@ if [ -f /etc/redhat-release ]; then
     fi
   fi
 
-  yum -y install ${ALL_DEPENDENCIES[*]}
+  yum -y install "${all_dependencies[@]}"
 elif [ -f /etc/debian_version ]; then
   apt-get update
-  apt-get -y install ${ALL_DEPENDENCIES[*]}
+  apt-get -y install "${all_dependencies[@]}"
 else
   echo "Unknown build system"
   exit 1
