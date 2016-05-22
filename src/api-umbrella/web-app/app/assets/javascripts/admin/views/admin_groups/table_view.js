@@ -26,12 +26,21 @@ Admin.AdminGroupsTableView = Ember.View.extend({
         {
           data: 'api_scope_display_names',
           title: 'API Scopes',
+          orderable: false,
           render: Admin.DataTablesHelpers.renderListEscaped,
         },
         {
           data: 'permission_display_names',
           title: 'Access',
           defaultContent: '-',
+          orderable: false,
+          render: Admin.DataTablesHelpers.renderListEscaped,
+        },
+        {
+          data: 'admin_usernames',
+          title: 'Admins',
+          defaultContent: '-',
+          orderable: false,
           render: Admin.DataTablesHelpers.renderListEscaped,
         }
       ]

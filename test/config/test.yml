@@ -6,8 +6,6 @@ https_port: 9081
 root_dir: /tmp/api-umbrella-test
 static_site:
   port: 13013
-heka:
-  port: 13014
 nginx:
   # We default the number of workers to the number of CPU cores, but keep this
   # hard-coded for test purposes so we have a more stable baseline and ensure
@@ -45,6 +43,8 @@ router:
   trusted_proxies:
     - 192.168.12.0/23
     - 10.10.10.10
+rsyslog:
+  port: 13014
 mongodb:
   url: "mongodb://127.0.0.1:13090,127.0.0.1:13091/api_umbrella_test"
   embedded_server_config:

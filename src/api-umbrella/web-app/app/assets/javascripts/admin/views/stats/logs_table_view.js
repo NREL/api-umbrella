@@ -184,5 +184,5 @@ Admin.LogsTableView = Ember.View.extend({
     // Wrap datatables redraw in Ember.run.once so that we only trigger it once
     // even if multiple query parameters are being changed at once.
     Ember.run.once(this, 'redrawTable');
-  }.observes('controller.query.params.query', 'controller.query.params.search', 'controller.query.params.start_at', 'controller.query.params.end_at'),
+  }.observes('controller.query.params.query', 'controller.query.params.search', 'controller.query.params.start_at', 'controller.query.params.end_at', 'controller.query.params.beta_analytics'),
 });

@@ -33,7 +33,7 @@ describe('processes', function() {
     });
 
     it('does not leak file descriptors across reloads', function(done) {
-      this.timeout(100000);
+      this.timeout(180000);
 
       var execOpts = { env: processEnv.env() };
       var parentPid;

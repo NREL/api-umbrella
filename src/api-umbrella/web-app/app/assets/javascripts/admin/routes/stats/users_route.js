@@ -12,7 +12,7 @@ Admin.StatsUsersRoute = Admin.StatsBaseRoute.extend({
         this.transitionTo('stats.users', $.param(newQueryParams));
       }
     }
-  }.observes('query.params.query', 'query.params.search', 'query.params.start_at', 'query.params.end_at'),
+  }.observes('query.params.query', 'query.params.search', 'query.params.start_at', 'query.params.end_at', 'query.params.beta_analytics'),
 });
 
 Admin.StatsUsersDefaultRoute = Admin.StatsUsersRoute.extend({

@@ -1,4 +1,5 @@
 class Api::V0::AnalyticsController < Api::V1::BaseController
+  before_filter :set_analytics_adapter
   skip_before_filter :authenticate_admin!, :only => [:summary]
   skip_after_filter :verify_authorized, :only => [:summary]
 
@@ -94,10 +95,15 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     summary[:users_by_month].sort_by! { |data| [data[:year], data[:month]] }
 
     # Fetch the hits by month.
-    search = LogSearch.new({
+    search = LogSearch.factory(@analytics_adapter, {
       :start_time => start_time,
       :end_time => Time.now,
       :interval => "month",
+
+      # This query can take a long time to run against PrestoDB, so set a long
+      # timeout. But since we're only delivering cached results and refreshing
+      # periodically in the background, this long timeout should be okay.
+      :query_timeout => "20m",
     })
 
     # Try to ignore some of the baseline monitoring traffic. Only include

@@ -13,7 +13,7 @@ development:
 test:
   sessions:
     default:
-      uri: <%= ApiUmbrellaConfig[:mongodb][:url] || "mongodb://127.0.0.1:27017/api_umbrella_test" %>
+      uri: <%= ApiUmbrellaConfig[:mongodb][:url] %>
       options:
         safe: true
         consistency: :strong

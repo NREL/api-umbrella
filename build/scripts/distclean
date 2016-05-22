@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e -u -x
+
+SOURCE_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
+
+if [ ! -f $SOURCE_DIR/CMakeLists.txt ]; then
+  echo "Can't find root source directory"
+  exit 1
+fi
+
+rm -rf $SOURCE_DIR/CMakeCache.txt \
+  $SOURCE_DIR/CMakeFiles \
+  $SOURCE_DIR/Makefile \
+  $SOURCE_DIR/build/package/.bundle \
+  $SOURCE_DIR/build/package/vendor \
+  $SOURCE_DIR/build/scripts/.bundle \
+  $SOURCE_DIR/build/scripts/vendor \
+  $SOURCE_DIR/build/work \
+  $SOURCE_DIR/cmake_install.cmake \
+  $SOURCE_DIR/install_manifest.txt \
+  $SOURCE_DIR/src/api-umbrella/hadoop-analytics/*/dependency-reduced-pom.xml \
+  $SOURCE_DIR/src/api-umbrella/web-app/log \
+  $SOURCE_DIR/src/api-umbrella/web-app/tmp/* \
+  $SOURCE_DIR/test/config/.overrides.yml \
+  $SOURCE_DIR/test/node_modules \
+  $SOURCE_DIR/test/tmp/*

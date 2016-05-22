@@ -35,7 +35,7 @@ local function status_response()
     response["details"]["analytics_db"] = elasticsearch_health["status"]
 
     -- Check to see if the ElasticSearch index aliases have been setup.
-    local today = os.date("%Y-%m", ngx.time())
+    local today = os.date("!%Y-%m", ngx.time())
     local alias = "api-umbrella-logs-" .. today
     local index = "api-umbrella-logs-" .. config["log_template_version"] .. "-" .. today
     res, err = httpc:request_uri(config["elasticsearch"]["hosts"][1] .. "/" .. index .. "/_alias/" .. alias)

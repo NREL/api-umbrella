@@ -9,6 +9,9 @@ set :repo_url, "https://github.com/NREL/api-umbrella.git"
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
+# TODO analytics-revamp: Switch back to master once analytics-revamp branch
+# gets merged back in.
+set :branch, "analytics-revamp"
 
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, "/opt/api-umbrella/embedded/apps/core"
@@ -56,7 +59,7 @@ set :default_env, fetch(:default_env, {}).merge({
 })
 
 # Default value for keep_releases is 5
-# set :keep_releases, 5
+set :keep_releases, 15
 
 namespace :deploy do
   task :bundle do
@@ -81,8 +84,10 @@ namespace :deploy do
       end
     end
   end
-  before :updated, :lua_deps
-  before :reverted, :lua_deps
+  # TODO analytics-revamp: Figure out for updated cmake process before merging
+  # the analytics-revamp branch.
+  # before :updated, :lua_deps
+  # before :reverted, :lua_deps
 
   # The ember-rails gem's handling of temp files isn't ideal when multiple users
   # might touch the files. So for now, just make these temp files globally

@@ -24,19 +24,16 @@ fi
 if [ -z "$API_UMBRELLA_EMBEDDED_ROOT" ]; then
   # Default to /opt/api-umbrella unless it looks like we're working in
   # development and we've locally compiled all of the dependencies into
-  # build/local/stage (via "make"). This lets us run "./bin/api-umbrella" while
+  # build/work/stage (via "make"). This lets us run "./bin/api-umbrella" while
   # doing development without having to actually "make install" all the
   # dependencies into the system-wide location.
-  if [ -d "$API_UMBRELLA_SRC_ROOT/build/local/stage/opt/api-umbrella" ]; then
-    export API_UMBRELLA_EMBEDDED_ROOT="$API_UMBRELLA_SRC_ROOT/build/local/stage/opt/api-umbrella/embedded"
+  if [ -d "$API_UMBRELLA_SRC_ROOT/build/work/stage/opt/api-umbrella" ]; then
+    export API_UMBRELLA_EMBEDDED_ROOT="$API_UMBRELLA_SRC_ROOT/build/work/stage/opt/api-umbrella/embedded"
   else
     export API_UMBRELLA_EMBEDDED_ROOT="$API_UMBRELLA_ROOT/embedded"
   fi
 fi
 
 export PATH=$API_UMBRELLA_EMBEDDED_ROOT/sbin:$API_UMBRELLA_EMBEDDED_ROOT/bin:$PATH
-
-source $API_UMBRELLA_SRC_ROOT/src/api-umbrella/version.sh
-export API_UMBRELLA_VERSION
 
 exec $API_UMBRELLA_SRC_ROOT/bin/api-umbrella-cli "$@"
