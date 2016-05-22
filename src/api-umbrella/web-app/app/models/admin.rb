@@ -51,9 +51,13 @@ class Admin
     :group_ids,
     :as => [:admin]
 
+  def self.sorted
+    order_by(:username.asc)
+  end
+
   def group_names
     unless @group_names
-      @group_names = self.groups.map { |group| group.name }
+      @group_names = self.groups.sorted.map { |group| group.name }
       if(self.superuser?)
         @group_names << "Superuser"
       end

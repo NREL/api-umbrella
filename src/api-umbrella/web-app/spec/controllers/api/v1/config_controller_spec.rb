@@ -386,6 +386,32 @@ describe Api::V1::ConfigController do
       api1_config["name"].should eql("Before")
     end
 
+    it "does nothing when no changes are submited" do
+      api1 = FactoryGirl.create(:api, :name => "Before")
+      initial = ConfigVersion.publish!(ConfigVersion.pending_config)
+      initial.reload
+
+      api1.update_attribute(:name, "After")
+      FactoryGirl.create(:api)
+      FactoryGirl.create(:api)
+
+      admin_token_auth(@admin)
+      post :publish, :format => "json", :config => {}
+
+      active = ConfigVersion.active
+      active.id.should be_kind_of(Moped::BSON::ObjectId)
+      active.id.should eql(initial.id)
+      active.version.should be_kind_of(Time)
+      active.version.should eql(initial.version)
+      active_config = active.config
+      active_config["apis"].map { |api| api["_id"] }.sort.should eql([
+        api1.id,
+      ].sort)
+
+      api1_config = active_config["apis"].detect { |api| api["_id"] == api1.id }
+      api1_config["name"].should eql("Before")
+    end
+
     describe "admin permissions" do
       before(:each) do
         @api = FactoryGirl.create(:api)

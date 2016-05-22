@@ -1,0 +1,6 @@
+/.classpath
+/.project
+/.settings
+/dependency-reduced-pom.xml
+/migrate.log
+/target/

@@ -1,7 +1,7 @@
 require "mail_sanitizer"
 
 class ContactMailer < ActionMailer::Base
-  default :from => "noreply@#{ApiUmbrellaConfig[:default_host]}"
+  default :from => "noreply@#{ApiUmbrellaConfig[:web][:default_host]}"
 
   def contact_email(contact)
     @contact = contact

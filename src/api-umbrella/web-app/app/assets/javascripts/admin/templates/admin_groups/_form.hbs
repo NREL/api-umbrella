@@ -23,6 +23,25 @@
         {{view Admin.CheckboxListView checkedValuesBinding='permissionIds' contentBinding='permissionOptions'}}
       </div>
     </div>
+
+    {{#if id}}
+      <div class="control-group">
+        <div class="control-label">
+          <label>Admins</label>
+        </div>
+        <div class="controls">
+          {{#if admins}}
+            <ul>
+              {{#each admins}}
+                <li>{{#link-to 'admins.edit' id}}{{username}}{{/link-to}} (Last Login: {{#if last_sign_in_at}}{{formatDate last_sign_in_at}}{{else}}Never{{/if}})</li>
+              {{/each}}
+            </ul>
+          {{else}}
+            None
+          {{/if}}
+        </div>
+      </div>
+    {{/if}}
   </fieldset>
 
   <div class="row-fluid">

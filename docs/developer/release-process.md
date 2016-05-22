@@ -2,9 +2,8 @@
 
 Some basic instructions to follow when releasing a new, stable version of API Umbrella.
 
-- Update the version number in [`src/api-umbrella/version.sh`](https://github.com/NREL/api-umbrella/blob/master/src/api-umbrella/version.sh)
+- Update the version number in [`src/api-umbrella/version.txt`](https://github.com/NREL/api-umbrella/blob/master/src/api-umbrella/version.txt)
   - Use [semantic versioning](http://semver.org).
-  - `API_UMBRELLA_VERSION_PRE` can be used for pre-releases. This variable should be an empty string for final releases.
 - Update [CHANGELOG.md](https://github.com/NREL/api-umbrella/blob/master/CHANGELOG.md) with release notes.
 - Update other references to the version number:
   - Documentation:

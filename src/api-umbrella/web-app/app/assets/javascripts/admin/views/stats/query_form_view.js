@@ -33,6 +33,7 @@ Admin.StatsQueryFormView = Ember.View.extend({
   didInsertElement: function() {
     this.updateInterval();
     this.updateDateRange();
+    this.updateBetaAnalytics();
 
     $('#reportrange').daterangepicker({
       ranges: this.datePickerRanges,
@@ -309,6 +310,14 @@ Admin.StatsQueryFormView = Ember.View.extend({
       'controller.query.params.end_at': end.format('YYYY-MM-DD'),
     });
   },
+
+  updateBetaAnalytics: function() {
+    this.set('isBetaAnalytics', this.get('controller.query.params.beta_analytics') === 'true');
+  }.observes('controller.query.params.beta_analytics'),
+
+  handleBetaAnalytics: function() {
+    this.set('controller.query.params.beta_analytics', this.get('isBetaAnalytics').toString());
+  }.observes('isBetaAnalytics'),
 
   actions: {
     toggleFilters: function() {

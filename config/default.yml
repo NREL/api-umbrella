@@ -11,9 +11,6 @@ rlimits:
   nproc: 20000
 http_port: 80
 https_port: 443
-heka:
-  host: 127.0.0.1
-  port: 14014
 nginx:
   workers: auto
   worker_connections: 8192
@@ -81,6 +78,8 @@ web:
         - github
         - google
         - persona
+      cas:
+        options:
       facebook:
         client_id:
         client_secret:
@@ -88,6 +87,11 @@ web:
         client_id:
         client_secret:
       google:
+        client_id:
+        client_secret:
+      ldap:
+        options:
+      myusa:
         client_id:
         client_secret:
 static_site:
@@ -108,6 +112,9 @@ router:
   web_app_backend_regex: "^/(admin|admins|web-assets)(/|$)"
   web_app_backend_required_https_regex: "^/(admin|admins)(/|$)"
   website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
+rsyslog:
+  host: 127.0.0.1
+  port: 14014
 dns_resolver:
   negative_ttl: 60
   max_stale: 86400
@@ -157,6 +164,31 @@ elasticsearch:
       groovy:
         sandbox:
           enabled: false
+analytics:
+  adapter: elasticsearch
+  timezone: UTC
+kylin:
+  protocol: http
+  host: 127.0.0.1
+  port: 7070
+presto:
+  protocol: http
+  host: 127.0.0.1
+  port: 14015
+  embedded_server_config:
+    http_port: 14015
+    max_memory: 2GB
+    max_memory_per_node: 1GB
+    discovery_uri: http://localhost:14015
+    query_max_run_time: 60s
+flume:
+  host: 127.0.0.1
+  port: 14016
+  embedded_server_config:
+    java_opts:
+kafka:
+  brokers: []
+  topic: api_umbrella_logs
 log_template_version: v1
 strip_cookies:
   - ^__utm.*$

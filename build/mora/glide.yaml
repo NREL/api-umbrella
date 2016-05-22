@@ -1,0 +1,21 @@
+package: .
+import:
+- package: github.com/compose/mejson
+- package: github.com/emicklei/go-restful
+  # Keep at 1.1, since 1.2 seems to return some JSON responses with a
+  # content-type of text/plain.
+  version: ~1.1.3
+  subpackages:
+  - swagger
+- package: github.com/emicklei/mora
+  subpackages:
+  - api/documents
+  - api/response
+  - api/statistics
+  - session
+- package: github.com/magiconair/properties
+  version: ~1.7.0
+- package: gopkg.in/mgo.v2
+  version: r2016.02.04
+  subpackages:
+  - bson

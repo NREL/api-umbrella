@@ -8,14 +8,18 @@ class WebsiteBackendPolicy < ApplicationPolicy
 
         query_scopes = []
         api_scopes.each do |api_scope|
-          if(api_scope.path_prefix.blank? || api_scope.path_prefix == "/")
+          if(api_scope.root?)
             query_scopes << {
               :frontend_host => api_scope.host,
             }
           end
         end
 
-        scope.or(query_scopes)
+        if(query_scopes.any?)
+          scope.or(query_scopes)
+        else
+          scope.none
+        end
       end
     end
   end
@@ -50,7 +54,7 @@ class WebsiteBackendPolicy < ApplicationPolicy
       api_scopes = user.api_scopes_with_permission(permission)
 
       allowed = api_scopes.any? do |api_scope|
-        (record.frontend_host == api_scope.host && (api_scope.path_prefix.blank? || api_scope.path_prefix == "/"))
+        (record.frontend_host == api_scope.host && api_scope.root?)
       end
     end
 

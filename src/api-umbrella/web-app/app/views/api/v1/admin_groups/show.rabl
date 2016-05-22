@@ -7,6 +7,10 @@ attributes :id,
            :created_at,
            :updated_at
 
+child :admins, :object_root => false do
+  attributes :id, :username, :last_sign_in_at
+end
+
 child :creator => :creator do
   attributes :username
 end

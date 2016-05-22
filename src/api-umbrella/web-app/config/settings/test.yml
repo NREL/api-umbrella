@@ -8,3 +8,25 @@ web:
         - max.gov
         - myusa
         - persona
+analytics:
+  timezone: America/Denver
+<% if(ENV["INTEGRATION_TEST_SUITE"]) %>
+# When running as part of the integration test suite, where we run all the API
+# Umbrella processes separately, ensure we connect to those ports.
+mongodb:
+  url: "mongodb://127.0.0.1:13001/api_umbrella_test"
+elasticsearch:
+  hosts:
+    # Remove the default setting using rails config's knockout_prefix ("--").
+    - "--http://127.0.0.1:14002"
+    - "http://127.0.0.1:13002"
+<% elsif(!ENV["FULL_STACK_TEST"]) %>
+# If not running as part of the integration test suite, then we assume a
+# developer is just running the rails tests a standalone command. In that case,
+# we'll connect to the default API Umbrella ports for databases that we assume
+# are running in the development environment. The only difference is MongoDB,
+# where we want to make sure we connect to a separate test database so tests
+# don't interfere with development.
+mongodb:
+  url: "mongodb://127.0.0.1:14001/api_umbrella_test"
+<% end %>

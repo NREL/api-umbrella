@@ -5,6 +5,7 @@ describe "config publish", :js => true do
 
   before(:each) do
     Api.delete_all
+    WebsiteBackend.delete_all
     ConfigVersion.delete_all
   end
 
@@ -120,6 +121,43 @@ describe "config publish", :js => true do
       page.should have_content("Uncheck all")
       checkboxes[1].click
       page.should have_content("Check all")
+    end
+
+    it "disables the publish button if no changes are checked for publishing" do
+      FactoryGirl.create(:api)
+      FactoryGirl.create(:api)
+
+      visit "/admin/#/config/publish"
+
+      publish_button = find("#publish_button")
+      checkbox = all("input[type=checkbox][name*=publish]")[0]
+
+      checkbox[:checked].should eql(false)
+      publish_button.disabled?.should eql(true)
+
+      checkbox.click
+      checkbox[:checked].should eql(true)
+      publish_button.disabled?.should eql(false)
+
+      checkbox.click
+      checkbox[:checked].should eql(false)
+      publish_button.disabled?.should eql(true)
+    end
+
+    it "enables the publish button on load if the there's a single change pre-checked" do
+      FactoryGirl.create(:api)
+
+      visit "/admin/#/config/publish"
+
+      publish_button = find("#publish_button")
+      checkbox = all("input[type=checkbox][name*=publish]")[0]
+
+      checkbox[:checked].should eql(true)
+      publish_button.disabled?.should eql(false)
+
+      checkbox.click
+      checkbox[:checked].should eql(false)
+      publish_button.disabled?.should eql(true)
     end
   end
 

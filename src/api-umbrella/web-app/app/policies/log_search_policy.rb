@@ -2,27 +2,29 @@ class LogSearchPolicy < ApplicationPolicy
   class Scope < Scope
     def resolve
       unless(user.superuser?)
-        query_scopes = []
+        rules = []
         user.api_scopes_with_permission("analytics").each do |api_scope|
-          query_scopes << {
-            :bool => {
-              :must => [
-                {
-                  :term => {
-                    :request_host => api_scope.host.downcase,
-                  },
-                },
-                {
-                  :prefix => {
-                    :request_path => api_scope.path_prefix.downcase,
-                  },
-                }
-              ],
-            }
+          rules << {
+            "condition" => "AND",
+            "rules" => [
+              {
+                "field" => "request_host",
+                "operator" => "equal",
+                "value" => api_scope.host.downcase,
+              },
+              {
+                "field" => "request_path",
+                "operator" => "begins_with",
+                "value" => api_scope.path_prefix.downcase,
+              },
+            ],
           }
         end
 
-        scope.permission_scope!(query_scopes)
+        scope.permission_scope!({
+          "condition" => "OR",
+          "rules" => rules,
+        })
       end
     end
   end

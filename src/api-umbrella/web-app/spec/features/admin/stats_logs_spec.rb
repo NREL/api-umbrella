@@ -43,7 +43,7 @@ describe "analytics filter logs", :js => true do
           "input" => "select",
           "operator" => "is_null",
           "type" => "string",
-          "value" => nil
+          "value" => nil,
         }]
       })
 
@@ -60,6 +60,7 @@ describe "analytics filter logs", :js => true do
         "end_at" => "2015-01-18",
         "interval" => "day",
         "query" => default_query,
+        "beta_analytics" => "false",
       })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
@@ -75,6 +76,7 @@ describe "analytics filter logs", :js => true do
         "end_at" => "2015-01-18",
         "interval" => "day",
         "query" => default_query,
+        "beta_analytics" => "false",
       })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
@@ -95,6 +97,7 @@ describe "analytics filter logs", :js => true do
         "interval" => "day",
         "query" => JSON.generate({ "condition" => "AND", "rules" => [] }),
         "search" => "",
+        "beta_analytics" => "false",
       })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
@@ -115,6 +118,7 @@ describe "analytics filter logs", :js => true do
         "end_at" => "2015-01-18",
         "interval" => "day",
         "query" => "",
+        "beta_analytics" => "false",
       })
     end
 

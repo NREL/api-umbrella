@@ -62,5 +62,22 @@ FactoryGirl.define do
         ]
       end
     end
+
+    factory :amazon_admin_group_single_root_scope do
+      api_scopes { [FactoryGirl.create(:amazon_api_scope)] }
+    end
+
+    factory :amazon_admin_group_single_sub_scope do
+      api_scopes { [FactoryGirl.create(:amazon_books_api_scope)] }
+    end
+
+    factory :amazon_admin_group_multi_scope do
+      api_scopes do
+        [
+          FactoryGirl.create(:amazon_api_scope),
+          FactoryGirl.create(:amazon_books_api_scope),
+        ]
+      end
+    end
   end
 end

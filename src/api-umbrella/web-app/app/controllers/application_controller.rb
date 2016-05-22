@@ -71,12 +71,17 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def set_analytics_adapter
+    if(params[:beta_analytics] == "true")
+      @analytics_adapter = "kylin"
+    else
+      @analytics_adapter = ApiUmbrellaConfig[:analytics][:adapter]
+    end
+  end
+
   def set_time_zone
     old_time_zone = Time.zone
-    if(params[:tz].present?)
-      Time.zone = params[:tz]
-    end
-
+    Time.zone = ApiUmbrellaConfig[:analytics][:timezone]
     yield
   ensure
     Time.zone = old_time_zone
