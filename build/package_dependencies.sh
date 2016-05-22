@@ -6,15 +6,12 @@ if [ -f /etc/redhat-release ]; then
     bash
     glibc
     libffi
+    libuuid
     libyaml
     ncurses-libs
     openssl
     pcre
     zlib
-
-    # lua-resty-uuid requires "libuuid.so", so we have to instal the -devel
-    # package (libuuid provides "libuuid.so.1").
-    libuuid-devel
 
     # TrafficServer
     libxml2
@@ -45,8 +42,8 @@ if [ -f /etc/redhat-release ]; then
     gcc
     gcc-c++
     git
-    libffi-devel
     libcurl-devel
+    libffi-devel
     libtool
     libuuid-devel
     libxml2-devel
@@ -72,15 +69,12 @@ elif [ -f /etc/debian_version ]; then
     # General
     bash
     libc6
-    libyaml-0-2
     libncurses5
-    openssl
     libpcre3
+    libuuid1
+    libyaml-0-2
+    openssl
     zlib1g
-
-    # lua-resty-uuid requires "libuuid.so", so we have to instal the -dev
-    # package (libuuid1 provides "libuuid.so.1").
-    uuid-dev
 
     # TrafficServer
     libxml2
@@ -105,26 +99,26 @@ elif [ -f /etc/debian_version ]; then
     bzip2
     cmake
     curl
-    gcc
     g++
+    gcc
     git
-    libffi-dev
-    uuid-dev
     libcurl4-openssl-dev
+    libffi-dev
+    libncurses5-dev
+    libpcre3-dev
+    libssl-dev
     libtool
     libxml2-dev
     libyaml-dev
     lsb-release
     make
-    libncurses5-dev
     openssl
-    libssl-dev
     patch
-    libpcre3-dev
     rsync
     tar
     tcl-dev
     unzip
+    uuid-dev
     xz-utils
   )
   hadoop_analytics_build_dependencies=(

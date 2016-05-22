@@ -44,23 +44,27 @@ ExternalProject_Add(
 
 add_custom_command(
   OUTPUT ${STAMP_DIR}/core-lua-deps
+  # Depend on the internal stamp files used by ExternalProject_Add, since
+  # add_custom_command seems to require files to properly work when updates
+  # occur (we can't just specify the ExternalProject_Add target names or
+  # updates aren't detected).
   DEPENDS
-    luarock_argparse
-    luarock_inspect
-    luarock_libcidr-ffi
-    luarock_lua-cmsgpack
-    luarock_lua-iconv
-    luarock_lua-resty-auto-ssl
-    luarock_lua-resty-http
-    luarock_lua-resty-uuid
-    luarock_luaposix
-    luarock_luasocket
-    luarock_luatz
-    luarock_lustache
-    luarock_lyaml
-    luarock_penlight
-    lua_resty_dns_cache
-    lua_resty_logger_socket
-    lua_resty_shcache
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_argparse-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_inspect-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_libcidr-ffi-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_lua-cmsgpack-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_lua-iconv-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_lua-resty-auto-ssl-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_lua-resty-http-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_lua-resty-uuid-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_luaposix-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_luasocket-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_luatz-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_lustache-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_lyaml-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/luarock_penlight-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/lua_resty_dns_cache-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/lua_resty_logger_socket-complete
+    ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/lua_resty_shcache-complete
   COMMAND touch ${STAMP_DIR}/core-lua-deps
 )
