@@ -5,6 +5,7 @@ class ApiUserRole
     all = user_roles + all_api_roles
     all.uniq!
     all.reject! { |role| role.blank? }
+    all.sort!
 
     all
   end

@@ -1,19 +1,16 @@
 require "spec_helper"
 
 describe Api::V1::UsersController do
-  before(:all) do
+  before(:each) do
+    DatabaseCleaner.clean
+
     @admin = FactoryGirl.create(:admin)
     @google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_permission, :user_manage_permission)])
 
-    Api.delete_all
     @api = FactoryGirl.create(:api)
     @google_api = FactoryGirl.create(:google_api)
     @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api)
     @yahoo_api = FactoryGirl.create(:yahoo_api)
-  end
-
-  before(:each) do
-    ApiUser.where(:registration_source.ne => "seed").delete_all
   end
 
   shared_examples "admin token access" do |method, action|
@@ -1073,6 +1070,39 @@ describe Api::V1::UsersController do
         user.settings.rate_limits.length.should eql(1)
         user.settings.rate_limits[0].duration.should eql(1000)
         user.settings.rate_limits[0].limit.should eql(5)
+      end
+    end
+  end
+
+  describe "permissions" do
+    before(:each) do
+      DatabaseCleaner.clean
+    end
+
+    describe "role permissions" do
+      it "prevents limited admins from updating forbidden users to only contain roles the admin does have permissions to" do
+        FactoryGirl.create(:google_api)
+        FactoryGirl.create(:yahoo_api)
+        existing_roles = ApiUserRole.all
+        existing_roles.should eql(["google-write", "yahoo-write"])
+
+        record = FactoryGirl.create(:api_user, {
+          :roles => ["yahoo-write"],
+        })
+
+        admin = FactoryGirl.create(:google_admin)
+        admin_token_auth(admin)
+
+        attributes = record.serializable_hash
+        attributes["roles"] = ["google-write"]
+        put :update, :format => "json", :id => record.id, :user => attributes
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+
+        record = ApiUser.find(record.id)
+        record.roles.should eql(["yahoo-write"])
       end
     end
   end

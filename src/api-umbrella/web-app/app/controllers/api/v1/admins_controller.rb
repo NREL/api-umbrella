@@ -71,6 +71,7 @@ class Api::V1::AdminsController < Api::V1::BaseController
   private
 
   def save!
+    authorize(@admin) unless(@admin.new_record?)
     @admin.assign_attributes(params[:admin], :as => :admin)
     authorize(@admin)
     @admin.save

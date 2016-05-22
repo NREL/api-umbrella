@@ -111,5 +111,10 @@ FactoryGirl.define do
         end
       end
     end
+
+    factory :empty_url_matches_api do
+      url_matches { [] }
+      to_create { |instance| instance.save(:validate => false) }
+    end
   end
 end

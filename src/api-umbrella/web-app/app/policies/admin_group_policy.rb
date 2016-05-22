@@ -5,7 +5,7 @@ class AdminGroupPolicy < ApplicationPolicy
         scope.all
       else
         api_scope_ids = []
-        user.api_scopes_with_permission("admin_manage").each do |api_scope|
+        user.nested_api_scopes_with_permission("admin_manage").each do |api_scope|
           api_scope_ids << api_scope.id
         end
 
@@ -20,7 +20,7 @@ class AdminGroupPolicy < ApplicationPolicy
       allowed = true
     else
       current_user_scope_ids = []
-      user.api_scopes_with_permission("admin_manage").each do |current_user_scope|
+      user.nested_api_scopes_with_permission("admin_manage").each do |current_user_scope|
         current_user_scope_ids << current_user_scope.id
       end
 

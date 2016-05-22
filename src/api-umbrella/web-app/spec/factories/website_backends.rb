@@ -4,9 +4,5 @@ FactoryGirl.define do
     backend_protocol "http"
     server_host "example.com"
     server_port 80
-
-    factory :amazon_website_backend do
-      frontend_host "amazon.com"
-    end
   end
 end

@@ -53,6 +53,7 @@ class Api::V1::WebsiteBackendsController < Api::V1::BaseController
   private
 
   def save!
+    authorize(@website_backend) unless(@website_backend.new_record?)
     @website_backend.assign_attributes(params[:website_backend], :as => :admin)
     authorize(@website_backend)
     @website_backend.save

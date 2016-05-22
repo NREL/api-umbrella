@@ -6,12 +6,20 @@ FactoryGirl.define do
     host "localhost"
     path_prefix "/example"
 
+    factory :localhost_root_api_scope do
+      path_prefix "/"
+    end
+
     factory :google_api_scope do
       path_prefix "/google"
     end
 
     factory :yahoo_api_scope do
       path_prefix "/yahoo"
+    end
+
+    factory :extra_api_scope do
+      path_prefix "/extra"
     end
 
     factory :bing_all_api_scope do
@@ -28,16 +36,6 @@ FactoryGirl.define do
 
     factory :bing_maps_api_scope do
       path_prefix "/bing/maps"
-    end
-
-    factory :amazon_api_scope do
-      host "amazon.com"
-      path_prefix "/"
-    end
-
-    factory :amazon_books_api_scope do
-      host "amazon.com"
-      path_prefix "/books"
     end
   end
 end
