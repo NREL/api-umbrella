@@ -7,5 +7,6 @@ ExternalProject_Add(
   BUILD_COMMAND cabal sandbox init
     COMMAND cabal update
     COMMAND cabal install --reinstall --disable-library-profiling --disable-profiling --disable-optimization --disable-tests --disable-coverage --disable-benchmarks --disable-documentation
-  INSTALL_COMMAND cp <SOURCE_DIR>/.cabal-sandbox/bin/shellcheck ${TEST_INSTALL_PREFIX}/bin/
+  INSTALL_COMMAND mkdir -p ${TEST_INSTALL_PREFIX}/bin
+    COMMAND cp <SOURCE_DIR>/.cabal-sandbox/bin/shellcheck ${TEST_INSTALL_PREFIX}/bin/
 )
