@@ -51,7 +51,7 @@ describe "admins form", :js => true do
     end
 
     it "removes groups from the admin account when checkboxes are unchecked" do
-      admin = FactoryGirl.create(:admin, :group_ids => [@group1.id, @group2.id])
+      admin = FactoryGirl.create(:admin, :groups => [@group1, @group2])
       admin.group_ids.sort.should eql([@group1.id, @group2.id].sort)
 
       visit "/admin/#/admins/#{admin.id}/edit"

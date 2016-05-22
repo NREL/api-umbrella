@@ -5,7 +5,7 @@
     <title>API Umbrella Admin</title>
     <%= stylesheet_link_tag "admin" %>
     <%= javascript_tag do %>
-      webAdminAjaxApiKey = <%= ApiUser.where(:email => 'web.admin.ajax@internal.apiumbrella').order_by(:created_at.asc).first.api_key.to_json.html_safe %>;
+      webAdminAjaxApiKey = <%= web_admin_ajax_api_user.api_key.to_json.html_safe %>;
       currentAdmin = <%= current_admin.attributes.slice("username", "superuser").to_json.html_safe %>
     <% end %>
     <link href='//fonts.googleapis.com/css?family=Oswald:400,700' rel='stylesheet' type='text/css'>
@@ -47,9 +47,7 @@
                     <li><%= link_to(%(<i class="fa fa-user"></i> #{t("admin.nav.admin_accounts")}).html_safe, '/admin/#/admins') %></li>
                     <li class="divider"></li>
                     <li role="presentation" class="dropdown-header"><%= t("admin.nav.permissions_management") %></li>
-                    <% if(current_admin.superuser?) %>
-                      <li><%= link_to(%(<i class="fa fa-lock"></i> #{t("admin.nav.api_scopes")}).html_safe, '/admin/#/api_scopes') %></li>
-                    <% end %>
+                    <li><%= link_to(%(<i class="fa fa-lock"></i> #{t("admin.nav.api_scopes")}).html_safe, '/admin/#/api_scopes') %></li>
                     <li><%= link_to(%(<i class="fa fa-group"></i> #{t("admin.nav.admin_groups")}).html_safe, '/admin/#/admin_groups') %></li>
                   <% end %>
                 </ul>

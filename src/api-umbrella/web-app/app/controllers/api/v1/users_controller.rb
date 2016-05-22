@@ -86,6 +86,8 @@ class Api::V1::UsersController < Api::V1::BaseController
   private
 
   def assign_attributes!
+    authorize(@api_user) unless(@api_user.new_record?)
+
     assign_options = {}
     if(admin_signed_in?)
       assign_options[:as] = :admin

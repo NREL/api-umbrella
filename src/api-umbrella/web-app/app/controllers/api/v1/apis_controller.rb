@@ -76,6 +76,7 @@ class Api::V1::ApisController < Api::V1::BaseController
   private
 
   def save!
+    authorize(@api) unless(@api.new_record?)
     @api.assign_nested_attributes(params[:api], :as => :admin)
     authorize(@api)
 
