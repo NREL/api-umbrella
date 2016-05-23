@@ -9,9 +9,6 @@ set :repo_url, "https://github.com/NREL/api-umbrella.git"
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
-# TODO analytics-revamp: Switch back to master once analytics-revamp branch
-# gets merged back in.
-set :branch, "analytics-revamp"
 
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, "/opt/api-umbrella/embedded/apps/core"
@@ -79,15 +76,15 @@ namespace :deploy do
 
   task :lua_deps do
     on roles(:app) do
-      within release_path do
-        execute :make, "install_lua_vendor_deps LUA_PATH='/opt/api-umbrella/embedded/openresty/luajit/share/lua/5.1/?.lua;/opt/api-umbrella/embedded/openresty/luajit/share/lua/5.1/?/init.lua;;' LUAROCKS_CMD=/opt/api-umbrella/embedded/bin/luarocks VENDOR_DIR=#{shared_path}/vendor EMBEDDED_DIR=/opt/api-umbrella/embedded"
+      execute "mkdir", "-p", "#{shared_path}/deploy-build"
+      within "#{shared_path}/deploy-build" do
+        execute "cmake", "#{release_path}/build/cmake/deploy"
+        execute "make", "install-core-lua-deps"
       end
     end
   end
-  # TODO analytics-revamp: Figure out for updated cmake process before merging
-  # the analytics-revamp branch.
-  # before :updated, :lua_deps
-  # before :reverted, :lua_deps
+  before :updated, :lua_deps
+  before :reverted, :lua_deps
 
   # The ember-rails gem's handling of temp files isn't ideal when multiple users
   # might touch the files. So for now, just make these temp files globally
