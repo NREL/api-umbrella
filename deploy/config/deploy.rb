@@ -77,6 +77,9 @@ namespace :deploy do
   task :lua_deps do
     on roles(:app) do
       execute "mkdir", "-p", "#{shared_path}/deploy-build"
+      # We must wipe cmake's cache file, since the `release_path` changes on
+      # each deployment.
+      execute "rm", "-f", "#{shared_path}/deploy-build/CMakeCache.txt"
       within "#{shared_path}/deploy-build" do
         execute "cmake", "#{release_path}/build/cmake/deploy"
         execute "make", "install-core-lua-deps"
