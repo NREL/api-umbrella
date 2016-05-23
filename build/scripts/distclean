@@ -9,7 +9,8 @@ if [ ! -f "$source_dir/CMakeLists.txt" ]; then
   exit 1
 fi
 
-rm -rf "$source_dir/CMakeCache.txt" \
+rm -rf \
+  "$source_dir/CMakeCache.txt" \
   "$source_dir/CMakeFiles" \
   "$source_dir/Makefile" \
   "$source_dir/build/package/.bundle" \
@@ -20,7 +21,11 @@ rm -rf "$source_dir/CMakeCache.txt" \
   "$source_dir/cmake_install.cmake" \
   "$source_dir/install_manifest.txt" \
   "$source_dir/src/api-umbrella/hadoop-analytics"/*/dependency-reduced-pom.xml \
+  "$source_dir/src/api-umbrella/web-app/.bundle" \
+  "$source_dir/src/api-umbrella/web-app/brakeman.html" \
   "$source_dir/src/api-umbrella/web-app/log" \
+  "$source_dir/src/api-umbrella/web-app/public/test-assets" \
+  "$source_dir/src/api-umbrella/web-app/spec/reports" \
   "$source_dir/src/api-umbrella/web-app/tmp"/* \
   "$source_dir/test/config/.overrides.yml" \
   "$source_dir/test/node_modules" \
