@@ -19,6 +19,9 @@ if [ -f /etc/redhat-release ]; then
   fi
 
   yum -y install "${all_dependencies[@]}"
+  # Ensure the packages got installed, since yum's exit code isn't always
+  # useful: http://stackoverflow.com/a/22393088
+  rpm --query --queryformat "" "${all_dependencies[@]}"
 elif [ -f /etc/debian_version ]; then
   apt-get update
   apt-get -y install "${all_dependencies[@]}"

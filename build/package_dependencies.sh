@@ -137,8 +137,8 @@ fi
 
 # shellcheck disable=SC2034
 all_dependencies=(
-  "${core_package_dependencies[*]}"
-  "${hadoop_analytics_package_dependencies[*]}"
-  "${core_build_dependencies[*]}"
-  "${hadoop_analytics_build_dependencies[*]}"
+  "${core_package_dependencies[@]}"
+  "${hadoop_analytics_package_dependencies[@]}"
+  "${core_build_dependencies[@]}"
+  "${hadoop_analytics_build_dependencies[@]}"
 )
