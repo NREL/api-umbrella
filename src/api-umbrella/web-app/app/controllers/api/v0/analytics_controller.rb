@@ -16,7 +16,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     # If it's not cached, generate it now.
     if(!summary || !summary[:cached_at])
       summary = generate_summary
-      Rails.cache.write("analytics_summary", summary)
+      Rails.cache.write("analytics_summary", summary, :expires_in => 2.days)
 
     # If it is cached, but it's stale, use the stale data, but create a thread
     # to refresh it asynchronously in the background. Since this takes a while
@@ -25,7 +25,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     # it's uncached.
     elsif(summary && summary[:cached_at] && summary[:cached_at] < Time.now - 6.hours)
       Thread.new do
-        Rails.cache.write("analytics_summary", generate_summary)
+        Rails.cache.write("analytics_summary", generate_summary, :expires_in => 2.days)
       end
     end
 
