@@ -21,4 +21,8 @@ group :development do
   gem "capistrano", "~> 3.3.5"
   gem "capistrano-npm", "~> 1.0.1"
   gem "dotenv", "~> 1.0.2"
+
+  # Assets
+  gem "bootstrap-sass", "~> 3.3.6"
+  gem "font-awesome-sass", "~> 4.6.2"
 end
