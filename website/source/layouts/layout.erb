@@ -13,7 +13,10 @@
     <link rel="canonical" href="http://apiumbrella.io<%= current_page.url %>" />
     <script>
       if(window.location.href.indexOf('nrel.github.io') !== -1) {
-        window.location.href = 'http://apiumbrella.io<%= current_page.url %>';
+        window.location.href = 'https://apiumbrella.io<%= current_page.url %>';
+      }
+      if(window.location.href.indexOf('apiumbrella.io') !== -1 && window.location.protocol != 'https:') {
+        window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
       }
     </script>
 
