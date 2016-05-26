@@ -5,15 +5,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>API Umbrella - Open Source API Management</title>
-    <link href="stylesheets/all-30386510.css" rel="stylesheet" type="text/css" />
-    <script src="javascripts/all-c8fb7086.js" type="text/javascript"></script>
+    <link href="stylesheets/all-e9b5948d.css" rel="stylesheet" type="text/css" />
+    <script src="javascripts/all-df29a6aa.js" type="text/javascript"></script>
     <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic" rel="stylesheet" type="text/css">
     <link href="http://fonts.googleapis.com/css?family=Raleway:400,300,700" rel="stylesheet" type="text/css">
 
     <link rel="canonical" href="http://apiumbrella.io/" />
     <script>
       if(window.location.href.indexOf('nrel.github.io') !== -1) {
-        window.location.href = 'http://apiumbrella.io/';
+        window.location.href = 'https://apiumbrella.io/';
+      }
+      if(window.location.href.indexOf('apiumbrella.io') !== -1 && window.location.protocol != 'https:') {
+        window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
       }
     </script>
 
@@ -30,22 +33,25 @@
   <body>
   <body class="index">
     <div id="navigation" class="navbar navbar-default">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#"><i class="fa fa-umbrella"></i> <b>API Umbrella</b></a>
-        </div>
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="./">Home</a></li>
-            <li class=""><a href="install/">Install</a></li>
-            <li class=""><a href="https://api-umbrella.readthedocs.org">Documentation</a></li>
-          </ul>
-        </div>
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#"><i class="fa fa-umbrella" aria-hidden="true"></i> <b>API Umbrella</b></a>
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="./">Home</a></li>
+          <li><a href="./#features">Features</a></li>
+          <li class=""><a href="install/">Install</a></li>
+          <li class=""><a href="community/">Community</a></li>
+          <li><a href="https://api-umbrella.readthedocs.org">Documentation</a></li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="https://github.com/NREL/api-umbrella">View on GitHub <i class="fa fa-github" aria-hidden="true"></i></a></li>
+        </ul>
       </div>
     </div>
 
@@ -54,10 +60,10 @@
   <div class="container">
     <div class="row text-center">
       <div class="col-lg-12">
-        <h1><i class="fa fa-umbrella"></i> <b>API Umbrella</b></h1>
+        <h1><i class="fa fa-umbrella" aria-hidden="true"></i> <b>API Umbrella</b></h1>
         <h3>Open Source API Management</h3>
         <p class="actions">
-          <a class="btn btn-default btn-lg" role="button" href="install/"><i class="fa fa-download fa-lg"></i>Install</a>
+          <a class="btn btn-default btn-lg" role="button" href="install/"><i class="fa fa-download fa-lg" aria-hidden="true"></i>Install</a>
         </p>
         <div class="details">
           <p>
@@ -65,18 +71,112 @@
             It can seamlessly add common functionality like api keys, rate limiting, and analytics to any API.
           </p>
         </div>
-        <a href="docs/architecture/"><img class="img-responsive img-center" src="images/overview-700623af.png" data-at2x="images/overview@2x-09065870.png" alt="" width="676" height="266"></a>
+        <img class="img-responsive img-center" src="images/overview-700623af.png" data-at2x="images/overview@2x-09065870.png" alt="" width="676" height="266">
         <div class="links">
-          Version 0.11.1&nbsp;&nbsp;&nbsp;&nbsp;&sdot;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://github.com/NREL/api-umbrella"><i class="fa fa-github"></i>GitHub Project</a>
+          Version 0.11.1&nbsp;&nbsp;&nbsp;&nbsp;&sdot;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://github.com/NREL/api-umbrella"><i class="fa fa-github" aria-hidden="true"></i>GitHub Project</a>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<div class="container features">
+  <h2 id="features" class="text-center">Features</h2>
+
+  <div class="row">
+    <div class="feature-graphic">
+      <i class="fa fa-key" aria-hidden="true"></i>
+    </div>
+    <div class="feature-description">
+      <h3>API Keys</h3>
+      <p>Track API usage and control access to your APIs with API keys. API Umbrella provides an API key signup form that an be embedded on any website, or internal APIs you can leverage to create API keys programmatically.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="feature-graphic">
+      <i class="fa fa-hand-paper-o" aria-hidden="true"></i>
+    </div>
+    <div class="feature-description">
+      <h3>Rate Limiting</h3>
+      <p>Control how many requests each user can make to your APIs to prevent abuse or define usage tiers. Flexible rate limits can be defined ranging from per-second to per-day limits. Different limits can be defined for different APIs or for specific users.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="feature-graphic">
+      <i class="fa fa-bar-chart" aria-hidden="true"></i>
+    </div>
+    <div class="feature-description">
+      <h3>Analytics</h3>
+      <p>Understand how your API is being used with rich analytics about API requests. View high level summary data, or drill down into the specifics with a flexible analytics querying interface in the admin tool.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="feature-graphic">
+      <i class="fa fa-rocket" aria-hidden="true"></i>
+    </div>
+    <div class="feature-description">
+      <h3>Caching</h3>
+      <p>API Umbrella integrates a standard HTTP caching layer in front of your APIs. Accelerating your APIs and offloading work from your API servers is as easy as setting standard <a href="https://api-umbrella.readthedocs.io/en/latest/admin/api-backends/caching.html">Cache-Control</a> headers.
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="feature-graphic">
+      <i class="fa fa-home" aria-hidden="true"></i>
+    </div>
+    <div class="feature-description">
+      <h3>Unify your APIs</h3>
+      <p>Provide a single, public entry point to all your APIs and microservices regardless of where your APIs might live behind the scenes or how many APIs you might have. API Umbrella can define how your public endpoints get routed to your API servers.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="feature-graphic">
+      <i class="fa fa-smile-o" aria-hidden="true"></i>
+    </div>
+    <div class="feature-description">
+      <h3>Make Both API Consumers and API Producers Happy</h3>
+      <p>If you have multiple APIs, API Umbrella can simplify access for API consumers, with a single API key that can be used across different APIs. And by shifting common functionality, like API keys, rate limiting, and analytics outside of any individual API, API producers don't need to implement any of those details over and over again.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="feature-graphic">
+      <img src="images/features/admin_ui-3504c2d1.png" alt="" />
+    </div>
+    <div class="feature-description">
+      <h3>Admin Web Interface</h3>
+      <p>An administrative web tool is available to manage all aspects of API Umbrella, including API routing configuration, user management, and viewing analytics.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="feature-graphic">
+      <i class="fa fa-cog" aria-hidden="true"></i>
+    </div>
+    <div class="feature-description">
+      <h3>Admin REST APIs</h3>
+      <p>All administrative functionality is also available via a <a href="https://api-umbrella.readthedocs.io/en/latest/admin/api.html">REST API</a>.</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="feature-graphic">
+      <i class="fa fa-users" aria-hidden="true"></i>
+    </div>
+    <div class="feature-description">
+      <h3>Multitenancy</h3>
+      <p>Multiple organizations can co-exist on a single API Umbrella installation with granular admin permissions and the ability to serve multiple domains.</p>
+    </div>
+  </div>
+</div>
+
 
     <div style="text-align: center; font-style: italic; padding: 2em 0.5em;">
-      <a href="https://github.com/NREL/api-umbrella/blob/master/website/index.html.erb">Help Improve this Content</a>
+      <a href="https://github.com/NREL/api-umbrella/blob/master/website/source/index.html.erb">Help Improve this Content</a>
     </div>
   </body>
 </html>
