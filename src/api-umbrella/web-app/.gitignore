@@ -40,8 +40,3 @@ config/environments/*.local.yml
 # Generated assets
 /public/test-assets
 /public/web-assets
-
-
-# intelliJ IDE
-.idea
-*.iml
