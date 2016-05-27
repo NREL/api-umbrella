@@ -60,4 +60,16 @@ end
 
 RSpec.configure do |config|
   config.include CapybaraFeatureHelpers, :type => :feature
+
+  config.before(:each, :type => :feature) do
+    # Set the default language for tests to US English.
+    #
+    # This ensures we have a consistent baseline for testing, regardless of the
+    # default language on the computer running tests. See:
+    # https://github.com/NREL/api-umbrella/issues/242
+    #
+    # We then explicitly test the support of other languages by overriding this
+    # in spec/features/admin/locales_spec.rb
+    page.driver.add_headers("Accept-Language" => "en-US")
+  end
 end
