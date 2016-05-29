@@ -43,7 +43,7 @@ if [ "$PACKAGE" == "core" ]; then
   done
 
   fpm_args+=("-C" "$WORK_DIR/package-dest-core")
-  fpm_args+=("--name api-umbrella")
+  fpm_args+=("--name" "api-umbrella")
   fpm_args+=("--config-files" "etc/api-umbrella/api-umbrella.yml")
   fpm_args+=("--after-install" "$source_dir/build/package/scripts/after-install")
   fpm_args+=("--before-remove" "$source_dir/build/package/scripts/before-remove")
@@ -56,7 +56,7 @@ elif [ "$PACKAGE" == "hadoop-analytics" ]; then
   done
 
   fpm_args+=("-C" "$WORK_DIR/package-dest-hadoop-analytics")
-  fpm_args+=("--name api-umbrella-hadoop-analytics")
+  fpm_args+=("--name" "api-umbrella-hadoop-analytics")
   fpm_args+=("--depends" "api-umbrella")
 fi
 
