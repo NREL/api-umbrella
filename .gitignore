@@ -26,6 +26,8 @@
 /Makefile
 /cmake_install.cmake
 /install_manifest.txt
+/install_manifest_core.txt
+/install_manifest_hadoop-analytics.txt
 
 /build/work
 /build/package/verify/.rnd
