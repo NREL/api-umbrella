@@ -119,9 +119,7 @@ gem "daemons", "~> 1.2.2"
 gem "premailer-rails", "~> 1.8.0"
 gem "nokogiri", "~> 1.6.7.2"
 
-# Pull from git branch to get security patch for OSVDB-131677:
-# https://github.com/mikel/mail/pull/950
-gem "mail", "~> 2.5.4", :git => "https://github.com/wktk/mail.git", :branch => "2-5-stable"
+gem "mail", "~> 2.5.4"
 
 # Localization in the admin based on the Accept-Language header
 gem "http_accept_language", "~> 2.0.5"
