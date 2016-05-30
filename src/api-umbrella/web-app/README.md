@@ -9,6 +9,25 @@ Please submit any issues to the [primary API Umbrella issue tracker](https://git
 
 To get started, check out the [getting started docs](http://nrel.github.io/api-umbrella/docs/getting-started/).
 
+## Run the tests
+
+### Requirements
+ * [Ruby](https://www.ruby-lang.org/en/)
+ * [Bundler](http://bundler.io/)
+ * [PhantomJS](http://phantomjs.org/download.html)
+ * [Docker](https://www.docker.com/) or [MongoDB](https://www.docker.com/) and [Elasticsearch](https://www.elastic.co/products/elasticsearch)
+
+
+### Commands
+```bash
+#install dependencies
+$ bundle install
+# run the DB on the correct ports
+$ docker-compose up -d
+# run the tests
+$ bundle exec rake
+```
+
 ## Features
 
 *TODO: Finish documenting*
