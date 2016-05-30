@@ -29,7 +29,7 @@ $ make test-web-app
 
 # Run individual files or tests within the proxy test suite:
 $ cd test
-./node_modules/.bin/grunt ./server/api_matcher.js
+./node_modules/.bin/mocha ./server/api_matcher.js
 
 # Run individual files or tests within the web-app test suite:
 $ cd src/api-umbrella/web-app
