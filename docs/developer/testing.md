@@ -35,3 +35,29 @@ $ cd test
 $ cd src/api-umbrella/web-app
 $ bundle exec rspec ./spec/controllers/api/v1/apis_controller_spec.rb
 ```
+
+## Running Tests With Docker (Experimental)
+
+Running the tests within the Vagrant development environment is the best supported option for currently running all the tests. However, if you're not using the Vagrant development environment, then you can also run the web-app tests using Docker (but the proxy tests are not currently supported). This may be quicker and easier if you're only working on the web-app component (and not the proxy).
+
+### Requirements
+
+- [Ruby](https://www.ruby-lang.org/en/)
+- [Bundler](http://bundler.io/)
+- [PhantomJS](http://phantomjs.org/download.html)
+- [Docker](https://www.docker.com/) or [MongoDB](https://www.docker.com/) and [Elasticsearch](https://www.elastic.co/products/elasticsearch)
+
+### Commands
+
+```bash
+$ cd src/api-umbrella/web-app
+
+# install dependencies
+$ bundle install
+
+# run the DB on the correct ports
+$ docker-compose up -d
+
+# run the tests
+$ bundle exec rake
+```
