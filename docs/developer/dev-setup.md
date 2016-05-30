@@ -57,6 +57,10 @@ $ sudo /etc/init.d/api-umbrella reload
 $ sudo /etc/init.d/api-umbrella restart
 ```
 
+## Writing and Running Tests
+
+See the [testing section](testing.html) for more information about writing and running tests.
+
 ## Customizing Your VM
 
 The following environment variables can be set prior to running `vagrant up` if you wish to tune the local VM (for example, to give it more or less memory, pick a different IP address, or use a different base box):

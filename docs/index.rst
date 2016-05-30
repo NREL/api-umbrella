@@ -59,6 +59,7 @@ API Umbrella is an open source API management platform for exposing web service 
 
    developer/architecture
    developer/dev-setup
+   developer/testing
    developer/deploying
    developer/packaging
    developer/docker-build
