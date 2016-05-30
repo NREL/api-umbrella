@@ -72,13 +72,6 @@ http {
   init_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/init.lua';
   init_worker_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/init_worker.lua';
 
-  #proxy_cache_path /tmp/nginx-cache levels=1:2 keys_zone=backcache:8m max_size=50m;
-  #proxy_cache backcache;
-  #proxy_cache_lock on;
-  #proxy_cache_key "$scheme$request_method$host$request_uri$is_args$args";
-  #add_header X-Cache $upstream_cache_status;
-  #proxy_cache_valid 5m;
-
   lua_check_client_abort on;
   if_modified_since off;
 
