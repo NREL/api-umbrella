@@ -23,4 +23,16 @@ class ApiUserMailer < ActionMailer::Base
       :from => MailSanitizer.sanitize_address(from),
       :to => MailSanitizer.sanitize_address(user.email)
   end
+
+  def notify_api_admin(user)
+    @user = user
+
+    to = ApiUmbrellaConfig[:admin_notify_email].presence || ApiUmbrellaConfig[:web][:contact_form_email]
+
+    full_name = "#{@user.first_name} #{@user.last_name}"
+
+    mail :subject => "#{full_name} just subscribed",
+         :from => MailSanitizer.sanitize_address(user.email),
+         :to => MailSanitizer.sanitize_address(to)
+  end
 end
