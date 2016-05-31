@@ -980,6 +980,64 @@ describe Api::V1::UsersController do
         end
       end
     end
+
+    describe "notify e-mail" do
+      before(:each) do
+        Delayed::Worker.delay_jobs = false
+        ActionMailer::Base.deliveries.clear
+        ApiUmbrellaConfig[:web][:contact_form_email] = "aa@bb.com"
+      end
+
+      after(:each) do
+        Delayed::Worker.delay_jobs = true
+      end
+
+      it "sends a notify e-mail to be sent when requested" do
+        admin_token_auth(@admin)
+        expect do
+          p = params
+          p[:options] = { :send_notify_email => true }
+          post :create, p
+        end.to change { ActionMailer::Base.deliveries.count }.by(1)
+      end
+
+      it "does not send notify e-mails when explicitly disabled" do
+        admin_token_auth(@admin)
+        expect do
+          p = params
+          p[:options] = { :send_notify_email => false }
+          post :create, p
+        end.to change { ActionMailer::Base.deliveries.count }.by(0)
+      end
+
+      it "does not send a notify e-mail when the option is an unknown value" do
+        admin_token_auth(@admin)
+        expect do
+          p = params
+          p[:options] = { :send_notify_email => 1 }
+          post :create, p
+        end.to change { ActionMailer::Base.deliveries.count }.by(0)
+      end
+
+      it "does not send notify e-mails by default" do
+        admin_token_auth(@admin)
+        expect do
+          post :create, params
+        end.to change { ActionMailer::Base.deliveries.count }.by(0)
+      end
+
+      it "queues a welcome e-mail to when delayed job is enabled" do
+        Delayed::Worker.delay_jobs = true
+        admin_token_auth(@admin)
+        expect do
+          expect do
+            p = params
+            p[:options] = { :send_notify_email => true }
+            post :create, p
+          end.to change { Delayed::Job.count }.by(1)
+        end.to change { ActionMailer::Base.deliveries.count }.by(0)
+      end
+    end
   end
 
   describe "PUT update" do

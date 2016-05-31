@@ -93,11 +93,14 @@ describe ApiUserMailer do
       ApiUmbrellaConfig[:web][:contact_form_email] = "aaa@bbb.com"
     end
 
-    let(:api_user) { FactoryGirl.create(:api_user,
-                                        :first_name => "aaa",
-                                        :last_name => "bbb",
-                                        :use_description => "I WANNA DO EVERYTHING",
-                                        :email => "foo@example.com") }
+    let(:api_user) do
+      FactoryGirl.create(
+          :api_user,
+          :first_name => "aaa",
+          :last_name => "bbb",
+          :use_description => "I WANNA DO EVERYTHING",
+          :email => "foo@example.com")
+    end
 
     subject { ApiUserMailer.notify_api_admin(api_user).deliver }
 
