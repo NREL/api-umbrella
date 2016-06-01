@@ -91,4 +91,14 @@ Vagrant.configure("2") do |config|
       "recipe[api-umbrella::development]",
     ]
   end
+
+  # Always restart API Umbrella after starting the machine. This ensures the
+  # development version get started from the /vagrant partition (since the
+  # /vagrant NFS partition isn't started early enough during normal boot, we
+  # must do this here).
+  config.vm.provision :shell, :run => "always", :inline => <<-eos
+    if [ -f /etc/init.d/api-umbrella ]; then
+      /etc/init.d/api-umbrella restart
+    fi
+  eos
 end
