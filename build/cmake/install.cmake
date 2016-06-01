@@ -74,22 +74,26 @@ install(
   COMPONENT core
 )
 
-install(
-  DIRECTORY ${HADOOP_ANALYTICS_STAGE_PREFIX_DIR}/
-  DESTINATION ${CMAKE_INSTALL_PREFIX}
-  USE_SOURCE_PERMISSIONS
-  COMPONENT hadoop-analytics
-)
+if(ENABLE_HADOOP_ANALYTICS)
+  install(
+    DIRECTORY ${HADOOP_ANALYTICS_STAGE_PREFIX_DIR}/
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+    USE_SOURCE_PERMISSIONS
+    COMPONENT hadoop-analytics
+  )
+endif()
 
 add_custom_target(
   install-core
   COMMAND ${CMAKE_COMMAND} -D CMAKE_INSTALL_COMPONENT=core -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
 )
 
-add_custom_target(
-  install-hadoop-analytics
-  COMMAND ${CMAKE_COMMAND} -D CMAKE_INSTALL_COMPONENT=hadoop-analytics -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
-)
+if(ENABLE_HADOOP_ANALYTICS)
+  add_custom_target(
+    install-hadoop-analytics
+    COMMAND ${CMAKE_COMMAND} -D CMAKE_INSTALL_COMPONENT=hadoop-analytics -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+  )
+endif()
 
 add_custom_target(
   after-install
