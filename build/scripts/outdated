@@ -32,7 +32,6 @@ repos = {
   },
   "kylin" => {
     :git => "https://github.com/apache/kylin.git",
-    :constraint => "~> 1.2.0",
   },
   "libcidr" => {
     :http => "https://www.over-yonder.net/~fullermd/projects/libcidr",
