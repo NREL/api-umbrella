@@ -119,9 +119,9 @@ RSpec.shared_examples("package upgrade") do |package_version|
 
   def install_package(version)
     if(version == :current)
-      package_path = "#{ENV["source_dir"]}/build/work/package/current/#{ENV["DIST"]}/core/*"
+      package_path = "#{ENV["SOURCE_DIR"]}/build/work/package/current/#{ENV["DIST"]}/core/*"
     else
-      package_path = "#{ENV["source_dir"]}/build/work/package/archives/#{version}/#{ENV["DIST"]}/core/*"
+      package_path = "#{ENV["SOURCE_DIR"]}/build/work/package/archives/#{version}/#{ENV["DIST"]}/core/*"
     end
 
     case(os[:family])

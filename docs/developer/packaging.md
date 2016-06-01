@@ -24,7 +24,7 @@ To build packages for the current API Umbrella version for all distributions:
 $ git clone https://github.com/NREL/api-umbrella.git
 $ cd api-umbrella
 $ ./build/package/verify/download_previous_packages
-$ make -C build/package make -j4 docker_all # Adjust concurrency with -j flag as desired
+$ make -C build/package -j4 docker_all # Adjust concurrency with -j flag as desired
 ```
 
 Packages for each distribution will be created inside an isolated docker container, with the resulting packages being placed in the `build/work/package/current` directory.
