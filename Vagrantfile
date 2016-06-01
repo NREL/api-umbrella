@@ -79,10 +79,22 @@ Vagrant.configure("2") do |config|
 
   # On initial setup, ensure all temporary build files are deleted. This helps
   # ensure old build files aren't kept around if you do a vagrant
-  # destroy/vagrant up.
+  # destroy/vagrant up. But only run the first time a box is setup (and not on
+  # further provisions).
   config.vm.provision :shell, :inline => <<-eos
-    cd /vagrant
-    ./build/scripts/distclean
+    # Only run distclean if it hasn't been run yet on this specific VM
+    # instance.
+    if [ ! -f ~/.api-umbrella-distcleaned ]; then
+      cd /vagrant
+      # Run distclean a few times to possibly workaround temporary NFS issues
+      # that sometimes crop up when deleting all the fiels.
+      ./build/scripts/distclean || echo "Failed to complete distclean"
+      sleep 1
+      ./build/scripts/distclean || echo "Failed to complete distclean"
+      sleep 1
+      ./build/scripts/distclean || echo "Failed to complete distclean"
+      touch ~/.api-umbrella-distcleaned
+    fi
   eos
 
   # Provision the development environment with our Chef cookbook.
