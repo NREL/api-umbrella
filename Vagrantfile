@@ -77,9 +77,15 @@ Vagrant.configure("2") do |config|
   # Use the user's local SSH keys for git access.
   config.ssh.forward_agent = true
 
-  # Enable provisioning with chef solo, specifying a cookbooks path, roles
-  # path, and data_bags path (all relative to this Vagrantfile), and adding
-  # some recipes and/or roles.
+  # On initial setup, ensure all temporary build files are deleted. This helps
+  # ensure old build files aren't kept around if you do a vagrant
+  # destroy/vagrant up.
+  config.vm.provision :shell, :inline => <<-eos
+    cd /vagrant
+    ./build/scripts/distclean
+  eos
+
+  # Provision the development environment with our Chef cookbook.
   config.vm.provision :chef_solo do |chef|
     chef.run_list = [
       "recipe[api-umbrella::development]",
