@@ -9,7 +9,7 @@ add_custom_command(
     ${STAMP_DIR}/core-web-app-bundle
     ${STAMP_DIR}/core-lua-deps
   COMMAND mkdir -p ${CORE_SHARED_BUILD_DIR}/vendor
-  COMMAND rsync -av --delete-after ${VENDOR_DIR}/ ${CORE_SHARED_BUILD_DIR}/vendor/
+  COMMAND rsync -a --delete-after ${VENDOR_DIR}/ ${CORE_SHARED_BUILD_DIR}/vendor/
   COMMAND touch -c ${CORE_SHARED_BUILD_DIR}/vendor
 )
 
@@ -18,7 +18,7 @@ add_custom_command(
   OUTPUT ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
   DEPENDS ${STAMP_DIR}/core-web-app-assets-precompiled
   COMMAND mkdir -p ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
-  COMMAND rsync -av --delete-after ${WORK_DIR}/src/web-app/public/web-assets/ ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets/
+  COMMAND rsync -a --delete-after ${WORK_DIR}/src/web-app/public/web-assets/ ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets/
   COMMAND touch -c ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
 )
 
@@ -45,7 +45,7 @@ add_custom_command(
 add_custom_command(
   OUTPUT ${STAMP_DIR}/core-build-release-dir-${RELEASE_TIMESTAMP}
   COMMAND mkdir -p ${CORE_RELEASE_BUILD_DIR}
-  COMMAND rsync -av --delete-after --delete-excluded "--filter=:- ${CMAKE_SOURCE_DIR}/.gitignore" --include=/templates/etc/perp/.boot --exclude=.* --exclude=/templates/etc/test-env* --exclude=/templates/etc/perp/test-env* --exclude=/src/api-umbrella/web-app/spec --exclude=/src/api-umbrella/web-app/app/assets --exclude=/src/api-umbrella/hadoop-analytics --include=/bin/*** --include=/config/*** --include=/LICENSE.txt --include=/templates/*** --include=/src/*** --exclude=* ${CMAKE_SOURCE_DIR}/ ${CORE_RELEASE_BUILD_DIR}/
+  COMMAND rsync -a --delete-after --delete-excluded "--filter=:- ${CMAKE_SOURCE_DIR}/.gitignore" --include=/templates/etc/perp/.boot --exclude=.* --exclude=/templates/etc/test-env* --exclude=/templates/etc/perp/test-env* --exclude=/src/api-umbrella/web-app/spec --exclude=/src/api-umbrella/web-app/app/assets --exclude=/src/api-umbrella/hadoop-analytics --include=/bin/*** --include=/config/*** --include=/LICENSE.txt --include=/templates/*** --include=/src/*** --exclude=* ${CMAKE_SOURCE_DIR}/ ${CORE_RELEASE_BUILD_DIR}/
   COMMAND rm -f ${STAMP_DIR}/core-build-release-dir*
   COMMAND touch ${STAMP_DIR}/core-build-release-dir-${RELEASE_TIMESTAMP}
 )
@@ -116,7 +116,7 @@ add_custom_command(
   OUTPUT ${STAGE_EMBEDDED_DIR}/apps/core/shared
   DEPENDS ${STAMP_DIR}/core-build-shared
   COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core/shared
-  COMMAND rsync -av --delete-after ${CORE_SHARED_BUILD_DIR}/ ${STAGE_EMBEDDED_DIR}/apps/core/shared/
+  COMMAND rsync -a --delete-after ${CORE_SHARED_BUILD_DIR}/ ${STAGE_EMBEDDED_DIR}/apps/core/shared/
   COMMAND touch -c ${STAGE_EMBEDDED_DIR}/apps/core/shared
 )
 
