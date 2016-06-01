@@ -1,7 +1,7 @@
 DEPENDENCIES
   api-umbrella
     git: https://github.com/NREL-cookbooks/api-umbrella.git
-    revision: dfb6f667aba199f37e3c5d8eea8227adbc5aeefc
+    revision: d1bc15a4895c2d36d1bc5e42ca7cec35de61dd79
 
 GRAPH
   api-umbrella (0.7.1)
@@ -23,7 +23,7 @@ GRAPH
   chef_handler (1.4.0)
   chocolatey (1.0.0)
     windows (~> 1.38)
-  compat_resource (12.10.3)
+  compat_resource (12.10.4)
   homebrew (2.1.0)
     build-essential (>= 2.1.2)
   mingw (1.0.0)
@@ -38,11 +38,11 @@ GRAPH
   phantomjs (1.0.3)
     build-essential (>= 0.0.0)
     chocolatey (>= 0.0.0)
-  seven_zip (2.0.0)
+  seven_zip (2.0.1)
     windows (>= 1.2.2)
   sudo (2.9.0)
-  ulimit (0.3.3)
-  windows (1.41.0)
+  ulimit (0.4.0)
+  windows (1.42.0)
     chef_handler (>= 0.0.0)
   yum (3.10.0)
   yum-epel (0.7.0)
