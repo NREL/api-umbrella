@@ -992,12 +992,23 @@ describe Api::V1::UsersController do
         Delayed::Worker.delay_jobs = true
       end
 
-      it "sends a notify e-mail to be sent when requested" do
+      it "sends a notify e-mail to be sent when requested in query" do
         admin_token_auth(@admin)
         expect do
           p = params
           p[:options] = { :send_notify_email => true }
           post :create, p
+        end.to change { ActionMailer::Base.deliveries.count }.by(1)
+      end
+
+      it "sends a notify e-mail to be sent when requested in the config" do
+        admin_token_auth(@admin)
+        expect do
+          p = params
+          ApiUmbrellaConfig[:send_notify_email] = true
+          post :create, p
+          ApiUmbrellaConfig[:send_notify_email] = false
+
         end.to change { ActionMailer::Base.deliveries.count }.by(1)
       end
 

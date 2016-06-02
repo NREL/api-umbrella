@@ -60,10 +60,13 @@ class Api::V1::UsersController < Api::V1::BaseController
           send_welcome_email = true
         end
 
+        if(!send_notify_email && ApiUmbrellaConfig[:send_notify_email].to_s == "true")
+          send_notify_email = true
+        end
+
         if(send_welcome_email)
           ApiUserMailer.delay(:queue => "mailers").signup_email(@api_user, params[:options] || {})
         end
-
         if(send_notify_email)
           ApiUserMailer.delay(:queue => "mailers").notify_api_admin(@api_user)
         end
