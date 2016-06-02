@@ -17,6 +17,7 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Days;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -64,8 +65,9 @@ public class RefreshKylin implements Runnable {
     try {
       logger.info("Begin kylin refresh");
 
-      DateTime currentSegmentStart =
+      DateTime currentDayStart =
           new DateTime(App.TIMEZONE).withTimeAtStartOfDay().withZoneRetainFields(DateTimeZone.UTC);
+      DateTime currentDayEnd = currentDayStart.plusDays(1);
       DateTime segmentStart = null;
       DateTime segmentEnd = null;
 
@@ -102,18 +104,40 @@ public class RefreshKylin implements Runnable {
 
       /*
        * Define the next segment to build: Either the day following the last existing segment, or
-       * the current day if no existing segments exist.
+       * the beginning of the cube if no existing segments exist.
        */
       if (segmentStart == null) {
-        segmentStart = new DateTime(currentSegmentStart);
+        segmentStart = getCubeStart();
       } else {
         segmentStart = new DateTime(segmentEnd);
       }
 
       /* Loop over any segments that need building until the current day is hit. */
-      while (segmentStart.isBefore(currentSegmentStart)
-          || segmentStart.isEqual(currentSegmentStart)) {
-        segmentEnd = segmentStart.plusDays(1);
+      while (segmentStart.isBefore(currentDayEnd)) {
+        /*
+         * Build a segment from the first day needed until the current day. But handle segments
+         * longer than 1 full day a bit differently.
+         */
+        segmentEnd = new DateTime(currentDayEnd);
+        if (Days.daysBetween(segmentStart, segmentEnd).getDays() > 1) {
+          if (segmentStart.getYear() != segmentEnd.getYear()) {
+            /*
+             * If this segment would span separate years, then create separate segments for each
+             * calendar year. When first importing historical data, this helps the segment out the
+             * first big bulk processing.
+             */
+            segmentEnd = segmentStart.withDayOfYear(1).plusYears(1);
+          } else {
+            /*
+             * Otherwise, if the segment would span multiple days, first create a segment until the
+             * second to last day. Then we'll create a separate segment for the final day. This
+             * helps ensure that the last day (which may contain live data), is put in its own
+             * segment, so it's quicker to re-process once the day is complete.
+             */
+            segmentEnd = segmentEnd.minusDays(1);
+          }
+        }
+
         buildSegment("BUILD", segmentStart, segmentEnd);
         segmentStart = segmentEnd;
       }
@@ -125,10 +149,18 @@ public class RefreshKylin implements Runnable {
 
   private JsonArray getSegments() throws HttpException, JsonSyntaxException, IOException {
     GetMethod method = new GetMethod(KYLIN_URL + "/api/cubes/" + CUBE_NAME);
-    JsonObject result = makeRequest(method);
+    JsonObject result = makeRequest(method).getAsJsonObject();
     JsonArray segments = result.get("segments").getAsJsonArray();
 
     return segments;
+  }
+
+  private DateTime getCubeStart() throws HttpException, JsonSyntaxException, IOException {
+    GetMethod method = new GetMethod(KYLIN_URL + "/api/cube_desc/" + CUBE_NAME);
+    JsonObject result = makeRequest(method).getAsJsonArray().get(0).getAsJsonObject();
+    DateTime start = new DateTime(result.get("partition_date_start").getAsLong(), DateTimeZone.UTC);
+
+    return start;
   }
 
   private void buildSegment(String buildType, DateTime start, DateTime end)
@@ -145,7 +177,7 @@ public class RefreshKylin implements Runnable {
     RequestEntity entity = new StringRequestEntity(data.toString(), "application/json", "UTF-8");
     method.setRequestEntity(entity);
 
-    JsonObject result = makeRequest(method);
+    JsonObject result = makeRequest(method).getAsJsonObject();
     String jobUuid = result.get("uuid").getAsString();
     waitForJob(jobUuid);
 
@@ -155,7 +187,7 @@ public class RefreshKylin implements Runnable {
   private String getJobStatus(String jobUuid)
       throws HttpException, JsonSyntaxException, IOException {
     GetMethod method = new GetMethod(KYLIN_URL + "/api/jobs/" + jobUuid);
-    JsonObject result = makeRequest(method);
+    JsonObject result = makeRequest(method).getAsJsonObject();
     String status = result.get("job_status").getAsString();
 
     logger.debug("Job status: " + jobUuid + ": " + status);
@@ -173,9 +205,9 @@ public class RefreshKylin implements Runnable {
     }
   }
 
-  private JsonObject makeRequest(HttpMethod method)
+  private JsonElement makeRequest(HttpMethod method)
       throws HttpException, JsonSyntaxException, IOException {
-    JsonObject result = null;
+    JsonElement result = null;
     try {
       client.executeMethod(method);
       int responseStatus = method.getStatusLine().getStatusCode();
@@ -185,7 +217,7 @@ public class RefreshKylin implements Runnable {
             + IOUtils.toString(responseBody));
         throw new HttpException("Unsuccessful HTTP response");
       }
-      result = new JsonParser().parse(responseBody).getAsJsonObject();
+      result = new JsonParser().parse(responseBody);
     } catch (HttpException e) {
       throw e;
     } catch (JsonSyntaxException e) {

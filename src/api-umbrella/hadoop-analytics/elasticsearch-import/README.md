@@ -424,10 +424,6 @@ $ echo '{"cubeDescData":"{
             \"REQUEST_IP_COUNTRY\",
             \"REQUEST_IP_REGION\",
             \"REQUEST_IP_CITY\"
-          ],
-          [
-            \"RESPONSE_STATUS\",
-            \"DENIED_REASON\"
           ]
         ],
         \"mandatory_dims\": [
@@ -441,6 +437,8 @@ $ echo '{"cubeDescData":"{
             \"REQUEST_AT_TZ_HOUR\",
             \"USER_ID\",
             \"REQUEST_IP\",
+            \"RESPONSE_STATUS\",
+            \"DENIED_REASON\",
             \"REQUEST_METHOD\"
           ]
         ]
