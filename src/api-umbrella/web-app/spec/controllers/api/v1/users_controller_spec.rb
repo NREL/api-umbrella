@@ -1005,9 +1005,9 @@ describe Api::V1::UsersController do
         admin_token_auth(@admin)
         expect do
           p = params
-          ApiUmbrellaConfig[:send_notify_email] = true
+          ApiUmbrellaConfig[:web][:send_notify_email] = true
           post :create, p
-          ApiUmbrellaConfig[:send_notify_email] = false
+          ApiUmbrellaConfig[:web][:send_notify_email] = false
 
         end.to change { ActionMailer::Base.deliveries.count }.by(1)
       end

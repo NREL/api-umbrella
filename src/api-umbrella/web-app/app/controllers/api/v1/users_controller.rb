@@ -60,7 +60,7 @@ class Api::V1::UsersController < Api::V1::BaseController
           send_welcome_email = true
         end
 
-        if(!send_notify_email && ApiUmbrellaConfig[:send_notify_email].to_s == "true")
+        if(!send_notify_email && ApiUmbrellaConfig[:web][:send_notify_email].to_s == "true")
           send_notify_email = true
         end
 

@@ -91,6 +91,7 @@ describe ApiUserMailer do
   describe "signup_email" do
     before(:each) do
       ApiUmbrellaConfig[:web][:contact_form_email] = "aaa@bbb.com"
+      ApiUmbrellaConfig[:web][:default_host] = "localhost.com"
     end
 
     let(:api_user) do
@@ -114,7 +115,7 @@ describe ApiUserMailer do
     end
 
     it "the receiver can be overwrited by the admin " do
-      ApiUmbrellaConfig[:admin_notify_email] = "ccc@ddd.com"
+      ApiUmbrellaConfig[:web][:admin_notify_email] = "ccc@ddd.com"
       subject
       expect(ActionMailer::Base.deliveries.first.to).to eq ["ccc@ddd.com"]
     end
@@ -122,6 +123,11 @@ describe ApiUserMailer do
     it "send an email with the name of the person in the subject" do
       subject
       expect(ActionMailer::Base.deliveries.first.subject).to eq "aaa bbb just subscribed"
+    end
+
+    it "send an email from the server name" do
+      subject
+      expect(ActionMailer::Base.deliveries.first.from).to eq ["noreply@localhost.com"]
     end
 
     it "send an email with usage in the body" do
