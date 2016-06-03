@@ -1,17 +1,11 @@
 require "spec_helper"
+require 'test_helper/elasticsearch_helper'
 
 describe "analytics by users", :js => true do
   login_admin
 
   before(:each) do
-    # TODO: remove delete by query (not supported in ES 2.0)
-    # https://www.elastic.co/guide/en/elasticsearch/reference/1.6/docs-delete-by-query.html
-    # https://www.elastic.co/guide/en/elasticsearch/reference/1.6/search-request-scroll.html
-    LogItem.gateway.client.delete_by_query :index => LogItem.index_name, :body => {
-      :query => {
-        :match_all => {},
-      },
-    }
+    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
   end
 
   describe "xss" do
