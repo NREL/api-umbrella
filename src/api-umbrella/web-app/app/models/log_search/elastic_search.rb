@@ -1,3 +1,6 @@
+
+require('json')
+
 class LogSearch::ElasticSearch < LogSearch::Base
   attr_reader :client
 
@@ -48,9 +51,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
     if query_options[:body][:aggregations] && query_options[:body][:aggregations].blank?
       query_options[:body].delete(:aggregations)
     end
-
     raw_result = @client.search(query_options)
-
     @result = LogResult.factory(self, raw_result)
   end
 
@@ -290,7 +291,6 @@ class LogSearch::ElasticSearch < LogSearch::Base
             :field => "request_at",
             :interval => @interval,
             :time_zone => Time.zone.name,
-            :pre_zone_adjust_large_interval => true,
             :min_doc_count => 0,
             :extended_bounds => {
               :min => @start_time.iso8601,
@@ -306,7 +306,6 @@ class LogSearch::ElasticSearch < LogSearch::Base
         :field => "request_at",
         :interval => @interval,
         :time_zone => Time.zone.name,
-        :pre_zone_adjust_large_interval => true,
         :min_doc_count => 0,
         :extended_bounds => {
           :min => @start_time.iso8601,
@@ -322,7 +321,6 @@ class LogSearch::ElasticSearch < LogSearch::Base
         :field => "request_at",
         :interval => @interval,
         :time_zone => Time.zone.name,
-        :pre_zone_adjust_large_interval => true,
         :min_doc_count => 0,
         :extended_bounds => {
           :min => @start_time.iso8601,
