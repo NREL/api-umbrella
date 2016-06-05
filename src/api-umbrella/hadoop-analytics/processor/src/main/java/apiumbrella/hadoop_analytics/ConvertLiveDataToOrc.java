@@ -3,9 +3,8 @@ package apiumbrella.hadoop_analytics;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,7 +13,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -26,6 +24,12 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.quartz.DisallowConcurrentExecution;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.PersistJobDataAfterExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,16 +58,13 @@ import org.slf4j.LoggerFactory;
  * more manual approach that can work with the older version of Hive, but in the future this may be
  * worth revisiting.
  */
-public class ConvertLiveDataToOrc implements Runnable {
-  private static final String HDFS_URI =
-      System.getProperty("apiumbrella.hdfs_uri", "hdfs://127.0.0.1:8020");
-  private static final String HDFS_ROOT = "/apps/api-umbrella";
-  private static final String HDFS_LOGS_ROOT = HDFS_ROOT + "/logs";
-  private static final String HDFS_LOGS_LIVE_ROOT = HDFS_ROOT + "/logs-live";
-  private static final String LOGS_TABLE_NAME = "api_umbrella.logs";
+@DisallowConcurrentExecution
+@PersistJobDataAfterExecution
+public class ConvertLiveDataToOrc implements Job {
+  private static final String HDFS_LOGS_LIVE_ROOT = App.HDFS_ROOT + "/logs-live";
   private static final String LOGS_LIVE_TABLE_NAME = "api_umbrella.logs_live";
   private static final Path LAST_MIGRATED_MARKER =
-      new Path(HDFS_URI + HDFS_ROOT + "/.logs-live-last-migrated-partition-time");
+      new Path(App.HDFS_URI + App.HDFS_ROOT + "/.logs-live-last-migrated-partition-time");
   final Logger logger;
 
   Pattern partitionDatePattern = Pattern.compile(
@@ -76,42 +77,46 @@ public class ConvertLiveDataToOrc implements Runnable {
   private String addPartitionSql;
   private String addLivePartitionSql;
   private String insertSql;
-  private long lastMigratedPartitionTime = 0;
-  private boolean tablesCreated = false;
   private FileSystem fileSystem;
+  private long lastMigratedPartitionTime = 0;
 
-  public ConvertLiveDataToOrc(App app) {
-    logSchema = new LogSchema();
+  public ConvertLiveDataToOrc() {
     logger = LoggerFactory.getLogger(this.getClass());
+    logger.debug("Initializing " + this.getClass());
+  }
 
+  public void execute(JobExecutionContext context) throws JobExecutionException {
     try {
-      // Load the Hive JDBC class.
-      Class.forName("org.apache.hive.jdbc.HiveDriver");
+      run(context);
+    } catch (Exception e) {
+      logger.error("Convert live data to ORC error", e);
+      JobExecutionException jobError = new JobExecutionException(e);
+      throw jobError;
+    }
+  }
 
-      Configuration conf = new Configuration();
-      // Fix for hadoop jar ordering: http://stackoverflow.com/a/21118824
-      conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
-      conf.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
+  public void run(JobExecutionContext context) throws SQLException, IOException,
+      ClassNotFoundException, IllegalArgumentException, URISyntaxException {
+    logger.debug("Begin processing");
 
-      fileSystem = FileSystem.get(new URI(HDFS_URI), conf);
+    logSchema = new LogSchema();
+    JobDataMap jobData = context.getJobDetail().getJobDataMap();
+    lastMigratedPartitionTime = jobData.getLong("lastMigratedPartitionTime");
+
+    fileSystem = App.getHadoopFileSystem();
+    if (lastMigratedPartitionTime == 0) {
       if (fileSystem.exists(LAST_MIGRATED_MARKER)) {
         FSDataInputStream markerInputStream = fileSystem.open(LAST_MIGRATED_MARKER);
         lastMigratedPartitionTime = Long.parseLong(IOUtils.toString(markerInputStream), 10);
         logger.debug("Read last migrated partition timestamp marker: " + lastMigratedPartitionTime);
       }
-    } catch (Exception e) {
-      e.printStackTrace();
-      System.exit(1);
     }
-  }
 
-  public void run() {
-    logger.debug("Begin processing");
     Connection connection = null;
     try {
-      connection =
-          DriverManager.getConnection("jdbc:hive2://localhost:10000/api_umbrella", "hive", "");
-      createTables(connection);
+      connection = App.getHiveConnection();
+      createTables(jobData, connection);
+
       for (DateTime partition : getInactivePartitions()) {
         if (partition.getMillis() > lastMigratedPartitionTime) {
           logger.info("Migrating partition: " + partition);
@@ -142,6 +147,7 @@ public class ConvertLiveDataToOrc implements Runnable {
           migrate.close();
 
           lastMigratedPartitionTime = partition.getMillis();
+          jobData.put("lastMigratedPartitionTime", lastMigratedPartitionTime);
 
           FSDataOutputStream markerOutputStream = fileSystem.create(LAST_MIGRATED_MARKER, true);
           BufferedWriter br = new BufferedWriter(new OutputStreamWriter(markerOutputStream));
@@ -151,17 +157,27 @@ public class ConvertLiveDataToOrc implements Runnable {
           logger.debug("Skipping already processed partition: " + partition);
         }
       }
-    } catch (Exception e) {
-      logger.error("convert error", e);
+
+      jobData.put("lastMigratedPartitionTime", lastMigratedPartitionTime);
+
+      /*
+       * Since we're appending the live data to the ORC files every minute, we end up with many
+       * small ORC files in the api_umbrella.logs partitions. To help improve query performance,
+       * concatenate the table partitions ever 1 hour (which merges the existing files down to a
+       * single file).
+       */
+      long now = DateTime.now().getMillis();
+      long lastConcatenateTime = jobData.getLong("lastConcatenateTime");
+      if (now - lastConcatenateTime > 1 * 60 * 60 * 1000) {
+        App.concatenateTablePartitions(logger);
+        jobData.put("lastConcatenateTime", now);
+      }
     } finally {
-      try {
-        if (connection != null) {
-          connection.close();
-        }
-      } catch (SQLException e) {
-        logger.error("convert error", e);
+      if (connection != null) {
+        connection.close();
       }
     }
+
     logger.debug("Finish processing");
   }
 
@@ -171,13 +187,19 @@ public class ConvertLiveDataToOrc implements Runnable {
    * @param connection
    * @throws SQLException
    */
-  private void createTables(Connection connection) throws SQLException {
+  private void createTables(JobDataMap jobData, Connection connection) throws SQLException {
+    boolean tablesCreated = jobData.getBoolean("tablesCreated");
     if (tablesCreated == false) {
       Statement statement = connection.createStatement();
+
+      logger.info("Creating table (if not exists): " + App.LOGS_TABLE_NAME);
       statement.executeUpdate(getCreateExternalTableSql());
+
+      logger.info("Creating table (if not exists): " + LOGS_LIVE_TABLE_NAME);
       statement.executeUpdate(getCreateLiveExternalTableSql());
+
       statement.close();
-      tablesCreated = true;
+      jobData.put("tablesCreated", true);
     }
   }
 
@@ -193,7 +215,7 @@ public class ConvertLiveDataToOrc implements Runnable {
   private String getCreateExternalTableSql() {
     if (createExternalTableSql == null) {
       StringBuilder sql = new StringBuilder();
-      sql.append("CREATE EXTERNAL TABLE IF NOT EXISTS " + LOGS_TABLE_NAME + "(");
+      sql.append("CREATE EXTERNAL TABLE IF NOT EXISTS " + App.LOGS_TABLE_NAME + "(");
       for (int i = 0; i < logSchema.getNonPartitionFieldsList().size(); i++) {
         if (i > 0) {
           sql.append(",");
@@ -213,7 +235,7 @@ public class ConvertLiveDataToOrc implements Runnable {
       }
       sql.append(") ");
 
-      sql.append("STORED AS ORC LOCATION '" + HDFS_LOGS_ROOT + "'");
+      sql.append("STORED AS ORC LOCATION '" + App.HDFS_LOGS_ROOT + "'");
 
       createExternalTableSql = sql.toString();
     }
@@ -271,7 +293,7 @@ public class ConvertLiveDataToOrc implements Runnable {
   private String getAddPartitionSql() {
     if (addPartitionSql == null) {
       StringBuilder sql = new StringBuilder();
-      sql.append("ALTER TABLE " + LOGS_TABLE_NAME + " ADD IF NOT EXISTS ");
+      sql.append("ALTER TABLE " + App.LOGS_TABLE_NAME + " ADD IF NOT EXISTS ");
       sql.append("PARTITION(");
       for (int i = 0; i < logSchema.getPartitionFieldsList().size(); i++) {
         if (i > 0) {
@@ -324,7 +346,7 @@ public class ConvertLiveDataToOrc implements Runnable {
   private String getMigrateSql() {
     if (insertSql == null) {
       StringBuilder sql = new StringBuilder();
-      sql.append("INSERT INTO TABLE " + LOGS_TABLE_NAME + " ");
+      sql.append("INSERT INTO TABLE " + App.LOGS_TABLE_NAME + " ");
 
       sql.append("PARTITION(");
       for (int i = 0; i < logSchema.getPartitionFieldsList().size(); i++) {
@@ -370,7 +392,7 @@ public class ConvertLiveDataToOrc implements Runnable {
    */
   private TreeSet<DateTime> getInactivePartitions() throws IOException {
     RemoteIterator<LocatedFileStatus> filesIter =
-        fileSystem.listFiles(new Path(HDFS_URI + HDFS_LOGS_LIVE_ROOT), true);
+        fileSystem.listFiles(new Path(App.HDFS_URI + HDFS_LOGS_LIVE_ROOT), true);
 
     TreeSet<DateTime> inactivePartitions = new TreeSet<DateTime>();
     TreeSet<DateTime> activePartitions = new TreeSet<DateTime>();
