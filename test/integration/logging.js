@@ -839,7 +839,13 @@ describe('logging', function() {
     var expectedRawBinary = new Buffer('77+9', 'base64').toString();
 
     var args = 'url_encoded=' + urlEncoded + '&base64ed=' + base64ed + '&raw=' + raw;
-    request({
+
+    // Use curl and not request for this test, since node's HTTP parser
+    // prevents invalid utf8 characters from being used in headers as of NodeJS
+    // v0.10.42. But we still want to test this, since other clients can still
+    // pass invalid utf8 characters.
+    var curl = new Curler();
+    curl.request({
       method: 'GET',
       url: 'http://localhost:9080/info/' + urlEncoded + '/' + base64ed + '/' + raw + '/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&' + args,
       headers: {

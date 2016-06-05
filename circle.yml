@@ -14,7 +14,7 @@ machine:
     # don't conflict with our embedded ruby installation.
     - rvm reset
   node:
-    version: 0.10.40
+    version: 0.10.45
 dependencies:
   cache_directories:
     - build/work
