@@ -216,6 +216,7 @@ local0.info action(
   type="omkafka"
   broker=[{{kafka._rsyslog_broker}}]
   topic="{{kafka.topic}}"
+  confParam=["compression.codec=gzip"]
   template="sql-tsv-record"
   queue.type="LinkedList"
   queue.filename="queue-kafka"
