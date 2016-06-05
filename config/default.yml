@@ -187,8 +187,10 @@ presto:
     http_port: 14015
     max_memory: 2GB
     max_memory_per_node: 1GB
-    discovery_uri: http://localhost:14015
+    discovery_uri: http://127.0.0.1:14015
     query_max_run_time: 60s
+    hive:
+      metastore_uri: thrift://127.0.0.1:9083
 flume:
   host: 127.0.0.1
   port: 14016
