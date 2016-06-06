@@ -32,10 +32,10 @@ api-umbrella-agent.sinks.hdfs-sink.hdfs.path = /apps/api-umbrella/logs-live/requ
 # picking these files up before they're fully written (otherwise, the partial
 # gzip state results in invalid data).
 api-umbrella-agent.sinks.hdfs-sink.hdfs.inUsePrefix = _
-# Write compressed tsv files.
+# Write compressed JSON files.
 api-umbrella-agent.sinks.hdfs-sink.hdfs.fileType = CompressedStream
 api-umbrella-agent.sinks.hdfs-sink.hdfs.codeC = gzip
-api-umbrella-agent.sinks.hdfs-sink.hdfs.fileSuffix = .tsv.gz
+api-umbrella-agent.sinks.hdfs-sink.hdfs.fileSuffix = .json.gz
 # Write out the file ever 15 seconds.
 api-umbrella-agent.sinks.hdfs-sink.hdfs.rollInterval = 15
 api-umbrella-agent.sinks.hdfs-sink.hdfs.rollSize = 0

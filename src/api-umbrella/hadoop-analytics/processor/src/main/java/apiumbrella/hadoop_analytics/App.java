@@ -182,7 +182,7 @@ public class App {
           connection = getHiveConnection();
         }
 
-        logger.info("Concatenating table partition " + partition + " (" + count + "files)");
+        logger.info("Concatenating table partition " + partition + " (" + count + " files)");
         PreparedStatement concatenate = connection.prepareStatement(sql.toString());
         concatenate.setString(1, dateFormatter.print(partition.withDayOfYear(1)));
         concatenate.setString(2, dateFormatter.print(partition.withDayOfMonth(1)));

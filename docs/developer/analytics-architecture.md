@@ -90,36 +90,35 @@ This is the most complicated setup, but it allows for vastly improved querying p
 During ingest, there are several concurrent processes that play a role:
 
 ```
-[nginx] ====> [rsyslog] ===> [Kafka] ===> [Flume] ===> [HDFS - TSV (temp)]
-        JSON            TSV          TSV          TSV
+[nginx] ====> [rsyslog] ====> [Kafka] ====> [Flume] ====> [HDFS - JSON (temp)]
+        JSON            JSON          JSON          JSON
 ```
 
 ```
-[HDFS - TSV (temp)] => [API Umbrella Live Processor] => [Hive - ORC]
+[HDFS - JSON (temp)] => [API Umbrella Live Processor] => [Hive - ORC]
 ```
 
 ```
 [Hive - ORC] => [API Umbrella Kylin Refresher] => [Kylin]
 ```
 
-- rsyslog buffers and sends TSV messages to Kafka using the [omkafka](http://www.rsyslog.com/doc/v8-stable/configuration/modules/omkafka.html) output module.
+- rsyslog buffers and sends JSON messages to Kafka using the [omkafka](http://www.rsyslog.com/doc/v8-stable/configuration/modules/omkafka.html) output module.
   - Kafka is used as an intermediate step as a reliable way to get messages in order to Flume, but primarily Kafka is being used because that's what Kylin's future [streaming feature](http://kylin.apache.org/blog/2016/02/03/streaming-cubing/) will require (so it seemed worth getting in place now).
-  - TSV messages are used, since they should be compatible with Kylin's streaming functionality, and generating TSV files is an append-friendly file format for HDFS and Hive.
-- Flume takes messages off the Kafka queue and appends them to a gzipped TSV file stored inside Hadoop (HDFS).
-  - The TSV files are flushed to HDFS every 15 seconds, and new files are created for each minute.
-  - The per-minute TSV files are partitioned by the request timestamp and not the timestamp of when Flume is processing the message. This means Flume could be writing to a file from previous minutes if it's catching up with a backlog of data.
-  - Kafka's stronger in-order handling of messages should ensure that the per-minute TSV files are written in order, and skipping between minutes should not be likely (although possible if an nginx server's clock is severely skewed or an nginx server goes offline, but still has queued up messages that could be sent if it rejoins later).
+- Flume takes messages off the Kafka queue and appends them to a gzipped JSON file stored inside Hadoop (HDFS).
+  - The JSON files are flushed to HDFS every 15 seconds, and new files are created for each minute.
+  - The per-minute JSON files are partitioned by the request timestamp and not the timestamp of when Flume is processing the message. This means Flume could be writing to a file from previous minutes if it's catching up with a backlog of data.
+  - Kafka's stronger in-order handling of messages should ensure that the per-minute JSON files are written in order, and skipping between minutes should not be likely (although possible if an nginx server's clock is severely skewed or an nginx server goes offline, but still has queued up messages that could be sent if it rejoins later).
   - Flume plays a very similar role to rsyslog, but we use it because it has the best integration with the Hadoop ecosystem and writing to HDFS (I ran into multiple issues with rsyslog's native omhdfs and omhttpfs modules).
-- The API Umbrella Live Processor task determines when a per-minute TSV file hasn't been touched in more than 1 minute, and then copies the data to the ORC file for permanent storage and querying in the Hive table.
+- The API Umbrella Live Processor task determines when a per-minute JSON file hasn't been touched in more than 1 minute, and then copies the data to the ORC file for permanent storage and querying in the Hive table.
   - The live data should usually make it's way to the permanent ORC storage within 2-3 minutes.
   - The ORC data is partitioned by day.
-  - The data is converted from TSV to ORC using a Hive SQL command. Each minute of data is appended as a new ORC file within the overall ORC daily partition (which Hive simply treats as a single daily partition within the overall logs table).
-  - Since the data is only appended, the same minute cannot be processed twice, which is why we give a minute buffer after the TSV file has ceased writing activity to convert it to ORC.
-  - The ORC file format gives much better compression and querying performance than storing everything in TSVs.
+  - The data is converted from JSON to ORC using a Hive SQL command. Each minute of data is appended as a new ORC file within the overall ORC daily partition (which Hive simply treats as a single daily partition within the overall logs table).
+  - Since the data is only appended, the same minute cannot be processed twice, which is why we give a minute buffer after the JSON file has ceased writing activity to convert it to ORC.
+  - The ORC file format gives much better compression and querying performance than storing everything in JSON.
   - If a new ORC file is created for a new day, the partition will be added to the Hive table.
   - *TODO: At the end of each day, compact the many per-minute ORC files that were created by the append process into a single ORC file.*
-  - *TODO: While unlikely, there are certain edge-cases that could lead to missing analytics data in the daily ORC files. Namely, if data comes into a TSV file for a previous minute that's already been processed, this minute won't be processed again (since we only append to the ORC table). This shouldn't be likely due to Kafka's in-order processing, but to resolve this, we could reprocess the full day based on the TSV after we give an ample buffer after the day has ended (a couple hours). This could also serve as the compaction step, since we would be replacing all the data at once.*
-  - *TODO: Automatically remove old TSV minute data once it's no longer needed (after we're done with any final daily processing).*
+  - *TODO: While unlikely, there are certain edge-cases that could lead to missing analytics data in the daily ORC files. Namely, if data comes into a JSON file for a previous minute that's already been processed, this minute won't be processed again (since we only append to the ORC table). This shouldn't be likely due to Kafka's in-order processing, but to resolve this, we could reprocess the full day based on the JSON after we give an ample buffer after the day has ended (a couple hours). This could also serve as the compaction step, since we would be replacing all the data at once.*
+  - *TODO: Automatically remove old JSON minute data once it's no longer needed (after we're done with any final daily processing).*
 - The API Umbrella Kylin Refresher task is responsible for triggering Kylin builds to updated the pre-aggregated data.
   - **TODO: This refresher task hasn't been implemented yet.**
   - Once every 30 minutes, we trigger a Kylin build for the most recent day's data.
@@ -129,7 +128,7 @@ During ingest, there are several concurrent processes that play a role:
 This setup is unfortunately complicated with several moving pieces. However, there are several things that could potentially simplify this setup quite a bit in the future:
 
 - [Kylin Streaming](http://kylin.apache.org/blog/2016/02/03/streaming-cubing/): This would eliminate our need to constantly refresh Kylin throughout the day, and reduce the amount of time it would take live data to become available in Kylin's pre-aggregated results. This feature available as a prototype in Kylin 1.5, but we're still on 1.2, and we'll be waiting for this to stabilize and for more documentation to come out. But basically, this should just act as another consumer of the Kafka queue, and then it would handle all the details of getting the data into Kylin.
-- [Flume Hive Sink](https://flume.apache.org/FlumeUserGuide.html#hive-sink): Even with Kylin streaming support, we will likely still need our own way to get the live data into the ORC-backed Hive table. Flume's Hive Sink offers a way to directly push data from Flume into a ORC table. Currently marked as a preview feature, I ran into memory growth and instability issues in my attempts to use it, but if this proves stable in the future, it could be a much easier path to populating the ORC tables directly and get rid of the need for temporary TSVs (along with the edge conditions those bring).
+- [Flume Hive Sink](https://flume.apache.org/FlumeUserGuide.html#hive-sink): Even with Kylin streaming support, we will likely still need our own way to get the live data into the ORC-backed Hive table. Flume's Hive Sink offers a way to directly push data from Flume into a ORC table. Currently marked as a preview feature, I ran into memory growth and instability issues in my attempts to use it, but if this proves stable in the future, it could be a much easier path to populating the ORC tables directly and get rid of the need for temporary JSON (along with the edge conditions those bring).
 - [Kylin Hour Partitioning](https://issues.apache.org/jira/browse/KYLIN-1427): A possible shorter-term improvement while waiting for Kylin streaming is the ability to refresh Kylin by hour partitions. This would be more efficient than our full day refreshes currently used. This is currently implemented in v1.5.0, but we first need to upgrade to 1.5 (we're holding back at 1.2 due to some other issues), and then [KYLIN-1513](https://issues.apache.org/jira/browse/KYLIN-1513) would be good to get fixed before.
 
 ### Querying

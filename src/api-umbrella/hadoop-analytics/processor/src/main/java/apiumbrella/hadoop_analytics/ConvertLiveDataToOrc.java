@@ -39,10 +39,10 @@ import org.slf4j.LoggerFactory;
  * 
  * Live log data is sent by the application servers in the following fashion:
  * 
- * [nginx] --json--> [rsyslog] --tsv--> [flume] --tsv--> [hdfs]
+ * [nginx] --json--> [rsyslog] --json--> [flume] --json--> [hdfs]
  * 
- * Flume stores the TSV files in directories partitioned by minute. This background job then runs
- * periodically to migrate this per-minute TSV data into the permanent ORC storage. The data is
+ * Flume stores the JSON files in directories partitioned by minute. This background job then runs
+ * periodically to migrate this per-minute JSON data into the permanent ORC storage. The data is
  * migrated by appending each minute's data to the ORC table, which is partitioned by day. With this
  * approach, it may take around 2-3 minutes for the data to become populated in the ORC table (since
  * we have to wait until we're sure the minute partition is no longer being written to).
@@ -246,7 +246,7 @@ public class ConvertLiveDataToOrc implements Job {
   /**
    * Generate the SQL string for creating the external "api_umbrella.logs_live" table in Hive. This
    * is the table that stores temporary data, partitioned by minute, that Flume is writing to HDFS
-   * TSV files to.
+   * JSON files to.
    * 
    * The columns are generated based on the Avro schema definition (src/main/resources/log.avsc) for
    * our log data to ensure the schemas match across the different tables.
@@ -276,7 +276,7 @@ public class ConvertLiveDataToOrc implements Job {
       }
       sql.append(") ");
 
-      sql.append("ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\t' ");
+      sql.append("ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' ");
       sql.append("STORED AS TEXTFILE LOCATION '" + HDFS_LOGS_LIVE_ROOT + "'");
 
       createLiveExternalTableSql = sql.toString();
@@ -335,7 +335,7 @@ public class ConvertLiveDataToOrc implements Job {
 
   /**
    * Generate the SQL string that copies a minute worth of data from the "api_umbrella.logs_live"
-   * table (TSV storage) to the real "api_umbrella.logs" table (ORC storage).
+   * table (JSON storage) to the real "api_umbrella.logs" table (ORC storage).
    * 
    * Data is appended to the ORC table's full-day partition, so it's expected that this will run
    * repeatedly for each new minute of data, but the same minute should not be repeated (or else the
