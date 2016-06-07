@@ -15,11 +15,10 @@ api-umbrella-agent.sources.kafka-source.zookeeperConnect = 127.0.0.1:2181
 api-umbrella-agent.sources.kafka-source.groupId = api-umbrella-flume
 api-umbrella-agent.sources.kafka-source.topic = api_umbrella_logs
 
-# Extract the request_at timestamp from the data. Expected to be the first
-# column of data.
+# Extract the request_at timestamp from the JSON data.
 api-umbrella-agent.sources.kafka-source.interceptors = timestamp-extractor
 api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.type = regex_extractor
-api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.regex = ^(\\d+)
+api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.regex = "request_at": ?(\\d+)
 api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.serializers = timestamp-serializer
 api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.serializers.timestamp-serializer.type = org.apache.flume.interceptor.RegexExtractorInterceptorPassThroughSerializer
 api-umbrella-agent.sources.kafka-source.interceptors.timestamp-extractor.serializers.timestamp-serializer.name = timestamp
