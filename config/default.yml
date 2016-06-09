@@ -167,11 +167,6 @@ elasticsearch:
       breaker:
         fielddata:
           limit: 60%
-    # Disable Groovy scripting for security: CVE-2015-1427
-    script:
-      groovy:
-        sandbox:
-          enabled: false
 analytics:
   adapter: elasticsearch
   timezone: UTC
