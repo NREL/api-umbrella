@@ -267,7 +267,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
       :terms => {
         :field => "request_hierarchy",
         :size => size,
-        :include => "^#{Regexp.escape(prefix)}.*",
+        :include => "#{prefix}.*",
       },
     }
   end
