@@ -45,4 +45,4 @@ API Umbrella bundles the recommended database versions inside its package. Using
     ```
 
 - Elasticsearch 2
-  - API Umbrella is not yet comptabile with Elasticsearch 2+.
+  - API Umbrella is using Elasticsearch 2.3
