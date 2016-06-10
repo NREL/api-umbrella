@@ -1153,7 +1153,7 @@ describe('logging', function() {
 
           res[hit['_index']].mappings[hit['_type']].properties.request_at.should.eql({
             type: 'date',
-            format: 'dateOptionalTime',
+            format: 'strict_date_optional_time||epoch_millis',
           });
 
           done();
