@@ -117,7 +117,7 @@ gem "daemons", "~> 1.2.2"
 # nokogiri is a soft-dependency for premailer-rails so we need to explicitly
 # include it here.
 gem "premailer-rails", "~> 1.8.0"
-gem "nokogiri", "~> 1.6.7.2"
+gem "nokogiri", "~> 1.6.8"
 
 gem "mail", "~> 2.5.4"
 
