@@ -1,3 +1,7 @@
+# Allow for longer message sizes to handle the JSON data containing long URLs
+# or HTTP headers.
+global(maxMessageSize="32k")
+
 global(workDirectory="{{db_dir}}/rsyslog")
 
 # Load Modules

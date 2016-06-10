@@ -9,6 +9,7 @@ var _ = require('lodash'),
     crypto = require('crypto'),
     Factory = require('factory-lady'),
     mongoose = require('mongoose'),
+    randomstring = require('randomstring'),
     request = require('request');
 
 describe('logging', function() {
@@ -50,7 +51,7 @@ describe('logging', function() {
       },
       {
         _id: 'example',
-        frontend_host: 'localhost',
+        frontend_host: '*',
         backend_host: 'localhost',
         servers: [
           {
@@ -1350,6 +1351,115 @@ describe('logging', function() {
         done();
       }.bind(this));
     }.bind(this));
+  });
+
+  describe('length limits', function() {
+    it('logs requests with the maximum 8KB URL length', function(done) {
+      this.timeout(10000);
+
+      var options = _.merge({}, this.options, {});
+      delete options.qs;
+
+      var otherHeaderLineContent = 'GET  HTTP/1.1\r\n';
+      var urlPath = '/info/?unique_query_id=' + this.uniqueQueryId + '&long=';
+      var longQuery = randomstring.generate(8192 - urlPath.length - otherHeaderLineContent.length);
+      urlPath += longQuery;
+      var url = 'http://localhost:9080' + urlPath;
+
+      request.get(url, options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+          should.not.exist(error);
+          record.request_query.long.should.eql(longQuery);
+          done();
+        }.bind(this));
+      }.bind(this));
+    });
+
+    // We may actually want to revisit this behavior and log these requests,
+    // but documenting current behavior.
+    //
+    // In order to log these requests, we'd need to move the log_by_lua_file
+    // statement out of the "location" block and into the "http" level. We'd
+    // then need to account for certain things in the logging logic that won't
+    // be present in these error conditions.
+    it('does not log requests that exceed the maximum 8KB URL length limit', function(done) {
+      this.timeout(10000);
+
+      var options = _.merge({}, this.options, {});
+      delete options.qs;
+
+      var otherHeaderLineContent = 'GET  HTTP/1.1\r\n';
+      var urlPath = '/info/?unique_query_id=' + this.uniqueQueryId + '&long=';
+      var longQuery = randomstring.generate(8193 - urlPath.length - otherHeaderLineContent.length);
+      urlPath += longQuery;
+      var url = 'http://localhost:9080' + urlPath;
+
+      request.get(url, options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(414);
+        waitForLog(this.uniqueQueryId, function(error) {
+          error.should.include('Timed out fetching log');
+          done();
+        }.bind(this));
+      }.bind(this));
+    });
+
+    it('logs a request with a combination of a long URL and long header, truncating headers', function(done) {
+      this.timeout(10000);
+
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Accept': randomstring.generate(1000),
+          'Accept-Encoding': randomstring.generate(1000),
+          'Connection': randomstring.generate(1000),
+          'Content-Type': randomstring.generate(1000),
+          'Host': randomstring.generate(1000),
+          'Origin': randomstring.generate(1000),
+          'User-Agent': randomstring.generate(1000),
+          'Referer': randomstring.generate(1000),
+        },
+        auth: {
+          user: randomstring.generate(1000),
+          pass: randomstring.generate(1000),
+        },
+      });
+      delete options.qs;
+
+      var otherHeaderLineContent = 'GET  HTTP/1.1\r\n';
+      var urlPath = '/logging-long-response-headers/?unique_query_id=' + this.uniqueQueryId + '&long=';
+      var longQuery = randomstring.generate(8192 - urlPath.length - otherHeaderLineContent.length);
+      urlPath += longQuery;
+      var url = 'http://localhost:9080' + urlPath;
+
+      request.get(url, options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+          should.not.exist(error);
+
+          // Ensure the full URL got logged.
+          record.request_query.long.should.eql(longQuery);
+
+          // Ensure the long header values got truncated so we're not
+          // susceptible to exceeding rsyslog's message buffers and we're also
+          // not storing an unexpected amount of data for values users can pass in.
+          record.request_accept.length.should.eql(200);
+          record.request_accept_encoding.length.should.eql(200);
+          record.request_connection.length.should.eql(200);
+          record.request_content_type.length.should.eql(200);
+          record.request_host.length.should.eql(200);
+          record.request_origin.length.should.eql(200);
+          record.request_user_agent.length.should.eql(400);
+          record.request_referer.length.should.eql(200);
+          record.response_content_encoding.length.should.eql(200);
+          record.response_content_type.length.should.eql(200);
+
+          done();
+        }.bind(this));
+      }.bind(this));
+    });
   });
 
   describe('global rate limits', function() {

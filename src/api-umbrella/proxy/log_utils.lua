@@ -153,4 +153,16 @@ function _M.set_url_fields(data)
   set_url_hierarchy(data)
 end
 
+function _M.truncate_header(value, max_length)
+  if not value or type(value) ~= "string" then
+    return value
+  end
+
+  if string.len(value) > max_length then
+    return string.sub(value, 1, max_length)
+  else
+    return value
+  end
+end
+
 return _M

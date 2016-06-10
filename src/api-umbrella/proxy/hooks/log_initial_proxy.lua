@@ -14,6 +14,8 @@ if log_utils.ignore_request() then
   return
 end
 
+local truncate_header = log_utils.truncate_header
+
 local ngx_ctx = ngx.ctx
 local ngx_var = ngx.var
 
@@ -115,33 +117,33 @@ local function log_request()
   local data = {
     denied_reason = ngx_ctx.gatekeeper_denied_code,
     id = id,
-    request_accept = request_headers["accept"],
-    request_accept_encoding = request_headers["accept-encoding"],
+    request_accept = truncate_header(request_headers["accept"], 200),
+    request_accept_encoding = truncate_header(request_headers["accept-encoding"], 200),
     request_at = (ngx_var.msec - (tonumber(ngx_var.request_time) or 0)),
     request_basic_auth_username = ngx_var.remote_user,
-    request_connection = request_headers["connection"],
-    request_content_type = request_headers["content-type"],
+    request_connection = truncate_header(request_headers["connection"], 200),
+    request_content_type = truncate_header(request_headers["content-type"], 200),
     request_ip = ngx_var.remote_addr,
     request_ip_city = geoip_city,
     request_ip_country = ngx_var.geoip_city_country_code,
     request_ip_region = ngx_var.geoip_region,
     request_method = ngx_var.request_method,
-    request_origin = request_headers["origin"],
-    request_referer = request_headers["referer"],
+    request_origin = truncate_header(request_headers["origin"], 200),
+    request_referer = truncate_header(request_headers["referer"], 200),
     request_size = tonumber(ngx_var.request_length),
-    request_url_host = request_headers["host"],
+    request_url_host = truncate_header(request_headers["host"], 200),
     request_url_port = ngx_var.real_port,
     request_url_scheme = ngx_var.real_scheme,
-    request_user_agent = request_headers["user-agent"],
+    request_user_agent = truncate_header(request_headers["user-agent"], 400),
     response_age = tonumber(response_headers["age"]),
-    response_cache = response_headers["x-cache"],
-    response_content_encoding = response_headers["content-encoding"],
+    response_cache = truncate_header(response_headers["x-cache"], 200),
+    response_content_encoding = truncate_header(response_headers["content-encoding"], 200),
     response_content_length = tonumber(response_headers["content-length"]),
-    response_content_type = response_headers["content-type"],
+    response_content_type = truncate_header(response_headers["content-type"], 200),
     response_server = ngx_var.upstream_http_server,
     response_size = tonumber(ngx_var.bytes_sent),
     response_status = tonumber(ngx_var.status),
-    response_transfer_encoding = response_headers["transfer-encoding"],
+    response_transfer_encoding = truncate_header(response_headers["transfer-encoding"], 200),
     timer_internal = ngx_ctx.internal_overhead,
     timer_response = tonumber(ngx_var.request_time),
     user_id = ngx_ctx.user_id,
@@ -257,6 +259,19 @@ local function log_request()
     .. " @cee:" -- CEE-enhanced logging for rsyslog to parse JSON
     .. elasticsearch_encode_json(data) -- JSON data
     .. "\n"
+
+  -- Check the syslog message length to ensure it doesn't exceed the configured
+  -- rsyslog maxMessageSize value.
+  --
+  -- In general, this shouldn't be possible, since URLs can't exceed 8KB, and
+  -- we truncate the various headers that users can control for logging
+  -- purposes. However, this provides an extra sanity check to ensure this
+  -- doesn't unexpectedly pop up (eg, if we add additional headers we forget to
+  -- truncate).
+  local syslog_message_length = string.len(syslog_message)
+  if syslog_message_length > 32000 then
+    ngx.log(ngx.ERR, "request syslog message longer than expected - analytics logging may fail: ", syslog_message_length)
+  end
 
   local _, err = logger.log(syslog_message)
   if err then
