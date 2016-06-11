@@ -267,7 +267,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
       :terms => {
         :field => "request_hierarchy",
         :size => size,
-        :include => "#{prefix}.*",
+        :include => "#{Regexp.escape(prefix)}.*",
       },
     }
   end
@@ -283,7 +283,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
       :terms => {
         :field => "request_hierarchy",
         :size => 10,
-        :include => "^#{Regexp.escape(prefix)}.*",
+        :include => "#{Regexp.escape(prefix)}.*",
       },
       :aggregations => {
         :drilldown_over_time => {
