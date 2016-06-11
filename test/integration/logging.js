@@ -1010,6 +1010,30 @@ describe('logging', function() {
     }.bind(this));
   });
 
+  it('logs requests with dots in query parameters by translating dots to underscores (elasticsearch 2 compatibility)', function(done) {
+    this.timeout(10000);
+
+    var options = _.merge({}, this.options, {
+      qs: {
+        'foo.bar.baz': 'example.1',
+        'foo.bar': 'example.2',
+        'foo[bar]': 'example.3',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_query.foo_bar_baz.should.eql('example.1');
+        record.request_query.foo_bar.should.eql('example.2');
+        record.request_query['foo[bar]'].should.eql('example.3');
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
   describe('multiple request header handling', function() {
     var multipleForbidden = {
       'Content-Type': 'request_content_type',
