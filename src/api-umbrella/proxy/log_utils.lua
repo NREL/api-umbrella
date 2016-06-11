@@ -107,14 +107,36 @@ local function set_url_hierarchy(data)
   end
 end
 
-local function recursive_escape_uri_non_ascii(data)
+local function recursive_elasticsearch_sanitize(data)
   if not data then return end
 
   for key, value in pairs(data) do
     if type(value) == "string" then
+      -- Escaping any non-ASCII chars to prevent invalid or wonky UTF-8
+      -- sequences from generating invalid JSON that will prevent ElasticSearch
+      -- from indexing the request.
       data[key] = escape_uri_non_ascii(value)
     elseif type(value) == "table" then
-      recursive_escape_uri_non_ascii(value)
+      recursive_elasticsearch_sanitize(value)
+    end
+
+    -- As of ElasticSearch 2, field names cannot contain dots. This affects our
+    -- nested hash of query parameters, since incoming query parameters may
+    -- contain dots. For storage purposes, replace these dots with underscores
+    -- (the same approach LogStash's de_dot plugin takes).
+    --
+    -- See:
+    -- https://www.elastic.co/guide/en/elasticsearch/reference/2.0/breaking_20_mapping_changes.html#_field_names_may_not_contain_dots
+    --
+    -- However, dots look like they'll be allowed again (although, treated as
+    -- nested objects) in ElasticSearch 5:
+    -- https://github.com/elastic/elasticsearch/issues/15951
+    -- https://github.com/elastic/elasticsearch/pull/18106
+    -- https://www.elastic.co/blog/elasticsearch-5-0-0-alpha3-released#_dots_in_field_names
+    local sanitized_key = ngx.re.gsub(key, "\\.", "_", "jo")
+    if key ~= sanitized_key then
+      data[sanitized_key] = data[key]
+      data[key] = nil
     end
   end
 end
@@ -139,10 +161,8 @@ function _M.set_url_fields(data)
     data["legacy_request_url_query_hash"] = ngx.decode_args(data["request_url_query"])
 
     -- Since we decoded the argument string to construct the table of
-    -- arguments, we now might have invalid or wonky characters that will cause
-    -- invalid JSON and prevent ElasticSearch from indexing the request. So run
-    -- through all the arguments and escape them.
-    recursive_escape_uri_non_ascii(data["legacy_request_url_query_hash"])
+    -- arguments, we now must recursively prepare it for ElasticSearch storage.
+    recursive_elasticsearch_sanitize(data["legacy_request_url_query_hash"])
   end
 
   data["legacy_request_url"] = data["request_url_scheme"] .. "://" .. data["request_url_host"] .. data["request_url_path"]
