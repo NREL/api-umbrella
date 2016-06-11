@@ -1,16 +1,11 @@
 require 'spec_helper'
+require 'test_helper/elasticsearch_helper'
 
 describe Api::V1::AnalyticsController do
   login_admin
 
   before(:each) do
-    ["2014-11", "2015-01", "2015-03"].each do |month|
-      LogItem.gateway.client.delete_by_query :index => "api-umbrella-logs-#{month}", :body => {
-        :query => {
-          :match_all => {},
-        },
-      }
-    end
+    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
   end
 
   describe "GET drilldown" do
@@ -35,6 +30,7 @@ describe Api::V1::AnalyticsController do
 
       response.status.should eql(200)
       data = MultiJson.load(response.body)
+      data["results"].length.should be > 0
       data["results"][0]["hits"].should eql(2)
       data["hits_over_time"]["rows"][0]["c"][0]["f"].should eql("Tue, Jan 13, 2015")
       data["hits_over_time"]["rows"][0]["c"][0]["v"].should eql(1421132400000)
@@ -69,6 +65,7 @@ describe Api::V1::AnalyticsController do
 
       response.status.should eql(200)
       data = MultiJson.load(response.body)
+      data["results"].length.should be > 0
       data["results"][0]["hits"].should eql(4)
       data["hits_over_time"]["rows"][0]["c"][0]["f"].should eql("Sat, Mar 7, 2015")
       data["hits_over_time"]["rows"][0]["c"][0]["v"].should eql(1425711600000)
@@ -105,6 +102,7 @@ describe Api::V1::AnalyticsController do
 
       response.status.should eql(200)
       data = MultiJson.load(response.body)
+      data["results"].length.should be > 0
       data["results"][0]["hits"].should eql(2)
       data["hits_over_time"]["rows"][0]["c"][0]["f"].should eql("Sun, Mar 8, 2015 12:00am MST")
       data["hits_over_time"]["rows"][0]["c"][0]["v"].should eql(1425798000000)
@@ -147,6 +145,7 @@ describe Api::V1::AnalyticsController do
 
       response.status.should eql(200)
       data = MultiJson.load(response.body)
+      data["results"].length.should be > 0
       data["results"][0]["hits"].should eql(4)
       data["hits_over_time"]["rows"][0]["c"][0]["f"].should eql("Sat, Nov 1, 2014")
       data["hits_over_time"]["rows"][0]["c"][0]["v"].should eql(1414821600000)
@@ -183,6 +182,7 @@ describe Api::V1::AnalyticsController do
 
       response.status.should eql(200)
       data = MultiJson.load(response.body)
+      data["results"].length.should be > 0
       data["results"][0]["hits"].should eql(2)
       data["hits_over_time"]["rows"][1]["c"][0]["f"].should eql("Sun, Nov 2, 2014 1:00am MDT")
       data["hits_over_time"]["rows"][1]["c"][0]["v"].should eql(1414911600000)

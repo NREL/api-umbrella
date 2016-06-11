@@ -4,6 +4,7 @@ require('../test_helper');
 
 var _ = require('lodash'),
     config = require('./config'),
+    async = require('async'),
     elasticsearch = require('elasticsearch'),
     mongoose = require('mongoose');
 
@@ -33,12 +34,24 @@ before(function elasticsearchOpen(done) {
   // https://github.com/elasticsearch/elasticsearch-js/issues/33
   var clientConfig = _.cloneDeep(config.get('elasticsearch'));
   global.elasticsearch = new elasticsearch.Client(clientConfig);
-  global.elasticsearch.deleteByQuery({
+
+  global.elasticsearch.search({
     index: 'api-umbrella-logs-*',
     allowNoIndices: true,
     type: 'log',
-    q: '*',
-  }, done);
+    q: '*'
+  }, function(err, results) {
+    if(err) {
+      done(err);
+    }
+    async.map(results.hits.hits, function(hit, callback) {
+      global.elasticsearch.delete({
+        index: hit['_index'],
+        type: hit['_type'],
+        id: hit['_id']
+      }, callback);
+    }, done);
+  });
 });
 
 // Close the mongo connection cleanly after each run.
