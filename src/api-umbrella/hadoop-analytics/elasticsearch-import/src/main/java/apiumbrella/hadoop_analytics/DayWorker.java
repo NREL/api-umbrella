@@ -88,12 +88,12 @@ public class DayWorker implements Runnable {
       // Perform a scroll query to fetch the specified day's data from
       // elasticsearch.
       String query = "{" + //
-          "  \"sort\":\"request_at\"," + //
+          "  \"sort\":\"timestamp_utc\"," + //
           "  \"query\":{" + //
           "    \"filtered\":{" + //
           "      \"filter\":{" + //
           "        \"range\":{" + //
-          "          \"request_at\":{" + //
+          "          \"timestamp_utc\":{" + //
           "            \"gte\":" + this.dayStartTime.getMillis() + "," + //
           "            \"lt\":" + this.dayEndTime.getMillis() + //
           "          }" + //
@@ -196,10 +196,10 @@ public class DayWorker implements Runnable {
       String date = dateFormatter.print(dayStartTime);
       // Create a new file in /dir/YYYY/MM/WW/YYYY-MM-DD.par
       Path path = new Path(App.HDFS_URI + Paths.get(App.DIR,
-          "request_at_tz_year=" + dateFormatter.print(dayStartTime.withDayOfYear(1)),
-          "request_at_tz_month=" + dateFormatter.print(dayStartTime.withDayOfMonth(1)),
-          "request_at_tz_week=" + dateFormatter.print(dayStartTime.withDayOfWeek(1)),
-          "request_at_tz_date=" + date, date + ".orc"));
+          "timestamp_tz_year=" + dateFormatter.print(dayStartTime.withDayOfYear(1)),
+          "timestamp_tz_month=" + dateFormatter.print(dayStartTime.withDayOfMonth(1)),
+          "timestamp_tz_week=" + dateFormatter.print(dayStartTime.withDayOfWeek(1)),
+          "timestamp_tz_date=" + date, date + ".orc"));
       this.orcWriter = OrcFile.createWriter(path, getOrcWriterOptions());
     }
 
@@ -219,7 +219,7 @@ public class DayWorker implements Runnable {
     BigInteger globalHits = this.app.incrementGlobalHits(pageHits);
     NumberFormat numberFormatter = NumberFormat.getNumberInstance(Locale.US);
     DateTime firstRequestAt = this.parseTimestamp(
-        hits.get(0).getAsJsonObject().get("_source").getAsJsonObject().get("request_at"));
+        hits.get(0).getAsJsonObject().get("_source").getAsJsonObject().get("timestamp_utc"));
     logger.info(String.format("Processing %s to %s | %10s / %10s | %12s | %s", this.dayStartTime,
         this.dayEndTime, numberFormatter.format(this.totalProcessedHits),
         numberFormatter.format(this.totalHits), numberFormatter.format(globalHits),
@@ -261,20 +261,20 @@ public class DayWorker implements Runnable {
 
         // Handle special processing for certain fields.
         switch (key) {
-          case "request_at":
+          case "timestamp_utc":
             // Split up the timestamp into several fields for better compatibility
             // with the Kylin's cube's that will be created (which doesn't support
             // timestamps yet).
             DateTime requestAt = this.parseTimestamp(value);
-            log.put("request_at", requestAt.getMillis());
-            log.put("request_at_tz_offset", App.TIMEZONE.getOffset(requestAt.getMillis()));
-            log.put("request_at_tz_year", dateFormatter.print(requestAt.withDayOfYear(1)));
-            log.put("request_at_tz_month", dateFormatter.print(requestAt.withDayOfMonth(1)));
-            log.put("request_at_tz_week", dateFormatter.print(requestAt.withDayOfWeek(1)));
-            log.put("request_at_tz_date", dateFormatter.print(requestAt));
-            log.put("request_at_tz_hour", dateTimeFormatter
+            log.put("timestamp_utc", requestAt.getMillis());
+            log.put("timestamp_tz_offset", App.TIMEZONE.getOffset(requestAt.getMillis()));
+            log.put("timestamp_tz_year", dateFormatter.print(requestAt.withDayOfYear(1)));
+            log.put("timestamp_tz_month", dateFormatter.print(requestAt.withDayOfMonth(1)));
+            log.put("timestamp_tz_week", dateFormatter.print(requestAt.withDayOfWeek(1)));
+            log.put("timestamp_tz_date", dateFormatter.print(requestAt));
+            log.put("timestamp_tz_hour", dateTimeFormatter
                 .print(requestAt.withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0)));
-            log.put("request_at_tz_minute",
+            log.put("timestamp_tz_minute",
                 dateTimeFormatter.print(requestAt.withSecondOfMinute(0).withMillisOfSecond(0)));
             value = null;
             break;

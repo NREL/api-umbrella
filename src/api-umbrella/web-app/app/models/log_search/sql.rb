@@ -6,15 +6,16 @@ class LogSearch::Sql < LogSearch::Base
   ]
 
   LEGACY_FIELDS = {
-    "request_scheme" => "request_url_scheme",
-    "request_host" => "request_url_host",
-    "request_path" => "request_url_path",
-    "response_time" => "timer_response",
     "backend_response_time" => "timer_backend_response",
-    "internal_gatekeeper_time" => "timer_internal",
-    "proxy_overhead" => "timer_proxy_overhead",
     "gatekeeper_denied_code" => "denied_reason",
     "imported" => "log_imported",
+    "internal_gatekeeper_time" => "timer_internal",
+    "proxy_overhead" => "timer_proxy_overhead",
+    "request_at" => "timestamp_utc",
+    "request_host" => "request_url_host",
+    "request_path" => "request_url_path",
+    "request_scheme" => "request_url_scheme",
+    "response_time" => "timer_response",
   }
 
   FIELD_TYPES = {
@@ -28,19 +29,19 @@ class LogSearch::Sql < LogSearch::Base
 
     case(@interval)
     when "minute"
-      @interval_field = "request_at_tz_minute"
+      @interval_field = "timestamp_tz_minute"
       @interval_field_format = "%Y-%m-%d %H:%M:%S"
     when "hour"
-      @interval_field = "request_at_tz_hour"
+      @interval_field = "timestamp_tz_hour"
       @interval_field_format = "%Y-%m-%d %H:%M:%S"
     when "day"
-      @interval_field = "request_at_tz_date"
+      @interval_field = "timestamp_tz_date"
       @interval_field_format = "%Y-%m-%d"
     when "week"
-      @interval_field = "request_at_tz_week"
+      @interval_field = "timestamp_tz_week"
       @interval_field_format = "%Y-%m-%d"
     when "month"
-      @interval_field = "request_at_tz_month"
+      @interval_field = "timestamp_tz_month"
       @interval_field_format = "%Y-%m-%d"
     end
 
@@ -375,7 +376,7 @@ class LogSearch::Sql < LogSearch::Base
   end
 
   def filter_by_date_range!
-    @query[:where] << @sequel.literal(Sequel.lit("request_at_tz_date >= CAST(:start_time_date AS DATE) AND request_at_tz_date <= CAST(:end_time_date AS DATE)", {
+    @query[:where] << @sequel.literal(Sequel.lit("timestamp_tz_date >= CAST(:start_time_date AS DATE) AND timestamp_tz_date <= CAST(:end_time_date AS DATE)", {
       :start_time_date => @start_time.strftime("%Y-%m-%d"),
       :end_time_date => @end_time.strftime("%Y-%m-%d"),
     }))
@@ -798,7 +799,7 @@ class LogSearch::Sql < LogSearch::Base
 
   def aggregate_by_user_stats!(options = {})
     @query[:select] << "COUNT(*) AS hits"
-    @query[:select] << "MAX(request_at) AS last_request_at"
+    @query[:select] << "MAX(timestamp_utc) AS last_request_at"
     @query[:select] << "user_id"
     @query[:group_by] << "user_id"
 

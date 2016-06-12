@@ -146,11 +146,11 @@ The analytic APIs in the web application query Kylin or [PrestoDB](https://prest
 - Queries are attempted against Kylin first, since Kylin will provide the fastest answers from it's pre-computed aggregates.
   - Kylin will be unable to answer the query if the query involves dimensions that have not been pre-computed.
   - We've attempted to design the Kylin cubes with the dimensions that are involved in the most common queries. These are currently:
-    - `request_at_tz_year`
-    - `request_at_tz_month`
-    - `request_at_tz_week`
-    - `request_at_tz_date`
-    - `request_at_tz_hour`
+    - `timestamp_tz_year`
+    - `timestamp_tz_month`
+    - `timestamp_tz_week`
+    - `timestamp_tz_date`
+    - `timestamp_tz_hour`
     - `request_url_host`
     - `request_url_path_level1`
     - `request_url_path_level2`

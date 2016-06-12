@@ -6,11 +6,11 @@ local split = plutils.split
 local _M = {}
 
 _M.MSEC_FIELDS = {
-  "request_at",
   "timer_backend_response",
   "timer_internal",
   "timer_proxy_overhead",
   "timer_response",
+  "timestamp_utc",
 }
 
 function _M.ignore_request()

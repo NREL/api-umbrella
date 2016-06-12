@@ -149,7 +149,7 @@ public class App {
      */
     RemoteIterator<LocatedFileStatus> filesIter =
         getHadoopFileSystem().listFiles(new Path(HDFS_URI + HDFS_LOGS_ROOT), true);
-    Pattern partitionDatePattern = Pattern.compile(".*request_at_tz_date=(\\d{4}-\\d{2}-\\d{2})");
+    Pattern partitionDatePattern = Pattern.compile(".*timestamp_tz_date=(\\d{4}-\\d{2}-\\d{2})");
     HashMap<DateTime, Integer> partitionFileCounts = new HashMap<DateTime, Integer>();
     while (filesIter.hasNext()) {
       FileStatus file = filesIter.next();

@@ -68,7 +68,7 @@ public class ConvertLiveDataToOrc implements Job {
   final Logger logger;
 
   Pattern partitionDatePattern = Pattern.compile(
-      ".*request_at_tz_date=(\\d{4}-\\d{2}-\\d{2})/request_at_tz_hour_minute=(\\d{2})-(\\d{2}).*");
+      ".*timestamp_tz_date=(\\d{4}-\\d{2}-\\d{2})/timestamp_tz_hour_minute=(\\d{2})-(\\d{2}).*");
   DateTimeFormatter dateFormatter = ISODateTimeFormat.date();
   DateTimeFormatter hourMinuteFormatter = DateTimeFormat.forPattern("HH-mm");
   private LogSchema logSchema;
@@ -372,7 +372,7 @@ public class ConvertLiveDataToOrc implements Job {
         }
         sql.append(logSchema.getLivePartitionFieldsList().get(i) + "=?");
       }
-      sql.append(" ORDER BY request_at");
+      sql.append(" ORDER BY timestamp_utc");
 
       insertSql = sql.toString();
     }

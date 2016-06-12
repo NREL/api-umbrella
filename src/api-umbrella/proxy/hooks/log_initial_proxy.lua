@@ -119,7 +119,6 @@ local function log_request()
     id = id,
     request_accept = truncate_header(request_headers["accept"], 200),
     request_accept_encoding = truncate_header(request_headers["accept-encoding"], 200),
-    request_at = tonumber(ngx_var.msec),
     request_basic_auth_username = ngx_var.remote_user,
     request_connection = truncate_header(request_headers["connection"], 200),
     request_content_type = truncate_header(request_headers["content-type"], 200),
@@ -146,6 +145,7 @@ local function log_request()
     response_transfer_encoding = truncate_header(response_headers["transfer-encoding"], 200),
     timer_internal = ngx_ctx.internal_overhead,
     timer_response = tonumber(ngx_var.request_time),
+    timestamp_utc = tonumber(ngx_var.msec),
     user_id = ngx_ctx.user_id,
 
     -- Deprecated
@@ -154,7 +154,7 @@ local function log_request()
     legacy_user_registration_source = ngx_ctx.user_registration_source,
   }
 
-  local utc_sec = data["request_at"]
+  local utc_sec = data["timestamp_utc"]
   local tz_offset = timezone:find_current(utc_sec).gmtoff
   local tz_sec = utc_sec + tz_offset
   local tz_time = os.date("!%Y-%m-%d %H:%M:00", tz_sec)
@@ -169,13 +169,13 @@ local function log_request()
     tz_week:normalize()
   end
 
-  data["request_at_tz_offset"] = tz_offset * 1000
-  data["request_at_tz_year"] = string.sub(tz_time, 1, 4) .. "-01-01" -- YYYY-01-01
-  data["request_at_tz_month"] = string.sub(tz_time, 1, 7) .. "-01" -- YYYY-MM-01
-  data["request_at_tz_week"] = tz_week:strftime("%Y-%m-%d") -- YYYY-MM-DD of first day in ISO week.
-  data["request_at_tz_date"] = string.sub(tz_time, 1, 10) -- YYYY-MM-DD
-  data["request_at_tz_hour"] = string.sub(tz_time, 1, 13) .. ":00:00" -- YYYY-MM-DD HH:00:00
-  data["request_at_tz_minute"] = tz_time -- YYYY-MM-DD HH:MM:00
+  data["timestamp_tz_offset"] = tz_offset * 1000
+  data["timestamp_tz_year"] = string.sub(tz_time, 1, 4) .. "-01-01" -- YYYY-01-01
+  data["timestamp_tz_month"] = string.sub(tz_time, 1, 7) .. "-01" -- YYYY-MM-01
+  data["timestamp_tz_week"] = tz_week:strftime("%Y-%m-%d") -- YYYY-MM-DD of first day in ISO week.
+  data["timestamp_tz_date"] = string.sub(tz_time, 1, 10) -- YYYY-MM-DD
+  data["timestamp_tz_hour"] = string.sub(tz_time, 1, 13) .. ":00:00" -- YYYY-MM-DD HH:00:00
+  data["timestamp_tz_minute"] = tz_time -- YYYY-MM-DD HH:MM:00
 
   -- Check for log data set by the separate api backend proxy
   -- (log_api_backend_proxy.lua). This is used for timing information.
@@ -250,7 +250,7 @@ local function log_request()
 
   local syslog_message = "<" .. syslog_priority .. ">"
     .. syslog_version
-    .. " " .. os.date("!%Y-%m-%dT%TZ", data["request_at"] / 1000) -- timestamp
+    .. " " .. os.date("!%Y-%m-%dT%TZ", data["timestamp_utc"] / 1000) -- timestamp
     .. " -" -- hostname
     .. " api-umbrella" -- app-name
     .. " -" -- procid
