@@ -292,12 +292,13 @@ group :development, :test do
 
   # Check for application security issues.
   gem "brakeman", :require => false
+
+  # Debug inspecting/printing.
+  gem "awesome_print", "~> 1.6.1"
 end
 
 group :development do
   # Deployment
   gem "capistrano", "~> 3.3.5"
   gem "capistrano-rails", "~> 1.1.2"
-
-  gem "awesome_print", "~> 1.6.1"
 end
