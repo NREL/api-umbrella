@@ -119,7 +119,7 @@ local function log_request()
     id = id,
     request_accept = truncate_header(request_headers["accept"], 200),
     request_accept_encoding = truncate_header(request_headers["accept-encoding"], 200),
-    request_at = (ngx_var.msec - (tonumber(ngx_var.request_time) or 0)),
+    request_at = tonumber(ngx_var.msec),
     request_basic_auth_username = ngx_var.remote_user,
     request_connection = truncate_header(request_headers["connection"], 200),
     request_content_type = truncate_header(request_headers["content-type"], 200),
