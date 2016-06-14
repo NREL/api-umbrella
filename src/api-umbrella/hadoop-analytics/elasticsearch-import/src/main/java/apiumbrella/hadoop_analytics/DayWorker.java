@@ -88,12 +88,12 @@ public class DayWorker implements Runnable {
       // Perform a scroll query to fetch the specified day's data from
       // elasticsearch.
       String query = "{" + //
-          "  \"sort\":\"timestamp_utc\"," + //
+          "  \"sort\":\"request_at\"," + //
           "  \"query\":{" + //
           "    \"filtered\":{" + //
           "      \"filter\":{" + //
           "        \"range\":{" + //
-          "          \"timestamp_utc\":{" + //
+          "          \"request_at\":{" + //
           "            \"gte\":" + this.dayStartTime.getMillis() + "," + //
           "            \"lt\":" + this.dayEndTime.getMillis() + //
           "          }" + //
@@ -219,7 +219,7 @@ public class DayWorker implements Runnable {
     BigInteger globalHits = this.app.incrementGlobalHits(pageHits);
     NumberFormat numberFormatter = NumberFormat.getNumberInstance(Locale.US);
     DateTime firstRequestAt = this.parseTimestamp(
-        hits.get(0).getAsJsonObject().get("_source").getAsJsonObject().get("timestamp_utc"));
+        hits.get(0).getAsJsonObject().get("_source").getAsJsonObject().get("request_at"));
     logger.info(String.format("Processing %s to %s | %10s / %10s | %12s | %s", this.dayStartTime,
         this.dayEndTime, numberFormatter.format(this.totalProcessedHits),
         numberFormatter.format(this.totalHits), numberFormatter.format(globalHits),
@@ -261,7 +261,7 @@ public class DayWorker implements Runnable {
 
         // Handle special processing for certain fields.
         switch (key) {
-          case "timestamp_utc":
+          case "request_at":
             // Split up the timestamp into several fields for better compatibility
             // with the Kylin's cube's that will be created (which doesn't support
             // timestamps yet).
