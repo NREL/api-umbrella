@@ -69,8 +69,6 @@ public class LogSchema {
     dateFields.add("timestamp_tz_month");
     dateFields.add("timestamp_tz_week");
     dateFields.add("timestamp_tz_date");
-    dateFields.add("timestamp_tz_hour");
-    dateFields.add("timestamp_tz_minute");
   }
 
   protected Schema getSchema() {
