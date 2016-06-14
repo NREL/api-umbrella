@@ -61,8 +61,6 @@ import org.slf4j.LoggerFactory;
 @DisallowConcurrentExecution
 @PersistJobDataAfterExecution
 public class ConvertLiveDataToOrc implements Job {
-  private static final String HDFS_LOGS_LIVE_ROOT = App.HDFS_ROOT + "/logs-live";
-  private static final String LOGS_LIVE_TABLE_NAME = "api_umbrella.logs_live";
   private static final Path LAST_MIGRATED_MARKER =
       new Path(App.HDFS_URI + App.HDFS_ROOT + "/.logs-live-last-migrated-partition-time");
   final Logger logger;
@@ -71,12 +69,14 @@ public class ConvertLiveDataToOrc implements Job {
       ".*timestamp_tz_date=(\\d{4}-\\d{2}-\\d{2})/timestamp_tz_hour_minute=(\\d{2})-(\\d{2}).*");
   DateTimeFormatter dateFormatter = ISODateTimeFormat.date();
   DateTimeFormatter hourMinuteFormatter = DateTimeFormat.forPattern("HH-mm");
-  private LogSchema logSchema;
-  private String createExternalTableSql;
-  private String createLiveExternalTableSql;
-  private String addPartitionSql;
-  private String addLivePartitionSql;
-  private String insertSql;
+  private static LogSchema logSchema = new LogSchema();
+  private static String createExternalTableSql;
+  private static String createLiveExternalTableSql;
+  private static String addPartitionSql;
+  private static String addLivePartitionSql;
+  private static String dropLivePartitionSql;
+  private static String insertAppendSql;
+  private static String insertOverwriteSql;
   private FileSystem fileSystem;
   private long lastMigratedPartitionTime = 0;
 
@@ -99,7 +99,6 @@ public class ConvertLiveDataToOrc implements Job {
       ClassNotFoundException, IllegalArgumentException, URISyntaxException {
     logger.debug("Begin processing");
 
-    logSchema = new LogSchema();
     JobDataMap jobData = context.getJobDetail().getJobDataMap();
     lastMigratedPartitionTime = jobData.getLong("lastMigratedPartitionTime");
 
@@ -136,7 +135,7 @@ public class ConvertLiveDataToOrc implements Job {
           addLivePartition.executeUpdate();
           addLivePartition.close();
 
-          PreparedStatement migrate = connection.prepareStatement(getMigrateSql());
+          PreparedStatement migrate = connection.prepareStatement(getInsertAppendSql());
           migrate.setString(1, dateFormatter.print(partition.withDayOfYear(1)));
           migrate.setString(2, dateFormatter.print(partition.withDayOfMonth(1)));
           migrate.setString(3, dateFormatter.print(partition.withDayOfWeek(1)));
@@ -195,7 +194,7 @@ public class ConvertLiveDataToOrc implements Job {
       logger.info("Creating table (if not exists): " + App.LOGS_TABLE_NAME);
       statement.executeUpdate(getCreateExternalTableSql());
 
-      logger.info("Creating table (if not exists): " + LOGS_LIVE_TABLE_NAME);
+      logger.info("Creating table (if not exists): " + App.LOGS_LIVE_TABLE_NAME);
       statement.executeUpdate(getCreateLiveExternalTableSql());
 
       statement.close();
@@ -212,7 +211,7 @@ public class ConvertLiveDataToOrc implements Job {
    * 
    * @return
    */
-  private String getCreateExternalTableSql() {
+  private static String getCreateExternalTableSql() {
     if (createExternalTableSql == null) {
       StringBuilder sql = new StringBuilder();
       sql.append("CREATE EXTERNAL TABLE IF NOT EXISTS " + App.LOGS_TABLE_NAME + "(");
@@ -253,10 +252,10 @@ public class ConvertLiveDataToOrc implements Job {
    * 
    * @return
    */
-  private String getCreateLiveExternalTableSql() {
+  private static String getCreateLiveExternalTableSql() {
     if (createLiveExternalTableSql == null) {
       StringBuilder sql = new StringBuilder();
-      sql.append("CREATE EXTERNAL TABLE IF NOT EXISTS " + LOGS_LIVE_TABLE_NAME + "(");
+      sql.append("CREATE EXTERNAL TABLE IF NOT EXISTS " + App.LOGS_LIVE_TABLE_NAME + "(");
       for (int i = 0; i < logSchema.getLiveNonPartitionFieldsList().size(); i++) {
         if (i > 0) {
           sql.append(",");
@@ -277,7 +276,7 @@ public class ConvertLiveDataToOrc implements Job {
       sql.append(") ");
 
       sql.append("ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' ");
-      sql.append("STORED AS TEXTFILE LOCATION '" + HDFS_LOGS_LIVE_ROOT + "'");
+      sql.append("STORED AS TEXTFILE LOCATION '" + App.HDFS_LOGS_LIVE_ROOT + "'");
 
       createLiveExternalTableSql = sql.toString();
     }
@@ -290,7 +289,7 @@ public class ConvertLiveDataToOrc implements Job {
    * 
    * @return
    */
-  private String getAddPartitionSql() {
+  private static String getAddPartitionSql() {
     if (addPartitionSql == null) {
       StringBuilder sql = new StringBuilder();
       sql.append("ALTER TABLE " + App.LOGS_TABLE_NAME + " ADD IF NOT EXISTS ");
@@ -314,10 +313,10 @@ public class ConvertLiveDataToOrc implements Job {
    * 
    * @return
    */
-  private String getAddLivePartitionSql() {
+  private static String getAddLivePartitionSql() {
     if (addLivePartitionSql == null) {
       StringBuilder sql = new StringBuilder();
-      sql.append("ALTER TABLE " + LOGS_LIVE_TABLE_NAME + " ADD IF NOT EXISTS ");
+      sql.append("ALTER TABLE " + App.LOGS_LIVE_TABLE_NAME + " ADD IF NOT EXISTS ");
       sql.append("PARTITION(");
       for (int i = 0; i < logSchema.getLivePartitionFieldsList().size(); i++) {
         if (i > 0) {
@@ -333,6 +332,18 @@ public class ConvertLiveDataToOrc implements Job {
     return addLivePartitionSql;
   }
 
+  protected static String getDropLivePartitionsDaySql() {
+    if (dropLivePartitionSql == null) {
+      StringBuilder sql = new StringBuilder();
+      sql.append("ALTER TABLE " + App.LOGS_TABLE_NAME + " DROP IF EXISTS ");
+      sql.append("PARTITION(timestamp_tz_date=?)");
+
+      dropLivePartitionSql = sql.toString();
+    }
+
+    return dropLivePartitionSql;
+  }
+
   /**
    * Generate the SQL string that copies a minute worth of data from the "api_umbrella.logs_live"
    * table (JSON storage) to the real "api_umbrella.logs" table (ORC storage).
@@ -343,8 +354,8 @@ public class ConvertLiveDataToOrc implements Job {
    * 
    * @return
    */
-  private String getMigrateSql() {
-    if (insertSql == null) {
+  private static String getInsertAppendSql() {
+    if (insertAppendSql == null) {
       StringBuilder sql = new StringBuilder();
       sql.append("INSERT INTO TABLE " + App.LOGS_TABLE_NAME + " ");
 
@@ -365,19 +376,50 @@ public class ConvertLiveDataToOrc implements Job {
         sql.append(logSchema.getNonPartitionFieldsList().get(i));
       }
 
-      sql.append(" FROM " + LOGS_LIVE_TABLE_NAME + " WHERE ");
+      sql.append(" FROM " + App.LOGS_LIVE_TABLE_NAME + " WHERE ");
       for (int i = 0; i < logSchema.getLivePartitionFieldsList().size(); i++) {
         if (i > 0) {
           sql.append(" AND ");
         }
         sql.append(logSchema.getLivePartitionFieldsList().get(i) + "=?");
       }
-      sql.append(" ORDER BY timestamp_utc");
+      sql.append(" ORDER BY timestamp_utc, id");
 
-      insertSql = sql.toString();
+      insertAppendSql = sql.toString();
     }
 
-    return insertSql;
+    return insertAppendSql;
+  }
+
+  protected static String getInsertOverwriteDaySql() {
+    if (insertOverwriteSql == null) {
+      StringBuilder sql = new StringBuilder();
+      sql.append("INSERT OVERWRITE TABLE " + App.LOGS_TABLE_NAME + " ");
+
+      sql.append("PARTITION(");
+      for (int i = 0; i < logSchema.getPartitionFieldsList().size(); i++) {
+        if (i > 0) {
+          sql.append(",");
+        }
+        sql.append(logSchema.getPartitionFieldsList().get(i) + "=?");
+      }
+      sql.append(") ");
+
+      sql.append("SELECT DISTINCT ");
+      for (int i = 0; i < logSchema.getNonPartitionFieldsList().size(); i++) {
+        if (i > 0) {
+          sql.append(",");
+        }
+        sql.append(logSchema.getNonPartitionFieldsList().get(i));
+      }
+
+      sql.append(" FROM " + App.LOGS_LIVE_TABLE_NAME + " WHERE timestamp_tz_date=?");
+      sql.append(" ORDER BY timestamp_utc, id");
+
+      insertOverwriteSql = sql.toString();
+    }
+
+    return insertOverwriteSql;
   }
 
   /**
@@ -392,7 +434,7 @@ public class ConvertLiveDataToOrc implements Job {
    */
   private TreeSet<DateTime> getInactivePartitions() throws IOException {
     RemoteIterator<LocatedFileStatus> filesIter =
-        fileSystem.listFiles(new Path(App.HDFS_URI + HDFS_LOGS_LIVE_ROOT), true);
+        fileSystem.listFiles(new Path(App.HDFS_URI + App.HDFS_LOGS_LIVE_ROOT), true);
 
     TreeSet<DateTime> inactivePartitions = new TreeSet<DateTime>();
     TreeSet<DateTime> activePartitions = new TreeSet<DateTime>();
@@ -442,9 +484,9 @@ public class ConvertLiveDataToOrc implements Job {
        * manually be dealt with.
        */
       if (activePartition.getMillis() < lastMigratedPartitionTime) {
-        logger.error("Partition with active files is unexpectedly older than the most recently "
+        logger.warn("Partition with active files is unexpectedly older than the most recently "
             + "processed data. This means older data is being populated in the live data files. "
-            + "This data will not automatically be processed. Manual cleanup is required. "
+            + "This should be resolved during the nightly OVERWRITE refresh process. "
             + "Partition: " + activePartition);
       }
     }

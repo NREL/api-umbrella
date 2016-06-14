@@ -34,53 +34,65 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 
 public class App {
+  private static boolean DISABLE_LIVE_DATA_CONVERSION =
+      Boolean.getBoolean("apiumbrella.disable_live_data_conversion");
+  private static boolean DISABLE_KYLIN_REFRESH =
+      Boolean.getBoolean("apiumbrella.disable_kylin_refresh");
   protected static DateTimeZone TIMEZONE =
       DateTimeZone.forID(System.getProperty("apiumbrella.timezone", "UTC"));
   protected static final String HDFS_URI =
       System.getProperty("apiumbrella.hdfs_uri", "hdfs://127.0.0.1:8020");
   protected static final String HDFS_ROOT = "/apps/api-umbrella";
   protected static final String HDFS_LOGS_ROOT = HDFS_ROOT + "/logs";
+  protected static final String HDFS_LOGS_LIVE_ROOT = App.HDFS_ROOT + "/logs-live";
   protected static final String LOGS_TABLE_NAME = "api_umbrella.logs";
+  protected static final String LOGS_LIVE_TABLE_NAME = "api_umbrella.logs_live";
 
   public void run() throws SchedulerException {
     Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
     scheduler.start();
 
-    /*
-     * Job to convert the live log data (coming from Kafka & Flume) into the ORC files for querying
-     * and long-term storage.
-     */
-    JobDetail convertJob = JobBuilder.newJob(ConvertLiveDataToOrc.class)
-        .withIdentity("convertLiveDataJob").usingJobData("lastMigratedPartitionTime", 0L)
-        .usingJobData("lastConcatenateTime", 0L).usingJobData("tablesCreated", false).build();
-    /* Run every 30 seconds */
-    Trigger convertTrigger =
-        TriggerBuilder.newTrigger().withIdentity("convertLiveDataTrigger").startNow()
-            .withSchedule(
-                SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(30).repeatForever())
-            .build();
-    scheduler.scheduleJob(convertJob, convertTrigger);
+    if (!DISABLE_LIVE_DATA_CONVERSION) {
+      /*
+       * Job to convert the live log data (coming from Kafka & Flume) into the ORC files for
+       * querying and long-term storage.
+       */
+      JobDetail convertJob = JobBuilder.newJob(ConvertLiveDataToOrc.class)
+          .withIdentity("convertLiveDataJob").usingJobData("lastMigratedPartitionTime", 0L)
+          .usingJobData("lastConcatenateTime", 0L).usingJobData("tablesCreated", false).build();
+      /* Run every 30 seconds */
+      Trigger convertTrigger =
+          TriggerBuilder.newTrigger().withIdentity("convertLiveDataTrigger").startNow()
+              .withSchedule(
+                  SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(30).repeatForever())
+              .build();
+      scheduler.scheduleJob(convertJob, convertTrigger);
+    }
 
-    /* Job to process the new log data into the pre-aggregated Kylin cubes. */
-    JobDetail refreshJob = JobBuilder.newJob(RefreshKylin.class).withIdentity("refreshKylinJob")
-        .storeDurably().build();
-    /* Run this job once immediately on boot to catch up with any new data that needs processing. */
-    Trigger refreshImmediateTrigger =
-        TriggerBuilder.newTrigger().withIdentity("refreshKylinImmediateTrigger").forJob(refreshJob)
-            .startNow().withSchedule(SimpleScheduleBuilder.simpleSchedule()).build();
-    /*
-     * After the initial run, run this every morning at 01:00 in the timezone used for data. This
-     * assumes that by 01:00 there will no longer be any data writing to the previous day's
-     * partition, so it's safe to fully process that day into Kylin.
-     */
-    Trigger refreshDailyTrigger = TriggerBuilder.newTrigger()
-        .withIdentity("refreshKylinDailyTrigger").forJob(refreshJob).startNow()
-        .withSchedule(
-            CronScheduleBuilder.dailyAtHourAndMinute(1, 0).inTimeZone(TIMEZONE.toTimeZone()))
-        .build();
-    scheduler.addJob(refreshJob, false);
-    scheduler.scheduleJob(refreshImmediateTrigger);
-    scheduler.scheduleJob(refreshDailyTrigger);
+    if (!DISABLE_KYLIN_REFRESH) {
+      /* Job to process the new log data into the pre-aggregated Kylin cubes. */
+      JobDetail refreshJob = JobBuilder.newJob(RefreshKylin.class).withIdentity("refreshKylinJob")
+          .storeDurably().build();
+      /*
+       * Run this job once immediately on boot to catch up with any new data that needs processing.
+       */
+      Trigger refreshImmediateTrigger = TriggerBuilder.newTrigger()
+          .withIdentity("refreshKylinImmediateTrigger").forJob(refreshJob).startNow()
+          .withSchedule(SimpleScheduleBuilder.simpleSchedule()).build();
+      /*
+       * After the initial run, run this every morning at 01:00 in the timezone used for data. This
+       * assumes that by 01:00 there will no longer be any data writing to the previous day's
+       * partition, so it's safe to fully process that day into Kylin.
+       */
+      Trigger refreshDailyTrigger = TriggerBuilder.newTrigger()
+          .withIdentity("refreshKylinDailyTrigger").forJob(refreshJob).startNow()
+          .withSchedule(
+              CronScheduleBuilder.dailyAtHourAndMinute(1, 0).inTimeZone(TIMEZONE.toTimeZone()))
+          .build();
+      scheduler.addJob(refreshJob, false);
+      scheduler.scheduleJob(refreshImmediateTrigger);
+      scheduler.scheduleJob(refreshDailyTrigger);
+    }
 
     scheduler.start();
   }

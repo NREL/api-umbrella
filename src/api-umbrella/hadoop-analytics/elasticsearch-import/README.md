@@ -40,11 +40,11 @@ $ echo '{"modelDescData":"{
     {
       \"table\": \"API_UMBRELLA.LOGS\",
       \"columns\": [
-        \"REQUEST_AT_TZ_YEAR\",
-        \"REQUEST_AT_TZ_MONTH\",
-        \"REQUEST_AT_TZ_WEEK\",
-        \"REQUEST_AT_TZ_DATE\",
-        \"REQUEST_AT_TZ_HOUR\",
+        \"TIMESTAMP_TZ_YEAR\",
+        \"TIMESTAMP_TZ_MONTH\",
+        \"TIMESTAMP_TZ_WEEK\",
+        \"TIMESTAMP_TZ_DATE\",
+        \"TIMESTAMP_TZ_HOUR\",
         \"REQUEST_URL_HOST\",
         \"REQUEST_URL_PATH_LEVEL1\",
         \"REQUEST_URL_PATH_LEVEL2\",
@@ -67,10 +67,10 @@ $ echo '{"modelDescData":"{
     \"USER_ID\",
     \"REQUEST_IP\",
     \"TIMER_RESPONSE\",
-    \"REQUEST_AT\"
+    \"TIMESTAMP_UTC\"
   ],
   \"partition_desc\": {
-    \"partition_date_column\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_DATE\",
+    \"partition_date_column\": \"API_UMBRELLA.LOGS.TIMESTAMP_TZ_DATE\",
     \"partition_date_format\": \"yyyy-MM-dd\",
     \"partition_date_start\": null,
     \"partition_type\": \"APPEND\"
@@ -85,9 +85,9 @@ $ echo '{"cubeDescData":"{
   \"description\": \"\",
   \"dimensions\": [
     {
-      \"name\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_HOUR\",
+      \"name\": \"API_UMBRELLA.LOGS.TIMESTAMP_TZ_HOUR\",
       \"table\": \"API_UMBRELLA.LOGS\",
-      \"column\": \"REQUEST_AT_TZ_HOUR\",
+      \"column\": \"TIMESTAMP_TZ_HOUR\",
       \"derived\": null
     },
     {
@@ -181,27 +181,27 @@ $ echo '{"cubeDescData":"{
       \"derived\": null
     },
     {
-      \"name\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_YEAR\",
+      \"name\": \"API_UMBRELLA.LOGS.TIMESTAMP_TZ_YEAR\",
       \"table\": \"API_UMBRELLA.LOGS\",
-      \"column\": \"REQUEST_AT_TZ_YEAR\",
+      \"column\": \"TIMESTAMP_TZ_YEAR\",
       \"derived\": null
     },
     {
-      \"name\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_MONTH\",
+      \"name\": \"API_UMBRELLA.LOGS.TIMESTAMP_TZ_MONTH\",
       \"table\": \"API_UMBRELLA.LOGS\",
-      \"column\": \"REQUEST_AT_TZ_MONTH\",
+      \"column\": \"TIMESTAMP_TZ_MONTH\",
       \"derived\": null
     },
     {
-      \"name\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_WEEK\",
+      \"name\": \"API_UMBRELLA.LOGS.TIMESTAMP_TZ_WEEK\",
       \"table\": \"API_UMBRELLA.LOGS\",
-      \"column\": \"REQUEST_AT_TZ_WEEK\",
+      \"column\": \"TIMESTAMP_TZ_WEEK\",
       \"derived\": null
     },
     {
-      \"name\": \"API_UMBRELLA.LOGS.REQUEST_AT_TZ_DATE\",
+      \"name\": \"API_UMBRELLA.LOGS.TIMESTAMP_TZ_DATE\",
       \"table\": \"API_UMBRELLA.LOGS\",
-      \"column\": \"REQUEST_AT_TZ_DATE\",
+      \"column\": \"TIMESTAMP_TZ_DATE\",
       \"derived\": null
     }
   ],
@@ -259,12 +259,12 @@ $ echo '{"cubeDescData":"{
       \"dependent_measure_ref\": null
     },
     {
-      \"name\": \"MAX_REQUEST_AT\",
+      \"name\": \"MAX_TIMESTAMP_UTC\",
       \"function\": {
         \"expression\": \"MAX\",
         \"parameter\": {
           \"type\": \"column\",
-          \"value\": \"REQUEST_AT\",
+          \"value\": \"TIMESTAMP_UTC\",
           \"next_parameter\": null
         },
         \"returntype\": \"bigint\"
@@ -275,23 +275,19 @@ $ echo '{"cubeDescData":"{
   \"rowkey\": {
     \"rowkey_columns\": [
       {
-        \"column\": \"REQUEST_AT_TZ_YEAR\",
+        \"column\": \"TIMESTAMP_TZ_YEAR\",
         \"encoding\": \"dict\"
       },
       {
-        \"column\": \"REQUEST_AT_TZ_MONTH\",
+        \"column\": \"TIMESTAMP_TZ_MONTH\",
         \"encoding\": \"dict\"
       },
       {
-        \"column\": \"REQUEST_AT_TZ_WEEK\",
+        \"column\": \"TIMESTAMP_TZ_WEEK\",
         \"encoding\": \"dict\"
       },
       {
-        \"column\": \"REQUEST_AT_TZ_DATE\",
-        \"encoding\": \"dict\"
-      },
-      {
-        \"column\": \"REQUEST_AT_TZ_HOUR\",
+        \"column\": \"TIMESTAMP_TZ_DATE\",
         \"encoding\": \"dict\"
       },
       {
@@ -301,6 +297,22 @@ $ echo '{"cubeDescData":"{
       {
         \"column\": \"REQUEST_URL_PATH_LEVEL1\",
         \"encoding\": \"fixed_length:40\"
+      },
+      {
+        \"column\": \"DENIED_REASON\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"USER_ID\",
+        \"encoding\": \"fixed_length:36\"
+      },
+      {
+        \"column\": \"REQUEST_IP\",
+        \"encoding\": \"fixed_length:45\"
+      },
+      {
+        \"column\": \"TIMESTAMP_TZ_HOUR\",
+        \"encoding\": \"dict\"
       },
       {
         \"column\": \"REQUEST_URL_PATH_LEVEL2\",
@@ -323,26 +335,6 @@ $ echo '{"cubeDescData":"{
         \"encoding\": \"fixed_length:40\"
       },
       {
-        \"column\": \"USER_ID\",
-        \"encoding\": \"fixed_length:36\"
-      },
-      {
-        \"column\": \"REQUEST_IP\",
-        \"encoding\": \"fixed_length:45\"
-      },
-      {
-        \"column\": \"RESPONSE_STATUS\",
-        \"encoding\": \"dict\"
-      },
-      {
-        \"column\": \"DENIED_REASON\",
-        \"encoding\": \"dict\"
-      },
-      {
-        \"column\": \"REQUEST_METHOD\",
-        \"encoding\": \"dict\"
-      },
-      {
         \"column\": \"REQUEST_IP_COUNTRY\",
         \"encoding\": \"dict\"
       },
@@ -352,6 +344,14 @@ $ echo '{"cubeDescData":"{
       },
       {
         \"column\": \"REQUEST_IP_CITY\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"RESPONSE_STATUS\",
+        \"encoding\": \"dict\"
+      },
+      {
+        \"column\": \"REQUEST_METHOD\",
         \"encoding\": \"dict\"
       }
     ]
@@ -366,7 +366,7 @@ $ echo '{"cubeDescData":"{
             \"measure_refs\": [
               \"_COUNT_\",
               \"SUM_TIMER_RESPONSE\",
-              \"MAX_REQUEST_AT\"
+              \"MAX_TIMESTAMP_UTC\"
             ]
           }
         ]
@@ -388,11 +388,11 @@ $ echo '{"cubeDescData":"{
   \"aggregation_groups\": [
     {
       \"includes\": [
-        \"REQUEST_AT_TZ_YEAR\",
-        \"REQUEST_AT_TZ_MONTH\",
-        \"REQUEST_AT_TZ_WEEK\",
-        \"REQUEST_AT_TZ_DATE\",
-        \"REQUEST_AT_TZ_HOUR\",
+        \"TIMESTAMP_TZ_YEAR\",
+        \"TIMESTAMP_TZ_MONTH\",
+        \"TIMESTAMP_TZ_WEEK\",
+        \"TIMESTAMP_TZ_DATE\",
+        \"TIMESTAMP_TZ_HOUR\",
         \"REQUEST_URL_HOST\",
         \"REQUEST_URL_PATH_LEVEL1\",
         \"REQUEST_URL_PATH_LEVEL2\",
@@ -427,19 +427,20 @@ $ echo '{"cubeDescData":"{
           ]
         ],
         \"mandatory_dims\": [
-          \"REQUEST_AT_TZ_YEAR\",
-          \"REQUEST_AT_TZ_MONTH\",
-          \"REQUEST_AT_TZ_WEEK\",
-          \"REQUEST_AT_TZ_DATE\"
+          \"TIMESTAMP_TZ_YEAR\",
+          \"TIMESTAMP_TZ_MONTH\",
+          \"TIMESTAMP_TZ_WEEK\",
+          \"TIMESTAMP_TZ_DATE\"
         ],
         \"joint_dims\": [
           [
-            \"REQUEST_AT_TZ_HOUR\",
             \"USER_ID\",
-            \"REQUEST_IP\",
+            \"REQUEST_IP\"
+          ],
+          [
             \"RESPONSE_STATUS\",
-            \"DENIED_REASON\",
-            \"REQUEST_METHOD\"
+            \"REQUEST_METHOD\",
+            \"TIMESTAMP_TZ_HOUR\"
           ]
         ]
       }

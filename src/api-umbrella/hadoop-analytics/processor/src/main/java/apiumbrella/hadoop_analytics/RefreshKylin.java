@@ -23,11 +23,16 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.LocatedFileStatus;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Days;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -52,10 +57,15 @@ public class RefreshKylin implements Job {
       System.getProperty("apiumbrella.kylin_username", "ADMIN");
   private static final String KYLIN_PASSWORD =
       System.getProperty("apiumbrella.kylin_password", "KYLIN");
+  private static final String KYLIN_REFRESH_END_DATE =
+      System.getProperty("apiumbrella.kylin_refresh_end_date");
   private static final String CUBE_NAME = "logs_cube";
+  DateTimeFormatter dateFormatter = ISODateTimeFormat.date();
+  DateTimeFormatter hourMinuteFormatter = DateTimeFormat.forPattern("HH-mm");
   DateTimeFormatter dateTimeFormatter =
       DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(App.TIMEZONE);
   private HttpClient client;
+  private Connection connection;
 
   public RefreshKylin() {
     logger = LoggerFactory.getLogger(this.getClass());
@@ -64,7 +74,15 @@ public class RefreshKylin implements Job {
 
   public void execute(JobExecutionContext context) throws JobExecutionException {
     try {
-      run();
+      connection = null;
+      try {
+        connection = App.getHiveConnection();
+        run();
+      } finally {
+        if (connection != null) {
+          connection.close();
+        }
+      }
     } catch (Exception e) {
       logger.error("Refresh kylin error", e);
       try {
@@ -79,7 +97,7 @@ public class RefreshKylin implements Job {
   }
 
   public void run() throws JsonSyntaxException, HttpException, IOException, SQLException,
-      ClassNotFoundException, IllegalArgumentException, URISyntaxException {
+      ClassNotFoundException, IllegalArgumentException, URISyntaxException, InterruptedException {
     logger.info("Begin kylin refresh");
 
     URL url = new URL(KYLIN_URL);
@@ -91,7 +109,7 @@ public class RefreshKylin implements Job {
     client.getParams().setAuthenticationPreemptive(true);
 
     /* Determine the last table partition with data in it. */
-    DateTime lastPartitionDayStart = getLastPartition();
+    DateTime lastPartitionDayStart = getPartitions(App.LOGS_TABLE_NAME).last();
     if (lastPartitionDayStart == null) {
       logger.info("No data partitions exist, skipping kylin refresh");
       return;
@@ -111,11 +129,45 @@ public class RefreshKylin implements Job {
     } else {
       processUntilDayStart = lastPartitionDayStart;
     }
+    if (KYLIN_REFRESH_END_DATE != null) {
+      DateTimeFormatter dateParser = ISODateTimeFormat.dateParser().withZone(App.TIMEZONE);
+      processUntilDayStart = dateParser.parseDateTime(KYLIN_REFRESH_END_DATE);
+    }
     logger.debug("Process until: " + processUntilDayStart + " (last partition: "
-        + processUntilDayStart + ")");
+        + lastPartitionDayStart + ")");
     DateTime processUntilDayEnd = processUntilDayStart.plusDays(1);
     DateTime segmentStart = null;
     DateTime segmentEnd = null;
+
+    /*
+     * Before processing the last day of data, perform some additional data migrations to better
+     * optimize any of the daily partitions that were originally populated from the streaming live
+     * data.
+     */
+    TreeSet<DateTime> livePartitions = getPartitions(App.LOGS_LIVE_TABLE_NAME);
+    for (DateTime livePartition : livePartitions) {
+      if (livePartition.isBefore(processUntilDayStart) || livePartition == processUntilDayStart) {
+        /*
+         * First, ensure the day's partition is done writing to (this should generally be the case,
+         * since this refresh kylin task is only called after midnight).
+         */
+        waitForNoWriteActivityOnDayPartition(livePartition);
+
+        /*
+         * Next, re-write the daily ORC partition with the live data. This better optimizes the data
+         * for long-term storage (less stripes than the data originally written from streaming
+         * appends). This also helps mitigate any potential edge-cases that may have led to the live
+         * data being missed during the live append process.
+         */
+        overwriteDayPartitionFromLiveData(livePartition);
+
+        /*
+         * Finally, remove the live data for this day, since the ORC data is now the definitive
+         * copy.
+         */
+        removeLiveDataForDay(livePartition);
+      }
+    }
 
     /* Loop through the existing segments and see if any of them need to be refreshed. */
     JsonArray segments = getSegments();
@@ -206,40 +258,115 @@ public class RefreshKylin implements Job {
     return start;
   }
 
-  private DateTime getLastPartition() throws FileNotFoundException, IllegalArgumentException,
-      IOException, URISyntaxException, ClassNotFoundException, SQLException {
+  private TreeSet<DateTime> getPartitions(String tableName)
+      throws FileNotFoundException, IllegalArgumentException, IOException, URISyntaxException,
+      ClassNotFoundException, SQLException {
     TreeSet<DateTime> partitions = new TreeSet<DateTime>();
-    Pattern partitionDatePattern = Pattern.compile("request_at_tz_date=(\\d{4}-\\d{2}-\\d{2})");
-    Connection connection = null;
-    try {
-      connection = App.getHiveConnection();
-      PreparedStatement statement =
-          connection.prepareStatement("SHOW PARTITIONS " + App.LOGS_TABLE_NAME);
-      ResultSet rs = statement.executeQuery();
-      while (rs.next()) {
-        logger.debug(App.LOGS_TABLE_NAME + " partition: " + rs.getString("partition"));
-        Matcher matcher = partitionDatePattern.matcher(rs.getString("partition").toString());
-        DateTime partitionTime = null;
-        while (matcher.find()) {
-          partitionTime = new DateTime(matcher.group(1) + "T00:00:00");
-        }
+    Pattern partitionDatePattern = Pattern.compile("timestamp_tz_date=(\\d{4}-\\d{2}-\\d{2})");
+    PreparedStatement statement = connection.prepareStatement("SHOW PARTITIONS " + tableName);
+    ResultSet rs = statement.executeQuery();
+    while (rs.next()) {
+      logger.debug(tableName + " partition: " + rs.getString("partition"));
+      Matcher matcher = partitionDatePattern.matcher(rs.getString("partition").toString());
+      DateTime partitionTime = null;
+      while (matcher.find()) {
+        partitionTime = new DateTime(matcher.group(1) + "T00:00:00");
+      }
 
-        partitions.add(partitionTime);
-      }
-    } finally {
-      if (connection != null) {
-        connection.close();
-      }
+      partitions.add(partitionTime);
     }
 
-    return partitions.last();
+    return partitions;
+  }
+
+  private void waitForNoWriteActivityOnDayPartition(DateTime partition)
+      throws FileNotFoundException, IllegalArgumentException, IOException, URISyntaxException,
+      InterruptedException {
+    long inactiveTimeThreshold = new DateTime().minusMinutes(30).getMillis();
+    long lastModifiedFile = 0;
+    do {
+      RemoteIterator<LocatedFileStatus> filesIter = App.getHadoopFileSystem()
+          .listFiles(new Path(App.HDFS_URI + App.HDFS_LOGS_ROOT //
+              + "/timestamp_tz_year=" + dateFormatter.print(partition.withDayOfYear(1))
+              + "/timestamp_tz_month=" + dateFormatter.print(partition.withDayOfMonth(1))
+              + "/timestamp_tz_week=" + dateFormatter.print(partition.withDayOfWeek(1))
+              + "/timestamp_tz_date=" + dateFormatter.print(partition)), true);
+      while (filesIter.hasNext()) {
+        FileStatus file = filesIter.next();
+        logger.debug(file.getPath() + " file last modified: " + file.getModificationTime());
+        if (file.getModificationTime() > lastModifiedFile) {
+          lastModifiedFile = file.getModificationTime();
+        }
+      }
+
+      if (lastModifiedFile > inactiveTimeThreshold) {
+        logger.info("Previous day partition has recently written data. "
+            + "Waiting until write activity hasn't occurred in 30 minutes. Last modification: "
+            + lastModifiedFile);
+        Thread.sleep(60000);
+      }
+    } while (lastModifiedFile == 0 || lastModifiedFile > inactiveTimeThreshold);
+  }
+
+  private void overwriteDayPartitionFromLiveData(DateTime partition)
+      throws ClassNotFoundException, SQLException {
+    logger.info("Begin overwrite of partition " + partition + " from " + App.LOGS_LIVE_TABLE_NAME);
+
+    PreparedStatement statement = connection.prepareStatement(
+        "SELECT COUNT(*) AS count FROM " + App.LOGS_TABLE_NAME + " WHERE timestamp_tz_date=?");
+    statement.setString(1, dateFormatter.print(partition));
+    ResultSet rs = statement.executeQuery();
+    long beforePartitionCount = 0;
+    if (rs.next()) {
+      beforePartitionCount = rs.getLong("count");
+      logger.debug("Partition (" + partition + ") count before overwrite: ", beforePartitionCount);
+    }
+
+    PreparedStatement migrate =
+        connection.prepareStatement(ConvertLiveDataToOrc.getInsertOverwriteDaySql());
+    migrate.setString(1, dateFormatter.print(partition.withDayOfYear(1)));
+    migrate.setString(2, dateFormatter.print(partition.withDayOfMonth(1)));
+    migrate.setString(3, dateFormatter.print(partition.withDayOfWeek(1)));
+    migrate.setString(4, dateFormatter.print(partition));
+    migrate.setString(5, dateFormatter.print(partition));
+    migrate.executeUpdate();
+    migrate.close();
+
+    rs = statement.executeQuery();
+    long afterPartitionCount = 0;
+    if (rs.next()) {
+      afterPartitionCount = rs.getLong("count");
+      logger.debug("Partition (" + partition + ") count after overwrite: ", beforePartitionCount);
+    }
+
+    if (beforePartitionCount != afterPartitionCount) {
+      logger.warn("Partition (" + partition + ") counts did not match");
+    }
+
+    logger.info("Finish overwrite of partition " + partition + " from " + App.LOGS_LIVE_TABLE_NAME);
+  }
+
+  private void removeLiveDataForDay(DateTime partition)
+      throws SQLException, IllegalArgumentException, IOException, URISyntaxException {
+    logger.info("Removing ");
+    PreparedStatement addLivePartition =
+        connection.prepareStatement(ConvertLiveDataToOrc.getDropLivePartitionsDaySql());
+    addLivePartition.setString(1, dateFormatter.print(partition));
+    addLivePartition.setString(2, hourMinuteFormatter.print(partition));
+    addLivePartition.executeUpdate();
+    addLivePartition.close();
+
+    App.getHadoopFileSystem()
+        .delete(new Path(App.HDFS_URI + App.HDFS_LOGS_LIVE_ROOT //
+            + "/timestamp_tz_date=" + dateFormatter.print(partition) //
+            + "/timestamp_tz_hour_minute=" + hourMinuteFormatter.print(partition)), true);
   }
 
   private void buildSegment(String buildType, DateTime start, DateTime end)
       throws HttpException, JsonSyntaxException, IOException, ClassNotFoundException,
       IllegalArgumentException, SQLException, URISyntaxException {
     /*
-     * Before building any sgements with Kylin, ensure that the table partitions are optimized by
+     * Before building any segments with Kylin, ensure that the table partitions are optimized by
      * merging multiple files into 1.
      */
     App.concatenateTablePartitions(logger);
