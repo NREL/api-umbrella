@@ -34,6 +34,29 @@ if [ -z "$API_UMBRELLA_EMBEDDED_ROOT" ]; then
   fi
 fi
 
+# Set the path for binaries.
 export PATH=$API_UMBRELLA_EMBEDDED_ROOT/sbin:$API_UMBRELLA_EMBEDDED_ROOT/bin:$PATH
 
+# Set the Lua load paths to include the vendored app dependencies and the
+# embedded openresty installation.
+#
+# Note that we purposefully don't use any of the default Lua load paths (like
+# /usr/local) so that other Lua packages on the system aren't picked up (since
+# they might conflict).
+export LUA_PATH="$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/share/lua/5.1/?.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/share/lua/5.1/?/init.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?/init.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/luajit-2.1.0-beta1/?.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/luajit-2.1.0-beta1/?/init.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/lua/5.1/?.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/lua/5.1/?/init.lua"
+if [ -n "$API_UMBRELLA_SRC_ROOT" ]; then
+  export LUA_PATH="$API_UMBRELLA_SRC_ROOT/src/?.lua;$LUA_PATH"
+fi
+export LUA_CPATH="$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/lib/lua/5.1/?.so;\
+$API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?.so;\
+$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/lib/lua/5.1/?.so"
+
+# Run the Lua CLI app.
 exec $API_UMBRELLA_SRC_ROOT/bin/api-umbrella-cli "$@"
