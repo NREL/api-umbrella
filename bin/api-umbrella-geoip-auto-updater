@@ -69,6 +69,10 @@ while true; do
           echo "Reloading api-umbrella failed"
         fi
       fi
+
+      # Touch the file so we know we've checked it recently (even if we didn't
+      # replace it).
+      touch "$current_path"
     fi
   fi
 
