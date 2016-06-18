@@ -44,7 +44,6 @@ $ echo '{"modelDescData":"{
         \"TIMESTAMP_TZ_MONTH\",
         \"TIMESTAMP_TZ_WEEK\",
         \"TIMESTAMP_TZ_DATE\",
-        \"TIMESTAMP_TZ_HOUR\",
         \"REQUEST_URL_HOST\",
         \"REQUEST_URL_PATH_LEVEL1\",
         \"REQUEST_URL_PATH_LEVEL2\",
@@ -84,12 +83,6 @@ $ echo '{"cubeDescData":"{
   \"model_name\": \"logs_model\",
   \"description\": \"\",
   \"dimensions\": [
-    {
-      \"name\": \"API_UMBRELLA.LOGS.TIMESTAMP_TZ_HOUR\",
-      \"table\": \"API_UMBRELLA.LOGS\",
-      \"column\": \"TIMESTAMP_TZ_HOUR\",
-      \"derived\": null
-    },
     {
       \"name\": \"API_UMBRELLA.LOGS.USER_ID\",
       \"table\": \"API_UMBRELLA.LOGS\",
@@ -311,10 +304,6 @@ $ echo '{"cubeDescData":"{
         \"encoding\": \"fixed_length:45\"
       },
       {
-        \"column\": \"TIMESTAMP_TZ_HOUR\",
-        \"encoding\": \"dict\"
-      },
-      {
         \"column\": \"REQUEST_URL_PATH_LEVEL2\",
         \"encoding\": \"fixed_length:40\"
       },
@@ -392,7 +381,6 @@ $ echo '{"cubeDescData":"{
         \"TIMESTAMP_TZ_MONTH\",
         \"TIMESTAMP_TZ_WEEK\",
         \"TIMESTAMP_TZ_DATE\",
-        \"TIMESTAMP_TZ_HOUR\",
         \"REQUEST_URL_HOST\",
         \"REQUEST_URL_PATH_LEVEL1\",
         \"REQUEST_URL_PATH_LEVEL2\",
@@ -436,11 +424,6 @@ $ echo '{"cubeDescData":"{
           [
             \"USER_ID\",
             \"REQUEST_IP\"
-          ],
-          [
-            \"RESPONSE_STATUS\",
-            \"REQUEST_METHOD\",
-            \"TIMESTAMP_TZ_HOUR\"
           ]
         ]
       }
