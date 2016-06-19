@@ -3,7 +3,7 @@
   "name": "Log",
   "fields": [
     {
-      "name": "request_at",
+      "name": "timestamp_utc",
       "type": "long"
     },
     {
@@ -11,31 +11,31 @@
       "type": "string"
     },
     {
-      "name": "request_at_tz_offset",
+      "name": "timestamp_tz_offset",
       "type": "int"
     },
     {
-      "name": "request_at_tz_year",
+      "name": "timestamp_tz_year",
       "type": "string"
     },
     {
-      "name": "request_at_tz_month",
+      "name": "timestamp_tz_month",
       "type": "string"
     },
     {
-      "name": "request_at_tz_week",
+      "name": "timestamp_tz_week",
       "type": "string"
     },
     {
-      "name": "request_at_tz_date",
+      "name": "timestamp_tz_date",
       "type": "string"
     },
     {
-      "name": "request_at_tz_hour",
+      "name": "timestamp_tz_hour",
       "type": "string"
     },
     {
-      "name": "request_at_tz_minute",
+      "name": "timestamp_tz_minute",
       "type": "string"
     },
     {

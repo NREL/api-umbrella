@@ -1193,6 +1193,36 @@ describe('logging', function() {
     }.bind(this));
   });
 
+  it('logs the request_at as the time the request finishes (not when it begins)', function(done) {
+    this.timeout(15000);
+
+    var requestStart = Date.now();
+    request.get('http://localhost:9080/delay/3000', this.options, function(error, response) {
+      var requestEnd = Date.now();
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+
+        var recordResponseTime = record.response_time;
+        recordResponseTime.should.be.gte(2500);
+        recordResponseTime.should.be.lte(3500);
+
+        var localResponseTime = requestEnd - requestStart;
+        localResponseTime.should.be.gte(2500);
+        localResponseTime.should.be.lte(3500);
+
+        var diffExpectedEndTime = requestEnd - record.request_at;
+        diffExpectedEndTime.should.be.gte(-500);
+        diffExpectedEndTime.should.be.lte(500);
+
+        done();
+      });
+    }.bind(this));
+  });
+
+
   it('successfully logs query strings when the field first indexed was a date, but later queries are not (does not attempt to map fields into dates)', function(done) {
     this.timeout(30000);
 

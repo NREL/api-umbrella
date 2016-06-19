@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Download previous API Umbrella packages so the verify scripts can test
 # package upgrades.

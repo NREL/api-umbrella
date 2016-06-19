@@ -196,10 +196,10 @@ public class DayWorker implements Runnable {
       String date = dateFormatter.print(dayStartTime);
       // Create a new file in /dir/YYYY/MM/WW/YYYY-MM-DD.par
       Path path = new Path(App.HDFS_URI + Paths.get(App.DIR,
-          "request_at_tz_year=" + dateFormatter.print(dayStartTime.withDayOfYear(1)),
-          "request_at_tz_month=" + dateFormatter.print(dayStartTime.withDayOfMonth(1)),
-          "request_at_tz_week=" + dateFormatter.print(dayStartTime.withDayOfWeek(1)),
-          "request_at_tz_date=" + date, date + ".orc"));
+          "timestamp_tz_year=" + dateFormatter.print(dayStartTime.withDayOfYear(1)),
+          "timestamp_tz_month=" + dateFormatter.print(dayStartTime.withDayOfMonth(1)),
+          "timestamp_tz_week=" + dateFormatter.print(dayStartTime.withDayOfWeek(1)),
+          "timestamp_tz_date=" + date, date + ".orc"));
       this.orcWriter = OrcFile.createWriter(path, getOrcWriterOptions());
     }
 
@@ -266,15 +266,15 @@ public class DayWorker implements Runnable {
             // with the Kylin's cube's that will be created (which doesn't support
             // timestamps yet).
             DateTime requestAt = this.parseTimestamp(value);
-            log.put("request_at", requestAt.getMillis());
-            log.put("request_at_tz_offset", App.TIMEZONE.getOffset(requestAt.getMillis()));
-            log.put("request_at_tz_year", dateFormatter.print(requestAt.withDayOfYear(1)));
-            log.put("request_at_tz_month", dateFormatter.print(requestAt.withDayOfMonth(1)));
-            log.put("request_at_tz_week", dateFormatter.print(requestAt.withDayOfWeek(1)));
-            log.put("request_at_tz_date", dateFormatter.print(requestAt));
-            log.put("request_at_tz_hour", dateTimeFormatter
+            log.put("timestamp_utc", requestAt.getMillis());
+            log.put("timestamp_tz_offset", App.TIMEZONE.getOffset(requestAt.getMillis()));
+            log.put("timestamp_tz_year", dateFormatter.print(requestAt.withDayOfYear(1)));
+            log.put("timestamp_tz_month", dateFormatter.print(requestAt.withDayOfMonth(1)));
+            log.put("timestamp_tz_week", dateFormatter.print(requestAt.withDayOfWeek(1)));
+            log.put("timestamp_tz_date", dateFormatter.print(requestAt));
+            log.put("timestamp_tz_hour", dateTimeFormatter
                 .print(requestAt.withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0)));
-            log.put("request_at_tz_minute",
+            log.put("timestamp_tz_minute",
                 dateTimeFormatter.print(requestAt.withSecondOfMinute(0).withMillisOfSecond(0)));
             value = null;
             break;

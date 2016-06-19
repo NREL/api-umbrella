@@ -1,74 +1,83 @@
 #!/usr/bin/env bash
 
+set -e -u
+
 # Kill the child "sleep" processes on exit.
 cleanup() {
-  local PIDS=$(jobs -pr)
-  [ -n "$PIDS" ] && kill $PIDS
+  local pids
+  pids=($(jobs -pr))
+  if [ -n "${pids:-}" ]; then
+    kill "${pids[@]}"
+  fi
 }
 trap "cleanup" EXIT
 
-if [ -z "$API_UMBRELLA_SRC_ROOT" ]; then
+if [ -z "${API_UMBRELLA_SRC_ROOT:-}" ]; then
   echo "Error: API_UMBRELLA_SRC_ROOT environment variable is not set"
   exit 1
 fi
 
-if [ -z "$API_UMBRELLA_DB_DIR" ]; then
+if [ -z "${API_UMBRELLA_DB_DIR:-}" ]; then
   echo "Error: API_UMBRELLA_DB_DIR environment variable is not set"
   exit 1
 fi
 
-DOWNLOAD_URL="https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz"
-FREQUENCY=86400 # Sleep for 1 day between runs
+download_url="https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz"
+frequency=86400 # Sleep for 1 day between runs
 
 while true; do
-  CURRENT_PATH=$API_UMBRELLA_DB_DIR/geoip/city-v6.dat
+  current_path="$API_UMBRELLA_DB_DIR/geoip/city-v6.dat"
 
   # Don't attempt to redownload if the current file has recently been updated
   # (within the last 22 hours).
-  if [[ -f $CURRENT_PATH && "$(find $CURRENT_PATH -mmin -1320)" ]]; then
-    echo "$CURRENT_PATH recently updated - skipping"
-    sleep $FREQUENCY
+  if [[ -f "$current_path" && -n "$(find "$current_path" -mmin -1320)" ]]; then
+    echo "$current_path recently updated - skipping"
+    sleep $frequency
     continue
   fi
 
   # Download the data file to a temporary path.
   echo "Downloading new file..."
-  UNZIP_PATH=$(mktemp -t api-umbrella-geoip-auto-updater.XXXXXXXXXX)
-  DOWNLOAD_PATH="$UNZIP_PATH.gz"
-  curl --silent --show-error --fail --location --output $DOWNLOAD_PATH $DOWNLOAD_URL
+  unzip_path=$(mktemp -t api-umbrella-geoip-auto-updater.XXXXXXXXXX)
+  download_path="$unzip_path.gz"
+  curl --silent --show-error --fail --location --output "$download_path" "$download_url"
   if [ $? -ne 0 ]; then
-    echo "Error downloading $DOWNLOAD_URL"
+    echo "Error downloading $download_url"
   else
     # Un-gzip the downloaded file.
-    gunzip -c $DOWNLOAD_PATH > $UNZIP_PATH
+    gunzip -c "$download_path" > "$unzip_path"
     if [ $? -ne 0 ]; then
-      echo "Error unzipping $DOWNLOAD_PATH"
+      echo "Error unzipping $download_path"
     else
-      UNZIP_MD5=$(openssl md5 $UNZIP_PATH | awk '{print $2}')
-      if [ -f $CURRENT_PATH ]; then
-        CURRENT_MD5=$(openssl md5 $CURRENT_PATH | awk '{print $2}')
+      unzip_md5=$(openssl md5 "$unzip_path" | awk '{print $2}')
+      if [ -f "$current_path" ]; then
+        current_md5=$(openssl md5 "$current_path" | awk '{print $2}')
       fi
 
       # If the new files is different, move it into place and then reload API
       # Umbrella.
-      if [ "$UNZIP_MD5" == "$CURRENT_MD5" ]; then
-        echo "$CURRENT_PATH is already up to date (checksum: $CURRENT_MD5)"
+      if [ "$unzip_md5" == "${current_md5:-}" ]; then
+        echo "$current_path is already up to date (checksum: ${current_md5:-})"
       else
-        mv $UNZIP_PATH $CURRENT_PATH
-        echo "Installed new $CURRENT_PATH"
+        mv "$unzip_path" "$current_path"
+        echo "Installed new $current_path"
 
-        $API_UMBRELLA_SRC_ROOT/bin/api-umbrella reload
+        "$API_UMBRELLA_SRC_ROOT"/bin/api-umbrella reload
         if [ $? == 0 ]; then
           echo "Reloaded api-umbrella"
         else
           echo "Reloading api-umbrella failed"
         fi
       fi
+
+      # Touch the file so we know we've checked it recently (even if we didn't
+      # replace it).
+      touch "$current_path"
     fi
   fi
 
   # Cleanup any temp files.
-  rm -f $DOWNLOAD_PATH $UNZIP_PATH
+  rm -f "$download_path" "$unzip_path"
 
-  sleep $FREQUENCY
+  sleep $frequency
 done

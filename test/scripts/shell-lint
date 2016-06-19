@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e -u
 
@@ -19,6 +19,7 @@ shells=(
 
 for shell in "${shells[@]}"; do
   readarray -t shell_files < <(git grep -l "^#\!/bin/$shell")
+  readarray -t shell_files < <(git grep -l "^#\!/usr/bin/env $shell")
 
   if [ "${#shell_files[@]}" != 0 ]; then
     for ignore in "${ignore_files[@]}"; do
