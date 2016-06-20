@@ -68,7 +68,11 @@ module ApiUmbrella
         # ports.
         if(ENV["INTEGRATION_TEST_SUITE"])
           config[:mongodb][:url] = "mongodb://127.0.0.1:13001/api_umbrella_test"
-          config[:elasticsearch][:hosts] = ["http://127.0.0.1:13002"]
+
+          # Don't override the Elasticsearch v2 connection tests.
+          if(config[:elasticsearch][:hosts] != ["http://127.0.0.1:9200"])
+            config[:elasticsearch][:hosts] = ["http://127.0.0.1:13002"]
+          end
 
         # If not running as part of the integration test suite, then we assume
         # a developer is just running the rails tests a standalone command. In
@@ -81,7 +85,7 @@ module ApiUmbrella
           config[:mongodb][:url] = "mongodb://127.0.0.1:14001/api_umbrella_test"
 
           # Don't override the Elasticsearch v2 connection tests.
-          if(config[:elasticsearch][:hosts] == ["http://127.0.0.1:13002"])
+          if(config[:elasticsearch][:hosts] != ["http://127.0.0.1:9200"])
             config[:elasticsearch][:hosts] = ["http://127.0.0.1:14002"]
           end
         end
