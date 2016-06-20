@@ -1182,10 +1182,20 @@ describe('logging', function() {
         }, function(error, res) {
           should.not.exist(error);
 
-          res[hit['_index']].mappings[hit['_type']].properties.request_at.should.eql({
-            type: 'date',
-            format: 'strict_date_optional_time||epoch_millis',
-          });
+          var property = res[hit['_index']].mappings[hit['_type']].properties.request_at;
+          if(config.get('elasticsearch.api_version') === 1) {
+            property.should.eql({
+              type: 'date',
+              format: 'dateOptionalTime',
+            });
+          } else if(config.get('elasticsearch.api_version') >= 2) {
+            property.should.eql({
+              type: 'date',
+              format: 'strict_date_optional_time||epoch_millis',
+            });
+          } else {
+            throw 'Unknown elasticsearch version: ' + config.get('elasticsearch.api_version');
+          }
 
           done();
         });

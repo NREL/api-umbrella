@@ -18,7 +18,13 @@ end
 module ApiUmbrella
   class Application < Rails::Application
     config.before_configuration do
+      require "symbolize_helper"
+
+      config_files = []
       config_file = ENV["API_UMBRELLA_RUNTIME_CONFIG"]
+      if(config_file.present?)
+        config_files << config_file
+      end
 
       # In non-test environments, load the system-wide runtime_config.yml file
       # if it exists and the API_UMBRELLA_RUNTIME_CONFIG environment variable
@@ -27,23 +33,59 @@ module ApiUmbrella
       # in the test environment, since we don't want development environment
       # config to be used in test (assuming you're testing from the same
       # machine you're developing on).
-      if(config_file.blank? && Rails.env != "test")
+      if(config_files.blank? && Rails.env != "test")
         default_runtime_config_file = "/opt/api-umbrella/var/run/runtime_config.yml"
         if(File.exist?(default_runtime_config_file) && File.readable?(default_runtime_config_file))
-          config_file = default_runtime_config_file
+          config_files << default_runtime_config_file
         end
       end
 
       # If no config environment variable is set and we're not using the
       # default runtime config file, then fall back to the default.yml file at
       # the top-level of the api-umbrella repo.
-      if(config_file.blank?)
-        config_file = File.expand_path("../../../../../config/default.yml", __FILE__)
+      if(config_files.blank?)
+        config_files << File.expand_path("../../../../../config/default.yml", __FILE__)
+
+        if(Rails.env == "test")
+          if(ENV["API_UMBRELLA_CONFIG"].present?)
+            config_files += ENV["API_UMBRELLA_CONFIG"].split(":")
+          else
+            config_files << File.expand_path("../../../../../test/config/test.yml", __FILE__)
+          end
+        end
       end
 
       # Load the YAML config in.
-      ApiUmbrellaConfig.prepend_source!(config_file)
-      ApiUmbrellaConfig.reload!
+      config = {}
+      config_files.each do |file|
+        data = SymbolizeHelper.symbolize_recursive(YAML.load_file(file))
+        config.deep_merge!(data)
+      end
+
+      if(Rails.env == "test")
+        # When running as part of the integration test suite, where we run all
+        # the API Umbrella processes separately, ensure we connect to those
+        # ports.
+        if(ENV["INTEGRATION_TEST_SUITE"])
+          config[:mongodb][:url] = "mongodb://127.0.0.1:13001/api_umbrella_test"
+          config[:elasticsearch][:hosts] = ["http://127.0.0.1:13002"]
+
+        # If not running as part of the integration test suite, then we assume
+        # a developer is just running the rails tests a standalone command. In
+        # that case, we'll connect to the default API Umbrella ports for
+        # databases that we assume are running in the development environment.
+        # The only difference is MongoDB, where we want to make sure we connect
+        # to a separate test database so tests don't interfere with
+        # development.
+        elsif(!ENV["FULL_STACK_TEST"])
+          config[:mongodb][:url] = "mongodb://127.0.0.1:14001/api_umbrella_test"
+
+          # Don't override the Elasticsearch v2 connection tests.
+          if(config[:elasticsearch][:hosts] == ["http://127.0.0.1:13002"])
+            config[:elasticsearch][:hosts] = ["http://127.0.0.1:14002"]
+          end
+        end
+      end
 
       # Set the default host used for web application links (for mailers,
       # contact URLs, etc).
@@ -52,16 +94,20 @@ module ApiUmbrella
       # been set to true (this gets put on `_default_hostname` for easier
       # access). But still allow the web host to be explicitly set via
       # `web.default_host`.
-      if(ApiUmbrellaConfig[:web][:default_host].blank?)
-        ApiUmbrellaConfig[:web][:default_host] = ApiUmbrellaConfig[:_default_hostname]
+      if(config[:web][:default_host].blank?)
+        config[:web][:default_host] = config[:_default_hostname]
 
         # Fallback to something that will at least generate valid URLs if
         # there's no default, or the default is "*" (since in this context, a
         # wildcard doesn't make sense for generating URLs).
-        if(ApiUmbrellaConfig[:web][:default_host].blank? || ApiUmbrellaConfig[:web][:default_host] == "*")
-          ApiUmbrellaConfig[:web][:default_host] = "localhost"
+        if(config[:web][:default_host].blank? || config[:web][:default_host] == "*")
+          config[:web][:default_host] = "localhost"
         end
       end
+
+      # rubocop:disable Style/ConstantName
+      ::ApiUmbrellaConfig = config
+      # rubocop:enable Style/ConstantName
 
       require "js_locale_helper"
     end

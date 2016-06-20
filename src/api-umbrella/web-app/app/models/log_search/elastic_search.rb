@@ -291,6 +291,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
             :field => "request_at",
             :interval => @interval,
             :time_zone => Time.zone.name,
+            :pre_zone_adjust_large_interval => true,
             :min_doc_count => 0,
             :extended_bounds => {
               :min => @start_time.iso8601,
@@ -306,6 +307,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
         :field => "request_at",
         :interval => @interval,
         :time_zone => Time.zone.name,
+        :pre_zone_adjust_large_interval => true,
         :min_doc_count => 0,
         :extended_bounds => {
           :min => @start_time.iso8601,
@@ -313,6 +315,11 @@ class LogSearch::ElasticSearch < LogSearch::Base
         },
       },
     }
+
+    if(ApiUmbrellaConfig[:elasticsearch][:api_version] >= 2)
+      @query[:aggregations][:top_path_hits_over_time][:aggregations][:drilldown_over_time][:date_histogram].delete(:pre_zone_adjust_large_interval)
+      @query[:aggregations][:hits_over_time][:date_histogram].delete(:pre_zone_adjust_large_interval)
+    end
   end
 
   def aggregate_by_interval!
@@ -321,6 +328,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
         :field => "request_at",
         :interval => @interval,
         :time_zone => Time.zone.name,
+        :pre_zone_adjust_large_interval => true,
         :min_doc_count => 0,
         :extended_bounds => {
           :min => @start_time.iso8601,
@@ -328,6 +336,10 @@ class LogSearch::ElasticSearch < LogSearch::Base
         },
       },
     }
+
+    if(ApiUmbrellaConfig[:elasticsearch][:api_version] >= 2)
+      @query[:aggregations][:hits_over_time][:date_histogram].delete(:pre_zone_adjust_large_interval)
+    end
   end
 
   def aggregate_by_region!
