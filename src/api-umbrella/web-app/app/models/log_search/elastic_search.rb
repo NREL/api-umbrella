@@ -1,3 +1,6 @@
+
+require('json')
+
 class LogSearch::ElasticSearch < LogSearch::Base
   attr_reader :client
 
@@ -48,9 +51,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
     if query_options[:body][:aggregations] && query_options[:body][:aggregations].blank?
       query_options[:body].delete(:aggregations)
     end
-
     raw_result = @client.search(query_options)
-
     @result = LogResult.factory(self, raw_result)
   end
 
@@ -266,7 +267,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
       :terms => {
         :field => "request_hierarchy",
         :size => size,
-        :include => "^#{Regexp.escape(prefix)}.*",
+        :include => "#{Regexp.escape(prefix)}.*",
       },
     }
   end
@@ -282,7 +283,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
       :terms => {
         :field => "request_hierarchy",
         :size => 10,
-        :include => "^#{Regexp.escape(prefix)}.*",
+        :include => "#{Regexp.escape(prefix)}.*",
       },
       :aggregations => {
         :drilldown_over_time => {
@@ -314,6 +315,11 @@ class LogSearch::ElasticSearch < LogSearch::Base
         },
       },
     }
+
+    if(ApiUmbrellaConfig[:elasticsearch][:api_version] >= 2)
+      @query[:aggregations][:top_path_hits_over_time][:aggregations][:drilldown_over_time][:date_histogram].delete(:pre_zone_adjust_large_interval)
+      @query[:aggregations][:hits_over_time][:date_histogram].delete(:pre_zone_adjust_large_interval)
+    end
   end
 
   def aggregate_by_interval!
@@ -330,6 +336,10 @@ class LogSearch::ElasticSearch < LogSearch::Base
         },
       },
     }
+
+    if(ApiUmbrellaConfig[:elasticsearch][:api_version] >= 2)
+      @query[:aggregations][:hits_over_time][:date_histogram].delete(:pre_zone_adjust_large_interval)
+    end
   end
 
   def aggregate_by_region!

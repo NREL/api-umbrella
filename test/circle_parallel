@@ -43,9 +43,28 @@ if [ "$CIRCLE_NODE_INDEX" -gt "0" ] || [ "$CIRCLE_NODE_TOTAL" -lt "2" ]; then
 
   # Run the integration/gatekeeper tests.
   make test-proxy MOCHA_FILES="${node_files[*]}"
+
+  # Also run the analytics specific proxy tests against Elasticsearch v2 for
+  # compatibility.
+  last_node=$((CIRCLE_NODE_TOTAL-1))
+  if [ "$CIRCLE_NODE_INDEX" -eq "$last_node" ]; then
+    API_UMBRELLA_CONFIG="test/config/test.yml:test/config/test_elasticsearch2.yml" ./test/node_modules/.bin/mocha test/integration/logging.js
+  fi
 fi
 
 # Run the Rails tests on the first node.
 if [ "$CIRCLE_NODE_INDEX" -eq "0" ]; then
   make test-web-app
+
+  # Also run the analytics specific web tests against Elasticsearch v2 for
+  # compatibility.
+  cd src/api-umbrella/web-app && \
+    env \
+    PATH="../../../build/work/stage/opt/api-umbrella/embedded/bin:$PATH" \
+    INTEGRATION_TEST_SUITE=true \
+    PRECOMPILE_TEST_ASSETS=false \
+    API_UMBRELLA_CONFIG="../../../test/config/test.yml:../../../test/config/test_elasticsearch2.yml" \
+    bundle exec rspec \
+    spec/controllers/admin/stats_controller_spec.rb \
+    spec/controllers/api/v1/analytics_controller_spec.rb
 fi

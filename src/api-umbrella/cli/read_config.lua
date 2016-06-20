@@ -151,10 +151,18 @@ end
 -- Read the /etc/api-umbrella/api-umbrella.yml config file that provides
 -- server-specific overrides for API Umbrella configuration.
 local function read_system_config()
-  local content = file.read(os.getenv("API_UMBRELLA_CONFIG") or "/etc/api-umbrella/api-umbrella.yml", true)
-  if content then
-    local overrides = lyaml.load(content)
-    deep_merge_overwrite_arrays(config, overrides)
+  local config_paths = os.getenv("API_UMBRELLA_CONFIG") or "/etc/api-umbrella/api-umbrella.yml"
+  config_paths = split(config_paths, ":", true)
+  for _, config_path in ipairs(config_paths) do
+    if path.exists(config_path) then
+      local content = file.read(config_path, true)
+      if content then
+        local overrides = lyaml.load(content)
+        deep_merge_overwrite_arrays(config, overrides)
+      end
+    else
+      print("WARNING: Config file does not exist: ", config_path)
+    end
   end
 
   nillify_yaml_nulls(config)

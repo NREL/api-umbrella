@@ -7,7 +7,6 @@ var _ = require('lodash'),
     csv = require('csv'),
     Factory = require('factory-lady'),
     fs = require('fs'),
-    fsExtra = require('fs-extra'),
     ippp = require('ipplusplus'),
     mergeOverwriteArrays = require('object-extend'),
     mongoose = require('mongoose'),
@@ -30,11 +29,9 @@ _.merge(global.shared, {
   setFileConfigOverrides: function setFileConfigOverrides(newFileConfig, callback) {
     global.currentFileConfigOverrides = newFileConfig;
 
-    var testFileConfigPath = path.resolve(__dirname, '../config/test.yml');
     var overridesFileConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
 
-    var data = fs.readFileSync(testFileConfigPath);
-    var config = yaml.safeLoad(data.toString());
+    var config = {};
     mergeOverwriteArrays(config, newFileConfig);
 
     // Generate a unique ID for this config, so we can detect when it's been
@@ -51,9 +48,8 @@ _.merge(global.shared, {
 
   revertFileConfigOverrides: function revertFileConfigOverrides(callback) {
     global.currentFileConfigVersion = undefined;
-    var testFileConfigPath = path.resolve(__dirname, '../config/test.yml');
     var overridesFileConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
-    fsExtra.copySync(testFileConfigPath, overridesFileConfigPath);
+    fs.writeFileSync(overridesFileConfigPath, '');
     shared.runCommand(['reload', '--router'], callback);
   },
 

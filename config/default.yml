@@ -152,6 +152,7 @@ elasticsearch:
     - "http://127.0.0.1:14002"
   embedded_server_env:
     heap_size: 512m
+  api_version: 1
   embedded_server_config:
     http:
       port: 14002
@@ -167,11 +168,6 @@ elasticsearch:
       breaker:
         fielddata:
           limit: 60%
-    # Disable Groovy scripting for security: CVE-2015-1427
-    script:
-      groovy:
-        sandbox:
-          enabled: false
 analytics:
   adapter: elasticsearch
   timezone: UTC

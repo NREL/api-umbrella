@@ -106,9 +106,6 @@ gem "psych", "~> 2.0.13", :platforms => [:ruby]
 # For user-inputted YAML.
 gem "safe_yaml", "~> 1.0.4", :require => "safe_yaml/load"
 
-# YAML configuration files.
-gem "config", "~> 1.1.0"
-
 # Delayed jobs and background tasks
 gem "delayed_job_mongoid", "~> 2.1.0"
 gem "daemons", "~> 1.2.2"
