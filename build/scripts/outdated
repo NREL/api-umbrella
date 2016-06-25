@@ -28,7 +28,6 @@ repos = {
   },
   "json_c" => {
     :git => "https://github.com/json-c/json-c.git",
-    :git_ref => "master",
   },
   "kylin" => {
     :git => "https://github.com/apache/kylin.git",
@@ -147,6 +146,7 @@ repos = {
   },
   "rsyslog" => {
     :git => "https://github.com/rsyslog/rsyslog.git",
+    :constraint => "< 8.15.0",
   },
   "runit" => {
     :http => "http://smarden.org/runit/install.html",
@@ -178,6 +178,7 @@ def tag_to_semver(name, tag)
 
   # Remove prefixes containing the project name.
   tag.gsub!(/^#{name}[\-_]/i, "")
+  tag.gsub!(/^#{name.gsub("_", "-")}[\-_]/i, "")
 
   # Remove trailing "^{}" at end of git tags.
   tag.chomp!("^{}")
@@ -192,6 +193,8 @@ def tag_to_semver(name, tag)
   case(name)
   when "golang"
     tag.gsub!(/^go/, "")
+  when "json_c"
+    tag.gsub!(/-\d{8}$/, "")
   when "openssl", "ruby"
     tag.gsub!(/_/, ".")
   end

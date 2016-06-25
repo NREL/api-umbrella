@@ -23,8 +23,8 @@ ExternalProject_Add(
 # build that from source anyway (since there are no system packages for that).
 ExternalProject_Add(
   json-c
-  URL https://github.com/json-c/json-c/archive/${JSON_C_VERSION}.tar.gz
-  URL_HASH MD5=${JSON_C_HASH}
+  URL https://s3.amazonaws.com/json-c_releases/releases/json-c-${JSON_C_VERSION}-nodoc.tar.gz
+  URL_HASH SHA256=${JSON_C_HASH}
   BUILD_IN_SOURCE 1
   # Run autoreconf to fix issues with the bundled configure file being built
   # with specific versions of autoreconf and libtool that might be newer than
