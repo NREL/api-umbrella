@@ -22,11 +22,25 @@ add_custom_command(
   COMMAND touch -c ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
 )
 
-# Create a tmp directory in the shared build directory.
+# Create the tmp directories in the shared build directory.
+#
+# We create these more specific tmp sub directories so the deb/rpm
+# after-install script can set the necessary permissions on these sub
+# directories to allow for deployments of master on top of a package install.
 add_custom_command(
-  OUTPUT ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp
-  COMMAND mkdir -p ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp
-  COMMAND touch -c ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp
+  OUTPUT ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/assets
+  COMMAND mkdir -p ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/assets
+  COMMAND touch -c ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/assets
+)
+add_custom_command(
+  OUTPUT ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/sass
+  COMMAND mkdir -p ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/sass
+  COMMAND touch -c ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/sass
+)
+add_custom_command(
+  OUTPUT ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/ember-rails
+  COMMAND mkdir -p ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/ember-rails
+  COMMAND touch -c ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/ember-rails
 )
 
 #
@@ -37,7 +51,9 @@ add_custom_command(
   DEPENDS
     ${CORE_SHARED_BUILD_DIR}/vendor
     ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
-    ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp
+    ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/assets
+    ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/sass
+    ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/ember-rails
   COMMAND touch ${STAMP_DIR}/core-build-shared
 )
 
@@ -91,7 +107,7 @@ add_custom_command(
   OUTPUT ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app/tmp
   DEPENDS
     ${STAMP_DIR}/core-build-release-dir-${RELEASE_TIMESTAMP}
-    ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp
+    ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/assets
   WORKING_DIRECTORY ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app
   COMMAND ln -snf ../../../../../shared/src/api-umbrella/web-app/tmp ./tmp
   COMMAND touch -c ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app/tmp

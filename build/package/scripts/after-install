@@ -33,6 +33,9 @@ if [ "$configure" = "true" ]; then
   group=api-umbrella
   deploy_user=api-umbrella-deploy
   deploy_group=api-umbrella-deploy
+  prefix_dir=/opt/api-umbrella
+  embedded_dir=$prefix_dir/embedded
+  web_app_shared_dir=$embedded_dir/apps/core/shared/src/api-umbrella/web-app
 
   # Create the main user & group.
   if ! getent group $group > /dev/null; then
@@ -40,7 +43,7 @@ if [ "$configure" = "true" ]; then
   fi
   if ! getent passwd $user > /dev/null; then
     useradd -r -g $group -s /sbin/nologin \
-      -d /opt/api-umbrella -c "API Umbrella user" $user
+      -d $prefix_dir -c "API Umbrella user" $user
   fi
 
   # Create the deploy user & group.
@@ -75,18 +78,20 @@ if [ "$configure" = "true" ]; then
   fi
 
   # Set file permissions
-  chown -R $user:$group /opt/api-umbrella/etc /opt/api-umbrella/var
-  chown -R $deploy_user:$deploy_group /opt/api-umbrella/embedded/apps
-  mkdir -p /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache
-  chown -R $user:$deploy_group /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
-  mkdir -p /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/ember-rails /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/assets /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/sass
-  chown -R $deploy_user:$group /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/ember-rails /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/assets /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/sass
-  chmod -R 775 /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/ember-rails /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/assets /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp/cache/sass
-  chmod 1777 /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
-  if [ -d /opt/api-umbrella/embedded/kylin ]; then
-    chown $user:$group /opt/api-umbrella/embedded/kylin/tomcat/temp \
-      /opt/api-umbrella/embedded/kylin/tomcat/webapps \
-      /opt/api-umbrella/embedded/kylin/tomcat/logs
+  chown -R $user:$group $prefix_dir/etc $prefix_dir/var
+  chown -R $deploy_user:$deploy_group $embedded_dir/apps
+  chown -R $user:$deploy_group $web_app_shared_dir/tmp
+  chown -R $deploy_user:$group $web_app_shared_dir/tmp/ember-rails \
+    $web_app_shared_dir/tmp/cache/assets \
+    $web_app_shared_dir/tmp/cache/sass
+  chmod -R 775 $web_app_shared_dir/tmp/ember-rails \
+    $web_app_shared_dir/tmp/cache/assets \
+    $web_app_shared_dir/tmp/cache/sass
+  chmod 1777 $web_app_shared_dir/tmp
+  if [ -d $embedded_dir/kylin ]; then
+    chown $user:$group $embedded_dir/kylin/tomcat/temp \
+      $embedded_dir/kylin/tomcat/webapps \
+      $embedded_dir/kylin/tomcat/logs
   fi
 
   # Re-create symlinks that may have inadvertently been cleaned up by the API
@@ -94,10 +99,10 @@ if [ "$configure" = "true" ]; then
   # fixed by the v0.10 after-remove script, so at some point, we can probably
   # remove this logic).
   if [ ! -f /usr/bin/api-umbrella ]; then
-    cd /usr/bin && ln -snf ../../opt/api-umbrella/bin/api-umbrella ./api-umbrella
+    cd /usr/bin && ln -snf ../..$prefix_dir/bin/api-umbrella ./api-umbrella
   fi
   if [ ! -f /var/log/api-umbrella ]; then
-    cd /var/log && ln -snf ../../opt/api-umbrella/var/log ./api-umbrella
+    cd /var/log && ln -snf ../..$prefix_dir/var/log ./api-umbrella
   fi
 
   # Install service, but don't activate.
