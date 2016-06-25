@@ -50,8 +50,8 @@ export LUA_PATH="$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/share/lua/5
 $API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/share/lua/5.1/?/init.lua;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?.lua;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?/init.lua;\
-$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/luajit-2.1.0-beta1/?.lua;\
-$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/luajit-2.1.0-beta1/?/init.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/luajit-2.1.0-beta2/?.lua;\
+$API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/luajit-2.1.0-beta2/?/init.lua;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/lua/5.1/?.lua;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/share/lua/5.1/?/init.lua"
 if [ -n "$API_UMBRELLA_SRC_ROOT" ]; then
