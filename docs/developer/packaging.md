@@ -23,7 +23,6 @@ To build packages for the current API Umbrella version for all distributions:
 ```sh
 $ git clone https://github.com/NREL/api-umbrella.git
 $ cd api-umbrella
-$ ./build/package/verify/download_previous_packages
 $ make -C build/package -j4 docker_all # Adjust concurrency with -j flag as desired
 ```
 

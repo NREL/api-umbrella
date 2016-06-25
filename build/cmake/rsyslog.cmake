@@ -35,6 +35,10 @@ ExternalProject_Add(
 )
 
 if(ENABLE_HADOOP_ANALYTICS)
+  # There's a small dependency on Python for librdkafka's Makefile:
+  # https://github.com/edenhill/librdkafka/blob/0.9.1/Makefile#L8
+  find_package(PythonInterp REQUIRED)
+
   ExternalProject_Add(
     librdkafka
     URL https://github.com/edenhill/librdkafka/archive/${LIBRDKAFKA_VERSION}.tar.gz
@@ -45,6 +49,7 @@ if(ENABLE_HADOOP_ANALYTICS)
   )
 endif()
 
+list(APPEND RSYSLOG_DEPENDS json-c)
 list(APPEND RSYSLOG_DEPENDS libestr)
 if(ENABLE_HADOOP_ANALYTICS)
   list(APPEND RSYSLOG_DEPENDS librdkafka)

@@ -22,7 +22,6 @@ else
 fi
 
 fpm_args=()
-fpm_args+=("--rpm-dist" "$rpm_dist")
 fpm_args+=("-t" "$package_type")
 fpm_args+=("-s" "dir")
 fpm_args+=("--verbose")

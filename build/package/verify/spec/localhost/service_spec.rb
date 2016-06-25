@@ -100,6 +100,21 @@ RSpec.shared_examples("installed") do
 end
 
 RSpec.shared_examples("package upgrade") do |package_version|
+  # Skip testing upgrades if we don't have binary packages for certain distro
+  # and version combinations.
+  case(ENV["DIST"])
+  when "debian-8"
+    # No Debian 8 packages until v0.9
+    if(Gem::Version.new(package_version) < Gem::Version.new("0.9.0-1"))
+      next
+    end
+  when "ubuntu-16.04"
+    # No Ubuntu 16.04 packages until v0.12
+    if(Gem::Version.new(package_version) < Gem::Version.new("0.12.0-1"))
+      next
+    end
+  end
+
   def ensure_uninstalled
     command_result = command("/etc/init.d/api-umbrella stop")
     command_result.exit_status
@@ -520,12 +535,7 @@ describe "api-umbrella" do
     end
   end
 
-  # We don't have Debian 8 builds of API Umbrella v0.8, so skip testing that
-  # upgrade path for Debian 8.
-  if(ENV["DIST"] != "debian-8")
-    it_behaves_like "package upgrade", "0.8.0-1"
-  end
-
+  it_behaves_like "package upgrade", "0.8.0-1"
   it_behaves_like "package upgrade", "0.9.0-1"
   it_behaves_like "package upgrade", "0.10.0-1"
   it_behaves_like "package upgrade", "0.11.0-1"

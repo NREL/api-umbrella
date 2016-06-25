@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e -u
+
 if [ -f /etc/redhat-release ]; then
   core_package_dependencies=(
     # General
@@ -54,6 +56,8 @@ if [ -f /etc/redhat-release ]; then
     openssl-devel
     patch
     pcre-devel
+    pkgconfig
+    python
     rpm-build
     rsync
     tar
@@ -65,10 +69,22 @@ if [ -f /etc/redhat-release ]; then
     java-1.8.0-openjdk-devel
   )
 elif [ -f /etc/debian_version ]; then
+  libffi_version=6
+  openjdk_version=7
+
+  # shellcheck disable=SC1091
+  source /etc/os-release
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "7" ]]; then
+    libffi_version=5
+  elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+    openjdk_version=8
+  fi
+
   core_package_dependencies=(
     # General
     bash
     libc6
+    libffi$libffi_version
     libncurses5
     libpcre3
     libuuid1
@@ -81,7 +97,7 @@ elif [ -f /etc/debian_version ]; then
     tcl
 
     # ElasticSearch
-    openjdk-7-jre-headless
+    openjdk-$openjdk_version-jre-headless
 
     # init.d script helpers
     sysvinit-utils
@@ -91,7 +107,7 @@ elif [ -f /etc/debian_version ]; then
     procps
   )
   hadoop_analytics_package_dependencies=(
-    openjdk-7-jre-headless
+    openjdk-$openjdk_version-jre-headless
   )
   core_build_dependencies=(
     autoconf
@@ -114,6 +130,8 @@ elif [ -f /etc/debian_version ]; then
     make
     openssl
     patch
+    pkg-config
+    python
     rsync
     tar
     tcl-dev
@@ -122,13 +140,11 @@ elif [ -f /etc/debian_version ]; then
     xz-utils
   )
   hadoop_analytics_build_dependencies=(
-    openjdk-7-jdk-headless
+    openjdk-$openjdk_version-jdk
   )
 
-  if lsb_release --codename --short | grep wheezy; then
-    core_package_dependencies+=("libffi5")
-  else
-    core_package_dependencies+=("libffi6")
+  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+    core_build_dependencies+=("libtool-bin")
   fi
 else
   echo "Unknown build system"

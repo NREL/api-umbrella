@@ -43,7 +43,6 @@ repos = {
   },
   "librdkafka" => {
     :git => "https://github.com/edenhill/librdkafka.git",
-    :constraint => "~> 0.8.6",
   },
   "luarocks" => {
     :git => "https://github.com/keplerproject/luarocks.git",
