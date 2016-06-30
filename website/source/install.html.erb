@@ -14,6 +14,7 @@ header: Install
       Choose an OS <span class="caret"></span>
     </button>
     <ul class="dropdown-menu" role="menu">
+      <li><a href="#docker">Docker</a></li>
       <li><a href="#ubuntu1204">Ubuntu 12.04 (Precise)</a></li>
       <li><a href="#ubuntu1404">Ubuntu 14.04 (Trusty)</a></li>
       <li><a href="#ubuntu1604">Ubuntu 16.04 (Xenial)</a></li>
@@ -36,6 +37,22 @@ header: Install
     "el7" => "el7",
   }
   %>
+
+  <div id="docker" class="platform-download" style="display: none;">
+    <p>In this simple example, the API Umbrella configuration can be stored in the <code>config/api-umbrella.yml</code> file on host machine.</p>
+
+    <pre>$ mkdir config && touch config/api-umbrella.yml</pre>
+
+    <p>Open the configuration file for editing. In the config file, define an e-mail address for your first admin account:</p>
+
+    <pre>web:
+  admin:
+    initial_superusers:
+      - your.email@example.com</pre>
+
+    <p>Start API Umbrella:</p>
+    <pre>$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v $PWD/config:/etc/api-umbrella nrel/api-umbrella</pre>
+  </div>
 
   <% packages.each do |id, distro| %>
     <div id="<%= id %>" class="platform-download" style="display: none;">
@@ -64,20 +81,22 @@ $ make
 $ sudo make install</pre>
   </div>
 
-  <div id="setup" class="platform-download" style="display: none;">
+  <div id="setup_packages" class="platform-download" style="display: none;">
     <p>Open the configuration file for editing:</p>
     <pre>sudo -e /etc/api-umbrella/api-umbrella.yml</pre>
 
     <p>In the config file, define an e-mail address for your first admin account:</p>
 
     <pre>web:
-admin:
-  initial_superusers:
-    - your.email@example.com</pre>
+  admin:
+    initial_superusers:
+      - your.email@example.com</pre>
 
     <p>Start API Umbrella:</p>
     <pre>sudo /etc/init.d/api-umbrella start</pre>
+  </div>
 
+  <div id="setup_common" class="platform-download" style="display: none;">
     <p>Browse to your server's hostname. You should land on the default homepage:</p>
 
     <%= image_tag("../../images/default_homepage.png", :alt => "Default API Umbrella homepage", :class => "img-responsive img-center") %>
@@ -96,7 +115,10 @@ admin:
     var current = $(this).attr('href');
     $('.platform-download').hide();
     $(current).show();
-    $('#setup').show();
+    if(current !== '#docker') {
+      $('#setup_packages').show();
+    }
+    $('#setup_common').show();
 
     $(this).dropdown('toggle');
     return false;
