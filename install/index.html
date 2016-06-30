@@ -74,6 +74,7 @@
     <ul class="dropdown-menu" role="menu">
       <li><a href="#ubuntu1204">Ubuntu 12.04 (Precise)</a></li>
       <li><a href="#ubuntu1404">Ubuntu 14.04 (Trusty)</a></li>
+      <li><a href="#ubuntu1604">Ubuntu 16.04 (Xenial)</a></li>
       <li><a href="#debian7">Debian 7 (Wheezy)</a></li>
       <li><a href="#debian8">Debian 8 (Jessie)</a></li>
       <li><a href="#el6">Enterprise Linux 6 (CentOS/RedHat/Oracle/Scientific Linux)</a></li>
@@ -92,6 +93,12 @@ sudo apt-get install api-umbrella</pre>
     <div id="ubuntu1404" class="platform-download" style="display: none;">
       <p>Download and install the package:</p>
 <pre>echo "deb https://dl.bintray.com/nrel/api-umbrella-ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+sudo apt-get update
+sudo apt-get install api-umbrella</pre>
+    </div>
+    <div id="ubuntu1604" class="platform-download" style="display: none;">
+      <p>Download and install the package:</p>
+<pre>echo "deb https://dl.bintray.com/nrel/api-umbrella-ubuntu xenial main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
 sudo apt-get update
 sudo apt-get install api-umbrella</pre>
     </div>
@@ -120,9 +127,9 @@ sudo yum install api-umbrella</pre>
 
   <div id="other" class="platform-download" style="display: none;">
     <p>We build binary packages for a variety of Linux distributions. These binary packages are the recommended way to install API Umbrella. However, if binary packages aren't available, you can also compile from source (also, please <a href="https://github.com/NREL/api-umbrella/issues">let us know</a> if you'd like to see binaries for other operating systems):</p>
-    <pre>$ curl -OLJ https://github.com/NREL/api-umbrella/archive/v0.11.1.tar.gz
-$ tar -xvf api-umbrella-0.11.1.tar.gz
-$ cd api-umbrella-0.11.1
+    <pre>$ curl -OLJ https://github.com/NREL/api-umbrella/archive/v0.12.0.tar.gz
+$ tar -xvf api-umbrella-0.12.0.tar.gz
+$ cd api-umbrella-0.12.0
 $ make
 $ sudo make install</pre>
   </div>
