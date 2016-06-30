@@ -2,7 +2,20 @@
 
 set -e -u
 
+# shellcheck disable=SC1091
+if [ -f /etc/os-release ]; then
+  source /etc/os-release
+fi
+
 if [ -f /etc/redhat-release ]; then
+  util_linux_package="util-linux-ng"
+  procps_package="procps"
+
+  if [[ "${VERSION_ID:-}" == "7" ]]; then
+    util_linux_package="util-linux"
+    procps_package="procps-ng"
+  fi
+
   core_package_dependencies=(
     # General
     bash
@@ -23,14 +36,14 @@ if [ -f /etc/redhat-release ]; then
     java-1.8.0-openjdk-headless
     # For getopt, should no longer be necessary in ElasticSearch 2:
     # https://github.com/elastic/elasticsearch/pull/12165
-    util-linux-ng
+    $util_linux_package
     which
 
     # init.d script helpers
     initscripts
 
     # For pkill/pgrep used for legacy status/stop commands.
-    procps
+    $procps_package
   )
   hadoop_analytics_package_dependencies=(
     java-1.8.0-openjdk-headless
@@ -72,8 +85,6 @@ elif [ -f /etc/debian_version ]; then
   libffi_version=6
   openjdk_version=7
 
-  # shellcheck disable=SC1091
-  source /etc/os-release
   if [[ "$ID" == "debian" && "$VERSION_ID" == "7" ]]; then
     libffi_version=5
   elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
