@@ -23,10 +23,10 @@ rm -rf "$build_dir"
 mkdir -p "$build_dir"
 cd "$build_dir"
 
-# When building the packages for Ubuntu 12.04, we need a newer version of CMake
-# than what's available via the packages (we need 2.8.10+ for
+# When building the packages for Debian 7 or Ubuntu 12.04, we need a newer
+# version of CMake than what's available via the packages (we need 2.8.10+ for
 # ExternalProject_Add URL_HASH compatibility).
-if [[ "${ID:-}" == "ubuntu" && "${VERSION_ID:-}" == "12.04" ]]; then
+if [[ "${ID:-}" == "debian" && "${VERSION_ID:-}" == "7" ]] || [[ "${ID:-}" == "ubuntu" && "${VERSION_ID:-}" == "12.04" ]]; then
   if [[ ! -e "$build_dir/build/work/cmake-3.4.3/bin/cmake" ]]; then
     mkdir -p "$build_dir/build/work/cmake-3.4.3"
     curl -L "https://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz" | tar --strip-components 1 -C "$build_dir/build/work/cmake-3.4.3" -xz

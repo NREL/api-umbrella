@@ -154,7 +154,7 @@ elif [ -f /etc/debian_version ]; then
     openjdk-$openjdk_version-jdk
   )
 
-  if [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
     core_build_dependencies+=("libtool-bin")
   fi
 else
