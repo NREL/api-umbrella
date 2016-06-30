@@ -1,6 +1,6 @@
 # API Umbrella Change Log
 
-## 0.12.0 (2016-06-29)
+## 0.12.0 (2016-06-30)
 
 This update brings a variety of fixes and new features. A few potential security issues are also addressed. Upgrading is recommended.
 
