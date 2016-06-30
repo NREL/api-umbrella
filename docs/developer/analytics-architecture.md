@@ -44,7 +44,7 @@ The analytic APIs in the web application directly query Elasticsearch:
 
 ## PostgreSQL
 
-**TODO: The PostgreSQL adapter doesn't currently exist, but should be completed before shipping the package releases of v0.12.**
+**TODO: The PostgreSQL adapter doesn't currently exist, but the idea is to leverage the same SQL framework built for Kylin.**
 
 Suitable for small amounts of historical analytics data, or small to medium amounts of data with a columnar storage extension. *(TODO: Provide more definitive guidance on what small/medium/large amounts are)*
 
@@ -116,14 +116,10 @@ During ingest, there are several concurrent processes that play a role:
   - Since the data is only appended, the same minute cannot be processed twice, which is why we give a minute buffer after the JSON file has ceased writing activity to convert it to ORC.
   - The ORC file format gives much better compression and querying performance than storing everything in JSON.
   - If a new ORC file is created for a new day, the partition will be added to the Hive table.
-  - *TODO: At the end of each day, compact the many per-minute ORC files that were created by the append process into a single ORC file.*
-  - *TODO: While unlikely, there are certain edge-cases that could lead to missing analytics data in the daily ORC files. Namely, if data comes into a JSON file for a previous minute that's already been processed, this minute won't be processed again (since we only append to the ORC table). This shouldn't be likely due to Kafka's in-order processing, but to resolve this, we could reprocess the full day based on the JSON after we give an ample buffer after the day has ended (a couple hours). This could also serve as the compaction step, since we would be replacing all the data at once.*
-  - *TODO: Automatically remove old JSON minute data once it's no longer needed (after we're done with any final daily processing).*
+  - At the end of each day, overwrite the daily ORC file with a new, compacted file from the original JSON data. Writing the full day at once provides better querying performance than the many per-minute ORC files. By basing this daily file on the original JSON data, it also alleviates any rare edge-cases where the per-minute appender missed data.
+  - Automatically remove old JSON minute data once it's no longer needed.
 - The API Umbrella Kylin Refresher task is responsible for triggering Kylin builds to updated the pre-aggregated data.
-  - **TODO: This refresher task hasn't been implemented yet.**
-  - Once every 30 minutes, we trigger a Kylin build for the most recent day's data.
-  - If the most recent day has already been built in Kylin, then a refresh is performed for that day (instead of a nw build).
-  - A day is currently the most granular refresh period for Kylin, so the same day's data will continually be refreshed as the day goes on.
+  - At the end of each day, after writing the compacted ORC file for the full day, we then trigger a Kylin build for the most recent day's data.
 
 This setup is unfortunately complicated with several moving pieces. However, there are several things that could potentially simplify this setup quite a bit in the future:
 
