@@ -25,7 +25,7 @@ API Umbrella is an open source API management platform for exposing web service 
    getting-started
 
 .. toctree::
-   :caption: Administrator Documentation
+   :caption: For Admin Users
    :maxdepth: 2
 
    admin/api-backends/index
@@ -36,7 +36,7 @@ API Umbrella is an open source API management platform for exposing web service 
    admin/other-docs
 
 .. toctree::
-   :caption: Server Setup Documentation
+   :caption: For System Admins
    :maxdepth: 1
 
    server/https-config
@@ -48,14 +48,14 @@ API Umbrella is an open source API management platform for exposing web service 
    server/analytics-storage-adapters
 
 .. toctree::
-   :caption: API Consumer Documentation
+   :caption: For API Consumers
    :maxdepth: 1
 
    api-consumer/api-key-usage
    api-consumer/rate-limits
 
 .. toctree::
-   :caption: Developer Documentation
+   :caption: For API Umbrella Developers
    :maxdepth: 1
 
    developer/architecture
