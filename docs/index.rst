@@ -33,6 +33,7 @@ API Umbrella is an open source API management platform for exposing web service 
    admin/admin-accounts/index
    admin/analytics/index
    admin/api
+   admin/other-docs
 
 .. toctree::
    :caption: Server Setup Documentation
