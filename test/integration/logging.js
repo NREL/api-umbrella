@@ -8,6 +8,8 @@ var _ = require('lodash'),
     Curler = require('curler').Curler,
     crypto = require('crypto'),
     Factory = require('factory-lady'),
+    mongoose = require('mongoose'),
+    randomstring = require('randomstring'),
     request = require('request');
 
 describe('logging', function() {
@@ -49,7 +51,7 @@ describe('logging', function() {
       },
       {
         _id: 'example',
-        frontend_host: 'localhost',
+        frontend_host: '*',
         backend_host: 'localhost',
         servers: [
           {
@@ -219,18 +221,13 @@ describe('logging', function() {
       response.statusCode.should.eql(200);
 
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
         var fields = _.keys(record).sort();
-
-        // Varnish randomly turns some non-chunked responses into chunked
-        // responses, so these header may crop up, but we'll ignore these for
-        // this test's purposes.
-        // See: https://www.varnish-cache.org/trac/ticket/1506
-        // TODO: Remove if Varnish changes its behavior.
-        fields = _.without(fields, 'response_transfer_encoding', 'response_content_length');
 
         fields.should.eql([
           'api_key',
           'backend_response_time',
+          'gatekeeper_denied_code',
           'internal_gatekeeper_time',
           'proxy_overhead',
           'request_accept',
@@ -242,6 +239,10 @@ describe('logging', function() {
           'request_hierarchy',
           'request_host',
           'request_ip',
+          'request_ip_city',
+          'request_ip_country',
+          'request_ip_location',
+          'request_ip_region',
           'request_method',
           'request_origin',
           'request_path',
@@ -255,11 +256,14 @@ describe('logging', function() {
           'request_user_agent_type',
           'response_age',
           'response_cache',
+          'response_content_encoding',
+          'response_content_length',
           'response_content_type',
           'response_server',
           'response_size',
           'response_status',
           'response_time',
+          'response_transfer_encoding',
           'user_email',
           'user_id',
           'user_registration_source',
@@ -367,10 +371,9 @@ describe('logging', function() {
         record.request_ip_country.should.eql('US');
         record.request_ip_region.should.eql('CA');
         record.request_ip_city.should.eql('Mountain View');
-        record.request_ip_location.should.eql({
-          lat: 37.3845,
-          lon: -122.0881,
-        });
+        Object.keys(record.request_ip_location).length.should.eql(2);
+        record.request_ip_location.lat.should.be.closeTo(37.386, 0.00);
+        record.request_ip_location.lon.should.be.closeTo(-122.0838, 0.00);
 
         done();
       }.bind(this));
@@ -394,10 +397,9 @@ describe('logging', function() {
         record.request_ip_country.should.eql('US');
         should.not.exist(record.request_ip_region);
         should.not.exist(record.request_ip_city);
-        record.request_ip_location.should.eql({
-          lat: 38,
-          lon: -97,
-        });
+        Object.keys(record.request_ip_location).length.should.eql(2);
+        record.request_ip_location.lat.should.be.closeTo(37.751, 0.00);
+        record.request_ip_location.lon.should.be.closeTo(-97.822, 0.00);
 
         done();
       }.bind(this));
@@ -421,10 +423,9 @@ describe('logging', function() {
         record.request_ip_country.should.eql('US');
         record.request_ip_region.should.eql('CA');
         record.request_ip_city.should.eql('Mountain View');
-        record.request_ip_location.should.eql({
-          lat: 37.3845,
-          lon: -122.0881,
-        });
+        Object.keys(record.request_ip_location).length.should.eql(2);
+        record.request_ip_location.lat.should.be.closeTo(37.386, 0.00);
+        record.request_ip_location.lon.should.be.closeTo(-122.0838, 0.00);
 
         done();
       }.bind(this));
@@ -444,20 +445,23 @@ describe('logging', function() {
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error) {
         should.not.exist(error);
-        global.elasticsearch.get({
-          index: 'api-umbrella',
-          type: 'city',
-          id: crypto.createHash('sha256').update('US-CA-Mountain View').digest('hex'),
-        }, function(error, res) {
+        var id = crypto.createHash('sha256').update('US-CA-Mountain View').digest('hex');
+        mongoose.testConnection.model('LogCityLocation').find({
+          _id: id,
+        }, function(error, locations) {
           should.not.exist(error);
-          _.omit(res._source, 'updated_at').should.eql({
+          locations.length.should.eql(1);
+          var location = locations[0].toObject();
+          location.updated_at.should.be.a('date');
+          location.location.type.should.eql('Point');
+          location.location.coordinates.length.should.eql(2);
+          location.location.coordinates[0].should.be.closeTo(-122.0838, 0.00);
+          location.location.coordinates[1].should.be.closeTo(37.386, 0.00);
+          _.omit(location, 'updated_at', 'location').should.eql({
+            _id: id,
             country: 'US',
             region: 'CA',
             city: 'Mountain View',
-            location: {
-              lat: 37.3845,
-              lon: -122.0881,
-            },
           });
           done();
         });
@@ -482,24 +486,26 @@ describe('logging', function() {
         record.request_ip_country.should.eql('SG');
         should.not.exist(record.request_ip_region);
         record.request_ip_city.should.eql('Singapore');
-        record.request_ip_location.should.eql({
-          lat: 1.2931,
-          lon: 103.8558,
-        });
+        Object.keys(record.request_ip_location).length.should.eql(2);
+        record.request_ip_location.lat.should.be.closeTo(1.2931, 0.00);
+        record.request_ip_location.lon.should.be.closeTo(103.8558, 0.00);
 
-        global.elasticsearch.get({
-          index: 'api-umbrella',
-          type: 'city',
-          id: crypto.createHash('sha256').update('SG--Singapore').digest('hex'),
-        }, function(error, res) {
+        var id = crypto.createHash('sha256').update('SG--Singapore').digest('hex');
+        mongoose.testConnection.model('LogCityLocation').find({
+          _id: id,
+        }, function(error, locations) {
           should.not.exist(error);
-          _.omit(res._source, 'updated_at').should.eql({
+          locations.length.should.eql(1);
+          var location = locations[0].toObject();
+          location.updated_at.should.be.a('date');
+          location.location.type.should.eql('Point');
+          location.location.coordinates.length.should.eql(2);
+          location.location.coordinates[0].should.be.closeTo(103.8558, 0.00);
+          location.location.coordinates[1].should.be.closeTo(1.2931, 0.00);
+          _.omit(location, 'updated_at', 'location').should.eql({
+            _id: id,
             country: 'SG',
             city: 'Singapore',
-            location: {
-              lat: 1.2931,
-              lon: 103.8558,
-            },
           });
           done();
         });
@@ -524,23 +530,25 @@ describe('logging', function() {
         record.request_ip_country.should.eql('SG');
         should.not.exist(record.request_ip_region);
         should.not.exist(record.request_ip_city);
-        record.request_ip_location.should.eql({
-          lat: 1.3667,
-          lon: 103.8,
-        });
+        Object.keys(record.request_ip_location).length.should.eql(2);
+        record.request_ip_location.lat.should.be.closeTo(1.3667, 0.00);
+        record.request_ip_location.lon.should.be.closeTo(103.8, 0.00);
 
-        global.elasticsearch.get({
-          index: 'api-umbrella',
-          type: 'city',
-          id: crypto.createHash('sha256').update('SG--').digest('hex'),
-        }, function(error, res) {
+        var id = crypto.createHash('sha256').update('SG--').digest('hex');
+        mongoose.testConnection.model('LogCityLocation').find({
+          _id: id,
+        }, function(error, locations) {
           should.not.exist(error);
-          _.omit(res._source, 'updated_at').should.eql({
+          locations.length.should.eql(1);
+          var location = locations[0].toObject();
+          location.updated_at.should.be.a('date');
+          location.location.type.should.eql('Point');
+          location.location.coordinates.length.should.eql(2);
+          location.location.coordinates[0].should.be.closeTo(103.8, 0.00);
+          location.location.coordinates[1].should.be.closeTo(1.3667, 0.00);
+          _.omit(location, 'updated_at', 'location').should.eql({
+            _id: id,
             country: 'SG',
-            location: {
-              lat: 1.3667,
-              lon: 103.8,
-            },
           });
           done();
         });
@@ -552,7 +560,7 @@ describe('logging', function() {
     this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
-        'X-Forwarded-For': '212.55.61.5',
+        'X-Forwarded-For': '191.102.110.22',
       },
     });
 
@@ -561,28 +569,31 @@ describe('logging', function() {
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
-        record.request_ip.should.eql('212.55.61.5');
-        record.request_ip_country.should.eql('FO');
-        should.not.exist(record.request_ip_region);
-        record.request_ip_city.should.eql('Tórshavn');
-        record.request_ip_location.should.eql({
-          lat: 62.0167,
-          lon: -6.7667,
-        });
+        record.request_ip.should.eql('191.102.110.22');
+        record.request_ip_country.should.eql('CO');
+        record.request_ip_region.should.eql('34');
+        record.request_ip_city.should.eql('Bogotá');
+        Object.keys(record.request_ip_location).length.should.eql(2);
+        record.request_ip_location.lat.should.be.closeTo(4.6492, 0.00);
+        record.request_ip_location.lon.should.be.closeTo(-74.0628, 0.00);
 
-        global.elasticsearch.get({
-          index: 'api-umbrella',
-          type: 'city',
-          id: crypto.createHash('sha256').update('FO--Tórshavn', 'utf8').digest('hex'),
-        }, function(error, res) {
+        var id = crypto.createHash('sha256').update('CO-34-Bogotá', 'utf8').digest('hex');
+        mongoose.testConnection.model('LogCityLocation').find({
+          _id: id,
+        }, function(error, locations) {
           should.not.exist(error);
-          _.omit(res._source, 'updated_at').should.eql({
-            country: 'FO',
-            city: 'Tórshavn',
-            location: {
-              lat: 62.0167,
-              lon: -6.7667,
-            },
+          locations.length.should.eql(1);
+          var location = locations[0].toObject();
+          location.updated_at.should.be.a('date');
+          location.location.type.should.eql('Point');
+          location.location.coordinates.length.should.eql(2);
+          location.location.coordinates[0].should.be.closeTo(-74.0628, 0.00);
+          location.location.coordinates[1].should.be.closeTo(4.6492, 0.00);
+          _.omit(location, 'updated_at', 'location').should.eql({
+            _id: id,
+            country: 'CO',
+            region: '34',
+            city: 'Bogotá',
           });
           done();
         });
@@ -829,7 +840,13 @@ describe('logging', function() {
     var expectedRawBinary = new Buffer('77+9', 'base64').toString();
 
     var args = 'url_encoded=' + urlEncoded + '&base64ed=' + base64ed + '&raw=' + raw;
-    request({
+
+    // Use curl and not request for this test, since node's HTTP parser
+    // prevents invalid utf8 characters from being used in headers as of NodeJS
+    // v0.10.42. But we still want to test this, since other clients can still
+    // pass invalid utf8 characters.
+    var curl = new Curler();
+    curl.request({
       method: 'GET',
       url: 'http://localhost:9080/info/' + urlEncoded + '/' + base64ed + '/' + raw + '/?api_key=' + this.apiKey + '&unique_query_id=' + this.uniqueQueryId + '&' + args,
       headers: {
@@ -993,6 +1010,30 @@ describe('logging', function() {
     }.bind(this));
   });
 
+  it('logs requests with dots in query parameters by translating dots to underscores (elasticsearch 2 compatibility)', function(done) {
+    this.timeout(10000);
+
+    var options = _.merge({}, this.options, {
+      qs: {
+        'foo.bar.baz': 'example.1',
+        'foo.bar': 'example.2',
+        'foo[bar]': 'example.3',
+      },
+    });
+
+    request.get('http://localhost:9080/info/', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_query.foo_bar_baz.should.eql('example.1');
+        record.request_query.foo_bar.should.eql('example.2');
+        record.request_query['foo[bar]'].should.eql('example.3');
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
   describe('multiple request header handling', function() {
     var multipleForbidden = {
       'Content-Type': 'request_content_type',
@@ -1141,16 +1182,56 @@ describe('logging', function() {
         }, function(error, res) {
           should.not.exist(error);
 
-          res[hit['_index']].mappings[hit['_type']].properties.request_at.should.eql({
-            type: 'date',
-            format: 'dateOptionalTime',
-          });
+          var property = res[hit['_index']].mappings[hit['_type']].properties.request_at;
+          if(config.get('elasticsearch.api_version') === 1) {
+            property.should.eql({
+              type: 'date',
+              format: 'dateOptionalTime',
+            });
+          } else if(config.get('elasticsearch.api_version') >= 2) {
+            property.should.eql({
+              type: 'date',
+              format: 'strict_date_optional_time||epoch_millis',
+            });
+          } else {
+            throw 'Unknown elasticsearch version: ' + config.get('elasticsearch.api_version');
+          }
 
           done();
         });
       });
     }.bind(this));
   });
+
+  it('logs the request_at as the time the request finishes (not when it begins)', function(done) {
+    this.timeout(15000);
+
+    var requestStart = Date.now();
+    request.get('http://localhost:9080/delay/3000', this.options, function(error, response) {
+      var requestEnd = Date.now();
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+
+        var recordResponseTime = record.response_time;
+        recordResponseTime.should.be.gte(2500);
+        recordResponseTime.should.be.lte(3500);
+
+        var localResponseTime = requestEnd - requestStart;
+        localResponseTime.should.be.gte(2500);
+        localResponseTime.should.be.lte(3500);
+
+        var diffExpectedEndTime = requestEnd - record.request_at;
+        diffExpectedEndTime.should.be.gte(-500);
+        diffExpectedEndTime.should.be.lte(500);
+
+        done();
+      });
+    }.bind(this));
+  });
+
 
   it('successfully logs query strings when the field first indexed was a date, but later queries are not (does not attempt to map fields into dates)', function(done) {
     this.timeout(30000);
@@ -1334,6 +1415,115 @@ describe('logging', function() {
         done();
       }.bind(this));
     }.bind(this));
+  });
+
+  describe('length limits', function() {
+    it('logs requests with the maximum 8KB URL length', function(done) {
+      this.timeout(10000);
+
+      var options = _.merge({}, this.options, {});
+      delete options.qs;
+
+      var otherHeaderLineContent = 'GET  HTTP/1.1\r\n';
+      var urlPath = '/info/?unique_query_id=' + this.uniqueQueryId + '&long=';
+      var longQuery = randomstring.generate(8192 - urlPath.length - otherHeaderLineContent.length);
+      urlPath += longQuery;
+      var url = 'http://localhost:9080' + urlPath;
+
+      request.get(url, options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+          should.not.exist(error);
+          record.request_query.long.should.eql(longQuery);
+          done();
+        }.bind(this));
+      }.bind(this));
+    });
+
+    // We may actually want to revisit this behavior and log these requests,
+    // but documenting current behavior.
+    //
+    // In order to log these requests, we'd need to move the log_by_lua_file
+    // statement out of the "location" block and into the "http" level. We'd
+    // then need to account for certain things in the logging logic that won't
+    // be present in these error conditions.
+    it('does not log requests that exceed the maximum 8KB URL length limit', function(done) {
+      this.timeout(10000);
+
+      var options = _.merge({}, this.options, {});
+      delete options.qs;
+
+      var otherHeaderLineContent = 'GET  HTTP/1.1\r\n';
+      var urlPath = '/info/?unique_query_id=' + this.uniqueQueryId + '&long=';
+      var longQuery = randomstring.generate(8193 - urlPath.length - otherHeaderLineContent.length);
+      urlPath += longQuery;
+      var url = 'http://localhost:9080' + urlPath;
+
+      request.get(url, options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(414);
+        waitForLog(this.uniqueQueryId, function(error) {
+          error.should.include('Timed out fetching log');
+          done();
+        }.bind(this));
+      }.bind(this));
+    });
+
+    it('logs a request with a combination of a long URL and long header, truncating headers', function(done) {
+      this.timeout(10000);
+
+      var options = _.merge({}, this.options, {
+        headers: {
+          'Accept': randomstring.generate(1000),
+          'Accept-Encoding': randomstring.generate(1000),
+          'Connection': randomstring.generate(1000),
+          'Content-Type': randomstring.generate(1000),
+          'Host': randomstring.generate(1000),
+          'Origin': randomstring.generate(1000),
+          'User-Agent': randomstring.generate(1000),
+          'Referer': randomstring.generate(1000),
+        },
+        auth: {
+          user: randomstring.generate(1000),
+          pass: randomstring.generate(1000),
+        },
+      });
+      delete options.qs;
+
+      var otherHeaderLineContent = 'GET  HTTP/1.1\r\n';
+      var urlPath = '/logging-long-response-headers/?unique_query_id=' + this.uniqueQueryId + '&long=';
+      var longQuery = randomstring.generate(8192 - urlPath.length - otherHeaderLineContent.length);
+      urlPath += longQuery;
+      var url = 'http://localhost:9080' + urlPath;
+
+      request.get(url, options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+          should.not.exist(error);
+
+          // Ensure the full URL got logged.
+          record.request_query.long.should.eql(longQuery);
+
+          // Ensure the long header values got truncated so we're not
+          // susceptible to exceeding rsyslog's message buffers and we're also
+          // not storing an unexpected amount of data for values users can pass in.
+          record.request_accept.length.should.eql(200);
+          record.request_accept_encoding.length.should.eql(200);
+          record.request_connection.length.should.eql(200);
+          record.request_content_type.length.should.eql(200);
+          record.request_host.length.should.eql(200);
+          record.request_origin.length.should.eql(200);
+          record.request_user_agent.length.should.eql(400);
+          record.request_referer.length.should.eql(200);
+          record.response_content_encoding.length.should.eql(200);
+          record.response_content_type.length.should.eql(200);
+
+          done();
+        }.bind(this));
+      }.bind(this));
+    });
   });
 
   describe('global rate limits', function() {

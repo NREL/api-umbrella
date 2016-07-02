@@ -27,7 +27,11 @@ $ vagrant up # This step compiles API Umbrella from source, so the first time
              # make take 30-40 minutes.
 ```
 
-Assuming all goes smoothly, you should be able to see the homepage at [http://10.10.33.2/](http://10.10.33.2/). Run into problems? Open an [issue](https://github.com/NREL/api-umbrella/issues).
+Assuming all goes smoothly, you should be able to see the homepage at [http://10.10.33.2/](http://10.10.33.2/).
+
+If you run into issues when running `vagrant up`, try running `vagrant provision` once to see if the error reoccurs. This will pickup with the setup process from the last failure point, which can sometimes help resolve temporary issues.
+
+If you're still having any difficulties getting the Vagrant environment setup, then open an [issue](https://github.com/NREL/api-umbrella/issues).
 
 ## Directory Structure
 
@@ -56,6 +60,10 @@ $ sudo /etc/init.d/api-umbrella reload
 # Slow: Restarts everything:
 $ sudo /etc/init.d/api-umbrella restart
 ```
+
+## Writing and Running Tests
+
+See the [testing section](testing.html) for more information about writing and running tests.
 
 ## Customizing Your VM
 

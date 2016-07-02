@@ -20,9 +20,9 @@ class Api::V1::ApiScopesController < Api::V1::BaseController
 
     if(params[:search] && params[:search][:value].present?)
       @api_scopes = @api_scopes.or([
-        { :name => /#{params[:search][:value]}/i },
-        { :host => /#{params[:search][:value]}/i },
-        { :path_prefix => /#{params[:search][:value]}/i },
+        { :name => /#{Regexp.escape(params[:search][:value])}/i },
+        { :host => /#{Regexp.escape(params[:search][:value])}/i },
+        { :path_prefix => /#{Regexp.escape(params[:search][:value])}/i },
       ])
     end
   end
@@ -54,6 +54,7 @@ class Api::V1::ApiScopesController < Api::V1::BaseController
   private
 
   def save!
+    authorize(@api_scope) unless(@api_scope.new_record?)
     @api_scope.assign_attributes(params[:api_scope], :as => :admin)
     authorize(@api_scope)
     @api_scope.save

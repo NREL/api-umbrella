@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
+
+version_string=$(cat "$source_dir/src/api-umbrella/version.txt")
+version_matcher="^([^-]+)(-(.+))?$"
+if [[ $version_string =~ $version_matcher ]]; then
+  # shellcheck disable=SC2034
+  version=${BASH_REMATCH[1]}
+  version_pre=${BASH_REMATCH[3]}
+fi
+
+package_iteration="1"
+if [ -n "$version_pre" ]; then
+  package_iteration="0.$package_iteration.$version_pre"
+fi

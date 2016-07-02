@@ -3,6 +3,7 @@ local array_last = require "api-umbrella.utils.array_last"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
 local file = require "pl.file"
+local host_normalize = require "api-umbrella.utils.host_normalize"
 local lyaml = require "lyaml"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local path = require "pl.path"
@@ -150,10 +151,18 @@ end
 -- Read the /etc/api-umbrella/api-umbrella.yml config file that provides
 -- server-specific overrides for API Umbrella configuration.
 local function read_system_config()
-  local content = file.read(os.getenv("API_UMBRELLA_CONFIG") or "/etc/api-umbrella/api-umbrella.yml", true)
-  if content then
-    local overrides = lyaml.load(content)
-    deep_merge_overwrite_arrays(config, overrides)
+  local config_paths = os.getenv("API_UMBRELLA_CONFIG") or "/etc/api-umbrella/api-umbrella.yml"
+  config_paths = split(config_paths, ":", true)
+  for _, config_path in ipairs(config_paths) do
+    if path.exists(config_path) then
+      local content = file.read(config_path, true)
+      if content then
+        local overrides = lyaml.load(content)
+        deep_merge_overwrite_arrays(config, overrides)
+      end
+    else
+      print("WARNING: Config file does not exist: ", config_path)
+    end
   end
 
   nillify_yaml_nulls(config)
@@ -223,6 +232,21 @@ local function set_computed_config()
     default = (not default_host_exists),
   })
 
+  local default_hostname
+  if config["hosts"] then
+    for _, host in ipairs(config["hosts"]) do
+      if host["default"] and host["hostname"] then
+        default_hostname = host["hostname"]
+        break
+      end
+    end
+  end
+
+  if default_hostname then
+    config["_default_hostname"] = default_hostname
+    config["_default_hostname_normalized"] = host_normalize(default_hostname)
+  end
+
   -- Determine the nameservers for DNS resolution. Prefer explicitly configured
   -- nameservers, but fallback to nameservers defined in resolv.conf, and then
   -- Google's DNS servers if nothing else is defined.
@@ -278,6 +302,16 @@ local function set_computed_config()
     end
   end
 
+  if not config["analytics"]["outputs"] then
+    config["analytics"]["outputs"] = { config["analytics"]["adapter"] }
+  end
+
+  config["kafka"]["_rsyslog_broker"] = {}
+  for _, broker in ipairs(config["kafka"]["brokers"]) do
+    table.insert(config["kafka"]["_rsyslog_broker"], '"' .. broker["host"] .. ":" .. broker["port"] .. '"')
+  end
+  config["kafka"]["_rsyslog_broker"] = table.concat(config["kafka"]["_rsyslog_broker"], ",")
+
   -- Setup the request/response timeouts for the different pieces of the stack.
   -- Since we traverse multiple proxies, we want to make sure the timeouts of
   -- the different proxies are kept in sync.
@@ -308,14 +342,19 @@ local function set_computed_config()
     _src_root_dir = src_root_dir,
     _package_path = package.path,
     _package_cpath = package.cpath,
+    analytics = {
+      ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
+      ["_output_kylin?"] = array_includes(config["analytics"]["outputs"], "kylin"),
+    },
     mongodb = {
       _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
     },
     elasticsearch = {
-      _first_host = config["elasticsearch"]["hosts"][1],
+      _first_server = config["elasticsearch"]["_servers"][1],
     },
     ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
+    ["_service_hadoop_db_enabled?"] = array_includes(config["services"], "hadoop_db"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
     ["_service_nginx_reloader_enabled?"] = (array_includes(config["services"], "router") and config["nginx"]["_reloader_frequency"]),
@@ -338,7 +377,7 @@ local function set_computed_config()
   })
 
   if config["app_env"] == "test" then
-    config["_test_env_install_dir"] = path.join(path.dirname(embedded_root_dir), "test-env")
+    config["_test_env_install_dir"] = path.join(src_root_dir, "build/work/test-env")
   end
 end
 

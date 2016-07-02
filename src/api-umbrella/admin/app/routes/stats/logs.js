@@ -24,7 +24,7 @@ export default Base.extend({
         this.transitionTo('stats.logs', $.param(newQueryParams));
       }
     }
-  }.observes('query.params.query', 'query.params.search', 'query.params.interval', 'query.params.start_at', 'query.params.end_at'),
+  }.observes('query.params.query', 'query.params.search', 'query.params.interval', 'query.params.start_at', 'query.params.end_at', 'query.params.beta_analytics'),
 
   validateOptions: function() {
     var valid = true;

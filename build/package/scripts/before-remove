@@ -1,32 +1,32 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e -u
 
-STOP_SERVICE=false
-REMOVE_SERVICE=false
+stop_service=false
+remove_service=false
 
 case "$1" in
   # dpkg
   remove)
-    STOP_SERVICE=true
+    stop_service=true
     ;;
   deconfigure|failed-upgrade|upgrade)
     ;;
 
   # rpm
   0) # uninstall
-    STOP_SERVICE=true
-    REMOVE_SERVICE=true
+    stop_service=true
+    remove_service=true
     ;;
   1) # upgrade
     ;;
 esac
 
-if [ "$STOP_SERVICE" = "true" ]; then
+if [ "$stop_service" = "true" ]; then
   /etc/init.d/api-umbrella stop || true
 fi
 
-if [ "$REMOVE_SERVICE" = "true" ]; then
+if [ "$remove_service" = "true" ]; then
   if command -v chkconfig > /dev/null 2>&1; then
     chkconfig --del api-umbrella
   fi

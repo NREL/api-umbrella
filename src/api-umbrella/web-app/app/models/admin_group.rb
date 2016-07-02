@@ -28,9 +28,21 @@ class AdminGroup
     :api_scope_ids,
     :as => [:admin]
 
+  def self.sorted
+    order_by(:name.asc)
+  end
+
   def can?(permission)
     permissions = self.permission_ids || []
     permissions.include?(permission.to_s)
+  end
+
+  def admins
+    @admins ||= Admin.where(:group_ids => self.id).all.sorted
+  end
+
+  def admin_usernames
+    @admin_usernames ||= self.admins.map { |admin| admin.username }
   end
 
   private

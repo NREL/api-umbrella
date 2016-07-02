@@ -54,8 +54,8 @@ local function create_templates()
 end
 
 local function create_aliases()
-  local today = os.date("%Y-%m", ngx.time())
-  local tomorrow = os.date("%Y-%m", ngx.time() + 86400)
+  local today = os.date("!%Y-%m", ngx.time())
+  local tomorrow = os.date("!%Y-%m", ngx.time() + 86400)
 
   local aliases = {
     {

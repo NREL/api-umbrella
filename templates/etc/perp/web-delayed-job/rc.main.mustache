@@ -1,17 +1,18 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Redirect stderr to stdout
 exec 2>&1
 
-if test ${1} = "start"; then
+if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
+  api_umbrella_user="{{user}}"
 
-  RUN_OPTS="-e rc.env -c {{_src_root_dir}}/src/api-umbrella/web-app"
-  {{#user}}
-  RUN_OPTS="$RUN_OPTS -u {{user}}"
-  {{/user}}
+  run_args=("-e" "rc.env" "-c" "{{_src_root_dir}}/src/api-umbrella/web-app")
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
 
-  exec runtool $RUN_OPTS bundle exec ./script/delayed_job --pid-dir={{run_dir}} --queues=mailers run
+  exec runtool "${run_args[@]}" bundle exec ./script/delayed_job --pid-dir="{{run_dir}}" --queues=mailers run
 fi
 
 exit 0

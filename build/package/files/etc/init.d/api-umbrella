@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # api-umbrella
 #
@@ -16,67 +16,71 @@
 # Short-Description: API Umbrella
 ### END INIT INFO
 
-NAME=api-umbrella
-DESC="API Umbrella"
+name=api-umbrella
+desc="API Umbrella"
 
 if [ -f /etc/rc.d/init.d/functions ]; then
+  # shellcheck disable=SC1091
   . /etc/rc.d/init.d/functions
 elif [ -f /lib/lsb/init-functions ]; then
+  # shellcheck disable=SC1091
   . /lib/lsb/init-functions
 fi
 
 if [ -f /etc/sysconfig/api-umbrella ]; then
+  # shellcheck disable=SC1091
   . /etc/sysconfig/api-umbrella
 elif [ -f /etc/default/api-umbrella ]; then
+  # shellcheck disable=SC1091
   . /etc/default/api-umbrella
 fi
 
 start() {
   if type log_daemon_msg > /dev/null 2>&1; then
-    log_daemon_msg "Starting $DESC" "$NAME"
+    log_daemon_msg "Starting $desc" "$name"
   else
-    echo -n $"Starting $NAME: "
+    echo -n $"Starting $name: "
   fi
 
   api-umbrella start
-  RETVAL=$?
+  retval=$?
 
   if type log_end_msg > /dev/null 2>&1; then
-    log_end_msg $RETVAL
+    log_end_msg $retval
   elif type success > /dev/null 2>&1; then
-    if [ $RETVAL -eq 0 ]; then
-      success $"$NAME startup"
+    if [ $retval -eq 0 ]; then
+      success $"$name startup"
     else
-      failure $"$NAME startup"
+      failure $"$name startup"
     fi
     echo
   fi
 
-  return $RETVAL
+  return $retval
 }
 
 stop() {
   if type log_daemon_msg > /dev/null 2>&1; then
-    log_daemon_msg "Stopping $DESC" "$NAME"
+    log_daemon_msg "Stopping $desc" "$name"
   else
-    echo -n $"Stopping $NAME: "
+    echo -n $"Stopping $name: "
   fi
 
   api-umbrella stop
-  RETVAL=$?
+  retval=$?
 
   if type log_end_msg > /dev/null 2>&1; then
-    log_end_msg $RETVAL
+    log_end_msg $retval
   elif type success > /dev/null 2>&1; then
-    if [ $RETVAL -eq 0 ]; then
-      success $"$NAME shutdown"
+    if [ $retval -eq 0 ]; then
+      success $"$name shutdown"
     else
-      failure $"$NAME shutdown"
+      failure $"$name shutdown"
     fi
     echo
   fi
 
-  return $RETVAL
+  return $retval
 }
 
 restart() {
@@ -86,32 +90,32 @@ restart() {
 
 reload() {
   if type log_daemon_msg > /dev/null 2>&1; then
-    log_daemon_msg "Reloading $DESC" "$NAME"
+    log_daemon_msg "Reloading $desc" "$name"
   else
-    echo -n $"Reloading $NAME: "
+    echo -n $"Reloading $name: "
   fi
 
   api-umbrella reload
-  RETVAL=$?
+  retval=$?
 
   if type log_end_msg > /dev/null 2>&1; then
-    log_end_msg $RETVAL
+    log_end_msg $retval
   elif type success > /dev/null 2>&1; then
-    if [ $RETVAL -eq 0 ]; then
-      success $"$NAME reload"
+    if [ $retval -eq 0 ]; then
+      success $"$name reload"
     else
-      failure $"$NAME reload"
+      failure $"$name reload"
     fi
     echo
   fi
 
-  return $RETVAL
+  return $retval
 }
 
 status() {
   api-umbrella status
-  RETVAL=$?
-  return $RETVAL
+  retval=$?
+  return $retval
 }
 
 status_quiet() {
@@ -139,7 +143,7 @@ case "$1" in
     restart
     ;;
   *)
-    echo "Usage: $NAME {start|stop|status|reload|restart|condrestart}"
+    echo "Usage: $name {start|stop|status|reload|restart|condrestart}"
     exit 1
     ;;
 esac

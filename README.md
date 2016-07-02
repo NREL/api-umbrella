@@ -15,26 +15,15 @@ API Umbrella is an open source API management platform for exposing web service 
 
 ## Download
 
-Binary packages are available for [download](http://nrel.github.io/api-umbrella/download/). Follow the quick setup instructions on the download page to begin running API Umbrella.
+Binary packages are available for [download](https://apiumbrella.io/install/). Follow the quick setup instructions on the download page to begin running API Umbrella.
 
 ## Getting Started
 
-Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](http://nrel.github.io/api-umbrella/docs/getting-started/).
+Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](https://api-umbrella.readthedocs.org/en/latest/getting-started.html).
 
 ## API Umbrella Development
 
-Are you interested in working on the code behind API Umbrella? See our [development setup guide](http://nrel.github.io/api-umbrella/docs/development-setup/) to see how you can get a local development environment setup.
-
-## Projects
-
-In addition to this project, API Umbrella is made up of the following subprojects:
-
-* [api-umbrella-gatekeeper](https://github.com/NREL/api-umbrella-gatekeeper) - The gatekeeper is a custom reverse proxy that sits in front of your APIs and efficiently validates incoming requests.
-* [api-umbrella-router](https://github.com/NREL/api-umbrella-router) - The router provides the necessary configuration to join together API Umbrealla Gatekeeper with other open source proxies.
-* [api-umbrella-web](https://github.com/NREL/api-umbrella-web) - The web component provides the website frontend and web admin tool.
-* [api-umbrella-static-site](https://github.com/NREL/api-umbrella-static-site) - The static site provides the public website content using a static site generator.
-* [api-umbrella-config](https://github.com/NREL/api-umbrella-config) - Provides configuration file parsing for the other API Umbrella components.
-* [omnibus-api-umbrella](https://github.com/NREL/omnibus-api-umbrella) - Omnibus packaging for API Umbrella
+Are you interested in working on the code behind API Umbrella? See our [development setup guide](https://api-umbrella.readthedocs.org/en/latest/developer/dev-setup.html) to see how you can get a local development environment setup.
 
 ## Who's using API Umbrella?
 

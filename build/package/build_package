@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
+
+# shellcheck source=build/package/parse_version
+source "$source_dir/build/package/parse_version"
+
+# shellcheck source=build/package_dependencies.sh
+source "$source_dir/build/package_dependencies.sh"
+
+if [ -f /etc/redhat-release ]; then
+  package_type="rpm"
+  rpm_dist=$(rpm --query centos-release | grep -o "el[0-9]")
+elif [ -f /etc/debian_version ]; then
+  package_type="deb"
+  package_iteration="$package_iteration~$(lsb_release --codename --short)"
+else
+  echo "Unknown build system"
+  exit 1
+fi
+
+fpm_args=()
+fpm_args+=("-t" "$package_type")
+fpm_args+=("-s" "dir")
+fpm_args+=("--verbose")
+fpm_args+=("--license" "MIT")
+fpm_args+=("--version" "$version")
+fpm_args+=("--iteration" "$package_iteration")
+if [ "$package_type" == "rpm" ]; then
+  fpm_args+=("--rpm-dist" "$rpm_dist")
+  fpm_args+=("--rpm-compression" "xz")
+elif [ "$package_type" == "deb" ]; then
+  fpm_args+=("--deb-compression" "xz")
+  fpm_args+=("--deb-no-default-config-files")
+fi
+
+if [ "$PACKAGE" == "core" ]; then
+  for dep in "${core_package_dependencies[@]}"; do
+    fpm_args+=("-d" "$dep")
+  done
+
+  fpm_args+=("-C" "$WORK_DIR/package-dest-core")
+  fpm_args+=("--name" "api-umbrella")
+  fpm_args+=("--config-files" "etc/api-umbrella/api-umbrella.yml")
+  fpm_args+=("--after-install" "$source_dir/build/package/scripts/after-install")
+  fpm_args+=("--before-remove" "$source_dir/build/package/scripts/before-remove")
+  fpm_args+=("--after-remove" "$source_dir/build/package/scripts/after-remove")
+  fpm_args+=("--directories" "/opt/api-umbrella")
+  fpm_args+=("--directories" "/etc/api-umbrella")
+elif [ "$PACKAGE" == "hadoop-analytics" ]; then
+  for dep in "${hadoop_analytics_package_dependencies[@]}"; do
+    fpm_args+=("-d" "$dep")
+  done
+
+  fpm_args+=("-C" "$WORK_DIR/package-dest-hadoop-analytics")
+  fpm_args+=("--name" "api-umbrella-hadoop-analytics")
+  fpm_args+=("--depends" "api-umbrella")
+fi
+
+mkdir -p "$WORK_DIR/package/build/$PACKAGE"
+cd "$WORK_DIR/package/build/$PACKAGE"
+env XZ_OPT=-9 bundle exec fpm "${fpm_args[@]}"

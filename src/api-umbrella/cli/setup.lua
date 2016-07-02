@@ -32,6 +32,7 @@ local function set_template_config()
     _elasticsearch_yaml = lyaml.dump({deep_merge_overwrite_arrays({
       path = {
         conf = path.join(config["etc_dir"], "elasticsearch"),
+        scripts = path.join(config["etc_dir"], "elasticsearch_scripts"),
         data = path.join(config["db_dir"], "elasticsearch"),
         logs = config["log_dir"],
       },
@@ -96,6 +97,7 @@ local function prepare()
     config["tmp_dir"],
     path.join(config["db_dir"], "elasticsearch"),
     path.join(config["db_dir"], "mongodb"),
+    path.join(config["db_dir"], "rsyslog"),
     path.join(config["etc_dir"], "trafficserver/snapshots"),
     path.join(config["log_dir"], "trafficserver"),
     path.join(config["root_dir"], "var/trafficserver"),
@@ -180,6 +182,11 @@ local function write_static_site_key()
     path.join(config["static_site"]["build_dir"], "signup/index.html"),
   }
   for _, file_path in ipairs(file_paths) do
+    if not path.exists(file_path) then
+      print("File does not exist: " .. file_path)
+      os.exit(1)
+    end
+
     local content = file.read(file_path)
     local new_content, replacements = string.gsub(content, "apiKey: '.-'", "apiKey: '" .. config["static_site"]["api_key"] .. "'")
     if replacements > 0 then
@@ -241,8 +248,14 @@ local function activate_services()
         end
       end
 
+      if not config["_service_hadoop_db_enabled?"] then
+        if array_includes({ "flume", "kylin", "presto" }, service_name) then
+          is_active = false
+        end
+      end
+
       if not config["_service_router_enabled?"] then
-        if array_includes({ "geoip-auto-updater", "heka", "mora", "nginx", "trafficserver" }, service_name) then
+        if array_includes({ "geoip-auto-updater", "mora", "nginx", "rsyslog", "trafficserver" }, service_name) then
           is_active = false
         end
       end

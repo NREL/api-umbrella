@@ -16,12 +16,12 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
     if(params["search"] && params["search"]["value"].present?)
       @admins = @admins.or([
-        { :first_name => /#{params["search"]["value"]}/i },
-        { :last_name => /#{params["search"]["value"]}/i },
-        { :email => /#{params["search"]["value"]}/i },
-        { :username => /#{params["search"]["value"]}/i },
-        { :authentication_token => /#{params["search"]["value"]}/i },
-        { :_id => /#{params["search"]["value"]}/i },
+        { :first_name => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :last_name => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :email => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :username => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :authentication_token => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :_id => /#{Regexp.escape(params["search"]["value"])}/i },
       ])
     end
 
@@ -71,6 +71,7 @@ class Api::V1::AdminsController < Api::V1::BaseController
   private
 
   def save!
+    authorize(@admin) unless(@admin.new_record?)
     @admin.assign_attributes(params[:admin], :as => :admin)
     authorize(@admin)
     @admin.save

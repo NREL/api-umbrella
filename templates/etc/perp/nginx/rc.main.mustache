@@ -1,13 +1,13 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Redirect stderr to stdout
 exec 2>&1
 
-if test ${1} = "start"; then
+if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
 
-  RUN_OPTS="-e rc.env -c {{_src_root_dir}}"
-  exec runtool $RUN_OPTS nginx -p {{_src_root_dir}}/ -c {{etc_dir}}/nginx/router.conf
+  run_args=("-e" "rc.env" "-c" "{{_src_root_dir}}")
+  exec runtool "${run_args[@]}" nginx -p "{{_src_root_dir}}/" -c "{{etc_dir}}/nginx/router.conf"
 fi
 
 exit 0

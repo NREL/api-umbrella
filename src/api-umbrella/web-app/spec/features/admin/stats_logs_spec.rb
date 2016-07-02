@@ -1,15 +1,12 @@
 require "spec_helper"
 require "addressable/uri"
+require 'test_helper/elasticsearch_helper'
 
 describe "analytics filter logs", :js => true do
   login_admin
 
   before(:each) do
-    LogItem.gateway.client.delete_by_query :index => LogItem.index_name, :body => {
-      :query => {
-        :match_all => {},
-      },
-    }
+    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
   end
 
   describe "xss" do
@@ -43,7 +40,7 @@ describe "analytics filter logs", :js => true do
           "input" => "select",
           "operator" => "is_null",
           "type" => "string",
-          "value" => nil
+          "value" => nil,
         }]
       })
 
@@ -60,6 +57,7 @@ describe "analytics filter logs", :js => true do
         "end_at" => "2015-01-18",
         "interval" => "day",
         "query" => default_query,
+        "beta_analytics" => "false",
       })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
@@ -75,6 +73,7 @@ describe "analytics filter logs", :js => true do
         "end_at" => "2015-01-18",
         "interval" => "day",
         "query" => default_query,
+        "beta_analytics" => "false",
       })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
@@ -95,6 +94,7 @@ describe "analytics filter logs", :js => true do
         "interval" => "day",
         "query" => JSON.generate({ "condition" => "AND", "rules" => [] }),
         "search" => "",
+        "beta_analytics" => "false",
       })
 
       visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
@@ -115,6 +115,7 @@ describe "analytics filter logs", :js => true do
         "end_at" => "2015-01-18",
         "interval" => "day",
         "query" => "",
+        "beta_analytics" => "false",
       })
     end
 

@@ -1,4 +1,3 @@
-local host_normalize = require "api-umbrella.utils.host_normalize"
 local lyaml = require "lyaml"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local utils = require "api-umbrella.proxy.utils"
@@ -22,18 +21,6 @@ local function read_file()
 end
 
 local function set_defaults(data)
-  local default_hostname
-  if data["hosts"] then
-    for _, host in ipairs(data["hosts"]) do
-      if host["default"] and host["hostname"] then
-        default_hostname = host_normalize(host["hostname"])
-        break
-      end
-    end
-  end
-
-  data["_default_hostname_normalized"] = default_hostname
-
   if data["internal_apis"] then
     for _, api in ipairs(data["internal_apis"]) do
       if api["frontend_host"] == "{{router.web_app_host}}" then

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+source_dir="$(dirname "$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")")"
+docker_image=${DIST/-/:}
+container_name="api-umbrella-package-$DIST-verify"
+container_name=${container_name//[^a-zA-Z0-9_.-]/}
+
+# Wipe any previous build attempts.
+existing=$(docker ps -a -q --filter="name=$container_name")
+if [ "$existing" != "" ]; then
+  docker rm -f "$existing"
+fi
+
+# Run inside a privileged container so the ulimit settings that API Umbrella
+# v0.8 attempt work (needed so we can test upgrades from v0.8).
+docker run \
+  --name="$container_name" \
+  --volume="$source_dir:/api-umbrella" \
+  --env="DIST=$DIST" \
+  --tty \
+  --rm \
+  --privileged \
+  "$docker_image" \
+  /bin/bash -c "/api-umbrella/build/package/verify/docker_script"
+
+echo "Completed package verification for $DIST"

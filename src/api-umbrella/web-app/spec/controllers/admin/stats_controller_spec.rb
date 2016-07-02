@@ -1,16 +1,11 @@
 require 'spec_helper'
+require 'test_helper/elasticsearch_helper'
 
 describe Admin::StatsController do
   login_admin
 
   before(:each) do
-    ["2014-11", "2015-01", "2015-03"].each do |month|
-      LogItem.gateway.client.delete_by_query :index => "api-umbrella-logs-#{month}", :body => {
-        :query => {
-          :match_all => {},
-        },
-      }
-    end
+    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
   end
 
   describe "GET search" do
@@ -199,6 +194,49 @@ describe Admin::StatsController do
   end
 
   describe "GET logs" do
+    it "strips the api_key from the request_url on the JSON response" do
+      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_url => "http://127.0.0.1/with_api_key/?foo=bar&api_key=my_secret_key", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" })
+      LogItem.gateway.refresh_index!
+
+      get :logs, {
+        "format" => "json",
+        "tz" => "America/Denver",
+        "start_at" => "2015-01-13",
+        "end_at" => "2015-01-18",
+        "interval" => "day",
+        "start" => "0",
+        "length" => "10",
+      }
+
+      response.status.should eql(200)
+      body = response.body
+      data = MultiJson.load(body)
+      data["recordsTotal"].should eql(1)
+      data["data"][0]["request_url"].should eql("/with_api_key/?foo=bar")
+      data["data"][0]["request_query"].should eql({ "foo" => "bar" })
+      body.should_not include("my_secret_key")
+    end
+
+    it "strips the api_key from the request_url on the CSV response" do
+      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_url => "http://127.0.0.1/with_api_key/?api_key=my_secret_key&foo=bar", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" })
+      LogItem.gateway.refresh_index!
+
+      get :logs, {
+        "format" => "csv",
+        "tz" => "America/Denver",
+        "start_at" => "2015-01-13",
+        "end_at" => "2015-01-18",
+        "interval" => "day",
+        "start" => "0",
+        "length" => "10",
+      }
+
+      response.status.should eql(200)
+      body = response.body
+      body.should include(",http://127.0.0.1/with_api_key/?foo=bar,")
+      body.should_not include("my_secret_key")
+    end
+
     it "downloads a CSV that requires an elasticsearch scan and scroll query" do
       FactoryGirl.create_list(:log_item, 1005, :request_at => Time.parse("2015-01-16T06:06:28.816Z"))
       LogItem.gateway.refresh_index!

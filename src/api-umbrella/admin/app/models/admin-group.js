@@ -6,6 +6,7 @@ export default Model.extend(Ember.Validations.Mixin, {
   name: attr(),
   apiScopeIds: attr(),
   permissionIds: attr(),
+  admins: attr(),
   createdAt: attr(),
   updatedAt: attr(),
   creator: attr(),

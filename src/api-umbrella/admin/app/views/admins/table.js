@@ -44,6 +44,7 @@ export default Ember.View.extend({
           data: 'group_names',
           name: 'Groups',
           title: 'Groups',
+          orderable: false,
           render: Admin.DataTablesHelpers.renderListEscaped,
         },
         {

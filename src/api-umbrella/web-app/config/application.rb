@@ -18,35 +18,100 @@ end
 module ApiUmbrella
   class Application < Rails::Application
     config.before_configuration do
-      default_config = "/opt/api-umbrella/var/run/runtime_config.yml"
-      if(ENV["API_UMBRELLA_RUNTIME_CONFIG"].blank? && File.exist?(default_config) && File.readable?(default_config))
-        ENV["API_UMBRELLA_RUNTIME_CONFIG"] = default_config
+      require "symbolize_helper"
+
+      config_files = []
+      config_file = ENV["API_UMBRELLA_RUNTIME_CONFIG"]
+      if(config_file.present?)
+        config_files << config_file
       end
 
-      if(ENV["API_UMBRELLA_RUNTIME_CONFIG"])
-        ApiUmbrellaConfig.add_source!(ENV["API_UMBRELLA_RUNTIME_CONFIG"])
-        ApiUmbrellaConfig.reload!
+      # In non-test environments, load the system-wide runtime_config.yml file
+      # if it exists and the API_UMBRELLA_RUNTIME_CONFIG environment variable
+      # isn't set (this allows for more easily running "rails console" on
+      # without having to specify this environment variable). We don't set this
+      # in the test environment, since we don't want development environment
+      # config to be used in test (assuming you're testing from the same
+      # machine you're developing on).
+      if(config_files.blank? && Rails.env != "test")
+        default_runtime_config_file = "/opt/api-umbrella/var/run/runtime_config.yml"
+        if(File.exist?(default_runtime_config_file) && File.readable?(default_runtime_config_file))
+          config_files << default_runtime_config_file
+        end
       end
 
-      # Provide default config values for arrays when a real API Umbrella
-      # config file isn't passed in (via the API_UMBRELLA_RUNTIME_CONFIG
-      # environment variable).
+      # If no config environment variable is set and we're not using the
+      # default runtime config file, then fall back to the default.yml file at
+      # the top-level of the api-umbrella repo.
+      if(config_files.blank?)
+        config_files << File.expand_path("../../../../../config/default.yml", __FILE__)
+
+        if(Rails.env == "test")
+          if(ENV["API_UMBRELLA_CONFIG"].present?)
+            config_files += ENV["API_UMBRELLA_CONFIG"].split(":")
+          else
+            config_files << File.expand_path("../../../../../test/config/test.yml", __FILE__)
+          end
+        end
+      end
+
+      # Load the YAML config in.
+      config = {}
+      config_files.each do |file|
+        data = SymbolizeHelper.symbolize_recursive(YAML.load_file(file))
+        config.deep_merge!(data)
+      end
+
+      if(Rails.env == "test")
+        # When running as part of the integration test suite, where we run all
+        # the API Umbrella processes separately, ensure we connect to those
+        # ports.
+        if(ENV["INTEGRATION_TEST_SUITE"])
+          config[:mongodb][:url] = "mongodb://127.0.0.1:13001/api_umbrella_test"
+
+          # Don't override the Elasticsearch v2 connection tests.
+          if(config[:elasticsearch][:hosts] != ["http://127.0.0.1:9200"])
+            config[:elasticsearch][:hosts] = ["http://127.0.0.1:13002"]
+          end
+
+        # If not running as part of the integration test suite, then we assume
+        # a developer is just running the rails tests a standalone command. In
+        # that case, we'll connect to the default API Umbrella ports for
+        # databases that we assume are running in the development environment.
+        # The only difference is MongoDB, where we want to make sure we connect
+        # to a separate test database so tests don't interfere with
+        # development.
+        elsif(!ENV["FULL_STACK_TEST"])
+          config[:mongodb][:url] = "mongodb://127.0.0.1:14001/api_umbrella_test"
+
+          # Don't override the Elasticsearch v2 connection tests.
+          if(config[:elasticsearch][:hosts] != ["http://127.0.0.1:9200"])
+            config[:elasticsearch][:hosts] = ["http://127.0.0.1:14002"]
+          end
+        end
+      end
+
+      # Set the default host used for web application links (for mailers,
+      # contact URLs, etc).
       #
-      # Most defaults should be defined in config/settings.yml, but array
-      # values don't overwrite well with RailsConfig, so we'll define the array
-      # default values here. Revisit if RailsConfig addresses this so arrays
-      # can overwrite, rather than append:
-      # https://github.com/railsconfig/rails_config/issues/12
-      if(ApiUmbrellaConfig[:elasticsearch][:hosts].blank?)
-        ApiUmbrellaConfig[:elasticsearch][:hosts] = ["http://127.0.0.1:9200"]
+      # By default, pick this up from the `hosts` array where `default` has
+      # been set to true (this gets put on `_default_hostname` for easier
+      # access). But still allow the web host to be explicitly set via
+      # `web.default_host`.
+      if(config[:web][:default_host].blank?)
+        config[:web][:default_host] = config[:_default_hostname]
+
+        # Fallback to something that will at least generate valid URLs if
+        # there's no default, or the default is "*" (since in this context, a
+        # wildcard doesn't make sense for generating URLs).
+        if(config[:web][:default_host].blank? || config[:web][:default_host] == "*")
+          config[:web][:default_host] = "localhost"
+        end
       end
 
-      if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].blank?)
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled] = [
-          "github",
-          "persona",
-        ]
-      end
+      # rubocop:disable Style/ConstantName
+      ::ApiUmbrellaConfig = config
+      # rubocop:enable Style/ConstantName
 
       require "js_locale_helper"
     end
@@ -93,6 +158,18 @@ module ApiUmbrella
     # in your app. As such, your models will need to explicitly whitelist or blacklist accessible
     # parameters by using an attr_accessible or attr_protected declaration.
     # config.active_record.whitelist_attributes = true
+
+    if(ENV["RAILS_TMP_PATH"].present?)
+      paths["tmp"] = ENV["RAILS_TMP_PATH"]
+      tmp_assets_cache_path = File.join(ENV["RAILS_TMP_PATH"], "cache/assets")
+      FileUtils.mkdir_p(tmp_assets_cache_path)
+      config.assets.cache_store = [:file_store, tmp_assets_cache_path]
+      config.sass.cache_location = File.join(ENV["RAILS_TMP_PATH"], "cache/sass")
+    end
+
+    if(ENV["RAILS_PUBLIC_PATH"].present?)
+      paths["public"] = ENV["RAILS_PUBLIC_PATH"]
+    end
 
     # Enable the asset pipeline
     config.assets.enabled = true
@@ -148,12 +225,13 @@ module ApiUmbrella
       config.handlebars.templates_root = ["admin/templates", "templates"]
     end
 
-    # Use a file-based cache store
-    config.cache_store = :file_store, "#{Rails.root}/tmp/cache"
+    # Use a mongo-based cache store (this ensures the cache can be shared
+    # amongst multiple servers).
+    config.cache_store = :mongoid_store
 
     config.action_mailer.raise_delivery_errors = true
     config.action_mailer.default_url_options = {
-      :host => ApiUmbrellaConfig[:default_host],
+      :host => ApiUmbrellaConfig[:web][:default_host],
     }
 
     if(ApiUmbrellaConfig[:web] && ApiUmbrellaConfig[:web][:mailer] && ApiUmbrellaConfig[:web][:mailer][:smtp_settings])

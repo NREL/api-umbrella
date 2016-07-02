@@ -8,3 +8,4 @@ require('../factories/config_versions');
 require('../factories/rate_limits');
 
 require('./models/admin_permission');
+require('./models/log_city_location');

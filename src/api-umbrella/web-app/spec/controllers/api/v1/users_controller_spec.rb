@@ -1,19 +1,16 @@
 require "spec_helper"
 
 describe Api::V1::UsersController do
-  before(:all) do
+  before(:each) do
+    DatabaseCleaner.clean
+
     @admin = FactoryGirl.create(:admin)
     @google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_permission, :user_manage_permission)])
 
-    Api.delete_all
     @api = FactoryGirl.create(:api)
     @google_api = FactoryGirl.create(:google_api)
     @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api)
     @yahoo_api = FactoryGirl.create(:yahoo_api)
-  end
-
-  before(:each) do
-    ApiUser.where(:registration_source.ne => "seed").delete_all
   end
 
   shared_examples "admin token access" do |method, action|
@@ -983,6 +980,75 @@ describe Api::V1::UsersController do
         end
       end
     end
+
+    describe "notify e-mail" do
+      before(:each) do
+        Delayed::Worker.delay_jobs = false
+        ActionMailer::Base.deliveries.clear
+        ApiUmbrellaConfig[:web][:contact_form_email] = "aa@bb.com"
+      end
+
+      after(:each) do
+        Delayed::Worker.delay_jobs = true
+      end
+
+      it "sends a notify e-mail to be sent when requested in query" do
+        admin_token_auth(@admin)
+        expect do
+          p = params
+          p[:options] = { :send_notify_email => true }
+          post :create, p
+        end.to change { ActionMailer::Base.deliveries.count }.by(1)
+      end
+
+      it "sends a notify e-mail to be sent when requested in the config" do
+        admin_token_auth(@admin)
+        expect do
+          p = params
+          ApiUmbrellaConfig[:web][:send_notify_email] = true
+          post :create, p
+          ApiUmbrellaConfig[:web][:send_notify_email] = false
+
+        end.to change { ActionMailer::Base.deliveries.count }.by(1)
+      end
+
+      it "does not send notify e-mails when explicitly disabled" do
+        admin_token_auth(@admin)
+        expect do
+          p = params
+          p[:options] = { :send_notify_email => false }
+          post :create, p
+        end.to change { ActionMailer::Base.deliveries.count }.by(0)
+      end
+
+      it "does not send a notify e-mail when the option is an unknown value" do
+        admin_token_auth(@admin)
+        expect do
+          p = params
+          p[:options] = { :send_notify_email => 1 }
+          post :create, p
+        end.to change { ActionMailer::Base.deliveries.count }.by(0)
+      end
+
+      it "does not send notify e-mails by default" do
+        admin_token_auth(@admin)
+        expect do
+          post :create, params
+        end.to change { ActionMailer::Base.deliveries.count }.by(0)
+      end
+
+      it "queues a welcome e-mail to when delayed job is enabled" do
+        Delayed::Worker.delay_jobs = true
+        admin_token_auth(@admin)
+        expect do
+          expect do
+            p = params
+            p[:options] = { :send_notify_email => true }
+            post :create, p
+          end.to change { Delayed::Job.count }.by(1)
+        end.to change { ActionMailer::Base.deliveries.count }.by(0)
+      end
+    end
   end
 
   describe "PUT update" do
@@ -1073,6 +1139,39 @@ describe Api::V1::UsersController do
         user.settings.rate_limits.length.should eql(1)
         user.settings.rate_limits[0].duration.should eql(1000)
         user.settings.rate_limits[0].limit.should eql(5)
+      end
+    end
+  end
+
+  describe "permissions" do
+    before(:each) do
+      DatabaseCleaner.clean
+    end
+
+    describe "role permissions" do
+      it "prevents limited admins from updating forbidden users to only contain roles the admin does have permissions to" do
+        FactoryGirl.create(:google_api)
+        FactoryGirl.create(:yahoo_api)
+        existing_roles = ApiUserRole.all
+        existing_roles.should eql(["google-write", "yahoo-write"])
+
+        record = FactoryGirl.create(:api_user, {
+          :roles => ["yahoo-write"],
+        })
+
+        admin = FactoryGirl.create(:google_admin)
+        admin_token_auth(admin)
+
+        attributes = record.serializable_hash
+        attributes["roles"] = ["google-write"]
+        put :update, :format => "json", :id => record.id, :user => attributes
+
+        response.status.should eql(403)
+        data = MultiJson.load(response.body)
+        data.keys.should eql(["errors"])
+
+        record = ApiUser.find(record.id)
+        record.roles.should eql(["yahoo-write"])
       end
     end
   end

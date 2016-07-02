@@ -1,20 +1,21 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Redirect stderr to stdout
 exec 2>&1
 
-if test ${1} = "start"; then
+if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
+  api_umbrella_user="{{user}}"
 
   PATH="{{_test_env_install_dir}}/sbin:{{_test_env_install_dir}}/bin:$PATH"
-  RUN_OPTS=""
-  {{#user}}
-  RUN_OPTS="$RUN_OPTS -u {{user}}"
-  {{/user}}
+  run_args=()
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
 
   exec \
-    runtrap test-env-mongo-orchestration ${0} \
-    runtool $RUN_OPTS \
+    runtrap test-env-mongo-orchestration "${0}" \
+    runtool "${run_args[@]}" \
     mongo-orchestration \
       --no-fork \
       --port 13089 \
@@ -25,12 +26,12 @@ fi
 # mongo-orchestration doesn't respond properly to SIGTERM (which is what
 # perpboot sends on exit), so trap signals and then trigger a SIGQUIT, which
 # mongo-orchestration does respond to.
-if test ${1} = "trap" && test ${4} = "15"; then
+if [ "${1}" = "trap" ] && [ "${4}" = "15" ]; then
   echo "stopping ${2}..."
-  kill -3 ${3}
+  kill -3 "${3}"
 fi
 
-if test ${1} = "reset"; then
+if [ "${1}" = "reset" ]; then
   echo "cleaning up ${2}..."
   # mongo-orchestration also doesn't always seem the best at ensuring all the
   # mongod processes it spawns are stopped when exiting. So perform an extra

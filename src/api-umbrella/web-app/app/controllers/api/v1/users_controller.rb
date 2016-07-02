@@ -19,13 +19,13 @@ class Api::V1::UsersController < Api::V1::BaseController
 
     if(params["search"] && params["search"]["value"].present?)
       @api_users = @api_users.or([
-        { :first_name => /#{params["search"]["value"]}/i },
-        { :last_name => /#{params["search"]["value"]}/i },
-        { :email => /#{params["search"]["value"]}/i },
-        { :api_key => /#{params["search"]["value"]}/i },
-        { :registration_source => /#{params["search"]["value"]}/i },
-        { :roles => /#{params["search"]["value"]}/i },
-        { :_id => /#{params["search"]["value"]}/i },
+        { :first_name => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :last_name => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :email => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :api_key => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :registration_source => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :roles => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :_id => /#{Regexp.escape(params["search"]["value"])}/i },
       ])
     end
   end
@@ -49,18 +49,26 @@ class Api::V1::UsersController < Api::V1::BaseController
 
     respond_to do |format|
       if(@api_user.save)
-        send_email = (params[:options] && params[:options][:send_welcome_email].to_s == "true")
+        send_welcome_email = (params[:options] && params[:options][:send_welcome_email].to_s == "true")
+        send_notify_email = (params[:options] && params[:options][:send_notify_email].to_s == "true")
 
         # For the admin tool, it's easier to have this attribute on the user
         # model, rather than options, so check there for whether we should send
         # e-mail. Also note that for backwards compatibility, we only check for
         # the presence of this attribute, and not it's actual value.
-        if(!send_email && params[:user] && params[:user][:send_welcome_email])
-          send_email = true
+        if(!send_welcome_email && params[:user] && params[:user][:send_welcome_email])
+          send_welcome_email = true
         end
 
-        if(send_email)
+        if(!send_notify_email && ApiUmbrellaConfig[:web][:send_notify_email].to_s == "true")
+          send_notify_email = true
+        end
+
+        if(send_welcome_email)
           ApiUserMailer.delay(:queue => "mailers").signup_email(@api_user, params[:options] || {})
+        end
+        if(send_notify_email)
+          ApiUserMailer.delay(:queue => "mailers").notify_api_admin(@api_user)
         end
 
         format.json { render("show", :status => :created, :location => api_v1_user_url(@api_user)) }
@@ -86,6 +94,8 @@ class Api::V1::UsersController < Api::V1::BaseController
   private
 
   def assign_attributes!
+    authorize(@api_user) unless(@api_user.new_record?)
+
     assign_options = {}
     if(admin_signed_in?)
       assign_options[:as] = :admin

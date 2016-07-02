@@ -1,25 +1,26 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Redirect stderr to stdout
 exec 2>&1
 
-if test ${1} = "start"; then
+if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
+  api_umbrella_user="{{user}}"
 
-  RUN_OPTS="-e rc.env -c {{_src_root_dir}}/src/api-umbrella/web-app"
-  {{#user}}
-  RUN_OPTS="$RUN_OPTS -u {{user}}"
-  {{/user}}
+  run_args=("-e" "rc.env" "-c" "{{_src_root_dir}}/src/api-umbrella/web-app")
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
 
-  exec runtool $RUN_OPTS \
+  exec runtool "${run_args[@]}" \
     bundle exec puma \
       -q \
-      --dir {{_src_root_dir}}/src/api-umbrella/web-app \
+      --dir "{{_src_root_dir}}/src/api-umbrella/web-app" \
       --prune-bundler \
-      -e {{app_env}} \
-      -w {{web.puma.workers}} \
-      -t {{web.puma.min_threads}}:{{web.puma.max_threads}} \
-      -b unix://{{run_dir}}/web-puma.sock
+      -e "{{app_env}}" \
+      -w "{{web.puma.workers}}" \
+      -t "{{web.puma.min_threads}}:{{web.puma.max_threads}}" \
+      -b "unix://{{run_dir}}/web-puma.sock"
 fi
 
 exit 0

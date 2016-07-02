@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+source_dir="$(dirname "$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")")"
+
+# Install the local package that just got built.
+current_package_dir="$source_dir/build/work/package/current/$DIST/core"
+if command -v yum > /dev/null 2>&1; then
+  yum -y install "$current_package_dir"/*.rpm
+elif command -v dpkg > /dev/null 2>&1; then
+  apt-get update
+  dpkg -i "$current_package_dir"/*.deb || apt-get install -y -f
+else
+  echo "Unknown build system"
+  exit 1
+fi
+
+# Start the service
+/etc/init.d/api-umbrella start
+
+# Make sure API Umbrella starts successfully and wait for a "green" status
+# indicating everything is spun up
+api-umbrella health --wait-for-status green
+
+# Install the test package dependencies.
+#
+# Note: We do this after installing and starting API Umbrella to ensure that
+# API Umbrella can start on its own (and we're not accidentally depending on
+# any of these test dependencies).
+if [ -f /etc/redhat-release ]; then
+  yum -y install epel-release
+  yum -y install \
+    rubygems \
+    socat \
+    sudo
+elif [ -f /etc/debian_version ]; then
+  apt-get -y install \
+    net-tools \
+    ruby \
+    socat \
+    sudo
+  if [ "$DIST" == "ubuntu-12.04" ] || [ "$DIST" == "debian-7" ]; then
+    apt-get -y install rubygems
+  fi
+fi
+gem install bundler --no-rdoc --no-ri
+
+# Perform an out-of-source build (so the same source directory can be used for
+# multiple parallel docker builds).
+build_dir=/tmp/api-umbrella-$DIST
+rm -rf "$build_dir"
+mkdir -p "$build_dir"
+cd "$build_dir"
+
+# Install the test gem dependencies.
+BUNDLE_GEMFILE="$source_dir/build/package/verify/Gemfile" BUNDLE_APP_CONFIG="$build_dir/.bundle" bundle install --clean --path="$build_dir/bundle"
+
+# Run the serverspec suite.
+cd "$source_dir/build/package/verify"
+BUNDLE_GEMFILE="$source_dir/build/package/verify/Gemfile" BUNDLE_APP_CONFIG="$build_dir/.bundle" SOURCE_DIR="$source_dir" DIST="$DIST" bundle exec rake spec

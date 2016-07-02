@@ -3,13 +3,14 @@ require "csv_streamer"
 class Admin::StatsController < Admin::BaseController
   set_tab :analytics
 
+  before_filter :set_analytics_adapter
   around_filter :set_time_zone
 
   def index
   end
 
   def search
-    @search = LogSearch.new({
+    @search = LogSearch.factory(@analytics_adapter, {
       :start_time => params[:start_at],
       :end_time => params[:end_at],
       :interval => params[:interval],
@@ -30,8 +31,16 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def logs
-    @search = LogSearch.new({
-      :start_time => params[:start_at],
+    # TODO: For the SQL fetching, set start_time to end_time to limit to last
+    # 24 hours. If we do end up limiting it to the last 24 hours by default,
+    # figure out a better way to document this and still allow downloading
+    # the full data set.
+    start_time = params[:start_at]
+    if(@analytics_adapter == "kylin")
+      start_time = Time.zone.parse(params[:end_at]) - 1.day
+    end
+    @search = LogSearch.factory(@analytics_adapter, {
+      :start_time => start_time,
       :end_time => params[:end_at],
       :interval => params[:interval],
     })
@@ -48,6 +57,7 @@ class Admin::StatsController < Admin::BaseController
     @search.filter_by_date_range!
     @search.offset!(offset)
     @search.limit!(limit)
+    @search.select_records!
 
     sort = datatables_sort
     if(sort.any?)
@@ -68,16 +78,15 @@ class Admin::StatsController < Admin::BaseController
         # http://stackoverflow.com/a/10252798/222487
         response.headers["Last-Modified"] = Time.now.httpdate
 
-        scroll_id = @result.raw_result["_scroll_id"]
         headers = ["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Reason Denied", "Response Time", "Content Type", "Accept Encoding", "User Agent"]
 
         send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.strftime("%b %-e %Y")}).#{params[:format]}")
-        self.response_body = CsvStreamer.new(@search.client, scroll_id, headers) do |row|
+        self.response_body = CsvStreamer.new(@result, headers) do |row|
           [
             csv_time(row["request_at"]),
             row["request_method"],
             row["request_host"],
-            row["request_url"],
+            strip_api_key_from_url(row["request_url"]),
             row["user_email"],
             row["request_ip"],
             row["request_ip_country"],
@@ -100,7 +109,7 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def users
-    @search = LogSearch.new({
+    @search = LogSearch.factory(@analytics_adapter, {
       :start_time => params[:start_at],
       :end_time => params[:end_at],
     })
@@ -193,7 +202,7 @@ class Admin::StatsController < Admin::BaseController
   end
 
   def map
-    @search = LogSearch.new({
+    @search = LogSearch.factory(@analytics_adapter, {
       :start_time => params[:start_at],
       :end_time => params[:end_at],
       :region => params[:region],
@@ -212,4 +221,13 @@ class Admin::StatsController < Admin::BaseController
       format.csv
     end
   end
+
+  private
+
+  def strip_api_key_from_url(url)
+    stripped = url.gsub(/\bapi_key=?[^&]*(&|$)/, "")
+    stripped.gsub!(/&$/, "")
+    stripped
+  end
+  helper_method :strip_api_key_from_url
 end

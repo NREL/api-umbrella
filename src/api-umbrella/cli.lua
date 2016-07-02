@@ -60,7 +60,12 @@ function _M.health(args)
 end
 
 function _M.version()
-  print(os.getenv("API_UMBRELLA_VERSION"))
+  local file = require "pl.file"
+  local path = require "pl.path"
+  local stringx = require "pl.stringx"
+  local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
+  local version = stringx.strip(file.read(path.join(src_root_dir, "src/api-umbrella/version.txt")))
+  print(version)
   os.exit(0)
 end
 
@@ -74,18 +79,23 @@ parser:flag("--version")
 
 parser:command("run")
   :description("Run the API Umbrella server in the foreground.")
+  :action(_M.run)
 
 parser:command("start")
   :description("Start the API Umbrella server in the background.")
+  :action(_M.start)
 
 parser:command("stop")
   :description("Stop the API Umbrella server.")
+  :action(_M.stop)
 
 parser:command("restart")
   :description("Restart the API Umbrella server.")
+  :action(_M.restart)
 
 local reload_command = parser:command("reload")
   :description("Reload the configuration of the API Umbrella server.")
+  :action(_M.reload)
 reload_command:flag("--router")
   :description("Reload only the router processes")
 reload_command:flag("--web")
@@ -93,15 +103,19 @@ reload_command:flag("--web")
 
 parser:command("status")
   :description("Show the status of the API Umbrella server.")
+  :action(_M.status)
 
 parser:command("reopen-logs")
   :description("Close and reopen log files in use.")
+  :action(_M.reopen_logs)
 
 parser:command("processes")
   :description("List the status of the processes running under API Umbrella.")
+  :action(_M.processes)
 
 local health_command = parser:command("health")
   :description("Print the health of the API Umbrella services.")
+  :action(_M.health)
 health_command:option("--wait-for-status")
   :description("Wait for this health status (or better) to become true before returning")
 health_command:option("--wait-timeout")
@@ -112,33 +126,12 @@ health_command:option("--wait-timeout")
 
 parser:command("version")
   :description("Print the API Umbrella version number.")
+  :action(_M.version)
 
 parser:command("help")
   :description("Show this help message and exit.")
+  :action(_M.help)
 
 return function()
-  -- Parse the CLI options into a table.
-  local args = parser:parse()
-
-  -- Check which top-level command was given (start, stop, etc). There's no
-  -- immediate way to tell this top-level command based on the args table, so
-  -- check all the known commands to see which one was met.
-  local command_found = false
-  for command_name, command_function in pairs(_M) do
-    command_name = string.gsub(command_name, "_", "-")
-    if args[command_name] then
-      command_function(args)
-      command_found = true
-      break
-    end
-  end
-
-  -- If the function for the command wasn't found, print an error. This should
-  -- not be expected, since argparse will exit earlier if the user passes in an
-  -- unknown command. If we hit this, it indicates we have a documented command
-  -- in argparse, but no corresponding function to call.
-  if not command_found then
-    print("Did not find function for command")
-    os.exit(1)
-  end
+  parser:parse()
 end

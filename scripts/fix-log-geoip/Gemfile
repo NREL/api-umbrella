@@ -1,0 +1,5 @@
+source "https://rubygems.org"
+
+gem "elasticsearch", "~> 1.0.17"
+gem "geoip", "~> 1.6.1"
+gem "oj", "~> 2.15.0"

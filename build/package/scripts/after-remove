@@ -1,74 +1,74 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e -u
 
-REMOVE_ACCOUNTS=false
-REMOVE_DATA=false
-REMOVE_FILES=false
-REMOVE_SERVICE=false
-RESTART_SERVICE=false
+remove_accounts=false
+remove_data=false
+remove_files=false
+remove_service=false
+restart_service=false
 
 case "$1" in
   # dpkg
   remove)
-    REMOVE_FILES=true
-    REMOVE_SERVICE=true
+    remove_files=true
+    remove_service=true
     ;;
   purge)
-    REMOVE_ACCOUNTS=true
-    REMOVE_DATA=true
+    remove_accounts=true
+    remove_data=true
     ;;
   abort-install|abort-upgrade|disappear|failed-upgrade|upgrade)
     ;;
 
   # rpm
   0) # uninstall
-    REMOVE_FILES=true
+    remove_files=true
     ;;
   1) # upgrade
-    RESTART_SERVICE=true
+    restart_service=true
     ;;
 esac
 
-if [ "$REMOVE_FILES" = "true" ]; then
+if [ "$remove_files" = "true" ]; then
   rm -f /usr/bin/api-umbrella /var/log/api-umbrella
   rmdir /etc/api-umbrella > /dev/null 2>&1 || true # Delete directory if empty.
 fi
 
-if [ "$REMOVE_SERVICE" = "true" ]; then
+if [ "$remove_service" = "true" ]; then
   if command -v update-rc.d > /dev/null 2>&1; then
     update-rc.d api-umbrella remove > /dev/null
   fi
 fi
 
-if [ "$REMOVE_DATA" = "true" ]; then
+if [ "$remove_data" = "true" ]; then
   rm -rf /etc/api-umbrella /opt/api-umbrella
 fi
 
-if [ "$REMOVE_ACCOUNTS" = "true" ]; then
-  USER=api-umbrella
-  GROUP=api-umbrella
-  DEPLOY_USER=api-umbrella-deploy
-  DEPLOY_GROUP=api-umbrella-deploy
+if [ "$remove_accounts" = "true" ]; then
+  user=api-umbrella
+  group=api-umbrella
+  deploy_user=api-umbrella-deploy
+  deploy_group=api-umbrella-deploy
 
-  if getent passwd $DEPLOY_USER > /dev/null; then
-    userdel $DEPLOY_USER
+  if getent passwd $deploy_user > /dev/null; then
+    userdel $deploy_user
   fi
 
-  if getent passwd $USER > /dev/null; then
-    userdel $USER
+  if getent passwd $user > /dev/null; then
+    userdel $user
   fi
 
-  if getent group $DEPLOY_GROUP > /dev/null; then
-    groupdel $DEPLOY_GROUP
+  if getent group $deploy_group > /dev/null; then
+    groupdel $deploy_group
   fi
 
-  if getent group $GROUP > /dev/null; then
-    groupdel $GROUP
+  if getent group $group > /dev/null; then
+    groupdel $group
   fi
 fi
 
-if [ "$RESTART_SERVICE" = "true" ]; then
+if [ "$restart_service" = "true" ]; then
   # On upgrades, restart the service if it's currently running.
   /etc/init.d/api-umbrella condrestart
 fi

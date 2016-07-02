@@ -1,6 +1,22 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+options = {
+  # Allow NFS file sharing to be disabled
+  :nfs => (ENV["API_UMBRELLA_VAGRANT_NFS"] == "true") || !Vagrant::Util::Platform.windows?,
+
+  # Allow picking a different Vagrant base box:
+  # API_UMBRELLA_VAGRANT_BOX="chef/debian-7.4" vagrant up
+  :box => ENV["API_UMBRELLA_VAGRANT_BOX"] || "nrel/CentOS-6.7-x86_64",
+
+  # Allow adjusting the memory and cores when starting the VM:
+  :memory => (ENV["API_UMBRELLA_VAGRANT_MEMORY"] || "2048").to_i,
+  :cores => (ENV["API_UMBRELLA_VAGRANT_CORES"] || "2").to_i,
+
+  # Allow a different IP
+  :ip => ENV["API_UMBRELLA_VAGRANT_IP"] || "10.10.33.2",
+}
+
 plugins = { "vagrant-berkshelf" => nil }
 
 plugins.each do |plugin, version|
@@ -12,31 +28,13 @@ plugins.each do |plugin, version|
   end
 end
 
-# Allow picking a different Vagrant base box:
-# API_UMBRELLA_VAGRANT_BOX="chef/debian-7.4" vagrant up
-BOX = ENV["API_UMBRELLA_VAGRANT_BOX"] || "nrel/CentOS-6.7-x86_64"
-
-# Allow adjusting the memory and cores when starting the VM:
-MEMORY = (ENV["API_UMBRELLA_VAGRANT_MEMORY"] || "2048").to_i
-CORES = (ENV["API_UMBRELLA_VAGRANT_CORES"] || "2").to_i
-
-# Allow a different IP
-IP = ENV["API_UMBRELLA_VAGRANT_IP"] || "10.10.33.2"
-
-# Allow NFS file sharing to be disabled
-if(Vagrant::Util::Platform.windows?)
-  NFS = false
-else
-  NFS = (ENV["API_UMBRELLA_VAGRANT_NFS"] || "true") == "true"
-end
-
 Vagrant.configure("2") do |config|
   # All Vagrant configuration is done here. The most common configuration
   # options are documented and commented below. For a complete reference,
   # please see the online documentation at vagrantup.com.
 
   # Every Vagrant virtual environment requires a box to build off of.
-  config.vm.box = BOX
+  config.vm.box = options[:box]
 
   # Boot with a GUI so you can see the screen. (Default is headless)
   # config.vm.boot_mode = :gui
@@ -46,7 +44,7 @@ Vagrant.configure("2") do |config|
 
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  config.vm.network :private_network, :ip => IP
+  config.vm.network :private_network, :ip => options[:ip]
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -57,14 +55,18 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder ".", "/vagrant", :nfs => NFS
+  config.vm.synced_folder ".", "/vagrant", :nfs => options[:nfs]
+  if(options[:nfs])
+    config.nfs.map_uid = Process.uid
+    config.nfs.map_gid = Process.gid
+  end
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
   config.vm.provider :virtualbox do |vb|
     # Adjust memory used by the VM.
-    vb.customize ["modifyvm", :id, "--memory", MEMORY]
-    vb.customize ["modifyvm", :id, "--cpus", CORES]
+    vb.customize ["modifyvm", :id, "--memory", options[:memory]]
+    vb.customize ["modifyvm", :id, "--cpus", options[:cores]]
 
     # Keep the virtual machine's clock better in sync to prevent drift (by
     # default VirtualBox only syncs if the clocks get more than 20 minutes out
@@ -75,12 +77,40 @@ Vagrant.configure("2") do |config|
   # Use the user's local SSH keys for git access.
   config.ssh.forward_agent = true
 
-  # Enable provisioning with chef solo, specifying a cookbooks path, roles
-  # path, and data_bags path (all relative to this Vagrantfile), and adding
-  # some recipes and/or roles.
+  # On initial setup, ensure all temporary build files are deleted. This helps
+  # ensure old build files aren't kept around if you do a vagrant
+  # destroy/vagrant up. But only run the first time a box is setup (and not on
+  # further provisions).
+  config.vm.provision :shell, :inline => <<-eos
+    # Only run distclean if it hasn't been run yet on this specific VM
+    # instance.
+    if [ ! -f ~/.api-umbrella-distcleaned ]; then
+      cd /vagrant
+      # Run distclean a few times to possibly workaround temporary NFS issues
+      # that sometimes crop up when deleting all the fiels.
+      ./build/scripts/distclean || echo "Failed to complete distclean"
+      sleep 1
+      ./build/scripts/distclean || echo "Failed to complete distclean"
+      sleep 1
+      ./build/scripts/distclean || echo "Failed to complete distclean"
+      touch ~/.api-umbrella-distcleaned
+    fi
+  eos
+
+  # Provision the development environment with our Chef cookbook.
   config.vm.provision :chef_solo do |chef|
     chef.run_list = [
       "recipe[api-umbrella::development]",
     ]
   end
+
+  # Always restart API Umbrella after starting the machine. This ensures the
+  # development version get started from the /vagrant partition (since the
+  # /vagrant NFS partition isn't started early enough during normal boot, we
+  # must do this here).
+  config.vm.provision :shell, :run => "always", :inline => <<-eos
+    if [ -f /etc/init.d/api-umbrella ]; then
+      /etc/init.d/api-umbrella restart
+    fi
+  eos
 end

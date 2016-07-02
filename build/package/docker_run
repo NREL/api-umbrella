@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
+docker_image=${DIST/-/:}
+container_name="api-umbrella-package-$DIST"
+container_name=${container_name//[^a-zA-Z0-9_.-]/}
+
+# Make sure we have the latest base image.
+docker pull "$docker_image"
+
+# Wipe any previous build attempts.
+existing=$(docker ps -a -q --filter="name=$container_name")
+if [ "$existing" != "" ]; then
+  docker rm -f "$existing"
+fi
+
+# Create the package inside the docker container for this distro.
+docker run \
+  --name="$container_name" \
+  --volume="$source_dir:/api-umbrella" \
+  --env="DIST=$DIST" \
+  --rm \
+  "$docker_image" \
+  /bin/bash -c "/api-umbrella/build/package/docker_script"
+
+echo "Completed package build for $DIST"

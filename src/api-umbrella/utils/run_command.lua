@@ -13,7 +13,7 @@ return function(command)
   local all_output = handle:read("*all")
   handle:close()
 
-  local output, status = string.match(all_output, "^(.*)===STATUS_CODE:(%d+)\n$")
+  local output, status = string.match((all_output or ""), "^(.*)===STATUS_CODE:(%d+)\n$")
   local err = nil
   if output == nil and status == nil then
     -- This means we never got the "STATUS_CODE" output, so the entire

@@ -1,18 +1,19 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Redirect stderr to stdout
 exec 2>&1
 
-if test ${1} = "start"; then
+if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
+  api_umbrella_user="{{user}}"
 
   PATH="{{_test_env_install_dir}}/sbin:{{_test_env_install_dir}}/bin:$PATH"
-  RUN_OPTS=""
-  {{#user}}
-  RUN_OPTS="$RUN_OPTS -u {{user}}"
-  {{/user}}
+  run_args=()
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
 
-  exec runtool $RUN_OPTS unbound -c {{etc_dir}}/test-env/unbound/unbound.conf
+  exec runtool "${run_args[@]}" unbound -c "{{etc_dir}}/test-env/unbound/unbound.conf"
 fi
 
 exit 0

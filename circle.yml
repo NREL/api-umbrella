@@ -3,31 +3,48 @@ general:
     # Keep logs after running to help debug if errors do crop up.
     - /tmp/api-umbrella-test/var/log
     - src/api-umbrella/web-app/log
+    - src/api-umbrella/web-app/brakeman.html
     # Keep screenshots of capybara failures for easier debugging.
     - src/api-umbrella/web-app/tmp/capybara
 machine:
   pre:
     # Enable IPv6 on CircleCI for running IPv6 integration tests.
     - sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0 net.ipv6.conf.default.disable_ipv6=0 net.ipv6.conf.all.disable_ipv6=0
+    # Disable RVM so the various environment variables (things like GEM_HOME)
+    # don't conflict with our embedded ruby installation.
+    - rvm reset
   node:
-    version: 0.10.40
+    version: 0.10.45
 dependencies:
   cache_directories:
-    - build/work/stage
-    - build/work/test-env
-    - build/work/tmp/web-assets
-    - build/work/vendor
+    - build/work
+    - CMakeCache.txt
+    - CMakeFiles
+    - cmake_install.cmake
+    - test/node_modules
   pre:
-    # Stop the older MongoDB 2.4 version in favor of the one bundled with API
-    # Umbrella.
-    - sudo stop mongodb
+    # Install a newer version of CMake than is available on Ubuntu 12.04 (we
+    # need 2.8.10+ for ExternalProject_Add URL_HASH compatibility).
+    - if [[ ! -e build/work/cmake-3.4.3/bin/cmake ]]; then mkdir -p build/work/cmake-3.4.3 && curl -L https://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz | tar --strip-components 1 -C build/work/cmake-3.4.3 -xz; fi
+    # Set the local file timestamps based on when they were last modified in
+    # git. This helps prevent unnecessary rebuilds in the CI environment, since
+    # make is dependent on file timestamps and every CI test run operates on a
+    # fresh clone.
+    - if [[ ! -e build/work/git-restore-mtime ]]; then curl https://raw.githubusercontent.com/MestreLion/git-tools/0fc841a3e49d041576e5b21d1644c8df2d2ef801/git-restore-mtime > build/work/git-restore-mtime && chmod +x build/work/git-restore-mtime; fi
+    - ./build/work/git-restore-mtime -f .
+    - if [[ ! -e build/work/elasticsearch-2.3.3/bin/elasticsearch ]]; then mkdir -p build/work/elasticsearch-2.3.3 && curl -L https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.3.3/elasticsearch-2.3.3.tar.gz | tar --strip-components 1 -C build/work/elasticsearch-2.3.3 -xz; fi
+  post:
+    - rm -rf /tmp/elasticsearch-v2-data
+    - ./build/work/elasticsearch-2.3.3/bin/elasticsearch --path.data=/tmp/elasticsearch-v2-data:
+        background: true
   override:
     # Build all the API Umbrella software dependencies.
-    - make --debug
-    - make test_dependencies --debug
-    # Remove the "vendor" symlink (to the cached build/work/vendor), since this
-    # symlink seems to mess up CircleCI's caching.
-    - rm -f vendor
+    - env PATH=build/work/cmake-3.4.3/bin:$PATH ./configure --enable-test-dependencies
+    - make
+    # Remove the download archives, since we don't need to cache these in
+    # CircleCI, and doing so also leads to multiple versions being kept around
+    # whenever we bump our dependency versions.
+    - make clean-download-archives
 compile:
   override:
     # Don't perform any compile tasks that CircleCI infers. We'll run our

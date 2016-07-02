@@ -191,8 +191,10 @@ header {
   border-width: 0px 0px 1px 0px;
 }
 
-.navbar-nav {
-  margin-left: 50px;
+@media (min-width: 992px) {
+  .navbar-nav {
+    margin-left: 50px;
+  }
 }
 
 .navbar-brand {
@@ -254,5 +256,73 @@ nav .nav-section {
 }
 
 a.anchorjs-link, a.anchorjs-link:hover {
+  text-decoration: none;
+}
+
+h2 {
+  margin-bottom: 4px;
+  line-height: 90%;
+}
+
+ul.nav .fa-github {
+  font-size: 140%;
+  position: relative;
+  top: 2px;
+}
+
+.features .row {
+  padding: 40px 0px;
+  border-bottom: 1px solid #ddd;
+}
+
+.feature-graphic {
+  text-align: center;
+  float: left;
+  width: 80px;
+}
+
+.feature-graphic img {
+  border: 1px solid #ddd;
+  width: 55px;
+}
+
+.feature-graphic .fa {
+  font-size: 48px;
+  color: #f1715e;
+}
+
+.feature-description {
+  margin-left: 80px;
+  padding-right: 10px;
+}
+
+@media (min-width: 768px) {
+  .feature-graphic {
+    width: 200px;
+  }
+
+  .feature-graphic .fa {
+    font-size: 96px;
+    color: #f1715e;
+  }
+
+  .feature-graphic img {
+    width: 110px;
+  }
+
+  .feature-description {
+    margin-left: 200px;
+  }
+}
+
+.feature-description h3 {
+  margin: 0px;
+}
+
+a {
+  text-decoration: underline;
+}
+
+#navigation a, ul.dropdown-menu a, a.btn {
   text-decoration: none;
 }

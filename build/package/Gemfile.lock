@@ -3,9 +3,9 @@ GEM
   specs:
     arr-pm (0.0.10)
       cabin (> 0)
-    backports (3.6.6)
-    cabin (0.7.1)
-    childprocess (0.5.6)
+    backports (3.6.8)
+    cabin (0.8.1)
+    childprocess (0.5.9)
       ffi (~> 1.0, >= 1.0.11)
     clamp (0.6.5)
     ffi (1.9.10)
@@ -26,4 +26,4 @@ DEPENDENCIES
   fpm (~> 1.4.0)
 
 BUNDLED WITH
-   1.10.6
+   1.11.2

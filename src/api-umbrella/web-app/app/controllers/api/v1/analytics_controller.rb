@@ -1,11 +1,12 @@
 class Api::V1::AnalyticsController < Api::V1::BaseController
   include ActionView::Helpers::NumberHelper
 
+  before_filter :set_analytics_adapter
   skip_after_filter :verify_authorized
   around_filter :set_time_zone
 
   def drilldown
-    @search = LogSearch.new({
+    @search = LogSearch.factory(@analytics_adapter, {
       :start_time => params[:start_at],
       :end_time => params[:end_at],
       :interval => params[:interval],

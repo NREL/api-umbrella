@@ -7,7 +7,6 @@ var _ = require('lodash'),
     config = require('./config'),
     execFile = require('child_process').execFile,
     fs = require('fs'),
-    fsExtra = require('fs-extra'),
     mkdirp = require('mkdirp'),
     path = require('path'),
     request = require('request'),
@@ -79,9 +78,10 @@ before(function apiUmbrellaStart(done) {
     process.stdout.write('.');
   }, 2000);
 
-  var testConfigPath = path.resolve(__dirname, '../config/test.yml');
+  var testConfigPath = process.env['API_UMBRELLA_CONFIG'] || path.resolve(__dirname, '../config/test.yml');
   var overridesConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
-  fsExtra.copySync(testConfigPath, overridesConfigPath);
+  fs.writeFileSync(overridesConfigPath, '');
+  var configPath = testConfigPath + ':' + overridesConfigPath;
 
   // Spin up the api-umbrella processes.
   var binPath = path.resolve(__dirname, '../../bin/api-umbrella');
@@ -90,7 +90,7 @@ before(function apiUmbrellaStart(done) {
     stdio: 'inherit',
     env: _.merge({}, process.env, {
       'API_UMBRELLA_EMBEDDED_ROOT': process.env.API_UMBRELLA_EMBEDDED_ROOT,
-      'API_UMBRELLA_CONFIG': overridesConfigPath,
+      'API_UMBRELLA_CONFIG': configPath,
     }),
   });
 
@@ -110,7 +110,7 @@ before(function apiUmbrellaStart(done) {
     execFile(binPath, ['health', '--wait-for-status', 'green', '--wait-timeout', '90'], {
       env: _.merge({}, process.env, {
         'API_UMBRELLA_EMBEDDED_ROOT': process.env.API_UMBRELLA_EMBEDDED_ROOT,
-        'API_UMBRELLA_CONFIG': overridesConfigPath,
+        'API_UMBRELLA_CONFIG': configPath,
       }),
     }, function(error, stdout, stderr) {
       if(error) {

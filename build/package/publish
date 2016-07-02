@@ -1,54 +1,54 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e -u -x
 
-ROOT_DIR="$(dirname $(dirname $(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)))"
+source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 
-source $ROOT_DIR/src/api-umbrella/version.sh
-VERSION="$API_UMBRELLA_VERSION_BASE"
-ITERATION="$API_UMBRELLA_VERSION_PACKAGE_ITERATION"
+# shellcheck source=build/package/parse_version
+source "$source_dir/build/package/parse_version"
 
-PACKAGES=(
-  build/package/dist/centos-6/api-umbrella-$VERSION-$ITERATION.el6.x86_64.rpm
-  build/package/dist/centos-7/api-umbrella-$VERSION-$ITERATION.el7.x86_64.rpm
-  build/package/dist/debian-7/api-umbrella_$VERSION-$ITERATION~wheezy_amd64.deb
-  build/package/dist/debian-8/api-umbrella_$VERSION-$ITERATION~jessie_amd64.deb
-  build/package/dist/ubuntu-12.04/api-umbrella_$VERSION-$ITERATION~precise_amd64.deb
-  build/package/dist/ubuntu-14.04/api-umbrella_$VERSION-$ITERATION~trusty_amd64.deb
+packages=(
+  build/work/package/current/centos-6/core/api-umbrella-$version-$package_iteration.el6.x86_64.rpm
+  build/work/package/current/centos-7/core/api-umbrella-$version-$package_iteration.el7.x86_64.rpm
+  build/work/package/current/debian-7/core/api-umbrella_$version-$package_iteration~wheezy_amd64.deb
+  build/work/package/current/debian-8/core/api-umbrella_$version-$package_iteration~jessie_amd64.deb
+  build/work/package/current/ubuntu-12.04/core/api-umbrella_$version-$package_iteration~precise_amd64.deb
+  build/work/package/current/ubuntu-14.04/core/api-umbrella_$version-$package_iteration~trusty_amd64.deb
+  build/work/package/current/ubuntu-16.04/core/api-umbrella_$version-$package_iteration~xenial_amd64.deb
 )
 
-for PACKAGE in "${PACKAGES[@]}"; do
-  if [ ! -f "$PACKAGE" ]; then
-    echo "Expected package for current version does not exist: $PACKAGE"
+for package in "${packages[@]}"; do
+  if [ ! -f "$package" ]; then
+    echo "Expected package for current version does not exist: $package"
     exit 1
   fi
 done
 
-for PACKAGE in "${PACKAGES[@]}"; do
-  CURL_ARGS=()
-  FILE_PATH=$(basename $PACKAGE)
+for package in "${packages[@]}"; do
+  curl_args=()
+  file_path=$(basename "$package")
 
-  if [[ "$PACKAGE" == *"centos"* ]]; then
-    [[ "$FILE_PATH" =~ \.(el[0-9])\. ]]
+  if [[ "$package" == *"centos"* ]]; then
+    [[ "$file_path" =~ \.(el[0-9])\. ]]
     echo "${BASH_REMATCH[1]}"
-    REPO="api-umbrella-${BASH_REMATCH[1]}"
-  elif [[ "$PACKAGE" == *"debian"* ]]; then
-    REPO=api-umbrella-debian
-  elif [[ "$PACKAGE" == *"ubuntu"* ]]; then
-    REPO=api-umbrella-ubuntu
+    repo="api-umbrella-${BASH_REMATCH[1]}"
+  elif [[ "$package" == *"debian"* ]]; then
+    repo=api-umbrella-debian
+  elif [[ "$package" == *"ubuntu"* ]]; then
+    repo=api-umbrella-ubuntu
   fi
 
-  CURL_ARGS+=("--user" "$BINTRAY_USERNAME:$BINTRAY_API_KEY")
-  CURL_ARGS+=("--upload-file" "$PACKAGE")
-  CURL_ARGS+=("--fail")
-  if [[ "$PACKAGE" == *"debian"* || "$PACKAGE" == *"ubuntu"* ]]; then
-    [[ "$FILE_PATH" =~ ~([a-z]+)_ ]]
-    CURL_ARGS+=("-H" "X-Bintray-Debian-Distribution: ${BASH_REMATCH[1]}")
-    [[ "$FILE_PATH" =~ _([a-z0-9]+)\.deb ]]
-    CURL_ARGS+=("-H" "X-Bintray-Debian-Architecture: ${BASH_REMATCH[1]}")
-    CURL_ARGS+=("-H" "X-Bintray-Debian-Component: main")
-    FILE_PATH="pool/main/a/api-umbrella/$FILE_PATH"
+  curl_args+=("--user" "$BINTRAY_USERNAME:$BINTRAY_API_KEY")
+  curl_args+=("--upload-file" "$package")
+  curl_args+=("--fail")
+  if [[ "$package" == *"debian"* || "$package" == *"ubuntu"* ]]; then
+    [[ "$file_path" =~ ~([a-z]+)_ ]]
+    curl_args+=("-H" "X-Bintray-Debian-Distribution: ${BASH_REMATCH[1]}")
+    [[ "$file_path" =~ _([a-z0-9]+)\.deb ]]
+    curl_args+=("-H" "X-Bintray-Debian-Architecture: ${BASH_REMATCH[1]}")
+    curl_args+=("-H" "X-Bintray-Debian-Component: main")
+    file_path="pool/main/a/api-umbrella/$file_path"
   fi
 
-  curl -X PUT "${CURL_ARGS[@]}" "https://api.bintray.com/content/nrel/$REPO/api-umbrella/$VERSION/$FILE_PATH"
+  curl -X PUT "${curl_args[@]}" "https://api.bintray.com/content/nrel/$repo/api-umbrella/$version/$file_path"
 done

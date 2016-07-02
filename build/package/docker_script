@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
+
+# Install any system dependencies for building.
+"$source_dir/build/scripts/install_build_dependencies"
+
+# shellcheck disable=SC1091
+if [ -f /etc/os-release ]; then
+  source /etc/os-release
+fi
+
+# Wipe any cmake files in the source directory, so we can perform an
+# out-of-source build.
+rm -rf "$source_dir/cmake_install.cmake" "$source_dir/CMakeCache.txt" "$source_dir/CMakeFiles" "$source_dir/Makefile"
+
+# Perform an out-of-source build (so the same source directory can be used for
+# multiple parallel docker builds).
+build_dir="/tmp/api-umbrella-$DIST"
+rm -rf "$build_dir"
+mkdir -p "$build_dir"
+cd "$build_dir"
+
+# When building the packages for Debian 7 or Ubuntu 12.04, we need a newer
+# version of CMake than what's available via the packages (we need 2.8.10+ for
+# ExternalProject_Add URL_HASH compatibility).
+if [[ "${ID:-}" == "debian" && "${VERSION_ID:-}" == "7" ]] || [[ "${ID:-}" == "ubuntu" && "${VERSION_ID:-}" == "12.04" ]]; then
+  if [[ ! -e "$build_dir/build/work/cmake-3.4.3/bin/cmake" ]]; then
+    mkdir -p "$build_dir/build/work/cmake-3.4.3"
+    curl -L "https://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz" | tar --strip-components 1 -C "$build_dir/build/work/cmake-3.4.3" -xz
+  fi
+  export PATH="$build_dir/build/work/cmake-3.4.3/bin:$PATH"
+fi
+
+"$source_dir/configure" --enable-hadoop-analytics
+make
+make package
+
+# Copy the packages for this distro back to the source directory so it's
+# available on the host machine, outside the docker build container.
+rm -rf "$source_dir/build/work/package/current/$DIST"
+mkdir -p "$source_dir/build/work/package/current/$DIST"
+cp -r "$build_dir/build/work/package/build"/* "$source_dir/build/work/package/current/$DIST/"

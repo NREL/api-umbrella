@@ -1,18 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e -u
 
-CONFIGURE=false
-RESTART_SERVICE=false
+configure=false
+restart_service=false
 
 case "$1" in
   # dpkg
   configure)
-    CONFIGURE=true
+    configure=true
 
     # Upgrade
-    if [ -n $2 ]; then
-      RESTART_SERVICE=true
+    if [ -n "$2" ]; then
+      restart_service=true
     fi
 
     ;;
@@ -21,74 +21,88 @@ case "$1" in
 
   # rpm
   1) # install
-    CONFIGURE=true
+    configure=true
     ;;
   2) # upgrade
-    CONFIGURE=true
+    configure=true
     ;;
 esac
 
-if [ "$CONFIGURE" = "true" ]; then
-  USER=api-umbrella
-  GROUP=api-umbrella
-  DEPLOY_USER=api-umbrella-deploy
-  DEPLOY_GROUP=api-umbrella-deploy
+if [ "$configure" = "true" ]; then
+  user=api-umbrella
+  group=api-umbrella
+  deploy_user=api-umbrella-deploy
+  deploy_group=api-umbrella-deploy
+  prefix_dir=/opt/api-umbrella
+  embedded_dir=$prefix_dir/embedded
+  web_app_shared_dir=$embedded_dir/apps/core/shared/src/api-umbrella/web-app
 
   # Create the main user & group.
-  if ! getent group $GROUP > /dev/null; then
-    groupadd -r $GROUP
+  if ! getent group $group > /dev/null; then
+    groupadd -r $group
   fi
-  if ! getent passwd $USER > /dev/null; then
-    useradd -r -g $GROUP -s /sbin/nologin \
-      -d /opt/api-umbrella -c "API Umbrella user" $USER
+  if ! getent passwd $user > /dev/null; then
+    useradd -r -g $group -s /sbin/nologin \
+      -d $prefix_dir -c "API Umbrella user" $user
   fi
 
   # Create the deploy user & group.
-  if ! getent group $DEPLOY_GROUP > /dev/null; then
-    groupadd -r $DEPLOY_GROUP
+  if ! getent group $deploy_group > /dev/null; then
+    groupadd -r $deploy_group
   fi
-  if ! getent passwd $DEPLOY_USER > /dev/null; then
-    useradd -r -g $DEPLOY_GROUP -s /bin/bash \
-      -d /home/$DEPLOY_USER -c "API Umbrella deployment user" $DEPLOY_USER
+  if ! getent passwd $deploy_user > /dev/null; then
+    useradd -r -g $deploy_group -s /bin/bash \
+      -d /home/$deploy_user -c "API Umbrella deployment user" $deploy_user
   fi
 
   # Add the deploy user to the app group, so the deploy user can read config
   # files.
-  if ! groups $DEPLOY_USER | grep -q -E "\s$GROUP(\s|$)"; then
-    usermod -a -G $GROUP $DEPLOY_USER
+  if ! groups $deploy_user | grep -q -E "\s$group(\s|$)"; then
+    usermod -a -G $group $deploy_user
   fi
 
   # Fix previously created deploy user that couldn't actually login.
-  if getent passwd $DEPLOY_USER | grep -q "/sbin/nologin"; then
-    usermod -d /home/$DEPLOY_USER -s /bin/bash $DEPLOY_USER
+  if getent passwd $deploy_user | grep -q "/sbin/nologin"; then
+    usermod -d /home/$deploy_user -s /bin/bash $deploy_user
   fi
 
   # Create an empty .ssh/authorized_keys file with proper permissions if it
   # doesn't already exist.
-  if [ ! -f /home/$DEPLOY_USER/.ssh/authorized_keys ]; then
-    mkdir -p /home/$DEPLOY_USER/.ssh
-    touch /home/$DEPLOY_USER/.ssh/authorized_keys
-    chown -R $DEPLOY_USER:$DEPLOY_GROUP /home/$DEPLOY_USER
-    chmod 700 /home/$DEPLOY_USER
-    chmod 700 /home/$DEPLOY_USER/.ssh
-    chmod 600 /home/$DEPLOY_USER/.ssh/authorized_keys
+  if [ ! -f /home/$deploy_user/.ssh/authorized_keys ]; then
+    mkdir -p /home/$deploy_user/.ssh
+    touch /home/$deploy_user/.ssh/authorized_keys
+    chown -R $deploy_user:$deploy_group /home/$deploy_user
+    chmod 700 /home/$deploy_user
+    chmod 700 /home/$deploy_user/.ssh
+    chmod 600 /home/$deploy_user/.ssh/authorized_keys
   fi
 
   # Set file permissions
-  chown -R $USER:$GROUP /opt/api-umbrella/etc /opt/api-umbrella/var
-  chown -R $DEPLOY_USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps
-  chown -R $USER:$DEPLOY_GROUP /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
-  chmod 775 /opt/api-umbrella/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
+  chown -R $user:$group $prefix_dir/etc $prefix_dir/var
+  chown -R $deploy_user:$deploy_group $embedded_dir/apps
+  chown -R $user:$deploy_group $web_app_shared_dir/tmp
+  chown -R $deploy_user:$group $web_app_shared_dir/tmp/ember-rails \
+    $web_app_shared_dir/tmp/cache/assets \
+    $web_app_shared_dir/tmp/cache/sass
+  chmod -R 775 $web_app_shared_dir/tmp/ember-rails \
+    $web_app_shared_dir/tmp/cache/assets \
+    $web_app_shared_dir/tmp/cache/sass
+  chmod 1777 $web_app_shared_dir/tmp
+  if [ -d $embedded_dir/kylin ]; then
+    chown $user:$group $embedded_dir/kylin/tomcat/temp \
+      $embedded_dir/kylin/tomcat/webapps \
+      $embedded_dir/kylin/tomcat/logs
+  fi
 
   # Re-create symlinks that may have inadvertently been cleaned up by the API
   # Umbrella v0.8 and v0.9 after-remove scripts during upgrades (this should be
   # fixed by the v0.10 after-remove script, so at some point, we can probably
   # remove this logic).
   if [ ! -f /usr/bin/api-umbrella ]; then
-    cd /usr/bin && ln -snf ../../opt/api-umbrella/bin/api-umbrella ./api-umbrella
+    cd /usr/bin && ln -snf ../..$prefix_dir/bin/api-umbrella ./api-umbrella
   fi
   if [ ! -f /var/log/api-umbrella ]; then
-    cd /var/log && ln -snf ../../opt/api-umbrella/var/log ./api-umbrella
+    cd /var/log && ln -snf ../..$prefix_dir/var/log ./api-umbrella
   fi
 
   # Install service, but don't activate.
@@ -99,7 +113,7 @@ if [ "$CONFIGURE" = "true" ]; then
   fi
 fi
 
-if [ "$RESTART_SERVICE" = "true" ]; then
+if [ "$restart_service" = "true" ]; then
   # On upgrades, restart the service if it's currently running.
   /etc/init.d/api-umbrella condrestart
 fi

@@ -1,4 +1,5 @@
 class Api::V0::AnalyticsController < Api::V1::BaseController
+  before_filter :set_analytics_adapter
   skip_before_filter :authenticate_admin!, :only => [:summary]
   skip_after_filter :verify_authorized, :only => [:summary]
 
@@ -15,7 +16,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     # If it's not cached, generate it now.
     if(!summary || !summary[:cached_at])
       summary = generate_summary
-      Rails.cache.write("analytics_summary", summary)
+      Rails.cache.write("analytics_summary", summary, :expires_in => 2.days)
 
     # If it is cached, but it's stale, use the stale data, but create a thread
     # to refresh it asynchronously in the background. Since this takes a while
@@ -24,7 +25,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     # it's uncached.
     elsif(summary && summary[:cached_at] && summary[:cached_at] < Time.now - 6.hours)
       Thread.new do
-        Rails.cache.write("analytics_summary", generate_summary)
+        Rails.cache.write("analytics_summary", generate_summary, :expires_in => 2.days)
       end
     end
 
@@ -94,10 +95,15 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     summary[:users_by_month].sort_by! { |data| [data[:year], data[:month]] }
 
     # Fetch the hits by month.
-    search = LogSearch.new({
+    search = LogSearch.factory(@analytics_adapter, {
       :start_time => start_time,
       :end_time => Time.now,
       :interval => "month",
+
+      # This query can take a long time to run against PrestoDB, so set a long
+      # timeout. But since we're only delivering cached results and refreshing
+      # periodically in the background, this long timeout should be okay.
+      :query_timeout => "20m",
     })
 
     # Try to ignore some of the baseline monitoring traffic. Only include

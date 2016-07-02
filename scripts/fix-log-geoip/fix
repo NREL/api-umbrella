@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "oj"
+require "elasticsearch"
+require "geoip"
+require "logger"
+
+STDOUT.sync = true
+logger = Logger.new(STDOUT)
+
+geo = GeoIP.new("/opt/api-umbrella/var/db/geoip/city-v6.dat")
+
+client = Elasticsearch::Client.new({
+  :hosts => ENV["ELASTICSEARCH_HOST"],
+})
+
+result = client.search({
+  :index => "api-umbrella-logs-v1-2016-04",
+  :type => "log",
+  :search_type => "scan",
+  :scroll => "2m",
+  :size => 2000,
+  :q => "request_at:[1460521800000 TO 1460763000000]",
+})
+
+total_hits = result["hits"]["total"]
+logger.info "Total hits: #{total_hits.inspect}"
+count = 0
+while(result = client.scroll(:scroll_id => result["_scroll_id"], :scroll => "2m")) # rubocop:disable Lint/AssignmentInCondition
+  start_time = Time.now
+  break if(result["hits"]["hits"].empty?)
+
+  bulk_commands = []
+  result["hits"]["hits"].each do |hit|
+    count += 1
+
+    if(hit["_source"]["request_ip"])
+      location = geo.city(hit["_source"]["request_ip"])
+      if(location && location.country_code2)
+        hit["_source"]["request_ip_country"] = location.country_code2
+      else
+        hit["_source"]["request_ip_country"] = nil
+      end
+      if(location && location.region_name && location.region_name != "00")
+        hit["_source"]["request_ip_region"] = location.region_name
+      else
+        hit["_source"]["request_ip_region"] = nil
+      end
+      if(location && location.city_name)
+        hit["_source"]["request_ip_city"] = location.city_name
+      else
+        hit["_source"]["request_ip_city"] = nil
+      end
+      if(location && location.latitude)
+        hit["_source"]["request_ip_location"] = {
+          "lon" => location.longitude,
+          "lat" => location.latitude,
+        }
+      else
+        hit["_source"]["request_ip_location"] = nil
+      end
+
+      bulk_commands << { "update" => { "_index" => hit["_index"], "_type" => hit["_type"], "_id" => hit["_id"] } }
+      bulk_commands << { "doc" => hit["_source"] }
+    end
+  end
+
+  if(bulk_commands.any?)
+    client.bulk(:body => bulk_commands)
+    elapsed_time = Time.now - start_time
+    logger.info "Indexed #{count} of #{total_hits} (#{bulk_commands.length / 2} records indexed in #{elapsed_time.round} seconds)"
+  end
+end

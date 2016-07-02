@@ -1,17 +1,18 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Redirect stderr to stdout
 exec 2>&1
 
-if test ${1} = "start"; then
+if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
+  api_umbrella_user="{{user}}"
 
-  RUN_OPTS="-e rc.env"
-  {{#user}}
-  RUN_OPTS="$RUN_OPTS -u {{user}}"
-  {{/user}}
+  run_args=("-e" "rc.env")
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
 
-  exec runtool $RUN_OPTS elasticsearch
+  exec runtool "${run_args[@]}" elasticsearch
 fi
 
 exit 0

@@ -1,13 +1,13 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Redirect stderr to stdout
 exec 2>&1
 
-if test ${1} = "start"; then
+if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
 
-  RUN_OPTS="-e rc.env"
-  exec runtool $RUN_OPTS {{_src_root_dir}}/bin/api-umbrella-nginx-reloader
+  run_args=("-e" "rc.env")
+  exec runtool "${run_args[@]}" "{{_src_root_dir}}/bin/api-umbrella-nginx-reloader"
 fi
 
 exit 0

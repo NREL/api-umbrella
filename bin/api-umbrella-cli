@@ -1,28 +1,4 @@
 #!/usr/bin/env luajit
 
-local embedded_root = os.getenv("API_UMBRELLA_EMBEDDED_ROOT")
-if embedded_root then
-  package.path = embedded_root .. "/openresty/lualib/?.lua;" ..
-    embedded_root .. "/openresty/lualib/?/init.lua;" ..
-    embedded_root .. "/openresty/luajit/share/luajit-2.1.0-beta1/?.lua;" ..
-    embedded_root .. "/openresty/luajit/share/luajit-2.1.0-beta1/?/init.lua;" ..
-    embedded_root .. "/openresty/luajit/share/lua/5.1/?.lua;" ..
-    embedded_root .. "/openresty/luajit/share/lua/5.1/?/init.lua;" ..
-    package.path
-  package.cpath = embedded_root .. "/openresty/lualib/?.so;" ..
-    embedded_root .. "/openresty/luajit/lib/lua/5.1/?.so;" ..
-    package.cpath
-end
-
-local src_root = os.getenv("API_UMBRELLA_SRC_ROOT")
-if src_root then
-  package.path = src_root .. "/src/?.lua;" ..
-    src_root .. "/vendor/share/lua/5.1/?.lua;" ..
-    src_root .. "/vendor/share/lua/5.1/?/init.lua;" ..
-    package.path
-  package.cpath = src_root .. "/vendor/lib/lua/5.1/?.so;" ..
-    package.cpath
-end
-
 local cli = require "api-umbrella.cli"
 cli()

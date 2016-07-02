@@ -20,11 +20,17 @@
 # Ignore Circle CI items, so the GitHub pages publish task can work. 
 /.ruby-version
 
-/build/local
-/build/package/.bundle
-/build/package/dist
-/build/package/logs
+# CMake
+/CMakeCache.txt
+/CMakeFiles
+/Makefile
+/cmake_install.cmake
+/install_manifest.txt
+/install_manifest_core.txt
+/install_manifest_hadoop-analytics.txt
+
 /build/work
+/build/package/verify/.rnd
 /deploy/.env
 /log/*
 /test/node_modules

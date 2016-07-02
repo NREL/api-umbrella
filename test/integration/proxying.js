@@ -295,6 +295,36 @@ describe('proxying', function() {
     }.bind(this));
   });
 
+  describe('url length', function() {
+    it('allows a url length of 8KB', function(done) {
+      var otherHeaderLineContent = 'GET  HTTP/1.1\r\n';
+      var urlPath = '/info/?';
+      urlPath += randomstring.generate(8192 - urlPath.length - otherHeaderLineContent.length);
+      var url = 'http://localhost:9080' + urlPath;
+
+      request.get(url, this.options, function(error, response, body) {
+        should.not.exist(error);
+        response.statusCode.should.eql(200);
+        var data = JSON.parse(body);
+        data.url.path.should.eql(urlPath);
+        done();
+      });
+    });
+
+    it('returns 414 request uri too large when  of 8KB', function(done) {
+      var otherHeaderLineContent = 'GET  HTTP/1.1\r\n';
+      var urlPath = '/info/?';
+      urlPath += randomstring.generate(8193 - urlPath.length - otherHeaderLineContent.length);
+      var url = 'http://localhost:9080' + urlPath;
+
+      request.get(url, this.options, function(error, response) {
+        should.not.exist(error);
+        response.statusCode.should.eql(414);
+        done();
+      });
+    });
+  });
+
   describe('header size', function() {
     function requestOfHeaderSize(options, callback) {
       var headers = {

@@ -26,3 +26,16 @@
   notifempty
   copytruncate
 }
+
+# Shorter rotation for these redundant request logs (we're just keeping them in
+# place as we work on some of the new analytics updates). And disable
+# compression since they're already gzipped on write.
+/opt/api-umbrella/var/log/rsyslog/requests.log.gz {
+  daily
+  rotate 10
+  create 644 api-umbrella api-umbrella
+  missingok
+  nocompress
+  notifempty
+  copytruncate
+}

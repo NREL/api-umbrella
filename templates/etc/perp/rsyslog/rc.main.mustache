@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# Redirect stderr to stdout
+exec 2>&1
+
+if [ "${1}" = "start" ]; then
+  echo "starting ${2}..."
+  api_umbrella_user="{{user}}"
+
+  run_args=()
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
+
+  exec \
+    runtrap rsyslogd "${0}" \
+    runtool "${run_args[@]}" \
+    rsyslogd \
+      -n \
+      -f "{{etc_dir}}/rsyslog.conf" \
+      -i "{{run_dir}}/rsyslogd.pid"
+fi
+
+# Use runtrap to handle the normal SIGTERM perp sends when rsyslogd is supposed
+# to stop. For some reason rsyslogd seems to require multiple kill attempts to
+# close cleanly (not all the time, but most of the time). Need to debug and
+# file a bug with rsyslog, but as a workaround, send a few SIGTERMs to rsyslogd
+# to try to get it to shutdown cleanly. If it can't, then escalate to more
+# harsh kill signals.
+if [ "${1}" = "trap" ] && [ "${5}" = "SIGTERM" ]; then
+  echo "stopping ${2}..."
+  pid="${3}"
+  signals=(TERM TERM TERM TERM TERM TERM INT QUIT ABRT KILL)
+  for signal in "${signals[@]}"; do
+    echo "attempting to stop ${2} (pid $pid) with signal $signal"
+    kill "-$signal" "$pid"
+    # shellcheck disable=SC2009
+    if ps --no-headers -p "$pid" | grep -v defunct > /dev/null; then
+      sleep 1
+    else
+      break
+    fi
+  done
+fi
+
+exit 0

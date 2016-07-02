@@ -45,4 +45,9 @@ API Umbrella bundles the recommended database versions inside its package. Using
     ```
 
 - Elasticsearch 2
-  - API Umbrella is not yet comptabile with Elasticsearch 2+.
+  - API Umbrella can be used with an Elasticsearch 2 instance by setting the following config option in `/etc/api-umbrella/api-umbrella.yml`:
+
+    ```yaml
+    elasticsearch:
+       api_version: 2
+    ```

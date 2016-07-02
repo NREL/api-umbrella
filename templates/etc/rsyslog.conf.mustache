@@ -1,0 +1,198 @@
+# Allow for longer message sizes to handle the JSON data containing long URLs
+# or HTTP headers.
+global(maxMessageSize="32k")
+
+global(workDirectory="{{db_dir}}/rsyslog")
+
+# Load Modules
+module(load="imtcp" MaxSessions="500")
+module(load="mmjsonparse")
+module(load="mmutf8fix")
+
+# TCP Input
+input(type="imtcp" address="{{rsyslog.host}}" port="{{rsyslog.port}}")
+
+# Ensure we have only valid UTF-8 characters in the log message (otherwise
+# ElasticSearch is unhappy).
+action(type="mmutf8fix")
+
+# Parse the JSON data out of the @cee-enhanced logs.
+action(type="mmjsonparse")
+
+{{#analytics._output_elasticsearch?}}
+module(load="omelasticsearch")
+
+# Define the ElasticSearch-based output.
+# This aliases some of the logged fields to different names for backwards
+# compatibility with the ElasticSearch data.
+set $!usr!es!api_key = $!legacy_api_key;
+set $!usr!es!backend_response_time = $!timer_backend_response;
+set $!usr!es!gatekeeper_denied_code = $!denied_reason;
+set $!usr!es!internal_gatekeeper_time = $!timer_internal;
+set $!usr!es!proxy_overhead = $!timer_proxy_overhead;
+set $!usr!es!request_accept = $!request_accept;
+set $!usr!es!request_accept_encoding = $!request_accept_encoding;
+set $!usr!es!request_at = $!timestamp_utc;
+set $!usr!es!request_basic_auth_username = $!request_basic_auth_username;
+set $!usr!es!request_connection = $!request_connection;
+set $!usr!es!request_content_type = $!request_content_type;
+set $!usr!es!request_hierarchy = $!request_url_hierarchy;
+set $!usr!es!request_host = $!request_url_host;
+set $!usr!es!request_ip = $!request_ip;
+set $!usr!es!request_ip_city = $!request_ip_city;
+set $!usr!es!request_ip_country = $!request_ip_country;
+set $!usr!es!request_ip_location = $!legacy_request_ip_location;
+set $!usr!es!request_ip_region = $!request_ip_region;
+set $!usr!es!request_method = $!request_method;
+set $!usr!es!request_origin = $!request_origin;
+set $!usr!es!request_path = $!request_url_path;
+set $!usr!es!request_query = $!legacy_request_url_query_hash;
+set $!usr!es!request_referer = $!request_referer;
+set $!usr!es!request_scheme = $!request_url_scheme;
+set $!usr!es!request_size = $!request_size;
+set $!usr!es!request_url = $!legacy_request_url;
+set $!usr!es!request_user_agent = $!request_user_agent;
+set $!usr!es!request_user_agent_family = $!request_user_agent_family;
+set $!usr!es!request_user_agent_type = $!request_user_agent_type;
+set $!usr!es!response_age = $!response_age;
+set $!usr!es!response_cache = $!response_cache;
+set $!usr!es!response_content_encoding = $!response_content_encoding;
+set $!usr!es!response_content_length = $!response_content_length;
+set $!usr!es!response_content_type = $!response_content_type;
+set $!usr!es!response_server = $!response_server;
+set $!usr!es!response_size = $!response_size;
+set $!usr!es!response_status = $!response_status;
+set $!usr!es!response_time = $!timer_response;
+set $!usr!es!response_transfer_encoding = $!response_transfer_encoding;
+set $!usr!es!user_email = $!legacy_user_email;
+set $!usr!es!user_id = $!user_id;
+set $!usr!es!user_registration_source = $!legacy_user_registration_source;
+
+# Define templates for ElasticSearch output.
+template(name="elasticsearch-index" type="string" string="api-umbrella-logs-v1-%timereported:1:7:date-rfc3339%")
+template(name="elasticsearch-id" type="subtree" subtree="$!id")
+template(name="elasticsearch-json-record" type="list") {
+  property(name="$!usr!es")
+}
+
+# Output to ElasticSearch.
+# A disk-assisted memory queue is used for buffering.
+local0.info action(
+  type="omelasticsearch"
+  server="{{elasticsearch._first_server.host}}"
+  serverport="{{elasticsearch._first_server.port}}"
+  searchIndex="elasticsearch-index"
+  dynSearchIndex="on"
+  searchType="log"
+  template="elasticsearch-json-record"
+  bulkmode="on"
+  bulkId="elasticsearch-id"
+  dynBulkId="on"
+  asyncrepl="off"
+  queue.type="LinkedList"
+  queue.filename="queue-elasticsearch"
+  queue.checkpointinterval="10"
+  queue.saveonshutdown="on"
+  queue.highwatermark="10000"
+  queue.lowwatermark="2000"
+  action.resumeRetryCount="-1"
+)
+{{/analytics._output_elasticsearch?}}
+
+{{#analytics._output_kylin?}}
+module(load="omkafka")
+
+# Define the SQL-based output.
+set $!usr!sql!denied_reason = $!denied_reason;
+set $!usr!sql!id = $!id;
+set $!usr!sql!request_accept = $!request_accept;
+set $!usr!sql!request_accept_encoding = $!request_accept_encoding;
+set $!usr!sql!request_basic_auth_username = $!request_basic_auth_username;
+set $!usr!sql!request_connection = $!request_connection;
+set $!usr!sql!request_content_type = $!request_content_type;
+set $!usr!sql!request_ip = $!request_ip;
+set $!usr!sql!request_ip_city = $!request_ip_city;
+set $!usr!sql!request_ip_country = $!request_ip_country;
+set $!usr!sql!request_ip_lat = $!request_ip_lat;
+set $!usr!sql!request_ip_lon = $!request_ip_lon;
+set $!usr!sql!request_ip_region = $!request_ip_region;
+set $!usr!sql!request_method = $!request_method;
+set $!usr!sql!request_origin = $!request_origin;
+set $!usr!sql!request_referer = $!request_referer;
+set $!usr!sql!request_size = $!request_size;
+set $!usr!sql!request_url_host = $!request_url_host;
+set $!usr!sql!request_url_path = $!request_url_path;
+set $!usr!sql!request_url_path_level1 = $!request_url_path_level1;
+set $!usr!sql!request_url_path_level2 = $!request_url_path_level2;
+set $!usr!sql!request_url_path_level3 = $!request_url_path_level3;
+set $!usr!sql!request_url_path_level4 = $!request_url_path_level4;
+set $!usr!sql!request_url_path_level5 = $!request_url_path_level5;
+set $!usr!sql!request_url_path_level6 = $!request_url_path_level6;
+set $!usr!sql!request_url_query = $!request_url_query;
+set $!usr!sql!request_url_scheme = $!request_url_scheme;
+set $!usr!sql!request_user_agent = $!request_user_agent;
+set $!usr!sql!request_user_agent_family = $!request_user_agent_family;
+set $!usr!sql!request_user_agent_type = $!request_user_agent_type;
+set $!usr!sql!response_age = $!response_age;
+set $!usr!sql!response_cache = $!response_cache;
+set $!usr!sql!response_content_encoding = $!response_content_encoding;
+set $!usr!sql!response_content_length = $!response_content_length;
+set $!usr!sql!response_content_type = $!response_content_type;
+set $!usr!sql!response_server = $!response_server;
+set $!usr!sql!response_size = $!response_size;
+set $!usr!sql!response_status = $!response_status;
+set $!usr!sql!response_transfer_encoding = $!response_transfer_encoding;
+set $!usr!sql!timer_backend_response = $!timer_backend_response;
+set $!usr!sql!timer_internal = $!timer_internal;
+set $!usr!sql!timer_proxy_overhead = $!timer_proxy_overhead;
+set $!usr!sql!timer_response = $!timer_response;
+set $!usr!sql!timestamp_tz_date = $!timestamp_tz_date;
+set $!usr!sql!timestamp_tz_hour = $!timestamp_tz_hour;
+set $!usr!sql!timestamp_tz_minute = $!timestamp_tz_minute;
+set $!usr!sql!timestamp_tz_month = $!timestamp_tz_month;
+set $!usr!sql!timestamp_tz_offset = $!timestamp_tz_offset;
+set $!usr!sql!timestamp_tz_week = $!timestamp_tz_week;
+set $!usr!sql!timestamp_tz_year = $!timestamp_tz_year;
+set $!usr!sql!timestamp_utc = $!timestamp_utc;
+set $!usr!sql!user_id = $!user_id;
+
+# Define templates for SQL output via JSON records.
+template(name="sql-json-record" type="list") {
+  property(name="$!usr!sql")
+}
+
+# Output to Kafka.
+# A disk-assisted memory queue is used for buffering.
+local0.info action(
+  type="omkafka"
+  broker=[{{kafka._rsyslog_broker}}]
+  topic="{{kafka.topic}}"
+  confParam=["compression.codec=gzip"]
+  template="sql-json-record"
+  queue.type="LinkedList"
+  queue.filename="queue-kafka"
+  queue.checkpointinterval="10"
+  queue.saveonshutdown="on"
+  queue.highwatermark="10000"
+  queue.lowwatermark="2000"
+  action.resumeRetryCount="-1"
+)
+{{/analytics._output_kylin?}}
+
+# Output to local file for redundancy until we prove the new system out.
+template(name="all-json-record" type="list") {
+  property(name="$!all-json") constant(value="\n")
+}
+local0.info action(
+  type="omfile"
+  file="{{log_dir}}/rsyslog/requests.log.gz"
+  template="all-json-record"
+  queue.type="LinkedList"
+  queue.filename="queue-file"
+  queue.checkpointinterval="10"
+  queue.saveonshutdown="on"
+  queue.highwatermark="10000"
+  queue.lowwatermark="2000"
+  zipLevel="3"
+  action.resumeRetryCount="-1"
+)

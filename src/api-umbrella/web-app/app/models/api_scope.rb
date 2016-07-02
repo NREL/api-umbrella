@@ -27,6 +27,9 @@ class ApiScope
     :format => {
       :with => CommonValidations::URL_PREFIX_FORMAT,
       :message => :invalid_url_prefix_format,
+    },
+    :uniqueness => {
+      :scope => :host,
     }
 
   # Mass assignment security
@@ -41,5 +44,20 @@ class ApiScope
 
   def display_name
     "#{self.name} - #{self.host}#{self.path_prefix}"
+  end
+
+  def root?
+    (self.path_prefix.blank? || self.path_prefix == "/")
+  end
+
+  def self.find_or_create_by_instance!(other)
+    attributes = other.attributes.slice("host", "path_prefix")
+    record = self.where(attributes).first
+    unless(record)
+      record = other
+      record.save!
+    end
+
+    record
   end
 end

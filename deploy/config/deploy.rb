@@ -56,7 +56,7 @@ set :default_env, fetch(:default_env, {}).merge({
 })
 
 # Default value for keep_releases is 5
-# set :keep_releases, 5
+set :keep_releases, 15
 
 namespace :deploy do
   task :bundle do
@@ -76,8 +76,13 @@ namespace :deploy do
 
   task :lua_deps do
     on roles(:app) do
-      within release_path do
-        execute :make, "install_lua_vendor_deps LUA_PATH='/opt/api-umbrella/embedded/openresty/luajit/share/lua/5.1/?.lua;/opt/api-umbrella/embedded/openresty/luajit/share/lua/5.1/?/init.lua;;' LUAROCKS_CMD=/opt/api-umbrella/embedded/bin/luarocks VENDOR_DIR=#{shared_path}/vendor EMBEDDED_DIR=/opt/api-umbrella/embedded"
+      execute "mkdir", "-p", "#{shared_path}/deploy-build"
+      # We must wipe cmake's cache file, since the `release_path` changes on
+      # each deployment.
+      execute "rm", "-f", "#{shared_path}/deploy-build/CMakeCache.txt"
+      within "#{shared_path}/deploy-build" do
+        execute "cmake", "#{release_path}/build/cmake/deploy"
+        execute "make", "install-core-lua-deps"
       end
     end
   end
