@@ -2,7 +2,7 @@ import Base from './base';
 
 export default Base.extend({
   model() {
-    return Admin.Api.create({
+    return this.get('store').createRecord('api', {
       frontendHost: location.hostname,
     });
   },

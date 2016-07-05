@@ -20,10 +20,10 @@ module.exports = function(defaults) {
   // please specify an object with the list of modules as keys
   // along with the exports of each module as its value.
 
-  app.import('bower_components/ace-builds/src/ace.js');
-  app.import('bower_components/ace-builds/src/mode-json.js');
-  app.import('bower_components/ace-builds/src/mode-xml.js');
-  app.import('bower_components/ace-builds/src/mode-yaml.js');
+  app.import('bower_components/ace-builds/src-noconflict/ace.js');
+  app.import('bower_components/ace-builds/src-noconflict/mode-json.js');
+  app.import('bower_components/ace-builds/src-noconflict/mode-xml.js');
+  app.import('bower_components/ace-builds/src-noconflict/mode-yaml.js');
   app.import('bower_components/blockUI/jquery.blockUI.js');
   app.import('bower_components/bootbox/bootbox.js');
   app.import('bower_components/bootstrap-daterangepicker/daterangepicker.js');

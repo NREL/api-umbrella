@@ -1,7 +1,36 @@
 import Ember from 'ember';
-import { Model, attr, belongsTo, hasMany } from 'ember-model';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { belongsTo, hasMany } from 'ember-data/relationships';
+import { validator, buildValidations } from 'ember-cp-validations';
 
-export default Model.extend(Ember.Validations.Mixin, {
+const Validations = buildValidations({
+  name: validator('presence', true),
+  frontendHost: [
+    validator('presence', true),
+    validator('format', {
+      regex: CommonValidations.host_format_with_wildcard,
+      message: I18n.t('errors.messages.invalid_host_format'),
+    }),
+  ],
+  backendHost: [
+    validator('presence', {
+      presence: true,
+      disabled(model) {
+        return (model.get('frontendHost') && model.get('frontendHost')[0] === '*');
+      },
+    }),
+    validator('format', {
+      regex: CommonValidations.host_format_with_wildcard,
+      message: I18n.t('errors.messages.invalid_host_format'),
+      disabled(model) {
+        return !model.get('backendHost');
+      },
+    }),
+  ],
+});
+
+export default Model.extend(Validations, {
   name: attr(),
   sortOrder: attr('number'),
   backendProtocol: attr(),
@@ -19,56 +48,24 @@ export default Model.extend(Ember.Validations.Mixin, {
   subSettings: hasMany('api/sub-settings', { async: false }),
   rewrites: hasMany('api/rewrites', { async: false }),
 
-  validations: {
-    name: {
-      presence: true,
-    },
-    frontendHost: {
-      presence: true,
-      format: {
-        with: CommonValidations.host_format_with_wildcard,
-        message: I18n.t('errors.messages.invalid_host_format'),
-      },
-    },
-    backendHost: {
-      presence: {
-        unless(object) {
-          return (object.get('frontendHost') && object.get('frontendHost')[0] === '*');
-        },
-      },
-      format: {
-        with: CommonValidations.host_format_with_wildcard,
-        message: I18n.t('errors.messages.invalid_host_format'),
-        if(object) {
-          return !!object.get('backendHost');
-        },
-      },
-    },
-  },
-
-  init() {
-    this._super();
-
-    // Set defaults for new records.
+  ready() {
     this.setDefaults();
-
-    // For existing records, we need to set the defaults after loading.
-    this.on('didLoad', this, this.setDefaults);
+    this._super();
   },
 
   setDefaults() {
     if(!this.get('settings')) {
-      this.set('settings', Admin.ApiSettings.create());
+      this.set('settings', this.get('store').createRecord('api/settings'));
     }
   },
 
-  exampleIncomingUrlRoot: function() {
+  exampleIncomingUrlRoot: Ember.computed('frontendHost', function() {
     return 'http://' + (this.get('frontendHost') || '');
-  }.property('frontendHost'),
+  }),
 
-  exampleOutgoingUrlRoot: function() {
+  exampleOutgoingUrlRoot: Ember.computed('backendHost', function() {
     return 'http://' + (this.get('backendHost') || this.get('frontendHost') || '');
-  }.property('backendHost'),
+  }),
 
   didUpdate() {
     // Clear the cached roles on save, so the list of available roles is always
@@ -80,10 +77,7 @@ export default Model.extend(Ember.Validations.Mixin, {
     this.didUpdate();
   },
 }).reopenClass({
-  url: '/api-umbrella/v1/apis',
-  rootKey: 'api',
-  collectionKey: 'data',
-  primaryKey: 'id',
-  camelizeKeys: true,
-  adapter: Admin.APIUmbrellaRESTAdapter.create(),
+  urlRoot: '/api-umbrella/v1/apis',
+  singlePayloadKey: 'api',
+  arrayPayloadKey: 'data',
 });

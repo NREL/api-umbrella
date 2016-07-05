@@ -1,29 +1,23 @@
-import { Model, attr, belongsTo } from 'ember-model';
+import Ember from 'ember';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { belongsTo } from 'ember-data/relationships';
 
 export default Model.extend({
-  id: attr(),
-  sortOrder: attr(Number),
+  sortOrder: attr('number'),
   httpMethod: attr(),
   regex: attr(),
 
-  settings: belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
+  settings: belongsTo('api/settings', { async: false }),
 
-  init() {
-    this._super();
-
-    // Set defaults for new records.
+  ready() {
     this.setDefaults();
-
-    // For existing records, we need to set the defaults after loading.
-    this.on('didLoad', this, this.setDefaults);
+    this._super();
   },
 
   setDefaults() {
     if(!this.get('settings')) {
-      this.set('settings', Admin.ApiSettings.create());
+      this.set('settings', this.get('store').createRecord('api/settings'));
     }
   },
-}).reopenClass({
-  primaryKey: 'id',
-  camelizeKeys: true,
 });

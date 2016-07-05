@@ -1,13 +1,11 @@
-import { Model, attr } from 'ember-model';
+import Ember from 'ember';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
 
 export default Model.extend({
-  id: attr(),
-  sortOrder: attr(Number),
+  sortOrder: attr('number'),
   matcherType: attr(),
   httpMethod: attr(),
   frontendMatcher: attr(),
   backendReplacement: attr(),
-}).reopenClass({
-  primaryKey: 'id',
-  camelizeKeys: true,
 });

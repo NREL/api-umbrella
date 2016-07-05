@@ -1,29 +1,27 @@
 import Ember from 'ember';
-import { Model, attr } from 'ember-model';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { validator, buildValidations } from 'ember-cp-validations';
 
-export default Model.extend(Ember.Validations.Mixin, {
-  id: attr(),
+const Validations = buildValidations({
+  host: [
+    validator('presence', true),
+    validator('format', {
+      regex: CommonValidations.host_format,
+      message: I18n.t('errors.messages.invalid_host_format'),
+    }),
+  ],
+  port: [
+    validator('presence', true),
+    validator('number', { allowString: true }),
+  ],
+});
+
+export default Model.extend(Validations, {
   host: attr(),
-  port: attr(Number),
+  port: attr('number'),
 
-  validations: {
-    host: {
-      presence: true,
-      format: {
-        with: CommonValidations.host_format,
-        message: I18n.t('errors.messages.invalid_host_format'),
-      },
-    },
-    port: {
-      presence: true,
-      numericality: true,
-    },
-  },
-
-  hostWithPort: function() {
+  hostWithPort: Ember.computed('host', 'port', function() {
     return _.compact([this.get('host'), this.get('port')]).join(':');
-  }.property('host', 'port'),
-}).reopenClass({
-  primaryKey: 'id',
-  camelizeKeys: true,
+  }),
 });

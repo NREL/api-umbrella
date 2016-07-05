@@ -1,33 +1,31 @@
 import Ember from 'ember';
-import { Model, attr } from 'ember-model';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { validator, buildValidations } from 'ember-cp-validations';
 
-export default Model.extend(Ember.Validations.Mixin, {
-  id: attr(),
-  sortOrder: attr(Number),
+const Validations = buildValidations({
+  frontendPrefix: [
+    validator('presence', true),
+    validator('format', {
+      regex: CommonValidations.url_prefix_format,
+      message: I18n.t('errors.messages.invalid_url_prefix_format'),
+    }),
+  ],
+  backendPrefix: [
+    validator('presence', true),
+    validator('format', {
+      regex: CommonValidations.url_prefix_format,
+      message: I18n.t('errors.messages.invalid_url_prefix_format'),
+    }),
+  ],
+});
+
+export default Model.extend(Validations, {
+  sortOrder: attr('number'),
   frontendPrefix: attr(),
   backendPrefix: attr(),
 
-  validations: {
-    frontendPrefix: {
-      presence: true,
-      format: {
-        with: CommonValidations.url_prefix_format,
-        message: I18n.t('errors.messages.invalid_url_prefix_format'),
-      },
-    },
-    backendPrefix: {
-      presence: true,
-      format: {
-        with: CommonValidations.url_prefix_format,
-        message: I18n.t('errors.messages.invalid_url_prefix_format'),
-      },
-    },
-  },
-
-  backendPrefixWithDefault: function() {
+  backendPrefixWithDefault: Ember.computed('backendPrefix', 'frontendPrefix', function() {
     return this.get('backendPrefix') || this.get('frontendPrefix');
-  }.property('backendPrefix', 'frontendPrefix'),
-}).reopenClass({
-  primaryKey: 'id',
-  camelizeKeys: true,
+  }),
 });

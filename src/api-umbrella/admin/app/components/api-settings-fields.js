@@ -1,6 +1,8 @@
 import Ember from 'ember';
 
 export default Ember.Component.extend({
+  store: Ember.inject.service(),
+
   requireHttpsOptions: [
     { id: null, name: I18n.t('admin.api.settings.require_https_options.inherit') },
     { id: 'required_return_error', name: I18n.t('admin.api.settings.require_https_options.required_return_error') },
@@ -25,7 +27,5 @@ export default Ember.Component.extend({
 
   roleOptions: Ember.computed(function() {
     return this.get('store').findAll('api-user-role');
-    // Don't cache this property, so we can rely on refreshing the underlying
-    // model to refresh the options.
   }),
 });
