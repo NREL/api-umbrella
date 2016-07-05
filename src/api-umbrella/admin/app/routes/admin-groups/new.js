@@ -1,7 +1,7 @@
 import Base from './base';
 
 export default Base.extend({
-  model: function() {
-    return Admin.AdminGroup.create();
+  model() {
+    return this.get('store').createRecord('admin-group');
   },
 });

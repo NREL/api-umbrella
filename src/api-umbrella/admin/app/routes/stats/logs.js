@@ -1,13 +1,13 @@
 import Base from './base';
 
 export default Base.extend({
-  init: function() {
+  init() {
     _.defaults(this.defaultQueryParams, {
       interval: 'day',
     });
   },
 
-  model: function(params) {
+  model(params) {
     this._super(params);
     if(this.validateOptions()) {
       return Admin.StatsLogs.find(this.get('query.params'));
@@ -17,23 +17,23 @@ export default Base.extend({
   },
 
   queryChange: function() {
-    var newQueryParams = this.get('query.params');
+    let newQueryParams = this.get('query.params');
     if(newQueryParams && !_.isEmpty(newQueryParams)) {
-      var activeQueryParams = this.get('activeQueryParams');
+      let activeQueryParams = this.get('activeQueryParams');
       if(!_.isEqual(newQueryParams, activeQueryParams)) {
         this.transitionTo('stats.logs', $.param(newQueryParams));
       }
     }
   }.observes('query.params.query', 'query.params.search', 'query.params.interval', 'query.params.start_at', 'query.params.end_at', 'query.params.beta_analytics'),
 
-  validateOptions: function() {
-    var valid = true;
+  validateOptions() {
+    let valid = true;
 
-    var interval = this.get('query.params.interval');
-    var start = moment(this.get('query.params.start_at'));
-    var end = moment(this.get('query.params.end_at'));
+    let interval = this.get('query.params.interval');
+    let start = moment(this.get('query.params.start_at'));
+    let end = moment(this.get('query.params.end_at'));
 
-    var range = end.unix() - start.unix();
+    let range = end.unix() - start.unix();
     switch(interval) {
       case 'minute':
         // 2 days maximum range

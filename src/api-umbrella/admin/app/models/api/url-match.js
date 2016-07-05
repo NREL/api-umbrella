@@ -12,14 +12,14 @@ export default Model.extend(Ember.Validations.Mixin, {
       presence: true,
       format: {
         with: CommonValidations.url_prefix_format,
-        message: polyglot.t('errors.messages.invalid_url_prefix_format'),
+        message: I18n.t('errors.messages.invalid_url_prefix_format'),
       },
     },
     backendPrefix: {
       presence: true,
       format: {
         with: CommonValidations.url_prefix_format,
-        message: polyglot.t('errors.messages.invalid_url_prefix_format'),
+        message: I18n.t('errors.messages.invalid_url_prefix_format'),
       },
     },
   },

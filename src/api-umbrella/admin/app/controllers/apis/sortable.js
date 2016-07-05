@@ -1,21 +1,21 @@
 import Ember from 'ember';
 
-export default Ember.ArrayController.extend({
+export default Ember.Controller.extend({
   reorderable: function() {
-    var length = this.get('length');
+    let length = this.get('length');
     return (length && length > 1);
   }.property('length'),
 
-  updateSortOrder: function(indexes) {
+  updateSortOrder(indexes) {
     this.forEach(function(record) {
-      var index = indexes[record.get('id')];
+      let index = indexes[record.get('id')];
       record.set('sortOrder', index);
     });
   },
 
-  reorderCollection: function(containerId) {
-    var $container = $('#' + containerId);
-    var $buttonText = $container.find('.reorder-button-text');
+  reorderCollection(containerId) {
+    let $container = $('#' + containerId);
+    let $buttonText = $container.find('.reorder-button-text');
 
     if($container.hasClass('reorder-active')) {
       $buttonText.text($buttonText.data('originalText'));
@@ -26,18 +26,18 @@ export default Ember.ArrayController.extend({
 
     $container.toggleClass('reorder-active');
 
-    var controller = this;
+    let controller = this;
     $container.find('tbody').sortable({
       handle: '.reorder-handle',
       placeholder: 'reorder-placeholder',
-      helper: function(event, ui) {
+      helper(event, ui) {
         ui.children().each(function() {
           $(this).width($(this).width());
         });
         return ui;
       },
-      stop: function() {
-        var indexes = {};
+      stop() {
+        let indexes = {};
         $(this).find('tr').each(function(index) {
           indexes[$(this).data('id')] = index;
         });

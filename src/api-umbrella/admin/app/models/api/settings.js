@@ -1,7 +1,8 @@
-import { Model, attr, hasMany } from 'ember-model';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { hasMany } from 'ember-data/relationships';
 
 export default Model.extend({
-  id: attr(),
   appendQueryString: attr(),
   headersString: attr(),
   httpBasicAuth: attr(),
@@ -22,19 +23,14 @@ export default Model.extend({
   errorTemplates: attr(),
   errorDataYamlStrings: attr(),
 
-  rateLimits: hasMany('Admin.ApiRateLimit', { key: 'rate_limits', embedded: true }),
+  rateLimits: hasMany('api/rate-limit', { async: false }),
 
-  init: function() {
-    this._super();
-
-    // Set defaults for new records.
+  ready() {
     this.setDefaults();
-
-    // For existing records, we need to set the defaults after loading.
-    this.on('didLoad', this, this.setDefaults);
+    this._super();
   },
 
-  setDefaults: function() {
+  setDefaults() {
     if(this.get('rateLimitMode') === undefined) {
       this.set('rateLimitMode', null);
     }
@@ -53,13 +49,13 @@ export default Model.extend({
   requiredRolesString: function(key, value) {
     // Setter
     if(arguments.length > 1) {
-      var roles = _.compact(value.split(','));
+      let roles = _.compact(value.split(','));
       if(roles.length === 0) { roles = null; }
       this.set('requiredRoles', roles);
     }
 
     // Getter
-    var rolesString = '';
+    let rolesString = '';
     if(this.get('requiredRoles')) {
       rolesString = this.get('requiredRoles').join(',');
     }
@@ -70,13 +66,13 @@ export default Model.extend({
   allowedIpsString: function(key, value) {
     // Setter
     if(arguments.length > 1) {
-      var ips = _.compact(value.split(/[\r\n]+/));
+      let ips = _.compact(value.split(/[\r\n]+/));
       if(ips.length === 0) { ips = null; }
       this.set('allowedIps', ips);
     }
 
     // Getter
-    var allowedIpsString = '';
+    let allowedIpsString = '';
     if(this.get('allowedIps')) {
       allowedIpsString = this.get('allowedIps').join('\n');
     }
@@ -87,13 +83,13 @@ export default Model.extend({
   allowedReferersString: function(key, value) {
     // Setter
     if(arguments.length > 1) {
-      var referers = _.compact(value.split(/[\r\n]+/));
+      let referers = _.compact(value.split(/[\r\n]+/));
       if(referers.length === 0) { referers = null; }
       this.set('allowedReferers', referers);
     }
 
     // Getter
-    var allowedReferersString = '';
+    let allowedReferersString = '';
     if(this.get('allowedReferers')) {
       allowedReferersString = this.get('allowedReferers').join('\n');
     }
@@ -104,7 +100,4 @@ export default Model.extend({
   isRateLimitModeCustom: function() {
     return (this.get('rateLimitMode') === 'custom');
   }.property('rateLimitMode'),
-}).reopenClass({
-  primaryKey: 'id',
-  camelizeKeys: true,
 });

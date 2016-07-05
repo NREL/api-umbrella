@@ -1,7 +1,7 @@
 import Users from './users';
 
 export default Users.extend({
-  renderTemplate: function() {
+  renderTemplate() {
     this.render('stats/users', { controller: 'statsUsersDefault' });
-  }
+  },
 });

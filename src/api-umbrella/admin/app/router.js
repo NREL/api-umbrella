@@ -2,40 +2,40 @@ import Ember from 'ember';
 import config from './config/environment';
 
 const Router = Ember.Router.extend({
-  location: config.locationType
+  location: config.locationType,
 });
 
 Router.map(function() {
-  this.resource('apis', { path: '/apis' }, function() {
+  this.route('apis', { path: '/apis' }, function() {
     this.route('new');
     this.route('edit', { path: '/:apiId/edit' });
   });
 
-  this.resource('api_users', { path: '/api_users' }, function() {
+  this.route('api_users', { path: '/api_users' }, function() {
     this.route('new');
     this.route('edit', { path: '/:apiUserId/edit' });
   });
 
-  this.resource('admins', { path: '/admins' }, function() {
+  this.route('admins', { path: '/admins' }, function() {
     this.route('new');
     this.route('edit', { path: '/:adminId/edit' });
   });
 
-  this.resource('api_scopes', { path: '/api_scopes' }, function() {
+  this.route('api_scopes', { path: '/api_scopes' }, function() {
     this.route('new');
     this.route('edit', { path: '/:apiScopeId/edit' });
   });
 
-  this.resource('admin_groups', { path: '/admin_groups' }, function() {
+  this.route('admin_groups', { path: '/admin_groups' }, function() {
     this.route('new');
     this.route('edit', { path: '/:adminGroupId/edit' });
   });
 
-  this.resource('config', { path: '/config' }, function() {
+  this.route('config', { path: '/config' }, function() {
     this.route('publish');
   });
 
-  this.resource('stats', { path: '/stats' }, function() {
+  this.route('stats', { path: '/stats' }, function() {
     this.route('drilldown', { path: '/drilldown/*query' });
     this.route('drilldownDefault', { path: '/drilldown' });
 
@@ -49,10 +49,11 @@ Router.map(function() {
     this.route('mapDefault', { path: '/map' });
   });
 
-  this.resource('website_backends', { path: '/website_backends' }, function() {
+  this.route('website_backends', { path: '/website_backends' }, function() {
     this.route('new');
     this.route('edit', { path: '/:websiteBackendId/edit' });
   });
+  this.route('login');
 });
 
 export default Router;

@@ -2,7 +2,7 @@ import Sortable from './sortable';
 
 export default Sortable.extend({
   actions: {
-    reorderRewrites: function() {
+    reorderRewrites() {
       this.reorderCollection('rewrites');
     },
   },

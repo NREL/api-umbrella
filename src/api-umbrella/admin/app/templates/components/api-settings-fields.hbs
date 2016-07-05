@@ -25,7 +25,7 @@
   optionLabelPath='content.name'
   inputConfig='class:span12'}}
 {{input model.requiredRolesString as='selectize'
-  collectionBinding='roleOptions'
+  collection=roleOptions
   optionValuePath='id'
   optionLabelPath='id'
   class='row-fluid'
@@ -37,7 +37,7 @@
     </div>
     <div class="controls">
       <label class="checkbox">
-        {{view Ember.Checkbox checkedBinding='model.requiredRolesOverride'}}
+        {{! view Ember.Checkbox checked=model.requiredRolesOverride}}
         {{t 'admin.api.settings.required_roles_override'}}
         {{tooltip-field title=(t 'admin.api.settings.required_roles_override_tooltip_markdown')}}
       </label>
@@ -52,11 +52,11 @@
   </div>
   <div class="controls">
     <label class="checkbox">
-      {{view Ember.Checkbox checkedBinding='model.passApiKeyHeader'}}
+      {{! view Ember.Checkbox checked=model.passApiKeyHeader}}
       {{t 'admin.api.settings.pass_api_key_header'}}
     </label>
     <label class="checkbox">
-      {{view Ember.Checkbox checkedBinding='model.passApiKeyQueryParam'}}
+      {{! view Ember.Checkbox checked=model.passApiKeyQueryParam}}
       {{t 'admin.api.settings.pass_api_key_param'}}
     </label>
   </div>

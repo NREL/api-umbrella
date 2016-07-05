@@ -1,8 +1,12 @@
-import Ember from 'ember';
-import { Model, attr } from 'ember-model';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { validator, buildValidations } from 'ember-cp-validations';
 
-export default Model.extend(Ember.Validations.Mixin, {
-  id: attr(),
+const Validations = buildValidations({
+  name: validator('presence', true),
+});
+
+export default Model.extend(Validations, {
   name: attr(),
   apiScopeIds: attr(),
   permissionIds: attr(),
@@ -11,17 +15,8 @@ export default Model.extend(Ember.Validations.Mixin, {
   updatedAt: attr(),
   creator: attr(),
   updater: attr(),
-
-  validations: {
-    name: {
-      presence: true,
-    },
-  },
 }).reopenClass({
-  url: '/api-umbrella/v1/admin_groups',
-  rootKey: 'admin_group',
-  collectionKey: 'data',
-  primaryKey: 'id',
-  camelizeKeys: true,
-  adapter: Admin.APIUmbrellaRESTAdapter.create(),
+  urlRoot: '/api-umbrella/v1/admin_groups',
+  singlePayloadKey: 'admin_group',
+  arrayPayloadKey: 'data',
 });

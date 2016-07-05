@@ -1,39 +1,52 @@
-<nav class="navbar navbar-inverse navbar-fixed-top">
-  <div class="navbar-inner">
-    <div class="container-fluid">
-      <span class="brand">API Umbrella</span>
-      <ul class="nav">
-        <li class="nav-home"><a href="/admin">Dashboard</a></li>
-          <li class="dropdown nav-analytics"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Analytics <b class="caret"></b></a>
-            <ul class="dropdown-menu">
-              <li><a href="#/stats/drilldown"><i class="fa fa-sitemap"></i> API Drilldown</a></li>
-              <li><a href="#/stats/logs"><i class="fa fa-signal"></i> Filter Logs</a></li>
-              <li><a href="#/stats/users"><i class="fa fa-user"></i> By Users</a></li>
-              <li><a href="#/stats/map"><i class="fa fa-map-marker"></i> By Location</a></li>
-            </ul>
-</li>              <li class="dropdown nav-users"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Users <b class="caret"></b></a>
-            <ul class="dropdown-menu">
-                <li><a href="#/api_users"><i class="fa fa-user"></i> API Users</a></li>
-                <li><a href="#/admins"><i class="fa fa-user"></i> Admin Accounts</a></li>
-                <li class="divider"></li>
-                <li role="presentation" class="dropdown-header">Permissions Management</li>
-                  <li><a href="#/api_scopes"><i class="fa fa-lock"></i> API Scopes</a></li>
-                <li><a href="#/admin_groups"><i class="fa fa-group"></i> Admin Groups</a></li>
-            </ul>
-</li>              <li class="dropdown nav-config"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Configuration <b class="caret"></b></a>
-            <ul class="dropdown-menu">
-              <li><a href="#/apis"><i class="fa fa-gear"></i> API Backends</a></li>
-              <li><a href="#/website_backends"><i class="fa fa-gear"></i> Website Backends</a></li>
-              <li><a href="#/config/publish"><i class="fa fa-upload"></i> Publish Changes</a></li>
-              <li class="divider"></li>
-              <li><a href="/admin/config/import_export"><i class="fa fa-exchange"></i> Import/Export</a></li>
-            </ul>
-</li></ul>
-      <ul class="nav pull-right">
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-gear"></i> <b class="caret"></b></a>
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <span class="navbar-brand" href="#">API Umbrella</span>
+    </div>
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown nav-analytics">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Analytics <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a href="#/admins/dc8f9694-12a8-49b4-81e2-6f378fd37d50/edit">My Account</a></li>
+            <li><a href="#/stats/drilldown"><i class="fa fa-sitemap" aria-hidden="true"></i> API Drilldown</a></li>
+            <li><a href="#/stats/logs"><i class="fa fa-signal" aria-hidden="true"></i> Filter Logs</a></li>
+            <li><a href="#/stats/users"><i class="fa fa-user" aria-hidden="true"></i> By Users</a></li>
+            <li><a href="#/stats/map"><i class="fa fa-map-marker" aria-hidden="true"></i> By Location</a></li>
+          </ul>
+        </li>
+        <li class="dropdown nav-users">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Users <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#/api_users"><i class="fa fa-user" aria-hidden="true"></i> API Users</a></li>
+            <li><a href="#/admins"><i class="fa fa-user" aria-hidden="true"></i> Admin Accounts</a></li>
+            <li role="separator" class="divider"></li>
+            <li role="presentation" class="dropdown-header">Permissions Management</li>
+            <li><a href="#/api_scopes"><i class="fa fa-lock" aria-hidden="true"></i> API Scopes</a></li>
+            <li><a href="#/admin_groups"><i class="fa fa-group" aria-hidden="true"></i> Admin Groups</a></li>
+          </ul>
+        </li>
+        <li class="dropdown nav-config">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Configuration <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#/apis"><i class="fa fa-gear" aria-hidden="true"></i> API Backends</a></li>
+            <li><a href="#/website_backends"><i class="fa fa-gear" aria-hidden="true"></i> Website Backends</a></li>
+            <li><a href="#/config/publish"><i class="fa fa-upload" aria-hidden="true"></i> Publish Changes</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="/admin/config/import_export"><i class="fa fa-exchange" aria-hidden="true"></i> Import/Export</a></li>
+          </ul>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-gear" aria-hidden="true"></i> <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#/admins/{{session.data.authenticated.admin.id}}/edit">My Account</a></li>
             <li><a href="/admin/logout">Logout</a></li>
           </ul>
         </li>
@@ -53,4 +66,4 @@
   </div>
 </div>
 
-<div id="loading_overlay" style="display: none;"></div>
+{{busy-blocker}}

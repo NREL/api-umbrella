@@ -5,14 +5,14 @@ export default NestedForm.extend({
   exampleSuffix: 'example.json?param=value',
 
   exampleIncomingUrl: function() {
-    var root = this.get('apiModel.exampleIncomingUrlRoot') || '';
-    var prefix = this.get('frontendPrefix') || '';
+    let root = this.get('apiModel.exampleIncomingUrlRoot') || '';
+    let prefix = this.get('frontendPrefix') || '';
     return root + prefix + this.get('exampleSuffix');
   }.property('frontendPrefix'),
 
   exampleOutgoingUrl: function() {
-    var root = this.get('apiModel.exampleOutgoingUrlRoot') || '';
-    var prefix = this.get('backendPrefixWithDefault') || '';
+    let root = this.get('apiModel.exampleOutgoingUrlRoot') || '';
+    let prefix = this.get('backendPrefixWithDefault') || '';
     return root + prefix + this.get('exampleSuffix');
   }.property('backendPrefix', 'frontendPrefix'),
 });

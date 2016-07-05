@@ -1,6 +1,6 @@
 import Ember from 'ember';
 
-export default Ember.ObjectController.extend(Ember.Evented, {
+export default Ember.Controller.extend(Ember.Evented, {
   needs: ['modal'],
 
   titleBase: null,
@@ -9,12 +9,12 @@ export default Ember.ObjectController.extend(Ember.Evented, {
   isNew: null,
   originalData: null,
 
-  setup: function(apiModel, parentCollectionName) {
+  setup(apiModel, parentCollectionName) {
     this.set('apiModel', apiModel);
     this.set('parentCollection', apiModel.get(parentCollectionName));
   },
 
-  add: function(apiModel, parentCollectionName) {
+  add(apiModel, parentCollectionName) {
     this.setup(apiModel, parentCollectionName);
     this.set('model', this.get('parentCollection').create());
 
@@ -22,7 +22,7 @@ export default Ember.ObjectController.extend(Ember.Evented, {
     this.set('isNew', true);
   },
 
-  edit: function(apiModel, parentCollectionName, record) {
+  edit(apiModel, parentCollectionName, record) {
     this.setup(apiModel, parentCollectionName);
     this.set('model', record);
 
@@ -32,8 +32,8 @@ export default Ember.ObjectController.extend(Ember.Evented, {
   },
 
   actions: {
-    ok: function() {
-      var model = this.get('model');
+    ok() {
+      let model = this.get('model');
 
       // Validate the nested model (if supported) before allowing the modal to
       // close.
@@ -54,11 +54,11 @@ export default Ember.ObjectController.extend(Ember.Evented, {
       }
     },
 
-    cancel: function() {
+    cancel() {
       if(this.get('isNew')) {
         this.get('parentCollection').removeObject(this.get('model'));
       } else {
-        var data = this.get('originalData');
+        let data = this.get('originalData');
         this.get('model').load(data.id, data);
       }
 

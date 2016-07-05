@@ -1,41 +1,36 @@
-import Ember from 'ember';
-import { Model, attr } from 'ember-model';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { validator, buildValidations } from 'ember-cp-validations';
 
-export default Model.extend(Ember.Validations.Mixin, {
-  id: attr(),
+const Validations = buildValidations({
+  frontendHost: [
+    validator('presence', true),
+    validator('format', {
+      regex: CommonValidations.host_format_with_wildcard,
+      message: I18n.t('errors.messages.invalid_host_format'),
+    }),
+  ],
+  backendProtocol: validator('presence', true),
+  serverHost: [
+    validator('presence', true),
+    validator('format', {
+      regex: CommonValidations.host_format_with_wildcard,
+      message: I18n.t('errors.messages.invalid_host_format'),
+    }),
+  ],
+  serverPort: [
+    validator('presence', true),
+    validator('number', { allowString: true }),
+  ],
+});
+
+export default Model.extend(Validations, {
   frontendHost: attr(),
   backendProtocol: attr(),
   serverHost: attr(),
-  serverPort: attr(Number),
-
-  validations: {
-    frontendHost: {
-      presence: true,
-      format: {
-        with: CommonValidations.host_format_with_wildcard,
-        message: polyglot.t('errors.messages.invalid_host_format'),
-      },
-    },
-    backendProtocol: {
-      presence: true,
-    },
-    serverHost: {
-      presence: true,
-      format: {
-        with: CommonValidations.host_format_with_wildcard,
-        message: polyglot.t('errors.messages.invalid_host_format'),
-      },
-    },
-    serverPort: {
-      presence: true,
-      numericality: true,
-    },
-  },
+  serverPort: attr('number'),
 }).reopenClass({
-  url: '/api-umbrella/v1/website_backends',
-  rootKey: 'website_backend',
-  collectionKey: 'data',
-  primaryKey: 'id',
-  camelizeKeys: true,
-  adapter: Admin.APIUmbrellaRESTAdapter.create(),
+  urlRoot: '/api-umbrella/v1/website_backends',
+  singlePayloadKey: 'website_backend',
+  arrayPayloadKey: 'data',
 });

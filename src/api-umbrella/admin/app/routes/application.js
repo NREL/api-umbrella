@@ -1,8 +1,9 @@
 import Ember from 'ember';
+import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
 
-export default Ember.Route.extend({
+export default Ember.Route.extend(ApplicationRouteMixin, {
   actions: {
-    openModal: function(template) {
+    openModal(template) {
       this.render(template, { into: 'modal', outlet: 'modalBody' });
       $('.modal').modal({
         // Don't close when the background is clicked or the escape key is hit.
@@ -12,12 +13,16 @@ export default Ember.Route.extend({
         // keyboard or background clicks and what the behavior should be
         // (cancel, or ok?).
         backdrop: 'static',
-        keyboard: false
+        keyboard: false,
       });
     },
 
-    closeModal: function() {
+    closeModal() {
       this.render('hide_modal', { into: 'modal', outlet: 'modalBody' });
+    },
+
+    redirectTo(route) {
+      this.transitionTo(route);
     },
   },
 });

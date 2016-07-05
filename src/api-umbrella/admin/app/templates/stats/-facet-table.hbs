@@ -1,4 +1,4 @@
-<div class="toggle-facet-table"><a {{action 'toggleFacetTable' target='view'}}>{{view.toggleLabel}}</a></div>
+<div class="toggle-facet-table"><a {{action 'toggleFacetTable' target='view'}}>{{! view.toggleLabel}}</a></div>
 <table class="table facet-table" style="display: none;">
   <thead>
     <tr>
@@ -8,12 +8,12 @@
     </tr>
   </thead>
   <tbody>
-    {{#each view.data}}
+    {{! #each view.data}}
       <tr>
         <td>{{#link-to 'stats.logs' linkQuery}}{{key}}{{/link-to}}</td>
         <td class="value">{{formatNumber count}}</td>
         <td class="value">{{percent}}%</td>
       </tr>
-    {{/each}}
+    {{! /each}}
   </tbody>
 </table>

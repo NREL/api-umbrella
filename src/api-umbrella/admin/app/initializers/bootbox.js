@@ -1,8 +1,10 @@
 export function initialize() {
-  bootbox.animate(false);
+  bootbox.setDefaults({
+    animate: false,
+  });
 }
 
 export default {
   name: 'bootbox',
-  initialize
+  initialize,
 };

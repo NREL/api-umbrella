@@ -1,21 +1,21 @@
 import Base from './base';
 
 export default Base.extend({
-  init: function() {
+  init() {
     _.defaults(this.defaultQueryParams, {
       region: 'world',
     });
   },
 
-  model: function(params) {
+  model(params) {
     this._super(params);
     return Admin.StatsMap.find(this.get('query.params'));
   },
 
   queryChange: function() {
-    var newQueryParams = this.get('query.params');
+    let newQueryParams = this.get('query.params');
     if(newQueryParams && !_.isEmpty(newQueryParams)) {
-      var activeQueryParams = this.get('activeQueryParams');
+      let activeQueryParams = this.get('activeQueryParams');
       if(!_.isEqual(newQueryParams, activeQueryParams)) {
         this.transitionTo('stats.map', $.param(newQueryParams));
       }

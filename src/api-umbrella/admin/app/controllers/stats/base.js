@@ -1,13 +1,13 @@
 import Ember from 'ember';
 
-export default Ember.ObjectController.extend({
+export default Ember.Controller.extend({
   needs: ['application'],
 
   query: null,
 
   actions: {
-    submit: function() {
-      var query = this.get('query');
+    submit() {
+      let query = this.get('query');
       query.beginPropertyChanges();
 
       if($('#filter_type_advanced').css('display') === 'none') {

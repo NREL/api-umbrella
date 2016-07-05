@@ -1,7 +1,7 @@
 import Map from './map';
 
 export default Map.extend({
-  renderTemplate: function() {
+  renderTemplate() {
     this.render('stats/users');
-  }
+  },
 });

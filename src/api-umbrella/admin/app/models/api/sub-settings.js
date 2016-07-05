@@ -8,7 +8,7 @@ export default Model.extend({
 
   settings: belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
 
-  init: function() {
+  init() {
     this._super();
 
     // Set defaults for new records.
@@ -18,7 +18,7 @@ export default Model.extend({
     this.on('didLoad', this, this.setDefaults);
   },
 
-  setDefaults: function() {
+  setDefaults() {
     if(!this.get('settings')) {
       this.set('settings', Admin.ApiSettings.create());
     }

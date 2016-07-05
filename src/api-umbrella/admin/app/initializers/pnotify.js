@@ -1,19 +1,19 @@
 export function initialize() {
   _.merge(PNotify.prototype.options, {
-    styling: 'bootstrap2',
+    styling: 'bootstrap3',
     width: '400px',
     icon: false,
     animate_speed: 'fast',
     history: {
-      history: false
+      history: false,
     },
     buttons: {
-      sticker: false
-    }
+      sticker: false,
+    },
   });
 }
 
 export default {
   name: 'pnotify',
-  initialize
+  initialize,
 };

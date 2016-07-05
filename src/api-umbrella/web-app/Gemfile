@@ -127,6 +127,8 @@ gem "kramdown", "~> 1.6.0"
 # Lucene query parsing for translating into SQL.
 gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_parser.git"
 
+gem "i18n-js", ">= 3.0.0.rc13"
+
 # Include test-unit so rspec 2 can run under Ruby 2.2:
 # https://github.com/rspec/rspec-rails/issues/1273
 #

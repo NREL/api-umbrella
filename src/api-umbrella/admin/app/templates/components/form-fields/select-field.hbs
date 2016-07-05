@@ -1,0 +1,7 @@
+{{#form-fields/field-wrapper model=model style=style fieldName=fieldName inputId=inputId label=label tooltip=tooltip}}
+  {{#x-select value=(mut (get model fieldName)) id=inputId class="form-control"}}
+    {{#each options as |option|}}
+      {{#x-option value=option.id}}{{option.name}}{{/x-option}}
+    {{/each}}
+  {{/x-select}}
+{{/form-fields/field-wrapper}}

@@ -1,11 +1,12 @@
 import Ember from 'ember';
+import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 
-export default Ember.Route.extend({
-  model: function() {
+export default Ember.Route.extend(AuthenticatedRouteMixin, {
+  model() {
     return ic.ajax.request('/api-umbrella/v1/config/pending_changes');
   },
 
-  setupController: function(controller, model) {
+  setupController(controller, model) {
     controller.set('model', model);
 
     $('ul.nav li').removeClass('active');
@@ -13,10 +14,10 @@ export default Ember.Route.extend({
   },
 
   actions: {
-    publish: function() {
-      var form = $('#publish_form');
+    publish() {
+      let form = $('#publish_form');
 
-      var button = $('#publish_button');
+      let button = $('#publish_button');
       button.button('loading');
 
       ic.ajax.raw({
@@ -33,10 +34,10 @@ export default Ember.Route.extend({
 
         this.refresh();
       }, this), function(response) {
-        var message = '<h3>Error</h3>';
+        let message = '<h3>Error</h3>';
         try {
-          var errors = response.responseJSON.errors;
-          for(var prop in errors) {
+          let errors = response.responseJSON.errors;
+          for(let prop in errors) {
             message += prop + ': ' + errors[prop].join(', ') + '<br>';
           }
         } catch(e) {

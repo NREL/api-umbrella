@@ -1,12 +1,10 @@
+@import "bower_components/bootswatch/cerulean/_variables.scss";
 @import "admin/variables";
-@import "bower_components/bootstrap-sass/vendor/assets/stylesheets/bootstrap.scss";
-@import "bower_components/bootstrap-sass/vendor/assets/stylesheets/bootstrap-responsive.scss";
-@import "bower_components/fontawesome/scss/font-awesome.scss";
+@import "bower_components/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
+@import "bower_components/bootswatch/cerulean/_bootswatch.scss";
+@import "bower_components/font-awesome/scss/font-awesome.scss";
 
-@import "vendor/jQuery-QueryBuilder/query-builder.css";
-@import "bower_components/qtip2/jquery.qtip.css";
-@import "bower_components/bootstrap-daterangepicker/daterangepicker-bs2.css";
-@import "bower_components/selectize/dist/css/selectize.default.css";
-@import "bower_components/pnotify/pnotify.core.css";
+@import "bower_components/jQuery-QueryBuilder/dist/scss/default.scss";
+@import "bower_components/bootstrap-daterangepicker/daterangepicker.scss";
 @import "admin/base";
 @import "admin/stats";

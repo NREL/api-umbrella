@@ -1,7 +1,7 @@
 import Base from './base';
 
 export default Base.extend({
-  model: function() {
+  model() {
     return Admin.Api.create({
       frontendHost: location.hostname,
     });

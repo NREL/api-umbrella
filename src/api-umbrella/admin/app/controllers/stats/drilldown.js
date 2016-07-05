@@ -2,14 +2,14 @@ import Base from './base';
 
 export default Base.extend({
   breadcrumbs: function() {
-    var crumbs = [];
+    let crumbs = [];
 
-    var data = this.get('model.breadcrumbs');
-    for(var i = 0; i < data.length; i++) {
-      var crumb = { name: data[i].crumb };
+    let data = this.get('model.breadcrumbs');
+    for(let i = 0; i < data.length; i++) {
+      let crumb = { name: data[i].crumb };
 
       if(i < data.length -1) {
-        var params = _.clone(this.get('query.params'));
+        let params = _.clone(this.get('query.params'));
         params.prefix = data[i].prefix;
         crumb.linkQuery = $.param(params);
       }

@@ -1,6 +1,6 @@
-{{view 'stats/query-form' enableInterval=true}}
+{{! view 'stats/query-form' enableInterval=true}}
 
-{{view 'stats/drilldown-chart' dataBinding='hits_over_time'}}
+{{! view 'stats/drilldown-chart' data=hits_over_time}}
 
 {{#each breadcrumbs}}
   {{#if linkQuery}}
@@ -11,10 +11,10 @@
 {{/each}}
 
 <div id="results_table">
-  {{view 'stats/drilldown-table' modelBinding='model'}}
+  {{! view 'stats/drilldown-table' model=model}}
 </div>
 <div class="results-table-actions">
   <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
 </div>
 
-{{view 'loading-overlay' isLoadingBinding='controllers.application.isLoading'}}
+{{! view 'loading-overlay' isLoading=controllers.application.isLoading}}

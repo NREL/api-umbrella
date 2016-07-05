@@ -1,7 +1,7 @@
 import Drilldown from './drilldown';
 
 export default Drilldown.extend({
-  renderTemplate: function() {
+  renderTemplate() {
     this.render('stats/drilldown', { controller: 'statsDrilldownDefault' });
-  }
+  },
 });

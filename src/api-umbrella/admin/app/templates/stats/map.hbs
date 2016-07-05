@@ -1,4 +1,4 @@
-{{view 'stats/query-form'}}
+{{! view 'stats/query-form'}}
 
 <div id="map_container">
   {{#each breadcrumbs}}
@@ -9,14 +9,14 @@
     {{/if}}
   {{/each}}
 
-  {{view 'stats/map-geo' modelBinding='model'}}
+  {{! view 'stats/map-geo' model=model}}
 </div>
 
 <div id="results_table">
-  {{view 'stats/map-table' modelBinding='model'}}
+  {{! view 'stats/map-table' model=model}}
 </div>
 <div class="results-table-actions">
   <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
 </div>
 
-{{view 'loading-overlay' isLoadingBinding='controllers.application.isLoading'}}
+{{! view 'loading-overlay' isLoading=controllers.application.isLoading}}

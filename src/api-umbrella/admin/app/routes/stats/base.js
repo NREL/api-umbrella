@@ -1,6 +1,7 @@
 import Ember from 'ember';
+import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 
-export default Ember.Route.extend({
+export default Ember.Route.extend(AuthenticatedRouteMixin, {
   defaultQueryParams: {
     tz: jstz.determine().name(),
     search: '',
@@ -14,18 +15,18 @@ export default Ember.Route.extend({
         input: 'select',
         operator: 'is_null',
         type: 'string',
-        value: null
-      }]
-    })
+        value: null,
+      }],
+    }),
   },
 
-  model: function(params) {
+  model(params) {
     this.controllerFor('application').set('isLoading', true);
 
     this.setQueryParams(params);
   },
 
-  setupController: function(controller, model) {
+  setupController(controller, model) {
     if(!controller.get('query')) {
       controller.set('query', this.get('query'));
     }
@@ -38,8 +39,8 @@ export default Ember.Route.extend({
     $('ul.nav li.nav-analytics').addClass('active');
   },
 
-  setQueryParams: function(params) {
-    var activeQueryParams = {};
+  setQueryParams(params) {
+    let activeQueryParams = {};
     if(params && params.query) {
       activeQueryParams = $.deparam(params.query);
     }
@@ -47,7 +48,7 @@ export default Ember.Route.extend({
     _.defaults(activeQueryParams, this.defaultQueryParams);
     this.set('activeQueryParams', activeQueryParams);
 
-    var query = this.get('query');
+    let query = this.get('query');
     if(!query) {
       query = Ember.Object.create({ params: {} });
     }
@@ -56,11 +57,11 @@ export default Ember.Route.extend({
     // values that differ. This is to cut down on unneeded observer
     // notifications.
     query.beginPropertyChanges();
-    for(var prop in activeQueryParams) {
+    for(let prop in activeQueryParams) {
       if(activeQueryParams.hasOwnProperty(prop)) {
-        var paramKey = 'params.' + prop;
-        var existingValue = query.get(paramKey);
-        var newValue = activeQueryParams[prop];
+        let paramKey = 'params.' + prop;
+        let existingValue = query.get(paramKey);
+        let newValue = activeQueryParams[prop];
 
         if(newValue !== existingValue) {
           query.set(paramKey, newValue);
@@ -75,9 +76,9 @@ export default Ember.Route.extend({
   },
 
   queryChange: function() {
-    var newQueryParams = this.get('query.params');
+    let newQueryParams = this.get('query.params');
     if(newQueryParams && !_.isEmpty(newQueryParams)) {
-      var activeQueryParams = this.get('activeQueryParams');
+      let activeQueryParams = this.get('activeQueryParams');
       if(!_.isEqual(newQueryParams, activeQueryParams)) {
         this.transitionTo('stats.logs', $.param(newQueryParams));
       }
@@ -85,7 +86,7 @@ export default Ember.Route.extend({
   }.observes('query.params.query', 'query.params.search', 'query.params.interval', 'query.params.start_at', 'query.params.end_at', 'query.params.beta_analytics'),
 
   actions: {
-    error: function() {
+    error() {
       bootbox.alert('An unexpected error occurred. Please check your query and try again.');
     },
   },

@@ -1,8 +1,8 @@
-import Base from 'base';
+import Base from './base';
 
 export default Base.extend({
-  model: function() {
-    return Admin.WebsiteBackend.create({
+  model() {
+    return this.get('store').createRecord('website-backend', {
       serverPort: 80,
     });
   },

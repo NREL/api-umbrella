@@ -11,7 +11,7 @@ export default Model.extend(Ember.Validations.Mixin, {
       presence: true,
       format: {
         with: CommonValidations.host_format,
-        message: polyglot.t('errors.messages.invalid_host_format'),
+        message: I18n.t('errors.messages.invalid_host_format'),
       },
     },
     port: {

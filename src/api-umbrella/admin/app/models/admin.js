@@ -1,12 +1,12 @@
-import { Model, attr } from 'ember-model';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
 
 export default Model.extend({
-  id: attr(),
   username: attr(),
   email: attr(),
   name: attr(),
   superuser: attr(),
-  groupIds: attr(),
+  groupIds: attr({ defaultValue() { return [] } }),
   signInCount: attr(),
   lastSignInAt: attr(),
   lastSignInIp: attr(),
@@ -17,10 +17,7 @@ export default Model.extend({
   creator: attr(),
   updater: attr(),
 }).reopenClass({
-  url: '/api-umbrella/v1/admins',
-  rootKey: 'admin',
-  collectionKey: 'data',
-  primaryKey: 'id',
-  camelizeKeys: true,
-  adapter: Admin.APIUmbrellaRESTAdapter.create(),
+  urlRoot: '/api-umbrella/v1/admins',
+  singlePayloadKey: 'admin',
+  arrayPayloadKey: 'data',
 });

@@ -1,7 +1,7 @@
 import App from '../../app';
 import Ember from 'ember';
 
-export default Ember.ObjectController.extend(App.Save, {
+export default Ember.Controller.extend(App.Save, {
   needs: [
     'apis_server_form',
     'apis_url_match_form',
@@ -21,14 +21,14 @@ export default Ember.ObjectController.extend(App.Save, {
   ],
 
   actions: {
-    submit: function() {
+    submit() {
       this.save({
         transitionToRoute: 'apis',
         message: 'Successfully saved the "' + _.escape(this.get('model.name')) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
 
-    delete: function() {
+    delete() {
       bootbox.confirm('Are you sure you want to delete this API backend?', _.bind(function(result) {
         if(result) {
           this.get('model').deleteRecord();
@@ -37,7 +37,7 @@ export default Ember.ObjectController.extend(App.Save, {
       }, this));
     },
 
-    addServer: function() {
+    addServer() {
       this.get('controllers.apis_server_form').add(this.get('model'), 'servers');
 
       // For new servers, intelligently pick the default port based on the
@@ -52,7 +52,7 @@ export default Ember.ObjectController.extend(App.Save, {
       // "Backend Host" field based on the server's host (because in most
       // non-load balancing situations they will match).
       this.get('controllers.apis_server_form').on('closeOk', _.bind(function() {
-        var server = this.get('model.servers.firstObject');
+        let server = this.get('model.servers.firstObject');
         if(!this.get('model.backendHost') && server) {
           this.set('model.backendHost', server.get('host'));
         }
@@ -61,60 +61,60 @@ export default Ember.ObjectController.extend(App.Save, {
       this.send('openModal', 'apis/server_form');
     },
 
-    editServer: function(server) {
+    editServer(server) {
       this.get('controllers.apis_server_form').edit(this.get('model'), 'servers', server);
       this.send('openModal', 'apis/server_form');
     },
 
-    deleteServer: function(server) {
+    deleteServer(server) {
       this.deleteChildRecord('servers', server, 'Are you sure you want to remove this server?');
     },
 
-    addUrlMatch: function() {
+    addUrlMatch() {
       this.get('controllers.apis_url_match_form').add(this.get('model'), 'urlMatches');
       this.send('openModal', 'apis/url_match_form');
     },
 
-    editUrlMatch: function(urlMatch) {
+    editUrlMatch(urlMatch) {
       this.get('controllers.apis_url_match_form').edit(this.get('model'), 'urlMatches', urlMatch);
       this.send('openModal', 'apis/url_match_form');
     },
 
-    deleteUrlMatch: function(urlMatch) {
+    deleteUrlMatch(urlMatch) {
       this.deleteChildRecord('urlMatches', urlMatch, 'Are you sure you want to remove this URL prefix?');
     },
 
-    addSubSettings: function() {
+    addSubSettings() {
       this.get('controllers.apis_sub_settings_form').add(this.get('model'), 'subSettings');
       this.send('openModal', 'apis/sub_settings_form');
     },
 
-    editSubSettings: function(subSettings) {
+    editSubSettings(subSettings) {
       this.get('controllers.apis_sub_settings_form').edit(this.get('model'), 'subSettings', subSettings);
       this.send('openModal', 'apis/sub_settings_form');
     },
 
-    deleteSubSettings: function(subSettings) {
+    deleteSubSettings(subSettings) {
       this.deleteChildRecord('subSettings', subSettings, 'Are you sure you want to remove this URL setting?');
     },
 
-    addRewrite: function() {
+    addRewrite() {
       this.get('controllers.apis_rewrite_form').add(this.get('model'), 'rewrites');
       this.send('openModal', 'apis/rewrite_form');
     },
 
-    editRewrite: function(rewrite) {
+    editRewrite(rewrite) {
       this.get('controllers.apis_rewrite_form').edit(this.get('model'), 'rewrites', rewrite);
       this.send('openModal', 'apis/rewrite_form');
     },
 
-    deleteRewrite: function(rewrite) {
+    deleteRewrite(rewrite) {
       this.deleteChildRecord('rewrites', rewrite, 'Are you sure you want to remove this rewrite?');
     },
   },
 
-  deleteChildRecord: function(collectionName, record, message) {
-    var collection = this.get('model').get(collectionName);
+  deleteChildRecord(collectionName, record, message) {
+    let collection = this.get('model').get(collectionName);
     bootbox.confirm(message, function(result) {
       if(result) {
         collection.removeObject(record);

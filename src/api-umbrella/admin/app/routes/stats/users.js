@@ -1,15 +1,15 @@
 import Base from './base';
 
 export default Base.extend({
-  model: function(params) {
+  model(params) {
     this._super(params);
     return {};
   },
 
   queryChange: function() {
-    var newQueryParams = this.get('query.params');
+    let newQueryParams = this.get('query.params');
     if(newQueryParams && !_.isEmpty(newQueryParams)) {
-      var activeQueryParams = this.get('activeQueryParams');
+      let activeQueryParams = this.get('activeQueryParams');
       if(!_.isEqual(newQueryParams, activeQueryParams)) {
         this.transitionTo('stats.users', $.param(newQueryParams));
       }

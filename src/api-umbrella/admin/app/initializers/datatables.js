@@ -1,14 +1,3 @@
-// DataTables plugin to programmatically show the processing indidicator.
-// https://datatables.net/plug-ins/api#fnProcessingIndicator
-jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function ( oSettings, onoff )
-{
-  if( typeof(onoff) === 'undefined' )
-  {
-    onoff=true;
-  }
-  this.oApi._fnProcessingDisplay( oSettings, onoff );
-};
-
 export function initialize() {
   // Defaults for DataTables.
   _.merge($.fn.DataTable.defaults, {
@@ -21,7 +10,7 @@ export function initialize() {
 
     // Re-arrange how the table and surrounding fields (pagination, search, etc)
     // are laid out.
-    dom: 'rft<"row-fluid"<"span3 table-info"i><"span6 table-pagination"p><"span3 table-length"l>>',
+    dom: 'rft<"row"<"col-sm-3 table-info"i><"col-sm-6 table-pagination"p><"col-sm-3 table-length"l>>',
 
     language: {
       // Don't have an explicit label for the search field. Use a placeholder
@@ -30,7 +19,7 @@ export function initialize() {
       searchPlaceholder: 'Search...',
     },
 
-    preDrawCallback: function() {
+    preDrawCallback() {
       if(!this.customProcessingCallbackSet) {
         // Use blockui to provide a more obvious processing message the overlays
         // the entire table (this helps for long tables, where a simple processing
@@ -56,5 +45,5 @@ export function initialize() {
 
 export default {
   name: 'datatables',
-  initialize
+  initialize,
 };

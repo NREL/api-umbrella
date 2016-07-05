@@ -1,8 +1,16 @@
 import Ember from 'ember';
-import { Model, attr, belongsTo } from 'ember-model';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { belongsTo } from 'ember-data/relationships';
+import { validator, buildValidations } from 'ember-cp-validations';
 
-export default Model.extend(Ember.Validations.Mixin, {
-  id: attr(),
+const Validations = buildValidations({
+  firstName: validator('presence', true),
+  lastName: validator('presence', true),
+  email: validator('presence', true),
+});
+
+export default Model.extend(Validations, {
   apiKey: attr(),
   apiKeyHidesAt: attr(),
   apiKeyPreview: attr(),
@@ -15,9 +23,9 @@ export default Model.extend(Ember.Validations.Mixin, {
   registrationSource: attr(),
   termsAndConditions: attr(),
   sendWelcomeEmail: attr(),
-  throttleByIp: attr(),
+  throttleByIp: attr('boolean'),
   roles: attr(),
-  enabled: attr(),
+  enabled: attr('boolean'),
   createdAt: attr(),
   updatedAt: attr(),
   creator: attr(),
@@ -27,31 +35,14 @@ export default Model.extend(Ember.Validations.Mixin, {
   registrationReferer: attr(),
   registrationOrigin: attr(),
 
-  settings: belongsTo('Admin.ApiSettings', { key: 'settings', embedded: true }),
+  settings: belongsTo('api/settings', { async: false }),
 
-  validations: {
-    firstName: {
-      presence: true,
-    },
-    lastName: {
-      presence: true,
-    },
-    email: {
-      presence: true,
-    },
-  },
-
-  init: function() {
-    this._super();
-
-    // Set defaults for new records.
+  ready() {
     this.setDefaults();
-
-    // For existing records, we need to set the defaults after loading.
-    this.on('didLoad', this, this.setDefaults);
+    this._super();
   },
 
-  setDefaults: function() {
+  setDefaults() {
     if(this.get('throttleByIp') === undefined) {
       this.set('throttleByIp', false);
     }
@@ -61,7 +52,7 @@ export default Model.extend(Ember.Validations.Mixin, {
     }
 
     if(!this.get('settings')) {
-      this.set('settings', Admin.ApiSettings.create());
+      this.set('settings', this.get('store').createRecord('api/settings'));
     }
 
     if(!this.get('registrationSource') && this.get('isNew')) {
@@ -69,32 +60,32 @@ export default Model.extend(Ember.Validations.Mixin, {
     }
   },
 
-  rolesString: function(key, value) {
-    // Setter
-    if(arguments.length > 1) {
-      var roles = value.split(',');
+  rolesString: Ember.computed('roles', {
+    get() {
+      let rolesString = '';
+      if(this.get('roles')) {
+        rolesString = this.get('roles').join(',');
+      }
+      return rolesString;
+    },
+    set(key, value) {
+      let roles = value.split(',');
       this.set('roles', roles);
-    }
+      return value;
+    },
+  }),
 
-    // Getter
-    var rolesString = '';
-    if(this.get('roles')) {
-      rolesString = this.get('roles').join(',');
-    }
-
-    return rolesString;
-  }.property('roles'),
-
-  didSaveRecord: function() {
+  didUpdate() {
     // Clear the cached roles on save, so the list of available roles is always
     // correct for subsequent form renderings in this current session.
-    Admin.ApiUserRole.clearCache();
+    this.get('store').unloadAll('api-user-role');
+  },
+
+  didCreate() {
+    this.didUpdate();
   },
 }).reopenClass({
-  url: '/api-umbrella/v1/users',
-  rootKey: 'user',
-  collectionKey: 'data',
-  primaryKey: 'id',
-  camelizeKeys: true,
-  adapter: Admin.APIUmbrellaRESTAdapter.create(),
+  urlRoot: '/api-umbrella/v1/users',
+  singlePayloadKey: 'user',
+  arrayPayloadKey: 'data',
 });

@@ -1,13 +1,10 @@
-import { Model, attr } from 'ember-model';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
 
 export default Model.extend({
-  id: attr(),
-  name: attr()
+  name: attr(),
 }).reopenClass({
-  url: '/api-umbrella/v1/admin_permissions',
-  rootKey: 'admin_permission',
-  collectionKey: 'admin_permissions',
-  primaryKey: 'id',
-  camelizeKeys: true,
-  adapter: Admin.APIUmbrellaRESTAdapter.create(),
+  urlRoot: '/api-umbrella/v1/admin_permissions',
+  singlePayloadKey: 'admin_permission',
+  arrayPayloadKey: 'admin_permissions',
 });

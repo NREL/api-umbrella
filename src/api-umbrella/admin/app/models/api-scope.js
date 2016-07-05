@@ -1,8 +1,26 @@
-import Ember from 'ember';
-import { Model, attr } from 'ember-model';
+import Model from 'ember-data/model';
+import attr from 'ember-data/attr';
+import { validator, buildValidations } from 'ember-cp-validations';
 
-export default Model.extend(Ember.Validations.Mixin, {
-  id: attr(),
+const Validations = buildValidations({
+  name: validator('presence', true),
+  host: [
+    validator('presence', true),
+    validator('format', {
+      regex: CommonValidations.host_format_with_wildcard,
+      message: I18n.t('errors.messages.invalid_host_format'),
+    }),
+  ],
+  pathPrefix: [
+    validator('presence', true),
+    validator('format', {
+      regex: CommonValidations.url_prefix_format,
+      message: I18n.t('errors.messages.invalid_url_prefix_format'),
+    }),
+  ],
+});
+
+export default Model.extend(Validations, {
   name: attr(),
   host: attr(),
   pathPrefix: attr(),
@@ -11,34 +29,11 @@ export default Model.extend(Ember.Validations.Mixin, {
   creator: attr(),
   updater: attr(),
 
-  validations: {
-    name: {
-      presence: true,
-    },
-    host: {
-      presence: true,
-      format: {
-        with: CommonValidations.host_format_with_wildcard,
-        message: polyglot.t('errors.messages.invalid_host_format'),
-      },
-    },
-    pathPrefix: {
-      presence: true,
-      format: {
-        with: CommonValidations.url_prefix_format,
-        message: polyglot.t('errors.messages.invalid_url_prefix_format'),
-      },
-    },
-  },
-
-  displayName: function() {
+  displayName: Ember.computed('name', 'host', 'pathPrefix', function() {
     return this.get('name') + ' - ' + this.get('host') + this.get('pathPrefix');
-  }.property('name', 'host', 'pathPrefix')
+  }),
 }).reopenClass({
-  url: '/api-umbrella/v1/api_scopes',
-  rootKey: 'api_scope',
-  collectionKey: 'data',
-  primaryKey: 'id',
-  camelizeKeys: true,
-  adapter: Admin.APIUmbrellaRESTAdapter.create(),
+  urlRoot: '/api-umbrella/v1/api_scopes',
+  singlePayloadKey: 'api_scope',
+  arrayPayloadKey: 'data',
 });
