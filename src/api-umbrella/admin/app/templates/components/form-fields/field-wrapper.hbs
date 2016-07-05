@@ -1,18 +1,26 @@
 <div class="form-group {{wrapperErrorClass}}">
-  <div class="col-sm-2 control-label">
+  {{#if (eq style "horizontal")}}
+    <div class="col-sm-2 control-label">
+      <label for="{{inputId}}">{{label}}</label>
+      {{help-tooltip tooltip=tooltip}}
+    </div>
+    <div class="col-sm-10">
+      {{yield}}
+      {{form-fields/error-messages hasErrors=fieldErrorMessages errorMessages=fieldErrorMessages}}
+    </div>
+  {{else if (eq style "horizontal-wide-labels")}}
+    <div class="col-sm-3 control-label">
+      <label for="{{inputId}}">{{label}}</label>
+      {{help-tooltip tooltip=tooltip}}
+    </div>
+    <div class="col-sm-9">
+      {{yield}}
+      {{form-fields/error-messages hasErrors=fieldErrorMessages errorMessages=fieldErrorMessages}}
+    </div>
+  {{else}}
     <label for="{{inputId}}">{{label}}</label>
-    {{#if tooltip}}
-      <a href="#" rel="tooltip" title="{{tooltip}}"><i class="fa fa-question-circle" aria-hidden="true"></i><span class="sr-only">Help</span></a>
-    {{/if}}
-  </div>
-  <div class="col-sm-10">
+    {{help-tooltip tooltip=tooltip}}
     {{yield}}
-    {{#if fieldHasErrors}}
-      <div class="help-block with-errors">
-        {{#each fieldErrorMessages as |message|}}
-          {{message}}<br>
-        {{/each}}
-      </div>
-    {{/if}}
-  </div>
+    {{form-fields/error-messages hasErrors=fieldErrorMessages errorMessages=fieldErrorMessages}}
+  {{/if}}
 </div>

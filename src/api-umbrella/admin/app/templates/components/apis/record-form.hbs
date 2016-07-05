@@ -61,8 +61,8 @@
 
   <fieldset class="collapsible">
     <legend><a data-toggle="collapse" class="collapsed" data-target="#global_settings"><i class="fa fa-caret-down"></i> Global Request Settings</a></legend>
-    <div id="global_settings" class="collapse form-horizontal form-horizontal-wide">
-      {{#fields-for model=model.settings style="horizontal" as |f|}}
+    <div id="global_settings" class="collapse form-horizontal">
+      {{#fields-for model=model.settings style="horizontal-wide-labels" as |f|}}
         {{f.text-field "appendQueryString" label="Append Query String Parameters" placeholder="param1=value&param2=value"}}
         {{f.textarea-field "headersString" label="Set Request Headers" placeholder="X-Example-Header: value"}}
         {{f.text-field "httpBasicAuth" label="HTTP Basic Authentication" placeholder="username:password"}}
@@ -90,19 +90,19 @@
 
   <fieldset class="collapsible">
     <legend><a data-toggle="collapse" class="collapsed" data-target="#advanced_settings"><i class="fa fa-caret-down"></i> Advanced Settings</a></legend>
-    <div id="advanced_settings" class="collapse form-horizontal form-horizontal-wide">
-      {{#fields-for model=model style="horizontal" as |f|}}
+    <div id="advanced_settings" class="collapse form-horizontal">
+      {{#fields-for model=model style="horizontal-wide-labels" as |f|}}
         {{f.select-field "balanceAlgorithm" label="Balance Algorithm" options=balanceAlgorithmOptions}}
        {{/fields-for}}
 
-      {{#fields-for model=model.settings.errorTemplates style="horizontal" as |f|}}
+      {{#fields-for model=model.settings.errorTemplates style="horizontal-wide-labels" as |f|}}
         <h4>{{t "mongoid.attributes.api/settings.error_templates"}}</h4>
         {{f.ace-field "json" label=(t "admin.api.settings.error_templates_json") tooltip=(t "admin.api.settings.error_templates_json_tooltip_markdown") mode="json"}}
         {{f.ace-field "xml" label=(t "admin.api.settings.error_templates_xml") tooltip=(t "admin.api.settings.error_templates_xml_tooltip_markdown") mode="xml"}}
         {{f.ace-field "csv" label=(t "admin.api.settings.error_templates_csv") tooltip=(t "admin.api.settings.error_templates_csv_tooltip_markdown") mode="text"}}
       {{/fields-for}}
 
-      {{#fields-for model=model.settings.errorDataYamlStrings style="horizontal" as |f|}}
+      {{#fields-for model=model.settings.errorDataYamlStrings style="horizontal-wide-labels" as |f|}}
         <h4>{{t "mongoid.attributes.api/settings.error_data"}}</h4>
         {{f.ace-field "common" label=(t "admin.api.settings.error_data_common") tooltip=(t "admin.api.settings.error_data_common_tooltip_markdown") mode="yaml"}}
         {{f.ace-field "api_key_missing" label=(t "admin.api.settings.error_data_api_key_missing") tooltip=(t "admin.api.settings.error_data_api_key_missing_tooltip_markdown") mode="yaml"}}

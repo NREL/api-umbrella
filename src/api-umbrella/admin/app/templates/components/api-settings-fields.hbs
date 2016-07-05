@@ -39,7 +39,7 @@
       <label class="checkbox">
         {{! view Ember.Checkbox checked=model.requiredRolesOverride}}
         {{t 'admin.api.settings.required_roles_override'}}
-        {{tooltip-field title=(t 'admin.api.settings.required_roles_override_tooltip_markdown')}}
+        {{help-tooptip tooltip=(t 'admin.api.settings.required_roles_override_tooltip_markdown')}}
       </label>
     </div>
   </div>
@@ -48,7 +48,7 @@
 <div class="control-group">
   <div class="control-label">
     <label>{{t 'admin.api.settings.pass_api_key'}}</label>
-    {{tooltip-field title=(t 'admin.api.settings.pass_api_key_tooltip_markdown')}}
+    {{help-tooltip tooltip=(t 'admin.api.settings.pass_api_key_tooltip_markdown')}}
   </div>
   <div class="controls">
     <label class="checkbox">
