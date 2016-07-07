@@ -30,39 +30,6 @@ export default Ember.Component.extend(Save, {
       }, this));
     },
 
-    addServer() {
-      this.get('controllers.apis_server_form').add(this.get('model'), 'servers');
-
-      // For new servers, intelligently pick the default port based on the
-      // backend protocol selected.
-      if(this.get('model.backendProtocol') === 'https') {
-        this.set('controllers.apis_server_form.model.port', 443);
-      } else {
-        this.set('controllers.apis_server_form.model.port', 80);
-      }
-
-      // After the first server is added, fill out a default value for the
-      // "Backend Host" field based on the server's host (because in most
-      // non-load balancing situations they will match).
-      this.get('controllers.apis_server_form').on('closeOk', _.bind(function() {
-        let server = this.get('model.servers.firstObject');
-        if(!this.get('model.backendHost') && server) {
-          this.set('model.backendHost', server.get('host'));
-        }
-      }, this));
-
-      this.send('openModal', 'apis/server_form');
-    },
-
-    editServer(server) {
-      this.get('controllers.apis_server_form').edit(this.get('model'), 'servers', server);
-      this.send('openModal', 'apis/server_form');
-    },
-
-    deleteServer(server) {
-      this.deleteChildRecord('servers', server, 'Are you sure you want to remove this server?');
-    },
-
     addUrlMatch() {
       this.get('controllers.apis_url_match_form').add(this.get('model'), 'urlMatches');
       this.send('openModal', 'apis/url_match_form');

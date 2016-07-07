@@ -579,3 +579,17 @@ td.reorder-handle {
   font-size: 11px;
   color: #777;
 }
+
+// For when we want to submit a form with the enter key, but don't want a real
+// submit button visible in the form (eg, in modals where the submit button is
+// in the modal footer and not inside the <form> tag):
+// http://stackoverflow.com/q/477691
+.hidden-submit-button {
+  position: absolute;
+  left: -9999px;
+  height: 0px;
+  width: 0px;
+  border: none;
+  padding: 0px;
+  margin: 0px;
+}
