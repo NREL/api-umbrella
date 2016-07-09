@@ -7,7 +7,7 @@
     "bootstrap": "~3.3.5",
     "bootstrap-daterangepicker": "2.1.23",
     "bootstrap-sass": "3.3.6",
-    "bootswatch": "^3.3.6+2",
+    "bootswatch": "v3.3.6+2",
     "datatables": "1.10.12",
     "ember": "~2.6.0",
     "ember-cli-shims": "0.1.1",
