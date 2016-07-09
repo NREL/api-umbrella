@@ -32,7 +32,6 @@
     "ember-cli-eslint": "1.6.0",
     "ember-cli-htmlbars": "^1.0.3",
     "ember-cli-htmlbars-inline-precompile": "^0.3.1",
-    "ember-cli-inject-live-reload": "^1.4.0",
     "ember-cli-qunit": "^1.4.0",
     "ember-cli-release": "^0.2.9",
     "ember-cli-sass": "5.3.1",
@@ -50,5 +49,10 @@
     "ember-welcome-page": "^1.0.1",
     "emberx-select": "2.1.2",
     "loader.js": "^4.0.1"
+  },
+  "ember-addon": {
+    "paths": [
+      "lib/inject-live-reload"
+    ]
   }
 }

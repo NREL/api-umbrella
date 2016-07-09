@@ -153,10 +153,23 @@ local function write_templates()
     for _, filename in ipairs(files) do
       local template_path = path.join(root, filename)
 
+      local process = true
       local is_hidden = (string.find(filename, ".", 1, true) == 1)
-      local is_test_file = (string.find(template_path, "test-env") ~= nil)
+      if is_hidden then
+        process = false
+      end
 
-      if not is_hidden and (not is_test_file or config["app_env"] == "test") then
+      local is_dev_file = (string.find(template_path, "dev-env") ~= nil)
+      if is_dev_file and config["app_env"] ~= "development" then
+        process = false
+      end
+
+      local is_test_file = (string.find(template_path, "test-env") ~= nil)
+      if is_test_file and config["app_env"] ~= "test" then
+        process = false
+      end
+
+      if process then
         local install_path = string.gsub(template_path, "^" .. plutils.escape(template_root .. "/"), "", 1)
         install_path = string.gsub(install_path, plutils.escape(".mustache") .. "$", "", 1)
         install_path = path.join(config["etc_dir"], install_path)
@@ -270,6 +283,15 @@ local function activate_services()
         if array_includes({ "nginx-reloader" }, service_name) then
           is_active = false
         end
+      end
+    end
+
+    -- Disable any dev-only services when not running in the dev environment.
+    if string.find(service_name, "dev-env", 1, true) == 1 then
+      if config["app_env"] == "development" then
+        is_active = true
+      else
+        is_active = false
       end
     end
 

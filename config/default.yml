@@ -350,3 +350,6 @@ ban:
     status_code: 403
     delay: 0
     message: "Please contact us for assistance."
+ember_server:
+  port: 14050
+  live_reload_port: 14051

@@ -268,7 +268,7 @@ http {
 
     location /admin/ {
       rewrite /admin/(.*) /$1 break;
-      proxy_pass http://127.0.0.1:4200;
+      proxy_pass http://127.0.0.1:{{ember_server.port}};
     }
 
     # Serve non-static resources with Puma.

@@ -1,0 +1,9 @@
+{
+  "name": "inject-live-reload",
+  "keywords": [
+    "ember-addon"
+  ],
+  "ember-addon": {
+    "before": "serve-files-middleware"
+  }
+}

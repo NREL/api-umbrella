@@ -65,3 +65,20 @@ if ($banned_user_agent) {
 # Clear any headers used inside API Umbrella that should not be possible to set
 # by an external client.
 more_clear_input_headers X-Api-Umbrella-Allow-Authorization-Caching;
+
+{{#_development_env?}}
+  location /livereload.js {
+    proxy_pass http://127.0.0.1:{{ember_server.live_reload_port}};
+  }
+
+  location /livereload {
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_pass http://127.0.0.1:{{ember_server.live_reload_port}};
+  }
+
+  location /ember-cli-live-reload.js {
+    proxy_pass http://127.0.0.1:{{ember_server.port}};
+  }
+{{/_development_env?}}
