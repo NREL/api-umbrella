@@ -2,14 +2,14 @@
 
 API Umbrella is a reverse proxy that sits between your API users and your APIs:
 
-![](../images/overview.png)
+![](../images/overview.svg)
 
 ## In More Detail
 
 ### Components
 
-![](../images/router.png)
+![](../images/router.svg)
 
 ### Gatekeeper
 
-![](../images/gatekeeper.png)
+![](../images/gatekeeper.svg)
