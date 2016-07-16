@@ -1,0 +1,1 @@
+Minitest::Reporters.use!
