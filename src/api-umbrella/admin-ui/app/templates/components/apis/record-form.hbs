@@ -33,7 +33,7 @@
   <fieldset>
     <legend>{{t "admin.api.url_matches.legend"}}</legend>
     <p class="fieldset-note">{{t "admin.api.url_matches.note"}}</p>
-    {{render "apis/url_matches" urlMatches}}
+    {{apis/url-match-table model=model}}
   </fieldset>
 
   <fieldset class="collapsible">
@@ -45,7 +45,7 @@
         {{f.text-field "httpBasicAuth" label="HTTP Basic Authentication" placeholder="username:password"}}
       {{/fields-for}}
 
-      {{! api-settings-fields model=settings}}
+      {{apis/settings/common-fields model=model.settings}}
     </div>
   </fieldset>
 
@@ -53,7 +53,7 @@
     <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="fa fa-caret-down"></i> {{t "admin.api.sub_settings.legend"}}</a></legend>
     <div id="sub_settings" class="collapse">
       <p class="fieldset-note">{{t "admin.api.sub_settings.note"}}</p>
-      {{render "apis/sub_settings" subSettings}}
+      {{apis/sub-settings-table model=model}}
     </div>
   </fieldset>
 
@@ -61,7 +61,7 @@
     <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites"><i class="fa fa-caret-down"></i> {{t "admin.api.rewrites.legend"}}</a></legend>
     <div id="rewrites" class="collapse">
       <p class="fieldset-note">{{t "admin.api.rewrites.note"}}</p>
-      {{render "apis/rewrites" rewrites}}
+      {{apis/rewrite-table model=model}}
     </div>
   </fieldset>
 

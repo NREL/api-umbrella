@@ -29,6 +29,7 @@
       <legend>Permissions</legend>
 
       {{f.checkboxes-field "groupIds" label="Groups" options=groupOptions}}
+      superuser: {{model.superuser}}
       {{#if currentAdmin.superuser}}
         {{f.checkbox-field "superuser" label="Superuser"}}
       {{/if}}
@@ -49,7 +50,7 @@
     </div>
     {{#if id}}
       <div class="row form-extra-actions">
-        <a href="#" class="remove-action" {{action 'delete'}}><i class="fa fa-times"></i>Delete Admin</a>
+        <a href="#" class="remove-action" {{action "delete"}}><i class="fa fa-times"></i>Delete Admin</a>
       </div>
     {{/if}}
   {{/fields-for}}

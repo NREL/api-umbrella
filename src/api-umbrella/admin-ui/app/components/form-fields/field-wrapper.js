@@ -14,7 +14,7 @@ export default Ember.Component.extend({
 
   wrapperErrorClass: Ember.computed('fieldHasErrors', function() {
     if(this.get('fieldHasErrors')) {
-      return 'has-error has-feedback';
+      return 'has-error';
     } else {
       return '';
     }

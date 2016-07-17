@@ -21,16 +21,6 @@ export default Ember.Component.extend({
     { id: 'ip', name: 'IP Address' },
   ],
 
-  anonymousRateLimitBehaviorOptions: [
-    { id: 'ip_fallback', name: 'IP Fallback - API key rate limits are applied as IP limits' },
-    { id: 'ip_only', name: 'IP Only - API key rate limits are ignored (only IP based limits are applied)' },
-  ],
-
-  authenticatedRateLimitBehaviorOptions: [
-    { id: 'all', name: 'All Limits - Both API key rate limits and IP based limits are applied' },
-    { id: 'api_key_only', name: 'API Key Only - IP based rate limits are ignored (only API key limits are applied)' },
-  ],
-
   uniqueSettingsId: Ember.computed(function() {
     return _.uniqueId('api_settings_');
   }),

@@ -2,7 +2,7 @@ body {
   padding-top: 60px;
 }
 
-.navbar .brand {
+.navbar .navbar-brand {
   font-weight: bold;
 }
 
@@ -232,12 +232,6 @@ div.dataTables_wrapper {
   margin-bottom: 5px;
 }
 
-/*
-.modal form {
-  margin: 0px;
-}
-*/
-
 fieldset {
   margin: 12px 0px 32px 0px;
   padding: 6px 0px 6px 12px;
@@ -252,7 +246,6 @@ fieldset.collapsible {
 }
 
 legend {
-  font-family: 'Oswald', sans-serif;
   margin-bottom: 2px;
   border-bottom-width: 1px;
   border-color: #999;
@@ -395,13 +388,6 @@ a[data-toggle='collapse'].collapsed .fa-caret-down:before {
 a:hover {
   cursor: pointer;
 }
-
-/*
-.modal {
-  width: 820px;
-  margin-left: -410px;
-}
-*/
 
 .api-key {
   font-family: $font-family-monospace;

@@ -1,1 +1,31 @@
-{{yield}}
+{{#bs-modal open=openModal submitAction=(action "submit") closedAction=(action "closed") title=modalTitle body=false footer=false backdropClose=false size="lg"}}
+  {{#bs-modal-body}}
+    <form {{action "submit" on="submit"}}>
+      {{#fields-for model=bufferedModel style="vertical" as |f|}}
+        <div class="row">
+          <div class="col-sm-12">
+            {{f.select-field "matcherType" label="Matcher Type" options=matcherTypeOptions}}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-2">
+            {{f.select-field "httpMethod" label="HTTP Method" options=httpMethodOptions}}
+          </div>
+          <div class="col-sm-10">
+            {{f.text-field "frontendMatcher" label="Frontend Matcher" placeholder="/example/"}}
+          </div>
+        </div>
+        <div class="row arrow arrow-vertical">
+          <i class="fa fa-arrow-down fa-2x"></i> rewrite to
+        </div>
+        <div class="row">
+          <div class="col-sm-offset-2 col-sm-10">
+            {{f.text-field "backendReplacement" label="Backend Replacement" placeholder="/example/"}}
+          </div>
+        </div>
+      {{/fields-for}}
+      <input type="submit" class="hidden-submit-button" tabindex="-1">
+    </form>
+  {{/bs-modal-body}}
+  {{bs-modal-footer closeTitle="Cancel" submitTitle="OK"}}
+{{/bs-modal}}

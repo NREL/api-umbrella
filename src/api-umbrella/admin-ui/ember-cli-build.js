@@ -53,8 +53,14 @@ module.exports = function(defaults) {
   app.import('bower_components/qtip2/jquery.qtip.js');
   app.import('bower_components/selectize/dist/css/selectize.default.css');
   app.import('bower_components/selectize/dist/js/standalone/selectize.js');
+  app.import('bower_components/jquery-ui/ui/version.js');
+  app.import('bower_components/jquery-ui/ui/data.js');
+  app.import('bower_components/jquery-ui/ui/ie.js');
+  app.import('bower_components/jquery-ui/ui/scroll-parent.js');
+  app.import('bower_components/jquery-ui/ui/widget.js');
+  app.import('bower_components/jquery-ui/ui/widgets/mouse.js');
+  app.import('bower_components/jquery-ui/ui/widgets/sortable.js');
   app.import('vendor/dirtyforms/jquery.dirtyforms.js');
-  app.import('vendor/jquery-ui-1.10.3.custom.js');
   app.import('vendor/jquery.truncate.js');
 
   return app.toTree();

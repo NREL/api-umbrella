@@ -31,7 +31,7 @@
 
     <fieldset class="form-horizontal">
       <legend>Rate Limiting</legend>
-      {{api-settings/rate-limit-fields model=model.settings}}
+      {{apis/settings/rate-limit-fields model=model.settings}}
       {{f.select-field "throttleByIp" label="Limit By" options=throttleByIpOptions}}
     </fieldset>
 
@@ -39,8 +39,8 @@
       <legend>Permissions</legend>
 
       {{f.selectize-field "rolesString" label="Roles" options=roleOptions}}
-      {{api-settings/allowed-ips-fields model=model.settings}}
-      {{api-settings/allowed-referers-fields model=model.settings}}
+      {{apis/settings/allowed-ips-fields model=model.settings}}
+      {{apis/settings/allowed-referers-fields model=model.settings}}
       {{f.select-field "enabled" label="Limit By" options=enabledOptions}}
     </fieldset>
 

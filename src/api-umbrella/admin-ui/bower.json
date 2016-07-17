@@ -17,6 +17,7 @@
     "inflection": "1.10.0",
     "jQuery-QueryBuilder": "2.3.3",
     "jquery-bbq-deparam": "1.2.1",
+    "jquery-ui": "1.12.0",
     "jquery.scrollTo": "2.1.2",
     "jsdiff": "2.2.2",
     "jstz-detect": "1.0.5",
