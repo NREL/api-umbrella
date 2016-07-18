@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import BufferedProxy from 'ember-buffered-proxy/proxy';
+import UrlMatch from 'api-umbrella-admin/models/api/url-match';
 
 export default Ember.Component.extend({
   openModal: false,
@@ -14,7 +15,8 @@ export default Ember.Component.extend({
   }),
 
   bufferedModel: Ember.computed('model', function() {
-    return BufferedProxy.create({ content: this.get('model') });
+    let owner = Ember.getOwner(this).ownerInjection();
+    return BufferedProxy.extend(UrlMatch.validationClass).create(owner, { content: this.get('model') });
   }),
 
   exampleIncomingUrl: Ember.computed('bufferedModel.frontendPrefix', function() {

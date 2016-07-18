@@ -28,4 +28,6 @@ export default Model.extend(Validations, {
   backendPrefixWithDefault: Ember.computed('backendPrefix', 'frontendPrefix', function() {
     return this.get('backendPrefix') || this.get('frontendPrefix');
   }),
+}).reopenClass({
+  validationClass: Validations,
 });

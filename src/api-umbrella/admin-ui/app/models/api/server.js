@@ -24,4 +24,6 @@ export default Model.extend(Validations, {
   hostWithPort: Ember.computed('host', 'port', function() {
     return _.compact([this.get('host'), this.get('port')]).join(':');
   }),
+}).reopenClass({
+  validationClass: Validations,
 });

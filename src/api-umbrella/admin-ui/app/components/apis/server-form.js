@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import BufferedProxy from 'ember-buffered-proxy/proxy';
+import Server from 'api-umbrella-admin/models/api/server';
 
 export default Ember.Component.extend({
   openModal: false,
@@ -13,7 +14,8 @@ export default Ember.Component.extend({
   }),
 
   bufferedModel: Ember.computed('model', function() {
-    return BufferedProxy.create({ content: this.get('model') });
+    let owner = Ember.getOwner(this).ownerInjection();
+    return BufferedProxy.extend(Server.validationClass).create(owner, { content: this.get('model') });
   }),
 
   actions: {
