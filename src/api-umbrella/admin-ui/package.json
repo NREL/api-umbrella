@@ -47,7 +47,7 @@
     "ember-simple-auth": "1.1.0",
     "ember-truth-helpers": "1.2.0",
     "ember-welcome-page": "^1.0.1",
-    "emberx-select": "2.1.2",
+    "emberx-select": "2.2.1",
     "loader.js": "^4.0.1"
   },
   "ember-addon": {

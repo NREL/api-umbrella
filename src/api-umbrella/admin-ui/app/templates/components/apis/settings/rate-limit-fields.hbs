@@ -30,18 +30,10 @@
                   {{input type="text" value=rateLimit.durationInUnits class="form-control input-sm rate-limit-duration-in-units"}}
                 </td>
                 <td style="text-align: left;">
-                  {{#x-select value=rateLimit.durationUnits class="form-control input-sm rate-limit-duration-units"}}
-                    {{#each rateLimitDurationUnitOptions as |option|}}
-                      {{#x-option value=option.id}}{{option.name}}{{/x-option}}
-                    {{/each}}
-                  {{/x-select}}
+                  {{select-menu value=rateLimit.durationUnits action=(action (mut rateLimit.durationUnits)) options=rateLimitDurationUnitOptions inputClass="form-control input-sm rate-limit-duration-units"}}
                 </td>
                 <td>
-                  {{#x-select value=rateLimit.limitBy class="form-control input-sm rate-limit-limit-by"}}
-                    {{#each rateLimitLimitByOptions as |option|}}
-                      {{#x-option value=option.id}}{{option.name}}{{/x-option}}
-                    {{/each}}
-                  {{/x-select}}
+                  {{select-menu value=rateLimit.limitBy action=(action (mut rateLimit.limitBy)) options=rateLimitLimitByOptions inputClass="form-control input-sm rate-limit-limit-by"}}
                 </td>
                 <td>
                   <div class="input-group">
