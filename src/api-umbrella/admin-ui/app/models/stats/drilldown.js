@@ -1,21 +1,24 @@
 import Ember from 'ember';
 
-export default Ember.Object.extend(Ember.Evented, {
+let Drilldown = Ember.Object.extend(Ember.Evented, {
   results: null,
-}).reopenClass({
+});
+
+Drilldown.reopenClass({
+  urlRoot: '/api-umbrella/v1/analytics/drilldown.json',
+
   find(params) {
-    let promise = Ember.Deferred.create();
-
-    $.ajax({
-      url: '/api-umbrella/v1/analytics/drilldown.json',
-      data: params,
-    }).done(function(data) {
-      let map = Admin.StatsDrilldown.create(data);
-      promise.resolve(map);
-    }).fail(function() {
-      promise.reject();
-    });
-
-    return promise;
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      return $.ajax({
+        url: this.urlRoot,
+        data: params
+      }).then(function(data) {
+        resolve(new Drilldown(data));
+      }, function() {
+        reject();
+      });
+    }.bind(this));
   },
 });
+
+export default Drilldown;

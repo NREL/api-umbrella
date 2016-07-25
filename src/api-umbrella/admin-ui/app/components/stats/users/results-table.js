@@ -1,20 +1,16 @@
 import Ember from 'ember';
+import DataTablesHelpers from 'api-umbrella-admin/utils/data-tables-helpers';
 
-export default Ember.View.extend({
-  tagName: 'table',
-
-  classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
-
-  didInsertElement: function() {
-    this.$().DataTable({
+export default Ember.Component.extend({
+  didInsertElement() {
+    this.$().find('table').DataTable({
       searching: false,
       serverSide: true,
       ajax: {
         url: '/admin/stats/users.json',
-        data: _.bind(function(data) {
-          var query = this.get('controller.query.params');
-          return _.extend({}, data, query);
-        }, this)
+        data: function(data) {
+          return _.extend({}, data, this.get('allQueryParamValues'));
+        }.bind(this),
       },
       order: [[4, 'desc']],
       columns: [
@@ -22,36 +18,36 @@ export default Ember.View.extend({
           data: 'email',
           title: 'Email',
           defaultContent: '-',
-          render: _.bind(function(email, type, data) {
+          render: function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
-              var params = _.clone(this.get('controller.query.params'));
+              let params = _.clone(this.get('queryParamValues'));
               params.search = 'user_id:"' + data.id + '"';
-              var link = '#/stats/logs/' + $.param(params);
+              let link = '#/stats/logs?' + $.param(params);
 
               return '<a href="' + link + '">' + _.escape(email) + '</a>';
             }
 
             return email;
-          }, this),
+          }.bind(this),
         },
         {
           data: 'first_name',
           title: 'First Name',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'last_name',
           title: 'Last Name',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'created_at',
           type: 'date',
           title: 'Signed Up',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderTime,
+          render: DataTablesHelpers.renderTime,
         },
         {
           data: 'hits',
@@ -70,19 +66,23 @@ export default Ember.View.extend({
           type: 'date',
           title: 'Last Request',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderTime,
+          render: DataTablesHelpers.renderTime,
         },
         {
           data: 'use_description',
           title: 'Use Description',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
       ]
     });
   },
 
-  refreshData: function() {
-    this.$().DataTable().draw();
-  }.observes('controller.query.params.query', 'controller.query.params.search', 'controller.query.params.start_at', 'controller.query.params.end_at', 'controller.query.params.beta_analytics'),
+  refreshData: Ember.observer('allQueryParamValues', function() {
+    this.$().find('table').DataTable().draw();
+  }),
+
+  downloadUrl: Ember.computed('allQueryParamValues', function() {
+    return '/admin/stats/users.csv?' + $.param(this.get('allQueryParamValues'));
+  }),
 });

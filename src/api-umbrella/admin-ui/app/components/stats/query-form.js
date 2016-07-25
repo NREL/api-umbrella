@@ -1,8 +1,6 @@
 import Ember from 'ember';
 
-export default Ember.View.extend({
-  templateName: 'stats/_query_form',
-
+export default Ember.Component.extend({
   enableInterval: false,
 
   datePickerRanges: {
@@ -35,12 +33,11 @@ export default Ember.View.extend({
   didInsertElement: function() {
     this.updateInterval();
     this.updateDateRange();
-    this.updateBetaAnalytics();
 
     $('#reportrange').daterangepicker({
       ranges: this.datePickerRanges,
-      startDate: moment(this.get('controller.query.params.start_at'), 'YYYY-MM-DD'),
-      endDate: moment(this.get('controller.query.params.end_at'), 'YYYY-MM-DD'),
+      startDate: moment(this.get('start_at'), 'YYYY-MM-DD'),
+      endDate: moment(this.get('end_at'), 'YYYY-MM-DD'),
     }, _.bind(this.handleDateRangeChange, this));
 
     var stringOperators = [
@@ -86,8 +83,8 @@ export default Ember.View.extend({
       filters: [
         {
           id: 'request_method',
-          label: polyglot.t('admin.stats.fields.request_method.label'),
-          description: polyglot.t('admin.stats.fields.request_method.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_method.label'),
+          description: I18n.t('admin.stats.fields.request_method.description_markdown'),
           type: 'string',
           operators: selectOperators,
           input: 'select',
@@ -103,8 +100,8 @@ export default Ember.View.extend({
         },
         {
           id: 'request_scheme',
-          label: polyglot.t('admin.stats.fields.request_scheme.label'),
-          description: polyglot.t('admin.stats.fields.request_scheme.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_scheme.label'),
+          description: I18n.t('admin.stats.fields.request_scheme.description_markdown'),
           type: 'string',
           operators: selectOperators,
           input: 'select',
@@ -115,120 +112,120 @@ export default Ember.View.extend({
         },
         {
           id: 'request_host',
-          label: polyglot.t('admin.stats.fields.request_host.label'),
-          description: polyglot.t('admin.stats.fields.request_host.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_host.label'),
+          description: I18n.t('admin.stats.fields.request_host.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_path',
-          label: polyglot.t('admin.stats.fields.request_path.label'),
-          description: polyglot.t('admin.stats.fields.request_path.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_path.label'),
+          description: I18n.t('admin.stats.fields.request_path.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_url',
-          label: polyglot.t('admin.stats.fields.request_url.label'),
-          description: polyglot.t('admin.stats.fields.request_url.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_url.label'),
+          description: I18n.t('admin.stats.fields.request_url.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_ip',
-          label: polyglot.t('admin.stats.fields.request_ip.label'),
-          description: polyglot.t('admin.stats.fields.request_ip.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_ip.label'),
+          description: I18n.t('admin.stats.fields.request_ip.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_ip_country',
-          label: polyglot.t('admin.stats.fields.request_ip_country.label'),
-          description: polyglot.t('admin.stats.fields.request_ip_country.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_ip_country.label'),
+          description: I18n.t('admin.stats.fields.request_ip_country.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_ip_region',
-          label: polyglot.t('admin.stats.fields.request_ip_region.label'),
-          description: polyglot.t('admin.stats.fields.request_ip_region.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_ip_region.label'),
+          description: I18n.t('admin.stats.fields.request_ip_region.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_ip_city',
-          label: polyglot.t('admin.stats.fields.request_ip_city.label'),
-          description: polyglot.t('admin.stats.fields.request_ip_city.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_ip_city.label'),
+          description: I18n.t('admin.stats.fields.request_ip_city.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_user_agent',
-          label: polyglot.t('admin.stats.fields.request_user_agent.label'),
-          description: polyglot.t('admin.stats.fields.request_user_agent.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_user_agent.label'),
+          description: I18n.t('admin.stats.fields.request_user_agent.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_user_agent_family',
-          label: polyglot.t('admin.stats.fields.request_user_agent_family.label'),
-          description: polyglot.t('admin.stats.fields.request_user_agent_family.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_user_agent_family.label'),
+          description: I18n.t('admin.stats.fields.request_user_agent_family.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_user_agent_type',
-          label: polyglot.t('admin.stats.fields.request_user_agent_type.label'),
-          description: polyglot.t('admin.stats.fields.request_user_agent_type.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_user_agent_type.label'),
+          description: I18n.t('admin.stats.fields.request_user_agent_type.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_referer',
-          label: polyglot.t('admin.stats.fields.request_referer.label'),
-          description: polyglot.t('admin.stats.fields.request_referer.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_referer.label'),
+          description: I18n.t('admin.stats.fields.request_referer.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'request_origin',
-          label: polyglot.t('admin.stats.fields.request_origin.label'),
-          description: polyglot.t('admin.stats.fields.request_origin.description_markdown'),
+          label: I18n.t('admin.stats.fields.request_origin.label'),
+          description: I18n.t('admin.stats.fields.request_origin.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'api_key',
-          label: polyglot.t('admin.stats.fields.api_key.label'),
-          description: polyglot.t('admin.stats.fields.api_key.description_markdown'),
+          label: I18n.t('admin.stats.fields.api_key.label'),
+          description: I18n.t('admin.stats.fields.api_key.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'user_email',
-          label: polyglot.t('admin.stats.fields.user_email.label'),
-          description: polyglot.t('admin.stats.fields.user_email.description_markdown'),
+          label: I18n.t('admin.stats.fields.user_email.label'),
+          description: I18n.t('admin.stats.fields.user_email.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'user_id',
-          label: polyglot.t('admin.stats.fields.user_id.label'),
-          description: polyglot.t('admin.stats.fields.user_id.description_markdown'),
+          label: I18n.t('admin.stats.fields.user_id.label'),
+          description: I18n.t('admin.stats.fields.user_id.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
         {
           id: 'response_status',
-          label: polyglot.t('admin.stats.fields.response_status.label'),
-          description: polyglot.t('admin.stats.fields.response_status.description_markdown'),
+          label: I18n.t('admin.stats.fields.response_status.label'),
+          description: I18n.t('admin.stats.fields.response_status.description_markdown'),
           type: 'integer',
           operators: numberOperators,
         },
         {
           id: 'gatekeeper_denied_code',
-          label: polyglot.t('admin.stats.fields.gatekeeper_denied_code.label'),
-          description: polyglot.t('admin.stats.fields.gatekeeper_denied_code.description_markdown'),
+          label: I18n.t('admin.stats.fields.gatekeeper_denied_code.label'),
+          description: I18n.t('admin.stats.fields.gatekeeper_denied_code.description_markdown'),
           type: 'string',
           operators: selectOperators,
           input: 'select',
@@ -246,22 +243,22 @@ export default Ember.View.extend({
         },
         {
           id: 'response_time',
-          label: polyglot.t('admin.stats.fields.response_time.label'),
-          description: polyglot.t('admin.stats.fields.response_time.description_markdown'),
+          label: I18n.t('admin.stats.fields.response_time.label'),
+          description: I18n.t('admin.stats.fields.response_time.description_markdown'),
           type: 'integer',
           operators: numberOperators,
         },
         {
           id: 'response_content_type',
-          label: polyglot.t('admin.stats.fields.response_content_type.label'),
-          description: polyglot.t('admin.stats.fields.response_content_type.description_markdown'),
+          label: I18n.t('admin.stats.fields.response_content_type.label'),
+          description: I18n.t('admin.stats.fields.response_content_type.description_markdown'),
           type: 'string',
           operators: stringOperators,
         },
       ],
     });
 
-    var query = this.get('controller.query.params.query');
+    var query = this.get('query');
     var rules;
     if(query) {
       rules = JSON.parse(query);
@@ -274,14 +271,14 @@ export default Ember.View.extend({
 
       this.send('toggleFilters');
       this.send('toggleFilterType', 'builder');
-    } else if(this.get('controller.query.params.search')) {
+    } else if(this.get('search')) {
       this.send('toggleFilters');
       this.send('toggleFilterType', 'advanced');
     }
   },
 
   updateQueryBuilderRules: function() {
-    var query = this.get('controller.query.params.query');
+    var query = this.get('query');
     var rules;
     if(query) {
       rules = JSON.parse(query);
@@ -292,34 +289,26 @@ export default Ember.View.extend({
     } else {
       $('#query_builder').queryBuilder('reset');
     }
-  }.observes('controller.query.params.query'),
+  }.observes('query'),
 
   updateInterval: function() {
-    var interval = this.get('controller.query.params.interval');
+    var interval = this.get('interval');
     $('#interval_buttons').find('button[value="' + interval + '"]').button('toggle');
-  }.observes('controller.query.params.interval'),
+  }.observes('interval'),
 
   updateDateRange: function() {
-    var start = moment(this.get('controller.query.params.start_at'));
-    var end = moment(this.get('controller.query.params.end_at'));
+    var start = moment(this.get('start_at'));
+    var end = moment(this.get('end_at'));
 
     $('#reportrange span.text').html(start.format('MMM D, YYYY') + ' - ' + end.format('MMM D, YYYY'));
-  }.observes('controller.query.params.start_at', 'controller.query.params.end_at'),
+  }.observes('start_at', 'end_at'),
 
   handleDateRangeChange: function(start, end) {
     this.setProperties({
-      'controller.query.params.start_at': start.format('YYYY-MM-DD'),
-      'controller.query.params.end_at': end.format('YYYY-MM-DD'),
+      'start_at': start.format('YYYY-MM-DD'),
+      'end_at': end.format('YYYY-MM-DD'),
     });
   },
-
-  updateBetaAnalytics: function() {
-    this.set('isBetaAnalytics', this.get('controller.query.params.beta_analytics') === 'true');
-  }.observes('controller.query.params.beta_analytics'),
-
-  handleBetaAnalytics: function() {
-    this.set('controller.query.params.beta_analytics', this.get('isBetaAnalytics').toString());
-  }.observes('isBetaAnalytics'),
 
   actions: {
     toggleFilters: function() {
@@ -342,7 +331,7 @@ export default Ember.View.extend({
     },
 
     clickInterval: function(interval) {
-      this.set('controller.query.params.interval', interval);
+      this.set('interval', interval);
     },
   },
 });

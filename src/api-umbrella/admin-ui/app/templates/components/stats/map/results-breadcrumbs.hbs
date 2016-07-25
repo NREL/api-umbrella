@@ -1,0 +1,7 @@
+{{#each breadcrumbLinks as |breadcrumb|}}
+  {{#if breadcrumb.region}}
+    {{#link-to "stats.map" (query-params region=breadcrumb.region)}}{{breadcrumb.name}}{{/link-to}} /
+  {{else}}
+    {{breadcrumb.name}}
+  {{/if}}
+{{/each}}

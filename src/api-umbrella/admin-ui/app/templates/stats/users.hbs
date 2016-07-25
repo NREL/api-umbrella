@@ -1,10 +1,2 @@
-{{! view 'stats/query-form'}}
-
-<div id="results_table">
-  {{! view 'stats/users-table'}}
-</div>
-<div class="results-table-actions">
-  <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
-</div>
-
-{{! view 'loading-overlay' isLoading=controllers.application.isLoading}}
+{{stats/query-form enableInterval=false start_at=start_at end_at=end_at query=query search=search beta_analytics=beta_analytics}}
+{{stats/users/results-table queryParamValues=queryParamValues allQueryParamValues=allQueryParamValues}}

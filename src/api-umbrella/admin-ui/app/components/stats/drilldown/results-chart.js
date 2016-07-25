@@ -1,8 +1,6 @@
 import Ember from 'ember';
 
-export default Ember.View.extend({
-  data: [],
-
+export default Ember.Component.extend({
   chartOptions: {
     pointSize: 0,
     lineWidth: 1,
@@ -57,8 +55,8 @@ export default Ember.View.extend({
     $(window).on('resize', _.debounce(this.draw.bind(this), 100));
   },
 
-  refreshData: function() {
-    this.chartData = this.get('data');
+  refreshData: Ember.observer('hitsOverTime', function() {
+    this.chartData = this.get('hitsOverTime');
     for(var i = 0; i < this.chartData.rows.length; i++) {
       this.chartData.rows[i].c[0].v = new Date(this.chartData.rows[i].c[0].v);
     }
@@ -85,7 +83,7 @@ export default Ember.View.extend({
 
     this.dataTable = new google.visualization.DataTable(this.chartData);
     this.draw();
-  }.observes('data'),
+  }),
 
   draw: function() {
     this.chart.draw(this.dataTable, this.chartOptions);

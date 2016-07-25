@@ -36,17 +36,10 @@ Router.map(function() {
   });
 
   this.route('stats', { path: '/stats' }, function() {
-    this.route('drilldown', { path: '/drilldown/*query' });
-    this.route('drilldownDefault', { path: '/drilldown' });
-
-    this.route('logs', { path: '/logs/*query' });
-    this.route('logsDefault', { path: '/logs' });
-
-    this.route('users', { path: '/users/*query' });
-    this.route('usersDefault', { path: '/users' });
-
-    this.route('map', { path: '/map/*query' });
-    this.route('mapDefault', { path: '/map' });
+    this.route('drilldown', { path: '/drilldown' });
+    this.route('logs', { path: '/logs' });
+    this.route('users', { path: '/users' });
+    this.route('map', { path: '/map' });
   });
 
   this.route('website_backends', { path: '/website_backends' }, function() {

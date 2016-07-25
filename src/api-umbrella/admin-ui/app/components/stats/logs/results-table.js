@@ -1,12 +1,9 @@
 import Ember from 'ember';
+import DataTablesHelpers from 'api-umbrella-admin/utils/data-tables-helpers';
 
-export default Ember.View.extend({
-  tagName: 'table',
-
-  classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
-
-  didInsertElement: function() {
-    this.$().DataTable({
+export default Ember.Component.extend({
+  didInsertElement() {
+    this.$().find('table').DataTable({
       searching: false,
       serverSide: true,
       ajax: {
@@ -14,10 +11,9 @@ export default Ember.View.extend({
         // Use POST for this endpoint, since the URLs can be very long and
         // exceed URL length limits in IE (and apparently Capybara too).
         type: 'POST',
-        data: _.bind(function(data) {
-          var query = this.get('controller.query.params');
-          return _.extend({}, data, query);
-        }, this)
+        data: function(data) {
+          return _.extend({}, data, this.get('allQueryParamValues'));
+        }.bind(this),
       },
       drawCallback: _.bind(function() {
         this.$().find('td').truncate({
@@ -48,77 +44,77 @@ export default Ember.View.extend({
           type: 'date',
           title: 'Time',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderTime,
+          render: DataTablesHelpers.renderTime,
         },
         {
           data: 'request_method',
           title: 'Method',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_host',
           title: 'Host',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_url',
           title: 'URL',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'user_email',
           title: 'User',
           defaultContent: '-',
-          render: _.bind(function(email, type, data) {
+          render: function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
-              var params = _.clone(this.get('controller.query.params'));
+              let params = _.clone(this.get('queryParamValues'));
               params.search = _.compact([params.search, 'user_id:"' + data.user_id + '"']).join(' AND ');
-              var link = '#/stats/logs/' + $.param(params);
+              let link = '#/stats/logs?' + $.param(params);
 
               return '<a href="' + link + '">' + _.escape(email) + '</a>';
             }
 
             return email;
-          }, this),
+          }.bind(this),
         },
         {
           data: 'request_ip',
           title: 'IP Address',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_ip_country',
           title: 'Country',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_ip_region',
           title: 'State',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_ip_city',
           title: 'City',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'response_status',
           title: 'Status',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'gatekeeper_denied_code',
           title: 'Reason Denied',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'response_time',
@@ -136,55 +132,53 @@ export default Ember.View.extend({
           data: 'response_content_type',
           title: 'Content Type',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_accept_encoding',
           title: 'Accept Encoding',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_user_agent',
           title: 'User Agent',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_user_agent_family',
           title: 'User Agent Family',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_user_agent_type',
           title: 'User Agent Type',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_referer',
           title: 'Referer',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'request_origin',
           title: 'Origin',
           defaultContent: '-',
-          render: Admin.DataTablesHelpers.renderEscaped,
+          render: DataTablesHelpers.renderEscaped,
         },
       ]
     });
   },
 
-  redrawTable: function() {
-    this.$().DataTable().draw();
-  },
+  refreshData: Ember.observer('allQueryParamValues', function() {
+    this.$().find('table').DataTable().draw();
+  }),
 
-  refreshData: function() {
-    // Wrap datatables redraw in Ember.run.once so that we only trigger it once
-    // even if multiple query parameters are being changed at once.
-    Ember.run.once(this, 'redrawTable');
-  }.observes('controller.query.params.query', 'controller.query.params.search', 'controller.query.params.start_at', 'controller.query.params.end_at', 'controller.query.params.beta_analytics'),
+  downloadUrl: Ember.computed('allQueryParamValues', function() {
+    return '/admin/stats/logs.csv?' + $.param(this.get('allQueryParamValues'));
+  }),
 });

@@ -1,8 +1,6 @@
 import Ember from 'ember';
 
-export default Ember.View.extend({
-  data: [],
-
+export default Ember.Component.extend({
   chartOptions: {
     width: 640,
     colorAxis: {
@@ -34,7 +32,7 @@ export default Ember.View.extend({
   },
 
   handleCityClick: function() {
-    if(this.get('model.region_field') === 'request_ip_city') {
+    if(this.get('regionField') === 'request_ip_city') {
       var selection = this.chart.getSelection();
       if(selection) {
         var rowIndex = selection[0].row;
@@ -48,19 +46,19 @@ export default Ember.View.extend({
     }
   },
 
-  refreshData: function() {
-    this.chartData.rows = this.get('model.map_regions') || [];
+  refreshData: Ember.observer('regions', function() {
+    this.chartData.rows = this.get('regions') || [];
     this.chartData.cols = [
       {id: 'region', label: 'Region', type: 'string'},
       {id: 'startDate', label: 'Hits', type: 'number'},
     ];
 
-    if(this.get('model.region_field') === 'request_ip_city') {
+    if(this.get('regionField') === 'request_ip_city') {
       this.chartData.cols.unshift({id: 'latitude', label: 'Latitude', type: 'number'},
         {id: 'longitude', label: 'Longitude', type: 'number'});
     }
 
-    this.chartOptions.region = this.get('controller.query.params.region');
+    this.chartOptions.region = this.get('allQueryParamValues.region');
     if(this.chartOptions.region.indexOf('US') === 0) {
       this.chartOptions.resolution = 'provinces';
     } else {
@@ -75,7 +73,7 @@ export default Ember.View.extend({
 
     this.dataTable = new google.visualization.DataTable(this.chartData);
     this.draw();
-  }.observes('model.map_regions'),
+  }),
 
   draw: function() {
     this.chart.draw(this.dataTable, this.chartOptions);

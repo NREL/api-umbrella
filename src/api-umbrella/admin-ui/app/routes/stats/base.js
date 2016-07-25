@@ -2,92 +2,79 @@ import Ember from 'ember';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 
 export default Ember.Route.extend(AuthenticatedRouteMixin, {
-  defaultQueryParams: {
-    tz: jstz.determine().name(),
-    search: '',
-    start_at: moment().subtract(29, 'days').format('YYYY-MM-DD'),
-    end_at: moment().format('YYYY-MM-DD'),
-    query: JSON.stringify({
-      condition: 'AND',
-      rules: [{
-        field: 'gatekeeper_denied_code',
-        id: 'gatekeeper_denied_code',
-        input: 'select',
-        operator: 'is_null',
-        type: 'string',
-        value: null,
-      }],
-    }),
-  },
-
-  model(params) {
-    this.controllerFor('application').set('isLoading', true);
-
-    this.setQueryParams(params);
+  queryParams: {
+    tz: {
+      refreshModel: true,
+    },
+    interval: {
+      refreshModel: true,
+    },
+    search: {
+      refreshModel: true,
+    },
+    start_at: {
+      refreshModel: true,
+    },
+    end_at: {
+      refreshModel: true,
+    },
+    query: {
+      refreshModel: true,
+    },
+    beta_analytics: {
+      refreshModel: true,
+    },
+    prefix: {
+      refreshModel: true,
+    },
+    region: {
+      refreshModel: true,
+    },
   },
 
   setupController(controller, model) {
-    if(!controller.get('query')) {
-      controller.set('query', this.get('query'));
-    }
-
     controller.set('model', model);
-
-    this.controllerFor('application').set('isLoading', false);
+    controller.set('queryParamValues', this.get('queryParamValues') || {});
+    controller.set('allQueryParamValues', this.paramsFor(this.routeName));
 
     $('ul.nav li').removeClass('active');
     $('ul.nav li.nav-analytics').addClass('active');
   },
 
-  setQueryParams(params) {
-    let activeQueryParams = {};
-    if(params && params.query) {
-      activeQueryParams = $.deparam(params.query);
-    }
+  validateParams(params) {
+    let valid = true;
 
-    _.defaults(activeQueryParams, this.defaultQueryParams);
-    this.set('activeQueryParams', activeQueryParams);
+    let interval = params.interval;
+    let start = moment(params.start_at);
+    let end = moment(params.end_at);
 
-    let query = this.get('query');
-    if(!query) {
-      query = Ember.Object.create({ params: {} });
-    }
-
-    // Wrap setting the parameters in a begin/end transaction and only set
-    // values that differ. This is to cut down on unneeded observer
-    // notifications.
-    query.beginPropertyChanges();
-    for(let prop in activeQueryParams) {
-      if(activeQueryParams.hasOwnProperty(prop)) {
-        let paramKey = 'params.' + prop;
-        let existingValue = query.get(paramKey);
-        let newValue = activeQueryParams[prop];
-
-        if(newValue !== existingValue) {
-          query.set(paramKey, newValue);
+    let range = end.unix() - start.unix();
+    switch(interval) {
+      case 'minute':
+        // 2 days maximum range
+        if(range > 2 * 24 * 60 * 60) {
+          valid = false;
+          bootbox.alert('Your date range is too large for viewing minutely data. Adjust your viewing interval or choose a date range to no more than 2 days.');
         }
-      }
-    }
-    query.endPropertyChanges();
 
-    if(!this.get('query')) {
-      this.set('query', query);
+        break;
+      case 'hour':
+        // 31 day maximum range
+        if(range > 31 * 24 * 60 * 60) {
+          valid = false;
+          bootbox.alert('Your date range is too large for viewing hourly data. Adjust your viewing interval or choose a date range to no more than 31 days.');
+        }
+
+        break;
     }
+
+    return valid;
   },
 
-  queryChange: function() {
-    let newQueryParams = this.get('query.params');
-    if(newQueryParams && !_.isEmpty(newQueryParams)) {
-      let activeQueryParams = this.get('activeQueryParams');
-      if(!_.isEqual(newQueryParams, activeQueryParams)) {
-        this.transitionTo('stats.logs', $.param(newQueryParams));
-      }
-    }
-  }.observes('query.params.query', 'query.params.search', 'query.params.interval', 'query.params.start_at', 'query.params.end_at', 'query.params.beta_analytics'),
-
   actions: {
-    error() {
-      bootbox.alert('An unexpected error occurred. Please check your query and try again.');
+    queryParamsDidChange: function(changed, present) {
+      this._super(...arguments);
+      this.set('queryParamValues', present);
     },
   },
 });

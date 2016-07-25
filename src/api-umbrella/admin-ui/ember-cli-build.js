@@ -26,8 +26,12 @@ module.exports = function(defaults) {
   app.import('bower_components/ace-builds/src-noconflict/mode-yaml.js');
   app.import('bower_components/blockUI/jquery.blockUI.js');
   app.import('bower_components/bootbox/bootbox.js');
-  app.import('bower_components/bootstrap-daterangepicker/daterangepicker.js');
   app.import('bower_components/bootstrap-sass/assets/javascripts/bootstrap.js');
+  app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.eot', { destDir: 'fonts/bootstrap' });
+  app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.svg', { destDir: 'fonts/bootstrap' });
+  app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.ttf', { destDir: 'fonts/bootstrap' });
+  app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff', { destDir: 'fonts/bootstrap' });
+  app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff2', { destDir: 'fonts/bootstrap' });
   app.import('bower_components/datatables/media/css/dataTables.bootstrap.css');
   app.import('bower_components/datatables/media/js/jquery.dataTables.js');
   app.import('bower_components/datatables/media/js/dataTables.bootstrap.js');
@@ -46,7 +50,6 @@ module.exports = function(defaults) {
   app.import('bower_components/lodash/dist/lodash.js');
   app.import('bower_components/marked/lib/marked.js');
   app.import('bower_components/moment/moment.js');
-  app.import('bower_components/numeral/numeral.js');
   app.import('bower_components/pnotify/dist/pnotify.css');
   app.import('bower_components/pnotify/dist/pnotify.js');
   app.import('bower_components/qtip2/jquery.qtip.css');
@@ -62,6 +65,8 @@ module.exports = function(defaults) {
   app.import('bower_components/jquery-ui/ui/widgets/sortable.js');
   app.import('vendor/dirtyforms/jquery.dirtyforms.js');
   app.import('vendor/jquery.truncate.js');
+
+  app.import('bower_components/bootstrap-daterangepicker/daterangepicker.js');
 
   return app.toTree();
 };

@@ -1,20 +1,4 @@
-{{! view 'stats/query-form' enableInterval=true}}
-
-{{! view 'stats/drilldown-chart' data=hits_over_time}}
-
-{{#each breadcrumbs}}
-  {{#if linkQuery}}
-    {{#link-to 'stats.drilldown' linkQuery}}{{name}}{{/link-to}} /
-  {{else}}
-    {{name}}
-  {{/if}}
-{{/each}}
-
-<div id="results_table">
-  {{! view 'stats/drilldown-table' model=model}}
-</div>
-<div class="results-table-actions">
-  <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
-</div>
-
-{{! view 'loading-overlay' isLoading=controllers.application.isLoading}}
+{{stats/query-form enableInterval=true start_at=start_at end_at=end_at query=query search=search interval=interval beta_analytics=beta_analytics}}
+{{stats/drilldown/results-chart hitsOverTime=model.hits_over_time}}
+{{stats/drilldown/results-breadcrumbs breadcrumbs=model.breadcrumbs}}
+{{stats/drilldown/results-table results=model.results queryParamValues=queryParamValues allQueryParamValues=allQueryParamValues}}

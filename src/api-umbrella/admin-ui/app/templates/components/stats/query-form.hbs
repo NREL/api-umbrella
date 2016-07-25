@@ -1,23 +1,33 @@
 <form id="filter_form" action="#" method="get" {{action 'submit' on='submit'}}>
-  <div class="row-fluid">
-    <div class="span4">
+  <div class="row">
+    <div class="col-sm-4">
       <a id="filter_toggle" {{action 'toggleFilters' target='view'}}><i class="fa fa-caret-right"></i>{{t 'admin.stats.filter_results'}}</a>
     </div>
-    <div class="span8 filter-times">
-      <label class="checkbox" style="display: inline-block; font-size: 12px; margin: 0px 40px 0px 0px; color: #666; position: relative; top: 2px;">{{! view Ember.Checkbox checked=view.isBetaAnalytics action="toggleBetaAnalytics" target="view"}} Beta Analytics</label>
+    <div class="col-sm-8 filter-times">
+      <label class="checkbox" style="display: inline-block; font-size: 12px; margin: 0px 40px 0px 0px; color: #666; position: relative; top: 2px;">{{one-way-checkbox checked=beta_analytics update=(action (mut beta_analytics))}} Beta Analytics</label>
 
-      {{! #if view.enableInterval}}
-        <div id="interval_buttons" class="btn-group" data-toggle="buttons-radio">
-          <button type="button" class="btn btn-default btn-xs" value="minute" {{action 'clickInterval' 'minute' target='view'}}>{{t 'admin.stats.minute'}}</button>
-          <button type="button" class="btn btn-default btn-xs" value="hour" {{action 'clickInterval' 'hour' target='view'}}>{{t 'admin.stats.hour'}}</button>
-          <button type="button" class="btn btn-default btn-xs" value="day" {{action 'clickInterval' 'day' target='view'}}>{{t 'admin.stats.day'}}</button>
-          <button type="button" class="btn btn-default btn-xs" value="week" {{action 'clickInterval' 'week' target='view'}}>{{t 'admin.stats.week'}}</button>
-          <button type="button" class="btn btn-default btn-xs" value="month" {{action 'clickInterval' 'month' target='view'}}>{{t 'admin.stats.month'}}</button>
+      {{#if enableInterval}}
+        <div id="interval_buttons" class="btn-group" role="group" data-toggle="buttons">
+          <label class="btn btn-default btn-xs">
+            {{one-way-radio name="interval" value=interval option="minute" update=(action (mut interval))}}{{t 'admin.stats.minute'}}
+          </label>
+          <label class="btn btn-default btn-xs">
+            {{one-way-radio name="interval" value=interval option="hour" update=(action (mut interval))}}{{t 'admin.stats.hour'}}
+          </label>
+          <label class="btn btn-default btn-xs">
+            {{one-way-radio name="interval" value=interval option="day" update=(action (mut interval))}}{{t 'admin.stats.day'}}
+          </label>
+          <label class="btn btn-default btn-xs">
+            {{one-way-radio name="interval" value=interval option="week" update=(action (mut interval))}}{{t 'admin.stats.week'}}
+          </label>
+          <label class="btn btn-default btn-xs">
+            {{one-way-radio name="interval" value=interval option="month" update=(action (mut interval))}}{{t 'admin.stats.month'}}
+          </label>
         </div>
-      {{! /if}}
+      {{/if}}
 
       <div id="reportrange" class="pull-right">
-        <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
+        <a class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" href="#">
           <i class="fa fa-calendar fa-lg"></i>
           <span class="text"></span>
           <span class="caret"></span>
@@ -25,16 +35,16 @@
       </div>
     </div>
   </div>
-  <div class="row-fluid">
-    <div class="span12 advanced-filter">
+  <div class="row">
+    <div class="col-sm-12 advanced-filter">
       <div id="filters_ui" style="display: none;">
         <div id="filter_type_builder" class="filter-type">
           <div id="query_builder"></div>
-          <div class="row-fluid">
-            <div class="span6">
-              <button class="btn btn-small" type="submit">{{t 'admin.stats.filter'}}</button>
+          <div class="row">
+            <div class="col-sm-6">
+              <button class="btn btn-default btn-sm" type="submit">{{t 'admin.stats.filter'}}</button>
             </div>
-            <div class="span6 text-right">
+            <div class="col-sm-6 text-right">
               <a {{action 'toggleFilterType' 'advanced' target='view'}} class="filter-type-toggle">{{t 'admin.stats.switch_advanced_filters'}}</a>
             </div>
           </div>
@@ -46,14 +56,14 @@
                 <input type="text" name="search" class="input-xxlarge" placeholder="{{t 'admin.stats.advanced_filters_placeholder'}}" {{bind-attr value='query.params.search'}} />
               </div>
               <div class="full-width-submit">
-                <button class="btn btn-small" type="submit">{{t 'admin.stats.filter'}}</button>
+                <button class="btn btn-default btn-sm" type="submit">{{t 'admin.stats.filter'}}</button>
               </div>
             </div>
-            <div class="row-fluid">
-              <div class="span6">
+            <div class="row">
+              <div class="col-sm-6">
                 <span class="help-block">{{{t 'admin.stats.advanced_filters_tip'}}}</span>
               </div>
-              <div class="span6 text-right">
+              <div class="col-sm-6 text-right">
                 <a {{action 'toggleFilterType' 'builder' target='view'}} class="filter-type-toggle">{{t 'admin.stats.switch_simple_filters'}}</a>
               </div>
             </div>

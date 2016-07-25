@@ -1,22 +1,27 @@
 import Ember from 'ember';
 
-export default Ember.Object.extend(Ember.Evented, {
-  regions: null,
-  map_regions: null,
-}).reopenClass({
+let Map = Ember.Object.extend(Ember.Evented, {
+  hits_over_time: null,
+  stats: null,
+  facets: null,
+  logs: null,
+});
+
+Map.reopenClass({
+  urlRoot: '/admin/stats/map.json',
+
   find(params) {
-    let promise = Ember.Deferred.create();
-
-    $.ajax({
-      url: '/admin/stats/map.json',
-      data: params,
-    }).done(function(data) {
-      let map = Admin.StatsMap.create(data);
-      promise.resolve(map);
-    }).fail(function() {
-      promise.reject();
-    });
-
-    return promise;
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      return $.ajax({
+        url: this.urlRoot,
+        data: params
+      }).then(function(data) {
+        resolve(new Map(data));
+      }, function() {
+        reject();
+      });
+    }.bind(this));
   },
 });
+
+export default Map;

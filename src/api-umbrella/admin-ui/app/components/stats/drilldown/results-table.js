@@ -1,42 +1,40 @@
 import Ember from 'ember';
+import numeral from 'numeral';
 
-export default Ember.View.extend({
-  tagName: 'table',
+export default Ember.Component.extend({
+  session: Ember.inject.service(),
 
-  classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
-
-  didInsertElement: function() {
-    this.$().DataTable({
+  didInsertElement() {
+    this.$().find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
-      data: this.get('model.results'),
+      data: this.get('results'),
       columns: [
         {
           data: 'path',
           title: 'Path',
           defaultContent: '-',
-          render: _.bind(function(name, type, data) {
+          render: function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               if(data.terminal) {
                 return '<i class="fa fa-file-o fa-space-right"></i>' + _.escape(name);
               } else {
-                var link, params;
-                params = _.clone(this.get('controller.query.params'));
+                let params = _.clone(this.get('queryParamValues'));
                 params.prefix = data.descendent_prefix;
-                link = '#/stats/drilldown/' + $.param(params);
+                let link = '#/stats/drilldown?' + $.param(params);
 
                 return '<a href="' + link + '"><i class="fa fa-folder-o fa-space-right"></i>' + _.escape(name) + '</a>';
               }
             }
 
             return name;
-          }, this),
+          }.bind(this),
         },
         {
           data: 'hits',
           title: 'Hits',
           defaultContent: '-',
-          render: function(number, type) {
+          render(number, type) {
             if(type === 'display' && number && number !== '-') {
               return numeral(number).format('0,0');
             }
@@ -48,9 +46,14 @@ export default Ember.View.extend({
     });
   },
 
-  refreshData: function() {
-    var table = this.$().DataTable();
+  refreshData: Ember.observer('results', function() {
+    let table = this.$().find('table').dataTable().api();
     table.clear();
-    table.rows.add(this.get('model.results')).draw();
-  }.observes('model.results'),
+    table.rows.add(this.get('results'));
+    table.draw();
+  }),
+
+  downloadUrl: Ember.computed('allQueryParamValues', function() {
+    return '/admin/stats/users.csv?' + $.param(this.get('allQueryParamValues'));
+  }),
 });

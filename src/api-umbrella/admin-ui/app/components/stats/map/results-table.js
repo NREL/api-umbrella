@@ -1,15 +1,12 @@
 import Ember from 'ember';
+import numeral from 'numeral';
 
-export default Ember.View.extend({
-  tagName: 'table',
-
-  classNames: ['table', 'table-striped', 'table-bordered', 'table-condensed'],
-
+export default Ember.Component.extend({
   didInsertElement: function() {
-    this.$().DataTable({
+    this.$().find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
-      data: this.get('model.regions'),
+      data: this.get('regions'),
       columns: [
         {
           data: 'name',
@@ -17,15 +14,15 @@ export default Ember.View.extend({
           defaultContent: '-',
           render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
-              var link, params;
-              if(this.get('model.region_field') === 'request_ip_city') {
-                params = _.clone(this.get('controller.query.params'));
+              let link;
+              let params = _.clone(this.get('queryParamValues'));
+              if(this.get('regionField') === 'request_ip_city') {
+                delete params.region;
                 params.search = 'request_ip_city:"' + data.id + '"';
-                link = '#/stats/logs/' + $.param(params);
+                link = '#/stats/logs?' + $.param(params);
               } else {
-                params = _.clone(this.get('controller.query.params'));
                 params.region = data.id;
-                link = '#/stats/map/' + $.param(params);
+                link = '#/stats/map?' + $.param(params);
               }
 
               return '<a href="' + link + '">' + _.escape(name) + '</a>';
@@ -50,9 +47,14 @@ export default Ember.View.extend({
     });
   },
 
-  refreshData: function() {
-    var table = this.$().DataTable();
+  refreshData: Ember.observer('regions', function() {
+    var table = this.$().find('table').dataTable().api();
     table.clear();
-    table.rows.add(this.get('model.regions')).draw();
-  }.observes('model.regions'),
+    table.rows.add(this.get('regions'));
+    table.draw();
+  }),
+
+  downloadUrl: Ember.computed('allQueryParamValues', function() {
+    return '/admin/stats/map.csv?' + $.param(this.get('allQueryParamValues'));
+  }),
 });

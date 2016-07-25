@@ -1,22 +1,6 @@
-{{! view 'stats/query-form'}}
-
+{{stats/query-form enableInterval=false start_at=start_at end_at=end_at query=query search=search region=region beta_analytics=beta_analytics}}
 <div id="map_container">
-  {{#each breadcrumbs}}
-    {{#if linkQuery}}
-      {{#link-to 'stats.map' linkQuery}}{{name}}{{/link-to}} /
-    {{else}}
-      {{name}}
-    {{/if}}
-  {{/each}}
-
-  {{! view 'stats/map-geo' model=model}}
+  {{stats/map/results-breadcrumbs breadcrumbs=model.map_breadcrumbs}}
+  {{stats/map/results-map regions=model.map_regions regionField=model.region_field queryParamValues=queryParamValues allQueryParamValues=allQueryParamValues}}
 </div>
-
-<div id="results_table">
-  {{! view 'stats/map-table' model=model}}
-</div>
-<div class="results-table-actions">
-  <a {{bind-attr href='downloadUrl'}}>Download CSV</a>
-</div>
-
-{{! view 'loading-overlay' isLoading=controllers.application.isLoading}}
+{{stats/map/results-table regions=model.regions regionField=model.region_field queryParamValues=queryParamValues allQueryParamValues=allQueryParamValues}}
