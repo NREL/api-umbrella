@@ -75,13 +75,6 @@ ApiUmbrella::Application.routes.draw do
       end
     end
 
-    namespace :config do
-      get "import_export"
-      get "export"
-      post "import_preview"
-      post "import"
-    end
-
     resources :api_users do
       get "page/:page", :action => :index, :on => :collection
     end
