@@ -2,6 +2,7 @@ class Api::V1::WebsiteBackendsController < Api::V1::BaseController
   respond_to :json
 
   skip_after_filter :verify_authorized, :only => [:index]
+  after_filter :verify_policy_scoped, :only => [:index]
 
   def index
     @website_backends = policy_scope(WebsiteBackend).order_by(datatables_sort_array)

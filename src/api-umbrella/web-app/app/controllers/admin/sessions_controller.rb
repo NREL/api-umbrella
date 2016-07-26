@@ -1,5 +1,6 @@
 class Admin::SessionsController < Devise::SessionsController
   before_filter :set_locale
+  skip_after_filter :verify_authorized
 
   def new
   end

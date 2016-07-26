@@ -5,6 +5,8 @@ class Admin::StatsController < Admin::BaseController
 
   before_filter :set_analytics_adapter
   around_filter :set_time_zone
+  skip_after_filter :verify_authorized
+  after_filter :verify_policy_scoped
 
   def index
   end

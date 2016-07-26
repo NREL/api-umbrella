@@ -2,6 +2,7 @@ class Api::V1::ApiScopesController < Api::V1::BaseController
   respond_to :json
 
   skip_after_filter :verify_authorized, :only => [:index]
+  after_filter :verify_policy_scoped, :only => [:index]
 
   def index
     @api_scopes = policy_scope(ApiScope).order_by(datatables_sort_array)

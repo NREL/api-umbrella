@@ -4,6 +4,7 @@ class Api::V1::UsersController < Api::V1::BaseController
   skip_before_filter :authenticate_admin!, :only => [:create]
   before_filter :authenicate_creator_api_key_role, :only => [:create]
   skip_after_filter :verify_authorized, :only => [:index, :create]
+  after_filter :verify_policy_scoped, :only => [:index]
   before_filter :parse_post_for_pseudo_ie_cors, :only => [:create]
 
   def index

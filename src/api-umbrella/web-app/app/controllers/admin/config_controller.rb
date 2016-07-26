@@ -6,9 +6,12 @@ class Admin::ConfigController < Admin::BaseController
   helper_method :simplify_import_data
 
   def import_export
+    authorize(ConfigVersion, :export?)
+    authorize(ConfigVersion, :import?)
   end
 
   def export
+    authorize(ConfigVersion, :export?)
     @published_config = self.class.pretty_dump(ConfigVersion.active_config)
 
     respond_to do |format|
@@ -27,9 +30,11 @@ class Admin::ConfigController < Admin::BaseController
   end
 
   def import_preview
+    authorize(ConfigVersion, :import?)
   end
 
   def import
+    authorize(ConfigVersion, :import?)
     @apis = []
 
     params[:import_new_api_ids] ||= []
@@ -76,7 +81,7 @@ class Admin::ConfigController < Admin::BaseController
       end
 
       flash[:success] = "Successfully imported configuration. Configuration still needs to be published to take effect."
-      redirect_to(admin_config_publish_path)
+      redirect_to(admin_config_import_export_path)
     else
       render(:action => "import_preview")
     end

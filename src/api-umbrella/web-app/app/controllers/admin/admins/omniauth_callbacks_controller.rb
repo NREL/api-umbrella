@@ -1,4 +1,6 @@
 class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksController
+  skip_after_filter :verify_authorized
+
   # For the developer strategy, simply find or create a new admin account with
   # whatever login details they give. This is not for use on production.
   def developer

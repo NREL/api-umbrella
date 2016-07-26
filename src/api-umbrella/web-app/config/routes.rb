@@ -76,9 +76,6 @@ ApiUmbrella::Application.routes.draw do
     end
 
     namespace :config do
-      get "publish", :action => "show"
-      post "publish", :action => "create"
-
       get "import_export"
       get "export"
       post "import_preview"

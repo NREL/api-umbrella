@@ -59,8 +59,10 @@
                   <li><%= link_to(%(<i class="fa fa-gear"></i> #{t("admin.nav.api_backends")}).html_safe, '/admin/#/apis') %></li>
                   <li><%= link_to(%(<i class="fa fa-gear"></i> #{t("admin.nav.website_backends")}).html_safe, '/admin/#/website_backends') %></li>
                   <li><%= link_to(%(<i class="fa fa-upload"></i> #{t("admin.nav.publish_changes")}).html_safe, '/admin/#/config/publish') %></li>
-                  <li class="divider"></li>
-                  <li><%= link_to(%(<i class="fa fa-exchange"></i> #{t("admin.nav.import_export")}).html_safe, admin_config_import_export_path) %></li>
+                  <% if(current_admin.superuser?) %>
+                    <li class="divider"></li>
+                    <li><%= link_to(%(<i class="fa fa-exchange"></i> #{t("admin.nav.import_export")}).html_safe, admin_config_import_export_path) %></li>
+                  <% end %>
                 </ul>
               <% end %>
             <% end %>
