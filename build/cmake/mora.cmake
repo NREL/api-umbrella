@@ -14,7 +14,7 @@ set(GOLANG_SOURCE_DIR ${SOURCE_DIR})
 ExternalProject_Add(
   glide
   DEPENDS golang
-  URL https://github.com/Masterminds/glide/releases/download/${GLIDE_VERSION}/glide-${GLIDE_VERSION}-linux-amd64.tar.gz
+  URL https://github.com/Masterminds/glide/releases/download/v${GLIDE_VERSION}/glide-v${GLIDE_VERSION}-linux-amd64.tar.gz
   URL_HASH MD5=${GLIDE_HASH}
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
