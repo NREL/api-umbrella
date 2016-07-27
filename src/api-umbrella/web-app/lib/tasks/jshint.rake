@@ -36,6 +36,7 @@ begin
       "CommonValidations",
       "currentAdmin",
       "Ember",
+      "enableBetaAnalytics",
       "google",
       "ic",
       "inflection",

@@ -6,7 +6,8 @@
     <%= stylesheet_link_tag "admin" %>
     <%= javascript_tag do %>
       webAdminAjaxApiKey = <%= web_admin_ajax_api_user.api_key.to_json.html_safe %>;
-      currentAdmin = <%= current_admin.attributes.slice("username", "superuser").to_json.html_safe %>
+      currentAdmin = <%= current_admin.attributes.slice("username", "superuser").to_json.html_safe %>;
+      enableBetaAnalytics = <%= (ApiUmbrellaConfig[:analytics][:adapter] == "kylin" || (ApiUmbrellaConfig[:analytics][:outputs] && ApiUmbrellaConfig[:analytics][:outputs].include?("kylin"))).to_json.html_safe  %>;
     <% end %>
     <link href='//fonts.googleapis.com/css?family=Oswald:400,700' rel='stylesheet' type='text/css'>
     <%= javascript_include_tag "admin/locales/#{I18n.locale}" %>

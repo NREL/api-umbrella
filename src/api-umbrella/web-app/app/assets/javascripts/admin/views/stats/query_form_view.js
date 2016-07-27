@@ -3,6 +3,8 @@ Admin.StatsQueryFormView = Ember.View.extend({
 
   enableInterval: false,
 
+  enableBetaAnalytics: enableBetaAnalytics,
+
   datePickerRanges: {
     'Today': [
       moment().startOf('day'),
