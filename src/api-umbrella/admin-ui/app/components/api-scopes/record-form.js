@@ -4,19 +4,18 @@ import Save from 'api-umbrella-admin/mixins/save';
 export default Ember.Component.extend(Save, {
   actions: {
     submit() {
-      this.save({
+      this.saveRecord({
         transitionToRoute: 'api_scopes',
         message: 'Successfully saved the API scope "' + _.escape(this.get('model.name')) + '"',
       });
     },
 
     delete() {
-      bootbox.confirm('Are you sure you want to delete this API scope?', _.bind(function(result) {
-        if(result) {
-          this.get('model').deleteRecord();
-          this.transitionToRoute('api_scopes');
-        }
-      }, this));
+      this.destroyRecord({
+        prompt: 'Are you sure you want to delete the API scope "' + _.escape(this.get('model.name')) + '"?',
+        transitionToRoute: 'api_scopes',
+        message: 'Successfully deleted the API scope "' + _.escape(this.get('model.name')) + '"',
+      });
     },
   },
 });

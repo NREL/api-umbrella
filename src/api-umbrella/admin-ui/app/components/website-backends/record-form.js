@@ -23,19 +23,18 @@ export default Ember.Component.extend(Save, {
 
   actions: {
     submit() {
-      this.save({
+      this.saveRecord({
         transitionToRoute: 'website_backends',
         message: 'Successfully saved the "' + _.escape(this.get('model.frontendHost')) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
 
     delete() {
-      bootbox.confirm('Are you sure you want to delete this website backend?', _.bind(function(result) {
-        if(result) {
-          this.get('model').deleteRecord();
-          this.transitionToRoute('website_backends');
-        }
-      }, this));
+      this.destroyRecord({
+        prompt: 'Are you sure you want to delete the website backend "' + _.escape(this.get('model.frontendHost')) + '"?',
+        transitionToRoute: 'website_backends',
+        message: 'Successfully deleted the "' + _.escape(this.get('model.frontendHost')) + '" website backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+      });
     },
   },
 });

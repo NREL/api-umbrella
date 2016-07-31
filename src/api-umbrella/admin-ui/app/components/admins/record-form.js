@@ -15,19 +15,18 @@ export default Ember.Component.extend(Save, {
 
   actions: {
     submit() {
-      this.save({
+      this.saveRecord({
         transitionToRoute: 'admins',
         message: 'Successfully saved the admin "' + _.escape(this.get('model.username')) + '"',
       });
     },
 
     delete() {
-      bootbox.confirm('Are you sure you want to delete this admin?', _.bind(function(result) {
-        if(result) {
-          this.get('model').deleteRecord();
-          this.transitionToRoute('admins');
-        }
-      }, this));
+      this.destroyRecord({
+        prompt: 'Are you sure you want to delete the admin "' + _.escape(this.get('model.name')) + '"?',
+        transitionToRoute: 'admins',
+        message: 'Successfully deleted the admin "' + _.escape(this.get('model.name')) + '"',
+      });
     },
   },
 });

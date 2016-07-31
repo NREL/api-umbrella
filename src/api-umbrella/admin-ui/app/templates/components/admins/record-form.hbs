@@ -40,16 +40,16 @@
         <button type="submit" id="save_button" class="btn btn-lg btn-primary" data-loading-text="<i class='fa fa-refresh fa-spin'></i> Saving...">Save</button>
       </div>
       <div class="col-sm-6 record-details">
-        {{#if id}}
-          Created: {{format-date createdAt}} by {{creator.username}}<br>
-          Last Updated: {{format-date updatedAt}} by {{updater.username}}<br>
-          Last Login: {{format-date lastSignInAt}} from {{lastSignInIp}} via {{lastSignInProvider}}<br>
-          Logged in: {{signInCount}} times<br>
+        {{#if model.id}}
+          Created: {{format-date model.createdAt}} by {{model.creator.username}}<br>
+          Last Updated: {{format-date model.updatedAt}} by {{model.updater.username}}<br>
+          Last Login: {{format-date model.lastSignInAt}} from {{model.lastSignInIp}} via {{model.lastSignInProvider}}<br>
+          Logged in: {{model.signInCount}} times<br>
         {{/if}}
       </div>
     </div>
-    {{#if id}}
-      <div class="row form-extra-actions">
+    {{#if model.id}}
+      <div class="form-extra-actions">
         <a href="#" class="remove-action" {{action "delete"}}><i class="fa fa-times"></i>Delete Admin</a>
       </div>
     {{/if}}

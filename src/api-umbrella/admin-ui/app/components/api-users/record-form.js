@@ -35,7 +35,7 @@ export default Ember.Component.extend(Save, {
     },
 
     submit() {
-      this.save({
+      this.saveRecord({
         transitionToRoute: 'api_users',
         message(model) {
           let message = 'Successfully saved the user "' + _.escape(model.get('email')) + '"';

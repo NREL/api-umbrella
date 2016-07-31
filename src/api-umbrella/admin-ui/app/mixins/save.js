@@ -1,14 +1,14 @@
 import Ember from 'ember';
 
 export default Ember.Mixin.create({
-  router: Ember.inject.service('router'),
+  routing: Ember.inject.service('-routing'),
 
   scrollToErrors() {
     $('#save_button').button('reset');
     $.scrollTo('#error_messages', { offset: -60, duration: 200 });
   },
 
-  save(options) {
+  saveRecord(options) {
     let button = $('#save_button');
     button.button('loading');
 
@@ -17,7 +17,7 @@ export default Ember.Mixin.create({
         this.set('model.clientErrors', this.get('model.validations.errors'));
         this.scrollToErrors();
       } else {
-        this.get('model').save().then(_.bind(function() {
+        this.get('model').save().then(function() {
           button.button('reset');
           new PNotify({
             type: 'success',
@@ -25,8 +25,8 @@ export default Ember.Mixin.create({
             text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
           });
 
-          this.sendAction('action', options.transitionToRoute);
-        }, this), _.bind(function(response) {
+          this.get('routing').transitionTo(options.transitionToRoute);
+        }.bind(this), function(response) {
           // Set the errors from the server response on a "serverErrors" property
           // for the error-messages component display.
           try {
@@ -36,7 +36,25 @@ export default Ember.Mixin.create({
           }
 
           this.scrollToErrors();
-        }, this));
+        }.bind(this));
+      }
+    }.bind(this));
+  },
+
+  destroyRecord(options) {
+    bootbox.confirm(options.prompt, function(result) {
+      if(result) {
+        this.get('model').destroyRecord().then(function() {
+          new PNotify({
+            type: 'success',
+            title: 'Deleted',
+            text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
+          });
+
+          this.get('routing').transitionTo(options.transitionToRoute);
+        }.bind(this), function(response) {
+          bootbox.alert('Unexpected error deleting record: ' + response.responseText);
+        });
       }
     }.bind(this));
   },

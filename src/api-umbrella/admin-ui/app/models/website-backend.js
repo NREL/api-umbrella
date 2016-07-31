@@ -29,6 +29,10 @@ export default Model.extend(Validations, {
   backendProtocol: attr(),
   serverHost: attr(),
   serverPort: attr('number'),
+  createdAt: attr(),
+  updatedAt: attr(),
+  creator: attr(),
+  updater: attr(),
 }).reopenClass({
   urlRoot: '/api-umbrella/v1/website_backends',
   singlePayloadKey: 'website_backend',

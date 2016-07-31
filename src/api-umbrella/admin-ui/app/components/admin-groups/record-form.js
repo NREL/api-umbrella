@@ -14,19 +14,18 @@ export default Ember.Component.extend(Save, {
 
   actions: {
     submit() {
-      this.save({
+      this.saveRecord({
         transitionToRoute: 'admin_groups',
         message: 'Successfully saved the admin group "' + _.escape(this.get('model.name')) + '"',
       });
     },
 
     delete() {
-      bootbox.confirm('Are you sure you want to delete this admin group?', _.bind(function(result) {
-        if(result) {
-          this.get('model').deleteRecord();
-          this.transitionToRoute('admin_groups');
-        }
-      }, this));
+      this.destroyRecord({
+        prompt: 'Are you sure you want to delete the admin group "' + _.escape(this.get('model.name')) + '"?',
+        transitionToRoute: 'admin_groups',
+        message: 'Successfully deleted the admin group "' + _.escape(this.get('model.name')) + '"',
+      });
     },
   },
 });

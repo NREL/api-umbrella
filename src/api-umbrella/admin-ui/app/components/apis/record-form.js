@@ -15,19 +15,18 @@ export default Ember.Component.extend(Save, {
 
   actions: {
     submit() {
-      this.save({
+      this.saveRecord({
         transitionToRoute: 'apis',
         message: 'Successfully saved the "' + _.escape(this.get('model.name')) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
       });
     },
 
     delete() {
-      bootbox.confirm('Are you sure you want to delete this API backend?', _.bind(function(result) {
-        if(result) {
-          this.get('model').deleteRecord();
-          this.transitionToRoute('apis');
-        }
-      }, this));
+      this.destroyRecord({
+        prompt: 'Are you sure you want to delete the API backend "' + _.escape(this.get('model.name')) + '"?',
+        transitionToRoute: 'apis',
+        message: 'Successfully deleted the "' + _.escape(this.get('model.name')) + '" API backend<br><strong>Note:</strong> Your changes are not yet live. <a href="/admin/#/config/publish">Publish Changes</a> to send your updates live.',
+      });
     },
 
     addUrlMatch() {

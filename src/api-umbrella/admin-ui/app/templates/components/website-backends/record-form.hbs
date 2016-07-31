@@ -14,14 +14,14 @@
         <button type="submit" id="save_button" class="btn btn-lg btn-primary" data-loading-text="<i class='fa fa-refresh fa-spin'></i> Saving...">Save</button>
       </div>
       <div class="col-sm-6 record-details">
-        {{#if id}}
+        {{#if model.id}}
           Created: {{format-date model.createdAt}} by {{model.creator.username}}<br>
           Last Updated: {{format-date model.updatedAt}} by {{model.updater.username}}<br>
         {{/if}}
       </div>
     </div>
     {{#if model.id}}
-      <div class="row form-extra-actions">
+      <div class="form-extra-actions">
         <a href="#" class="remove-action" {{action "delete"}}><i class="fa fa-times"></i>Delete Website Backend</a>
       </div>
     {{/if}}
