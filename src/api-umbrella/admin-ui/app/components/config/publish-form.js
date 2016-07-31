@@ -1,6 +1,8 @@
 import Ember from 'ember';
 
-export default Ember.View.extend({
+export default Ember.Component.extend({
+  routing: Ember.inject.service('-routing'),
+
   didInsertElement: function() {
     this.$submitButton = $('#publish_button');
     this.$toggleCheckboxesLink = $('#toggle_checkboxes');
@@ -62,8 +64,23 @@ export default Ember.View.extend({
     }
   },
 
+  hasChanges: Ember.computed('model.config.apis.new.@each', 'model.config.apis.modified.@each', 'model.config.apis.deleted.@each', 'model.config.website_backends.new.@each', 'model.config.website_backends.modified.@each', 'model.config.website_backends.deleted.@each', function() {
+    let newApis = this.get('model.config.apis.new');
+    let modifiedApis = this.get('model.config.apis.modified');
+    let deletedApis = this.get('model.config.apis.deleted');
+    let newWebsiteBackends = this.get('model.config.website_backends.new');
+    let modifiedWebsiteBackends = this.get('model.config.website_backends.modified');
+    let deletedWebsiteBackends = this.get('model.config.website_backends.deleted');
+
+    if(newApis.length > 0 || modifiedApis.length > 0 || deletedApis.length > 0 || newWebsiteBackends.length > 0 || modifiedWebsiteBackends.length > 0 || deletedWebsiteBackends.length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }),
+
   actions: {
-    toggleAllCheckboxes: function() {
+    toggleAllCheckboxes() {
       var $checkboxes = $('#publish_form :checkbox');
       var $unchecked = $('#publish_form :checkbox').not(':checked');
 
@@ -74,6 +91,41 @@ export default Ember.View.extend({
       }
 
       this.onCheckboxChange();
-    }
-  }
+    },
+
+    publish() {
+      let form = $('#publish_form');
+
+      let button = $('#publish_button');
+      button.button('loading');
+
+      $.ajax({
+        url: '/api-umbrella/v1/config/publish',
+        type: 'POST',
+        data: form.serialize(),
+      }).then(_.bind(function() {
+        button.button('reset');
+        new PNotify({
+          type: 'success',
+          title: 'Published',
+          text: 'Successfully published the configuration<br>Changes should be live in a few seconds...',
+        });
+
+        this.get('routing.router.router').refresh();
+      }, this), function(response) {
+        let message = '<h3>Error</h3>';
+        try {
+          let errors = response.responseJSON.errors;
+          for(let prop in errors) {
+            message += prop + ': ' + errors[prop].join(', ') + '<br>';
+          }
+        } catch(e) {
+          message = 'An unexpected error occurred: ' + response.responseText;
+        }
+
+        button.button('reset');
+        bootbox.alert(message);
+      });
+    },
+  },
 });

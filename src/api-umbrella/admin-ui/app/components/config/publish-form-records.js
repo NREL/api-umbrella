@@ -1,9 +1,9 @@
 import Ember from 'ember';
 
-export default Ember.View.extend({
+export default Ember.Component.extend({
   actions: {
-    toggleConfigDiff: function(id) {
+    toggleConfigDiff(id) {
       $('[data-diff-id=' + id + ']').toggle();
-    }
-  }
+    },
+  },
 });
