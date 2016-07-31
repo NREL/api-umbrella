@@ -4,11 +4,11 @@
 
 .facet-table {
   font-size: 11px;
+  text-align: left;
 
   th,
   td {
-    padding: 2px;
-    line-height: 14px;
+    padding: 2px !important;
   }
 
   th.value,

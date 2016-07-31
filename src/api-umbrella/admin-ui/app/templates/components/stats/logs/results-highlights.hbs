@@ -7,19 +7,13 @@
     <strong>{{format-number stats.total_users format="0,0"}}</strong>
     <small>unique {{inflect "user" stats.total_users}}</small>
 
-    {{! view 'stats/facet-table'
-       data=model.aggregations.users
-       facetTerm='user_email'
-       toggleLabel='view top users'}}
+    {{stats/logs/results-facet-table label="view top users" field="user_email" facets=aggregations.users queryParamValues=queryParamValues}}
   </div>
   <div class="col-sm-3 number-highlight">
     <strong>{{format-number stats.total_ips format="0,0"}}</strong>
     <small>unique ip {{inflect "address" stats.total_ips}}</small>
 
-    {{! view 'stats/facet-table'
-       data=model.aggregations.ips
-       facetTerm='request_ip'
-       toggleLabel='view top ips'}}
+    {{stats/logs/results-facet-table label="view top ips" field="request_ip" facets=aggregations.ips queryParamValues=queryParamValues}}
   </div>
   <div class="col-sm-3 number-highlight">
     <strong>{{format-number stats.average_response_time format="0,0"}} <span class="units">ms</span></strong>
