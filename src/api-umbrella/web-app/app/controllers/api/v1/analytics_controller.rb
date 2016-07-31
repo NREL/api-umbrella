@@ -3,6 +3,7 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
 
   before_filter :set_analytics_adapter
   skip_after_filter :verify_authorized
+  after_filter :verify_policy_scoped
   around_filter :set_time_zone
 
   def drilldown

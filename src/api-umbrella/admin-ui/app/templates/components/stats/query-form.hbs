@@ -4,7 +4,9 @@
       <a id="filter_toggle" {{action 'toggleFilters' target='view'}}><i class="fa fa-caret-right"></i>{{t 'admin.stats.filter_results'}}</a>
     </div>
     <div class="col-sm-8 filter-times">
-      <label class="checkbox" style="display: inline-block; font-size: 12px; margin: 0px 40px 0px 0px; color: #666; position: relative; top: 2px;">{{one-way-checkbox checked=beta_analytics update=(action (mut beta_analytics))}} Beta Analytics</label>
+      {{#if session.data.authenticated.enable_beta_analytics}}
+        <label class="checkbox" style="display: inline-block; font-size: 12px; margin: 0px 40px 0px 0px; color: #666; position: relative; top: 2px;">{{one-way-checkbox checked=beta_analytics update=(action (mut beta_analytics))}} Beta Analytics</label>
+      {{/if}}
 
       {{#if enableInterval}}
         <div id="interval_buttons" class="btn-group" role="group" data-toggle="buttons">

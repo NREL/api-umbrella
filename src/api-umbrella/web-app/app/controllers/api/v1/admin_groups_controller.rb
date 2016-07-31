@@ -2,6 +2,7 @@ class Api::V1::AdminGroupsController < Api::V1::BaseController
   respond_to :json
 
   skip_after_filter :verify_authorized, :only => [:index]
+  after_filter :verify_policy_scoped, :only => [:index]
 
   def index
     @admin_groups = policy_scope(AdminGroup).order_by(datatables_sort_array)

@@ -141,4 +141,22 @@ describe "analytics filter logs", :js => true do
       page.response_headers["Content-Type"].should eql("text/csv")
     end
   end
+
+  describe "beta analytics option" do
+    it "doesn't show the beta analytics option by default" do
+      visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+      page.should_not have_content("Beta Analytics")
+    end
+
+    it "shows the beta analytics toggle if kylin analytics are enabled" do
+      original = ApiUmbrellaConfig[:analytics][:outputs]
+      begin
+        ApiUmbrellaConfig[:analytics][:outputs] = ["kylin"]
+        visit "/admin/#/stats/logs/tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+        page.should have_content("Beta Analytics")
+      ensure
+        ApiUmbrellaConfig[:analytics][:outputs] = original
+      end
+    end
+  end
 end

@@ -1,5 +1,21 @@
 # API Umbrella Change Log
 
+## 0.13.0 (2016-07-30)
+
+This update fixes one security issue and one small bug fix. Upgrading is recommended.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` package using your package manager.
+
+### Security
+
+- **Removed the configuration import/export tool from the admin:** This import/export tool could have presented a security issue if admin accounts with limited privilege scopes existed. These less-privileged admins could have viewed all API backend configuration, including API backends outside of their scoped permissions (however, they would not have been able to change the API backend configuration). Since the import/export tool has not been maintained and has other bugs, it has been removed entirely. If you still have a need for this tool, please [let us know](http://github.com/NREL/api-umbrella/issues/new). ([#272](https://github.com/NREL/api-umbrella/issues/272))
+
+### Fixed
+
+- **Don't show the "Beta Analytics" checkbox by default:** In the admin analytics interface, a "Beta Analytics" checkbox appeared in v0.12, but this should only be shown if the experimental Hadoop/Kylin-based analytics is actually enabled. ([c606261](https://github.com/NREL/api-umbrella/commit/c6062613380329b4cbd0ddfa4598e123e5908920))
+
 ## 0.12.0 (2016-06-30)
 
 This update brings a variety of fixes and new features. A few potential security issues are also addressed. Upgrading is recommended.

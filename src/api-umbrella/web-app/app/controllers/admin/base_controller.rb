@@ -1,5 +1,6 @@
 class Admin::BaseController < ApplicationController
   before_filter :authenticate_admin!
+  after_filter :verify_authorized
   skip_after_filter :verify_authorized, :only => [:empty]
   before_filter :set_locale
 

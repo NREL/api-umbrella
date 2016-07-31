@@ -6,7 +6,8 @@
     <%= stylesheet_link_tag "admin" %>
     <%= javascript_tag do %>
       webAdminAjaxApiKey = <%= web_admin_ajax_api_user.api_key.to_json.html_safe %>;
-      currentAdmin = <%= current_admin.attributes.slice("username", "superuser").to_json.html_safe %>
+      currentAdmin = <%= current_admin.attributes.slice("username", "superuser").to_json.html_safe %>;
+      enableBetaAnalytics = <%= (ApiUmbrellaConfig[:analytics][:adapter] == "kylin" || (ApiUmbrellaConfig[:analytics][:outputs] && ApiUmbrellaConfig[:analytics][:outputs].include?("kylin"))).to_json.html_safe  %>;
     <% end %>
     <link href='//fonts.googleapis.com/css?family=Oswald:400,700' rel='stylesheet' type='text/css'>
     <%= javascript_include_tag "admin/locales/#{I18n.locale}" %>
@@ -59,8 +60,6 @@
                   <li><%= link_to(%(<i class="fa fa-gear"></i> #{t("admin.nav.api_backends")}).html_safe, '/admin/#/apis') %></li>
                   <li><%= link_to(%(<i class="fa fa-gear"></i> #{t("admin.nav.website_backends")}).html_safe, '/admin/#/website_backends') %></li>
                   <li><%= link_to(%(<i class="fa fa-upload"></i> #{t("admin.nav.publish_changes")}).html_safe, '/admin/#/config/publish') %></li>
-                  <li class="divider"></li>
-                  <li><%= link_to(%(<i class="fa fa-exchange"></i> #{t("admin.nav.import_export")}).html_safe, admin_config_import_export_path) %></li>
                 </ul>
               <% end %>
             <% end %>
