@@ -6,80 +6,6 @@ body {
   font-weight: bold;
 }
 
-.crumbs {
-  font-size: 85%;
-  color: #3c4349;
-  font-weight: bold;
-  margin-bottom: 12px;
-}
-
-.crumbs a:link,
-.crumbs a:visited {
-  color: #3c4349;
-}
-
-
-ul.collection-list {
-  margin: 0px;
-}
-
-ul.collection-list li {
-  list-style-type: none;
-  margin-bottom: 10px;
-}
-
-ul.collection-list ul {
-  margin: 10px 0px 10px 40px;
-}
-
-ul.collection-list .collection-item {
-  background-color: #e0e0e3;
-  padding: 8px 16px;
-
-  border-radius: 16px;
-
-  -webkit-box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.2);
-  -moz-box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.2);
-  box-shadow: 1px 1px 0px 0px rgba(0, 0, 0, 0.2);
-}
-
-ul.collection-list .collection-actions {
-  float: right;
-}
-
-.input {
-  margin: 3px 0px;
-}
-
-.input label {
-  font-weight: bold;
-  margin-bottom: 2px;
-}
-
-.hint {
-  display: block;
-  clear: left;
-  color: #777;
-  font-size: 93%;
-  padding-top: 2px;
-}
-
-textarea.editor {
-}
-
-input.fill,
-textarea.fill {
-  width: 100%;
-}
-
-.icon {
-  width: 17px;
-  height: 17px;
-  display: block;
-  float: left;
-  text-indent: -9999px;
-}
-
 .button-actions {
   text-align: right;
   margin-bottom: 16px;
@@ -90,18 +16,6 @@ textarea.fill {
   height: 0px;
   margin: 0px;
   z-index: 999;
-}
-
-.select-mini {
-  font-size: 11px;
-  height: 22px;
-  line-height: 22px;
-  margin-bottom: 0px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-}
-
-#results_table {
 }
 
 #results_table .table th,
@@ -124,7 +38,7 @@ table.table thead .sorting_asc:after,
 table.table thead .sorting_desc:after {
   opacity: 1.0;
   font-family: FontAwesome;
-  color: #ddd;
+  color: $gray-lighter;
   margin-left: 8px;
 }
 
@@ -148,7 +62,7 @@ table.table thead .sorting_desc:after {
 div.dataTables_info {
   padding: 0px;
   font-size: 13px;
-  color: #666;
+  color: $text-color-light;
 }
 
 div.dataTables_paginate {
@@ -162,7 +76,7 @@ div.dataTables_length {
   label {
     float: none;
     font-size: 13px;
-    color: #666;
+    color: $text-color-light;
   }
 
   select {
@@ -184,7 +98,7 @@ div.dataTables_wrapper {
   }
 
   .blockUI {
-    color: #999 !important;
+    color: $gray-light !important;
     border: 1px solid #ddd !important;
     font-size: 32px !important;
     line-height: 60px !important;
@@ -201,32 +115,11 @@ div.dataTables_wrapper {
   margin-top: -30px;
   border: 1px solid #ddd;
   text-align: center;
-  color: #999;
+  color: $gray-light;
   font-size: 32px;
   line-height: 60px;
   background-color: white;
 }
-
-/*
-.control-label {
-  font-weight: bold;
-
-  label {
-    font-weight: bold;
-    display: inline;
-  }
-}
-*/
-
-/*
-.control-group {
-  margin-top: 5px;
-}
-
-.form-horizontal .control-group {
-  margin-bottom: 10px;
-}
-*/
 
 .form-horizontal.condensed .form-group {
   margin-bottom: 5px;
@@ -248,7 +141,7 @@ fieldset.collapsible {
 legend {
   margin-bottom: 2px;
   border-bottom-width: 1px;
-  border-color: #999;
+  border-color: $gray-light;
   margin-left: -12px;
   padding: 6px 10px 3px 2px;
   line-height: 22px;
@@ -261,7 +154,7 @@ legend a {
 
 .fieldset-note {
   font-size: 85%;
-  color: #555;
+  color: $text-color-light;
   margin-bottom: 4px;
 }
 
@@ -306,13 +199,13 @@ fieldset .table {
 .arrow {
   margin-top: 24px;
   text-align: center;
-  color: #999;
+  color: $gray-light;
   font-size: 10px;
   line-height: 10px;
 }
 
 .arrow i {
-  color: #ddd;
+  color: lighten($gray-light, 16%);
 }
 
 .arrow-vertical {
@@ -359,18 +252,6 @@ table input {
   margin-bottom: 0px !important;
 }
 
-/*
-.form-horizontal-wide {
-  .control-label {
-    width: 240px;
-  }
-
-  .controls {
-    margin-left: 260px;
-  }
-}
-*/
-
 legend a:hover {
   text-decoration: none;
 }
@@ -393,21 +274,11 @@ a:hover {
   font-family: $font-family-monospace;
 }
 
-/*
-.selectize-control {
-  width: 100%;
-}
-
-.selectize-dropdown {
-  z-index: 9999;
-}
-*/
-
 .record-details {
   text-align: right;
   font-size: 11px;
   line-height: 13px;
-  color: #777;
+  color: $text-color-lighter;
 }
 
 th.reorder-handle,
@@ -501,7 +372,7 @@ td.reorder-handle {
   text-align: center;
   font-size: 12px;
   font-style: italic;
-  color: #555;
+  color: $text-color-light;
 }
 
 .table th.text-center,
@@ -535,16 +406,6 @@ td.reorder-handle {
   }
 }
 
-/* Pulled from Bootstrap 3. Remove once we upgrade */
-.dropdown-header {
-  display: block;
-  padding: 3px 20px;
-  font-size: 12px;
-  line-height: 1.42857143;
-  color: #777;
-  white-space: nowrap;
-}
-
 .publish-toggle-checkboxes {
   margin: -28px 0px 32px 17px;
   text-align: center;
@@ -557,13 +418,13 @@ td.reorder-handle {
 }
 
 #version_footer .row-fluid {
-  border-top: 1px solid #ddd;
+  border-top: 1px solid $gray-lighter;
   text-align: center;
   margin-top: 3em;
   margin-bottom: 1em;
   padding-top: 1em;
   font-size: 11px;
-  color: #777;
+  color: $text-color-lighter;
 }
 
 // For when we want to submit a form with the enter key, but don't want a real

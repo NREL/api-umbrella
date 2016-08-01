@@ -1,0 +1,14 @@
+$headings-color: $text-color;
+
+$padding-base-vertical: 6px;
+$padding-large-vertical: 10px;
+$modal-inner-padding: 15px;
+
+$navbar-default-bg: lighten($gray-base, 23%);
+$navbar-default-link-hover-bg: darken($navbar-default-bg, 10%);
+$navbar-default-link-active-bg: $navbar-default-link-hover-bg;
+
+$gray-lighter: lighten($gray-base, 85%);
+
+$text-color-light: lighten($text-color, 16%);
+$text-color-lighter: lighten($text-color, 28%);
