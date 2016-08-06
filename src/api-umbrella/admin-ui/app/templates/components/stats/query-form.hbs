@@ -1,7 +1,7 @@
-<form id="filter_form" action="#" method="get" {{action 'submit' on='submit'}}>
+<form id="filter_form" action="#" method="get" {{action "submit" on="submit"}}>
   <div class="row">
     <div class="col-sm-4">
-      <a id="filter_toggle" {{action 'toggleFilters' target='view'}}><i class="fa fa-caret-right"></i>{{t 'admin.stats.filter_results'}}</a>
+      <a id="filter_toggle" {{action "toggleFilters"}}><i class="fa fa-caret-right"></i>{{t "admin.stats.filter_results"}}</a>
     </div>
     <div class="col-sm-8 filter-times">
       {{#if session.data.authenticated.enable_beta_analytics}}
@@ -11,19 +11,19 @@
       {{#if enableInterval}}
         <div id="interval_buttons" class="btn-group" role="group" data-toggle="buttons">
           <label class="btn btn-default btn-xs">
-            {{one-way-radio name="interval" value=interval option="minute" update=(action (mut interval))}}{{t 'admin.stats.minute'}}
+            {{one-way-radio name="interval" value=interval option="minute" update=(action (mut interval))}}{{t "admin.stats.minute"}}
           </label>
           <label class="btn btn-default btn-xs">
-            {{one-way-radio name="interval" value=interval option="hour" update=(action (mut interval))}}{{t 'admin.stats.hour'}}
+            {{one-way-radio name="interval" value=interval option="hour" update=(action (mut interval))}}{{t "admin.stats.hour"}}
           </label>
           <label class="btn btn-default btn-xs">
-            {{one-way-radio name="interval" value=interval option="day" update=(action (mut interval))}}{{t 'admin.stats.day'}}
+            {{one-way-radio name="interval" value=interval option="day" update=(action (mut interval))}}{{t "admin.stats.day"}}
           </label>
           <label class="btn btn-default btn-xs">
-            {{one-way-radio name="interval" value=interval option="week" update=(action (mut interval))}}{{t 'admin.stats.week'}}
+            {{one-way-radio name="interval" value=interval option="week" update=(action (mut interval))}}{{t "admin.stats.week"}}
           </label>
           <label class="btn btn-default btn-xs">
-            {{one-way-radio name="interval" value=interval option="month" update=(action (mut interval))}}{{t 'admin.stats.month'}}
+            {{one-way-radio name="interval" value=interval option="month" update=(action (mut interval))}}{{t "admin.stats.month"}}
           </label>
         </div>
       {{/if}}
@@ -44,41 +44,39 @@
           <div id="query_builder"></div>
           <div class="row">
             <div class="col-sm-6">
-              <button class="btn btn-default btn-sm" type="submit">{{t 'admin.stats.filter'}}</button>
+              <button class="btn btn-default btn-sm" type="submit">{{t "admin.stats.filter"}}</button>
             </div>
             <div class="col-sm-6 text-right">
-              <a {{action 'toggleFilterType' 'advanced' target='view'}} class="filter-type-toggle">{{t 'admin.stats.switch_advanced_filters'}}</a>
+              <a {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
             </div>
           </div>
         </div>
         <div id="filter_type_advanced" class="filter-type" style="display: none;">
           <div id="search_field">
-            <div class="input-append">
-              <div class="full-width-input">
-                <input type="text" name="search" class="input-xxlarge" placeholder="{{t 'admin.stats.advanced_filters_placeholder'}}" {{bind-attr value='query.params.search'}} />
-              </div>
-              <div class="full-width-submit">
-                <button class="btn btn-default btn-sm" type="submit">{{t 'admin.stats.filter'}}</button>
-              </div>
+            <div class="input-group">
+              <input type="text" name="search" class="form-control" placeholder="{{t "admin.stats.advanced_filters_placeholder"}}" value="{{query.params.search}}" />
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="submit">{{t "admin.stats.filter"}}</button>
+              </span>
             </div>
             <div class="row">
               <div class="col-sm-6">
-                <span class="help-block">{{{t 'admin.stats.advanced_filters_tip'}}}</span>
+                <span class="help-block">{{{t "admin.stats.advanced_filters_tip"}}}</span>
               </div>
               <div class="col-sm-6 text-right">
-                <a {{action 'toggleFilterType' 'builder' target='view'}} class="filter-type-toggle">{{t 'admin.stats.switch_simple_filters'}}</a>
+                <a {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
               </div>
             </div>
             <div id="query_syntax_help_content" style="display: none;">
-              <p>{{{t 'admin.stats.advanced_filters_help_content'}}}</p>
-              <p>{{t 'admin.stats.example'}}:</p>
+              <p>{{{t "admin.stats.advanced_filters_help_content"}}}</p>
+              <p>{{t "admin.stats.example"}}:</p>
               <pre>request_method:"POST" AND response_status:[400 TO *]</pre>
-              <p>{{t 'admin.stats.available_fields'}}:</p>
+              <p>{{t "admin.stats.available_fields"}}:</p>
               <table class="table table-condensed query-syntax-help">
                 <thead>
                   <tr>
-                    <th>{{t 'admin.stats.field'}}</th>
-                    <th class="example">{{t 'admin.stats.example'}}</th>
+                    <th>{{t "admin.stats.field"}}</th>
+                    <th class="example">{{t "admin.stats.example"}}</th>
                   </tr>
                 </thead>
                 <tbody>

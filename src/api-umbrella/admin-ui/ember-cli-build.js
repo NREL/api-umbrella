@@ -4,7 +4,12 @@ var EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function(defaults) {
   var app = new EmberApp(defaults, {
-    // Add options here
+    sassOptions: {
+      // The Sass number precision must be increased to 8 for Bootstrap, or
+      // else certain things don't line up:
+      // https://github.com/twbs/bootstrap-sass#sass-number-precision
+      precision: 8,
+    },
   });
 
   // Use `app.import` to add additional libraries to the generated

@@ -25,6 +25,40 @@ export function initialize() {
 
     event.preventDefault();
   });
+
+  $(document).on('click', 'a[rel=popover]', function(event) {
+    $(this).qtip({
+      overwrite: false,
+      show: {
+        event: event.type,
+        ready: true,
+        solo: true,
+      },
+      hide: {
+        event: 'unfocus',
+      },
+      content: {
+        text: function(event) {
+          var target = $(event.target).attr('href');
+          var content = $(target).html();
+          return content;
+        },
+      },
+      style: {
+        classes: 'qtip-bootstrap qtip-wide ' + $(this).data('tooltip-class'),
+      },
+      position: {
+        viewport: false,
+        my: 'top left',
+        at: 'bottom center',
+        adjust: {
+          y: 2,
+        },
+      },
+    }, event);
+
+    event.preventDefault();
+  });
 }
 
 export default {
