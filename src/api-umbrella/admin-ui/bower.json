@@ -2,7 +2,6 @@
   "name": "api-umbrella-admin",
   "dependencies": {
     "ace-builds": "1.2.3",
-    "blockUI": "blockui#*",
     "bootbox": "4.4.0",
     "bootstrap": "3.3.7",
     "bootstrap-daterangepicker": "2.1.24",

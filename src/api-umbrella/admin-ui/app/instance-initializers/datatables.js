@@ -1,8 +1,8 @@
-export function initialize() {
+export function initialize(appInstance) {
   // Defaults for DataTables.
   _.merge($.fn.DataTable.defaults, {
     // Don't show the DataTables processing message. We'll handle the processing
-    // message logic in initComplete with blockui.
+    // message logic in preDrawCallback.
     processing: false,
 
     // Enable global searching.
@@ -21,19 +21,19 @@ export function initialize() {
 
     preDrawCallback() {
       if(!this.customProcessingCallbackSet) {
-        // Use blockui to provide a more obvious processing message the overlays
-        // the entire table (this helps for long tables, where a simple processing
-        // message might appear out of your current view).
+        // Use a custom spinner to provide a more obvious processing message
+        // the overlays the entire table (this helps for long tables, where a
+        // simple processing message might appear out of your current view).
+        // This also standardizes the spinner with other loaders used
+        // throughout the Ember app.
         //
         // Set this early on during pre-draw so that the processing message shows
         // up for the first load.
         $(this).DataTable().on('processing', _.bind(function(event, settings, processing) {
           if(processing) {
-            this.block({
-              message: '<i class="fa fa-spinner fa-spin fa-lg"></i>',
-            });
+            appInstance.lookup('service:busy').show();
           } else {
-            this.unblock();
+            appInstance.lookup('service:busy').hide();
           }
         }, this));
 

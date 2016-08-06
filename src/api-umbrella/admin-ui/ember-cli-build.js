@@ -29,7 +29,6 @@ module.exports = function(defaults) {
   app.import('bower_components/ace-builds/src-noconflict/mode-json.js');
   app.import('bower_components/ace-builds/src-noconflict/mode-xml.js');
   app.import('bower_components/ace-builds/src-noconflict/mode-yaml.js');
-  app.import('bower_components/blockUI/jquery.blockUI.js');
   app.import('bower_components/bootbox/bootbox.js');
   app.import('bower_components/bootstrap-sass/assets/javascripts/bootstrap.js');
   app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.eot', { destDir: 'fonts/bootstrap' });
