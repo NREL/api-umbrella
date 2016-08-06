@@ -26,9 +26,9 @@ const Validations = buildValidations({
 
 export default Model.extend(Validations, {
   frontendHost: attr(),
-  backendProtocol: attr(),
+  backendProtocol: attr('string', { defaultValue: 'http' }),
   serverHost: attr(),
-  serverPort: attr('number'),
+  serverPort: attr('number', { defaultValue: 80 }),
   createdAt: attr(),
   updatedAt: attr(),
   creator: attr(),

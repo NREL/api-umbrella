@@ -14,29 +14,29 @@
         <li class="dropdown nav-analytics">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Analytics <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a href="#/stats/drilldown"><i class="fa fa-sitemap" aria-hidden="true"></i> API Drilldown</a></li>
-            <li><a href="#/stats/logs"><i class="fa fa-signal" aria-hidden="true"></i> Filter Logs</a></li>
-            <li><a href="#/stats/users"><i class="fa fa-user" aria-hidden="true"></i> By Users</a></li>
-            <li><a href="#/stats/map"><i class="fa fa-map-marker" aria-hidden="true"></i> By Location</a></li>
+            <li>{{#link_to "stats.drilldown"}}<i class="fa fa-sitemap" aria-hidden="true"></i> API Drilldown{{/link-to}}</li>
+            <li>{{#link_to "stats.logs"}}<i class="fa fa-signal" aria-hidden="true"></i> Filter Logs{{/link-to}}</li>
+            <li>{{#link_to "stats.users"}}<i class="fa fa-user" aria-hidden="true"></i> By Users{{/link-to}}</li>
+            <li>{{#link_to "stats.map"}}<i class="fa fa-map-marker" aria-hidden="true"></i> By Location{{/link-to}}</li>
           </ul>
         </li>
         <li class="dropdown nav-users">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Users <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a href="#/api_users"><i class="fa fa-user" aria-hidden="true"></i> API Users</a></li>
-            <li><a href="#/admins"><i class="fa fa-user" aria-hidden="true"></i> Admin Accounts</a></li>
+            <li>{{#link_to "api_users"}}<i class="fa fa-user" aria-hidden="true"></i> API Users{{/link-to}}</li>
+            <li>{{#link_to "admins"}}<i class="fa fa-user" aria-hidden="true"></i> Admin Accounts{{/link-to}}</li>
             <li role="separator" class="divider"></li>
             <li role="presentation" class="dropdown-header">Permissions Management</li>
-            <li><a href="#/api_scopes"><i class="fa fa-lock" aria-hidden="true"></i> API Scopes</a></li>
-            <li><a href="#/admin_groups"><i class="fa fa-group" aria-hidden="true"></i> Admin Groups</a></li>
+            <li>{{#link_to "api_scopes"}}<i class="fa fa-lock" aria-hidden="true"></i> API Scopes{{/link-to}}</li>
+            <li>{{#link_to "admin_groups"}}<i class="fa fa-group" aria-hidden="true"></i> Admin Groups{{/link-to}}</li>
           </ul>
         </li>
         <li class="dropdown nav-config">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Configuration <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a href="#/apis"><i class="fa fa-gear" aria-hidden="true"></i> API Backends</a></li>
-            <li><a href="#/website_backends"><i class="fa fa-gear" aria-hidden="true"></i> Website Backends</a></li>
-            <li><a href="#/config/publish"><i class="fa fa-upload" aria-hidden="true"></i> Publish Changes</a></li>
+            <li>{{#link-to "apis"}}<i class="fa fa-gear" aria-hidden="true"></i> API Backends{{/link-to}}</li>
+            <li>{{#link-to "website_backends"}}<i class="fa fa-gear" aria-hidden="true"></i> Website Backends{{/link-to}}</li>
+            <li>{{#link-to "config.publish"}}<i class="fa fa-upload" aria-hidden="true"></i> Publish Changes{{/link-to}}</li>
           </ul>
         </li>
       </ul>
@@ -44,7 +44,7 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-gear" aria-hidden="true"></i> <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li><a href="#/admins/{{session.data.authenticated.admin.id}}/edit">My Account</a></li>
+            <li>{{#link_to "admins.edit" session.data.authenticated.admin.id}}My Account{{/link-to}}</li>
             <li><a href="/admin/logout">Logout</a></li>
           </ul>
         </li>

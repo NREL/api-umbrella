@@ -33,10 +33,10 @@ const Validations = buildValidations({
 export default Model.extend(Validations, {
   name: attr(),
   sortOrder: attr('number'),
-  backendProtocol: attr(),
+  backendProtocol: attr('string', { defaultValue: 'http' }),
   frontendHost: attr(),
   backendHost: attr(),
-  balanceAlgorithm: attr(),
+  balanceAlgorithm: attr('string', { defaultValue: 'least_conn' }),
   createdAt: attr(),
   updatedAt: attr(),
   creator: attr(),

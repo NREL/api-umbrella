@@ -1,6 +1,6 @@
-import Base from './base';
+import Form from './form';
 
-export default Base.extend({
+export default Form.extend({
   model() {
     return this.get('store').createRecord('admin-group');
   },
