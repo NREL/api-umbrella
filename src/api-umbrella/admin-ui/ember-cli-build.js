@@ -67,8 +67,8 @@ module.exports = function(defaults) {
   app.import('bower_components/jquery-ui/ui/widget.js');
   app.import('bower_components/jquery-ui/ui/widgets/mouse.js');
   app.import('bower_components/jquery-ui/ui/widgets/sortable.js');
+  app.import('bower_components/tbasse-jquery-truncate/jquery.truncate.js');
   app.import('vendor/dirtyforms/jquery.dirtyforms.js');
-  app.import('vendor/jquery.truncate.js');
 
   app.import('bower_components/bootstrap-daterangepicker/daterangepicker.js');
 

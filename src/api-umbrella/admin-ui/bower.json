@@ -26,6 +26,7 @@
     "pnotify": "3.0.0",
     "polyglot": "2.0.0",
     "qtip2": "2.2.1",
-    "selectize": "selectize/selectize.js#v0.12.2"
+    "selectize": "selectize/selectize.js#v0.12.2",
+    "tbasse-jquery-truncate": "#2247c21d70591a516d9a484aaba83db0a908e32f"
   }
 }
