@@ -25,10 +25,14 @@ module.exports = function(defaults) {
   // please specify an object with the list of modules as keys
   // along with the exports of each module as its value.
 
-  app.import('bower_components/ace-builds/src-noconflict/ace.js');
-  app.import('bower_components/ace-builds/src-noconflict/mode-json.js');
-  app.import('bower_components/ace-builds/src-noconflict/mode-xml.js');
-  app.import('bower_components/ace-builds/src-noconflict/mode-yaml.js');
+  // Prepend Ace before Ember, or else the "define" method from Ember's
+  // loader.js conflicts with Ace after these changes in Ace v1.2.4:
+  // https://github.com/ajaxorg/ace/pull/2914
+  app.import('bower_components/ace-builds/src-noconflict/mode-json.js', { prepend: true });
+  app.import('bower_components/ace-builds/src-noconflict/mode-xml.js', { prepend: true });
+  app.import('bower_components/ace-builds/src-noconflict/mode-yaml.js', { prepend: true });
+  app.import('bower_components/ace-builds/src-noconflict/ace.js', { prepend: true });
+
   app.import('bower_components/bootbox/bootbox.js');
   app.import('bower_components/bootstrap-sass/assets/javascripts/bootstrap.js');
   app.import('bower_components/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.eot', { destDir: 'fonts/bootstrap' });
