@@ -1,6 +1,5 @@
 import Ember from 'ember';
 import Model from 'ember-data/model';
-import UnloadAfterSave from 'api-umbrella-admin/mixins/unload-after-save';
 import attr from 'ember-data/attr';
 import { belongsTo, hasMany } from 'ember-data/relationships';
 import { validator, buildValidations } from 'ember-cp-validations';
@@ -31,7 +30,7 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, UnloadAfterSave, {
+export default Model.extend(Validations, {
   name: attr(),
   sortOrder: attr('number'),
   backendProtocol: attr('string', { defaultValue: 'http' }),

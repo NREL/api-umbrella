@@ -1,6 +1,5 @@
 import Ember from 'ember';
 import Model from 'ember-data/model';
-import UnloadAfterSave from 'api-umbrella-admin/mixins/unload-after-save';
 import attr from 'ember-data/attr';
 import { belongsTo } from 'ember-data/relationships';
 import { validator, buildValidations } from 'ember-cp-validations';
@@ -11,7 +10,7 @@ const Validations = buildValidations({
   email: validator('presence', true),
 });
 
-export default Model.extend(Validations, UnloadAfterSave, {
+export default Model.extend(Validations, {
   apiKey: attr(),
   apiKeyHidesAt: attr(),
   apiKeyPreview: attr(),
