@@ -1,7 +1,7 @@
 import Ember from 'ember';
 
 export default Ember.Component.extend({
-  canShoErrors: false,
+  canShowErrors: false,
 
   fieldNameDidChange: Ember.on('init', Ember.observer('fieldName', function() {
     let fieldName = this.get('fieldName');
@@ -32,7 +32,20 @@ export default Ember.Component.extend({
     }
   }),
 
+  // Don't show errors until the field has been unfocused. This prevents all
+  // the inline errors from showing up on initial render.
   focusOut() {
     this.set('canShowErrors', true);
   },
+
+  // Anytime the model changes, reset the error display so errors aren't
+  // displayed until the field is unfocused again.
+  //
+  // This helps handle modals where the same form might be reused multiple
+  // times. Without this, errors would show up immediately the second time the
+  // modal is opened if all the fields were unfocused the first time the modal
+  // was opened.
+  hideErrorsOnModelChange: Ember.observer('model', function() {
+    this.set('canShowErrors', false);
+  }),
 });
