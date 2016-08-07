@@ -16,16 +16,16 @@ const Validations = buildValidations({
   backendHost: [
     validator('presence', {
       presence: true,
-      disabled(model) {
-        return (model.get('frontendHost') && model.get('frontendHost')[0] === '*');
-      },
+      disabled: Ember.computed('model.frontendHost', function() {
+        return (this.get('model.frontendHost') && this.get('model.frontendHost')[0] === '*');
+      }),
     }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
       message: I18n.t('errors.messages.invalid_host_format'),
-      disabled(model) {
-        return !model.get('backendHost');
-      },
+      disabled: Ember.computed('model.backendHost', function() {
+        return !this.get('model.backendHost');
+      }),
     }),
   ],
 });
