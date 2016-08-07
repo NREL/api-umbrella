@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import Model from 'ember-data/model';
+import UnloadAfterSave from 'api-umbrella-admin/mixins/unload-after-save';
 import attr from 'ember-data/attr';
 import { belongsTo, hasMany } from 'ember-data/relationships';
 import { validator, buildValidations } from 'ember-cp-validations';
@@ -30,7 +31,7 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
+export default Model.extend(Validations, UnloadAfterSave, {
   name: attr(),
   sortOrder: attr('number'),
   backendProtocol: attr('string', { defaultValue: 'http' }),
@@ -66,16 +67,6 @@ export default Model.extend(Validations, {
   exampleOutgoingUrlRoot: Ember.computed('backendHost', function() {
     return 'http://' + (this.get('backendHost') || this.get('frontendHost') || '');
   }),
-
-  didUpdate() {
-    // Clear the cached roles on save, so the list of available roles is always
-    // correct for subsequent form renderings in this current session.
-    this.get('store').unloadAll('api-user-role');
-  },
-
-  didCreate() {
-    this.didUpdate();
-  },
 }).reopenClass({
   urlRoot: '/api-umbrella/v1/apis',
   singlePayloadKey: 'api',
