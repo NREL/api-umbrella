@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import Sortable from 'api-umbrella-admin/mixins/sortable';
+import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
 
 export default Ember.Component.extend(Sortable, {
   store: Ember.inject.service(),

@@ -1,4 +1,4 @@
-import { htmlSafe } from 'api-umbrella-admin/helpers/html-safe';
+import { htmlSafe } from 'api-umbrella-admin-ui/helpers/html-safe';
 import { module, test } from 'qunit';
 
 module('Unit | Helper | html safe');

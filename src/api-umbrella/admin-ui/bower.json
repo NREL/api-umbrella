@@ -1,5 +1,5 @@
 {
-  "name": "api-umbrella-admin",
+  "name": "api-umbrella-admin-ui",
   "dependencies": {
     "ace-builds": "1.2.4",
     "bootbox": "4.4.0",

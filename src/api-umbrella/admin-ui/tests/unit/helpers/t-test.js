@@ -1,4 +1,4 @@
-import { t } from 'api-umbrella-admin/helpers/t';
+import { t } from 'api-umbrella-admin-ui/helpers/t';
 import { module, test } from 'qunit';
 
 module('Unit | Helper | t');

@@ -1,4 +1,4 @@
-import dataTablesHelpers from 'api-umbrella-admin/utils/data-tables-helpers';
+import dataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import { module, test } from 'qunit';
 
 module('Unit | Utility | data tables helpers');

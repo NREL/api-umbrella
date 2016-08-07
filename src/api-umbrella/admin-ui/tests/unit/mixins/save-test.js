@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import SaveMixin from 'api-umbrella-admin/mixins/save';
+import SaveMixin from 'api-umbrella-admin-ui/mixins/save';
 import { module, test } from 'qunit';
 
 module('Unit | Mixin | save');

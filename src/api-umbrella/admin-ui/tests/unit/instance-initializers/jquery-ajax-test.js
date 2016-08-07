@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import { initialize } from 'api-umbrella-admin/instance-initializers/jquery-ajax';
+import { initialize } from 'api-umbrella-admin-ui/instance-initializers/jquery-ajax';
 import { module, test } from 'qunit';
 import destroyApp from '../../helpers/destroy-app';
 

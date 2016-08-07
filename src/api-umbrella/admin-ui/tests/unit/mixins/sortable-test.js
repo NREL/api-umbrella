@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import SortableMixin from 'api-umbrella-admin/mixins/sortable';
+import SortableMixin from 'api-umbrella-admin-ui/mixins/sortable';
 import { module, test } from 'qunit';
 
 module('Unit | Mixin | sortable');

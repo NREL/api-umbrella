@@ -1,4 +1,4 @@
-import { inflect } from 'api-umbrella-admin/helpers/inflect';
+import { inflect } from 'api-umbrella-admin-ui/helpers/inflect';
 import { module, test } from 'qunit';
 
 module('Unit | Helper | inflect');

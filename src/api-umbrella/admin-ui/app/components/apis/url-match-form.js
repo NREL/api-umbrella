@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import BufferedProxy from 'ember-buffered-proxy/proxy';
-import UrlMatch from 'api-umbrella-admin/models/api/url-match';
+import UrlMatch from 'api-umbrella-admin-ui/models/api/url-match';
 
 export default Ember.Component.extend({
   openModal: false,

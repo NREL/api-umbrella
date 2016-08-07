@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import InflectionsInitializer from 'api-umbrella-admin/initializers/inflections';
+import InflectionsInitializer from 'api-umbrella-admin-ui/initializers/inflections';
 import { module, test } from 'qunit';
 
 let application;

@@ -1,4 +1,4 @@
-import { guidFor } from 'api-umbrella-admin/helpers/guid-for';
+import { guidFor } from 'api-umbrella-admin-ui/helpers/guid-for';
 import { module, test } from 'qunit';
 
 module('Unit | Helper | guid for');

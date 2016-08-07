@@ -1,4 +1,4 @@
-import { formatDate } from 'api-umbrella-admin/helpers/format-date';
+import { formatDate } from 'api-umbrella-admin-ui/helpers/format-date';
 import { module, test } from 'qunit';
 
 module('Unit | Helper | format date');

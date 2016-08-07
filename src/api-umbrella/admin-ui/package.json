@@ -1,7 +1,7 @@
 {
-  "name": "api-umbrella-admin",
+  "name": "api-umbrella-admin-ui",
   "version": "0.0.0",
-  "description": "Small description for api-umbrella-admin goes here",
+  "description": "Small description for api-umbrella-admin-ui goes here",
   "private": true,
   "directories": {
     "doc": "doc",

@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import Save from 'api-umbrella-admin/mixins/save';
+import Save from 'api-umbrella-admin-ui/mixins/save';
 
 export default Ember.Component.extend(Save, {
   session: Ember.inject.service(),

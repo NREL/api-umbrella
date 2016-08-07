@@ -1,5 +1,5 @@
 import Base from './base';
-import StatsMap from 'api-umbrella-admin/models/stats/map';
+import StatsMap from 'api-umbrella-admin-ui/models/stats/map';
 
 export default Base.extend({
   model(params) {

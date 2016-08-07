@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import BufferedProxy from 'ember-buffered-proxy/proxy';
-import Server from 'api-umbrella-admin/models/api/server';
+import Server from 'api-umbrella-admin-ui/models/api/server';
 
 export default Ember.Component.extend({
   openModal: false,

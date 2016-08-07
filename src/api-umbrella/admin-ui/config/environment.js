@@ -2,7 +2,7 @@
 
 module.exports = function(environment) {
   var ENV = {
-    modulePrefix: 'api-umbrella-admin',
+    modulePrefix: 'api-umbrella-admin-ui',
     environment: environment,
     baseURL: '/',
     locationType: 'hash',

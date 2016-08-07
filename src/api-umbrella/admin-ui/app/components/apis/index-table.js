@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import DataTablesHelpers from 'api-umbrella-admin/utils/data-tables-helpers';
+import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 
 export default Ember.Component.extend({
   reorderActive: false,

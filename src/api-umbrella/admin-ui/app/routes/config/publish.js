@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
-import ConfigPendingChanges from 'api-umbrella-admin/models/config-pending-changes';
+import ConfigPendingChanges from 'api-umbrella-admin-ui/models/config-pending-changes';
 
 export default Ember.Route.extend(AuthenticatedRouteMixin, {
   model() {
