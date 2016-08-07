@@ -3,7 +3,7 @@
 
   {{#if model.isRateLimitModeCustom}}
     {{#form-fields/field-wrapper style=(if style style "horizontal")}}
-      <table class="table table-striped table-condensed table-small small-form custom-rate-limits-table">
+      <table class="table table-striped table-condensed table-small custom-rate-limits-table">
         <thead>
           <tr>
             <th>Duration</th>
@@ -27,18 +27,18 @@
             {{#each model.rateLimits as |rateLimit|}}
               <tr class="form-inline">
                 <td>
-                  {{input type="text" value=rateLimit.durationInUnits class="form-control input-sm rate-limit-duration-in-units"}}
+                  {{input type="text" value=rateLimit.durationInUnits class="form-control input-xs rate-limit-duration-in-units"}}
                 </td>
                 <td style="text-align: left;">
-                  {{select-menu value=rateLimit.durationUnits action=(action (mut rateLimit.durationUnits)) options=rateLimitDurationUnitOptions inputClass="form-control input-sm rate-limit-duration-units"}}
+                  {{select-menu value=rateLimit.durationUnits action=(action (mut rateLimit.durationUnits)) options=rateLimitDurationUnitOptions inputClass="form-control input-xs rate-limit-duration-units"}}
                 </td>
                 <td>
-                  {{select-menu value=rateLimit.limitBy action=(action (mut rateLimit.limitBy)) options=rateLimitLimitByOptions inputClass="form-control input-sm rate-limit-limit-by"}}
+                  {{select-menu value=rateLimit.limitBy action=(action (mut rateLimit.limitBy)) options=rateLimitLimitByOptions inputClass="form-control input-xs rate-limit-limit-by"}}
                 </td>
                 <td>
                   <div class="input-group">
-                    {{input type="text" value=rateLimit.limit class="form-control input-sm rate-limit-limit"}}
-                    <span class="input-group-addon input-sm">requests</span>
+                    {{input type="text" value=rateLimit.limit class="form-control input-xs rate-limit-limit"}}
+                    <span class="input-group-addon input-xs">requests</span>
                   </div>
                 </td>
                 <td class="text-center">

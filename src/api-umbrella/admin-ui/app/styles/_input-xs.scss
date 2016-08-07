@@ -1,0 +1,5 @@
+$padding-xs-vertical: 3px;
+$padding-xs-horizontal: 5px;
+$input-height-xs: (floor($font-size-small * $line-height-small) + ($padding-xs-vertical * 2) + 2) !default;
+
+@include input-size('.input-xs', $input-height-xs, $padding-xs-vertical, $padding-xs-horizontal, $font-size-small, $line-height-small, $input-border-radius-small);
