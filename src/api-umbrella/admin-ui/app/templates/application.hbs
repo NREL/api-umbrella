@@ -14,21 +14,21 @@
         <li class="dropdown nav-analytics">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Analytics <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li>{{#link_to "stats.drilldown"}}<i class="fa fa-sitemap" aria-hidden="true"></i> API Drilldown{{/link-to}}</li>
-            <li>{{#link_to "stats.logs"}}<i class="fa fa-signal" aria-hidden="true"></i> Filter Logs{{/link-to}}</li>
-            <li>{{#link_to "stats.users"}}<i class="fa fa-user" aria-hidden="true"></i> By Users{{/link-to}}</li>
-            <li>{{#link_to "stats.map"}}<i class="fa fa-map-marker" aria-hidden="true"></i> By Location{{/link-to}}</li>
+            <li>{{#link-to "stats.drilldown"}}<i class="fa fa-sitemap" aria-hidden="true"></i> API Drilldown{{/link-to}}</li>
+            <li>{{#link-to "stats.logs"}}<i class="fa fa-signal" aria-hidden="true"></i> Filter Logs{{/link-to}}</li>
+            <li>{{#link-to "stats.users"}}<i class="fa fa-user" aria-hidden="true"></i> By Users{{/link-to}}</li>
+            <li>{{#link-to "stats.map"}}<i class="fa fa-map-marker" aria-hidden="true"></i> By Location{{/link-to}}</li>
           </ul>
         </li>
         <li class="dropdown nav-users">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Users <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li>{{#link_to "api_users"}}<i class="fa fa-user" aria-hidden="true"></i> API Users{{/link-to}}</li>
-            <li>{{#link_to "admins"}}<i class="fa fa-user" aria-hidden="true"></i> Admin Accounts{{/link-to}}</li>
+            <li>{{#link-to "api_users"}}<i class="fa fa-user" aria-hidden="true"></i> API Users{{/link-to}}</li>
+            <li>{{#link-to "admins"}}<i class="fa fa-user" aria-hidden="true"></i> Admin Accounts{{/link-to}}</li>
             <li role="separator" class="divider"></li>
             <li role="presentation" class="dropdown-header">Permissions Management</li>
-            <li>{{#link_to "api_scopes"}}<i class="fa fa-lock" aria-hidden="true"></i> API Scopes{{/link-to}}</li>
-            <li>{{#link_to "admin_groups"}}<i class="fa fa-group" aria-hidden="true"></i> Admin Groups{{/link-to}}</li>
+            <li>{{#link-to "api_scopes"}}<i class="fa fa-lock" aria-hidden="true"></i> API Scopes{{/link-to}}</li>
+            <li>{{#link-to "admin_groups"}}<i class="fa fa-group" aria-hidden="true"></i> Admin Groups{{/link-to}}</li>
           </ul>
         </li>
         <li class="dropdown nav-config">
@@ -44,7 +44,7 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-gear" aria-hidden="true"></i> <span class="caret"></span></a>
           <ul class="dropdown-menu">
-            <li>{{#link_to "admins.edit" session.data.authenticated.admin.id}}My Account{{/link-to}}</li>
+            <li>{{#link-to "admins.edit" session.data.authenticated.admin.id}}My Account{{/link-to}}</li>
             <li><a href="/admin/logout">Logout</a></li>
           </ul>
         </li>
