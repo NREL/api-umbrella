@@ -16,13 +16,13 @@ export default Base.extend({
         } else {
           Ember.run(null, reject);
         }
-      }.bind(this), function(xhr) {
+      }.bind(this), function() {
         Ember.run(null, reject);
       });
     }.bind(this));
   },
 
-  invalidate(data) {
+  invalidate() {
   },
 
   _validate(data) {

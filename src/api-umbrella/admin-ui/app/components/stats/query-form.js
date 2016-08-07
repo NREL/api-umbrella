@@ -29,10 +29,10 @@ export default Ember.Component.extend({
     'Last Month': [
       moment().subtract(1, 'month').startOf('month'),
       moment().subtract(1, 'month').endOf('month'),
-    ]
+    ],
   },
 
-  didInsertElement: function() {
+  didInsertElement() {
     this.updateInterval();
     this.updateDateRange();
 
@@ -42,7 +42,7 @@ export default Ember.Component.extend({
       endDate: moment(this.get('end_at'), 'YYYY-MM-DD'),
     }, _.bind(this.handleDateRangeChange, this));
 
-    var stringOperators = [
+    let stringOperators = [
       'begins_with',
       'not_begins_with',
       'equal',
@@ -53,14 +53,14 @@ export default Ember.Component.extend({
       'is_not_null',
     ];
 
-    var selectOperators = [
+    let selectOperators = [
       'equal',
       'not_equal',
       'is_null',
       'is_not_null',
     ];
 
-    var numberOperators = [
+    let numberOperators = [
       'equal',
       'not_equal',
       'less',
@@ -72,13 +72,13 @@ export default Ember.Component.extend({
       'is_not_null',
     ];
 
-    var $queryBuilder = $('#query_builder').queryBuilder({
+    let $queryBuilder = $('#query_builder').queryBuilder({
       plugins: {
         'filter-description': {
           icon: 'fa fa-info-circle',
           mode: 'bootbox',
         },
-        'bt-tooltip-errors': null
+        'bt-tooltip-errors': null,
       },
       allow_empty: true,
       allow_groups: false,
@@ -260,8 +260,8 @@ export default Ember.Component.extend({
       ],
     });
 
-    var query = this.get('query');
-    var rules;
+    let query = this.get('query');
+    let rules;
     if(query) {
       rules = JSON.parse(query);
     }
@@ -280,8 +280,8 @@ export default Ember.Component.extend({
   },
 
   updateQueryBuilderRules: function() {
-    var query = this.get('query');
-    var rules;
+    let query = this.get('query');
+    let rules;
     if(query) {
       rules = JSON.parse(query);
     }
@@ -294,18 +294,18 @@ export default Ember.Component.extend({
   }.observes('query'),
 
   updateInterval: function() {
-    var interval = this.get('interval');
+    let interval = this.get('interval');
     $('#interval_buttons').find('button[value="' + interval + '"]').button('toggle');
   }.observes('interval'),
 
   updateDateRange: function() {
-    var start = moment(this.get('start_at'));
-    var end = moment(this.get('end_at'));
+    let start = moment(this.get('start_at'));
+    let end = moment(this.get('end_at'));
 
     $('#reportrange span.text').html(start.format('MMM D, YYYY') + ' - ' + end.format('MMM D, YYYY'));
   }.observes('start_at', 'end_at'),
 
-  handleDateRangeChange: function(start, end) {
+  handleDateRangeChange(start, end) {
     this.setProperties({
       'start_at': start.format('YYYY-MM-DD'),
       'end_at': end.format('YYYY-MM-DD'),
@@ -313,9 +313,9 @@ export default Ember.Component.extend({
   },
 
   actions: {
-    toggleFilters: function() {
-      var $container = $('#filters_ui');
-      var $icon = $('#filter_toggle .fa');
+    toggleFilters() {
+      let $container = $('#filters_ui');
+      let $icon = $('#filter_toggle .fa');
       if($container.is(':visible')) {
         $icon.addClass('fa-caret-right');
         $icon.removeClass('fa-caret-down');
@@ -327,12 +327,12 @@ export default Ember.Component.extend({
       $container.slideToggle(100);
     },
 
-    toggleFilterType: function(type) {
+    toggleFilterType(type) {
       $('.filter-type').hide();
       $('#filter_type_' + type).show();
     },
 
-    clickInterval: function(interval) {
+    clickInterval(interval) {
       this.set('interval', interval);
     },
   },

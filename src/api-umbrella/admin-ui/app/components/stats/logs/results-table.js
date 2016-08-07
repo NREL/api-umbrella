@@ -19,7 +19,7 @@ export default Ember.Component.extend({
         this.$().find('td').truncate({
           width: 400,
           addtitle: true,
-          addclass: 'truncated'
+          addclass: 'truncated',
         });
 
         this.$().find('.truncated').qtip({
@@ -28,13 +28,13 @@ export default Ember.Component.extend({
           },
           hide: {
             fixed: true,
-            delay: 200
+            delay: 200,
           },
           position: {
             viewport: false,
             my: 'bottom center',
-            at: 'top center'
-          }
+            at: 'top center',
+          },
         });
       }, this),
       order: [[0, 'desc']],
@@ -120,7 +120,7 @@ export default Ember.Component.extend({
           data: 'response_time',
           title: 'Response Time',
           defaultContent: '-',
-          render: function(time, type) {
+          render(time, type) {
             if(type === 'display' && time && time !== '-') {
               return time + ' ms';
             }
@@ -170,7 +170,7 @@ export default Ember.Component.extend({
           defaultContent: '-',
           render: DataTablesHelpers.renderEscaped,
         },
-      ]
+      ],
     });
   },
 

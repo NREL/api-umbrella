@@ -3,12 +3,12 @@ import Ember from 'ember';
 export default Ember.Component.extend({
   routing: Ember.inject.service('-routing'),
 
-  didInsertElement: function() {
+  didInsertElement() {
     this.$submitButton = $('#publish_button');
     this.$toggleCheckboxesLink = $('#toggle_checkboxes');
     $('#publish_form').on('change', ':checkbox', _.bind(this.onCheckboxChange, this));
 
-    var $checkboxes = $('#publish_form :checkbox');
+    let $checkboxes = $('#publish_form :checkbox');
     if($checkboxes.length === 1) {
       $checkboxes.prop('checked', true);
     }
@@ -16,20 +16,20 @@ export default Ember.Component.extend({
     this.onCheckboxChange();
 
     this.$().find('.diff-active-yaml').each(function() {
-      var activeYaml = $(this).text();
-      var pendingYaml = $(this).siblings('.diff-pending-yaml').text();
+      let activeYaml = $(this).text();
+      let pendingYaml = $(this).siblings('.diff-pending-yaml').text();
 
-      var diff = JsDiff.diffWords(activeYaml, pendingYaml);
+      let diff = JsDiff.diffWords(activeYaml, pendingYaml);
 
-      var fragment = document.createDocumentFragment();
-      for(var i = 0; i < diff.length; i++) {
+      let fragment = document.createDocumentFragment();
+      for(let i = 0; i < diff.length; i++) {
         if(diff[i].added && diff[i + 1] && diff[i + 1].removed) {
-          var swap = diff[i];
+          let swap = diff[i];
           diff[i] = diff[i + 1];
           diff[i + 1] = swap;
         }
 
-        var node;
+        let node;
         if(diff[i].removed) {
           node = document.createElement('del');
           node.appendChild(document.createTextNode(diff[i].value));
@@ -43,20 +43,20 @@ export default Ember.Component.extend({
         fragment.appendChild(node);
       }
 
-      var diffOutput = $(this).siblings('.config-diff');
+      let diffOutput = $(this).siblings('.config-diff');
       diffOutput.html(fragment);
     });
   },
 
-  onCheckboxChange: function() {
-    var $unchecked = $('#publish_form :checkbox:not(:checked)');
+  onCheckboxChange() {
+    let $unchecked = $('#publish_form :checkbox:not(:checked)');
     if($unchecked.length > 0) {
       this.$toggleCheckboxesLink.text(this.$toggleCheckboxesLink.data('check-all'));
     } else {
       this.$toggleCheckboxesLink.text(this.$toggleCheckboxesLink.data('uncheck-all'));
     }
 
-    var $checked = $('#publish_form :checkbox:checked');
+    let $checked = $('#publish_form :checkbox:checked');
     if($checked.length > 0) {
       this.$submitButton.prop('disabled', false);
     } else {
@@ -81,8 +81,8 @@ export default Ember.Component.extend({
 
   actions: {
     toggleAllCheckboxes() {
-      var $checkboxes = $('#publish_form :checkbox');
-      var $unchecked = $('#publish_form :checkbox').not(':checked');
+      let $checkboxes = $('#publish_form :checkbox');
+      let $unchecked = $('#publish_form :checkbox').not(':checked');
 
       if($unchecked.length > 0) {
         $checkboxes.prop('checked', true);

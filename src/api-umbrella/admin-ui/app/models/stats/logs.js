@@ -14,7 +14,7 @@ Logs.reopenClass({
     return new Ember.RSVP.Promise(function(resolve, reject) {
       return $.ajax({
         url: this.urlRoot,
-        data: params
+        data: params,
       }).then(function(data) {
         resolve(new Logs(data));
       }, function() {

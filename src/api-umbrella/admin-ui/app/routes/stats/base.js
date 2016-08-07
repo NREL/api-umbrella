@@ -72,7 +72,7 @@ export default Ember.Route.extend(AuthenticatedRouteMixin, {
   },
 
   actions: {
-    queryParamsDidChange: function(changed, present) {
+    queryParamsDidChange(changed, present) {
       this._super(...arguments);
       this.set('queryParamValues', present);
     },

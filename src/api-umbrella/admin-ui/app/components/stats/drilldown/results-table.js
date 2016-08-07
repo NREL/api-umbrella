@@ -42,7 +42,7 @@ export default Ember.Component.extend({
             return number;
           },
         },
-      ]
+      ],
     });
   },
 

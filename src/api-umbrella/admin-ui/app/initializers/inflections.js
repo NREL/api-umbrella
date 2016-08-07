@@ -1,3 +1,5 @@
+import Ember from 'ember';
+
 export function initialize() {
   // So the Api model doesn't try to singularize the subSettings hasMany
   // relationship (which leads to it trying to find the non-existent
@@ -7,5 +9,5 @@ export function initialize() {
 
 export default {
   name: 'inflections',
-  initialize
+  initialize,
 };

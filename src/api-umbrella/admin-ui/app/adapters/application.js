@@ -3,7 +3,7 @@ import RESTAdapter from 'ember-data/adapters/rest';
 export default RESTAdapter.extend({
   // Build the URL using the customizable "urlRoot" attribute that can be set
   // on the model class.
-  buildURL(modelName, id, snapshot, requestType, query) {
+  buildURL(modelName, id, snapshot) {
     if(snapshot && snapshot.type && snapshot.type.urlRoot) {
       let url = snapshot.type.urlRoot;
       if(id) {
@@ -19,7 +19,7 @@ export default RESTAdapter.extend({
   // Ember data requires that errors from the API be returned as an array. This
   // normalizes some of our different error responses, so they're always an
   // array.
-  handleResponse(status, headers, payload, requestData) {
+  handleResponse(status, headers, payload) {
     if(!this.isSuccess(status, headers, payload)) {
       this.normalizePayloadErrors(payload, 'errors');
       this.normalizePayloadErrors(payload, 'error');
@@ -28,7 +28,7 @@ export default RESTAdapter.extend({
     return this._super(...arguments);
   },
 
-  normalizePayloadErrors: function(payload, key) {
+  normalizePayloadErrors(payload, key) {
     if(payload && payload[key]) {
       let rawErrors = payload[key];
       let normalizedErrors = [];
@@ -38,7 +38,7 @@ export default RESTAdapter.extend({
         normalizedErrors = rawErrors;
       } else if(_.isPlainObject(rawErrors)) {
         // Turn an object of error messages into an array of error objects.
-        for(var field in rawErrors) {
+        for(let field in rawErrors) {
           // The value might be an array of error messages.
           let messages = _.flatten([rawErrors[field]]);
           messages.forEach(function(message) {

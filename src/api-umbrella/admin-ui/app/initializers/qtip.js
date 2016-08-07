@@ -38,9 +38,9 @@ export function initialize() {
         event: 'unfocus',
       },
       content: {
-        text: function(event) {
-          var target = $(event.target).attr('href');
-          var content = $(target).html();
+        text(event) {
+          let target = $(event.target).attr('href');
+          let content = $(target).html();
           return content;
         },
       },

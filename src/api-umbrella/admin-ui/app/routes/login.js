@@ -7,7 +7,7 @@ export default Ember.Route.extend(UnauthenticatedRouteMixin, {
   },
 
   authenticate() {
-    this.get('session').authenticate('authenticator:devise-server-side').catch((reason) => {
+    this.get('session').authenticate('authenticator:devise-server-side').catch(() => {
       window.location.href = '/admin/login';
     });
   },

@@ -53,7 +53,7 @@ export default Ember.Component.extend({
           data: 'hits',
           title: 'Hits',
           defaultContent: '-',
-          render: function(number, type) {
+          render(number, type) {
             if(type === 'display' && number && number !== '-') {
               return numeral(number).format('0,0');
             }
@@ -74,7 +74,7 @@ export default Ember.Component.extend({
           defaultContent: '-',
           render: DataTablesHelpers.renderEscaped,
         },
-      ]
+      ],
     });
   },
 

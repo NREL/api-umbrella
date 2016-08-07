@@ -14,7 +14,7 @@ export default Ember.Component.extend({
     areaOpacity: 0.2,
     vAxis: {
       gridlines: {
-        count: 4
+        count: 4,
       },
       textStyle: {
         fontSize: 11,
@@ -30,7 +30,7 @@ export default Ember.Component.extend({
     },
     legend: {
       position: 'none',
-    }
+    },
   },
 
   chartData: {
@@ -38,10 +38,10 @@ export default Ember.Component.extend({
       {id: 'date', label: 'Date', type: 'datetime'},
       {id: 'hits', label: 'Hits', type: 'number'},
     ],
-    rows: []
+    rows: [],
   },
 
-  didInsertElement: function() {
+  didInsertElement() {
     this.chart = new google.visualization.AreaChart(this.$()[0]);
 
     // On first load, refresh the data. Afterwards the observer should handle
@@ -55,7 +55,7 @@ export default Ember.Component.extend({
 
   refreshData: Ember.observer('hitsOverTime', function() {
     this.chartData.rows = this.get('hitsOverTime') || [];
-    for(var i = 0; i < this.chartData.rows.length; i++) {
+    for(let i = 0; i < this.chartData.rows.length; i++) {
       this.chartData.rows[i].c[0].v = new Date(this.chartData.rows[i].c[0].v);
     }
 
@@ -79,9 +79,9 @@ export default Ember.Component.extend({
 
     // Show hours on the axis when viewing less than 2 days of hourly data.
     if(this.get('controller.query.params.interval') === 'hour') {
-      var start = moment(this.get('controller.query.params.start_at'));
-      var end = moment(this.get('controller.query.params.end_at'));
-      var maxDuration = 2 * 24 * 60 * 60; // 2 days
+      let start = moment(this.get('controller.query.params.start_at'));
+      let end = moment(this.get('controller.query.params.end_at'));
+      let maxDuration = 2 * 24 * 60 * 60; // 2 days
       if(end.unix() - start.unix() <= maxDuration) {
         this.chartOptions.hAxis.format = 'MMM d h a';
       }
@@ -91,7 +91,7 @@ export default Ember.Component.extend({
     this.draw();
   }),
 
-  draw: function() {
+  draw() {
     this.chart.draw(this.dataTable, this.chartOptions);
   },
 });

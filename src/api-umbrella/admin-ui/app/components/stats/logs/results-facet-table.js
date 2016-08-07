@@ -10,7 +10,7 @@ export default Ember.Component.extend({
   })),
 
   actions: {
-    toggleFacetTable: function() {
+    toggleFacetTable() {
       this.$().find('table').toggle();
     },
   },

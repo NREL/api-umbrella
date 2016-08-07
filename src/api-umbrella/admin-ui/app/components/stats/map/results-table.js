@@ -2,7 +2,7 @@ import Ember from 'ember';
 import numeral from 'numeral';
 
 export default Ember.Component.extend({
-  didInsertElement: function() {
+  didInsertElement() {
     this.$().find('table').DataTable({
       searching: false,
       order: [[1, 'desc']],
@@ -35,7 +35,7 @@ export default Ember.Component.extend({
           data: 'hits',
           title: 'Hits',
           defaultContent: '-',
-          render: function(number, type) {
+          render(number, type) {
             if(type === 'display' && number && number !== '-') {
               return numeral(number).format('0,0');
             }
@@ -43,12 +43,12 @@ export default Ember.Component.extend({
             return number;
           },
         },
-      ]
+      ],
     });
   },
 
   refreshData: Ember.observer('regions', function() {
-    var table = this.$().find('table').dataTable().api();
+    let table = this.$().find('table').dataTable().api();
     table.clear();
     table.rows.add(this.get('regions'));
     table.draw();

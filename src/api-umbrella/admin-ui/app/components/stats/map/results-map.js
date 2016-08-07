@@ -10,10 +10,10 @@ export default Ember.Component.extend({
 
   chartData: {
     cols: [],
-    rows: []
+    rows: [],
   },
 
-  didInsertElement: function() {
+  didInsertElement() {
     this.chart = new google.visualization.GeoChart(this.$()[0]);
     google.visualization.events.addListener(this.chart, 'regionClick', _.bind(this.handleRegionClick, this));
     google.visualization.events.addListener(this.chart, 'select', _.bind(this.handleCityClick, this));
@@ -27,20 +27,20 @@ export default Ember.Component.extend({
     $(window).on('resize', _.debounce(this.draw.bind(this), 100));
   },
 
-  handleRegionClick: function(region) {
+  handleRegionClick(region) {
     this.set('controller.query.params.region', region.region);
   },
 
-  handleCityClick: function() {
+  handleCityClick() {
     if(this.get('regionField') === 'request_ip_city') {
-      var selection = this.chart.getSelection();
+      let selection = this.chart.getSelection();
       if(selection) {
-        var rowIndex = selection[0].row;
-        var region = this.dataTable.getValue(rowIndex, 2);
+        let rowIndex = selection[0].row;
+        let region = this.dataTable.getValue(rowIndex, 2);
 
-        var params = _.clone(this.get('controller.query.params'));
+        let params = _.clone(this.get('controller.query.params'));
         params.search = 'request_ip_city:"' + region + '"';
-        var router = this.get('controller.target.router');
+        let router = this.get('controller.target.router');
         router.transitionTo('stats.logs', $.param(params));
       }
     }
@@ -75,7 +75,7 @@ export default Ember.Component.extend({
     this.draw();
   }),
 
-  draw: function() {
+  draw() {
     this.chart.draw(this.dataTable, this.chartOptions);
   },
 });

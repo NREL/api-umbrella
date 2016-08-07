@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import Model from 'ember-data/model';
 import attr from 'ember-data/attr';
 import { hasMany } from 'ember-data/relationships';
@@ -106,7 +107,7 @@ export default Model.extend({
   }),
 
   passApiKeyDidChange: Ember.observer('passApiKey.@each', function() {
-    var options = this.get('passApiKey');
+    let options = this.get('passApiKey');
     this.set('passApiKeyHeader', options.contains('header'));
     this.set('passApiKeyQueryParam', options.contains('param'));
   }),

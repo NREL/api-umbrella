@@ -13,11 +13,11 @@ export default Ember.Component.extend({
   // set until the modal opens (so setting a default value just on the initial
   // render doesn't work).
   updateDefault: Ember.on('init', Ember.observer('value', function() {
-    var value = this.get('value');
+    let value = this.get('value');
     if(value === undefined) {
-      var options = this.get('options');
+      let options = this.get('options');
       if(options) {
-        var firstOption = options[0];
+        let firstOption = options[0];
         if(firstOption && firstOption.id) {
           this.sendAction('action', firstOption.id, this);
         }
