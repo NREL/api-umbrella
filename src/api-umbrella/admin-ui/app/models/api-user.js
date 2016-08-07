@@ -1,7 +1,5 @@
 import Ember from 'ember';
-import Model from 'ember-data/model';
-import attr from 'ember-data/attr';
-import { belongsTo } from 'ember-data/relationships';
+import DS from 'ember-data';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -10,32 +8,32 @@ const Validations = buildValidations({
   email: validator('presence', true),
 });
 
-export default Model.extend(Validations, {
-  apiKey: attr(),
-  apiKeyHidesAt: attr(),
-  apiKeyPreview: attr(),
-  firstName: attr(),
-  lastName: attr(),
-  email: attr(),
-  emailVerified: attr(),
-  website: attr(),
-  useDescription: attr(),
-  registrationSource: attr(),
-  termsAndConditions: attr(),
-  sendWelcomeEmail: attr(),
-  throttleByIp: attr('boolean'),
-  roles: attr(),
-  enabled: attr('boolean'),
-  createdAt: attr(),
-  updatedAt: attr(),
-  creator: attr(),
-  updater: attr(),
-  registrationIp: attr(),
-  registrationUserAgent: attr(),
-  registrationReferer: attr(),
-  registrationOrigin: attr(),
+export default DS.Model.extend(Validations, {
+  apiKey: DS.attr(),
+  apiKeyHidesAt: DS.attr(),
+  apiKeyPreview: DS.attr(),
+  firstName: DS.attr(),
+  lastName: DS.attr(),
+  email: DS.attr(),
+  emailVerified: DS.attr(),
+  website: DS.attr(),
+  useDescription: DS.attr(),
+  registrationSource: DS.attr(),
+  termsAndConditions: DS.attr(),
+  sendWelcomeEmail: DS.attr(),
+  throttleByIp: DS.attr('boolean'),
+  roles: DS.attr(),
+  enabled: DS.attr('boolean'),
+  createdAt: DS.attr(),
+  updatedAt: DS.attr(),
+  creator: DS.attr(),
+  updater: DS.attr(),
+  registrationIp: DS.attr(),
+  registrationUserAgent: DS.attr(),
+  registrationReferer: DS.attr(),
+  registrationOrigin: DS.attr(),
 
-  settings: belongsTo('api/settings', { async: false }),
+  settings: DS.belongsTo('api/settings', { async: false }),
 
   ready() {
     this.setDefaults();

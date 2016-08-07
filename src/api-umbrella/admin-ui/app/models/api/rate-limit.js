@@ -1,12 +1,11 @@
 import Ember from 'ember';
-import Model from 'ember-data/model';
-import attr from 'ember-data/attr';
+import DS from 'ember-data';
 
-export default Model.extend({
-  duration: attr('number'),
-  limitBy: attr(),
-  limit: attr(),
-  responseHeaders: attr(),
+export default DS.Model.extend({
+  duration: DS.attr('number'),
+  limitBy: DS.attr(),
+  limit: DS.attr(),
+  responseHeaders: DS.attr(),
 
   ready() {
     this.setDefaults();

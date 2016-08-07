@@ -1,20 +1,19 @@
-import Model from 'ember-data/model';
-import attr from 'ember-data/attr';
+import DS from 'ember-data';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   name: validator('presence', true),
 });
 
-export default Model.extend(Validations, {
-  name: attr(),
-  apiScopeIds: attr(),
-  permissionIds: attr(),
-  admins: attr(),
-  createdAt: attr(),
-  updatedAt: attr(),
-  creator: attr(),
-  updater: attr(),
+export default DS.Model.extend(Validations, {
+  name: DS.attr(),
+  apiScopeIds: DS.attr(),
+  permissionIds: DS.attr(),
+  admins: DS.attr(),
+  createdAt: DS.attr(),
+  updatedAt: DS.attr(),
+  creator: DS.attr(),
+  updater: DS.attr(),
 }).reopenClass({
   urlRoot: '/api-umbrella/v1/admin_groups',
   singlePayloadKey: 'admin_group',

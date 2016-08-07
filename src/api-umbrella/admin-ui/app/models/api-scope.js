@@ -1,6 +1,5 @@
 import Ember from 'ember';
-import Model from 'ember-data/model';
-import attr from 'ember-data/attr';
+import DS from 'ember-data';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -21,14 +20,14 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  name: attr(),
-  host: attr(),
-  pathPrefix: attr(),
-  createdAt: attr(),
-  updatedAt: attr(),
-  creator: attr(),
-  updater: attr(),
+export default DS.Model.extend(Validations, {
+  name: DS.attr(),
+  host: DS.attr(),
+  pathPrefix: DS.attr(),
+  createdAt: DS.attr(),
+  updatedAt: DS.attr(),
+  creator: DS.attr(),
+  updater: DS.attr(),
 
   displayName: Ember.computed('name', 'host', 'pathPrefix', function() {
     return this.get('name') + ' - ' + this.get('host') + this.get('pathPrefix');

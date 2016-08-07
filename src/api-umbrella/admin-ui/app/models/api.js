@@ -1,7 +1,5 @@
 import Ember from 'ember';
-import Model from 'ember-data/model';
-import attr from 'ember-data/attr';
-import { belongsTo, hasMany } from 'ember-data/relationships';
+import DS from 'ember-data';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -30,23 +28,23 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  name: attr(),
-  sortOrder: attr('number'),
-  backendProtocol: attr('string', { defaultValue: 'http' }),
-  frontendHost: attr(),
-  backendHost: attr(),
-  balanceAlgorithm: attr('string', { defaultValue: 'least_conn' }),
-  createdAt: attr(),
-  updatedAt: attr(),
-  creator: attr(),
-  updater: attr(),
+export default DS.Model.extend(Validations, {
+  name: DS.attr(),
+  sortOrder: DS.attr('number'),
+  backendProtocol: DS.attr('string', { defaultValue: 'http' }),
+  frontendHost: DS.attr(),
+  backendHost: DS.attr(),
+  balanceAlgorithm: DS.attr('string', { defaultValue: 'least_conn' }),
+  createdAt: DS.attr(),
+  updatedAt: DS.attr(),
+  creator: DS.attr(),
+  updater: DS.attr(),
 
-  servers: hasMany('api/server', { async: false }),
-  urlMatches: hasMany('api/url-match', { async: false }),
-  settings: belongsTo('api/settings', { async: false }),
-  subSettings: hasMany('api/sub-settings', { async: false }),
-  rewrites: hasMany('api/rewrites', { async: false }),
+  servers: DS.hasMany('api/server', { async: false }),
+  urlMatches: DS.hasMany('api/url-match', { async: false }),
+  settings: DS.belongsTo('api/settings', { async: false }),
+  subSettings: DS.hasMany('api/sub-settings', { async: false }),
+  rewrites: DS.hasMany('api/rewrites', { async: false }),
 
   ready() {
     this.setDefaults();

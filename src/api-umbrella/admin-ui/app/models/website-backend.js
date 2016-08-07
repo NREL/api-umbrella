@@ -1,5 +1,4 @@
-import Model from 'ember-data/model';
-import attr from 'ember-data/attr';
+import DS from 'ember-data';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -24,15 +23,15 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  frontendHost: attr(),
-  backendProtocol: attr('string', { defaultValue: 'http' }),
-  serverHost: attr(),
-  serverPort: attr('number', { defaultValue: 80 }),
-  createdAt: attr(),
-  updatedAt: attr(),
-  creator: attr(),
-  updater: attr(),
+export default DS.Model.extend(Validations, {
+  frontendHost: DS.attr(),
+  backendProtocol: DS.attr('string', { defaultValue: 'http' }),
+  serverHost: DS.attr(),
+  serverPort: DS.attr('number', { defaultValue: 80 }),
+  createdAt: DS.attr(),
+  updatedAt: DS.attr(),
+  creator: DS.attr(),
+  updater: DS.attr(),
 }).reopenClass({
   urlRoot: '/api-umbrella/v1/website_backends',
   singlePayloadKey: 'website_backend',

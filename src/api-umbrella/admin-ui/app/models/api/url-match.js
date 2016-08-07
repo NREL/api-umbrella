@@ -1,6 +1,5 @@
 import Ember from 'ember';
-import Model from 'ember-data/model';
-import attr from 'ember-data/attr';
+import DS from 'ember-data';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -20,10 +19,10 @@ const Validations = buildValidations({
   ],
 });
 
-export default Model.extend(Validations, {
-  sortOrder: attr('number'),
-  frontendPrefix: attr(),
-  backendPrefix: attr(),
+export default DS.Model.extend(Validations, {
+  sortOrder: DS.attr('number'),
+  frontendPrefix: DS.attr(),
+  backendPrefix: DS.attr(),
 
   backendPrefixWithDefault: Ember.computed('backendPrefix', 'frontendPrefix', function() {
     return this.get('backendPrefix') || this.get('frontendPrefix');

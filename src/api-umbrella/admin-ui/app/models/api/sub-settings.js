@@ -1,13 +1,11 @@
-import Model from 'ember-data/model';
-import attr from 'ember-data/attr';
-import { belongsTo } from 'ember-data/relationships';
+import DS from 'ember-data';
 
-export default Model.extend({
-  sortOrder: attr('number'),
-  httpMethod: attr(),
-  regex: attr(),
+export default DS.Model.extend({
+  sortOrder: DS.attr('number'),
+  httpMethod: DS.attr(),
+  regex: DS.attr(),
 
-  settings: belongsTo('api/settings', { async: false }),
+  settings: DS.belongsTo('api/settings', { async: false }),
 
   ready() {
     this.setDefaults();
