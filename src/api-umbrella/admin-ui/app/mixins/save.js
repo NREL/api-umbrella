@@ -12,6 +12,11 @@ export default Ember.Mixin.create({
     let button = $('#save_button');
     button.button('loading');
 
+    this.setProperties({
+      'model.clientErrors': [],
+      'model.serverErrors': [],
+    });
+
     this.get('model').validate().then(function() {
       if(this.get('model.validations.isValid') === false) {
         this.set('model.clientErrors', this.get('model.validations.errors'));
@@ -26,13 +31,13 @@ export default Ember.Mixin.create({
           });
 
           this.get('routing').transitionTo(options.transitionToRoute);
-        }.bind(this), function(response) {
+        }.bind(this), function(error) {
           // Set the errors from the server response on a "serverErrors" property
           // for the error-messages component display.
-          try {
-            this.set('model.serverErrors', response.responseJSON.errors);
-          } catch(e) {
-            this.set('model.serverErrors', response.responseText);
+          if(error && error.errors) {
+            this.set('model.serverErrors', error.errors);
+          } else {
+            this.set('model.serverErrors', [{ message: 'Unexpected error' }]);
           }
 
           this.scrollToErrors();

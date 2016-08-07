@@ -2,71 +2,68 @@ import Ember from 'ember';
 
 export default Ember.Component.extend({
   messages: Ember.computed('model.clientErrors', 'model.serverErrors', function() {
-    let messages = [];
+    let errors = [];
 
-    let errors = {};
     let clientErrors = this.get('model.clientErrors');
     if(clientErrors) {
       if(_.isArray(clientErrors)) {
         _.each(clientErrors, function(clientError) {
-          let field = 'base';
-          let message = clientError;
-          if(_.isObject(clientError)) {
-            if(clientError.get('attribute')) {
-              field = clientError.get('attribute');
-            }
-
-            message = clientError.get('message');
+          let message = clientError.get('message');
+          if(message) {
+            errors.push({
+              attribute: clientError.get('attribute'),
+              message: message,
+            });
+          } else {
+            errors.push({ message: 'Unexpected error' });
           }
-
-          if(!errors[field]) {
-            errors[field] = [];
-          }
-
-          errors[field].push(message);
         });
       } else {
-        errors = _.merge(errors, clientErrors);
+        errors.push({ message: 'Unexpected error' });
       }
     }
 
     let serverErrors = this.get('model.serverErrors');
     if(serverErrors) {
-      if(_.isString(serverErrors)) {
-        messages.push(serverErrors);
-      } else if(_.isArray(serverErrors)) {
+      if(_.isArray(serverErrors)) {
         _.each(serverErrors, function(serverError) {
-          let field = 'base';
-          let message = serverError;
-          if(_.isObject(serverError)) {
-            if(serverError.field) {
-              field = serverError.field;
+          let message = serverError.message;
+          if(!message && serverError.title) {
+            message = serverError.title;
+            if(serverError.status) {
+              message += ' (Status: ' + serverError.status + ')';
             }
-
-            message = serverError.message;
           }
 
-          if(!errors[field]) {
-            errors[field] = [];
+          if(message) {
+            errors.push({
+              attribute: serverError.field,
+              message: message,
+            });
+          } else {
+            errors.push({ message: 'Unexpected error' });
           }
-
-          errors[field].push(message);
         });
       } else {
-        errors = _.merge(errors, serverErrors);
+        errors.push({ message: 'Unexpected error' });
       }
     }
 
-    _.forOwn(errors, function(attrErrors, attr) {
-      _.each(attrErrors, function(attrError) {
-        let message = '';
-        if(attr !== 'base') {
-          message += inflection.titleize(inflection.underscore(attr)) + ': ';
+    let messages = [];
+    _.each(errors, function(error) {
+      let message = '';
+      if(error.attribute && error.attribute !== 'base') {
+        message += inflection.titleize(inflection.underscore(error.attribute)) + ': ';
+        message += error.message || 'Unexpected error';
+      } else {
+        if(error.message) {
+          message += error.message.charAt(0).toUpperCase() + error.message.slice(1);
+        } else {
+          message += 'Unexpected error';
         }
-        message += attrError;
+      }
 
-        messages.push(marked(message));
-      });
+      messages.push(marked(message));
     });
 
     return messages;
