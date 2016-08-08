@@ -46,6 +46,7 @@ Router.map(function() {
     this.route('new');
     this.route('edit', { path: '/:websiteBackendId/edit' });
   });
+
   this.route('login');
 });
 

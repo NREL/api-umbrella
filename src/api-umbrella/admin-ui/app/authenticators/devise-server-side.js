@@ -23,6 +23,13 @@ export default Base.extend({
   },
 
   invalidate() {
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      return this.get('ajax').request('/admin/logout', { method: 'DELETE' }).then(function(data) {
+        Ember.run(null, resolve);
+      }, function() {
+        Ember.run(null, reject);
+      });
+    }.bind(this));
   },
 
   _validate(data) {

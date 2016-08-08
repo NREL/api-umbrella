@@ -3,6 +3,14 @@ class ApplicationController < ActionController::Base
   include DatatablesHelper
   protect_from_forgery
 
+  def after_sign_in_path_for(resource)
+    if(resource.is_a?(Admin))
+      "/admin/#/login"
+    else
+      super
+    end
+  end
+
   def pundit_user
     current_admin
   end

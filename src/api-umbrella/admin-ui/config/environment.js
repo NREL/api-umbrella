@@ -4,7 +4,7 @@ module.exports = function(environment) {
   var ENV = {
     modulePrefix: 'api-umbrella-admin-ui',
     environment: environment,
-    baseURL: '/',
+    baseURL: '/admin/',
     locationType: 'hash',
     EmberENV: {
       FEATURES: {

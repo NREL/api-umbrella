@@ -13,8 +13,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
     @admin ||= Admin.new({ :username => omniauth["uid"], :superuser => true }, :without_protection => true)
     @admin.apply_omniauth(omniauth)
     @admin.save!
-    sign_in(:admin, @admin)
-    redirect_to admin_path
+    sign_in_and_redirect(:admin, @admin)
   end
 
   def cas
