@@ -7,8 +7,8 @@ const Validations = buildValidations({
 
 export default DS.Model.extend(Validations, {
   name: DS.attr(),
-  apiScopeIds: DS.attr(),
-  permissionIds: DS.attr(),
+  apiScopeIds: DS.attr({ defaultValue() { return [] } }),
+  permissionIds: DS.attr({ defaultValue() { return [] } }),
   admins: DS.attr(),
   createdAt: DS.attr(),
   updatedAt: DS.attr(),
