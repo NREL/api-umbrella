@@ -29,7 +29,6 @@
       <legend>Permissions</legend>
 
       {{f.checkboxes-field "groupIds" label="Groups" options=groupOptions}}
-      superuser: {{model.superuser}}
       {{#if currentAdmin.superuser}}
         {{f.checkbox-field "superuser" label="Superuser"}}
       {{/if}}
