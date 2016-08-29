@@ -61,7 +61,20 @@ module ApiUmbrella
       attributify_embeds_many!(settings_data, "rate_limits", old_settings_data)
       if(self.class == ::Api)
         %w(headers default_response_headers override_response_headers).each do |collection_name|
-          attributify_embeds_many!(settings_data, collection_name, old_settings_data)
+          # The header associations are a bit different, since they accept
+          # either an array of nested attributes (like other nested object
+          # types), or a new-line delimited string. However, both cannot be set
+          # at the same time, or else Mongoid doesn't save properly (due to the
+          # string writer overwriting the old data ahead of when the nested
+          # object setter expects). So ensure only one of these is set.
+          object_key = collection_name
+          string_key = "#{collection_name}_string"
+          if(settings_data[string_key].present?)
+            settings_data.delete(object_key)
+          else
+            settings_data.delete(string_key)
+            attributify_embeds_many!(settings_data, collection_name, old_settings_data)
+          end
         end
       end
     end

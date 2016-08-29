@@ -108,8 +108,16 @@ class Api::V1::ApisController < Api::V1::BaseController
         :allowed_ips => [],
         :allowed_referers => [],
         :error_templates => [],
-        :default_response_headers => [],
-        :override_response_headers => [],
+        :default_response_headers => [
+          :id,
+          :key,
+          :value,
+        ],
+        :override_response_headers => [
+          :id,
+          :key,
+          :value,
+        ],
         :headers => [
           :id,
           :key,

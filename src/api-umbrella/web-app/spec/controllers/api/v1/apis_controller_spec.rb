@@ -101,7 +101,7 @@ RSpec.describe Api::V1::ApisController do
   end
 
   shared_examples "api settings header fields - show" do |field|
-    it "returns no headers as an empty string" do
+    it "returns no headers" do
       api = FactoryGirl.create(:api, {
         :settings => FactoryGirl.attributes_for(:api_setting, {
         }),
@@ -113,9 +113,10 @@ RSpec.describe Api::V1::ApisController do
       response.status.should eql(200)
       data = MultiJson.load(response.body)
       data["api"]["settings"]["#{field}_string"].should eql("")
+      data["api"]["settings"][field.to_s].should eql(nil)
     end
 
-    it "returns a single header as a string" do
+    it "returns a single header as a string and array" do
       api = FactoryGirl.create(:api, {
         :settings => FactoryGirl.attributes_for(:api_setting, {
           :"#{field}" => [
@@ -130,9 +131,14 @@ RSpec.describe Api::V1::ApisController do
       response.status.should eql(200)
       data = MultiJson.load(response.body)
       data["api"]["settings"]["#{field}_string"].should eql("X-Add1: test1")
+      data["api"]["settings"][field.to_s].should be_kind_of(Array)
+      data["api"]["settings"][field.to_s].length.should eql(1)
+      data["api"]["settings"][field.to_s][0].keys.sort.should eql(["id", "key", "value"])
+      data["api"]["settings"][field.to_s][0]["key"].should eql("X-Add1")
+      data["api"]["settings"][field.to_s][0]["value"].should eql("test1")
     end
 
-    it "returns multiple headers as a new-line separated string" do
+    it "returns multiple headers as a new-line separated string and array" do
       api = FactoryGirl.create(:api, {
         :settings => FactoryGirl.attributes_for(:api_setting, {
           :"#{field}" => [
@@ -148,11 +154,17 @@ RSpec.describe Api::V1::ApisController do
       response.status.should eql(200)
       data = MultiJson.load(response.body)
       data["api"]["settings"]["#{field}_string"].should eql("X-Add1: test1\nX-Add2: test2")
+      data["api"]["settings"][field.to_s].should be_kind_of(Array)
+      data["api"]["settings"][field.to_s].length.should eql(2)
+      data["api"]["settings"][field.to_s][0]["key"].should eql("X-Add1")
+      data["api"]["settings"][field.to_s][0]["value"].should eql("test1")
+      data["api"]["settings"][field.to_s][1]["key"].should eql("X-Add2")
+      data["api"]["settings"][field.to_s][1]["value"].should eql("test2")
     end
   end
 
   shared_examples "api settings header fields - create" do |field|
-    it "accepts a nil value" do
+    it "accepts nil for the string" do
       admin_token_auth(@admin)
       attributes = FactoryGirl.attributes_for(:api, {
         :settings => FactoryGirl.attributes_for(:api_setting, {
@@ -165,6 +177,27 @@ RSpec.describe Api::V1::ApisController do
         response.status.should eql(201)
         data = MultiJson.load(response.body)
         data["api"]["settings"]["#{field}_string"].should eql("")
+        data["api"]["settings"][field.to_s].should eql(nil)
+
+        api = Api.find(data["api"]["id"])
+        api.settings.send(field).length.should eql(0)
+      end.to change { Api.count }.by(1)
+    end
+
+    it "accepts nil for the array" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          field.to_s => nil,
+        }),
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["settings"]["#{field}_string"].should eql("")
+        data["api"]["settings"][field.to_s].should eql(nil)
 
         api = Api.find(data["api"]["id"])
         api.settings.send(field).length.should eql(0)
@@ -184,6 +217,27 @@ RSpec.describe Api::V1::ApisController do
         response.status.should eql(201)
         data = MultiJson.load(response.body)
         data["api"]["settings"]["#{field}_string"].should eql("")
+        data["api"]["settings"][field.to_s].should eql(nil)
+
+        api = Api.find(data["api"]["id"])
+        api.settings.send(field).length.should eql(0)
+      end.to change { Api.count }.by(1)
+    end
+
+    it "accepts an empty array" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          field.to_s => [],
+        }),
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["settings"]["#{field}_string"].should eql("")
+        data["api"]["settings"][field.to_s].should eql(nil)
 
         api = Api.find(data["api"]["id"])
         api.settings.send(field).length.should eql(0)
@@ -265,10 +319,38 @@ RSpec.describe Api::V1::ApisController do
         api.settings.send(field).length.should eql(1)
       end.to change { Api.count }.by(1)
     end
+
+    it "accepts headers as an array of objects" do
+      admin_token_auth(@admin)
+      attributes = FactoryGirl.attributes_for(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          field.to_s => [
+            {
+              "key" => "X-Add1",
+              "value" => "test1",
+            },
+            {
+              "key" => "X-Add2",
+              "value" => "test2",
+            },
+          ],
+        }),
+      })
+
+      expect do
+        post :create, :format => "json", :api => attributes
+        response.status.should eql(201)
+        data = MultiJson.load(response.body)
+        data["api"]["settings"]["#{field}_string"].should eql("X-Add1: test1\nX-Add2: test2")
+
+        api = Api.find(data["api"]["id"])
+        api.settings.send(field).length.should eql(2)
+      end.to change { Api.count }.by(1)
+    end
   end
 
   shared_examples "api settings header fields - update" do |field|
-    it "clears existing headers when passed nil" do
+    it "clears existing headers when passed nil for the string" do
       admin_token_auth(@admin)
 
       api = FactoryGirl.create(:api, {
@@ -284,6 +366,29 @@ RSpec.describe Api::V1::ApisController do
       attributes = api.serializable_hash
       attributes["settings"].delete(field.to_s)
       attributes["settings"]["#{field}_string"] = nil
+      put :update, :format => "json", :id => api.id, :api => attributes
+
+      response.status.should eql(204)
+      api = Api.find(api.id)
+      api.settings.send(field).length.should eql(0)
+    end
+
+    it "clears existing headers when passed nil for the array" do
+      admin_token_auth(@admin)
+
+      api = FactoryGirl.create(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}" => [
+            FactoryGirl.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
+          ],
+        }),
+      })
+
+      api.settings.send(field).length.should eql(1)
+
+      attributes = api.serializable_hash
+      attributes["settings"].delete("#{field}_string")
+      attributes["settings"][field.to_s] = nil
       put :update, :format => "json", :id => api.id, :api => attributes
 
       response.status.should eql(204)
@@ -314,6 +419,29 @@ RSpec.describe Api::V1::ApisController do
       api.settings.send(field).length.should eql(0)
     end
 
+    it "clears existing headers when passed an empty array" do
+      admin_token_auth(@admin)
+
+      api = FactoryGirl.create(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}" => [
+            FactoryGirl.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
+          ],
+        }),
+      })
+
+      api.settings.send(field).length.should eql(1)
+
+      attributes = api.serializable_hash
+      attributes["settings"].delete("#{field}_string")
+      attributes["settings"][field.to_s] = []
+      put :update, :format => "json", :id => api.id, :api => attributes
+
+      response.status.should eql(204)
+      api = Api.find(api.id)
+      api.settings.send(field).length.should eql(0)
+    end
+
     it "replaces existing headers when passed the headers string" do
       admin_token_auth(@admin)
 
@@ -337,6 +465,43 @@ RSpec.describe Api::V1::ApisController do
       api = Api.find(api.id)
       api.settings.send(field).length.should eql(2)
       api.settings.send(field).map { |h| h.key }.should eql(["X-New1", "X-New2"])
+    end
+
+    it "replaces existing headers when passed the headers as an array of objects" do
+      admin_token_auth(@admin)
+
+      api = FactoryGirl.create(:api, {
+        :settings => FactoryGirl.attributes_for(:api_setting, {
+          :"#{field}" => [
+            FactoryGirl.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
+          ],
+        }),
+      })
+
+      api.settings.send(field).length.should eql(1)
+      api.settings.send(field).map { |h| h.key }.should eql(["X-Add1"])
+      existing_id = api.settings.send(field)[0].id
+
+      attributes = api.serializable_hash
+      attributes["settings"].delete("#{field}_string")
+      attributes["settings"][field.to_s] = [
+        {
+          "id" => existing_id,
+          "key" => "X-New1",
+          "value" => "test1",
+        },
+        {
+          "key" => "X-New2",
+          "value" => "test2",
+        },
+      ]
+      put :update, :format => "json", :id => api.id, :api => attributes
+
+      response.status.should eql(204)
+      api = Api.find(api.id)
+      api.settings.send(field).length.should eql(2)
+      api.settings.send(field).map { |h| h.key }.should eql(["X-New1", "X-New2"])
+      api.settings.send(field)[0].id.should eql(existing_id)
     end
   end
 
