@@ -109,7 +109,7 @@ repos = {
   },
   "mongodb" => {
     :git => "https://github.com/mongodb/mongo.git",
-    :constraint => "~> 3.0.10",
+    :constraint => "~> 3.2.9",
   },
   "mora" => {
     :git => "https://github.com/emicklei/mora.git",
@@ -141,7 +141,6 @@ repos = {
   },
   "ruby" => {
     :git => "https://github.com/ruby/ruby.git",
-    :constraint => "~> 2.2.4",
   },
   "rsyslog" => {
     :git => "https://github.com/rsyslog/rsyslog.git",

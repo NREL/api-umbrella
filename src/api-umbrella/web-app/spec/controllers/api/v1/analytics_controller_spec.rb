@@ -1,7 +1,7 @@
-require 'spec_helper'
+require "rails_helper"
 require 'test_helper/elasticsearch_helper'
 
-describe Api::V1::AnalyticsController do
+RSpec.describe Api::V1::AnalyticsController do
   login_admin
 
   before(:each) do
@@ -10,8 +10,8 @@ describe Api::V1::AnalyticsController do
 
   describe "GET drilldown" do
     it "matches level 0 based on the prefix" do
-      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
+      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
       LogItem.gateway.refresh_index!
 
       get :drilldown, {
@@ -48,8 +48,8 @@ describe Api::V1::AnalyticsController do
     end
 
     it "matches level 1 based on the prefix" do
-      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
+      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
       LogItem.gateway.refresh_index!
 
       get :drilldown, {
@@ -84,12 +84,12 @@ describe Api::V1::AnalyticsController do
     end
 
     it "only matches results beginning with the prefix and not containing the prefix elsewhere in the strings" do
-      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
+      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
       # Ensure that the second element in the array also contains "0/" to
       # ensure that the filtering and terms aggregations are both matching
       # based on prefix only.
-      FactoryGirl.create(:log_item, :request_hierarchy => ["0/0/", "1/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create(:log_item, :request_hierarchy => ["foo/0/", "foo/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
+      FactoryGirl.create(:log_item, :request_hierarchy => ["0/0/", "1/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create(:log_item, :request_hierarchy => ["foo/0/", "foo/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
       LogItem.gateway.refresh_index!
 
       get :drilldown, {
@@ -126,13 +126,13 @@ describe Api::V1::AnalyticsController do
     end
 
     it "performs an exact match on the prefix value, escaping any regex patterns" do
-      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
+      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
       # Add other items in the request_hierarchy array that would match "0/."
       # (even though this isn't really a valid hierarchy definition). This
       # ensures that we also test whether the terms aggregations are being
       # escaped (and not just the overall filter).
-      FactoryGirl.create(:log_item, :request_hierarchy => ["0/.com/", "0/xcom", "0/ycom", "1/.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
+      FactoryGirl.create(:log_item, :request_hierarchy => ["0/.com/", "0/xcom", "0/ycom", "1/.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
       LogItem.gateway.refresh_index!
 
       get :drilldown, {
@@ -167,19 +167,19 @@ describe Api::V1::AnalyticsController do
     end
 
     it "returns all results for the list, but only the top 10 and an 'other' category for the chart" do
-      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.2/", "1/127.0.0.2/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 3, :request_hierarchy => ["0/127.0.0.3/", "1/127.0.0.3/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 10, :request_hierarchy => ["0/127.0.0.4/", "1/127.0.0.4/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 11, :request_hierarchy => ["0/127.0.0.5/", "1/127.0.0.5/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 12, :request_hierarchy => ["0/127.0.0.6/", "1/127.0.0.6/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 13, :request_hierarchy => ["0/127.0.0.7/", "1/127.0.0.7/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 14, :request_hierarchy => ["0/127.0.0.8/", "1/127.0.0.8/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 15, :request_hierarchy => ["0/127.0.0.9/", "1/127.0.0.9/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 16, :request_hierarchy => ["0/127.0.0.10/", "1/127.0.0.10/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 17, :request_hierarchy => ["0/127.0.0.11/", "1/127.0.0.11/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 18, :request_hierarchy => ["0/127.0.0.12/", "1/127.0.0.12/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
-      FactoryGirl.create_list(:log_item, 1, :request_hierarchy => ["0/127.0.0.13/", "1/127.0.0.13/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z"))
+      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.2/", "1/127.0.0.2/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 3, :request_hierarchy => ["0/127.0.0.3/", "1/127.0.0.3/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 10, :request_hierarchy => ["0/127.0.0.4/", "1/127.0.0.4/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 11, :request_hierarchy => ["0/127.0.0.5/", "1/127.0.0.5/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 12, :request_hierarchy => ["0/127.0.0.6/", "1/127.0.0.6/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 13, :request_hierarchy => ["0/127.0.0.7/", "1/127.0.0.7/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 14, :request_hierarchy => ["0/127.0.0.8/", "1/127.0.0.8/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 15, :request_hierarchy => ["0/127.0.0.9/", "1/127.0.0.9/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 16, :request_hierarchy => ["0/127.0.0.10/", "1/127.0.0.10/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 17, :request_hierarchy => ["0/127.0.0.11/", "1/127.0.0.11/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 18, :request_hierarchy => ["0/127.0.0.12/", "1/127.0.0.12/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+      FactoryGirl.create_list(:log_item, 1, :request_hierarchy => ["0/127.0.0.13/", "1/127.0.0.13/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
       LogItem.gateway.refresh_index!
 
       get :drilldown, {

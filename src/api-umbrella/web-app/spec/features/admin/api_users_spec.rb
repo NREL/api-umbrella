@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe "api users form", :js => true do
+RSpec.describe "api users form", :js => true do
   login_admin
 
   describe "xss" do
@@ -59,7 +59,7 @@ describe "api users form", :js => true do
     end
 
     it "allows the full api key to be revealed when the admin has permissions" do
-      user = FactoryGirl.create(:api_user, :created_by => @current_admin.id, :created_at => Time.now - 2.weeks + 5.minutes)
+      user = FactoryGirl.create(:api_user, :created_by => @current_admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes)
       visit "/admin/#/api_users/#{user.id}/edit"
 
       page.should have_content(user.api_key_preview)
@@ -81,7 +81,7 @@ describe "api users form", :js => true do
       login_admin
 
       it "hides the full api key when the admin does not have permissions" do
-        user = FactoryGirl.create(:api_user, :created_by => @current_admin.id, :created_at => (Time.now - 2.weeks - 5.minutes))
+        user = FactoryGirl.create(:api_user, :created_by => @current_admin.id, :created_at => (Time.now.utc - 2.weeks - 5.minutes))
         visit "/admin/#/api_users/#{user.id}/edit"
 
         page.should have_content(user.api_key_preview)

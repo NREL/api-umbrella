@@ -14,16 +14,16 @@ class ApiUuids < Mongoid::Migration
         # UUID _id value.
         new_api = api.clone
         new_api.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(api._id))
-        new_api._id = UUIDTools::UUID.random_create.to_s
+        new_api._id = SecureRandom.uuid
 
         if(new_api.settings)
           new_api.settings.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(new_api.settings._id))
-          new_api.settings._id = UUIDTools::UUID.random_create.to_s
+          new_api.settings._id = SecureRandom.uuid
 
           if(new_api.settings.headers)
             new_api.settings.headers.each do |header|
               header.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(header._id))
-              header._id = UUIDTools::UUID.random_create.to_s
+              header._id = SecureRandom.uuid
             end
           end
         end
@@ -31,30 +31,30 @@ class ApiUuids < Mongoid::Migration
         if(new_api.servers)
           new_api.servers.each do |server|
             server.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(server._id))
-            server._id = UUIDTools::UUID.random_create.to_s
+            server._id = SecureRandom.uuid
           end
         end
 
         if(new_api.url_matches)
           new_api.url_matches.each do |url_match|
             url_match.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(url_match._id))
-            url_match._id = UUIDTools::UUID.random_create.to_s
+            url_match._id = SecureRandom.uuid
           end
         end
 
         if(new_api.sub_settings)
           new_api.sub_settings.each do |sub_setting|
             sub_setting.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(sub_setting._id))
-            sub_setting._id = UUIDTools::UUID.random_create.to_s
+            sub_setting._id = SecureRandom.uuid
 
             if(sub_setting.settings)
               sub_setting.settings.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(sub_setting.settings._id))
-              sub_setting.settings._id = UUIDTools::UUID.random_create.to_s
+              sub_setting.settings._id = SecureRandom.uuid
 
               if(sub_setting.settings.headers)
                 sub_setting.settings.headers.each do |header|
                   header.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(header._id))
-                  header._id = UUIDTools::UUID.random_create.to_s
+                  header._id = SecureRandom.uuid
                 end
               end
             end
@@ -64,14 +64,14 @@ class ApiUuids < Mongoid::Migration
         if(new_api.rewrites)
           new_api.rewrites.each do |rewrite|
             rewrite.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(rewrite._id))
-            rewrite._id = UUIDTools::UUID.random_create.to_s
+            rewrite._id = SecureRandom.uuid
           end
         end
 
         if(new_api.read_attribute(:rate_limits))
           new_api.read_attribute(:rate_limits).each do |limit|
             limit.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(limit._id))
-            limit._id = UUIDTools::UUID.random_create.to_s
+            limit._id = SecureRandom.uuid
           end
         end
 

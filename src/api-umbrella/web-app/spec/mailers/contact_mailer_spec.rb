@@ -1,6 +1,6 @@
-require "spec_helper"
+require "rails_helper"
 
-describe ContactMailer do
+RSpec.describe ContactMailer do
   describe "OSVDB-131677 security" do
     before(:each) do
       ApiUmbrellaConfig[:web][:contact_form_email] = "test@example.com"

@@ -1,6 +1,6 @@
-require "spec_helper"
+require "rails_helper"
 
-describe "locales", :js => true do
+RSpec.describe "locales", :js => true do
   describe "login page" do
     I18n.available_locales.each do |locale|
       it "translates in #{locale}" do

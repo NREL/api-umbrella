@@ -1,11 +1,11 @@
 class Api::V1::UsersController < Api::V1::BaseController
   respond_to :json
 
-  skip_before_filter :authenticate_admin!, :only => [:create]
-  before_filter :authenicate_creator_api_key_role, :only => [:create]
-  skip_after_filter :verify_authorized, :only => [:index, :create]
-  after_filter :verify_policy_scoped, :only => [:index]
-  before_filter :parse_post_for_pseudo_ie_cors, :only => [:create]
+  skip_before_action :authenticate_admin!, :only => [:create]
+  before_action :authenicate_creator_api_key_role, :only => [:create]
+  skip_after_action :verify_authorized, :only => [:index, :create]
+  after_action :verify_policy_scoped, :only => [:index]
+  before_action :parse_post_for_pseudo_ie_cors, :only => [:create]
 
   def index
     @api_users = policy_scope(ApiUser).order_by(datatables_sort_array)
@@ -96,13 +96,7 @@ class Api::V1::UsersController < Api::V1::BaseController
 
   def assign_attributes!
     authorize(@api_user) unless(@api_user.new_record?)
-
-    assign_options = {}
-    if(admin_signed_in?)
-      assign_options[:as] = :admin
-    end
-
-    @api_user.assign_nested_attributes(params[:user], assign_options)
+    @api_user.assign_nested_attributes(user_params)
 
     @verify_email = (params[:options] && params[:options][:verify_email].to_s == "true")
     if(@verify_email || admin_signed_in?)
@@ -133,5 +127,47 @@ class Api::V1::UsersController < Api::V1::BaseController
         return false
       end
     end
+  end
+
+  def user_params
+    attrs = [
+      :first_name,
+      :last_name,
+      :email,
+      :website,
+      :use_description,
+      :terms_and_conditions,
+      :registration_source,
+    ]
+
+    if(admin_signed_in?)
+      attrs += [
+        :throttle_by_ip,
+        :enabled,
+        {
+          :roles => [],
+          :settings => [
+            :id,
+            :rate_limit_mode,
+            {
+              :allowed_ips => [],
+              :allowed_referers => [],
+              :rate_limits => [
+                :id,
+                :duration,
+                :limit_by,
+                :limit,
+                :response_headers,
+              ],
+            },
+          ],
+        },
+      ]
+    end
+
+    params.require(:user).permit(attrs)
+  rescue => e
+    logger.error("Parameters error: #{e}")
+    ActionController::Parameters.new({}).permit!
   end
 end

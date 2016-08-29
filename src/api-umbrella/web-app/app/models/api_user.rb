@@ -10,7 +10,7 @@ class ApiUser
   include ApiUmbrella::AttributifyData
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :api_key
   field :first_name
   field :last_name
@@ -85,21 +85,6 @@ class ApiUser
   # Nested attributes
   accepts_nested_attributes_for :settings
 
-  # Mass assignment security
-  attr_accessible :first_name,
-    :last_name,
-    :email,
-    :website,
-    :use_description,
-    :terms_and_conditions,
-    :registration_source,
-    :as => [:default, :admin]
-  attr_accessible :roles,
-    :throttle_by_ip,
-    :enabled,
-    :settings_attributes,
-    :as => :admin
-
   def self.human_attribute_name(attribute, options = {})
     case(attribute.to_sym)
     when :email
@@ -130,7 +115,7 @@ class ApiUser
   def enabled=(enabled)
     if(enabled.to_s == "false")
       if(self.disabled_at.nil?)
-        self.disabled_at = Time.now
+        self.disabled_at = Time.now.utc
       end
     else
       self.disabled_at = nil
@@ -198,7 +183,7 @@ class ApiUser
   # that all of the records get touched with consistent server-side
   # timestamps).
   def touch_server_side_timestamp
-    collection.find({ :_id => self.id }).update({
+    collection.update_one({ :_id => self.id }, {
       "$currentDate" => {
         "ts" => { "$type" => "timestamp" },
       },

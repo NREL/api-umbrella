@@ -1,5 +1,8 @@
-# Fix json issues with serializing times:
-# https://github.com/ohler55/oj/issues/192
+# Don't include milliseconds on timestamps to maintain our older response
+# formats.
+ActiveSupport::JSON::Encoding.time_precision = 0
+
 Oj.default_options = {
-  :use_to_json => true
+  # Integrate Oj with the to_json methods Rails adds to objects.
+  :use_to_json => true,
 }

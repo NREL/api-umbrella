@@ -1,6 +1,6 @@
-require "spec_helper"
+require "rails_helper"
 
-describe Api::V1::WebsiteBackendsController do
+RSpec.describe Api::V1::WebsiteBackendsController do
   before(:each) do
     DatabaseCleaner.clean
   end

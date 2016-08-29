@@ -1,7 +1,9 @@
 class ApplicationController < ActionController::Base
   include Pundit
   include DatatablesHelper
-  protect_from_forgery
+  protect_from_forgery :with => :exception
+
+  around_action :set_userstamp
 
   def after_sign_in_path_for(resource)
     if(resource.is_a?(Admin))
@@ -48,9 +50,9 @@ class ApplicationController < ActionController::Base
     if(time)
       case(time)
       when String
-        time = Time.parse(time)
+        time = Time.parse(time).utc
       when Numeric
-        time = Time.at(time / 1000.0)
+        time = Time.at(time / 1000.0).utc
       end
 
       time.utc.strftime("%Y-%m-%d %H:%M:%S")
@@ -93,5 +95,15 @@ class ApplicationController < ActionController::Base
     yield
   ensure
     Time.zone = old_time_zone
+  end
+
+  private
+
+  def set_userstamp
+    orig = RequestStore.store[:current_userstamp_user]
+    RequestStore.store[:current_userstamp_user] = current_admin
+    yield
+  ensure
+    RequestStore.store[:current_userstamp_user] = orig
   end
 end

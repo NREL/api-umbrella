@@ -1,8 +1,8 @@
 class Api::V1::ApisController < Api::V1::BaseController
   respond_to :json
 
-  skip_after_filter :verify_authorized, :only => [:index]
-  after_filter :verify_policy_scoped, :only => [:index]
+  skip_after_action :verify_authorized, :only => [:index]
+  after_action :verify_policy_scoped, :only => [:index]
 
   def index
     @apis = policy_scope(Api).order_by(datatables_sort_array)
@@ -78,9 +78,100 @@ class Api::V1::ApisController < Api::V1::BaseController
 
   def save!
     authorize(@api) unless(@api.new_record?)
-    @api.assign_nested_attributes(params[:api], :as => :admin)
+    @api.assign_nested_attributes(api_params)
     authorize(@api)
 
     @api.save
+  end
+
+  def api_params
+    settings_permitted = [
+      :id,
+      :append_query_string,
+      :http_basic_auth,
+      :require_https,
+      :require_https_transition_start_at,
+      :disable_api_key,
+      :api_key_verification_level,
+      :api_key_verification_transition_start_at,
+      :rate_limit_mode,
+      :anonymous_rate_limit_behavior,
+      :authenticated_rate_limit_behavior,
+      :pass_api_key_header,
+      :pass_api_key_query_param,
+      :required_roles_override,
+      :headers_string,
+      :default_response_headers_string,
+      :override_response_headers_string,
+      {
+        :required_roles => [],
+        :allowed_ips => [],
+        :allowed_referers => [],
+        :error_templates => [],
+        :default_response_headers => [],
+        :override_response_headers => [],
+        :headers => [
+          :id,
+          :key,
+          :value,
+        ],
+        :error_data_yaml_strings => [
+          :common,
+          :api_key_missing,
+          :api_key_invalid,
+          :api_key_disabled,
+          :api_key_unauthorized,
+          :over_rate_limit,
+          :https_required,
+        ],
+        :rate_limits => [
+          :id,
+          :duration,
+          :limit_by,
+          :limit,
+          :response_headers,
+        ],
+      },
+    ]
+
+    params.require(:api).permit([
+      :name,
+      :sort_order,
+      :backend_protocol,
+      :frontend_host,
+      :backend_host,
+      :balance_algorithm,
+      {
+        :settings => settings_permitted,
+        :servers => [
+          :id,
+          :host,
+          :port,
+        ],
+        :url_matches => [
+          :id,
+          :frontend_prefix,
+          :backend_prefix,
+        ],
+        :sub_settings => [
+          :id,
+          :http_method,
+          :regex,
+          {
+            :settings => settings_permitted,
+          },
+        ],
+        :rewrites => [
+          :id,
+          :matcher_type,
+          :http_method,
+          :frontend_matcher,
+          :backend_replacement,
+        ],
+      },
+    ])
+  rescue => e
+    logger.error("Parameters error: #{e}")
+    ActionController::Parameters.new({}).permit!
   end
 end

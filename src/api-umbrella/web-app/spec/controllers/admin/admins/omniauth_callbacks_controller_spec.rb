@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe Admin::Admins::OmniauthCallbacksController do
+RSpec.describe Admin::Admins::OmniauthCallbacksController do
   before(:all) do
     Admin.delete_all
     @valid_admin = FactoryGirl.create(:admin, :username => "test@example.com")
@@ -15,7 +15,6 @@ describe Admin::Admins::OmniauthCallbacksController do
     OmniAuth.config.mock_auth[:facebook] = nil
     OmniAuth.config.mock_auth[:github] = nil
     OmniAuth.config.mock_auth[:google_oauth2] = nil
-    OmniAuth.config.mock_auth[:myusa] = nil
     OmniAuth.config.mock_auth[:persona] = nil
     OmniAuth.config.mock_auth[:twitter] = nil
 
@@ -156,26 +155,6 @@ describe Admin::Admins::OmniauthCallbacksController do
 
     it_behaves_like "omniauth login", :google_oauth2
     it_behaves_like "omniauth verified e-mail login", :google_oauth2
-  end
-
-  describe "myusa" do
-    before(:all) do
-      @valid_omniauth = OmniAuth::AuthHash.new({
-        :provider => "myusa",
-        :uid => "12345",
-        :info => {
-          :email => @valid_admin.username,
-        },
-      })
-
-      @case_insensitive_omniauth = @valid_omniauth.deep_dup
-      @case_insensitive_omniauth[:info][:email] = "Hello@ExamplE.Com"
-
-      @nonexistent_omniauth = @valid_omniauth.deep_dup
-      @nonexistent_omniauth[:info][:email] = "bad@example.com"
-    end
-
-    it_behaves_like "omniauth login", :myusa
   end
 
   describe "persona" do

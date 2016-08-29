@@ -1,6 +1,6 @@
 class Admin::SessionsController < Devise::SessionsController
-  before_filter :set_locale
-  skip_after_filter :verify_authorized
+  before_action :set_locale
+  skip_after_action :verify_authorized
 
   def new
   end
@@ -11,7 +11,7 @@ class Admin::SessionsController < Devise::SessionsController
 
   def auth
     response = {
-      "authenticated" => !!current_admin,
+      "authenticated" => !current_admin.nil?,
       "enable_beta_analytics" => (ApiUmbrellaConfig[:analytics][:adapter] == "kylin" || (ApiUmbrellaConfig[:analytics][:outputs] && ApiUmbrellaConfig[:analytics][:outputs].include?("kylin"))),
     }
 

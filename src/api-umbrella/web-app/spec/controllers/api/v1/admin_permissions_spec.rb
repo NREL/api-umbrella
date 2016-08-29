@@ -1,6 +1,6 @@
-require "spec_helper"
+require "rails_helper"
 
-describe Api::V1::AdminPermissionsController do
+RSpec.describe Api::V1::AdminPermissionsController do
   before(:all) do
     @admin = FactoryGirl.create(:admin)
   end

@@ -1,16 +1,19 @@
 AllCops:
   Exclude:
+    - bin/**/*
     - tmp/**/*
     - vendor/**/*
-    - config/compass.rb
-    - public/web-assets/**/*
-    - public/test-assets/**/*
-  RunRailsCops: true
+
+Rails:
+  Enabled: true
+
+Lint/AssignmentInCondition:
+  AllowSafeAssignment: false
 
 Lint/LiteralInInterpolation:
   Enabled: false
 
-Lint/NumericLiterals:
+Style/NumericLiterals:
   Enabled: false
 
 Lint/UnusedBlockArgument:
@@ -40,6 +43,9 @@ Metrics/MethodLength:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Performance/RedundantMerge:
+  Enabled: false
+
 Style/AlignHash:
   Enabled: false
 
@@ -59,11 +65,17 @@ Style/CollectionMethods:
   PreferredMethods:
     find: 'detect'
 
+Style/ConditionalAssignment:
+  Enabled: false
+
 Style/Documentation:
   Enabled: false
 
 Style/EachWithObject:
   Enabled: false
+
+Style/EmptyElse:
+  EnforcedStyle: empty
 
 Style/Encoding:
   Enabled: false
@@ -74,8 +86,14 @@ Style/GuardClause:
 Style/HashSyntax:
   EnforcedStyle: hash_rockets
 
+Style/IfInsideElse:
+  Enabled: false
+
 Style/IfUnlessModifier:
   Enabled: false
+
+Style/IndentArray:
+  EnforcedStyle: consistent
 
 Style/IndentHash:
   EnforcedStyle: consistent
@@ -87,6 +105,9 @@ Style/NegatedIf:
   Enabled: false
 
 Style/Next:
+  Enabled: false
+
+Style/NumericPredicate:
   Enabled: false
 
 Style/OneLineConditional:
@@ -107,7 +128,7 @@ Style/RegexpLiteral:
 Style/SignalException:
   Enabled: false
 
-Style/SpaceAfterControlKeyword:
+Style/SpaceAroundKeyword:
   Enabled: false
 
 Style/StringLiterals:
@@ -119,8 +140,11 @@ Style/StringLiteralsInInterpolation:
 Style/SymbolProc:
   Enabled: false
 
-Style/TrailingComma:
-  Enabled: false
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInLiteral:
+  EnforcedStyleForMultiline: comma
 
 Style/WhileUntilModifier:
   Enabled: false
@@ -128,15 +152,10 @@ Style/WhileUntilModifier:
 Style/WordArray:
   Enabled: false
 
-# Not valid for Rails 3.
-Rails/ActionFilter:
-  Enabled: false
-
-# Not valid for mongoid
-Rails/DefaultScope:
-  Enabled: false
-
 Rails/Delegate:
+  Enabled: false
+
+Rails/FindBy:
   Enabled: false
 
 Rails/HasAndBelongsToMany:

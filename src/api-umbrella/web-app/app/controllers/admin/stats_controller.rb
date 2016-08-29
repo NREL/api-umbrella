@@ -1,12 +1,10 @@
 require "csv_streamer"
 
 class Admin::StatsController < Admin::BaseController
-  set_tab :analytics
-
-  before_filter :set_analytics_adapter
-  around_filter :set_time_zone
-  skip_after_filter :verify_authorized
-  after_filter :verify_policy_scoped
+  before_action :set_analytics_adapter
+  around_action :set_time_zone
+  skip_after_action :verify_authorized
+  after_action :verify_policy_scoped
 
   def index
   end
@@ -78,11 +76,11 @@ class Admin::StatsController < Admin::BaseController
       format.csv do
         # Set Last-Modified so response streaming works:
         # http://stackoverflow.com/a/10252798/222487
-        response.headers["Last-Modified"] = Time.now.httpdate
+        response.headers["Last-Modified"] = Time.now.utc.httpdate
 
         headers = ["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Reason Denied", "Response Time", "Content Type", "Accept Encoding", "User Agent"]
 
-        send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.strftime("%b %-e %Y")}).#{params[:format]}")
+        send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.utc.strftime("%b %-e %Y")}).#{params[:format]}")
         self.response_body = CsvStreamer.new(@result, headers) do |row|
           [
             csv_time(row["request_at"]),
@@ -181,7 +179,7 @@ class Admin::StatsController < Admin::BaseController
         :registration_source => user["registration_source"],
         :created_at => user["created_at"],
         :hits => bucket["doc_count"],
-        :last_request_at => Time.at(bucket["last_request_at"]["value"] / 1000),
+        :last_request_at => Time.at(bucket["last_request_at"]["value"] / 1000).utc,
         :use_description => user["use_description"],
       }
     end

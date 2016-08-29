@@ -1,5 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe Admin::BaseController do
-
+RSpec.describe Admin::BaseController do
 end

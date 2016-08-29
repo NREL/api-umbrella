@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe ApiUser do
+RSpec.describe ApiUser do
   context "api key generation" do
     before(:all) do
       @api_user = FactoryGirl.create(:api_user, :api_key => nil)

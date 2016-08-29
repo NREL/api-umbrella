@@ -1,7 +1,7 @@
 class LogResult::ElasticSearch < LogResult::Base
   def bulk_each
     scroll_id = raw_result["_scroll_id"]
-    while(scroll = @search.client.scroll(:scroll_id => scroll_id, :scroll => "10m")) # rubocop:disable Lint/LiteralInCondition
+    while(scroll = @search.client.scroll(:scroll_id => scroll_id, :scroll => "10m")) # rubocop:disable Lint/AssignmentInCondition
       scroll_id = scroll["_scroll_id"]
       hits = scroll["hits"]["hits"]
 

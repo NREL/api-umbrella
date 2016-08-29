@@ -1,6 +1,6 @@
 module ApiUmbrella
   class ElasticsearchProxy < Rack::Proxy
-    PREFIX = "/admin/elasticsearch"
+    PREFIX = "/admin/elasticsearch".freeze
 
     def initialize(options = {})
       super(options.merge({

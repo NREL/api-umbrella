@@ -13,7 +13,7 @@ class ConfigVersion
 
   def self.publish!(config)
     self.create!({
-      :version => Time.now,
+      :version => Time.now.utc,
       :config => config,
     })
   end
@@ -49,7 +49,7 @@ class ConfigVersion
 
   def self.pending_config
     {
-      "apis" => Api.sorted.all.map { |api| Hash[api.attributes] }
+      "apis" => Api.sorted.all.map { |api| Hash[api.attributes] },
     }
   end
 
@@ -153,7 +153,7 @@ class ConfigVersion
       # data to import, since these are likely to differ even if the data is
       # really the same (since these depend on when the import was actually
       # performed).
-      duplicate.except!(*%w(version created_by created_at updated_at updated_by _id))
+      duplicate.except!(*%w(version created_by created_at deleted_at updated_at updated_by _id))
 
       duplicate.each do |key, value|
         duplicate[key] = record_for_comparison(value)
@@ -187,7 +187,7 @@ class ConfigVersion
 
     if(duplicate.kind_of?(Hash))
       duplicate.each do |key, value|
-        if(value.kind_of?(Moped::BSON::ObjectId))
+        if(value.kind_of?(BSON::ObjectId))
           duplicate[key] = value.to_s
         else
           duplicate[key] = stringify_object_ids(value)

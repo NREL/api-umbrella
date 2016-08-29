@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe Api::V1::AdminsController do
+RSpec.describe Api::V1::AdminsController do
   before(:each) do
     DatabaseCleaner.clean
   end
@@ -337,7 +337,7 @@ describe Api::V1::AdminsController do
       describe "localhost/* full admin" do
         before(:each) do
           @admin = FactoryGirl.create(:limited_admin, :groups => [
-            FactoryGirl.create(:localhost_root_admin_group)
+            FactoryGirl.create(:localhost_root_admin_group),
           ])
         end
         it_behaves_like "admin forbidden"

@@ -99,9 +99,6 @@ web:
         client_secret:
       ldap:
         options:
-      myusa:
-        client_id:
-        client_secret:
 static_site:
   host: 127.0.0.1
   port: 14013

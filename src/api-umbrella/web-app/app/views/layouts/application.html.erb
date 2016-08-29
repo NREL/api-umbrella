@@ -5,14 +5,14 @@
     <title>API Umbrella</title>
     <%= stylesheet_link_tag "application" %>
     <%= javascript_include_tag "application" %>
-    <%= csrf_meta_tag %>
+    <%= csrf_meta_tags %>
   </head>
   <body>
-    <div class="container-fluid">
-      <div id="main" class="row-fluid">
+    <div class="container">
+      <div id="main" class="row">
         <% flash.each do |flash_type, message| %>
-          <div class="alert alert-<%= flash_type %>">
-            <%= message %>
+          <div class="alert <%= bootstrap_class_for(flash_type) %>">
+            <%= message.html_safe %>
           </div>
         <% end %>
 

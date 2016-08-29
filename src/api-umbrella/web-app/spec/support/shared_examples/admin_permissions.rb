@@ -1,4 +1,4 @@
-shared_examples "admin permissions" do |options|
+RSpec.shared_examples "admin permissions" do |options|
   options ||= {}
 
   let(:except_required_permissions) do

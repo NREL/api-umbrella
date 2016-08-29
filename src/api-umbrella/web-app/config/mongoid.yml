@@ -1,31 +1,19 @@
 defaults: &defaults
-  sessions:
+  clients:
     default:
       uri: <%= ApiUmbrellaConfig[:mongodb][:url] %>
-      options:
-        safe: true
-  options:
-    allow_dynamic_fields: false
 
 development:
   <<: *defaults
 
 test:
-  sessions:
+  clients:
     default:
       uri: <%= ApiUmbrellaConfig[:mongodb][:url] %>
       options:
-        safe: true
-        consistency: :strong
-        # In the test environment we lower the retries and retry interval to
-        # low amounts for fast failures.
-        max_retries: 1
-        retry_interval: 0
-  options:
-    allow_dynamic_fields: false
-
-staging:
-  <<: *defaults
+        read:
+          mode: :primary
+        max_pool_size: 1
 
 production:
   <<: *defaults

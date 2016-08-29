@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe DatatablesHelper do
+RSpec.describe DatatablesHelper do
   describe "#datatables_sort" do
     it "uses defaults to no order" do
       helper.stub(:params) { {} }
@@ -11,11 +11,11 @@ describe DatatablesHelper do
       helper.stub(:params) do
         { :columns => { "0" => { :data => 'col0' }, "1" => { :data => 'col1' },
                         "2" => { :data => 'col2' }, "3" => { :data => 'col3' } },
-          :order => [{ :column => '2', :dir => 'asc' }, { :column => '0', :dir => 'desc' }]
-        }
+          :order => [{ :column => '2', :dir => 'asc' }, { :column => '0', :dir => 'desc' }] }
       end
       expect(helper.datatables_sort).to eq([
-        { 'col2' => 'asc' }, { 'col0' => 'desc' }])
+        { 'col2' => 'asc' }, { 'col0' => 'desc' }
+      ])
     end
   end
 
@@ -66,23 +66,25 @@ describe DatatablesHelper do
       expect(helper.datatables_columns).to eq([
         { :name => 'Username', :field => 'username' },
         { :name => 'E-mail', :field => 'email' },
-        { :name => 'Name', :field => 'name' }])
+        { :name => 'Name', :field => 'name' },
+      ])
     end
 
     it "accounts for data errors" do
       helper.stub(:params) do
         { :columns => {
-          "0" => { :name => "Username", :searchable => true,  # missing data
+          "0" => { :name => "Username", :searchable => true, # missing data
                    :orderable => true, :search => { :value => '', :regex => false } },
-          "1" => { :data => "email", :searchable => true,   # missing name
+          "1" => { :data => "email", :searchable => true, # missing name
                    :orderable => true, :search => { :value => '', :regex => false } },
-          "2" => { :data => ["a", "b", "c"], :name => "Name", :searchable => true,   # data is an array
+          "2" => { :data => ["a", "b", "c"], :name => "Name", :searchable => true, # data is an array
                    :orderable => true, :search => { :value => '', :regex => false } },
         } }
       end
       expect(helper.datatables_columns).to eq([
         { :name => '-', :field => 'email' },
-        { :name => 'Name', :field => '["a", "b", "c"]' }])
+        { :name => 'Name', :field => '["a", "b", "c"]' },
+      ])
     end
   end
 
@@ -116,5 +118,5 @@ describe DatatablesHelper do
     end
   end
 
-  describe "#respond_to_datatables"   # @todo
+  describe "#respond_to_datatables" # @todo
 end

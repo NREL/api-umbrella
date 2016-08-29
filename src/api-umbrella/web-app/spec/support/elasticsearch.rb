@@ -4,7 +4,7 @@ RSpec.configure do |config|
   config.before(:suite) do
     client = Elasticsearch::Client.new({
       :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
-      :logger => Rails.logger
+      :logger => Rails.logger,
     })
 
     templates = MultiJson.load(File.read(File.expand_path("../../../../../../config/elasticsearch_templates.json", __FILE__)))

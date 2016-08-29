@@ -7,7 +7,6 @@ de:
     facebook: Facebook
     github: GitHub
     google_oauth2: Google
-    myusa: MyUSA
     persona: Persona
   errors:
     messages:

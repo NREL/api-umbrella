@@ -9,7 +9,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
 
     @client = ::Elasticsearch::Client.new({
       :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
-      :logger => Rails.logger
+      :logger => Rails.logger,
     })
 
     @query = {
@@ -58,7 +58,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
   def permission_scope!(scopes)
     filter = {
       :bool => {
-        :should => []
+        :should => [],
       },
     }
 
@@ -77,7 +77,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
     if(query_string.present?)
       @query[:query][:filtered][:query] = {
         :query_string => {
-          :query => query_string
+          :query => query_string,
         },
       }
     end
@@ -188,7 +188,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
         condition = if(query["condition"] == "OR") then :should else :must end
         query_filter = {
           :bool => {
-            condition => filters
+            condition => filters,
           },
         }
       end
@@ -273,7 +273,7 @@ class LogSearch::ElasticSearch < LogSearch::Base
   end
 
   def aggregate_by_drilldown_over_time!(prefix)
-    @query[:query][:filtered][:filter][:bool][:must] <<                 {
+    @query[:query][:filtered][:filter][:bool][:must] << {
       :prefix => {
         :request_hierarchy => prefix,
       },

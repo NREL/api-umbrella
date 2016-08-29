@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe Api::V1::ApisController do
+RSpec.describe Api::V1::ApisController do
   before(:each) do
     DatabaseCleaner.clean
   end
@@ -1259,7 +1259,7 @@ describe Api::V1::ApisController do
           {
             "code" => "FORBIDDEN",
             "message" => "You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n- localhost/a\n- localhost/b\n- localhost/c\n\nContact your API Umbrella administrator if you need access to new APIs.",
-          }
+          },
         ])
       end.to_not change { Api.count }
     end
@@ -1334,7 +1334,7 @@ describe Api::V1::ApisController do
                   "new-write",
                   "new-write#{rand(999_999)}",
                 ],
-              })
+              }),
             }),
           ],
         })

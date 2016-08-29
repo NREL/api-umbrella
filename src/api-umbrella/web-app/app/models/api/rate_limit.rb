@@ -2,7 +2,7 @@ class Api::RateLimit
   include Mongoid::Document
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :duration, :type => Integer
   field :accuracy, :type => Integer
   field :limit_by, :type => String
@@ -33,13 +33,6 @@ class Api::RateLimit
   # Callbacks
   before_validation :auto_calculate_accuracy
   before_validation :auto_calculate_distributed
-
-  # Mass assignment security
-  attr_accessible :duration,
-    :limit_by,
-    :limit,
-    :response_headers,
-    :as => [:default, :admin]
 
   private
 

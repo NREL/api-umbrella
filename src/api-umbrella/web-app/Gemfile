@@ -1,281 +1,156 @@
 source "https://rubygems.org"
 
-gem "rails", "~> 3.2.22.2"
+gem "rails", "~> 4.2.7.1"
 
 # Rails app server
-gem "puma", "~> 2.11.3"
+gem "puma", "~> 3.6.0"
 
 # Error notification service (optional)
-gem "rollbar", "~> 2.10.0"
-
-# Environment specific configuration
-gem "dotenv-rails", "~> 1.0.2"
+gem "rollbar", "~> 2.12.0"
 
 # Abort requests that take too long
-# Don't upgrade to 0.1 yet, since it causes issues with Capybara test:
-# https://github.com/heroku/rack-timeout/issues/55
-gem "rack-timeout", "~> 0.0.4"
+gem "rack-timeout", "~> 0.4.2"
 
 # For proxying HTTP requests to password-protected places for admins.
-gem "rack-proxy", "~> 0.5.17"
+gem "rack-proxy", "~> 0.6.0"
 
 # JSON handling
-gem "multi_json", "~> 1.11.0"
-gem "oj", "~> 2.13.0", :platforms => [:ruby]
+gem "multi_json", "~> 1.12.1"
+gem "oj", "~> 2.17.3", :platforms => [:ruby]
+
+# Use Oj for the default Rails to_json calls.
 gem "oj_mimic_json", "~> 1.0.1", :platforms => [:ruby]
 
-gem "sequel", "~> 4.31.0"
+# SQL escape libraries for Kylin analytics.
+gem "sequel", "~> 4.37.0"
 
 # MongoDB
-gem "mongoid", "~> 3.1.6"
+gem "mongoid", "~> 5.1.3"
 
-# Created/updated userstamping
-# Hold on the 0.3 release until we tackle the migration necessary for 0.4:
-# https://github.com/tbpro/mongoid_userstamp/blob/master/CHANGELOG.md#040---2014-02-24
-gem "mongoid_userstamp", "~> 0.3.2"
+# Soft-delete
+gem "mongoid-paranoia", "~> 2.0.0"
 
 # Versioning for mongoid
 gem "mongoid_delorean", "~> 1.3.0"
 
 # Display deeply nested validation errors on embedded documents.
-gem "mongoid-embedded-errors", "~> 2.0.1"
+#
+# Fork to fix Mongoid 4+ compatibility:
+# https://github.com/glooko/mongoid-embedded-errors/pull/6
+gem "mongoid-embedded-errors", "~> 2.0.1", :git => "https://github.com/calfzhou/mongoid-embedded-errors.git"
 
 # Data migrations
-gem "mongoid_rails_migrations", "~> 1.0.1"
+gem "mongoid_rails_migrations", "~> 1.1.0"
 
 # Rails cache store using mongo.
-gem "mongoid-store", "~> 0.4.4"
-
-# Generate UUIDs
-gem "uuidtools", "~> 2.1.4"
+#
+# Use master from git for Rails 4 compatibility.
+gem "mongoid-store", :git => "https://github.com/ahoward/mongoid-store.git"
 
 # Database seeding
+#
 # This branch adds mongoid compatibility:
 # https://github.com/mbleigh/seed-fu/pull/80
 gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
 
 # Elasticsearch
-gem "elasticsearch", "~> 1.0.14"
+gem "elasticsearch", "~> 2.0.0"
 
 # OmniAuth-based authentication
-gem "devise", "~> 3.4.0"
-gem "omniauth", "~> 1.2.1"
-gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml"
-gem "omniauth-facebook", "~> 2.0.0"
-# Patched omniauth-github for e-mail verification:
-# https://github.com/intridea/omniauth-github/pull/41
-gem "omniauth-github", :git => "https://github.com/riking/omniauth-github.git", :branch => "all_emails"
-gem "omniauth-google-oauth2", "~> 0.2.2"
-# Latest from git to loosen net-ldap dependency
-# (https://github.com/intridea/omniauth-ldap/pull/46) so we can bump net-ldap
-# for OSVDB-106108
-gem "omniauth-ldap", "~> 1.0.4", :git => "https://github.com/intridea/omniauth-ldap.git"
-gem "omniauth-myusa", :git => "https://github.com/GSA-OCSIT/omniauth-myusa.git"
-gem "omniauth-persona", "~> 0.0.1"
-gem "omniauth-twitter", "~> 1.0.1"
+gem "devise", "~> 4.2.0"
+gem "omniauth", "~> 1.3.1"
+gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml", :require => false
+gem "omniauth-facebook", "~> 4.0.0", :require => false
+# Use master for e-mail verification:
+# https://github.com/intridea/omniauth-github/pull/48
+gem "omniauth-github", :git => "https://github.com/intridea/omniauth-github.git", :require => false
+gem "omniauth-google-oauth2", "~> 0.4.1", :require => false
+gem "omniauth-ldap", "~> 1.0.5", :require => false
+gem "omniauth-persona", "~> 0.0.1", :require => false
+gem "omniauth-twitter", "~> 1.2.1", :require => false
+
+# Assets for login page.
+gem "bootstrap-sass", "~> 3.3.7"
+gem "jquery-rails", "~> 4.2.1"
 
 # Authorization
 gem "pundit", "~> 1.1.0"
 
-# Pagination
-gem "kaminari", "~> 0.16.1"
-gem "kaminari-bootstrap", "~> 0.1.3" # Hold at bootstrap 2 version
-
-# Navigation links
-gem "tabs_on_rails", "~> 2.2.0"
-
-# Unobtrusive javascript for Rails helpers (things like delete links).
-gem "jquery-rails", "~> 3.1.4"
-
 # Views/templates for APIs
-gem "rabl", "~> 0.11.5"
-gem "jbuilder", "~> 2.2.2"
+gem "rabl", "~> 0.13.0"
+gem "jbuilder", "~> 2.6.0"
 gem "csv_builder", "~> 2.1.1"
 
 # Country and state name lookups
-gem "countries", "~> 0.11.3"
-
-# HTML diffs
-gem "diffy", "~> 3.0.7"
-
-# Use a newer version of Psych for YAML. The newer gem version does a better
-# job of making multi-line strings and strings with colons in them more human
-# readable.
-gem "psych", "~> 2.0.13", :platforms => [:ruby]
+gem "countries", "~> 1.2.5"
 
 # For user-inputted YAML.
 gem "safe_yaml", "~> 1.0.4", :require => "safe_yaml/load"
 
 # Delayed jobs and background tasks
-gem "delayed_job_mongoid", "~> 2.1.0"
-gem "daemons", "~> 1.2.2"
+gem "delayed_job_mongoid", "~> 2.2.0"
+gem "daemons", "~> 1.2.4"
 
 # HTML email styling
 # nokogiri is a soft-dependency for premailer-rails so we need to explicitly
 # include it here.
-gem "premailer-rails", "~> 1.8.0"
+gem "premailer-rails", "~> 1.9.4"
 gem "nokogiri", "~> 1.6.8"
-
-gem "mail", "~> 2.5.4"
 
 # Localization in the admin based on the Accept-Language header
 gem "http_accept_language", "~> 2.0.5"
 
 # Markdown
-gem "kramdown", "~> 1.6.0"
+gem "kramdown", "~> 1.12.0"
 
 # Lucene query parsing for translating into SQL.
 gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_parser.git"
 
+# Thread-safe per-request variables.
+gem "request_store", "~> 1.3.1"
+
+# Share i18n data with the admin-ui client-side app.
 gem "i18n-js", ">= 3.0.0.rc13"
 
-# Include test-unit so rspec 2 can run under Ruby 2.2:
-# https://github.com/rspec/rspec-rails/issues/1273
-#
-# Include in production bundle (not just development/test), since
-# active_model_serializers (which we don't use, but ember-rails forces as a
-# dependency) tries to monkey-patch ActionController::TestCase at load-time
-# (https://github.com/rails-api/active_model_serializers/blob/v0.9.3/lib/active_model_serializers.rb#L15).
-# This fails under Ruby 2.2 if we don't also have this test-unit gem in
-# production. Sigh...
-gem "test-unit", :require => false
-
-group :production, :staging do
-  # Log to stdout instead of file
-  gem "rails_stdout_logging", "~> 0.0.3"
-end
-
-# Gems used only for assets and not required
-# in production environments by default.
-group :assets do
-  gem 'sass-rails', '~> 3.2.6'
-
-  # Hold at sass 3.2, since newer versions lead to weird sprockets errors.
-  # Apparently fixed in newer versions of sprockets, but not the version Rails
-  # 3.2 uses:
-  # https://github.com/sass/sass/issues/1144
-  gem "sass", "~> 3.2.19"
-
-  # A Sass version of Twitter Bootstrap. This it the basis for our styles and
-  # JavaScript components.
-  gem "bootstrap-sass", "~> 2.3.2.2"
-
-  # Sass utilities and automatic image spirtes
-  gem "compass-rails", "~> 1.1.7"
-
-  # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-  gem "therubyracer", "~> 0.12.2", :platforms => :ruby
-  # For JRuby, use the Node.js execjs runtime - We'll assume it's on the
-  # servers so it gets picked up by execjs. It's faster than therubyrhino.
-
-  # JavaScript compression
-  gem "uglifier", "~> 2.7.1"
-
-  # Smarter handling of compiled CSS with relative paths (like Jammit)
-  gem "sprockets-urlrewriter", "~> 0.1.2"
-
-  # Faster asset precompilation and caching.
-  # This specific version contains the CLEAN_EXPIRED_ASSETS option to speed up
-  # deployments by combining two tasks into one (particularly under JRuby).
-  gem "turbo-sprockets-rails3", "0.3.13"
-
-  # Ember.js
-  gem "ember-rails", "~> 0.15.0"
-  gem "ember-source", "~> 1.7.1"
-
-  # We're not using this ourselves (ember-rails is pulling it in), but if it gets
-  # updated to 0.9.1 it seems to break various things in our responses. I think
-  # the 0.9.1 release might be slightly busted based on these reports:
-  # https://github.com/rails-api/active_model_serializers/issues/747
-  # https://github.com/rails-api/active_model_serializers/issues/746
-  # Lock to 0.9.0 for now.
-  gem "active_model_serializers", "0.9.0"
-
-  source "https://rails-assets.org" do
-    # Client-side translations
-    gem "rails-assets-polyglot", "~> 0.4.1"
-
-    # Smooth scrolling to content
-    gem "rails-assets-jquery.scrollTo", "~> 1.4.14"
-
-    # Icons
-    gem "rails-assets-font-awesome", "~> 4.2.0"
-
-    # Code editor (for syntax highlighting inside textareas)
-    gem "rails-assets-ace-builds", "~> 1.1.7"
-
-    # Visual text diffs
-    gem "rails-assets-jsdiff", "~> 1.0.8"
-
-    # jQuery ajax calls wrapped in Ember promises
-    gem "rails-assets-ic-ajax", "~> 2.0.1"
-    gem "rails-assets-ember", "~> 1.7.1"
-
-    # For Markdown parsing
-    gem "rails-assets-marked", "~> 0.3.2"
-
-    gem "rails-assets-bootbox", "~> 3.3.0"
-    gem "rails-assets-bootstrap-daterangepicker", "~> 1.3.12"
-    gem "rails-assets-datatables", "~> 1.10.2"
-    gem "rails-assets-html5shiv", "~> 3.7.0"
-    gem "rails-assets-inflection", "~> 1.4.0"
-    gem "rails-assets-jquery", "~> 1.11.2"
-    gem "rails-assets-jquery-bbq-deparam", "~> 1.2.1"
-    gem "rails-assets-jstz-detect", "~> 1.0.5"
-    gem "rails-assets-lodash", "~> 2.4.1"
-    gem "rails-assets-moment", "~> 2.8.2"
-    gem "rails-assets-numeral", "~> 1.5.3"
-    gem "rails-assets-pnotify", "~> 2.0.1"
-    gem "rails-assets-qtip2", "~> 2.2.0"
-    gem "rails-assets-selectize", "~> 0.11.2"
-    gem "rails-assets-spinjs", "~> 2.0.0"
-  end
-end
+# Log to stdout instead of file
+gem "rails_stdout_logging", "~> 0.0.5", :require => false
 
 # Bundle gems for the local environment. Make sure to
 # put test-only gems in this group so their generators
 # and rake tasks are available in development mode:
 group :development, :test do
-  gem "rspec-rails", "~> 2.99.0"
-  gem "factory_girl_rails", "~> 4.5.0"
-  gem "rspec-html-matchers", "~> 0.5.0"
+  gem "rspec-rails", "~> 3.5.2"
+  gem "factory_girl_rails", "~> 4.7.0"
+  gem "rspec-html-matchers", "~> 0.8.0"
 
   # Rspec formatter - Prints overall progress and error details as they happen.
-  gem "fuubar", "~> 1.3.3"
+  gem "fuubar", "~> 2.2.0"
 
   # Ruby lint/style checker
-  gem "rubocop", "~> 0.27.1", :require => false
+  gem "rubocop", "~> 0.42.0", :require => false
 
   # Real browser testing
-  gem "capybara", "~> 2.5.0"
+  gem "capybara", "~> 2.8.1"
 
   # Take screenshots and save the HTML content whenever capybara errors occur
   # for better debugging.
-  gem "capybara-screenshot", "~> 1.0.11"
+  gem "capybara-screenshot", "~> 1.0.13"
 
   # Headless webkit for capybara
-  gem "poltergeist", "~> 1.6.0"
+  gem "poltergeist", "~> 1.10.0"
 
   # Clean the database between tests
-  gem "database_cleaner", "~> 1.4.1"
-
-  # JavaScript lint/style checker
-  gem "jshintrb", "~> 0.3.0"
-
-  source "https://rails-assets.org" do
-    # For testing drag and drop in capybara.
-    gem "rails-assets-jquery-simulate-ext", "~> 1.3.0"
-  end
+  gem "database_cleaner", "~> 1.5.3"
 
   # For creating test data in elasticsearch.
-  gem "elasticsearch-persistence", "~> 0.1.7"
+  gem "elasticsearch-persistence", "~> 0.1.9"
 
   # For parsing URLs in tests.
-  gem "addressable", "~> 2.3.8"
+  gem "addressable", "~> 2.4.0"
 
   # For caching external web requests
-  gem "vcr", "~> 2.9.3", :require => false
-  gem "webmock", "~> 1.21.0", :require => false
+  gem "vcr", "~> 3.0.3", :require => false
+  gem "webmock", "~> 2.1.0", :require => false
 
   # Generate output for CI.
   gem "rspec_junit_formatter", "~> 0.2.3"
@@ -284,20 +159,17 @@ group :development, :test do
   gem "childprocess", "~> 0.5.9"
 
   # Check for security issues on gem dependencies.
-  #
-  # Use this fork for .bundlerauditignore support:
-  # https://github.com/rubysec/bundler-audit/pull/122
-  gem "bundler-audit", :git => "https://github.com/rickypai/bundler-audit.git", :branch => "rpai/ignorefile", :require => false
+  gem "bundler-audit", :require => false
 
   # Check for application security issues.
   gem "brakeman", :require => false
 
   # Debug inspecting/printing.
-  gem "awesome_print", "~> 1.6.1"
+  gem "awesome_print", "~> 1.7.0"
 end
 
 group :development do
   # Deployment
-  gem "capistrano", "~> 3.3.5"
-  gem "capistrano-rails", "~> 1.1.2"
+  gem "capistrano", "~> 3.6.1"
+  gem "capistrano-rails", "~> 1.1.7"
 end

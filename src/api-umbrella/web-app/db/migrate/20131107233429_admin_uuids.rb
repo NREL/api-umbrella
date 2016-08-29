@@ -14,7 +14,7 @@ class AdminUuids < Mongoid::Migration
         # UUID _id value.
         new_admin = admin.clone
         new_admin.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(admin._id))
-        new_admin._id = UUIDTools::UUID.random_create.to_s
+        new_admin._id = SecureRandom.uuid
 
         puts "#{admin._id} => #{new_admin._id}"
 

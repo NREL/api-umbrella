@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe Api::V1::AdminGroupsController do
+RSpec.describe Api::V1::AdminGroupsController do
   before(:each) do
     DatabaseCleaner.clean
   end
@@ -63,7 +63,7 @@ describe Api::V1::AdminGroupsController do
     describe "admins" do
       it "returns metadata for the admins belonging to the group" do
         group = FactoryGirl.create(:admin_group)
-        admin_in_group = FactoryGirl.create(:limited_admin, :last_sign_in_at => Time.now, :groups => [
+        admin_in_group = FactoryGirl.create(:limited_admin, :last_sign_in_at => Time.now.utc, :groups => [
           group,
         ])
 
