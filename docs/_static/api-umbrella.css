@@ -29,6 +29,10 @@
   margin-left: 0px;
 }
 
+.rst-content .swagger-section .swagger-ui-wrap ul#resources li.resource ul.endpoints li.endpoint ul.operations li.operation {
+  overflow-x: auto;
+}
+
 .rst-content .section .swagger-section code {
   border-style: none;
   white-space: pre;
