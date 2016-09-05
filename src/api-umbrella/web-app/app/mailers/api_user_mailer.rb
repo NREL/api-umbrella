@@ -1,5 +1,3 @@
-require "mail_sanitizer"
-
 class ApiUserMailer < ActionMailer::Base
   default :from => "noreply@#{ApiUmbrellaConfig[:web][:default_host]}"
 
@@ -20,8 +18,8 @@ class ApiUserMailer < ActionMailer::Base
     end
 
     mail :subject => "Your #{site_name} API key",
-      :from => MailSanitizer.sanitize_address(from),
-      :to => MailSanitizer.sanitize_address(user.email)
+      :from => from,
+      :to => user.email
   end
 
   def notify_api_admin(user)
@@ -32,7 +30,7 @@ class ApiUserMailer < ActionMailer::Base
     full_name = "#{@user.first_name} #{@user.last_name}"
     from = "noreply@#{ApiUmbrellaConfig[:web][:default_host]}"
     mail :subject => "#{full_name} just subscribed",
-         :from => MailSanitizer.sanitize_address(from),
-         :to => MailSanitizer.sanitize_address(to)
+         :from => from,
+         :to => to
   end
 end

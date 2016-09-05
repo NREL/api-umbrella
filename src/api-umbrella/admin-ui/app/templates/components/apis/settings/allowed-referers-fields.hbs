@@ -1,0 +1,3 @@
+{{#fields-for model=model style="horizontal" as |f|}}
+  {{f.textarea-field "allowedReferersString" label=(t "mongoid.attributes.api/settings.allowed_referers") tooltip=(t "admin.api.settings.allowed_referers_tooltip_markdown") placeholder="*.example.com/*"}}
+{{/fields-for}}

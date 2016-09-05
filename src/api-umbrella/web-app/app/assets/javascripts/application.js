@@ -1,1 +1,1 @@
-//= require jquery/jquery.js
+//= require jquery

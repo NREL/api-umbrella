@@ -3,7 +3,7 @@ class LogSearch::Sql < LogSearch::Base
 
   NOT_NULL_FIELDS = [
     "request_ip",
-  ]
+  ].freeze
 
   LEGACY_FIELDS = {
     "backend_response_time" => "timer_backend_response",
@@ -16,11 +16,11 @@ class LogSearch::Sql < LogSearch::Base
     "request_path" => "request_url_path",
     "request_scheme" => "request_url_scheme",
     "response_time" => "timer_response",
-  }
+  }.freeze
 
   FIELD_TYPES = {
     "response_status" => :int,
-  }
+  }.freeze
 
   def initialize(options = {})
     super

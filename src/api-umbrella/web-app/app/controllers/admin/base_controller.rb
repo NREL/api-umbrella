@@ -1,13 +1,8 @@
 class Admin::BaseController < ApplicationController
-  before_filter :authenticate_admin!
-  skip_after_filter :verify_authorized, :only => [:empty]
-  before_filter :set_locale
-
-  layout "admin"
-
-  def empty
-    render(:text => "", :layout => true)
-  end
+  before_action :authenticate_admin!
+  after_action :verify_authorized
+  skip_after_action :verify_authorized, :only => [:empty]
+  before_action :set_locale
 
   private
 

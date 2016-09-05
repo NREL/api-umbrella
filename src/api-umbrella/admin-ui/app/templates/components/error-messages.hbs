@@ -1,0 +1,12 @@
+<div id="error_messages">
+  {{#if hasErrors}}
+    <div class="alert alert-danger error-messages" role="alert">
+      <h4>Oops! Please check the errors below:</h4>
+      <ul>
+        {{#each messages as |message|}}
+          <li>{{{message}}}</li>
+        {{/each}}
+      </ul>
+    </div>
+  {{/if}}
+</div>

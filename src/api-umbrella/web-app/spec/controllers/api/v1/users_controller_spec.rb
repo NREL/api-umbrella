@@ -1,6 +1,6 @@
-require "spec_helper"
+require "rails_helper"
 
-describe Api::V1::UsersController do
+RSpec.describe Api::V1::UsersController do
   before(:each) do
     DatabaseCleaner.clean
 
@@ -221,9 +221,9 @@ describe Api::V1::UsersController do
         response.status.should eql(success_response_status)
         data = MultiJson.load(response.body)
         user = ApiUser.find(data["user"]["id"])
-        user.ts.should be_kind_of(Moped::BSON::Timestamp)
-        user.ts.seconds.should be_within(2).of(Time.now.to_i)
-        user.ts.increment.should be_kind_of(Numeric)
+        user[:ts].should be_kind_of(BSON::Timestamp)
+        user[:ts].seconds.should be_within(2).of(Time.now.utc.to_i)
+        user[:ts].increment.should be_kind_of(Numeric)
       end.to change { ApiUser.count }.by(success_record_change_count)
     end
   end
@@ -293,7 +293,7 @@ describe Api::V1::UsersController do
       it_behaves_like "wildcard, case-insensitive search over field", :registration_source, "RegistrationSourceSearchTest", "registrationsourcesearchtest"
       it_behaves_like "wildcard, case-insensitive search over field", :registration_source, "RegistrationSourceSearchTest", "registrationsourcesearchtest"
       it_behaves_like "wildcard, case-insensitive search over field", :roles, ["RoleSearchTest1", "RoleSearchTest2", "RoleSearchTest3"], "olesearchtest3"
-      it_behaves_like "wildcard, case-insensitive search over field", :roles, "381f2ad2-493b-4750-994d-a046fa6eae70", "994D-A046"
+      it_behaves_like "wildcard, case-insensitive search over field", :id, "381f2ad2-493b-4750-994d-a046fa6eae70", "994D-A046"
     end
   end
 
@@ -418,44 +418,44 @@ describe Api::V1::UsersController do
 
         describe "accounts without roles" do
           describe "new accounts they created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now - 2.weeks + 5.minutes), :roles => nil) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now.utc - 2.weeks + 5.minutes), :roles => nil) }
             it_behaves_like "allowed to view full api key"
           end
 
           describe "old accounts they created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now - 2.weeks - 5.minutes), :roles => nil) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now.utc - 2.weeks - 5.minutes), :roles => nil) }
             it_behaves_like "allowed to view full api key"
           end
 
           describe "new accounts other admins created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => nil) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes, :roles => nil) }
             it_behaves_like "allowed to view full api key"
           end
 
           describe "old accounts other admins created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => nil) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes, :roles => nil) }
             it_behaves_like "allowed to view full api key"
           end
         end
 
         describe "accounts with roles" do
           describe "new accounts they created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => ["foo"]) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes, :roles => ["foo"]) }
             it_behaves_like "allowed to view full api key"
           end
 
           describe "old accounts they created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => ["foo"]) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes, :roles => ["foo"]) }
             it_behaves_like "allowed to view full api key"
           end
 
           describe "new accounts other admins created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => ["foo"]) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes, :roles => ["foo"]) }
             it_behaves_like "allowed to view full api key"
           end
 
           describe "old accounts other admins created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => ["foo"]) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes, :roles => ["foo"]) }
             it_behaves_like "allowed to view full api key"
           end
         end
@@ -467,44 +467,44 @@ describe Api::V1::UsersController do
 
         describe "accounts without roles" do
           describe "new accounts they created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now - 2.weeks + 5.minutes), :roles => nil) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now.utc - 2.weeks + 5.minutes), :roles => nil) }
             it_behaves_like "allowed to view full api key"
           end
 
           describe "old accounts they created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now - 2.weeks - 5.minutes), :roles => nil) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => (Time.now.utc - 2.weeks - 5.minutes), :roles => nil) }
             it_behaves_like "not allowed to view full api key"
           end
 
           describe "new accounts other admins created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => nil) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes, :roles => nil) }
             it_behaves_like "allowed to view full api key"
           end
 
           describe "old accounts other admins created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => nil) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes, :roles => nil) }
             it_behaves_like "not allowed to view full api key"
           end
         end
 
         describe "accounts with roles" do
           describe "new accounts they created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => ["foo"]) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes, :roles => ["foo"]) }
             it_behaves_like "allowed to view full api key"
           end
 
           describe "old accounts they created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => ["foo"]) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => current_admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes, :roles => ["foo"]) }
             it_behaves_like "not allowed to view full api key"
           end
 
           describe "new accounts other admins created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks + 5.minutes, :roles => ["foo"]) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes, :roles => ["foo"]) }
             it_behaves_like "not allowed to view full api key"
           end
 
           describe "old accounts other admins created" do
-            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now - 2.weeks - 5.minutes, :roles => ["foo"]) }
+            let(:api_user) { FactoryGirl.create(:api_user, :created_by => @admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes, :roles => ["foo"]) }
             it_behaves_like "not allowed to view full api key"
           end
         end
@@ -950,7 +950,7 @@ describe Api::V1::UsersController do
           data = MultiJson.load(response.body)
           user = ApiUser.find(data["user"]["id"])
 
-          ActionMailer::Base.deliveries.first.encoded.should include("https://example.com/api.json?api_key=#{user.api_key}\r\n( https://example.com/api.json?api_key=#{user.api_key} )")
+          ActionMailer::Base.deliveries.first.encoded.should include("https://example.com/api.json?api_key=#{user.api_key}\r\n\r\n( https://example.com/api.json?api_key=#{user.api_key} )")
         end
       end
 
@@ -976,7 +976,7 @@ describe Api::V1::UsersController do
           p = params
           p[:options] = { :send_welcome_email => true }
           post :create, p
-          ActionMailer::Base.deliveries.first.encoded.should include("contact us ( http://localhost/contact/ )")
+          ActionMailer::Base.deliveries.first.encoded.should include("contact us \r\n( http://localhost/contact/ )")
         end
       end
     end
@@ -1008,7 +1008,6 @@ describe Api::V1::UsersController do
           ApiUmbrellaConfig[:web][:send_notify_email] = true
           post :create, p
           ApiUmbrellaConfig[:web][:send_notify_email] = false
-
         end.to change { ActionMailer::Base.deliveries.count }.by(1)
       end
 

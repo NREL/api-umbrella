@@ -2,7 +2,7 @@ require "elasticsearch/persistence/model"
 
 Elasticsearch::Persistence.client = Elasticsearch::Client.new({
   :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
-  :logger => Rails.logger
+  :logger => Rails.logger,
 })
 
 class LogItem
@@ -58,7 +58,7 @@ FactoryGirl.define do
     internal_response_time 1.8
     proxy_overhead 3
     request_accept_encoding "*/*"
-    request_at { Time.now }
+    request_at { Time.now.utc }
     request_hierarchy ["0/127.0.0.1/", "1/127.0.0.1/hello"]
     request_host "127.0.0.1"
     request_ip "127.0.0.1"

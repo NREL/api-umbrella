@@ -2,7 +2,7 @@ class MoveCachedCityGeocodesToMongo < Mongoid::Migration
   def self.up
     client = Elasticsearch::Client.new({
       :hosts => ApiUmbrellaConfig[:elasticsearch][:hosts],
-      :logger => Rails.logger
+      :logger => Rails.logger,
     })
 
     result = client.search({
@@ -27,7 +27,7 @@ class MoveCachedCityGeocodesToMongo < Mongoid::Migration
               hit["_source"]["location"]["lat"],
             ],
           },
-          :updated_at => Time.at(hit["_source"]["updated_at"] / 1000.0),
+          :updated_at => Time.at(hit["_source"]["updated_at"] / 1000.0).utc,
         })
       end
     end

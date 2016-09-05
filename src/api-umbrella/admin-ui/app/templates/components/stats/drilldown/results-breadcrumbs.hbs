@@ -1,0 +1,7 @@
+{{#each breadcrumbLinks as |breadcrumb|}}
+  {{#if breadcrumb.prefix}}
+    {{#link-to "stats.drilldown" (query-params prefix=breadcrumb.prefix)}}{{breadcrumb.name}}{{/link-to}} /
+  {{else}}
+    {{breadcrumb.name}}
+  {{/if}}
+{{/each}}

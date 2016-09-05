@@ -41,8 +41,9 @@ module DatatablesHelper
     columns = self.param_index_array(:columns)
     columns = columns.select { |col| col[:data] }
     columns.map do |col|
-      { :name => (col[:name] || '-').to_s,
-        :field => col[:data].to_s
+      {
+        :name => (col[:name] || '-').to_s,
+        :field => col[:data].to_s,
       }
     end
   end

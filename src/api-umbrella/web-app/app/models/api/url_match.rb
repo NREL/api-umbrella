@@ -4,7 +4,7 @@ class Api::UrlMatch
   include Mongoid::Document
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :frontend_prefix, :type => String
   field :backend_prefix, :type => String
 
@@ -24,9 +24,4 @@ class Api::UrlMatch
       :with => CommonValidations::URL_PREFIX_FORMAT,
       :message => :invalid_url_prefix_format,
     }
-
-  # Mass assignment security
-  attr_accessible :frontend_prefix,
-    :backend_prefix,
-    :as => [:default, :admin]
 end

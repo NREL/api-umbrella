@@ -62,7 +62,6 @@ if [ "$CIRCLE_NODE_INDEX" -eq "0" ]; then
     env \
     PATH="../../../build/work/stage/opt/api-umbrella/embedded/bin:$PATH" \
     INTEGRATION_TEST_SUITE=true \
-    PRECOMPILE_TEST_ASSETS=false \
     API_UMBRELLA_CONFIG="../../../test/config/test.yml:../../../test/config/test_elasticsearch2.yml" \
     bundle exec rspec \
     spec/controllers/admin/stats_controller_spec.rb \

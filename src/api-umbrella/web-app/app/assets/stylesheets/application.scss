@@ -1,0 +1,20 @@
+@import "bootstrap-sprockets";
+@import "bootstrap";
+
+body {
+  padding-top: 60px;
+}
+
+.admin-logins {
+  form {
+    margin: 0px;
+  }
+
+  .row-fluid {
+    margin-bottom: 15px;
+  }
+
+  .alert {
+    margin-bottom: 2px;
+  }
+}

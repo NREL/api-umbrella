@@ -1,7 +1,8 @@
 class Api::V1::ApiScopesController < Api::V1::BaseController
   respond_to :json
 
-  skip_after_filter :verify_authorized, :only => [:index]
+  skip_after_action :verify_authorized, :only => [:index]
+  after_action :verify_policy_scoped, :only => [:index]
 
   def index
     @api_scopes = policy_scope(ApiScope).order_by(datatables_sort_array)
@@ -55,8 +56,19 @@ class Api::V1::ApiScopesController < Api::V1::BaseController
 
   def save!
     authorize(@api_scope) unless(@api_scope.new_record?)
-    @api_scope.assign_attributes(params[:api_scope], :as => :admin)
+    @api_scope.assign_attributes(api_scope_params)
     authorize(@api_scope)
     @api_scope.save
+  end
+
+  def api_scope_params
+    params.require(:api_scope).permit([
+      :name,
+      :host,
+      :path_prefix,
+    ])
+  rescue => e
+    logger.error("Parameters error: #{e}")
+    ActionController::Parameters.new({}).permit!
   end
 end

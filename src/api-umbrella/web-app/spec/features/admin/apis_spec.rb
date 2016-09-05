@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe "apis", :js => true do
+RSpec.describe "apis", :js => true do
   login_admin
 
   before(:each) do
@@ -118,7 +118,7 @@ describe "apis", :js => true do
         "api_key_missing" => {
           "hello1" => "foo",
           "hello2" => "bar",
-        }
+        },
       })
     end
   end

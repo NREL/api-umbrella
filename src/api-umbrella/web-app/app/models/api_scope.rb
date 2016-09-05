@@ -8,7 +8,7 @@ class ApiScope
   include Mongoid::Delorean::Trackable
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :name, :type => String
   field :host, :type => String
   field :path_prefix, :type => String
@@ -31,12 +31,6 @@ class ApiScope
     :uniqueness => {
       :scope => :host,
     }
-
-  # Mass assignment security
-  attr_accessible :name,
-    :host,
-    :path_prefix,
-    :as => [:admin]
 
   def path_prefix_matcher
     /^#{Regexp.escape(self.path_prefix)}/

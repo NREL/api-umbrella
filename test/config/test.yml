@@ -45,7 +45,6 @@ web:
         - github
         - google
         - max.gov
-        - myusa
         - persona
 router:
   api_backends:

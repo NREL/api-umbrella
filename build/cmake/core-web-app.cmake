@@ -25,13 +25,3 @@ if(ENABLE_TEST_DEPENDENCIES)
   )
   add_custom_target(core-web-app-local-bundle ALL DEPENDS ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/.bundle/config)
 endif()
-
-add_custom_command(
-  OUTPUT ${STAMP_DIR}/core-web-app-assets-precompiled
-  DEPENDS
-    ${VENDOR_DIR}/bundle
-    ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/app/assets/**/*
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app
-  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/src/web-app/.bundle RAILS_TMP_PATH=${WORK_DIR}/src/web-app/tmp RAILS_PUBLIC_PATH=${WORK_DIR}/src/web-app/public DEVISE_SECRET_KEY=temp RAILS_SECRET_TOKEN=temp RAILS_GROUPS=assets RAILS_ENV=production bundle exec rake assets:precompile
-  COMMAND touch ${STAMP_DIR}/core-web-app-assets-precompiled
-)

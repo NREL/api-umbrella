@@ -1,12 +1,12 @@
 class Api::V1::BaseController < ApplicationController
   # Try authenticating from an admin token (for direct API access).
-  before_filter :authenticate_admin_from_token!
+  before_action :authenticate_admin_from_token!
 
   # If no admin token is present, authenticate normally with Devise from a
   # session (so this API can be used from within the web admin tool).
-  before_filter :authenticate_admin!
+  before_action :authenticate_admin!
 
-  after_filter :verify_authorized
+  after_action :verify_authorized
 
   rescue_from Pundit::NotAuthorizedError, :with => :user_not_authorized
 
@@ -21,13 +21,12 @@ class Api::V1::BaseController < ApplicationController
       # request.
       sign_in(admin, :store => false)
 
-      # The mongoid_userstamp plugin doesn't seem to pickup the current admin
-      # user when we load via this token (something to do with callback
-      # ordering?). To to fix that, force the userstamp model to pickup the
-      # current admin account after this token-based login.
-      unless Mongoid::Userstamp.current_user
+      # The normal userstamp before_action that set's the current admin fires
+      # before we handle token authentication. To fix that, force the userstamp
+      # model to pickup the current admin account after this token-based login.
+      unless RequestStore.store[:current_userstamp_user]
         begin
-          Mongoid::Userstamp.config.user_model.current = self.send(Mongoid::Userstamp.config.user_reader)
+          RequestStore.store[:current_userstamp_user] = current_admin
         rescue => e
           Rails.logger.warn("Unexpected error setting userstamp: #{e}")
         end

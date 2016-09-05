@@ -13,15 +13,6 @@ add_custom_command(
   COMMAND touch -c ${CORE_SHARED_BUILD_DIR}/vendor
 )
 
-# Copy the precompiled assets into the shared build directory.
-add_custom_command(
-  OUTPUT ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
-  DEPENDS ${STAMP_DIR}/core-web-app-assets-precompiled
-  COMMAND mkdir -p ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
-  COMMAND rsync -a --delete-after ${WORK_DIR}/src/web-app/public/web-assets/ ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets/
-  COMMAND touch -c ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
-)
-
 # Create the tmp directories in the shared build directory.
 #
 # We create these more specific tmp sub directories so the deb/rpm
@@ -50,7 +41,6 @@ add_custom_command(
   OUTPUT ${STAMP_DIR}/core-build-shared
   DEPENDS
     ${CORE_SHARED_BUILD_DIR}/vendor
-    ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
     ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/assets
     ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/cache/sass
     ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/tmp/ember-rails
@@ -91,17 +81,6 @@ add_custom_command(
   COMMAND touch -c ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app/.bundle/config
 )
 
-# Create a symlink to the shared assets directory within the release.
-add_custom_command(
-  OUTPUT ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
-  DEPENDS
-    ${STAMP_DIR}/core-build-release-dir-${RELEASE_TIMESTAMP}
-    ${CORE_SHARED_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
-  WORKING_DIRECTORY ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app/public
-  COMMAND ln -snf ../../../../../../shared/src/api-umbrella/web-app/public/web-assets ./web-assets
-  COMMAND touch -c ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
-)
-
 # Create a symlink to the shared web-app tmp directory within the release.
 add_custom_command(
   OUTPUT ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app/tmp
@@ -122,7 +101,6 @@ add_custom_command(
     ${STAMP_DIR}/core-build-release-dir-${RELEASE_TIMESTAMP}
     ${CORE_RELEASE_BUILD_DIR}/vendor
     ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app/.bundle/config
-    ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app/public/web-assets
     ${CORE_RELEASE_BUILD_DIR}/src/api-umbrella/web-app/tmp
   COMMAND touch ${STAMP_DIR}/core-build-release
 )

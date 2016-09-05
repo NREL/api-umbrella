@@ -14,7 +14,7 @@ class UserUuids < Mongoid::Migration
         # UUID _id value.
         new_user = user.clone
         new_user.write_attribute(:legacy_id, Moped::BSON::ObjectId.from_string(user._id))
-        new_user._id = UUIDTools::UUID.random_create.to_s
+        new_user._id = SecureRandom.uuid
 
         puts "#{user._id} => #{new_user._id}"
 

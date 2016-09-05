@@ -1,0 +1,19 @@
+<div class="toggle-facet-table"><a {{action "toggleFacetTable"}}>{{label}}</a></div>
+<table class="table table-condensed facet-table" style="display: none;">
+  <thead>
+    <tr>
+      <th>User</th>
+      <th class="value">Hits</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each facets as |facet|}}
+      <tr>
+        <td><a href="{{facet.link}}">{{facet.key}}</a></td>
+        <td class="value">{{formatNumber facet.count}}</td>
+        <td class="value">{{facet.percent}}%</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

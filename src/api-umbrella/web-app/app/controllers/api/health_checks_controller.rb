@@ -5,8 +5,8 @@ class Api::HealthChecksController < ApplicationController
 
   def logging
     @search = LogSearch.new({
-      :start_time => Time.now - params[:age].to_i,
-      :end_time => Time.now,
+      :start_time => Time.now.utc - params[:age].to_i,
+      :end_time => Time.now.utc,
     })
 
     @search.filter_by_date_range!

@@ -1,5 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe Api::ApiUsersController do
-
+RSpec.describe Api::ApiUsersController do
 end

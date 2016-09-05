@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe "config publish", :js => true do
+RSpec.describe "config publish", :js => true do
   login_admin
 
   before(:each) do

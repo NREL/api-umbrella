@@ -4,7 +4,7 @@ class ElasticsearchHelper
       result = LogItem.gateway.client.search :index => "api-umbrella-logs-#{month}",
             :body => {
               :query => {
-                :match_all => {}
+                :match_all => {},
               },
               :size => 1000,
             }

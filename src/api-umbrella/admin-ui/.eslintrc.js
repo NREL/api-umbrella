@@ -1,0 +1,25 @@
+module.exports = {
+  extends: './node_modules/ember-cli-eslint/coding-standard/ember-application.js',
+  rules: {
+    'comma-dangle': ['error', 'always-multiline'],
+    'no-var': 'error',
+    'object-shorthand': ['error', 'methods'],
+    'no-duplicate-imports': 'error',
+  },
+  globals: {
+    '$': true,
+    'CommonValidations': true,
+    'I18n': true,
+    'JsDiff': true,
+    'PNotify': true,
+    '_': true,
+    'ace': true,
+    'bootbox': true,
+    'google': true,
+    'inflection': true,
+    'jstz': true,
+    'marked': true,
+    'moment': true,
+    'numeral': true,
+  },
+};

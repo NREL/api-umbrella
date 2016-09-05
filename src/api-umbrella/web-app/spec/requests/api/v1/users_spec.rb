@@ -1,6 +1,6 @@
-require "spec_helper"
+require "rails_helper"
 
-describe "/api/v1/users" do
+RSpec.describe "/api/v1/users" do
   # Make sure our API key creation endpoint can be successfully called with
   # IE8-9's shimmed pseudo-CORS support. This ensures API keys can be created
   # even if the endpoint is called with empty or text/plain content-types. See

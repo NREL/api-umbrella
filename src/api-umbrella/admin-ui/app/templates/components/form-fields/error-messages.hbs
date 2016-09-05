@@ -1,0 +1,7 @@
+{{#if hasErrors}}
+  <div class="help-block with-errors">
+    {{#each errorMessages as |message|}}
+      {{message}}<br>
+    {{/each}}
+  </div>
+{{/if}}

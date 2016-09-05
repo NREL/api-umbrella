@@ -6,7 +6,7 @@ class AdminGroup
   include Mongoid::Delorean::Trackable
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :name, :type => String
 
   # Relations
@@ -21,12 +21,6 @@ class AdminGroup
   validates :permissions,
     :presence => true
   validate :validate_permissions
-
-  # Mass assignment security
-  attr_accessible :name,
-    :permission_ids,
-    :api_scope_ids,
-    :as => [:admin]
 
   def self.sorted
     order_by(:name.asc)

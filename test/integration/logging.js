@@ -473,7 +473,7 @@ describe('logging', function() {
     this.timeout(10000);
     var options = _.merge({}, this.options, {
       headers: {
-        'X-Forwarded-For': '42.61.81.163',
+        'X-Forwarded-For': '104.250.168.24',
       },
     });
 
@@ -482,15 +482,15 @@ describe('logging', function() {
       response.statusCode.should.eql(200);
       waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
         should.not.exist(error);
-        record.request_ip.should.eql('42.61.81.163');
-        record.request_ip_country.should.eql('SG');
+        record.request_ip.should.eql('104.250.168.24');
+        record.request_ip_country.should.eql('MC');
         should.not.exist(record.request_ip_region);
-        record.request_ip_city.should.eql('Singapore');
+        record.request_ip_city.should.eql('Monte-carlo');
         Object.keys(record.request_ip_location).length.should.eql(2);
-        record.request_ip_location.lat.should.be.closeTo(1.2931, 0.00);
-        record.request_ip_location.lon.should.be.closeTo(103.8558, 0.00);
+        record.request_ip_location.lat.should.be.closeTo(43.7333, 0.00);
+        record.request_ip_location.lon.should.be.closeTo(7.4167, 0.00);
 
-        var id = crypto.createHash('sha256').update('SG--Singapore').digest('hex');
+        var id = crypto.createHash('sha256').update('MC--Monte-carlo').digest('hex');
         mongoose.testConnection.model('LogCityLocation').find({
           _id: id,
         }, function(error, locations) {
@@ -500,12 +500,12 @@ describe('logging', function() {
           location.updated_at.should.be.a('date');
           location.location.type.should.eql('Point');
           location.location.coordinates.length.should.eql(2);
-          location.location.coordinates[0].should.be.closeTo(103.8558, 0.00);
-          location.location.coordinates[1].should.be.closeTo(1.2931, 0.00);
+          location.location.coordinates[0].should.be.closeTo(7.4167, 0.00);
+          location.location.coordinates[1].should.be.closeTo(43.7333, 0.00);
           _.omit(location, 'updated_at', 'location').should.eql({
             _id: id,
-            country: 'SG',
-            city: 'Singapore',
+            country: 'MC',
+            city: 'Monte-carlo',
           });
           done();
         });

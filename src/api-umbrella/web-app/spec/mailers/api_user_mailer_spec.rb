@@ -1,6 +1,6 @@
-require "spec_helper"
+require "rails_helper"
 
-describe ApiUserMailer do
+RSpec.describe ApiUserMailer do
   describe "signup_email" do
     describe "OSVDB-131677 security" do
       it "accepts recipients without newlines" do
@@ -84,7 +84,6 @@ describe ApiUserMailer do
           end.to raise_error(MailSanitizer::InvalidAddress)
         end.to change { ActionMailer::Base.deliveries.count }.by(0)
       end
-
     end
   end
 
@@ -95,12 +94,12 @@ describe ApiUserMailer do
     end
 
     let(:api_user) do
-      FactoryGirl.create(
-          :api_user,
-          :first_name => "aaa",
-          :last_name => "bbb",
-          :use_description => "I WANNA DO EVERYTHING",
-          :email => "foo@example.com")
+      FactoryGirl.create(:api_user, {
+        :first_name => "aaa",
+        :last_name => "bbb",
+        :use_description => "I WANNA DO EVERYTHING",
+        :email => "foo@example.com",
+      })
     end
 
     subject { ApiUserMailer.notify_api_admin(api_user).deliver }

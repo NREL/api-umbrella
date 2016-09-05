@@ -1,0 +1,60 @@
+{{#fields-for model=model style=(if style style "horizontal") as |f|}}
+  {{f.select-field "rateLimitMode" label="Rate Limit" options=rateLimitModeOptions}}
+
+  {{#if model.isRateLimitModeCustom}}
+    {{#form-fields/field-wrapper style=(if style style "horizontal")}}
+      <table class="table table-striped table-condensed table-small custom-rate-limits-table">
+        <thead>
+          <tr>
+            <th>Duration</th>
+            <th></th>
+            <th>Limit By</th>
+            <th>Limit</th>
+            <th class="text-center">
+              Primary
+              <a rel="tooltip" title="<p>Controls which rate limit will return its status in the HTTP response headers. This informs the end-users of this limit and how many remaining requests they have. For example:</p>
+  <pre>
+  X-RateLimit-Limit: 1000
+  X-RateLimit-Remaining: 840
+  </pre>
+  <p>Only one rate limit may return this status information, so it will likely be your primary, publicized rate limit (for example, hourly), and not more granular rate limits you may have assigned (for example, per-second limits).</p>"><i class="fa fa-question-circle"></i></a>
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#if model.rateLimits}}
+            {{#each model.rateLimits as |rateLimit|}}
+              <tr class="form-inline">
+                <td>
+                  {{input type="text" value=rateLimit.durationInUnits class="form-control input-xs rate-limit-duration-in-units"}}
+                </td>
+                <td style="text-align: left;">
+                  {{select-menu value=rateLimit.durationUnits action=(action (mut rateLimit.durationUnits)) options=rateLimitDurationUnitOptions inputClass="form-control input-xs rate-limit-duration-units"}}
+                </td>
+                <td>
+                  {{select-menu value=rateLimit.limitBy action=(action (mut rateLimit.limitBy)) options=rateLimitLimitByOptions inputClass="form-control input-xs rate-limit-limit-by"}}
+                </td>
+                <td>
+                  <div class="input-group">
+                    {{input type="text" value=rateLimit.limit class="form-control input-xs rate-limit-limit"}}
+                    <span class="input-group-addon input-xs">requests</span>
+                  </div>
+                </td>
+                <td class="text-center">
+                  {{one-way-radio name=uniqueSettingsId value=rateLimit.responseHeaders option=true class="rate-limit-response-headers" update=(action "primaryRateLimitChange" rateLimit)}}
+                </td>
+                <td class="table-row-actions">
+                  <a href="#" class="remove-action" {{action "deleteRateLimit" rateLimit}}><i class="fa fa-times"></i>Remove</a>
+                </td>
+              </tr>
+            {{/each}}
+          {{else}}
+            <tr class="empty"><td colspan="6">No custom rate limits have been added yet. Click "Add Rate Limit" below to get started.</td></tr>
+          {{/if}}
+        </tbody>
+      </table>
+      <button type="button" class="btn btn-default btn-xs" {{action "addRateLimit"}}><i class="fa fa-plus-circle"></i> Add Rate Limit</button>
+    {{/form-fields/field-wrapper}}
+  {{/if}}
+{{/fields-for}}

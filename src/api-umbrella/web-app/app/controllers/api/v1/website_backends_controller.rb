@@ -1,7 +1,8 @@
 class Api::V1::WebsiteBackendsController < Api::V1::BaseController
   respond_to :json
 
-  skip_after_filter :verify_authorized, :only => [:index]
+  skip_after_action :verify_authorized, :only => [:index]
+  after_action :verify_policy_scoped, :only => [:index]
 
   def index
     @website_backends = policy_scope(WebsiteBackend).order_by(datatables_sort_array)
@@ -54,8 +55,20 @@ class Api::V1::WebsiteBackendsController < Api::V1::BaseController
 
   def save!
     authorize(@website_backend) unless(@website_backend.new_record?)
-    @website_backend.assign_attributes(params[:website_backend], :as => :admin)
+    @website_backend.assign_attributes(website_backend_params)
     authorize(@website_backend)
     @website_backend.save
+  end
+
+  def website_backend_params
+    params.require(:website_backend).permit([
+      :frontend_host,
+      :backend_protocol,
+      :server_host,
+      :server_port,
+    ])
+  rescue => e
+    logger.error("Parameters error: #{e}")
+    ActionController::Parameters.new({}).permit!
   end
 end

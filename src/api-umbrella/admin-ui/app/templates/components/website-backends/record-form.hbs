@@ -1,0 +1,29 @@
+{{error-messages model=model}}
+
+<form {{action "submit" on="submit"}}>
+  {{#fields-for model=model style="horizontal" as |f|}}
+    <fieldset class="form-horizontal condensed">
+      {{f.text-field "frontendHost" label="Frontend Host" placeholder="example.com"}}
+      {{f.select-field "backendProtocol" label=(t "mongoid.attributes.api.backend_protocol") options=backendProtocolOptions}}
+      {{f.text-field "serverHost" label="Backend Server" placeholder="example.github.io"}}
+      {{f.text-field "serverPort" label="Backend Port"}}
+    </fieldset>
+
+    <div class="row">
+      <div class="col-sm-6">
+        <button type="submit" id="save_button" class="btn btn-lg btn-primary" data-loading-text="<i class='fa fa-refresh fa-spin'></i> Saving...">Save</button>
+      </div>
+      <div class="col-sm-6 record-details">
+        {{#if model.id}}
+          Created: {{format-date model.createdAt}} by {{model.creator.username}}<br>
+          Last Updated: {{format-date model.updatedAt}} by {{model.updater.username}}<br>
+        {{/if}}
+      </div>
+    </div>
+    {{#if model.id}}
+      <div class="form-extra-actions">
+        <a href="#" class="remove-action" {{action "delete"}}><i class="fa fa-times"></i>Delete Website Backend</a>
+      </div>
+    {{/if}}
+  {{/fields-for}}
+</form>

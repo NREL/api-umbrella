@@ -1,5 +1,4 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe Api::HealthChecksController do
-
+RSpec.describe Api::HealthChecksController do
 end

@@ -32,10 +32,7 @@ config/settings/*.local.yml
 config/environments/*.local.yml
 
 # Test reports
+/spec/examples.txt
 /spec/reports
 /coverage
 /brakeman.html
-
-# Generated assets
-/public/test-assets
-/public/web-assets

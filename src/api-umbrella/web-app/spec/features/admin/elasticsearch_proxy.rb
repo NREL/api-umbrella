@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe "elasticsearch proxy", :js => true do
+RSpec.describe "elasticsearch proxy", :js => true do
   shared_examples "allowed access" do
   end
 

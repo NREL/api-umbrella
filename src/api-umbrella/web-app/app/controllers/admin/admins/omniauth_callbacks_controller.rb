@@ -1,4 +1,10 @@
 class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksController
+  skip_after_action :verify_authorized
+
+  # The developer strategy doesn't include the CSRF token in the form:
+  # https://github.com/omniauth/omniauth/pull/674
+  skip_before_action :verify_authenticity_token, :only => :developer
+
   # For the developer strategy, simply find or create a new admin account with
   # whatever login details they give. This is not for use on production.
   def developer
@@ -6,13 +12,11 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
       raise "The developer OmniAuth strategy should not be used outside of development or test."
     end
 
-    omniauth = request.env["omniauth.auth"]
-    @admin = Admin.where(:username => omniauth["uid"]).first
-    @admin ||= Admin.new({ :username => omniauth["uid"], :superuser => true }, :without_protection => true)
-    @admin.apply_omniauth(omniauth)
-    @admin.save!
-    sign_in(:admin, @admin)
-    redirect_to admin_path
+    @email = request.env["omniauth.auth"]["uid"]
+    @admin = Admin.where(:username => @email).first
+    @admin ||= Admin.create!(:username => @email, :superuser => true)
+
+    login
   end
 
   def cas
@@ -44,11 +48,6 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
     login
   end
 
-  def myusa
-    @email = request.env["omniauth.auth"]["info"]["email"]
-    login
-  end
-
   def persona
     @email = request.env["omniauth.auth"]["info"]["email"]
     login
@@ -57,7 +56,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
   private
 
   def login
-    if @email.present?
+    if(!@admin && @email.present?)
       @admin = Admin.where(:username => @email.downcase).first
     end
 
@@ -77,7 +76,13 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
       sign_in_and_redirect(:admin, @admin)
     else
-      flash[:error] = %(The account for '#{@email}' is not authorized to access the admin. Please <a href="#{ApiUmbrellaConfig[:contact_url]}">contact us</a> for further assistance.).html_safe
+      flash[:error] = ActionController::Base.helpers.safe_join([
+        "The account for '",
+        @email,
+        "' is not authorized to access the admin. Please ",
+        ActionController::Base.helpers.content_tag(:a, "contact us", :href => ApiUmbrellaConfig[:contact_url]),
+        " for further assistance.",
+      ])
 
       redirect_to new_admin_session_path
     end

@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe "roles", :js => true do
+RSpec.describe "roles", :js => true do
   login_admin
 
   before(:each) do

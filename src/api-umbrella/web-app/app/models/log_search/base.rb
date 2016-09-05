@@ -7,7 +7,7 @@ class LogSearch::Base
     "request_ip_country",
     "request_ip_region",
     "request_ip_city",
-  ]
+  ].freeze
 
   def self.policy_class
     # Set the Pundit policy class to be the same for all LogSearch::Base child

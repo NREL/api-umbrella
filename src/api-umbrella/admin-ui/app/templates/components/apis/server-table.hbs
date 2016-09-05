@@ -1,0 +1,26 @@
+{{apis/server-form model=serverModel collection=model.servers apiBackendProtocol=model.backendProtocol apiBackendHost=model.backendHost openModal=openModal}}
+
+<table id="servers_table" class="table table-striped table-condensed">
+  <thead>
+    <tr>
+      <th>{{t "admin.api.servers.server"}}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#if model.servers}}
+      {{#each model.servers as |server|}}
+        <tr>
+          <td>{{model.backendProtocol}}://{{server.hostWithPort}}</td>
+          <td class="table-row-actions">
+            <a href="#" {{action "edit" server}}><i class="fa fa-pencil"></i>{{t "admin.edit"}}</a>
+            <a href="#" class="remove-action" {{action "remove" server}}><i class="fa fa-times"></i>{{t "admin.remove"}}</a>
+          </td>
+        </tr>
+      {{/each}}
+    {{else}}
+      <tr class="empty"><td colspan="2">{{t "admin.api.servers.empty_list" add=(t "admin.api.servers.add")}}</td></tr>
+    {{/if}}
+  </tbody>
+</table>
+<button type="button" class="btn btn-default btn-xs" {{action "add"}}><i class="fa fa-plus-circle"></i> {{t "admin.api.servers.add"}}</button>

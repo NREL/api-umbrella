@@ -1,14 +1,14 @@
 class Api::V1::ContactsController < Api::V1::BaseController
-  skip_before_filter :authenticate_admin!, :only => [:create]
-  before_filter :authenicate_contact_api_key_role, :only => [:create]
-  skip_after_filter :verify_authorized
+  skip_before_action :authenticate_admin!, :only => [:create]
+  before_action :authenicate_contact_api_key_role, :only => [:create]
+  skip_after_action :verify_authorized
 
   def create
-    @contact = Contact.new(params[:contact])
+    @contact = Contact.new(contact_params)
 
     respond_to do |format|
       if(@contact.deliver)
-        format.json { render(:json => { :submitted => Time.now }, :status => :ok) }
+        format.json { render(:json => { :submitted => Time.now.utc }, :status => :ok) }
       else
         format.json { render(:json => errors_response(@contact), :status => :unprocessable_entity) }
       end
@@ -28,5 +28,18 @@ class Api::V1::ContactsController < Api::V1::BaseController
         return false
       end
     end
+  end
+
+  def contact_params
+    params.require(:contact).permit([
+      :name,
+      :email,
+      :api,
+      :subject,
+      :message,
+    ])
+  rescue => e
+    logger.error("Parameters error: #{e}")
+    ActionController::Parameters.new({}).permit!
   end
 end

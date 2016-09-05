@@ -1,0 +1,5 @@
+{{#x-select value=value one-way=true action=action id=inputId class=inputClass}}
+  {{#each options as |option|}}
+    {{#x-option value=option.id}}{{option.name}}{{/x-option}}
+  {{/each}}
+{{/x-select}}

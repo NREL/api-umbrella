@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe "datatables", :js => true do
+RSpec.describe "datatables", :js => true do
   login_admin
 
   before(:each) do

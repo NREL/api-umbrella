@@ -1,0 +1,414 @@
+body {
+  padding-top: 60px;
+}
+
+.navbar .navbar-brand {
+  font-weight: bold;
+}
+
+.button-actions {
+  text-align: right;
+  margin-bottom: 16px;
+}
+
+.button-actions-down {
+  position: relative;
+  height: 0px;
+  margin: 0px;
+  z-index: 999;
+}
+
+#results_table .table th,
+#results_table .table td {
+  white-space: nowrap;
+}
+
+#results_table .table thead th {
+  color: $link-color;
+}
+
+table.table thead .sorting,
+table.table thead .sorting_asc,
+table.table thead .sorting_desc {
+  background: none;
+}
+
+table.table thead .sorting:after,
+table.table thead .sorting_asc:after,
+table.table thead .sorting_desc:after {
+  opacity: 1.0;
+  font-family: FontAwesome;
+  color: $gray-lighter;
+  margin-left: 8px;
+}
+
+table.table thead .sorting_asc:after,
+table.table thead .sorting_desc:after {
+  color: $link-color;
+}
+
+table.table thead .sorting:after {
+  content: "\F0DC";
+}
+
+table.table thead .sorting_asc:after {
+  content: "\F0DE";
+}
+
+table.table thead .sorting_desc:after {
+  content: "\F0DD";
+}
+
+div.dataTables_info {
+  padding: 0px;
+  font-size: 13px;
+  color: $text-color-light;
+}
+
+div.dataTables_paginate {
+  text-align: center !important;
+  float: none;
+}
+
+div.dataTables_length {
+  text-align: right;
+
+  label {
+    float: none;
+    font-size: 13px;
+    color: $text-color-light;
+  }
+
+  select {
+    font-size: 13px;
+  }
+}
+
+div.dataTables_wrapper {
+  position: relative;
+
+  div.dataTables_filter {
+    label {
+      float: left;
+    }
+
+    input {
+      margin-left: 0px;
+    }
+  }
+}
+
+.dataTables_processing {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 250px;
+  height: 60px;
+  margin-left: -125px;
+  margin-top: -30px;
+  border: 1px solid #ddd;
+  text-align: center;
+  color: $gray-light;
+  font-size: 32px;
+  line-height: 60px;
+  background-color: white;
+}
+
+.form-horizontal.condensed .form-group {
+  margin-bottom: 5px;
+}
+
+fieldset {
+  margin: 12px 0px 32px 0px;
+  padding: 6px 0px 6px 12px;
+}
+
+fieldset.collapsible {
+  margin-bottom: 12px;
+
+  .collapse.in {
+    margin-bottom: 24px;
+  }
+}
+
+legend {
+  margin-bottom: 2px;
+  border-bottom-width: 1px;
+  border-color: $gray-light;
+  margin-left: -12px;
+  padding: 6px 10px 3px 2px;
+  line-height: 22px;
+  background-color: #fff;
+}
+
+legend a {
+  display: block;
+}
+
+.fieldset-note {
+  font-size: 85%;
+  color: $text-color-light;
+  margin-bottom: 4px;
+}
+
+fieldset .table {
+  margin-bottom: 4px;
+}
+
+.control-group.error .help-block {
+  margin-top: -8px;
+  font-style: italic;
+}
+
+.form-horizontal .control-group.error .help-block {
+  margin-top: 0px;
+}
+
+.error-messages {
+  h4 {
+    margin-bottom: 4px;
+  }
+
+  ul {
+    margin-bottom: 0px;
+
+    ul {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+  }
+
+  li {
+    p {
+      margin: 10px 0px 0px 0px;
+    }
+
+    p:first-child {
+      margin: 0px;
+    }
+  }
+}
+
+.arrow {
+  margin-top: 24px;
+  text-align: center;
+  color: $gray-light;
+  font-size: 10px;
+  line-height: 10px;
+}
+
+.arrow i {
+  color: lighten($gray-light, 16%);
+}
+
+.arrow-vertical {
+  margin: 0px;
+}
+
+.arrow-vertical i {
+  vertical-align: middle;
+}
+
+a {
+  .fa {
+    text-decoration: none;
+    margin-right: 3px;
+  }
+}
+
+.fa-space-right {
+  margin-right: 3px;
+}
+
+.table .table-row-actions {
+  text-align: right;
+  white-space: nowrap;
+
+  a {
+    margin-left: 24px;
+  }
+}
+
+a.remove-action {
+  font-size: 12px;
+  color: $brand-danger;
+}
+
+.table-actions {
+}
+
+.form-extra-actions {
+  margin-top: 20px;
+}
+
+table input {
+  margin-bottom: 0px !important;
+}
+
+legend a:hover {
+  text-decoration: none;
+}
+
+a[data-toggle='collapse'] .fa-caret-down:before {
+  display: block;
+  width: 16px;
+  text-align: center;
+}
+
+a[data-toggle='collapse'].collapsed .fa-caret-down:before {
+  content: "\f0da";
+}
+
+a:hover {
+  cursor: pointer;
+}
+
+.api-key {
+  font-family: $font-family-monospace;
+}
+
+.record-details {
+  text-align: right;
+  font-size: 11px;
+  line-height: 13px;
+  color: $text-color-lighter;
+}
+
+th.reorder-handle,
+td.reorder-handle {
+  display: none;
+  width: 60px;
+  text-align: center;
+  cursor: move;
+}
+
+.reorder-active {
+  th.reorder-handle,
+  td.reorder-handle {
+    display: table-cell;
+  }
+}
+
+.reorder-placeholder th,
+.reorder-placeholder td {
+  background-color: $state-warning-bg !important;
+}
+
+.form-horizontal .ace_editor {
+  height: 96px;
+  border: 1px solid $input-border;
+  border-radius: $input-border-radius;
+}
+
+.control-label a[rel='tooltip'] {
+  margin-left: 8px;
+}
+
+.qtip-bootstrap {
+  font-size: 12px;
+  max-width: 320px;
+
+  pre {
+    font-size: 11px;
+    line-height: 15px;
+  }
+}
+
+.qtip-wide {
+  max-width: 700px;
+}
+
+.qtip-forced-wide {
+  min-width: 400px;
+  max-width: 600px;
+}
+
+.qtip-content p:last-child {
+  margin-bottom: 0px;
+}
+
+.query-syntax-help .example {
+  text-align: right;
+}
+
+.query-syntax-help td.example {
+  font-style: italic;
+  font-size: 11px;
+}
+
+.table-small {
+  font-size: 13px;
+}
+
+.table tr.empty td {
+  text-align: center;
+  font-size: 12px;
+  font-style: italic;
+  color: $text-color-light;
+}
+
+.table th.text-center,
+.table td.text-center {
+  text-align: center;
+}
+
+.table tr.line-bottom th,
+.table tr.line-bottom td {
+  border-top: none;
+  border-bottom: 1px solid $table-border-color;
+}
+
+.diff {
+  del {
+    text-decoration: none;
+    background: #fdd;
+  }
+
+  ins {
+    text-decoration: none;
+    background: #dfd;
+  }
+}
+
+.dropdown-menu {
+  .fa {
+    /* Make the icons a consistent width so the menu text lines up */
+    width: 16px;
+    text-align: center;
+  }
+}
+
+.publish-toggle-checkboxes {
+  margin: -28px 0px 32px 17px;
+  text-align: center;
+  width: 80px;
+  font-size: 85%;
+}
+
+.control-group-negative-top {
+  margin-top: -16px;
+}
+
+#version_footer .row-fluid {
+  border-top: 1px solid $gray-lighter;
+  text-align: center;
+  margin-top: 3em;
+  margin-bottom: 1em;
+  padding-top: 1em;
+  font-size: 11px;
+  color: $text-color-lighter;
+}
+
+// For when we want to submit a form with the enter key, but don't want a real
+// submit button visible in the form (eg, in modals where the submit button is
+// in the modal footer and not inside the <form> tag):
+// http://stackoverflow.com/q/477691
+.hidden-submit-button {
+  position: absolute;
+  left: -9999px;
+  height: 0px;
+  width: 0px;
+  border: none;
+  padding: 0px;
+  margin: 0px;
+}

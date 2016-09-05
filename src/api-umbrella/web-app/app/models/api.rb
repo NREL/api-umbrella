@@ -15,7 +15,7 @@ class Api
   SORT_ORDER_GAP = 10_000
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :name, :type => String
   field :sort_order, :type => Integer
   field :backend_protocol, :type => String
@@ -66,20 +66,6 @@ class Api
   accepts_nested_attributes_for :settings
   accepts_nested_attributes_for :servers, :url_matches, :sub_settings, :rewrites, :allow_destroy => true
 
-  # Mass assignment security
-  attr_accessible :name,
-    :sort_order,
-    :backend_protocol,
-    :frontend_host,
-    :backend_host,
-    :balance_algorithm,
-    :settings_attributes,
-    :servers_attributes,
-    :url_matches_attributes,
-    :sub_settings_attributes,
-    :rewrites_attributes,
-    :as => [:default, :admin]
-
   def self.sorted
     order_by(:sort_order.asc)
   end
@@ -100,11 +86,11 @@ class Api
     end
 
     root["creator"] = {
-      "username" => (self.creator.username if(self.creator))
+      "username" => (self.creator.username if(self.creator)),
     }
 
     root["updater"] = {
-      "username" => (self.updater.username if(self.updater))
+      "username" => (self.updater.username if(self.updater)),
     }
 
     json

@@ -1,5 +1,5 @@
 class Api::V1::AdminPermissionsController < Api::V1::BaseController
-  skip_after_filter :verify_authorized, :only => [:index]
+  skip_after_action :verify_authorized, :only => [:index]
 
   def index
     @admin_permissions = AdminPermission.sorted.all.to_a

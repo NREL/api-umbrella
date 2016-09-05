@@ -41,7 +41,7 @@ FactoryGirl.define do
               :required_roles => [
                 "google-write",
               ],
-            })
+            }),
           }),
         ]
       end
@@ -83,7 +83,7 @@ FactoryGirl.define do
               :required_roles => [
                 "yahoo-write",
               ],
-            })
+            }),
           }),
         ]
       end

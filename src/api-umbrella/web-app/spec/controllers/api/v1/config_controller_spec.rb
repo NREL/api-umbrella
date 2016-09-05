@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe Api::V1::ConfigController do
+RSpec.describe Api::V1::ConfigController do
   before(:all) do
     @admin = FactoryGirl.create(:admin)
     @google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
@@ -28,7 +28,7 @@ describe Api::V1::ConfigController do
 
     describe "yaml output" do
       before(:each) do
-        @api = FactoryGirl.create(:api, :name => "YAML Test")
+        @api = FactoryGirl.create(:api, :name => "YAML Test", :created_by => @admin.id, :updated_by => @admin.id)
       end
 
       it "omits the yaml separator" do
@@ -293,7 +293,7 @@ describe Api::V1::ConfigController do
       config = {
         :apis => {
           api.id => { :publish => "1" },
-        }
+        },
       }
 
       admin_token_auth(@admin)
@@ -313,7 +313,7 @@ describe Api::V1::ConfigController do
       config = {
         :apis => {
           api.id => { :publish => "1" },
-        }
+        },
       }
 
       admin_token_auth(@admin)
@@ -341,7 +341,7 @@ describe Api::V1::ConfigController do
           api4.id => { :publish => "1" },
           api5.id => { :publish => "1" },
           api6.id => { :publish => "1" },
-        }
+        },
       }
 
       admin_token_auth(@admin)
@@ -370,7 +370,7 @@ describe Api::V1::ConfigController do
         :apis => {
           api2.id => { :publish => "1" },
           api3.id => { :publish => "0" },
-        }
+        },
       }
 
       admin_token_auth(@admin)
@@ -399,7 +399,7 @@ describe Api::V1::ConfigController do
       post :publish, :format => "json", :config => {}
 
       active = ConfigVersion.active
-      active.id.should be_kind_of(Moped::BSON::ObjectId)
+      active.id.should be_kind_of(BSON::ObjectId)
       active.id.should eql(initial.id)
       active.version.should be_kind_of(Time)
       active.version.should eql(initial.version)
@@ -427,7 +427,7 @@ describe Api::V1::ConfigController do
             @google_api.id => { :publish => "1" },
             @google_extra_url_match_api.id => { :publish => "1" },
             @yahoo_api.id => { :publish => "1" },
-          }
+          },
         }
 
         admin_token_auth(@admin)
@@ -448,7 +448,7 @@ describe Api::V1::ConfigController do
         config = {
           :apis => {
             @google_api.id => { :publish => "1" },
-          }
+          },
         }
 
         admin_token_auth(@google_admin)
@@ -464,7 +464,7 @@ describe Api::V1::ConfigController do
         config = {
           :apis => {
             @yahoo_api.id => { :publish => "1" },
-          }
+          },
         }
 
         admin_token_auth(@google_admin)
@@ -480,7 +480,7 @@ describe Api::V1::ConfigController do
         config = {
           :apis => {
             @google_extra_url_match_api.id => { :publish => "1" },
-          }
+          },
         }
 
         admin_token_auth(@google_admin)
@@ -496,7 +496,7 @@ describe Api::V1::ConfigController do
         config = {
           :apis => {
             @google_api.id => { :publish => "1" },
-          }
+          },
         }
 
         admin_token_auth(@unauthorized_google_admin)
@@ -520,7 +520,7 @@ describe Api::V1::ConfigController do
           config = {
             :apis => {
               api.id => { :publish => "1" },
-            }
+            },
           }
 
           api.settings.require_https_transition_start_at.should eql(nil)
@@ -542,14 +542,14 @@ describe Api::V1::ConfigController do
               FactoryGirl.attributes_for(:api_sub_setting, {
                 :settings_attributes => FactoryGirl.attributes_for(:api_setting, {
                   :require_https => mode,
-                })
+                }),
               }),
             ],
           })
           config = {
             :apis => {
               api.id => { :publish => "1" },
-            }
+            },
           }
 
           api.sub_settings[0].settings.require_https_transition_start_at.should eql(nil)
@@ -566,7 +566,7 @@ describe Api::V1::ConfigController do
         end
 
         it "does not change existing transition timestamp for #{mode.inspect} mode when publishing" do
-          timestamp = Time.parse("2015-01-16T06:06:28.816Z")
+          timestamp = Time.parse("2015-01-16T06:06:28.816Z").utc
           api = FactoryGirl.create(:api, {
             :settings => FactoryGirl.attributes_for(:api_setting, {
               :require_https => mode,
@@ -576,7 +576,7 @@ describe Api::V1::ConfigController do
           config = {
             :apis => {
               api.id => { :publish => "1" },
-            }
+            },
           }
 
           api.settings.require_https_transition_start_at.should eql(timestamp)
@@ -593,7 +593,7 @@ describe Api::V1::ConfigController do
         end
 
         it "does not change existing transition timestamp for #{mode.inspect} mode if the mode changes are made without publishing" do
-          timestamp = Time.parse("2015-01-16T06:06:28.816Z")
+          timestamp = Time.parse("2015-01-16T06:06:28.816Z").utc
           api = FactoryGirl.create(:api, {
             :settings => FactoryGirl.attributes_for(:api_setting, {
               :require_https => mode,
@@ -619,7 +619,7 @@ describe Api::V1::ConfigController do
           config = {
             :apis => {
               api.id => { :publish => "1" },
-            }
+            },
           }
 
           api.settings.require_https_transition_start_at.should eql(timestamp)
@@ -641,13 +641,13 @@ describe Api::V1::ConfigController do
           api = FactoryGirl.create(:api, {
             :settings => FactoryGirl.attributes_for(:api_setting, {
               :require_https => mode,
-              :require_https_transition_start_at => Time.now,
+              :require_https_transition_start_at => Time.now.utc,
             }),
           })
           config = {
             :apis => {
               api.id => { :publish => "1" },
-            }
+            },
           }
 
           api.settings.require_https_transition_start_at.should be_kind_of(Time)
@@ -669,15 +669,15 @@ describe Api::V1::ConfigController do
               FactoryGirl.attributes_for(:api_sub_setting, {
                 :settings_attributes => FactoryGirl.attributes_for(:api_setting, {
                   :require_https => mode,
-                  :require_https_transition_start_at => Time.now,
-                })
+                  :require_https_transition_start_at => Time.now.utc,
+                }),
               }),
             ],
           })
           config = {
             :apis => {
               api.id => { :publish => "1" },
-            }
+            },
           }
 
           api.sub_settings[0].settings.require_https_transition_start_at.should be_kind_of(Time)

@@ -5,7 +5,7 @@ class AdminPermission
   include Mongoid::Userstamp
   include Mongoid::Delorean::Trackable
 
-  field :_id, :type => String
+  field :_id, :type => String, :overwrite => true
   field :name, :type => String
   field :display_order, :type => Integer
 

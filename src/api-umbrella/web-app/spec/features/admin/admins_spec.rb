@@ -1,6 +1,6 @@
-require 'spec_helper'
+require "rails_helper"
 
-describe "admins form", :js => true do
+RSpec.describe "admins form", :js => true do
   describe "superuser is logged in" do
     login_admin
 

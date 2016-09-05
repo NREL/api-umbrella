@@ -1,7 +1,8 @@
 class Api::V1::AdminsController < Api::V1::BaseController
   respond_to :json
 
-  skip_after_filter :verify_authorized, :only => [:index]
+  skip_after_action :verify_authorized, :only => [:index]
+  after_action :verify_policy_scoped, :only => [:index]
 
   def index
     @admins = policy_scope(Admin).order_by(datatables_sort_array)
@@ -27,7 +28,7 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
     @admins_count = @admins.count
     @admins = @admins.to_a.select { |admin| Pundit.policy!(pundit_user, admin).show? }
-    self.respond_to_datatables(@admins, "admins #{Time.now.strftime("%b %-e %Y")}")
+    self.respond_to_datatables(@admins, "admins #{Time.now.utc.strftime("%b %-e %Y")}")
   end
 
   def show
@@ -72,8 +73,22 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
   def save!
     authorize(@admin) unless(@admin.new_record?)
-    @admin.assign_attributes(params[:admin], :as => :admin)
+    @admin.assign_attributes(admin_params)
     authorize(@admin)
     @admin.save
+  end
+
+  def admin_params
+    params.require(:admin).permit([
+      :username,
+      :email,
+      :name,
+      :notes,
+      :superuser,
+      { :group_ids => [] },
+    ])
+  rescue => e
+    logger.error("Parameters error: #{e}")
+    ActionController::Parameters.new({}).permit!
   end
 end

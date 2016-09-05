@@ -1,6 +1,6 @@
 require "api_umbrella/elasticsearch_proxy"
 
-ApiUmbrella::Application.routes.draw do
+Rails.application.routes.draw do
   # Mount the API at both /api/ and /api-umbrella/ for backwards compatibility.
   %w(api api-umbrella).each do |path|
     namespace(:api, :path => path) do
@@ -59,10 +59,9 @@ ApiUmbrella::Application.routes.draw do
 
   devise_scope :admin do
     get "/admin/login" => "admin/sessions#new", :as => :new_admin_session
-    get "/admin/logout" => "admin/sessions#destroy", :as => :destroy_admin_session
+    delete "/admin/logout" => "admin/sessions#destroy", :as => :destroy_admin_session
+    get "/admin/auth" => "admin/sessions#auth"
   end
-
-  match "/admin" => "admin/base#empty"
 
   namespace :admin do
     resources :stats, :only => [:index] do
@@ -73,16 +72,6 @@ ApiUmbrella::Application.routes.draw do
         get "users"
         get "map"
       end
-    end
-
-    namespace :config do
-      get "publish", :action => "show"
-      post "publish", :action => "create"
-
-      get "import_export"
-      get "export"
-      post "import_preview"
-      post "import"
     end
 
     resources :api_users do

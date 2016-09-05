@@ -1,7 +1,7 @@
-require 'spec_helper'
+require "rails_helper"
 require 'test_helper/elasticsearch_helper'
 
-describe Admin::StatsController do
+RSpec.describe Admin::StatsController do
   login_admin
 
   before(:each) do
@@ -195,7 +195,7 @@ describe Admin::StatsController do
 
   describe "GET logs" do
     it "strips the api_key from the request_url on the JSON response" do
-      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_url => "http://127.0.0.1/with_api_key/?foo=bar&api_key=my_secret_key", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" })
+      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_url => "http://127.0.0.1/with_api_key/?foo=bar&api_key=my_secret_key", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" })
       LogItem.gateway.refresh_index!
 
       get :logs, {
@@ -218,7 +218,7 @@ describe Admin::StatsController do
     end
 
     it "strips the api_key from the request_url on the CSV response" do
-      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_url => "http://127.0.0.1/with_api_key/?api_key=my_secret_key&foo=bar", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" })
+      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_url => "http://127.0.0.1/with_api_key/?api_key=my_secret_key&foo=bar", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" })
       LogItem.gateway.refresh_index!
 
       get :logs, {
@@ -238,7 +238,7 @@ describe Admin::StatsController do
     end
 
     it "downloads a CSV that requires an elasticsearch scan and scroll query" do
-      FactoryGirl.create_list(:log_item, 1005, :request_at => Time.parse("2015-01-16T06:06:28.816Z"))
+      FactoryGirl.create_list(:log_item, 1005, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
       LogItem.gateway.refresh_index!
 
       get :logs, {
@@ -252,7 +252,7 @@ describe Admin::StatsController do
 
       response.status.should eql(200)
       response.headers["Content-Type"].should eql("text/csv")
-      response.headers["Content-Disposition"].should include("attachment; filename=\"api_logs (#{Time.now.strftime("%b %-e %Y")}).csv\"")
+      response.headers["Content-Disposition"].should include("attachment; filename=\"api_logs (#{Time.now.utc.strftime("%b %-e %Y")}).csv\"")
 
       lines = response.body.split("\n")
       lines[0].should eql("Time,Method,Host,URL,User,IP Address,Country,State,City,Status,Reason Denied,Response Time,Content Type,Accept Encoding,User Agent")
@@ -261,7 +261,7 @@ describe Admin::StatsController do
 
     describe "query builder" do
       it "searches fields case-insensitively by default" do
-        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_user_agent => "MOZILLAAA")
+        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_user_agent => "MOZILLAAA")
         LogItem.gateway.refresh_index!
 
         get :logs, {
@@ -272,7 +272,7 @@ describe Admin::StatsController do
           "interval" => "day",
           "start" => "0",
           "length" => "10",
-          "query" => '{"condition":"AND","rules":[{"id":"request_user_agent","field":"request_user_agent","type":"string","input":"text","operator":"begins_with","value":"Mozilla"}]}'
+          "query" => '{"condition":"AND","rules":[{"id":"request_user_agent","field":"request_user_agent","type":"string","input":"text","operator":"begins_with","value":"Mozilla"}]}',
         }
 
         response.status.should eql(200)
@@ -282,7 +282,7 @@ describe Admin::StatsController do
       end
 
       it "matches the api key case-sensitively" do
-        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :api_key => "AbCDeF", :request_user_agent => "api key match test")
+        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :api_key => "AbCDeF", :request_user_agent => "api key match test")
         LogItem.gateway.refresh_index!
 
         get :logs, {
@@ -293,7 +293,7 @@ describe Admin::StatsController do
           "interval" => "day",
           "start" => "0",
           "length" => "10",
-          "query" => '{"condition":"AND","rules":[{"id":"api_key","field":"api_key","type":"string","input":"text","operator":"begins_with","value":"AbCDeF"}]}'
+          "query" => '{"condition":"AND","rules":[{"id":"api_key","field":"api_key","type":"string","input":"text","operator":"begins_with","value":"AbCDeF"}]}',
         }
 
         response.status.should eql(200)
@@ -303,8 +303,8 @@ describe Admin::StatsController do
       end
 
       it "operates properly with null operators and a null value" do
-        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :request_user_agent => "gatekeeper denied code null test")
-        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z"), :gatekeeper_denied_code => "api_key_missing", :request_user_agent => "gatekeeper denied code not null test")
+        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_user_agent => "gatekeeper denied code null test")
+        FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :gatekeeper_denied_code => "api_key_missing", :request_user_agent => "gatekeeper denied code not null test")
         LogItem.gateway.refresh_index!
 
         get :logs, {
@@ -315,7 +315,7 @@ describe Admin::StatsController do
           "interval" => "day",
           "start" => "0",
           "length" => "10",
-          "query" => '{"condition":"AND","rules":[{"id":"gatekeeper_denied_code","field":"gatekeeper_denied_code","type":"string","input":"select","operator":"is_not_null","value":null}]}'
+          "query" => '{"condition":"AND","rules":[{"id":"gatekeeper_denied_code","field":"gatekeeper_denied_code","type":"string","input":"select","operator":"is_not_null","value":null}]}',
         }
 
         response.status.should eql(200)

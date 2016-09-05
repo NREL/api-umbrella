@@ -1,0 +1,56 @@
+{{error-messages model=model}}
+
+<form {{action "submit" on="submit"}}>
+  {{#fields-for model=model style="horizontal" as |f|}}
+    <fieldset class="form-horizontal condensed">
+      <legend>User Info</legend>
+
+      {{f.text-field "username" label="Username"}}
+      {{f.textarea-field "notes" label="Notes"}}
+      {{#if model.email}}
+        {{f.static-field "email" label="E-mail"}}
+      {{/if}}
+      {{#if model.name}}
+        {{f.static-field "name" label="Name"}}
+      {{/if}}
+    </fieldset>
+
+    {{#if model.authenticationToken}}
+      <fieldset class="form-horizontal condensed">
+        <legend>Admin API Access</legend>
+
+        {{#f.static-field "authenticationToken" label="Admin API Token"}}
+          <span class="api-key">{{model.authenticationToken}}</span>
+        {{/f.static-field}}
+      </fieldset>
+    {{/if}}
+
+    <fieldset class="form-horizontal condensed">
+      <legend>Permissions</legend>
+
+      {{f.checkboxes-field "groupIds" label="Groups" options=groupOptions}}
+      {{#if currentAdmin.superuser}}
+        {{f.checkbox-field "superuser" label="Superuser"}}
+      {{/if}}
+    </fieldset>
+
+    <div class="row">
+      <div class="col-sm-6">
+        <button type="submit" id="save_button" class="btn btn-lg btn-primary" data-loading-text="<i class='fa fa-refresh fa-spin'></i> Saving...">Save</button>
+      </div>
+      <div class="col-sm-6 record-details">
+        {{#if model.id}}
+          Created: {{format-date model.createdAt}} by {{model.creator.username}}<br>
+          Last Updated: {{format-date model.updatedAt}} by {{model.updater.username}}<br>
+          Last Login: {{format-date model.lastSignInAt}} from {{model.lastSignInIp}} via {{model.lastSignInProvider}}<br>
+          Logged in: {{model.signInCount}} times<br>
+        {{/if}}
+      </div>
+    </div>
+    {{#if model.id}}
+      <div class="form-extra-actions">
+        <a href="#" class="remove-action" {{action "delete"}}><i class="fa fa-times"></i>Delete Admin</a>
+      </div>
+    {{/if}}
+  {{/fields-for}}
+</form>

@@ -1,7 +1,8 @@
 class Api::V1::AdminGroupsController < Api::V1::BaseController
   respond_to :json
 
-  skip_after_filter :verify_authorized, :only => [:index]
+  skip_after_action :verify_authorized, :only => [:index]
+  after_action :verify_policy_scoped, :only => [:index]
 
   def index
     @admin_groups = policy_scope(AdminGroup).order_by(datatables_sort_array)
@@ -56,8 +57,21 @@ class Api::V1::AdminGroupsController < Api::V1::BaseController
 
   def save!
     authorize(@admin_group) unless(@admin_group.new_record?)
-    @admin_group.assign_attributes(params[:admin_group], :as => :admin)
+    @admin_group.assign_attributes(admin_group_params)
     authorize(@admin_group)
     @admin_group.save
+  end
+
+  def admin_group_params
+    params.require(:admin_group).permit([
+      :name,
+      {
+        :permission_ids => [],
+        :api_scope_ids => [],
+      },
+    ])
+  rescue => e
+    logger.error("Parameters error: #{e}")
+    ActionController::Parameters.new({}).permit!
   end
 end
