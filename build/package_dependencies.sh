@@ -19,6 +19,7 @@ if [ -f /etc/redhat-release ]; then
   core_package_dependencies=(
     # General
     bash
+    curl
     glibc
     libffi
     libuuid
@@ -94,6 +95,7 @@ elif [ -f /etc/debian_version ]; then
   core_package_dependencies=(
     # General
     bash
+    curl
     libc6
     libffi$libffi_version
     libncurses5
