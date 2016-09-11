@@ -198,7 +198,7 @@ http {
   }
   {{/hosts}}
 
-  {{^development_env}}
+  {{^_development_env?}}
   server {
     listen {{static_site.host}}:{{static_site.port}};
     server_name _;
@@ -206,7 +206,7 @@ http {
 
     root {{static_site.build_dir}};
   }
-  {{/development_env}}
+  {{/_development_env?}}
 
   map $http_accept_encoding $normalized_accept_encoding {
     "~(^|,) *gzip *; *q=0[\.0]* *($|,)" "";
@@ -269,7 +269,12 @@ http {
     }
 
     location /admin/ {
+      {{^_development_env?}}
+      alias /vagrant-admin-ui/dist/;
+      {{/_development_env?}}
+      {{#_development_env?}}
       proxy_pass http://127.0.0.1:{{ember_server.port}};
+      {{/_development_env?}}
     }
 
     # Serve non-static resources with Puma.
