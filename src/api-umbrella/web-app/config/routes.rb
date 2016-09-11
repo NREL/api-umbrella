@@ -1,6 +1,9 @@
 require "api_umbrella/elasticsearch_proxy"
 
 Rails.application.routes.draw do
+  # Add a simple health-check endpoint to see if this app is up.
+  get "/_web-app-health", :to => proc { [200, {}, ["OK"]] }
+
   # Mount the API at both /api/ and /api-umbrella/ for backwards compatibility.
   %w(api api-umbrella).each do |path|
     namespace(:api, :path => path) do

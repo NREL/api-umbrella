@@ -49,7 +49,7 @@ local function status_response()
     end
   end
 
-  res, err = httpc:request_uri("http://127.0.0.1:" .. config["web"]["port"] .. "/admin/")
+  res, err = httpc:request_uri("http://127.0.0.1:" .. config["web"]["port"] .. "/_web-app-health")
   if err then
     ngx.log(ngx.ERR, "failed to fetch web app: ", err)
   elseif res.body then
