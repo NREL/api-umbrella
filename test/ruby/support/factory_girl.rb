@@ -1,0 +1,1 @@
+FactoryGirl.find_definitions

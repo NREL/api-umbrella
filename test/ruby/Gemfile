@@ -6,22 +6,36 @@ gem "rake", "~> 11.2.2"
 gem "minitest", "~> 5.9.0"
 
 # More test outputs
-gem "minitest-reporters", "~> 1.1.10"
+gem "minitest-reporters", "~> 1.1.11"
 
 # Running background processes
 gem "childprocess", "~> 0.5.9"
 
 # Making HTTP requests
-gem "typhoeus", "~> 1.0.2"
+gem "typhoeus", "~> 1.1.0"
 
 # JSON parsing
 gem "multi_json", "~> 1.12.1"
-gem "oj", "~> 2.17.1"
+gem "oj", "~> 2.17.4"
 
 # Database libraries
-gem "mongo", "~> 2.2.5"
+gem "mongoid", "~> 5.1.4"
+
+# Factories for test database data
+gem "factory_girl", "~> 4.7.0"
+
+# Browser/JavaScript integration tests
+gem "capybara", "~> 2.8.1"
+gem "minitest-capybara", "~> 0.8.2"
+
+# Webkit-based driver for capybara
+gem "poltergeist", "~> 1.10.0"
+
+# Take screenshots on capybara test failures
+gem "capybara-screenshot", "~> 1.0.13"
 
 # Useful additions
-gem "activesupport", "~> 5.0.0"
+gem "activesupport", "~> 4.2.7"
 
+# Debug printing
 gem "awesome_print", "~> 1.7.0"

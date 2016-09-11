@@ -6,6 +6,18 @@ module ApiUmbrellaTests
     def setup_server
       @@semaphore.synchronize do
         unless @@setup_complete
+          Mongoid.load_configuration({
+            "clients" => {
+              "default" => {
+                "uri" => $config["mongodb"]["url"],
+                "options" => {
+                  "max_pool_size" => 1,
+                },
+              },
+            },
+          })
+
+          Admin.collection.drop
           ApiUmbrellaTests::ConfigVersion.delete_all
           ApiUmbrellaTests::ConfigVersion.insert_default
 

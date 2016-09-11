@@ -7,7 +7,7 @@ module ApiUmbrellaTests
     end
 
     def self.delete_all
-      self.client[:api_users].delete_many
+      self.client[:api_users].find("registration_source" => { "$ne" => "seed" }).delete_many
     end
 
     def self.insert
