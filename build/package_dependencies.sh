@@ -19,6 +19,7 @@ if [ -f /etc/redhat-release ]; then
   core_package_dependencies=(
     # General
     bash
+    curl
     glibc
     libffi
     libuuid
@@ -53,7 +54,6 @@ if [ -f /etc/redhat-release ]; then
     automake
     bzip2
     cmake
-    curl
     gcc
     gcc-c++
     git
@@ -94,6 +94,7 @@ elif [ -f /etc/debian_version ]; then
   core_package_dependencies=(
     # General
     bash
+    curl
     libc6
     libffi$libffi_version
     libncurses5
@@ -125,7 +126,6 @@ elif [ -f /etc/debian_version ]; then
     automake
     bzip2
     cmake
-    curl
     g++
     gcc
     git
