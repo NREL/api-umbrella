@@ -19,7 +19,6 @@ if [ -f /etc/redhat-release ]; then
   core_package_dependencies=(
     # General
     bash
-    curl
     glibc
     libffi
     libuuid
@@ -28,6 +27,11 @@ if [ -f /etc/redhat-release ]; then
     openssl
     pcre
     zlib
+
+    # geoip-auto-updater
+    coreutils
+    curl
+    gzip
 
     # TrafficServer
     libxml2
@@ -94,7 +98,6 @@ elif [ -f /etc/debian_version ]; then
   core_package_dependencies=(
     # General
     bash
-    curl
     libc6
     libffi$libffi_version
     libncurses5
@@ -103,6 +106,11 @@ elif [ -f /etc/debian_version ]; then
     libyaml-0-2
     openssl
     zlib1g
+
+    # geoip-auto-updater
+    coreutils
+    curl
+    gzip
 
     # TrafficServer
     libxml2
