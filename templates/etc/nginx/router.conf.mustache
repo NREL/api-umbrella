@@ -37,6 +37,10 @@ http {
   lua_package_path '{{_package_path}}';
   lua_package_cpath '{{_package_cpath}}';
 
+  # Quiet the raw socket errors from the logs, since we should be handling any
+  # connection errors as appropriate in the Lua code.
+  lua_socket_log_errors off;
+
   lua_shared_dict active_config {{nginx.shared_dicts.active_config.size}};
   lua_shared_dict api_users {{nginx.shared_dicts.api_users.size}};
   lua_shared_dict dns_cache {{nginx.shared_dicts.dns_cache.size}};
