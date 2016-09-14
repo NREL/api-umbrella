@@ -1,10 +1,36 @@
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
-local lock = require "resty.lock"
+local interval_lock = require "api-umbrella.utils.interval_lock"
 local mongo = require "api-umbrella.utils.mongo"
 local random_token = require "api-umbrella.utils.random_token"
 local uuid = require "resty.uuid"
 
 local nowMongoDate = { ["$date"] = { ["$numberLong"] = tostring(os.time() * 1000) } }
+
+local function wait_for_mongodb()
+  local mongodb_alive = false
+  local wait_time = 0
+  local sleep_time = 0.5
+  local max_time = 14
+  repeat
+    local _, err = mongo.collections()
+    if err then
+      ngx.log(ngx.NOTICE, "failed to establish connection to mongodb (this is expected if mongodb is starting up at the same time): ", err)
+    else
+      mongodb_alive = true
+    end
+
+    if not mongodb_alive then
+      ngx.sleep(sleep_time)
+      wait_time = wait_time + sleep_time
+    end
+  until mongodb_alive or wait_time > max_time
+
+  if mongodb_alive then
+    return true, nil
+  else
+    return false, "elasticsearch was not ready within " .. max_time  .."s"
+  end
+end
 
 local function seed_api_keys()
   local keys = {
@@ -208,19 +234,24 @@ local function seed_admin_permissions()
 end
 
 local function seed()
-  local seed_lock = lock:new("locks", { ["timeout"] = 0 })
-  local _, lock_err = seed_lock:lock("seed_database")
-  if lock_err then
-    return
+  local _, err = wait_for_mongodb()
+  if not err then
+    seed_api_keys()
+    seed_initial_superusers()
+    seed_admin_permissions()
+  else
+    ngx.log(ngx.ERR, "timed out waiting for mongodb before seeding, rerunning...")
+    ngx.sleep(5)
+    seed()
   end
+end
 
-  seed_api_keys()
-  seed_initial_superusers()
-  seed_admin_permissions()
+local function seed_once()
+  interval_lock.mutex_exec("seed_database", seed)
 end
 
 return function()
-  local ok, err = ngx.timer.at(0, seed)
+  local ok, err = ngx.timer.at(0, seed_once)
   if not ok then
     ngx.log(ngx.ERR, "failed to create timer: ", err)
     return
