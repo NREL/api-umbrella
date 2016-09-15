@@ -53,6 +53,13 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
     login
   end
 
+  def ldap
+    uid_field = request.env["omniauth.strategy"].options[:uid]
+    uid = [request.env["omniauth.auth"]["extra"]["raw_info"][uid_field]].flatten.compact.first
+    @email = uid
+    login
+  end
+
   private
 
   def login
@@ -86,6 +93,10 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
       redirect_to new_admin_session_path
     end
+  end
+
+  def signed_in_root_path(resource_or_scope)
+    admin_path
   end
 
   def after_omniauth_failure_path_for(scope)

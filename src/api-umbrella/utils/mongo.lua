@@ -120,6 +120,12 @@ function _M.find(collection, query_options)
   return results, err
 end
 
+function _M.collections()
+  local collection = ""
+  local query_options = {}
+  return _M.find(collection, query_options)
+end
+
 function _M.first(collection, query_options)
   if not query_options then
     query_options = {}

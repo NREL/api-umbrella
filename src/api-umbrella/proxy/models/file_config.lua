@@ -17,7 +17,9 @@ local function read_file()
   local content = f:read("*all")
   f:close()
 
-  return lyaml.load(content)
+  local data = lyaml.load(content)
+  nillify_yaml_nulls(data)
+  return data
 end
 
 local function set_defaults(data)
@@ -78,7 +80,6 @@ end
 
 local function read()
   local data = read_file()
-  nillify_yaml_nulls(data)
   set_defaults(data)
   cache_computed_settings(data["apiSettings"])
 

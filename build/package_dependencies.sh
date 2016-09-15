@@ -28,6 +28,11 @@ if [ -f /etc/redhat-release ]; then
     pcre
     zlib
 
+    # geoip-auto-updater
+    coreutils
+    curl
+    gzip
+
     # TrafficServer
     libxml2
     tcl
@@ -53,7 +58,6 @@ if [ -f /etc/redhat-release ]; then
     automake
     bzip2
     cmake
-    curl
     gcc
     gcc-c++
     git
@@ -103,6 +107,11 @@ elif [ -f /etc/debian_version ]; then
     openssl
     zlib1g
 
+    # geoip-auto-updater
+    coreutils
+    curl
+    gzip
+
     # TrafficServer
     libxml2
     tcl
@@ -125,7 +134,6 @@ elif [ -f /etc/debian_version ]; then
     automake
     bzip2
     cmake
-    curl
     g++
     gcc
     git
