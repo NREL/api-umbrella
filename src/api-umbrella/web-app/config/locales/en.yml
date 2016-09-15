@@ -7,6 +7,7 @@ en:
     github: GitHub
     google_oauth2: Google
     persona: Persona
+    ldap: LDAP
   errors:
     messages:
       invalid_host_format: must be in the format of "example.com"

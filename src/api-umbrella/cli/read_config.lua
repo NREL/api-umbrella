@@ -102,6 +102,7 @@ local function read_runtime_config()
     f:close()
 
     config = lyaml.load(content)
+    nillify_yaml_nulls(config)
   end
 end
 
@@ -110,6 +111,7 @@ end
 local function read_default_config()
   local content = file.read(path.join(src_root_dir, "config/default.yml"), true)
   config = lyaml.load(content)
+  nillify_yaml_nulls(config)
 end
 
 -- Handle setup of random secret tokens that should be be unique for API
@@ -159,6 +161,7 @@ local function read_system_config()
       if content then
         local overrides = lyaml.load(content)
         deep_merge_overwrite_arrays(config, overrides)
+        nillify_yaml_nulls(config)
       end
     else
       print("WARNING: Config file does not exist: ", config_path)

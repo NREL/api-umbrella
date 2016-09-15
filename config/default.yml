@@ -139,6 +139,7 @@ mongodb:
     processManagement:
       fork: false
     net:
+      bindIp: 127.0.0.1
       port: 14001
 mora:
   host: 127.0.0.1
@@ -151,6 +152,8 @@ elasticsearch:
     heap_size: 512m
   api_version: 1
   embedded_server_config:
+    network:
+      host: 127.0.0.1
     http:
       port: 14002
     transport:

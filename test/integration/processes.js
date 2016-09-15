@@ -5,6 +5,7 @@ require('../test_helper');
 var _ = require('lodash'),
     async = require('async'),
     config = require('../support/config'),
+    exec = require('child_process').exec,
     execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
     fs = require('fs'),
@@ -14,6 +15,60 @@ var _ = require('lodash'),
 
 describe('processes', function() {
   shared.runServer();
+
+  describe('network listening', function() {
+    it('only listens for the HTTP/HTTPS ports on the public interface by default (all other processes are bound to localhost)', function(done) {
+      exec('lsof -n -P -l -R -p $(pstree -p $(cat ' + path.join(config.get('run_dir'), 'perpboot.pid') + ') | grep -o "([0-9]\\+)" | grep -o "[0-9]\\+" | tr "\\012" ",") | grep LISTEN', function(error, stdout, stderr) {
+        if(error) {
+          return done('Error gathering lsof details: ' + error.message + '\n\nSTDOUT: ' + stdout + '\n\nSTDERR:' + stderr);
+        }
+
+        var listening = {
+          local: [],
+          public: [],
+        };
+        var lines = stdout.trim().split('\n');
+        lines.forEach(function(line) {
+          var ipVersion = line.match(/(IPv4|IPv6)/)[1];
+          should.exist(ipVersion);
+
+          var port = line.match(/:(\d+) \(LISTEN\)/)[1];
+          should.exist(port);
+
+          var listen = port + ':' + ipVersion;
+          if(_.contains(line, 'TCP 127.0.0.1:') || _.contains(line, 'TCP [::1]:')) {
+            if(listening.local.indexOf(listen) === -1) {
+              listening.local.push(listen);
+            }
+          } else if(_.contains(line, 'TCP *:')) {
+            if(listening.public.indexOf(listen) === -1) {
+              listening.public.push(listen);
+            }
+          } else {
+            return done('Unknown listening (not localhost or public): ' + line);
+          }
+        });
+
+        _.uniq(listening.public).sort().should.eql([
+          // HTTP port in test environment.
+          '9080:IPv4',
+          '9080:IPv6',
+
+          // HTTPS port in test environment.
+          '9081:IPv4',
+          '9081:IPv6',
+
+          // API backend for our test environment that needs to listen on all
+          // interfaces for some of our DNS tests that use 127.0.0.2,
+          // 127.0.0.3, etc.
+          '9444:IPv4',
+          '9444:IPv6',
+        ]);
+
+        done();
+      });
+    });
+  });
 
   describe('nginx', function() {
     beforeEach(function setOptionDefaults(done) {
