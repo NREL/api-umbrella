@@ -1090,6 +1090,149 @@ RSpec.describe Api::V1::UsersController do
       data["user"]["registration_source"].should eql("something")
     end
 
+    describe "allowed ips" do
+      it "adds allowed ips" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user)
+        user.settings.should eql(nil)
+
+        attributes = user.as_json
+        attributes["settings"] ||= {}
+        attributes["settings"]["allowed_ips"] = ["127.0.0.1", "127.0.0.2"]
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.allowed_ips.should eql(["127.0.0.1", "127.0.0.2"])
+      end
+
+      it "updates allowed ips" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user, {
+          :settings => FactoryGirl.build(:api_setting, {
+            :allowed_ips => ["127.0.0.1"],
+          }),
+        })
+        user.settings.allowed_ips.should eql(["127.0.0.1"])
+
+        attributes = user.as_json
+        attributes["settings"]["allowed_ips"] = ["127.0.0.5", "127.0.0.4"]
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.allowed_ips.should eql(["127.0.0.5", "127.0.0.4"])
+      end
+
+      it "removes allowed ips when set to empty array" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user, {
+          :settings => FactoryGirl.build(:api_setting, {
+            :allowed_ips => ["127.0.0.1"],
+          }),
+        })
+        user.settings.allowed_ips.should eql(["127.0.0.1"])
+
+        attributes = user.as_json
+        attributes["settings"]["allowed_ips"] = []
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.allowed_ips.should eql([])
+      end
+
+      it "removes allowed ips when set to null" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user, {
+          :settings => FactoryGirl.build(:api_setting, {
+            :allowed_ips => ["127.0.0.1"],
+          }),
+        })
+        user.settings.allowed_ips.should eql(["127.0.0.1"])
+
+        attributes = user.as_json
+        attributes["settings"]["allowed_ips"] = nil
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.allowed_ips.should eql(nil)
+      end
+    end
+
+    describe "allowed referers" do
+      it "adds allowed referers" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user)
+        user.settings.should eql(nil)
+
+        attributes = user.as_json
+        attributes["settings"] ||= {}
+        attributes["settings"]["allowed_referers"] = ["http://google.com/", "http://yahoo.com/"]
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.allowed_referers.should eql(["http://google.com/", "http://yahoo.com/"])
+      end
+
+      it "updates allowed referers" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user, {
+          :settings => FactoryGirl.build(:api_setting, {
+            :allowed_referers => ["http://google.com/"],
+          }),
+        })
+        user.settings.allowed_referers.should eql(["http://google.com/"])
+
+        attributes = user.as_json
+        attributes["settings"]["allowed_referers"] = ["https://example.com", "https://bing.com/foo"]
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.allowed_referers.should eql(["https://example.com", "https://bing.com/foo"])
+      end
+
+      it "removes allowed referers when set to empty array" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user, {
+          :settings => FactoryGirl.build(:api_setting, {
+            :allowed_referers => ["http://google.com"],
+          }),
+        })
+        user.settings.allowed_referers.should eql(["http://google.com"])
+
+        attributes = user.as_json
+        attributes["settings"]["allowed_referers"] = []
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.allowed_referers.should eql([])
+      end
+
+      it "removes allowed referers when set to null" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user, {
+          :settings => FactoryGirl.build(:api_setting, {
+            :allowed_referers => ["http://google.com"],
+          }),
+        })
+        user.settings.allowed_referers.should eql(["http://google.com"])
+
+        attributes = user.as_json
+        attributes["settings"]["allowed_referers"] = nil
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.allowed_referers.should eql(nil)
+      end
+
+    end
+
     describe "custom rate limits" do
       it "updates embedded custom rate limit records" do
         admin_token_auth(@admin)
@@ -1126,6 +1269,7 @@ RSpec.describe Api::V1::UsersController do
             ],
           }),
         })
+        user.settings.rate_limits.length.should eql(2)
 
         attributes = user.as_json
         attributes["settings"]["rate_limits"] = [
@@ -1138,6 +1282,48 @@ RSpec.describe Api::V1::UsersController do
         user.settings.rate_limits.length.should eql(1)
         user.settings.rate_limits[0].duration.should eql(1000)
         user.settings.rate_limits[0].limit.should eql(5)
+      end
+
+      it "clears embedded custom rate limit records when set to an empty array" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user, {
+          :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+            :rate_limits => [
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+            ],
+          }),
+        })
+        user.settings.rate_limits.length.should eql(2)
+
+        attributes = user.as_json
+        attributes["settings"]["rate_limits"] = []
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.rate_limits.length.should eql(0)
+      end
+
+      it "clears embedded custom rate limit records when set to null" do
+        admin_token_auth(@admin)
+        user = FactoryGirl.create(:api_user, {
+          :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+            :rate_limits => [
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+              FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+            ],
+          }),
+        })
+        user.settings.rate_limits.length.should eql(2)
+
+        attributes = user.as_json
+        attributes["settings"]["rate_limits"] = nil
+
+        put :update, :format => "json", :id => user.id, :user => attributes
+
+        user.reload
+        user.settings.rate_limits.length.should eql(0)
       end
     end
   end
