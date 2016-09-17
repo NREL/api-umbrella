@@ -149,6 +149,8 @@ class Api::V1::UsersController < Api::V1::BaseController
           :settings => [
             :id,
             :rate_limit_mode,
+            :allowed_ips,
+            :allowed_referers,
             {
               :allowed_ips => [],
               :allowed_referers => [],
