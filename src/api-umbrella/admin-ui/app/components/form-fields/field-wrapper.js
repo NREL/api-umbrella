@@ -3,6 +3,10 @@ import Ember from 'ember';
 export default Ember.Component.extend({
   canShowErrors: false,
 
+  labelFor: Ember.computed('labelForId', 'inputId', function() {
+    return this.get('labelForId') || this.get('inputId');
+  }),
+
   fieldNameDidChange: Ember.on('init', Ember.observer('fieldName', function() {
     let fieldName = this.get('fieldName');
     let fieldValidations = 'model.validations.attrs.' + fieldName;
