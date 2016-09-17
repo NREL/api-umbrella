@@ -8,8 +8,7 @@ export default BaseField.extend({
 
   init() {
     this._super();
-    this.set('selectizeTextInputId', this.get('elementId') + '_selectize_text_input');
-    this.set('overrideForElementId', this.get('selectizeTextInputId'));
+    this.set('selectizeTextInputId', this.get('elementId') + '-selectize_text_input');
   },
 
   didInsertElement() {
@@ -32,9 +31,9 @@ export default BaseField.extend({
 
     this.selectize = this.$input[0].selectize;
     this.selectize.$control_input.attr('id', this.get('selectizeTextInputId'));
-    this.selectize.$control_input.attr('data-raw-input-id', this.get('elementId'));
+    this.selectize.$control_input.attr('data-raw-input-id', this.get('inputId'));
 
-    let controlId = this.get('elementId') + '_selectize_control';
+    let controlId = this.get('elementId') + '-selectize_control';
     this.selectize.$control.attr('id', controlId);
     this.selectize.$control_input.attr('data-selectize-control-id', controlId);
   },

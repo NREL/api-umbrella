@@ -21,38 +21,34 @@ export default DS.Model.extend({
       let seconds = duration / 1000;
 
       if(days % 1 === 0) {
-        this.set('durationInUnits', days);
-        this.set('durationUnits', 'days');
+        this.setProperties({
+          durationInUnits: days,
+          durationUnits: 'days',
+        });
       } else if(hours % 1 === 0) {
-        this.set('durationInUnits', hours);
-        this.set('durationUnits', 'hours');
+        this.setProperties({
+          durationInUnits: hours,
+          durationUnits: 'hours',
+        });
       } else if(minutes % 1 === 0) {
-        this.set('durationInUnits', minutes);
-        this.set('durationUnits', 'minutes');
+        this.setProperties({
+          durationInUnits: minutes,
+          durationUnits: 'minutes',
+        });
       } else {
-        this.set('durationInUnits', seconds);
-        this.set('durationUnits', 'seconds');
+        this.setProperties({
+          durationInUnits: seconds,
+          durationUnits: 'seconds',
+        });
       }
     }
   },
 
-  durationFromUnits: Ember.computed('durationInUnits', 'durationUnits', function() {
-    if(this.get('durationInUnits') && this.get('durationUnits')) {
+  durationInUnitsDidChange: Ember.observer('durationInUnits', 'durationUnits', function() {
+    if(this.get('durationUnits')) {
       let inUnits = parseInt(this.get('durationInUnits'), 10);
       let units = this.get('durationUnits');
-      return moment.duration(inUnits, units).asMilliseconds();
-    } else {
-      return this.get('duration');
+      this.set('duration', moment.duration(inUnits, units).asMilliseconds());
     }
   }),
-
-  settingsId: function() {
-    return this.get('parent.id');
-  }.property(),
-
-  toJSON() {
-    let json = this._super();
-    json.duration = this.get('durationFromUnits');
-    return json;
-  },
 });
