@@ -29,6 +29,10 @@ PREFIX=/usr/local
 LIBDIR=
 CMAKE_ARGS=
 
+"$TOP_SRCDIR/build/scripts/download_cmake"
+PATH="$TOP_SRCDIR/build/work/cmake/bin:$PATH"
+export PATH
+
 if [ -e "${TOP_SRCDIR}/.configure-custom.sh" ]; then
     . "${TOP_SRCDIR}/.configure-custom.sh"
 fi

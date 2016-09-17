@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.6.0 FATAL_ERROR)
 project(api-umbrella)
 
 option(ENABLE_HADOOP_ANALYTICS "Build dependencies for Hadoop analytics" off)

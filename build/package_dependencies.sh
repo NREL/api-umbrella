@@ -57,7 +57,6 @@ if [ -f /etc/redhat-release ]; then
     autoconf
     automake
     bzip2
-    cmake
     gcc
     gcc-c++
     git
@@ -133,7 +132,6 @@ elif [ -f /etc/debian_version ]; then
     autoconf
     automake
     bzip2
-    cmake
     g++
     gcc
     git

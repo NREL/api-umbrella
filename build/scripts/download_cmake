@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -e -u
+
+version=3.6.2
+checksum=5df4b69d9e85093ae78b1070d5cb9f824ce0bdd02528948c3f6a740e240083e5
+
+source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
+version_stamp="$source_dir/build/work/cmake/version-$version"
+prefix="$source_dir/build/work/cmake"
+
+if [[ ! -e "$prefix/bin/cmake" || ! -e "$version_stamp" ]]; then
+  rm -rf "$prefix"
+  mkdir -p "$prefix"
+
+  download_filename="cmake-$version-Linux-x86_64.tar.gz"
+  minor_version=${version%.*}
+  download_url="https://cmake.org/files/v$minor_version/$download_filename"
+  download_path="$source_dir/build/work/$download_filename"
+  if [ ! -e "$download_path" ]; then
+    echo "Downloading CMake $version..."
+    curl -fL -o "$download_path" "$download_url"
+  fi
+
+  actual_checksum=$(openssl sha256 "$download_path" | awk '{print $2}')
+  if [ "$actual_checksum" != "$checksum" ]; then
+    echo "SHA256 hash of"
+    echo "  $download_path"
+    echo "does not match expected value"
+    echo "  expected: '$checksum'"
+    echo "    actual: '$actual_checksum'"
+    exit 1
+  fi
+
+  echo "Extracting CMake $version..."
+  tar --strip-components 1 -C "$prefix" -xf "$download_path"
+  rm -f "$download_path"
+  touch "$version_stamp"
+  echo "Completed local CMake $version installation into $prefix"
+fi

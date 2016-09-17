@@ -11,24 +11,24 @@ ExternalProject_Add(
     COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../openresty/luajit/bin/luarocks ./luarocks
 )
 
-function(luarocks_install package version)
+function(_luarocks_install tree_dir package version hash)
   ExternalProject_Add(
     luarock_${package}
-    DEPENDS luarocks ${ARGV3}
-    DOWNLOAD_COMMAND cd <SOURCE_DIR> && curl -OL https://luarocks.org/${package}-${version}.rockspec
+    DEPENDS luarocks ${ARGV5}
+    URL https://luarocks.org/${package}-${version}.rockspec
+    URL_HASH MD5=${hash}
+    DOWNLOAD_NO_EXTRACT 1
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
-    INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${VENDOR_DIR} install ${package} ${version} ${ARGV2}
+    INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${tree_dir} install ${package} ${version} ${ARGV4}
   )
 endfunction()
 
-function(test_luarocks_install package version)
-  ExternalProject_Add(
-    luarock_${package}
-    DEPENDS luarocks ${ARGV3}
-    DOWNLOAD_COMMAND cd <SOURCE_DIR> && curl -OL https://luarocks.org/${package}-${version}.rockspec
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${TEST_VENDOR_DIR} install ${package} ${version} ${ARGV2}
-  )
+
+function(luarocks_install package version hash)
+  _luarocks_install(${VENDOR_DIR} ${package} ${version} ${hash} ${ARGV3} ${ARGV4})
+endfunction()
+
+function(test_luarocks_install package version hash)
+  _luarocks_install(${TEST_VENDOR_DIR} ${package} ${version} ${hash} ${ARGV3} ${ARGV4})
 endfunction()
