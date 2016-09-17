@@ -1097,7 +1097,7 @@ RSpec.describe Api::V1::UsersController do
         user.settings.should eql(nil)
 
         attributes = user.as_json
-        attributes["settings"] = {}
+        attributes["settings"] ||= {}
         attributes["settings"]["allowed_ips"] = ["127.0.0.1", "127.0.0.2"]
 
         put :update, :format => "json", :id => user.id, :user => attributes
@@ -1116,7 +1116,6 @@ RSpec.describe Api::V1::UsersController do
         user.settings.allowed_ips.should eql(["127.0.0.1"])
 
         attributes = user.as_json
-        attributes["settings"] = {}
         attributes["settings"]["allowed_ips"] = ["127.0.0.5", "127.0.0.4"]
 
         put :update, :format => "json", :id => user.id, :user => attributes
@@ -1135,7 +1134,6 @@ RSpec.describe Api::V1::UsersController do
         user.settings.allowed_ips.should eql(["127.0.0.1"])
 
         attributes = user.as_json
-        attributes["settings"] = {}
         attributes["settings"]["allowed_ips"] = []
 
         put :update, :format => "json", :id => user.id, :user => attributes
@@ -1154,7 +1152,6 @@ RSpec.describe Api::V1::UsersController do
         user.settings.allowed_ips.should eql(["127.0.0.1"])
 
         attributes = user.as_json
-        attributes["settings"] = {}
         attributes["settings"]["allowed_ips"] = nil
 
         put :update, :format => "json", :id => user.id, :user => attributes
@@ -1171,7 +1168,7 @@ RSpec.describe Api::V1::UsersController do
         user.settings.should eql(nil)
 
         attributes = user.as_json
-        attributes["settings"] = {}
+        attributes["settings"] ||= {}
         attributes["settings"]["allowed_referers"] = ["http://google.com/", "http://yahoo.com/"]
 
         put :update, :format => "json", :id => user.id, :user => attributes
@@ -1190,7 +1187,6 @@ RSpec.describe Api::V1::UsersController do
         user.settings.allowed_referers.should eql(["http://google.com/"])
 
         attributes = user.as_json
-        attributes["settings"] = {}
         attributes["settings"]["allowed_referers"] = ["https://example.com", "https://bing.com/foo"]
 
         put :update, :format => "json", :id => user.id, :user => attributes
@@ -1209,7 +1205,6 @@ RSpec.describe Api::V1::UsersController do
         user.settings.allowed_referers.should eql(["http://google.com"])
 
         attributes = user.as_json
-        attributes["settings"] = {}
         attributes["settings"]["allowed_referers"] = []
 
         put :update, :format => "json", :id => user.id, :user => attributes
@@ -1228,7 +1223,6 @@ RSpec.describe Api::V1::UsersController do
         user.settings.allowed_referers.should eql(["http://google.com"])
 
         attributes = user.as_json
-        attributes["settings"] = {}
         attributes["settings"]["allowed_referers"] = nil
 
         put :update, :format => "json", :id => user.id, :user => attributes
