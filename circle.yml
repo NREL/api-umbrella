@@ -23,9 +23,6 @@ dependencies:
     - cmake_install.cmake
     - test/node_modules
   pre:
-    # Install a newer version of CMake than is available on Ubuntu 12.04 (we
-    # need 2.8.10+ for ExternalProject_Add URL_HASH compatibility).
-    - if [[ ! -e build/work/cmake-3.4.3/bin/cmake ]]; then mkdir -p build/work/cmake-3.4.3 && curl -L https://cmake.org/files/v3.4/cmake-3.4.3-Linux-x86_64.tar.gz | tar --strip-components 1 -C build/work/cmake-3.4.3 -xz; fi
     # Set the local file timestamps based on when they were last modified in
     # git. This helps prevent unnecessary rebuilds in the CI environment, since
     # make is dependent on file timestamps and every CI test run operates on a
@@ -39,7 +36,7 @@ dependencies:
         background: true
   override:
     # Build all the API Umbrella software dependencies.
-    - env PATH=build/work/cmake-3.4.3/bin:$PATH ./configure --enable-test-dependencies
+    - ./configure --enable-test-dependencies
     - make
     # Remove the download archives, since we don't need to cache these in
     # CircleCI, and doing so also leads to multiple versions being kept around
