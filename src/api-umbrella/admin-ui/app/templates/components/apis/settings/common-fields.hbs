@@ -11,7 +11,7 @@
   {{apis/settings/rate-limit-fields model=model style="horizontal-wide-labels"}}
   {{#if model.disableApiKey}}
     {{f.select-field "anonymousRateLimitBehavior" label="Anonymous Rate Limit Behavior" options=anonymousRateLimitBehaviorOptions}}
-    {{f.select-field "authenticatedRateLimitBehavior" label="Authenticated Rate Limit Behavior" options=authenticatedRateLimitBehaviorgt}}
+    {{f.select-field "authenticatedRateLimitBehavior" label="Authenticated Rate Limit Behavior" options=authenticatedRateLimitBehaviorOptions}}
   {{/if}}
 
   {{f.textarea-field "defaultResponseHeadersString" label=(t "admin.api.settings.default_response_headers") tooltip=(t "admin.api.settings.default_response_headers_tooltip_markdown") placeholder="X-Example-Header: value"}}
