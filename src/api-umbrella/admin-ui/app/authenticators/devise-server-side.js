@@ -16,7 +16,8 @@ export default Base.extend({
         } else {
           Ember.run(null, reject);
         }
-      }.bind(this), function() {
+      }.bind(this)).catch(function(error) {
+        Ember.Logger.error(error);
         bootbox.alert('An unexpected server error occurred during authentication');
         Ember.run(null, reject);
       });
@@ -27,7 +28,7 @@ export default Base.extend({
     return new Ember.RSVP.Promise(function(resolve, reject) {
       return this.get('ajax').request('/admin/logout', { method: 'DELETE' }).then(function() {
         Ember.run(null, resolve);
-      }, function() {
+      }).catch(function() {
         Ember.run(null, reject);
       });
     }.bind(this));

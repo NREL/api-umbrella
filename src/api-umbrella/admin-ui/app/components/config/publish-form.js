@@ -124,6 +124,7 @@ export default Ember.Component.extend({
         }
 
         button.button('reset');
+        Ember.Logger.error(message);
         bootbox.alert(message);
       });
     },
