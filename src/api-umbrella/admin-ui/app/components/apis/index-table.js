@@ -2,6 +2,8 @@ import Ember from 'ember';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 
 export default Ember.Component.extend({
+  ajax: Ember.inject.service('ajax'),
+  busy: Ember.inject.service('busy'),
   reorderActive: false,
 
   didInsertElement() {
@@ -125,17 +127,17 @@ export default Ember.Component.extend({
   }.observes('reorderActive'),
 
   saveReorder(id, moveAfterId) {
-    this.get('table').fnProcessingIndicator(true);
-    $.ajax({
-      url: '/api-umbrella/v1/apis/' + id + '/move_after.json',
+    this.get('busy').show();
+    this.get('ajax').request('/api-umbrella/v1/apis/' + id + '/move_after.json', {
       type: 'PUT',
       data: { move_after_id: moveAfterId },
-    }).done(_.bind(function() {
+    }).then(function() {
       this.get('table').draw();
-    }, this)).fail(_.bind(function() {
+    }.bind(this)).catch(function(error) {
+      Ember.Logger.error(error);
       bootbox.alert('An unexpected error occurred. Please try again.');
       this.get('table').draw();
-    }, this));
+    }.bind(this));
   },
 
   actions: {
