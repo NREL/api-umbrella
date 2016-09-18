@@ -14,10 +14,9 @@ ExternalProject_Add(
   geolitecity-${RELEASE_DATE}
   URL https://geolite.maxmind.com/download/geoip/database/GeoLiteCityv6-beta/GeoLiteCityv6.dat.gz
   DOWNLOAD_NO_EXTRACT 1
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND gunzip -c <DOWNLOADED_FILE> > <SOURCE_DIR>/GeoLiteCityv6.dat
-  INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/GeoLiteCityv6.dat ${STAGE_EMBEDDED_DIR}/var/db/geoip/city-v6.dat
-    # Since we re-download every day as a separate project name, this cleans up
-    # any old downloads in the work directory.
-    COMMAND find ${WORK_DIR}/src -maxdepth 1 -name geolitecity* -not -name geolitecity-${RELEASE_DATE}* -print -exec rm -rf {} $<SEMICOLON>
+  # Since we re-download every day as a separate project name, this cleans up
+  # any old downloads in the work directory.
+  CONFIGURE_COMMAND find ${CMAKE_BINARY_DIR}/${EP_BASE} -maxdepth 2 -name geolitecity* -not -name geolitecity-${RELEASE_DATE}* -print -exec rm -rf {} $<SEMICOLON>
+  BUILD_COMMAND gunzip -c <DOWNLOADED_FILE> > <BINARY_DIR>/GeoLiteCityv6.dat
+  INSTALL_COMMAND install -D -m 644 <BINARY_DIR>/GeoLiteCityv6.dat ${STAGE_EMBEDDED_DIR}/var/db/geoip/city-v6.dat
 )

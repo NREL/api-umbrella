@@ -1,7 +1,7 @@
 DEPENDENCIES
   api-umbrella
     git: https://github.com/NREL/api-umbrella-cookbook.git
-    revision: 4babd6d375fa87ddff74aae9c268081df6a3c47c
+    revision: 46e8637cdd591abfa74aef5c9ffbcda69ff888a5
 
 GRAPH
   api-umbrella (0.7.1)

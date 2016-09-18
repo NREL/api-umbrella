@@ -11,9 +11,9 @@ endif()
 set(INSTALL_PREFIX_EMBEDDED ${CMAKE_INSTALL_PREFIX}/embedded)
 
 # Where to install cmake ExternalProjects.
-set(EP_PREFIX build/work)
-set_directory_properties(PROPERTIES EP_PREFIX ${EP_PREFIX})
-set(WORK_DIR ${CMAKE_BINARY_DIR}/${EP_PREFIX})
+set(EP_BASE build/work/external-projects)
+set_directory_properties(PROPERTIES EP_BASE ${EP_BASE})
+set(WORK_DIR ${CMAKE_BINARY_DIR}/build/work)
 
 # Directory to store "stamp" files indicating when a step was completed or last
 # touched.
