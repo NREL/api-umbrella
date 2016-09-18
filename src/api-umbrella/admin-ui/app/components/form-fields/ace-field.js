@@ -5,7 +5,6 @@ export default BaseField.extend({
     this._super();
     this.set('aceId', this.get('elementId') + '_ace');
     this.set('aceTextInputId', this.get('elementId') + '_ace_text_input');
-    this.set('overrideForElementId', this.get('aceTextInputId'));
   },
 
   didInsertElement() {
@@ -14,7 +13,7 @@ export default BaseField.extend({
     let aceId = this.get('aceId');
     let $element = this.$().find('textarea');
     $element.hide();
-    $element.before('<div id="' + aceId + '" data-form-property="' + this.property + '" class="span12"></div>');
+    $element.before('<div id="' + aceId + '" data-form-property="' + this.get('fieldName') + '" class="span12"></div>');
 
     this.editor = ace.edit(aceId);
 
