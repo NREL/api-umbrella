@@ -29,10 +29,6 @@ PREFIX=/usr/local
 LIBDIR=
 CMAKE_ARGS=
 
-"$TOP_SRCDIR/build/scripts/download_cmake"
-PATH="$TOP_SRCDIR/build/work/cmake/bin:$PATH"
-export PATH
-
 if [ -e "${TOP_SRCDIR}/.configure-custom.sh" ]; then
     . "${TOP_SRCDIR}/.configure-custom.sh"
 fi
@@ -302,5 +298,9 @@ if [ "x${LDFLAGS}" != "x" ]; then
         CMAKE_ARGS="$CMAKE_ARGS -DCMAKE_${varname}_LINKER_FLAGS=$(quote "$LDFLAGS")"
     done
 fi
+
+"$TOP_SRCDIR/build/scripts/download_cmake"
+PATH="$TOP_SRCDIR/build/work/cmake/bin:$PATH"
+export PATH
 
 eval "cmake ${TOP_SRCDIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${PREFIX} ${CMAKE_ARGS}"
