@@ -82,7 +82,7 @@ Rails.application.routes.draw do
     end
   end
 
-  authenticate :admin, lambda { |admin| admin.superuser? } do
-    mount ApiUmbrella::ElasticsearchProxy.new, :at => ApiUmbrella::ElasticsearchProxy::PREFIX
+  authenticate :admin do
+    mount ApiUmbrella::ElasticsearchProxy.new => ApiUmbrella::ElasticsearchProxy::PREFIX
   end
 end

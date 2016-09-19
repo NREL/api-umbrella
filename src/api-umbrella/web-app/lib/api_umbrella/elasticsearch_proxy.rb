@@ -8,6 +8,15 @@ module ApiUmbrella
       }))
     end
 
+    def perform_request(env)
+      admin = env["warden"].user(:admin)
+      if(admin && admin.superuser?)
+        super
+      else
+        [403, {}, ["Forbidden"]]
+      end
+    end
+
     def rewrite_env(env)
       # Rewrite /admin/elasticsearch to /
       %w(SCRIPT_NAME REQUEST_PATH REQUEST_URI).each do |key|
@@ -28,9 +37,15 @@ module ApiUmbrella
     def rewrite_response(triplet)
       status, headers, body = triplet
 
-      # Fix <meta> tag redirects returned by elasticsearch to add our URL
-      # custom prefix.
+      # Rewrite redirects
       if(status >= 300 && status < 400)
+        # Rewrite Location header redirects
+        url = [headers["location"]].flatten.join("")
+        if(url && !url.empty? && url.start_with?("/") && !url.start_with?(PREFIX))
+          headers["location"] = File.join(PREFIX, url)
+        end
+
+        # Rewrite <meta> tag redirects.
         new_body = body.to_s
         new_body.gsub!(/(url=['"]?)([^'">]+)/i) do
           tag = Regexp.last_match[1]
