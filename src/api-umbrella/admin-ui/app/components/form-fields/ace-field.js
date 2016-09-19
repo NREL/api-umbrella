@@ -5,6 +5,7 @@ export default BaseField.extend({
     this._super();
     this.set('aceId', this.get('elementId') + '_ace');
     this.set('aceTextInputId', this.get('elementId') + '_ace_text_input');
+    this.addObserver('model.' + this.get('fieldName'), this, this.valueDidChange);
   },
 
   didInsertElement() {
@@ -20,6 +21,7 @@ export default BaseField.extend({
     let editor = this.editor;
     let session = this.editor.getSession();
 
+    editor.$blockScrolling = Infinity;
     editor.setTheme('ace/theme/textmate');
     editor.setShowPrintMargin(false);
     editor.setHighlightActiveLine(false);
@@ -30,7 +32,7 @@ export default BaseField.extend({
 
     let $textElement = $(editor.textInput.getElement());
     $textElement.attr('id', this.get('aceTextInputId'));
-    $textElement.attr('data-raw-input-id', this.get('elementId'));
+    $textElement.attr('data-raw-input-id', $element.attr('id'));
 
     let contentId = this.get('elementId') + '_ace_content';
     let $content = $(editor.container).find('.ace_content');
@@ -41,5 +43,15 @@ export default BaseField.extend({
       $element.val(session.getValue());
       $element.trigger('change');
     });
+  },
+
+  valueDidChange() {
+    if(this.editor) {
+      let session = this.editor.getSession();
+      let value = this.get('model.' + this.get('fieldName'));
+      if(value !== session.getValue()) {
+        session.setValue(value);
+      }
+    }
   },
 });
