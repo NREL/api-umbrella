@@ -1,10 +1,35 @@
 require "capybara/poltergeist"
 require "capybara-screenshot/minitest"
 
+class PoltergeistLogger
+  attr_reader :logger
+
+  def initialize(path)
+    @logger = Logger.new(path)# ::Logger::Formatter.new
+  end
+
+  def puts(line)
+    @logger.info(line)
+  end
+
+  def write(msg)
+    if(msg)
+      @line ||= ""
+      @line << msg.chomp
+
+      if(msg.include?("\n"))
+        @logger.info(@line)
+        @line = ""
+      end
+    end
+  end
+end
+
 Capybara.default_max_wait_time = 5
 Capybara.register_driver :poltergeist do |app|
   Capybara::Poltergeist::Driver.new(app, {
-    :phantomjs_logger => File.open("/tmp/test_phantomjs.log", "a"),
+    :logger => PoltergeistLogger.new("/tmp/test_poltergeist.log"),
+    :phantomjs_logger => PoltergeistLogger.new("/tmp/test_phantomjs.log"),
     :phantomjs_options => [
       "--ignore-ssl-errors=true",
       "--disk-cache-path=/tmp/capybara-disk-cache",
