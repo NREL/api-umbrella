@@ -9,6 +9,7 @@ export default BaseField.extend({
   init() {
     this._super();
     this.set('selectizeTextInputId', this.get('elementId') + '-selectize_text_input');
+    this.addObserver('model.' + this.get('fieldName'), this, this.valueDidChange);
   },
 
   didInsertElement() {
@@ -22,7 +23,6 @@ export default BaseField.extend({
       labelField: 'label',
       searchField: 'label',
       sortField: 'label',
-      onChange: _.bind(this.handleSelectizeChange, this),
       create: true,
 
       // Add to body so it doesn't get clipped by parent div containers.
@@ -57,9 +57,9 @@ export default BaseField.extend({
 
   // Sync the selectize input with the value binding if the value changes
   // externally.
-  valueDidChange: Ember.on('init', Ember.observer('value', function() {
+  valueDidChange() {
     if(this.selectize) {
-      let valueString = this.get('value');
+      let valueString = this.get('model.' + this.get('fieldName'));
       if(valueString !== this.selectize.getValue()) {
         let values = valueString;
         if(values) {
@@ -83,11 +83,6 @@ export default BaseField.extend({
         this.selectize.setValue(values);
       }
     }
-  })),
-
-  // Update the value binding when the selectize input changes.
-  handleSelectizeChange(value) {
-    this.set('value', value);
   },
 
   willDestroyElement() {
