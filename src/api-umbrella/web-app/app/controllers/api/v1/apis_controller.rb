@@ -107,7 +107,11 @@ class Api::V1::ApisController < Api::V1::BaseController
         :required_roles => [],
         :allowed_ips => [],
         :allowed_referers => [],
-        :error_templates => [],
+        :error_templates => [
+          :json,
+          :xml,
+          :csv,
+        ],
         :default_response_headers => [
           :id,
           :key,
