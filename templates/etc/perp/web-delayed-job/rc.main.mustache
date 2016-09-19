@@ -12,7 +12,7 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  exec runtool "${run_args[@]}" bundle exec ./script/delayed_job --pid-dir="{{run_dir}}" --queues=mailers run
+  exec runtool "${run_args[@]}" bundle exec ./bin/delayed_job --pid-dir="{{run_dir}}" run
 fi
 
 exit 0

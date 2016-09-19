@@ -66,10 +66,10 @@ class Api::V1::UsersController < Api::V1::BaseController
         end
 
         if(send_welcome_email)
-          ApiUserMailer.delay(:queue => "mailers").signup_email(@api_user, params[:options] || {})
+          ApiUserMailer.signup_email(@api_user.id, params[:options] || {}).deliver_later
         end
         if(send_notify_email)
-          ApiUserMailer.delay(:queue => "mailers").notify_api_admin(@api_user)
+          ApiUserMailer.notify_api_admin(@api_user.id).deliver_later
         end
 
         format.json { render("show", :status => :created, :location => api_v1_user_url(@api_user)) }

@@ -146,6 +146,9 @@ module ApiUmbrella
     # amongst multiple servers).
     config.cache_store = :mongoid_store
 
+    # Use delayed job for background jobs.
+    config.active_job.queue_adapter = :delayed_job
+
     config.action_mailer.raise_delivery_errors = true
     config.action_mailer.default_url_options = {
       :host => ApiUmbrellaConfig[:web][:default_host],

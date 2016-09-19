@@ -87,6 +87,7 @@ endif()
 #
 if(ENABLE_TEST_DEPENDENCIES)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/unbound.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/test/mailhog.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/mongo-orchestration.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/lua-deps.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/shellcheck.cmake)

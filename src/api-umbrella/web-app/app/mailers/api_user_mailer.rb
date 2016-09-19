@@ -1,8 +1,8 @@
 class ApiUserMailer < ActionMailer::Base
   default :from => "noreply@#{ApiUmbrellaConfig[:web][:default_host]}"
 
-  def signup_email(user, options)
-    @user = user
+  def signup_email(user_id, options)
+    @user = ApiUser.find(user_id)
 
     if(options[:example_api_url].present?)
       @example_api_url = options[:example_api_url].gsub("{{api_key}}", @user.api_key)
@@ -19,11 +19,11 @@ class ApiUserMailer < ActionMailer::Base
 
     mail :subject => "Your #{site_name} API key",
       :from => from,
-      :to => user.email
+      :to => @user.email
   end
 
-  def notify_api_admin(user)
-    @user = user
+  def notify_api_admin(user_id)
+    @user = ApiUser.find(user_id)
 
     to = ApiUmbrellaConfig[:web][:admin_notify_email].presence || ApiUmbrellaConfig[:web][:contact_form_email]
 

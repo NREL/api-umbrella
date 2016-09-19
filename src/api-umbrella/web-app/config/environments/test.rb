@@ -29,7 +29,12 @@ Rails.application.configure do
   # Tell Action Mailer not to deliver emails to the real world.
   # The :test delivery method accumulates sent emails in the
   # ActionMailer::Base.deliveries array.
-  config.action_mailer.delivery_method = :test
+  #
+  # But do deliver real e-mail if running integration tests with local MailHog
+  # as our test SMTP server.
+  if(!config.action_mailer.smtp_settings || config.action_mailer.smtp_settings[:address] != "127.0.0.1" || config.action_mailer.smtp_settings[:port] != 13102)
+    config.action_mailer.delivery_method = :test
+  end
 
   # Randomize the order test cases are executed.
   config.active_support.test_order = :random
