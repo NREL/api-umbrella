@@ -3,7 +3,7 @@ export function initialize() {
     styling: 'bootstrap3',
     width: '400px',
     icon: false,
-    animate_speed: 'fast',
+    animation: 'none',
     history: {
       history: false,
     },
