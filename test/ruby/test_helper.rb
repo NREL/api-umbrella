@@ -11,7 +11,4 @@ end
 
 Dir["support/**/*.rb"].each { |f| require f }
 
-# Start the API Umbrella process to test against.
-ApiUmbrellaTests::Process.start
-
 #Typhoeus::Config.verbose = true

@@ -11,6 +11,9 @@ Capybara.register_driver :poltergeist do |app|
       "--offline-storage-path=/tmp/capybara-offline-storage",
       "--local-storage-path=/tmp/capybara-local-storage",
     ],
+    :extensions => [
+      File.expand_path("../capybara/disable_animations.js", __FILE__),
+    ],
   })
 end
 Capybara.default_driver = :poltergeist

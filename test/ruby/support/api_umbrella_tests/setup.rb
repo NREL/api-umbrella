@@ -1,7 +1,30 @@
 module ApiUmbrellaTests
   module Setup
     @@semaphore = Mutex.new
+    @@start_complete = false
     @@setup_complete = false
+
+    # Start the API Umbrella server process before any tests run.
+    #
+    # We perform this before the #run phase (rather than in the more normal
+    # #setup phase) so that the time spent starting up doesn't get counted as
+    # part of the first test being run (which would skew the metrics for
+    # individual test times). This also occurs later than directly inside
+    # test_helper.rb so that we're sure minitest will actually run (for
+    # example, no invalid command line flags given) and this includes the
+    # startup time in the overall test times (just not any individual test
+    # times).
+    def run
+      @@semaphore.synchronize do
+        unless @@start_complete
+          # Start the API Umbrella process to test against.
+          ApiUmbrellaTests::Process.start
+          @@start_complete = true
+        end
+      end
+
+      super
+    end
 
     def setup_server
       @@semaphore.synchronize do

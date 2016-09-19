@@ -1,18 +1,21 @@
 module ApiUmbrellaTests
   class Process
+    EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded")
+    CONFIG_PATH = "/tmp/integration_test_suite.yml"
+
     def self.start
       Minitest.after_run do
         ApiUmbrellaTests::Process.stop
       end
 
-      Bundler.with_clean_env do
-        embedded_root = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded")
+      FileUtils.rm_rf("/tmp/api-umbrella-test")
+      FileUtils.mkdir_p("/tmp/api-umbrella-test/var/log")
 
+      Bundler.with_clean_env do
         $config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "test/config/test.yml"))
         #config["services"] = ["general_db", "log_db", "router"]
         $config["mongodb"]["url"] = "mongodb://127.0.0.1:13001/api_umbrella_test"
-        config_path = "/tmp/integration_test_suite.yml"
-        File.write(config_path, YAML.dump($config))
+        File.write(CONFIG_PATH, YAML.dump($config))
 
         #config_path = File.join(API_UMBRELLA_SRC_ROOT, "test/config/test.yml")
 
@@ -28,16 +31,16 @@ module ApiUmbrellaTests
         # process.
         $api_umbrella_process = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "run")
         $api_umbrella_process.io.inherit!
-        $api_umbrella_process.environment["API_UMBRELLA_EMBEDDED_ROOT"] = embedded_root
-        $api_umbrella_process.environment["API_UMBRELLA_CONFIG"] = config_path
+        $api_umbrella_process.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
+        $api_umbrella_process.environment["API_UMBRELLA_CONFIG"] = CONFIG_PATH
         $api_umbrella_process.leader = true
         $api_umbrella_process.start
 
         # Run the health command to wait for API Umbrella to fully startup.
         health = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "health", "--wait-for-status", "green", "--wait-timeout", "90")
         health.io.inherit!
-        health.environment["API_UMBRELLA_EMBEDDED_ROOT"] = embedded_root
-        health.environment["API_UMBRELLA_CONFIG"] = config_path
+        health.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
+        health.environment["API_UMBRELLA_CONFIG"] = CONFIG_PATH
         health.start
         health.wait
 
@@ -55,7 +58,18 @@ module ApiUmbrellaTests
 
     def self.stop
       if($api_umbrella_process && $api_umbrella_process.alive?)
-        $api_umbrella_process.stop
+        puts "Stopping api-umbrella..."
+
+        begin
+          stop = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "stop")
+          stop.io.inherit!
+          stop.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
+          stop.environment["API_UMBRELLA_CONFIG"] = CONFIG_PATH
+          stop.start
+          stop.wait
+        ensure
+          $api_umbrella_process.stop
+        end
       end
     end
   end
