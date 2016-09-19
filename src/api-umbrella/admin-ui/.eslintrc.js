@@ -1,5 +1,13 @@
 module.exports = {
-  extends: './node_modules/ember-cli-eslint/coding-standard/ember-application.js',
+  root: true,
+  parserOptions: {
+    ecmaVersion: 6,
+    sourceType: 'module'
+  },
+  extends: 'eslint:recommended',
+  env: {
+    browser: true
+  },
   rules: {
     'comma-dangle': ['error', 'always-multiline'],
     'no-var': 'error',

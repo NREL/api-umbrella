@@ -106,8 +106,8 @@ export default DS.Model.extend({
 
   passApiKeyDidChange: Ember.observer('passApiKey.@each', function() {
     let options = this.get('passApiKey');
-    this.set('passApiKeyHeader', options.contains('header'));
-    this.set('passApiKeyQueryParam', options.contains('param'));
+    this.set('passApiKeyHeader', options.includes('header'));
+    this.set('passApiKeyQueryParam', options.includes('param'));
   }),
 
   isRateLimitModeCustom: Ember.computed('rateLimitMode', function() {
