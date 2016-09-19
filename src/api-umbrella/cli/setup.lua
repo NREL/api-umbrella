@@ -101,6 +101,7 @@ local function prepare()
     path.join(config["etc_dir"], "trafficserver/snapshots"),
     path.join(config["log_dir"], "trafficserver"),
     path.join(config["root_dir"], "var/trafficserver"),
+    path.join(config["_src_root_dir"], "src/api-umbrella/web-app/tmp"),
   }
 
   for _, directory in ipairs(dirs) do

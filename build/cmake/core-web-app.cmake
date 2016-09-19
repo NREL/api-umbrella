@@ -18,6 +18,7 @@ if(ENABLE_TEST_DEPENDENCIES)
     OUTPUT ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/.bundle/config
     DEPENDS
       bundler
+      ${STAMP_DIR}/core-web-app-bundle
       ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile
       ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile.lock
     COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile bundle install --clean --path=${VENDOR_DIR}/bundle

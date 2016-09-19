@@ -44,6 +44,18 @@ install(
 
 install(
   CODE "
+  message(STATUS \"Directories: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core/${RELEASE_TIMESTAMP}\")
+  execute_process(
+    WORKING_DIRECTORY \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core
+    COMMAND mv releases/0 releases/${RELEASE_TIMESTAMP}
+    COMMAND ln -snf releases/${RELEASE_TIMESTAMP} ./current
+  )
+  message(STATUS \"Directories: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/static-site/${RELEASE_TIMESTAMP}\")
+  execute_process(
+    WORKING_DIRECTORY \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/static-site
+    COMMAND mv releases/0 releases/${RELEASE_TIMESTAMP}
+    COMMAND ln -snf releases/${RELEASE_TIMESTAMP} ./current
+  )
   message(STATUS \"Directories: \$ENV{DESTDIR}/usr/bin \$ENV{DESTDIR}/var/log \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/etc \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/db \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/log \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/run \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/tmp\")
   execute_process(
     COMMAND mkdir -p \$ENV{DESTDIR}/usr/bin \$ENV{DESTDIR}/var/log \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/etc \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/db \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/log \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/run \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/tmp
