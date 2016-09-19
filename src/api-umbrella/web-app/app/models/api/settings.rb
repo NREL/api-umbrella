@@ -83,7 +83,7 @@ class Api::Settings
       @error_data_yaml_strings = {}
       if self.error_data.present?
         self.error_data.each do |key, value|
-          @error_data_yaml_strings[key] = Psych.dump(value).gsub(/^---\s*\n/, "").strip
+          @error_data_yaml_strings[key] = Psych.dump(value).gsub(/\A---.*?\n/, "").strip
         end
       end
     end
