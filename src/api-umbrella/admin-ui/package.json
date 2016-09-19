@@ -21,7 +21,6 @@
   "devDependencies": {
     "bower": "1.7.9",
     "broccoli-asset-rev": "^2.4.2",
-    "ember-ajax": "2.5.1",
     "ember-bootstrap": "0.10.0",
     "ember-buffered-proxy": "0.6.0",
     "ember-busy-blocker": "0.1.0",

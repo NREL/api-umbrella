@@ -2,36 +2,41 @@ import Ember from 'ember';
 import Base from 'ember-simple-auth/authenticators/base';
 
 export default Base.extend({
-  ajax: Ember.inject.service(),
-
   restore(data) {
     return this._validate(data) ? Ember.RSVP.Promise.resolve(data) : Ember.RSVP.Promise.reject();
   },
 
   authenticate() {
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      return this.get('ajax').request('/admin/auth').then(function(data) {
+    return new Ember.RSVP.Promise((resolve, reject) => {
+      $.ajax({
+        url: '/admin/auth',
+      }).done((data) => {
         if(this._validate(data)) {
           Ember.run(null, resolve, data);
         } else {
-          Ember.run(null, reject);
+          Ember.run(null, reject, 'unauthenticated');
         }
-      }.bind(this)).catch(function(error) {
-        Ember.Logger.error(error);
+      }).fail((xhr) => {
+        Ember.Logger.error('Unexpected error: ' + xhr.status + ' ' + xhr.statusText + ' (' + xhr.readyState + '): ' + xhr.responseText);
         bootbox.alert('An unexpected server error occurred during authentication');
-        Ember.run(null, reject);
+        Ember.run(null, reject, 'unexpected_error');
       });
-    }.bind(this));
+    });
   },
 
   invalidate() {
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      return this.get('ajax').request('/admin/logout', { method: 'DELETE' }).then(function() {
+    return new Ember.RSVP.Promise((resolve, reject) => {
+      $.ajax({
+        url: '/admin/logout',
+        method: 'DELETE',
+      }).done(() => {
         Ember.run(null, resolve);
-      }).catch(function() {
-        Ember.run(null, reject);
+      }).fail((xhr) => {
+        Ember.Logger.error('Unexpected error: ' + xhr.status + ' ' + xhr.statusText + ' (' + xhr.readyState + '): ' + xhr.responseText);
+        bootbox.alert('An unexpected server error occurred during logout');
+        Ember.run(null, reject, 'unexpected_error');
       });
-    }.bind(this));
+    });
   },
 
   _validate(data) {
