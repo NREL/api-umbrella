@@ -157,5 +157,7 @@ module ApiUmbrella
     if(ApiUmbrellaConfig[:web] && ApiUmbrellaConfig[:web][:mailer] && ApiUmbrellaConfig[:web][:mailer][:smtp_settings])
       config.action_mailer.smtp_settings = ApiUmbrellaConfig[:web][:mailer][:smtp_settings]
     end
+
+    config.middleware.use HttpAcceptLanguage::Middleware
   end
 end

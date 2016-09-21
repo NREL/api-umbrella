@@ -85,4 +85,30 @@ Rails.application.routes.draw do
   authenticate :admin do
     mount ApiUmbrella::ElasticsearchProxy.new => ApiUmbrella::ElasticsearchProxy::PREFIX
   end
+
+  # Add an endpoint for admin-ui to hit to return the detected language based
+  # on the Accept-Language HTTP header.
+  #
+  # At some point we may want to revisit this to be purely client-side, but
+  # this currently seems like the easiest approach to ensure that the parsed
+  # client-side language is consistent with the server-side language, and this
+  # can be tested with Capybara (purely client-side approaches based on
+  # "navigator.languages" can't really seem to be changed in
+  # Capybara+poltergeist).
+  get "/admin/i18n_detection.js", :to => proc { |env|
+    locale = env["http_accept_language.parser"].compatible_language_from(I18n.available_locales) || I18n.default_locale
+
+    [
+      200,
+      {
+        "Content-Type" => "application/javascript",
+        "Cache-Control" => "max-age=0, private, must-revalidate",
+      },
+      [
+        "I18n = {};",
+        "I18n.defaultLocale = #{I18n.default_locale.to_json};",
+        "I18n.locale = #{locale.to_json};",
+      ],
+    ]
+  }
 end
