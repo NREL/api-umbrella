@@ -20,6 +20,8 @@ gem "oj", "~> 2.17.4"
 
 # Database libraries
 gem "mongoid", "~> 5.1.4"
+gem "elasticsearch", "~> 2.0.0"
+gem "elasticsearch-persistence", "~> 0.1.9"
 
 # Factories for test database data
 gem "factory_girl", "~> 4.7.0"
@@ -27,6 +29,12 @@ gem "factory_girl", "~> 4.7.0"
 gem "database_cleaner", "~> 1.5.3"
 
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
+
+# Localization tests
+gem "i18n", "~> 0.7.0"
+
+# URL parsing/generation
+gem "addressable", "~> 2.4.0"
 
 # Browser/JavaScript integration tests
 gem "capybara", "~> 2.8.1"

@@ -40,6 +40,32 @@ module ApiUmbrellaTests
             },
           })
 
+          require "typhoeus/adapters/faraday"
+          client = Elasticsearch::Client.new({
+            :hosts => $config["elasticsearch"]["hosts"],
+          })
+          Elasticsearch::Persistence.client = client
+
+          # For simplicity sake, we're assuming our tests only deal with a few explicit
+          # indexes currently.
+          ["2014-11", "2015-01", "2015-03"].each do |month|
+            # First delete any existing indexes.
+            ["api-umbrella-logs-v1-#{month}", "api-umbrella-logs-#{month}", "api-umbrella-logs-write-#{month}"].each do |index_name|
+              begin
+                client.indices.delete :index => index_name
+              rescue Elasticsearch::Transport::Transport::Errors::NotFound # rubocop:disable Lint/HandleExceptions
+              end
+            end
+
+            # Create the index with proper aliases setup.
+            client.indices.create(:index => "api-umbrella-logs-v1-#{month}", :body => {
+              :aliases => {
+                "api-umbrella-logs-#{month}" => {},
+                "api-umbrella-logs-write-#{month}" => {},
+              },
+            })
+          end
+
           Admin.collection.drop
           ApiUmbrellaTests::ConfigVersion.delete_all
           ApiUmbrellaTests::ConfigVersion.insert_default
@@ -76,6 +102,22 @@ module ApiUmbrellaTests
         config_version = ApiUmbrellaTests::ConfigVersion.get
         config_version["config"]["apis"].reject! { |api| api_ids.include?(api["_id"]) }
         ApiUmbrellaTests::ConfigVersion.insert(config_version)
+      end
+    end
+
+    def override_config(config)
+      @@semaphore.synchronize do
+        begin
+          config["version"] = SecureRandom.uuid
+          File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump(config))
+          ApiUmbrellaTests::Process.reload
+          ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", config["version"])
+          yield
+        ensure
+          File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump({ "version" => 0 }))
+          ApiUmbrellaTests::Process.reload
+          ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", 0)
+        end
       end
     end
 

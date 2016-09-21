@@ -1,7 +1,7 @@
 module ApiUmbrellaTests
   class Process
     EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded")
-    CONFIG_PATH = "/tmp/integration_test_suite.yml"
+    CONFIG_PATH = "/tmp/integration_test_suite.yml:/tmp/integration_test_suite_overrides.yml"
 
     def self.start
       Minitest.after_run do
@@ -15,7 +15,8 @@ module ApiUmbrellaTests
         $config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "test/config/test.yml"))
         #config["services"] = ["general_db", "log_db", "router"]
         $config["mongodb"]["url"] = "mongodb://127.0.0.1:13001/api_umbrella_test"
-        File.write(CONFIG_PATH, YAML.dump($config))
+        File.write("/tmp/integration_test_suite.yml", YAML.dump($config))
+        File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump({ "version" => 0 }))
 
         #config_path = File.join(API_UMBRELLA_SRC_ROOT, "test/config/test.yml")
 
@@ -70,6 +71,31 @@ module ApiUmbrellaTests
         ensure
           $api_umbrella_process.stop
         end
+      end
+    end
+
+    def self.reload
+      reload = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload")
+      reload.io.inherit!
+      reload.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
+      reload.environment["API_UMBRELLA_CONFIG"] = CONFIG_PATH
+      reload.start
+      reload.wait
+    end
+
+    def self.wait_for_config_version(field, version)
+      data = nil
+      begin
+        Timeout.timeout(10) do
+          loop do
+            response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state?#{rand}")
+            data = MultiJson.load(response.body)
+            break if(data[field] == version)
+            sleep 0.1
+          end
+        end
+      rescue Timeout::Error
+        raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{version}. Last seen: #{data.inspect}"
       end
     end
   end

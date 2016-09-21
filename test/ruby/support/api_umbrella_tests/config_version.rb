@@ -48,19 +48,7 @@ module ApiUmbrellaTests
 
     def self.wait_until_live(config_version)
       version = (config_version["version"].to_f * 1000).to_i
-
-      start_time = Time.now
-      loop do
-        response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state?#{rand}")
-        data = MultiJson.load(response.body)
-        if(data["db_config_version"] == version)
-          break
-        end
-
-        if(Time.now - start_time > 10)
-          raise "API Umbrella configuration changes were not detected. Waiting for version #{version}. Last seen: #{data.inspect}"
-        end
-      end
+      ApiUmbrellaTests::Process.wait_for_config_version("db_config_version", version)
     end
   end
 end
