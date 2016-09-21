@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 export default Ember.Controller.extend({
   tz: jstz.determine().name(),
-  search: null,
+  search: '',
   interval: 'day',
   prefix: '0/',
   region: 'world',
@@ -23,18 +23,13 @@ export default Ember.Controller.extend({
 
   actions: {
     submit() {
-      let query = this.get('query');
-      query.beginPropertyChanges();
-
       if($('#filter_type_advanced').css('display') === 'none') {
-        query.set('params.search', '');
-        query.set('params.query', JSON.stringify($('#query_builder').queryBuilder('getRules')));
+        this.set('search', '');
+        this.set('query', JSON.stringify($('#query_builder').queryBuilder('getRules')));
       } else {
-        query.set('params.query', '');
-        query.set('params.search', $('#filter_form input[name=search]').val());
+        this.set('query', '');
+        this.set('search', $('#filter_form input[name=search]').val());
       }
-
-      query.endPropertyChanges();
     },
   },
 });
