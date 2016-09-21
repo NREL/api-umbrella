@@ -1,17 +1,6 @@
 import Ember from 'ember';
 
 export default Ember.Controller.extend({
-  queryParams: [
-    'tz',
-    'interval',
-    'search',
-    'start_at',
-    'end_at',
-    'query',
-    'beta_analytics',
-    'prefix',
-    'region',
-  ],
   tz: jstz.determine().name(),
   search: null,
   interval: 'day',

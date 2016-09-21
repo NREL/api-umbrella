@@ -2,36 +2,6 @@ import Ember from 'ember';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
 
 export default Ember.Route.extend(AuthenticatedRouteMixin, {
-  queryParams: {
-    tz: {
-      refreshModel: true,
-    },
-    interval: {
-      refreshModel: true,
-    },
-    search: {
-      refreshModel: true,
-    },
-    start_at: {
-      refreshModel: true,
-    },
-    end_at: {
-      refreshModel: true,
-    },
-    query: {
-      refreshModel: true,
-    },
-    beta_analytics: {
-      refreshModel: true,
-    },
-    prefix: {
-      refreshModel: true,
-    },
-    region: {
-      refreshModel: true,
-    },
-  },
-
   setupController(controller, model) {
     controller.set('model', model);
     controller.set('queryParamValues', this.get('queryParamValues') || {});
