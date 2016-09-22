@@ -108,6 +108,7 @@ Rails.application.routes.draw do
         "I18n = {};",
         "I18n.defaultLocale = #{I18n.default_locale.to_json};",
         "I18n.locale = #{locale.to_json};",
+        "I18n.fallbacks = true;",
       ],
     ]
   }
