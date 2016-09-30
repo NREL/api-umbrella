@@ -1,6 +1,6 @@
 require "test_helper"
 
-class TestAdminUiStatsUsers < Minitest::Capybara::Test
+class TestAdminUiStatsMap < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTests::AdminAuth
   include ApiUmbrellaTests::Setup
@@ -10,37 +10,8 @@ class TestAdminUiStatsUsers < Minitest::Capybara::Test
     ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
   end
 
-  def test_xss_escaping_in_table
-    user = FactoryGirl.create(:xss_api_user)
-    FactoryGirl.create(:xss_log_item, {
-      :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc,
-      :api_key => user.api_key,
-      :user_id => user.id,
-      :user_email => user.email,
-      :user_registration_source => user.registration_source,
-    })
-    LogItem.gateway.refresh_index!
-
-    admin_login
-    visit "/admin/#/stats/users?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18"
-    refute_selector(".busy-blocker")
-
-    assert_text(user.email)
-    assert_text(user.first_name)
-    assert_text(user.last_name)
-    assert_text(user.use_description)
-    refute_selector(".xss-test", :visible => :all)
-  end
-
   def test_csv_download
-    user = FactoryGirl.create(:api_user, :email => "#{SecureRandom.uuid}@example.com")
-    FactoryGirl.create_list(:log_item, 5, {
-      :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc,
-      :api_key => user.api_key,
-      :user_id => user.id,
-      :user_email => user.email,
-      :user_registration_source => user.registration_source,
-    })
+    FactoryGirl.create_list(:log_item, 5, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
     FactoryGirl.create_list(:log_item, 5, :request_at => 1421413588000)
     LogItem.gateway.refresh_index!
     default_query = JSON.generate({
@@ -56,13 +27,13 @@ class TestAdminUiStatsUsers < Minitest::Capybara::Test
     })
 
     admin_login
-    visit "/admin/#/stats/users?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18"
+    visit "/admin/#/stats/map?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18"
     refute_selector(".busy-blocker")
 
     assert_link("Download CSV", :href => /start_at=2015-01-12/)
     link = find_link("Download CSV")
     uri = Addressable::URI.parse(link[:href])
-    assert_equal("/admin/stats/users.csv", uri.path)
+    assert_equal("/admin/stats/map.csv", uri.path)
     assert_equal({
       "tz" => "America/Denver",
       "start_at" => "2015-01-12",
@@ -75,7 +46,7 @@ class TestAdminUiStatsUsers < Minitest::Capybara::Test
     # Wait for the ajax actions to fetch the graph and tables to both
     # complete, or else the download link seems to be flakey in Capybara.
     assert_text("Download CSV")
-    assert_text(user.email)
+    assert_text("Unknown")
     refute_selector(".busy-blocker")
     click_link "Download CSV"
 
