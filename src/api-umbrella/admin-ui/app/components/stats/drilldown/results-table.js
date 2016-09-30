@@ -54,6 +54,6 @@ export default Ember.Component.extend({
   }),
 
   downloadUrl: Ember.computed('allQueryParamValues', function() {
-    return '/admin/stats/users.csv?' + $.param(this.get('allQueryParamValues'));
+    return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + $.param(this.get('allQueryParamValues'));
   }),
 });
