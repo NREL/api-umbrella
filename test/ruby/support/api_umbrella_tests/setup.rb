@@ -74,6 +74,7 @@ module ApiUmbrellaTests
           user = ApiUmbrellaTests::User.insert
 
           @@http_options = {
+            :ssl_verifypeer => false,
             :headers => {
               "X-Api-Key" => user["api_key"],
             },
