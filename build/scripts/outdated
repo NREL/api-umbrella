@@ -107,6 +107,9 @@ repos = {
   "maven" => {
     :git => "https://github.com/apache/maven.git",
   },
+  "mailhog" => {
+    :git => "https://github.com/mailhog/MailHog.git",
+  },
   "mongodb" => {
     :git => "https://github.com/mongodb/mongo.git",
     :constraint => "~> 3.2.9",
@@ -264,7 +267,9 @@ versions_content.each_line do |line|
 
   case(name)
   when "openssl"
-    tags.select! { |tag| tag =~ /^\d+\.\d+\.\d+[a-z]?$/ }
+    tags.select! { |tag| tag =~ /^1\.0\.\d+[a-z]?$/ }
+  when "mailhog"
+    tags.reject! { |tag| tag =~ /^0\.0\d$/ }
   end
 
   tags.compact!
