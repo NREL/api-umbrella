@@ -63,6 +63,9 @@ mongodb:
   embedded_server_config:
     net:
       port: 13001
+    storage:
+      journal:
+        enabled: false
 mora:
   port: 13004
 elasticsearch:
@@ -74,6 +77,14 @@ elasticsearch:
     transport:
       tcp:
         port: 13003
+    discovery:
+      zen:
+        ping:
+          multicast:
+            enabled: false
+    index:
+      number_of_shards: 1
+      number_of_replicas: 0
 unbound:
   port: 13100
   control_port: 13101
