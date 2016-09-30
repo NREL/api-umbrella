@@ -65,7 +65,7 @@ class LogResult::Base
 
         @map_breadcrumbs = [
           { :region => "world", :name => "World" },
-          { :name => Country[country].name },
+          { :name => ISO3166::Country.new(country).name },
         ]
       when /^(US)-([A-Z]{2})$/
         country = Regexp.last_match[1]
@@ -73,8 +73,8 @@ class LogResult::Base
 
         @map_breadcrumbs = [
           { :region => "world", :name => "World" },
-          { :region => country, :name => Country[country].name },
-          { :name => Country[country].states[state]["name"] },
+          { :region => country, :name => ISO3166::Country.new(country).name },
+          { :name => ISO3166::Country.new(country).states[state]["name"] },
         ]
       end
     end
