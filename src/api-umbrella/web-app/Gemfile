@@ -16,7 +16,7 @@ gem "rack-proxy", "~> 0.6.0"
 
 # JSON handling
 gem "multi_json", "~> 1.12.1"
-gem "oj", "~> 2.17.3", :platforms => [:ruby]
+gem "oj", "~> 2.17.4", :platforms => [:ruby]
 
 # Use Oj for the default Rails to_json calls.
 gem "oj_mimic_json", "~> 1.0.1", :platforms => [:ruby]
@@ -134,7 +134,7 @@ group :development, :test do
 
   # Take screenshots and save the HTML content whenever capybara errors occur
   # for better debugging.
-  gem "capybara-screenshot", "~> 1.0.13"
+  gem "capybara-screenshot", "~> 1.0.14"
 
   # Headless webkit for capybara
   gem "poltergeist", "~> 1.10.0"
