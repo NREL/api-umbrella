@@ -11,7 +11,7 @@ class TestProxyHttpHeaderLengths < Minitest::Test
   def test_total_header_length_limit
     response = make_request_with_header_lengths(:size => 32000, :line_length => 4048)
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_operator(data["request_length"], :>=, 32000)
     assert_operator(data["request_length"], :<, 34000)
@@ -20,13 +20,13 @@ class TestProxyHttpHeaderLengths < Minitest::Test
   def test_total_header_length_limit_exceeded
     response = make_request_with_header_lengths(:size => 34000, :line_length => 4048)
 
-    assert_equal(400, response.code)
+    assert_equal(400, response.code, response.body)
   end
 
   def test_header_line_length_limit
     response = make_request_with_header_lengths(:size => 12000, :line_length => 8192)
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     refute_nil(data["headers"]["x-test001"])
     assert_equal("x-test001: #{data["headers"]["x-test001"]}\r\n".length, 8192)
@@ -35,13 +35,13 @@ class TestProxyHttpHeaderLengths < Minitest::Test
   def test_header_line_length_limit_exceeded
     response = make_request_with_header_lengths(:size => 12000, :line_length => 8193)
 
-    assert_equal(400, response.code)
+    assert_equal(400, response.code, response.body)
   end
 
   def test_no_limit_on_number_of_headers
     response = make_request_with_header_lengths(:size => 12000, :line_length => 24, :num_headers => 150)
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_operator(data["headers"].length, :>=, 150)
   end

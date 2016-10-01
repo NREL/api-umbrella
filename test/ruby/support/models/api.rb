@@ -8,10 +8,12 @@ class Api
   field :frontend_host, :type => String
   field :backend_host, :type => String
   field :balance_algorithm, :type => String
-   embeds_one :settings, :class_name => "Api::Settings"
+  field :created_by, :type => String
+  field :updated_by, :type => String
+  embeds_one :settings, :class_name => "Api::Settings"
   embeds_many :servers, :class_name => "Api::Server"
   embeds_many :url_matches, :class_name => "Api::UrlMatch"
-  # embeds_many :sub_settings, :class_name => "Api::SubSettings"
-  # embeds_many :rewrites, :class_name => "Api::Rewrite"
+  embeds_many :sub_settings, :class_name => "Api::SubSettings"
+  embeds_many :rewrites, :class_name => "Api::Rewrite"
 end
 

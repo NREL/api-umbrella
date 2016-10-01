@@ -9,7 +9,7 @@ class TestAdminUiApiUsersWelcomeEmail < Minitest::Capybara::Test
     setup_server
 
     response = Typhoeus.delete("http://127.0.0.1:13103/api/v1/messages")
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
   end
 
   def test_no_email_by_default
@@ -25,7 +25,7 @@ class TestAdminUiApiUsersWelcomeEmail < Minitest::Capybara::Test
 
     wait_for_delayed_jobs
     response = Typhoeus.get("http://127.0.0.1:13103/api/v1/messages")
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal(0, data.length)
   end
@@ -44,7 +44,7 @@ class TestAdminUiApiUsersWelcomeEmail < Minitest::Capybara::Test
 
     wait_for_delayed_jobs
     response = Typhoeus.get("http://127.0.0.1:13103/api/v1/messages")
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal(1, data.length)
   end

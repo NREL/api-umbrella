@@ -20,7 +20,6 @@ FactoryGirl.define do
       end
     end
 
-=begin
     factory :google_api do
       sequence(:name) { |n| "Google #{n}" }
       backend_host "google.com"
@@ -115,6 +114,5 @@ FactoryGirl.define do
       url_matches { [] }
       to_create { |instance| instance.save(:validate => false) }
     end
-=end
   end
 end

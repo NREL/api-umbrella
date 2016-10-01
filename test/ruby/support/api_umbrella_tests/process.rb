@@ -8,6 +8,7 @@ module ApiUmbrellaTests
         ApiUmbrellaTests::Process.stop
       end
 
+      start_time = Time.now
       FileUtils.rm_rf("/tmp/api-umbrella-test")
       FileUtils.mkdir_p("/tmp/api-umbrella-test/var/log")
 
@@ -46,6 +47,9 @@ module ApiUmbrellaTests
         health.wait
 
         progress.exit
+
+        end_time = Time.now
+        puts sprintf("(%.2fs)", end_time - start_time)
 
         # If anything exited unsuccessfully, abort tests.
         if(health.crashed? || $api_umbrella_process.crashed?)

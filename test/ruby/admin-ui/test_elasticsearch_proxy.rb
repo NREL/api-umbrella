@@ -53,7 +53,7 @@ class TestAdminUiElasticsearchProxy < Minitest::Capybara::Test
         "Cookie" => "_api_umbrella_session=#{page.driver.cookies["_api_umbrella_session"].value}",
       },
     })
-    assert_equal(301, response.code)
+    assert_equal(301, response.code, response.body)
     assert_equal("/admin/elasticsearch/_plugin/foobar/", response.headers["Location"])
     assert_match(%r{URL=/admin/elasticsearch/_plugin/foobar/>}, response.body)
     assert_equal(response.body.bytesize, response.headers["Content-Length"].to_i)

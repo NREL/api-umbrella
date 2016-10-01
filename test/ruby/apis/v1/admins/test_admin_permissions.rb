@@ -1,0 +1,360 @@
+require "test_helper"
+
+class TestApisV1AdminsAdminPermissions < Minitest::Capybara::Test
+  include ApiUmbrellaTests::AdminAuth
+  include ApiUmbrellaTests::AdminPermissions
+  include ApiUmbrellaTests::Setup
+
+  def setup
+    setup_server
+    Admin.delete_all
+    AdminGroup.delete_all
+    ApiScope.delete_all
+  end
+
+  def test_default_permissions_single_scope
+    factory = :google_admin
+    assert_default_admin_permissions(factory, :required_permissions => ["admin_manage"])
+  end
+
+  def test_multi_group_multi_scope_permitted_as_superuser
+    factory = :google_and_yahoo_multi_group_admin
+    admin = FactoryGirl.create(:admin)
+    assert_admin_permitted(factory, admin)
+  end
+
+  def test_multi_group_multi_scope_permitted_as_multi_scope_admin
+    factory = :google_and_yahoo_multi_group_admin
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:admin_group, :api_scopes => [
+        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:google_api_scope)),
+        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:yahoo_api_scope)),
+      ]),
+    ])
+    assert_admin_permitted(factory, admin)
+  end
+
+  def test_multi_group_multi_scope_forbidden_as_single_scope_admin
+    factory = :google_and_yahoo_multi_group_admin
+
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:admin_group, :api_scopes => [
+        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:google_api_scope)),
+      ]),
+    ])
+    assert_admin_forbidden(factory, admin)
+
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:admin_group, :api_scopes => [
+        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:yahoo_api_scope)),
+      ]),
+    ])
+    assert_admin_forbidden(factory, admin)
+  end
+
+  def test_single_group_multi_scope_permitted_as_superuser
+    factory = :google_and_yahoo_single_group_admin
+    admin = FactoryGirl.create(:admin)
+    assert_admin_permitted(factory, admin)
+  end
+
+  def test_single_group_multi_scope_permitted_as_multi_scope_admin
+    factory = :google_and_yahoo_single_group_admin
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:admin_group, :api_scopes => [
+        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:google_api_scope)),
+        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:yahoo_api_scope)),
+      ]),
+    ])
+    assert_admin_permitted(factory, admin)
+  end
+
+  def test_single_group_multi_scope_forbidden_as_single_scope_admin
+    factory = :google_and_yahoo_single_group_admin
+
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:admin_group, :api_scopes => [
+        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:google_api_scope)),
+      ]),
+    ])
+    assert_admin_forbidden(factory, admin)
+
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:admin_group, :api_scopes => [
+        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:yahoo_api_scope)),
+      ]),
+    ])
+    assert_admin_forbidden(factory, admin)
+  end
+
+  def test_superuser_as_superuser
+    factory = :admin
+    admin = FactoryGirl.create(:admin)
+    assert_admin_permitted(factory, admin)
+  end
+
+  def test_superuser_as_full_host_admin
+    factory = :admin
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:localhost_root_admin_group),
+    ])
+    assert_admin_forbidden(factory, admin)
+  end
+
+  def test_superuser_as_prefix_admin
+    factory = :admin
+    admin = FactoryGirl.create(:google_admin)
+    assert_admin_forbidden(factory, admin)
+  end
+
+  def test_forbids_updating_unpermitted_admins_with_permitted_values
+    google_admin_group = FactoryGirl.create(:google_admin_group)
+    yahoo_admin_group = FactoryGirl.create(:yahoo_admin_group)
+    record = FactoryGirl.create(:limited_admin, :groups => [yahoo_admin_group])
+    admin = FactoryGirl.create(:google_admin)
+
+    attributes = record.serializable_hash
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+    assert_equal(403, response.code, response.body)
+
+    attributes["group_ids"] = [google_admin_group.id]
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+    assert_equal(403, response.code, response.body)
+    data = MultiJson.load(response.body)
+    assert_equal(["errors"], data.keys)
+
+    record = Admin.find(record.id)
+    assert_equal([yahoo_admin_group.id], record.group_ids)
+  end
+
+  def test_forbids_limited_admin_adding_superuser_to_existing_admin
+    record = FactoryGirl.create(:limited_admin)
+    admin = FactoryGirl.create(:limited_admin)
+
+    attributes = record.serializable_hash
+    attributes["superuser"] = "1"
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+
+    assert_equal(403, response.code, response.body)
+    record = Admin.find(record.id)
+    assert_equal(false, record.superuser)
+  end
+
+  def test_forbids_limited_admin_adding_superuser_to_own_account
+    record = FactoryGirl.create(:limited_admin)
+
+    attributes = record.serializable_hash
+    attributes["superuser"] = "1"
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(record)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+
+    assert_equal(403, response.code, response.body)
+    record = Admin.find(record.id)
+    assert_equal(false, record.superuser)
+  end
+
+  def test_forbids_limited_admin_removing_superuser_from_existing_admin
+    record = FactoryGirl.create(:limited_admin, :superuser => true)
+    admin = FactoryGirl.create(:limited_admin)
+
+    attributes = record.serializable_hash
+    attributes["superuser"] = "0"
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+
+    assert_equal(403, response.code, response.body)
+    record = Admin.find(record.id)
+    assert_equal(true, record.superuser)
+  end
+
+  def test_permits_superuser_adding_superuser_to_existing_admin
+    record = FactoryGirl.create(:limited_admin)
+    admin = FactoryGirl.create(:admin)
+
+    attributes = record.serializable_hash
+    attributes["superuser"] = "1"
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+
+    assert_equal(200, response.code, response.body)
+    record = Admin.find(record.id)
+    assert_equal(true, record.superuser)
+  end
+
+  def test_permits_superuser_removing_superuser_from_existing_admin
+    record = FactoryGirl.create(:limited_admin, :superuser => true)
+    admin = FactoryGirl.create(:admin)
+
+    attributes = record.serializable_hash
+    attributes["superuser"] = "0"
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+
+    assert_equal(200, response.code, response.body)
+    record = Admin.find(record.id)
+    assert_equal(false, record.superuser)
+  end
+
+  private
+
+  def assert_admin_permitted(factory, admin)
+    assert_admin_permitted_index(factory, admin)
+    assert_admin_permitted_show(factory, admin)
+    assert_admin_permitted_create(factory, admin)
+    assert_admin_permitted_update(factory, admin)
+    assert_admin_permitted_destroy(factory, admin)
+  end
+
+  def assert_admin_forbidden(factory, admin)
+    assert_admin_forbidden_index(factory, admin)
+    assert_admin_forbidden_show(factory, admin)
+    assert_admin_forbidden_create(factory, admin)
+    assert_admin_forbidden_update(factory, admin)
+    assert_admin_forbidden_destroy(factory, admin)
+  end
+
+  def assert_admin_permitted_index(factory, admin)
+    record = FactoryGirl.create(factory)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins.json", @@http_options.deep_merge(admin_token(admin)))
+
+    assert_equal(200, response.code, response.body)
+    data = MultiJson.load(response.body)
+    record_ids = data["data"].map { |r| r["id"] }
+    assert_includes(record_ids, record.id)
+  end
+
+  def assert_admin_forbidden_index(factory, admin)
+    record = FactoryGirl.create(factory)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins.json", @@http_options.deep_merge(admin_token(admin)))
+
+    assert_equal(200, response.code, response.body)
+    data = MultiJson.load(response.body)
+    record_ids = data["data"].map { |r| r["id"] }
+    refute_includes(record_ids, record.id)
+  end
+
+  def assert_admin_permitted_show(factory, admin)
+    record = FactoryGirl.create(factory)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)))
+
+    assert_equal(200, response.code, response.body)
+    data = MultiJson.load(response.body)
+    assert_equal(["admin"], data.keys)
+  end
+
+  def assert_admin_forbidden_show(factory, admin)
+    record = FactoryGirl.create(factory)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)))
+
+    assert_equal(403, response.code, response.body)
+    data = MultiJson.load(response.body)
+    assert_equal(["errors"], data.keys)
+  end
+
+  def assert_admin_permitted_create(factory, admin)
+    attributes = FactoryGirl.build(factory).serializable_hash
+    initial_count = active_count
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admins.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+
+    assert_equal(201, response.code, response.body)
+    data = MultiJson.load(response.body)
+    refute_nil(data["admin"]["username"])
+    assert_equal(attributes["username"], data["admin"]["username"])
+    assert_equal(1, active_count - initial_count)
+  end
+
+  def assert_admin_forbidden_create(factory, admin)
+    attributes = FactoryGirl.build(factory).serializable_hash
+    initial_count = active_count
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admins.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+
+    assert_equal(403, response.code, response.body)
+    data = MultiJson.load(response.body)
+    assert_equal(["errors"], data.keys)
+    assert_equal(0, active_count - initial_count)
+  end
+
+  def assert_admin_permitted_update(factory, admin)
+    record = FactoryGirl.create(factory)
+
+    attributes = record.serializable_hash
+    attributes["username"] += rand(999_999).to_s
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+
+    assert_equal(200, response.code, response.body)
+    data = MultiJson.load(response.body)
+    refute_nil(data["admin"]["username"])
+    assert_equal(attributes["username"], data["admin"]["username"])
+
+    record = Admin.find(record.id)
+    refute_nil(record.username)
+    assert_equal(attributes["username"], record.username)
+  end
+
+  def assert_admin_forbidden_update(factory, admin)
+    record = FactoryGirl.create(factory)
+
+    attributes = record.serializable_hash
+    attributes["username"] += rand(999_999).to_s
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+
+    assert_equal(403, response.code, response.body)
+    data = MultiJson.load(response.body)
+    assert_equal(["errors"], data.keys)
+
+    record = Admin.find(record.id)
+    refute_nil(record.username)
+    refute_equal(attributes["username"], record.username)
+  end
+
+  def assert_admin_permitted_destroy(factory, admin)
+    record = FactoryGirl.create(factory)
+    initial_count = active_count
+    response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)))
+    assert_equal(204, response.code, response.body)
+    assert_equal(-1, active_count - initial_count)
+  end
+
+  def assert_admin_forbidden_destroy(factory, admin)
+    record = FactoryGirl.create(factory)
+    initial_count = active_count
+    response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)))
+    assert_equal(403, response.code, response.body)
+    data = MultiJson.load(response.body)
+    assert_equal(["errors"], data.keys)
+    assert_equal(0, active_count - initial_count)
+  end
+
+  def active_count
+    Admin.where(:deleted_at => nil).count
+  end
+end

@@ -18,7 +18,7 @@ class TestProxyStreaming < Minitest::Test
     end
     response = request.run
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     assert_equal("chunked", response.headers["Transfer-Encoding"])
     assert_equal(["hello", "salutations", "goodbye"], chunks)
     assert_operator((chunk_timers[1] - chunk_timers[0]), :>, 0.4)

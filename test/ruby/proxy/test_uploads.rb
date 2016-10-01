@@ -20,7 +20,7 @@ class TestProxyUploads < Minitest::Test
         :body => { :upload => file },
       }))
 
-      assert_equal(200, response.code)
+      assert_equal(200, response.code, response.body)
       data = MultiJson.load(response.body)
       assert_equal(file_size, data["upload_size"])
     ensure

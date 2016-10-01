@@ -11,7 +11,7 @@ class TestProxyUrlLengths < Minitest::Test
   def test_url_length_limit
     response = make_request_with_url_length(8192)
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_includes(response.request.base_url, data["url"]["path"])
     assert_operator(data["url"]["path"].length, :>, 8000)
@@ -20,7 +20,7 @@ class TestProxyUrlLengths < Minitest::Test
   def test_url_length_limit_exceeded
     response = make_request_with_url_length(8193)
 
-    assert_equal(414, response.code)
+    assert_equal(414, response.code, response.body)
   end
 
   private

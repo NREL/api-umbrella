@@ -24,7 +24,7 @@ class TestAdminStatsLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     body = response.body
     data = MultiJson.load(body)
     assert_equal(1, data["recordsTotal"])
@@ -48,7 +48,7 @@ class TestAdminStatsLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     body = response.body
     assert_match(",http://127.0.0.1/with_api_key/?foo=bar,", body)
     refute_match("my_secret_key", body)
@@ -68,7 +68,7 @@ class TestAdminStatsLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     assert_equal("text/csv", response.headers["Content-Type"])
     assert_match("attachment; filename=\"api_logs (#{Time.now.utc.strftime("%b %-e %Y")}).csv\"", response.headers["Content-Disposition"])
 
@@ -93,7 +93,7 @@ class TestAdminStatsLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal(1, data["recordsTotal"])
     assert_equal("MOZILLAAA", data["data"][0]["request_user_agent"])
@@ -115,7 +115,7 @@ class TestAdminStatsLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal(1, data["recordsTotal"])
     assert_equal("api key match test", data["data"][0]["request_user_agent"])
@@ -138,7 +138,7 @@ class TestAdminStatsLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code)
+    assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal(1, data["recordsTotal"])
     assert_equal("gatekeeper denied code not null test", data["data"][0]["request_user_agent"])

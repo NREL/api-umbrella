@@ -70,11 +70,24 @@ module ApiUmbrellaTests
           ApiUmbrellaTests::ConfigVersion.delete_all
           ApiUmbrellaTests::ConfigVersion.insert_default
 
-          ApiUmbrellaTests::User.delete_all
-          user = ApiUmbrellaTests::User.insert
+          ApiUser.where(:registration_source.ne => "seed").delete_all
+          user = FactoryGirl.create(:api_user, {
+            :registration_source => "seed",
+            :settings => {
+              :rate_limit_mode => "unlimited",
+            },
+          })
 
           @@http_options = {
+            # Disable SSL verification by default, since most of our tests are
+            # against our self-signed SSL certificate for the test environment.
             :ssl_verifypeer => false,
+
+            # When sending x-www-form-urlencoded encoded bodies, serialize Ruby
+            # arrays the way Rails expects
+            # (https://github.com/typhoeus/ethon/pull/104).
+            :params_encoding => :rack,
+
             :headers => {
               "X-Api-Key" => user["api_key"],
             },
