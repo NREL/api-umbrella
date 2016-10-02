@@ -9,7 +9,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
     ApiUser.where(:registration_source.ne => "seed").delete_all
   end
 
-  def test_create_success
+  def test_valid_create
     non_admin_auth = non_admin_key_creator_api_key
     attributes = FactoryGirl.attributes_for(:api_user)
     initial_count = active_count

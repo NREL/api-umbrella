@@ -4,6 +4,7 @@ class TestAdminUiApiUsersWelcomeEmail < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTests::AdminAuth
   include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTests::DelayedJob
 
   def setup
     setup_server
@@ -23,11 +24,7 @@ class TestAdminUiApiUsersWelcomeEmail < Minitest::Capybara::Test
     click_button("Save")
     assert_content("Successfully saved the user")
 
-    wait_for_delayed_jobs
-    response = Typhoeus.get("http://127.0.0.1:13103/api/v1/messages")
-    assert_equal(200, response.code, response.body)
-    data = MultiJson.load(response.body)
-    assert_equal(0, data.length)
+    assert_equal(0, delayed_job_sent_messages.length)
   end
 
   def test_email_when_explicitly_requested
@@ -42,28 +39,6 @@ class TestAdminUiApiUsersWelcomeEmail < Minitest::Capybara::Test
     click_button("Save")
     assert_content("Successfully saved the user")
 
-    wait_for_delayed_jobs
-    response = Typhoeus.get("http://127.0.0.1:13103/api/v1/messages")
-    assert_equal(200, response.code, response.body)
-    data = MultiJson.load(response.body)
-    assert_equal(1, data.length)
-  end
-
-  private
-
-  def wait_for_delayed_jobs
-    db = Mongoid.client(:default)
-    start_time = Time.now
-    loop do
-      if(db[:delayed_backend_mongoid_jobs].count == 0)
-        break
-      end
-
-      if(Time.now - start_time > 10)
-        raise "Background job was not processed within expected time. Is delayed_job running?"
-      end
-
-      sleep 0.1
-    end
+    assert_equal(1, delayed_job_sent_messages.length)
   end
 end

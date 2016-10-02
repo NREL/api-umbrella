@@ -50,6 +50,7 @@ web:
     smtp_settings:
       address: 127.0.0.1
       port: 13102
+  contact_form_email: default-test-contact-email@example.com
 router:
   api_backends:
     port: 13011

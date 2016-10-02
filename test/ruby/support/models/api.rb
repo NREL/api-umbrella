@@ -15,5 +15,23 @@ class Api
   embeds_many :url_matches, :class_name => "Api::UrlMatch"
   embeds_many :sub_settings, :class_name => "Api::SubSettings"
   embeds_many :rewrites, :class_name => "Api::Rewrite"
-end
 
+  def roles
+    roles = []
+
+    if(self.settings && self.settings.required_roles)
+      roles += self.settings.required_roles
+    end
+
+    if(self.sub_settings)
+      self.sub_settings.each do |sub|
+        if(sub.settings && sub.settings.required_roles)
+          roles += sub.settings.required_roles
+        end
+      end
+    end
+
+    roles.uniq!
+    roles
+  end
+end

@@ -88,18 +88,26 @@ module ApiUmbrellaTests
     end
 
     def self.wait_for_config_version(field, version)
-      data = nil
+      state = nil
+      health = nil
       begin
         Timeout.timeout(10) do
           loop do
             response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state?#{rand}")
-            data = MultiJson.load(response.body)
-            break if(data[field] == version)
+            state = MultiJson.load(response.body)
+            if(state[field] == version)
+              response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/health?#{rand}")
+              health = MultiJson.load(response.body)
+              if(health["status"] == "green")
+                break
+              end
+            end
+
             sleep 0.1
           end
         end
       rescue Timeout::Error
-        raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{version}. Last seen: #{data.inspect}"
+        raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{version}. Last seen: #{state.inspect} #{health.inspect}"
       end
     end
   end

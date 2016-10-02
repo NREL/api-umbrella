@@ -23,6 +23,10 @@ FactoryGirl.define do
       permission_ids ["user_manage"]
     end
 
+    trait :user_view_and_manage_permission do
+      permission_ids ["user_view", "user_manage"]
+    end
+
     trait :admin_manage_permission do
       permission_ids ["admin_manage"]
     end

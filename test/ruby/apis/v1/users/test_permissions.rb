@@ -1,0 +1,430 @@
+require "test_helper"
+
+class TestApisV1UsersPermissions < Minitest::Capybara::Test
+  include ApiUmbrellaTests::AdminAuth
+  include ApiUmbrellaTests::AdminPermissions
+  include ApiUmbrellaTests::Setup
+
+  def setup
+    setup_server
+    ApiUser.where(:registration_source.ne => "seed").delete_all
+    Admin.delete_all
+    AdminGroup.delete_all
+    Api.delete_all
+    ApiScope.delete_all
+  end
+
+  def test_no_admin_and_api_key_with_key_creator_role
+    api_key = FactoryGirl.create(:api_user, {
+      :roles => ["api-umbrella-key-creator"],
+    }).api_key
+    admin = nil
+    assert_admin_permitted_create_only(api_key, admin)
+  end
+
+  def test_no_admin_and_api_key_without_key_creator_role
+    api_key = FactoryGirl.create(:api_user).api_key
+    admin = nil
+    assert_admin_forbidden(api_key, admin)
+  end
+
+  def test_no_admin_and_no_api_key
+    api_key = nil
+    admin = nil
+    assert_admin_forbidden(api_key, admin)
+  end
+
+  def test_superuser_admin_and_api_key_with_key_creator_role
+    api_key = FactoryGirl.create(:api_user, {
+      :roles => ["api-umbrella-key-creator"],
+    }).api_key
+    admin = FactoryGirl.create(:admin)
+    assert_admin_permitted(api_key, admin)
+  end
+
+  def test_superuser_admin_and_api_key_without_key_creator_role
+    api_key = FactoryGirl.create(:api_user).api_key
+    admin = FactoryGirl.create(:admin)
+    assert_admin_permitted(api_key, admin)
+  end
+
+  def test_superuser_admin_and_no_api_key
+    api_key = nil
+    admin = FactoryGirl.create(:admin)
+    assert_admin_forbidden(api_key, admin)
+  end
+
+  def test_view_manage_admin_and_api_key_with_key_creator_role
+    api_key = FactoryGirl.create(:api_user, {
+      :roles => ["api-umbrella-key-creator"],
+    }).api_key
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission),
+    ])
+    assert_admin_permitted(api_key, admin)
+  end
+
+  def test_view_manage_admin_and_api_key_without_key_creator_role
+    api_key = FactoryGirl.create(:api_user).api_key
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission),
+    ])
+    assert_admin_permitted(api_key, admin)
+  end
+
+  def test_view_manage_admin_and_no_api_key
+    api_key = nil
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission),
+    ])
+    assert_admin_forbidden(api_key, admin)
+  end
+
+  def test_view_admin_and_api_key_with_key_creator_role
+    api_key = FactoryGirl.create(:api_user, {
+      :roles => ["api-umbrella-key-creator"],
+    }).api_key
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:google_admin_group, :user_view_permission),
+    ])
+    assert_admin_permitted_view_only(api_key, admin)
+  end
+
+  def test_view_admin_and_api_key_without_key_creator_role
+    api_key = FactoryGirl.create(:api_user).api_key
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:google_admin_group, :user_view_permission),
+    ])
+    assert_admin_permitted_view_only(api_key, admin)
+  end
+
+  def test_view_admin_and_no_api_key
+    api_key = nil
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:google_admin_group, :user_view_permission),
+    ])
+    assert_admin_forbidden(api_key, admin)
+  end
+
+  def test_manage_admin_and_api_key_with_key_creator_role
+    api_key = FactoryGirl.create(:api_user, {
+      :roles => ["api-umbrella-key-creator"],
+    }).api_key
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:google_admin_group, :user_manage_permission),
+    ])
+    assert_admin_permitted_manage_only(api_key, admin)
+  end
+
+  def test_manage_admin_and_api_key_without_key_creator_role
+    api_key = FactoryGirl.create(:api_user).api_key
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:google_admin_group, :user_manage_permission),
+    ])
+    assert_admin_permitted_manage_only(api_key, admin)
+  end
+
+  def test_manage_admin_and_no_api_key
+    api_key = nil
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:google_admin_group, :user_view_permission),
+    ])
+    assert_admin_forbidden(api_key, admin)
+  end
+
+  def test_non_admin_exact_role_needed
+    api_key = FactoryGirl.create(:api_user, {
+      :roles => ["api-umbrella-key-creator-bogus", "bogus-api-umbrella-key-creator"],
+    }).api_key
+    admin = nil
+    assert_admin_forbidden(api_key, admin)
+  end
+
+  def test_non_admin_ignores_private_fields
+    api_key = FactoryGirl.create(:api_user, {
+      :roles => ["api-umbrella-key-creator"],
+    }).api_key
+    admin = nil
+    initial_count = active_count
+
+    attributes = FactoryGirl.attributes_for(:api_user, {
+      :roles => ["new-role#{rand(999_999)}"],
+      :settings => {
+        :rate_limit_mode => "unlimited",
+      },
+    }).stringify_keys
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :user => attributes },
+    }))
+
+    assert_equal(201, response.code, response.body)
+    assert_equal(1, active_count - initial_count)
+    data = MultiJson.load(response.body)
+    record = ApiUser.find(data["user"]["id"])
+    assert_nil(record.roles)
+    assert_nil(record.settings.rate_limit_mode)
+  end
+
+  def test_admin_uses_private_fields
+    api_key = FactoryGirl.create(:api_user, {
+      :roles => ["api-umbrella-key-creator"],
+    }).api_key
+    admin = FactoryGirl.create(:limited_admin, :groups => [
+      FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission),
+    ])
+    initial_count = active_count
+
+    attributes = FactoryGirl.attributes_for(:api_user, {
+      :roles => ["new-role#{rand(999_999)}"],
+      :settings => {
+        :rate_limit_mode => "unlimited",
+      },
+    }).stringify_keys
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :user => attributes },
+    }))
+
+    assert_equal(201, response.code, response.body)
+    assert_equal(1, active_count - initial_count)
+    data = MultiJson.load(response.body)
+    record = ApiUser.find(data["user"]["id"])
+    refute_nil(record.roles)
+    assert_equal(attributes["roles"], record.roles)
+    assert_equal("unlimited", record.settings.rate_limit_mode)
+  end
+
+  private
+
+  def assert_admin_permitted(api_key, admin)
+    assert_admin_permitted_index(api_key, admin)
+    assert_admin_permitted_show(api_key, admin)
+    assert_admin_permitted_create(api_key, admin)
+    assert_admin_permitted_update(api_key, admin)
+    assert_no_destroy(api_key, admin)
+  end
+
+  def assert_admin_permitted_create_only(api_key, admin)
+    assert_admin_forbidden_index(api_key, admin)
+    assert_admin_forbidden_show(api_key, admin)
+    assert_admin_permitted_create(api_key, admin)
+    assert_admin_forbidden_update(api_key, admin)
+    assert_no_destroy(api_key, admin)
+  end
+
+  def assert_admin_permitted_view_only(api_key, admin)
+    assert_admin_permitted_index(api_key, admin)
+    assert_admin_permitted_show(api_key, admin)
+    assert_admin_forbidden_create(api_key, admin, true)
+    assert_admin_forbidden_update(api_key, admin, true)
+    assert_no_destroy(api_key, admin)
+  end
+
+  def assert_admin_permitted_manage_only(api_key, admin)
+    assert_admin_forbidden_index(api_key, admin, true)
+    assert_admin_forbidden_show(api_key, admin, true)
+    assert_admin_permitted_create(api_key, admin)
+    assert_admin_permitted_update(api_key, admin)
+    assert_no_destroy(api_key, admin)
+  end
+
+  def assert_admin_forbidden(api_key, admin)
+    assert_admin_forbidden_index(api_key, admin)
+    assert_admin_forbidden_show(api_key, admin)
+    assert_admin_forbidden_create(api_key, admin)
+    assert_admin_forbidden_update(api_key, admin)
+    assert_no_destroy(api_key, admin)
+  end
+
+  def assert_admin_permitted_index(api_key, admin)
+    record = FactoryGirl.create(:api_user)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin))
+
+    assert_equal(200, response.code, response.body)
+    data = MultiJson.load(response.body)
+    record_ids = data["data"].map { |r| r["id"] }
+    assert_includes(record_ids, record.id)
+  end
+
+  def assert_admin_forbidden_index(api_key, admin, role_based_error = false)
+    record = FactoryGirl.create(:api_user)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin))
+
+    if(role_based_error)
+      assert_equal(200, response.code, response.body)
+      data = MultiJson.load(response.body)
+      assert_equal([], data["data"])
+    else
+      if(!api_key)
+        assert_equal(403, response.code, response.body)
+      else
+        assert_equal(401, response.code, response.body)
+      end
+      data = MultiJson.load(response.body)
+      assert_equal(["error"], data.keys)
+    end
+  end
+
+  def assert_admin_permitted_show(api_key, admin)
+    record = FactoryGirl.create(:api_user)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
+
+    assert_equal(200, response.code, response.body)
+    data = MultiJson.load(response.body)
+    assert_equal(["user"], data.keys)
+  end
+
+  def assert_admin_forbidden_show(api_key, admin, role_based_error = false)
+    record = FactoryGirl.create(:api_user)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
+
+    if(role_based_error)
+      assert_equal(403, response.code, response.body)
+      data = MultiJson.load(response.body)
+      assert_equal(["errors"], data.keys)
+    else
+      if(!api_key)
+        assert_equal(403, response.code, response.body)
+      else
+        assert_equal(401, response.code, response.body)
+      end
+      data = MultiJson.load(response.body)
+      assert_equal(["error"], data.keys)
+    end
+  end
+
+  def assert_admin_permitted_create(api_key, admin)
+    attributes = FactoryGirl.attributes_for(:api_user).stringify_keys
+    initial_count = active_count
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :user => attributes },
+    }))
+
+    assert_equal(201, response.code, response.body)
+    data = MultiJson.load(response.body)
+    refute_equal(nil, data["user"]["first_name"])
+    assert_equal(attributes["first_name"], data["user"]["first_name"])
+    record = ApiUser.find(data["user"]["id"])
+    assert_equal(1, active_count - initial_count)
+  end
+
+  def assert_admin_forbidden_create(api_key, admin, role_based_error = false)
+    attributes = FactoryGirl.attributes_for(:api_user).stringify_keys
+    initial_count = active_count
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :user => attributes },
+    }))
+
+    if(role_based_error)
+      assert_equal(403, response.code, response.body)
+      data = MultiJson.load(response.body)
+      assert_equal(["errors"], data.keys)
+    else
+      if(!api_key)
+        assert_equal(403, response.code, response.body)
+      else
+        assert_equal(401, response.code, response.body)
+      end
+      data = MultiJson.load(response.body)
+      assert_equal(["error"], data.keys)
+    end
+    assert_equal(0, active_count - initial_count)
+  end
+
+  def assert_admin_permitted_update(api_key, admin)
+    record = FactoryGirl.create(:api_user)
+
+    attributes = record.serializable_hash
+    attributes["first_name"] += rand(999_999).to_s
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :user => attributes },
+    }))
+
+    assert_equal(200, response.code, response.body)
+    record = ApiUser.find(record.id)
+    refute_equal(nil, record.first_name)
+    assert_equal(attributes["first_name"], record.first_name)
+  end
+
+  def assert_admin_forbidden_update(api_key, admin, role_based_error = false)
+    record = FactoryGirl.create(:api_user)
+
+    attributes = record.serializable_hash
+    attributes["first_name"] += rand(999_999).to_s
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :user => attributes },
+    }))
+
+    if(role_based_error)
+      assert_equal(403, response.code, response.body)
+      data = MultiJson.load(response.body)
+      assert_equal(["errors"], data.keys)
+    else
+      if(!api_key)
+        assert_equal(403, response.code, response.body)
+      else
+        assert_equal(401, response.code, response.body)
+      end
+      data = MultiJson.load(response.body)
+      assert_equal(["error"], data.keys)
+    end
+
+    record = ApiUser.find(record.id)
+    refute_equal(nil, record.first_name)
+    refute_equal(attributes["first_name"], record.first_name)
+  end
+
+  def assert_admin_permitted_destroy(api_key, admin)
+    record = FactoryGirl.create(:api_user)
+    initial_count = active_count
+    response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
+    assert_equal(204, response.code, response.body)
+    assert_equal(-1, active_count - initial_count)
+  end
+
+  def assert_no_destroy(api_key, admin)
+    record = FactoryGirl.create(:api_user)
+    initial_count = active_count
+    response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
+
+    if(!api_key)
+      assert_equal(403, response.code, response.body)
+    else
+      assert_equal(404, response.code, response.body)
+    end
+    assert_equal(0, active_count - initial_count)
+  end
+
+  def http_options(api_key, admin)
+    options = @@http_options.deep_dup
+
+    if(api_key)
+      options.deep_merge!({
+        :headers => {
+          "X-Api-Key" => api_key,
+        },
+      })
+    else
+      options[:headers].delete("X-Api-Key")
+      assert_nil(options[:headers]["X-Api-Key"])
+    end
+
+    if(admin)
+      options.deep_merge!(admin_token(admin))
+    else
+      options[:headers].delete("X-Admin-Auth-Token")
+      assert_nil(options[:headers]["X-Admin-Auth-Token"])
+    end
+
+    options
+  end
+
+  def active_count
+    ApiUser.where(:deleted_at => nil).count
+  end
+end
