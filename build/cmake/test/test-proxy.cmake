@@ -1,5 +1,5 @@
 add_custom_command(
-  OUTPUT ${CMAKE_SOURCE_DIR}/test/node_modules
+  OUTPUT ${CMAKE_SOURCE_DIR}/test/node_modules/.bin/grunt
   DEPENDS ${CMAKE_SOURCE_DIR}/test/package.json
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test
   COMMAND npm install
@@ -9,7 +9,7 @@ add_custom_command(
 add_custom_target(
   test-proxy-target
   COMMAND npm test
-  DEPENDS ${CMAKE_SOURCE_DIR}/test/node_modules
+  DEPENDS ${CMAKE_SOURCE_DIR}/test/node_modules/.bin/grunt
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test
 )
 
