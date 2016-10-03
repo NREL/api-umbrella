@@ -337,6 +337,21 @@ describe('ApiUmbrellaGatekeper', function() {
         });
       });
 
+      it('ignores X-Forwarded-Host header by default', function(done) {
+        var opts = shared.buildRequestOptions('/info/matching/', this.apiKey, {
+          headers: {
+            'X-Forwarded-Host': 'fallback.example.com',
+            'Host': 'localhost',
+          },
+        });
+
+        request.get(opts, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.headers['x-backend'].should.eql('localhost-non-matching-port');
+          done();
+        });
+      });
+
       describe('wildcard subdomains', function() {
         describe('*. prefix', function() {
           it('matches wildcard subdomains', function(done) {
@@ -573,6 +588,63 @@ describe('ApiUmbrellaGatekeper', function() {
           headers: {
             'Host': 'unmatched.example.com',
           },
+        });
+      });
+    });
+
+    describe('host matching with X-Forwarded-Host matching enabled', function() {
+      shared.runServer({
+        router: {
+          match_x_forwarded_host: true,
+        },
+        apis: [
+          {
+            'frontend_host': 'localhost:7777',
+            'backend_host': 'example.com',
+            '_id': 'localhost-non-matching-port',
+            'url_matches': [
+              {
+                'frontend_prefix': '/info/matching/',
+                'backend_prefix': '/info/matching/'
+              }
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'localhost-non-matching-port' },
+              ],
+            },
+          },
+          {
+            'frontend_host': 'fallback.example.com',
+            'backend_host': 'example.com',
+            '_id': 'fallback-no-port',
+            'url_matches': [
+              {
+                'frontend_prefix': '/info/matching/',
+                'backend_prefix': '/info/matching/'
+              }
+            ],
+            settings: {
+              headers: [
+                { key: 'X-Backend', value: 'fallback-no-port' },
+              ],
+            },
+          },
+        ],
+      });
+
+      it('uses X-Forwarded-Host header when enabled', function(done) {
+        var opts = shared.buildRequestOptions('/info/matching/', this.apiKey, {
+          headers: {
+            'X-Forwarded-Host': 'fallback.example.com',
+            'Host': 'localhost',
+          },
+        });
+
+        request.get(opts, function(error, response, body) {
+          var data = JSON.parse(body);
+          data.headers['x-backend'].should.eql('fallback-no-port');
+          done();
         });
       });
     });
