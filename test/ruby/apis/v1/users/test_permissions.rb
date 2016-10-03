@@ -152,7 +152,7 @@ class TestApisV1UsersPermissions < Minitest::Capybara::Test
       :settings => {
         :rate_limit_mode => "unlimited",
       },
-    }).stringify_keys
+    }).deep_stringify_keys
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
@@ -180,7 +180,7 @@ class TestApisV1UsersPermissions < Minitest::Capybara::Test
       :settings => {
         :rate_limit_mode => "unlimited",
       },
-    }).stringify_keys
+    }).deep_stringify_keys
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
@@ -295,7 +295,7 @@ class TestApisV1UsersPermissions < Minitest::Capybara::Test
   end
 
   def assert_admin_permitted_create(api_key, admin)
-    attributes = FactoryGirl.attributes_for(:api_user).stringify_keys
+    attributes = FactoryGirl.attributes_for(:api_user).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
@@ -311,7 +311,7 @@ class TestApisV1UsersPermissions < Minitest::Capybara::Test
   end
 
   def assert_admin_forbidden_create(api_key, admin, role_based_error = false)
-    attributes = FactoryGirl.attributes_for(:api_user).stringify_keys
+    attributes = FactoryGirl.attributes_for(:api_user).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },

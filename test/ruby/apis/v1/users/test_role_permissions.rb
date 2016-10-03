@@ -1,6 +1,6 @@
 require "test_helper"
 
-class TestApisV1UsersAdminPermissions < Minitest::Capybara::Test
+class TestApisV1UsersRolePermissions < Minitest::Capybara::Test
   include ApiUmbrellaTests::AdminAuth
   include ApiUmbrellaTests::AdminPermissions
   include ApiUmbrellaTests::Setup
@@ -182,14 +182,14 @@ class TestApisV1UsersAdminPermissions < Minitest::Capybara::Test
     }))
 
     assert_equal(201, response.code, response.body)
+    assert_equal(1, active_count - initial_count)
     data = MultiJson.load(response.body)
     refute_equal(nil, data["user"]["first_name"])
     assert_equal(attributes["first_name"], data["user"]["first_name"])
     record = ApiUser.find(data["user"]["id"])
-    attr_overrides.keys.each do |key|
-      assert_equal(attributes[key], record[key])
-    end
-    assert_equal(1, active_count - initial_count)
+
+    refute_empty(attr_overrides["roles"])
+    assert_equal(attr_overrides["roles"], record.roles)
   end
 
   def assert_admin_forbidden_create(factory, admin, attr_overrides = {})
@@ -201,9 +201,9 @@ class TestApisV1UsersAdminPermissions < Minitest::Capybara::Test
     }))
 
     assert_equal(403, response.code, response.body)
+    assert_equal(0, active_count - initial_count)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_equal(0, active_count - initial_count)
   end
 
   def assert_admin_permitted_update(factory, admin, attr_overrides = {})
@@ -220,9 +220,9 @@ class TestApisV1UsersAdminPermissions < Minitest::Capybara::Test
     record = ApiUser.find(record.id)
     refute_equal(nil, record.first_name)
     assert_equal(attributes["first_name"], record.first_name)
-    attr_overrides.keys.each do |key|
-      assert_equal(attributes[key], record[key])
-    end
+
+    refute_empty(attr_overrides["roles"])
+    assert_equal(attr_overrides["roles"], record.roles)
   end
 
   def assert_admin_forbidden_update(factory, admin, attr_overrides = {})
@@ -242,9 +242,9 @@ class TestApisV1UsersAdminPermissions < Minitest::Capybara::Test
     record = ApiUser.find(record.id)
     refute_equal(nil, record.first_name)
     refute_equal(attributes["first_name"], record.first_name)
-    attr_overrides.keys.each do |key|
-      refute_equal(attributes[key], record[key])
-    end
+
+    refute_empty(attr_overrides["roles"])
+    refute_equal(attr_overrides["roles"], record.roles)
   end
 
   def active_count

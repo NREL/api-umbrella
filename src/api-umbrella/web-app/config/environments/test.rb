@@ -4,6 +4,8 @@
 require_relative "./production.rb"
 
 Rails.application.configure do
+  config.log_level = :debug
+
   # Deliver real e-mail if running integration tests with local MailHog as our
   # test SMTP server.
   if(!config.action_mailer.smtp_settings || config.action_mailer.smtp_settings[:address] != "127.0.0.1" || config.action_mailer.smtp_settings[:port] != 13102)

@@ -120,7 +120,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
   end
 
   def assert_admin_permitted_create(factory, admin)
-    attributes = FactoryGirl.build(factory).serializable_hash
+    attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
@@ -135,7 +135,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
   end
 
   def assert_admin_forbidden_create(factory, admin)
-    attributes = FactoryGirl.build(factory).serializable_hash
+    attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
