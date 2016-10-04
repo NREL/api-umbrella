@@ -8,7 +8,9 @@ Rails.application.config.assets.version = '1.0'
 
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in app/assets folder are already added.
-# Rails.application.config.assets.precompile += %w( search.js )
+Rails.application.config.assets.precompile += [
+  "admin/login.css",
+]
 
 # Move default assets directory so this project can co-exist with the
 # static-site projectt that delivers most of the web content.
