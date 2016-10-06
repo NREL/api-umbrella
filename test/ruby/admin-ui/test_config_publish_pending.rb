@@ -1,4 +1,4 @@
-require "test_helper"
+require_relative "../test_helper"
 
 class TestAdminUiConfigPublishPending < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin

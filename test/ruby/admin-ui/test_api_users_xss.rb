@@ -1,4 +1,4 @@
-require "test_helper"
+require_relative "../test_helper"
 
 class TestAdminUiApiUsersXss < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin

@@ -1,4 +1,4 @@
-require "test_helper"
+require_relative "../../../test_helper"
 
 class TestAdminStatsLogs < Minitest::Capybara::Test
   include ApiUmbrellaTests::AdminAuth

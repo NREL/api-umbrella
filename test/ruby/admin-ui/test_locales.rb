@@ -1,4 +1,4 @@
-require "test_helper"
+require_relative "../test_helper"
 
 locales_root_dir = File.expand_path("../../../../src/api-umbrella/web-app/config/locales", __FILE__)
 I18n.load_path = Dir[File.join(locales_root_dir, "*.yml")]
