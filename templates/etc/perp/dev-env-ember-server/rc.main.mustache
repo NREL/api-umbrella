@@ -3,6 +3,7 @@
 # Redirect stderr to stdout
 exec 2>&1
 
+
 if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
   api_umbrella_user="{{user}}"
@@ -12,11 +13,11 @@ if [ "${1}" = "start" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
 
-  PATH=$PATH:/usr/local/bin
+  PATH="{{_dev_env_install_dir}}/sbin:{{_dev_env_install_dir}}/bin:$PATH"
   exec env runtool "${run_args[@]}" \
     ./node_modules/.bin/ember server \
-      --port {{ember_server.port}} \
-      --live-reload-port {{ember_server.live_reload_port}}
+      --port "{{ember_server.port}}" \
+      --live-reload-port "{{ember_server.live_reload_port}}"
 fi
 
 exit 0

@@ -33,6 +33,10 @@ set(VENDOR_DIR ${WORK_DIR}/vendor)
 set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
 set(LUAROCKS_CMD env LUA_PATH=${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?.lua$<SEMICOLON>${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?/init.lua$<SEMICOLON>$<SEMICOLON> ${STAGE_EMBEDDED_DIR}/bin/luarocks)
 
+# Where to install development-only dependencies.
+set(DEV_INSTALL_PREFIX ${WORK_DIR}/dev-env)
+set(DEV_VENDOR_DIR ${DEV_INSTALL_PREFIX}/vendor)
+
 # Where to install test-only dependencies.
 set(TEST_INSTALL_PREFIX ${WORK_DIR}/test-env)
 set(TEST_VENDOR_DIR ${TEST_INSTALL_PREFIX}/vendor)
@@ -59,6 +63,7 @@ pkg_search_module(LIBFFI REQUIRED libffi)
 require_program(rsync)
 
 include(${CMAKE_SOURCE_DIR}/build/cmake/versions.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/dev/nodejs.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/elasticsearch.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/libcidr.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/libgeoip.cmake)
@@ -72,8 +77,6 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/ruby.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/rsyslog.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/trafficserver.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/static-site.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/core-lua-deps.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/core-web-app.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core.cmake)
 if(ENABLE_HADOOP_ANALYTICS)
   include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/flume.cmake)

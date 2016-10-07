@@ -1,5 +1,9 @@
 set(CORE_BUILD_DIR ${WORK_DIR}/src/api-umbrella-core)
 
+include(${CMAKE_SOURCE_DIR}/build/cmake/core-lua-deps.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/core-web-app.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/core-admin-ui.cmake)
+
 # Copy the vendored libraries into the shared build directory.
 add_custom_command(
   OUTPUT ${CORE_BUILD_DIR}/shared/vendor
@@ -11,46 +15,29 @@ add_custom_command(
   COMMAND touch -c ${CORE_BUILD_DIR}/shared/vendor
 )
 
-# Create the tmp directories in the shared build directory.
-#
-# We create these more specific tmp sub directories so the deb/rpm
-# after-install script can set the necessary permissions on these sub
-# directories to allow for deployments of master on top of a package install.
-add_custom_command(
-  OUTPUT ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/cache/assets
-  COMMAND mkdir -p ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/cache/assets
-  COMMAND touch -c ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/cache/assets
-)
-add_custom_command(
-  OUTPUT ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/cache/sass
-  COMMAND mkdir -p ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/cache/sass
-  COMMAND touch -c ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/cache/sass
-)
-add_custom_command(
-  OUTPUT ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/ember-rails
-  COMMAND mkdir -p ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/ember-rails
-  COMMAND touch -c ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/ember-rails
-)
-
-#
-# Build the shared dir.
-#
-add_custom_command(
-  OUTPUT ${STAMP_DIR}/core-build-shared
-  DEPENDS
-    ${CORE_BUILD_DIR}/shared/vendor
-    ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/cache/assets
-    ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/cache/sass
-    ${CORE_BUILD_DIR}/shared/src/api-umbrella/web-app/tmp/ember-rails
-  COMMAND touch ${STAMP_DIR}/core-build-shared
-)
-
 # Copy the code into a build release directory.
+file(GLOB_RECURSE core_files
+  ${CMAKE_SOURCE_DIR}/bin/*
+  ${CMAKE_SOURCE_DIR}/config/*
+  ${CMAKE_SOURCE_DIR}/templates/*
+)
 add_custom_command(
   OUTPUT ${STAMP_DIR}/core-build-release-dir
+  DEPENDS ${core_files}
   COMMAND mkdir -p ${CORE_BUILD_DIR}/releases/0
   COMMAND rsync -a --delete-after --delete-excluded "--filter=:- ${CMAKE_SOURCE_DIR}/.gitignore" --include=/templates/etc/perp/.boot --exclude=.* --exclude=/templates/etc/test-env* --exclude=/templates/etc/perp/test-env* --exclude=/src/api-umbrella/web-app/spec --exclude=/src/api-umbrella/web-app/app/assets --exclude=/src/api-umbrella/hadoop-analytics --include=/bin/*** --include=/config/*** --include=/LICENSE.txt --include=/templates/*** --include=/src/*** --exclude=* ${CMAKE_SOURCE_DIR}/ ${CORE_BUILD_DIR}/releases/0/
   COMMAND touch ${STAMP_DIR}/core-build-release-dir
+)
+
+add_custom_command(
+  OUTPUT ${STAMP_DIR}/core-build-install-dist
+  DEPENDS ${STAMP_DIR}/core-admin-ui-build
+  DEPENDS ${STAMP_DIR}/core-web-app-precompile
+  COMMAND mkdir -p ${CORE_BUILD_DIR}/releases/0/build/dist
+  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/web-app-build/web-assets/ ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets/
+  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist-dev/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui-dev/
+  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist-prod/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui/
+  COMMAND touch ${STAMP_DIR}/core-build-install-dist
 )
 
 # Create a symlink to the latest release.
@@ -87,17 +74,6 @@ add_custom_command(
   COMMAND touch -c ${CORE_BUILD_DIR}/releases/0/src/api-umbrella/web-app/.bundle/config
 )
 
-# Create a symlink to the shared web-app tmp directory within the release.
-add_custom_command(
-  OUTPUT ${STAMP_DIR}/core-build-release-web-tmp-symlink
-  DEPENDS
-    ${STAMP_DIR}/core-build-release-dir
-		${STAMP_DIR}/core-build-shared
-  WORKING_DIRECTORY ${CORE_BUILD_DIR}/releases/0/src/api-umbrella/web-app
-  COMMAND ln -snf ../../../../../shared/src/api-umbrella/web-app/tmp ./tmp
-  COMMAND touch ${STAMP_DIR}/core-build-release-web-tmp-symlink
-)
-
 #
 # Build the release dir.
 #
@@ -106,7 +82,6 @@ add_custom_command(
   DEPENDS
     ${STAMP_DIR}/core-build-release-dir
     ${STAMP_DIR}/core-build-release-vendor-symlink
-    ${STAMP_DIR}/core-build-release-web-tmp-symlink
     ${STAMP_DIR}/core-build-current-symlink
     ${CORE_BUILD_DIR}/releases/0/src/api-umbrella/web-app/.bundle/config
   COMMAND touch ${STAMP_DIR}/core-build-release
@@ -115,8 +90,9 @@ add_custom_command(
 # Copy the built shared directory to the stage install path.
 add_custom_command(
   OUTPUT ${STAGE_EMBEDDED_DIR}/apps/core
-  DEPENDS ${STAMP_DIR}/core-build-shared
+  DEPENDS ${CORE_BUILD_DIR}/shared/vendor
   DEPENDS ${STAMP_DIR}/core-build-release
+  DEPENDS ${STAMP_DIR}/core-build-install-dist
   COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core
   COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/ ${STAGE_EMBEDDED_DIR}/apps/core/
   COMMAND touch -c ${STAGE_EMBEDDED_DIR}/apps/core

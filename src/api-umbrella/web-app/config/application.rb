@@ -131,15 +131,18 @@ module ApiUmbrella
     # config.i18n.default_locale = :de
 
     if(ENV["RAILS_TMP_PATH"].present?)
-      paths["tmp"] = ENV["RAILS_TMP_PATH"]
-      tmp_assets_cache_path = File.join(ENV["RAILS_TMP_PATH"], "cache/assets")
-      FileUtils.mkdir_p(tmp_assets_cache_path)
-      config.assets.cache_store = [:file_store, tmp_assets_cache_path]
-      config.sass.cache_location = File.join(ENV["RAILS_TMP_PATH"], "cache/sass")
+      config.paths["tmp"] = ENV["RAILS_TMP_PATH"]
+      config.assets.configure do |env|
+        env.cache = Sprockets::Cache::FileStore.new(
+          File.join(ENV["RAILS_TMP_PATH"], "cache/assets"),
+          config.assets.cache_limit,
+          env.logger
+        )
+      end
     end
 
     if(ENV["RAILS_PUBLIC_PATH"].present?)
-      paths["public"] = ENV["RAILS_PUBLIC_PATH"]
+      config.paths["public"] = ENV["RAILS_PUBLIC_PATH"]
     end
 
     # Use a mongo-based cache store (this ensures the cache can be shared

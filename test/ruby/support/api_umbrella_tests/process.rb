@@ -21,6 +21,15 @@ module ApiUmbrellaTests
 
         #config_path = File.join(API_UMBRELLA_SRC_ROOT, "test/config/test.yml")
 
+        build = ChildProcess.build("make")
+        build.io.inherit!
+        build.cwd = API_UMBRELLA_SRC_ROOT
+        build.start
+        build.wait
+        if(build.crashed?)
+          exit build.exit_code
+        end
+
         progress = Thread.new do
           print "Waiting for api-umbrella to start..."
           loop do

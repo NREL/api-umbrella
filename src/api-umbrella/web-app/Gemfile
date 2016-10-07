@@ -72,6 +72,10 @@ gem "omniauth-twitter", "~> 1.2.1", :require => false
 # Authorization
 gem "pundit", "~> 1.1.0"
 
+# Generate non-digest assets for i18n content that  the admin-ui component can
+# link to (without knowing the cache busted URLs).
+gem "non-stupid-digest-assets", "~> 1.0.8"
+
 # Views/templates for APIs
 gem "rabl", "~> 0.13.0"
 gem "jbuilder", "~> 2.6.0"
