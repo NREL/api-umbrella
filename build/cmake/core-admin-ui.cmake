@@ -21,14 +21,20 @@ add_custom_command(
 )
 
 add_custom_command(
-  OUTPUT ${STAMP_DIR}/core-admin-ui-npm-install
-  DEPENDS ${CORE_BUILD_DIR}/tmp/admin-ui-build/package.json
+  OUTPUT
+    ${STAMP_DIR}/core-admin-ui-npm-install
+    ${CORE_BUILD_DIR}/tmp/admin-ui-build/node_modules
+  DEPENDS
+    nodejs
+    ${CORE_BUILD_DIR}/tmp/admin-ui-build/package.json
   COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} npm install && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} npm prune
   COMMAND touch ${STAMP_DIR}/core-admin-ui-npm-install
 )
 
 add_custom_command(
-  OUTPUT ${STAMP_DIR}/core-admin-ui-bower-install
+  OUTPUT
+    ${STAMP_DIR}/core-admin-ui-bower-install
+    ${CORE_BUILD_DIR}/tmp/admin-ui-build/bower_components
   DEPENDS
     ${CORE_BUILD_DIR}/tmp/admin-ui-build/bower.json
     ${STAMP_DIR}/core-admin-ui-npm-install

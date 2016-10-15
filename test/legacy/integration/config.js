@@ -23,7 +23,7 @@ describe('config', function() {
     });
 
     it('overrides a default null value', function() {
-      var defaultConfig = yaml.safeLoad(fs.readFileSync(path.resolve(__dirname, '../../config/default.yml')).toString());
+      var defaultConfig = yaml.safeLoad(fs.readFileSync(path.join(global.API_UMBRELLA_SRC_ROOT, 'config/default.yml')).toString());
       var runtimeConfig = yaml.safeLoad(fs.readFileSync('/tmp/api-umbrella-test/var/run/runtime_config.yml').toString());
 
       should.not.exist(defaultConfig.web.admin.auth_strategies.ldap.options);

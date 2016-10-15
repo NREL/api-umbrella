@@ -7,7 +7,7 @@ add_custom_target(
   test
   COMMAND ${CMAKE_BUILD_TOOL} all
   COMMAND ${CMAKE_BUILD_TOOL} lint-target
-  COMMAND ${CMAKE_BUILD_TOOL} test-proxy-target
+  COMMAND ${CMAKE_BUILD_TOOL} test-legacy-target
   COMMAND ${CMAKE_BUILD_TOOL} test-web-app-target
 )
 cmake_policy(POP)

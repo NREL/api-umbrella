@@ -6,7 +6,6 @@ add_custom_command(
 add_custom_target(test_virtualenv ALL DEPENDS ${TEST_INSTALL_PREFIX}/bin/pip)
 add_custom_command(
   OUTPUT ${TEST_INSTALL_PREFIX}/bin/mongo-orchestration
-  DEPENDS ${TEST_INSTALL_PREFIX}/bin/pip ${CMAKE_SOURCE_DIR}/test/requirements.txt
-  COMMAND ${TEST_INSTALL_PREFIX}/bin/pip install -r ${CMAKE_SOURCE_DIR}/test/requirements.txt
+  COMMAND ${TEST_INSTALL_PREFIX}/bin/pip install --ignore-installed 'mongo-orchestration==${MONGO_ORCHESTRATION_VERSION}'
 )
 add_custom_target(test_pip_install ALL DEPENDS ${TEST_INSTALL_PREFIX}/bin/mongo-orchestration)

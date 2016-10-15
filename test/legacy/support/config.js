@@ -17,7 +17,7 @@ module.exports = {
     // isn't quite ideal or perfect, but seems to do the trick for now (but
     // should perhaps be revisited).
     if(!fs.existsSync(testFileConfigPath)) {
-      testFileConfigPath = path.resolve(__dirname, '../config/test.yml');
+      testFileConfigPath = path.join(global.API_UMBRELLA_SRC_ROOT, 'config/test.yml');
     }
 
     var data = fs.readFileSync(testFileConfigPath);

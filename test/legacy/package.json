@@ -2,7 +2,10 @@
   "name": "api-umbrella",
   "description": "A custom reverse proxy to control access to your APIs. Performs API key validation, request rate limiting, and gathers analytics.",
   "version": "0.1.0",
-  "engines": ">= 0.8.0",
+  "engines": {
+    "node": ">= 0.10.0 <0.11.0"
+  },
+  "engine-strict": true,
   "author": "Nick Muerdter <nick.muerdter@nrel.gov>",
   "scripts": {
     "test": "grunt"

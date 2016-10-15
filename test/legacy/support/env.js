@@ -1,12 +1,11 @@
 'use strict';
 
 var fs = require('fs'),
-    path = require('path'),
     yaml = require('js-yaml');
 
 fs.writeFileSync('/tmp/api-umbrella-test.yml', yaml.safeDump({
   router: {
-    dir: path.resolve(__dirname, '../../'),
+    dir: global.API_UMBRELLA_SRC_ROOT,
   },
 }));
 

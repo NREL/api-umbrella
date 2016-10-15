@@ -78,14 +78,14 @@ before(function apiUmbrellaStart(done) {
     process.stdout.write('.');
   }, 2000);
 
-  var testConfigPath = process.env['API_UMBRELLA_CONFIG'] || path.resolve(__dirname, '../config/test.yml');
+  var testConfigPath = process.env['API_UMBRELLA_CONFIG'] || path.join(global.API_UMBRELLA_SRC_ROOT, 'config/test.yml');
   var overridesConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
   fs.writeFileSync(overridesConfigPath, '');
   var configPath = testConfigPath + ':' + overridesConfigPath;
 
   // Spin up the api-umbrella processes.
-  var binPath = path.resolve(__dirname, '../../bin/api-umbrella');
-  process.env.API_UMBRELLA_EMBEDDED_ROOT = path.resolve(__dirname, '../../build/work/stage/opt/api-umbrella/embedded');
+  var binPath = path.join(global.API_UMBRELLA_SRC_ROOT, 'bin/api-umbrella');
+  process.env.API_UMBRELLA_EMBEDDED_ROOT = path.join(global.API_UMBRELLA_SRC_ROOT, 'build/work/stage/opt/api-umbrella/embedded');
   global.apiUmbrellaServer = spawn(binPath, ['run'], {
     stdio: 'inherit',
     env: _.merge({}, process.env, {

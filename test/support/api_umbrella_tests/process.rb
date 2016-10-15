@@ -13,13 +13,10 @@ module ApiUmbrellaTests
       FileUtils.mkdir_p("/tmp/api-umbrella-test/var/log")
 
       Bundler.with_clean_env do
-        $config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "test/config/test.yml"))
-        #config["services"] = ["general_db", "log_db", "router"]
+        $config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
         $config["mongodb"]["url"] = "mongodb://127.0.0.1:13001/api_umbrella_test"
         File.write("/tmp/integration_test_suite.yml", YAML.dump($config))
         File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump({ "version" => 0 }))
-
-        #config_path = File.join(API_UMBRELLA_SRC_ROOT, "test/config/test.yml")
 
         build = ChildProcess.build("make")
         build.io.inherit!

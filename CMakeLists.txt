@@ -89,14 +89,15 @@ endif()
 # Testing
 #
 if(ENABLE_TEST_DEPENDENCIES)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/test/unbound.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/test/lua-deps.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/mailhog.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/mongo-orchestration.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/test/lua-deps.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/test/nodejs.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/shellcheck.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/test/unbound.cmake)
 endif()
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/lint.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/test/test-proxy.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/test/test-legacy.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/test-web-app.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/test.cmake)
 

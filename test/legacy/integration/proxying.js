@@ -4,15 +4,10 @@ require('../test_helper');
 
 var _ = require('lodash'),
     async = require('async'),
-    config = require('../support/config'),
-    Curler = require('curler').Curler,
     execFile = require('child_process').execFile,
     Factory = require('factory-lady'),
-    fs = require('fs'),
     http = require('http'),
-    randomstring = require('randomstring'),
     request = require('request'),
-    stk = require('stream-tk'),
     temp = require('temp'),
     zlib = require('zlib');
 

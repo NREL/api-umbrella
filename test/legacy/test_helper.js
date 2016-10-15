@@ -2,10 +2,23 @@
 
 // As a very first step, blow away the default test directory, so we have a
 // fresh test directory, clean logs, etc. on every run.
-var mkdirp = require('mkdirp'),
+var fs = require('fs'),
+    mkdirp = require('mkdirp'),
+    path = require('path'),
     rimraf = require('rimraf');
 rimraf.sync('/tmp/api-umbrella-test');
 mkdirp.sync('/tmp/api-umbrella-test/var/log');
+
+if(!/^v0\.10\./.test(process.version)) {
+  console.error('Legacy test suite must be run with nodejs v0.10 (current version: ' + process.version + ')');
+  return process.exit(1);
+}
+
+global.API_UMBRELLA_SRC_ROOT = path.resolve(__dirname, '../../');
+if(!fs.existsSync(path.join(global.API_UMBRELLA_SRC_ROOT, 'src/api-umbrella'))) {
+  console.error('The calculated root directory does not appear correct: ' + global.API_UMBRELLA_SRC_ROOT);
+  return process.exit(1);
+}
 
 require('./support/env');
 

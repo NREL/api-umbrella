@@ -9,8 +9,8 @@ var _ = require('lodash'),
 
 _.merge(global.shared, {
   runCommand: function(args, callback) {
-    var binPath = path.resolve(__dirname, '../../bin/api-umbrella');
-    var testConfigPath = process.env['API_UMBRELLA_CONFIG'] || path.resolve(__dirname, '../config/test.yml');
+    var binPath = path.resolve(__dirname, '../../../bin/api-umbrella');
+    var testConfigPath = process.env['API_UMBRELLA_CONFIG'] || path.resolve(__dirname, '../../../config/test.yml');
     var overridesConfigPath = path.resolve(__dirname, '../config/.overrides.yml');
     var configPath = testConfigPath + ':' + overridesConfigPath;
     execFile(binPath, args, {

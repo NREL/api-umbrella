@@ -13,15 +13,12 @@ machine:
     # Disable RVM so the various environment variables (things like GEM_HOME)
     # don't conflict with our embedded ruby installation.
     - rvm reset
-  node:
-    version: 0.10.45
 dependencies:
   cache_directories:
     - build/work
     - CMakeCache.txt
     - CMakeFiles
     - cmake_install.cmake
-    - test/node_modules
   pre:
     # Set the local file timestamps based on when they were last modified in
     # git. This helps prevent unnecessary rebuilds in the CI environment, since
