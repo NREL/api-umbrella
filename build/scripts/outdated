@@ -110,6 +110,9 @@ repos = {
   "mailhog" => {
     :git => "https://github.com/mailhog/MailHog.git",
   },
+  "mongo_orchestration" => {
+    :git => "https://github.com/10gen/mongo-orchestration.git",
+  },
   "mongodb" => {
     :git => "https://github.com/mongodb/mongo.git",
     :constraint => "~> 3.2.9",
@@ -125,6 +128,14 @@ repos = {
   "ngx_txid" => {
     :git => "https://github.com/streadway/ngx_txid.git",
     :git_ref => "master",
+  },
+  "nodejs" => {
+    :git => "https://github.com/nodejs/node.git",
+    :constraint => "~> 4.6.0",
+  },
+  "nodejs_test" => {
+    :git => "https://github.com/nodejs/node.git",
+    :constraint => "~> 0.10.0",
   },
   "openresty" => {
     :git => "https://github.com/openresty/openresty.git",
