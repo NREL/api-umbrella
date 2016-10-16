@@ -100,7 +100,7 @@ module ApiUmbrellaTests
 
     def prepend_api_backends(apis)
       apis.each_with_index do |apis, index|
-        apis["_id"] = "#{self.location}-#{index}"
+        apis["_id"] = "#{self.unique_test_id}-#{index}"
       end
 
       @@semaphore.synchronize do
@@ -119,24 +119,24 @@ module ApiUmbrellaTests
       end
     end
 
-    def override_config(config)
+    def override_config(config, reload_flag)
       @@semaphore.synchronize do
         begin
           config["version"] = SecureRandom.uuid
           File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump(config))
-          ApiUmbrellaTests::Process.reload
+          ApiUmbrellaTests::Process.reload(reload_flag)
           ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", config["version"])
           yield
         ensure
           File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump({ "version" => 0 }))
-          ApiUmbrellaTests::Process.reload
+          ApiUmbrellaTests::Process.reload(reload_flag)
           ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", 0)
         end
       end
     end
 
-    def unique_url_prefix
-      @unique_url_prefix ||= "#{self.location.gsub(/[^\w]/, "-")}"
+    def unique_test_id
+      @unique_test_id ||= "#{self.location.gsub(/[^\w]/, "-")}"
     end
   end
 end

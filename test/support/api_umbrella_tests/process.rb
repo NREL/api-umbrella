@@ -61,6 +61,12 @@ module ApiUmbrellaTests
         if(health.crashed? || $api_umbrella_process.crashed?)
           raise "Did not start api-umbrella process for integration tests"
         end
+
+        runtime_config_path = File.join($config["root_dir"], "var/run/runtime_config.yml")
+        unless(File.exist?(runtime_config_path))
+          raise "runtime_config.yml file not found after starting: #{runtime_config_path.inspect}"
+        end
+        $config = YAML.load_file(runtime_config_path)
       end
     rescue Exception => e
       self.stop
@@ -84,8 +90,8 @@ module ApiUmbrellaTests
       end
     end
 
-    def self.reload
-      reload = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload")
+    def self.reload(flag)
+      reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload", flag].compact)
       reload.io.inherit!
       reload.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
       reload.environment["API_UMBRELLA_CONFIG"] = CONFIG_PATH

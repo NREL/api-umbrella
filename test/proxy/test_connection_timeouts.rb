@@ -14,10 +14,10 @@ class TestProxyConnectionTimeouts < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => "127.0.0.1",
         :servers => [{ :host => "127.0.0.1", :port => 9450 }],
-        :url_matches => [{ :frontend_prefix => "/#{unique_url_prefix}/down", :backend_prefix => "/down" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/down", :backend_prefix => "/down" }],
       }
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_url_prefix}/down", @@http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", @@http_options)
 
       assert_equal(502, response.code, response.body)
       assert_operator(response.total_time, :<, 1)

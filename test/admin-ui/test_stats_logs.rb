@@ -155,7 +155,7 @@ class TestAdminUiStatsLogs < Minitest::Capybara::Test
   end
 
   def test_shows_beta_analytics_toggle_when_enabled
-    override_config({ "analytics" => { "outputs" => ["kylin"] } }) do
+    override_config({ "analytics" => { "outputs" => ["kylin"] } }, "--router") do
       admin_login
       visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
       assert_text("view top users")
