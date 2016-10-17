@@ -28,6 +28,22 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
     assert_equal(1, active_count - initial_count)
   end
 
+  def test_api_key_format
+    attributes = FactoryGirl.attributes_for(:api_user)
+    refute(attributes["api_key"])
+
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :user => attributes },
+    }))
+    assert_equal(201, response.code, response.body)
+
+    data = MultiJson.load(response.body)
+    assert(data["user"]["api_key"])
+    assert_equal(40, data["user"]["api_key"].length)
+    assert_match(/\A[0-9A-Za-z]+\z/, data["user"]["api_key"])
+  end
+
   def test_no_user_attributes_error
     non_admin_auth = non_admin_key_creator_api_key
     initial_count = active_count

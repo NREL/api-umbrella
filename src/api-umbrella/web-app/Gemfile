@@ -119,44 +119,8 @@ gem "rails_stdout_logging", "~> 0.0.5", :require => false
 # put test-only gems in this group so their generators
 # and rake tasks are available in development mode:
 group :development, :test do
-  gem "rspec-rails", "~> 3.5.2"
-  gem "factory_girl_rails", "~> 4.7.0"
-  gem "rspec-html-matchers", "~> 0.8.0"
-
-  # Rspec formatter - Prints overall progress and error details as they happen.
-  gem "fuubar", "~> 2.2.0"
-
   # Ruby lint/style checker
   gem "rubocop", "~> 0.42.0", :require => false
-
-  # Real browser testing
-  gem "capybara", "~> 2.8.1"
-
-  # Take screenshots and save the HTML content whenever capybara errors occur
-  # for better debugging.
-  gem "capybara-screenshot", "~> 1.0.14"
-
-  # Headless webkit for capybara
-  gem "poltergeist", "~> 1.10.0"
-
-  # Clean the database between tests
-  gem "database_cleaner", "~> 1.5.3"
-
-  # For creating test data in elasticsearch.
-  gem "elasticsearch-persistence", "~> 0.1.9"
-
-  # For parsing URLs in tests.
-  gem "addressable", "~> 2.4.0"
-
-  # For caching external web requests
-  gem "vcr", "~> 3.0.3", :require => false
-  gem "webmock", "~> 2.1.0", :require => false
-
-  # Generate output for CI.
-  gem "rspec_junit_formatter", "~> 0.2.3"
-
-  # For running the api-umbrella process as a background process during tests.
-  gem "childprocess", "~> 0.5.9"
 
   # Check for security issues on gem dependencies.
   gem "bundler-audit", :require => false
