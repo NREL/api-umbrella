@@ -30,9 +30,15 @@ add_custom_command(
 )
 
 add_custom_command(
-  OUTPUT ${STAMP_DIR}/core-build-install-dist
-  DEPENDS ${STAMP_DIR}/core-admin-ui-build
-  DEPENDS ${STAMP_DIR}/core-web-app-precompile
+  OUTPUT
+    ${STAMP_DIR}/core-build-install-dist
+    ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets
+    ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui-dev
+    ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui
+  DEPENDS
+    ${STAMP_DIR}/core-admin-ui-build
+    ${STAMP_DIR}/core-web-app-precompile
+    ${STAMP_DIR}/core-build-release-dir
   COMMAND mkdir -p ${CORE_BUILD_DIR}/releases/0/build/dist
   COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/web-app-build/web-assets/ ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets/
   COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist-dev/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui-dev/

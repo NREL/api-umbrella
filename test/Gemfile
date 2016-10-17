@@ -49,5 +49,8 @@ gem "capybara-screenshot", "~> 1.0.14"
 # Useful additions
 gem "activesupport", "~> 4.2.7"
 
+# Path-based setting of hashes
+gem "lazyhash", "~> 0.1.1"
+
 # Debug printing
 gem "awesome_print", "~> 1.7.0"

@@ -320,3 +320,37 @@ Devise.setup do |config|
   # so you need to do it manually. For the users scope, it would be:
   # config.omniauth_path_prefix = '/my_engine/users/auth'
 end
+
+# In the test environment, allow the OmniAuth data to be mocked via a special
+# "test_mock_omniauth" cookie. This gives us a way to mock the OmniAuth
+# responses from our external integration tests.
+if(Rails.env.test?)
+  # Define a middleware that looks for the special "test_mock_omniauth" cookie
+  # and sets up the omniauth mock data based on its value.
+  class TestMockOmniauth
+    def initialize(app)
+      @app = app
+    end
+
+    def call(env)
+      begin
+        request = ActionDispatch::Request.new(env)
+        if(request.cookies["test_mock_omniauth"].present?)
+          data = MultiJson.load(Base64.urlsafe_decode64(request.cookies["test_mock_omniauth"]))
+          OmniAuth.config.test_mode = true
+          OmniAuth.config.add_mock(data["provider"], data)
+        else
+          OmniAuth.config.test_mode = false
+        end
+
+        status, headers, body = @app.call(env)
+      ensure
+        OmniAuth.config.test_mode = false
+      end
+
+      [status, headers, body]
+    end
+  end
+
+  Rails.application.config.middleware.insert_after(Warden::Manager, TestMockOmniauth)
+end

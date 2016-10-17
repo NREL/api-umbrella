@@ -43,7 +43,10 @@ add_custom_command(
 )
 
 add_custom_command(
-  OUTPUT ${STAMP_DIR}/core-admin-ui-build
+  OUTPUT
+    ${STAMP_DIR}/core-admin-ui-build
+    ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist-dev
+    ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist-prod
   DEPENDS
     ${STAMP_DIR}/core-admin-ui-build-dir
     ${STAMP_DIR}/core-admin-ui-npm-install

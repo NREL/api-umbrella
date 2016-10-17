@@ -44,8 +44,25 @@ web:
         - facebook
         - github
         - google
+        - ldap
         - max.gov
         - persona
+      facebook:
+        client_id: test_fake
+        client_secret: test_fake
+      github:
+        client_id: test_fake
+        client_secret: test_fake
+      google:
+        client_id: test_fake
+        client_secret: test_fake
+      ldap:
+        options:
+          host: 127.0.0.1
+          port: 389
+          method: plain
+          base: dc=example,dc=com
+          uid: sAMAccountName
   mailer:
     smtp_settings:
       address: 127.0.0.1

@@ -11,7 +11,7 @@
   <div class="admin-logins">
     <%- resource_class.omniauth_providers.each do |provider| %>
       <div class="admin-login">
-        <% if(provider == :persona) %>
+        <% if(provider == :persona && !Rails.env.test?) %>
           <form id="persona_form" action="/admins/auth/persona/callback">
             <input type="hidden" name="assertion"/>
             <button class="btn" id="persona_login_button">Login with <%= t(provider, :scope => [:omniauth_providers]) %></button>
