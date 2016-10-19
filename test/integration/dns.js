@@ -5,6 +5,7 @@ require('../test_helper');
 var _ = require('lodash'),
     async = require('async'),
     config = require('../support/config'),
+    exec = require('child_process').exec,
     execFile = require('child_process').execFile,
     fs = require('fs'),
     ipaddr = require('ipaddr.js'),
@@ -782,6 +783,97 @@ describe('dns backend resolving', function() {
           }.bind(this),
         ], done);
       });
+    });
+  });
+
+  describe('backend ssl certificates', function() {
+    shared.runServer({
+      apis: [
+        {
+          frontend_host: 'localhost',
+          backend_host: 'sni1.foo.ooga',
+          backend_protocol: 'https',
+          servers: [
+            {
+              host: '127.0.0.1',
+              port: 9448,
+            },
+          ],
+          url_matches: [
+            {
+              frontend_prefix: '/sni1/',
+              backend_prefix: '/',
+            },
+          ],
+        },
+        {
+          frontend_host: 'localhost',
+          backend_host: 'sni2.foo.ooga',
+          backend_protocol: 'https',
+          servers: [
+            {
+              host: '127.0.0.1',
+              port: 9448,
+            },
+          ],
+          url_matches: [
+            {
+              frontend_prefix: '/sni2/',
+              backend_prefix: '/',
+            },
+          ],
+        },
+      ],
+    });
+
+    it('establishes connections to backends that require SNI SSL support', function(done) {
+      async.series([
+        function(next) {
+          setDnsRecords([
+            'sni1.foo.ooga 60 A 127.0.0.1',
+            'sni2.foo.ooga 60 A 127.0.0.1',
+          ], next);
+        },
+        function(next) {
+          // Verify that a non-SNI connection fails completely, rather than
+          // returning some default certificate.
+          exec('echo "Q" | openssl s_client -connect 127.0.0.1:9448', function(error, stdout) {
+            stdout.should.contain('no peer certificate available');
+            stdout.should.not.contain('ssltest.example.com');
+            next();
+          });
+        },
+        function(next) {
+          exec('echo "Q" | openssl s_client -connect 127.0.0.1:9448 -servername sni1.foo.ooga', function(error, stdout) {
+            stdout.should.not.contain('no peer certificate available');
+            stdout.should.contain('ssltest.example.com');
+            next();
+          });
+        },
+        function(next) {
+          exec('echo "Q" | openssl s_client -connect 127.0.0.1:9448 -servername sni2.foo.ooga', function(error, stdout) {
+            stdout.should.not.contain('no peer certificate available');
+            stdout.should.contain('ssltest.example.com');
+            next();
+          });
+        },
+        function(next) {
+          request.get('http://localhost:9080/sni1/', this.options, function(error, response) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            response.body.should.eql('SNI1');
+            next();
+          });
+        }.bind(this),
+        function(next) {
+          request.get('http://localhost:9080/sni2/', this.options, function(error, response) {
+            should.not.exist(error);
+            response.statusCode.should.eql(200);
+            response.body.should.eql('SNI2');
+            next();
+          });
+        }.bind(this),
+      ], done);
     });
   });
 });
