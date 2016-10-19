@@ -14,6 +14,10 @@ export default Ember.Component.extend({
   },
 
   didInsertElement() {
+    google.charts.setOnLoadCallback(this.renderChart.bind(this));
+  },
+
+  renderChart() {
     this.chart = new google.visualization.GeoChart(this.$()[0]);
     google.visualization.events.addListener(this.chart, 'regionClick', _.bind(this.handleRegionClick, this));
     google.visualization.events.addListener(this.chart, 'select', _.bind(this.handleCityClick, this));

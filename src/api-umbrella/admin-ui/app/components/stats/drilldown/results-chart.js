@@ -44,6 +44,10 @@ export default Ember.Component.extend({
   },
 
   didInsertElement() {
+    google.charts.setOnLoadCallback(this.renderChart.bind(this));
+  },
+
+  renderChart() {
     this.chart = new google.visualization.AreaChart(this.$()[0]);
 
     // On first load, refresh the data. Afterwards the observer should handle
