@@ -160,11 +160,12 @@ describe('dns backend resolving', function() {
         },
         {
           frontend_host: 'localhost',
-          backend_host: 'httpbin.org',
+          backend_host: 'www.google.com',
+          backend_protocol: 'https',
           servers: [
             {
-              host: 'httpbin.org',
-              port: 80,
+              host: 'www.google.com',
+              port: 443,
             },
           ],
           url_matches: [
@@ -219,14 +220,11 @@ describe('dns backend resolving', function() {
       });
     });
 
-    it('responds successfully when a valid external hostname (httpbin.org) is given', function(done) {
-      // Increase timeout in case external httpbin.org site is slow.
-      this.timeout(10000);
-
-      request.get('http://localhost:9080/valid-external-hostname/html', this.options, function(error, response, body) {
+    it('responds successfully when a valid external hostname (google.com) is given', function(done) {
+      request.get('http://localhost:9080/valid-external-hostname/humans.txt', this.options, function(error, response, body) {
         should.not.exist(error);
         response.statusCode.should.eql(200);
-        body.should.contain('Moby-Dick');
+        body.should.contain('Google is built by a large team');
         done();
       });
     });
