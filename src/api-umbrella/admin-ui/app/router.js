@@ -37,9 +37,13 @@ Router.map(function() {
 
   this.route('stats', { path: '/stats' }, function() {
     this.route('drilldown', { path: '/drilldown' });
+    this.route('drilldown-legacy', { path: '/drilldown/*legacyParams' });
     this.route('logs', { path: '/logs' });
+    this.route('logs-legacy', { path: '/logs/*legacyParams' });
     this.route('users', { path: '/users' });
+    this.route('users-legacy', { path: '/users/*legacyParams' });
     this.route('map', { path: '/map' });
+    this.route('map-legacy', { path: '/map/*legacyParams' });
   });
 
   this.route('website_backends', { path: '/website_backends' }, function() {
@@ -48,6 +52,7 @@ Router.map(function() {
   });
 
   this.route('login');
+  this.route('not-found', { path: '/*wildcard' });
 });
 
 export default Router;
