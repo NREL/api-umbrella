@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "rake", "~> 11.2.2"
+gem "rake", "~> 11.3.0"
 
 # Tests
 gem "minitest", "~> 5.9.0"
@@ -16,10 +16,10 @@ gem "typhoeus", "~> 1.1.0"
 
 # JSON parsing
 gem "multi_json", "~> 1.12.1"
-gem "oj", "~> 2.17.4"
+gem "oj", "~> 2.17.5"
 
 # Database libraries
-gem "mongoid", "~> 5.1.4"
+gem "mongoid", "~> 6.0.2"
 gem "elasticsearch", "~> 2.0.0"
 gem "elasticsearch-persistence", "~> 0.1.9"
 
@@ -37,17 +37,17 @@ gem "i18n", "~> 0.7.0"
 gem "addressable", "~> 2.4.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 2.8.1"
+gem "capybara", "~> 2.10.1"
 gem "minitest-capybara", "~> 0.8.2"
 
 # Webkit-based driver for capybara
-gem "poltergeist", "~> 1.10.0"
+gem "poltergeist", "~> 1.11.0"
 
 # Take screenshots on capybara test failures
 gem "capybara-screenshot", "~> 1.0.14"
 
 # Useful additions
-gem "activesupport", "~> 4.2.7"
+gem "activesupport", "~> 5.0.0"
 
 # Path-based setting of hashes
 gem "lazyhash", "~> 0.1.1"

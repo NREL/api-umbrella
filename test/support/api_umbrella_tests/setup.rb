@@ -1,8 +1,18 @@
 module ApiUmbrellaTests
   module Setup
-    @@semaphore = Mutex.new
-    @@start_complete = false
-    @@setup_complete = false
+    extend ActiveSupport::Concern
+
+    mattr_reader :api_key
+    mattr_reader :http_options
+    mattr_accessor :start_complete
+    mattr_accessor :setup_complete
+    mattr_accessor(:setup_mutex) { Mutex.new }
+    mattr_accessor(:config_mutex) { Mutex.new }
+
+    included do
+      mattr_accessor :class_setup_complete
+      mattr_accessor(:class_setup_mutex) { Mutex.new }
+    end
 
     # Start the API Umbrella server process before any tests run.
     #
@@ -15,20 +25,22 @@ module ApiUmbrellaTests
     # startup time in the overall test times (just not any individual test
     # times).
     def run
-      @@semaphore.synchronize do
-        unless @@start_complete
+      self.setup_mutex.synchronize do
+        unless self.start_complete
           # Start the API Umbrella process to test against.
           ApiUmbrellaTests::Process.start
-          @@start_complete = true
+          self.start_complete = true
         end
       end
 
       super
     end
 
+    private
+
     def setup_server
-      @@semaphore.synchronize do
-        unless @@setup_complete
+      self.setup_mutex.synchronize do
+        unless self.setup_complete
           Mongoid.load_configuration({
             "clients" => {
               "default" => {
@@ -66,7 +78,6 @@ module ApiUmbrellaTests
             })
           end
 
-          Admin.collection.drop
           ApiUmbrellaTests::ConfigVersion.delete_all
           ApiUmbrellaTests::ConfigVersion.insert_default
 
@@ -78,6 +89,7 @@ module ApiUmbrellaTests
             },
           })
 
+          @@api_key = user["api_key"]
           @@http_options = {
             # Disable SSL verification by default, since most of our tests are
             # against our self-signed SSL certificate for the test environment.
@@ -90,37 +102,39 @@ module ApiUmbrellaTests
 
             :headers => {
               "X-Api-Key" => user["api_key"],
-            },
-          }
+            }.freeze,
+          }.freeze
 
-          @@setup_complete = true
+          self.setup_complete = true
         end
       end
     end
 
     def prepend_api_backends(apis)
       apis.each_with_index do |apis, index|
-        apis["_id"] = "#{self.unique_test_id}-#{index}"
+        apis["_id"] = "#{unique_test_id}-#{index}"
       end
 
-      @@semaphore.synchronize do
+      self.config_mutex.synchronize do
         config_version = ApiUmbrellaTests::ConfigVersion.get
         config_version["config"]["apis"] = apis + config_version["config"]["apis"]
         ApiUmbrellaTests::ConfigVersion.insert(config_version)
       end
 
-      yield
+      yield if(block_given?)
     ensure
-      @@semaphore.synchronize do
-        api_ids = apis.map { |api| api["_id"] }
-        config_version = ApiUmbrellaTests::ConfigVersion.get
-        config_version["config"]["apis"].reject! { |api| api_ids.include?(api["_id"]) }
-        ApiUmbrellaTests::ConfigVersion.insert(config_version)
+      if(block_given?)
+        self.config_mutex.synchronize do
+          api_ids = apis.map { |api| api["_id"] }
+          config_version = ApiUmbrellaTests::ConfigVersion.get
+          config_version["config"]["apis"].reject! { |api| api_ids.include?(api["_id"]) }
+          ApiUmbrellaTests::ConfigVersion.insert(config_version)
+        end
       end
     end
 
     def override_config(config, reload_flag)
-      @@semaphore.synchronize do
+      self.config_mutex.synchronize do
         begin
           config["version"] = SecureRandom.uuid
           File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump(config))
@@ -133,6 +147,10 @@ module ApiUmbrellaTests
           ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", 0)
         end
       end
+    end
+
+    def unique_test_class_id
+      @unique_test_class_id ||= self.class.name
     end
 
     def unique_test_id

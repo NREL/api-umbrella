@@ -966,35 +966,6 @@ describe('proxying', function() {
     });
   });
 
-  describe('http basic auth', function() {
-    it('passes the original http basic auth headers to the api backend', function(done) {
-      request.get('http://foo:bar@localhost:9080/info/', this.options, function(error, response, body) {
-        var data = JSON.parse(body);
-        data.basic_auth_username.should.eql('foo');
-        data.basic_auth_password.should.eql('bar');
-        done();
-      });
-    });
-
-    it('passes http basic auth added at the proxy layer to the api backend', function(done) {
-      request.get('http://localhost:9080/add-auth-header/info/', this.options, function(error, response, body) {
-        var data = JSON.parse(body);
-        data.basic_auth_username.should.eql('somebody');
-        data.basic_auth_password.should.eql('secret');
-        done();
-      });
-    });
-
-    it('replaces http basic auth headers passed by the client when the api backend forces its own http basic auth', function(done) {
-      request.get('http://foo:bar@localhost:9080/add-auth-header/info/', this.options, function(error, response, body) {
-        var data = JSON.parse(body);
-        data.basic_auth_username.should.eql('somebody');
-        data.basic_auth_password.should.eql('secret');
-        done();
-      });
-    });
-  });
-
   describe('via request header', function() {
     it('does not pass the via header header to backends', function(done) {
       request.get('http://localhost:9080/info/', this.options, function(error, response, body) {

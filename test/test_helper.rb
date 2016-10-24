@@ -2,7 +2,6 @@ require "bundler/setup"
 Bundler.require(:default)
 
 require "minitest/autorun"
-require "active_support/core_ext/hash/deep_merge"
 
 # Add the test root directory to the default load path, regardless of where
 # tests are run from.

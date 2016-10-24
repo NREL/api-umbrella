@@ -29,16 +29,10 @@ module ApiUmbrellaTests
               "frontend_host" => "127.0.0.1",
               "backend_host" => "127.0.0.1",
               "servers" => [
-                {
-                  "host" => "127.0.0.1",
-                  "port" => 9444,
-                },
+                { "host" => "127.0.0.1", "port" => 9444 },
               ],
               "url_matches" => [
-                {
-                  "frontend_prefix" => "/",
-                  "backend_prefix" => "/",
-                },
+                { "frontend_prefix" => "/api/", "backend_prefix" => "/" },
               ],
             },
           ],
