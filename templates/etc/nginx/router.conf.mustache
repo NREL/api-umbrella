@@ -202,7 +202,6 @@ http {
   }
   {{/hosts}}
 
-  {{^development_env}}
   server {
     listen {{static_site.host}}:{{static_site.port}};
     server_name _;
@@ -210,7 +209,6 @@ http {
 
     root {{static_site.build_dir}};
   }
-  {{/development_env}}
 
   map $http_accept_encoding $normalized_accept_encoding {
     "~(^|,) *gzip *; *q=0[\.0]* *($|,)" "";
