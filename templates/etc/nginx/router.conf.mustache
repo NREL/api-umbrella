@@ -202,7 +202,6 @@ http {
   }
   {{/hosts}}
 
-  {{^_development_env?}}
   server {
     listen {{static_site.host}}:{{static_site.port}};
     server_name _;
@@ -210,7 +209,6 @@ http {
 
     root {{static_site.build_dir}};
   }
-  {{/_development_env?}}
 
   map $http_accept_encoding $normalized_accept_encoding {
     "~(^|,) *gzip *; *q=0[\.0]* *($|,)" "";
@@ -233,6 +231,11 @@ http {
     proxy_set_header X-Api-Umbrella-Backend-Scheme "";
     proxy_set_header X-Api-Umbrella-Backend-Host "";
     proxy_set_header X-Api-Umbrella-Backend-Id "";
+
+    # Use SNI when establishing backend connections for backends that may
+    # require SNI.
+    proxy_ssl_server_name on;
+    proxy_ssl_name $http_x_api_umbrella_backend_host;
 
     # Only retry backends in the event of connection errors (and not also
     # connection timeouts as is the default). This prevents slow backend timeouts

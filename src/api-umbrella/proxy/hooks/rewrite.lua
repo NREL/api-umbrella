@@ -19,7 +19,11 @@ wait_for_setup()
 -- ngx.var lookups are apparently somewhat expensive.
 ngx.ctx.args = ngx_var.args
 ngx.ctx.arg_api_key = ngx_var.arg_api_key
-ngx.ctx.host = ngx_var.http_x_forwarded_host or ngx_var.http_host or ngx_var.host
+if(config["router"]["match_x_forwarded_host"]) then
+  ngx.ctx.host = ngx_var.http_x_forwarded_host or ngx_var.http_host or ngx_var.host
+else
+  ngx.ctx.host = ngx_var.http_host or ngx_var.host
+end
 ngx.ctx.host_normalized = host_normalize(ngx.ctx.host)
 ngx.ctx.http_x_api_key = ngx_var.http_x_api_key
 ngx.ctx.port = ngx_var.http_x_forwarded_port or ngx_var.server_port
