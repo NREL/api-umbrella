@@ -8,6 +8,7 @@ module ApiUmbrellaTests
     mattr_accessor :setup_complete
     mattr_accessor(:setup_mutex) { Mutex.new }
     mattr_accessor(:config_mutex) { Mutex.new }
+    mattr_accessor(:api_config_mutex) { Mutex.new }
 
     included do
       mattr_accessor :class_setup_complete
@@ -110,12 +111,23 @@ module ApiUmbrellaTests
       end
     end
 
+    def once_per_class_setup
+      unless self.class_setup_complete
+        self.class_setup_mutex.synchronize do
+          unless self.class_setup_complete
+            yield
+            self.class_setup_complete = true
+          end
+        end
+      end
+    end
+
     def prepend_api_backends(apis)
       apis.each_with_index do |apis, index|
         apis["_id"] = "#{unique_test_id}-#{index}"
       end
 
-      self.config_mutex.synchronize do
+      self.api_config_mutex.synchronize do
         config_version = ApiUmbrellaTests::ConfigVersion.get
         config_version["config"]["apis"] = apis + config_version["config"]["apis"]
         ApiUmbrellaTests::ConfigVersion.insert(config_version)
@@ -124,7 +136,7 @@ module ApiUmbrellaTests
       yield if(block_given?)
     ensure
       if(block_given?)
-        self.config_mutex.synchronize do
+        self.api_config_mutex.synchronize do
           api_ids = apis.map { |api| api["_id"] }
           config_version = ApiUmbrellaTests::ConfigVersion.get
           config_version["config"]["apis"].reject! { |api| api_ids.include?(api["_id"]) }
@@ -136,16 +148,28 @@ module ApiUmbrellaTests
     def override_config(config, reload_flag)
       self.config_mutex.synchronize do
         begin
-          config["version"] = SecureRandom.uuid
-          File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump(config))
-          ApiUmbrellaTests::Process.reload(reload_flag)
-          ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", config["version"])
+          self.override_config_set(config, reload_flag)
           yield
         ensure
-          File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump({ "version" => 0 }))
-          ApiUmbrellaTests::Process.reload(reload_flag)
-          ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", 0)
+          self.override_config_reset(reload_flag)
         end
+      end
+    end
+
+    def override_config_set(config, reload_flag)
+      self.config_mutex.synchronize do
+        config["version"] = SecureRandom.uuid
+        File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump(config))
+        ApiUmbrellaTests::Process.reload(reload_flag)
+        ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", config["version"])
+      end
+    end
+
+    def override_config_reset(reload_flag)
+      self.config_mutex.synchronize do
+        File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump({ "version" => 0 }))
+        ApiUmbrellaTests::Process.reload(reload_flag)
+        ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", 0)
       end
     end
 

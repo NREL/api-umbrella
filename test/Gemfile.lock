@@ -78,6 +78,7 @@ GEM
       capybara (~> 2.2)
       minitest (~> 5.0)
       rake
+    minitest-hooks (1.4.0)
     minitest-reporters (1.1.11)
       ansi
       builder
@@ -137,6 +138,7 @@ DEPENDENCIES
   lazyhash (~> 0.1.1)
   minitest (~> 5.9.0)
   minitest-capybara (~> 0.8.2)
+  minitest-hooks (~> 1.4.0)
   minitest-reporters (~> 1.1.11)
   mongoid (~> 6.0.2)
   multi_json (~> 1.12.1)

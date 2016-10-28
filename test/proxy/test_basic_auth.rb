@@ -6,21 +6,18 @@ class TestProxyBasicAuth < Minitest::Test
 
   def setup
     setup_server
-    self.class_setup_mutex.synchronize do
-      unless self.class_setup_complete
-        prepend_api_backends([
-          {
-            :frontend_host => "127.0.0.1",
-            :backend_host => "127.0.0.1",
-            :servers => [{ :host => "127.0.0.1", :port => 9444 }],
-            :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/add-auth-header/", :backend_prefix => "/" }],
-            :settings => {
-              :http_basic_auth => "somebody:secret",
-            },
-          }
-        ])
-        self.class_setup_complete = true
-      end
+    once_per_class_setup do
+      prepend_api_backends([
+        {
+          :frontend_host => "127.0.0.1",
+          :backend_host => "127.0.0.1",
+          :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+          :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/add-auth-header/", :backend_prefix => "/" }],
+          :settings => {
+            :http_basic_auth => "somebody:secret",
+          },
+        }
+      ])
     end
   end
 

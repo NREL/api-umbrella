@@ -8,6 +8,9 @@ gem "minitest", "~> 5.9.0"
 # More test outputs
 gem "minitest-reporters", "~> 1.1.11"
 
+# For an "after_all" callback.
+gem "minitest-hooks", "~> 1.4.0"
+
 # Running background processes
 gem "childprocess", "~> 0.5.9"
 
