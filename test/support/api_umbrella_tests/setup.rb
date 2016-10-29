@@ -1,13 +1,17 @@
+require "ipaddr"
+
 module ApiUmbrellaTests
   module Setup
     extend ActiveSupport::Concern
 
+    @@incrementing_unique_ip_addr = IPAddr.new("127.0.0.1")
     mattr_reader :api_key
     mattr_reader :http_options
     mattr_accessor :start_complete
     mattr_accessor :setup_complete
     mattr_accessor(:setup_mutex) { Mutex.new }
     mattr_accessor(:config_mutex) { Mutex.new }
+    mattr_accessor(:config_set_mutex) { Mutex.new }
     mattr_accessor(:api_config_mutex) { Mutex.new }
 
     included do
@@ -148,25 +152,25 @@ module ApiUmbrellaTests
     def override_config(config, reload_flag)
       self.config_mutex.synchronize do
         begin
-          self.override_config_set(config, reload_flag)
+          override_config_set(config, reload_flag)
           yield
         ensure
-          self.override_config_reset(reload_flag)
+          override_config_reset(reload_flag)
         end
       end
     end
 
     def override_config_set(config, reload_flag)
-      self.config_mutex.synchronize do
+      self.config_set_mutex.synchronize do
         config["version"] = SecureRandom.uuid
         File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump(config))
         ApiUmbrellaTests::Process.reload(reload_flag)
-        ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", config["version"])
+        ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", config["version"], config)
       end
     end
 
     def override_config_reset(reload_flag)
-      self.config_mutex.synchronize do
+      self.config_set_mutex.synchronize do
         File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump({ "version" => 0 }))
         ApiUmbrellaTests::Process.reload(reload_flag)
         ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", 0)
@@ -179,6 +183,15 @@ module ApiUmbrellaTests
 
     def unique_test_id
       @unique_test_id ||= "#{self.location.gsub(/[^\w]/, "-")}"
+    end
+
+    def unique_test_ip_addr
+      unless @unique_test_ip_addr
+        @@incrementing_unique_ip_addr = @@incrementing_unique_ip_addr.succ
+        @unique_test_ip_addr ||= @@incrementing_unique_ip_addr.to_s
+      end
+
+      @unique_test_ip_addr
     end
   end
 end

@@ -1,7 +1,10 @@
+require "ipaddr"
+
 module ApiUmbrellaTests
   class Process
     EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded")
     CONFIG_PATH = "/tmp/integration_test_suite.yml:/tmp/integration_test_suite_overrides.yml"
+    @@incrementing_unique_ip_addr = IPAddr.new("200.0.0.1")
 
     def self.start
       Minitest.after_run do
@@ -99,17 +102,15 @@ module ApiUmbrellaTests
       reload.wait
     end
 
-    def self.wait_for_config_version(field, version)
+    def self.wait_for_config_version(field, version, config = {})
       state = nil
       health = nil
       begin
         Timeout.timeout(10) do
           loop do
-            response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state?#{rand}")
-            state = MultiJson.load(response.body)
+            state = self.fetch("http://127.0.0.1:9080/api-umbrella/v1/state?#{rand}", config)
             if(state[field] == version)
-              response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/health?#{rand}")
-              health = MultiJson.load(response.body)
+              health = self.fetch("http://127.0.0.1:9080/api-umbrella/v1/health?#{rand}", config)
               if(health["status"] == "green")
                 break
               end
@@ -121,6 +122,32 @@ module ApiUmbrellaTests
       rescue Timeout::Error
         raise Timeout::Error, "API Umbrella configuration changes were not detected. Waiting for version #{version}. Last seen: #{state.inspect} #{health.inspect}"
       end
+    end
+
+    def self.fetch(url, config)
+      http_opts = {}
+
+      # If we're performing global rate limit tests, use a different IP address
+      # for each internal API request when trying to determine if the config is
+      # published. This prevents us from accidentally hitting these global rate
+      # limits in our rapid polling requests to determine if things are ready.
+      if(config && config["router"] && config["router"]["global_rate_limits"])
+        @@incrementing_unique_ip_addr = @@incrementing_unique_ip_addr.succ
+        http_opts.deep_merge!({
+          :headers => {
+            "X-Forwarded-For" => @@incrementing_unique_ip_addr.to_s,
+          },
+        })
+      end
+
+      response = Typhoeus.get(url, http_opts)
+      begin
+        data = MultiJson.load(response.body)
+      rescue MultiJson::ParseError => e
+        raise MultiJson::ParseError, "#{e.message}: #{url} failure (#{response.code}): #{response.body}"
+      end
+
+      data
     end
   end
 end
