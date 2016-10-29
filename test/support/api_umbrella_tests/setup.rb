@@ -5,6 +5,7 @@ module ApiUmbrellaTests
     extend ActiveSupport::Concern
 
     @@incrementing_unique_ip_addr = IPAddr.new("127.0.0.1")
+    mattr_reader :api_user
     mattr_reader :api_key
     mattr_reader :http_options
     mattr_accessor :start_complete
@@ -94,6 +95,7 @@ module ApiUmbrellaTests
             },
           })
 
+          @@api_user = user
           @@api_key = user["api_key"]
           @@http_options = {
             # Disable SSL verification by default, since most of our tests are

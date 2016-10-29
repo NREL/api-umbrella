@@ -2,6 +2,7 @@ require_relative "../test_helper"
 
 class TestProxyNginxGlobalRateLimits < Minitest::Test
   include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTests::Logging
 
   def setup
     setup_server
@@ -88,6 +89,43 @@ class TestProxyNginxGlobalRateLimits < Minitest::Test
       assert_operator(oks, :<=, 34)
       assert_operator(over_rate_limits, :>=, 1)
       assert_equal(40, oks + over_rate_limits)
+    end
+  end
+
+  def test_logs_requests_rejected_by_global_limits
+    override_config({
+      "router" => {
+        "global_rate_limits" => {
+          "ip_connections" => 5,
+        },
+      },
+    }, "--router") do
+      hydra = Typhoeus::Hydra.new
+      requests = 8.times.map do |index|
+        request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", self.http_options.deep_merge({
+          :params => {
+            :unique_query_id => "#{unique_test_id}-#{index}",
+          },
+        }))
+        hydra.queue(request)
+        request
+      end
+      hydra.run
+
+      code_results = {}
+      requests.each_with_index do |request, index|
+        record = wait_for_log("#{unique_test_id}-#{index}")[:hit_source]
+        assert_equal(request.response.code, record["response_status"])
+        refute(record["gatekeeper_denied_code"])
+
+        code_results[request.response.code] ||= 0
+        code_results[request.response.code] += 1
+      end
+
+      assert_equal({
+        200 => 5,
+        429 => 3,
+      }, code_results)
     end
   end
 end

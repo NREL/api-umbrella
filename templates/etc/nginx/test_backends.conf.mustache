@@ -569,10 +569,12 @@ server {
   location /logging-multiple-request-headers/ {
     content_by_lua_block {
       local cjson = require "cjson"
+      local header = ngx.var.arg_header
       local raw_header = ngx.req.raw_header(true)
-      local _, num_matches = ngx.re.gsub(raw_header, "^" .. ngx.var.arg_header .. ": ", "", "im")
+      local _, num_matches = ngx.re.gsub(raw_header, "^" .. header .. ": ", "", "im")
       ngx.print(cjson.encode({
         header_occurrences_received = num_matches,
+        header_value = ngx.req.get_headers()[header],
       }))
     }
   }
