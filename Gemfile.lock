@@ -81,6 +81,8 @@ GEM
       capybara (~> 2.2)
       minitest (~> 5.0)
       rake
+    minitest-ci (3.1.0)
+      minitest (~> 5.0, >= 5.0.6)
     minitest-hooks (1.4.0)
     minitest-reporters (1.1.11)
       ansi
@@ -153,6 +155,7 @@ DEPENDENCIES
   lazyhash (~> 0.1.1)
   minitest (~> 5.9.0)
   minitest-capybara (~> 0.8.2)
+  minitest-ci (~> 3.1.0)
   minitest-hooks (~> 1.4.0)
   minitest-reporters (~> 1.1.11)
   mongoid (~> 6.0.2)

@@ -11,6 +11,9 @@ gem "minitest-reporters", "~> 1.1.11"
 # For an "after_all" callback.
 gem "minitest-hooks", "~> 1.4.0"
 
+# Test metadata for CI environment.
+gem "minitest-ci", "~> 3.1.0"
+
 # Ruby lint/style checker
 gem "rubocop", "~> 0.44.1", :require => false
 
