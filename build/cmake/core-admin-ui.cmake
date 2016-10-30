@@ -51,7 +51,7 @@ add_custom_command(
     ${STAMP_DIR}/core-admin-ui-build-dir
     ${STAMP_DIR}/core-admin-ui-npm-install
     ${STAMP_DIR}/core-admin-ui-bower-install
-  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && time env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/ember build --environment=development --output-path=./dist-dev
-  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && time env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/ember build --environment=production --output-path=./dist-prod
+  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/ember build --environment=development --output-path=./dist-dev
+  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/ember build --environment=production --output-path=./dist-prod
   COMMAND touch ${STAMP_DIR}/core-admin-ui-build
 )
