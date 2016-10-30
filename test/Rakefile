@@ -3,6 +3,6 @@ require "rake/testtask"
 Rake::TestTask.new do |t|
   t.libs = ["."]
   #t.pattern = "**/test*.rb"
-  t.pattern = "proxy/*logging*.rb"
+  t.pattern = "proxy/request_rewriting/test_*.rb"
   t.warning = false
 end

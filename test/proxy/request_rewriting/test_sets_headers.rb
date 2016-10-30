@@ -1,0 +1,91 @@
+require_relative "../../test_helper"
+
+class TestProxyRequestRewritingSetsHeaders < Minitest::Test
+  include ApiUmbrellaTests::Setup
+  parallelize_me!
+
+  def setup
+    setup_server
+    once_per_class_setup do
+      prepend_api_backends([
+        {
+          :frontend_host => "127.0.0.1",
+          :backend_host => "127.0.0.1",
+          :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+          :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/", :backend_prefix => "/" }],
+          :settings => {
+            :headers => [
+              { :key => "X-Add1", :value => "test1" },
+              { :key => "X-Add2", :value => "test2" },
+            ],
+          },
+          :sub_settings => [
+            {
+              :http_method => "any",
+              :regex => "^/info/sub/",
+              :settings => {
+                :headers => [
+                  { :key => "X-Add2", :value => "overridden" },
+                ],
+              },
+            },
+          ],
+        },
+      ])
+    end
+  end
+
+  def test_sets_header_values
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", self.http_options)
+    assert_equal(200, response.code, response.body)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "x-add1" => "test1",
+      "x-add2" => "test2",
+    }, strip_standard_headers(data["headers"]))
+  end
+
+  def test_overrides_and_merges_existing_headers_case_insensitively
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", self.http_options.deep_merge({
+      :headers => {
+        "X-Add1" => "original1",
+        "X-ADD2" => "original2",
+        "X-Foo" => "bar",
+      },
+    }))
+    assert_equal(200, response.code, response.body)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "x-add1" => "test1",
+      "x-add2" => "test2",
+      "x-foo" => "bar",
+    }, strip_standard_headers(data["headers"]))
+  end
+
+  def test_sub_url_settings_overrides_parent_settings
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/sub/", self.http_options)
+    assert_equal(200, response.code, response.body)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "x-add2" => "overridden",
+    }, strip_standard_headers(data["headers"]))
+  end
+
+  private
+
+  def strip_standard_headers(headers)
+    headers.except(
+      "accept",
+      "connection",
+      "host",
+      "user-agent",
+      "via",
+      "x-api-key",
+      "x-api-umbrella-request-id",
+      "x-api-user-id",
+      "x-forwarded-for",
+      "x-forwarded-port",
+      "x-forwarded-proto",
+    )
+  end
+end
