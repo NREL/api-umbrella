@@ -46,7 +46,7 @@ class TestProxyDatabaseSeeding < Minitest::Test
         "limit" => 20.0,
         "limit_by" => "ip",
         "response_headers" => true,
-      }
+      },
     ], user["settings"]["rate_limits"].map { |r| r.compact.except("_id") })
     assert_match(/\A[0-9a-f\-]{36}\z/, user["settings"]["rate_limits"][0]["_id"])
     assert_match(/\A[0-9a-f\-]{36}\z/, user["settings"]["rate_limits"][1]["_id"])

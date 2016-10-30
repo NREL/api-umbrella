@@ -5,7 +5,7 @@ class PoltergeistLogger
   attr_reader :logger
 
   def initialize(path)
-    @logger = Logger.new(path)# ::Logger::Formatter.new
+    @logger = Logger.new(path)
   end
 
   def puts(line)

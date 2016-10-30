@@ -153,7 +153,7 @@ class ConfigVersion
       # data to import, since these are likely to differ even if the data is
       # really the same (since these depend on when the import was actually
       # performed).
-      duplicate.except!(*%w(version created_by created_at deleted_at updated_at updated_by _id))
+      duplicate.except!("version", "created_by", "created_at", "deleted_at", "updated_at", "updated_by", "_id")
 
       duplicate.each do |key, value|
         duplicate[key] = record_for_comparison(value)
@@ -204,7 +204,7 @@ class ConfigVersion
 
   def self.sort_hash_by_keys(object)
     if(object.kind_of?(Hash))
-      object.keys.sort { |x, y| x.to_s <=> y.to_s }.reduce({}) do |sorted, key|
+      object.keys.sort_by(&:to_s).reduce({}) do |sorted, key|
         sorted[key] = sort_hash_by_keys(object[key])
         sorted
       end

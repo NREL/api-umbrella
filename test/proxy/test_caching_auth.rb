@@ -17,7 +17,7 @@ class TestProxyCachingAuth < Minitest::Test
           :settings => {
             :http_basic_auth => "somebody:secret",
           },
-        }
+        },
       ])
     end
   end

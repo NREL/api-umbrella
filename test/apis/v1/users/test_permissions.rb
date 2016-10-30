@@ -248,7 +248,7 @@ class TestApisV1UsersPermissions < Minitest::Capybara::Test
   end
 
   def assert_admin_forbidden_index(api_key, admin, role_based_error = false)
-    record = FactoryGirl.create(:api_user)
+    FactoryGirl.create(:api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin))
 
     if(role_based_error)
@@ -306,7 +306,6 @@ class TestApisV1UsersPermissions < Minitest::Capybara::Test
     data = MultiJson.load(response.body)
     refute_equal(nil, data["user"]["first_name"])
     assert_equal(attributes["first_name"], data["user"]["first_name"])
-    record = ApiUser.find(data["user"]["id"])
     assert_equal(1, active_count - initial_count)
   end
 

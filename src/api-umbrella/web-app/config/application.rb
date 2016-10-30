@@ -136,7 +136,7 @@ module ApiUmbrella
         env.cache = Sprockets::Cache::FileStore.new(
           File.join(ENV["RAILS_TMP_PATH"], "cache/assets"),
           config.assets.cache_limit,
-          env.logger
+          env.logger,
         )
       end
     end

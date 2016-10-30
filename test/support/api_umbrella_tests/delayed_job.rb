@@ -3,21 +3,19 @@ module ApiUmbrellaTests
     private
 
     def wait_for_delayed_jobs
-      begin
-        Timeout.timeout(10) do
-          db = Mongoid.client(:default)
-          loop do
-            count = db[:delayed_backend_mongoid_jobs].count
-            if(count == 0)
-              break
-            end
-
-            sleep 0.1
+      Timeout.timeout(10) do
+        db = Mongoid.client(:default)
+        loop do
+          count = db[:delayed_backend_mongoid_jobs].count
+          if(count == 0)
+            break
           end
+
+          sleep 0.1
         end
-      rescue Timeout::Error
-        raise Timeout::Error, "Background job was not processed within expected time. Is delayed_job running?"
       end
+    rescue Timeout::Error
+      raise Timeout::Error, "Background job was not processed within expected time. Is delayed_job running?"
     end
 
     def delayed_job_sent_messages

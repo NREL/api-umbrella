@@ -129,8 +129,8 @@ module ApiUmbrellaTests
     end
 
     def prepend_api_backends(apis)
-      apis.each_with_index do |apis, index|
-        apis["_id"] = "#{unique_test_id}-#{index}"
+      apis.each_with_index do |api, index|
+        api["_id"] = "#{unique_test_id}-#{index}"
       end
 
       self.api_config_mutex.synchronize do
@@ -184,7 +184,7 @@ module ApiUmbrellaTests
     end
 
     def unique_test_id
-      @unique_test_id ||= "#{self.location.gsub(/[^\w]/, "-")}"
+      @unique_test_id ||= self.location.gsub(/[^\w]/, "-")
     end
 
     def unique_test_ip_addr

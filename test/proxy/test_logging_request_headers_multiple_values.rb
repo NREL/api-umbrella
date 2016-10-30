@@ -17,19 +17,19 @@ class TestProxyLoggingRequestHeadersMultipleValues < Minitest::Test
     #
     # "Authorization" => "request_basic_auth_username",
     # "Host" => "request_host",
-  }
+  }.freeze
 
   MULTIPLE_ALLOWED = {
     "Accept" => "request_accept",
     "Accept-Encoding" => "request_accept_encoding",
     "Connection" => "request_connection",
     "Origin" => "request_origin",
-  }
+  }.freeze
 
   MULTIPLE_OVERRIDEN_INSIDE_PROXY = [
     "Accept-Encoding",
     "Connection",
-  ]
+  ].freeze
 
   def setup
     setup_server

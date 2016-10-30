@@ -15,7 +15,7 @@ class TestProxyLoggingRequestHeadersMultipleValues < Minitest::Test
     #
     # "Content-Length" => "response_content_length",
     # "Content-Type" => "response_content_type",
-  }
+  }.freeze
 
   MULTIPLE_ALLOWED = {
     "X-Cache" => "response_cache",
@@ -27,7 +27,7 @@ class TestProxyLoggingRequestHeadersMultipleValues < Minitest::Test
     #
     # "Content-Encoding" => "response_content_encoding",
     # "Transfer-Encoding" => "response_transfer_encoding",
-  }
+  }.freeze
 
   def setup
     setup_server

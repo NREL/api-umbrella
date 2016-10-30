@@ -38,7 +38,7 @@ class TestProxyDnsNegativeCaching < Minitest::Test
       # configuration is put into place by runServer (since that's when the
       # hostname is first seen and the unresolvable status is cached). So start
       # our timer here.
-      start_time = Time.now
+      start_time = Time.now.utc
 
       wait_for_response("/#{unique_test_id}/negative-caching-invalid-hostname-begins-resolving/", {
         :code => 502,
@@ -49,7 +49,7 @@ class TestProxyDnsNegativeCaching < Minitest::Test
         :code => 200,
         :local_interface_ip => "127.0.0.1",
       })
-      duration = Time.now - start_time
+      duration = Time.now.utc - start_time
       assert_operator(duration, :>=, (NEGATIVE_TTL - TTL_BUFFER))
       assert_operator(duration, :<, (NEGATIVE_TTL + TTL_BUFFER))
     end

@@ -15,7 +15,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
         :backend_host => "127.0.0.1",
         :servers => [{ :host => "127.0.0.1", :port => 9450 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/down", :backend_prefix => "/down" }],
-      }
+      },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", @@http_options)
 
@@ -75,7 +75,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
   # doing, doesn't improperly hold up non-cacheable requests waiting on a
   # potentially cacheable request.
   def test_concurrent_requests_to_same_url_different_http_method
-    start_time = Time.now
+    start_time = Time.now.utc
 
     get_thread = Thread.new do
       Thread.current[:response] = Typhoeus.get("http://127.0.0.1:9080/delay-sec/5", @@http_options)
@@ -91,7 +91,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
 
     get_thread.join
     post_thread.join
-    total_time = Time.now - start_time
+    total_time = Time.now.utc - start_time
 
     assert_equal(200, get_thread[:response].code)
     assert_equal(200, post_thread[:response].code)
@@ -181,7 +181,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
   # remove all the gatekeepers from load balancing rotation.
   def test_backend_remains_in_rotation_after_timeouts
     timeout_hydra = Typhoeus::Hydra.new
-    timeout_requests = 50.times.map do
+    timeout_requests = Array.new(50) do
       delay = $config["nginx"]["proxy_connect_timeout"] + 5
       request = Typhoeus::Request.new("http://127.0.0.1:9080/delay-sec/#{delay}", @@http_options)
       timeout_hydra.queue(request)
@@ -190,7 +190,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
     timeout_hydra.run
 
     info_hydra = Typhoeus::Hydra.new
-    info_requests = 50.times.map do
+    info_requests = Array.new(50) do
       request = Typhoeus::Request.new("http://127.0.0.1:9080/info/", @@http_options)
       info_hydra.queue(request)
       request

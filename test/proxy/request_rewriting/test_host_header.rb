@@ -15,7 +15,7 @@ class TestProxyRequestRewritingHostHeader < Minitest::Test
         :backend_host => "example.com",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
-      }
+      },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", self.http_options)
       assert_equal(200, response.code, response.body)
@@ -31,7 +31,7 @@ class TestProxyRequestRewritingHostHeader < Minitest::Test
         :backend_host => "example.com:8080",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
-      }
+      },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", self.http_options)
       assert_equal(200, response.code, response.body)
@@ -47,7 +47,7 @@ class TestProxyRequestRewritingHostHeader < Minitest::Test
         :backend_host => nil,
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
-      }
+      },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", self.http_options)
       assert_equal(200, response.code, response.body)
@@ -63,7 +63,7 @@ class TestProxyRequestRewritingHostHeader < Minitest::Test
         :backend_host => "",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
-      }
+      },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", self.http_options)
       assert_equal(200, response.code, response.body)

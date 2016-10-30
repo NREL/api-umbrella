@@ -73,7 +73,7 @@ class TestProxyRequestRewritingAddsUserIdHeader < Minitest::Test
         :settings => {
           :disable_api_key => true,
         },
-      }
+      },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-keys-optional/info/", self.http_options.except(:headers))
       assert_equal(200, response.code, response.body)

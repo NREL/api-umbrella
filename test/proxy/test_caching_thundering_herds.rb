@@ -55,7 +55,7 @@ class TestProxyCachingThunderingHerds < Minitest::Test
     })
 
     hydra = Typhoeus::Hydra.new
-    requests = 50.times.map do
+    requests = Array.new(50) do
       request = Typhoeus::Request.new("http://127.0.0.1:9080#{path}/#{unique_test_id}", http_opts)
       hydra.queue(request)
       request

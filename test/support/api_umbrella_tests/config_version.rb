@@ -15,7 +15,7 @@ module ApiUmbrellaTests
     def self.insert(config_version)
       config_version = config_version.dup
       config_version.delete("_id")
-      config_version["version"] = Time.now
+      config_version["version"] = Time.now.utc
       self.client[:config_versions].insert_one(config_version)
       self.wait_until_live(config_version)
     end

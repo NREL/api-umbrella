@@ -11,7 +11,7 @@ class TestApisV1ConfigPendingChangesDeleted < Minitest::Capybara::Test
 
     @api = FactoryGirl.create(:api)
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    @api.update_attribute(:deleted_at, Time.now)
+    @api.update_attribute(:deleted_at, Time.now.utc)
   end
 
   def test_deleted_after_last_publish

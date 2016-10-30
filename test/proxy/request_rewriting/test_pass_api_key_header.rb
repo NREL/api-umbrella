@@ -16,7 +16,7 @@ class TestProxyRequestRewritingPassApiKeyHeader < Minitest::Test
           :settings => {
             :pass_api_key_header => true,
           },
-        }
+        },
       ])
     end
   end

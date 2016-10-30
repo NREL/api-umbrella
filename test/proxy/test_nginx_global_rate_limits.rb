@@ -10,7 +10,7 @@ class TestProxyNginxGlobalRateLimits < Minitest::Test
 
   def test_no_limits_by_default
     hydra = Typhoeus::Hydra.new(:max_concurrency => 500)
-    requests = 400.times.map do
+    requests = Array.new(400) do
       request = Typhoeus::Request.new("http://127.0.0.1:9080/api/hello/", self.http_options)
       hydra.queue(request)
       request
@@ -32,7 +32,7 @@ class TestProxyNginxGlobalRateLimits < Minitest::Test
       },
     }, "--router") do
       hydra = Typhoeus::Hydra.new
-      requests = 21.times.map do
+      requests = Array.new(21) do
         request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", self.http_options)
         hydra.queue(request)
         request
@@ -67,7 +67,7 @@ class TestProxyNginxGlobalRateLimits < Minitest::Test
       })
 
       hydra = Typhoeus::Hydra.new
-      requests = 40.times.map do
+      requests = Array.new(40) do
         request = Typhoeus::Request.new("http://127.0.0.1:9080/api/hello/", http_opts)
         hydra.queue(request)
         request
@@ -101,7 +101,7 @@ class TestProxyNginxGlobalRateLimits < Minitest::Test
       },
     }, "--router") do
       hydra = Typhoeus::Hydra.new
-      requests = 8.times.map do |index|
+      requests = Array.new(8) do |index|
         request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", self.http_options.deep_merge({
           :params => {
             :unique_query_id => "#{unique_test_id}-#{index}",

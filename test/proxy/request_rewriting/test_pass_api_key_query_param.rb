@@ -16,7 +16,7 @@ class TestProxyRequestRewritingPassApiKeyQueryParam < Minitest::Test
           :settings => {
             :pass_api_key_query_param => true,
           },
-        }
+        },
       ])
     end
   end

@@ -14,7 +14,7 @@ class TestProxyStreaming < Minitest::Test
     chunk_timers = []
     request.on_body do |chunk|
       chunks << chunk
-      chunk_timers << Time.now
+      chunk_timers << Time.now.utc
     end
     response = request.run
 

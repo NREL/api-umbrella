@@ -8,7 +8,7 @@ class ElasticsearchHelper
             :match_all => {},
           },
           :size => 1000,
-        }
+        },
       })
       bulk_request = result["hits"]["hits"].map do |hit|
         { :delete => { :_index => hit["_index"], :_type => hit["_type"], :_id => hit["_id"] } }

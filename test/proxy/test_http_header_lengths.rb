@@ -58,8 +58,8 @@ class TestProxyHttpHeaderLengths < Minitest::Test
 
     # Determine the length of the raw HTTP request with the default headers in
     # place.
-    raw_request_length = "GET /info/ HTTP/1.1\r\n".length
-    header_line_extra_raw_length = ": \r\n".length
+    raw_request_length = "GET /info/ HTTP/1.1\r\n".freeze.length
+    header_line_extra_raw_length = ": \r\n".freeze.length
     headers.each do |key, value|
       raw_request_length += key.length + value.length + header_line_extra_raw_length
     end

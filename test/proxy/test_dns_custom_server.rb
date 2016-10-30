@@ -69,12 +69,12 @@ class TestProxyDnsCustomServer < Minitest::Test
       })
 
       set_dns_records(["refresh-after-ttl-expires.ooga #{ttl} A 127.0.0.2"])
-      start_time = Time.now
+      start_time = Time.now.utc
       wait_for_response("/#{unique_test_id}/refresh-after-ttl-expires/", {
         :code => 200,
         :local_interface_ip => "127.0.0.2",
       })
-      duration = Time.now - start_time
+      duration = Time.now.utc - start_time
       assert_operator(duration, :>=, (ttl - TTL_BUFFER))
       assert_operator(duration, :<, (ttl + TTL_BUFFER))
     end
@@ -97,11 +97,11 @@ class TestProxyDnsCustomServer < Minitest::Test
       })
 
       set_dns_records([])
-      start_time = Time.now
+      start_time = Time.now.utc
       wait_for_response("/#{unique_test_id}/down-after-ttl-expires/", {
         :code => 502,
       })
-      duration = Time.now - start_time
+      duration = Time.now.utc - start_time
       assert_operator(duration, :>=, (ttl - TTL_BUFFER))
       assert_operator(duration, :<, (ttl + TTL_BUFFER))
     end
@@ -159,7 +159,7 @@ class TestProxyDnsCustomServer < Minitest::Test
       })
 
       hydra = Typhoeus::Hydra.new(:max_concurrency => 10)
-      requests = 250.times.map do
+      requests = Array.new(250) do
         request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_id}/multiple-ips/", self.http_options)
         hydra.queue(request)
         request
@@ -217,20 +217,20 @@ class TestProxyDnsCustomServer < Minitest::Test
       # We default to 20 seconds, but allow an environment variable override
       # for much longer tests for debugging.
       test_duration = (ENV["CONNECTION_DROPS_DURATION"] || 20).to_i
-      start_time = Time.now
+      start_time = Time.now.utc
       hydra = Typhoeus::Hydra.new(:max_concurrency => 25)
       requests = []
       100.times do
         # Recursive callback to keep making parallel requests until the test
         # duration is hit.
-        on_complete = Proc.new {
-          if(Time.now - start_time < test_duration)
+        on_complete = proc do
+          if(Time.now.utc - start_time < test_duration)
             request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_id}/no-drops-during-changes/", self.http_options)
             request.on_complete(&on_complete)
             requests << request
             hydra.queue(request)
           end
-        }
+        end
 
         # Queue initial requests
         on_complete.call

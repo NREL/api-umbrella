@@ -36,14 +36,14 @@ class TestProxyNginxBans < Minitest::Test
 
       response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options.deep_merge({
         :headers => {
-          "X-Forwarded-For": "7.4.2.2",
+          "X-Forwarded-For" => "7.4.2.2",
         },
       }))
       assert_equal(403, response.code, response.body)
 
       response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options.deep_merge({
         :headers => {
-          "X-Forwarded-For": "8.7.1.44",
+          "X-Forwarded-For" => "8.7.1.44",
         },
       }))
       assert_equal(403, response.code, response.body)

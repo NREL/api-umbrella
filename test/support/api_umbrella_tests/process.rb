@@ -2,8 +2,8 @@ require "ipaddr"
 
 module ApiUmbrellaTests
   class Process
-    EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded")
-    CONFIG_PATH = "/tmp/integration_test_suite.yml:/tmp/integration_test_suite_overrides.yml"
+    EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded").freeze
+    CONFIG_PATH = "/tmp/integration_test_suite.yml:/tmp/integration_test_suite_overrides.yml".freeze
     @@incrementing_unique_ip_addr = IPAddr.new("200.0.0.1")
 
     def self.start
@@ -11,7 +11,7 @@ module ApiUmbrellaTests
         ApiUmbrellaTests::Process.stop
       end
 
-      start_time = Time.now
+      start_time = Time.now.utc
       FileUtils.rm_rf("/tmp/api-umbrella-test")
       FileUtils.mkdir_p("/tmp/api-umbrella-test/var/log")
 
@@ -57,8 +57,8 @@ module ApiUmbrellaTests
 
         progress.exit
 
-        end_time = Time.now
-        puts sprintf("(%.2fs)", end_time - start_time)
+        end_time = Time.now.utc
+        puts format("(%.2fs)", end_time - start_time)
 
         # If anything exited unsuccessfully, abort tests.
         if(health.crashed? || $api_umbrella_process.crashed?)
@@ -71,7 +71,7 @@ module ApiUmbrellaTests
         end
         $config = YAML.load_file(runtime_config_path)
       end
-    rescue Exception => e
+    rescue Exception => e # rubocop:disable Lint/RescueException
       self.stop
       raise e
     end

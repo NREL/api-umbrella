@@ -65,7 +65,7 @@ class TestProxyCachingVary < Minitest::Test
     }, {
       :headers => {
         "X-Bar" => "foo",
-      }
+      },
     })
   end
 
@@ -79,7 +79,7 @@ class TestProxyCachingVary < Minitest::Test
     }, {
       :headers => {
         "Accept" => "application/json",
-      }
+      },
     })
   end
 
@@ -103,7 +103,7 @@ class TestProxyCachingVary < Minitest::Test
     }, {
       :headers => {
         "X-Bar" => "foo",
-      }
+      },
     })
   end
 
@@ -117,7 +117,7 @@ class TestProxyCachingVary < Minitest::Test
     }, {
       :headers => {
         "Accept" => "application/json",
-      }
+      },
     })
   end
 end

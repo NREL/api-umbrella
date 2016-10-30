@@ -25,6 +25,9 @@ Lint/UnusedMethodArgument:
 Metrics/AbcSize:
   Enabled: false
 
+Metrics/BlockLength:
+  Enabled: false
+
 Metrics/BlockNesting:
   Enabled: false
 
@@ -40,6 +43,9 @@ Metrics/LineLength:
 Metrics/MethodLength:
   Enabled: false
 
+Metrics/ModuleLength:
+  Enabled: false
+
 Metrics/PerceivedComplexity:
   Enabled: false
 
@@ -50,6 +56,9 @@ Style/AlignHash:
   Enabled: false
 
 Style/AlignParameters:
+  Enabled: false
+
+Style/AsciiComments:
   Enabled: false
 
 Style/BracesAroundHashParameters:

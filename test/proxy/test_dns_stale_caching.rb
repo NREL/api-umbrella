@@ -43,11 +43,11 @@ class TestProxyDnsStaleCaching < Minitest::Test
       })
 
       set_dns_records([])
-      start_time = Time.now
+      start_time = Time.now.utc
       wait_for_response("/#{unique_test_id}/stale-caching-down-after-ttl-expires/", {
         :code => 502,
       })
-      duration = Time.now - start_time
+      duration = Time.now.utc - start_time
       assert_operator(duration, :>=, (ttl - TTL_BUFFER + MAX_STALE))
       # Double the TTL buffer factor on this test, to account for further
       # fuzziness with the timings of the stale record too.

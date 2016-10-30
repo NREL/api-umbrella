@@ -15,7 +15,7 @@ class TestAdminUiConfigPublishPending < Minitest::Capybara::Test
     deleted_api = FactoryGirl.create(:api)
     modified_api = FactoryGirl.create(:api, :name => "Before")
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    deleted_api.update_attribute(:deleted_at, Time.now)
+    deleted_api.update_attribute(:deleted_at, Time.now.utc)
     modified_api.update_attribute(:name, "After")
     FactoryGirl.create(:api)
 

@@ -32,7 +32,7 @@ class TestProcessesReloads < Minitest::Test
           loop do
             new_child_pids = nginx_child_pids(parent_pid)
             pid_intersection = new_child_pids & original_child_pids
-            break if(pid_intersection.length == 0)
+            break if(pid_intersection.empty?)
             sleep 0.1
           end
         end
@@ -76,7 +76,7 @@ class TestProcessesReloads < Minitest::Test
           descriptor_count += 1
 
           if(line.include?("urandom"))
-             urandom_descriptor_count += 1
+            urandom_descriptor_count += 1
           end
         end
       end
@@ -115,7 +115,7 @@ class TestProcessesReloads < Minitest::Test
         :backend_host => "127.0.0.1",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/db-config/hello", :backend_prefix => "/hello" }],
-      }
+      },
     ]) do
       # Fetch the PID of the nginx parent/master process.
       parent_pid = nginx_parent_pid
@@ -134,8 +134,8 @@ class TestProcessesReloads < Minitest::Test
       # Constantly make requests for 20 seconds while performing reloads in the
       # background thread.
       test_duration = 20
-      start_time = Time.now
-      while(Time.now - start_time < test_duration)
+      start_time = Time.now.utc
+      while(Time.now.utc - start_time < test_duration)
         response = Typhoeus.get("http://127.0.0.1:9080/db-config/hello?#{rand}", @@http_options)
         assert_equal(200, response.code, response.body)
         assert_equal("Hello World", response.body)

@@ -107,8 +107,6 @@ class TestApisV1UsersCreateNotifyEmail < Minitest::Capybara::Test
       messages = delayed_job_sent_messages
       assert_equal(1, messages.length)
 
-      data = MultiJson.load(response.body)
-      user = ApiUser.find(data["user"]["id"])
       message = messages.first
 
       # To

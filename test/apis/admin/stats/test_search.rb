@@ -137,7 +137,7 @@ class TestAdminStatsSearch < Minitest::Capybara::Test
         :start_at => "2014-11-01",
         :end_at => "2014-11-03",
         :interval => "day",
-      }
+      },
     }))
 
     assert_equal(200, response.code, response.body)

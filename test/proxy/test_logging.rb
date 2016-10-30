@@ -282,13 +282,13 @@ class TestProxyLogging < Minitest::Test
   end
 
   def test_request_at_is_time_request_finishes_not_starts
-    request_start = Time.now
+    request_start = Time.now.utc
     response = Typhoeus.get("http://127.0.0.1:9080/api/delay/3000", self.http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
     }))
-    request_end = Time.now
+    request_end = Time.now.utc
     assert_equal(200, response.code, response.body)
 
     record = wait_for_log(unique_test_id)[:hit_source]
@@ -444,7 +444,7 @@ class TestProxyLogging < Minitest::Test
         :backend_host => "127.0.0.1",
         :servers => [{ :host => "127.0.0.1", :port => 9450 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/down", :backend_prefix => "/down" }],
-      }
+      },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", self.http_options.deep_merge({
         :params => {
@@ -462,7 +462,7 @@ class TestProxyLogging < Minitest::Test
 
   def test_logs_requests_with_maximum_8kb_url_limit
     url_path = "/api/hello?unique_query_id=#{unique_test_id}&long="
-    long_length = 8192 - url_path.length - "GET  HTTP/1.1\r\n".length
+    long_length = 8192 - "GET #{url_path} HTTP/1.1\r\n".length
     long_value = Faker::Lorem.characters(long_length)
     url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
@@ -482,7 +482,7 @@ class TestProxyLogging < Minitest::Test
   # present in these error conditions.
   def test_does_not_log_requests_exceeding_8kb_url_limit
     url_path = "/api/hello?unique_query_id=#{unique_test_id}&long="
-    long_length = 8193 - url_path.length - "GET  HTTP/1.1\r\n".length
+    long_length = 8193 - "GET #{url_path} HTTP/1.1\r\n".length
     long_value = Faker::Lorem.characters(long_length)
     url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
@@ -505,7 +505,7 @@ class TestProxyLogging < Minitest::Test
       },
     ]) do
       url_path = "/#{unique_test_id}/logging-long-response-headers/?unique_query_id=#{unique_test_id}&long="
-      long_length = 8192 - url_path.length - "GET  HTTP/1.1\r\n".length
+      long_length = 8192 - "GET #{url_path} HTTP/1.1\r\n".length
       long_value = Faker::Lorem.characters(long_length)
       url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 

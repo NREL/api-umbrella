@@ -20,7 +20,7 @@ module ApiUmbrellaTests
       admin ||= FactoryGirl.create(:admin)
       cookies_utils = RailsCompatibleCookiesUtils.new("aeec385fb48a0594b6bb0b18f62473190f1d01b0b6113766af525be2ae1a317a03ab0ee1b3ee6aca3fb1572dc87684e033dcec21acd90d0ca0f111ca1785d0e9")
       session = cookies_utils.encrypt({
-        "session_id"=> SecureRandom.hex(16),
+        "session_id" => SecureRandom.hex(16),
         "warden.user.admin.key" => [[admin.id], nil],
       })
 

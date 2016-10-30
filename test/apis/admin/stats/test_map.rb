@@ -29,8 +29,8 @@ class TestAdminStatsMap < Minitest::Capybara::Test
     assert_equal({
       "map_breadcrumbs" => [],
       "map_regions" => [
-        { "c" => [ { "v" => "US", "f" => "United States" }, { "v" => 2, "f" => "2" } ] },
-        { "c" => [ { "v" => "CA", "f" => "Canada" }, { "v" => 1, "f" => "1" } ] },
+        { "c" => [{ "v" => "US", "f" => "United States" }, { "v" => 2, "f" => "2" }] },
+        { "c" => [{ "v" => "CA", "f" => "Canada" }, { "v" => 1, "f" => "1" }] },
       ],
       "region_field" => "request_ip_country",
       "regions" => [
@@ -65,8 +65,8 @@ class TestAdminStatsMap < Minitest::Capybara::Test
         { "name" => "Canada" },
       ],
       "map_regions" => [
-        { "c" => [ { "v" => 43.6949 }, { "v" => -79.5323 }, { "v" => "Toronto" }, { "v" => 2, "f" => "2" } ] },
-        { "c" => [ { "v" => 45.5009 }, { "v" => -73.5877 }, { "v" => "Montréal" }, { "v" => 1, "f" => "1" } ] },
+        { "c" => [{ "v" => 43.6949 }, { "v" => -79.5323 }, { "v" => "Toronto" }, { "v" => 2, "f" => "2" }] },
+        { "c" => [{ "v" => 45.5009 }, { "v" => -73.5877 }, { "v" => "Montréal" }, { "v" => 1, "f" => "1" }] },
       ],
       "region_field" => "request_ip_city",
       "regions" => [
@@ -99,8 +99,8 @@ class TestAdminStatsMap < Minitest::Capybara::Test
         { "name" => "United States" },
       ],
       "map_regions" => [
-        { "c" => [ { "v" => "CO", "f" => "Colorado" }, { "v" => 2, "f" => "2" } ] },
-        { "c" => [ { "v" => "CA", "f" => "California" }, { "v" => 1, "f" => "1" } ] },
+        { "c" => [{ "v" => "CO", "f" => "Colorado" }, { "v" => 2, "f" => "2" }] },
+        { "c" => [{ "v" => "CA", "f" => "California" }, { "v" => 1, "f" => "1" }] },
       ],
       "region_field" => "request_ip_region",
       "regions" => [
@@ -135,7 +135,7 @@ class TestAdminStatsMap < Minitest::Capybara::Test
         { "name" => "Colorado" },
       ],
       "map_regions" => [
-        { "c" => [ { "v" => 39.7146 }, { "v" => -105.2433 }, { "v" => "Golden" }, { "v" => 2, "f" => "2" } ] },
+        { "c" => [{ "v" => 39.7146 }, { "v" => -105.2433 }, { "v" => "Golden" }, { "v" => 2, "f" => "2" }] },
       ],
       "region_field" => "request_ip_city",
       "regions" => [

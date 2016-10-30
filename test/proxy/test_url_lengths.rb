@@ -27,8 +27,8 @@ class TestProxyUrlLengths < Minitest::Test
 
   def make_request_with_url_length(length)
     other_line_content = "GET  HTTP/1.1\r\n"
-    path = "/info/?";
-    path += "a" * (length - path.length - other_line_content.length);
+    path = "/info/?"
+    path += "a" * (length - path.length - other_line_content.length)
     Typhoeus.get("http://127.0.0.1:9080#{path}", @@http_options)
   end
 end

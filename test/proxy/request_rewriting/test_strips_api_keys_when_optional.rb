@@ -16,7 +16,7 @@ class TestProxyRequestRewritingStripsApiKeysWhenOptional < Minitest::Test
           :settings => {
             :disable_api_key => true,
           },
-        }
+        },
       ])
     end
   end

@@ -119,9 +119,6 @@ gem "rails_stdout_logging", "~> 0.0.5", :require => false
 # put test-only gems in this group so their generators
 # and rake tasks are available in development mode:
 group :development, :test do
-  # Ruby lint/style checker
-  gem "rubocop", "~> 0.42.0", :require => false
-
   # Check for security issues on gem dependencies.
   gem "bundler-audit", :require => false
 
