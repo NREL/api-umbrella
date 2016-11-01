@@ -37,6 +37,7 @@
 /test/legacy/config/.overrides.yml
 /test/legacy/log/*
 /test/legacy/tmp/*
+/test/reports
 /ci_cache
 /vendor
 /website/build
