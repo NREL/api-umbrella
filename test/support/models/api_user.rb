@@ -20,8 +20,22 @@ class ApiUser
   field :created_by
   attr_accessor :terms_and_conditions
   embeds_one :settings, :class_name => "Api::Settings"
+  after_save :touch_server_side_timestamp
 
   def api_key_preview
     self.api_key.truncate(9)
+  end
+
+  private
+
+  # Used for polling. See
+  # src/api-umbrella/web-app/app/models/api_user.rb#touch_server_side_timestamp
+  # for more details.
+  def touch_server_side_timestamp
+    collection.update_one({ :_id => self.id }, {
+      "$currentDate" => {
+        "ts" => { "$type" => "timestamp" },
+      },
+    })
   end
 end
