@@ -2,6 +2,7 @@ require_relative "../../test_helper"
 
 class TestProxyApiKeyValidationBasicAuthParsing < Minitest::Test
   include ApiUmbrellaTests::Setup
+  parallelize_me!
 
   def setup
     setup_server
@@ -89,16 +90,6 @@ class TestProxyApiKeyValidationBasicAuthParsing < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.except(:headers).deep_merge({
       :headers => {
         "Authorization" => "Basic",
-      },
-    }))
-    assert_equal(403, response.code, response.body)
-    assert_match("API_KEY_MISSING", response.body)
-  end
-
-  def test_denies_basic_scheme_without_value_with_space
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.except(:headers).deep_merge({
-      :headers => {
-        "Authorization" => "Basic ",
       },
     }))
     assert_equal(403, response.code, response.body)

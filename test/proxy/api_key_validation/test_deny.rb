@@ -2,6 +2,7 @@ require_relative "../../test_helper"
 
 class TestProxyApiKeyValidationDeny < Minitest::Test
   include ApiUmbrellaTests::Setup
+  parallelize_me!
 
   def setup
     setup_server

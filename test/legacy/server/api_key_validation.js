@@ -21,24 +21,6 @@ describe('api key validation', function() {
           done();
         });
       });
-
-      it('key works across parllel calls (testing key lookup caching behavior)', function(done) {
-        async.times(20, function(index, callback) {
-          request.get('http://localhost:9080/hello?api_key=' + this.apiKey, function(error, response, body) {
-            body.should.eql('Hello World');
-            callback();
-          });
-        }.bind(this), done);
-      });
-
-      it('key works across repeated calls (testing key lookup caching behavior)', function(done) {
-        async.timesSeries(20, function(index, callback) {
-          request.get('http://localhost:9080/hello?api_key=' + this.apiKey, function(error, response, body) {
-            body.should.eql('Hello World');
-            callback();
-          });
-        }.bind(this), done);
-      });
     });
   });
 
@@ -386,47 +368,6 @@ describe('api key validation', function() {
 
         shared.itBehavesLikeGatekeeperAllowed('/info/api-key-verification/required_email');
       });
-    });
-  });
-
-  describe('api key caching disabled', function() {
-    shared.runServer({
-      gatekeeper: {
-        api_key_cache: false,
-      }
-    }, {
-      user: { settings: { rate_limit_mode: 'unlimited' } },
-    });
-
-    it('does not cache keys locally inside each worker process', function(done) {
-      async.series([
-        function(next) {
-          // Fire off a number of parallel requests so we should hit all the
-          // individual worker processes.
-          async.timesLimit(100, 10, function(index, timesCallback) {
-            request.get('http://localhost:9080/hello?pre&api_key=' + this.apiKey, function(error, response, body) {
-              should.not.exist(error);
-              response.statusCode.should.eql(200);
-              body.should.eql('Hello World');
-              setTimeout(timesCallback, _.random(0, 5));
-            });
-          }.bind(this), next);
-        }.bind(this),
-        function(next) {
-          this.user.disabled_at = new Date();
-          this.user.save(next);
-        }.bind(this),
-        function(next) {
-          async.timesLimit(100, 10, function(index, timesCallback) {
-            request.get('http://localhost:9080/hello?post-save&api_key=' + this.apiKey, function(error, response, body) {
-              should.not.exist(error);
-              response.statusCode.should.eql(403);
-              body.should.include('API_KEY_DISABLED');
-              setTimeout(timesCallback, _.random(0, 5));
-            });
-          }.bind(this), next);
-        }.bind(this),
-      ], done);
     });
   });
 });

@@ -2,6 +2,7 @@ require_relative "../../test_helper"
 
 class TestProxyApiKeyValidationInputMethods < Minitest::Test
   include ApiUmbrellaTests::Setup
+  parallelize_me!
 
   def setup
     setup_server
@@ -52,7 +53,7 @@ class TestProxyApiKeyValidationInputMethods < Minitest::Test
   def test_prefers_query_param_over_basic_auth
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.except(:headers).deep_merge({
       :params => {
-        :api_key => "invalid",
+        :api_key => self.api_key,
       },
       :userpwd => "invalid:",
     }))
