@@ -176,11 +176,14 @@ function _M.set_url_fields(data)
   -- reflect the original URL (and not after any internal rewriting).
   if parts[2] then
     data["request_url_query"] = escape_uri_non_ascii(parts[2])
-    data["legacy_request_url_query_hash"] = ngx.decode_args(data["request_url_query"])
 
-    -- Sanitize the decoded the argument string table to prepare it for
-    -- ElasticSearch storage.
-    elasticsearch_sanitize_args(data["legacy_request_url_query_hash"])
+    if config["analytics"]["log_request_url_query_params_separately"] then
+      data["legacy_request_url_query_hash"] = ngx.decode_args(data["request_url_query"])
+
+      -- Sanitize the decoded the argument string table to prepare it for
+      -- ElasticSearch storage.
+      elasticsearch_sanitize_args(data["legacy_request_url_query_hash"])
+    end
   end
 
   data["legacy_request_url"] = data["request_url_scheme"] .. "://" .. data["request_url_host"] .. data["request_url_path"]

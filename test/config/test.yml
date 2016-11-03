@@ -6,6 +6,7 @@ https_port: 9081
 root_dir: /tmp/api-umbrella-test
 analytics:
   timezone: America/Denver
+  log_request_url_query_params_separately: true
 static_site:
   port: 13013
 nginx:
