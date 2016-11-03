@@ -1034,6 +1034,22 @@ describe('logging', function() {
     }.bind(this));
   });
 
+  it('logs requests with duplicate query parameters as comma-delimited', function(done) {
+    this.timeout(10000);
+
+    var options = _.merge({}, this.options);
+    delete options.qs;
+    request.get('http://localhost:9080/info/?unique_query_id=' + this.uniqueQueryId + '&test_dup_arg=foo&test_dup_arg=bar', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_query.test_dup_arg.should.eql('foo,bar');
+        done();
+      }.bind(this));
+    }.bind(this));
+  });
+
   describe('multiple request header handling', function() {
     var multipleForbidden = {
       'Content-Type': 'request_content_type',
@@ -1232,6 +1248,57 @@ describe('logging', function() {
     }.bind(this));
   });
 
+  it('successfully logs query strings when the field first indexed was a string, but later queries are arrays', function(done) {
+    this.timeout(10000);
+
+    var options = _.merge({}, this.options);
+    delete options.qs;
+    request.get('http://localhost:9080/info/?unique_query_id=' + this.uniqueQueryId + '&test_dup_arg_first_string=foo', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_query.test_dup_arg_first_string.should.eql('foo');
+
+        var uniqueQueryId = generateUniqueQueryId();
+        request.get('http://localhost:9080/info/?unique_query_id=' + uniqueQueryId + '&test_dup_arg_first_string=foo&test_dup_arg_first_string=bar', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          waitForLog(uniqueQueryId, function(error, response, hit, record) {
+            should.not.exist(error);
+            record.request_query.test_dup_arg_first_string.should.eql('foo,bar');
+            done();
+          }.bind(this));
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
+  });
+
+  it('successfully logs query strings when the field first indexed was a boolean, but later queries are strings', function(done) {
+    this.timeout(10000);
+
+    var options = _.merge({}, this.options);
+    delete options.qs;
+    request.get('http://localhost:9080/info/?unique_query_id=' + this.uniqueQueryId + '&test_arg_first_bool', options, function(error, response) {
+      should.not.exist(error);
+      response.statusCode.should.eql(200);
+      waitForLog(this.uniqueQueryId, function(error, response, hit, record) {
+        should.not.exist(error);
+        record.request_query.test_arg_first_bool.should.eql('true');
+
+        var uniqueQueryId = generateUniqueQueryId();
+        request.get('http://localhost:9080/info/?unique_query_id=' + uniqueQueryId + '&test_arg_first_bool=foo', options, function(error, response) {
+          should.not.exist(error);
+          response.statusCode.should.eql(200);
+          waitForLog(uniqueQueryId, function(error, response, hit, record) {
+            should.not.exist(error);
+            record.request_query.test_arg_first_bool.should.eql('foo');
+            done();
+          }.bind(this));
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
+  });
 
   it('successfully logs query strings when the field first indexed was a date, but later queries are not (does not attempt to map fields into dates)', function(done) {
     this.timeout(30000);
