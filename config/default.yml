@@ -171,6 +171,7 @@ elasticsearch:
 analytics:
   adapter: elasticsearch
   timezone: UTC
+  log_request_url_query_params_separately: false
 kylin:
   protocol: http
   host: 127.0.0.1

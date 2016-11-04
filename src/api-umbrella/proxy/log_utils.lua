@@ -107,18 +107,36 @@ local function set_url_hierarchy(data)
   end
 end
 
-local function recursive_elasticsearch_sanitize(data)
+local function elasticsearch_sanitize_args(data)
   if not data then return end
 
   for key, value in pairs(data) do
-    if type(value) == "string" then
-      -- Escaping any non-ASCII chars to prevent invalid or wonky UTF-8
-      -- sequences from generating invalid JSON that will prevent ElasticSearch
-      -- from indexing the request.
-      data[key] = escape_uri_non_ascii(value)
-    elseif type(value) == "table" then
-      recursive_elasticsearch_sanitize(value)
+    local value_type = type(value)
+    if value_type == "table" then
+      -- Flatten any arguments with array values.
+      --
+      -- These stem from duplicate argument names, like ?foo=bar&foo=baz
+      -- (resulting in { foo = { bar, baz } }). These need to be flattened into
+      -- a string value so ElasticSearch doesn't try to store these as
+      -- differing types depending on whether a single values comes in
+      -- (?foo=bar) or an array (?foo=bar&foo=baz).
+      --
+      -- ngx.decode_args doesn't support other more deeply nested tables, so we
+      -- don't need to worry about recursing.
+      value = escape_uri_non_ascii(table.concat(value, ","))
+    elseif value_type ~= "string" then
+      -- Convert any other types to strings to ensure ElasticSearch always
+      -- indexes things as a consistent type.
+      --
+      -- This helps ensure boolean arguments from ngx.decode_args (?foo,
+      -- resulting in { foo = true }), can be mixed with string types.
+      value = tostring(value)
     end
+
+    -- Escaping any non-ASCII chars to prevent invalid or wonky UTF-8
+    -- sequences from generating invalid JSON that will prevent ElasticSearch
+    -- from indexing the request.
+    data[key] = escape_uri_non_ascii(value)
 
     -- As of ElasticSearch 2, field names cannot contain dots. This affects our
     -- nested hash of query parameters, since incoming query parameters may
@@ -158,11 +176,14 @@ function _M.set_url_fields(data)
   -- reflect the original URL (and not after any internal rewriting).
   if parts[2] then
     data["request_url_query"] = escape_uri_non_ascii(parts[2])
-    data["legacy_request_url_query_hash"] = ngx.decode_args(data["request_url_query"])
 
-    -- Since we decoded the argument string to construct the table of
-    -- arguments, we now must recursively prepare it for ElasticSearch storage.
-    recursive_elasticsearch_sanitize(data["legacy_request_url_query_hash"])
+    if config["analytics"]["log_request_url_query_params_separately"] then
+      data["legacy_request_url_query_hash"] = ngx.decode_args(data["request_url_query"])
+
+      -- Sanitize the decoded the argument string table to prepare it for
+      -- ElasticSearch storage.
+      elasticsearch_sanitize_args(data["legacy_request_url_query_hash"])
+    end
   end
 
   data["legacy_request_url"] = data["request_url_scheme"] .. "://" .. data["request_url_host"] .. data["request_url_path"]

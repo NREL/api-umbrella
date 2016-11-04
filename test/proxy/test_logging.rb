@@ -251,6 +251,14 @@ class TestProxyLogging < Minitest::Test
     assert_equal("example.3", record["request_query"]["foo[bar]"])
   end
 
+  def test_requests_with_duplicate_query_params
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}&test_dup_arg=foo&test_dup_arg=bar", self.http_options)
+    assert_equal(200, response.code, response.body)
+
+    record = wait_for_log(unique_test_id)[:hit_source]
+    assert_equal("foo,bar", record["request_query"]["test_dup_arg"])
+  end
+
   def test_logs_request_at_as_date
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
       :params => {
@@ -335,6 +343,33 @@ class TestProxyLogging < Minitest::Test
     assert_equal(200, response.code, response.body)
     record = wait_for_log("#{unique_test_id}-3")[:hit_source]
     assert_equal("foo", record["request_query"]["date_field"])
+  end
+
+  # Does not attempt to automatically map the values into an array, which would
+  # conflict with the first-seen string type.
+  def test_duplicate_query_params_treated_as_strings
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-1&test_dup_arg_first_string=foo", self.http_options)
+    assert_equal(200, response.code, response.body)
+    record = wait_for_log("#{unique_test_id}-1")[:hit_source]
+    assert_equal("foo", record["request_query"]["test_dup_arg_first_string"])
+
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-2&test_dup_arg_first_string=foo&test_dup_arg_first_string=bar", self.http_options)
+    assert_equal(200, response.code, response.body)
+    record = wait_for_log("#{unique_test_id}-2")[:hit_source]
+    assert_equal("foo,bar", record["request_query"]["test_dup_arg_first_string"])
+  end
+
+  # Does not attempt to automatically map the first seen value into a boolean.
+  def test_boolean_query_params_treated_as_strings
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-1&test_arg_first_bool", self.http_options)
+    assert_equal(200, response.code, response.body)
+    record = wait_for_log("#{unique_test_id}-1")[:hit_source]
+    assert_equal("true", record["request_query"]["test_arg_first_bool"])
+
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-2&test_arg_first_bool=foo", self.http_options)
+    assert_equal(200, response.code, response.body)
+    record = wait_for_log("#{unique_test_id}-2")[:hit_source]
+    assert_equal("foo", record["request_query"]["test_arg_first_bool"])
   end
 
   # Does not attempt to automatically map the first seen value into a number.
