@@ -129,8 +129,10 @@ module ApiUmbrellaTests
     end
 
     def prepend_api_backends(apis)
-      apis.each_with_index do |api, index|
-        api["_id"] = "#{unique_test_id}-#{index}"
+      @prepend_api_backends_counter ||= 0
+      apis.each do |api|
+        @prepend_api_backends_counter += 1
+        api["_id"] = "#{unique_test_id}-#{@prepend_api_backends_counter}"
       end
 
       self.api_config_mutex.synchronize do
