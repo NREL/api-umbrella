@@ -1,0 +1,46 @@
+require_relative "../../test_helper"
+
+class TestProxyFormattedErrorsInvalidTemplates < Minitest::Test
+  include ApiUmbrellaTests::Setup
+  parallelize_me!
+
+  def setup
+    setup_server
+    once_per_class_setup do
+      prepend_api_backends([
+        {
+          :frontend_host => "127.0.0.1",
+          :backend_host => "127.0.0.1",
+          :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+          :url_matches => [{ :frontend_prefix => "/#{unique_test_class_id}/", :backend_prefix => "/" }],
+          :settings => {
+            :error_data => {
+              :api_key_missing => {
+                :newvar => "foo",
+                :message => "new message",
+              },
+            },
+            :error_templates => {
+              :json => '{ "unknown": {{bogusvar}} }',
+              :xml => "<invalid>{{oops}</invalid>",
+            },
+          },
+        },
+      ])
+    end
+  end
+
+  def test_undefined_variables_empty_space
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.json", self.http_options.except(:headers))
+    assert_equal(403, response.code, response.body)
+    assert_equal("application/json", response.headers["content-type"])
+    assert_equal('{ "unknown":  }', response.body)
+  end
+
+  def test_internal_server_error_when_parsing_errors
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.xml", self.http_options.except(:headers))
+    assert_equal(500, response.code, response.body)
+    assert_equal("text/plain", response.headers["content-type"])
+    assert_equal("Internal Server Error", response.body)
+  end
+end

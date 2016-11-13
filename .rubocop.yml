@@ -1,4 +1,5 @@
 AllCops:
+  TargetRubyVersion: 2.3
   Exclude:
     - bin/**/*
     - tmp/**/*
@@ -11,9 +12,6 @@ Lint/AssignmentInCondition:
   AllowSafeAssignment: false
 
 Lint/LiteralInInterpolation:
-  Enabled: false
-
-Style/NumericLiterals:
   Enabled: false
 
 Lint/UnusedBlockArgument:
@@ -89,6 +87,9 @@ Style/EmptyElse:
 Style/Encoding:
   Enabled: false
 
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
 Style/GuardClause:
   Enabled: false
 
@@ -114,6 +115,9 @@ Style/NegatedIf:
   Enabled: false
 
 Style/Next:
+  Enabled: false
+
+Style/NumericLiterals:
   Enabled: false
 
 Style/NumericPredicate:
