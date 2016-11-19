@@ -53,13 +53,13 @@ class TestProxyApiKeyValidationOptionalKeys < Minitest::Test
   end
 
   def test_required_by_default
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", keyless_http_options)
     assert_equal(403, response.code, response.body)
     assert_match("API_KEY_MISSING", response.body)
   end
 
   def test_disabled_for_specific_backend
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello", keyless_http_options)
     assert_equal(200, response.code, response.body)
     assert_equal("Hello World", response.body)
   end
@@ -83,39 +83,39 @@ class TestProxyApiKeyValidationOptionalKeys < Minitest::Test
   end
 
   def test_sub_url_settings_inherits_when_null
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/inherit", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/inherit", keyless_http_options)
     assert_equal(200, response.code, response.body)
     assert_equal("Hello World", response.body)
   end
 
   def test_sub_url_settings_overrides_parent_settings
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/nevermind", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/nevermind", keyless_http_options)
     assert_equal(403, response.code, response.body)
     assert_match("API_KEY_MISSING", response.body)
   end
 
   def test_sub_url_settings_matches_in_order
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/nevermind?force_disabled=true", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/nevermind?force_disabled=true", keyless_http_options)
     assert_equal(200, response.code, response.body)
     assert_equal("Hello World", response.body)
   end
 
   def test_sub_url_settings_matches_based_on_http_method
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/post-required", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/post-required", keyless_http_options)
     assert_equal(200, response.code, response.body)
     assert_equal("Hello World", response.body)
 
-    response = Typhoeus.post("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/post-required", http_options.except(:headers))
+    response = Typhoeus.post("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/post-required", keyless_http_options)
     assert_equal(403, response.code, response.body)
     assert_match("API_KEY_MISSING", response.body)
   end
 
   def test_sub_url_settings_do_not_affect_subsequent_parent_calls
-    response = Typhoeus.post("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/post-required", http_options.except(:headers))
+    response = Typhoeus.post("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello/post-required", keyless_http_options)
     assert_equal(403, response.code, response.body)
     assert_match("API_KEY_MISSING", response.body)
 
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-keys/hello", keyless_http_options)
     assert_equal(200, response.code, response.body)
     assert_equal("Hello World", response.body)
   end

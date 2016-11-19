@@ -9,7 +9,7 @@ class TestProxyApiKeyValidationDeny < Minitest::Test
   end
 
   def test_no_api_key
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", keyless_http_options)
     assert_equal(403, response.code, response.body)
     assert_match("API_KEY_MISSING", response.body)
   end

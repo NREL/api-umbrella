@@ -75,7 +75,7 @@ class TestProxyRequestRewritingAddsUserIdHeader < Minitest::Test
         },
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-keys-optional/info/", http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-keys-optional/info/", keyless_http_options)
       assert_equal(200, response.code, response.body)
       data = MultiJson.load(response.body)
       refute(data["headers"]["x-api-user-id"])

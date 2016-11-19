@@ -31,7 +31,7 @@ class TestProxyRequestRewritingPassApiKeyQueryParam < Minitest::Test
   end
 
   def test_api_key_given_in_query
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/pass-api-key-header/info/?api_key=#{self.api_key}", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/pass-api-key-header/info/?api_key=#{self.api_key}", keyless_http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({ "api_key" => self.api_key }, data["url"]["query"])
@@ -39,7 +39,7 @@ class TestProxyRequestRewritingPassApiKeyQueryParam < Minitest::Test
   end
 
   def test_api_key_given_in_basic_auth
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/pass-api-key-header/info/", http_options.except(:headers).deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/pass-api-key-header/info/", keyless_http_options.deep_merge({
       :userpwd => "#{self.api_key}:",
     }))
     assert_equal(200, response.code, response.body)

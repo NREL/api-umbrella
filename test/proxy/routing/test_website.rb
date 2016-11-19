@@ -9,23 +9,23 @@ class TestProxyRoutingWebsite < Minitest::Test
   end
 
   def test_default_website
-    response = Typhoeus.get("http://127.0.0.1:9080/", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options)
     assert_equal(200, response.code, response.body)
     assert_match("Your API Site Name", response.body)
 
-    response = Typhoeus.get("https://127.0.0.1:9081/signup/", http_options.except(:headers))
+    response = Typhoeus.get("https://127.0.0.1:9081/signup/", keyless_http_options)
     assert_equal(200, response.code, response.body)
     assert_match("API Key Signup", response.body)
   end
 
   def test_signup_https_redirect
-    response = Typhoeus.get("http://127.0.0.1:9080/signup/", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/signup/", keyless_http_options)
     assert_equal(301, response.code, response.body)
     assert_equal("https://127.0.0.1:9081/signup/", response.headers["location"])
   end
 
   def test_signup_https_redirect_wildcard_host
-    response = Typhoeus.get("http://127.0.0.1:9080/signup/", http_options.except(:headers).deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/signup/", keyless_http_options.deep_merge({
       :headers => {
         "Host" => "unknown.foo",
       },
@@ -35,7 +35,7 @@ class TestProxyRoutingWebsite < Minitest::Test
   end
 
   def test_signup_missing_trailing_slash
-    http_opts = http_options.except(:headers)
+    http_opts = keyless_http_options
 
     response = Typhoeus.get("http://127.0.0.1:9080/signup", http_opts)
     assert_equal(301, response.code, response.body)
@@ -47,7 +47,7 @@ class TestProxyRoutingWebsite < Minitest::Test
   end
 
   def test_signup_missing_trailing_slash_wildcard_host
-    http_opts = http_options.except(:headers).deep_merge({
+    http_opts = keyless_http_options.deep_merge({
       :headers => {
         "Host" => "unknown.foo",
       },

@@ -24,16 +24,16 @@ class TestProxyFormattedErrorsTemplates < Minitest::Test
       :html => %( \n\n  <html><body><h1>{{code}}</h1></body></html> \n\n  ),
     })
     prepend_api_backends([@api]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
       assert_equal('{ "code": "API_KEY_MISSING" }', response.body)
 
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.xml", http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.xml", keyless_http_options)
       assert_equal('<?xml version="1.0" encoding="UTF-8"?><code>API_KEY_MISSING</code>', response.body)
 
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.csv", http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.csv", keyless_http_options)
       assert_equal(%(Code\n"API_KEY_MISSING"), response.body)
 
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.html", http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.html", keyless_http_options)
       assert_equal("<html><body><h1>API_KEY_MISSING</h1></body></html>", response.body)
     end
   end
@@ -42,7 +42,7 @@ class TestProxyFormattedErrorsTemplates < Minitest::Test
     @api[:settings][:error_data] = {}
     @api[:settings][:error_templates] = {}
     prepend_api_backends([@api]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
       assert_json_error(response)
       data = MultiJson.load(response.body)
       assert_equal(["error"].sort, data.keys.sort)

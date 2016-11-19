@@ -8,6 +8,7 @@ module ApiUmbrellaTestHelpers
     mattr_reader :api_user
     mattr_reader :api_key
     mattr_reader :http_options
+    mattr_reader :keyless_http_options
     mattr_accessor :start_complete
     mattr_accessor :setup_complete
     mattr_accessor(:setup_mutex) { Mutex.new }
@@ -111,6 +112,7 @@ module ApiUmbrellaTestHelpers
               "X-Api-Key" => user["api_key"],
             }.freeze,
           }.freeze
+          @@keyless_http_options = @@http_options.except(:headers).freeze
 
           self.setup_complete = true
         end

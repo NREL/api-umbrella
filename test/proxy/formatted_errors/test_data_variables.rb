@@ -70,7 +70,7 @@ class TestProxyFormattedErrorsDataVariables < Minitest::Test
   end
 
   def test_variables
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello", keyless_http_options)
     assert_json_error(response)
     data = MultiJson.load(response.body)
     assert_equal("http://127.0.0.1:9080", data["base_url"])
@@ -79,7 +79,7 @@ class TestProxyFormattedErrorsDataVariables < Minitest::Test
   end
 
   def test_legacy_camel_case
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello", keyless_http_options)
     assert_json_error(response)
     data = MultiJson.load(response.body)
     assert_equal("http://127.0.0.1:9080", data["baseUrl"])
@@ -88,21 +88,21 @@ class TestProxyFormattedErrorsDataVariables < Minitest::Test
   end
 
   def test_variables_inside_other_variables
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello", keyless_http_options)
     assert_json_error(response)
     data = MultiJson.load(response.body)
     assert_equal("base_url: http://127.0.0.1:9080 signup_url: http://127.0.0.1:9080 contact_url: http://127.0.0.1:9080/contact/", data["embedded"])
   end
 
   def test_legacy_camel_case_variables_inside_other_variables
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello", keyless_http_options)
     assert_json_error(response)
     data = MultiJson.load(response.body)
     assert_equal("baseUrl: http://127.0.0.1:9080 signupUrl: http://127.0.0.1:9080 contactUrl: http://127.0.0.1:9080/contact/", data["embedded_legacy"])
   end
 
   def test_escapes_json_values
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.json", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.json", keyless_http_options)
     assert_json_error(response)
     data = MultiJson.load(response.body)
     assert(@@escape_test_value)
@@ -110,7 +110,7 @@ class TestProxyFormattedErrorsDataVariables < Minitest::Test
   end
 
   def test_escapes_xml_values
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.xml", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.xml", keyless_http_options)
     assert_xml_error(response)
     doc = REXML::Document.new(response.body)
     assert(@@escape_test_value)
@@ -118,7 +118,7 @@ class TestProxyFormattedErrorsDataVariables < Minitest::Test
   end
 
   def test_escapes_html_values
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.html", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.html", keyless_http_options)
     assert_html_error(response)
     doc = REXML::Document.new(response.body)
     assert(@@escape_test_value)
@@ -126,7 +126,7 @@ class TestProxyFormattedErrorsDataVariables < Minitest::Test
   end
 
   def test_escapes_csv_values
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.csv", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.csv", keyless_http_options)
     assert_csv_error(response)
     data = CSV.parse(response.body)
     assert(@@escape_test_value)
@@ -153,7 +153,7 @@ class TestProxyFormattedErrorsDataVariables < Minitest::Test
         },
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
       assert_equal(403, response.code, response.body)
       assert_equal("application/json", response.headers["content-type"])
       data = MultiJson.load(response.body)

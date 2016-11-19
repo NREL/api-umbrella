@@ -17,35 +17,35 @@ class TestProxyRequestRewritingStripsApiKeys < Minitest::Test
   end
 
   def test_strips_api_key_from_query
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?api_key=#{self.api_key}", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?api_key=#{self.api_key}", keyless_http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({}, data["url"]["query"])
   end
 
   def test_strips_api_key_from_start_of_query
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?api_key=#{self.api_key}&test=value", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?api_key=#{self.api_key}&test=value", keyless_http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({ "test" => "value" }, data["url"]["query"])
   end
 
   def test_strips_api_key_from_end_of_query
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?test=value&api_key=#{self.api_key}", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?test=value&api_key=#{self.api_key}", keyless_http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({ "test" => "value" }, data["url"]["query"])
   end
 
   def test_strips_api_key_from_middle_of_query
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?test=value&api_key=#{self.api_key}&foo=bar", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?test=value&api_key=#{self.api_key}&foo=bar", keyless_http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({ "test" => "value", "foo" => "bar" }, data["url"]["query"])
   end
 
   def test_strips_repeated_api_key_in_query
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?api_key=#{self.api_key}&api_key=foo&test=value&api_key=bar", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?api_key=#{self.api_key}&api_key=foo&test=value&api_key=bar", keyless_http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({ "test" => "value" }, data["url"]["query"])
@@ -73,14 +73,14 @@ class TestProxyRequestRewritingStripsApiKeys < Minitest::Test
   end
 
   def test_strips_api_key_from_invalid_encoded_query
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?test=foo%26%20bar&url=%ED%A1%BC&api_key=#{self.api_key}", http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/?test=foo%26%20bar&url=%ED%A1%BC&api_key=#{self.api_key}", keyless_http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({ "url" => "\xED\xA1\xBC", "test" => "foo& bar" }, data["url"]["query"])
   end
 
   def test_strips_api_key_from_basic_auth
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.except(:headers).deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", keyless_http_options.deep_merge({
       :userpwd => "#{self.api_key}:",
     }))
     assert_equal(200, response.code, response.body)
