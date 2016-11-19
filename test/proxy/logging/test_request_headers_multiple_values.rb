@@ -64,7 +64,7 @@ class TestProxyLoggingRequestHeadersMultipleValues < Minitest::Test
     header_list = Ethon::Curl.slist_append(header_list, "#{header}: 11")
     header_list = Ethon::Curl.slist_append(header_list, "#{header}: 22")
     raw_request_headers = ""
-    response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-request-headers/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-request-headers/", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
         :header => header,

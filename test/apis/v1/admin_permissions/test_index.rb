@@ -9,7 +9,7 @@ class TestApisV1AdminPermissionsIndex < Minitest::Capybara::Test
   end
 
   def test_all_permissions_in_display_order
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_permissions.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_permissions.json", http_options.deep_merge(admin_token))
 
     data = MultiJson.load(response.body)
     permission_names = data["admin_permissions"].map { |permission| permission["name"] }

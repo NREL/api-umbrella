@@ -20,7 +20,7 @@ class TestProxyCachingHttpMethods < Minitest::Test
   def test_caches_head_when_get_made_first
     assert_cacheable("/api/cacheable-cache-control-max-age/", :method => "GET")
 
-    response = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/", @@http_options.deep_merge({
+    response = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/", http_options.deep_merge({
       :method => "HEAD",
       :params => {
         :unique_test_id => unique_test_id,

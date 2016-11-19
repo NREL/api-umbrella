@@ -20,14 +20,14 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
     admin = FactoryGirl.create(:localhost_root_admin)
 
     attributes = record.serializable_hash
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :website_backend => attributes },
     }))
     assert_equal(204, response.code, response.body)
 
     attributes["frontend_host"] = "example.com"
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :website_backend => attributes },
     }))
@@ -44,14 +44,14 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
     admin = FactoryGirl.create(:localhost_root_admin)
 
     attributes = record.serializable_hash
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :website_backend => attributes },
     }))
     assert_equal(403, response.code, response.body)
 
     attributes["frontend_host"] = "localhost"
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :website_backend => attributes },
     }))
@@ -83,7 +83,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
 
   def assert_admin_permitted_index(factory, admin)
     record = FactoryGirl.create(factory)
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", @@http_options.deep_merge(admin_token(admin)))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", http_options.deep_merge(admin_token(admin)))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
@@ -93,7 +93,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
 
   def assert_admin_forbidden_index(factory, admin)
     record = FactoryGirl.create(factory)
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", @@http_options.deep_merge(admin_token(admin)))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", http_options.deep_merge(admin_token(admin)))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
@@ -103,7 +103,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
 
   def assert_admin_permitted_show(factory, admin)
     record = FactoryGirl.create(factory)
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
@@ -112,7 +112,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
 
   def assert_admin_forbidden_show(factory, admin)
     record = FactoryGirl.create(factory)
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
     assert_equal(403, response.code, response.body)
     data = MultiJson.load(response.body)
@@ -122,7 +122,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
   def assert_admin_permitted_create(factory, admin)
     attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys
     initial_count = active_count
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :website_backend => attributes },
     }))
@@ -137,7 +137,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
   def assert_admin_forbidden_create(factory, admin)
     attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys
     initial_count = active_count
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :website_backend => attributes },
     }))
@@ -153,7 +153,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
 
     attributes = record.serializable_hash
     attributes["server_host"] += rand(999_999).to_s
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :website_backend => attributes },
     }))
@@ -169,7 +169,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
 
     attributes = record.serializable_hash
     attributes["server_host"] += rand(999_999).to_s
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :website_backend => attributes },
     }))
@@ -186,7 +186,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
   def assert_admin_permitted_destroy(factory, admin)
     record = FactoryGirl.create(factory)
     initial_count = active_count
-    response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)))
+    response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
     assert_equal(204, response.code, response.body)
     assert_equal(-1, active_count - initial_count)
   end
@@ -194,7 +194,7 @@ class TestApisV1WebsiteBackendsAdminPermissions < Minitest::Capybara::Test
   def assert_admin_forbidden_destroy(factory, admin)
     record = FactoryGirl.create(factory)
     initial_count = active_count
-    response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)))
+    response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
     assert_equal(403, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)

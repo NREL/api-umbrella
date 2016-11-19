@@ -23,7 +23,7 @@ class TestApisV1ApiUpdateCustomRateLimits < Minitest::Capybara::Test
     attributes["settings"]["rate_limits"][0]["limit"] = 50
     attributes["settings"]["rate_limits"][1]["limit"] = 75
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => attributes),
     }))
@@ -52,7 +52,7 @@ class TestApisV1ApiUpdateCustomRateLimits < Minitest::Capybara::Test
       FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000, :limit => 5),
     ]
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => attributes),
     }))

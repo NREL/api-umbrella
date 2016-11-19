@@ -9,13 +9,13 @@ class TestProxyRoutingAdmin < Minitest::Test
   end
 
   def test_https_redirect
-    response = Typhoeus.get("http://127.0.0.1:9080/admin/login", self.http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/admin/login", http_options.except(:headers))
     assert_equal(301, response.code, response.body)
     assert_equal("https://127.0.0.1:9081/admin/login", response.headers["location"])
   end
 
   def test_https_redirect_wildcard_host
-    response = Typhoeus.get("http://127.0.0.1:9080/admin/login", self.http_options.except(:headers).deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/admin/login", http_options.except(:headers).deep_merge({
       :headers => {
         "Host" => "unknown.foo",
       },
@@ -25,7 +25,7 @@ class TestProxyRoutingAdmin < Minitest::Test
   end
 
   def test_missing_trailing_slash
-    http_opts = self.http_options.except(:headers)
+    http_opts = http_options.except(:headers)
 
     response = Typhoeus.get("http://127.0.0.1:9080/admin", http_opts)
     assert_equal(301, response.code, response.body)
@@ -37,7 +37,7 @@ class TestProxyRoutingAdmin < Minitest::Test
   end
 
   def test_missing_trailing_slash_wildcard_host
-    http_opts = self.http_options.except(:headers).deep_merge({
+    http_opts = http_options.except(:headers).deep_merge({
       :headers => {
         "Host" => "unknown.foo",
       },
@@ -61,7 +61,7 @@ class TestProxyRoutingAdmin < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/admin/", :backend_prefix => "/info/" }],
       },
     ]) do
-      response = Typhoeus.get("https://127.0.0.1:9081/admin/login", self.http_options.except(:headers))
+      response = Typhoeus.get("https://127.0.0.1:9081/admin/login", http_options.except(:headers))
       assert_equal(200, response.code, response.body)
       assert_match("Admin Login", response.body)
     end

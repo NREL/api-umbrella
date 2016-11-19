@@ -244,13 +244,13 @@ class TestProxyApiKeyValidationBasicAuthParsing < Minitest::Test
   end
 
   def test_api_requiring_key_and_roles_given_no_key
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/required-roles/", self.http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/required-roles/", http_options.except(:headers))
     assert_equal(403, response.code, response.body)
     assert_match("API_KEY_MISSING", response.body)
   end
 
   def test_api_requiring_roles_not_key_given_no_key
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-key/", self.http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/no-key/", http_options.except(:headers))
     assert_equal(403, response.code, response.body)
     assert_match("API_KEY_UNAUTHORIZED", response.body)
   end
@@ -265,7 +265,7 @@ class TestProxyApiKeyValidationBasicAuthParsing < Minitest::Test
   end
 
   def test_api_requiring_roles_sub_settings_disables_key_given_no_key
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/required-roles/hello/sub-no-key-required/", self.http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/required-roles/hello/sub-no-key-required/", http_options.except(:headers))
     assert_equal(403, response.code, response.body)
     assert_match("API_KEY_UNAUTHORIZED", response.body)
   end
@@ -282,7 +282,7 @@ class TestProxyApiKeyValidationBasicAuthParsing < Minitest::Test
   private
 
   def assert_unauthorized(path, key)
-    response = Typhoeus.get("http://127.0.0.1:9080#{path}", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
       :headers => {
         "X-Api-Key" => key,
       },
@@ -292,7 +292,7 @@ class TestProxyApiKeyValidationBasicAuthParsing < Minitest::Test
   end
 
   def assert_authorized(path, key)
-    response = Typhoeus.get("http://127.0.0.1:9080#{path}", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
       :headers => {
         "X-Api-Key" => key,
       },

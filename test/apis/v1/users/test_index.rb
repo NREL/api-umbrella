@@ -12,7 +12,7 @@ class TestApisV1UsersIndex < Minitest::Capybara::Test
   def test_paginate_results
     FactoryGirl.create_list(:api_user, 10)
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json?length=2", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json?length=2", http_options.deep_merge(admin_token))
     assert_equal(200, response.code, response.body)
 
     user_count = ApiUser.where(:deleted_at => nil).count
@@ -27,7 +27,7 @@ class TestApisV1UsersIndex < Minitest::Capybara::Test
   def test_includes_api_key_preview_not_full_api_key
     api_user = FactoryGirl.create(:api_user)
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token))
     assert_equal(200, response.code, response.body)
 
     data = MultiJson.load(response.body)
@@ -74,7 +74,7 @@ class TestApisV1UsersIndex < Minitest::Capybara::Test
   end
 
   def assert_wildcard_case_insensitive_search_match(field, value, search, api_user)
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :search => { :value => search },
       },
@@ -87,7 +87,7 @@ class TestApisV1UsersIndex < Minitest::Capybara::Test
   end
 
   def refute_wildcard_case_insensitive_search_match(field, value, search, api_user)
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :search => { :value => search },
       },

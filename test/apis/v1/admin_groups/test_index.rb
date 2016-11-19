@@ -15,7 +15,7 @@ class TestApisV1AdminGroupsIndex < Minitest::Capybara::Test
       group,
     ])
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", http_options.deep_merge(admin_token))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
@@ -32,7 +32,7 @@ class TestApisV1AdminGroupsIndex < Minitest::Capybara::Test
       group,
     ])
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", http_options.deep_merge(admin_token))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
@@ -43,7 +43,7 @@ class TestApisV1AdminGroupsIndex < Minitest::Capybara::Test
   def test_admin_usernames_empty
     FactoryGirl.create(:admin_group)
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", http_options.deep_merge(admin_token))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)

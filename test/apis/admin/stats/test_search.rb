@@ -18,7 +18,7 @@ class TestAdminStatsSearch < Minitest::Capybara::Test
     end
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", @@http_options.deep_merge(admin_session).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -52,7 +52,7 @@ class TestAdminStatsSearch < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", @@http_options.deep_merge(admin_session).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -88,7 +88,7 @@ class TestAdminStatsSearch < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", @@http_options.deep_merge(admin_session).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -130,7 +130,7 @@ class TestAdminStatsSearch < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", @@http_options.deep_merge(admin_session).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -166,7 +166,7 @@ class TestAdminStatsSearch < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", @@http_options.deep_merge(admin_session).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",

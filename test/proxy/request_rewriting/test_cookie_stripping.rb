@@ -9,7 +9,7 @@ class TestProxyRequestRewritingCookieStripping < Minitest::Test
   end
 
   def test_removes_cookie_when_only_single_analytics_present
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
         "Cookie" => "__utma=foo",
       },
@@ -20,7 +20,7 @@ class TestProxyRequestRewritingCookieStripping < Minitest::Test
   end
 
   def test_removes_cookie_when_only_multiple_analytics_present
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
         "Cookie" => "__utma=foo; __utmz=bar; _ga=foo",
       },
@@ -31,7 +31,7 @@ class TestProxyRequestRewritingCookieStripping < Minitest::Test
   end
 
   def test_removes_only_analytics_cookies
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
         "Cookie" => "__utma=foo; moo=boo; __utmz=bar; foo=bar; _ga=foo",
       },
@@ -42,7 +42,7 @@ class TestProxyRequestRewritingCookieStripping < Minitest::Test
   end
 
   def test_parses_cookies_with_variable_whitespace
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
         "Cookie" => "__utma=foo;moo=boo;    __utmz=bar;    foo=bar;_ga=foo",
       },
@@ -53,7 +53,7 @@ class TestProxyRequestRewritingCookieStripping < Minitest::Test
   end
 
   def test_leaves_cookie_alone_without_analytics
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
         "Cookie" => "foo=bar; moo=boo",
       },

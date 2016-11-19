@@ -127,7 +127,7 @@ class TestProxyHttpsRequirements < Minitest::Test
         },
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/required/hello/?foo=bar&test1=test2", self.http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/required/hello/?foo=bar&test1=test2", http_options.deep_merge({
         :headers => {
           "Host" => "https.foo",
         },
@@ -141,7 +141,7 @@ class TestProxyHttpsRequirements < Minitest::Test
   private
 
   def assert_https_allowed(path, key = nil)
-    response = Typhoeus.get("https://127.0.0.1:9081#{path}", self.http_options.deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081#{path}", http_options.deep_merge({
       :headers => {
         "X-Api-Key" => key || self.api_key,
       },
@@ -150,7 +150,7 @@ class TestProxyHttpsRequirements < Minitest::Test
   end
 
   def assert_http_allowed(path, key = nil)
-    response = Typhoeus.get("http://127.0.0.1:9080#{path}", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
       :headers => {
         "X-Api-Key" => key || self.api_key,
       },
@@ -160,7 +160,7 @@ class TestProxyHttpsRequirements < Minitest::Test
   end
 
   def assert_http_error(path, key = nil)
-    response = Typhoeus.get("http://127.0.0.1:9080#{path}", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
       :headers => {
         "X-Api-Key" => key || self.api_key,
       },

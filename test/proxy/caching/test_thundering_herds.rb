@@ -48,7 +48,7 @@ class TestProxyCachingThunderingHerds < Minitest::Test
   private
 
   def make_thundering_herd_requests(path, options = {})
-    http_opts = self.http_options.deep_merge(options).deep_merge({
+    http_opts = http_options.deep_merge(options).deep_merge({
       :params => {
         :unique_test_id => unique_test_id,
       },

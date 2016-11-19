@@ -49,7 +49,7 @@ class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
 
     hydra = Typhoeus::Hydra.new
     requests = Array.new(20) do
-      request = Typhoeus::Request.new("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+      request = Typhoeus::Request.new("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
         :headers => {
           "X-Api-Key" => user.api_key,
         },
@@ -71,7 +71,7 @@ class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
     })
 
     20.times do
-      response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
         :headers => {
           "X-Api-Key" => user.api_key,
         },
@@ -120,7 +120,7 @@ class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
     begin
       Timeout.timeout(10) do
         loop do
-          request = Typhoeus::Request.new("http://127.0.0.1:9080/api/info/?#{unique_test_id}-#{step}", self.http_options.deep_merge({
+          request = Typhoeus::Request.new("http://127.0.0.1:9080/api/info/?#{unique_test_id}-#{step}", http_options.deep_merge({
             :headers => {
               "X-Api-Key" => api_key,
               # Return debug information on the responses about which nginx

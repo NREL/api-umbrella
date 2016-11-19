@@ -38,7 +38,7 @@ class TestProxyRequestRewritingSetsHeadersDynamicValues < Minitest::Test
   end
 
   def test_if_statements
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", http_options.deep_merge({
       :headers => {
         "X-Dynamic-Source" => "dynamic",
       },
@@ -55,7 +55,7 @@ class TestProxyRequestRewritingSetsHeadersDynamicValues < Minitest::Test
   end
 
   def test_inverted_statements
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", http_options.deep_merge({
       :headers => {
         "X-Missing" => "not-missing",
       },
@@ -72,7 +72,7 @@ class TestProxyRequestRewritingSetsHeadersDynamicValues < Minitest::Test
   end
 
   def test_sub_url_settings_overrides_parent_settings
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/sub/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/sub/", http_options.deep_merge({
       :headers => {
         "X-Dynamic-Source" => "dynamic",
       },

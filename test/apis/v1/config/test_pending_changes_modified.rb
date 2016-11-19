@@ -15,7 +15,7 @@ class TestApisV1ConfigPendingChangesModified < Minitest::Capybara::Test
   end
 
   def test_modified_if_changes_since_publish
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
@@ -26,7 +26,7 @@ class TestApisV1ConfigPendingChangesModified < Minitest::Capybara::Test
   end
 
   def test_expected_output_for_modified_apis
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)

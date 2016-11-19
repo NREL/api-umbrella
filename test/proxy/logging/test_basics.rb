@@ -17,7 +17,7 @@ class TestProxyLoggingBasics < Minitest::Test
     param_url3 = param_url3_prefix + param_url3_invalid_suffix
 
     url = "http://127.0.0.1:9080/api/logging-example/foo/bar/?unique_query_id=#{unique_test_id}&url1=#{param_url1}&url2=#{param_url2}&url3=#{param_url3}"
-    response = Typhoeus.get(url, self.http_options.deep_merge({
+    response = Typhoeus.get(url, http_options.deep_merge({
       :headers => {
         "Accept" => "text/plain; q=0.5, text/html",
         "Accept-Encoding" => "compress, gzip",
@@ -139,7 +139,7 @@ class TestProxyLoggingBasics < Minitest::Test
   end
 
   def test_logs_extra_fields_for_chunked_or_gzip
-    response = Typhoeus.get("http://127.0.0.1:9080/api/compressible-delayed-chunked/5", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/compressible-delayed-chunked/5", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -153,7 +153,7 @@ class TestProxyLoggingBasics < Minitest::Test
   end
 
   def test_logs_accept_encoding_header_prior_to_normalization
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -168,7 +168,7 @@ class TestProxyLoggingBasics < Minitest::Test
   end
 
   def test_logs_external_connection_header_not_internal
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -191,7 +191,7 @@ class TestProxyLoggingBasics < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello", self.http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello", http_options.deep_merge({
         :params => {
           :unique_query_id => unique_test_id,
         },
@@ -207,7 +207,7 @@ class TestProxyLoggingBasics < Minitest::Test
   end
 
   def test_logs_request_schema_for_direct_hits
-    response = Typhoeus.get("https://127.0.0.1:9081/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -219,7 +219,7 @@ class TestProxyLoggingBasics < Minitest::Test
   end
 
   def test_logs_request_schema_from_forwarded_header
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -235,7 +235,7 @@ class TestProxyLoggingBasics < Minitest::Test
 
   # For Elasticsearch 2 compatibility
   def test_requests_with_dots_in_query_params
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
         "foo.bar.baz" => "example.1",
@@ -252,7 +252,7 @@ class TestProxyLoggingBasics < Minitest::Test
   end
 
   def test_requests_with_duplicate_query_params
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}&test_dup_arg=foo&test_dup_arg=bar", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}&test_dup_arg=foo&test_dup_arg=bar", http_options)
     assert_equal(200, response.code, response.body)
 
     record = wait_for_log(unique_test_id)[:hit_source]
@@ -260,7 +260,7 @@ class TestProxyLoggingBasics < Minitest::Test
   end
 
   def test_logs_request_at_as_date
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -291,7 +291,7 @@ class TestProxyLoggingBasics < Minitest::Test
 
   def test_request_at_is_time_request_finishes_not_starts
     request_start = Time.now.utc
-    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/3000", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/3000", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -314,7 +314,7 @@ class TestProxyLoggingBasics < Minitest::Test
 
   # Does not attempt to automatically map the first seen value into a date.
   def test_dates_in_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => "#{unique_test_id}-1",
         :date_field => "2010-05-01",
@@ -324,7 +324,7 @@ class TestProxyLoggingBasics < Minitest::Test
     record = wait_for_log("#{unique_test_id}-1")[:hit_source]
     assert_equal("2010-05-01", record["request_query"]["date_field"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => "#{unique_test_id}-2",
         :date_field => "2010-05-0",
@@ -334,7 +334,7 @@ class TestProxyLoggingBasics < Minitest::Test
     record = wait_for_log("#{unique_test_id}-2")[:hit_source]
     assert_equal("2010-05-0", record["request_query"]["date_field"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => "#{unique_test_id}-3",
         :date_field => "foo",
@@ -348,12 +348,12 @@ class TestProxyLoggingBasics < Minitest::Test
   # Does not attempt to automatically map the values into an array, which would
   # conflict with the first-seen string type.
   def test_duplicate_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-1&test_dup_arg_first_string=foo", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-1&test_dup_arg_first_string=foo", http_options)
     assert_equal(200, response.code, response.body)
     record = wait_for_log("#{unique_test_id}-1")[:hit_source]
     assert_equal("foo", record["request_query"]["test_dup_arg_first_string"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-2&test_dup_arg_first_string=foo&test_dup_arg_first_string=bar", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-2&test_dup_arg_first_string=foo&test_dup_arg_first_string=bar", http_options)
     assert_equal(200, response.code, response.body)
     record = wait_for_log("#{unique_test_id}-2")[:hit_source]
     assert_equal("foo,bar", record["request_query"]["test_dup_arg_first_string"])
@@ -361,12 +361,12 @@ class TestProxyLoggingBasics < Minitest::Test
 
   # Does not attempt to automatically map the first seen value into a boolean.
   def test_boolean_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-1&test_arg_first_bool", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-1&test_arg_first_bool", http_options)
     assert_equal(200, response.code, response.body)
     record = wait_for_log("#{unique_test_id}-1")[:hit_source]
     assert_equal("true", record["request_query"]["test_arg_first_bool"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-2&test_arg_first_bool=foo", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-2&test_arg_first_bool=foo", http_options)
     assert_equal(200, response.code, response.body)
     record = wait_for_log("#{unique_test_id}-2")[:hit_source]
     assert_equal("foo", record["request_query"]["test_arg_first_bool"])
@@ -374,7 +374,7 @@ class TestProxyLoggingBasics < Minitest::Test
 
   # Does not attempt to automatically map the first seen value into a number.
   def test_numbers_in_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => "#{unique_test_id}-1",
         :number_field => "123",
@@ -384,7 +384,7 @@ class TestProxyLoggingBasics < Minitest::Test
     record = wait_for_log("#{unique_test_id}-1")[:hit_source]
     assert_equal("123", record["request_query"]["number_field"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => "#{unique_test_id}-2",
         :number_field => "foo",
@@ -397,7 +397,7 @@ class TestProxyLoggingBasics < Minitest::Test
 
   def test_logs_requests_that_time_out
     time_out_delay = $config["nginx"]["proxy_connect_timeout"] * 1000 + 3000
-    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/#{time_out_delay}", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/#{time_out_delay}", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -411,7 +411,7 @@ class TestProxyLoggingBasics < Minitest::Test
   end
 
   def test_logs_requests_that_are_canceled
-    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/2000", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/2000", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -426,7 +426,7 @@ class TestProxyLoggingBasics < Minitest::Test
 
   def test_logs_cached_responses
     3.times do |index|
-      response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-expires/", self.http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-expires/", http_options.deep_merge({
         :params => {
           :unique_query_id => unique_test_id,
         },
@@ -451,7 +451,7 @@ class TestProxyLoggingBasics < Minitest::Test
   end
 
   def test_logs_denied_requests
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -481,7 +481,7 @@ class TestProxyLoggingBasics < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/down", :backend_prefix => "/down" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", self.http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", http_options.deep_merge({
         :params => {
           :unique_query_id => unique_test_id,
         },
@@ -501,7 +501,7 @@ class TestProxyLoggingBasics < Minitest::Test
     long_value = Faker::Lorem.characters(long_length)
     url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
-    response = Typhoeus.get(url, self.http_options)
+    response = Typhoeus.get(url, http_options)
     assert_equal(200, response.code, response.body)
 
     record = wait_for_log(unique_test_id)[:hit_source]
@@ -521,7 +521,7 @@ class TestProxyLoggingBasics < Minitest::Test
     long_value = Faker::Lorem.characters(long_length)
     url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
-    response = Typhoeus.get(url, self.http_options)
+    response = Typhoeus.get(url, http_options)
     assert_equal(414, response.code, response.body)
 
     error = assert_raises do
@@ -544,7 +544,7 @@ class TestProxyLoggingBasics < Minitest::Test
       long_value = Faker::Lorem.characters(long_length)
       url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
-      response = Typhoeus.get(url, self.http_options.deep_merge({
+      response = Typhoeus.get(url, http_options.deep_merge({
         :headers => {
           "Accept" => Faker::Lorem.characters(1000),
           "Accept-Encoding" => Faker::Lorem.characters(1000),

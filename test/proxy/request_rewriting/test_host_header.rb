@@ -17,7 +17,7 @@ class TestProxyRequestRewritingHostHeader < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", http_options)
       assert_equal(200, response.code, response.body)
       data = MultiJson.load(response.body)
       assert_equal("example.com", data["headers"]["host"])
@@ -33,7 +33,7 @@ class TestProxyRequestRewritingHostHeader < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", http_options)
       assert_equal(200, response.code, response.body)
       data = MultiJson.load(response.body)
       assert_equal("example.com:8080", data["headers"]["host"])
@@ -49,7 +49,7 @@ class TestProxyRequestRewritingHostHeader < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", http_options)
       assert_equal(200, response.code, response.body)
       data = MultiJson.load(response.body)
       assert_equal("127.0.0.1:9080", data["headers"]["host"])
@@ -65,7 +65,7 @@ class TestProxyRequestRewritingHostHeader < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", http_options)
       assert_equal(200, response.code, response.body)
       data = MultiJson.load(response.body)
       assert_equal("127.0.0.1:9080", data["headers"]["host"])

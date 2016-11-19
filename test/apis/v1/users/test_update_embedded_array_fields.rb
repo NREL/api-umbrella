@@ -21,7 +21,7 @@ class TestApisV1UsersUpdateEmbeddedArrayFields < Minitest::Capybara::Test
       FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
       FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
     ]
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
     }))
@@ -58,7 +58,7 @@ class TestApisV1UsersUpdateEmbeddedArrayFields < Minitest::Capybara::Test
     attributes["settings"]["allowed_referers"] = ["https://example.com", "https://bing.com/foo"]
     attributes["settings"]["rate_limits"][0]["limit"] = 50
     attributes["settings"]["rate_limits"][1]["limit"] = 75
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
     }))
@@ -98,7 +98,7 @@ class TestApisV1UsersUpdateEmbeddedArrayFields < Minitest::Capybara::Test
     attributes["settings"]["allowed_ips"].shift
     attributes["settings"]["allowed_referers"].shift
     attributes["settings"]["rate_limits"].shift
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
     }))
@@ -133,7 +133,7 @@ class TestApisV1UsersUpdateEmbeddedArrayFields < Minitest::Capybara::Test
     attributes["settings"]["allowed_ips"] = []
     attributes["settings"]["allowed_referers"] = []
     attributes["settings"]["rate_limits"] = []
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
     }))
@@ -171,7 +171,7 @@ class TestApisV1UsersUpdateEmbeddedArrayFields < Minitest::Capybara::Test
     attributes["settings"]["allowed_ips"] = nil
     attributes["settings"]["allowed_referers"] = nil
     attributes["settings"]["rate_limits"] = nil
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
     }))

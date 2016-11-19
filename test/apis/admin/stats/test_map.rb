@@ -14,7 +14,7 @@ class TestAdminStatsMap < Minitest::Capybara::Test
     FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "ON", :request_ip_city => "Toronto")
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", @@http_options.deep_merge(admin_session).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
         "tz" => "America/Denver",
         "start_at" => "2015-01-13",
@@ -47,7 +47,7 @@ class TestAdminStatsMap < Minitest::Capybara::Test
     FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "QC", :request_ip_city => "Montréal")
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", @@http_options.deep_merge(admin_session).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
         "tz" => "America/Denver",
         "start_at" => "2015-01-13",
@@ -81,7 +81,7 @@ class TestAdminStatsMap < Minitest::Capybara::Test
     FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CA", :request_ip_city => "San Diego")
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", @@http_options.deep_merge(admin_session).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
         "tz" => "America/Denver",
         "start_at" => "2015-01-13",
@@ -116,7 +116,7 @@ class TestAdminStatsMap < Minitest::Capybara::Test
     FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CA", :request_ip_city => "San Diego")
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", @@http_options.deep_merge(admin_session).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
         "tz" => "America/Denver",
         "start_at" => "2015-01-13",

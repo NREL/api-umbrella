@@ -19,7 +19,7 @@ class TestProxyFormattedErrorsInvalidData < Minitest::Test
   def test_unexpected_string_value_returns_internal_error
     @api[:settings][:error_data][:api_key_missing] = "Foo"
     prepend_api_backends([@api]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", self.http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", http_options.except(:headers))
       assert_json_internal_server_error(response)
     end
   end
@@ -27,7 +27,7 @@ class TestProxyFormattedErrorsInvalidData < Minitest::Test
   def test_unexpected_number_value_returns_internal_error
     @api[:settings][:error_data][:api_key_missing] = 9
     prepend_api_backends([@api]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", self.http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", http_options.except(:headers))
       assert_json_internal_server_error(response)
     end
   end
@@ -35,7 +35,7 @@ class TestProxyFormattedErrorsInvalidData < Minitest::Test
   def test_unexpected_array_value_returns_internal_error
     @api[:settings][:error_data][:api_key_missing] = ["foo"]
     prepend_api_backends([@api]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", self.http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", http_options.except(:headers))
       assert_json_internal_server_error(response)
     end
   end
@@ -43,7 +43,7 @@ class TestProxyFormattedErrorsInvalidData < Minitest::Test
   def test_unexpected_null_value_returns_default_error
     @api[:settings][:error_data][:api_key_missing] = nil
     prepend_api_backends([@api]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", self.http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", http_options.except(:headers))
       assert_json_error(response)
     end
   end

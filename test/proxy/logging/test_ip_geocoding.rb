@@ -10,7 +10,7 @@ class TestProxyLoggingIpGeocoding < Minitest::Test
   end
 
   def test_ipv4_address
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -32,7 +32,7 @@ class TestProxyLoggingIpGeocoding < Minitest::Test
   end
 
   def test_ipv6_address
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -54,7 +54,7 @@ class TestProxyLoggingIpGeocoding < Minitest::Test
   end
 
   def test_ipv4_mapped_ipv6_address
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -76,7 +76,7 @@ class TestProxyLoggingIpGeocoding < Minitest::Test
   end
 
   def test_country_city_no_region
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -98,7 +98,7 @@ class TestProxyLoggingIpGeocoding < Minitest::Test
   end
 
   def test_country_no_region_city
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },
@@ -120,7 +120,7 @@ class TestProxyLoggingIpGeocoding < Minitest::Test
   end
 
   def test_city_accent_chars
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
       },

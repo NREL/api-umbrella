@@ -22,27 +22,27 @@ class TestProxyRequestRewritingStripsApiKeysWhenOptional < Minitest::Test
   end
 
   def test_sanity_check_api_keys_optional
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", self.http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", http_options.except(:headers))
     assert_equal(200, response.code, response.body)
   end
 
   def test_strips_api_key_from_header
-    assert(self.http_options[:headers]["X-Api-Key"])
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", self.http_options)
+    assert(http_options[:headers]["X-Api-Key"])
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     refute(data["headers"]["x-api-key"])
   end
 
   def test_strips_api_key_from_query
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/?api_key=#{self.api_key}", self.http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/?api_key=#{self.api_key}", http_options.except(:headers))
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({}, data["url"]["query"])
   end
 
   def test_strips_api_key_from_basic_auth
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", self.http_options.except(:headers).deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", http_options.except(:headers).deep_merge({
       :userpwd => "#{self.api_key}:",
     }))
     assert_equal(200, response.code, response.body)
@@ -58,7 +58,7 @@ class TestProxyRequestRewritingStripsApiKeysWhenOptional < Minitest::Test
   def test_retains_basic_auth_if_api_key_passed_by_other_means
     skip("Passing HTTP basic auth when api keys are optional does not currently function as it should.")
 
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", self.http_options.except(:headers).deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", http_options.except(:headers).deep_merge({
       :userpwd => "foo:",
     }))
     assert_equal(200, response.code, response.body)

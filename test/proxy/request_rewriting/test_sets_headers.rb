@@ -36,7 +36,7 @@ class TestProxyRequestRewritingSetsHeaders < Minitest::Test
   end
 
   def test_sets_header_values
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({
@@ -46,7 +46,7 @@ class TestProxyRequestRewritingSetsHeaders < Minitest::Test
   end
 
   def test_overrides_and_merges_existing_headers_case_insensitively
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", http_options.deep_merge({
       :headers => {
         "X-Add1" => "original1",
         "X-ADD2" => "original2",
@@ -63,7 +63,7 @@ class TestProxyRequestRewritingSetsHeaders < Minitest::Test
   end
 
   def test_sub_url_settings_overrides_parent_settings
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/sub/", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/sub/", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({

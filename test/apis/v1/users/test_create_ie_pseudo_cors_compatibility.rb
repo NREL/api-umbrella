@@ -22,7 +22,7 @@ class TestApisV1UsersCreateIePseudoCorsCompatibility < Minitest::Capybara::Test
   end
 
   def test_content_type_null
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_auth).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_auth).deep_merge({
       :headers => { "Content-Type" => nil },
       :body => { :user => @attributes },
     }))
@@ -32,7 +32,7 @@ class TestApisV1UsersCreateIePseudoCorsCompatibility < Minitest::Capybara::Test
   end
 
   def test_content_type_empty
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_auth).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_auth).deep_merge({
       :headers => { "Content-Type" => "" },
       :body => { :user => @attributes },
     }))
@@ -42,7 +42,7 @@ class TestApisV1UsersCreateIePseudoCorsCompatibility < Minitest::Capybara::Test
   end
 
   def test_content_type_text_plain
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_auth).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_auth).deep_merge({
       :headers => { "Content-Type" => "text/plain" },
       :body => { :user => @attributes },
     }))

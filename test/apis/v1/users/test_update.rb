@@ -14,7 +14,7 @@ class TestApisV1UsersUpdate < Minitest::Capybara::Test
 
     attributes = user.serializable_hash
     attributes["first_name"] = "Updated"
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -31,7 +31,7 @@ class TestApisV1UsersUpdate < Minitest::Capybara::Test
     user = FactoryGirl.create(:api_user, :registration_source => "something")
 
     attributes = user.serializable_hash
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -50,7 +50,7 @@ class TestApisV1UsersUpdate < Minitest::Capybara::Test
     attributes = user.serializable_hash.except("api_key")
     refute(attributes["api_key"])
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -68,7 +68,7 @@ class TestApisV1UsersUpdate < Minitest::Capybara::Test
     assert(attributes["api_key"])
     attributes["api_key"] = "new_api_key"
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))

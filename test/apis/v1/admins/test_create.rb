@@ -11,7 +11,7 @@ class TestApisV1AdminsCreate < Minitest::Capybara::Test
 
   def test_downcases_username
     attributes = FactoryGirl.build(:admin, :username => "HELLO@example.com").serializable_hash
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admins.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admins.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :admin => attributes },
     }))

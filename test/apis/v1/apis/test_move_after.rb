@@ -20,7 +20,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(20_000, api3.sort_order)
     assert_equal(30_000, api4.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => nil },
     }))
@@ -43,7 +43,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(99, api1.sort_order)
     assert_equal(10_099, api2.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api2.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api2.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => nil },
     }))
@@ -64,7 +64,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(10_000, api2.sort_order)
     assert_equal(20_000, api3.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
@@ -87,7 +87,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(10_000, api2.sort_order)
     assert_equal(20_000, api3.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api2.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api2.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
@@ -110,7 +110,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(10_000, api2.sort_order)
     assert_equal(100_000, api3.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api2.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api2.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
@@ -131,7 +131,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(0, api1.sort_order)
     assert_equal(3_000, api2.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api2.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api2.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
@@ -156,7 +156,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(3, api4.sort_order)
     assert_equal(10, api5.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
@@ -185,7 +185,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(2_147_483_646, api3.sort_order)
     assert_equal(2_147_483_647, api4.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api2.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api2.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api4.id },
     }))
@@ -200,7 +200,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(2_147_483_645, api3.sort_order)
     assert_equal(2_147_483_646, api4.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => nil },
     }))
@@ -229,7 +229,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(-7, api4.sort_order)
     assert_equal(0, api5.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
@@ -258,7 +258,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(-2_147_483_646, api3.sort_order)
     assert_equal(-2_147_483_640, api4.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
@@ -273,7 +273,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
     assert_equal(-2_147_483_647, api3.sort_order)
     assert_equal(-2_147_483_640, api4.sort_order)
 
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api3.id}/move_after.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => nil },
     }))
@@ -293,7 +293,7 @@ class TestApisV1ApisMoveAfter < Minitest::Capybara::Test
 
   def create_with_default_sort_order
     attributes = FactoryGirl.attributes_for(:api)
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api => attributes },
     }))

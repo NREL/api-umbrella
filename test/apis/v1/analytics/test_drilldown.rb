@@ -14,7 +14,7 @@ class TestApisV1AnalyticsDrilldown < Minitest::Capybara::Test
     FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -53,7 +53,7 @@ class TestApisV1AnalyticsDrilldown < Minitest::Capybara::Test
     FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -94,7 +94,7 @@ class TestApisV1AnalyticsDrilldown < Minitest::Capybara::Test
     FactoryGirl.create(:log_item, :request_hierarchy => ["foo/0/", "foo/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -138,7 +138,7 @@ class TestApisV1AnalyticsDrilldown < Minitest::Capybara::Test
     FactoryGirl.create(:log_item, :request_hierarchy => ["0/.com/", "0/xcom", "0/ycom", "1/.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -186,7 +186,7 @@ class TestApisV1AnalyticsDrilldown < Minitest::Capybara::Test
     FactoryGirl.create_list(:log_item, 1, :request_hierarchy => ["0/127.0.0.13/", "1/127.0.0.13/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -254,7 +254,7 @@ class TestApisV1AnalyticsDrilldown < Minitest::Capybara::Test
     end
     LogItem.gateway.refresh_index!
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -290,7 +290,7 @@ class TestApisV1AnalyticsDrilldown < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -328,7 +328,7 @@ class TestApisV1AnalyticsDrilldown < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -372,7 +372,7 @@ class TestApisV1AnalyticsDrilldown < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",
@@ -410,7 +410,7 @@ class TestApisV1AnalyticsDrilldown < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
         :tz => "America/Denver",
         :search => "",

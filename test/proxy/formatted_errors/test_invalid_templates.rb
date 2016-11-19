@@ -31,14 +31,14 @@ class TestProxyFormattedErrorsInvalidTemplates < Minitest::Test
   end
 
   def test_undefined_variables_empty_space
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.json", self.http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.json", http_options.except(:headers))
     assert_equal(403, response.code, response.body)
     assert_equal("application/json", response.headers["content-type"])
     assert_equal('{ "unknown":  }', response.body)
   end
 
   def test_internal_server_error_when_parsing_errors
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.xml", self.http_options.except(:headers))
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello.xml", http_options.except(:headers))
     assert_equal(500, response.code, response.body)
     assert_equal("text/plain", response.headers["content-type"])
     assert_equal("Internal Server Error", response.body)

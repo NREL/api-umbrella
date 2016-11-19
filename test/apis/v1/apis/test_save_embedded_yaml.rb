@@ -107,12 +107,12 @@ class TestApisV1ApisSaveEmbeddedYaml < Minitest::Capybara::Test
 
   def create_or_update(action, attributes)
     if(action == :create)
-      Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", @@http_options.deep_merge(admin_token).deep_merge({
+      Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :api => attributes },
       }))
     elsif(action == :update)
-      Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{attributes["id"]}.json", @@http_options.deep_merge(admin_token).deep_merge({
+      Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{attributes["id"]}.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :api => attributes },
       }))

@@ -29,7 +29,7 @@ class TestApisV1ConfigPublishTransitionaryHttps < Minitest::Capybara::Test
 
       assert_equal(nil, api.settings.require_https_transition_start_at)
 
-      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", @@http_options.deep_merge(admin_token).deep_merge({
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :config => config },
       }))
@@ -61,7 +61,7 @@ class TestApisV1ConfigPublishTransitionaryHttps < Minitest::Capybara::Test
 
       assert_equal(nil, api.sub_settings[0].settings.require_https_transition_start_at)
 
-      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", @@http_options.deep_merge(admin_token).deep_merge({
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :config => config },
       }))
@@ -91,7 +91,7 @@ class TestApisV1ConfigPublishTransitionaryHttps < Minitest::Capybara::Test
 
       assert_equal(timestamp, api.settings.require_https_transition_start_at)
 
-      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", @@http_options.deep_merge(admin_token).deep_merge({
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :config => config },
       }))
@@ -137,7 +137,7 @@ class TestApisV1ConfigPublishTransitionaryHttps < Minitest::Capybara::Test
 
       assert_equal(timestamp, api.settings.require_https_transition_start_at)
 
-      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", @@http_options.deep_merge(admin_token).deep_merge({
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :config => config },
       }))
@@ -170,7 +170,7 @@ class TestApisV1ConfigPublishTransitionaryHttps < Minitest::Capybara::Test
 
       assert_kind_of(Time, api.settings.require_https_transition_start_at)
 
-      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", @@http_options.deep_merge(admin_token).deep_merge({
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :config => config },
       }))
@@ -203,7 +203,7 @@ class TestApisV1ConfigPublishTransitionaryHttps < Minitest::Capybara::Test
 
       assert_kind_of(Time, api.sub_settings[0].settings.require_https_transition_start_at)
 
-      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", @@http_options.deep_merge(admin_token).deep_merge({
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :config => config },
       }))

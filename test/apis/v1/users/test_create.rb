@@ -13,7 +13,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
     non_admin_auth = non_admin_key_creator_api_key
     attributes = FactoryGirl.attributes_for(:api_user)
     initial_count = active_count
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_auth).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_auth).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -32,7 +32,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
     attributes = FactoryGirl.attributes_for(:api_user)
     refute(attributes["api_key"])
 
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -47,7 +47,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
   def test_no_user_attributes_error
     non_admin_auth = non_admin_key_creator_api_key
     initial_count = active_count
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_auth).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_auth).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => nil,
     }))
@@ -61,7 +61,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
   def test_user_attributes_unexpected_object_error
     non_admin_auth = non_admin_key_creator_api_key
     initial_count = active_count
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_auth).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_auth).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => "something" },
     }))
@@ -73,7 +73,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
   end
 
   def test_wildcard_cors
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => FactoryGirl.attributes_for(:api_user) },
     }))
@@ -83,7 +83,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
 
   def test_permits_private_fields_as_admin
     attributes = FactoryGirl.attributes_for(:api_user, :roles => ["admin"])
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -96,7 +96,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
 
   def test_ignores_private_fields_as_non_admin
     attributes = FactoryGirl.attributes_for(:api_user, :roles => ["admin"])
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -110,7 +110,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
   def test_registration_source_default
     attributes = FactoryGirl.attributes_for(:api_user)
     assert_nil(attributes[:registration_source])
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -122,7 +122,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
 
   def test_registration_source_custom
     attributes = FactoryGirl.attributes_for(:api_user, :registration_source => "whatever")
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -134,7 +134,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
 
   def test_captures_and_returns_requester_details_as_admin
     attributes = FactoryGirl.attributes_for(:api_user)
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => {
         "Content-Type" => "application/x-www-form-urlencoded",
         "X-Forwarded-For" => "1.2.3.4",
@@ -161,7 +161,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
 
   def test_captures_does_not_return_requester_details_as_non_admin
     attributes = FactoryGirl.attributes_for(:api_user)
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => {
         "Content-Type" => "application/x-www-form-urlencoded",
         "X-Forwarded-For" => "1.2.3.4",
@@ -188,7 +188,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
 
   def test_registration_ip_x_forwarded_last_trusted
     attributes = FactoryGirl.attributes_for(:api_user)
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => {
         "Content-Type" => "application/x-www-form-urlencoded",
         "X-Forwarded-For" => "1.1.1.1, 2.2.2.2, 127.0.0.1",
@@ -215,7 +215,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
     })
 
     initial_count = active_count
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -238,7 +238,7 @@ class TestApisV1UsersCreate < Minitest::Capybara::Test
     })
 
     initial_count = active_count
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))

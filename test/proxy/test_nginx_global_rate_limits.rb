@@ -11,7 +11,7 @@ class TestProxyNginxGlobalRateLimits < Minitest::Test
   def test_no_limits_by_default
     hydra = Typhoeus::Hydra.new(:max_concurrency => 500)
     requests = Array.new(400) do
-      request = Typhoeus::Request.new("http://127.0.0.1:9080/api/hello/", self.http_options)
+      request = Typhoeus::Request.new("http://127.0.0.1:9080/api/hello/", http_options)
       hydra.queue(request)
       request
     end
@@ -33,7 +33,7 @@ class TestProxyNginxGlobalRateLimits < Minitest::Test
     }, "--router") do
       hydra = Typhoeus::Hydra.new
       requests = Array.new(21) do
-        request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", self.http_options)
+        request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", http_options)
         hydra.queue(request)
         request
       end
@@ -58,7 +58,7 @@ class TestProxyNginxGlobalRateLimits < Minitest::Test
         },
       },
     }, "--router") do
-      http_opts = self.http_options.deep_merge({
+      http_opts = http_options.deep_merge({
         :headers => {
           # Perform each batch of tests as though its from a unique IP address
           # so requests from different tests don't interfere with each other.
@@ -102,7 +102,7 @@ class TestProxyNginxGlobalRateLimits < Minitest::Test
     }, "--router") do
       hydra = Typhoeus::Hydra.new
       requests = Array.new(8) do |index|
-        request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", self.http_options.deep_merge({
+        request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", http_options.deep_merge({
           :params => {
             :unique_query_id => "#{unique_test_id}-#{index}",
           },

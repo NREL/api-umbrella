@@ -14,7 +14,7 @@ class TestApisV1UsersCreateNotifyEmail < Minitest::Capybara::Test
   end
 
   def test_sends_email_when_enabled
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
         :user => FactoryGirl.attributes_for(:api_user),
@@ -26,7 +26,7 @@ class TestApisV1UsersCreateNotifyEmail < Minitest::Capybara::Test
   end
 
   def test_no_email_when_disabled
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
         :user => FactoryGirl.attributes_for(:api_user),
@@ -38,7 +38,7 @@ class TestApisV1UsersCreateNotifyEmail < Minitest::Capybara::Test
   end
 
   def test_no_email_when_unknown_value
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
         :user => FactoryGirl.attributes_for(:api_user),
@@ -50,7 +50,7 @@ class TestApisV1UsersCreateNotifyEmail < Minitest::Capybara::Test
   end
 
   def test_no_email_by_default
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
         :user => FactoryGirl.attributes_for(:api_user),
@@ -61,7 +61,7 @@ class TestApisV1UsersCreateNotifyEmail < Minitest::Capybara::Test
   end
 
   def test_content
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
         :user => FactoryGirl.attributes_for(:api_user, :use_description => "I wanna do everything."),
@@ -96,7 +96,7 @@ class TestApisV1UsersCreateNotifyEmail < Minitest::Capybara::Test
       },
     }
     override_config(config, "--web") do
-      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => {
           :user => FactoryGirl.attributes_for(:api_user),

@@ -13,10 +13,10 @@ class TestProxyNginxBans < Minitest::Test
         "user_agents" => ["~*naughty"],
       },
     }, "--router") do
-      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
       assert_equal(200, response.code, response.body)
 
-      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
         :headers => {
           "User-Agent" => "some NaUghtY user_agent",
         },
@@ -31,17 +31,17 @@ class TestProxyNginxBans < Minitest::Test
         "ips" => ["7.4.2.2", "8.7.1.0/24"],
       },
     }, "--router") do
-      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
       assert_equal(200, response.code, response.body)
 
-      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
         :headers => {
           "X-Forwarded-For" => "7.4.2.2",
         },
       }))
       assert_equal(403, response.code, response.body)
 
-      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
         :headers => {
           "X-Forwarded-For" => "8.7.1.44",
         },
@@ -57,10 +57,10 @@ class TestProxyNginxBans < Minitest::Test
         "user_agents" => ["~*naughty"],
       },
     }, "--router") do
-      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
       assert_equal(200, response.code, response.body)
 
-      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
         :headers => {
           "User-Agent" => "naughty",
         },
@@ -81,10 +81,10 @@ class TestProxyNginxBans < Minitest::Test
         },
       },
     }, "--router") do
-      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
       assert_equal(200, response.code, response.body)
 
-      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", @@http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
         :headers => {
           "User-Agent" => "naughty",
         },
@@ -102,11 +102,11 @@ class TestProxyNginxBans < Minitest::Test
         "user_agents" => ["~*naughty"],
       },
     }, "--router") do
-      response = Typhoeus.get("https://127.0.0.1:9081/signup/", @@http_options)
+      response = Typhoeus.get("https://127.0.0.1:9081/signup/", http_options)
       assert_equal(200, response.code, response.body)
       assert_match("API Key Signup", response.body)
 
-      response = Typhoeus.get("https://127.0.0.1:9081/signup/", @@http_options.deep_merge({
+      response = Typhoeus.get("https://127.0.0.1:9081/signup/", http_options.deep_merge({
         :headers => {
           "User-Agent" => "naughty",
         },

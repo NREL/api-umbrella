@@ -118,14 +118,14 @@ class TestApisV1UsersRolePermissions < Minitest::Capybara::Test
     admin = FactoryGirl.create(:google_admin)
 
     attributes = record.serializable_hash
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
     assert_equal(200, response.code, response.body)
 
     attributes["roles"] = ["yahoo-write"]
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -151,14 +151,14 @@ class TestApisV1UsersRolePermissions < Minitest::Capybara::Test
     admin = FactoryGirl.create(:google_admin)
 
     attributes = record.serializable_hash
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
     assert_equal(403, response.code, response.body)
 
     attributes["roles"] = ["google-write"]
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -176,7 +176,7 @@ class TestApisV1UsersRolePermissions < Minitest::Capybara::Test
   def assert_admin_permitted_create(factory, admin, attr_overrides = {})
     attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
     initial_count = active_count
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -195,7 +195,7 @@ class TestApisV1UsersRolePermissions < Minitest::Capybara::Test
   def assert_admin_forbidden_create(factory, admin, attr_overrides = {})
     attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
     initial_count = active_count
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -211,7 +211,7 @@ class TestApisV1UsersRolePermissions < Minitest::Capybara::Test
 
     attributes = record.serializable_hash.deep_merge(attr_overrides)
     attributes["first_name"] += rand(999_999).to_s
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -230,7 +230,7 @@ class TestApisV1UsersRolePermissions < Minitest::Capybara::Test
 
     attributes = record.serializable_hash.deep_merge(attr_overrides)
     attributes["first_name"] += rand(999_999).to_s
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))

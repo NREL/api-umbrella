@@ -176,7 +176,7 @@ class TestProxyRefererValidation < Minitest::Test
   private
 
   def assert_unauthorized_referer(path, headers = {})
-    response = Typhoeus.get("http://127.0.0.1:9080#{path}", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
       :headers => headers,
     }))
     assert_equal(403, response.code, response.body)
@@ -184,7 +184,7 @@ class TestProxyRefererValidation < Minitest::Test
   end
 
   def assert_authorized_referer(path, headers = {})
-    response = Typhoeus.get("http://127.0.0.1:9080#{path}", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
       :headers => headers,
     }))
     assert_equal(200, response.code, response.body)

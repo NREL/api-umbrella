@@ -11,7 +11,7 @@ class TestApisV1ConfigPendingChanges < Minitest::Capybara::Test
   end
 
   def test_grouped_into_categories
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
@@ -25,7 +25,7 @@ class TestApisV1ConfigPendingChanges < Minitest::Capybara::Test
 
   def test_yaml_output_omits_separator
     FactoryGirl.create(:api)
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
@@ -35,7 +35,7 @@ class TestApisV1ConfigPendingChanges < Minitest::Capybara::Test
 
   def test_yaml_output_omits_unnecessary_fields
     FactoryGirl.create(:api, :created_by => "foo", :updated_by => "foo")
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
@@ -48,7 +48,7 @@ class TestApisV1ConfigPendingChanges < Minitest::Capybara::Test
 
   def test_yaml_output_sorts_fields_alphabetically
     FactoryGirl.create(:api, :sort_order => 10)
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)

@@ -17,7 +17,7 @@ class TestProxyDnsDefaultServers < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/ipv4/", :backend_prefix => "/hello/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/ipv4/", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/ipv4/", http_options)
       assert_equal(200, response.code, response.body)
       assert_equal("Hello World", response.body)
     end
@@ -32,7 +32,7 @@ class TestProxyDnsDefaultServers < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/ipv6/", :backend_prefix => "/hello/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/ipv6/", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/ipv6/", http_options)
       assert_equal(200, response.code, response.body)
       assert_equal("Hello World", response.body)
     end
@@ -47,7 +47,7 @@ class TestProxyDnsDefaultServers < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/localhost/", :backend_prefix => "/hello/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/localhost/", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/localhost/", http_options)
       assert_equal(200, response.code, response.body)
       assert_equal("Hello World", response.body)
     end
@@ -62,7 +62,7 @@ class TestProxyDnsDefaultServers < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/valid-external-hostname/", :backend_prefix => "/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/valid-external-hostname/humans.txt", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/valid-external-hostname/humans.txt", http_options)
       assert_equal(200, response.code, response.body)
       assert_match("Google is built by a large team", response.body)
     end
@@ -77,7 +77,7 @@ class TestProxyDnsDefaultServers < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/invalid-hostname/", :backend_prefix => "/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/invalid-hostname/", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/invalid-hostname/", http_options)
       assert_equal(502, response.code, response.body)
     end
   end

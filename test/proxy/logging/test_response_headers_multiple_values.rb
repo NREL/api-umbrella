@@ -61,7 +61,7 @@ class TestProxyLoggingRequestHeadersMultipleValues < Minitest::Test
 
   def response_with_duplicate_headers(header)
     raw_response_headers = ""
-    response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-response-headers/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-response-headers/", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
         :header => header,

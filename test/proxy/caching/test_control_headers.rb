@@ -30,7 +30,7 @@ class TestProxyCachingControlHeaders < Minitest::Test
   end
 
   def test_does_not_cache_expires_0
-    first = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-expires-0/?unique_test_id=#{unique_test_id}", @@http_options).run
+    first = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-expires-0/?unique_test_id=#{unique_test_id}", http_options).run
     assert_equal(200, first.code, first.body)
     assert_equal("0", first.headers["expires"])
 
@@ -41,7 +41,7 @@ class TestProxyCachingControlHeaders < Minitest::Test
     # https://issues.apache.org/jira/browse/TS-2961
     sleep 1
 
-    second = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-expires-0/?unique_test_id=#{unique_test_id}", @@http_options).run
+    second = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-expires-0/?unique_test_id=#{unique_test_id}", http_options).run
     assert_equal(200, second.code, second.body)
     assert_equal("0", second.headers["expires"])
 
@@ -51,7 +51,7 @@ class TestProxyCachingControlHeaders < Minitest::Test
   end
 
   def test_does_not_cache_expires_past
-    first = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-expires-past/?unique_test_id=#{unique_test_id}", @@http_options).run
+    first = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-expires-past/?unique_test_id=#{unique_test_id}", http_options).run
     assert_equal(200, first.code, first.body)
     assert_equal("Sat, 05 Sep 2015 17:58:16 GMT", first.headers["expires"])
 
@@ -62,7 +62,7 @@ class TestProxyCachingControlHeaders < Minitest::Test
     # https://issues.apache.org/jira/browse/TS-2961
     sleep 1
 
-    second = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-expires-past/?unique_test_id=#{unique_test_id}", @@http_options).run
+    second = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-expires-past/?unique_test_id=#{unique_test_id}", http_options).run
     assert_equal(200, second.code, second.body)
     assert_equal("Sat, 05 Sep 2015 17:58:16 GMT", second.headers["expires"])
 
@@ -84,13 +84,13 @@ class TestProxyCachingControlHeaders < Minitest::Test
   end
 
   def test_removes_surrogate_control_header_from_client
-    response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-surrogate-control-max-age/", @@http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-surrogate-control-max-age/", http_options)
     assert_equal(200, response.code, response.body)
     refute(response.headers["surrogate-control"])
   end
 
   def test_leaves_cache_control_header_when_surrogate_control_present
-    response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-surrogate-control-and-cache-control/", @@http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-surrogate-control-and-cache-control/", http_options)
     assert_equal(200, response.code, response.body)
     refute(response.headers["surrogate-control"])
     assert_equal("max-age=0, private, must-revalidate", response.headers["cache-control"])

@@ -11,7 +11,7 @@ class TestApisV1UsersServerSideTimestamps < Minitest::Capybara::Test
 
   def test_create
     attributes = FactoryGirl.attributes_for(:api_user)
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
@@ -23,7 +23,7 @@ class TestApisV1UsersServerSideTimestamps < Minitest::Capybara::Test
     record = FactoryGirl.create(:api_user)
     attributes = record.serializable_hash
     attributes["use_description"] = rand(999_999).to_s
-    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", @@http_options.deep_merge(admin_token).deep_merge({
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))

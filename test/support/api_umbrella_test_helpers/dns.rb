@@ -30,7 +30,7 @@ module ApiUmbrellaTestHelpers
       begin
         Timeout.timeout(15) do
           loop do
-            response = Typhoeus.get("http://127.0.0.1:9080#{path}", self.http_options)
+            response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options)
             if(response.code == options.fetch(:code))
               if(options[:local_interface_ip])
                 assert_equal(200, response.code, response.body)

@@ -241,7 +241,7 @@ class TestApisV1ApisSaveEmbeddedHeaders < Minitest::Capybara::Test
 
   def create_or_update(action, attributes)
     if(action == :create)
-      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", @@http_options.deep_merge(admin_token).deep_merge({
+      response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :api => attributes },
       }))
@@ -249,7 +249,7 @@ class TestApisV1ApisSaveEmbeddedHeaders < Minitest::Capybara::Test
       data = MultiJson.load(response.body)
       api = Api.find(data["api"]["id"])
     elsif(action == :update || action == :update_clears_existing_headers)
-      response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{attributes["id"]}.json", @@http_options.deep_merge(admin_token).deep_merge({
+      response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{attributes["id"]}.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :api => attributes },
       }))
@@ -259,7 +259,7 @@ class TestApisV1ApisSaveEmbeddedHeaders < Minitest::Capybara::Test
       raise "Unknown action: #{action.inspect}"
     end
 
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
 

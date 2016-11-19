@@ -3,7 +3,7 @@ module ApiUmbrellaTestHelpers
     private
 
     def make_duplicate_requests(path, options = {}, second_request_options = {})
-      http_opts = self.http_options.deep_merge(options).deep_merge({
+      http_opts = http_options.deep_merge(options).deep_merge({
         :params => {
           :unique_test_id => unique_test_id,
         },

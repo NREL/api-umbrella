@@ -138,7 +138,7 @@ class TestProxyRequestRewritingUrlRewrites < Minitest::Test
   end
 
   def test_route_matcher_mix_path_and_query_params
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/aaa/zzz/cat/10.json?bar=hello&foo=goodbye", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/aaa/zzz/cat/10.json?bar=hello&foo=goodbye", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({
@@ -152,7 +152,7 @@ class TestProxyRequestRewritingUrlRewrites < Minitest::Test
   end
 
   def test_route_matcher_query_params_no_args_to_backend
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/no-query-string-route?bar=hello&foo=goodbye", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/no-query-string-route?bar=hello&foo=goodbye", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-no-query-string-route", data["url"]["pathname"])
@@ -160,80 +160,80 @@ class TestProxyRequestRewritingUrlRewrites < Minitest::Test
   end
 
   def test_route_matcher_query_params_noncapturing_args_any_order
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/args?foo=1&bar=2", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/args?foo=1&bar=2", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-args", data["url"]["path"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/args?bar=2&foo=1", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/args?bar=2&foo=1", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-args", data["url"]["path"])
   end
 
   def test_route_matcher_query_params_noncapturing_extra_args_no_match
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/args?foo=1&bar=2&aaa=3", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/args?foo=1&bar=2&aaa=3", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/args?foo=1&bar=2&aaa=3", data["url"]["path"])
   end
 
   def test_route_matcher_query_params_noncapturing_duplicate_args_no_match
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/args?foo=1&bar=2&bar=3", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/args?foo=1&bar=2&bar=3", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/args?foo=1&bar=2&bar=3", data["url"]["path"])
   end
 
   def test_route_matcher_query_params_noncapturing_missing_args_no_match
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/args?foo=1", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/args?foo=1", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/args?foo=1", data["url"]["path"])
   end
 
   def test_route_matcher_query_params_capturing_matches_and_replaces
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-arg?foo=hello", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-arg?foo=hello", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-named-arg?bar=hello", data["url"]["path"])
   end
 
   def test_route_matcher_query_params_capturing_comma_delimits_multi_matches
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-arg?foo=hello3&foo=hello1&foo=hello2", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-arg?foo=hello3&foo=hello1&foo=hello2", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-named-arg?bar=hello3,hello1,hello2", data["url"]["path"])
   end
 
   def test_route_matcher_query_params_capturing_args_any_order
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-args?foo=1&bar=2", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-args?foo=1&bar=2", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-named-args?bar=2&foo=1", data["url"]["path"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-args?bar=2&foo=1", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-args?bar=2&foo=1", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-named-args?bar=2&foo=1", data["url"]["path"])
   end
 
   def test_route_matcher_query_params_capturing_extra_args_no_match
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-args?foo=1&bar=2&aaa=3", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-args?foo=1&bar=2&aaa=3", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/named-args?foo=1&bar=2&aaa=3", data["url"]["path"])
   end
 
   def test_route_matcher_query_params_capturing_missing_args_no_match
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-args?foo=1", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-args?foo=1", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/named-args?foo=1", data["url"]["path"])
   end
 
   def test_route_matcher_query_params_capturing_maintains_url_encoding
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/a/b/c/d/encoding-test?foo=hello+space+test&bar=1%262*3%254%2F5&add_path=x%2Fy%2Fz", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/a/b/c/d/encoding-test?foo=hello+space+test&bar=1%262*3%254%2F5&add_path=x%2Fy%2Fz", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/a/b/c/d/x/y/z/matched-encoding-test?bar=1%262*3%254%2F5&foo=hello%20space%20test&path=a&wildcard=b%2Fc%2Fd&add_path=x%2Fy%2Fz", data["url"]["path"])
@@ -248,105 +248,105 @@ class TestProxyRequestRewritingUrlRewrites < Minitest::Test
 
   # Maybe this is something we should support, though?
   def test_route_matcher_query_params_capturing_does_not_support_named_wildcards
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-wildcard-query-string-route?bar=hello&foo=goodbye", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-wildcard-query-string-route?bar=hello&foo=goodbye", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/named-wildcard-query-string-route?bar=hello&foo=goodbye", data["url"]["path"])
   end
 
   def test_route_matcher_path_captures_path_params
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-path/foo/10", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-path/foo/10", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-named-path?dir=foo&id=10", data["url"]["path"])
   end
 
   def test_route_matcher_path_extra_path_no_match
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-path/foo/bar/10", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-path/foo/bar/10", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/named-path/foo/bar/10", data["url"]["path"])
   end
 
   def test_route_matcher_path_captures_file_extension
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-path-ext.json", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-path-ext.json", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-named-path-ext?extension=json", data["url"]["path"])
   end
 
   def test_route_matcher_path_captures_multiple_wildcards
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/a/b/c/wildcard/d/e/", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/a/b/c/wildcard/d/e/", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/d/e/matched-wildcard/a/b/c?before=a%2Fb%2Fc&after=d%2Fe", data["url"]["path"])
   end
 
   def test_route_matcher_path_ignores_trailing_slash_match_with_given_with
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/with-trailing-slash/", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/with-trailing-slash/", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-with-trailing-slash", data["url"]["pathname"])
   end
 
   def test_route_matcher_path_ignores_trailing_slash_match_with_given_with_plus_query
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/with-trailing-slash/?query=foo", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/with-trailing-slash/?query=foo", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-with-trailing-slash-query", data["url"]["pathname"])
   end
 
   def test_route_matcher_path_ignores_trailing_slash_match_with_given_without
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/with-trailing-slash", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/with-trailing-slash", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-with-trailing-slash", data["url"]["pathname"])
   end
 
   def test_route_matcher_path_ignores_trailing_slash_match_with_given_without_plus_query
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/with-trailing-slash?query=foo", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/with-trailing-slash?query=foo", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-with-trailing-slash-query", data["url"]["pathname"])
   end
 
   def test_route_matcher_path_ignores_trailing_slash_match_without_given_with
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/without-trailing-slash/", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/without-trailing-slash/", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-without-trailing-slash", data["url"]["pathname"])
   end
 
   def test_route_matcher_path_ignores_trailing_slash_match_without_given_with_plus_query
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/without-trailing-slash/?query=foo", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/without-trailing-slash/?query=foo", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-without-trailing-slash-query", data["url"]["pathname"])
   end
 
   def test_route_matcher_path_ignores_trailing_slash_match_without_given_without
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/without-trailing-slash", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/without-trailing-slash", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-without-trailing-slash", data["url"]["pathname"])
   end
 
   def test_route_matcher_path_ignores_trailing_slash_match_without_given_without_plus_query
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/without-trailing-slash?query=foo", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/without-trailing-slash?query=foo", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/matched-without-trailing-slash-query", data["url"]["pathname"])
   end
 
   def test_regex_matcher_replaces_only_matched
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?state=CO", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?state=CO", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({ "region" => "US-CO" }, data["url"]["query"])
   end
 
   def test_regex_matcher_replaces_all_instances
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/state=CO/?state=CO", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/state=CO/?state=CO", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/region=US-CO/", data["url"]["pathname"])
@@ -354,40 +354,40 @@ class TestProxyRequestRewritingUrlRewrites < Minitest::Test
   end
 
   def test_regex_matcher_case_insensitive
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?STATE=CO", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?STATE=CO", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal({ "region" => "US-CO" }, data["url"]["query"])
   end
 
   def test_ordering_matches_after_api_key_removed
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?api_key=#{self.api_key}&foo=bar", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?api_key=#{self.api_key}&foo=bar", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/?foo=moo", data["url"]["path"])
   end
 
   def test_ordering_matches_after_url_prefix_replacement
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/prefix/", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/prefix/", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/second-replacement/", data["url"]["pathname"])
   end
 
   def test_ordering_chains_multiple_replacements_in_order
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/route/hello?state=CO", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/route/hello?state=CO", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/after-route/hello?region=US-CO", data["url"]["path"])
   end
 
   def test_matches_http_method
-    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?post_only=before", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?post_only=before", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/?post_only=before", data["url"]["path"])
 
-    response = Typhoeus.post("http://127.0.0.1:9080/#{unique_test_class_id}/info/?post_only=before", self.http_options)
+    response = Typhoeus.post("http://127.0.0.1:9080/#{unique_test_class_id}/info/?post_only=before", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal("/info/?post_only=after", data["url"]["path"])

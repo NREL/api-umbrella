@@ -9,7 +9,7 @@ class TestProxyRequestRewritingAddsUserIdHeader < Minitest::Test
   end
 
   def test_adds_user_id_header
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", self.http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
     assert_equal(200, response.code, response.body)
     data = MultiJson.load(response.body)
     assert_equal(self.api_user.id, data["headers"]["x-api-user-id"])
@@ -18,7 +18,7 @@ class TestProxyRequestRewritingAddsUserIdHeader < Minitest::Test
 
   def test_passes_mongo_object_ids_as_hex_strings
     user = FactoryGirl.create(:api_user, :id => BSON::ObjectId.new)
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
         "X-Api-Key" => user.api_key,
       },
@@ -30,7 +30,7 @@ class TestProxyRequestRewritingAddsUserIdHeader < Minitest::Test
   end
 
   def test_strips_forged_values
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
         "X-Api-User-Id" => "bogus-value",
       },
@@ -42,7 +42,7 @@ class TestProxyRequestRewritingAddsUserIdHeader < Minitest::Test
   end
 
   def test_strips_forged_values_case_insensitively
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
         "X-API-USER-ID" => "bogus-value",
       },
@@ -52,7 +52,7 @@ class TestProxyRequestRewritingAddsUserIdHeader < Minitest::Test
     assert_equal(self.api_user.id, data["headers"]["x-api-user-id"])
     refute_match("bogus-value", response.body)
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", self.http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => {
         "x-api-user-id" => "bogus-value",
       },
@@ -75,12 +75,12 @@ class TestProxyRequestRewritingAddsUserIdHeader < Minitest::Test
         },
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-keys-optional/info/", self.http_options.except(:headers))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-keys-optional/info/", http_options.except(:headers))
       assert_equal(200, response.code, response.body)
       data = MultiJson.load(response.body)
       refute(data["headers"]["x-api-user-id"])
 
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-keys-optional/info/", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-keys-optional/info/", http_options)
       assert_equal(200, response.code, response.body)
       data = MultiJson.load(response.body)
       assert_equal(self.api_user.id, data["headers"]["x-api-user-id"])

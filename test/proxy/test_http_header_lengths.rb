@@ -49,7 +49,7 @@ class TestProxyHttpHeaderLengths < Minitest::Test
   private
 
   def make_request_with_header_lengths(options = {})
-    headers = @@http_options[:headers].merge({
+    headers = http_options[:headers].merge({
       "Host" => "127.0.0.1:9080",
       "Connection" => "close",
       "User-Agent" => "Test",
@@ -91,7 +91,7 @@ class TestProxyHttpHeaderLengths < Minitest::Test
       index += 1
     end
 
-    Typhoeus.get("http://127.0.0.1:9080/info/", @@http_options.merge({
+    Typhoeus.get("http://127.0.0.1:9080/info/", http_options.merge({
       :headers => headers,
     }))
   end

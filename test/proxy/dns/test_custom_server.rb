@@ -40,7 +40,7 @@ class TestProxyDnsCustomServer < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/invalid-hostname-begins-resolving/", :backend_prefix => "/info/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/invalid-hostname-begins-resolving/", self.http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/invalid-hostname-begins-resolving/", http_options)
       assert_equal(502, response.code, response.body)
 
       set_dns_records(["invalid-hostname-begins-resolving.ooga 60 A 127.0.0.1"])
@@ -160,7 +160,7 @@ class TestProxyDnsCustomServer < Minitest::Test
 
       hydra = Typhoeus::Hydra.new(:max_concurrency => 10)
       requests = Array.new(250) do
-        request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_id}/multiple-ips/", self.http_options)
+        request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_id}/multiple-ips/", http_options)
         hydra.queue(request)
         request
       end
@@ -225,7 +225,7 @@ class TestProxyDnsCustomServer < Minitest::Test
         # duration is hit.
         on_complete = proc do
           if(Time.now.utc - start_time < test_duration)
-            request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_id}/no-drops-during-changes/", self.http_options)
+            request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_id}/no-drops-during-changes/", http_options)
             request.on_complete(&on_complete)
             requests << request
             hydra.queue(request)

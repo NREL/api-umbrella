@@ -10,7 +10,7 @@ class TestApisV1ApisIndex < Minitest::Capybara::Test
   end
 
   def test_datatables_output_fields
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token))
     assert_equal(200, response.code, response.body)
 
     data = MultiJson.load(response.body)
@@ -24,7 +24,7 @@ class TestApisV1ApisIndex < Minitest::Capybara::Test
 
   def test_paginate_results
     FactoryGirl.create_list(:api, 3)
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis.json?length=2", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis.json?length=2", http_options.deep_merge(admin_token))
     assert_equal(200, response.code, response.body)
 
     assert_equal(3, Api.where(:deleted_at => nil).count)

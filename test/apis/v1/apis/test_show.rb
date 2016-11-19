@@ -25,7 +25,7 @@ class TestApisV1ApisShow < Minitest::Capybara::Test
     api = FactoryGirl.create(:api, {
       :settings => FactoryGirl.build(:custom_rate_limit_api_setting),
     })
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_equal(200, response.code, response.body)
 
     data = MultiJson.load(response.body)
@@ -62,7 +62,7 @@ class TestApisV1ApisShow < Minitest::Capybara::Test
       :settings => FactoryGirl.attributes_for(:api_setting, {
       }),
     })
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_equal(200, response.code, response.body)
 
     data = MultiJson.load(response.body)
@@ -78,7 +78,7 @@ class TestApisV1ApisShow < Minitest::Capybara::Test
         ],
       }),
     })
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_equal(200, response.code, response.body)
 
     data = MultiJson.load(response.body)
@@ -99,7 +99,7 @@ class TestApisV1ApisShow < Minitest::Capybara::Test
         ],
       }),
     })
-    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", @@http_options.deep_merge(admin_token))
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_equal(200, response.code, response.body)
 
     data = MultiJson.load(response.body)

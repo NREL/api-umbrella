@@ -15,7 +15,7 @@ class TestProxyConcurrency < Minitest::Test
   def test_proxies_concurrent_requests_properly
     hydra = Typhoeus::Hydra.new
     requests = Array.new(20) do |index|
-      request = Typhoeus::Request.new("http://127.0.0.1:9080/api/echo_delayed_chunked", self.http_options.deep_merge({
+      request = Typhoeus::Request.new("http://127.0.0.1:9080/api/echo_delayed_chunked", http_options.deep_merge({
         :params => {
           :input => "#{unique_test_id}-#{index}-#{SecureRandom.hex(40)}",
         },
