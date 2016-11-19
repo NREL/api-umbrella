@@ -6,8 +6,8 @@ I18n.backend.load_translations
 
 class TestAdminUiLocales < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
-  include ApiUmbrellaTests::AdminAuth
-  include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTestHelpers::AdminAuth
+  include ApiUmbrellaTestHelpers::Setup
 
   def setup
     setup_server

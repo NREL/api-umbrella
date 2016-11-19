@@ -1,4 +1,4 @@
-module ApiUmbrellaTests
+module ApiUmbrellaTestHelpers
   module AdminPermissions
     def assert_default_admin_permissions(factory, options)
       options[:except_required_permissions] = AdminPermission.pluck(:id) - options[:required_permissions]

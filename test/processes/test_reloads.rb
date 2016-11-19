@@ -1,7 +1,7 @@
 require_relative "../test_helper"
 
 class TestProcessesReloads < Minitest::Test
-  include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTestHelpers::Setup
 
   def setup
     setup_server
@@ -127,7 +127,7 @@ class TestProcessesReloads < Minitest::Test
       reload_thread = Thread.new do
         loop do
           sleep rand(0.005..0.5)
-          ApiUmbrellaTests::Process.reload("--router")
+          ApiUmbrellaTestHelpers::Process.reload("--router")
         end
       end
 

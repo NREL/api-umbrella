@@ -1,6 +1,6 @@
 require "securerandom"
 
-module ApiUmbrellaTests
+module ApiUmbrellaTestHelpers
   module AdminAuth
     def admin_login(admin = nil)
       admin ||= FactoryGirl.create(:admin)

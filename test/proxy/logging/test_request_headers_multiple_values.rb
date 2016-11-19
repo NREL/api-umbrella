@@ -1,8 +1,8 @@
 require_relative "../../test_helper"
 
 class TestProxyLoggingRequestHeadersMultipleValues < Minitest::Test
-  include ApiUmbrellaTests::Setup
-  include ApiUmbrellaTests::Logging
+  include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::Logging
   parallelize_me!
 
   MULTIPLE_FORBIDDEN = {

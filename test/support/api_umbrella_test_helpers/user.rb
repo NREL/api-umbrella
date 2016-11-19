@@ -1,4 +1,4 @@
-module ApiUmbrellaTests
+module ApiUmbrellaTestHelpers
   class User
     @@api_key_sequence = 0
 

@@ -1,8 +1,8 @@
 require_relative "../../../test_helper"
 
 class TestApisV1ApisSaveHostValidations < Minitest::Capybara::Test
-  include ApiUmbrellaTests::AdminAuth
-  include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTestHelpers::AdminAuth
+  include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 
   def setup

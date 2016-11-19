@@ -2,8 +2,8 @@ require_relative "../test_helper"
 
 class TestAdminUiElasticsearchProxy < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
-  include ApiUmbrellaTests::AdminAuth
-  include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTestHelpers::AdminAuth
+  include ApiUmbrellaTestHelpers::Setup
 
   def setup
     setup_server

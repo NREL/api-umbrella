@@ -1,6 +1,6 @@
 require "ipaddr"
 
-module ApiUmbrellaTests
+module ApiUmbrellaTestHelpers
   class Process
     EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded").freeze
     CONFIG_PATH = "/tmp/integration_test_suite.yml:/tmp/integration_test_suite_overrides.yml".freeze
@@ -8,7 +8,7 @@ module ApiUmbrellaTests
 
     def self.start
       Minitest.after_run do
-        ApiUmbrellaTests::Process.stop
+        ApiUmbrellaTestHelpers::Process.stop
       end
 
       start_time = Time.now.utc

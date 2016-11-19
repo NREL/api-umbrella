@@ -1,4 +1,4 @@
-module ApiUmbrellaTests
+module ApiUmbrellaTestHelpers
   module Dns
     # When checking to make sure we adhere to TTLs on the domain names, add a
     # buffer to our timing calculations. This is to account for some fuzziness in

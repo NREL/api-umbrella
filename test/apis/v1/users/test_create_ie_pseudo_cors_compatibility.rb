@@ -5,8 +5,8 @@ require_relative "../../../test_helper"
 # even if the endpoint is called with empty or text/plain content-types. See
 # ApplicationController#parse_post_for_pseudo_ie_cors for more detail.
 class TestApisV1UsersCreateIePseudoCorsCompatibility < Minitest::Capybara::Test
-  include ApiUmbrellaTests::AdminAuth
-  include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTestHelpers::AdminAuth
+  include ApiUmbrellaTestHelpers::Setup
 
   def setup
     setup_server

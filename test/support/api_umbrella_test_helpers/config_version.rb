@@ -1,4 +1,4 @@
-module ApiUmbrellaTests
+module ApiUmbrellaTestHelpers
   class ConfigVersion
     def self.client
       @client ||= Mongo::Client.new($config["mongodb"]["url"])
@@ -42,7 +42,7 @@ module ApiUmbrellaTests
 
     def self.wait_until_live(config_version)
       version = (config_version["version"].to_f * 1000).to_i
-      ApiUmbrellaTests::Process.wait_for_config_version("db_config_version", version)
+      ApiUmbrellaTestHelpers::Process.wait_for_config_version("db_config_version", version)
     end
   end
 end

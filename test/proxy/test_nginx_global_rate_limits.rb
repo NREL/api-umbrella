@@ -1,8 +1,8 @@
 require_relative "../test_helper"
 
 class TestProxyNginxGlobalRateLimits < Minitest::Test
-  include ApiUmbrellaTests::Setup
-  include ApiUmbrellaTests::Logging
+  include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::Logging
 
   def setup
     setup_server

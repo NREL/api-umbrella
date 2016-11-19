@@ -1,4 +1,4 @@
-module ApiUmbrellaTests
+module ApiUmbrellaTestHelpers
   module DelayedJob
     private
 

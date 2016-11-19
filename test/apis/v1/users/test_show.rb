@@ -1,8 +1,8 @@
 require_relative "../../../test_helper"
 
 class TestApisV1UsersShow < Minitest::Capybara::Test
-  include ApiUmbrellaTests::AdminAuth
-  include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTestHelpers::AdminAuth
+  include ApiUmbrellaTestHelpers::Setup
 
   def setup
     setup_server

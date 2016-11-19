@@ -1,8 +1,8 @@
 require_relative "../../test_helper"
 
 class TestProxyDnsStaleCaching < Minitest::Test
-  include ApiUmbrellaTests::Setup
-  include ApiUmbrellaTests::Dns
+  include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::Dns
   include Minitest::Hooks
 
   MAX_STALE = 3

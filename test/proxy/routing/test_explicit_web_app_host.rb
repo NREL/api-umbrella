@@ -1,7 +1,7 @@
 require_relative "../../test_helper"
 
 class TestProxyRoutingExplicitWebAppHost < Minitest::Test
-  include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTestHelpers::Setup
   include Minitest::Hooks
 
   def setup
@@ -38,5 +38,5 @@ class TestProxyRoutingExplicitWebAppHost < Minitest::Test
     override_config_reset("--router")
   end
 
-  include ApiUmbrellaTests::Routing
+  include ApiUmbrellaSharedTests::Routing
 end

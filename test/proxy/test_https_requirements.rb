@@ -1,7 +1,7 @@
 require_relative "../test_helper"
 
 class TestProxyHttpsRequirements < Minitest::Test
-  include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTestHelpers::Setup
   include Minitest::Hooks
 
   def setup

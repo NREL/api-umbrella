@@ -1,6 +1,6 @@
 require "ipaddr"
 
-module ApiUmbrellaTests
+module ApiUmbrellaTestHelpers
   module Setup
     extend ActiveSupport::Concern
 
@@ -34,7 +34,7 @@ module ApiUmbrellaTests
       self.setup_mutex.synchronize do
         unless self.start_complete
           # Start the API Umbrella process to test against.
-          ApiUmbrellaTests::Process.start
+          ApiUmbrellaTestHelpers::Process.start
           self.start_complete = true
         end
       end
@@ -84,8 +84,8 @@ module ApiUmbrellaTests
             })
           end
 
-          ApiUmbrellaTests::ConfigVersion.delete_all
-          ApiUmbrellaTests::ConfigVersion.insert_default
+          ApiUmbrellaTestHelpers::ConfigVersion.delete_all
+          ApiUmbrellaTestHelpers::ConfigVersion.insert_default
 
           ApiUser.where(:registration_source.ne => "seed").delete_all
           user = FactoryGirl.create(:api_user, {
@@ -162,18 +162,18 @@ module ApiUmbrellaTests
 
     def publish_backends(type, records)
       self.config_publish_mutex.synchronize do
-        config_version = ApiUmbrellaTests::ConfigVersion.get
+        config_version = ApiUmbrellaTestHelpers::ConfigVersion.get
         config_version["config"][type] = records + (config_version["config"][type] || [])
-        ApiUmbrellaTests::ConfigVersion.insert(config_version)
+        ApiUmbrellaTestHelpers::ConfigVersion.insert(config_version)
       end
     end
 
     def unpublish_backends(type, records)
       self.config_publish_mutex.synchronize do
         record_ids = records.map { |record| record["_id"] }
-        config_version = ApiUmbrellaTests::ConfigVersion.get
+        config_version = ApiUmbrellaTestHelpers::ConfigVersion.get
         config_version["config"][type].reject! { |record| record_ids.include?(record["_id"]) }
-        ApiUmbrellaTests::ConfigVersion.insert(config_version)
+        ApiUmbrellaTestHelpers::ConfigVersion.insert(config_version)
       end
     end
 
@@ -192,16 +192,16 @@ module ApiUmbrellaTests
       self.config_set_mutex.synchronize do
         config["version"] = SecureRandom.uuid
         File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump(config))
-        ApiUmbrellaTests::Process.reload(reload_flag)
-        ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", config["version"], config)
+        ApiUmbrellaTestHelpers::Process.reload(reload_flag)
+        ApiUmbrellaTestHelpers::Process.wait_for_config_version("file_config_version", config["version"], config)
       end
     end
 
     def override_config_reset(reload_flag)
       self.config_set_mutex.synchronize do
         File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump({ "version" => 0 }))
-        ApiUmbrellaTests::Process.reload(reload_flag)
-        ApiUmbrellaTests::Process.wait_for_config_version("file_config_version", 0)
+        ApiUmbrellaTestHelpers::Process.reload(reload_flag)
+        ApiUmbrellaTestHelpers::Process.wait_for_config_version("file_config_version", 0)
       end
     end
 

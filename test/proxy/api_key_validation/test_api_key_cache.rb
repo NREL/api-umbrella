@@ -1,7 +1,7 @@
 require_relative "../../test_helper"
 
 class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
-  include ApiUmbrellaTests::Setup
+  include ApiUmbrellaTestHelpers::Setup
 
   def setup
     setup_server

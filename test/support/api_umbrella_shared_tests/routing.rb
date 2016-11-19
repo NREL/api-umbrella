@@ -1,6 +1,8 @@
-module ApiUmbrellaTests
+require "support/api_umbrella_test_helpers/admin_auth"
+
+module ApiUmbrellaSharedTests
   module Routing
-    include ApiUmbrellaTests::AdminAuth
+    include ApiUmbrellaTestHelpers::AdminAuth
 
     def test_website
       response = Typhoeus.get("http://127.0.0.1:9080/", self.http_options.except(:headers))
