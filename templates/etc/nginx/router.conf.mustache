@@ -278,6 +278,7 @@ http {
       proxy_pass http://puma;
     }
 
+    rewrite ^/admin$ /admin/ permanent;
     location /admin/ {
       {{^_development_env?}}
         {{^_test_env?}}
