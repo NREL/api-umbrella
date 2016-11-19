@@ -205,7 +205,6 @@ http {
   server {
     listen {{static_site.host}}:{{static_site.port}};
     server_name _;
-    port_in_redirect off;
 
     root {{static_site.build_dir}};
   }
@@ -266,8 +265,6 @@ http {
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
     root {{web.dir}}/public;
-
-    port_in_redirect off;
 
     {{^_development_env?}}
     location /web-assets/ {
