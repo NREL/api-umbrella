@@ -13,7 +13,7 @@ module ApiUmbrellaTests
     mattr_accessor(:setup_mutex) { Mutex.new }
     mattr_accessor(:config_mutex) { Mutex.new }
     mattr_accessor(:config_set_mutex) { Mutex.new }
-    mattr_accessor(:api_config_mutex) { Mutex.new }
+    mattr_accessor(:config_publish_mutex) { Mutex.new }
 
     included do
       mattr_accessor :class_setup_complete
@@ -135,21 +135,45 @@ module ApiUmbrellaTests
         api["_id"] = "#{unique_test_id}-#{@prepend_api_backends_counter}"
       end
 
-      self.api_config_mutex.synchronize do
-        config_version = ApiUmbrellaTests::ConfigVersion.get
-        config_version["config"]["apis"] = apis + config_version["config"]["apis"]
-        ApiUmbrellaTests::ConfigVersion.insert(config_version)
-      end
+      publish_backends("apis", apis)
 
       yield if(block_given?)
     ensure
       if(block_given?)
-        self.api_config_mutex.synchronize do
-          api_ids = apis.map { |api| api["_id"] }
-          config_version = ApiUmbrellaTests::ConfigVersion.get
-          config_version["config"]["apis"].reject! { |api| api_ids.include?(api["_id"]) }
-          ApiUmbrellaTests::ConfigVersion.insert(config_version)
-        end
+        unpublish_backends("apis", apis)
+      end
+    end
+
+    def prepend_website_backends(websites)
+      @prepend_website_backends_counter ||= 0
+      websites.each do |website|
+        @prepend_website_backends_counter += 1
+        website["_id"] = "#{unique_test_id}-#{@prepend_website_backends_counter}"
+      end
+
+      publish_backends("website_backends", websites)
+
+      yield if(block_given?)
+    ensure
+      if(block_given?)
+        unpublish_backends("website_backends", websites)
+      end
+    end
+
+    def publish_backends(type, records)
+      self.config_publish_mutex.synchronize do
+        config_version = ApiUmbrellaTests::ConfigVersion.get
+        config_version["config"][type] = records + (config_version["config"][type] || [])
+        ApiUmbrellaTests::ConfigVersion.insert(config_version)
+      end
+    end
+
+    def unpublish_backends(type, records)
+      self.config_publish_mutex.synchronize do
+        record_ids = records.map { |record| record["_id"] }
+        config_version = ApiUmbrellaTests::ConfigVersion.get
+        config_version["config"][type].reject! { |record| record_ids.include?(record["_id"]) }
+        ApiUmbrellaTests::ConfigVersion.insert(config_version)
       end
     end
 

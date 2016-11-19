@@ -615,8 +615,23 @@ server {
 
   location / {
     echo_status 404;
-    more_set_headers "Content-Type: text/html";
+    more_set_headers "Content-Type: text/plain";
     echo -n "Test Website 404 Not Found";
+  }
+}
+
+server {
+  listen 127.0.0.1:9440;
+  listen [::1]:9440;
+
+  location = / {
+    echo -n "Test Default Website Home Page";
+  }
+
+  location / {
+    echo_status 404;
+    more_set_headers "Content-Type: text/plain";
+    echo -n "Test Default Website 404 Not Found";
   }
 }
 
