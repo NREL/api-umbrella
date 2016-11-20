@@ -2,6 +2,7 @@ require_relative "../../test_helper"
 
 class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::ExerciseAllWorkers
 
   def setup
     setup_server
@@ -14,9 +15,12 @@ class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
 
     # Make requests against all the workers processes so the key is cache
     # locally inside each worker.
-    requests = exercise_all_workers(user.api_key, "pre")
-    requests.each do |request|
-      assert_equal(200, request.response.code, request.response.body)
+    responses = exercise_all_workers("/api/info/", {
+      :headers => { "X-Api-Key" => user.api_key },
+      :params => { :step => "pre" },
+    })
+    responses.each do |response|
+      assert_equal(200, response.code, response.body)
     end
 
     # Disable the API key
@@ -25,9 +29,12 @@ class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
 
     # Immediately make more requests. These should still succeed due to the
     # local cache.
-    requests = exercise_all_workers(user.api_key, "post-save")
-    requests.each do |request|
-      assert_equal(200, request.response.code, request.response.body)
+    responses = exercise_all_workers("/api/info/", {
+      :headers => { "X-Api-Key" => user.api_key },
+      :params => { :step => "post-save" },
+    })
+    responses.each do |response|
+      assert_equal(200, response.code, response.body)
     end
 
     # Wait for the cache to expire
@@ -35,10 +42,13 @@ class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
 
     # With the cache expired, now all requests should be rejected due to the
     # disabled key.
-    requests = exercise_all_workers(user.api_key, "post-timeout")
-    requests.each do |request|
-      assert_equal(403, request.response.code, request.response.body)
-      assert_match("API_KEY_DISABLED", request.response.body)
+    responses = exercise_all_workers("/api/info/", {
+      :headers => { "X-Api-Key" => user.api_key },
+      :params => { :step => "post-timeout" },
+    })
+    responses.each do |response|
+      assert_equal(403, response.code, response.body)
+      assert_match("API_KEY_DISABLED", response.body)
     end
   end
 
@@ -50,9 +60,7 @@ class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
     hydra = Typhoeus::Hydra.new
     requests = Array.new(20) do
       request = Typhoeus::Request.new("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
-        :headers => {
-          "X-Api-Key" => user.api_key,
-        },
+        :headers => { "X-Api-Key" => user.api_key },
       }))
       hydra.queue(request)
       request
@@ -72,9 +80,7 @@ class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
 
     20.times do
       response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
-        :headers => {
-          "X-Api-Key" => user.api_key,
-        },
+        :headers => { "X-Api-Key" => user.api_key },
       }))
       assert_equal(200, response.code, response.body)
       assert_equal("Hello World", response.body)
@@ -92,9 +98,12 @@ class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
       })
 
       # Make requests against all the workers processes.
-      requests = exercise_all_workers(user.api_key, "pre")
-      requests.each do |request|
-        assert_equal(200, request.response.code, request.response.body)
+      responses = exercise_all_workers("/api/info/", {
+        :headers => { "X-Api-Key" => user.api_key },
+        :params => { :step => "pre" },
+      })
+      responses.each do |response|
+        assert_equal(200, response.code, response.body)
       end
 
       # Disable the API key
@@ -103,52 +112,14 @@ class TestProxyApiKeyValidationApiKeyCache < Minitest::Test
 
       # Immediately make more requests. These should still immediately be
       # rejected since the key caching is disabled.
-      requests = exercise_all_workers(user.api_key, "post-save")
-      requests.each do |request|
-        assert_equal(403, request.response.code, request.response.body)
-        assert_match("API_KEY_DISABLED", request.response.body)
+      responses = exercise_all_workers("/api/info/", {
+        :headers => { "X-Api-Key" => user.api_key },
+        :params => { :step => "post-save" },
+      })
+      responses.each do |response|
+        assert_equal(403, response.code, response.body)
+        assert_match("API_KEY_DISABLED", response.body)
       end
     end
-  end
-
-  private
-
-  def exercise_all_workers(api_key, step)
-    requests = []
-    ids_seen = Set.new
-    pids_seen = Set.new
-    begin
-      Timeout.timeout(10) do
-        loop do
-          request = Typhoeus::Request.new("http://127.0.0.1:9080/api/info/?#{unique_test_id}-#{step}", http_options.deep_merge({
-            :headers => {
-              "X-Api-Key" => api_key,
-              # Return debug information on the responses about which nginx
-              # worker process was used for the request.
-              "X-Api-Umbrella-Test-Debug-Workers" => "true",
-              # Don't use keepalive connections. This helps hit all the worker
-              # processes more quickly.
-              "Connection" => "close",
-            },
-          }))
-          request.run
-          if(request.response.headers["x-api-umbrella-test-worker-id"])
-            ids_seen << request.response.headers["x-api-umbrella-test-worker-id"]
-          end
-          if(request.response.headers["x-api-umbrella-test-worker-pid"])
-            pids_seen << request.response.headers["x-api-umbrella-test-worker-pid"]
-          end
-          requests << request
-
-          if(ids_seen.length == $config["nginx"]["workers"] && pids_seen.length >= $config["nginx"]["workers"])
-            break
-          end
-        end
-      end
-    rescue Timeout::Error
-      raise Timeout::Error, "All nginx workers not hit. Expected workers: #{$config["nginx"]["workers"]} Worker IDs seen: #{ids_seen.to_a.inspect} Worker PIDs seen: #{pids_seen.to_a.inspect}"
-    end
-
-    requests
   end
 end

@@ -5,6 +5,7 @@ module ApiUmbrellaTestHelpers
     extend ActiveSupport::Concern
 
     @@incrementing_unique_ip_addr = IPAddr.new("127.0.0.1")
+    @@current_override_config = {}
     mattr_reader :api_user
     mattr_reader :api_key
     mattr_reader :http_options
@@ -181,30 +182,31 @@ module ApiUmbrellaTestHelpers
 
     def override_config(config, reload_flag)
       self.config_mutex.synchronize do
+        original_config = @@current_override_config
+        original_config["version"] ||= SecureRandom.uuid
+
         begin
           override_config_set(config, reload_flag)
           yield
         ensure
-          override_config_reset(reload_flag)
+          override_config_set(original_config, reload_flag)
         end
       end
     end
 
     def override_config_set(config, reload_flag)
       self.config_set_mutex.synchronize do
+        config = config.deep_stringify_keys
         config["version"] = SecureRandom.uuid
         File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump(config))
         ApiUmbrellaTestHelpers::Process.reload(reload_flag)
+        @@current_override_config = config
         ApiUmbrellaTestHelpers::Process.wait_for_config_version("file_config_version", config["version"], config)
       end
     end
 
     def override_config_reset(reload_flag)
-      self.config_set_mutex.synchronize do
-        File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump({ "version" => 0 }))
-        ApiUmbrellaTestHelpers::Process.reload(reload_flag)
-        ApiUmbrellaTestHelpers::Process.wait_for_config_version("file_config_version", 0)
-      end
+      override_config_set({}, reload_flag)
     end
 
     def unique_test_class_id
@@ -215,10 +217,14 @@ module ApiUmbrellaTestHelpers
       @unique_test_id ||= self.location.gsub(/[^\w]/, "-")
     end
 
+    def next_unique_ip_addr
+      @@incrementing_unique_ip_addr = @@incrementing_unique_ip_addr.succ
+      @@incrementing_unique_ip_addr.to_s
+    end
+
     def unique_test_ip_addr
       unless @unique_test_ip_addr
-        @@incrementing_unique_ip_addr = @@incrementing_unique_ip_addr.succ
-        @unique_test_ip_addr ||= @@incrementing_unique_ip_addr.to_s
+        @unique_test_ip_addr = next_unique_ip_addr
       end
 
       @unique_test_ip_addr
