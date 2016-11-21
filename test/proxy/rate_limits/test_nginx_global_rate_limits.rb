@@ -1,6 +1,6 @@
-require_relative "../test_helper"
+require_relative "../../test_helper"
 
-class TestProxyNginxGlobalRateLimits < Minitest::Test
+class TestProxyRateLimitsNginxGlobalRateLimits < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::Logging
 
