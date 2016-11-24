@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class TestProxyRequestRewritingCookieStripping < Minitest::Test
+class Test::Proxy::RequestRewriting::TestCookieStripping < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 

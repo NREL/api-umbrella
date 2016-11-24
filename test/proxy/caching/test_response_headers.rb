@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class TestProxyCachingResponseHeaders < Minitest::Test
+class Test::Proxy::Caching::TestResponseHeaders < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 

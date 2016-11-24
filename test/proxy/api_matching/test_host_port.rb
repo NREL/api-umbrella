@@ -5,7 +5,7 @@ require_relative "../../test_helper"
 # now only match on the hostname portion of the Host header (ignoring the
 # port). So these are various sanity checks to ensure we no longer match based
 # on port, and instead take the first matching hostname.
-class TestProxyApiMatchingHostPort < Minitest::Test
+class Test::Proxy::ApiMatching::TestHostPort < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::ApiMatching
   parallelize_me!

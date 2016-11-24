@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestProcessesReloads < Minitest::Test
+class Test::Processes::TestReloads < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup

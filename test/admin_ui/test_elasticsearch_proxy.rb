@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestAdminUiElasticsearchProxy < Minitest::Capybara::Test
+class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup

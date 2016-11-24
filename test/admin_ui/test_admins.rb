@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestAdminUiAdmins < Minitest::Capybara::Test
+class Test::AdminUi::TestAdmins < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup

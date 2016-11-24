@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestProxyMongodbReplicaSet < Minitest::Test
+class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include Minitest::Hooks
 

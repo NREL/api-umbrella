@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestProxyUrlSpecialCharacters < Minitest::Test
+class Test::Proxy::TestUrlSpecialCharacters < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 

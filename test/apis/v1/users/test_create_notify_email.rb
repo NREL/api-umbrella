@@ -1,6 +1,6 @@
 require_relative "../../../test_helper"
 
-class TestApisV1UsersCreateNotifyEmail < Minitest::Capybara::Test
+class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::DelayedJob

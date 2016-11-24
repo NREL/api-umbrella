@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class TestProxyApiKeyValidationEmailVerification < Minitest::Test
+class Test::Proxy::ApiKeyValidation::TestEmailVerification < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 

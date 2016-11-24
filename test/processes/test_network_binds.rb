@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestProcessesNetworkBinds < Minitest::Test
+class Test::Processes::TestNetworkBinds < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup

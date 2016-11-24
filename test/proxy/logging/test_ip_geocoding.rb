@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class TestProxyLoggingIpGeocoding < Minitest::Test
+class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::Logging
   parallelize_me!

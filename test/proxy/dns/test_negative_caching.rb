@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class TestProxyDnsNegativeCaching < Minitest::Test
+class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::Dns
   include Minitest::Hooks

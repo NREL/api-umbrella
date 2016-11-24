@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestHostSslCerts < Minitest::Test
+class Test::Proxy::TestHostSslCerts < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::Dns
   include Minitest::Hooks

@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestProxyConnectionTimeouts < Minitest::Test
+class Test::Proxy::TestConnectionTimeouts < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 

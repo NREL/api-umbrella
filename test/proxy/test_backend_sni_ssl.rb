@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestBackendSniSsl < Minitest::Test
+class Test::Proxy::TestBackendSniSsl < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::Dns
   include Minitest::Hooks

@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class TestProxyRequestRewritingStripsApiKeys < Minitest::Test
+class Test::Proxy::RequestRewriting::TestStripsApiKeys < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 

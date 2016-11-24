@@ -225,11 +225,11 @@ module ApiUmbrellaTestHelpers
     end
 
     def unique_test_class_id
-      @unique_test_class_id ||= self.class.name
+      @unique_test_class_id ||= self.class.name.gsub(/[^\w]+/, "-")
     end
 
     def unique_test_id
-      @unique_test_id ||= self.location.gsub(/[^\w]/, "-")
+      @unique_test_id ||= self.location.gsub(/[^\w]+/, "-")
     end
 
     def next_unique_ip_addr

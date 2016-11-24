@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class TestProxyRateLimitsApiKeyOptionalApiKeyLimits < Minitest::Test
+class Test::Proxy::RateLimits::TestApiKeyOptionalApiKeyLimits < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::RateLimits
   include Minitest::Hooks

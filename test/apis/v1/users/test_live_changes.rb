@@ -1,6 +1,6 @@
 require_relative "../../../test_helper"
 
-class TestApisV1UsersLiveChanges < Minitest::Capybara::Test
+class Test::Apis::V1::Users::TestLiveChanges < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!

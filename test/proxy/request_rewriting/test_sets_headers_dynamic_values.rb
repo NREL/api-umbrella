@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class TestProxyRequestRewritingSetsHeadersDynamicValues < Minitest::Test
+class Test::Proxy::RequestRewriting::TestSetsHeadersDynamicValues < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 

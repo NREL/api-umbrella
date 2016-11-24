@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestProxyDatabaseSeeding < Minitest::Test
+class Test::Proxy::TestDatabaseSeeding < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 

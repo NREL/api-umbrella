@@ -4,7 +4,7 @@ locales_root_dir = File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/web-app/co
 I18n.load_path = Dir[File.join(locales_root_dir, "*.yml")]
 I18n.backend.load_translations
 
-class TestAdminUiLocales < Minitest::Capybara::Test
+class Test::AdminUi::TestLocales < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup

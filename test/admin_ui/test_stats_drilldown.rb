@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestAdminUiStatsMap < Minitest::Capybara::Test
+class Test::AdminUi::TestStatsDrilldown < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
@@ -11,8 +11,8 @@ class TestAdminUiStatsMap < Minitest::Capybara::Test
   end
 
   def test_csv_download
-    FactoryGirl.create_list(:log_item, 5, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US")
-    FactoryGirl.create_list(:log_item, 5, :request_at => 1421413588000, :request_ip_country => "CI")
+    FactoryGirl.create_list(:log_item, 5, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
+    FactoryGirl.create_list(:log_item, 5, :request_at => 1421413588000)
     LogItem.gateway.refresh_index!
     default_query = JSON.generate({
       "condition" => "AND",
@@ -27,28 +27,29 @@ class TestAdminUiStatsMap < Minitest::Capybara::Test
     })
 
     admin_login
-    visit "/admin/#/stats/map?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18"
+    visit "/admin/#/stats/drilldown?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
     refute_selector(".busy-blocker")
 
     assert_link("Download CSV", :href => /start_at=2015-01-12/)
     link = find_link("Download CSV")
     uri = Addressable::URI.parse(link[:href])
-    assert_equal("/admin/stats/map.csv", uri.path)
+    assert_equal("/api-umbrella/v1/analytics/drilldown.csv", uri.path)
     assert_equal({
       "tz" => "America/Denver",
       "start_at" => "2015-01-12",
       "end_at" => "2015-01-18",
+      "interval" => "day",
       "search" => "",
       "query" => default_query,
-      "region" => "world",
+      "prefix" => "0/",
       "beta_analytics" => "false",
-    }, uri.query_values)
+    }, uri.query_values.except("api_key"))
+    assert_equal(40, uri.query_values["api_key"].length)
 
     # Wait for the ajax actions to fetch the graph and tables to both
     # complete, or else the download link seems to be flakey in Capybara.
     assert_text("Download CSV")
-    assert_text("United States")
-    assert_text("Côte D'Ivoire")
+    assert_text("127.0.0.1/")
     refute_selector(".busy-blocker")
     click_link "Download CSV"
 

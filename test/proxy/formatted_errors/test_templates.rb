@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class TestProxyFormattedErrorsTemplates < Minitest::Test
+class Test::Proxy::FormattedErrors::TestTemplates < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::FormattedErrors
   parallelize_me!

@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-class TestProxyNginxBans < Minitest::Test
+class Test::Proxy::TestNginxBans < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup

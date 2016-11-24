@@ -1,6 +1,6 @@
 require_relative "../../test_helper"
 
-class TestProxyApiKeyValidationHittingBackendApp < Minitest::Test
+class Test::Proxy::ApiKeyValidation::TestHittingBackendApp < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
