@@ -100,6 +100,7 @@ server {
     content_by_lua '
       local cjson = require "cjson";
       local raw_url = ngx.var.scheme .. "://" .. ngx.var.host .. ngx.var.request_uri
+      ngx.header["Content-Type"] = "application/json"
       ngx.print(cjson.encode({
         method = ngx.var.request_method,
         headers = ngx.req.get_headers(500),
@@ -139,6 +140,7 @@ server {
         end
       end
 
+      ngx.header["Content-Type"] = "application/json"
       ngx.print(cjson.encode({
         upload_size = upload_size,
       }))
@@ -572,6 +574,7 @@ server {
       local header = ngx.var.arg_header
       local raw_header = ngx.req.raw_header(true)
       local _, num_matches = ngx.re.gsub(raw_header, "^" .. header .. ": ", "", "im")
+      ngx.header["Content-Type"] = "application/json"
       ngx.print(cjson.encode({
         header_occurrences_received = num_matches,
         header_value = ngx.req.get_headers()[header],

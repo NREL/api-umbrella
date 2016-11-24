@@ -207,6 +207,10 @@ module ApiUmbrellaTestHelpers
 
     def override_config_set(config, reload_flag)
       self.config_set_mutex.synchronize do
+        if(self.class.test_order == :parallel)
+          raise "`override_config_set` cannot be called with `parallelize_me!` in the same class. Since overriding config affects the global state, it cannot be used with parallel tests."
+        end
+
         config = config.deep_stringify_keys
         config["version"] = SecureRandom.uuid
         File.write(ApiUmbrellaTestHelpers::Process::CONFIG_OVERRIDES_PATH, YAML.dump(config))
