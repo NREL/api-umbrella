@@ -201,15 +201,15 @@ class TestProxyRateLimitsApiLimits < Minitest::Test
 
     self.config_publish_mutex.synchronize do
       begin
-        original_config = ApiUmbrellaTestHelpers::ConfigVersion.get
+        original_config = ConfigVersion.active_config
         config = original_config.deep_dup
 
         # Find the already published "lower" api backend, change its rate
         # limits, and republish.
-        api = config["config"]["apis"].find { |a| a["url_matches"].present? && a["url_matches"][0]["frontend_prefix"] == "/#{unique_test_class_id}/lower/" }
+        api = config["apis"].find { |a| a["url_matches"].present? && a["url_matches"][0]["frontend_prefix"] == "/#{unique_test_class_id}/lower/" }
         assert_equal(3, api["settings"]["rate_limits"][0]["limit"])
         api["settings"]["rate_limits"][0]["limit"] = 80
-        ApiUmbrellaTestHelpers::ConfigVersion.insert(config)
+        ConfigVersion.publish!(config).wait_until_live
 
         # Make sure any local worker cache is cleared across all possible
         # worker processes.
@@ -218,7 +218,7 @@ class TestProxyRateLimitsApiLimits < Minitest::Test
           assert_equal("80", resp.headers["x-ratelimit-limit"])
         end
       ensure
-        ApiUmbrellaTestHelpers::ConfigVersion.insert(original_config)
+        ConfigVersion.publish!(original_config).wait_until_live
       end
     end
 

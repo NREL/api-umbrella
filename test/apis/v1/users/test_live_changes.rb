@@ -60,7 +60,7 @@ class TestApisV1UsersLiveChanges < Minitest::Capybara::Test
       # Update the key using the API to add the restricted role.
       response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/json" },
-          :body => MultiJson.dump(:user => { :roles => ["restricted"] }),
+        :body => MultiJson.dump(:user => { :roles => ["restricted"] }),
       }))
       assert_equal(200, response.code, response.body)
 

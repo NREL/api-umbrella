@@ -1,7 +1,7 @@
 {
   "id": "repl0",
   "rsSettings": {
-    "heartbeatTimeoutSecs": 1
+    "electionTimeoutMillis": 1000
   },
   "members": [
     {

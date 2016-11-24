@@ -3,7 +3,9 @@ require "ipaddr"
 module ApiUmbrellaTestHelpers
   class Process
     EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded").freeze
-    CONFIG_PATH = "/tmp/integration_test_suite.yml:/tmp/integration_test_suite_overrides.yml".freeze
+    CONFIG_PATH = File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml").freeze
+    CONFIG_OVERRIDES_PATH = "/tmp/integration_test_suite_overrides.yml".freeze
+    CONFIG = "#{CONFIG_PATH}:#{CONFIG_OVERRIDES_PATH}".freeze
     @@incrementing_unique_ip_addr = IPAddr.new("200.0.0.1")
 
     def self.start
@@ -17,9 +19,7 @@ module ApiUmbrellaTestHelpers
 
       Bundler.with_clean_env do
         $config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
-        $config["mongodb"]["url"] = "mongodb://127.0.0.1:13001/api_umbrella_test"
-        File.write("/tmp/integration_test_suite.yml", YAML.dump($config))
-        File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump({ "version" => 0 }))
+        File.write(CONFIG_OVERRIDES_PATH, YAML.dump({ "version" => 0 }))
 
         build = ChildProcess.build("make")
         build.io.inherit!
@@ -43,7 +43,7 @@ module ApiUmbrellaTestHelpers
         $api_umbrella_process = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "run")
         $api_umbrella_process.io.inherit!
         $api_umbrella_process.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
-        $api_umbrella_process.environment["API_UMBRELLA_CONFIG"] = CONFIG_PATH
+        $api_umbrella_process.environment["API_UMBRELLA_CONFIG"] = CONFIG
         $api_umbrella_process.leader = true
         $api_umbrella_process.start
 
@@ -51,7 +51,7 @@ module ApiUmbrellaTestHelpers
         health = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "health", "--wait-for-status", "green", "--wait-timeout", "90")
         health.io.inherit!
         health.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
-        health.environment["API_UMBRELLA_CONFIG"] = CONFIG_PATH
+        health.environment["API_UMBRELLA_CONFIG"] = CONFIG
         health.start
         health.wait
 
@@ -84,7 +84,7 @@ module ApiUmbrellaTestHelpers
           stop = ChildProcess.build(File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "stop")
           stop.io.inherit!
           stop.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
-          stop.environment["API_UMBRELLA_CONFIG"] = CONFIG_PATH
+          stop.environment["API_UMBRELLA_CONFIG"] = CONFIG
           stop.start
           stop.wait
         ensure
@@ -97,7 +97,7 @@ module ApiUmbrellaTestHelpers
       reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload", flag].compact)
       reload.io.inherit!
       reload.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
-      reload.environment["API_UMBRELLA_CONFIG"] = CONFIG_PATH
+      reload.environment["API_UMBRELLA_CONFIG"] = CONFIG
       reload.start
       reload.wait
     end

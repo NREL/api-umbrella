@@ -53,9 +53,6 @@ module ApiUmbrellaTestHelpers
             "clients" => {
               "default" => {
                 "uri" => $config["mongodb"]["url"],
-                "options" => {
-                  "max_pool_size" => 1,
-                },
               },
             },
           })
@@ -86,8 +83,22 @@ module ApiUmbrellaTestHelpers
             })
           end
 
-          ApiUmbrellaTestHelpers::ConfigVersion.delete_all
-          ApiUmbrellaTestHelpers::ConfigVersion.insert_default
+          ConfigVersion.delete_all
+          ConfigVersion.publish!({
+            "apis" => [
+              {
+                "_id" => "example",
+                "frontend_host" => "127.0.0.1",
+                "backend_host" => "127.0.0.1",
+                "servers" => [
+                  { "host" => "127.0.0.1", "port" => 9444 },
+                ],
+                "url_matches" => [
+                  { "frontend_prefix" => "/api/", "backend_prefix" => "/" },
+                ],
+              },
+            ],
+          }).wait_until_live
 
           ApiUser.where(:registration_source.ne => "seed").delete_all
           user = FactoryGirl.create(:api_user, {
@@ -165,18 +176,18 @@ module ApiUmbrellaTestHelpers
 
     def publish_backends(type, records)
       self.config_publish_mutex.synchronize do
-        config_version = ApiUmbrellaTestHelpers::ConfigVersion.get
-        config_version["config"][type] = records + (config_version["config"][type] || [])
-        ApiUmbrellaTestHelpers::ConfigVersion.insert(config_version)
+        config = ConfigVersion.active_config || {}
+        config[type] = records + (config[type] || [])
+        ConfigVersion.publish!(config).wait_until_live
       end
     end
 
     def unpublish_backends(type, records)
       self.config_publish_mutex.synchronize do
         record_ids = records.map { |record| record["_id"] }
-        config_version = ApiUmbrellaTestHelpers::ConfigVersion.get
-        config_version["config"][type].reject! { |record| record_ids.include?(record["_id"]) }
-        ApiUmbrellaTestHelpers::ConfigVersion.insert(config_version)
+        config = ConfigVersion.active_config || {}
+        config[type].reject! { |record| record_ids.include?(record["_id"]) }
+        ConfigVersion.publish!(config).wait_until_live
       end
     end
 
@@ -198,7 +209,7 @@ module ApiUmbrellaTestHelpers
       self.config_set_mutex.synchronize do
         config = config.deep_stringify_keys
         config["version"] = SecureRandom.uuid
-        File.write("/tmp/integration_test_suite_overrides.yml", YAML.dump(config))
+        File.write(ApiUmbrellaTestHelpers::Process::CONFIG_OVERRIDES_PATH, YAML.dump(config))
         ApiUmbrellaTestHelpers::Process.reload(reload_flag)
         @@current_override_config = config
         ApiUmbrellaTestHelpers::Process.wait_for_config_version("file_config_version", config["version"], config)

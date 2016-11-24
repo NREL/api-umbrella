@@ -78,7 +78,7 @@ router:
 rsyslog:
   port: 13014
 mongodb:
-  url: "mongodb://127.0.0.1:13090,127.0.0.1:13091/api_umbrella_test"
+  url: "mongodb://127.0.0.1:13001/api_umbrella_test"
   embedded_server_config:
     net:
       port: 13001

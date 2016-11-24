@@ -25,4 +25,9 @@ class ConfigVersion
       "apis" => Api.order_by(:sort_order.asc).all.map { |api| Hash[api.attributes] },
     }
   end
+
+  def wait_until_live
+    version = (self.version.to_f * 1000).to_i
+    ApiUmbrellaTestHelpers::Process.wait_for_config_version("db_config_version", version)
+  end
 end
