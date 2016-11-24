@@ -15,7 +15,7 @@ class TestProxyUploads < Minitest::Test
     chunks = file_size / chunk_size
     chunks.times { file.write(SecureRandom.random_bytes(chunk_size)) }
 
-    response = Typhoeus.post("http://127.0.0.1:9080/upload", http_options.deep_merge({
+    response = Typhoeus.post("http://127.0.0.1:9080/api/upload", http_options.deep_merge({
       :body => { :upload => file },
     }))
 

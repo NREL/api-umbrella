@@ -91,7 +91,7 @@ class TestProxyHttpHeaderLengths < Minitest::Test
       index += 1
     end
 
-    Typhoeus.get("http://127.0.0.1:9080/info/", http_options.merge({
+    Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.merge({
       :headers => headers,
     }))
   end

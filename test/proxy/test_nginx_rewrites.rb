@@ -14,8 +14,8 @@ class TestProxyNginxRewrites < Minitest::Test
           "hostname" => "default.foo",
           "default" => true,
           "rewrites" => [
-            "^/hello/rewrite/(debian|el|ubuntu)/([\\d\\.]+)/(file[_-]([\\d\\.]+)-\\d+).*((\\.|_)(amd64|x86_64).(deb|rpm)) https://example.com/downloads/v$4/$3.$1$2$5? redirect",
-            "^/hello/rewrite https://example.com/something/ permanent",
+            "^/#{unique_test_id}/hello/rewrite/(debian|el|ubuntu)/([\\d\\.]+)/(file[_-]([\\d\\.]+)-\\d+).*((\\.|_)(amd64|x86_64).(deb|rpm)) https://example.com/downloads/v$4/$3.$1$2$5? redirect",
+            "^/#{unique_test_id}/hello/rewrite https://example.com/something/ permanent",
           ],
         },
         {
@@ -24,12 +24,12 @@ class TestProxyNginxRewrites < Minitest::Test
       ],
     }, "--router") do
       # Basic rewrite
-      response = Typhoeus.get("http://127.0.0.1:9080/hello/rewrite?foo=bar", http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options)
       assert_equal(301, response.code, response.body)
       assert_equal("https://example.com/something/?foo=bar", response.headers["location"])
 
       # Advanced with replacements rewrite
-      response = Typhoeus.get("http://127.0.0.1:9080/hello/rewrite/el/7/file-0.6.0-1.el7.x86_64.rpm?foo=bar", http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite/el/7/file-0.6.0-1.el7.x86_64.rpm?foo=bar", http_options)
       assert_equal(302, response.code, response.body)
       assert_equal("https://example.com/downloads/v0.6.0/file-0.6.0-1.el7.x86_64.rpm", response.headers["location"])
     end
@@ -42,7 +42,7 @@ class TestProxyNginxRewrites < Minitest::Test
           "hostname" => "default.foo",
           "default" => true,
           "rewrites" => [
-            "^/hello/rewrite https://example.com/something/ permanent",
+            "^/#{unique_test_id}/hello/rewrite https://example.com/something/ permanent",
           ],
         },
         {
@@ -51,20 +51,20 @@ class TestProxyNginxRewrites < Minitest::Test
       ],
     }, "--router") do
       # Known host without rewrites
-      response = Typhoeus.get("http://127.0.0.1:9080/hello/rewrite?foo=bar", http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "default.foo" },
       }))
       assert_equal(301, response.code, response.body)
       assert_equal("https://example.com/something/?foo=bar", response.headers["location"])
 
       # Known host without rewrites
-      response = Typhoeus.get("http://127.0.0.1:9080/hello/rewrite?foo=bar", http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "known.foo" },
       }))
       assert_equal(404, response.code, response.body)
 
       # Unknown host
-      response = Typhoeus.get("http://127.0.0.1:9080/hello/rewrite?foo=bar", http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "unknown.foo" },
       }))
       assert_equal(301, response.code, response.body)
@@ -78,20 +78,20 @@ class TestProxyNginxRewrites < Minitest::Test
         {
           "hostname" => "default.foo",
           "rewrites" => [
-            "^/hello/rewrite https://example.com/something/ permanent",
+            "^/#{unique_test_id}/hello/rewrite https://example.com/something/ permanent",
           ],
         },
       ],
     }, "--router") do
       # Known host without rewrites
-      response = Typhoeus.get("http://127.0.0.1:9080/hello/rewrite?foo=bar", http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "default.foo" },
       }))
       assert_equal(301, response.code, response.body)
       assert_equal("https://example.com/something/?foo=bar", response.headers["location"])
 
       # Unknown host
-      response = Typhoeus.get("http://127.0.0.1:9080/hello/rewrite?foo=bar", http_options.deep_merge({
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "unknown.foo" },
       }))
       assert_equal(404, response.code, response.body)

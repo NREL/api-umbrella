@@ -27,7 +27,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
   def test_connect_timeout_get
     timeout = $config["nginx"]["proxy_connect_timeout"]
     delay = timeout + 5
-    response = Typhoeus.get("http://127.0.0.1:9080/delay-sec/#{delay}", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/delay-sec/#{delay}", http_options)
 
     assert_equal(504, response.code, response.body)
     assert_operator(response.total_time, :>, timeout)
@@ -37,7 +37,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
   def test_connect_timeout_post
     timeout = $config["nginx"]["proxy_connect_timeout"]
     delay = timeout + 5
-    response = Typhoeus.post("http://127.0.0.1:9080/delay-sec/#{delay}", http_options)
+    response = Typhoeus.post("http://127.0.0.1:9080/api/delay-sec/#{delay}", http_options)
 
     assert_equal(504, response.code, response.body)
     assert_operator(response.total_time, :>, timeout)
@@ -47,7 +47,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
   def test_response_begins_within_read_timeout
     delay1 = $config["nginx"]["proxy_read_timeout"] - 2
     delay2 = $config["nginx"]["proxy_connect_timeout"] + 5
-    response = Typhoeus.post("http://127.0.0.1:9080/delays-sec/#{delay1}/#{delay2}", http_options)
+    response = Typhoeus.post("http://127.0.0.1:9080/api/delays-sec/#{delay1}/#{delay2}", http_options)
 
     assert_equal(200, response.code, response.body)
     assert_equal("firstdone", response.body)
@@ -56,7 +56,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
   def test_response_sends_chunks_at_least_once_per_read_timeout_interval
     delay1 = $config["nginx"]["proxy_read_timeout"] - 8
     delay2 = $config["nginx"]["proxy_read_timeout"]
-    response = Typhoeus.post("http://127.0.0.1:9080/delays-sec/#{delay1}/#{delay2}", http_options)
+    response = Typhoeus.post("http://127.0.0.1:9080/api/delays-sec/#{delay1}/#{delay2}", http_options)
 
     assert_equal(200, response.code, response.body)
     assert_equal("firstdone", response.body)
@@ -65,7 +65,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
   def test_response_closes_when_chunk_delay_exceeds_read_timeout
     delay1 = $config["nginx"]["proxy_read_timeout"] - 8
     delay2 = $config["nginx"]["proxy_read_timeout"] + 4
-    response = Typhoeus.post("http://127.0.0.1:9080/delays-sec/#{delay1}/#{delay2}", http_options)
+    response = Typhoeus.post("http://127.0.0.1:9080/api/delays-sec/#{delay1}/#{delay2}", http_options)
 
     assert_equal(200, response.code, response.body)
     assert_equal("first", response.body)
@@ -78,7 +78,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
     start_time = Time.now.utc
 
     get_thread = Thread.new do
-      Thread.current[:response] = Typhoeus.get("http://127.0.0.1:9080/delay-sec/5", http_options)
+      Thread.current[:response] = Typhoeus.get("http://127.0.0.1:9080/api/delay-sec/5", http_options)
     end
 
     # Wait 1 second to ensure the first GET request is fully established to the
@@ -86,7 +86,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
     sleep 1
 
     post_thread = Thread.new do
-      Thread.current[:response] = Typhoeus.post("http://127.0.0.1:9080/delay-sec/5", http_options)
+      Thread.current[:response] = Typhoeus.post("http://127.0.0.1:9080/api/delay-sec/5", http_options)
     end
 
     get_thread.join
@@ -110,7 +110,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
     assert_equal(200, response.code, response.body)
     assert_equal("0", response.body)
 
-    response = Typhoeus.get("http://127.0.0.1:9080/timeout", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/timeout", http_options)
     assert_equal(504, response.code, response.body)
 
     # Ensure that the backend has only been called once.
@@ -135,7 +135,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
     assert_equal(200, response.code, response.body)
     assert_equal("0", response.body)
 
-    response = Typhoeus.post("http://127.0.0.1:9080/timeout", http_options)
+    response = Typhoeus.post("http://127.0.0.1:9080/api/timeout", http_options)
     assert_equal(504, response.code, response.body)
 
     # Ensure that the backend has only been called once.
@@ -160,7 +160,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
     assert_equal(200, response.code, response.body)
     assert_equal("0", response.body)
 
-    response = Typhoeus.get("http://127.0.0.1:9080/between-varnish-timeout", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/between-varnish-timeout", http_options)
     assert_equal(504, response.code, response.body)
 
     # Ensure that the backend has only been called once.
@@ -183,7 +183,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
     timeout_hydra = Typhoeus::Hydra.new
     timeout_requests = Array.new(50) do
       delay = $config["nginx"]["proxy_connect_timeout"] + 5
-      request = Typhoeus::Request.new("http://127.0.0.1:9080/delay-sec/#{delay}", http_options)
+      request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay-sec/#{delay}", http_options)
       timeout_hydra.queue(request)
       request
     end
@@ -191,7 +191,7 @@ class TestProxyConnectionTimeouts < Minitest::Test
 
     info_hydra = Typhoeus::Hydra.new
     info_requests = Array.new(50) do
-      request = Typhoeus::Request.new("http://127.0.0.1:9080/info/", http_options)
+      request = Typhoeus::Request.new("http://127.0.0.1:9080/api/info/", http_options)
       info_hydra.queue(request)
       request
     end

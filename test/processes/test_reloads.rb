@@ -48,7 +48,7 @@ class TestProcessesReloads < Minitest::Test
       # initialized later on in the tests).
       hydra = Typhoeus::Hydra.new(:max_concurrency => 10)
       200.times do
-        request = Typhoeus::Request.new("http://127.0.0.1:9080/delay/5?#{rand}", http_options)
+        request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/5?#{rand}", http_options)
         request.on_complete do |response|
           assert_equal(200, response.code, response.body)
         end
@@ -114,7 +114,7 @@ class TestProcessesReloads < Minitest::Test
         :frontend_host => "127.0.0.1",
         :backend_host => "127.0.0.1",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
-        :url_matches => [{ :frontend_prefix => "/db-config/hello", :backend_prefix => "/hello" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/db-config/hello", :backend_prefix => "/hello" }],
       },
     ]) do
       # Fetch the PID of the nginx parent/master process.
@@ -136,7 +136,7 @@ class TestProcessesReloads < Minitest::Test
       test_duration = 20
       start_time = Time.now.utc
       while(Time.now.utc - start_time < test_duration)
-        response = Typhoeus.get("http://127.0.0.1:9080/db-config/hello?#{rand}", http_options)
+        response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/db-config/hello?#{rand}", http_options)
         assert_equal(200, response.code, response.body)
         assert_equal("Hello World", response.body)
       end
@@ -170,7 +170,7 @@ class TestProcessesReloads < Minitest::Test
   end
 
   def test_file_based_config_changes_updates_apis
-    response = Typhoeus.get("http://127.0.0.1:9080/file-config/info/", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/file-config/info/", http_options)
     assert_equal(404, response.code, response.body)
 
     override_config({
@@ -179,20 +179,20 @@ class TestProcessesReloads < Minitest::Test
           "frontend_host" => "127.0.0.1",
           "backend_host" => "127.0.0.1",
           "servers" => [{ "host" => "127.0.0.1", "port" => 9444 }],
-          "url_matches" => [{ "frontend_prefix" => "/file-config/info/", "backend_prefix" => "/info/" }],
+          "url_matches" => [{ "frontend_prefix" => "/#{unique_test_id}/file-config/info/", "backend_prefix" => "/info/" }],
           "settings" => {
             "headers" => [{ "key" => "X-Test-File-Config", "value" => "foo" }],
           },
         },
       ],
     }, "--router") do
-      response = Typhoeus.get("http://127.0.0.1:9080/file-config/info/", http_options)
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/file-config/info/", http_options)
       assert_equal(200, response.code, response.body)
       data = MultiJson.load(response.body)
       assert_equal(data["headers"]["x-test-file-config"], "foo")
     end
 
-    response = Typhoeus.get("http://127.0.0.1:9080/file-config/info/", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/file-config/info/", http_options)
     assert_equal(404, response.code, response.body)
   end
 
