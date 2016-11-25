@@ -299,8 +299,4 @@ http {
       proxy_pass http://puma;
     }
   }
-
-  {{#_test_env?}}
-    include ./test_backends.conf;
-  {{/_test_env?}}
 }

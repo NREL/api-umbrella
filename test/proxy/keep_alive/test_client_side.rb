@@ -45,7 +45,7 @@ class Test::Proxy::KeepAlive::TestClientSide < Minitest::Test
   private
 
   def debug_http_options
-    http_opts = http_options.deep_merge({
+    http_options.deep_merge({
       # Provide a custom debug callback that doesn't print to STDOUT to curl's
       # debug output (https://github.com/typhoeus/typhoeus/issues/247).
       :verbose => true,

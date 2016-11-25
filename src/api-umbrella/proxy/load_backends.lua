@@ -28,7 +28,7 @@ local function generate_upstream_config(api)
     upstream = upstream .. balance .. ";\n"
   end
 
-  local keepalive = api["keepalive_connections"] or 10
+  local keepalive = api["keepalive_connections"] or config["router"]["api_backends"]["keepalive_connections"]
   upstream = upstream .. "keepalive " .. keepalive .. ";\n"
 
   local servers = {}

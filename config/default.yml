@@ -106,6 +106,7 @@ router:
   api_backends:
     host: 127.0.0.1
     port: 14011
+    keepalive_connections: 10
   trusted_proxies: []
   global_rate_limits:
     ip_rate:

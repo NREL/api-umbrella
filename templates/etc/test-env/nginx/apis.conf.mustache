@@ -123,6 +123,22 @@ server {
     ';
   }
 
+  location /connection-stats/ {
+    content_by_lua_block {
+      local cjson = require "cjson";
+      ngx.sleep(0.3)
+      ngx.header["Content-Type"] = "application/json"
+      ngx.say(cjson.encode({
+        connection = tonumber(ngx.var.connection),
+        connection_requests = tonumber(ngx.var.connection_requests),
+        connections_active = tonumber(ngx.var.connections_active),
+        connections_reading = tonumber(ngx.var.connections_reading),
+        connections_waiting = tonumber(ngx.var.connections_waiting),
+        connections_writing = tonumber(ngx.var.connections_writing),
+      }))
+    }
+  }
+
   location = /upload {
     content_by_lua '
       local cjson = require "cjson";
