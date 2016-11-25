@@ -63,28 +63,18 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
     header_list = Ethon::Curl.slist_append(header_list, "X-Api-Key: #{api_key}")
     header_list = Ethon::Curl.slist_append(header_list, "#{header}: 11")
     header_list = Ethon::Curl.slist_append(header_list, "#{header}: 22")
-    raw_request_headers = ""
     response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-request-headers/", http_options.deep_merge({
       :params => {
         :unique_query_id => unique_test_id,
         :header => header,
       },
       :httpheader => header_list,
-
-      # Provide a custom debug callback that doesn't print to STDOUT to capture
-      # our raw headers (https://github.com/typhoeus/typhoeus/issues/247).
       :verbose => true,
-      :debugfunction => proc do |handle, type, data, size, udata|
-        if(type == :header_out)
-          raw_request_headers << data.read_string(size)
-        end
-        0
-      end,
     }))
     assert_equal(200, response.code, response.body)
 
     # Verify that our outbound request included 2 distinct headers.
-    assert_equal(2, raw_request_headers.scan(/^#{header}: /).length)
+    assert_equal(2, response.debug_info.header_out.join("").scan(/^#{header}: /).length)
 
     # Verify that the request received by the API backend contained 2 distinct
     # headers, except in the cases where we overwrite the header during proxying.

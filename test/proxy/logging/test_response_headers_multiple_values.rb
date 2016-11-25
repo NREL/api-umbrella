@@ -60,25 +60,15 @@ class Test::Proxy::Logging::TestResponseHeadersMultipleValues < Minitest::Test
   private
 
   def response_with_duplicate_headers(header)
-    raw_response_headers = ""
     response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-response-headers/", http_options.deep_merge({
+      :verbose => true,
       :params => {
         :unique_query_id => unique_test_id,
         :header => header,
       },
-
-      # Provide a custom debug callback that doesn't print to STDOUT to capture
-      # our raw headers (https://github.com/typhoeus/typhoeus/issues/247).
-      :verbose => true,
-      :debugfunction => proc do |handle, type, data, size, udata|
-        if(type == :header_in)
-          raw_response_headers << data.read_string(size)
-        end
-        0
-      end,
     }))
 
     assert_equal(200, response.code, response.body)
-    [response, raw_response_headers]
+    [response, response.debug_info.header_in.join("")]
   end
 end

@@ -37,11 +37,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
   end
 
   def test_denies_empty_authorization
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", keyless_http_options.deep_merge({
-      :headers => {
-        "Authorization" => "",
-      },
-    }))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", keyless_http_options.deep_merge(empty_http_header_options("Authorization")))
     assert_equal(403, response.code, response.body)
     assert_match("API_KEY_MISSING", response.body)
   end

@@ -38,4 +38,6 @@ module Test
     module ResponseRewriting; end
     module Routing; end
   end
+
+  module TestingSanityChecks; end
 end

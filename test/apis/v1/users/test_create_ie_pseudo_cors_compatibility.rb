@@ -32,8 +32,7 @@ class Test::Apis::V1::Users::TestCreateIePseudoCorsCompatibility < Minitest::Cap
   end
 
   def test_content_type_empty
-    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_auth).deep_merge({
-      :headers => { "Content-Type" => "" },
+    response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_auth).deep_merge(empty_http_header_options("Content-Type")).deep_merge({
       :body => { :user => @attributes },
     }))
     assert_equal(201, response.code, response.body)
