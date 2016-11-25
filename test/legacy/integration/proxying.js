@@ -248,147 +248,6 @@ describe('proxying', function() {
     });
   });
 
-  describe('client-side keep alive', function() {
-    it('reuses connections', function(done) {
-      var url = 'http://localhost:9080/hello/?api_key=' + this.apiKey;
-      execFile('curl', ['-v', url, url], function(error, stdout, stderr) {
-        stdout.should.eql('Hello WorldHello World');
-        stderr.should.match(/200 OK[\s\S]+Re-using existing connection[\s\S]+200 OK/);
-        done();
-      });
-    });
-  });
-
-  describe('server-side keep alive', function() {
-    it('keeps 10 idle keepalive connections (per nginx worker) opened to the backend', function(done) {
-      this.timeout(30000);
-
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Connection': 'close',
-        },
-      });
-
-      // Open a bunch of concurrent connections first, and then inspect the
-      // number of number of connections still active afterwards.
-      async.times(400, function(index, callback) {
-        request.get('http://localhost:9080/keepalive9445/connections?index=' + index, options, function(error, response) {
-          callback(error, response.statusCode);
-        });
-      }.bind(this), function(error, responseCodes) {
-        should.not.exist(error);
-        responseCodes.length.should.eql(400);
-        _.uniq(responseCodes).should.eql([200]);
-
-        setTimeout(function() {
-          request.get('http://localhost:9080/keepalive9445/connections', options, function(error, response, body) {
-            response.statusCode.should.eql(200);
-
-            var data = JSON.parse(body);
-            data.requests.should.eql(1);
-
-            // The number of active connections afterwards should be between 10
-            // and 40 (10 * number of nginx worker processes). This ambiguity
-            // is because we may not have exercised all the individual nginx
-            // workers. Since we're mainly interested in ensuring some unused
-            // connections are being kept open, we'll loosen our count checks.
-            data.connections.should.be.gte(10);
-            data.connections.should.be.lte(10 * 4);
-
-            done();
-          });
-        }.bind(this), 50);
-      }.bind(this));
-    });
-
-    it('allows the number of idle backend keepalive connections (per nginx worker) to be configured', function(done) {
-      this.timeout(30000);
-
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Connection': 'close',
-        },
-      });
-
-      // Open a bunch of concurrent connections first, and then inspect the
-      // number of number of connections still active afterwards.
-      async.times(400, function(index, callback) {
-        request.get('http://localhost:9080/keepalive9446/connections?index=' + index, options, function(error, response) {
-          callback(error, response.statusCode);
-        });
-      }.bind(this), function(error, responseCodes) {
-        should.not.exist(error);
-        responseCodes.length.should.eql(400);
-        _.uniq(responseCodes).should.eql([200]);
-
-        setTimeout(function() {
-          request.get('http://localhost:9080/keepalive9446/connections', options, function(error, response, body) {
-            response.statusCode.should.eql(200);
-
-            var data = JSON.parse(body);
-            data.requests.should.eql(1);
-
-            // The number of active connections afterwards for this specific
-            // API should be between 2 and 8 (2 * number of nginx worker
-            // processes).
-            data.connections.should.be.gte(2);
-            data.connections.should.be.lte(2 * 4);
-
-            // Given the ambiguity of the connection ranges, make an explicit
-            // check to ensure this test remains below the default 10 keepalive
-            // connections.
-            data.connections.should.be.lt(10);
-
-            done();
-          });
-        }.bind(this), 50);
-      }.bind(this));
-    });
-
-    it('allows the number of concurrent connections to execeed the number of keepalive connections', function(done) {
-      this.timeout(30000);
-
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Connection': 'close',
-        },
-      });
-
-      var maxConnections = 0;
-      var maxRequests = 0;
-      async.times(400, function(index, callback) {
-        request.get('http://localhost:9080/keepalive9447/connections?index=' + index, options, function(error, response, body) {
-          var data = JSON.parse(body);
-
-          if(data.connections > maxConnections) {
-            maxConnections = data.connections;
-          }
-
-          if(data.requests > maxRequests) {
-            maxRequests = data.requests;
-          }
-
-          callback(error, response.statusCode);
-        });
-      }.bind(this), function(error, responseCodes) {
-        should.not.exist(error);
-        responseCodes.length.should.eql(400);
-        _.uniq(responseCodes).should.eql([200]);
-
-        // We sent 400 concurrent requests, but the number of concurrent
-        // requests to the backend will likely be lower, since we're testing
-        // the full stack, and the requests have to go through multiple layers
-        // (the gatekeeper, caching, etc) which may lower absolute concurrency.
-        // But all we're really trying to test here is that this does increase
-        // above the default of 40 keepalive connections per backend.
-        maxRequests.should.be.greaterThan(40);
-        maxConnections.should.be.greaterThan(40);
-
-        done();
-      });
-    });
-  });
-
   describe('gzip', function() {
     describe('backend returning non-gzipped content', function() {
       it('gzips the response when the content length is greather than or equal to 1000', function(done) {
@@ -790,45 +649,6 @@ describe('proxying', function() {
     });
   });
 
-  describe('content type', function() {
-    // This is a side-effect of setting the X-Cache header in OpenResty. It
-    // appears like OpenResty forces a default text/plain content-type when it
-    // changes any other header if the content-type isn't already set. If this
-    // changes in the future to retaining no header, that should be fine, just
-    // testing current behavior.
-    it('turns an empty content-type response header into text/plain', function(done) {
-      var options = _.merge({}, this.options, {
-        url: 'http://localhost:9080/compressible/1000',
-        qs: {
-          content_type: '',
-        },
-        gzip: true,
-      });
-
-      request(options, function(error, response) {
-        response.statusCode.should.eql(200);
-        response.headers['content-type'].should.eql('text/plain');
-        done();
-      });
-    });
-
-    it('keeps any existing contet-type as is', function(done) {
-      var options = _.merge({}, this.options, {
-        url: 'http://localhost:9080/compressible/1000',
-        qs: {
-          content_type: 'Qwerty',
-        },
-        gzip: true,
-      });
-
-      request(options, function(error, response) {
-        response.statusCode.should.eql(200);
-        response.headers['content-type'].should.eql('Qwerty');
-        done();
-      });
-    });
-  });
-
   describe('chunked response behavior', function() {
     // TODO: Ideally when a backend returns a non-chunked response it would be
     // returned to the client as non-chunked, but Varnish appears to sometimes
@@ -949,23 +769,6 @@ describe('proxying', function() {
     });
   });
 
-  describe('cookies', function() {
-    it('strips analytics cookies', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Cookie': '__utma=foo; foo=bar; _ga=test; moo=boo',
-        },
-      });
-
-      request.get('http://localhost:9080/info/', options, function(error, response, body) {
-        response.statusCode.should.eql(200);
-        var data = JSON.parse(body);
-        data.headers['cookie'].should.eql('foo=bar; moo=boo');
-        done();
-      });
-    });
-  });
-
   describe('via request header', function() {
     it('does not pass the via header header to backends', function(done) {
       request.get('http://localhost:9080/info/', this.options, function(error, response, body) {
@@ -973,26 +776,6 @@ describe('proxying', function() {
         response.statusCode.should.eql(200);
         var data = JSON.parse(body);
         should.not.exist(data.headers['via']);
-        done();
-      });
-    });
-  });
-
-  describe('via response header', function() {
-    it('returns the trafficserver via header, including cache decoding information, but ommitting trafficserver version and replacing the host information', function(done) {
-      request.get('http://localhost:9080/info/?cache-busting=' + _.uniqueId(), this.options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        response.headers['via'].should.eql('http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ])');
-        done();
-      });
-    });
-
-    it('appends the trafficserver via header to other via headers the backend returns', function(done) {
-      request.get('http://localhost:9080/via-header/?cache-busting=' + _.uniqueId(), this.options, function(error, response) {
-        should.not.exist(error);
-        response.statusCode.should.eql(200);
-        response.headers['via'].should.eql('1.0 fred, 1.1 nowhere.com (Apache/1.1), http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ])');
         done();
       });
     });

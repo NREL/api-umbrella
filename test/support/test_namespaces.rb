@@ -31,6 +31,7 @@ module Test
     module Caching; end
     module Dns; end
     module FormattedErrors; end
+    module KeepAlive; end
     module Logging; end
     module RateLimits; end
     module RequestRewriting; end
