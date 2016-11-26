@@ -169,6 +169,9 @@ repos = {
   "unbound" => {
     :http => "https://www.unbound.net/download.html",
   },
+  "yarn" => {
+    :git => "https://github.com/yarnpkg/yarn.git",
+  },
 }
 
 luarocks_manifest = JSON.load(open("https://luarocks.org/manifest.json"))

@@ -22,13 +22,13 @@ add_custom_command(
 
 add_custom_command(
   OUTPUT
-    ${STAMP_DIR}/core-admin-ui-npm-install
+    ${STAMP_DIR}/core-admin-ui-yarn-install
     ${CORE_BUILD_DIR}/tmp/admin-ui-build/node_modules
   DEPENDS
-    nodejs
+    yarn
     ${CORE_BUILD_DIR}/tmp/admin-ui-build/package.json
-  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} npm install && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} npm prune
-  COMMAND touch ${STAMP_DIR}/core-admin-ui-npm-install
+  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} yarn install && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} yarn clean
+  COMMAND touch ${STAMP_DIR}/core-admin-ui-yarn-install
 )
 
 add_custom_command(
@@ -37,7 +37,7 @@ add_custom_command(
     ${CORE_BUILD_DIR}/tmp/admin-ui-build/bower_components
   DEPENDS
     ${CORE_BUILD_DIR}/tmp/admin-ui-build/bower.json
-    ${STAMP_DIR}/core-admin-ui-npm-install
+    ${STAMP_DIR}/core-admin-ui-yarn-install
   COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/bower install && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/bower prune
   COMMAND touch ${STAMP_DIR}/core-admin-ui-bower-install
 )
@@ -49,7 +49,7 @@ add_custom_command(
     ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist-prod
   DEPENDS
     ${STAMP_DIR}/core-admin-ui-build-dir
-    ${STAMP_DIR}/core-admin-ui-npm-install
+    ${STAMP_DIR}/core-admin-ui-yarn-install
     ${STAMP_DIR}/core-admin-ui-bower-install
   COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/ember build --environment=development --output-path=./dist-dev
   COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/ember build --environment=production --output-path=./dist-prod
