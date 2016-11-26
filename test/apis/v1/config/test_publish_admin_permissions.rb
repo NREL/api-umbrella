@@ -8,6 +8,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::
   def setup
     setup_server
     Api.delete_all
+    WebsiteBackend.delete_all
     ConfigVersion.delete_all
     @api = FactoryGirl.create(:api)
     @google_api = FactoryGirl.create(:google_api)

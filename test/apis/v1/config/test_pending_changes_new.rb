@@ -8,6 +8,7 @@ class Test::Apis::V1::Config::TestPendingChangesNew < Minitest::Capybara::Test
   def setup
     setup_server
     Api.delete_all
+    WebsiteBackend.delete_all
     ConfigVersion.delete_all
 
     @api = FactoryGirl.create(:api)

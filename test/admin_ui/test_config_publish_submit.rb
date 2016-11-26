@@ -9,6 +9,7 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
   def setup
     setup_server
     Api.delete_all
+    WebsiteBackend.delete_all
     ConfigVersion.delete_all
   end
 
