@@ -16,7 +16,7 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
       :local => Set.new,
       :public => Set.new,
     }
-    stdout.strip.split("\n").each do |line|
+    output.strip.split("\n").each do |line|
       ip_version = line.match(/(IPv4|IPv6)/)[1]
       assert(ip_version, line)
 
