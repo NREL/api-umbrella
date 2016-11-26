@@ -34,6 +34,7 @@
 /deploy/.env
 /log/*
 /test/reports
+/test/tmp
 /ci_cache
 /vendor
 /website/build

@@ -44,6 +44,7 @@ end
 Capybara.default_driver = :poltergeist
 Capybara.run_server = false
 Capybara.app_host = "https://127.0.0.1:9081"
+Capybara.save_path = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/capybara")
 
 FileUtils.rm_rf("/tmp/capybara-disk-cache")
 FileUtils.rm_rf("/tmp/capybara-offline-storage")
