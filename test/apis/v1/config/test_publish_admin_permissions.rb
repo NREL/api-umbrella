@@ -3,6 +3,7 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  include Minitest::Hooks
 
   def setup
     setup_server
@@ -12,6 +13,11 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::
     @google_api = FactoryGirl.create(:google_api)
     @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api)
     @yahoo_api = FactoryGirl.create(:yahoo_api)
+  end
+
+  def after_all
+    super
+    default_config_version_needed
   end
 
   def test_superusers_publish_anything

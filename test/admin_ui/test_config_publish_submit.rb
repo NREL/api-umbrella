@@ -4,11 +4,17 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  include Minitest::Hooks
 
   def setup
     setup_server
     Api.delete_all
     ConfigVersion.delete_all
+  end
+
+  def after_all
+    super
+    default_config_version_needed
   end
 
   def test_publishing_changes

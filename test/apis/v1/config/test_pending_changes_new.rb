@@ -3,6 +3,7 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Config::TestPendingChangesNew < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  include Minitest::Hooks
 
   def setup
     setup_server
@@ -10,6 +11,11 @@ class Test::Apis::V1::Config::TestPendingChangesNew < Minitest::Capybara::Test
     ConfigVersion.delete_all
 
     @api = FactoryGirl.create(:api)
+  end
+
+  def after_all
+    super
+    default_config_version_needed
   end
 
   def test_new_if_never_published

@@ -12,6 +12,8 @@ module ApiUmbrellaTestHelpers
     mattr_reader :keyless_http_options
     mattr_accessor :start_complete
     mattr_accessor :setup_complete
+    mattr_accessor :setup_config_version_complete
+    mattr_accessor :setup_api_user_complete
     mattr_accessor(:setup_mutex) { Mutex.new }
     mattr_accessor(:config_mutex) { Mutex.new }
     mattr_accessor(:config_set_mutex) { Mutex.new }
@@ -83,6 +85,10 @@ module ApiUmbrellaTestHelpers
             })
           end
 
+          self.setup_complete = true
+        end
+
+        unless self.setup_config_version_complete
           ConfigVersion.delete_all
           ConfigVersion.publish!({
             "apis" => [
@@ -100,6 +106,10 @@ module ApiUmbrellaTestHelpers
             ],
           }).wait_until_live
 
+          self.setup_config_version_complete = true
+        end
+
+        unless self.setup_api_user_complete
           ApiUser.where(:registration_source.ne => "seed").delete_all
           user = FactoryGirl.create(:api_user, {
             :registration_source => "seed",
@@ -126,8 +136,27 @@ module ApiUmbrellaTestHelpers
           }.freeze
           @@keyless_http_options = @@http_options.except(:headers).freeze
 
-          self.setup_complete = true
+          self.setup_api_user_complete = true
         end
+      end
+    end
+
+    # If tests need to delete all the ConfigVersion records from the database,
+    # then they need to call this method after finishing so the default
+    # ConfigVersion record will be re-created for other tests that depend on
+    # it.
+    def default_config_version_needed
+      ApiUmbrellaTestHelpers::Setup.setup_mutex.synchronize do
+        ApiUmbrellaTestHelpers::Setup.setup_config_version_complete = false
+      end
+    end
+
+    # If tests need to delete all the ApiUser records from the database, then
+    # they need to call this method after finishing so the default ApiUser
+    # record will be re-created for other tests that depend on it.
+    def default_api_user_needed
+      ApiUmbrellaTestHelpers::Setup.setup_mutex.synchronize do
+        ApiUmbrellaTestHelpers::Setup.setup_api_user_complete = false
       end
     end
 

@@ -3,11 +3,17 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Config::TestPublish < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  include Minitest::Hooks
 
   def setup
     setup_server
     Api.delete_all
     ConfigVersion.delete_all
+  end
+
+  def after_all
+    super
+    default_config_version_needed
   end
 
   def test_publish_with_no_existing_config
