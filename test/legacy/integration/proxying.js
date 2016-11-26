@@ -231,23 +231,6 @@ describe('proxying', function() {
     });
   });
 
-  describe('header size', function() {
-    it('supports long hostnames without additional config when part of api backend hosts', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
-        },
-      });
-
-      request.get('http://localhost:9080/long-host-info/', options, function(error, response, body) {
-        response.statusCode.should.eql(200);
-        var data = JSON.parse(body);
-        data.headers.host.length.should.eql(200);
-        done();
-      });
-    });
-  });
-
   describe('gzip', function() {
     describe('backend returning non-gzipped content', function() {
       it('gzips the response when the content length is greather than or equal to 1000', function(done) {
@@ -497,126 +480,6 @@ describe('proxying', function() {
     });
   });
 
-  describe('chunked response behavior', function() {
-    // TODO: Ideally when a backend returns a non-chunked response it would be
-    // returned to the client as non-chunked, but Varnish appears to sometimes
-    // randomly change non-chunked responses into chunked responses.
-    // Update if Varnish's behavior changes:
-    // https://www.varnish-cache.org/trac/ticket/1506
-    //
-    // So for now, we're simply testing to ensure that a portion of
-    // chunked/non-chunked responses get returned as expected. So these test
-    // aren't exactly precise, but ensure we're testing the basic chunking
-    // behavior.
-    //
-    // Note, Varnish seems to vary more in whether it decides to chunk or not
-    // chunk responses based on available system memory and resources (I've
-    // noticed when lower on memory, it consistently decides to turn chunked
-    // responses into non-chunked responses). So if these tests fail, consider
-    // system resources, or we might end up disabling these altogether.
-    function countChunkedResponses(options, count, size, done) {
-      var chunkedCount = 0;
-      var nonChunkedCount = 0;
-
-      var requests = _.times(count, function(index) { return index; });
-      var results = [];
-      async.eachLimit(requests, 10, function(index, callback) {
-        request(options, function(error, response, body) {
-          results.push({ body: body, headers: response.headers, responseCode: response.statusCode });
-          callback(error);
-        });
-      }, function(error) {
-        should.not.exist(error);
-        results.forEach(function(result) {
-          result.responseCode.should.eql(200);
-
-          if(result.headers['transfer-encoding']) {
-            result.headers['transfer-encoding'].should.eql('chunked');
-            should.not.exist(result.headers['content-length']);
-            chunkedCount++;
-          } else {
-            should.not.exist(result.headers['transfer-encoding']);
-            should.exist(result.headers['content-length']);
-            nonChunkedCount++;
-          }
-
-          result.body.toString().length.should.eql(size);
-        });
-
-        done({
-          chunked: chunkedCount,
-          nonChunked: nonChunkedCount,
-          total: chunkedCount + nonChunkedCount,
-        });
-      });
-    }
-
-    [true, false].forEach(function(gzipEnabled) {
-      describe('gzip enabled: ' + gzipEnabled, function() {
-        beforeEach(function() {
-          _.merge(this.options, { gzip: gzipEnabled });
-        });
-
-        it('returns small non-chunked responses', function(done) {
-          this.timeout(10000);
-          _.merge(this.options, { url: 'http://localhost:9080/compressible/10' });
-          countChunkedResponses(this.options, 50, 10, function(counts) {
-            counts.total.should.eql(50);
-            counts.nonChunked.should.be.greaterThan(15);
-            done();
-          });
-        });
-
-        // nginx's gzipping chunks responses, even if they weren't before.
-        if(gzipEnabled) {
-          it('returns larger non-chunked responses as chunked when gzip is enabled', function(done) {
-            this.timeout(10000);
-            _.merge(this.options, { url: 'http://localhost:9080/compressible/100000' });
-            countChunkedResponses(this.options, 50, 100000, function(counts) {
-              counts.total.should.eql(50);
-              counts.chunked.should.be.greaterThan(15);
-              done();
-            });
-          });
-        } else {
-          it('returns larger non-chunked responses as non-chunked when gzip is disabled', function(done) {
-            this.timeout(10000);
-            _.merge(this.options, { url: 'http://localhost:9080/compressible/10000' });
-            countChunkedResponses(this.options, 50, 10000, function(counts) {
-              counts.total.should.eql(50);
-              // The number of non-chunked responses we see is sporadically
-              // quite low. I think this might be due to how Varnish buffers
-              // things. We can revisit this, but this chunked vs non-chunked
-              // behavior probably isn't a huge deal.
-              counts.nonChunked.should.be.greaterThan(1);
-              done();
-            });
-          });
-        }
-
-        it('returns small chunked responses', function(done) {
-          this.timeout(10000);
-          _.merge(this.options, { url: 'http://localhost:9080/compressible-chunked/1/500' });
-          countChunkedResponses(this.options, 50, 500, function(counts) {
-            counts.total.should.eql(50);
-            counts.chunked.should.be.greaterThan(15);
-            done();
-          });
-        });
-
-        it('returns larger chunked responses', function(done) {
-          this.timeout(10000);
-          _.merge(this.options, { url: 'http://localhost:9080/compressible-chunked/50/2000' });
-          countChunkedResponses(this.options, 50, 100000, function(counts) {
-            counts.total.should.eql(50);
-            counts.chunked.should.be.greaterThan(15);
-            done();
-          });
-        });
-      });
-    });
-  });
-
   describe('via request header', function() {
     it('does not pass the via header header to backends', function(done) {
       request.get('http://localhost:9080/info/', this.options, function(error, response, body) {
@@ -638,52 +501,6 @@ describe('proxying', function() {
         response.headers['via'].should.eql('http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ]), http/1.1 api-umbrella (ApacheTrafficServer [cMsSf ])');
         var data = JSON.parse(body);
         data.url.path.should.eql('/info/circular-example/?cache-busting=' + uniqueId);
-        done();
-      });
-    });
-  });
-
-  describe('long hostnames defined in "hosts" config require "nginx.server_names_hash_bucket_size" option to be adjusted', function() {
-    shared.runServer({
-      apis: [
-        {
-          frontend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
-          backend_host: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
-          servers: [
-            {
-              host: '127.0.0.1',
-              port: 9444,
-            },
-          ],
-          url_matches: [
-            {
-              frontend_prefix: '/long-host-in-hosts-info/',
-              backend_prefix: '/info/',
-            },
-          ],
-        },
-      ],
-      hosts: [
-        {
-          hostname: 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
-        },
-      ],
-      nginx: {
-        server_names_hash_bucket_size: 200,
-      },
-    });
-
-    it('supports long hostnames', function(done) {
-      var options = _.merge({}, this.options, {
-        headers: {
-          'Host': 'abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghij',
-        },
-      });
-
-      request.get('http://localhost:9080/long-host-in-hosts-info/', options, function(error, response, body) {
-        response.statusCode.should.eql(200);
-        var data = JSON.parse(body);
-        data.headers.host.length.should.eql(200);
         done();
       });
     });
