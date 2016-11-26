@@ -31,5 +31,8 @@ http {
   gzip_types application/atom+xml application/javascript application/json application/rss+xml application/x-javascript application/xml text/css text/csv text/javascript text/plain text/xml;
   gzip_vary on;
 
+  # Don't restrict file upload size.
+  client_max_body_size 0;
+
   include ./apis.conf;
 }
