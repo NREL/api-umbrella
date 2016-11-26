@@ -11,11 +11,11 @@ class Test::Proxy::Caching::TestBasics < Minitest::Test
 
   def test_caches_across_different_api_keys
     user = FactoryGirl.create(:api_user)
-    first = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/?api_key=#{user.api_key}", http_options)
+    first = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/#{unique_test_id}?api_key=#{user.api_key}", http_options)
     assert_equal(200, first.code, first.body)
 
     user = FactoryGirl.create(:api_user)
-    second = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/?api_key=#{user.api_key}", http_options)
+    second = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/#{unique_test_id}?api_key=#{user.api_key}", http_options)
     assert_equal(200, second.code, second.body)
 
     assert_equal("MISS", first.headers["x-cache"])
@@ -25,7 +25,7 @@ class Test::Proxy::Caching::TestBasics < Minitest::Test
 
   def test_caches_dynamic_looking_urls
     # https://docs.trafficserver.apache.org/en/latest/admin-guide/files/records.config.en.html#proxy-config-http-cache-cache-urls-that-look-dynamic
-    assert_cacheable("/api/cacheable-dynamic/test.cgi?foo=bar&test=test&id=")
+    assert_cacheable("/api/cacheable-dynamic/test.cgi?#{unique_test_id}&foo=bar&test=test&id=")
   end
 
   def test_separates_caches_for_identical_backend_paths_with_different_hosts

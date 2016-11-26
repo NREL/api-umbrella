@@ -3,10 +3,18 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Config::TestLiveChanges < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
-  parallelize_me!
+  include Minitest::Hooks
 
   def setup
     setup_server
+    Api.delete_all
+    WebsiteBackend.delete_all
+    ConfigVersion.delete_all
+  end
+
+  def after_all
+    super
+    default_config_version_needed
   end
 
   def test_detects_published_api_changes_within_1_second
