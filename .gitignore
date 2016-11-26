@@ -33,10 +33,6 @@
 /build/package/verify/.rnd
 /deploy/.env
 /log/*
-/test/legacy/node_modules
-/test/legacy/config/.overrides.yml
-/test/legacy/log/*
-/test/legacy/tmp/*
 /test/reports
 /ci_cache
 /vendor

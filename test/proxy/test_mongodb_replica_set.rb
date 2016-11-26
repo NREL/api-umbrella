@@ -254,6 +254,6 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
 
     # Once started, send our config file to configure the replica set for
     # testing.
-    mongo_orchestration(:put, "/v1/replica_sets/test-cluster", MultiJson.load(File.read(File.join(API_UMBRELLA_SRC_ROOT, "test/legacy/config/mongo-orchestration.json"))))
+    mongo_orchestration(:put, "/v1/replica_sets/test-cluster", MultiJson.load(File.read(File.join(API_UMBRELLA_SRC_ROOT, "test/config/mongo-orchestration.json"))))
   end
 end

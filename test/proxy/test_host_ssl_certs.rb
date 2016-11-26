@@ -12,8 +12,8 @@ class Test::Proxy::TestHostSslCerts < Minitest::Test
         "hosts" => [
           {
             "hostname" => "ssl.foo",
-            "ssl_cert" => File.join(API_UMBRELLA_SRC_ROOT, "test/legacy/config/ssl_test.crt"),
-            "ssl_cert_key" => File.join(API_UMBRELLA_SRC_ROOT, "test/legacy/config/ssl_test.key"),
+            "ssl_cert" => File.join(API_UMBRELLA_SRC_ROOT, "test/config/ssl_test.crt"),
+            "ssl_cert_key" => File.join(API_UMBRELLA_SRC_ROOT, "test/config/ssl_test.key"),
           },
         ],
       }, "--router")
