@@ -335,5 +335,15 @@ export default Ember.Component.extend({
     clickInterval(interval) {
       this.set('interval', interval);
     },
+
+    submit() {
+      if($('#filter_type_advanced').css('display') === 'none') {
+        this.set('search', '');
+        this.set('query', JSON.stringify($('#query_builder').queryBuilder('getRules')));
+      } else {
+        this.set('query', '');
+        this.set('search', $('#filter_form input[name=search]').val());
+      }
+    },
   },
 });

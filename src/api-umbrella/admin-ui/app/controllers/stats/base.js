@@ -20,16 +20,4 @@ export default Ember.Controller.extend({
     }],
   }),
   beta_analytics: false,
-
-  actions: {
-    submit() {
-      if($('#filter_type_advanced').css('display') === 'none') {
-        this.set('search', '');
-        this.set('query', JSON.stringify($('#query_builder').queryBuilder('getRules')));
-      } else {
-        this.set('query', '');
-        this.set('search', $('#filter_form input[name=search]').val());
-      }
-    },
-  },
 });
