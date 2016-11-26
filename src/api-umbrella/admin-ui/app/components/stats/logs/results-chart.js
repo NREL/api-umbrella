@@ -58,6 +58,12 @@ export default Ember.Component.extend({
   },
 
   refreshData: Ember.observer('hitsOverTime', function() {
+    // Defer until Google Charts is loaded if this got called earlier from the
+    // observer.
+    if(!google || !google.visualization || !google.visualization.DataTable) {
+      return;
+    }
+
     this.chartData.rows = this.get('hitsOverTime') || [];
     for(let i = 0; i < this.chartData.rows.length; i++) {
       this.chartData.rows[i].c[0].v = new Date(this.chartData.rows[i].c[0].v);

@@ -51,6 +51,12 @@ export default Ember.Component.extend({
   },
 
   refreshData: Ember.observer('regions', function() {
+    // Defer until Google Charts is loaded if this got called earlier from the
+    // observer.
+    if(!google || !google.visualization || !google.visualization.DataTable) {
+      return;
+    }
+
     this.chartData.rows = this.get('regions') || [];
     this.chartData.cols = [
       {id: 'region', label: 'Region', type: 'string'},
