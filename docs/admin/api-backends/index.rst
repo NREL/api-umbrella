@@ -6,3 +6,4 @@ API Backends
 
    caching
    http-headers
+   role-restrictions
