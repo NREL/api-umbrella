@@ -46,7 +46,7 @@ compile:
     - /bin/true
 test:
   override:
-    - bundle exec rake test TESTOPTS="--ci-dir=$CIRCLE_TEST_REPORTS/reports":
+    - env PATH="build/work/stage/opt/api-umbrella/embedded/bin:$PATH" bundle exec rake test TESTOPTS="--ci-dir=$CIRCLE_TEST_REPORTS/reports":
         parallel: true
         files:
           - test/**/test_*.rb

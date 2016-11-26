@@ -1,7 +1,6 @@
 require "rake/testtask"
 Rake::TestTask.new do |t|
-  # t.pattern = File.expand_path("../test/**/test_*.rb", __FILE__)
-  t.pattern = File.expand_path("../test/proxy/request_rewriting/test_*.rb", __FILE__)
+  t.pattern = File.expand_path("../test/**/test_*.rb", __FILE__)
   t.warning = false
 end
 
