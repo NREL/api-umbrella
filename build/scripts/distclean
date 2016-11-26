@@ -28,5 +28,4 @@ rm -rf \
   "$source_dir/src/api-umbrella/web-app/spec/reports" \
   "$source_dir/src/api-umbrella/web-app/tmp"/* \
   "$source_dir/test/config/.overrides.yml" \
-  "$source_dir/test/node_modules"/* \
   "$source_dir/test/tmp"/*
