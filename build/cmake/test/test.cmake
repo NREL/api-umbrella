@@ -6,8 +6,7 @@ add_custom_target(
 add_custom_target(
   test-target
   DEPENDS test-deps
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} bundle exec rake
+  COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/.bundle bundle exec rake
 )
 
 # CMake policy CMP0037 business to allow target named "test".
