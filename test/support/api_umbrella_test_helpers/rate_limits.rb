@@ -107,6 +107,9 @@ module ApiUmbrellaTestHelpers
       if(options[:time])
         http_opts[:headers]["X-Fake-Time"] = (options[:time].to_f * 1000).to_i
       end
+      if(options[:http_options])
+        http_opts.deep_merge!(options[:http_options])
+      end
 
       hydra = Typhoeus::Hydra.new
       requests = Array.new(count) do

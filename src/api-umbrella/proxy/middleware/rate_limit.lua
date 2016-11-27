@@ -201,10 +201,15 @@ return function(settings, user)
   end
 
   local current_time = math.floor(ngx.now() * 1000)
+  local test_env_skip_increment_limits = false
   if config["app_env"] == "test" then
     local fake_time = ngx.var.http_x_fake_time
     if fake_time then
       current_time = tonumber(fake_time)
+    end
+
+    if ngx.var.http_x_api_umbrella_test_skip_increment_limits == "true" then
+      test_env_skip_increment_limits = true
     end
   end
 
@@ -214,8 +219,13 @@ return function(settings, user)
   -- If the request isn't over any limits, then increment all the rate limit
   -- values (we only do this when not over limits so that over rate limit
   -- requests don't count against the user).
-  if not over_limit then
+  if not over_limit and not test_env_skip_increment_limits then
     over_limit = increment_all_limits(settings)
+  elseif test_env_skip_increment_limits then
+    -- If we're in the test environment and incrementing rate limits is
+    -- disabled, then add 1 back to the remaining count (since this hit hasn't
+    -- actually subtracted 1).
+    ngx.ctx.response_header_remaining = ngx.ctx.response_header_remaining + 1
   end
 
   if ngx.ctx.response_header_limit then
