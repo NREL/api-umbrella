@@ -7,7 +7,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
 
   def setup
     setup_server
-    Admin.delete_all
+    Admin.where(:registration_source.ne => "seed").delete_all
     AdminGroup.delete_all
     ApiScope.delete_all
   end

@@ -140,6 +140,7 @@ local function seed_initial_superusers()
     local data = {
       username = username,
       superuser = true,
+      registration_source = "seed",
     }
 
     if admin then

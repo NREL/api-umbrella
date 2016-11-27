@@ -6,7 +6,7 @@ class Test::AdminUi::TestLogin < Minitest::Capybara::Test
 
   def setup
     setup_server
-    Admin.delete_all
+    Admin.where(:registration_source.ne => "seed").delete_all
   end
 
   def test_facebook
