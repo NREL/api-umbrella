@@ -1,5 +1,4 @@
 class Admin::SessionsController < Devise::SessionsController
-  before_action :set_locale
   skip_after_action :verify_authorized
 
   def new
@@ -24,11 +23,5 @@ class Admin::SessionsController < Devise::SessionsController
     respond_to do|format|
       format.json { render(:json => response) }
     end
-  end
-
-  private
-
-  def set_locale
-    I18n.locale = http_accept_language.compatible_language_from(I18n.available_locales) || I18n.default_locale
   end
 end

@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   include Pundit
   include DatatablesHelper
+  prepend_around_filter :use_locale
   protect_from_forgery :with => :null_session
 
   around_action :set_userstamp
@@ -78,6 +79,13 @@ class ApplicationController < ActionController::Base
   def parse_post_for_pseudo_ie_cors
     if(request.post? && request.POST.blank? && request.raw_post.present?)
       params.merge!(Rack::Utils.parse_nested_query(request.raw_post))
+    end
+  end
+
+  def use_locale
+    locale = http_accept_language.compatible_language_from(I18n.available_locales) || I18n.default_locale
+    I18n.with_locale(locale) do
+      yield
     end
   end
 
