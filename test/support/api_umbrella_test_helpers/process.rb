@@ -142,7 +142,10 @@ module ApiUmbrellaTestHelpers
       state = nil
       health = nil
       begin
-        Timeout.timeout(10) do
+        # Reloading is normally fast, but can sometimes be slower if the
+        # web-app is being reloaded and we have to wait for it to become
+        # healthy again.
+        Timeout.timeout(40) do
           loop do
             state = self.fetch("http://127.0.0.1:9080/api-umbrella/v1/state?#{rand}", config)
             if(state[field] == version)
