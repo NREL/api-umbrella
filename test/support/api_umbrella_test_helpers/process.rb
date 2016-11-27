@@ -17,17 +17,30 @@ module ApiUmbrellaTestHelpers
       FileUtils.rm_rf("/tmp/api-umbrella-test")
       FileUtils.mkdir_p("/tmp/api-umbrella-test/var/log")
 
-      Bundler.with_clean_env do
-        # In Bundler 1.13.2+, GEM_PATH becomes an empty string and isn't reset
-        # by with_clean_env, which causes problems. Need to file issue with
-        # Bundler.
-        if(ENV["GEM_PATH"] == "")
-          ENV.delete("GEM_PATH")
-        end
+      original_env = ENV.to_hash
+      begin
+        # Wipe any bundler environment variables before executing sub-shells to
+        # prevent confusion between the test bundler environment and the
+        # web-app's bundler environment.
+        #
+        # We're manually removing all these rather than using
+        # Bundler.with_clean_env or with_original_env, since those don't quite
+        # work for our case. Bundler's approach restores the original
+        # environment, which omits any ENV customizations we may have actually
+        # intended. It also doesn't work quite right since Rake::TestTask
+        # triggers these scripts via a ruby system() call, so there's multiple
+        # layers of shells, which confuses what's the "original" environment.
+        ENV.delete_if { |key, value| key =~ /\A(GEM_|BUNDLE_|BUNDLER_|RUBY)/ }
 
+        # Read the initial test config file.
         $config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
+
+        # Create an empty config file for overrides.
         File.write(CONFIG_OVERRIDES_PATH, YAML.dump({ "version" => 0 }))
 
+        # Trigger a build to ensure the tests get run with the latest
+        # environment. This takes care of tasks in the sub-components, like
+        # bundling new dependencies, or recompiling the javascript files.
         build = ChildProcess.build("make")
         build.io.inherit!
         build.cwd = API_UMBRELLA_SRC_ROOT
@@ -72,12 +85,28 @@ module ApiUmbrellaTestHelpers
           raise "Did not start api-umbrella process for integration tests"
         end
 
+        # Once API Umbrella is started, read the config from the runtime file.
+        # This allows the tests to access the full config (accounting for
+        # merging config from multiple sources and any computed config
+        # settings).
         runtime_config_path = File.join($config["root_dir"], "var/run/runtime_config.yml")
         unless(File.exist?(runtime_config_path))
           raise "runtime_config.yml file not found after starting: #{runtime_config_path.inspect}"
         end
         $config = YAML.load_file(runtime_config_path)
+      ensure
+        # Restore the original environment before we wiped the bundler
+        # variables.
+        ENV.replace(original_env)
       end
+
+    # If anything fails during API Umbrella's startup, make sure we attempt to
+    # stop the API Umbrella process, so we don't leave processes hanging
+    # around.
+    #
+    # This is also a case where we do want to rescue the low-level Exception
+    # class to ensure we have a chance to properly stop the child process on
+    # things like SIGINTs.
     rescue Exception => e # rubocop:disable Lint/RescueException
       self.stop
       raise e
