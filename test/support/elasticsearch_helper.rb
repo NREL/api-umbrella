@@ -7,7 +7,7 @@ class ElasticsearchHelper
           :query => {
             :match_all => {},
           },
-          :size => 1000,
+          :size => 100_000,
         },
       })
       bulk_request = result["hits"]["hits"].map do |hit|
