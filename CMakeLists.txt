@@ -95,8 +95,7 @@ if(ENABLE_TEST_DEPENDENCIES)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/shellcheck.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/unbound.cmake)
 endif()
-include(${CMAKE_SOURCE_DIR}/build/cmake/test/lint.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/test/test-web-app.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/test/bundle.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/test/test.cmake)
 
 #

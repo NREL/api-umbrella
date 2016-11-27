@@ -18,6 +18,13 @@ module ApiUmbrellaTestHelpers
       FileUtils.mkdir_p("/tmp/api-umbrella-test/var/log")
 
       Bundler.with_clean_env do
+        # In Bundler 1.13.2+, GEM_PATH becomes an empty string and isn't reset
+        # by with_clean_env, which causes problems. Need to file issue with
+        # Bundler.
+        if(ENV["GEM_PATH"] == "")
+          ENV.delete("GEM_PATH")
+        end
+
         $config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
         File.write(CONFIG_OVERRIDES_PATH, YAML.dump({ "version" => 0 }))
 
