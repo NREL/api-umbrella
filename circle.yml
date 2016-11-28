@@ -20,6 +20,8 @@ dependencies:
     - CMakeFiles
     - cmake_install.cmake
   pre:
+    # Need flex for compiling unbound.
+    - sudo apt-get update; sudo apt-get install flex
     # Set the local file timestamps based on when they were last modified in
     # git. This helps prevent unnecessary rebuilds in the CI environment, since
     # make is dependent on file timestamps and every CI test run operates on a
