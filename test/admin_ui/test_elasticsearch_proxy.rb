@@ -47,12 +47,11 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
     assert_content('"hits"')
 
     # Redirect rewriting
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch/_plugin/foobar", {
-      :ssl_verifypeer => false,
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch/_plugin/foobar", keyless_http_options.deep_merge({
       :headers => {
         "Cookie" => "_api_umbrella_session=#{page.driver.cookies["_api_umbrella_session"].value}",
       },
-    })
+    }))
     assert_response_code(301, response)
     assert_equal("/admin/elasticsearch/_plugin/foobar/", response.headers["Location"])
     assert_match(%r{URL=/admin/elasticsearch/_plugin/foobar/>}, response.body)
