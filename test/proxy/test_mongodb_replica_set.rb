@@ -191,7 +191,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
       end
     end
   rescue Timeout::Error
-    raise Timeout::Error, "MongoDB primary server change not detected"
+    flunk("MongoDB primary server change not detected")
   end
 
   # In addition to the background requests being made throughout the replica
@@ -249,7 +249,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
         end
       end
     rescue Timeout::Error
-      raise Timeout::Error, "mongo-orchestration did not start"
+      flunk("mongo-orchestration did not start")
     end
 
     # Once started, send our config file to configure the replica set for

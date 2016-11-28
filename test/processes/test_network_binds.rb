@@ -29,7 +29,7 @@ class Test::Processes::TestNetworkBinds < Minitest::Test
       elsif(line.include?("TCP *:"))
         listening[:public] << listen
       else
-        raise "Unknown listening (not localhost or public): #{line.inspect}"
+        flunk("Unknown listening (not localhost or public): #{line.inspect}")
       end
     end
 

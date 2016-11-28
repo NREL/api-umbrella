@@ -47,7 +47,7 @@ module ApiUmbrellaTestHelpers
           end
         end
       rescue Timeout::Error
-        raise Timeout::Error, "DNS change not detected"
+        flunk("DNS change not detected")
       end
 
       # After we detect the change we want, wait an additional 500ms. This is

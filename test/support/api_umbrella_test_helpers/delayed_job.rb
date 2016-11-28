@@ -15,7 +15,7 @@ module ApiUmbrellaTestHelpers
         end
       end
     rescue Timeout::Error
-      raise Timeout::Error, "Background job was not processed within expected time. Is delayed_job running?"
+      flunk("Background job was not processed within expected time. Is delayed_job running?")
     end
 
     def delayed_job_sent_messages

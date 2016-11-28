@@ -87,7 +87,7 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
         end
       end
     rescue Timeout::Error
-      raise Timeout::Error, "nginx still has idle connections waiting. This is not expected after the reload. Last connection stats: #{data.inspect}"
+      flunk("nginx still has idle connections waiting. This is not expected after the reload. Last connection stats: #{data.inspect}")
     end
   end
 

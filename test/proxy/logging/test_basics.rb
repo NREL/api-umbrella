@@ -285,7 +285,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "format" => "strict_date_optional_time||epoch_millis",
       }, property)
     else
-      raise "Unknown elasticsearch version: #{$config["elasticsearch"]["api_version"].inspect}"
+      flunk("Unknown elasticsearch version: #{$config["elasticsearch"]["api_version"].inspect}")
     end
   end
 

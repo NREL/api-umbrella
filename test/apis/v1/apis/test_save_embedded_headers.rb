@@ -233,7 +233,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Capybara::Test
       assert_equal(1, api.settings.send(field).length)
       attributes = api.serializable_hash
     else
-      raise "Unknown action: #{action.inspect}"
+      flunk("Unknown action: #{action.inspect}")
     end
 
     attributes
@@ -256,7 +256,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Capybara::Test
       assert_equal(204, response.code, response.body)
       api = Api.find(attributes["id"])
     else
-      raise "Unknown action: #{action.inspect}"
+      flunk("Unknown action: #{action.inspect}")
     end
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))

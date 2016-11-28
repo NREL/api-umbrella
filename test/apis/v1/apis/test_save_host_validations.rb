@@ -261,7 +261,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Capybara::Test
     elsif(action == :update)
       FactoryGirl.create(:api).serializable_hash
     else
-      raise "Unknown action: #{action.inspect}"
+      flunk("Unknown action: #{action.inspect}")
     end
   end
 
@@ -277,7 +277,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Capybara::Test
         :body => MultiJson.dump(:api => attributes),
       }))
     else
-      raise "Unknown action: #{action.inspect}"
+      flunk("Unknown action: #{action.inspect}")
     end
   end
 end

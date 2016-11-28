@@ -37,7 +37,7 @@ class Test::Processes::TestReloads < Minitest::Test
           end
         end
       rescue Timeout::Error
-        raise Timeout::Error, "nginx child processes did not change during reload. original_child_pids: #{original_child_pids.inspect} Last output: #{output.inspect}"
+        flunk("nginx child processes did not change during reload. original_child_pids: #{original_child_pids.inspect} Last output: #{output.inspect}")
       end
 
       # Make a number of concurrent requests to ensure that each nginx worker
@@ -222,7 +222,7 @@ class Test::Processes::TestReloads < Minitest::Test
         end
       end
     rescue Timeout::Error
-      raise Timeout::Error, "Did not find expected number of nginx child processes. Last output: #{output.inspect}"
+      flunk("Did not find expected number of nginx child processes. Last output: #{output.inspect}")
     end
 
     pids

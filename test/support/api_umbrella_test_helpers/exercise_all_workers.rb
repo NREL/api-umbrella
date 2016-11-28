@@ -4,7 +4,7 @@ module ApiUmbrellaTestHelpers
 
     def exercise_all_workers(path, options = {})
       unless(path.end_with?("/info/"))
-        raise "path for exercise_all_workers must end with '/info/'"
+        flunk("path for exercise_all_workers must end with '/info/'")
       end
 
       http_opts = http_options.deep_merge({
@@ -42,7 +42,7 @@ module ApiUmbrellaTestHelpers
           end
         end
       rescue Timeout::Error
-        raise Timeout::Error, "All nginx workers not hit. Expected workers: #{$config["nginx"]["workers"]} Worker IDs seen: #{ids_seen.to_a.inspect} Worker PIDs seen: #{pids_seen.to_a.inspect}"
+        flunk("All nginx workers not hit. Expected workers: #{$config["nginx"]["workers"]} Worker IDs seen: #{ids_seen.to_a.inspect} Worker PIDs seen: #{pids_seen.to_a.inspect}")
       end
 
       assert_operator(responses.length, :>=, $config["nginx"]["workers"])
