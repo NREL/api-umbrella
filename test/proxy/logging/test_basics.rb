@@ -524,7 +524,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     response = Typhoeus.get(url, http_options)
     assert_response_code(414, response)
 
-    error = assert_raises do
+    error = assert_raises Timeout::Error do
       wait_for_log(unique_test_id)
     end
     assert_equal("Log not found: #{unique_test_id.inspect}", error.message)

@@ -24,7 +24,7 @@ module ApiUmbrellaTestHelpers
           end
         end
       rescue Timeout::Error
-        flunk("Log not found: #{unique_query_id.inspect}")
+        raise Timeout::Error, "Log not found: #{unique_query_id.inspect}"
       end
     end
 
