@@ -124,6 +124,7 @@ module ApiUmbrellaTestHelpers
             # Disable SSL verification by default, since most of our tests are
             # against our self-signed SSL certificate for the test environment.
             :ssl_verifypeer => false,
+            :ssl_verifyhost => 0,
 
             # When sending x-www-form-urlencoded encoded bodies, serialize Ruby
             # arrays the way Rails expects
