@@ -20,11 +20,11 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
     existing_roles = ApiUserRole.all
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
-    refute_includes(existing_roles, "new-write")
+    refute_includes(existing_roles, "new-write#{unique_test_id}")
 
     admin = FactoryGirl.create(:admin)
     attr_overrides = {
-      "roles" => ["google-write", "yahoo-write", "new-write"],
+      "roles" => ["google-write", "yahoo-write", "new-write#{unique_test_id}"],
     }
     assert_admin_permitted_create(:api_user, admin, attr_overrides)
     assert_admin_permitted_update(:api_user, admin, attr_overrides)
@@ -33,7 +33,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
   def test_permits_limited_admin_assign_unused_role
     admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
     attr_overrides = {
-      "roles" => ["new-role#{rand(999_999)}"],
+      "roles" => ["new-role#{unique_test_id}#{rand(999_999)}"],
     }
     assert_admin_permitted_create(:api_user, admin, attr_overrides)
     assert_admin_permitted_update(:api_user, admin, attr_overrides)
@@ -90,7 +90,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
   def test_forbids_limited_admin_create_new_api_umbrella_roles
     admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
     attr_overrides = {
-      "roles" => ["api-umbrella#{rand(999_999)}"],
+      "roles" => ["api-umbrella#{unique_test_id}#{rand(999_999)}"],
     }
     assert_admin_forbidden_create(:api_user, admin, attr_overrides)
     assert_admin_forbidden_update(:api_user, admin, attr_overrides)
@@ -99,7 +99,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
   def test_permits_superuser_create_new_api_umbrella_roles
     admin = FactoryGirl.create(:admin)
     attr_overrides = {
-      "roles" => ["api-umbrella#{rand(999_999)}"],
+      "roles" => ["api-umbrella#{unique_test_id}#{rand(999_999)}"],
     }
     assert_admin_permitted_create(:api_user, admin, attr_overrides)
     assert_admin_permitted_update(:api_user, admin, attr_overrides)

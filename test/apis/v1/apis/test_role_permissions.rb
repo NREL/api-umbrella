@@ -15,7 +15,7 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Capybara::Test
     existing_roles = ApiUserRole.all
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
-    refute_includes(existing_roles, "new-write")
+    refute_includes(existing_roles, "new-write#{unique_test_id}")
 
     admin = FactoryGirl.create(:admin)
     attr_overrides = {
@@ -24,8 +24,8 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Capybara::Test
           "test-write",
           "google-write",
           "yahoo-write",
-          "new-write",
-          "new-write#{rand(999_999)}",
+          "new-write#{unique_test_id}",
+          "new-write#{unique_test_id}#{rand(999_999)}",
         ],
       }),
       :sub_settings => [
@@ -35,8 +35,8 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Capybara::Test
               "test-write",
               "google-write",
               "yahoo-write",
-              "new-write",
-              "new-write#{rand(999_999)}",
+              "new-write#{unique_test_id}",
+              "new-write#{unique_test_id}#{rand(999_999)}",
             ],
           }),
         }),
@@ -51,14 +51,14 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Capybara::Test
     attr_overrides = {
       :settings => FactoryGirl.attributes_for(:api_setting, {
         :required_roles => [
-          "new-settings-role#{rand(999_999)}",
+          "new-settings-role#{unique_test_id}#{rand(999_999)}",
         ],
       }),
       :sub_settings => [
         FactoryGirl.attributes_for(:api_sub_setting, {
           :settings => FactoryGirl.attributes_for(:api_setting, {
             :required_roles => [
-              "new-sub-settings-role#{rand(999_999)}",
+              "new-sub-settings-role#{unique_test_id}#{rand(999_999)}",
             ],
           }),
         }),
@@ -175,7 +175,7 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Capybara::Test
     attr_overrides = {
       :settings => FactoryGirl.attributes_for(:api_setting, {
         :required_roles => [
-          "api-umbrella#{rand(999_999)}",
+          "api-umbrella#{unique_test_id}#{rand(999_999)}",
         ],
       }),
     }.deep_stringify_keys
