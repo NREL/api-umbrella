@@ -68,7 +68,7 @@ class Test::Proxy::Logging::TestResponseHeadersMultipleValues < Minitest::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     [response, response.debug_info.header_in.join("")]
   end
 end

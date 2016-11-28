@@ -17,7 +17,7 @@ class Test::Apis::V1::AdminGroups::TestShow < Minitest::Capybara::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{group.id}.json", http_options.deep_merge(admin_token))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal([
       {
@@ -39,7 +39,7 @@ class Test::Apis::V1::AdminGroups::TestShow < Minitest::Capybara::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{group.id}.json", http_options.deep_merge(admin_token))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal([
       admin_in_group2.id,
@@ -52,7 +52,7 @@ class Test::Apis::V1::AdminGroups::TestShow < Minitest::Capybara::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{group.id}.json", http_options.deep_merge(admin_token))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal([], data["admin_group"]["admins"])
   end

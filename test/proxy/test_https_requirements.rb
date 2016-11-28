@@ -132,7 +132,7 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
           "Host" => "https.foo",
         },
       }))
-      assert_equal(400, response.code, response.body)
+      assert_response_code(400, response)
       assert_match("HTTPS_REQUIRED", response.body)
       assert_match("https://https.foo:9081/#{unique_test_id}/required/hello/?foo=bar&test1=test2", response.body)
     end
@@ -146,7 +146,7 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
         "X-Api-Key" => key || self.api_key,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
   end
 
   def assert_http_allowed(path, key = nil)
@@ -156,7 +156,7 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
   end
 
   def assert_http_error(path, key = nil)
@@ -165,7 +165,7 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
         "X-Api-Key" => key || self.api_key,
       },
     }))
-    assert_equal(400, response.code, response.body)
+    assert_response_code(400, response)
     assert_match("HTTPS_REQUIRED", response.body)
     assert_match("https://127.0.0.1:9081#{path}", response.body)
   end

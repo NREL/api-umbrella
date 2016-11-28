@@ -67,10 +67,10 @@ class Test::Proxy::TestBackendSniSsl < Minitest::Test
       # These would fail if our proxy doesn't use SNI for communication with
       # the backend.
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/sni1/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal("SNI1", response.body)
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/sni2/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal("SNI2", response.body)
     end
   end

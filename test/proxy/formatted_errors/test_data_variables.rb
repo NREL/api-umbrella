@@ -154,7 +154,7 @@ class Test::Proxy::FormattedErrors::TestDataVariables < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello.json", keyless_http_options)
-      assert_equal(403, response.code, response.body)
+      assert_response_code(403, response)
       assert_equal("application/json", response.headers["content-type"])
       data = MultiJson.load(response.body)
       assert_equal("API_KEY_MISSING", data["code"])

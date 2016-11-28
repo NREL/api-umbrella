@@ -20,7 +20,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
       :params => { :step => "pre" },
     })
     responses.each do |response|
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
     end
 
     # Disable the API key
@@ -34,7 +34,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
       :params => { :step => "post-save" },
     })
     responses.each do |response|
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
     end
 
     # Wait for the cache to expire
@@ -47,7 +47,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
       :params => { :step => "post-timeout" },
     })
     responses.each do |response|
-      assert_equal(403, response.code, response.body)
+      assert_response_code(403, response)
       assert_match("API_KEY_DISABLED", response.body)
     end
   end
@@ -68,7 +68,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
     hydra.run
 
     requests.each do |request|
-      assert_equal(200, request.response.code, request.response.body)
+      assert_response_code(200, request.response)
       assert_equal("Hello World", request.response.body)
     end
   end
@@ -82,7 +82,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
       response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
         :headers => { "X-Api-Key" => user.api_key },
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal("Hello World", response.body)
     end
   end
@@ -103,7 +103,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
         :params => { :step => "pre" },
       })
       responses.each do |response|
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
       end
 
       # Disable the API key
@@ -117,7 +117,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
         :params => { :step => "post-save" },
       })
       responses.each do |response|
-        assert_equal(403, response.code, response.body)
+        assert_response_code(403, response)
         assert_match("API_KEY_DISABLED", response.body)
       end
     end

@@ -97,7 +97,7 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Capybara::Test
 
   def assert_api_key_visible(user, admin)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token(admin)))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     data = MultiJson.load(response.body)
     assert_equal(user.api_key, data["user"]["api_key"])
@@ -107,7 +107,7 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Capybara::Test
 
   def refute_api_key_visible(user, admin)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token(admin)))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     data = MultiJson.load(response.body)
     refute_includes(data["user"].keys, "api_key")

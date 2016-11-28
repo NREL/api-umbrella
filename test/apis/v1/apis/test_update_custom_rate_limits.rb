@@ -27,7 +27,7 @@ class Test::Apis::V1::Apis::TestUpdateCustomRateLimits < Minitest::Capybara::Tes
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => attributes),
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api.reload
     assert_equal(2, api.settings.rate_limits.length)
@@ -56,7 +56,7 @@ class Test::Apis::V1::Apis::TestUpdateCustomRateLimits < Minitest::Capybara::Tes
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => attributes),
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api.reload
     assert_equal(1, api.settings.rate_limits.length)

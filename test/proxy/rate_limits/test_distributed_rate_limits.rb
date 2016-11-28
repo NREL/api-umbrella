@@ -348,7 +348,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
   def assert_response_headers(count, responses, options = {})
     reported_requests_made = 0
     responses.each do |response|
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal(options.fetch(:limit).to_s, response.headers["x-ratelimit-limit"])
       assert(response.headers["x-ratelimit-remaining"])
       reported_count = response.headers["x-ratelimit-limit"].to_i - response.headers["x-ratelimit-remaining"].to_i
@@ -467,7 +467,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
           },
         })
         response = make_requests(path, 1, request_options).first
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         assert_equal(options.fetch(:limit), response.headers["x-ratelimit-limit"].to_i)
 
         count = options.fetch(:limit) - response.headers["x-ratelimit-remaining"].to_i

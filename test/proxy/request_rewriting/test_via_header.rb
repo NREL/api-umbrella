@@ -15,7 +15,7 @@ class Test::Proxy::RequestRewriting::TestViaHeader < Minitest::Test
   # proxy.config.http.insert_request_via_str comments.
   def test_does_not_add_via_header
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute(data["headers"]["via"])
   end
@@ -24,7 +24,7 @@ class Test::Proxy::RequestRewriting::TestViaHeader < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :headers => { "Via" => "foo" },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("foo", data["headers"]["via"])
   end

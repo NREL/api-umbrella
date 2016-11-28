@@ -10,7 +10,7 @@ class Test::Proxy::RequestRewriting::TestAddsUserIdHeader < Minitest::Test
 
   def test_adds_user_id_header
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(self.api_user.id, data["headers"]["x-api-user-id"])
     assert_equal(36, data["headers"]["x-api-user-id"].length)
@@ -23,7 +23,7 @@ class Test::Proxy::RequestRewriting::TestAddsUserIdHeader < Minitest::Test
         "X-Api-Key" => user.api_key,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(user.id, data["headers"]["x-api-user-id"])
     assert_equal(24, data["headers"]["x-api-user-id"].length)
@@ -35,7 +35,7 @@ class Test::Proxy::RequestRewriting::TestAddsUserIdHeader < Minitest::Test
         "X-Api-User-Id" => "bogus-value",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(self.api_user.id, data["headers"]["x-api-user-id"])
     refute_match("bogus-value", response.body)
@@ -47,7 +47,7 @@ class Test::Proxy::RequestRewriting::TestAddsUserIdHeader < Minitest::Test
         "X-API-USER-ID" => "bogus-value",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(self.api_user.id, data["headers"]["x-api-user-id"])
     refute_match("bogus-value", response.body)
@@ -57,7 +57,7 @@ class Test::Proxy::RequestRewriting::TestAddsUserIdHeader < Minitest::Test
         "x-api-user-id" => "bogus-value",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(self.api_user.id, data["headers"]["x-api-user-id"])
     refute_match("bogus-value", response.body)
@@ -76,12 +76,12 @@ class Test::Proxy::RequestRewriting::TestAddsUserIdHeader < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-keys-optional/info/", keyless_http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       refute(data["headers"]["x-api-user-id"])
 
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-keys-optional/info/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal(self.api_user.id, data["headers"]["x-api-user-id"])
       assert_equal(36, data["headers"]["x-api-user-id"].length)

@@ -10,7 +10,7 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
 
   def test_https_redirect
     response = Typhoeus.get("http://127.0.0.1:9080/admin/login", keyless_http_options)
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://127.0.0.1:9081/admin/login", response.headers["location"])
   end
 
@@ -20,7 +20,7 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
         "Host" => "unknown.foo",
       },
     }))
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://unknown.foo:9081/admin/login", response.headers["location"])
   end
 
@@ -28,11 +28,11 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
     http_opts = keyless_http_options
 
     response = Typhoeus.get("http://127.0.0.1:9080/admin", http_opts)
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://127.0.0.1:9081/admin", response.headers["location"])
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin", http_opts)
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://127.0.0.1:9081/admin/", response.headers["location"])
   end
 
@@ -44,11 +44,11 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
     })
 
     response = Typhoeus.get("http://127.0.0.1:9080/admin", http_opts)
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://unknown.foo:9081/admin", response.headers["location"])
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin", http_opts)
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://unknown.foo:9081/admin/", response.headers["location"])
   end
 
@@ -62,7 +62,7 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("https://127.0.0.1:9081/admin/login", keyless_http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_match("Admin Login", response.body)
     end
   end

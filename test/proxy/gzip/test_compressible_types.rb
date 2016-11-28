@@ -29,7 +29,7 @@ class Test::Proxy::Gzip::TestCompressibleTypes < Minitest::Test
         :accept_encoding => "gzip",
         :params => { :content_type => mime },
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       if(mime == "")
         assert_equal("text/plain", response.headers["content-type"])
       else
@@ -52,7 +52,7 @@ class Test::Proxy::Gzip::TestCompressibleTypes < Minitest::Test
         :accept_encoding => "gzip",
         :params => { :content_type => mime },
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal(mime, response.headers["content-type"])
       refute(response.headers["content-encoding"])
       assert_equal(1000, response.body.bytesize)

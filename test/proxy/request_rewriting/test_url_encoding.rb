@@ -13,7 +13,7 @@ class Test::Proxy::RequestRewriting::TestUrlEncoding < Minitest::Test
   # https://github.com/joyent/node/pull/8459
   def test_passes_backslashes_to_backend
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/test\\backslash?test=\\hello", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("http://127.0.0.1/info/test\\backslash?test=\\hello", data["raw_url"])
   end

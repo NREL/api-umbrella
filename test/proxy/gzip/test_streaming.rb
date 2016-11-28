@@ -24,7 +24,7 @@ class Test::Proxy::Gzip::TestStreaming < Minitest::Test
     end
     response = request.run
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("gzip", response.headers["content-encoding"])
     assert_equal("chunked", response.headers["transfer-encoding"])
     assert_equal(15, chunks.join("").bytesize)
@@ -48,7 +48,7 @@ class Test::Proxy::Gzip::TestStreaming < Minitest::Test
     end
     response = request.run
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     refute(response.headers["content-encoding"])
     assert_equal("chunked", response.headers["transfer-encoding"])
     assert_equal(30, chunks.join("").bytesize)
@@ -72,7 +72,7 @@ class Test::Proxy::Gzip::TestStreaming < Minitest::Test
     end
     response = request.run
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     refute(response.headers["content-encoding"])
     assert_equal("chunked", response.headers["transfer-encoding"])
     assert_equal(150000, chunks.join("").bytesize)

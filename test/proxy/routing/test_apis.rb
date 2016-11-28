@@ -18,7 +18,7 @@ class Test::Proxy::Routing::TestApis < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/state.json", keyless_http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert(data["db_config_version"])
     end

@@ -41,7 +41,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Capybara
         :body => { :config => config },
       }))
 
-      assert_equal(201, response.code, response.body)
+      assert_response_code(201, response)
       assert_equal(1, ConfigVersion.count)
       active_config = ConfigVersion.active_config
 
@@ -73,7 +73,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Capybara
         :body => { :config => config },
       }))
 
-      assert_equal(201, response.code, response.body)
+      assert_response_code(201, response)
       assert_equal(1, ConfigVersion.count)
       active_config = ConfigVersion.active_config
 
@@ -103,7 +103,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Capybara
         :body => { :config => config },
       }))
 
-      assert_equal(201, response.code, response.body)
+      assert_response_code(201, response)
       assert_equal(1, ConfigVersion.count)
       active_config = ConfigVersion.active_config
 
@@ -149,7 +149,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Capybara
         :body => { :config => config },
       }))
 
-      assert_equal(201, response.code, response.body)
+      assert_response_code(201, response)
       assert_equal(1, ConfigVersion.count)
       active_config = ConfigVersion.active_config
 
@@ -182,7 +182,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Capybara
         :body => { :config => config },
       }))
 
-      assert_equal(201, response.code, response.body)
+      assert_response_code(201, response)
       assert_equal(1, ConfigVersion.count)
       active_config = ConfigVersion.active_config
 
@@ -215,7 +215,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Capybara
         :body => { :config => config },
       }))
 
-      assert_equal(201, response.code, response.body)
+      assert_response_code(201, response)
       assert_equal(1, ConfigVersion.count)
       active_config = ConfigVersion.active_config
 

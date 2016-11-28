@@ -43,7 +43,7 @@ class Test::Proxy::RequestRewriting::TestSetsHeadersDynamicValues < Minitest::Te
         "X-Dynamic-Source" => "dynamic",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "x-dynamic" => "(dynamic-dynamic)",
@@ -60,7 +60,7 @@ class Test::Proxy::RequestRewriting::TestSetsHeadersDynamicValues < Minitest::Te
         "X-Missing" => "not-missing",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "x-dynamic" => "(-)",
@@ -77,7 +77,7 @@ class Test::Proxy::RequestRewriting::TestSetsHeadersDynamicValues < Minitest::Te
         "X-Dynamic-Source" => "dynamic",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "x-dynamic-source" => "dynamic",

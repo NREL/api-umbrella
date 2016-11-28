@@ -33,7 +33,7 @@ module ApiUmbrellaTestHelpers
             response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options)
             if(response.code == options.fetch(:code))
               if(options[:local_interface_ip])
-                assert_equal(200, response.code, response.body)
+                assert_response_code(200, response)
                 data = MultiJson.load(response.body)
                 if(options[:local_interface_ip] == data["local_interface_ip"])
                   break

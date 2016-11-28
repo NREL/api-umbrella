@@ -26,7 +26,7 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Capybara::Test
       :settings => FactoryGirl.build(:custom_rate_limit_api_setting),
     })
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     data = MultiJson.load(response.body)
     assert_equal(1, data["api"]["settings"]["rate_limits"].length)
@@ -63,7 +63,7 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Capybara::Test
       }),
     })
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     data = MultiJson.load(response.body)
     assert_equal("", data["api"]["settings"]["#{field}_string"])
@@ -79,7 +79,7 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Capybara::Test
       }),
     })
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     data = MultiJson.load(response.body)
     assert_equal("X-Add1: test1", data["api"]["settings"]["#{field}_string"])
@@ -100,7 +100,7 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Capybara::Test
       }),
     })
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     data = MultiJson.load(response.body)
     assert_equal("X-Add1: test1\nX-Add2: test2", data["api"]["settings"]["#{field}_string"])

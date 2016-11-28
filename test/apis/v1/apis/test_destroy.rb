@@ -13,10 +13,10 @@ class Test::Apis::V1::Apis::TestDestroy < Minitest::Capybara::Test
     api = FactoryGirl.create(:api)
 
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
 
     refute_nil(Api.where(:id => api.id, :deleted_at.ne => nil).first)
   end

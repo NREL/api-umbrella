@@ -27,7 +27,7 @@ class Test::Proxy::TestConcurrency < Minitest::Test
 
     assert_equal(20, requests.length)
     requests.each do |request|
-      assert_equal(200, request.response.code, request.response.body)
+      assert_response_code(200, request.response)
       assert(request.original_options[:params][:input])
       assert_equal(request.original_options[:params][:input], request.response.body)
     end

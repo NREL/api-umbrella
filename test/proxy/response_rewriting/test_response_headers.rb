@@ -66,14 +66,14 @@ class Test::Proxy::ResponseRewriting::TestResponseHeaders < Minitest::Test
 
   def test_default_sets_new_headers
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/default/headers/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("test1", response.headers["x-add1"])
     assert_equal("test2", response.headers["x-add2"])
   end
 
   def test_default_leaves_existing_headers_case_insensitive
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/default/headers/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("existing1", response.headers["x-existing1"])
     assert_equal("existing2", response.headers["x-existing2"])
     assert_equal("existing3", response.headers["x-existing3"])
@@ -81,7 +81,7 @@ class Test::Proxy::ResponseRewriting::TestResponseHeaders < Minitest::Test
 
   def test_default_sub_settings
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/default/headers/sub/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     refute(response.headers["x-add1"])
     assert_equal("overridden", response.headers["x-add2"])
     assert_equal("existing1", response.headers["x-existing1"])
@@ -91,14 +91,14 @@ class Test::Proxy::ResponseRewriting::TestResponseHeaders < Minitest::Test
 
   def test_override_sets_new_headers
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/override/headers/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("test1", response.headers["x-add1"])
     assert_equal("test2", response.headers["x-add2"])
   end
 
   def test_override_replaces_existing_headers_case_insensitive
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/override/headers/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("test3", response.headers["x-existing1"])
     assert_equal("test4", response.headers["x-existing2"])
     assert_equal("test5", response.headers["x-existing3"])
@@ -106,7 +106,7 @@ class Test::Proxy::ResponseRewriting::TestResponseHeaders < Minitest::Test
 
   def test_override_sub_settings
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/override/headers/sub/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     refute(response.headers["x-add1"])
     refute(response.headers["x-add2"])
     assert_equal("existing1", response.headers["x-existing1"])

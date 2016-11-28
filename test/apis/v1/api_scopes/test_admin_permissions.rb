@@ -24,14 +24,14 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api_scope => attributes },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     attributes["path_prefix"] = "/yahoo/#{rand(999_999)}"
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api_scope => attributes },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
 
@@ -48,14 +48,14 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api_scope => attributes },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
 
     attributes["path_prefix"] = "/google/#{rand(999_999)}"
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api_scope => attributes },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
 
@@ -85,7 +85,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
     record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/api_scopes.json", http_options.deep_merge(admin_token(admin)))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     record_ids = data["data"].map { |r| r["id"] }
     assert_includes(record_ids, record.id)
@@ -95,7 +95,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
     record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/api_scopes.json", http_options.deep_merge(admin_token(admin)))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     record_ids = data["data"].map { |r| r["id"] }
     refute_includes(record_ids, record.id)
@@ -105,7 +105,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
     record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(["api_scope"], data.keys)
   end
@@ -114,7 +114,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
     record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
   end
@@ -146,7 +146,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
       }))
     end
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     refute_equal(nil, data["api_scope"]["name"])
     assert_equal(attributes["name"], data["api_scope"]["name"])
@@ -161,7 +161,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :api_scope => attributes },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal(0, active_count - initial_count)
@@ -177,7 +177,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :api_scope => attributes },
     }))
 
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
     record = ApiScope.find(record.id)
     refute_equal(nil, record.name)
     assert_equal(attributes["name"], record.name)
@@ -193,7 +193,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :api_scope => attributes },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
 
@@ -206,7 +206,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
     record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
     assert_equal(-1, active_count - initial_count)
   end
 
@@ -214,7 +214,7 @@ class Test::Apis::V1::ApiScopes::TestAdminPermissions < Minitest::Capybara::Test
     record = ApiScope.find_or_create_by_instance!(FactoryGirl.build(factory))
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/api_scopes/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal(0, active_count - initial_count)

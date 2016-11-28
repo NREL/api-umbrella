@@ -23,21 +23,21 @@ class Test::Proxy::RequestRewriting::TestApiPathPrefix < Minitest::Test
 
   def test_rewrites_prefix
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/incoming/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("/info/outgoing/", data["url"]["path"])
   end
 
   def test_retains_path_beyond_prefix
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/incoming/foo/bar", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("/info/outgoing/foo/bar", data["url"]["path"])
   end
 
   def test_retains_query_params
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/incoming/foo/bar?param1=value1&param2=value2", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("/info/outgoing/foo/bar?param1=value1&param2=value2", data["url"]["path"])
   end

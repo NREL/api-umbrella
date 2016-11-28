@@ -118,14 +118,14 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :admin => attributes },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
 
     attributes["group_ids"] = [google_admin_group.id]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :admin => attributes },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
 
@@ -144,7 +144,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :admin => attributes },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     record = Admin.find(record.id)
     assert_equal(false, record.superuser)
   end
@@ -159,7 +159,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :admin => attributes },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     record = Admin.find(record.id)
     assert_equal(false, record.superuser)
   end
@@ -175,7 +175,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :admin => attributes },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     record = Admin.find(record.id)
     assert_equal(true, record.superuser)
   end
@@ -191,7 +191,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :admin => attributes },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = Admin.find(record.id)
     assert_equal(true, record.superuser)
   end
@@ -207,7 +207,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :admin => attributes },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = Admin.find(record.id)
     assert_equal(false, record.superuser)
   end
@@ -234,7 +234,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
     record = FactoryGirl.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins.json", http_options.deep_merge(admin_token(admin)))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     record_ids = data["data"].map { |r| r["id"] }
     assert_includes(record_ids, record.id)
@@ -244,7 +244,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
     record = FactoryGirl.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins.json", http_options.deep_merge(admin_token(admin)))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     record_ids = data["data"].map { |r| r["id"] }
     refute_includes(record_ids, record.id)
@@ -254,7 +254,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
     record = FactoryGirl.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(["admin"], data.keys)
   end
@@ -263,7 +263,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
     record = FactoryGirl.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
   end
@@ -276,7 +276,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :admin => attributes },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     refute_nil(data["admin"]["username"])
     assert_equal(attributes["username"], data["admin"]["username"])
@@ -291,7 +291,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :admin => attributes },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal(0, active_count - initial_count)
@@ -307,7 +307,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :admin => attributes },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute_nil(data["admin"]["username"])
     assert_equal(attributes["username"], data["admin"]["username"])
@@ -327,7 +327,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
       :body => { :admin => attributes },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
 
@@ -340,7 +340,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
     record = FactoryGirl.create(factory)
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
     assert_equal(-1, active_count - initial_count)
   end
 
@@ -348,7 +348,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Capybara::Test
     record = FactoryGirl.create(factory)
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal(0, active_count - initial_count)

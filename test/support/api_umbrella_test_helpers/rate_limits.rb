@@ -71,7 +71,7 @@ module ApiUmbrellaTestHelpers
     def assert_under_rate_limit(path, count, options = {})
       responses = make_requests(path, count, options)
       responses.each do |response|
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         assert_equal("Hello World", response.body)
       end
     end
@@ -79,7 +79,7 @@ module ApiUmbrellaTestHelpers
     def assert_over_rate_limit(path, count, options = {})
       responses = make_requests(path, count, options)
       responses.each do |response|
-        assert_equal(429, response.code, response.body)
+        assert_response_code(429, response)
         assert_match("OVER_RATE_LIMIT", response.body)
       end
     end

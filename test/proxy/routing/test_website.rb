@@ -10,17 +10,17 @@ class Test::Proxy::Routing::TestWebsite < Minitest::Test
 
   def test_default_website
     response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_match("Your API Site Name", response.body)
 
     response = Typhoeus.get("https://127.0.0.1:9081/signup/", keyless_http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_match("API Key Signup", response.body)
   end
 
   def test_signup_https_redirect
     response = Typhoeus.get("http://127.0.0.1:9080/signup/", keyless_http_options)
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://127.0.0.1:9081/signup/", response.headers["location"])
   end
 
@@ -30,7 +30,7 @@ class Test::Proxy::Routing::TestWebsite < Minitest::Test
         "Host" => "unknown.foo",
       },
     }))
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://unknown.foo:9081/signup/", response.headers["location"])
   end
 
@@ -38,11 +38,11 @@ class Test::Proxy::Routing::TestWebsite < Minitest::Test
     http_opts = keyless_http_options
 
     response = Typhoeus.get("http://127.0.0.1:9080/signup", http_opts)
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://127.0.0.1:9081/signup", response.headers["location"])
 
     response = Typhoeus.get("https://127.0.0.1:9081/signup", http_opts)
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://127.0.0.1:9081/signup/", response.headers["location"])
   end
 
@@ -54,11 +54,11 @@ class Test::Proxy::Routing::TestWebsite < Minitest::Test
     })
 
     response = Typhoeus.get("http://127.0.0.1:9080/signup", http_opts)
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://unknown.foo:9081/signup", response.headers["location"])
 
     response = Typhoeus.get("https://127.0.0.1:9081/signup", http_opts)
-    assert_equal(301, response.code, response.body)
+    assert_response_code(301, response)
     assert_equal("https://unknown.foo:9081/signup/", response.headers["location"])
   end
 end

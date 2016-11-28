@@ -71,7 +71,7 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
       :httpheader => header_list,
       :verbose => true,
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     # Verify that our outbound request included 2 distinct headers.
     assert_equal(2, response.debug_info.header_out.join("").scan(/^#{header}: /).length)

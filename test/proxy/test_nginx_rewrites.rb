@@ -25,12 +25,12 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
     }, "--router") do
       # Basic rewrite
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options)
-      assert_equal(301, response.code, response.body)
+      assert_response_code(301, response)
       assert_equal("https://example.com/something/?foo=bar", response.headers["location"])
 
       # Advanced with replacements rewrite
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite/el/7/file-0.6.0-1.el7.x86_64.rpm?foo=bar", http_options)
-      assert_equal(302, response.code, response.body)
+      assert_response_code(302, response)
       assert_equal("https://example.com/downloads/v0.6.0/file-0.6.0-1.el7.x86_64.rpm", response.headers["location"])
     end
   end
@@ -54,20 +54,20 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "default.foo" },
       }))
-      assert_equal(301, response.code, response.body)
+      assert_response_code(301, response)
       assert_equal("https://example.com/something/?foo=bar", response.headers["location"])
 
       # Known host without rewrites
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "known.foo" },
       }))
-      assert_equal(404, response.code, response.body)
+      assert_response_code(404, response)
 
       # Unknown host
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "unknown.foo" },
       }))
-      assert_equal(301, response.code, response.body)
+      assert_response_code(301, response)
       assert_equal("https://example.com/something/?foo=bar", response.headers["location"])
     end
   end
@@ -87,14 +87,14 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "default.foo" },
       }))
-      assert_equal(301, response.code, response.body)
+      assert_response_code(301, response)
       assert_equal("https://example.com/something/?foo=bar", response.headers["location"])
 
       # Unknown host
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello/rewrite?foo=bar", http_options.deep_merge({
         :headers => { "Host" => "unknown.foo" },
       }))
-      assert_equal(404, response.code, response.body)
+      assert_response_code(404, response)
     end
   end
 
@@ -133,26 +133,26 @@ class Test::Proxy::TestNginxRewrites < Minitest::Test
 
       # Rewrites match before API Backends.
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-example/rewrite_me", http_opts)
-      assert_equal(301, response.code, response.body)
+      assert_response_code(301, response)
       assert_equal("https://example.com/", response.headers["location"])
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/api-example/rewrite_me_just_kidding", http_opts)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_match("Hello World", response.body)
 
       # Rewrites match before Website Backends.
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/website-example/rewrite_me", http_opts)
-      assert_equal(301, response.code, response.body)
+      assert_response_code(301, response)
       assert_equal("https://2.example.com/", response.headers["location"])
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/website-example/rewrite_me_just_kidding", http_opts)
-      assert_equal(404, response.code, response.body)
+      assert_response_code(404, response)
       assert_match("Test 404 Not Found", response.body)
 
       # Rewrites match before the admin tool.
       response = Typhoeus.get("https://127.0.0.1:9081/admin/rewrite_me", http_opts)
-      assert_equal(301, response.code, response.body)
+      assert_response_code(301, response)
       assert_equal("https://3.example.com/", response.headers["location"])
       response = Typhoeus.get("https://127.0.0.1:9081/admin/rewrite_me_just_kidding", http_opts)
-      assert_equal(404, response.code, response.body)
+      assert_response_code(404, response)
       assert_match("nginx", response.body)
     end
   end

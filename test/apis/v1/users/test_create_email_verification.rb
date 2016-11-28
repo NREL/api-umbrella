@@ -14,7 +14,7 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Capybara::T
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => FactoryGirl.attributes_for(:api_user) },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_kind_of(String, data["user"]["api_key"])
@@ -30,7 +30,7 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Capybara::T
         :options => { :verify_email => true },
       },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_nil(data["user"]["api_key"])
@@ -44,7 +44,7 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Capybara::T
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => FactoryGirl.attributes_for(:api_user) },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_kind_of(String, data["user"]["api_key"])

@@ -122,14 +122,14 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     attributes["roles"] = ["yahoo-write"]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
 
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
@@ -155,14 +155,14 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
 
     attributes["roles"] = ["google-write"]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
 
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
@@ -181,7 +181,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
       :body => { :user => attributes },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_equal(1, active_count - initial_count)
     data = MultiJson.load(response.body)
     refute_equal(nil, data["user"]["first_name"])
@@ -200,7 +200,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
       :body => { :user => attributes },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_equal(0, active_count - initial_count)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
@@ -216,7 +216,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
       :body => { :user => attributes },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = ApiUser.find(record.id)
     refute_equal(nil, record.first_name)
     assert_equal(attributes["first_name"], record.first_name)
@@ -235,7 +235,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
       :body => { :user => attributes },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
 

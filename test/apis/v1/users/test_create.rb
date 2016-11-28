@@ -17,7 +17,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_equal(attributes[:last_name], data["user"]["last_name"])
@@ -36,7 +36,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert(data["user"]["api_key"])
@@ -51,7 +51,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => nil,
     }))
-    assert_equal(422, response.code, response.body)
+    assert_response_code(422, response)
 
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
@@ -66,7 +66,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :body => { :user => "something" },
     }))
 
-    assert_equal(422, response.code, response.body)
+    assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal(0, active_count - initial_count)
@@ -77,7 +77,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => FactoryGirl.attributes_for(:api_user) },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_equal("*", response.headers["Access-Control-Allow-Origin"])
   end
 
@@ -87,7 +87,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     user = ApiUser.find(data["user"]["id"])
@@ -100,7 +100,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     user = ApiUser.find(data["user"]["id"])
@@ -114,7 +114,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_equal("api", data["user"]["registration_source"])
@@ -126,7 +126,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_equal("whatever", data["user"]["registration_source"])
@@ -144,7 +144,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_equal("1.2.3.4", data["user"]["registration_ip"])
@@ -171,7 +171,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_nil(data["user"]["registration_ip"])
@@ -198,7 +198,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_equal("2.2.2.2", data["user"]["registration_ip"])
@@ -219,7 +219,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(422, response.code, response.body)
+    assert_response_code(422, response)
 
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
@@ -242,7 +242,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_equal(2, data["user"]["settings"]["rate_limits"].length)

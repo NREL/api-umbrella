@@ -41,7 +41,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/invalid-hostname-begins-resolving/", http_options)
-      assert_equal(502, response.code, response.body)
+      assert_response_code(502, response)
 
       set_dns_records(["invalid-hostname-begins-resolving.ooga 60 A 127.0.0.1"])
 
@@ -168,7 +168,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
 
       seen_ips = Set.new
       requests.each do |request|
-        assert_equal(200, request.response.code, request.response.body)
+        assert_response_code(200, request.response)
         data = MultiJson.load(request.response.body)
         seen_ips << data["local_interface_ip"]
       end
@@ -245,7 +245,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
 
       seen_ips = Set.new
       requests.each do |request|
-        assert_equal(200, request.response.code, request.response.body)
+        assert_response_code(200, request.response)
         data = MultiJson.load(request.response.body)
         seen_ips << data["local_interface_ip"]
       end

@@ -25,7 +25,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(2, data["results"].length)
     assert_equal({
@@ -64,7 +64,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(1, data["results"].length)
     assert_equal({
@@ -105,7 +105,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(2, data["results"].length)
     assert_equal({
@@ -149,7 +149,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(1, data["results"].length)
     assert_equal({
@@ -197,7 +197,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(13, data["results"].length)
     assert_equal({
@@ -265,7 +265,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_operator(data["results"].length, :>, 0)
     assert_equal(2, data["results"][0]["hits"])
@@ -301,7 +301,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_operator(data["results"].length, :>, 0)
     assert_equal(4, data["results"][0]["hits"])
@@ -339,7 +339,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_operator(data["results"].length, :>, 0)
     assert_equal(2, data["results"][0]["hits"])
@@ -383,7 +383,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_operator(data["results"].length, :>, 0)
     assert_equal(4, data["results"][0]["hits"])
@@ -421,7 +421,7 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_operator(data["results"].length, :>, 0)
     assert_equal(2, data["results"][0]["hits"])

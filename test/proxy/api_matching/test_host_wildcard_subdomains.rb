@@ -83,17 +83,17 @@ class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
 
   def test_star_dot_does_not_match_root_domain
     response = make_request_to_host("star-dot.#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   def test_star_dot_does_not_match_wildcards_without_dot_boundary
     response = make_request_to_host("foostar-dot.#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   def test_star_dot_does_not_match_domains_with_text_suffix
     response = make_request_to_host("foo.star-dot.#{unique_test_class_id}bar", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   def test_star_dot_matches_wildcard_with_port_suffix
@@ -140,12 +140,12 @@ class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
 
   def test_dot_does_not_match_wildcards_without_dot_boundary
     response = make_request_to_host("foodot.#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   def test_dot_does_not_match_domains_with_text_suffix
     response = make_request_to_host("foo.dot.#{unique_test_class_id}bar", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   def test_dot_matches_wildcard_with_port_suffix
@@ -174,20 +174,20 @@ class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
 
   def test_star_does_not_match_wildcard_subdomains
     response = make_request_to_host("foo.star.#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
 
     response = make_request_to_host("foo.bar.star.#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   def test_star_does_not_match_root_domain
     response = make_request_to_host("star.#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   def test_star_does_not_match_wildcards_without_dot_boundary
     response = make_request_to_host("foostar.#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   def test_escapes_other_possible_regex_chars_in_wildcard_subdomains
@@ -195,12 +195,12 @@ class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
     assert_backend_match("wildcard-star-dot", response)
 
     response = make_request_to_host("foo.star-dotx#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
 
     response = make_request_to_host("foo.dot.#{unique_test_class_id}", "/info/")
     assert_backend_match("wildcard-dot", response)
 
     response = make_request_to_host("foo.dotx#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 end

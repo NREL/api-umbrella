@@ -36,6 +36,6 @@ class Test::Proxy::ApiMatching::TestHost < Minitest::Test
 
   def test_does_not_match_unknown_host
     response = make_request_to_host("bar-foo.#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 end

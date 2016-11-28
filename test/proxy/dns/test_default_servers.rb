@@ -18,7 +18,7 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/ipv4/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal("Hello World", response.body)
     end
   end
@@ -33,7 +33,7 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/ipv6/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal("Hello World", response.body)
     end
   end
@@ -48,7 +48,7 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/localhost/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal("Hello World", response.body)
     end
   end
@@ -63,7 +63,7 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/valid-external-hostname/humans.txt", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_match("Google is built by a large team", response.body)
     end
   end
@@ -78,7 +78,7 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/invalid-hostname/", http_options)
-      assert_equal(502, response.code, response.body)
+      assert_response_code(502, response)
     end
   end
 end

@@ -15,7 +15,7 @@ class Test::TestingSanityChecks::TestEmptyHttpHeaders < Minitest::Test
     http_opts = http_options.merge(:verbose => true)
     http_opts.deep_merge!(empty_http_header_options("X-Foo"))
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_opts)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     # Verify that the empty header was sent by curl.
     header_out = response.debug_info.header_out.join("")
@@ -36,7 +36,7 @@ class Test::TestingSanityChecks::TestEmptyHttpHeaders < Minitest::Test
     http_opts.deep_merge!(empty_http_header_options("X-Foo"))
     http_opts.deep_merge!(empty_http_header_options("X-Bar"))
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_opts)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     # Verify that the empty header was sent by curl.
     header_out = response.debug_info.header_out.join("")

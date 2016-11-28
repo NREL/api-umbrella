@@ -23,7 +23,7 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     body = response.body
     data = MultiJson.load(body)
     assert_equal({
@@ -56,7 +56,7 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     body = response.body
     data = MultiJson.load(body)
     assert_equal({
@@ -90,7 +90,7 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     body = response.body
     data = MultiJson.load(body)
     assert_equal({
@@ -125,7 +125,7 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     body = response.body
     data = MultiJson.load(body)
     assert_equal({

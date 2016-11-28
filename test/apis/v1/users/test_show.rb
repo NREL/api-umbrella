@@ -12,7 +12,7 @@ class Test::Apis::V1::Users::TestShow < Minitest::Capybara::Test
   def test_user_response
     user = FactoryGirl.create(:api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     data = MultiJson.load(response.body)
     assert_equal([

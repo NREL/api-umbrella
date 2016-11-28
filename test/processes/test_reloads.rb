@@ -50,7 +50,7 @@ class Test::Processes::TestReloads < Minitest::Test
       200.times do
         request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/5?#{rand}", http_options)
         request.on_complete do |response|
-          assert_equal(200, response.code, response.body)
+          assert_response_code(200, response)
         end
         hydra.queue(request)
       end
@@ -137,7 +137,7 @@ class Test::Processes::TestReloads < Minitest::Test
       start_time = Time.now.utc
       while(Time.now.utc - start_time < test_duration)
         response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/db-config/hello?#{rand}", http_options)
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         assert_equal("Hello World", response.body)
       end
 
@@ -171,7 +171,7 @@ class Test::Processes::TestReloads < Minitest::Test
 
   def test_file_based_config_changes_updates_apis
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/file-config/info/", http_options)
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
 
     override_config({
       "apis" => [
@@ -187,13 +187,13 @@ class Test::Processes::TestReloads < Minitest::Test
       ],
     }, "--router") do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/file-config/info/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal(data["headers"]["x-test-file-config"], "foo")
     end
 
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/file-config/info/", http_options)
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   private

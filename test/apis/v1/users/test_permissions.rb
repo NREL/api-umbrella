@@ -158,7 +158,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
       :body => { :user => attributes },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_equal(1, active_count - initial_count)
     data = MultiJson.load(response.body)
     record = ApiUser.find(data["user"]["id"])
@@ -186,7 +186,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
       :body => { :user => attributes },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_equal(1, active_count - initial_count)
     data = MultiJson.load(response.body)
     record = ApiUser.find(data["user"]["id"])
@@ -241,7 +241,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
     record = FactoryGirl.create(:api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     record_ids = data["data"].map { |r| r["id"] }
     assert_includes(record_ids, record.id)
@@ -252,14 +252,14 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin))
 
     if(role_based_error)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal([], data["data"])
     else
       if(!api_key)
-        assert_equal(403, response.code, response.body)
+        assert_response_code(403, response)
       else
-        assert_equal(401, response.code, response.body)
+        assert_response_code(401, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -270,7 +270,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
     record = FactoryGirl.create(:api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(["user"], data.keys)
   end
@@ -280,14 +280,14 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
 
     if(role_based_error)
-      assert_equal(403, response.code, response.body)
+      assert_response_code(403, response)
       data = MultiJson.load(response.body)
       assert_equal(["errors"], data.keys)
     else
       if(!api_key)
-        assert_equal(403, response.code, response.body)
+        assert_response_code(403, response)
       else
-        assert_equal(401, response.code, response.body)
+        assert_response_code(401, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -302,7 +302,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
       :body => { :user => attributes },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     refute_equal(nil, data["user"]["first_name"])
     assert_equal(attributes["first_name"], data["user"]["first_name"])
@@ -318,14 +318,14 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
     }))
 
     if(role_based_error)
-      assert_equal(403, response.code, response.body)
+      assert_response_code(403, response)
       data = MultiJson.load(response.body)
       assert_equal(["errors"], data.keys)
     else
       if(!api_key)
-        assert_equal(403, response.code, response.body)
+        assert_response_code(403, response)
       else
-        assert_equal(401, response.code, response.body)
+        assert_response_code(401, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -343,7 +343,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
       :body => { :user => attributes },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = ApiUser.find(record.id)
     refute_equal(nil, record.first_name)
     assert_equal(attributes["first_name"], record.first_name)
@@ -360,14 +360,14 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
     }))
 
     if(role_based_error)
-      assert_equal(403, response.code, response.body)
+      assert_response_code(403, response)
       data = MultiJson.load(response.body)
       assert_equal(["errors"], data.keys)
     else
       if(!api_key)
-        assert_equal(403, response.code, response.body)
+        assert_response_code(403, response)
       else
-        assert_equal(401, response.code, response.body)
+        assert_response_code(401, response)
       end
       data = MultiJson.load(response.body)
       assert_equal(["error"], data.keys)
@@ -382,7 +382,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
     record = FactoryGirl.create(:api_user)
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
     assert_equal(-1, active_count - initial_count)
   end
 
@@ -392,9 +392,9 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Capybara::Test
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
 
     if(!api_key)
-      assert_equal(403, response.code, response.body)
+      assert_response_code(403, response)
     else
-      assert_equal(404, response.code, response.body)
+      assert_response_code(404, response)
     end
     assert_equal(0, active_count - initial_count)
   end

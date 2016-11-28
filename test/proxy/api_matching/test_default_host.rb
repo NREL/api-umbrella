@@ -42,7 +42,7 @@ class Test::Proxy::ApiMatching::TestDefaultHost < Minitest::Test
     assert_backend_match("host-default", response)
 
     response = make_request_to_host("unknown-#{unique_test_class_id}", "/info/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   def test_uses_default_host_as_fallback_if_set

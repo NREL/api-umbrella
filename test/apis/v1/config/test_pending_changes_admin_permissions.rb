@@ -26,7 +26,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Cap
   def test_all_apis_for_superuser
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
     assert_includes(api_ids, @api.id)
@@ -39,7 +39,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Cap
     google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token(google_admin)))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
     assert_includes(api_ids, @google_api.id)
@@ -49,7 +49,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Cap
     google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token(google_admin)))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
     refute_includes(api_ids, @yahoo_api.id)
@@ -59,7 +59,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Cap
     google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token(google_admin)))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
     refute_includes(api_ids, @google_extra_url_match_api.id)
@@ -69,7 +69,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Cap
     unauthorized_google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token(unauthorized_google_admin)))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
     assert_equal(0, api_ids.length)

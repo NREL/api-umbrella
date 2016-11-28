@@ -37,7 +37,7 @@ class Test::Proxy::RequestRewriting::TestSetsHeaders < Minitest::Test
 
   def test_sets_header_values
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "x-add1" => "test1",
@@ -53,7 +53,7 @@ class Test::Proxy::RequestRewriting::TestSetsHeaders < Minitest::Test
         "X-Foo" => "bar",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "x-add1" => "test1",
@@ -64,7 +64,7 @@ class Test::Proxy::RequestRewriting::TestSetsHeaders < Minitest::Test
 
   def test_sub_url_settings_overrides_parent_settings
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/sub/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "x-add2" => "overridden",

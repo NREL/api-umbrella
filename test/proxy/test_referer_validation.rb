@@ -179,7 +179,7 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
       :headers => headers,
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_UNAUTHORIZED", response.body)
   end
 
@@ -187,6 +187,6 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge({
       :headers => headers,
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
   end
 end

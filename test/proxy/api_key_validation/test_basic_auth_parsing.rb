@@ -14,7 +14,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "basIC #{Base64.strict_encode64("#{self.api_key}:")}",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_match("Hello World", response.body)
   end
 
@@ -24,7 +24,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "  Basic      #{Base64.strict_encode64("#{self.api_key}:")}   ",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_match("Hello World", response.body)
   end
 
@@ -32,13 +32,13 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", keyless_http_options.deep_merge({
       :userpwd => "#{self.api_key}:foobar",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_match("Hello World", response.body)
   end
 
   def test_denies_empty_authorization
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", keyless_http_options.deep_merge(empty_http_header_options("Authorization")))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_MISSING", response.body)
   end
 
@@ -48,7 +48,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "foo bar",
       },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_MISSING", response.body)
   end
 
@@ -58,7 +58,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "Basic #{Base64.strict_encode64(":#{self.api_key}")}",
       },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_MISSING", response.body)
   end
 
@@ -68,7 +68,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "Digest #{Base64.strict_encode64("#{self.api_key}:")}",
       },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_MISSING", response.body)
   end
 
@@ -78,7 +78,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "Digest #{Base64.strict_encode64(self.api_key)}",
       },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_MISSING", response.body)
   end
 
@@ -88,7 +88,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "Basic",
       },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_MISSING", response.body)
   end
 
@@ -98,7 +98,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "Basic ",
       },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_MISSING", response.body)
   end
 
@@ -108,7 +108,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "Basic z",
       },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_MISSING", response.body)
   end
 
@@ -118,7 +118,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "Basic zF7&F@#@@",
       },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_MISSING", response.body)
   end
 
@@ -128,7 +128,7 @@ class Test::Proxy::ApiKeyValidation::TestBasicAuthParsing < Minitest::Test
         "Authorization" => "Basic /9j/4AAQSkZJRgABAQAAAQABAAD//gA",
       },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_MISSING", response.body)
   end
 end

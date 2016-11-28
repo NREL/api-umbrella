@@ -93,13 +93,13 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello?#{rand}", keyless_http_options.deep_merge({
       :headers => { "X-Api-Key" => user.api_key },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     user.disabled_at = Time.now.utc
     user.save!
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/hello?#{rand}", keyless_http_options.deep_merge({
       :headers => { "X-Api-Key" => user.api_key },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
 
     # Perform parallel requests constantly in the background of this tests.
     # This ensures that no connections are dropped during any point of the
@@ -212,7 +212,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
         :headers => { "X-Api-Key" => user.api_key },
       }))
       request.on_complete do |response|
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
       end
       hydra.queue(request)
     end
@@ -229,7 +229,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     end
 
     response = Typhoeus::Request.new("http://127.0.0.1:13089#{path}", http_opts).run
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("application/json", response.headers["content-type"])
 
     MultiJson.load(response.body)

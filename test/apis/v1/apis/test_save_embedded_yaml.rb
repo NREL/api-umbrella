@@ -44,7 +44,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Capybara::Test
     }).deep_stringify_keys
 
     response = create_or_update(action, attributes)
-    assert_equal(422, response.code, response.body)
+    assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal({
@@ -62,7 +62,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Capybara::Test
     }).deep_stringify_keys
 
     response = create_or_update(action, attributes)
-    assert_equal(422, response.code, response.body)
+    assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal({
@@ -80,11 +80,11 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Capybara::Test
 
     response = create_or_update(action, attributes)
     if(action == :create)
-      assert_equal(201, response.code, response.body)
+      assert_response_code(201, response)
       data = MultiJson.load(response.body)
       api = Api.find(data["api"]["id"])
     elsif(action == :update)
-      assert_equal(204, response.code, response.body)
+      assert_response_code(204, response)
       api = Api.find(attributes["id"])
     end
     assert_equal({

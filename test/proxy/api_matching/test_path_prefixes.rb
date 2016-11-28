@@ -54,10 +54,10 @@ class Test::Proxy::ApiMatching::TestPathPrefixes < Minitest::Test
     assert_backend_match("specific-prefix-other-host", response)
 
     response = make_request_to_host("127.0.0.1", "/#{unique_test_class_id}/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
 
     response = make_request_to_host("other-#{unique_test_class_id}", "/#{unique_test_class_id}/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 
   def test_matches_beyond_prefix
@@ -67,7 +67,7 @@ class Test::Proxy::ApiMatching::TestPathPrefixes < Minitest::Test
 
   def test_requires_trailing_slash_match
     response = make_request_to_host("127.0.0.1", "/#{unique_test_class_id}/specific")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
 
     response = make_request_to_host("127.0.0.1", "/#{unique_test_class_id}/no-trailing")
     assert_backend_match("no-trailing-prefix", response)
@@ -78,6 +78,6 @@ class Test::Proxy::ApiMatching::TestPathPrefixes < Minitest::Test
 
   def test_matches_case_sensitively
     response = make_request_to_host("127.0.0.1", "/#{unique_test_class_id}/SPECIFIC/")
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
   end
 end

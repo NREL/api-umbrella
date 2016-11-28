@@ -16,7 +16,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Capybara::Test
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
         :body => { :api => attributes },
       }))
-      assert_equal(201, response.code, response.body)
+      assert_response_code(201, response)
       data = MultiJson.load(response.body)
       assert_equal(i * 10_000, data["api"]["sort_order"])
     end
@@ -28,7 +28,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     assert_equal(0, data["api"]["sort_order"])
   end
@@ -39,7 +39,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     assert_equal(8, data["api"]["sort_order"])
   end
@@ -52,7 +52,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     assert_equal(2_147_483_624, data["api"]["sort_order"])
 
@@ -60,7 +60,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     assert_equal(2_147_483_636, data["api"]["sort_order"])
 
@@ -68,7 +68,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     assert_equal(2_147_483_642, data["api"]["sort_order"])
   end
@@ -82,7 +82,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     api3_id = data["api"]["id"]
     assert_equal(2_147_483_646, data["api"]["sort_order"])
@@ -91,7 +91,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     api4_id = data["api"]["id"]
     assert_equal(2_147_483_647, data["api"]["sort_order"])
@@ -100,7 +100,7 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     api5_id = data["api"]["id"]
     assert_equal(2_147_483_647, data["api"]["sort_order"])

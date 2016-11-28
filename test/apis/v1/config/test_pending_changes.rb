@@ -20,7 +20,7 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Capybara::Test
   def test_grouped_into_categories
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_kind_of(Hash, data["config"])
     assert_kind_of(Hash, data["config"]["apis"])
@@ -34,7 +34,7 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Capybara::Test
     FactoryGirl.create(:api)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_data = data["config"]["apis"]["new"].first
     refute_includes(api_data["pending_yaml"], "---")
@@ -44,7 +44,7 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Capybara::Test
     FactoryGirl.create(:api, :created_by => "foo", :updated_by => "foo")
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_data = data["config"]["apis"]["new"].first
     %w(_id version created_by created_at updated_at updated_by).each do |field|
@@ -57,7 +57,7 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Capybara::Test
     FactoryGirl.create(:api, :sort_order => 10)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     api_data = data["config"]["apis"]["new"].first
 

@@ -18,7 +18,7 @@ class Test::Proxy::RequestRewriting::TestHostHeader < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal("example.com", data["headers"]["host"])
     end
@@ -34,7 +34,7 @@ class Test::Proxy::RequestRewriting::TestHostHeader < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal("example.com:8080", data["headers"]["host"])
     end
@@ -50,7 +50,7 @@ class Test::Proxy::RequestRewriting::TestHostHeader < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal("127.0.0.1:9080", data["headers"]["host"])
     end
@@ -66,7 +66,7 @@ class Test::Proxy::RequestRewriting::TestHostHeader < Minitest::Test
       },
     ]) do
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal("127.0.0.1:9080", data["headers"]["host"])
     end

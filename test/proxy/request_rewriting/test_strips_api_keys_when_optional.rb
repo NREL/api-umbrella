@@ -23,20 +23,20 @@ class Test::Proxy::RequestRewriting::TestStripsApiKeysWhenOptional < Minitest::T
 
   def test_sanity_check_api_keys_optional
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", keyless_http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
   end
 
   def test_strips_api_key_from_header
     assert(http_options[:headers]["X-Api-Key"])
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute(data["headers"]["x-api-key"])
   end
 
   def test_strips_api_key_from_query
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/?api_key=#{self.api_key}", keyless_http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({}, data["url"]["query"])
   end
@@ -45,7 +45,7 @@ class Test::Proxy::RequestRewriting::TestStripsApiKeysWhenOptional < Minitest::T
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", keyless_http_options.deep_merge({
       :userpwd => "#{self.api_key}:",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute(data["basic_auth_username"])
     refute(data["headers"]["authorization"])
@@ -61,7 +61,7 @@ class Test::Proxy::RequestRewriting::TestStripsApiKeysWhenOptional < Minitest::T
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/api-keys-optional/info/", keyless_http_options.deep_merge({
       :userpwd => "foo:",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("foo", data["basic_auth_username"])
     assert(data["headers"]["authorization"])

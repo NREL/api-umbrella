@@ -15,7 +15,7 @@ class Test::Apis::V1::Users::TestServerSideTimestamps < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_server_side_timestamp(response)
   end
 
@@ -27,7 +27,7 @@ class Test::Apis::V1::Users::TestServerSideTimestamps < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_server_side_timestamp(response)
   end
 

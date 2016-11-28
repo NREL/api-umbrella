@@ -64,7 +64,7 @@ class Test::Proxy::TestChunkedResponses < Minitest::Test
     assert_equal(1000, requests.length)
     requests.each_with_index do |request, i|
       size = 252850 + i
-      assert_equal(200, request.response.code, request.response.body)
+      assert_response_code(200, request.response)
       assert_equal("chunked", request.response.headers["transfer-encoding"])
       assert_equal("gzip", request.response.headers["content-encoding"])
       assert_equal(size, request.response.body.bytesize)
@@ -75,7 +75,7 @@ class Test::Proxy::TestChunkedResponses < Minitest::Test
 
   def assert_chunked_response(path, expected_body_size, options = {})
     response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge(options))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("chunked", response.headers["transfer-encoding"])
     refute(response.headers["content-length"])
     assert_equal(expected_body_size, response.body.bytesize)
@@ -83,7 +83,7 @@ class Test::Proxy::TestChunkedResponses < Minitest::Test
 
   def assert_non_chunked_response(path, expected_body_size, options = {})
     response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options.deep_merge(options))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     refute(response.headers["transfer-encoding"])
     assert_equal(expected_body_size.to_s, response.headers["content-length"])
     assert_equal(expected_body_size, response.body.bytesize)

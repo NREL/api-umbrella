@@ -26,7 +26,7 @@ class Test::Proxy::Caching::TestHttpMethods < Minitest::Test
         :unique_test_id => unique_test_id,
       },
     })).run
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("GET", response.headers["x-received-method"])
     assert_equal("HIT", response.headers["x-cache"])
     assert_equal("", response.body)

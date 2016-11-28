@@ -44,7 +44,7 @@ class Test::Proxy::RequestRewriting::TestAcceptEncodingNormalization < Minitest:
 
   def test_removes_empty_string
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge(empty_http_header_options("Accept-Encoding")))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(nil, data["headers"]["accept-encoding"])
   end
@@ -55,7 +55,7 @@ class Test::Proxy::RequestRewriting::TestAcceptEncodingNormalization < Minitest:
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :accept_encoding => value_to_send,
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(expected_value_received, data["headers"]["accept-encoding"])
   end

@@ -15,7 +15,7 @@ class Test::Proxy::RequestRewriting::TestAddsRolesHeader < Minitest::Test
         "X-Api-Key" => user.api_key,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("private", data["headers"]["x-api-roles"])
   end
@@ -23,7 +23,7 @@ class Test::Proxy::RequestRewriting::TestAddsRolesHeader < Minitest::Test
   def test_omits_roles_header_if_empty
     refute(self.api_user.roles)
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute(data["headers"]["x-api-roles"])
   end
@@ -35,7 +35,7 @@ class Test::Proxy::RequestRewriting::TestAddsRolesHeader < Minitest::Test
         "X-Api-Key" => user.api_key,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("private,foo,bar", data["headers"]["x-api-roles"])
   end
@@ -46,7 +46,7 @@ class Test::Proxy::RequestRewriting::TestAddsRolesHeader < Minitest::Test
         "X-Api-Roles" => "bogus-value",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute(data["headers"]["x-api-roles"])
     refute_match("bogus-value", response.body)
@@ -58,7 +58,7 @@ class Test::Proxy::RequestRewriting::TestAddsRolesHeader < Minitest::Test
         "X-API-ROLES" => "bogus-value",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute(data["headers"]["x-api-roles"])
     refute_match("bogus-value", response.body)
@@ -68,7 +68,7 @@ class Test::Proxy::RequestRewriting::TestAddsRolesHeader < Minitest::Test
         "X-API-ROLES" => "bogus-value",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute(data["headers"]["x-api-roles"])
     refute_match("bogus-value", response.body)

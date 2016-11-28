@@ -73,7 +73,7 @@ class Test::Proxy::RateLimits::TestConcurrency < Minitest::Test
     requests_by_key.each do |api_key, api_key_requests|
       reported_requests_made = 0
       api_key_requests.each do |request|
-        assert_equal(200, request.response.code, request.response.body)
+        assert_response_code(200, request.response)
         assert_equal("60", request.response.headers["x-ratelimit-limit"])
         assert(request.response.headers["x-ratelimit-remaining"])
         count = request.response.headers["x-ratelimit-limit"].to_i - request.response.headers["x-ratelimit-remaining"].to_i

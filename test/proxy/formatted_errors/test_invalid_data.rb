@@ -51,7 +51,7 @@ class Test::Proxy::FormattedErrors::TestInvalidData < Minitest::Test
   private
 
   def assert_json_internal_server_error(response)
-    assert_equal(500, response.code, response.body)
+    assert_response_code(500, response)
     assert_equal("application/json", response.headers["content-type"])
     data = MultiJson.load(response.body)
     assert_equal("INTERNAL_SERVER_ERROR", data["error"]["code"])

@@ -32,7 +32,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Capybara::Test
       :body => { :config => config },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_equal(1, ConfigVersion.count)
     active_config = ConfigVersion.active_config
     assert_equal(1, active_config["apis"].length)
@@ -55,7 +55,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Capybara::Test
       :body => { :config => config },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_equal(2, ConfigVersion.count)
     active_config = ConfigVersion.active_config
     assert_equal(2, active_config["apis"].length)
@@ -86,7 +86,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Capybara::Test
       :body => { :config => config },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     active_config = ConfigVersion.active_config
     assert_equal([
       api4.id,
@@ -118,7 +118,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Capybara::Test
       :body => { :config => config },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     active_config = ConfigVersion.active_config
     assert_equal([
       api1.id,
@@ -143,7 +143,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Capybara::Test
       :body => { :config => {} },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     active = ConfigVersion.active
     assert_kind_of(BSON::ObjectId, active.id)
     assert_equal(initial.id, active.id)

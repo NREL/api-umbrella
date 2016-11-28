@@ -50,7 +50,7 @@ class Test::Proxy::RequestRewriting::TestSetsHttpBasicAuth < Minitest::Test
 
   def test_sets_auth
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/auth/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("somebody", response.body)
   end
 
@@ -58,26 +58,26 @@ class Test::Proxy::RequestRewriting::TestSetsHttpBasicAuth < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/auth/", http_options.deep_merge({
       :userpwd => "testuser:testpass",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("somebody", response.body)
   end
 
   def test_sub_url_settings_overrides_parent_settings
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/auth/sub/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("anotheruser", response.body)
   end
 
   def test_does_not_pass_auth_when_empty_string
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/empty/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute(data["headers"]["authorization"])
   end
 
   def test_passes_unauthorized_error_from_backend_if_auth_is_invalid
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/invalid/auth/", http_options)
-    assert_equal(401, response.code, response.body)
+    assert_response_code(401, response)
     assert_equal("Unauthorized", response.body)
   end
 end

@@ -20,7 +20,7 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Capybara::Test
   def test_detects_published_api_changes_within_1_second
     # Ensure that we hit the default routing.
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
 
     # Create a new API backend (but don't publish yet).
     api_attributes = FactoryGirl.attributes_for(:api, {
@@ -38,7 +38,7 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => api_attributes),
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     new_api = MultiJson.load(response.body)
     assert(new_api["api"]["id"])
 
@@ -48,7 +48,7 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Capybara::Test
     # Ensure that we still hit the default routing, since we haven't published
     # the new API backend.
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
-    assert_equal(404, response.code, response.body)
+    assert_response_code(404, response)
 
     # Publish the API backend changes.
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
@@ -61,14 +61,14 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Capybara::Test
         },
       }),
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     # Wait 1 second to ensure time for any backend changes to get picked up.
     sleep 1.1
 
     # The request to the new endpoint should now succeed.
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("test1", data["headers"]["x-new-api"])
 
@@ -78,14 +78,14 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:api => api_attributes),
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     # Wait 1 second to ensure time for any backend changes to get picked up.
     sleep 1.1
 
     # Ensure the updates are not live, since we haven't published them yet.
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("test1", data["headers"]["x-new-api"])
     refute(data["headers"]["x-updated-api"])
@@ -101,14 +101,14 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Capybara::Test
         },
       }),
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     # Wait 1 second to ensure time for any backend changes to get picked up.
     sleep 1.1
 
     # Verify that the updated api backend changes are now live.
     response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("test2", data["headers"]["x-updated-api"])
     refute(data["headers"]["x-new-api"])

@@ -19,7 +19,7 @@ class Test::Proxy::RateLimits::TestNginxGlobalRateLimits < Minitest::Test
 
     assert_equal(400, requests.length)
     requests.each do |request|
-      assert_equal(200, request.response.code, request.response.body)
+      assert_response_code(200, request.response)
     end
   end
 

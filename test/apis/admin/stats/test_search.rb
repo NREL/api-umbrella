@@ -28,7 +28,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(2, data["stats"]["total_hits"])
     assert_equal("Tue, Jan 13, 2015", data["hits_over_time"][0]["c"][0]["f"])
@@ -62,7 +62,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(4, data["stats"]["total_hits"])
     assert_equal("Sat, Mar 7, 2015", data["hits_over_time"][0]["c"][0]["f"])
@@ -98,7 +98,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(2, data["stats"]["total_hits"])
     assert_equal("Sun, Mar 8, 2015 12:00am MST", data["hits_over_time"][0]["c"][0]["f"])
@@ -140,7 +140,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(4, data["stats"]["total_hits"])
     assert_equal("Sat, Nov 1, 2014", data["hits_over_time"][0]["c"][0]["f"])
@@ -176,7 +176,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(2, data["stats"]["total_hits"])
     assert_equal("Sun, Nov 2, 2014 1:00am MDT", data["hits_over_time"][1]["c"][0]["f"])

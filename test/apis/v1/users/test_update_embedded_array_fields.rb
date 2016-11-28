@@ -25,7 +25,7 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Capybara:
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     user = ApiUser.find(user.id)
     assert_equal(["127.0.0.1", "127.0.0.2"], user.settings.allowed_ips)
@@ -62,7 +62,7 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Capybara:
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     user = ApiUser.find(user.id)
     assert_equal(["127.0.0.5", "127.0.0.4"], user.settings.allowed_ips)
@@ -102,7 +102,7 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Capybara:
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     user = ApiUser.find(user.id)
     assert_equal(["127.0.0.2"], user.settings.allowed_ips)
@@ -137,7 +137,7 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Capybara:
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     user = ApiUser.find(user.id)
     # Setting to [] gets turned into nil by Rack:
@@ -175,7 +175,7 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Capybara:
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     user = ApiUser.find(user.id)
     assert_equal(nil, user.settings.allowed_ips)

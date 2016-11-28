@@ -59,7 +59,7 @@ class Test::Proxy::TestHttpMethods < Minitest::Test
   def test_trace_requests
     response = Typhoeus::Request.new("http://127.0.0.1:9080/api/info/", http_options.deep_merge(:method => "TRACE")).run
 
-    assert_equal(405, response.code, response.body)
+    assert_response_code(405, response)
   end
 
   private
@@ -67,7 +67,7 @@ class Test::Proxy::TestHttpMethods < Minitest::Test
   def test_request_without_body(method)
     response = Typhoeus::Request.new("http://127.0.0.1:9080/api/info/", http_options.deep_merge(:method => method)).run
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal(method, response.headers["X-Received-Method"])
   end
 
@@ -77,7 +77,7 @@ class Test::Proxy::TestHttpMethods < Minitest::Test
       :body => "test",
     })).run
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal(method, response.headers["X-Received-Method"])
   end
 
@@ -90,7 +90,7 @@ class Test::Proxy::TestHttpMethods < Minitest::Test
       },
     })).run
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal(method, response.headers["X-Received-Method"])
   end
 end

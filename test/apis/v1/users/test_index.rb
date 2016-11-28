@@ -13,7 +13,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Capybara::Test
     FactoryGirl.create_list(:api_user, 10)
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json?length=2", http_options.deep_merge(admin_token))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     user_count = ApiUser.where(:deleted_at => nil).count
     assert_operator(user_count, :>, 10)
@@ -28,7 +28,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Capybara::Test
     api_user = FactoryGirl.create(:api_user)
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     data = MultiJson.load(response.body)
     user = data["data"].find { |u| u["id"] == api_user.id }
@@ -79,7 +79,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Capybara::Test
         :search => { :value => search },
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(1, data["recordsTotal"])
     assert_equal(1, data["data"].length)
@@ -92,7 +92,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Capybara::Test
         :search => { :value => search },
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(0, data["recordsTotal"])
     assert_equal(0, data["data"].length)

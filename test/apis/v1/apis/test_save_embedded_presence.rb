@@ -43,7 +43,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Capybara::Test
     attributes[field.to_s] = nil
 
     response = create_or_update(action, attributes)
-    assert_equal(422, response.code, response.body)
+    assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal({
@@ -56,7 +56,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Capybara::Test
     attributes[field.to_s] = []
 
     response = create_or_update(action, attributes)
-    assert_equal(422, response.code, response.body)
+    assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal({
@@ -70,11 +70,11 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Capybara::Test
 
     response = create_or_update(action, attributes)
     if(action == :create)
-      assert_equal(201, response.code, response.body)
+      assert_response_code(201, response)
       data = MultiJson.load(response.body)
       api = Api.find(data["api"]["id"])
     elsif(action == :update)
-      assert_equal(204, response.code, response.body)
+      assert_response_code(204, response)
       api = Api.find(attributes["id"])
     end
     assert_equal(1, api[field].length)

@@ -25,7 +25,7 @@ class Test::Proxy::TestBasicAuthPassthrough < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
       :userpwd => "foo:bar",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("foo", data["basic_auth_username"])
     assert_equal("bar", data["basic_auth_password"])
@@ -33,7 +33,7 @@ class Test::Proxy::TestBasicAuthPassthrough < Minitest::Test
 
   def test_passes_auth_from_proxy
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/add-auth-header/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("somebody", data["basic_auth_username"])
     assert_equal("secret", data["basic_auth_password"])
@@ -43,7 +43,7 @@ class Test::Proxy::TestBasicAuthPassthrough < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/add-auth-header/info/", http_options.deep_merge({
       :userpwd => "foo:bar",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("somebody", data["basic_auth_username"])
     assert_equal("secret", data["basic_auth_password"])
@@ -51,7 +51,7 @@ class Test::Proxy::TestBasicAuthPassthrough < Minitest::Test
 
   def test_strips_internal_authorization_headers
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/add-auth-header/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     refute(data["headers"]["x-api-umbrella-orig-authorization"])
     refute(data["headers"]["x-api-umbrella-allow-authorization-caching"])

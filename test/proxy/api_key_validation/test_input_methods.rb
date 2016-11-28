@@ -14,7 +14,7 @@ class Test::Proxy::ApiKeyValidation::TestInputMethods < Minitest::Test
         "X-Api-Key" => self.api_key,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_match("Hello World", response.body)
   end
 
@@ -24,7 +24,7 @@ class Test::Proxy::ApiKeyValidation::TestInputMethods < Minitest::Test
         :api_key => self.api_key,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_match("Hello World", response.body)
   end
 
@@ -32,7 +32,7 @@ class Test::Proxy::ApiKeyValidation::TestInputMethods < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", keyless_http_options.deep_merge({
       :userpwd => "#{self.api_key}:",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_match("Hello World", response.body)
   end
 
@@ -46,7 +46,7 @@ class Test::Proxy::ApiKeyValidation::TestInputMethods < Minitest::Test
       },
       :userpwd => "invalid:",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_match("Hello World", response.body)
   end
 
@@ -57,7 +57,7 @@ class Test::Proxy::ApiKeyValidation::TestInputMethods < Minitest::Test
       },
       :userpwd => "invalid:",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_match("Hello World", response.body)
   end
 end

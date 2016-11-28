@@ -30,7 +30,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       },
       :userpwd => "basic-auth-username-example:my-secret-password",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
 
@@ -145,7 +145,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       },
       :accept_encoding => "gzip",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("gzip", record["response_content_encoding"])
@@ -161,7 +161,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "Accept-Encoding" => "compress, gzip",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("compress, gzip", record["request_accept_encoding"])
@@ -176,7 +176,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "Connection" => "close",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("close", record["request_connection"])
@@ -199,7 +199,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
           "Host" => "unknown.foo",
         },
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
 
       record = wait_for_log(unique_test_id)[:hit_source]
       assert_equal("unknown.foo", record["request_host"])
@@ -212,7 +212,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :unique_query_id => unique_test_id,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("https", record["request_scheme"])
@@ -227,7 +227,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "X-Forwarded-Proto" => "https",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("https", record["request_scheme"])
@@ -243,7 +243,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "foo[bar]" => "example.3",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("example.1", record["request_query"]["foo_bar_baz"])
@@ -253,7 +253,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
   def test_requests_with_duplicate_query_params
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}&test_dup_arg=foo&test_dup_arg=bar", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("foo,bar", record["request_query"]["test_dup_arg"])
@@ -265,7 +265,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :unique_query_id => unique_test_id,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     hit = wait_for_log(unique_test_id)[:hit]
     result = LogItem.gateway.client.indices.get_mapping({
@@ -297,7 +297,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       },
     }))
     request_end = Time.now.utc
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
 
@@ -320,7 +320,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :date_field => "2010-05-01",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = wait_for_log("#{unique_test_id}-1")[:hit_source]
     assert_equal("2010-05-01", record["request_query"]["date_field"])
 
@@ -330,7 +330,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :date_field => "2010-05-0",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = wait_for_log("#{unique_test_id}-2")[:hit_source]
     assert_equal("2010-05-0", record["request_query"]["date_field"])
 
@@ -340,7 +340,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :date_field => "foo",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = wait_for_log("#{unique_test_id}-3")[:hit_source]
     assert_equal("foo", record["request_query"]["date_field"])
   end
@@ -349,12 +349,12 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   # conflict with the first-seen string type.
   def test_duplicate_query_params_treated_as_strings
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-1&test_dup_arg_first_string=foo", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = wait_for_log("#{unique_test_id}-1")[:hit_source]
     assert_equal("foo", record["request_query"]["test_dup_arg_first_string"])
 
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-2&test_dup_arg_first_string=foo&test_dup_arg_first_string=bar", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = wait_for_log("#{unique_test_id}-2")[:hit_source]
     assert_equal("foo,bar", record["request_query"]["test_dup_arg_first_string"])
   end
@@ -362,12 +362,12 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   # Does not attempt to automatically map the first seen value into a boolean.
   def test_boolean_query_params_treated_as_strings
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-1&test_arg_first_bool", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = wait_for_log("#{unique_test_id}-1")[:hit_source]
     assert_equal("true", record["request_query"]["test_arg_first_bool"])
 
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-2&test_arg_first_bool=foo", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = wait_for_log("#{unique_test_id}-2")[:hit_source]
     assert_equal("foo", record["request_query"]["test_arg_first_bool"])
   end
@@ -380,7 +380,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :number_field => "123",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = wait_for_log("#{unique_test_id}-1")[:hit_source]
     assert_equal("123", record["request_query"]["number_field"])
 
@@ -390,7 +390,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :number_field => "foo",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     record = wait_for_log("#{unique_test_id}-2")[:hit_source]
     assert_equal("foo", record["request_query"]["number_field"])
   end
@@ -402,7 +402,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :unique_query_id => unique_test_id,
       },
     }))
-    assert_equal(504, response.code, response.body)
+    assert_response_code(504, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal(504, record["response_status"])
@@ -431,7 +431,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
           :unique_query_id => unique_test_id,
         },
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
     end
 
     result = wait_for_log(unique_test_id, :min_result_count => 3)[:result]
@@ -459,7 +459,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "X-Api-Key" => "INVALID_KEY",
       },
     }))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal(403, record["response_status"])
@@ -486,7 +486,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
           :unique_query_id => unique_test_id,
         },
       }))
-      assert_equal(502, response.code, response.body)
+      assert_response_code(502, response)
 
       record = wait_for_log(unique_test_id)[:hit_source]
       assert_equal(502, record["response_status"])
@@ -502,7 +502,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
     response = Typhoeus.get(url, http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal(long_value, record["request_query"]["long"])
@@ -522,7 +522,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
     response = Typhoeus.get(url, http_options)
-    assert_equal(414, response.code, response.body)
+    assert_response_code(414, response)
 
     error = assert_raises do
       wait_for_log(unique_test_id)
@@ -557,7 +557,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         },
         :userpwd => "#{Faker::Lorem.characters(1000)}:#{Faker::Lorem.characters(1000)}",
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
 
       record = wait_for_log(unique_test_id)[:hit_source]
 

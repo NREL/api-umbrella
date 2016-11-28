@@ -85,13 +85,13 @@ class Test::Proxy::Caching::TestControlHeaders < Minitest::Test
 
   def test_removes_surrogate_control_header_from_client
     response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-surrogate-control-max-age/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     refute(response.headers["surrogate-control"])
   end
 
   def test_leaves_cache_control_header_when_surrogate_control_present
     response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-surrogate-control-and-cache-control/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     refute(response.headers["surrogate-control"])
     assert_equal("max-age=0, private, must-revalidate", response.headers["cache-control"])
   end

@@ -64,7 +64,7 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
 
     assert_equal(50, requests.length)
     requests.each do |request|
-      assert_equal(200, request.response.code, request.response.body)
+      assert_response_code(200, request.response)
     end
   end
 
@@ -72,7 +72,7 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
     requests = make_thundering_herd_requests(path, options)
 
     response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=#{unique_test_id}")
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("50", response.body)
 
     unique_response_bodies = requests.map { |r| r.response.body }.uniq
@@ -83,7 +83,7 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
     requests = make_thundering_herd_requests(path, options)
 
     response = Typhoeus.get("http://127.0.0.1:9442/backend_call_count?id=#{unique_test_id}")
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("1", response.body)
 
     unique_response_bodies = requests.map { |r| r.response.body }.uniq

@@ -41,7 +41,7 @@ class Test::Proxy::RequestRewriting::TestAppendQueryString < Minitest::Test
 
   def test_appends_to_no_query_string
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "add_param1" => "test1",
@@ -51,7 +51,7 @@ class Test::Proxy::RequestRewriting::TestAppendQueryString < Minitest::Test
 
   def test_appends_to_empty_query_string
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "add_param1" => "test1",
@@ -61,7 +61,7 @@ class Test::Proxy::RequestRewriting::TestAppendQueryString < Minitest::Test
 
   def test_appends_to_existing_query_string
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?test=value", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "test" => "value",
@@ -72,7 +72,7 @@ class Test::Proxy::RequestRewriting::TestAppendQueryString < Minitest::Test
 
   def test_overrides_existing_query_string
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?test=value&add_param1=original", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "test" => "value",
@@ -83,7 +83,7 @@ class Test::Proxy::RequestRewriting::TestAppendQueryString < Minitest::Test
 
   def test_leaves_query_string_when_append_value_is_empty_string
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/empty-append/info/?test=value", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "test" => "value",
@@ -92,7 +92,7 @@ class Test::Proxy::RequestRewriting::TestAppendQueryString < Minitest::Test
 
   def test_sub_url_settings_overrides_parent_settings
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/sub/", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal({
       "add_param2" => "overridden",
@@ -102,7 +102,7 @@ class Test::Proxy::RequestRewriting::TestAppendQueryString < Minitest::Test
 
   def test_preserves_query_string_order
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/?ccc=foo&aaa=bar&b=test", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("http://127.0.0.1/info/?ccc=foo&aaa=bar&b=test&add_param1=test1&add_param2=test2", data["raw_url"])
   end

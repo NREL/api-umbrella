@@ -79,7 +79,7 @@ class Test::Proxy::ResponseRewriting::TestRedirects < Minitest::Test
         :to => redirect_to,
       },
     }))
-    assert_equal(302, response.code, response.body)
+    assert_response_code(302, response)
     response
   end
 end

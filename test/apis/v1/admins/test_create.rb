@@ -15,7 +15,7 @@ class Test::Apis::V1::Admins::TestCreate < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :admin => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
     assert_equal("HELLO@example.com", attributes["username"])

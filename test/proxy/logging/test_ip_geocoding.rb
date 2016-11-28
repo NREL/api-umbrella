@@ -18,7 +18,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
         "X-Forwarded-For" => "8.8.8.8",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_geocode(record, {
@@ -40,7 +40,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
         "X-Forwarded-For" => "2001:4860:4860::8888",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_geocode(record, {
@@ -62,7 +62,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
         "X-Forwarded-For" => "0:0:0:0:0:ffff:808:808",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_geocode(record, {
@@ -84,7 +84,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
         "X-Forwarded-For" => "104.250.168.24",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_geocode(record, {
@@ -106,7 +106,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
         "X-Forwarded-For" => "182.50.152.193",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_geocode(record, {
@@ -128,7 +128,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
         "X-Forwarded-For" => "191.102.110.22",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_geocode(record, {

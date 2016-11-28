@@ -21,7 +21,7 @@ module ApiUmbrellaTestHelpers
     def delayed_job_sent_messages
       wait_for_delayed_jobs
       response = Typhoeus.get("http://127.0.0.1:13103/api/v1/messages")
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       messages = MultiJson.load(response.body)
 
       messages.each do |message|

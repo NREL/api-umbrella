@@ -26,7 +26,7 @@ class Test::Proxy::TestLongHostnames < Minitest::Test
           "Host" => long_frontend_host,
         },
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal(long_backend_host, data["headers"]["host"])
     end
@@ -61,7 +61,7 @@ class Test::Proxy::TestLongHostnames < Minitest::Test
             "Host" => long_frontend_host,
           },
         }))
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         data = MultiJson.load(response.body)
         assert_equal(long_backend_host, data["headers"]["host"])
       end

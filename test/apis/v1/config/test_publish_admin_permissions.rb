@@ -36,7 +36,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::
       :body => { :config => config },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     active_config = ConfigVersion.active_config
     assert_equal(4, active_config["apis"].length)
     assert_equal([
@@ -60,7 +60,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::
       :body => { :config => config },
     }))
 
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     active_config = ConfigVersion.active_config
     assert_equal(1, active_config["apis"].length)
     assert_equal(@google_api.id, active_config["apis"].first["_id"])
@@ -79,7 +79,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::
       :body => { :config => config },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal(nil, ConfigVersion.active_config)
@@ -98,7 +98,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::
       :body => { :config => config },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal(nil, ConfigVersion.active_config)
@@ -117,7 +117,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::
       :body => { :config => config },
     }))
 
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal(nil, ConfigVersion.active_config)

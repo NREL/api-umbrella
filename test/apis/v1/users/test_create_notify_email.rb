@@ -10,7 +10,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Capybara::Test
     ApiUser.where(:registration_source.ne => "seed").delete_all
 
     response = Typhoeus.delete("http://127.0.0.1:13103/api/v1/messages")
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
   end
 
   def test_sends_email_when_enabled
@@ -21,7 +21,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Capybara::Test
         :options => { :send_notify_email => true },
       },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_equal(1, delayed_job_sent_messages.length)
   end
 
@@ -33,7 +33,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Capybara::Test
         :options => { :send_notify_email => false },
       },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_equal(0, delayed_job_sent_messages.length)
   end
 
@@ -45,7 +45,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Capybara::Test
         :options => { :send_notify_email => 1 },
       },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_equal(0, delayed_job_sent_messages.length)
   end
 
@@ -56,7 +56,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Capybara::Test
         :user => FactoryGirl.attributes_for(:api_user),
       },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     assert_equal(0, delayed_job_sent_messages.length)
   end
 
@@ -68,7 +68,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Capybara::Test
         :options => { :send_notify_email => true },
       },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
 
     messages = delayed_job_sent_messages
     assert_equal(1, messages.length)
@@ -102,7 +102,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Capybara::Test
           :user => FactoryGirl.attributes_for(:api_user),
         },
       }))
-      assert_equal(201, response.code, response.body)
+      assert_response_code(201, response)
 
       messages = delayed_job_sent_messages
       assert_equal(1, messages.length)

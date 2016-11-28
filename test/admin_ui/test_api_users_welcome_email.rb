@@ -10,7 +10,7 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
     setup_server
 
     response = Typhoeus.delete("http://127.0.0.1:13103/api/v1/messages")
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
   end
 
   def test_no_email_by_default

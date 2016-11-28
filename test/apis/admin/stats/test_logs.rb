@@ -24,7 +24,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     body = response.body
     data = MultiJson.load(body)
     assert_equal(1, data["recordsTotal"], data)
@@ -48,7 +48,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     body = response.body
     assert_match(",http://127.0.0.1/with_api_key/?foo=bar,", body)
     refute_match("my_secret_key", body)
@@ -68,7 +68,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("text/csv", response.headers["Content-Type"])
     assert_match("attachment; filename=\"api_logs (#{Time.now.utc.strftime("%b %-e %Y")}).csv\"", response.headers["Content-Disposition"])
 
@@ -93,7 +93,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(1, data["recordsTotal"])
     assert_equal("MOZILLAAA-#{unique_test_id}", data["data"][0]["request_user_agent"])
@@ -115,7 +115,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(1, data["recordsTotal"])
     assert_equal(unique_test_id, data["data"][0]["request_user_agent"])
@@ -138,7 +138,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Capybara::Test
       },
     }))
 
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(1, data["recordsTotal"])
     assert_equal("#{unique_test_id}-not-null", data["data"][0]["request_user_agent"])

@@ -13,7 +13,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Capybara::Test
     FactoryGirl.create_list(:admin, 3)
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admins.json?length=2", http_options.deep_merge(admin_token))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     admin_count = Admin.where(:deleted_at => nil).count
     assert_operator(admin_count, :>, 2)

@@ -48,91 +48,91 @@ class Test::Proxy::ApiKeyValidation::TestEmailVerification < Minitest::Test
 
   def test_verification_default_none_user_verified_null
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello", :email_verified => nil)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 
   def test_verification_default_none_user_verified_false
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello", :email_verified => false)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 
   def test_verification_default_none_user_verified_true
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello", :email_verified => true)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 
   def test_verification_none_user_verified_null
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/none", :email_verified => nil)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 
   def test_verification_none_user_verified_false
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/none", :email_verified => false)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 
   def test_verification_none_user_verified_true
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/none", :email_verified => true)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 
   def test_verification_required_user_verified_null
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/required_email", :email_verified => nil)
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_UNVERIFIED", response.body)
   end
 
   def test_verification_required_user_verified_false
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/required_email", :email_verified => nil)
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_UNVERIFIED", response.body)
   end
 
   def test_verification_required_user_verified_true
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/required_email", :email_verified => true)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 
   def test_verification_transition_user_verified_null_created_before_transition_time
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/transition_email", :email_verified => nil, :created_at => Time.iso8601("2013-02-01T01:26:59Z"))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 
   def test_verification_transition_user_verified_null_created_after_transition_time
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/transition_email", :email_verified => nil, :created_at => Time.iso8601("2013-02-01T01:27:00Z"))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_UNVERIFIED", response.body)
   end
 
   def test_verification_transition_user_verified_false_created_before_transition_time
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/transition_email", :email_verified => false, :created_at => Time.iso8601("2013-02-01T01:26:59Z"))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 
   def test_verification_transition_user_verified_false_created_after_transition_time
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/transition_email", :email_verified => false, :created_at => Time.iso8601("2013-02-01T01:27:00Z"))
-    assert_equal(403, response.code, response.body)
+    assert_response_code(403, response)
     assert_match("API_KEY_UNVERIFIED", response.body)
   end
 
   def test_verification_transition_user_verified_true_created_before_transition_time
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/transition_email", :email_verified => true, :created_at => Time.iso8601("2013-02-01T01:26:59Z"))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 
   def test_verification_transition_user_verified_true_created_after_transition_time
     response = make_request("/#{unique_test_class_id}/api-key-verification/hello/transition_email", :email_verified => true, :created_at => Time.iso8601("2013-02-01T01:27:00.000Z"))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     assert_equal("Hello World", response.body)
   end
 

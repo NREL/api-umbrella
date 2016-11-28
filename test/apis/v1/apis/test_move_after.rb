@@ -24,7 +24,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => nil },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -47,7 +47,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => nil },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -68,7 +68,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -91,7 +91,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -114,7 +114,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -135,7 +135,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -160,7 +160,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -189,7 +189,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api4.id },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -204,7 +204,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => nil },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -233,7 +233,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -262,7 +262,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => api1.id },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -277,7 +277,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :move_after_id => nil },
     }))
-    assert_equal(204, response.code, response.body)
+    assert_response_code(204, response)
 
     api1.reload
     api2.reload
@@ -297,7 +297,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Capybara::Test
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :api => attributes },
     }))
-    assert_equal(201, response.code, response.body)
+    assert_response_code(201, response)
     data = MultiJson.load(response.body)
     Api.find(data["api"]["id"])
   end

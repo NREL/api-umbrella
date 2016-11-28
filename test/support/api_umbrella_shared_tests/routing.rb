@@ -6,7 +6,7 @@ module ApiUmbrellaSharedTests
 
     def test_website
       response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_match("Your API Site Name", response.body)
     end
 
@@ -16,7 +16,7 @@ module ApiUmbrellaSharedTests
           "Host" => "#{unique_test_class_id}-website.foo",
         },
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_match("Test Website Home Page", response.body)
     end
 
@@ -26,7 +26,7 @@ module ApiUmbrellaSharedTests
           "Host" => "#{unique_test_class_id}-website.foo",
         },
       }))
-      assert_equal(404, response.code, response.body)
+      assert_response_code(404, response)
       assert_match("Test Website 404 Not Found", response.body)
     end
 
@@ -37,18 +37,18 @@ module ApiUmbrellaSharedTests
         },
       }))
       if(@refute_fallback_website)
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         assert_equal("application/json", response.headers["content-type"])
         assert_match("NOT_FOUND", response.body)
       elsif(@assert_fallback_website)
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         if(@assert_default_host)
           assert_match("Test Default Website Home Page", response.body)
         else
           assert_match("Test Website Home Page", response.body)
         end
       else
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         assert_match("Your API Site Name", response.body)
       end
     end
@@ -59,7 +59,7 @@ module ApiUmbrellaSharedTests
           "Host" => "#{unique_test_class_id}-apis-no-website.foo",
         },
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal("Hello World", response.body)
 
       response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options.deep_merge({
@@ -68,25 +68,25 @@ module ApiUmbrellaSharedTests
         },
       }))
       if(@refute_fallback_website)
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         assert_equal("application/json", response.headers["content-type"])
         assert_match("NOT_FOUND", response.body)
       elsif(@assert_fallback_website)
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         if(@assert_default_host)
           assert_match("Test Default Website Home Page", response.body)
         else
           assert_match("Test Website Home Page", response.body)
         end
       else
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         assert_match("Your API Site Name", response.body)
       end
     end
 
     def test_gatekeeper_apis
       response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state.json", http_options.deep_merge(admin_token))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal("application/json", response.headers["content-type"])
     end
 
@@ -97,11 +97,11 @@ module ApiUmbrellaSharedTests
         },
       }))
       if(@refute_fallback_website)
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         assert_equal("application/json", response.headers["content-type"])
         assert_match("NOT_FOUND", response.body)
       elsif(@assert_fallback_website)
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         assert_equal("text/plain", response.headers["content-type"])
         if(@assert_default_host)
           assert_match("Test Default Website 404 Not Found", response.body)
@@ -109,14 +109,14 @@ module ApiUmbrellaSharedTests
           assert_match("Test Website 404 Not Found", response.body)
         end
       else
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         assert_equal("application/json", response.headers["content-type"])
       end
     end
 
     def test_web_app_apis
       response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/users.json", http_options.deep_merge(admin_token))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal("application/json; charset=utf-8", response.headers["content-type"])
     end
 
@@ -127,11 +127,11 @@ module ApiUmbrellaSharedTests
         },
       }))
       if(@refute_fallback_website)
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         assert_equal("application/json", response.headers["content-type"])
         assert_match("NOT_FOUND", response.body)
       elsif(@assert_fallback_website)
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         assert_equal("text/plain", response.headers["content-type"])
         if(@assert_default_host)
           assert_match("Test Default Website 404 Not Found", response.body)
@@ -139,7 +139,7 @@ module ApiUmbrellaSharedTests
           assert_match("Test Website 404 Not Found", response.body)
         end
       else
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         assert_equal("application/json; charset=utf-8", response.headers["content-type"])
       end
     end
@@ -150,7 +150,7 @@ module ApiUmbrellaSharedTests
           "Host" => "#{unique_test_class_id}-apis-no-website.foo",
         },
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_equal("Hello World", response.body)
     end
 
@@ -161,10 +161,10 @@ module ApiUmbrellaSharedTests
         },
       }))
       if(@assert_default_host)
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         assert_equal("Hello World", response.body)
       else
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         if(@refute_fallback_website)
           assert_equal("application/json", response.headers["content-type"])
           assert_match("NOT_FOUND", response.body)
@@ -184,7 +184,7 @@ module ApiUmbrellaSharedTests
           "Host" => "#{unique_test_class_id}-apis-no-website.foo",
         },
       }))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       data = MultiJson.load(response.body)
       assert_equal("apis-no-website.bar", data["headers"]["host"])
 
@@ -194,11 +194,11 @@ module ApiUmbrellaSharedTests
         },
       }))
       if(@assert_default_host)
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         data = MultiJson.load(response.body)
         assert_equal("default.bar", data["headers"]["host"])
       else
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
       end
 
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}-api/info/", http_options.deep_merge({
@@ -207,17 +207,17 @@ module ApiUmbrellaSharedTests
         },
       }))
       if(@assert_default_host)
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         data = MultiJson.load(response.body)
         assert_equal("default.bar", data["headers"]["host"])
       else
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
       end
     end
 
     def test_admin_ui
       response = Typhoeus.get("https://127.0.0.1:9081/admin/", keyless_http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_match('<script src="assets/api-umbrella-admin-ui.js">', response.body)
     end
 
@@ -228,11 +228,11 @@ module ApiUmbrellaSharedTests
         },
       }))
       if(@refute_fallback_website)
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         assert_equal("application/json", response.headers["content-type"])
         assert_match("NOT_FOUND", response.body)
       elsif(@assert_fallback_website)
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         assert_equal("text/plain", response.headers["content-type"])
         if(@assert_default_host)
           assert_match("Test Default Website 404 Not Found", response.body)
@@ -240,14 +240,14 @@ module ApiUmbrellaSharedTests
           assert_match("Test Website 404 Not Found", response.body)
         end
       else
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         assert_match('<script src="assets/api-umbrella-admin-ui.js">', response.body)
       end
     end
 
     def test_admin_web_app
       response = Typhoeus.get("https://127.0.0.1:9081/admin/login", keyless_http_options)
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
       assert_match("Admin Login", response.body)
     end
 
@@ -258,11 +258,11 @@ module ApiUmbrellaSharedTests
         },
       }))
       if(@refute_fallback_website)
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         assert_equal("application/json", response.headers["content-type"])
         assert_match("NOT_FOUND", response.body)
       elsif(@assert_fallback_website)
-        assert_equal(404, response.code, response.body)
+        assert_response_code(404, response)
         assert_equal("text/plain", response.headers["content-type"])
         if(@assert_default_host)
           assert_match("Test Default Website 404 Not Found", response.body)
@@ -270,7 +270,7 @@ module ApiUmbrellaSharedTests
           assert_match("Test Website 404 Not Found", response.body)
         end
       else
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         assert_match("Admin Login", response.body)
       end
     end

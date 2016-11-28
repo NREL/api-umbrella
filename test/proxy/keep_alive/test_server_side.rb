@@ -40,7 +40,7 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
     500.times do
       request = Typhoeus::Request.new("http://127.0.0.1:9080/#{unique_test_class_id}/keepalive-default/connection-stats/", http_options)
       request.on_complete do |response|
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
         data = MultiJson.load(response.body)
 
         if(data["connections_active"] > max_connections_active)
@@ -98,14 +98,14 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
     500.times do
       request = Typhoeus::Request.new("http://127.0.0.1:9080#{path}", http_options)
       request.on_complete do |response|
-        assert_equal(200, response.code, response.body)
+        assert_response_code(200, response)
       end
       hydra.queue(request)
     end
     hydra.run
 
     response = Typhoeus.get("http://127.0.0.1:9080#{path}", http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
     data = MultiJson.load(response.body)
 
     # The number of keepalive connections being kept open should correspond to

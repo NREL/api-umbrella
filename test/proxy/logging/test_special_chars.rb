@@ -21,7 +21,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
       },
       :userpwd => "\"foo'bar:bar\"foo'",
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("http://example.com/\"foo'bar", record["request_referer"])
@@ -38,7 +38,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
         "Referer" => "http://example.com/!\\*^%#[]",
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("http://example.com/!\\*^%#[]", record["request_referer"])
@@ -47,7 +47,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
   def test_logs_utf8_urls
     url = "http://127.0.0.1:9080/api/hello/utf8/✓/encoded_utf8/%E2%9C%93/?unique_query_id=#{unique_test_id}&utf8=✓&utf8_url_encoded=%E2%9C%93&more_utf8=¬¶ªþ¤l&more_utf8_hex=\xC2\xAC\xC2\xB6\xC2\xAA\xC3\xBE\xC2\xA4l&more_utf8_hex_lowercase=\xc2\xac\xc2\xb6\xc2\xaa\xc3\xbe\xc2\xa4l&actual_backslash_x=\\xC2\\xAC\\xC2\\xB6\\xC2\\xAA\\xC3\\xBE\\xC2\\xA4l"
     response = Typhoeus.get(url, http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("%E2%9C%93", record["request_query"]["utf8"])
@@ -72,7 +72,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
         "Origin" => raw,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
 
@@ -120,7 +120,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
         "Accept" => raw_utf8,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
 
@@ -167,7 +167,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
         "Content-Type" => url_encoded,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
 
@@ -197,7 +197,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
         "Content-Type" => as_is,
       },
     }))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
 
@@ -224,7 +224,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
   def test_slashes_and_backslashes
     url = "http://127.0.0.1:9080/api/hello/extra//slash/some\\backslash/encoded%5Cbackslash/encoded%2Fslash?&unique_query_id=#{unique_test_id}&forward_slash=/slash&encoded_forward_slash=%2F&back_slash=\\&encoded_back_slash=%5C"
     response = Typhoeus.get(url, http_options)
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     record = wait_for_log(unique_test_id)[:hit_source]
     assert_equal("/slash", record["request_query"]["forward_slash"])

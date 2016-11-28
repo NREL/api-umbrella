@@ -9,10 +9,10 @@ class Test::Proxy::KeepAlive::TestClientSide < Minitest::Test
 
   def test_reuses_connections
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.merge(:verbose => true))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.merge(:verbose => true))
-    assert_equal(200, response.code, response.body)
+    assert_response_code(200, response)
 
     # Ensure that curl's debug output contains the indicator of re-using a
     # keepalive connection.
@@ -27,10 +27,10 @@ class Test::Proxy::KeepAlive::TestClientSide < Minitest::Test
       },
     }, "--router") do
       response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.merge(:verbose => true))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
 
       response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.merge(:verbose => true))
-      assert_equal(200, response.code, response.body)
+      assert_response_code(200, response)
 
       # Since keepalive is disabled, ensure that curl's debug output does not
       # contain the indicator of re-using a keepalive connection.
