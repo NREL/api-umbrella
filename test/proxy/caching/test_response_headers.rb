@@ -44,24 +44,40 @@ class Test::Proxy::Caching::TestResponseHeaders < Minitest::Test
   end
 
   def test_age_increases
-    3.times do |index|
-      sleep(1.1) unless(index == 0)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/?unique_test_id=#{unique_test_id}", http_options)
+    assert_response_code(200, response)
+    first_age = response.headers["age"].to_i
+    assert_operator(first_age, :>=, 0)
 
-      response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/?unique_test_id=#{unique_test_id}", http_options)
-      assert_response_code(200, response)
-      assert_operator(response.headers["age"].to_i, :>=, index + 0)
-      assert_operator(response.headers["age"].to_i, :<=, index + 1)
-    end
+    sleep 1.1
+    response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/?unique_test_id=#{unique_test_id}", http_options)
+    assert_response_code(200, response)
+    second_age = response.headers["age"].to_i
+    assert_operator(second_age, :>, first_age)
+
+    sleep 1.1
+    response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-cache-control-max-age/?unique_test_id=#{unique_test_id}", http_options)
+    assert_response_code(200, response)
+    third_age = response.headers["age"].to_i
+    assert_operator(third_age, :>, second_age)
   end
 
   def test_age_increases_from_backend_age
-    3.times do |index|
-      sleep(1.1) unless(index == 0)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-backend-reports-cached/?unique_test_id=#{unique_test_id}", http_options)
+    assert_response_code(200, response)
+    first_age = response.headers["age"].to_i
+    assert_operator(first_age, :>=, 3)
 
-      response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-backend-reports-cached/?unique_test_id=#{unique_test_id}", http_options)
-      assert_response_code(200, response)
-      assert_operator(response.headers["age"].to_i, :>=, index + 3)
-      assert_operator(response.headers["age"].to_i, :<=, index + 4)
-    end
+    sleep 1.1
+    response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-backend-reports-cached/?unique_test_id=#{unique_test_id}", http_options)
+    assert_response_code(200, response)
+    second_age = response.headers["age"].to_i
+    assert_operator(second_age, :>, first_age)
+
+    sleep 1.1
+    response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-backend-reports-cached/?unique_test_id=#{unique_test_id}", http_options)
+    assert_response_code(200, response)
+    third_age = response.headers["age"].to_i
+    assert_operator(third_age, :>, second_age)
   end
 end
