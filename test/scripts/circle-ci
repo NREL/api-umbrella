@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# Circle's parallel command will pass this script a list of test files to run
+# on this node as arguments. Pass those along to the rake task via the TESTS
+# environment variable.
+tests=("$@")
+env PATH="build/work/stage/opt/api-umbrella/embedded/bin:$PATH" TESTOPTS="--ci-dir=$CIRCLE_TEST_REPORTS/reports" TESTS="${tests[*]}" N=12 bundle exec rake test

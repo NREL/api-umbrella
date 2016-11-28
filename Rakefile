@@ -1,6 +1,13 @@
+
 require "rake/testtask"
 Rake::TestTask.new do |t|
-  t.pattern = File.expand_path("../test/**/test_*.rb", __FILE__)
+  # If the TESTS environment variable is set, accept that as a space-delimited
+  # list of test files to run.
+  if(ENV["TESTS"])
+    t.test_files = FileList[ENV["TESTS"].split(" ")]
+  else
+    t.pattern = File.expand_path("../test/**/test_*.rb", __FILE__)
+  end
   t.warning = false
 end
 
