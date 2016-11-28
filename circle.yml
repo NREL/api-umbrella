@@ -48,7 +48,7 @@ compile:
     - /bin/true
 test:
   override:
-    - ./test/scripts/circle-ci
+    - ./test/scripts/circle-ci:
         parallel: true
         files:
           - test/**/test_*.rb
