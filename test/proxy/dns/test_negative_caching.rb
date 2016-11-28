@@ -50,8 +50,11 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
         :local_interface_ip => "127.0.0.1",
       })
       duration = Time.now.utc - start_time
-      assert_operator(duration, :>=, (NEGATIVE_TTL - TTL_BUFFER))
-      assert_operator(duration, :<, (NEGATIVE_TTL + TTL_BUFFER))
+      min_duration = NEGATIVE_TTL - TTL_BUFFER_NEG
+      max_duration = NEGATIVE_TTL + TTL_BUFFER_POS
+      assert_operator(min_duration, :>, 0)
+      assert_operator(duration, :>=, min_duration)
+      assert_operator(duration, :<, max_duration)
     end
   end
 end

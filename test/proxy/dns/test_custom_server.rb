@@ -75,8 +75,11 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         :local_interface_ip => "127.0.0.2",
       })
       duration = Time.now.utc - start_time
-      assert_operator(duration, :>=, (ttl - TTL_BUFFER))
-      assert_operator(duration, :<, (ttl + TTL_BUFFER))
+      min_duration = ttl - TTL_BUFFER_NEG
+      max_duration = ttl + TTL_BUFFER_POS
+      assert_operator(min_duration, :>, 0)
+      assert_operator(duration, :>=, min_duration)
+      assert_operator(duration, :<, max_duration)
     end
   end
 
@@ -102,8 +105,11 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
         :code => 502,
       })
       duration = Time.now.utc - start_time
-      assert_operator(duration, :>=, (ttl - TTL_BUFFER))
-      assert_operator(duration, :<, (ttl + TTL_BUFFER))
+      min_duration = ttl - TTL_BUFFER_NEG
+      max_duration = ttl + TTL_BUFFER_POS
+      assert_operator(min_duration, :>, 0)
+      assert_operator(duration, :>=, min_duration)
+      assert_operator(duration, :<, max_duration)
     end
   end
 

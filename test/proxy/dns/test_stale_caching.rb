@@ -48,10 +48,13 @@ class Test::Proxy::Dns::TestStaleCaching < Minitest::Test
         :code => 502,
       })
       duration = Time.now.utc - start_time
-      assert_operator(duration, :>=, (ttl - TTL_BUFFER + MAX_STALE))
+      min_duration = ttl - TTL_BUFFER_NEG + MAX_STALE
       # Double the TTL buffer factor on this test, to account for further
       # fuzziness with the timings of the stale record too.
-      assert_operator(duration, :<, (ttl + TTL_BUFFER * 2 + MAX_STALE))
+      max_duration = ttl + TTL_BUFFER_POS * 2 + MAX_STALE
+      assert_operator(min_duration, :>, 0)
+      assert_operator(duration, :>=, min_duration)
+      assert_operator(duration, :<, max_duration)
     end
   end
 end
