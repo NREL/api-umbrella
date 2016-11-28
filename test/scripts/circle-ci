@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e -u -x
+
 # Circle's parallel command will pass this script a list of test files to run
 # on this node as arguments. Pass those along to the rake task via the TESTS
 # environment variable.
