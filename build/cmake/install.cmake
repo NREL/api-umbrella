@@ -78,10 +78,6 @@ install(
   execute_process(
     COMMAND chmod 1777 \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/tmp
   )
-  message(STATUS \"Permissions: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core/shared/src/api-umbrella/web-app/tmp\")
-  execute_process(
-    COMMAND chmod 775 \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core/shared/src/api-umbrella/web-app/tmp
-  )
   "
   COMPONENT core
 )

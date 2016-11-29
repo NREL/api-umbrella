@@ -35,7 +35,6 @@ if [ "$configure" = "true" ]; then
   deploy_group=api-umbrella-deploy
   prefix_dir=/opt/api-umbrella
   embedded_dir=$prefix_dir/embedded
-  web_app_shared_dir=$embedded_dir/apps/core/shared/src/api-umbrella/web-app
 
   # Create the main user & group.
   if ! getent group $group > /dev/null; then
@@ -80,14 +79,6 @@ if [ "$configure" = "true" ]; then
   # Set file permissions
   chown -R $user:$group $prefix_dir/etc $prefix_dir/var
   chown -R $deploy_user:$deploy_group $embedded_dir/apps
-  chown -R $user:$deploy_group $web_app_shared_dir/tmp
-  chown -R $deploy_user:$group $web_app_shared_dir/tmp/ember-rails \
-    $web_app_shared_dir/tmp/cache/assets \
-    $web_app_shared_dir/tmp/cache/sass
-  chmod -R 775 $web_app_shared_dir/tmp/ember-rails \
-    $web_app_shared_dir/tmp/cache/assets \
-    $web_app_shared_dir/tmp/cache/sass
-  chmod 1777 $web_app_shared_dir/tmp
   if [ -d $embedded_dir/kylin ]; then
     chown $user:$group $embedded_dir/kylin/tomcat/temp \
       $embedded_dir/kylin/tomcat/webapps \

@@ -5,7 +5,7 @@ general:
     - src/api-umbrella/web-app/log
     - src/api-umbrella/web-app/brakeman.html
     # Keep screenshots of capybara failures for easier debugging.
-    - src/api-umbrella/web-app/tmp/capybara
+    - test/tmp/capybara
 machine:
   pre:
     # Enable IPv6 on CircleCI for running IPv6 integration tests.
