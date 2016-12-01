@@ -39,6 +39,7 @@ Capybara.register_driver :poltergeist do |app|
     :extensions => [
       File.expand_path("../capybara/disable_animations.js", __FILE__),
       File.expand_path("../capybara/disable_google_charts.js", __FILE__),
+      File.expand_path("../capybara/disable_fixed_header.js", __FILE__),
     ],
   })
 end
