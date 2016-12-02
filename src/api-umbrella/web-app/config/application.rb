@@ -62,35 +62,6 @@ module ApiUmbrella
         config.deep_merge!(data)
       end
 
-      if(Rails.env == "test")
-        # When running as part of the integration test suite, where we run all
-        # the API Umbrella processes separately, ensure we connect to those
-        # ports.
-        if(ENV["INTEGRATION_TEST_SUITE"])
-          config[:mongodb][:url] = "mongodb://127.0.0.1:13001/api_umbrella_test"
-
-          # Don't override the Elasticsearch v2 connection tests.
-          if(config[:elasticsearch][:hosts] != ["http://127.0.0.1:9200"])
-            config[:elasticsearch][:hosts] = ["http://127.0.0.1:13002"]
-          end
-
-        # If not running as part of the integration test suite, then we assume
-        # a developer is just running the rails tests a standalone command. In
-        # that case, we'll connect to the default API Umbrella ports for
-        # databases that we assume are running in the development environment.
-        # The only difference is MongoDB, where we want to make sure we connect
-        # to a separate test database so tests don't interfere with
-        # development.
-        elsif(!ENV["FULL_STACK_TEST"])
-          config[:mongodb][:url] = "mongodb://127.0.0.1:14001/api_umbrella_test"
-
-          # Don't override the Elasticsearch v2 connection tests.
-          if(config[:elasticsearch][:hosts] != ["http://127.0.0.1:9200"])
-            config[:elasticsearch][:hosts] = ["http://127.0.0.1:14002"]
-          end
-        end
-      end
-
       # Set the default host used for web application links (for mailers,
       # contact URLs, etc).
       #
