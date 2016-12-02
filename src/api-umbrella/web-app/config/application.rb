@@ -20,8 +20,6 @@ module ApiUmbrella
     config.eager_load_paths += ["#{config.root}/lib"]
 
     config.before_configuration do
-      require "symbolize_helper"
-
       config_files = []
       config_file = ENV["API_UMBRELLA_RUNTIME_CONFIG"]
       if(config_file.present?)
@@ -60,7 +58,7 @@ module ApiUmbrella
       # Load the YAML config in.
       config = {}
       config_files.each do |file|
-        data = SymbolizeHelper.symbolize_recursive(YAML.load_file(file))
+        data = YAML.load_file(file).deep_symbolize_keys
         config.deep_merge!(data)
       end
 
