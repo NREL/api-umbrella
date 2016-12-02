@@ -128,14 +128,7 @@ dns_resolver:
   retries: 3
 mongodb:
   url: "mongodb://127.0.0.1:14001/api_umbrella"
-  options:
-    server:
-      auto_reconnect: true
-      socketOptions:
-        keepAlive: 500
-    replset:
-      socketOptions:
-        keepAlive: 500
+  read_preference: primaryPreferred
   embedded_server_config:
     processManagement:
       fork: false

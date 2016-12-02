@@ -1,8 +1,10 @@
 local cjson = require "cjson"
 local http = require "resty.http"
+local stringx = require "pl.stringx"
 local types = require "pl.types"
 
 local is_empty = types.is_empty
+local startswith = stringx.startswith
 
 local _M = {}
 
@@ -68,22 +70,39 @@ local function perform_query(path, query_options, http_options)
 
   local response, err = try_query(path, http_options)
 
-  -- If we get an "EOF" error from Mora, this means our query occurred during
-  -- the middle of a server or replicaset change. In this case, retry the
-  -- request a couple more times.
+  -- If we certain types of errors from Mora, this means our query occurred
+  -- during the middle of a server or replicaset change. In this case, retry
+  -- the request a few more times.
   --
   -- This should be less likely in mora since
   -- https://github.com/emicklei/mora/pull/29, but it's still possible for this
   -- to crop up if the socket gets closed sometime between the request starting
-  -- and the query actually executing. After more research, this seems to be
+  -- and the query actually executing. This can also happen in case of
+  -- unexpected mongod shutdowns. After more research, this seems to be
   -- expected mgo behavior, and it's up to the app to handle these type of
   -- errors. I'm not entirely sure whether we should try to address the issue
   -- in mora itself, but in the meantime, we'll retry here.
-  if err and err == "mongodb error: EOF" then
-    response, err = try_query(path, http_options)
-    if err and err == "mongodb error: EOF" then
-      ngx.sleep(0.5)
-      response, err = try_query(path, http_options)
+  if err then
+    -- Loop to retry a few times until no errors occurs or we give up, since we
+    -- don't want to wait forever.
+    local retries = 0
+    while err and retries < 5 do
+      if err == "mongodb error: EOF"
+        or err == "mongodb error: node is recovering"
+        or err == "mongodb error: interrupted at shutdown"
+        or err == "mongodb error: Closed explicitly"
+        or startswith(err, "mongodb error: read tcp")
+        then
+        -- Retry immediately, then sleep between further retries.
+        retries = retries + 1
+        if retries > 1 then
+          ngx.sleep(0.5)
+        end
+
+        response, err = try_query(path, http_options)
+      else
+        break
+      end
     end
   end
 

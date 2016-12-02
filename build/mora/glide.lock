@@ -1,5 +1,5 @@
-hash: 1ff0351176d51da4f684e0e7621f3ee5fce0c74c44d7460be4a8107a4a549ee8
-updated: 2016-03-26T17:43:18.223474817-06:00
+hash: f341223f9b59f72bf4242c21178a6e272612d03abaf460892a1bf246c9967c3f
+updated: 2016-12-01T10:25:55.897154602-07:00
 imports:
 - name: github.com/compose/mejson
   version: afcf51c7c640b1e09c17065d4e5b8de3259d6261
@@ -7,17 +7,13 @@ imports:
   version: 89af920d613f1e3f771f6460b2629632e7a36ae9
   subpackages:
   - swagger
-- name: github.com/emicklei/mora
-  version: fea22d544a961ef5cd66dde405cf452b1ae33d2c
-  subpackages:
-  - api/documents
-  - api/response
-  - api/statistics
-  - session
 - name: github.com/magiconair/properties
   version: c265cfa48dda6474e208715ca93e987829f572f8
 - name: gopkg.in/mgo.v2
-  version: d90005c5262a3463800497ea5a89aed5fe22c886
+  version: b6121c6199b7beecde08e6853f256a6475fe8031
   subpackages:
   - bson
-devImports: []
+  - internal/json
+  - internal/sasl
+  - internal/scram
+testImports: []

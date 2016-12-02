@@ -52,9 +52,9 @@ module ApiUmbrellaTestHelpers
       self.setup_mutex.synchronize do
         unless self.setup_complete
           Mongoid.load_configuration({
-            "clients" => {
-              "default" => {
-                "uri" => $config["mongodb"]["url"],
+            :clients => {
+              :default => {
+                :uri => $config["mongodb"]["url"],
               },
             },
           })

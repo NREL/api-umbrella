@@ -146,6 +146,7 @@ DEPENDENCIES
   capybara (~> 2.10.1)
   capybara-screenshot (~> 1.0.14)
   childprocess (~> 0.5.9)
+  concurrent-ruby (~> 1.0.2)
   database_cleaner (~> 1.5.3)
   elasticsearch (~> 2.0.0)
   elasticsearch-persistence (~> 0.1.9)
@@ -168,4 +169,4 @@ DEPENDENCIES
   typhoeus (~> 1.1.0)
 
 BUNDLED WITH
-   1.13.1
+   1.13.6

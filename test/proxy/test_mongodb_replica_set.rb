@@ -35,9 +35,9 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
       Mongoid::Clients.disconnect
       Mongoid::Clients.clear
       Mongoid.load_configuration({
-        "clients" => {
-          "default" => {
-            "uri" => mongodb_url,
+        :clients => {
+          :default => {
+            :uri => mongodb_url,
           },
         },
       })
@@ -71,9 +71,9 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     Mongoid::Clients.disconnect
     Mongoid::Clients.clear
     Mongoid.load_configuration({
-      "clients" => {
-        "default" => {
-          "uri" => $config["mongodb"]["url"],
+      :clients => {
+        :default => {
+          :uri => $config["mongodb"]["url"],
         },
       },
     })
@@ -101,15 +101,29 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     }))
     assert_response_code(403, response)
 
+    # Pre-create an array of unique API keys to be used during tests.
+    #
+    # If more than 100 unique API keys are needed during the test, the number
+    # we create may need to be increased, but currently we're using far less
+    # than this on average.
+    #
+    # We do this before the tests start, so we're not dealing with the
+    # edge-case of inserts being attempted right as a primary server changes or
+    # shuts down. We're more interested with testing the read-only
+    # functionality of the proxy when the primary changes (eg, that the proxy
+    # can continue querying for valid API keys).
+    @users = Concurrent::Array.new(FactoryGirl.create_list(:api_user, 100, {
+      :settings => {
+        :rate_limit_mode => "unlimited",
+      },
+    }))
+
     # Perform parallel requests constantly in the background of this tests.
     # This ensures that no connections are dropped during any point of the
     # replica set changes we'll make later on.
     request_thread = Thread.new do
-      user = FactoryGirl.create(:api_user, {
-        :settings => {
-          :rate_limit_mode => "unlimited",
-        },
-      })
+      # Pop a new unique API key off to use for this set of tests.
+      user = @users.shift
 
       loop do
         hydra = Typhoeus::Hydra.new(:max_concurrency => 5)
@@ -165,6 +179,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     mongo_orchestration(:patch, "/v1/replica_sets/test-cluster/members/#{@initial_primary_replica_id}", {
       :rsParams => { :priority => 99 },
     })
+    wait_for_num_tests(100)
 
     request_thread.exit
   end
@@ -200,11 +215,8 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
   # just slow down during replica set changes (in which case the background
   # requests might not end up performing many requests).
   def wait_for_num_tests(count)
-    user = FactoryGirl.create(:api_user, {
-      :settings => {
-        :rate_limit_mode => "unlimited",
-      },
-    })
+    # Pop a new unique API key off to use for this set of tests.
+    user = @users.shift
 
     hydra = Typhoeus::Hydra.new(:max_concurrency => 5)
     count.times do
@@ -219,7 +231,12 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     hydra.run
   end
 
+  class MongoOrchestrationError < StandardError
+  end
+
   def mongo_orchestration(http_method, path, data = {})
+    retries ||= 0
+
     http_opts = http_options.merge(:method => http_method)
     if(data.present?)
       http_opts.deep_merge!({
@@ -229,10 +246,23 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
     end
 
     response = Typhoeus::Request.new("http://127.0.0.1:13089#{path}", http_opts).run
-    assert_response_code(200, response)
+    if(response.code != 200)
+      raise MongoOrchestrationError
+    end
     assert_equal("application/json", response.headers["content-type"])
 
     MultiJson.load(response.body)
+  rescue MongoOrchestrationError
+    # If the request to mongo-orchestration failed, retry a few times. This can
+    # happen in certain cases when mongo-orchestration's Python client also
+    # gets confused by the ongoing replicaset changes.
+    retries += 1
+    if(retries <= 4)
+      sleep 0.5
+      retry
+    else
+      assert_response_code(200, response)
+    end
   end
 
   def setup_mongo_orchestration

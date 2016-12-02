@@ -26,15 +26,17 @@ set(GLIDE_SOURCE_DIR ${SOURCE_DIR})
 ExternalProject_Add(
   mora
   DEPENDS glide
-  URL https://github.com/emicklei/mora/archive/${MORA_VERSION}.tar.gz
+  # Use fork for read preference support:
+  # https://github.com/emicklei/mora/pull/44
+  URL https://github.com/GUI/mora/archive/${MORA_VERSION}.tar.gz
   URL_HASH MD5=${MORA_HASH}
   SOURCE_DIR ${WORK_DIR}/gocode/src/github.com/emicklei/mora
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND ""
   BUILD_COMMAND cp ${CMAKE_SOURCE_DIR}/build/mora/glide.yaml <SOURCE_DIR>/glide.yaml
     COMMAND cp ${CMAKE_SOURCE_DIR}/build/mora/glide.lock <SOURCE_DIR>/glide.lock
-    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} GO15VENDOREXPERIMENT=1 glide install
-    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} GO15VENDOREXPERIMENT=1 go install
+    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} glide install
+    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} go install
   INSTALL_COMMAND install -D -m 755 ${WORK_DIR}/gocode/bin/mora ${STAGE_EMBEDDED_DIR}/bin/mora
 )
 ExternalProject_Add_Step(

@@ -87,6 +87,28 @@ module ApiUmbrella
       require "js_locale_helper"
     end
 
+    # Instead of loading from a mongoid.yml file, load the Mongoid config in
+    # code, where it's easier to merge settings from our API Umbrella
+    # configuration.
+    initializer "mongoid-config", :after => "mongoid.load-config" do
+      config = {
+        :clients => {
+          :default => {
+            :uri => ApiUmbrellaConfig[:mongodb][:url],
+            :options => {
+              :read => {
+                :mode => ApiUmbrellaConfig[:mongodb][:read_preference].underscore.to_sym,
+              },
+            },
+          },
+        },
+      }
+
+      Mongoid::Clients.disconnect
+      Mongoid::Clients.clear
+      Mongoid.load_configuration(config)
+    end
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.

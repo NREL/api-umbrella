@@ -64,5 +64,8 @@ gem "lazyhash", "~> 0.1.1"
 # Generating fake strings and data.
 gem "faker", "~> 1.6.6"
 
+# Concurrency helpers.
+gem "concurrent-ruby", "~> 1.0.2"
+
 # Debug printing
 gem "awesome_print", "~> 1.7.0"

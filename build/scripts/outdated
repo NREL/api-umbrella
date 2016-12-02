@@ -118,7 +118,9 @@ repos = {
     :constraint => "~> 3.2.9",
   },
   "mora" => {
-    :git => "https://github.com/emicklei/mora.git",
+    # Use fork for read preference support:
+    # https://github.com/emicklei/mora/pull/44
+    :git => "https://github.com/GUI/mora.git",
     :git_ref => "master",
   },
   "ngx_dyups" => {
