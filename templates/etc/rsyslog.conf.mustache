@@ -85,14 +85,27 @@ local0.info action(
   dynSearchIndex="on"
   searchType="log"
   template="elasticsearch-json-record"
+  # Enable bulk indexing, so batches of records are sent as a single HTTP
+  # request.
   bulkmode="on"
   bulkId="elasticsearch-id"
   dynBulkId="on"
+  # Require indexing by all replica shards.
   asyncrepl="off"
+  # For the in-memory queue, use a linked-list (so the memory doesn't have to
+  # be pre-allocated based on a fixed size).
   queue.type="LinkedList"
+  # Set a filename, so the queue is disk assisted. This allows for offloading
+  # the data from the memory queue to disk if the queue becomes bigger than
+  # expected.
   queue.filename="queue-elasticsearch"
+  # Persist data to disk on this interval (in seconds). We're okay with some
+  # loss in the event of unexpected failures.
   queue.checkpointinterval="10"
+  # Persist data to disk on graceful shutdowns.
   queue.saveonshutdown="on"
+  # Set thresholds for when the memory queue is too big and should use the
+  # disk.
   queue.highwatermark="10000"
   queue.lowwatermark="2000"
   action.resumeRetryCount="-1"
