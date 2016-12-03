@@ -94,7 +94,7 @@ class Test::Processes::TestReloads < Minitest::Test
     # other nginx modules might also be using them.
     assert_operator(urandom_descriptor_counts.min, :>, 0)
     range = urandom_descriptor_counts.max - urandom_descriptor_counts.min
-    assert_operator(range, :<=, $config["nginx"]["workers"] * 2)
+    assert_operator(range, :<=, $config["nginx"]["workers"] * 4)
 
     # A more general test to ensure that we don't see other unexpected file
     # descriptor growth. We'll allow some growth for this test, though, just to
@@ -102,7 +102,7 @@ class Test::Processes::TestReloads < Minitest::Test
     # be doing.
     assert_operator(descriptor_counts.min, :>, 0)
     range = descriptor_counts.max - descriptor_counts.min
-    assert_operator(range, :<=, $config["nginx"]["workers"] * 2)
+    assert_operator(range, :<=, $config["nginx"]["workers"] * 4)
   end
 
   def test_no_dropped_connections_during_reloads
