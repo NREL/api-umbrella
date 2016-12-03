@@ -79,7 +79,32 @@ local function cache_new_city_geocode(data)
   end
 end
 
-local function log_request()
+local function log_request(data)
+  local syslog_message = "<" .. syslog_priority .. ">"
+    .. syslog_version
+    .. " " .. os.date("!%Y-%m-%dT%TZ", data["timestamp_utc"] / 1000) -- timestamp
+    .. " -" -- hostname
+    .. " api-umbrella" -- app-name
+    .. " -" -- procid
+    .. " -" -- msgid
+    .. " -" -- structured-data
+    .. " @cee:" -- CEE-enhanced logging for rsyslog to parse JSON
+    .. elasticsearch_encode_json(data) -- JSON data
+    .. "\n"
+
+  -- Check the syslog message length to ensure it doesn't exceed the configured
+  -- rsyslog maxMessageSize value.
+  --
+  -- In general, this shouldn't be possible, since URLs can't exceed 8KB, and
+  -- we truncate the various headers that users can control for logging
+  -- purposes. However, this provides an extra sanity check to ensure this
+  -- doesn't unexpectedly pop up (eg, if we add additional headers we forget to
+  -- truncate).
+  local syslog_message_length = string.len(syslog_message)
+  if syslog_message_length > 32000 then
+    ngx.log(ngx.ERR, "request syslog message longer than expected - analytics logging may fail: ", syslog_message_length)
+  end
+
   -- Init the resty logger socket.
   if not logger.initted() then
     local ok, err = logger.init{
@@ -96,6 +121,81 @@ local function log_request()
     end
   end
 
+  local _, err = logger.log(syslog_message)
+  if err then
+    ngx.log(ngx.ERR, "failed to log message: ", err)
+    return
+  end
+
+  if data["timer_backend_response"] then
+    local log_timing_id = data["id"] .. "_upstream_response_time"
+    ngx.shared.logs:delete(log_timing_id)
+  end
+
+  if data["request_ip_lat"] then
+    cache_new_city_geocode(data)
+  end
+end
+
+local function combine_log_data(premature, data)
+  if premature then
+    return
+  end
+
+  -- If we are combining data after waiting for the backend data become
+  -- populated (this should be rare), then check for the timer information
+  -- again from the backend.
+  if data["_timer_backend_response"] == "pending" then
+    local log_timing_id = data["id"] .. "_upstream_response_time"
+    data["_timer_backend_response"] = ngx.shared.logs:get(log_timing_id)
+  end
+
+  -- Pop the temporary variables off the data table.
+  local timer_backend_response = data["_timer_backend_response"]
+  data["_timer_backend_response"] = nil
+  local upstream_response_time = data["_upstream_response_time"]
+  data["_upstream_response_time"] = nil
+
+  -- If we have more accurate timing information from the API backend layer,
+  -- then calculate additional timings.
+  if type(timer_backend_response) == "number" then
+    data["timer_backend_response"] = timer_backend_response
+
+    -- Try to determine the overhead API Umbrella incurred on the request.
+    -- First we compare the upstream times from this initial proxy to the
+    -- backend api router proxy. Note that we don't use the "request_time"
+    -- variables, since that could be affected by slow clients.
+    data["timer_proxy_overhead"] = (tonumber(upstream_response_time) or 0) - timer_backend_response
+
+    -- Since we're using the upstream response times for determining overhead,
+    -- next add in the amount of time we've calculated that we've used
+    -- internally in the Lua code.
+    --
+    -- Note: Due to how openresty caches the ngx.now() calls (unless we call
+    -- ngx.update_time, which we don't want to do on every request), this timer
+    -- will be very approximate, but we mainly want this for detecting if
+    -- things really start to increase dramatically.
+    if data["timer_internal"] then
+      data["timer_proxy_overhead"] = data["timer_proxy_overhead"] + data["timer_internal"]
+    end
+  end
+
+  -- Turn any internal fields from seconds (with millisecond precision
+  -- decimals) into milliseconds.
+  for _, msec_field in ipairs(log_utils.MSEC_FIELDS) do
+    if data[msec_field] then
+      -- Round the results after turning into milliseconds. Since all the nginx
+      -- timers only have millisecond precision, any decimals left after
+      -- converting are just an artifact of the original float storage or math
+      -- (eg, 1.00001... or 1.999988..).
+      data[msec_field] = utils.round(data[msec_field] * 1000)
+    end
+  end
+
+  log_request(data)
+end
+
+local function build_log_data()
   -- Fetch all the request and response headers.
   local request_headers = flatten_headers(ngx.req.get_headers());
   local response_headers = flatten_headers(ngx.resp.get_headers());
@@ -177,66 +277,6 @@ local function log_request()
   data["timestamp_tz_hour"] = string.sub(tz_time, 1, 13) .. ":00:00" -- YYYY-MM-DD HH:00:00
   data["timestamp_tz_minute"] = tz_time -- YYYY-MM-DD HH:MM:00
 
-  -- Check for log data set by the separate api backend proxy
-  -- (log_api_backend_proxy.lua). This is used for timing information.
-  local log_timing_id = id .. "_upstream_response_time"
-  local timer_backend_response = ngx.shared.logs:get(log_timing_id)
-  if timer_backend_response then
-    data["timer_backend_response"] = timer_backend_response
-
-    -- Try to determine the overhead API Umbrella incurred on the request.
-    -- First we compare the upstream times from this initial proxy to the
-    -- backend api router proxy. Note that we don't use the "request_time"
-    -- variables, since that could be affected by slow clients.
-    data["timer_proxy_overhead"] = (tonumber(ngx_var.upstream_response_time) or 0) - timer_backend_response
-
-    -- Since we're using the upstream response times for determining overhead,
-    -- next add in the amount of time we've calculated that we've used
-    -- internally in the Lua code.
-    --
-    -- Note: Due to how openresty caches the ngx.now() calls (unless we call
-    -- ngx.update_time, which we don't want to do on every request), this timer
-    -- will be very approximate, but we mainly want this for detecting if
-    -- things really start to increase dramatically.
-    if data["timer_internal"] then
-      data["timer_proxy_overhead"] = data["timer_proxy_overhead"] + data["timer_internal"]
-    end
-  end
-
-  if not data["timer_proxy_overhead"] then
-    data["timer_proxy_overhead"] = ngx_ctx.internal_overhead
-  end
-
-  -- Turn any internal fields from seconds (with millisecond precision
-  -- decimals) into milliseconds.
-  for _, msec_field in ipairs(log_utils.MSEC_FIELDS) do
-    if data[msec_field] then
-      -- Round the results after turning into milliseconds. Since all the nginx
-      -- timers only have millisecond precision, any decimals left after
-      -- converting are just an artifact of the original float storage or math
-      -- (eg, 1.00001... or 1.999988..).
-      data[msec_field] = utils.round(data[msec_field] * 1000)
-    end
-  end
-
-  -- Set the various URL fields.
-  log_utils.set_url_fields(data)
-
-  if request_headers["user-agent"] then
-    local user_agent_data = user_agent_parser(request_headers["user-agent"])
-    if user_agent_data then
-      data["request_user_agent_family"] = user_agent_data["family"]
-      data["request_user_agent_type"] = user_agent_data["type"]
-    end
-  end
-
-  -- The geoip database returns "00" for unknown regions sometimes:
-  -- http://maxmind.com/download/geoip/kml/index.html Remove these and treat
-  -- these as nil.
-  if data["request_ip_region"] == "00" then
-    data["request_ip_region"] = nil
-  end
-
   local geoip_latitude = ngx_var.geoip_latitude
   if geoip_latitude then
     data["request_ip_lat"] = tonumber(geoip_latitude)
@@ -248,47 +288,53 @@ local function log_request()
     }
   end
 
-  local syslog_message = "<" .. syslog_priority .. ">"
-    .. syslog_version
-    .. " " .. os.date("!%Y-%m-%dT%TZ", data["timestamp_utc"] / 1000) -- timestamp
-    .. " -" -- hostname
-    .. " api-umbrella" -- app-name
-    .. " -" -- procid
-    .. " -" -- msgid
-    .. " -" -- structured-data
-    .. " @cee:" -- CEE-enhanced logging for rsyslog to parse JSON
-    .. elasticsearch_encode_json(data) -- JSON data
-    .. "\n"
+  -- The geoip database returns "00" for unknown regions sometimes:
+  -- http://maxmind.com/download/geoip/kml/index.html Remove these and treat
+  -- these as nil.
+  if data["request_ip_region"] == "00" then
+    data["request_ip_region"] = nil
+  end
 
-  -- Check the syslog message length to ensure it doesn't exceed the configured
-  -- rsyslog maxMessageSize value.
+  if request_headers["user-agent"] then
+    local user_agent_data = user_agent_parser(request_headers["user-agent"])
+    if user_agent_data then
+      data["request_user_agent_family"] = user_agent_data["family"]
+      data["request_user_agent_type"] = user_agent_data["type"]
+    end
+  end
+
+  -- Set the various URL fields.
+  log_utils.set_url_fields(data)
+
+  -- Set the default timer_proxy_overhead. This may be overwritten by a more
+  -- accurate number in combine_log_data().
+  data["timer_proxy_overhead"] = ngx_ctx.internal_overhead
+
+  -- Grab the upstream_respone_time for temporary use.
+  data["_upstream_response_time"] = ngx_var.upstream_response_time
+
+  -- Check for log data set by the separate api backend proxy
+  -- (log_api_backend_proxy.lua). This is used for timing information.
   --
-  -- In general, this shouldn't be possible, since URLs can't exceed 8KB, and
-  -- we truncate the various headers that users can control for logging
-  -- purposes. However, this provides an extra sanity check to ensure this
-  -- doesn't unexpectedly pop up (eg, if we add additional headers we forget to
-  -- truncate).
-  local syslog_message_length = string.len(syslog_message)
-  if syslog_message_length > 32000 then
-    ngx.log(ngx.ERR, "request syslog message longer than expected - analytics logging may fail: ", syslog_message_length)
-  end
-
-  local _, err = logger.log(syslog_message)
-  if err then
-    ngx.log(ngx.ERR, "failed to log message: ", err)
-    return
-  end
-
-  if timer_backend_response then
-    ngx.shared.logs:delete(log_timing_id)
-  end
-
-  if data["request_ip_lat"] then
-    cache_new_city_geocode(data)
+  -- If this value is marked as "pending" then we've hit an edge case where the
+  -- initial proxy is being logged before the api backend proxy. This shouldn't
+  -- happen frequently, but does sometimes crop up in testing. When this
+  -- happens, we'll defer logging for a second to give the backend proxy a
+  -- chance to finish it's logging (which will set the shared variable).
+  --
+  -- But we want to generally avoid setting timers to log each individual
+  -- request, since there's a limit to how many timers we can have. So that's
+  -- why we only do it the handle this edge case that should be rare.
+  local log_timing_id = id .. "_upstream_response_time"
+  data["_timer_backend_response"] = ngx.shared.logs:get(log_timing_id)
+  if data["_timer_backend_response"] == "pending" then
+    ngx.timer.at(1, combine_log_data, data)
+  else
+    combine_log_data(false, data)
   end
 end
 
-local ok, err = pcall(log_request)
+local ok, err = pcall(build_log_data)
 if not ok then
   ngx.log(ngx.ERR, "failed to log request: ", err)
 end

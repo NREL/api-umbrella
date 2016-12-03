@@ -495,6 +495,24 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     end
   end
 
+  def test_logs_requests_when_logging_is_out_of_order
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
+      :params => {
+        :unique_query_id => unique_test_id,
+      },
+      :headers => {
+        "X-Api-Umbrella-Test-Simulate-Out-Of-Order-Logging" => "true",
+      },
+    }))
+    assert_response_code(200, response)
+
+    record = wait_for_log(unique_test_id)[:hit_source]
+    assert_equal(200, record["response_status"])
+    assert_logs_base_fields(record, unique_test_id, api_user)
+    assert_logs_backend_fields(record)
+    assert_equal(99000, record["backend_response_time"])
+  end
+
   def test_logs_requests_with_maximum_8kb_url_limit
     url_path = "/api/hello?unique_query_id=#{unique_test_id}&long="
     long_length = 8192 - "GET #{url_path} HTTP/1.1\r\n".length
