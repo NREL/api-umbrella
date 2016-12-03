@@ -26,9 +26,7 @@ set(GLIDE_SOURCE_DIR ${SOURCE_DIR})
 ExternalProject_Add(
   mora
   DEPENDS glide
-  # Use fork for read preference support:
-  # https://github.com/emicklei/mora/pull/44
-  URL https://github.com/GUI/mora/archive/${MORA_VERSION}.tar.gz
+  URL https://github.com/emicklei/mora/archive/${MORA_VERSION}.tar.gz
   URL_HASH MD5=${MORA_HASH}
   SOURCE_DIR ${WORK_DIR}/gocode/src/github.com/emicklei/mora
   BUILD_IN_SOURCE 1
