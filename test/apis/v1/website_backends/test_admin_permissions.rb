@@ -129,7 +129,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Capybara
 
     assert_response_code(201, response)
     data = MultiJson.load(response.body)
-    refute_equal(nil, data["website_backend"]["server_host"])
+    refute_nil(data["website_backend"]["server_host"])
     assert_equal(attributes["server_host"], data["website_backend"]["server_host"])
     assert_equal(1, active_count - initial_count)
   end
@@ -160,7 +160,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Capybara
 
     assert_response_code(204, response)
     record = WebsiteBackend.find(record.id)
-    refute_equal(nil, record.server_host)
+    refute_nil(record.server_host)
     assert_equal(attributes["server_host"], record.server_host)
   end
 
@@ -179,7 +179,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Capybara
     assert_equal(["errors"], data.keys)
 
     record = WebsiteBackend.find(record.id)
-    refute_equal(nil, record.server_host)
+    refute_nil(record.server_host)
     refute_equal(attributes["server_host"], record.server_host)
   end
 

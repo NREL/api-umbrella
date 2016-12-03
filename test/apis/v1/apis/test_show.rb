@@ -67,7 +67,7 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Capybara::Test
 
     data = MultiJson.load(response.body)
     assert_equal("", data["api"]["settings"]["#{field}_string"])
-    assert_equal(nil, data["api"]["settings"][field.to_s])
+    assert_nil(data["api"]["settings"][field.to_s])
   end
 
   def assert_headers_field_single_header(field)

@@ -34,7 +34,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Capybara
         },
       }
 
-      assert_equal(nil, api.settings.require_https_transition_start_at)
+      assert_nil(api.settings.require_https_transition_start_at)
 
       response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
@@ -66,7 +66,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Capybara
         },
       }
 
-      assert_equal(nil, api.sub_settings[0].settings.require_https_transition_start_at)
+      assert_nil(api.sub_settings[0].settings.require_https_transition_start_at)
 
       response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
@@ -187,8 +187,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Capybara
       active_config = ConfigVersion.active_config
 
       api.reload
-      assert_equal(nil, api.settings.require_https_transition_start_at)
-      assert_equal(nil, active_config["apis"][0]["settings"]["require_https_transition_start_at"])
+      assert_nil(api.settings.require_https_transition_start_at)
+      assert_nil(active_config["apis"][0]["settings"]["require_https_transition_start_at"])
     end
 
     define_method("test_#{mode_method_name}_sub_settings_unset_timestamp") do
@@ -220,8 +220,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Capybara
       active_config = ConfigVersion.active_config
 
       api.reload
-      assert_equal(nil, api.sub_settings[0].settings.require_https_transition_start_at)
-      assert_equal(nil, active_config["apis"][0]["sub_settings"][0]["settings"]["require_https_transition_start_at"])
+      assert_nil(api.sub_settings[0].settings.require_https_transition_start_at)
+      assert_nil(active_config["apis"][0]["sub_settings"][0]["settings"]["require_https_transition_start_at"])
     end
   end
 end

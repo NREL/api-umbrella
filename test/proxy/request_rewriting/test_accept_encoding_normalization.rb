@@ -46,7 +46,7 @@ class Test::Proxy::RequestRewriting::TestAcceptEncodingNormalization < Minitest:
     response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge(empty_http_header_options("Accept-Encoding")))
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal(nil, data["headers"]["accept-encoding"])
+    assert_nil(data["headers"]["accept-encoding"])
   end
 
   private

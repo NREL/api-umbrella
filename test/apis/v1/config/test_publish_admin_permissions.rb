@@ -82,7 +82,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_equal(nil, ConfigVersion.active_config)
+    assert_nil(ConfigVersion.active_config)
   end
 
   def test_reject_limited_admins_publish_partial_access_apis
@@ -101,7 +101,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_equal(nil, ConfigVersion.active_config)
+    assert_nil(ConfigVersion.active_config)
   end
 
   def test_reject_limited_admins_without_publish_permission
@@ -120,6 +120,6 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Capybara::
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_equal(nil, ConfigVersion.active_config)
+    assert_nil(ConfigVersion.active_config)
   end
 end

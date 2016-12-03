@@ -43,7 +43,7 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Capybara::Te
     assert_equal(@api.name, api_data["name"])
     assert_equal(@api.id, api_data["active"]["_id"])
     assert_includes(api_data["active_yaml"], "name: #{@api.name}")
-    assert_equal(nil, api_data["pending"])
+    assert_nil(api_data["pending"])
     assert_equal("", api_data["pending_yaml"])
   end
 end

@@ -218,7 +218,7 @@ class Test::Apis::V1::Apis::TestAdminPermissions < Minitest::Capybara::Test
     else
       assert_response_code(201, response)
       data = MultiJson.load(response.body)
-      refute_equal(nil, data["api"]["name"])
+      refute_nil(data["api"]["name"])
       assert_equal(attributes["name"], data["api"]["name"])
       assert_equal(1, active_count - initial_count)
     end
@@ -253,7 +253,7 @@ class Test::Apis::V1::Apis::TestAdminPermissions < Minitest::Capybara::Test
     else
       assert_response_code(204, response)
       record = Api.find(record.id)
-      refute_equal(nil, record.name)
+      refute_nil(record.name)
       assert_equal(attributes["name"], record.name)
     end
   end
@@ -273,7 +273,7 @@ class Test::Apis::V1::Apis::TestAdminPermissions < Minitest::Capybara::Test
     assert_equal(["errors"], data.keys)
 
     record = Api.find(record.id)
-    refute_equal(nil, record.name)
+    refute_nil(record.name)
     refute_equal(attributes["name"], record.name)
   end
 

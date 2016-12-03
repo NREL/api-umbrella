@@ -184,7 +184,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
     assert_response_code(201, response)
     assert_equal(1, active_count - initial_count)
     data = MultiJson.load(response.body)
-    refute_equal(nil, data["user"]["first_name"])
+    refute_nil(data["user"]["first_name"])
     assert_equal(attributes["first_name"], data["user"]["first_name"])
     record = ApiUser.find(data["user"]["id"])
 
@@ -218,7 +218,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
 
     assert_response_code(200, response)
     record = ApiUser.find(record.id)
-    refute_equal(nil, record.first_name)
+    refute_nil(record.first_name)
     assert_equal(attributes["first_name"], record.first_name)
 
     refute_empty(attr_overrides["roles"])
@@ -240,7 +240,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Capybara::Test
     assert_equal(["errors"], data.keys)
 
     record = ApiUser.find(record.id)
-    refute_equal(nil, record.first_name)
+    refute_nil(record.first_name)
     refute_equal(attributes["first_name"], record.first_name)
 
     refute_empty(attr_overrides["roles"])

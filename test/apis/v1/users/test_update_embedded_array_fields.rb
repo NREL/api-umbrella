@@ -145,8 +145,8 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Capybara:
     # This should be fine, although for future upgrades, it looks like empty
     # array support is back in Rails 5:
     # http://guides.rubyonrails.org/v5.0/security.html#unsafe-query-generation
-    assert_equal(nil, user.settings.allowed_ips)
-    assert_equal(nil, user.settings.allowed_referers)
+    assert_nil(user.settings.allowed_ips)
+    assert_nil(user.settings.allowed_referers)
     assert_equal([], user.settings.rate_limits)
   end
 
@@ -178,7 +178,7 @@ class Test::Apis::V1::Users::TestUpdateEmbeddedArrayFields < Minitest::Capybara:
     assert_response_code(200, response)
 
     user = ApiUser.find(user.id)
-    assert_equal(nil, user.settings.allowed_ips)
-    assert_equal(nil, user.settings.allowed_referers)
+    assert_nil(user.settings.allowed_ips)
+    assert_nil(user.settings.allowed_referers)
   end
 end

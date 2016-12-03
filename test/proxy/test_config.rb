@@ -10,7 +10,7 @@ class Test::Proxy::TestConfig < Minitest::Test
 
   def test_overrides_default_null_value
     default_config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/default.yml"))
-    assert_equal(nil, default_config["web"]["admin"]["auth_strategies"]["ldap"]["options"])
+    assert_nil(default_config["web"]["admin"]["auth_strategies"]["ldap"]["options"])
 
     expected_test_value = {
       "host" => "127.0.0.1",

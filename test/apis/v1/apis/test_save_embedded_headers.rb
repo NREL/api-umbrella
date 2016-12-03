@@ -67,7 +67,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Capybara::Test
     if(action == :update_clears_existing_headers)
       assert_equal([], data["api"]["settings"][field.to_s])
     else
-      assert_equal(nil, data["api"]["settings"][field.to_s])
+      assert_nil(data["api"]["settings"][field.to_s])
     end
     assert_equal("", data["api"]["settings"]["#{field}_string"])
   end
@@ -86,7 +86,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Capybara::Test
     if(action == :update_clears_existing_headers)
       assert_equal([], data["api"]["settings"][field.to_s])
     else
-      assert_equal(nil, data["api"]["settings"][field.to_s])
+      assert_nil(data["api"]["settings"][field.to_s])
     end
     assert_equal("", data["api"]["settings"]["#{field}_string"])
   end
@@ -165,7 +165,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Capybara::Test
     if(action == :update_clears_existing_headers)
       assert_equal([], data["api"]["settings"][field.to_s])
     else
-      assert_equal(nil, data["api"]["settings"][field.to_s])
+      assert_nil(data["api"]["settings"][field.to_s])
     end
     assert_equal("", data["api"]["settings"]["#{field}_string"])
   end
@@ -184,7 +184,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Capybara::Test
     if(action == :update_clears_existing_headers)
       assert_equal([], data["api"]["settings"][field.to_s])
     else
-      assert_equal(nil, data["api"]["settings"][field.to_s])
+      assert_nil(data["api"]["settings"][field.to_s])
     end
     assert_equal("", data["api"]["settings"]["#{field}_string"])
   end

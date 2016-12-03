@@ -104,7 +104,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Capybara::Test
 
     data = MultiJson.load(response.body)
     user = ApiUser.find(data["user"]["id"])
-    assert_equal(nil, user.roles)
+    assert_nil(user.roles)
   end
 
   def test_registration_source_default

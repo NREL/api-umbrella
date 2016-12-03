@@ -84,6 +84,9 @@ Style/EachWithObject:
 Style/EmptyElse:
   EnforcedStyle: empty
 
+Style/EmptyMethod:
+  Enabled: false
+
 Style/Encoding:
   Enabled: false
 

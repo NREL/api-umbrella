@@ -168,7 +168,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Capybara::Te
 
     assert_response_code(201, response)
     data = MultiJson.load(response.body)
-    refute_equal(nil, data["admin_group"]["name"])
+    refute_nil(data["admin_group"]["name"])
     assert_equal(attributes["name"], data["admin_group"]["name"])
     assert_equal(1, active_count - initial_count)
   end
@@ -199,7 +199,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Capybara::Te
 
     assert_response_code(204, response)
     record = AdminGroup.find(record.id)
-    refute_equal(nil, record.name)
+    refute_nil(record.name)
     assert_equal(attributes["name"], record.name)
   end
 
@@ -218,7 +218,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Capybara::Te
     assert_equal(["errors"], data.keys)
 
     record = AdminGroup.find(record.id)
-    refute_equal(nil, record.name)
+    refute_nil(record.name)
     refute_equal(attributes["name"], record.name)
   end
 
