@@ -16,8 +16,8 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     param_url3_invalid_suffix = "%D6%D0%B9%FA%BD%AD%CB%D5%CA%A1%B8%D3%D3%DC%CF%D8%D2%BB%C2%A5%C5%CC%CA%C0%BD%F5%BB%AA%B3%C7200%D3%E0%D2%B5%D6%F7%B9%BA%C2%F2%B5%C4%C9%CC%C6%B7%B7%BF%A3%AC%D2%F2%BF%AA%B7%A2%C9%CC%C5%DC%C2%B7%D2%D1%CD%A3%B9%A420%B8%F6%D4%C2%A3%AC%D2%B5%D6%F7%C4%C3%B7%BF%CE%DE%CD%FB%C8%B4%D0%E8%BC%CC%D0%F8%B3%A5%BB%B9%D2%F8%D0%D0%B4%FB%BF%EE%A1%A3%CF%F2%CA%A1%CA%D0%CF%D8%B9%FA%BC%D2%D0%C5%B7%C3%BE%D6%B7%B4%D3%B3%BD%FC2%C4%EA%CE%DE%C8%CB%B4%A6%C0%ED%A1%A3%D4%DA%B4%CB%B0%B8%D6%D0%A3%AC%CE%D2%C3%C7%BB%B3%D2%C9%D3%D0%C8%CB%CA%A7%D6%B0%E4%C2%D6%B0/sites/default/files/googleanalytics/ga.js"
     param_url3 = param_url3_prefix + param_url3_invalid_suffix
 
-    url = "http://127.0.0.1:9080/api/logging-example/foo/bar/?unique_query_id=#{unique_test_id}&url1=#{param_url1}&url2=#{param_url2}&url3=#{param_url3}"
-    response = Typhoeus.get(url, http_options.deep_merge({
+    url = "http://127.0.0.1:9080/api/logging-example/foo/bar/?url1=#{param_url1}&url2=#{param_url2}&url3=#{param_url3}"
+    response = Typhoeus.get(url, log_http_options.deep_merge({
       :headers => {
         "Accept" => "text/plain; q=0.5, text/html",
         "Accept-Encoding" => "compress, gzip",
@@ -32,7 +32,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     }))
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
 
     assert_equal([
       "api_key",
@@ -104,12 +104,10 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("http://foo.example", record["request_origin"])
     assert_equal("/api/logging-example/foo/bar/", record["request_path"])
     assert_equal([
-      "unique_query_id",
       "url1",
       "url2",
       "url3",
     ].sort, record["request_query"].keys.sort)
-    assert_equal(unique_test_id, record["request_query"]["unique_query_id"])
     assert_equal(CGI.unescape(param_url1), record["request_query"]["url1"])
     assert_equal(param_url2, record["request_query"]["url2"])
     assert_equal(CGI.unescape(param_url3_prefix) + param_url3_invalid_suffix, record["request_query"]["url3"])
@@ -139,46 +137,37 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_logs_extra_fields_for_chunked_or_gzip
-    response = Typhoeus.get("http://127.0.0.1:9080/api/compressible-delayed-chunked/5", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
+    response = Typhoeus.get("http://127.0.0.1:9080/api/compressible-delayed-chunked/5", log_http_options.deep_merge({
       :accept_encoding => "gzip",
     }))
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("gzip", record["response_content_encoding"])
     assert_equal("chunked", record["response_transfer_encoding"])
   end
 
   def test_logs_accept_encoding_header_prior_to_normalization
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
         "Accept-Encoding" => "compress, gzip",
       },
     }))
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("compress, gzip", record["request_accept_encoding"])
   end
 
   def test_logs_external_connection_header_not_internal
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
         "Connection" => "close",
       },
     }))
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("close", record["request_connection"])
   end
 
@@ -191,53 +180,42 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello", http_options.deep_merge({
-        :params => {
-          :unique_query_id => unique_test_id,
-        },
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello", log_http_options.deep_merge({
         :headers => {
           "Host" => "unknown.foo",
         },
       }))
       assert_response_code(200, response)
 
-      record = wait_for_log(unique_test_id)[:hit_source]
+      record = wait_for_log(response)[:hit_source]
       assert_equal("unknown.foo", record["request_host"])
     end
   end
 
   def test_logs_request_schema_for_direct_hits
-    response = Typhoeus.get("https://127.0.0.1:9081/api/hello", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
-    }))
+    response = Typhoeus.get("https://127.0.0.1:9081/api/hello", log_http_options)
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("https", record["request_scheme"])
   end
 
   def test_logs_request_schema_from_forwarded_header
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
         "X-Forwarded-Proto" => "https",
       },
     }))
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("https", record["request_scheme"])
   end
 
   # For Elasticsearch 2 compatibility
   def test_requests_with_dots_in_query_params
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :params => {
-        :unique_query_id => unique_test_id,
         "foo.bar.baz" => "example.1",
         "foo.bar" => "example.2",
         "foo[bar]" => "example.3",
@@ -245,29 +223,25 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     }))
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("example.1", record["request_query"]["foo_bar_baz"])
     assert_equal("example.2", record["request_query"]["foo_bar"])
     assert_equal("example.3", record["request_query"]["foo[bar]"])
   end
 
   def test_requests_with_duplicate_query_params
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}&test_dup_arg=foo&test_dup_arg=bar", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?test_dup_arg=foo&test_dup_arg=bar", log_http_options)
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("foo,bar", record["request_query"]["test_dup_arg"])
   end
 
   def test_logs_request_at_as_date
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
-    }))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options)
     assert_response_code(200, response)
 
-    hit = wait_for_log(unique_test_id)[:hit]
+    hit = wait_for_log(response)[:hit]
     result = LogItem.gateway.client.indices.get_mapping({
       :index => hit["_index"],
       :type => hit["_type"],
@@ -291,15 +265,11 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
   def test_request_at_is_time_request_finishes_not_starts
     request_start = Time.now.utc
-    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/3000", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
-    }))
+    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/3000", log_http_options)
     request_end = Time.now.utc
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
 
     logged_response_time = record["response_time"]
     assert_operator(logged_response_time, :>=, 2500)
@@ -314,132 +284,123 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
   # Does not attempt to automatically map the first seen value into a date.
   def test_dates_in_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :params => {
-        :unique_query_id => "#{unique_test_id}-1",
         :date_field => "2010-05-01",
       },
     }))
     assert_response_code(200, response)
-    record = wait_for_log("#{unique_test_id}-1")[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("2010-05-01", record["request_query"]["date_field"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :params => {
-        :unique_query_id => "#{unique_test_id}-2",
         :date_field => "2010-05-0",
       },
     }))
     assert_response_code(200, response)
-    record = wait_for_log("#{unique_test_id}-2")[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("2010-05-0", record["request_query"]["date_field"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :params => {
-        :unique_query_id => "#{unique_test_id}-3",
         :date_field => "foo",
       },
     }))
     assert_response_code(200, response)
-    record = wait_for_log("#{unique_test_id}-3")[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("foo", record["request_query"]["date_field"])
   end
 
   # Does not attempt to automatically map the values into an array, which would
   # conflict with the first-seen string type.
   def test_duplicate_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-1&test_dup_arg_first_string=foo", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?test_dup_arg_first_string=foo", log_http_options)
     assert_response_code(200, response)
-    record = wait_for_log("#{unique_test_id}-1")[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("foo", record["request_query"]["test_dup_arg_first_string"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-2&test_dup_arg_first_string=foo&test_dup_arg_first_string=bar", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?test_dup_arg_first_string=foo&test_dup_arg_first_string=bar", log_http_options)
     assert_response_code(200, response)
-    record = wait_for_log("#{unique_test_id}-2")[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("foo,bar", record["request_query"]["test_dup_arg_first_string"])
   end
 
   # Does not attempt to automatically map the first seen value into a boolean.
   def test_boolean_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-1&test_arg_first_bool", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?test_arg_first_bool", log_http_options)
     assert_response_code(200, response)
-    record = wait_for_log("#{unique_test_id}-1")[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("true", record["request_query"]["test_arg_first_bool"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?unique_query_id=#{unique_test_id}-2&test_arg_first_bool=foo", http_options)
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?test_arg_first_bool=foo", log_http_options)
     assert_response_code(200, response)
-    record = wait_for_log("#{unique_test_id}-2")[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("foo", record["request_query"]["test_arg_first_bool"])
   end
 
   # Does not attempt to automatically map the first seen value into a number.
   def test_numbers_in_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :params => {
-        :unique_query_id => "#{unique_test_id}-1",
         :number_field => "123",
       },
     }))
     assert_response_code(200, response)
-    record = wait_for_log("#{unique_test_id}-1")[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("123", record["request_query"]["number_field"])
 
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :params => {
-        :unique_query_id => "#{unique_test_id}-2",
         :number_field => "foo",
       },
     }))
     assert_response_code(200, response)
-    record = wait_for_log("#{unique_test_id}-2")[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal("foo", record["request_query"]["number_field"])
   end
 
   def test_logs_requests_that_time_out
-    time_out_delay = $config["nginx"]["proxy_connect_timeout"] * 1000 + 3000
-    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/#{time_out_delay}", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
-    }))
+    time_out_delay = $config["nginx"]["proxy_connect_timeout"] * 1000 + 3500
+    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/#{time_out_delay}", log_http_options)
     assert_response_code(504, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal(504, record["response_status"])
-    assert_logs_base_fields(record, unique_test_id, api_user)
-    assert_in_delta($config["nginx"]["proxy_connect_timeout"] * 1000, record["response_time"], 2000)
+    assert_logs_base_fields(record, api_user)
+    # Check that the logged response time is approximately what's expected.
+    # Allow for some buffer, since the exact timing can be a bit fuzzy--we
+    # mainly want to ensure it's how long the request was open before timing
+    # out, rather than the response time of the underlying API (since it timed
+    # out and was never completed).
+    expected_timeout_response_time = $config["nginx"]["proxy_connect_timeout"] * 1000
+    assert_in_delta(expected_timeout_response_time, record["response_time"], 2100)
+    assert_operator(expected_timeout_response_time, :<, time_out_delay)
   end
 
   def test_logs_requests_that_are_canceled
-    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/2000", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
+    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/2000", log_http_options.deep_merge({
       :timeout => 0.5,
     }))
     assert(response.timed_out?)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response, :lookup_by_unique_user_agent => true)[:hit_source]
     assert_equal(499, record["response_status"])
-    assert_logs_base_fields(record, unique_test_id, api_user)
+    assert_logs_base_fields(record, api_user)
   end
 
   def test_logs_cached_responses
-    3.times do |index|
-      response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-expires/", http_options.deep_merge({
-        :params => {
-          :unique_query_id => unique_test_id,
-        },
-      }))
+    responses = Array.new(3) do
+      response = Typhoeus.get("http://127.0.0.1:9080/api/cacheable-expires/#{unique_test_id}", log_http_options)
       assert_response_code(200, response)
+      response
     end
 
-    result = wait_for_log(unique_test_id, :min_result_count => 3)[:result]
     cache_results = {}
-    result["hits"]["hits"].each do |hit|
-      record = hit["_source"]
+    responses.each do |response|
+      record = wait_for_log(response)[:hit_source]
       assert_equal(200, record["response_status"])
-      assert_logs_base_fields(record, unique_test_id, api_user)
+      assert_logs_base_fields(record, api_user)
       assert_kind_of(Numeric, record["response_age"])
       cache_results[record["response_cache"]] ||= 0
       cache_results[record["response_cache"]] += 1
@@ -451,19 +412,16 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_logs_denied_requests
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
         "X-Api-Key" => "INVALID_KEY",
       },
     }))
     assert_response_code(403, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal(403, record["response_status"])
-    assert_logs_base_fields(record, unique_test_id)
+    assert_logs_base_fields(record)
     refute_logs_backend_fields(record)
     assert_equal("INVALID_KEY", record["api_key"])
     assert_equal("api_key_invalid", record["gatekeeper_denied_code"])
@@ -481,48 +439,41 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/down", :backend_prefix => "/down" }],
       },
     ]) do
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", http_options.deep_merge({
-        :params => {
-          :unique_query_id => unique_test_id,
-        },
-      }))
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/down", log_http_options)
       assert_response_code(502, response)
 
-      record = wait_for_log(unique_test_id)[:hit_source]
+      record = wait_for_log(response)[:hit_source]
       assert_equal(502, record["response_status"])
-      assert_logs_base_fields(record, unique_test_id, api_user)
+      assert_logs_base_fields(record, api_user)
       assert_logs_backend_fields(record)
     end
   end
 
   def test_logs_requests_when_logging_is_out_of_order
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_options.deep_merge({
-      :params => {
-        :unique_query_id => unique_test_id,
-      },
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
         "X-Api-Umbrella-Test-Simulate-Out-Of-Order-Logging" => "true",
       },
     }))
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal(200, record["response_status"])
-    assert_logs_base_fields(record, unique_test_id, api_user)
+    assert_logs_base_fields(record, api_user)
     assert_logs_backend_fields(record)
     assert_equal(99000, record["backend_response_time"])
   end
 
   def test_logs_requests_with_maximum_8kb_url_limit
-    url_path = "/api/hello?unique_query_id=#{unique_test_id}&long="
+    url_path = "/api/hello?long="
     long_length = 8192 - "GET #{url_path} HTTP/1.1\r\n".length
     long_value = Faker::Lorem.characters(long_length)
     url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
-    response = Typhoeus.get(url, http_options)
+    response = Typhoeus.get(url, log_http_options)
     assert_response_code(200, response)
 
-    record = wait_for_log(unique_test_id)[:hit_source]
+    record = wait_for_log(response)[:hit_source]
     assert_equal(long_value, record["request_query"]["long"])
   end
 
@@ -534,18 +485,18 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   # need to account for certain things in the logging logic that won't be
   # present in these error conditions.
   def test_does_not_log_requests_exceeding_8kb_url_limit
-    url_path = "/api/hello?unique_query_id=#{unique_test_id}&long="
+    url_path = "/api/hello?long="
     long_length = 8193 - "GET #{url_path} HTTP/1.1\r\n".length
     long_value = Faker::Lorem.characters(long_length)
     url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
-    response = Typhoeus.get(url, http_options)
+    response = Typhoeus.get(url, log_http_options)
     assert_response_code(414, response)
 
     error = assert_raises Timeout::Error do
-      wait_for_log(unique_test_id)
+      wait_for_log(response, :lookup_by_unique_user_agent => true)
     end
-    assert_equal("Log not found: #{unique_test_id.inspect}", error.message)
+    assert_match("Log not found: ", error.message)
   end
 
   def test_logs_long_url_and_headers_truncating_headers
@@ -557,12 +508,12 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
-      url_path = "/#{unique_test_id}/logging-long-response-headers/?unique_query_id=#{unique_test_id}&long="
+      url_path = "/#{unique_test_id}/logging-long-response-headers/?long="
       long_length = 8192 - "GET #{url_path} HTTP/1.1\r\n".length
       long_value = Faker::Lorem.characters(long_length)
       url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
-      response = Typhoeus.get(url, http_options.deep_merge({
+      response = Typhoeus.get(url, log_http_options.deep_merge({
         :headers => {
           "Accept" => Faker::Lorem.characters(1000),
           "Accept-Encoding" => Faker::Lorem.characters(1000),
@@ -577,7 +528,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       }))
       assert_response_code(200, response)
 
-      record = wait_for_log(unique_test_id)[:hit_source]
+      record = wait_for_log(response)[:hit_source]
 
       # Ensure the full URL got logged.
       assert_equal(long_value, record["request_query"]["long"])

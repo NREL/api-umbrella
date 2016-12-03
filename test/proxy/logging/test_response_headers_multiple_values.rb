@@ -40,7 +40,7 @@ class Test::Proxy::Logging::TestResponseHeadersMultipleValues < Minitest::Test
       assert_equal(1, raw_response_headers.scan(/^#{header}: /).length)
       assert_equal("11", response.headers[header])
 
-      record = wait_for_log(unique_test_id)[:hit_source]
+      record = wait_for_log(response)[:hit_source]
       assert_equal("11", record[log_field].to_s)
     end
   end
@@ -52,7 +52,7 @@ class Test::Proxy::Logging::TestResponseHeadersMultipleValues < Minitest::Test
       assert_equal(2, raw_response_headers.scan(/^#{header}: /).length)
       assert_equal(["11", "22"], response.headers[header])
 
-      record = wait_for_log(unique_test_id)[:hit_source]
+      record = wait_for_log(response)[:hit_source]
       assert_equal("11, 22", record[log_field])
     end
   end
@@ -60,10 +60,9 @@ class Test::Proxy::Logging::TestResponseHeadersMultipleValues < Minitest::Test
   private
 
   def response_with_duplicate_headers(header)
-    response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-response-headers/", http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-response-headers/", log_http_options.deep_merge({
       :verbose => true,
       :params => {
-        :unique_query_id => unique_test_id,
         :header => header,
       },
     }))

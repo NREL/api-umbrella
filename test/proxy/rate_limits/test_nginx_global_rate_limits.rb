@@ -102,11 +102,7 @@ class Test::Proxy::RateLimits::TestNginxGlobalRateLimits < Minitest::Test
     }, "--router") do
       hydra = Typhoeus::Hydra.new
       requests = Array.new(8) do |index|
-        request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", http_options.deep_merge({
-          :params => {
-            :unique_query_id => "#{unique_test_id}-#{index}",
-          },
-        }))
+        request = Typhoeus::Request.new("http://127.0.0.1:9080/api/delay/2000", log_http_options)
         hydra.queue(request)
         request
       end
@@ -114,7 +110,7 @@ class Test::Proxy::RateLimits::TestNginxGlobalRateLimits < Minitest::Test
 
       code_results = {}
       requests.each_with_index do |request, index|
-        record = wait_for_log("#{unique_test_id}-#{index}")[:hit_source]
+        record = wait_for_log(request.response)[:hit_source]
         assert_equal(request.response.code, record["response_status"])
         refute(record["gatekeeper_denied_code"])
 

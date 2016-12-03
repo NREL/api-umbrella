@@ -38,8 +38,8 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
   MULTIPLE_FORBIDDEN.each do |header, log_field|
     header_method_name = header.to_s.downcase.gsub(/[^\w]/, "_")
     define_method("test_logs_first_value_for_#{header_method_name}") do
-      request_with_duplicate_headers(header)
-      record = wait_for_log(unique_test_id)[:hit_source]
+      response = request_with_duplicate_headers(header)
+      record = wait_for_log(response)[:hit_source]
       assert_equal("11", record[log_field])
     end
   end
@@ -47,8 +47,8 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
   MULTIPLE_ALLOWED.each do |header, log_field|
     header_method_name = header.to_s.downcase.gsub(/[^\w]/, "_")
     define_method("test_logs_all_values_for_#{header_method_name}") do
-      request_with_duplicate_headers(header)
-      record = wait_for_log(unique_test_id)[:hit_source]
+      response = request_with_duplicate_headers(header)
+      record = wait_for_log(response)[:hit_source]
       assert_equal("11, 22", record[log_field])
     end
   end
@@ -61,13 +61,14 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
     # hash approach can't set multiple headers).
     header_list = nil
     header_list = Ethon::Curl.slist_append(header_list, "X-Api-Key: #{api_key}")
+    header_list = Ethon::Curl.slist_append(header_list, "X-Api-Umbrella-Test-Return-Request-Id: true")
     header_list = Ethon::Curl.slist_append(header_list, "#{header}: 11")
     header_list = Ethon::Curl.slist_append(header_list, "#{header}: 22")
-    response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-request-headers/", http_options.deep_merge({
+    response = Typhoeus.get("http://127.0.0.1:9080/api/logging-multiple-request-headers/", keyless_http_options.deep_merge({
       :params => {
-        :unique_query_id => unique_test_id,
         :header => header,
       },
+      :headers => {},
       :httpheader => header_list,
       :verbose => true,
     }))

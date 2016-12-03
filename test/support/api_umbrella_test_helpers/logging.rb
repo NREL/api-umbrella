@@ -2,17 +2,48 @@ module ApiUmbrellaTestHelpers
   module Logging
     private
 
-    def wait_for_log(unique_query_id, options = {})
-      options[:min_result_count] ||= 1
+    def log_http_options
+      http_options.deep_merge({
+        :headers => {
+          "User-Agent" => unique_test_id.downcase,
+          "X-Api-Umbrella-Test-Return-Request-Id" => "true",
+        },
+      })
+    end
+
+    def wait_for_log(response, options = {})
+      # We prefer to fetch the log based on the unique request ID. However, for
+      # some tests, this isn't part of the response (for example, when testing
+      # what happens when the client cancels the request before receiving a
+      # response). So in those cases, fall back to looking the log up by the
+      # unique user agent that was part of the initial request.
+      request_id = response.headers["x-api-umbrella-test-request-id"]
+      if(options[:lookup_by_unique_user_agent])
+        refute(request_id)
+        assert_equal(unique_test_id.downcase, response.request.options[:headers]["User-Agent"])
+        query = { :term => { :request_user_agent => unique_test_id.downcase } }
+      else
+        assert_kind_of(String, request_id)
+        assert_equal(20, request_id.length)
+        query = { :ids => { :values => [request_id] } }
+      end
 
       begin
         Timeout.timeout(15) do
           loop do
             result = LogItem.gateway.client.search({
-              :q => %(request_query.unique_query_id:"#{unique_query_id}"),
+              :index => "_all",
+              :type => "log",
+              :body => {
+                :query => query,
+              },
             })
 
-            if(result && result["hits"] && result["hits"]["total"] >= options[:min_result_count])
+            if(result && result["hits"] && result["hits"]["total"] >= 1)
+              if(result["hits"]["total"] > 1)
+                raise "Found more than 1 log result for query. This should not happen. Query: #{query.inspect} Result: #{result.inspect}"
+              end
+
               return {
                 :result => result,
                 :hit => result["hits"]["hits"][0],
@@ -24,11 +55,11 @@ module ApiUmbrellaTestHelpers
           end
         end
       rescue Timeout::Error
-        raise Timeout::Error, "Log not found: #{unique_query_id.inspect}"
+        raise Timeout::Error, "Log not found: #{query.inspect}"
       end
     end
 
-    def assert_logs_base_fields(record, unique_query_id, user = nil)
+    def assert_logs_base_fields(record, user = nil)
       assert_kind_of(Numeric, record["request_at"])
       assert_match(/\A\d{13}\z/, record["request_at"].to_s)
       assert_kind_of(Array, record["request_hierarchy"])
@@ -38,9 +69,6 @@ module ApiUmbrellaTestHelpers
       assert_equal("GET", record["request_method"])
       assert_kind_of(String, record["request_path"])
       assert_operator(record["request_path"].length, :>=, 1)
-      assert_kind_of(Hash, record["request_query"])
-      assert_operator(record["request_query"].length, :>=, 1)
-      assert_equal(unique_query_id, record["request_query"]["unique_query_id"])
       assert_equal("http", record["request_scheme"])
       assert_kind_of(Numeric, record["request_size"])
       assert_kind_of(String, record["request_url"])
