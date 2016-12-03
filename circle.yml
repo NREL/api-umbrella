@@ -41,6 +41,11 @@ dependencies:
     # CircleCI, and doing so also leads to multiple versions being kept around
     # whenever we bump our dependency versions.
     - make clean-download-archives
+database:
+  override:
+    # Don't perform any database tasks that CircleCI infers, since they're not
+    # needed.
+    - /bin/true
 compile:
   override:
     # Don't perform any compile tasks that CircleCI infers. We'll run our
