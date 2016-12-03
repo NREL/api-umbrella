@@ -5,5 +5,6 @@ module.exports = {
   rules: {
     'comma-dangle': 'off',
     'object-shorthand': 'off',
+    'keyword-spacing': 'off',
   },
 };

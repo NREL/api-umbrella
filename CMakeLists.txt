@@ -114,8 +114,3 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/package.cmake)
 #
 include(${CMAKE_SOURCE_DIR}/build/cmake/clean-download-archives.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/distclean.cmake)
-
-#
-# Outdated Dependencies Check
-#
-include(${CMAKE_SOURCE_DIR}/build/cmake/outdated.cmake)

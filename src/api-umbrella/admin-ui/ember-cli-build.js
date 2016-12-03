@@ -1,9 +1,9 @@
-/*jshint node:true*/
+/* eslint-env node */
 /* global require, module */
-var EmberApp = require('ember-cli/lib/broccoli/ember-app');
+let EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function(defaults) {
-  var app = new EmberApp(defaults, {
+  let app = new EmberApp(defaults, {
     sassOptions: {
       // The Sass number precision must be increased to 8 for Bootstrap, or
       // else certain things don't line up:

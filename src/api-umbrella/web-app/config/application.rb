@@ -97,7 +97,7 @@ module ApiUmbrella
             :uri => ApiUmbrellaConfig[:mongodb][:url],
             :options => {
               :read => {
-                :mode => ApiUmbrellaConfig[:mongodb][:read_preference].underscore.to_sym,
+                :mode => ApiUmbrellaConfig[:mongodb][:read_preference].to_s.underscore.to_sym,
               },
             },
           },

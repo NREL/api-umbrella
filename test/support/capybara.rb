@@ -37,9 +37,9 @@ Capybara.register_driver :poltergeist do |app|
       "--local-storage-path=/tmp/capybara-local-storage",
     ],
     :extensions => [
-      File.expand_path("../capybara/disable_animations.js", __FILE__),
-      File.expand_path("../capybara/disable_google_charts.js", __FILE__),
-      File.expand_path("../capybara/disable_fixed_header.js", __FILE__),
+      File.join(API_UMBRELLA_SRC_ROOT, "test/support/capybara/disable_animations.js"),
+      File.join(API_UMBRELLA_SRC_ROOT, "test/support/capybara/disable_google_charts.js"),
+      File.join(API_UMBRELLA_SRC_ROOT, "test/support/capybara/disable_fixed_header.js"),
     ],
   })
 end

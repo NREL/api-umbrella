@@ -13,6 +13,15 @@ module.exports = {
     'no-var': 'error',
     'object-shorthand': ['error', 'methods'],
     'no-duplicate-imports': 'error',
+    'func-call-spacing': ['error', 'never'],
+    'keyword-spacing': ['error', { 'before': true, 'after': true, 'overrides': {
+      'if': { 'after': false },
+      'for': { 'after': false },
+      'while': { 'after': false },
+      'catch': { 'after': false },
+      'switch': { 'after': false },
+    }}],
+    'no-trailing-spaces': 'error',
   },
   globals: {
     '$': true,

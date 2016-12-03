@@ -14,9 +14,9 @@ if [ "${1}" = "start" ]; then
   fi
 
   exec runtool "${run_args[@]}" mailhog \
-    -smtp-bind-addr {{mailhog.smtp_bind_addr}} \
-    -api-bind-addr {{mailhog.api_bind_addr}} \
-    -ui-bind-addr {{mailhog.ui_bind_addr}}
+    -smtp-bind-addr "{{mailhog.smtp_bind_addr}}" \
+    -api-bind-addr "{{mailhog.api_bind_addr}}" \
+    -ui-bind-addr "{{mailhog.ui_bind_addr}}"
 fi
 
 exit 0

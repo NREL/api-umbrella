@@ -40,13 +40,11 @@ while true; do
   echo "Downloading new file..."
   unzip_path=$(mktemp -t api-umbrella-geoip-auto-updater.XXXXXXXXXX)
   download_path="$unzip_path.gz"
-  curl --silent --show-error --fail --location --output "$download_path" "$download_url"
-  if [ $? -ne 0 ]; then
+  if ! curl --silent --show-error --fail --location --output "$download_path" "$download_url"; then
     echo "Error downloading $download_url"
   else
     # Un-gzip the downloaded file.
-    gunzip -c "$download_path" > "$unzip_path"
-    if [ $? -ne 0 ]; then
+    if ! gunzip -c "$download_path" > "$unzip_path"; then
       echo "Error unzipping $download_path"
     else
       unzip_md5=$(openssl md5 "$unzip_path" | awk '{print $2}')
@@ -62,8 +60,7 @@ while true; do
         mv "$unzip_path" "$current_path"
         echo "Installed new $current_path"
 
-        "$API_UMBRELLA_SRC_ROOT"/bin/api-umbrella reload
-        if [ $? == 0 ]; then
+        if "$API_UMBRELLA_SRC_ROOT"/bin/api-umbrella reload; then
           echo "Reloaded api-umbrella"
         else
           echo "Reloading api-umbrella failed"

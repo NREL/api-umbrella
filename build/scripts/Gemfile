@@ -1,4 +1,0 @@
-source "https://rubygems.org"
-
-# Colorized console printing
-gem "rainbow", "~> 2.1.0"
