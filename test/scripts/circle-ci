@@ -5,7 +5,7 @@ set -e -u -x
 # Always run the lint tests on the first node (since these are quick and only
 # need to be run on a single node).
 if [ "$CIRCLE_NODE_INDEX" -eq "0" ]; then
-  env PATH="build/work/stage/opt/api-umbrella/embedded/bin:$PATH" bundle exec rake lint
+  time env PATH="build/work/stage/opt/api-umbrella/embedded/bin:$PATH" bundle exec rake lint
 fi
 
 # Circle's parallel command will pass this script a list of test files to run
