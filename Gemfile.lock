@@ -1,3 +1,12 @@
+GIT
+  remote: https://github.com/GUI/minitest-capybara.git
+  revision: 74743d1472891da8636d773557297495cf8d6a77
+  specs:
+    minitest-capybara (0.8.2)
+      capybara (~> 2.2)
+      minitest (~> 5.0)
+      rake
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -78,10 +87,6 @@ GEM
     mime-types-data (3.2016.0521)
     mini_portile2 (2.1.0)
     minitest (5.10.1)
-    minitest-capybara (0.8.2)
-      capybara (~> 2.2)
-      minitest (~> 5.0)
-      rake
     minitest-ci (3.1.0)
       minitest (~> 5.0, >= 5.0.6)
     minitest-hooks (1.4.0)
@@ -157,12 +162,13 @@ DEPENDENCIES
   i18n (~> 0.7.0)
   lazyhash (~> 0.1.1)
   minitest (~> 5.10.1)
-  minitest-capybara (~> 0.8.2)
+  minitest-capybara (~> 0.8.2)!
   minitest-ci (~> 3.1.0)
   minitest-hooks (~> 1.4.0)
   minitest-reporters (~> 1.1.13)
   mongoid (~> 6.0.3)
   multi_json (~> 1.12.1)
+  nokogiri (~> 1.6.8)
   oj (~> 2.18.0)
   poltergeist (~> 1.11.0)
   rails_compatible_cookies_utils (~> 0.1.0)

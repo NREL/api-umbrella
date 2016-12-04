@@ -268,7 +268,7 @@ http {
 
     {{^_development_env?}}
     location /web-assets/ {
-      alias {{_embedded_root_dir}}/apps/core/current/build/dist/web-app-assets/;
+      alias {{_embedded_root_dir}}/apps/core/current/build/dist/web-app-assets/web-assets/;
     }
     {{/_development_env?}}
 

@@ -33,7 +33,6 @@ export default Ember.Component.extend({
   },
 
   didInsertElement() {
-    this.updateInterval();
     this.updateDateRange();
 
     $('#reportrange').daterangepicker({
@@ -292,11 +291,6 @@ export default Ember.Component.extend({
       $('#query_builder').queryBuilder('reset');
     }
   }.observes('query'),
-
-  updateInterval: function() {
-    let interval = this.get('interval');
-    $('#interval_buttons').find('button[value="' + interval + '"]').button('toggle');
-  }.observes('interval'),
 
   updateDateRange: function() {
     let start = moment(this.get('start_at'));

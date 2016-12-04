@@ -1,7 +1,7 @@
 {
   "name": "api-umbrella-admin-ui",
   "dependencies": {
-    "ace-builds": "1.2.5",
+    "ace-builds": "1.2.6",
     "bootbox": "4.4.0",
     "bootstrap": "3.3.7",
     "bootstrap-daterangepicker": "2.1.24",

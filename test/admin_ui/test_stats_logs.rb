@@ -147,6 +147,34 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
     assert_equal("text/csv", page.response_headers["Content-Type"])
   end
 
+  def test_changing_intervals
+    admin_login
+    visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-13&interval=week"
+    refute_selector(".busy-blocker")
+    assert_selector("button.active", :text => "Week")
+    assert_link("Download CSV", :href => /interval=week/)
+
+    click_button "Day"
+    refute_selector("button.active", :text => "Week")
+    assert_selector("button.active", :text => "Day")
+    assert_link("Download CSV", :href => /interval=day/)
+
+    click_button "Hour"
+    refute_selector("button.active", :text => "Day")
+    assert_selector("button.active", :text => "Hour")
+    assert_link("Download CSV", :href => /interval=hour/)
+
+    click_button "Month"
+    refute_selector("button.active", :text => "Hour")
+    assert_selector("button.active", :text => "Month")
+    assert_link("Download CSV", :href => /interval=month/)
+
+    click_button "Minute"
+    refute_selector("button.active", :text => "Month")
+    assert_selector("button.active", :text => "Minute")
+    assert_link("Download CSV", :href => /interval=minute/)
+  end
+
   def test_does_not_show_beta_analytics_toggle_by_default
     admin_login
     visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"

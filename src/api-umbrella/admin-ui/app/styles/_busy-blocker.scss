@@ -62,3 +62,10 @@
   width: 200px;
   z-index: $zindex-modal;
 }
+
+.busy-blocker__content p {
+  font-size: 18px;
+  margin: 12px 0px 0px 0px;
+  font-weight: bold;
+  color: #f7f7f7;
+}

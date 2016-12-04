@@ -49,13 +49,18 @@ gem "addressable", "~> 2.5.0"
 
 # Browser/JavaScript integration tests
 gem "capybara", "~> 2.10.2"
-gem "minitest-capybara", "~> 0.8.2"
+# Use fork to fix failure messages:
+# https://github.com/wojtekmach/minitest-capybara/pull/17
+gem "minitest-capybara", "~> 0.8.2", :git => "https://github.com/GUI/minitest-capybara.git"
 
 # Webkit-based driver for capybara
 gem "poltergeist", "~> 1.11.0"
 
 # Take screenshots on capybara test failures
 gem "capybara-screenshot", "~> 1.0.14"
+
+# HTML or XML parsing
+gem "nokogiri", "~> 1.6.8"
 
 # Useful additions
 gem "activesupport", "~> 5.0.0"

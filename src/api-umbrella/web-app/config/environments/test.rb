@@ -15,3 +15,28 @@ Rails.application.configure do
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 end
+
+if(Rails.env.test?)
+  # For the test environment setup a middleware that looks for the
+  # "test_delay_server_responses" cookie on requests, and if it's set, sleeps
+  # for that amount of time before returning responses.
+  #
+  # This can be used for some Capybara integration tests that otherwise might
+  # happen too quickly (for example, checking that a loading spinner pops up
+  # while making an ajax request).
+  class TestDelayServerResponses
+    def initialize(app)
+      @app = app
+    end
+
+    def call(env)
+      request = ActionDispatch::Request.new(env)
+      if(request.cookies["test_delay_server_responses"].present?)
+        sleep(request.cookies["test_delay_server_responses"].to_f)
+      end
+
+      @app.call(env)
+    end
+  end
+  Rails.application.config.middleware.use(TestDelayServerResponses)
+end

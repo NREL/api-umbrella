@@ -2,8 +2,12 @@ import Ember from 'ember';
 import Base from 'ember-simple-auth/authenticators/base';
 
 export default Base.extend({
-  restore(data) {
-    return this._validate(data) ? Ember.RSVP.Promise.resolve(data) : Ember.RSVP.Promise.reject();
+  restore() {
+    // Perform a full validation against the server-side endpoint to verify the
+    // user's authentication on load. We use this, instead of validating the
+    // data stored client side, since the user's server-side session may have
+    // expired, even if the local client data thinks it's authenticated.
+    return this.authenticate();
   },
 
   authenticate() {

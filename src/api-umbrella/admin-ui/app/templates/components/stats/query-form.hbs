@@ -9,23 +9,13 @@
       {{/if}}
 
       {{#if enableInterval}}
-        <div id="interval_buttons" class="btn-group" role="group" data-toggle="buttons">
-          <label class="btn btn-default btn-xs">
-            {{one-way-radio name="interval" value=interval option="minute" update=(action (mut interval))}}{{t "admin.stats.minute"}}
-          </label>
-          <label class="btn btn-default btn-xs">
-            {{one-way-radio name="interval" value=interval option="hour" update=(action (mut interval))}}{{t "admin.stats.hour"}}
-          </label>
-          <label class="btn btn-default btn-xs">
-            {{one-way-radio name="interval" value=interval option="day" update=(action (mut interval))}}{{t "admin.stats.day"}}
-          </label>
-          <label class="btn btn-default btn-xs">
-            {{one-way-radio name="interval" value=interval option="week" update=(action (mut interval))}}{{t "admin.stats.week"}}
-          </label>
-          <label class="btn btn-default btn-xs">
-            {{one-way-radio name="interval" value=interval option="month" update=(action (mut interval))}}{{t "admin.stats.month"}}
-          </label>
-        </div>
+        {{#bs-button-group value=interval type="radio" size="xs"}}
+          {{#bs-button value="minute"}}{{t "admin.stats.minute"}}{{/bs-button}}
+          {{#bs-button value="hour"}}{{t "admin.stats.hour"}}{{/bs-button}}
+          {{#bs-button value="day"}}{{t "admin.stats.day"}}{{/bs-button}}
+          {{#bs-button value="week"}}{{t "admin.stats.week"}}{{/bs-button}}
+          {{#bs-button value="month"}}{{t "admin.stats.month"}}{{/bs-button}}
+        {{/bs-button-group}}
       {{/if}}
 
       <div id="reportrange" class="pull-right">

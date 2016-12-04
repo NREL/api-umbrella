@@ -1,66 +1,69 @@
-<nav class="navbar navbar-default navbar-fixed-top">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand" href="#">API Umbrella</span>
+{{#if session.isAuthenticated}}
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <span class="navbar-brand" href="#">API Umbrella</span>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="dropdown nav-analytics">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.analytics"}} <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li>{{#link-to "stats.drilldown"}}<i class="fa fa-sitemap" aria-hidden="true"></i> {{t "admin.nav.api_drilldown"}}{{/link-to}}</li>
+              <li>{{#link-to "stats.logs"}}<i class="fa fa-signal" aria-hidden="true"></i> {{t "admin.nav.filter_logs"}}{{/link-to}}</li>
+              <li>{{#link-to "stats.users"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.by_users"}}{{/link-to}}</li>
+              <li>{{#link-to "stats.map"}}<i class="fa fa-map-marker" aria-hidden="true"></i> {{t "admin.nav.by_location"}}{{/link-to}}</li>
+            </ul>
+          </li>
+          <li class="dropdown nav-users">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.users"}} <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li>{{#link-to "api_users"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.api_users"}}{{/link-to}}</li>
+              <li>{{#link-to "admins"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.admin_accounts"}}{{/link-to}}</li>
+              <li role="separator" class="divider"></li>
+              <li role="presentation" class="dropdown-header"> {{t "admin.nav.permissions_management"}}</li>
+              <li>{{#link-to "api_scopes"}}<i class="fa fa-lock" aria-hidden="true"></i> {{t "admin.nav.api_scopes"}}{{/link-to}}</li>
+              <li>{{#link-to "admin_groups"}}<i class="fa fa-group" aria-hidden="true"></i> {{t "admin.nav.admin_groups"}}{{/link-to}}</li>
+            </ul>
+          </li>
+          <li class="dropdown nav-config">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.configuration"}} <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li>{{#link-to "apis"}}<i class="fa fa-gear" aria-hidden="true"></i> {{t "admin.nav.api_backends"}}{{/link-to}}</li>
+              <li>{{#link-to "website_backends"}}<i class="fa fa-gear" aria-hidden="true"></i> {{t "admin.nav.website_backends"}}{{/link-to}}</li>
+              <li>{{#link-to "config.publish"}}<i class="fa fa-upload" aria-hidden="true"></i> {{t "admin.nav.publish_changes"}}{{/link-to}}</li>
+            </ul>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-gear" aria-hidden="true"></i> <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li>{{#link-to "admins.edit" session.data.authenticated.admin.id id="my_account_nav_link"}}{{t "admin.nav.my_account"}}{{/link-to}}</li>
+              <li><a href="#" {{action "logout"}}>{{t "admin.nav.logout"}}</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
-    <div class="collapse navbar-collapse">
-      <ul class="nav navbar-nav">
-        <li class="dropdown nav-analytics">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.analytics"}} <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li>{{#link-to "stats.drilldown"}}<i class="fa fa-sitemap" aria-hidden="true"></i> {{t "admin.nav.api_drilldown"}}{{/link-to}}</li>
-            <li>{{#link-to "stats.logs"}}<i class="fa fa-signal" aria-hidden="true"></i> {{t "admin.nav.filter_logs"}}{{/link-to}}</li>
-            <li>{{#link-to "stats.users"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.by_users"}}{{/link-to}}</li>
-            <li>{{#link-to "stats.map"}}<i class="fa fa-map-marker" aria-hidden="true"></i> {{t "admin.nav.by_location"}}{{/link-to}}</li>
-          </ul>
-        </li>
-        <li class="dropdown nav-users">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.users"}} <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li>{{#link-to "api_users"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.api_users"}}{{/link-to}}</li>
-            <li>{{#link-to "admins"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.admin_accounts"}}{{/link-to}}</li>
-            <li role="separator" class="divider"></li>
-            <li role="presentation" class="dropdown-header"> {{t "admin.nav.permissions_management"}}</li>
-            <li>{{#link-to "api_scopes"}}<i class="fa fa-lock" aria-hidden="true"></i> {{t "admin.nav.api_scopes"}}{{/link-to}}</li>
-            <li>{{#link-to "admin_groups"}}<i class="fa fa-group" aria-hidden="true"></i> {{t "admin.nav.admin_groups"}}{{/link-to}}</li>
-          </ul>
-        </li>
-        <li class="dropdown nav-config">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.configuration"}} <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li>{{#link-to "apis"}}<i class="fa fa-gear" aria-hidden="true"></i> {{t "admin.nav.api_backends"}}{{/link-to}}</li>
-            <li>{{#link-to "website_backends"}}<i class="fa fa-gear" aria-hidden="true"></i> {{t "admin.nav.website_backends"}}{{/link-to}}</li>
-            <li>{{#link-to "config.publish"}}<i class="fa fa-upload" aria-hidden="true"></i> {{t "admin.nav.publish_changes"}}{{/link-to}}</li>
-          </ul>
-        </li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-gear" aria-hidden="true"></i> <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-            <li>{{#link-to "admins.edit" session.data.authenticated.admin.id id="my_account_nav_link"}}{{t "admin.nav.my_account"}}{{/link-to}}</li>
-            <li><a href="#" {{action "logout"}}>{{t "admin.nav.logout"}}</a></li>
-          </ul>
-        </li>
-      </ul>
+  </nav>
+
+  <div id="content" class="container-fluid">
+    {{outlet}}
+  </div>
+
+  <div id="version_footer" class="container-fluid">
+    <div class="row-fluid">
+      API Umbrella Version {{API_UMBRELLA_VERSION}}
     </div>
   </div>
-</nav>
 
-<div id="content" class="container-fluid">
-  {{outlet}}
-</div>
-
-<div id="version_footer" class="container-fluid">
-  <div class="row-fluid">
-    API Umbrella Version {{API_UMBRELLA_VERSION}}
-  </div>
-</div>
-
-{{busy-blocker}}
+  {{ember-load-remover}}
+  {{busy-blocker}}
+{{/if}}
