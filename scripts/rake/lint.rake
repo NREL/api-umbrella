@@ -2,6 +2,7 @@ namespace :lint do
   desc "Lint JavaScript files using eslint"
   task :js do
     require "childprocess"
+    require "rainbow"
 
     js_files = `cd #{API_UMBRELLA_SRC_ROOT}/src/api-umbrella/admin-ui && git ls-files | grep "\.js$"`.split("\n")
     js_files -= [
@@ -53,6 +54,7 @@ namespace :lint do
   desc "Lint shell files using shellcheck"
   task :shell do
     require "childprocess"
+    require "rainbow"
 
     # Ignore certain vendored files for linting.
     ignore_files = [
