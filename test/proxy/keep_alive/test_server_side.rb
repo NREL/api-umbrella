@@ -134,7 +134,7 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
     # any in-use connections (with our request to fetch connection stats being
     # the only in-use one).
     assert_operator(data["connections_active"], :>=, idle_per_worker)
-    assert_operator(data["connections_active"], :<=, idle_per_worker * $config["nginx"]["workers"])
+    assert_operator(data["connections_active"], :<=, idle_per_worker * $config["nginx"]["workers"] + 2)
 
     # Check the "waiting" count from nginx, which is just the idle connections.
     # This will be 1 less than the expected keepalive count, since one of those
@@ -142,6 +142,6 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
     # not necessarily, so this is why we only subtract 1 from the minimum
     # count).
     assert_operator(data["connections_waiting"], :>=, idle_per_worker - 1)
-    assert_operator(data["connections_waiting"], :<=, idle_per_worker * $config["nginx"]["workers"])
+    assert_operator(data["connections_waiting"], :<=, idle_per_worker * $config["nginx"]["workers"] + 2)
   end
 end
