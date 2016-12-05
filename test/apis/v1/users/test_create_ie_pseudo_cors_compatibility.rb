@@ -4,7 +4,7 @@ require_relative "../../../test_helper"
 # IE8-9's shimmed pseudo-CORS support. This ensures API keys can be created
 # even if the endpoint is called with empty or text/plain content-types. See
 # ApplicationController#parse_post_for_pseudo_ie_cors for more detail.
-class Test::Apis::V1::Users::TestCreateIePseudoCorsCompatibility < Minitest::Capybara::Test
+class Test::Apis::V1::Users::TestCreateIePseudoCorsCompatibility < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
 
