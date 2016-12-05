@@ -54,7 +54,7 @@ class Test::Apis::V1::Users::TestShow < Minitest::Test
   def test_embedded_rate_limit_response
     user = FactoryGirl.create(:custom_rate_limit_api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token))
-    assert_equal(200, response.code, body)
+    assert_response_code(200, response)
 
     data = MultiJson.load(response.body)
     assert_equal(1, data["user"]["settings"]["rate_limits"].length)
