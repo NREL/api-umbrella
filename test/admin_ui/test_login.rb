@@ -50,106 +50,140 @@ class Test::AdminUi::TestLogin < Minitest::Capybara::Test
     assert_equal("text/css", response.headers["content-type"])
   end
 
-  def test_facebook
-    assert_login(:facebook, "Login with Facebook", "info.email", "info.verified")
-  end
+  [
+    {
+      :provider => :facebook,
+      :login_button_text => "Login with Facebook",
+      :username_path => "info.email",
+      :verified_path => "info.verified",
+    },
+    {
+      :provider => :github,
+      :login_button_text => "Login with GitHub",
+      :username_path => "info.email",
+      :verified_path => "info.email_verified",
+    },
+    {
+      :provider => :google_oauth2,
+      :login_button_text => "Login with Google",
+      :username_path => "info.email",
+      :verified_path => "extra.raw_info.email_verified",
+    },
+    {
+      :provider => :ldap,
+      :login_button_text => "Login with LDAP",
+      :username_path => "extra.raw_info.sAMAccountName",
+    },
+    {
+      :provider => :cas,
+      :login_button_text => "Login with MAX.gov",
+      :username_path => "uid",
+    },
+    {
+      :provider => :persona,
+      :login_button_text => "Login with Persona",
+      :username_path => "info.email",
+    },
+  ].each do |options|
+    define_method("test_#{options.fetch(:provider)}_valid_admin") do
+      assert_login_valid_admin(options)
+    end
 
-  def test_github
-    assert_login(:github, "Login with GitHub", "info.email", "info.email_verified")
-  end
+    define_method("test_#{options.fetch(:provider)}_case_insensitive_username_admin") do
+      assert_login_case_insensitive_username_admin(options)
+    end
 
-  def test_google_oauth2
-    assert_login(:google_oauth2, "Login with Google", "info.email", "extra.raw_info.email_verified")
-  end
+    define_method("test_#{options.fetch(:provider)}_nonexistent_admin") do
+      assert_login_nonexistent_admin(options)
+    end
 
-  def test_ldap
-    assert_login(:ldap, "Login with LDAP", "extra.raw_info.sAMAccountName")
-  end
-
-  def test_max_gov
-    assert_login(:cas, "Login with MAX.gov", "uid")
-  end
-
-  def test_persona
-    assert_login(:persona, "Login with Persona", "info.email")
+    if(options[:verified_path])
+      define_method("test_#{options.fetch(:provider)}_unverified_email") do
+        assert_login_unverified_email_login(options)
+      end
+    end
   end
 
   private
 
-  def assert_login(provider, login_button_text, username_path, verified_path = nil)
-    omniauth_base_data = LazyHash.build_hash
-    omniauth_base_data["provider"] = provider.to_s
-    if(verified_path)
-      LazyHash.add(omniauth_base_data, verified_path, true)
-    end
-
-    assert_login_valid_admin(omniauth_base_data, login_button_text, username_path)
-    assert_login_case_insensitive_username_admin(omniauth_base_data, login_button_text, username_path)
-    assert_login_nonexistent_admin(omniauth_base_data, login_button_text, username_path)
-    if(verified_path)
-      assert_login_unverified_email_login(omniauth_base_data, login_button_text, username_path, verified_path)
-    end
-  end
-
-  def assert_login_valid_admin(omniauth_base_data, login_button_text, username_path)
-    omniauth_data = omniauth_base_data.deep_dup
+  def assert_login_valid_admin(options)
     admin = FactoryGirl.create(:admin, :username => "valid@example.com")
-    LazyHash.add(omniauth_data, username_path, admin.username)
+    omniauth_data = omniauth_base_data(options)
+    LazyHash.add(omniauth_data, options.fetch(:username_path), admin.username)
 
     mock_omniauth(omniauth_data) do
-      assert_login_permitted(login_button_text, admin)
+      assert_login_permitted(options.fetch(:login_button_text), admin)
     end
   end
 
-  def assert_login_case_insensitive_username_admin(omniauth_base_data, login_button_text, username_path)
-    omniauth_data = omniauth_base_data.deep_dup
+  def assert_login_case_insensitive_username_admin(options)
     admin = FactoryGirl.create(:admin, :username => "hello@example.com")
-    LazyHash.add(omniauth_data, username_path, "Hello@ExamplE.Com")
+    omniauth_data = omniauth_base_data(options)
+    LazyHash.add(omniauth_data, options.fetch(:username_path), "Hello@ExamplE.Com")
 
     mock_omniauth(omniauth_data) do
-      assert_login_permitted(login_button_text, admin)
+      assert_login_permitted(options.fetch(:login_button_text), admin)
     end
   end
 
-  def assert_login_nonexistent_admin(omniauth_base_data, login_button_text, username_path)
-    omniauth_data = omniauth_base_data.deep_dup
-    LazyHash.add(omniauth_data, username_path, "noadmin@example.com")
+  def assert_login_nonexistent_admin(options)
+    omniauth_data = omniauth_base_data(options)
+    LazyHash.add(omniauth_data, options.fetch(:username_path), "noadmin@example.com")
 
     mock_omniauth(omniauth_data) do
-      assert_login_forbidden(login_button_text)
+      assert_login_forbidden(options.fetch(:login_button_text))
     end
   end
 
-  def assert_login_unverified_email_login(omniauth_base_data, login_button_text, username_path, verified_path)
-    omniauth_data = omniauth_base_data.deep_dup
+  def assert_login_unverified_email_login(options)
     admin = FactoryGirl.create(:admin, :username => "unverified@example.com")
-    LazyHash.add(omniauth_data, username_path, admin.username)
-    LazyHash.add(omniauth_data, verified_path, false)
+    omniauth_data = omniauth_base_data(options)
+    LazyHash.add(omniauth_data, options.fetch(:username_path), admin.username)
+    LazyHash.add(omniauth_data, options.fetch(:verified_path), false)
 
     mock_omniauth(omniauth_data) do
-      assert_login_forbidden(login_button_text)
+      assert_login_forbidden(options.fetch(:login_button_text))
     end
   end
 
   def assert_login_permitted(login_button_text, admin)
     visit "/admin/"
-    click_server_side_link(login_button_text)
+    trigger_click_link(login_button_text)
     assert_link("my_account_nav_link", :href => /#{admin.id}/, :visible => :all)
   end
 
   def assert_login_forbidden(login_button_text)
     visit "/admin/"
-    click_server_side_link(login_button_text)
+    trigger_click_link(login_button_text)
     assert_text("not authorized")
     refute_link("my_account_nav_link")
   end
 
+  def omniauth_base_data(options)
+    omniauth_base_data = LazyHash.build_hash
+    omniauth_base_data["provider"] = options.fetch(:provider).to_s
+    if(options[:verified_path])
+      LazyHash.add(omniauth_base_data, options.fetch(:verified_path), true)
+    end
+
+    omniauth_base_data
+  end
+
   def mock_omniauth(omniauth_data)
+    # Reset the session and clear caches before setting our cookie. For some
+    # reason this seems necessary to ensure click_link always works correctly
+    # (otherwise, we sporadically get failures caused by the click_link on the
+    # login buttons not actually going anywhere).
+    #
+    # Possibly related:
+    # https://github.com/teampoltergeist/poltergeist/issues/814#issuecomment-248830334
+    Capybara.reset_session!
+    page.driver.clear_memory_cache
+
     # Set a cookie to mock the OmniAuth responses. This relies on the
     # TestMockOmniauth middleware we install into the Rails app during the test
     # environment. This gives us a way to mock this data from outside the Rails
     # test suite.
-    Capybara.reset_session!
     page.driver.set_cookie("test_mock_omniauth", Base64.urlsafe_encode64(MultiJson.dump(omniauth_data)))
     yield
   ensure
@@ -173,7 +207,7 @@ class Test::AdminUi::TestLogin < Minitest::Capybara::Test
   # here, and not within the app (since within the app, all the javascript and
   # stylesheets must be loaded first for there to be anything rendering on the
   # page).
-  def click_server_side_link(selector)
+  def trigger_click_link(selector)
     find_link(selector).trigger("click")
   end
 end
