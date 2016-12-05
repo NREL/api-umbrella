@@ -131,17 +131,25 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   end
 
   def assert_geocode_log(record, options)
-    assert_equal(options[:ip], record["request_ip"])
-    assert_equal(options[:country], record["request_ip_country"])
-    assert_equal(options[:region], record["request_ip_region"])
-    assert_equal(options[:city], record["request_ip_city"])
-    assert_equal(["lat", "lon"].sort, record["request_ip_location"].keys.sort)
-    assert_in_delta(options[:lat], record["request_ip_location"]["lat"], 0.02)
-    assert_in_delta(options[:lon], record["request_ip_location"]["lon"], 0.02)
+    assert_equal(options.fetch(:ip), record.fetch("request_ip"))
+    assert_equal(options.fetch(:country), record.fetch("request_ip_country"))
+    if(options.fetch(:region).nil?)
+      assert_nil(record.fetch("request_ip_region"))
+    else
+      assert_equal(options.fetch(:region), record.fetch("request_ip_region"))
+    end
+    if(options.fetch(:city).nil?)
+      assert_nil(record.fetch("request_ip_city"))
+    else
+      assert_equal(options.fetch(:city), record.fetch("request_ip_city"))
+    end
+    assert_equal(["lat", "lon"].sort, record.fetch("request_ip_location").keys.sort)
+    assert_in_delta(options[:lat], record.fetch("request_ip_location").fetch("lat"), 0.02)
+    assert_in_delta(options[:lon], record.fetch("request_ip_location").fetch("lon"), 0.02)
   end
 
   def assert_geocode_cache(record, options)
-    id = Digest::SHA256.hexdigest("#{options[:country]}-#{options[:region]}-#{options[:city]}")
+    id = Digest::SHA256.hexdigest("#{options.fetch(:country)}-#{options.fetch(:region)}-#{options.fetch(:city)}")
     locations = LogCityLocation.where(:_id => id).all
     assert_equal(1, locations.length)
 
@@ -151,13 +159,13 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
 
     assert_kind_of(Time, updated_at)
     assert_equal(2, coordinates.length)
-    assert_in_delta(options[:lon], coordinates[0], 0.02)
-    assert_in_delta(options[:lat], coordinates[1], 0.02)
+    assert_in_delta(options.fetch(:lon), coordinates[0], 0.02)
+    assert_in_delta(options.fetch(:lat), coordinates[1], 0.02)
     assert_equal({
       "_id" => id,
-      "country" => options[:country],
-      "region" => options[:region],
-      "city" => options[:city],
+      "country" => options.fetch(:country),
+      "region" => options.fetch(:region),
+      "city" => options.fetch(:city),
       "location" => {
         "type" => "Point",
       },

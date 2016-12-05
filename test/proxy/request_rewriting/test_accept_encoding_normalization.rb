@@ -57,6 +57,10 @@ class Test::Proxy::RequestRewriting::TestAcceptEncodingNormalization < Minitest:
     }))
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal(expected_value_received, data["headers"]["accept-encoding"])
+    if(expected_value_received.nil?)
+      assert_nil(data["headers"]["accept-encoding"])
+    else
+      assert_equal(expected_value_received, data["headers"]["accept-encoding"])
+    end
   end
 end

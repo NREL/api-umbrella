@@ -190,10 +190,14 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       assert_response_code(204, response)
       api = Api.find(attributes["id"])
     end
-    assert_equal(attributes["frontend_host"], api.frontend_host)
-    assert_equal(attributes["backend_host"], api.backend_host)
+    assert_equal(attributes.fetch("frontend_host"), api.frontend_host)
+    if(attributes.fetch("backend_host").nil?)
+      assert_nil(api.backend_host)
+    else
+      assert_equal(attributes.fetch("backend_host"), api.backend_host)
+    end
     assert_equal(1, api.servers.length)
-    assert_equal(attributes["servers"][0]["host"], api.servers[0].host)
+    assert_equal(attributes.fetch("servers")[0].fetch("host"), api.servers[0].host)
   end
 
   def assert_hostname_invalid(value)
