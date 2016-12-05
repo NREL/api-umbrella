@@ -35,11 +35,10 @@ class Test::Proxy::Caching::TestControlHeaders < Minitest::Test
     assert_equal("0", first.headers["expires"])
 
     # TrafficServer has a bug where Expires: 0 and Expires: Past Date headers
-    # are actually cached for less than a second. Probably not a huge deal, but
-    # this would be nice if they fixed it. In the meantime, we'll sleep 1
-    # second between the requests.  See:
-    # https://issues.apache.org/jira/browse/TS-2961
-    sleep 1
+    # might be cached for around a second. Probably not a huge deal, but this
+    # would be nice if they fixed it. In the meantime, we'll sleep 1 second
+    # between the requests. See: https://issues.apache.org/jira/browse/TS-2961
+    sleep 1.5
 
     second = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-expires-0/?unique_test_id=#{unique_test_id}", http_options).run
     assert_equal(200, second.code, second.body)
@@ -56,11 +55,10 @@ class Test::Proxy::Caching::TestControlHeaders < Minitest::Test
     assert_equal("Sat, 05 Sep 2015 17:58:16 GMT", first.headers["expires"])
 
     # TrafficServer has a bug where Expires: 0 and Expires: Past Date headers
-    # are actually cached for less than a second. Probably not a huge deal, but
-    # this would be nice if they fixed it. In the meantime, we'll sleep 1
-    # second between the requests.  See:
-    # https://issues.apache.org/jira/browse/TS-2961
-    sleep 1
+    # might be cached for around a second. Probably not a huge deal, but this
+    # would be nice if they fixed it. In the meantime, we'll sleep 1 second
+    # between the requests. See: https://issues.apache.org/jira/browse/TS-2961
+    sleep 1.5
 
     second = Typhoeus::Request.new("http://127.0.0.1:9080/api/cacheable-expires-past/?unique_test_id=#{unique_test_id}", http_options).run
     assert_equal(200, second.code, second.body)
