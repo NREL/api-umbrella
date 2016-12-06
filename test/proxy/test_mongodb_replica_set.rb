@@ -26,7 +26,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
       # Reloading API Umbrella doesn't normally restart the mora process. But
       # since we've changed the MongoDB configuration, we need to force a
       # restart of the mora process too.
-      output, status = Open3.capture2e("perpctl -b #{File.join($config["root_dir"], "etc/perp")} term mora")
+      output, status = run_shell("perpctl -b #{File.join($config["root_dir"], "etc/perp")} term mora")
       assert_equal(0, status, output)
 
       # Re-establish the mongodb connections used in the tests to point to the
@@ -62,7 +62,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
 
     # After reloading API Umbrella to reset it back to it's normal state, also
     # force restart Mora.
-    output, status = Open3.capture2e("perpctl -b #{File.join($config["root_dir"], "etc/perp")} term mora")
+    output, status = run_shell("perpctl -b #{File.join($config["root_dir"], "etc/perp")} term mora")
     assert_equal(0, status, output)
 
     # Re-establish the mongodb connections used in the tests to point to the

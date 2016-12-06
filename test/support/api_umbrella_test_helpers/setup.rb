@@ -1,3 +1,4 @@
+require "English"
 require "ipaddr"
 
 module ApiUmbrellaTestHelpers
@@ -315,6 +316,12 @@ module ApiUmbrellaTestHelpers
         eos
       end
       assert_equal(expected_code, response.code, message)
+    end
+
+    def run_shell(command)
+      output = `#{command} 2>&1`
+      status = $CHILD_STATUS.to_i
+      [output, status]
     end
   end
 end

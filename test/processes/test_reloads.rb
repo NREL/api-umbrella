@@ -57,7 +57,7 @@ class Test::Processes::TestReloads < Minitest::Test
       hydra.run
 
       # Now check for open file descriptors.
-      output, status = Open3.capture2e("lsof -n -P -l -R -c nginx")
+      output, status = run_shell("lsof -n -P -l -R -c nginx")
       assert_equal(0, status, output)
       descriptor_count = 0
       urandom_descriptor_count = 0
@@ -199,7 +199,7 @@ class Test::Processes::TestReloads < Minitest::Test
   private
 
   def nginx_parent_pid
-    output, status = Open3.capture2e("perpstat -b #{File.join($config["root_dir"], "etc/perp")} nginx")
+    output, status = run_shell("perpstat -b #{File.join($config["root_dir"], "etc/perp")} nginx")
     assert_equal(0, status, output)
     parent_pid = output.match(/^\s*main:.*\(pid (\d+)\)\s*$/)[1]
     assert(parent_pid, output)
@@ -214,7 +214,7 @@ class Test::Processes::TestReloads < Minitest::Test
     begin
       Timeout.timeout(70) do
         loop do
-          output, status = Open3.capture2e("pgrep -P #{parent_pid}")
+          output, status = run_shell("pgrep -P #{parent_pid}")
           assert_equal(0, status, output)
           pids = output.strip.split("\n")
           break if(pids.length == expected_num_workers)

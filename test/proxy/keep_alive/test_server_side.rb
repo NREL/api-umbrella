@@ -66,7 +66,7 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
   def reset_nginx_connections
     # Reload the test nginx server to close any persistent keep-alive
     # connections API Umbrella is holding against it.
-    output, status = Open3.capture2e("perpctl -b #{File.join($config["root_dir"], "etc/perp")} hup test-env-nginx")
+    output, status = run_shell("perpctl -b #{File.join($config["root_dir"], "etc/perp")} hup test-env-nginx")
     assert_equal(0, status, output)
 
     # After reloading nginx, ensure we wait until there are no more idle
