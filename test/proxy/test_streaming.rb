@@ -2,14 +2,13 @@ require_relative "../test_helper"
 
 class Test::Proxy::TestStreaming < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
-  parallelize_me!
 
   def setup
     setup_server
   end
 
   def test_streaming_responses
-    request = Typhoeus::Request.new("http://127.0.0.1:9080/api/chunked", http_options)
+    request = Typhoeus::Request.new("http://127.0.0.1:9080/api/chunked?#{unique_test_id}", http_options)
     chunks = []
     chunk_timers = []
     request.on_body do |chunk|

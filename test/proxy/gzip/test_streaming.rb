@@ -2,14 +2,13 @@ require_relative "../../test_helper"
 
 class Test::Proxy::Gzip::TestStreaming < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
-  parallelize_me!
 
   def setup
     setup_server
   end
 
   def test_streams_small_response_as_gzipped_chunks
-    request = Typhoeus::Request.new("http://127.0.0.1:9080/api/compressible-delayed-chunked/5", http_options.deep_merge(:accept_encoding => "gzip"))
+    request = Typhoeus::Request.new("http://127.0.0.1:9080/api/compressible-delayed-chunked/5?#{unique_test_id}", http_options.deep_merge(:accept_encoding => "gzip"))
     chunks = []
     chunk_time_gaps = []
     last_chunk_at = nil
@@ -41,7 +40,7 @@ class Test::Proxy::Gzip::TestStreaming < Minitest::Test
   end
 
   def test_client_no_gzip_streams_small_uncompressed_chunks
-    request = Typhoeus::Request.new("http://127.0.0.1:9080/api/compressible-delayed-chunked/10", http_options)
+    request = Typhoeus::Request.new("http://127.0.0.1:9080/api/compressible-delayed-chunked/10?#{unique_test_id}", http_options)
     chunks = []
     request.on_body do |chunk|
       chunks << chunk
@@ -57,7 +56,7 @@ class Test::Proxy::Gzip::TestStreaming < Minitest::Test
   end
 
   def test_client_no_gzip_streams_large_uncompressed_chunks
-    request = Typhoeus::Request.new("http://127.0.0.1:9080/api/compressible-delayed-chunked/50000", http_options)
+    request = Typhoeus::Request.new("http://127.0.0.1:9080/api/compressible-delayed-chunked/50000?#{unique_test_id}", http_options)
     chunks = []
     chunk_time_gaps = []
     last_chunk_at = nil

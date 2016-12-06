@@ -273,11 +273,9 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     logged_response_time = record["response_time"]
     assert_operator(logged_response_time, :>=, 2500)
-    assert_operator(logged_response_time, :<=, 3500)
 
     local_response_time = request_end - request_start
     assert_operator(local_response_time, :>=, 2.5)
-    assert_operator(local_response_time, :<=, 3.5)
 
     assert_in_delta(request_end.to_f * 1000, record["request_at"], 500)
   end
