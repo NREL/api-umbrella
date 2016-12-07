@@ -96,8 +96,10 @@ set(RSYSLOG_VERSION 8.14.0)
 set(RSYSLOG_HASH 443b5b1d2b84f5cd429d06d230af7fb2352336fa6449cb6484dbd4418a7ae7c2)
 set(RUNIT_VERSION 2.1.2)
 set(RUNIT_HASH 6c985fbfe3a34608eb3c53dc719172c4)
-set(SHELLCHECK_VERSION 0.4.5)
-set(SHELLCHECK_HASH a90ae414cd1ad64d547917a47bf3a365)
+# v0.4.5, but using this git commit reference for binary from
+# https://github.com/koalaman/shellcheck/issues/758#issuecomment-257730652
+set(SHELLCHECK_VERSION 5efb724a)
+set(SHELLCHECK_HASH 733f2f8104d12d0e8b7f5e2ee5a1c0e21d4817535cb1b8a29c9f764e26baf2a7)
 # Don't move to TrafficServer 6 until we can verify keepalive behavior:
 # https://issues.apache.org/jira/browse/TS-3959
 set(TRAFFICSERVER_VERSION 5.3.2)
