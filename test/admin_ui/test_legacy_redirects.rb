@@ -29,8 +29,7 @@ class Test::AdminUi::TestLegacyRedirects < Minitest::Capybara::Test
       "end_at" => "2015-01-18",
       "interval" => "hour",
       "query" => "{\"condition\":\"AND\",\"rules\":[{\"id\":\"gatekeeper_denied_code\",\"field\":\"gatekeeper_denied_code\",\"type\":\"string\",\"input\":\"select\",\"operator\":\"is_null\",\"value\":null},{\"id\":\"request_host\",\"field\":\"request_host\",\"type\":\"string\",\"input\":\"text\",\"operator\":\"begins_with\",\"value\":\"example.com\"}]}",
-      "tz" => "America/Denver",
-    }, fragment_uri.query_values)
+    }.merge(expected_tz_param), fragment_uri.query_values)
   end
 
   def test_logs
@@ -49,8 +48,7 @@ class Test::AdminUi::TestLegacyRedirects < Minitest::Capybara::Test
       "end_at" => "2015-01-18",
       "interval" => "hour",
       "query" => "{\"condition\":\"AND\",\"rules\":[{\"id\":\"gatekeeper_denied_code\",\"field\":\"gatekeeper_denied_code\",\"type\":\"string\",\"input\":\"select\",\"operator\":\"is_null\",\"value\":null},{\"id\":\"request_host\",\"field\":\"request_host\",\"type\":\"string\",\"input\":\"text\",\"operator\":\"begins_with\",\"value\":\"example.com\"}]}",
-      "tz" => "America/Denver",
-    }, fragment_uri.query_values)
+    }.merge(expected_tz_param), fragment_uri.query_values)
   end
 
   def test_users
@@ -68,8 +66,7 @@ class Test::AdminUi::TestLegacyRedirects < Minitest::Capybara::Test
       "start_at" => "2015-01-15",
       "end_at" => "2015-01-18",
       "query" => "{\"condition\":\"AND\",\"rules\":[{\"id\":\"gatekeeper_denied_code\",\"field\":\"gatekeeper_denied_code\",\"type\":\"string\",\"input\":\"select\",\"operator\":\"is_null\",\"value\":null},{\"id\":\"request_host\",\"field\":\"request_host\",\"type\":\"string\",\"input\":\"text\",\"operator\":\"begins_with\",\"value\":\"example.com\"}]}",
-      "tz" => "America/Denver",
-    }, fragment_uri.query_values)
+    }.merge(expected_tz_param), fragment_uri.query_values)
   end
 
   def test_map
@@ -88,7 +85,21 @@ class Test::AdminUi::TestLegacyRedirects < Minitest::Capybara::Test
       "end_at" => "2015-01-18",
       "query" => "{\"condition\":\"AND\",\"rules\":[{\"id\":\"gatekeeper_denied_code\",\"field\":\"gatekeeper_denied_code\",\"type\":\"string\",\"input\":\"select\",\"operator\":\"is_null\",\"value\":null},{\"id\":\"request_host\",\"field\":\"request_host\",\"type\":\"string\",\"input\":\"text\",\"operator\":\"begins_with\",\"value\":\"example.com\"}]}",
       "region" => "US",
-      "tz" => "America/Denver",
-    }, fragment_uri.query_values)
+    }.merge(expected_tz_param), fragment_uri.query_values)
+  end
+
+  private
+
+  def expected_tz_param
+    # In all our redirect tests, we pass in "America/Denver" for the timezone
+    # parameter. If the user's current timezone happens to be America/Denver,
+    # then the "tz" parameter won't be in the redirect (since Ember doesn't add
+    # default parameters into the URL). However, if we're running in any other
+    # timezone, this non-default "tz" parameter should be part of the redirect.
+    if(ENV["TZ"] == "America/Denver")
+      {}
+    else
+      { "tz" => "America/Denver" }
+    end
   end
 end

@@ -74,6 +74,9 @@ gem "faker", "~> 1.6.6"
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.0.2"
 
+# Time zone randomization for tests.
+gem "zonebie", "~> 0.6.1"
+
 # Color output
 gem "rainbow", "~> 2.1.0"
 
