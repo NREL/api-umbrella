@@ -15,8 +15,6 @@ module JsLocaleHelper
     result
   end
 
-  private
-
   def self.markdown!(data)
     if(data.kind_of?(Hash))
       data.each do |key, value|

@@ -99,9 +99,6 @@ web:
         client_secret:
       ldap:
         options:
-      myusa:
-        client_id:
-        client_secret:
 static_site:
   host: 127.0.0.1
   port: 14013
@@ -109,6 +106,7 @@ router:
   api_backends:
     host: 127.0.0.1
     port: 14011
+    keepalive_connections: 10
   trusted_proxies: []
   global_rate_limits:
     ip_rate:
@@ -130,14 +128,7 @@ dns_resolver:
   retries: 3
 mongodb:
   url: "mongodb://127.0.0.1:14001/api_umbrella"
-  options:
-    server:
-      auto_reconnect: true
-      socketOptions:
-        keepAlive: 500
-    replset:
-      socketOptions:
-        keepAlive: 500
+  read_preference: primaryPreferred
   embedded_server_config:
     processManagement:
       fork: false
@@ -354,3 +345,6 @@ ban:
     status_code: 403
     delay: 0
     message: "Please contact us for assistance."
+ember_server:
+  port: 14050
+  live_reload_port: 14051

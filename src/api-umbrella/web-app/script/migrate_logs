@@ -70,8 +70,8 @@ indices.each do |source_index| # rubocop:disable Lint/ShadowingOuterLocalVariabl
   scroll_id = result["_scroll_id"]
   total_hits = result["hits"]["total"]
   count = 0
-  while(scroll = source_client.scroll(:scroll_id => scroll_id, :scroll => "10m")) # rubocop:disable Lint/LiteralInCondition
-    start_time = Time.now
+  while(scroll = source_client.scroll(:scroll_id => scroll_id, :scroll => "10m")) # rubocop:disable Lint/AssignmentInCondition
+    start_time = Time.now.utc
 
     scroll_id = scroll["_scroll_id"]
     hits = scroll["hits"]["hits"]
@@ -120,7 +120,7 @@ indices.each do |source_index| # rubocop:disable Lint/ShadowingOuterLocalVariabl
 
     if(bulk_commands.any?)
       dest_client.bulk(:body => bulk_commands)
-      elapsed_time = Time.now - start_time
+      elapsed_time = Time.now.utc - start_time
       logger.info "Indexed #{count} of #{total_hits} (#{bulk_commands.length / 2} records indexed in #{elapsed_time.round} seconds)"
     end
   end

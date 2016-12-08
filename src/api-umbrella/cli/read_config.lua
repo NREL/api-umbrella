@@ -379,6 +379,10 @@ local function set_computed_config()
     },
   })
 
+  if config["app_env"] == "development" then
+    config["_dev_env_install_dir"] = path.join(src_root_dir, "build/work/dev-env")
+  end
+
   if config["app_env"] == "test" then
     config["_test_env_install_dir"] = path.join(src_root_dir, "build/work/test-env")
   end

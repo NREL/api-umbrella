@@ -2,7 +2,7 @@ class Api::SubSettings
   include Mongoid::Document
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :http_method, :type => String
   field :regex, :type => String
 
@@ -16,10 +16,4 @@ class Api::SubSettings
 
   # Nested attributes
   accepts_nested_attributes_for :settings
-
-  # Mass assignment security
-  attr_accessible :http_method,
-    :regex,
-    :settings_attributes,
-    :as => [:default, :admin]
 end

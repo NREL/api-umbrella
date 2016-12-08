@@ -1,6 +1,9 @@
 require "api_umbrella/elasticsearch_proxy"
 
-ApiUmbrella::Application.routes.draw do
+Rails.application.routes.draw do
+  # Add a simple health-check endpoint to see if this app is up.
+  get "/_web-app-health", :to => proc { [200, {}, ["OK"]] }
+
   # Mount the API at both /api/ and /api-umbrella/ for backwards compatibility.
   %w(api api-umbrella).each do |path|
     namespace(:api, :path => path) do
@@ -37,7 +40,7 @@ ApiUmbrella::Application.routes.draw do
             put "move_after"
           end
         end
-        resources :users
+        resources :users, :except => [:destroy]
         resources :website_backends
         resource :contact, :only => [:create]
 
@@ -59,10 +62,9 @@ ApiUmbrella::Application.routes.draw do
 
   devise_scope :admin do
     get "/admin/login" => "admin/sessions#new", :as => :new_admin_session
-    get "/admin/logout" => "admin/sessions#destroy", :as => :destroy_admin_session
+    delete "/admin/logout" => "admin/sessions#destroy", :as => :destroy_admin_session
+    get "/admin/auth" => "admin/sessions#auth"
   end
-
-  match "/admin" => "admin/base#empty"
 
   namespace :admin do
     resources :stats, :only => [:index] do
@@ -80,7 +82,34 @@ ApiUmbrella::Application.routes.draw do
     end
   end
 
-  authenticate :admin, lambda { |admin| admin.superuser? } do
-    mount ApiUmbrella::ElasticsearchProxy.new, :at => ApiUmbrella::ElasticsearchProxy::PREFIX
+  authenticate :admin do
+    mount ApiUmbrella::ElasticsearchProxy.new => ApiUmbrella::ElasticsearchProxy::PREFIX
   end
+
+  # Add an endpoint for admin-ui to hit to return the detected language based
+  # on the Accept-Language HTTP header.
+  #
+  # At some point we may want to revisit this to be purely client-side, but
+  # this currently seems like the easiest approach to ensure that the parsed
+  # client-side language is consistent with the server-side language, and this
+  # can be tested with Capybara (purely client-side approaches based on
+  # "navigator.languages" can't really seem to be changed in
+  # Capybara+poltergeist).
+  get "/admin/i18n_detection.js", :to => proc { |env|
+    locale = env["http_accept_language.parser"].compatible_language_from(I18n.available_locales) || I18n.default_locale
+
+    [
+      200,
+      {
+        "Content-Type" => "application/javascript",
+        "Cache-Control" => "max-age=0, private, must-revalidate",
+      },
+      [
+        "I18n = {};",
+        "I18n.defaultLocale = #{I18n.default_locale.to_json};",
+        "I18n.locale = #{locale.to_json};",
+        "I18n.fallbacks = true;",
+      ],
+    ]
+  }
 end

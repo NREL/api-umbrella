@@ -1,0 +1,9 @@
+{{#form-fields/field-wrapper model=model style=style fieldName=fieldName inputId=inputId label=label tooltip=tooltip}}
+  <div class="form-control-static">
+    {{#if hasBlock}}
+      {{yield}}
+    {{else}}
+      {{get model fieldName}}
+    {{/if}}
+  </div>
+{{/form-fields/field-wrapper}}

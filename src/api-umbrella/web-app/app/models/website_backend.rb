@@ -8,7 +8,7 @@ class WebsiteBackend
   include Mongoid::Delorean::Trackable
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :frontend_host, :type => String
   field :backend_protocol, :type => String
   field :server_host, :type => String

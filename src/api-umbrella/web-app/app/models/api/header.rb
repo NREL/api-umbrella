@@ -2,7 +2,7 @@ class Api::Header
   include Mongoid::Document
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :key, :type => String
   field :value, :type => String
 
@@ -12,11 +12,6 @@ class Api::Header
   # Validations
   validates :key,
     :presence => true
-
-  # Mass assignment security
-  attr_accessible :key,
-    :value,
-    :as => [:default, :admin]
 
   def to_s
     "#{key}: #{value}"

@@ -5,7 +5,7 @@ general:
     - src/api-umbrella/web-app/log
     - src/api-umbrella/web-app/brakeman.html
     # Keep screenshots of capybara failures for easier debugging.
-    - src/api-umbrella/web-app/tmp/capybara
+    - test/tmp/capybara
 machine:
   pre:
     # Enable IPv6 on CircleCI for running IPv6 integration tests.
@@ -13,16 +13,15 @@ machine:
     # Disable RVM so the various environment variables (things like GEM_HOME)
     # don't conflict with our embedded ruby installation.
     - rvm reset
-  node:
-    version: 0.10.45
 dependencies:
   cache_directories:
     - build/work
     - CMakeCache.txt
     - CMakeFiles
     - cmake_install.cmake
-    - test/node_modules
   pre:
+    # Install any system package dependencies.
+    - sudo ./build/scripts/install_build_dependencies
     # Set the local file timestamps based on when they were last modified in
     # git. This helps prevent unnecessary rebuilds in the CI environment, since
     # make is dependent on file timestamps and every CI test run operates on a
@@ -37,11 +36,16 @@ dependencies:
   override:
     # Build all the API Umbrella software dependencies.
     - ./configure --enable-test-dependencies
-    - make
+    - make all test-deps
     # Remove the download archives, since we don't need to cache these in
     # CircleCI, and doing so also leads to multiple versions being kept around
     # whenever we bump our dependency versions.
     - make clean-download-archives
+database:
+  override:
+    # Don't perform any database tasks that CircleCI infers, since they're not
+    # needed.
+    - /bin/true
 compile:
   override:
     # Don't perform any compile tasks that CircleCI infers. We'll run our
@@ -49,14 +53,7 @@ compile:
     - /bin/true
 test:
   override:
-    # Run the across parallel CI nodes.
-    - test/circle_parallel:
+    - ./test/scripts/circle-ci:
         parallel: true
-
-    # Copy the test reports into place.
-    - mkdir -p $CIRCLE_TEST_REPORTS/rspec $CIRCLE_TEST_REPORTS/mocha:
-        parallel: true
-    - if [ -e src/api-umbrella/web-app/spec/reports/web-app.xml ]; then cp src/api-umbrella/web-app/spec/reports/web-app.xml $CIRCLE_TEST_REPORTS/rspec/; fi:
-        parallel: true
-    - if [ -e test/tmp/xunit$CIRCLE_NODE_INDEX.xml ]; then cp test/tmp/xunit$CIRCLE_NODE_INDEX.xml $CIRCLE_TEST_REPORTS/mocha/; fi:
-        parallel: true
+        files:
+          - test/**/test_*.rb

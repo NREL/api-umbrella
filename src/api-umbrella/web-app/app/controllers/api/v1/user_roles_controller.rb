@@ -1,5 +1,5 @@
 class Api::V1::UserRolesController < Api::V1::BaseController
-  skip_after_filter :verify_authorized, :only => [:index]
+  skip_after_action :verify_authorized, :only => [:index]
 
   def index
     @roles = ApiUserRole.all

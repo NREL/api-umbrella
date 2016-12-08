@@ -1,10 +1,10 @@
 class Api::V1::AnalyticsController < Api::V1::BaseController
   include ActionView::Helpers::NumberHelper
 
-  before_filter :set_analytics_adapter
-  skip_after_filter :verify_authorized
-  after_filter :verify_policy_scoped
-  around_filter :set_time_zone
+  before_action :set_analytics_adapter
+  skip_after_action :verify_authorized
+  after_action :verify_policy_scoped
+  around_action :set_time_zone
 
   def drilldown
     @search = LogSearch.factory(@analytics_adapter, {
@@ -40,7 +40,7 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
         parents.each_with_index do |parent, index|
           @breadcrumbs << {
             :crumb => parent,
-            :prefix => File.join((index + 1).to_s, parents[0..index].join("/"), "/")
+            :prefix => File.join((index + 1).to_s, parents[0..index].join("/"), "/"),
           }
         end
 

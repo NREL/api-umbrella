@@ -1,0 +1,10 @@
+$headings-color: $text-color;
+
+$navbar-default-bg: lighten($gray-base, 23%);
+$navbar-default-link-hover-bg: darken($navbar-default-bg, 10%);
+$navbar-default-link-active-bg: $navbar-default-link-hover-bg;
+
+$gray-lighter: lighten($gray-base, 85%);
+
+$text-color-light: lighten($text-color, 16%);
+$text-color-lighter: lighten($text-color, 28%);

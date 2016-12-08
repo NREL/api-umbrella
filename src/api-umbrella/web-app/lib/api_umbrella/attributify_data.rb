@@ -24,14 +24,19 @@ module ApiUmbrella
     # we're leveraging it in the ApiUser model to handle the similar nested
     # settings and rate limits. If those use cases start to diverge,
     # this should be revisited to make more abstract.
-    def assign_nested_attributes(data, options = {})
+    def assign_nested_attributes(data)
       if(data.kind_of?(Hash))
+        if(!data.permitted?)
+          raise ActiveModel::ForbiddenAttributesError
+        end
+
         data = data.deep_dup
 
         old_data = self.attributes
         attributify_data!(data, old_data)
 
-        self.assign_attributes(data, options)
+        data.permit!
+        self.assign_attributes(data)
       end
     end
 
@@ -40,8 +45,10 @@ module ApiUmbrella
     def attributify_data!(data, old_data)
       attributify_settings!(data, old_data)
 
-      %w(servers url_matches sub_settings rewrites).each do |collection_name|
-        attributify_embeds_many!(data, collection_name, old_data)
+      if(self.class == ::Api)
+        %w(servers url_matches sub_settings rewrites).each do |collection_name|
+          attributify_embeds_many!(data, collection_name, old_data)
+        end
       end
     end
 
@@ -51,8 +58,24 @@ module ApiUmbrella
       settings_data = data["settings_attributes"]
       old_settings_data = old_data["settings"] if(old_data.present?)
 
-      %w(headers rate_limits default_response_headers override_response_headers).each do |collection_name|
-        attributify_embeds_many!(settings_data, collection_name, old_settings_data)
+      attributify_embeds_many!(settings_data, "rate_limits", old_settings_data)
+      if(self.class == ::Api)
+        %w(headers default_response_headers override_response_headers).each do |collection_name|
+          # The header associations are a bit different, since they accept
+          # either an array of nested attributes (like other nested object
+          # types), or a new-line delimited string. However, both cannot be set
+          # at the same time, or else Mongoid doesn't save properly (due to the
+          # string writer overwriting the old data ahead of when the nested
+          # object setter expects). So ensure only one of these is set.
+          object_key = collection_name
+          string_key = "#{collection_name}_string"
+          if(settings_data[string_key].present?)
+            settings_data.delete(object_key)
+          else
+            settings_data.delete(string_key)
+            attributify_embeds_many!(settings_data, collection_name, old_settings_data)
+          end
+        end
       end
     end
 

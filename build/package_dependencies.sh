@@ -84,6 +84,12 @@ if [ -f /etc/redhat-release ]; then
   hadoop_analytics_build_dependencies=(
     java-1.8.0-openjdk-devel
   )
+  test_build_dependencies=(
+    # Unbound
+    bison
+    expat-devel
+    flex
+  )
 elif [ -f /etc/debian_version ]; then
   libffi_version=6
   openjdk_version=7
@@ -159,6 +165,12 @@ elif [ -f /etc/debian_version ]; then
   hadoop_analytics_build_dependencies=(
     openjdk-$openjdk_version-jdk
   )
+  test_build_dependencies=(
+    # Unbound
+    bison
+    flex
+    libexpat-dev
+  )
 
   if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
     core_build_dependencies+=("libtool-bin")
@@ -174,4 +186,5 @@ all_dependencies=(
   "${hadoop_analytics_package_dependencies[@]}"
   "${core_build_dependencies[@]}"
   "${hadoop_analytics_build_dependencies[@]}"
+  "${test_build_dependencies[@]}"
 )

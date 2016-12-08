@@ -1,7 +1,18 @@
 class ApplicationController < ActionController::Base
   include Pundit
   include DatatablesHelper
-  protect_from_forgery
+  prepend_around_filter :use_locale
+  protect_from_forgery :with => :null_session
+
+  around_action :set_userstamp
+
+  def after_sign_in_path_for(resource)
+    if(resource.is_a?(Admin))
+      "/admin/#/login"
+    else
+      super
+    end
+  end
 
   def pundit_user
     current_admin
@@ -40,9 +51,9 @@ class ApplicationController < ActionController::Base
     if(time)
       case(time)
       when String
-        time = Time.parse(time)
+        time = Time.parse(time).utc
       when Numeric
-        time = Time.at(time / 1000.0)
+        time = Time.at(time / 1000.0).utc
       end
 
       time.utc.strftime("%Y-%m-%d %H:%M:%S")
@@ -71,6 +82,13 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def use_locale
+    locale = http_accept_language.compatible_language_from(I18n.available_locales) || I18n.default_locale
+    I18n.with_locale(locale) do
+      yield
+    end
+  end
+
   def set_analytics_adapter
     if(params[:beta_analytics] == "true")
       @analytics_adapter = "kylin"
@@ -85,5 +103,15 @@ class ApplicationController < ActionController::Base
     yield
   ensure
     Time.zone = old_time_zone
+  end
+
+  private
+
+  def set_userstamp
+    orig = RequestStore.store[:current_userstamp_user]
+    RequestStore.store[:current_userstamp_user] = current_admin
+    yield
+  ensure
+    RequestStore.store[:current_userstamp_user] = orig
   end
 end

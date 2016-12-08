@@ -1,7 +1,7 @@
 # Ruby & Bundler: For Rails web-app component
 ExternalProject_Add(
   ruby
-  URL https://cache.ruby-lang.org/pub/ruby/2.2/ruby-${RUBY_VERSION}.tar.bz2
+  URL https://cache.ruby-lang.org/pub/ruby/ruby-${RUBY_VERSION}.tar.bz2
   URL_HASH SHA256=${RUBY_HASH}
   CONFIGURE_COMMAND rm -rf <BINARY_DIR> && mkdir -p <BINARY_DIR> # Clean across version upgrades
     COMMAND <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED} --enable-load-relative --disable-install-doc

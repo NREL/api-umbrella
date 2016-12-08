@@ -3,3 +3,6 @@ if(Rails.env.development?)
 else
   Rack::Timeout.timeout = 15 # seconds
 end
+
+Rack::Timeout::Logger.device = $stderr
+Rack::Timeout::Logger.level = Logger::ERROR

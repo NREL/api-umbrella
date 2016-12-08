@@ -2,7 +2,7 @@ class Api::Settings
   include Mongoid::Document
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :append_query_string, :type => String
   field :http_basic_auth, :type => String
   field :require_https, :type => String
@@ -48,34 +48,6 @@ class Api::Settings
   # Nested attributes
   accepts_nested_attributes_for :headers, :rate_limits, :default_response_headers, :override_response_headers, :allow_destroy => true
 
-  # Mass assignment security
-  attr_accessible :append_query_string,
-    :http_basic_auth,
-    :require_https,
-    :require_https_transition_start_at,
-    :disable_api_key,
-    :api_key_verification_level,
-    :api_key_verification_transition_start_at,
-    :rate_limit_mode,
-    :anonymous_rate_limit_behavior,
-    :authenticated_rate_limit_behavior,
-    :pass_api_key_header,
-    :pass_api_key_query_param,
-    :required_roles,
-    :required_roles_override,
-    :allowed_ips,
-    :allowed_referers,
-    :error_templates,
-    :error_data_yaml_strings,
-    :headers,
-    :headers_string,
-    :rate_limits_attributes,
-    :default_response_headers,
-    :default_response_headers_string,
-    :override_response_headers,
-    :override_response_headers_string,
-    :as => [:default, :admin]
-
   def headers_string
     read_headers_string(:headers)
   end
@@ -111,7 +83,7 @@ class Api::Settings
       @error_data_yaml_strings = {}
       if self.error_data.present?
         self.error_data.each do |key, value|
-          @error_data_yaml_strings[key] = Psych.dump(value).gsub(/^---\s*\n/, "").strip
+          @error_data_yaml_strings[key] = Psych.dump(value).gsub(/\A---.*?\n/, "").strip
         end
       end
     end
@@ -143,7 +115,7 @@ class Api::Settings
   def set_transition_starts_on_publish
     if(self.require_https =~ /^transition_/)
       if(self.require_https_transition_start_at.blank?)
-        self.require_https_transition_start_at = Time.now
+        self.require_https_transition_start_at = Time.now.utc
       end
     else
       if(self.require_https_transition_start_at.present?)
@@ -153,7 +125,7 @@ class Api::Settings
 
     if(self.api_key_verification_level =~ /^transition_/)
       if(self.api_key_verification_transition_start_at.blank?)
-        self.api_key_verification_transition_start_at = Time.now
+        self.api_key_verification_transition_start_at = Time.now.utc
       end
     else
       if(self.api_key_verification_transition_start_at.present?)

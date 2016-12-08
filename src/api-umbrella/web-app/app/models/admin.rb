@@ -9,7 +9,7 @@ class Admin
   devise :omniauthable, :trackable
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :username, :type => String
   field :email, :type => String
   field :name, :type => String
@@ -41,15 +41,6 @@ class Admin
 
   # Callbacks
   before_validation :generate_authentication_token, :on => :create
-
-  # Mass assignment security
-  attr_accessible :username,
-    :email,
-    :name,
-    :notes,
-    :superuser,
-    :group_ids,
-    :as => [:admin]
 
   def self.sorted
     order_by(:username.asc)

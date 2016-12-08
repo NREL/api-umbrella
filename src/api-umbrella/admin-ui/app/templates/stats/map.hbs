@@ -1,0 +1,6 @@
+{{stats/query-form enableInterval=false start_at=start_at end_at=end_at query=query search=search region=region beta_analytics=beta_analytics}}
+<div id="map_container">
+  {{stats/map/results-breadcrumbs breadcrumbs=model.map_breadcrumbs}}
+  {{stats/map/results-map regions=model.map_regions regionField=model.region_field queryParamValues=queryParamValues allQueryParamValues=allQueryParamValues}}
+</div>
+{{stats/map/results-table regions=model.regions regionField=model.region_field queryParamValues=queryParamValues allQueryParamValues=allQueryParamValues}}

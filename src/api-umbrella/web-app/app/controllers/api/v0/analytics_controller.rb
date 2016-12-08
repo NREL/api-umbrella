@@ -1,7 +1,7 @@
 class Api::V0::AnalyticsController < Api::V1::BaseController
-  before_filter :set_analytics_adapter
-  skip_before_filter :authenticate_admin!, :only => [:summary]
-  skip_after_filter :verify_authorized, :only => [:summary]
+  before_action :set_analytics_adapter
+  skip_before_action :authenticate_admin!, :only => [:summary]
+  skip_after_action :verify_authorized, :only => [:summary]
 
   def summary
     api_key_roles = request.headers['X-Api-Roles'].to_s.split(",")
@@ -23,7 +23,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     # to generate, we want to err on the side of using the cache, so users
     # don't get a super slow response and we don't overwhelm the server when
     # it's uncached.
-    elsif(summary && summary[:cached_at] && summary[:cached_at] < Time.now - 6.hours)
+    elsif(summary && summary[:cached_at] && summary[:cached_at] < Time.now.utc - 6.hours)
       Thread.new do
         Rails.cache.write("analytics_summary", generate_summary, :expires_in => 2.days)
       end
@@ -45,7 +45,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
       :hits_by_month => [],
     }
 
-    start_time = Time.parse("2013-07-01")
+    start_time = Time.parse("2013-07-01").utc
 
     # Fetch the user signups by month, trying to remove duplicate signups for
     # the same e-mail address (each e-mail address only gets counted for the first
@@ -77,7 +77,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
 
     # Fill in missing months with 0 values.
     time = start_time
-    while(time < Time.now)
+    while(time < Time.now.utc)
       by_month["#{time.year}-#{time.month}"] ||= {
         :year => time.year,
         :month => time.month,
@@ -97,7 +97,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
     # Fetch the hits by month.
     search = LogSearch.factory(@analytics_adapter, {
       :start_time => start_time,
-      :end_time => Time.now,
+      :end_time => Time.now.utc,
       :interval => "month",
 
       # This query can take a long time to run against PrestoDB, so set a long
@@ -119,7 +119,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
 
     result = search.result
     result.hits_over_time.sort.each do |key, value|
-      time = Time.at(key / 1000)
+      time = Time.at(key / 1000).utc
 
       summary[:hits_by_month] << {
         :year => time.year,
@@ -130,7 +130,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
       summary[:total_hits] += value
     end
 
-    summary[:cached_at] = Time.now
+    summary[:cached_at] = Time.now.utc
     summary
   end
 end

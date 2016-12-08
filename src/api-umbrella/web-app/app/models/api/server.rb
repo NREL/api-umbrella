@@ -5,7 +5,7 @@ class Api::Server
   include Mongoid::Document
 
   # Fields
-  field :_id, :type => String, :default => lambda { UUIDTools::UUID.random_create.to_s }
+  field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
   field :host, :type => String
   field :port, :type => Integer
 
@@ -23,11 +23,6 @@ class Api::Server
     :presence => true,
     :inclusion => { :in => 0..65_535 }
   validate :validate_host_resolves, :on => :create
-
-  # Mass assignment security
-  attr_accessible :host,
-    :port,
-    :as => [:default, :admin]
 
   private
 

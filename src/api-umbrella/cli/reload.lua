@@ -46,6 +46,14 @@ local function reload_nginx(perp_base)
   end
 end
 
+local function reload_dev_env_ember_server(perp_base)
+  local _, _, err = run_command("perpctl -b " .. perp_base .. " term dev-env-ember-server")
+  if err then
+    print("Failed to reload dev-env-ember-server\n" .. err)
+    os.exit(1)
+  end
+end
+
 local function reload_nginx_reloader(perp_base)
   local _, _, err = run_command("perpctl -b " .. perp_base .. " term nginx-reloader")
   if err then
@@ -80,5 +88,9 @@ return function(options)
     if config["_service_nginx_reloader_enabled?"] then
       reload_nginx_reloader(perp_base)
     end
+  end
+
+  if config["app_env"] == "development" then
+    reload_dev_env_ember_server(perp_base)
   end
 end

@@ -79,12 +79,12 @@ module Admin::StatsHelper
     name = code
     case(params[:region])
     when "world"
-      country = Country[code]
+      country = ISO3166::Country.new(code)
       if country
         name = country.name
       end
     when /^[A-Z]{2}$/
-      country = Country[params[:region]]
+      country = ISO3166::Country.new(params[:region])
       if country
         state = country.states[code]
         if(state)

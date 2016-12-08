@@ -1,0 +1,71 @@
+@keyframes fadeIn {
+  0% {opacity: 0;}
+  100% {opacity: 1;}
+}
+
+.fade-in {
+  animation-name: fadeIn;
+}
+
+@keyframes fadeOut {
+  0% {opacity: 1;}
+  100% {opacity: 0;}
+}
+
+.fade-out {
+  animation-name: fadeOut;
+}
+
+@keyframes spinnerRotation {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+.busy-blocker { display: none; }
+
+.busy-blocker__animation {
+  animation: spinnerRotation 0.6s infinite linear;
+  border: 6px solid rgba(255, 255, 255, 0.5);
+  border-top: 6px solid rgba(255, 255, 255, 0.9);
+  border-radius: 100%;
+  height: 45px;
+  margin: auto;
+  width: 45px;
+}
+
+.busy-blocker__bg {
+  animation-fill-mode: both;
+  background: rgba(0, 0, 0, 0.75);
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: $zindex-modal-background;
+}
+
+.busy-blocker__content {
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+  color: #eee;
+  left: 50%;
+  margin-left: -100px;
+  margin-top: -40px;
+  position: fixed;
+  text-align: center;
+  top: 50%;
+  width: 200px;
+  z-index: $zindex-modal;
+}
+
+.busy-blocker__content p {
+  font-size: 18px;
+  margin: 12px 0px 0px 0px;
+  font-weight: bold;
+  color: #f7f7f7;
+}

@@ -1,0 +1,18 @@
+{{#bs-modal open=openModal openAction=(action "open") submitAction=(action "submit") closedAction=(action "closed") title=modalTitle body=false footer=false backdropClose=false}}
+  {{#bs-modal-body}}
+    <form {{action "submit" on="submit"}}>
+      {{#fields-for model=bufferedModel style="vertical" as |f|}}
+        <div class="row">
+          <div class="col-sm-10">
+            {{f.text-field "host" label="Host" placeholder="api.example.com"}}
+          </div>
+          <div class="col-sm-2">
+            {{f.text-field "port" label="Port"}}
+          </div>
+        </div>
+      {{/fields-for}}
+      <input type="submit" class="hidden-submit-button" tabindex="-1">
+    </form>
+  {{/bs-modal-body}}
+  {{bs-modal-footer closeTitle="Cancel" submitTitle="OK"}}
+{{/bs-modal}}

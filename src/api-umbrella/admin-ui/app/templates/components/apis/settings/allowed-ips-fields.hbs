@@ -1,0 +1,3 @@
+{{#fields-for model=model style="horizontal" as |f|}}
+  {{f.textarea-field "allowedIpsString" label=(t "mongoid.attributes.api/settings.allowed_ips") tooltip=(t "admin.api.settings.allowed_ips_tooltip_markdown") placeholder="10.0.0.0/8"}}
+{{/fields-for}}

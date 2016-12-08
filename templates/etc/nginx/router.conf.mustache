@@ -205,7 +205,6 @@ http {
   server {
     listen {{static_site.host}}:{{static_site.port}};
     server_name _;
-    port_in_redirect off;
 
     root {{static_site.build_dir}};
   }
@@ -267,16 +266,37 @@ http {
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
     root {{web.dir}}/public;
 
-    # Serve non-static resources with Puma.
-    try_files $uri/index.html $uri.html $uri @app;
-    location @app {
+    {{^_development_env?}}
+    location /web-assets/ {
+      alias {{_embedded_root_dir}}/apps/core/current/build/dist/web-app-assets/web-assets/;
+    }
+    {{/_development_env?}}
+
+    location ~ ^/admin/(login|logout|auth|stats|config|api_users|elasticsearch|i18n_detection) {
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_pass http://puma;
+    }
+
+    rewrite ^/admin$ /admin/ permanent;
+    location /admin/ {
+      {{^_development_env?}}
+        {{^_test_env?}}
+        alias {{_embedded_root_dir}}/apps/core/current/build/dist/admin-ui/;
+        {{/_test_env?}}
+        {{#_test_env?}}
+        alias {{_embedded_root_dir}}/apps/core/current/build/dist/admin-ui-dev/;
+        {{/_test_env?}}
+      {{/_development_env?}}
+      {{#_development_env?}}
+      proxy_pass http://127.0.0.1:{{ember_server.port}};
+      {{/_development_env?}}
+    }
+
+    location / {
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header Host $http_host;
       proxy_pass http://puma;
     }
   }
-
-  {{#_test_env?}}
-    include ./test_backends.conf;
-  {{/_test_env?}}
 }

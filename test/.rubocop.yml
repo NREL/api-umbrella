@@ -1,0 +1,19 @@
+inherit_from: ../.rubocop.yml
+
+Rails/DynamicFindBy:
+  Whitelist:
+    # Capybara finder.
+    - find_by_id
+
+Style/FileName:
+  ExpectMatchingDefinition: true
+  Exclude:
+    - "test_helper.rb"
+
+Style/GlobalVars:
+  AllowedVariables:
+    - $api_umbrella_process
+    - $config
+
+Style/ClassVars:
+  Enabled: false

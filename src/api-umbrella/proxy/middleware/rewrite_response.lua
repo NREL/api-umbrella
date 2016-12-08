@@ -126,5 +126,17 @@ return function(settings)
     set_override_headers(settings)
   end
 
+  if config["app_env"] == "test" then
+    if ngx.var.http_x_api_umbrella_test_debug_workers == "true" then
+      ngx.header["X-Api-Umbrella-Test-Worker-Id"] = ngx.worker.id()
+      ngx.header["X-Api-Umbrella-Test-Worker-Count"] = ngx.worker.count()
+      ngx.header["X-Api-Umbrella-Test-Worker-Pid"] = ngx.worker.pid()
+    end
+
+    if ngx.var.http_x_api_umbrella_test_return_request_id == "true" then
+      ngx.header["X-Api-Umbrella-Test-Request-Id"] = ngx.var.x_api_umbrella_request_id
+    end
+  end
+
   rewrite_redirects()
 end

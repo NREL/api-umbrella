@@ -33,8 +33,8 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND cp ${CMAKE_SOURCE_DIR}/build/mora/glide.yaml <SOURCE_DIR>/glide.yaml
     COMMAND cp ${CMAKE_SOURCE_DIR}/build/mora/glide.lock <SOURCE_DIR>/glide.lock
-    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} GO15VENDOREXPERIMENT=1 glide install
-    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} GO15VENDOREXPERIMENT=1 go install
+    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} glide install
+    COMMAND env PATH=${GOLANG_SOURCE_DIR}/bin:${GLIDE_SOURCE_DIR}:${WORK_DIR}/gocode/bin:$ENV{PATH} GOPATH=${WORK_DIR}/gocode GOROOT=${GOLANG_SOURCE_DIR} go install
   INSTALL_COMMAND install -D -m 755 ${WORK_DIR}/gocode/bin/mora ${STAGE_EMBEDDED_DIR}/bin/mora
 )
 ExternalProject_Add_Step(

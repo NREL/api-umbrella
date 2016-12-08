@@ -32,7 +32,6 @@ set :log_level, :info
 set :linked_dirs, fetch(:linked_dirs, []).push(
   "build/work",
   "src/api-umbrella/web-app/public/web-assets",
-  "src/api-umbrella/web-app/tmp",
   "vendor"
 )
 
@@ -88,18 +87,6 @@ namespace :deploy do
   end
   before :updated, :lua_deps
   before :reverted, :lua_deps
-
-  # The ember-rails gem's handling of temp files isn't ideal when multiple users
-  # might touch the files. So for now, just make these temp files globally
-  # writable. See:
-  # https://github.com/emberjs/ember-rails/issues/315#issuecomment-47703370
-  # https://github.com/emberjs/ember-rails/pull/357
-  task :ember_permissions do
-    on roles(:app) do
-      execute "mkdir -p #{release_path}/src/api-umbrella/web-app/tmp/ember-rails && chmod -R 777 #{release_path}/src/api-umbrella/web-app/tmp/ember-rails"
-    end
-  end
-  after :updated, :ember_permissions
 
   task :compile_assets do
     on roles(:app) do

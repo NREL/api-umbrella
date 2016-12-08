@@ -1,0 +1,5 @@
+{{#form-fields/field-wrapper model=model style=style fieldName=fieldName inputId=inputId}}
+  <div class="checkbox">
+    <label for="{{inputId}}">{{one-way-checkbox checked=(get model fieldName) update=(action (mut (get model fieldName))) id=inputId}} {{label}}</label>
+  </div>
+{{/form-fields/field-wrapper}}

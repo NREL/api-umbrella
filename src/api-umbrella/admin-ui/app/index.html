@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>ApiUmbrellaAdmin</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {{content-for "head"}}
+
+    <link rel="stylesheet" href="assets/vendor.css">
+    <link rel="stylesheet" href="assets/api-umbrella-admin-ui.css">
+
+    {{content-for "head-footer"}}
+  </head>
+  <body>
+    <noscript>
+      <p>This application requires JavaScript.</p>
+      <p>Here are <a href="http://www.enable-javascript.com/">instructions how to enable JavaScript in your web browser</a>.</p>
+    </noscript>
+    <div id="ember_load_indicator" class="ember-load-indicator" style="display: none;">
+      <div class="busy-blocker__bg"></div>
+      <div class="busy-blocker__content">
+        <div class="busy-blocker__animation"></div>
+        <p>Loading...</p>
+      </div>
+    </div>
+    <script>document.getElementById('ember_load_indicator').style.display = 'block';</script>
+
+    {{content-for "body"}}
+
+    <script type="text/javascript">
+      if(!window.DISABLE_GOOGLE_CHARTS) {
+        var script = document.createElement('script');
+        script.src = 'https://www.gstatic.com/charts/loader.js';
+        document.write(script.outerHTML);
+      }
+    </script>
+    <script type="text/javascript">
+      if(!window.DISABLE_GOOGLE_CHARTS) {
+        google.charts.load('current', { 'packages': ['corechart', 'geochart'] });
+      }
+    </script>
+
+    <script src="assets/vendor.js"></script>
+    <script src="/admin/i18n_detection.js"></script>
+    <script src="/web-assets/admin/server_side_loader.js"></script>
+    <script src="assets/api-umbrella-admin-ui.js"></script>
+
+    {{content-for "body-footer"}}
+  </body>
+</html>
