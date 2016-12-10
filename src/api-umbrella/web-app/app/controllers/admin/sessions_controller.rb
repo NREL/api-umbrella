@@ -15,6 +15,7 @@ class Admin::SessionsController < Devise::SessionsController
     }
 
     if current_admin
+      response["api_umbrella_version"] = API_UMBRELLA_VERSION
       response["admin"] = current_admin.as_json
       response["api_key"] = ApiUser.where(:email => "web.admin.ajax@internal.apiumbrella").order_by(:created_at.asc).first.api_key
       response["csrf_token"] = form_authenticity_token if(protect_against_forgery?)
