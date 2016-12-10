@@ -58,7 +58,7 @@ class Admin
   end
 
   def api_scopes
-    @api_scopes ||= groups.map { |group| group.api_scopes }.flatten.compact.uniq
+    groups.map { |group| group.api_scopes }.flatten.compact.uniq
   end
 
   def can?(permission)

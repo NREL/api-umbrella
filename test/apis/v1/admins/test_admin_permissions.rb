@@ -107,6 +107,32 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     assert_admin_forbidden(factory, admin)
   end
 
+  def test_forbids_updating_permitted_admins_with_unpermitted_values
+    google_admin_group = FactoryGirl.create(:google_admin_group)
+    yahoo_admin_group = FactoryGirl.create(:yahoo_admin_group)
+    record = FactoryGirl.create(:limited_admin, :groups => [google_admin_group])
+    admin = FactoryGirl.create(:google_admin)
+
+    attributes = record.serializable_hash
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+    assert_response_code(200, response)
+
+    attributes["group_ids"] = [yahoo_admin_group.id]
+    response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => { :admin => attributes },
+    }))
+    assert_response_code(403, response)
+    data = MultiJson.load(response.body)
+    assert_equal(["errors"], data.keys)
+
+    record = Admin.find(record.id)
+    assert_equal([google_admin_group.id], record.group_ids)
+  end
+
   def test_forbids_updating_unpermitted_admins_with_permitted_values
     google_admin_group = FactoryGirl.create(:google_admin_group)
     yahoo_admin_group = FactoryGirl.create(:yahoo_admin_group)
