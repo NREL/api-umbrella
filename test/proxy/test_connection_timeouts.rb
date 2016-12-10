@@ -197,12 +197,14 @@ class Test::Proxy::TestConnectionTimeouts < Minitest::Test
     end
     info_hydra.run
 
-    timeout_response_codes = timeout_requests.map { |request| request.response.code }
-    assert_equal(50, timeout_response_codes.length)
-    assert_equal([504], timeout_response_codes.uniq)
+    assert_equal(50, timeout_requests.length)
+    timeout_requests.each do |request|
+      assert_response_code(504, request.response)
+    end
 
-    info_response_codes = info_requests.map { |request| request.response.code }
-    assert_equal(50, info_response_codes.length)
-    assert_equal([200], info_response_codes.uniq)
+    assert_equal(50, info_requests.length)
+    info_requests.each do |request|
+      assert_response_code(200, request.response)
+    end
   end
 end
