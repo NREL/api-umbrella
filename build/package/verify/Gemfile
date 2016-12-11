@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "rake", "~> 10.4.2"
-gem "serverspec", "~> 2.24.3"
-gem "rest-client", "~> 1.6.9"
-gem "multi_json", "~> 1.11.2"
+gem "rake", "~> 11.3.0"
+gem "serverspec", "~> 2.37.2"
+gem "rest-client", "~> 2.0.0"
+gem "multi_json", "~> 1.12.1"

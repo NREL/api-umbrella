@@ -29,12 +29,12 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
     assert_equal({
       "map_breadcrumbs" => [],
       "map_regions" => [
-        { "c" => [{ "v" => "US", "f" => "United States" }, { "v" => 2, "f" => "2" }] },
+        { "c" => [{ "v" => "US", "f" => "United States of America" }, { "v" => 2, "f" => "2" }] },
         { "c" => [{ "v" => "CA", "f" => "Canada" }, { "v" => 1, "f" => "1" }] },
       ],
       "region_field" => "request_ip_country",
       "regions" => [
-        { "id" => "US", "name" => "United States", "hits" => 2 },
+        { "id" => "US", "name" => "United States of America", "hits" => 2 },
         { "id" => "CA", "name" => "Canada", "hits" => 1 },
       ],
     }, data)
@@ -96,7 +96,7 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
     assert_equal({
       "map_breadcrumbs" => [
         { "region" => "world", "name" => "World" },
-        { "name" => "United States" },
+        { "name" => "United States of America" },
       ],
       "map_regions" => [
         { "c" => [{ "v" => "CO", "f" => "Colorado" }, { "v" => 2, "f" => "2" }] },
@@ -131,7 +131,7 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
     assert_equal({
       "map_breadcrumbs" => [
         { "region" => "world", "name" => "World" },
-        { "region" => "US", "name" => "United States" },
+        { "region" => "US", "name" => "United States of America" },
         { "name" => "Colorado" },
       ],
       "map_regions" => [

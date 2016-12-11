@@ -36,12 +36,12 @@ ExternalProject_Add(
 
 if(ENABLE_HADOOP_ANALYTICS)
   # There's a small dependency on Python for librdkafka's Makefile:
-  # https://github.com/edenhill/librdkafka/blob/0.9.1/Makefile#L8
+  # https://github.com/edenhill/librdkafka/blob/v0.9.2/Makefile#L8
   find_package(PythonInterp REQUIRED)
 
   ExternalProject_Add(
     librdkafka
-    URL https://github.com/edenhill/librdkafka/archive/${LIBRDKAFKA_VERSION}.tar.gz
+    URL https://github.com/edenhill/librdkafka/archive/v${LIBRDKAFKA_VERSION}.tar.gz
     URL_HASH MD5=${LIBRDKAFKA_HASH}
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${INSTALL_PREFIX_EMBEDDED}

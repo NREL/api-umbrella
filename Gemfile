@@ -48,13 +48,13 @@ gem "i18n", "~> 0.7.0"
 gem "addressable", "~> 2.5.0"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 2.10.2"
+gem "capybara", "~> 2.11.0"
 # Use fork to fix failure messages:
 # https://github.com/wojtekmach/minitest-capybara/pull/17
 gem "minitest-capybara", "~> 0.8.2", :git => "https://github.com/GUI/minitest-capybara.git"
 
 # Webkit-based driver for capybara
-gem "poltergeist", "~> 1.11.0"
+gem "poltergeist", "~> 1.12.0"
 
 # Take screenshots on capybara test failures
 gem "capybara-screenshot", "~> 1.0.14"
