@@ -16,7 +16,7 @@ class Test::Processes::TestRpaths < Minitest::Test
     bins += Find.find(File.join($config["_embedded_root_dir"], "sbin")).to_a
     bins.map! { |path| File.realpath(path) }
     bins.select! { |path| File.file?(path) }
-    bins.reject! { |path| `file #{path}`.include?("text executable") }
+    bins.reject! { |path| `file #{path}` =~ /(text executable|ASCII)/ }
 
     # Spot check to ensure our list of binaries actually includes things we
     # expect.
