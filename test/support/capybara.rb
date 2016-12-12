@@ -1,5 +1,6 @@
 require "capybara/poltergeist"
 require "capybara-screenshot/minitest"
+require "support/api_umbrella_test_helpers/process"
 
 class PoltergeistLogger
   attr_reader :logger
@@ -25,16 +26,19 @@ class PoltergeistLogger
   end
 end
 
+root_dir = File.join(ApiUmbrellaTestHelpers::Process::TEST_RUN_ROOT, "capybara")
+
 Capybara.default_max_wait_time = 5
 Capybara.register_driver :poltergeist do |app|
+  FileUtils.mkdir_p(root_dir)
   Capybara::Poltergeist::Driver.new(app, {
-    :logger => PoltergeistLogger.new("/tmp/test_poltergeist.log"),
-    :phantomjs_logger => PoltergeistLogger.new("/tmp/test_phantomjs.log"),
+    :logger => PoltergeistLogger.new(File.join(root_dir, "poltergeist.log")),
+    :phantomjs_logger => PoltergeistLogger.new(File.join(root_dir, "phantomjs.log")),
     :phantomjs_options => [
       "--ignore-ssl-errors=true",
-      "--disk-cache-path=/tmp/capybara-disk-cache",
-      "--offline-storage-path=/tmp/capybara-offline-storage",
-      "--local-storage-path=/tmp/capybara-local-storage",
+      "--disk-cache-path=#{File.join(root_dir, "disk-cache")}",
+      "--offline-storage-path=#{File.join(root_dir, "offline-storage")}",
+      "--local-storage-path=#{File.join(root_dir, "local-storage")}",
     ],
     :extensions => [
       File.join(API_UMBRELLA_SRC_ROOT, "test/support/capybara/disable_animations.js"),
@@ -47,7 +51,3 @@ Capybara.default_driver = :poltergeist
 Capybara.run_server = false
 Capybara.app_host = "https://127.0.0.1:9081"
 Capybara.save_path = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/capybara")
-
-FileUtils.rm_rf("/tmp/capybara-disk-cache")
-FileUtils.rm_rf("/tmp/capybara-offline-storage")
-FileUtils.rm_rf("/tmp/capybara-local-storage")

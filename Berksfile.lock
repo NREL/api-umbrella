@@ -1,7 +1,7 @@
 DEPENDENCIES
   api-umbrella
     git: https://github.com/NREL/api-umbrella-cookbook.git
-    revision: 04238ed07c24af20b0de0603cb076c002b5b2baa
+    revision: 908aefb0c9eb4ecf97bc1aaecb9f64c7ecc26dd6
 
 GRAPH
   api-umbrella (0.7.1)
@@ -18,8 +18,8 @@ GRAPH
   mingw (1.2.4)
     compat_resource (>= 0.0.0)
     seven_zip (>= 0.0.0)
-  ohai (4.2.2)
-    compat_resource (>= 12.14)
+  ohai (4.2.3)
+    compat_resource (>= 12.14.7)
   seven_zip (2.0.2)
     windows (>= 1.2.2)
   sudo (3.1.0)

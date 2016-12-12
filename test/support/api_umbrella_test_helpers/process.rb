@@ -3,9 +3,12 @@ require "ipaddr"
 module ApiUmbrellaTestHelpers
   class Process
     EMBEDDED_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "build/work/stage/opt/api-umbrella/embedded").freeze
+    TEST_RUN_ROOT = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/run")
+    TEST_RUN_API_UMBRELLA_ROOT = File.join(TEST_RUN_ROOT, "api-umbrella-root")
     CONFIG_PATH = File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml").freeze
-    CONFIG_OVERRIDES_PATH = "/tmp/integration_test_suite_overrides.yml".freeze
-    CONFIG = "#{CONFIG_PATH}:#{CONFIG_OVERRIDES_PATH}".freeze
+    CONFIG_COMPUTED_PATH = File.join(TEST_RUN_ROOT, "test_computed.yml").freeze
+    CONFIG_OVERRIDES_PATH = File.join(TEST_RUN_ROOT, "test_overrides.yml").freeze
+    CONFIG = "#{CONFIG_PATH}:#{CONFIG_COMPUTED_PATH}:#{CONFIG_OVERRIDES_PATH}".freeze
     @@incrementing_unique_ip_addr = IPAddr.new("200.0.0.1")
 
     def self.start
@@ -14,8 +17,8 @@ module ApiUmbrellaTestHelpers
       end
 
       start_time = Time.now.utc
-      FileUtils.rm_rf("/tmp/api-umbrella-test")
-      FileUtils.mkdir_p("/tmp/api-umbrella-test/var/log")
+      FileUtils.rm_rf(Dir.glob(File.join(TEST_RUN_ROOT, "*"), File::FNM_DOTMATCH))
+      FileUtils.mkdir_p(File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/log"))
 
       original_env = ENV.to_hash
       begin
@@ -33,7 +36,11 @@ module ApiUmbrellaTestHelpers
         ENV.delete_if { |key, value| key =~ /\A(GEM_|BUNDLE_|BUNDLER_|RUBY)/ }
 
         # Read the initial test config file.
-        $config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
+        $config = YAML.load_file(CONFIG_PATH)
+
+        # Create an empty config file for overrides.
+        File.write(CONFIG_COMPUTED_PATH, YAML.dump({ "root_dir" => TEST_RUN_API_UMBRELLA_ROOT }))
+        $config.deep_merge!(YAML.load_file(CONFIG_COMPUTED_PATH))
 
         # Create an empty config file for overrides.
         File.write(CONFIG_OVERRIDES_PATH, YAML.dump({ "version" => 0 }))

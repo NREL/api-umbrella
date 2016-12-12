@@ -3,7 +3,6 @@ user:
 group:
 http_port: 9080
 https_port: 9081
-root_dir: /tmp/api-umbrella-test
 analytics:
   timezone: America/Denver
   log_request_url_query_params_separately: true
