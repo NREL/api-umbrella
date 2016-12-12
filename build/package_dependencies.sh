@@ -89,10 +89,19 @@ if [ -f /etc/redhat-release ]; then
     file
     binutils
 
+    # For installing the mongo-orchestration test dependency.
+    python-virtualenv
+
+    # For checking for file descriptor leaks during the tests.
+    lsof
+
     # Unbound
     bison
     expat-devel
     flex
+
+    # Fonts for Capybara screenshots.
+    urw-fonts
   )
 elif [ -f /etc/debian_version ]; then
   libffi_version=6
@@ -174,10 +183,19 @@ elif [ -f /etc/debian_version ]; then
     file
     binutils
 
+    # For installing the mongo-orchestration test dependency.
+    python-virtualenv
+
+    # For checking for file descriptor leaks during the tests.
+    lsof
+
     # Unbound
     bison
     flex
     libexpat-dev
+
+    # Fonts for Capybara screenshots.
+    gsfonts
   )
 
   if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
