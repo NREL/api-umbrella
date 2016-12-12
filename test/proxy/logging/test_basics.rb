@@ -257,23 +257,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     end
   end
 
-  def test_request_at_is_time_request_finishes_not_starts
-    request_start = Time.now.utc
-    response = Typhoeus.get("http://127.0.0.1:9080/api/delay/3000", log_http_options)
-    request_end = Time.now.utc
-    assert_response_code(200, response)
-
-    record = wait_for_log(response)[:hit_source]
-
-    logged_response_time = record["response_time"]
-    assert_operator(logged_response_time, :>=, 2500)
-
-    local_response_time = request_end - request_start
-    assert_operator(local_response_time, :>=, 2.5)
-
-    assert_in_delta(request_end.to_f * 1000, record["request_at"], 500)
-  end
-
   # Does not attempt to automatically map the first seen value into a date.
   def test_dates_in_query_params_treated_as_strings
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
