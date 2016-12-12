@@ -111,10 +111,11 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("curl/7.37.1", record["request_user_agent"])
     assert_equal("cURL", record["request_user_agent_family"])
     assert_equal("Library", record["request_user_agent_type"])
-    # The age might be 1 second higher than the original response if the
-    # response happens right on the boundary of a second.
+    # The backend responds with an age of 20. The actual age might higher than
+    # the original response if the response happens right on the boundary of a
+    # second or the proxy is congested and the response is delayed.
     assert_operator(record["response_age"], :>=, 20)
-    assert_operator(record["response_age"], :<=, 21)
+    assert_operator(record["response_age"], :<=, 40)
     assert_equal("MISS", record["response_cache"])
     assert_equal("text/plain; charset=utf-8", record["response_content_type"])
     assert_equal("openresty", record["response_server"])

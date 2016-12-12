@@ -600,7 +600,7 @@ server {
 
   location /logging-multiple-response-headers/ {
     content_by_lua_block {
-      ngx.header[ngx.var.arg_header] = { "11", "22" }
+      ngx.header[ngx.var.arg_header] = { "11", "45" }
       ngx.print("OK")
     }
   }
