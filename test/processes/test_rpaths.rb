@@ -29,7 +29,7 @@ class Test::Processes::TestRpaths < Minitest::Test
     rpaths = []
     bins.each do |path|
       output, status = run_shell("readelf -d #{path}")
-      assert_equal(0, status, output)
+      assert_equal(0, status, "#{path}: #{output}: " + `file #{path}`)
       output.scan(/RPATH.*\[(.+?)\]/) do |rpath|
         rpaths += rpath
       end
