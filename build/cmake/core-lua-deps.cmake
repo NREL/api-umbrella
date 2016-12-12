@@ -17,6 +17,7 @@ luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION} ${LUAROCK_PENLIGHT_HASH})
 # Other Lua app dependencies (non-luarocks)
 ExternalProject_Add(
   lua_resty_dns_cache
+  DEPENDS luarocks
   URL https://github.com/hamishforbes/lua-resty-dns-cache/archive/${LUA_RESTY_DNS_CACHE_VERSION}.tar.gz
   URL_HASH MD5=${LUA_RESTY_DNS_CACHE_HASH}
   CONFIGURE_COMMAND ""
@@ -26,6 +27,7 @@ ExternalProject_Add(
 
 ExternalProject_Add(
   lua_resty_logger_socket
+  DEPENDS luarocks
   URL https://github.com/cloudflare/lua-resty-logger-socket/archive/${LUA_RESTY_LOGGER_SOCKET_VERSION}.tar.gz
   URL_HASH MD5=${LUA_RESTY_LOGGER_SOCKET_HASH}
   CONFIGURE_COMMAND ""
@@ -35,6 +37,7 @@ ExternalProject_Add(
 
 ExternalProject_Add(
   lua_resty_shcache
+  DEPENDS luarocks
   URL https://github.com/cloudflare/lua-resty-shcache/archive/${LUA_RESTY_SHCACHE_VERSION}.tar.gz
   URL_HASH MD5=${LUA_RESTY_SHCACHE_HASH}
   CONFIGURE_COMMAND ""
