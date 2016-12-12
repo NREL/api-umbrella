@@ -9,6 +9,8 @@ ExternalProject_Add(
   BUILD_COMMAND make build
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
     COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../openresty/luajit/bin/luarocks ./luarocks
+    COMMAND rm -rf ${VENDOR_DIR}/share/lua ${VENDOR_DIR}/lib/luarocks
+    COMMAND rm -rf ${TEST_VENDOR_DIR}/share/lua ${TEST_VENDOR_DIR}/lib/luarocks
 )
 
 function(_luarocks_install tree_dir package version hash)
