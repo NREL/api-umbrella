@@ -64,16 +64,16 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
   private
 
   def reset_nginx_connections
-    # Reload the test nginx server to close any persistent keep-alive
+    # Restart the test nginx server to close any persistent keep-alive
     # connections API Umbrella is holding against it.
-    output, status = run_shell("perpctl -b #{File.join($config["root_dir"], "etc/perp")} hup test-env-nginx")
+    output, status = run_shell("perpctl -b #{File.join($config["root_dir"], "etc/perp")} term test-env-nginx")
     assert_equal(0, status, output)
 
-    # After reloading nginx, ensure we wait until there are no more idle
+    # After restarting nginx, ensure we wait until there are no more idle
     # connections, so our checks for counts are isolated to each test.
     begin
       data = nil
-      Timeout.timeout(5) do
+      Timeout.timeout(10) do
         loop do
           response = Typhoeus.get("http://127.0.0.1:9444/connection-stats/", http_options)
           if(response.code == 200)
