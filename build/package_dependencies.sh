@@ -85,6 +85,10 @@ if [ -f /etc/redhat-release ]; then
     java-1.8.0-openjdk-devel
   )
   test_build_dependencies=(
+    # Binary and readelf tests
+    file
+    binutils
+
     # Unbound
     bison
     expat-devel
@@ -166,6 +170,10 @@ elif [ -f /etc/debian_version ]; then
     openjdk-$openjdk_version-jdk
   )
   test_build_dependencies=(
+    # Binary and readelf tests
+    file
+    binutils
+
     # Unbound
     bison
     flex

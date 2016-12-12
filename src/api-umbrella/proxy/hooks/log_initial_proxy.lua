@@ -89,7 +89,7 @@ local function log_request(data)
     .. " -" -- msgid
     .. " -" -- structured-data
     .. " @cee:" -- CEE-enhanced logging for rsyslog to parse JSON
-    .. elasticsearch_encode_json(data) -- JSON data
+    .. elasticsearch_encode_json({ raw = data }) -- JSON data
     .. "\n"
 
   -- Check the syslog message length to ensure it doesn't exceed the configured

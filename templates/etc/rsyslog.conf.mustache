@@ -25,55 +25,137 @@ module(load="omelasticsearch")
 # Define the ElasticSearch-based output.
 # This aliases some of the logged fields to different names for backwards
 # compatibility with the ElasticSearch data.
-set $!usr!es!api_key = $!legacy_api_key;
-set $!usr!es!backend_response_time = $!timer_backend_response;
-set $!usr!es!gatekeeper_denied_code = $!denied_reason;
-set $!usr!es!internal_gatekeeper_time = $!timer_internal;
-set $!usr!es!proxy_overhead = $!timer_proxy_overhead;
-set $!usr!es!request_accept = $!request_accept;
-set $!usr!es!request_accept_encoding = $!request_accept_encoding;
-set $!usr!es!request_at = $!timestamp_utc;
-set $!usr!es!request_basic_auth_username = $!request_basic_auth_username;
-set $!usr!es!request_connection = $!request_connection;
-set $!usr!es!request_content_type = $!request_content_type;
-set $!usr!es!request_hierarchy = $!request_url_hierarchy;
-set $!usr!es!request_host = $!request_url_host;
-set $!usr!es!request_ip = $!request_ip;
-set $!usr!es!request_ip_city = $!request_ip_city;
-set $!usr!es!request_ip_country = $!request_ip_country;
-set $!usr!es!request_ip_location = $!legacy_request_ip_location;
-set $!usr!es!request_ip_region = $!request_ip_region;
-set $!usr!es!request_method = $!request_method;
-set $!usr!es!request_origin = $!request_origin;
-set $!usr!es!request_path = $!request_url_path;
-set $!usr!es!request_query = $!legacy_request_url_query_hash;
-set $!usr!es!request_referer = $!request_referer;
-set $!usr!es!request_scheme = $!request_url_scheme;
-set $!usr!es!request_size = $!request_size;
-set $!usr!es!request_url = $!legacy_request_url;
-set $!usr!es!request_user_agent = $!request_user_agent;
-set $!usr!es!request_user_agent_family = $!request_user_agent_family;
-set $!usr!es!request_user_agent_type = $!request_user_agent_type;
-set $!usr!es!response_age = $!response_age;
-set $!usr!es!response_cache = $!response_cache;
-set $!usr!es!response_content_encoding = $!response_content_encoding;
-set $!usr!es!response_content_length = $!response_content_length;
-set $!usr!es!response_content_type = $!response_content_type;
-set $!usr!es!response_server = $!response_server;
-set $!usr!es!response_size = $!response_size;
-set $!usr!es!response_status = $!response_status;
-set $!usr!es!response_time = $!timer_response;
-set $!usr!es!response_transfer_encoding = $!response_transfer_encoding;
-set $!usr!es!user_email = $!legacy_user_email;
-set $!usr!es!user_id = $!user_id;
-set $!usr!es!user_registration_source = $!legacy_user_registration_source;
+if($!raw!legacy_api_key != "") then {
+  set $!usr!es!api_key = $!raw!legacy_api_key;
+}
+if($!raw!timer_backend_response != "") then {
+  set $!usr!es!backend_response_time = $!raw!timer_backend_response;
+}
+if($!raw!denied_reason != "") then {
+  set $!usr!es!gatekeeper_denied_code = $!raw!denied_reason;
+}
+if($!raw!timer_internal != "") then {
+  set $!usr!es!internal_gatekeeper_time = $!raw!timer_internal;
+}
+if($!raw!timer_proxy_overhead != "") then {
+  set $!usr!es!proxy_overhead = $!raw!timer_proxy_overhead;
+}
+if($!raw!request_accept != "") then {
+  set $!usr!es!request_accept = $!raw!request_accept;
+}
+if($!raw!request_accept_encoding != "") then {
+  set $!usr!es!request_accept_encoding = $!raw!request_accept_encoding;
+}
+if($!raw!timestamp_utc != "") then {
+  set $!usr!es!request_at = $!raw!timestamp_utc;
+}
+if($!raw!request_basic_auth_username != "") then {
+  set $!usr!es!request_basic_auth_username = $!raw!request_basic_auth_username;
+}
+if($!raw!request_connection != "") then {
+  set $!usr!es!request_connection = $!raw!request_connection;
+}
+if($!raw!request_content_type != "") then {
+  set $!usr!es!request_content_type = $!raw!request_content_type;
+}
+if($!raw!request_url_hierarchy != "") then {
+  set $!usr!es!request_hierarchy = $!raw!request_url_hierarchy;
+}
+if($!raw!request_url_host != "") then {
+  set $!usr!es!request_host = $!raw!request_url_host;
+}
+if($!raw!request_ip != "") then {
+  set $!usr!es!request_ip = $!raw!request_ip;
+}
+if($!raw!request_ip_city != "") then {
+  set $!usr!es!request_ip_city = $!raw!request_ip_city;
+}
+if($!raw!request_ip_country != "") then {
+  set $!usr!es!request_ip_country = $!raw!request_ip_country;
+}
+if($!raw!legacy_request_ip_location != "") then {
+  set $!usr!es!request_ip_location = $!raw!legacy_request_ip_location;
+}
+if($!raw!request_ip_region != "") then {
+  set $!usr!es!request_ip_region = $!raw!request_ip_region;
+}
+if($!raw!request_method != "") then {
+  set $!usr!es!request_method = $!raw!request_method;
+}
+if($!raw!request_origin != "") then {
+  set $!usr!es!request_origin = $!raw!request_origin;
+}
+if($!raw!request_url_path != "") then {
+  set $!usr!es!request_path = $!raw!request_url_path;
+}
+if($!raw!legacy_request_url_query_hash != "") then {
+  set $!usr!es!request_query = $!raw!legacy_request_url_query_hash;
+}
+if($!raw!request_referer != "") then {
+  set $!usr!es!request_referer = $!raw!request_referer;
+}
+if($!raw!request_url_scheme != "") then {
+  set $!usr!es!request_scheme = $!raw!request_url_scheme;
+}
+if($!raw!request_size != "") then {
+  set $!usr!es!request_size = $!raw!request_size;
+}
+if($!raw!legacy_request_url != "") then {
+  set $!usr!es!request_url = $!raw!legacy_request_url;
+}
+if($!raw!request_user_agent != "") then {
+  set $!usr!es!request_user_agent = $!raw!request_user_agent;
+}
+if($!raw!request_user_agent_family != "") then {
+  set $!usr!es!request_user_agent_family = $!raw!request_user_agent_family;
+}
+if($!raw!request_user_agent_type != "") then {
+  set $!usr!es!request_user_agent_type = $!raw!request_user_agent_type;
+}
+if($!raw!response_age != "") then {
+  set $!usr!es!response_age = $!raw!response_age;
+}
+if($!raw!response_cache != "") then {
+  set $!usr!es!response_cache = $!raw!response_cache;
+}
+if($!raw!response_content_encoding != "") then {
+  set $!usr!es!response_content_encoding = $!raw!response_content_encoding;
+}
+if($!raw!response_content_length != "") then {
+  set $!usr!es!response_content_length = $!raw!response_content_length;
+}
+if($!raw!response_content_type != "") then {
+  set $!usr!es!response_content_type = $!raw!response_content_type;
+}
+if($!raw!response_server != "") then {
+  set $!usr!es!response_server = $!raw!response_server;
+}
+if($!raw!response_size != "") then {
+  set $!usr!es!response_size = $!raw!response_size;
+}
+if($!raw!response_status != "") then {
+  set $!usr!es!response_status = $!raw!response_status;
+}
+if($!raw!timer_response != "") then {
+  set $!usr!es!response_time = $!raw!timer_response;
+}
+if($!raw!response_transfer_encoding != "") then {
+  set $!usr!es!response_transfer_encoding = $!raw!response_transfer_encoding;
+}
+if($!raw!legacy_user_email != "") then {
+  set $!usr!es!user_email = $!raw!legacy_user_email;
+}
+if($!raw!user_id != "") then {
+  set $!usr!es!user_id = $!raw!user_id;
+}
+if($!raw!legacy_user_registration_source != "") then {
+  set $!usr!es!user_registration_source = $!raw!legacy_user_registration_source;
+}
 
 # Define templates for ElasticSearch output.
 template(name="elasticsearch-index" type="string" string="api-umbrella-logs-v1-%timereported:1:7:date-rfc3339%")
-template(name="elasticsearch-id" type="subtree" subtree="$!id")
-template(name="elasticsearch-json-record" type="list") {
-  property(name="$!usr!es")
-}
+template(name="elasticsearch-id" type="subtree" subtree="$!raw!id")
+template(name="elasticsearch-json-record" type="subtree" subtree="$!usr!es")
 
 # Output to ElasticSearch.
 # A disk-assisted memory queue is used for buffering.
@@ -116,63 +198,165 @@ local0.info action(
 module(load="omkafka")
 
 # Define the SQL-based output.
-set $!usr!sql!denied_reason = $!denied_reason;
-set $!usr!sql!id = $!id;
-set $!usr!sql!request_accept = $!request_accept;
-set $!usr!sql!request_accept_encoding = $!request_accept_encoding;
-set $!usr!sql!request_basic_auth_username = $!request_basic_auth_username;
-set $!usr!sql!request_connection = $!request_connection;
-set $!usr!sql!request_content_type = $!request_content_type;
-set $!usr!sql!request_ip = $!request_ip;
-set $!usr!sql!request_ip_city = $!request_ip_city;
-set $!usr!sql!request_ip_country = $!request_ip_country;
-set $!usr!sql!request_ip_lat = $!request_ip_lat;
-set $!usr!sql!request_ip_lon = $!request_ip_lon;
-set $!usr!sql!request_ip_region = $!request_ip_region;
-set $!usr!sql!request_method = $!request_method;
-set $!usr!sql!request_origin = $!request_origin;
-set $!usr!sql!request_referer = $!request_referer;
-set $!usr!sql!request_size = $!request_size;
-set $!usr!sql!request_url_host = $!request_url_host;
-set $!usr!sql!request_url_path = $!request_url_path;
-set $!usr!sql!request_url_path_level1 = $!request_url_path_level1;
-set $!usr!sql!request_url_path_level2 = $!request_url_path_level2;
-set $!usr!sql!request_url_path_level3 = $!request_url_path_level3;
-set $!usr!sql!request_url_path_level4 = $!request_url_path_level4;
-set $!usr!sql!request_url_path_level5 = $!request_url_path_level5;
-set $!usr!sql!request_url_path_level6 = $!request_url_path_level6;
-set $!usr!sql!request_url_query = $!request_url_query;
-set $!usr!sql!request_url_scheme = $!request_url_scheme;
-set $!usr!sql!request_user_agent = $!request_user_agent;
-set $!usr!sql!request_user_agent_family = $!request_user_agent_family;
-set $!usr!sql!request_user_agent_type = $!request_user_agent_type;
-set $!usr!sql!response_age = $!response_age;
-set $!usr!sql!response_cache = $!response_cache;
-set $!usr!sql!response_content_encoding = $!response_content_encoding;
-set $!usr!sql!response_content_length = $!response_content_length;
-set $!usr!sql!response_content_type = $!response_content_type;
-set $!usr!sql!response_server = $!response_server;
-set $!usr!sql!response_size = $!response_size;
-set $!usr!sql!response_status = $!response_status;
-set $!usr!sql!response_transfer_encoding = $!response_transfer_encoding;
-set $!usr!sql!timer_backend_response = $!timer_backend_response;
-set $!usr!sql!timer_internal = $!timer_internal;
-set $!usr!sql!timer_proxy_overhead = $!timer_proxy_overhead;
-set $!usr!sql!timer_response = $!timer_response;
-set $!usr!sql!timestamp_tz_date = $!timestamp_tz_date;
-set $!usr!sql!timestamp_tz_hour = $!timestamp_tz_hour;
-set $!usr!sql!timestamp_tz_minute = $!timestamp_tz_minute;
-set $!usr!sql!timestamp_tz_month = $!timestamp_tz_month;
-set $!usr!sql!timestamp_tz_offset = $!timestamp_tz_offset;
-set $!usr!sql!timestamp_tz_week = $!timestamp_tz_week;
-set $!usr!sql!timestamp_tz_year = $!timestamp_tz_year;
-set $!usr!sql!timestamp_utc = $!timestamp_utc;
-set $!usr!sql!user_id = $!user_id;
+if($!raw!denied_reason != "") then {
+  set $!usr!sql!denied_reason = $!raw!denied_reason;
+}
+if($!raw!id != "") then {
+  set $!usr!sql!id = $!raw!id;
+}
+if($!raw!request_accept != "") then {
+  set $!usr!sql!request_accept = $!raw!request_accept;
+}
+if($!raw!request_accept_encoding != "") then {
+  set $!usr!sql!request_accept_encoding = $!raw!request_accept_encoding;
+}
+if($!raw!request_basic_auth_username != "") then {
+  set $!usr!sql!request_basic_auth_username = $!raw!request_basic_auth_username;
+}
+if($!raw!request_connection != "") then {
+  set $!usr!sql!request_connection = $!raw!request_connection;
+}
+if($!raw!request_content_type != "") then {
+  set $!usr!sql!request_content_type = $!raw!request_content_type;
+}
+if($!raw!request_ip != "") then {
+  set $!usr!sql!request_ip = $!raw!request_ip;
+}
+if($!raw!request_ip_city != "") then {
+  set $!usr!sql!request_ip_city = $!raw!request_ip_city;
+}
+if($!raw!request_ip_country != "") then {
+  set $!usr!sql!request_ip_country = $!raw!request_ip_country;
+}
+if($!raw!request_ip_lat != "") then {
+  set $!usr!sql!request_ip_lat = $!raw!request_ip_lat;
+}
+if($!raw!request_ip_lon != "") then {
+  set $!usr!sql!request_ip_lon = $!raw!request_ip_lon;
+}
+if($!raw!request_ip_region != "") then {
+  set $!usr!sql!request_ip_region = $!raw!request_ip_region;
+}
+if($!raw!request_method != "") then {
+  set $!usr!sql!request_method = $!raw!request_method;
+}
+if($!raw!request_origin != "") then {
+  set $!usr!sql!request_origin = $!raw!request_origin;
+}
+if($!raw!request_referer != "") then {
+  set $!usr!sql!request_referer = $!raw!request_referer;
+}
+if($!raw!request_size != "") then {
+  set $!usr!sql!request_size = $!raw!request_size;
+}
+if($!raw!request_url_host != "") then {
+  set $!usr!sql!request_url_host = $!raw!request_url_host;
+}
+if($!raw!request_url_path != "") then {
+  set $!usr!sql!request_url_path = $!raw!request_url_path;
+}
+if($!raw!request_url_path_level1 != "") then {
+  set $!usr!sql!request_url_path_level1 = $!raw!request_url_path_level1;
+}
+if($!raw!request_url_path_level2 != "") then {
+  set $!usr!sql!request_url_path_level2 = $!raw!request_url_path_level2;
+}
+if($!raw!request_url_path_level3 != "") then {
+  set $!usr!sql!request_url_path_level3 = $!raw!request_url_path_level3;
+}
+if($!raw!request_url_path_level4 != "") then {
+  set $!usr!sql!request_url_path_level4 = $!raw!request_url_path_level4;
+}
+if($!raw!request_url_path_level5 != "") then {
+  set $!usr!sql!request_url_path_level5 = $!raw!request_url_path_level5;
+}
+if($!raw!request_url_path_level6 != "") then {
+  set $!usr!sql!request_url_path_level6 = $!raw!request_url_path_level6;
+}
+if($!raw!request_url_query != "") then {
+  set $!usr!sql!request_url_query = $!raw!request_url_query;
+}
+if($!raw!request_url_scheme != "") then {
+  set $!usr!sql!request_url_scheme = $!raw!request_url_scheme;
+}
+if($!raw!request_user_agent != "") then {
+  set $!usr!sql!request_user_agent = $!raw!request_user_agent;
+}
+if($!raw!request_user_agent_family != "") then {
+  set $!usr!sql!request_user_agent_family = $!raw!request_user_agent_family;
+}
+if($!raw!request_user_agent_type != "") then {
+  set $!usr!sql!request_user_agent_type = $!raw!request_user_agent_type;
+}
+if($!raw!response_age != "") then {
+  set $!usr!sql!response_age = $!raw!response_age;
+}
+if($!raw!response_cache != "") then {
+  set $!usr!sql!response_cache = $!raw!response_cache;
+}
+if($!raw!response_content_encoding != "") then {
+  set $!usr!sql!response_content_encoding = $!raw!response_content_encoding;
+}
+if($!raw!response_content_length != "") then {
+  set $!usr!sql!response_content_length = $!raw!response_content_length;
+}
+if($!raw!response_content_type != "") then {
+  set $!usr!sql!response_content_type = $!raw!response_content_type;
+}
+if($!raw!response_server != "") then {
+  set $!usr!sql!response_server = $!raw!response_server;
+}
+if($!raw!response_size != "") then {
+  set $!usr!sql!response_size = $!raw!response_size;
+}
+if($!raw!response_status != "") then {
+  set $!usr!sql!response_status = $!raw!response_status;
+}
+if($!raw!response_transfer_encoding != "") then {
+  set $!usr!sql!response_transfer_encoding = $!raw!response_transfer_encoding;
+}
+if($!raw!timer_backend_response != "") then {
+  set $!usr!sql!timer_backend_response = $!raw!timer_backend_response;
+}
+if($!raw!timer_internal != "") then {
+  set $!usr!sql!timer_internal = $!raw!timer_internal;
+}
+if($!raw!timer_proxy_overhead != "") then {
+  set $!usr!sql!timer_proxy_overhead = $!raw!timer_proxy_overhead;
+}
+if($!raw!timer_response != "") then {
+  set $!usr!sql!timer_response = $!raw!timer_response;
+}
+if($!raw!timestamp_tz_date != "") then {
+  set $!usr!sql!timestamp_tz_date = $!raw!timestamp_tz_date;
+}
+if($!raw!timestamp_tz_hour != "") then {
+  set $!usr!sql!timestamp_tz_hour = $!raw!timestamp_tz_hour;
+}
+if($!raw!timestamp_tz_minute != "") then {
+  set $!usr!sql!timestamp_tz_minute = $!raw!timestamp_tz_minute;
+}
+if($!raw!timestamp_tz_month != "") then {
+  set $!usr!sql!timestamp_tz_month = $!raw!timestamp_tz_month;
+}
+if($!raw!timestamp_tz_offset != "") then {
+  set $!usr!sql!timestamp_tz_offset = $!raw!timestamp_tz_offset;
+}
+if($!raw!timestamp_tz_week != "") then {
+  set $!usr!sql!timestamp_tz_week = $!raw!timestamp_tz_week;
+}
+if($!raw!timestamp_tz_year != "") then {
+  set $!usr!sql!timestamp_tz_year = $!raw!timestamp_tz_year;
+}
+if($!raw!timestamp_utc != "") then {
+  set $!usr!sql!timestamp_utc = $!raw!timestamp_utc;
+}
+if($!raw!user_id != "") then {
+  set $!usr!sql!user_id = $!raw!user_id;
+}
 
 # Define templates for SQL output via JSON records.
-template(name="sql-json-record" type="list") {
-  property(name="$!usr!sql")
-}
+template(name="sql-json-record" type="subtree" subtree="$!usr!sql")
 
 # Output to Kafka.
 # A disk-assisted memory queue is used for buffering.
@@ -194,7 +378,7 @@ local0.info action(
 
 # Output to local file for redundancy until we prove the new system out.
 template(name="all-json-record" type="list") {
-  property(name="$!all-json") constant(value="\n")
+  property(name="$!raw") constant(value="\n")
 }
 local0.info action(
   type="omfile"

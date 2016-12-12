@@ -36,8 +36,15 @@ class OutdatedPackages
     "libestr" => {
       :git => "https://github.com/rsyslog/libestr.git",
     },
+    "libfastjson" => {
+      :git => "https://github.com/rsyslog/libfastjson.git",
+    },
     "libgeoip" => {
       :git => "https://github.com/maxmind/geoip-api-c.git",
+    },
+    "liblogging" => {
+      :git => "https://github.com/rsyslog/liblogging.git",
+      :git_ref => "master",
     },
     "librdkafka" => {
       :git => "https://github.com/edenhill/librdkafka.git",
@@ -155,7 +162,6 @@ class OutdatedPackages
     },
     "rsyslog" => {
       :git => "https://github.com/rsyslog/rsyslog.git",
-      :constraint => "< 8.15.0",
     },
     "runit" => {
       :http => "http://smarden.org/runit/install.html",

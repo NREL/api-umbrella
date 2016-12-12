@@ -134,12 +134,14 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
     assert_equal(options.fetch(:ip), record.fetch("request_ip"))
     assert_equal(options.fetch(:country), record.fetch("request_ip_country"))
     if(options.fetch(:region).nil?)
-      assert_nil(record.fetch("request_ip_region"))
+      assert_nil(record["request_ip_region"])
+      refute(record.key?("request_ip_region"))
     else
       assert_equal(options.fetch(:region), record.fetch("request_ip_region"))
     end
     if(options.fetch(:city).nil?)
-      assert_nil(record.fetch("request_ip_city"))
+      assert_nil(record["request_ip_city"])
+      refute(record.key?("request_ip_city"))
     else
       assert_equal(options.fetch(:city), record.fetch("request_ip_city"))
     end

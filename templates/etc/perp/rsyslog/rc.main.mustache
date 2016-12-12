@@ -7,7 +7,7 @@ if [ "${1}" = "start" ]; then
   echo "starting ${2}..."
   api_umbrella_user="{{user}}"
 
-  run_args=()
+  run_args=("-e" "rc.env")
   if [ -n "$api_umbrella_user" ]; then
     run_args+=("-u" "$api_umbrella_user")
   fi
