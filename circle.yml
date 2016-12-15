@@ -28,11 +28,6 @@ dependencies:
     # fresh clone.
     - if [[ ! -e build/work/git-restore-mtime ]]; then mkdir -p build/work && curl -f -L https://raw.githubusercontent.com/MestreLion/git-tools/0fc841a3e49d041576e5b21d1644c8df2d2ef801/git-restore-mtime > build/work/git-restore-mtime && chmod +x build/work/git-restore-mtime; fi
     - ./build/work/git-restore-mtime -f .
-    - if [[ ! -e build/work/elasticsearch-2.3.3/bin/elasticsearch ]]; then mkdir -p build/work/elasticsearch-2.3.3 && curl -f -L https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.3.3/elasticsearch-2.3.3.tar.gz | tar --strip-components 1 -C build/work/elasticsearch-2.3.3 -xz; fi
-  post:
-    - rm -rf /tmp/elasticsearch-v2-data
-    - ./build/work/elasticsearch-2.3.3/bin/elasticsearch --path.data=/tmp/elasticsearch-v2-data:
-        background: true
   override:
     # Build all the API Umbrella software dependencies.
     - ./configure --enable-test-dependencies

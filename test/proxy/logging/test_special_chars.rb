@@ -44,12 +44,6 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal("%E2%9C%93", record["request_query"]["utf8"])
-    assert_equal("%E2%9C%93", record["request_query"]["utf8_url_encoded"])
-    assert_equal("%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l", record["request_query"]["more_utf8"])
-    assert_equal("%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l", record["request_query"]["more_utf8_hex"])
-    assert_equal("%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l", record["request_query"]["more_utf8_hex_lowercase"])
-    assert_equal("\\xC2\\xAC\\xC2\\xB6\\xC2\\xAA\\xC3\\xBE\\xC2\\xA4l", record["request_query"]["actual_backslash_x"])
     assert_equal("/api/hello/utf8/%E2%9C%93/encoded_utf8/%E2%9C%93/", record["request_path"])
     assert_equal("http://127.0.0.1:9080/api/hello/utf8/%E2%9C%93/encoded_utf8/%E2%9C%93/?utf8=%E2%9C%93&utf8_url_encoded=%E2%9C%93&more_utf8=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex_lowercase=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&actual_backslash_x=\\xC2\\xAC\\xC2\\xB6\\xC2\\xAA\\xC3\\xBE\\xC2\\xA4l", record["request_url"])
   end
@@ -73,11 +67,6 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     # When in the URL path or query string, we expect the raw £ symbol to be
     # logged as the url encoded version.
     expected_raw_in_url = url_encoded
-
-    # URL query string
-    assert_equal(url_encoded, record["request_query"]["url_encoded"])
-    assert_equal(base64ed, record["request_query"]["base64ed"])
-    assert_equal(expected_raw_in_url, record["request_query"]["raw"])
 
     # URL path
     assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/", record["request_path"])
@@ -126,12 +115,6 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     expected_raw_utf8_in_url = "%EF%BF%BD"
     expected_raw_utf8_in_header = Base64.decode64("77+9").force_encoding("utf-8")
 
-    # URL query string
-    assert_equal(url_encoded, record["request_query"]["url_encoded"])
-    assert_equal(base64ed, record["request_query"]["base64ed"])
-    assert_equal(expected_raw_in_url, record["request_query"]["raw"])
-    assert_equal(expected_raw_utf8_in_url, record["request_query"]["raw_utf8"])
-
     # URL path
     assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}/", record["request_path"])
     assert_equal([
@@ -155,7 +138,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_equal(expected_raw_utf8_in_header, record["request_accept"])
   end
 
-  def test_decodes_url_encoding_in_request_query_not_others
+  def test_encoded_strings_as_given
     url_encoded = "http%3A%2F%2Fexample.com%2Fsub%2Fsub%2F%3Ffoo%3Dbar%26foo%3Dbar%20more+stuff"
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello/#{url_encoded}/?url_encoded=#{url_encoded}", log_http_options.deep_merge({
       :headers => {
@@ -165,9 +148,6 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-
-    # URL query string
-    assert_equal(CGI.unescape(url_encoded), record["request_query"]["url_encoded"])
 
     # URL path
     assert_equal("/api/hello/#{url_encoded}/", record["request_path"])
@@ -185,7 +165,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_equal(url_encoded, record["request_content_type"])
   end
 
-  def test_optionally_encodable_ascii_strings_as_given_except_in_request_query
+  def test_optionally_encodable_ascii_strings_as_given
     as_is = "-%2D ;%3B +%2B /%2F :%3A 0%30 >%3E {%7B"
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello/#{as_is}/?as_is=#{as_is}", log_http_options.deep_merge({
       :headers => {
@@ -195,9 +175,6 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-
-    # URL query string
-    assert_equal(CGI.unescape(as_is), record["request_query"]["as_is"])
 
     # URL path
     assert_equal("/api/hello/#{as_is}/", record["request_path"])
@@ -222,10 +199,6 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal("/slash", record["request_query"]["forward_slash"])
-    assert_equal("/", record["request_query"]["encoded_forward_slash"])
-    assert_equal("\\", record["request_query"]["back_slash"])
-    assert_equal("\\", record["request_query"]["encoded_back_slash"])
     assert_equal("/api/hello/extra//slash/some\\backslash/encoded%5Cbackslash/encoded%2Fslash", record["request_path"])
     assert_equal(url, record["request_url"])
   end

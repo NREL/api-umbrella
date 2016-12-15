@@ -13,7 +13,7 @@ class OutdatedPackages
     },
     "elasticsearch" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
-      :constraint => "~> 1.7.5",
+      :constraint => "~> 2.4.3",
     },
     "flume" => {
       :git => "https://github.com/apache/flume.git",

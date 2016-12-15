@@ -51,7 +51,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "request_method",
       "request_origin",
       "request_path",
-      "request_query",
       "request_referer",
       "request_scheme",
       "request_size",
@@ -96,14 +95,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("GET", record["request_method"])
     assert_equal("http://foo.example", record["request_origin"])
     assert_equal("/api/logging-example/foo/bar/", record["request_path"])
-    assert_equal([
-      "url1",
-      "url2",
-      "url3",
-    ].sort, record["request_query"].keys.sort)
-    assert_equal(CGI.unescape(param_url1), record["request_query"]["url1"])
-    assert_equal(param_url2, record["request_query"]["url2"])
-    assert_equal(CGI.unescape(param_url3_prefix) + param_url3_invalid_suffix, record["request_query"]["url3"])
     assert_equal("http://example.com", record["request_referer"])
     assert_equal("http", record["request_scheme"])
     assert_kind_of(Numeric, record["request_size"])
@@ -208,27 +199,21 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
   # For Elasticsearch 2 compatibility
   def test_requests_with_dots_in_query_params
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
-      :params => {
-        "foo.bar.baz" => "example.1",
-        "foo.bar" => "example.2",
-        "foo[bar]" => "example.3",
-      },
-    }))
+    url = "http://127.0.0.1:9080/api/hello?foo.bar.baz=example.1&foo.bar=example.2&foo[bar]=example.3"
+    response = Typhoeus.get(url, log_http_options)
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal("example.1", record["request_query"]["foo_bar_baz"])
-    assert_equal("example.2", record["request_query"]["foo_bar"])
-    assert_equal("example.3", record["request_query"]["foo[bar]"])
+    assert_equal(url, record["request_url"])
   end
 
   def test_requests_with_duplicate_query_params
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?test_dup_arg=foo&test_dup_arg=bar", log_http_options)
+    url = "http://127.0.0.1:9080/api/hello?test_dup_arg=foo&test_dup_arg=bar"
+    response = Typhoeus.get(url, log_http_options)
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal("foo,bar", record["request_query"]["test_dup_arg"])
+    assert_equal(url, record["request_url"])
   end
 
   def test_logs_request_at_as_date
@@ -255,84 +240,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     else
       flunk("Unknown elasticsearch version: #{$config["elasticsearch"]["api_version"].inspect}")
     end
-  end
-
-  # Does not attempt to automatically map the first seen value into a date.
-  def test_dates_in_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
-      :params => {
-        :date_field => "2010-05-01",
-      },
-    }))
-    assert_response_code(200, response)
-    record = wait_for_log(response)[:hit_source]
-    assert_equal("2010-05-01", record["request_query"]["date_field"])
-
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
-      :params => {
-        :date_field => "2010-05-0",
-      },
-    }))
-    assert_response_code(200, response)
-    record = wait_for_log(response)[:hit_source]
-    assert_equal("2010-05-0", record["request_query"]["date_field"])
-
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
-      :params => {
-        :date_field => "foo",
-      },
-    }))
-    assert_response_code(200, response)
-    record = wait_for_log(response)[:hit_source]
-    assert_equal("foo", record["request_query"]["date_field"])
-  end
-
-  # Does not attempt to automatically map the values into an array, which would
-  # conflict with the first-seen string type.
-  def test_duplicate_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?test_dup_arg_first_string=foo", log_http_options)
-    assert_response_code(200, response)
-    record = wait_for_log(response)[:hit_source]
-    assert_equal("foo", record["request_query"]["test_dup_arg_first_string"])
-
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?test_dup_arg_first_string=foo&test_dup_arg_first_string=bar", log_http_options)
-    assert_response_code(200, response)
-    record = wait_for_log(response)[:hit_source]
-    assert_equal("foo,bar", record["request_query"]["test_dup_arg_first_string"])
-  end
-
-  # Does not attempt to automatically map the first seen value into a boolean.
-  def test_boolean_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?test_arg_first_bool", log_http_options)
-    assert_response_code(200, response)
-    record = wait_for_log(response)[:hit_source]
-    assert_equal("true", record["request_query"]["test_arg_first_bool"])
-
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?test_arg_first_bool=foo", log_http_options)
-    assert_response_code(200, response)
-    record = wait_for_log(response)[:hit_source]
-    assert_equal("foo", record["request_query"]["test_arg_first_bool"])
-  end
-
-  # Does not attempt to automatically map the first seen value into a number.
-  def test_numbers_in_query_params_treated_as_strings
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
-      :params => {
-        :number_field => "123",
-      },
-    }))
-    assert_response_code(200, response)
-    record = wait_for_log(response)[:hit_source]
-    assert_equal("123", record["request_query"]["number_field"])
-
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
-      :params => {
-        :number_field => "foo",
-      },
-    }))
-    assert_response_code(200, response)
-    record = wait_for_log(response)[:hit_source]
-    assert_equal("foo", record["request_query"]["number_field"])
   end
 
   def test_logs_requests_that_time_out
@@ -449,7 +356,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal(long_value, record["request_query"]["long"])
+    assert_equal(url, record["request_url"])
   end
 
   # We may actually want to revisit this behavior and log these requests, but
@@ -488,13 +395,14 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       long_value = Faker::Lorem.characters(long_length)
       url = "http://127.0.0.1:9080#{url_path}#{long_value}"
 
+      long_host = Faker::Lorem.characters(1000)
       response = Typhoeus.get(url, log_http_options.deep_merge({
         :headers => {
           "Accept" => Faker::Lorem.characters(1000),
           "Accept-Encoding" => Faker::Lorem.characters(1000),
           "Connection" => Faker::Lorem.characters(1000),
           "Content-Type" => Faker::Lorem.characters(1000),
-          "Host" => Faker::Lorem.characters(1000),
+          "Host" => long_host,
           "Origin" => Faker::Lorem.characters(1000),
           "User-Agent" => Faker::Lorem.characters(1000),
           "Referer" => Faker::Lorem.characters(1000),
@@ -506,8 +414,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       record = wait_for_log(response)[:hit_source]
 
       # Ensure the full URL got logged.
-      assert_equal(long_value, record["request_query"]["long"])
-      assert_match(long_value, record["request_url"])
+      assert_equal("http://#{long_host[0, 200]}#{url_path}#{long_value}", record["request_url"])
 
       # Ensure the long header values got truncated so we're not susceptible to
       # exceeding rsyslog's message buffers and we're also not storing an

@@ -4,6 +4,16 @@ global(maxMessageSize="32k")
 
 global(workDirectory="{{db_dir}}/rsyslog")
 
+# Output queue statistics periodically so the health of the queue can be
+# inspected.
+module(
+  load="impstats"
+  interval="60"
+  resetCounters="on"
+  log.syslog="off"
+  log.file="{{log_dir}}/rsyslog/stats.log"
+)
+
 # Load Modules
 module(load="imtcp" MaxSessions="500")
 module(load="mmjsonparse")
@@ -160,6 +170,7 @@ template(name="elasticsearch-json-record" type="subtree" subtree="$!usr!es")
 # Output to ElasticSearch.
 # A disk-assisted memory queue is used for buffering.
 local0.info action(
+  name="output-elasticsearch"
   type="omelasticsearch"
   server="{{elasticsearch._first_server.host}}"
   serverport="{{elasticsearch._first_server.port}}"
@@ -167,29 +178,51 @@ local0.info action(
   dynSearchIndex="on"
   searchType="log"
   template="elasticsearch-json-record"
+
   # Enable bulk indexing, so batches of records are sent as a single HTTP
   # request.
   bulkmode="on"
   bulkId="elasticsearch-id"
   dynBulkId="on"
+
+  # Allow bulk indexing of batches *up to* this size.
+  #
+  # Note that as long as Elasticsearch is keeping up and data isn't being
+  # queued by rsyslog, then rsyslog will send data as quickly as it can to
+  # Elasticsearch (so the batch sizes might be much smaller). See
+  # http://www.gossamer-threads.com/lists/rsyslog/users/17550
+  queue.dequeuebatchsize="5000"
+
   # Require indexing by all replica shards.
   asyncrepl="off"
+
   # For the in-memory queue, use a linked-list (so the memory doesn't have to
   # be pre-allocated based on a fixed size).
   queue.type="LinkedList"
+
   # Set a filename, so the queue is disk assisted. This allows for offloading
   # the data from the memory queue to disk if the queue becomes bigger than
   # expected.
   queue.filename="queue-elasticsearch"
+
+  # Set thresholds for when the memory queue is too big and should use the
+  # disk (note the disk queue size is not bounded by the queue.size, that only
+  # applies to the memory portion).
+  queue.size="15000"
+  queue.highwatermark="10000"
+  queue.lowwatermark="2000"
+
   # Persist data to disk on this interval (in seconds). We're okay with some
   # loss in the event of unexpected failures.
   queue.checkpointinterval="10"
+
   # Persist data to disk on graceful shutdowns.
   queue.saveonshutdown="on"
-  # Set thresholds for when the memory queue is too big and should use the
-  # disk.
-  queue.highwatermark="10000"
-  queue.lowwatermark="2000"
+
+  # If Elasticsearch is inaccessible, retry on this interval (in seconds)
+  # indefinitely (so we don't stop logging to Elasticsearch in case it goes
+  # down for a longer period of time).
+  action.resumeInterval="30"
   action.resumeRetryCount="-1"
 )
 {{/analytics._output_elasticsearch?}}
@@ -361,6 +394,7 @@ template(name="sql-json-record" type="subtree" subtree="$!usr!sql")
 # Output to Kafka.
 # A disk-assisted memory queue is used for buffering.
 local0.info action(
+  name="output-kafka"
   type="omkafka"
   broker=[{{kafka._rsyslog_broker}}]
   topic="{{kafka.topic}}"
@@ -370,6 +404,7 @@ local0.info action(
   queue.filename="queue-kafka"
   queue.checkpointinterval="10"
   queue.saveonshutdown="on"
+  queue.size="15000"
   queue.highwatermark="10000"
   queue.lowwatermark="2000"
   action.resumeRetryCount="-1"
@@ -381,6 +416,7 @@ template(name="all-json-record" type="list") {
   property(name="$!raw") constant(value="\n")
 }
 local0.info action(
+  name="output-file"
   type="omfile"
   file="{{log_dir}}/rsyslog/requests.log.gz"
   template="all-json-record"
@@ -388,6 +424,7 @@ local0.info action(
   queue.filename="queue-file"
   queue.checkpointinterval="10"
   queue.saveonshutdown="on"
+  queue.size="15000"
   queue.highwatermark="10000"
   queue.lowwatermark="2000"
   zipLevel="3"
