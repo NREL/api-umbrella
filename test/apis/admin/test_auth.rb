@@ -76,7 +76,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
   def test_authenticated_no_cross_site_access
     response = Typhoeus.get("https://127.0.0.1:9081/admin/auth", keyless_http_options.deep_merge(admin_session))
     assert_response_code(200, response)
-    assert_equal("SAMEORIGIN", response.headers["X-Frame-Options"])
+    assert_equal("DENY", response.headers["X-Frame-Options"])
     assert_equal("max-age=0, private, must-revalidate", response.headers["Cache-Control"])
     assert_nil(response.headers["Access-Control-Allow-Credentials"])
   end
