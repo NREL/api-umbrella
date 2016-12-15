@@ -7,24 +7,39 @@ source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=build/package_dependencies.sh
 source "$source_dir/build/package_dependencies.sh"
 
+install_dependencies=("${all_build_dependencies[@]}")
+if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
+  install_dependencies=("${all_dependencies[@]}")
+fi
+
 if [ -f /etc/redhat-release ]; then
-  # Building Go libraries from gopkg.in (which Mora has a dependency on),
-  # requires git 1.7.3+
-  # (https://groups.google.com/d/msg/golang-nuts/RKz9ASmJm3o/o7NcNY6x8U0J).
-  # CentOS 6 doesn't provide this by default, so install git from another repo.
+  # Install some extra repos needed for CentOS 6.
   if rpm --query centos-release | grep el6; then
+    # Building Go libraries from gopkg.in (which Mora has a dependency on),
+    # requires git 1.7.3+
+    # (https://groups.google.com/d/msg/golang-nuts/RKz9ASmJm3o/o7NcNY6x8U0J).
+    # CentOS 6 doesn't provide this by default, so install git from another repo.
     if [ ! -f /etc/yum.repos.d/wandisco-git.repo ]; then
       yum -y install http://opensource.wandisco.com/centos/6/git/x86_64/wandisco-git-release-6-1.noarch.rpm
     fi
+
+    if [ "${INSTALL_TEST_DEPENDENCIES:-}" == "true" ]; then
+      # python-virtualenv needed for mongo-orchestration during tests isn't
+      # present in CentOS 6's default repo, so we need to install EPEL to get
+      # this.
+      if [ ! -f /etc/yum.repos.d/epel.repo ]; then
+        yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+      fi
+    fi
   fi
 
-  yum -y install "${all_dependencies[@]}"
+  yum -y install "${install_dependencies[@]}"
   # Ensure the packages got installed, since yum's exit code isn't always
   # useful: http://stackoverflow.com/a/22393088
-  rpm --query --queryformat "" "${all_dependencies[@]}"
+  rpm --query --queryformat "" "${install_dependencies[@]}"
 elif [ -f /etc/debian_version ]; then
   apt-get update
-  apt-get -y install "${all_dependencies[@]}"
+  apt-get -y install "${install_dependencies[@]}"
 else
   echo "Unknown build system"
   exit 1

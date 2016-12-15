@@ -206,11 +206,15 @@ else
   exit 1
 fi
 
-# shellcheck disable=SC2034
-all_dependencies=(
+all_build_dependencies=(
   "${core_package_dependencies[@]}"
   "${hadoop_analytics_package_dependencies[@]}"
   "${core_build_dependencies[@]}"
   "${hadoop_analytics_build_dependencies[@]}"
+)
+
+# shellcheck disable=SC2034
+all_dependencies=(
+  "${all_build_dependencies[@]}"
   "${test_build_dependencies[@]}"
 )
