@@ -39,7 +39,7 @@ add_custom_command(
   DEPENDS
     ${CORE_BUILD_DIR}/tmp/admin-ui-build/bower.json
     ${STAMP_DIR}/core-admin-ui-yarn-install
-  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/bower install && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/bower prune
+  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/bower install --allow-root && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/bower prune --allow-root
   COMMAND touch ${STAMP_DIR}/core-admin-ui-bower-install
 )
 
