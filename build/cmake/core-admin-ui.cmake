@@ -27,8 +27,7 @@ add_custom_command(
     ${CORE_BUILD_DIR}/tmp/admin-ui-build/node_modules
   DEPENDS
     yarn
-    ${CORE_BUILD_DIR}/tmp/admin-ui-build/package.json
-    ${CORE_BUILD_DIR}/tmp/admin-ui-build/yarn.lock
+    ${STAMP_DIR}/core-admin-ui-build-dir
   COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} yarn install && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} yarn clean
   COMMAND touch ${STAMP_DIR}/core-admin-ui-yarn-install
 )
