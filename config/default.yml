@@ -162,6 +162,13 @@ elasticsearch:
       breaker:
         fielddata:
           limit: 60%
+    index:
+      translog:
+        # Sync the data to disk asynchronously on a fixed interval, rather than
+        # for every request. This significantly helps indexing throughput (at
+        # the risk of losing a few seconds of data if things crash).
+        durability: async
+        sync_interval: 10s
 analytics:
   adapter: elasticsearch
   timezone: UTC
