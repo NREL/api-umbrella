@@ -207,6 +207,12 @@ http {
     server_name _;
 
     root {{static_site.build_dir}};
+
+    # Security headers
+    # https://www.owasp.org/index.php/OWASP_Secure_Headers_Project#tab=Headers
+    more_set_headers "X-XSS-Protection: 1; mode=block";
+    more_set_headers "X-Frame-Options: DENY";
+    more_set_headers "X-Content-Type-Options: nosniff";
   }
 
   map $http_accept_encoding $normalized_accept_encoding {
@@ -265,6 +271,12 @@ http {
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
     root {{web.dir}}/public;
+
+    # Security headers
+    # https://www.owasp.org/index.php/OWASP_Secure_Headers_Project#tab=Headers
+    more_set_headers "X-XSS-Protection: 1; mode=block";
+    more_set_headers "X-Frame-Options: DENY";
+    more_set_headers "X-Content-Type-Options: nosniff";
 
     {{^_development_env?}}
     location /web-assets/ {
