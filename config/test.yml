@@ -45,7 +45,6 @@ web:
         - google
         - ldap
         - max.gov
-        - persona
       facebook:
         client_id: test_fake
         client_secret: test_fake

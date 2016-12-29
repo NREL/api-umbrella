@@ -11,40 +11,15 @@
   <div class="admin-logins">
     <%- resource_class.omniauth_providers.each do |provider| %>
       <div class="admin-login">
-        <% if(provider == :persona && !Rails.env.test?) %>
-          <form id="persona_form" action="/admins/auth/persona/callback">
-            <input type="hidden" name="assertion"/>
-            <button class="btn" id="persona_login_button">Login with <%= t(provider, :scope => [:omniauth_providers]) %></button>
-          </form>
-          <script src="https://login.persona.org/include.js" type="text/javascript"></script>
-          <script type="text/javascript">
-            var personaButton = document.getElementById('persona_login_button');
-            if(personaButton) {
-              personaButton.onclick = function() {
-                navigator.id.get(function(assertion) {
-                  if(assertion) {
-                    document.querySelectorAll('input[name=assertion]')[0].value = assertion;
-                    document.getElementsByTagName('form')[0].submit();
-                  } else {
-                    window.location = '/admins/auth/failure';
-                  }
-                });
-
-                return false;
-              }
-            }
-          </script>
+        <% strategy = Devise.omniauth_configs[provider].strategy %>
+        <% if(strategy.respond_to?(:client_secret) && strategy.client_secret.blank?) %>
+          <div class="alert alert-danger">
+            <%= t(provider, :scope => [:omniauth_providers]) %> authentication provider not yet configured.<br>
+            Access tokens must be defined in <code>/etc/api-umbrella/api-umbrella.yml</code> (see the <code>web.admin.auth_strategies</code> section)
+          </div>
+          <button class="btn" disabled="disabled">Login with <%= t(provider, :scope => [:omniauth_providers]) %></button>
         <% else %>
-          <% strategy = Devise.omniauth_configs[provider].strategy %>
-          <% if(strategy.respond_to?(:client_secret) && strategy.client_secret.blank?) %>
-            <div class="alert alert-danger">
-              <%= t(provider, :scope => [:omniauth_providers]) %> authentication provider not yet configured.<br>
-              Access tokens must be defined in <code>/etc/api-umbrella/api-umbrella.yml</code> (see the <code>web.admin.auth_strategies</code> section)
-            </div>
-            <button class="btn" disabled="disabled">Login with <%= t(provider, :scope => [:omniauth_providers]) %></button>
-          <% else %>
-            <%= link_to "Login with #{t(provider, :scope => [:omniauth_providers])}", omniauth_authorize_path(resource_name, provider), :class => "btn" %>
-          <% end %>
+          <%= link_to "Login with #{t(provider, :scope => [:omniauth_providers])}", omniauth_authorize_path(resource_name, provider), :class => "btn" %>
         <% end %>
       </div>
     <% end -%>

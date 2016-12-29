@@ -85,7 +85,6 @@ web:
       enabled:
         - github
         - google
-        - persona
       cas:
         options:
       facebook:

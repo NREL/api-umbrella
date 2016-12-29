@@ -6,7 +6,6 @@ en:
     facebook: Facebook
     github: GitHub
     google_oauth2: Google
-    persona: Persona
     ldap: LDAP
   errors:
     messages:

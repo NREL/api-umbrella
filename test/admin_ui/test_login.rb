@@ -79,11 +79,6 @@ class Test::AdminUi::TestLogin < Minitest::Capybara::Test
       :login_button_text => "Login with MAX.gov",
       :username_path => "uid",
     },
-    {
-      :provider => :persona,
-      :login_button_text => "Login with Persona",
-      :username_path => "info.email",
-    },
   ].each do |options|
     define_method("test_#{options.fetch(:provider)}_valid_admin") do
       assert_login_valid_admin(options)

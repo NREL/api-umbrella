@@ -7,7 +7,6 @@ de:
     facebook: Facebook
     github: GitHub
     google_oauth2: Google
-    persona: Persona
   errors:
     messages:
       invalid_host_format: "Erforderte Formatierung : \"example.com\""
