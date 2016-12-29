@@ -7,7 +7,6 @@ es-419:
     facebook: Facebook
     github: GitHub
     google_oauth2: Google
-    persona: Persona
   errors:
     messages:
       invalid_host_format: "debe ser en el formato de \"example.com\""

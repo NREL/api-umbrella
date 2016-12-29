@@ -317,7 +317,7 @@ describe "api-umbrella" do
 
   it "admin login page loads" do
     response = RestClient::Request.execute(:method => :get, :url => "https://localhost/admin/login", :verify_ssl => false)
-    expect(response).to include("Login with Persona")
+    expect(response).to include("Admin Login")
   end
 
   it "gatekeeper blocks key-less requests" do

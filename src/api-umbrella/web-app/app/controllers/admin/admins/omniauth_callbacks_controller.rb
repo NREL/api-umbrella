@@ -48,11 +48,6 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
     login
   end
 
-  def persona
-    @email = request.env["omniauth.auth"]["info"]["email"]
-    login
-  end
-
   def ldap
     uid_field = request.env["omniauth.strategy"].options[:uid]
     uid = [request.env["omniauth.auth"]["extra"]["raw_info"][uid_field]].flatten.compact.first

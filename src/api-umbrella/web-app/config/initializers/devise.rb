@@ -289,9 +289,6 @@ Devise.setup do |config|
         :service_validate_url => "/cas/serviceValidate",
         :logout_url => "/cas/logout",
         :ssl => true
-    when "persona"
-      require "omniauth-persona"
-      config.omniauth :persona
     else
       raise "Unknown authentication strategy enabled in config: #{strategy.inspect}"
     end
