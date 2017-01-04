@@ -98,7 +98,7 @@
       - your.email@example.com</pre>
 
     <p>Start API Umbrella:</p>
-    <pre>$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v $PWD/config:/etc/api-umbrella nrel/api-umbrella</pre>
+    <pre>$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v "$(pwd)/config":/etc/api-umbrella nrel/api-umbrella</pre>
   </div>
 
     <div id="ubuntu1204" class="platform-download" style="display: none;">
@@ -144,9 +144,9 @@ sudo yum install api-umbrella</pre>
 
   <div id="other" class="platform-download" style="display: none;">
     <p>We build binary packages for a variety of Linux distributions. These binary packages are the recommended way to install API Umbrella. However, if binary packages aren't available, you can also compile from source (also, please <a href="https://github.com/NREL/api-umbrella/issues">let us know</a> if you'd like to see binaries for other operating systems):</p>
-    <pre>$ curl -OLJ https://github.com/NREL/api-umbrella/archive/v0.12.0.tar.gz
-$ tar -xvf api-umbrella-0.12.0.tar.gz
-$ cd api-umbrella-0.12.0
+    <pre>$ curl -OLJ https://github.com/NREL/api-umbrella/archive/v0.13.0.tar.gz
+$ tar -xvf api-umbrella-0.13.0.tar.gz
+$ cd api-umbrella-0.13.0
 $ make
 $ sudo make install</pre>
   </div>
