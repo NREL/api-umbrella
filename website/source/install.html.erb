@@ -51,7 +51,7 @@ header: Install
       - your.email@example.com</pre>
 
     <p>Start API Umbrella:</p>
-    <pre>$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v $PWD/config:/etc/api-umbrella nrel/api-umbrella</pre>
+    <pre>$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v config:/etc/api-umbrella nrel/api-umbrella</pre>
   </div>
 
   <% packages.each do |id, distro| %>
