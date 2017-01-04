@@ -63,6 +63,7 @@ class Api::V1::BaseController < ApplicationController
         :code => "INVALID_INPUT",
         :message => message,
         :field => field,
+        :full_message => record.errors.full_message(field, message),
       }
     end
 

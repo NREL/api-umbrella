@@ -1,93 +1,98 @@
 /*
- *= require vendor/normalize.css
+ *= require bootstrap/bootstrap
+ *= require font-awesome
  */
-
-* {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
 
 body {
   padding: 20px;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.login .btn {
   font-size: 16px;
 }
 
-h1 {
-  margin: 0px;
+.login h1 {
   text-align: center;
+  margin: 0px 0px 15px 0px;
   font-weight: 200;
 }
 
-.btn {
-  display: block;
-  width: 100%;
-  text-decoration: none;
-  text-align: center;
-  cursor: pointer;
-  background-color: #07c;
-  color: #fff;
-  border-width: 0px;
-  padding: 10px;
-  border-radius: 5px;
+.login label {
+  font-weight: normal;
 }
 
-.btn:hover {
-  background-color: #005a9a;
-}
-
-.btn:disabled,
-.btn[disabled]:hover,
-.btn[disabled]:focus {
-  cursor: not-allowed;
-  filter: alpha(opacity=65);
-  background-color: #ddd;
-  color: #666;
-}
-
-.alert {
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-}
-.alert-success {
-  color: #3c763d;
-  background-color: #dff0d8;
-  border-color: #d6e9c6;
-}
-.alert-info {
-  color: #31708f;
-  background-color: #d9edf7;
-  border-color: #bce8f1;
-}
-.alert-warning {
-  color: #8a6d3b;
-  background-color: #fcf8e3;
-  border-color: #faebcc;
-}
-.alert-danger {
-  color: #a94442;
-  background-color: #f2dede;
-  border-color: #ebccd1;
-}
-
-#login, .alert {
-  max-width: 360px;
+.login, .alert {
+  max-width: 380px;
   margin-left: auto;
   margin-right: auto;
 }
 
-.admin-login {
-  margin: 20px 0px;
+.login .btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #07c;
+  color: #fff;
+  border-style: none;
 }
 
-.admin-login form {
-  margin: 0px;
+.login .btn:hover {
+  background-color: #005a9a;
 }
 
-.admin-login .alert {
+.login .btn:disabled,
+.login .btn[disabled]:hover,
+.login .btn[disabled]:focus {
+  background-color: #ddd;
+  color: #666;
+}
+
+.login .login-container {
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  padding: 15px;
+  margin: 15px 0px;
+}
+
+.external-login {
+  margin-top: 20px;
+  line-height: 24px;
+}
+
+.external-login:first-child {
+  margin-top: 0px;
+}
+
+.external-login .alert {
   margin-bottom: 2px;
   font-size: 14px;
+}
+
+.external-login .btn span {
+  display: inline-block;
+}
+
+.external-login .btn .fa {
+  margin-right: 8px;
+  font-size: 24px;
+}
+
+.external-login .btn span,
+.external-login .btn .fa {
+  vertical-align: middle;
+  line-height: 24px;
+}
+
+.external-login .btn .fa-developer,
+.external-login .btn .fa-cas,
+.external-login .btn .fa-ldap {
+  display: none;
+}
+
+.fa-google_oauth2:before {
+  content: "\f1a0";
+}
+
+.login .checkbox {
+  margin: 0px;
 }

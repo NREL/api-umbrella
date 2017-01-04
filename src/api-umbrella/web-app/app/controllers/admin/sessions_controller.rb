@@ -1,12 +1,6 @@
 class Admin::SessionsController < Devise::SessionsController
+  before_action :one_time_setup
   skip_after_action :verify_authorized
-
-  def new
-  end
-
-  def after_sign_out_path_for(resource_or_scope)
-    admin_path
-  end
 
   def auth
     response = {
@@ -23,6 +17,24 @@ class Admin::SessionsController < Devise::SessionsController
 
     respond_to do|format|
       format.json { render(:json => response) }
+    end
+  end
+
+  private
+
+  def set_flash_message(key, kind, options = {})
+    # Don't set the "signed in" flash message, since we redirect to the Ember
+    # app after signing in, where flashes won't be displayed (so displaying the
+    # "signed in" message the next time they get back to the Rails login page
+    # is confusing).
+    if(kind != :signed_in)
+      super(key, kind, options)
+    end
+  end
+
+  def one_time_setup
+    if(Admin.needs_first_account?)
+      redirect_to new_admin_registration_path
     end
   end
 end

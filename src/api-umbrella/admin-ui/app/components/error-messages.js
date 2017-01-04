@@ -27,7 +27,7 @@ export default Ember.Component.extend({
     if(serverErrors) {
       if(_.isArray(serverErrors)) {
         _.each(serverErrors, function(serverError) {
-          let message = serverError.message;
+          let message = serverError.full_message || serverError.message;
           if(!message && serverError.title) {
             message = serverError.title;
             if(serverError.status) {
@@ -51,18 +51,7 @@ export default Ember.Component.extend({
 
     let messages = [];
     _.each(errors, function(error) {
-      let message = '';
-      if(error.attribute && error.attribute !== 'base') {
-        message += inflection.titleize(inflection.underscore(error.attribute)) + ': ';
-        message += error.message || 'Unexpected error';
-      } else {
-        if(error.message) {
-          message += error.message.charAt(0).toUpperCase() + error.message.slice(1);
-        } else {
-          message += 'Unexpected error';
-        }
-      }
-
+      let message = error.message || 'Unexpected error';
       messages.push(marked(message));
     });
 

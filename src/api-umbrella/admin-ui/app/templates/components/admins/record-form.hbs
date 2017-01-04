@@ -5,21 +5,33 @@
     <fieldset class="form-horizontal condensed">
       <legend>User Info</legend>
 
-      {{f.text-field "username" label="Username"}}
-      {{f.textarea-field "notes" label="Notes"}}
+      {{f.text-field "username" label=(t "mongoid.attributes.admin.username")}}
       {{#if model.email}}
-        {{f.static-field "email" label="E-mail"}}
+        {{#if (not-eq (unbound model.email) (unbound model.username))}}
+          {{f.static-field "email" label=(t "mongoid.attributes.admin.email")}}
+        {{/if}}
       {{/if}}
       {{#if model.name}}
-        {{f.static-field "name" label="Name"}}
+        {{f.static-field "name" label=(t "mongoid.attributes.admin.name")}}
       {{/if}}
+      {{f.textarea-field "notes" label=(t "mongoid.attributes.admin.notes")}}
     </fieldset>
+
+    {{#if model.authenticationToken}}
+      <fieldset class="form-horizontal condensed">
+        <legend>Change Password</legend>
+
+        {{f.password-field "currentPassword" label=(t "mongoid.attributes.admin.current_password")}}
+        {{f.password-field "password" label=(t "mongoid.attributes.admin.password")}}
+        {{f.password-field "passwordConfirmation" label=(t "mongoid.attributes.admin.password_confirmation")}}
+      </fieldset>
+    {{/if}}
 
     {{#if model.authenticationToken}}
       <fieldset class="form-horizontal condensed">
         <legend>Admin API Access</legend>
 
-        {{#f.static-field "authenticationToken" label="Admin API Token"}}
+        {{#f.static-field "authenticationToken" label=(t "mongoid.attributes.admin.authentication_token")}}
           <span class="api-key">{{model.authenticationToken}}</span>
         {{/f.static-field}}
       </fieldset>
@@ -28,9 +40,9 @@
     <fieldset class="form-horizontal condensed">
       <legend>Permissions</legend>
 
-      {{f.checkboxes-field "groupIds" label="Groups" options=groupOptions}}
+      {{f.checkboxes-field "groupIds" label=(t "mongoid.attributes.admin.groups") options=groupOptions}}
       {{#if currentAdmin.superuser}}
-        {{f.checkbox-field "superuser" label="Superuser"}}
+        {{f.checkbox-field "superuser" label=(t "mongoid.attributes.admin.superuser")}}
       {{/if}}
     </fieldset>
 

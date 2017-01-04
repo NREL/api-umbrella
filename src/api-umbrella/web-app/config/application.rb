@@ -132,7 +132,7 @@ module ApiUmbrella
       end
     end
 
-    if(ENV["RAILS_PUBLIC_PATH"].present?)
+    if(ENV["RAILS_PUBLIC_PATH"].present? && !%w(test development).include?(Rails.env))
       config.paths["public"] = ENV["RAILS_PUBLIC_PATH"]
     end
 

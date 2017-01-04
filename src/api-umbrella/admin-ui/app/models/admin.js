@@ -7,8 +7,12 @@ const Validations = buildValidations({
 
 export default DS.Model.extend(Validations, {
   username: DS.attr(),
+  password: DS.attr(),
+  passwordConfirmation: DS.attr(),
+  currentPassword: DS.attr(),
   email: DS.attr(),
   name: DS.attr(),
+  notes: DS.attr(),
   superuser: DS.attr(),
   groupIds: DS.attr({ defaultValue() { return [] } }),
   signInCount: DS.attr(),

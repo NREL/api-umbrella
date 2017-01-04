@@ -11,6 +11,7 @@ en:
     messages:
       invalid_host_format: must be in the format of "example.com"
       invalid_url_prefix_format: must start with "/"
+      password_format: "must contain at least one lowercase letter, one uppercase letter, and one number"
       admin_not_authorized: |-
         You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:
 
@@ -19,6 +20,17 @@ en:
         Contact your API Umbrella administrator if you need access to new APIs.
   mongoid:
     attributes:
+      admin:
+        username: Email
+        email: Email
+        password: Password
+        password_confirmation: Password Confirmation
+        current_password: Current Password
+        name: Name
+        notes: Notes
+        authentication_token: Admin API Token
+        groups: Groups
+        superuser: Superuser
       api:
         backend_host: Backend Host
         backend_protocol: Backend Protocol
@@ -69,7 +81,7 @@ en:
       dashboard: Dashboard
       filter_logs: Filter Logs
       import_export: Import/Export
-      logout: Logout
+      logout: Sign out
       my_account: My Account
       permissions_management: Permissions Management
       publish_changes: Publish Changes

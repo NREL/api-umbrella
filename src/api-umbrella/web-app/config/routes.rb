@@ -58,12 +58,30 @@ Rails.application.routes.draw do
     end
   end
 
-  devise_for :admins, :controllers => { :omniauth_callbacks => "admin/admins/omniauth_callbacks" }
-
+  devise_for :admins,
+    :skip => [
+      :sessions,
+      :registrations,
+    ],
+    :path_names => {
+      :sign_in => "login",
+      :sign_out => "logout",
+    },
+    :controllers => {
+      :omniauth_callbacks => "admin/admins/omniauth_callbacks",
+    }
   devise_scope :admin do
     get "/admin/login" => "admin/sessions#new", :as => :new_admin_session
+    post "/admin/login" => "admin/sessions#create", :as => :admin_session
     delete "/admin/logout" => "admin/sessions#destroy", :as => :destroy_admin_session
     get "/admin/auth" => "admin/sessions#auth"
+
+    resource :registration,
+      :only => [:new, :create],
+      :path => "admins",
+      :path_names => { :new => "signup" },
+      :controller => "admin/registrations",
+      :as => :admin_registration
   end
 
   namespace :admin do

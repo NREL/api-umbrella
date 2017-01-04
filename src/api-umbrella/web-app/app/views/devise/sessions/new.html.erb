@@ -1,0 +1,60 @@
+<h1>Admin Sign In</h1>
+
+<div class="login-container">
+  <% if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].include?("local")) %>
+    <%= simple_form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
+      <div class="form-inputs">
+        <%= f.input :username, :required => false, :autofocus => true %>
+        <%= f.input :password, :required => false %>
+        <div class="row">
+          <div class="col-xs-6">
+            <%= f.input :remember_me, :as => :boolean if devise_mapping.rememberable? %>
+          </div>
+          <%- if devise_mapping.recoverable? %>
+            <div class="col-xs-6 text-right">
+              <%= link_to "Forgot your password?", new_password_path(resource_name) %><br />
+            </div>
+          <% end -%>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <%= f.button :submit, "Sign in" %>
+      </div>
+
+    <% end %>
+
+    <% if(resource_class.omniauth_providers.any?) %>
+      <hr>
+    <% end %>
+  <% end %>
+
+  <% if(resource_class.omniauth_providers.any?) %>
+    <% if(!ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].include?("local") && !resource_class.omniauth_providers.include?(:developer) && Admin.count == 0) %>
+      <div class="alert alert-danger">
+        <strong>No admins currently exist.</strong><br>
+        Initial admin accounts may be defined in <code>/etc/api-umbrella/api-umbrella.yml</code> (see the <code>web.admin.initial_superusers</code> section)
+      </div>
+    <% end %>
+
+    <%- resource_class.omniauth_providers.each do |provider| %>
+      <div class="external-login">
+        <% strategy = Devise.omniauth_configs[provider].strategy %>
+        <% if(strategy.respond_to?(:client_secret) && strategy.client_secret.blank?) %>
+          <div class="alert alert-danger">
+            <%= t(provider, :scope => [:omniauth_providers]) %> authentication provider not yet configured.<br>
+            Access tokens must be defined in <code>/etc/api-umbrella/api-umbrella.yml</code> (see the <code>web.admin.auth_strategies</code> section)
+          </div>
+          <button class="btn btn-primary" disabled="disabled"><i class="fa fa-<%= provider %>" aria-hidden="true"></i><span>Sign in with <%= t(provider, :scope => [:omniauth_providers]) %></span></button>
+        <% else %>
+          <%= link_to %(<i class="fa fa-#{provider}" aria-hidden="true"></i><span>Sign in with #{t(provider, :scope => [:omniauth_providers])}</span>).html_safe, omniauth_authorize_path(resource_name, provider), :class => "btn btn-primary" %>
+        <% end %>
+      </div>
+    <% end -%>
+  <% elsif(!ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].include?("local")) %>
+    <div class="alert alert-danger">
+      <strong>No authentication strategies are set.</strong><br>
+      You must define at least one authentication strategy in <code>/etc/api-umbrella/api-umbrella.yml</code> (see the <code>web.admin.auth_strategies.enabled</code> section)
+    </div>
+  <% end %>
+</div>

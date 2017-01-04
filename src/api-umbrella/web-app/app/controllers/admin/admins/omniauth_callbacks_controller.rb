@@ -12,21 +12,21 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
       raise "The developer OmniAuth strategy should not be used outside of development or test."
     end
 
-    @email = request.env["omniauth.auth"]["uid"]
-    @admin = Admin.where(:username => @email).first
-    @admin ||= Admin.create!(:username => @email, :superuser => true)
+    @username = request.env["omniauth.auth"]["uid"]
+    @admin = Admin.find_for_database_authentication(:username => @username)
+    @admin ||= Admin.create!(:username => @username, :superuser => true)
 
     login
   end
 
   def cas
-    @email = request.env["omniauth.auth"]["uid"]
+    @username = request.env["omniauth.auth"]["uid"]
     login
   end
 
   def facebook
     if(request.env["omniauth.auth"]["info"]["verified"])
-      @email = request.env["omniauth.auth"]["info"]["email"]
+      @username = request.env["omniauth.auth"]["info"]["email"]
     end
 
     login
@@ -34,7 +34,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
   def github
     if(request.env["omniauth.auth"]["info"]["email_verified"])
-      @email = request.env["omniauth.auth"]["info"]["email"]
+      @username = request.env["omniauth.auth"]["info"]["email"]
     end
 
     login
@@ -42,7 +42,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
   def google_oauth2
     if(request.env["omniauth.auth"]["extra"]["raw_info"]["email_verified"])
-      @email = request.env["omniauth.auth"]["info"]["email"]
+      @username = request.env["omniauth.auth"]["info"]["email"]
     end
 
     login
@@ -51,15 +51,15 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
   def ldap
     uid_field = request.env["omniauth.strategy"].options[:uid]
     uid = [request.env["omniauth.auth"]["extra"]["raw_info"][uid_field]].flatten.compact.first
-    @email = uid
+    @username = uid
     login
   end
 
   private
 
   def login
-    if(!@admin && @email.present?)
-      @admin = Admin.where(:username => @email.downcase).first
+    if(!@admin && @username.present?)
+      @admin = Admin.find_for_database_authentication(:username => @username)
     end
 
     if @admin
@@ -80,7 +80,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
     else
       flash[:error] = ActionController::Base.helpers.safe_join([
         "The account for '",
-        @email,
+        @username,
         "' is not authorized to access the admin. Please ",
         ActionController::Base.helpers.content_tag(:a, "contact us", :href => ApiUmbrellaConfig[:contact_url]),
         " for further assistance.",
@@ -88,10 +88,6 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
       redirect_to new_admin_session_path
     end
-  end
-
-  def signed_in_root_path(resource_or_scope)
-    admin_path
   end
 
   def after_omniauth_failure_path_for(scope)

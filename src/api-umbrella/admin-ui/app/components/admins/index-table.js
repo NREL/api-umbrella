@@ -14,30 +14,16 @@ export default Ember.Component.extend({
         {
           data: 'username',
           name: 'Username',
-          title: 'Username',
+          title: I18n.t('mongoid.attributes.admin.username'),
           defaultContent: '-',
-          render: _.bind(function(email, type, data) {
-            if(type === 'display' && email && email !== '-') {
+          render: _.bind(function(username, type, data) {
+            if(type === 'display' && username && username !== '-') {
               let link = '#/admins/' + data.id + '/edit';
-              return '<a href="' + link + '">' + _.escape(email) + '</a>';
+              return '<a href="' + link + '">' + _.escape(username) + '</a>';
             }
 
-            return email;
+            return username;
           }, this),
-        },
-        {
-          data: 'email',
-          name: 'E-mail',
-          title: 'E-mail',
-          defaultContent: '-',
-          render: DataTablesHelpers.renderEscaped,
-        },
-        {
-          data: 'name',
-          name: 'Name',
-          title: 'Name',
-          defaultContent: '-',
-          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'group_names',

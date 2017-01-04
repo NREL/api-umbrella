@@ -55,6 +55,10 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
     respond_to do |format|
       if(@admin.save)
+        if(current_admin && @admin.id == current_admin.id)
+          bypass_sign_in(current_admin, :scope => :admin)
+        end
+
         format.json { render("show", :status => :ok, :location => api_v1_admin_url(@admin)) }
       else
         format.json { render(:json => errors_response(@admin), :status => :unprocessable_entity) }
@@ -73,14 +77,16 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
   def save!
     authorize(@admin) unless(@admin.new_record?)
-    @admin.assign_attributes(admin_params)
+    @admin.assign_with_password(admin_params)
     authorize(@admin)
-    @admin.save
   end
 
   def admin_params
     params.require(:admin).permit([
       :username,
+      :password,
+      :password_confirmation,
+      :current_password,
       :email,
       :name,
       :notes,

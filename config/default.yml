@@ -81,12 +81,15 @@ web:
     max_threads: 24
   admin:
     initial_superusers: []
+    password_length_min: 8
+    password_length_max: 72
+    email_regex: "\\A[^@\\s]+@[^@\\s]+\\z"
+    password_regex:
     auth_strategies:
       enabled:
-        - github
-        - google
+        - local
       cas:
-        options:
+        options: {}
       facebook:
         client_id:
         client_secret:
@@ -97,7 +100,7 @@ web:
         client_id:
         client_secret:
       ldap:
-        options:
+        options: {}
 static_site:
   host: 127.0.0.1
   port: 14013

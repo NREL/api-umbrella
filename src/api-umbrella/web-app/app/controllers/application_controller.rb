@@ -105,6 +105,14 @@ class ApplicationController < ActionController::Base
     Time.zone = old_time_zone
   end
 
+  def signed_in_root_path(resource_or_scope)
+    admin_path
+  end
+
+  def after_sign_out_path_for(resource_or_scope)
+    admin_path
+  end
+
   private
 
   def set_userstamp
