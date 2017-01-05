@@ -55,8 +55,11 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
     respond_to do |format|
       if(@admin.save)
+        # If a user is updating themselves, make sure they remain signed in.
+        # This eliminates the current user getting logged out if they change
+        # their password.
         if(current_admin && @admin.id == current_admin.id)
-          bypass_sign_in(current_admin, :scope => :admin)
+          bypass_sign_in(@admin, :scope => :admin)
         end
 
         format.json { render("show", :status => :ok, :location => api_v1_admin_url(@admin)) }

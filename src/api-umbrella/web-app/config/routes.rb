@@ -130,4 +130,10 @@ Rails.application.routes.draw do
       ],
     ]
   }
+
+  # Add a dummy /admin/ route. This URL actually gets routed to the Ember.js
+  # app, not the Rails app, but we create this dummy route so we have the Rails
+  # "admin_path" and "admin_url" URL helpers available (for redirecting to the
+  # root of the admin).
+  get "/admin/", :to => proc { [200, {}, ["OK"]] }
 end
