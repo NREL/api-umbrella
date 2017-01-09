@@ -45,7 +45,7 @@ class Admin
   ## Lockable
   field :failed_attempts, :type => Integer, :default => 0 # Only if lock strategy is :failed_attempts
   field :unlock_token, :type => String # Only if unlock strategy is :email or :both
-  field :locked_at, type: Time
+  field :locked_at, :type => Time
 
   ## Invitable
   field :invitation_token, :type => String
@@ -97,7 +97,7 @@ class Admin
   end
 
   def self.needs_first_account?
-    self.unscoped.count == 0
+    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].include?("local") && self.unscoped.count == 0
   end
 
   def group_names

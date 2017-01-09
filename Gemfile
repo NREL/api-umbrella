@@ -77,6 +77,9 @@ gem "concurrent-ruby", "~> 1.0.2"
 # Time zone randomization for tests.
 gem "zonebie", "~> 0.6.1"
 
+# Encrypting admin passwords.
+gem "bcrypt", "~> 3.1.11"
+
 # Color output
 gem "rainbow", "~> 2.1.0"
 

@@ -1,6 +1,7 @@
 FactoryGirl.define do
   factory :admin do
-    sequence(:username) { |n| "aburnside#{n}" }
+    sequence(:username) { |n| "aburnside#{n}@example.com" }
+    sequence(:email) { username }
     superuser true
 
     factory :limited_admin do

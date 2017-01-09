@@ -36,15 +36,7 @@ api_server:
 web:
   port: 13012
   admin:
-    initial_superusers:
-      - initial.admin@example.com
     auth_strategies:
-      enabled:
-        - facebook
-        - github
-        - google
-        - ldap
-        - max.gov
       facebook:
         client_id: test_fake
         client_secret: test_fake
@@ -105,8 +97,9 @@ unbound:
   port: 13100
   control_port: 13101
 mailhog:
-  smtp_bind_addr: "127.0.0.1:13102"
-  api_bind_addr: "127.0.0.1:13103"
-  ui_bind_addr: "127.0.0.1:13103"
+  bind_addr: "127.0.0.1"
+  smtp_port: 13102
+  api_port: 13103
+  ui_port: 13103
 apiSettings:
   require_https: optional

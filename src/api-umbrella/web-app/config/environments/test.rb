@@ -8,7 +8,7 @@ Rails.application.configure do
 
   # Deliver real e-mail if running integration tests with local MailHog as our
   # test SMTP server.
-  if(!config.action_mailer.smtp_settings || config.action_mailer.smtp_settings[:address] != "127.0.0.1" || config.action_mailer.smtp_settings[:port] != 13102)
+  if(!config.action_mailer.smtp_settings || config.action_mailer.smtp_settings[:address] != "127.0.0.1" || config.action_mailer.smtp_settings[:port] != ApiUmbrellaConfig[:mailhog][:smtp_port])
     config.action_mailer.delivery_method = :test
   end
 

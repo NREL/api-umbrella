@@ -6,7 +6,7 @@ class Test::Apis::V1::Admins::TestCreate < Minitest::Test
 
   def setup
     setup_server
-    Admin.where(:registration_source.ne => "seed").delete_all
+    Admin.delete_all
   end
 
   def test_downcases_username

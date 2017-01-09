@@ -1,5 +1,5 @@
 class Admin::SessionsController < Devise::SessionsController
-  before_action :one_time_setup
+  before_action :first_time_setup
   skip_after_action :verify_authorized
 
   def auth
@@ -32,7 +32,7 @@ class Admin::SessionsController < Devise::SessionsController
     end
   end
 
-  def one_time_setup
+  def first_time_setup
     if(Admin.needs_first_account?)
       redirect_to new_admin_registration_path
     end

@@ -3,7 +3,9 @@
 # We pre-define all these here so that we can use the shorter, more succinct
 # single-line/non-nested syntax in all the test files.
 module Test
-  module AdminUi; end
+  module AdminUi
+    module Login; end
+  end
 
   module Apis
     module Admin

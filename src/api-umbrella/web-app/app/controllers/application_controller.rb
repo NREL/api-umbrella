@@ -2,7 +2,7 @@ class ApplicationController < ActionController::Base
   include Pundit
   include DatatablesHelper
   prepend_around_filter :use_locale
-  protect_from_forgery :with => :null_session
+  protect_from_forgery :with => :exception
 
   around_action :set_userstamp
 

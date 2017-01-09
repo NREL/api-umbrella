@@ -7,7 +7,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
 
   def setup
     setup_server
-    Admin.where(:registration_source.ne => "seed").delete_all
+    Admin.delete_all
     AdminGroup.delete_all
     ApiScope.delete_all
   end

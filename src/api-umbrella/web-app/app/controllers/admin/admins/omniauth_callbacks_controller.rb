@@ -1,22 +1,24 @@
 class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   skip_after_action :verify_authorized
 
-  # The developer strategy doesn't include the CSRF token in the form:
-  # https://github.com/omniauth/omniauth/pull/674
-  skip_before_action :verify_authenticity_token, :only => :developer
-
   # For the developer strategy, simply find or create a new admin account with
   # whatever login details they give. This is not for use on production.
   def developer
-    unless(%w(development test).include?(Rails.env))
+    unless(Rails.env == "development")
       raise "The developer OmniAuth strategy should not be used outside of development or test."
     end
 
     @username = request.env["omniauth.auth"]["uid"]
     @admin = Admin.find_for_database_authentication(:username => @username)
-    @admin ||= Admin.create!(:username => @username, :superuser => true)
+    unless(@admin)
+      @admin = Admin.new(:username => @username, :superuser => true)
+      @admin.save!
+    end
 
     login
+  rescue Mongoid::Errors::Validations
+    flash[:error] = @admin.errors.full_messages.join(", ")
+    redirect_to admin_developer_omniauth_authorize_path
   end
 
   def cas

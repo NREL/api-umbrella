@@ -9,7 +9,7 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
   def setup
     setup_server
 
-    response = Typhoeus.delete("http://127.0.0.1:13103/api/v1/messages")
+    response = Typhoeus.delete("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")
     assert_response_code(200, response)
   end
 
