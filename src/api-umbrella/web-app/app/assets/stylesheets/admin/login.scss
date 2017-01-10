@@ -1,7 +1,6 @@
-/*
- *= require bootstrap/bootstrap
- *= require font-awesome
- */
+@import "bootstrap-sprockets";
+@import "bootstrap";
+@import "font-awesome";
 
 body {
   padding: 20px;

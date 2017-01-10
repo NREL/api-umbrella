@@ -20,6 +20,7 @@ file(GLOB_RECURSE core_files
   ${CMAKE_SOURCE_DIR}/bin/*
   ${CMAKE_SOURCE_DIR}/config/*
   ${CMAKE_SOURCE_DIR}/templates/*
+  ${CMAKE_SOURCE_DIR}/src/api-umbrella/web-app/Gemfile*
 )
 add_custom_command(
   OUTPUT ${STAMP_DIR}/core-build-release-dir
