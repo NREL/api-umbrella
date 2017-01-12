@@ -1,4 +1,7 @@
 class Api::V1::BaseController < ApplicationController
+  # API requests won't pass CSRF tokens, so don't reject requests without them.
+  protect_from_forgery :with => :null_session
+
   # Try authenticating from an admin token (for direct API access).
   before_action :authenticate_admin_from_token!
 
