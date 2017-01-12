@@ -51,7 +51,6 @@ set :default_env, fetch(:default_env, {}).merge({
   # web app is started. But for rake task purposes (like asset precompilation
   # where these don't matter), just set some dummy values during deploy.
   "RAILS_SECRET_TOKEN" => "TEMP",
-  "DEVISE_SECRET_KEY" => "TEMP",
 })
 
 # Default value for keep_releases is 5
