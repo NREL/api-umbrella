@@ -6,9 +6,9 @@ module ApiUmbrellaTestHelpers
       admin ||= FactoryGirl.create(:admin, :encrypted_password => BCrypt::Password.create("password"))
 
       visit "/admin/login"
-      fill_in "Email", :with => admin.username
-      fill_in "Password", :with => "password"
-      click_button "Sign in"
+      fill_in "admin_username", :with => admin.username
+      fill_in "admin_password", :with => "password"
+      click_button "sign_in"
       assert_logged_in(admin)
     end
 

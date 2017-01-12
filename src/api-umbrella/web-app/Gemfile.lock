@@ -138,6 +138,7 @@ GEM
       railties (>= 4.1.0, < 5.1)
       responders
       warden (~> 1.2.3)
+    devise-i18n (1.1.1)
     devise_invitable (1.7.0)
       actionmailer (>= 4.0.0)
       devise (>= 4.0.0)
@@ -345,6 +346,7 @@ DEPENDENCIES
   daemons (~> 1.2.4)
   delayed_job_mongoid (~> 2.2.0)
   devise (~> 4.2.0)
+  devise-i18n (~> 1.1.1)
   devise_invitable (~> 1.7.0)
   elasticsearch (~> 2.0.0)
   font-awesome-rails (~> 4.7.0)

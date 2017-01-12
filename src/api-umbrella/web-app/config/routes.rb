@@ -114,7 +114,7 @@ Rails.application.routes.draw do
   # "navigator.languages" can't really seem to be changed in
   # Capybara+poltergeist).
   get "/admin/i18n_detection.js", :to => proc { |env|
-    locale = env["http_accept_language.parser"].compatible_language_from(I18n.available_locales) || I18n.default_locale
+    locale = env["http_accept_language.parser"].language_region_compatible_from(I18n.available_locales) || I18n.default_locale
 
     [
       200,

@@ -1,5 +1,5 @@
-<p>Welcome <%= @email %>!</p>
+<% require 'devise/version' %>
+<p><%= t('.greeting', recipient: @resource.email) %></p>
 
-<p>You can confirm your account email through the link below:</p>
-
-<p><%= link_to 'Confirm my account', confirmation_url(@resource, confirmation_token: @token) %></p>
+<p><%= t('.instruction') %></p>
+<p><%= link_to t('.action'), confirmation_url(@resource, confirmation_token: (Devise::VERSION.start_with?('3.') ? @token : @resource.confirmation_token)) %></p>

@@ -1,4 +1,4 @@
-<h1>Admin Sign In</h1>
+<h1><%= t(".admin_sign_in") %></h1>
 
 <div class="login-container">
   <% if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].include?("local")) %>
@@ -12,14 +12,14 @@
           </div>
           <%- if devise_mapping.recoverable? %>
             <div class="col-xs-6 text-right">
-              <%= link_to "Forgot your password?", new_password_path(resource_name) %><br />
+              <%= link_to t("devise.shared.links.forgot_your_password"), new_password_path(resource_name) %><br />
             </div>
           <% end -%>
         </div>
       </div>
 
       <div class="form-actions">
-        <%= f.button :submit, "Sign in" %>
+        <%= f.button :submit, t(".sign_in"), :id => "sign_in" %>
       </div>
     <% end %>
 

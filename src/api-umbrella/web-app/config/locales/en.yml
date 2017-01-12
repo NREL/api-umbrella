@@ -432,3 +432,7 @@ en:
           description_markdown: |-
             The content type of the response.
             *Example:* `application/json; charset=utf-8`
+  devise:
+    sessions:
+      new:
+        admin_sign_in: Admin Sign In

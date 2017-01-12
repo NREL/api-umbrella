@@ -41,9 +41,6 @@ gem "database_cleaner", "~> 1.5.3"
 # Programmatically generate Rails session cookies.
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
 
-# Localization tests
-gem "i18n", "~> 0.7.0"
-
 # URL parsing/generation
 gem "addressable", "~> 2.5.0"
 
