@@ -248,7 +248,7 @@ module ApiUmbrellaSharedTests
     def test_admin_web_app
       response = Typhoeus.get("https://127.0.0.1:9081/admin/login", keyless_http_options)
       assert_response_code(200, response)
-      assert_match("Admin Login", response.body)
+      assert_match("Admin Sign In", response.body)
     end
 
     def test_admin_web_app_wildcard_host
@@ -271,7 +271,7 @@ module ApiUmbrellaSharedTests
         end
       else
         assert_response_code(200, response)
-        assert_match("Admin Login", response.body)
+        assert_match("Admin Sign In", response.body)
       end
     end
   end

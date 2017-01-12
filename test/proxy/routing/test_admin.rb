@@ -63,7 +63,7 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
     ]) do
       response = Typhoeus.get("https://127.0.0.1:9081/admin/login", keyless_http_options)
       assert_response_code(200, response)
-      assert_match("Admin Login", response.body)
+      assert_match("Admin Sign In", response.body)
     end
   end
 end

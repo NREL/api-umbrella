@@ -11,7 +11,7 @@ class Test::AdminUi::TestPageTitle < Minitest::Capybara::Test
 
   def test_rails_login_page_title
     visit "/admin/"
-    assert_content("Admin Login")
+    assert_content("Admin Sign In")
     assert_equal("API Umbrella Admin", page.title)
   end
 
