@@ -74,7 +74,6 @@ web:
   host: 127.0.0.1
   port: 14012
   rails_secret_token:
-  devise_secret_key:
   puma:
     workers: 2
     min_threads: 2
@@ -101,6 +100,8 @@ web:
         client_secret:
       ldap:
         options: {}
+  mailer:
+    smtp_settings:
 static_site:
   host: 127.0.0.1
   port: 14013

@@ -126,7 +126,6 @@ local function set_cached_random_tokens()
   local cached = {
     web = {
       rails_secret_token = random_token(128),
-      devise_secret_key = random_token(128),
     },
     static_site = {
       api_key = random_token(40),

@@ -3,7 +3,7 @@ require "securerandom"
 module ApiUmbrellaTestHelpers
   module AdminAuth
     def admin_login(admin = nil)
-      admin ||= FactoryGirl.create(:admin, :encrypted_password => BCrypt::Password.create("password"))
+      admin ||= FactoryGirl.create(:admin)
 
       visit "/admin/login"
       fill_in "admin_username", :with => admin.username
@@ -15,7 +15,7 @@ module ApiUmbrellaTestHelpers
     def csrf_session
       csrf_token = SecureRandom.base64(32)
 
-      cookies_utils = RailsCompatibleCookiesUtils.new("aeec385fb48a0594b6bb0b18f62473190f1d01b0b6113766af525be2ae1a317a03ab0ee1b3ee6aca3fb1572dc87684e033dcec21acd90d0ca0f111ca1785d0e9")
+      cookies_utils = RailsCompatibleCookiesUtils.new(test_rails_secret_token)
       session = cookies_utils.encrypt({
         "session_id" => SecureRandom.hex(16),
         "_csrf_token" => csrf_token,
@@ -26,10 +26,12 @@ module ApiUmbrellaTestHelpers
 
     def admin_session(admin = nil)
       admin ||= FactoryGirl.create(:admin)
-      cookies_utils = RailsCompatibleCookiesUtils.new("aeec385fb48a0594b6bb0b18f62473190f1d01b0b6113766af525be2ae1a317a03ab0ee1b3ee6aca3fb1572dc87684e033dcec21acd90d0ca0f111ca1785d0e9")
+      cookies_utils = RailsCompatibleCookiesUtils.new(test_rails_secret_token)
+
+      authenticatable_salt = admin.encrypted_password[0, 29] if(admin.encrypted_password)
       session = cookies_utils.encrypt({
         "session_id" => SecureRandom.hex(16),
-        "warden.user.admin.key" => [[admin.id], nil],
+        "warden.user.admin.key" => [[admin.id], authenticatable_salt],
       })
 
       { :headers => { "Cookie" => "_api_umbrella_session=#{session}" } }
@@ -92,6 +94,19 @@ module ApiUmbrellaTestHelpers
       }))
 
       [get_response, create_response]
+    end
+
+    private
+
+    @@test_rails_secret_token = nil
+    def test_rails_secret_token
+      unless @@test_rails_secret_token
+        test_config = YAML.load_file(File.join(API_UMBRELLA_SRC_ROOT, "config/test.yml"))
+        @@test_rails_secret_token = test_config["web"]["rails_secret_token"]
+        assert(@@test_rails_secret_token)
+      end
+
+      @@test_rails_secret_token
     end
   end
 end

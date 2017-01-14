@@ -48,26 +48,10 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
     assert_includes([TrueClass, FalseClass], data["enable_beta_analytics"].class)
 
     assert_equal([
-      "created_at",
-      "created_by",
-      "current_sign_in_at",
-      "current_sign_in_ip",
-      "deleted_at",
       "email",
-      "group_ids",
-      "group_names",
       "id",
-      "last_sign_in_at",
-      "last_sign_in_ip",
-      "last_sign_in_provider",
-      "name",
-      "notes",
-      "sign_in_count",
       "superuser",
-      "updated_at",
-      "updated_by",
       "username",
-      "version",
     ].sort, data["admin"].keys.sort)
     assert_equal(File.read(File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/version.txt")).strip, data["api_umbrella_version"])
     assert_equal(true, data["authenticated"])

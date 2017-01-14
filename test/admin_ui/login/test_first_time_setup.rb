@@ -21,7 +21,7 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
     fill_in "Email", :with => "new@example.com"
     fill_in "Password", :with => "password123456"
     fill_in "Password Confirmation", :with => "password123456"
-    click_button "Create Account"
+    click_button "Sign up"
 
     # Ensure the user gets logged in.
     assert_logged_in
@@ -68,7 +68,7 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
     FactoryGirl.create(:admin)
     assert_equal(1, Admin.count)
 
-    click_button "Create Account"
+    click_button "Sign up"
 
     assert_content("Admin Sign In")
     assert_content("An initial admin account already exists.")

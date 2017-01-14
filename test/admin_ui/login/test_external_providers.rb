@@ -38,7 +38,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     assert_first_time_admin_creation_forbidden
   end
 
-  def test_shows_external_login_links_in_order_no_local_fields
+  def test_shows_external_login_links_in_order_and_no_local_fields
     visit "/admin/login"
 
     assert_content("Admin Sign In")

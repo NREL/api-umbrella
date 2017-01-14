@@ -13,7 +13,7 @@ class Test::AdminUi::TestAdmins < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/admins/new"
 
-    assert_content("Username")
+    assert_content("Email")
     assert_content("Superuser")
   end
 
@@ -21,7 +21,7 @@ class Test::AdminUi::TestAdmins < Minitest::Capybara::Test
     admin_login(FactoryGirl.create(:limited_admin))
     visit "/admin/#/admins/new"
 
-    assert_content("Username")
+    assert_content("Email")
     refute_content("Superuser")
   end
 

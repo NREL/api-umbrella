@@ -3,6 +3,7 @@ import Ember from 'ember';
 export default Ember.Component.extend({
   messages: Ember.computed('model.clientErrors', 'model.serverErrors', function() {
     let errors = [];
+    let modelI18nRoot = 'mongoid.attributes.' + this.get('model.constructor.modelName').replace('-', '_');
 
     let clientErrors = this.get('model.clientErrors');
     if(clientErrors) {
@@ -27,7 +28,7 @@ export default Ember.Component.extend({
     if(serverErrors) {
       if(_.isArray(serverErrors)) {
         _.each(serverErrors, function(serverError) {
-          let message = serverError.full_message || serverError.message;
+          let message = serverError.message;
           if(!message && serverError.title) {
             message = serverError.title;
             if(serverError.status) {
@@ -39,6 +40,7 @@ export default Ember.Component.extend({
             errors.push({
               attribute: serverError.field,
               message: message,
+              fullMessage: serverError.full_message,
             });
           } else {
             errors.push({ message: 'Unexpected error' });
@@ -51,7 +53,25 @@ export default Ember.Component.extend({
 
     let messages = [];
     _.each(errors, function(error) {
-      let message = error.message || 'Unexpected error';
+      let message = '';
+      if(error.fullMessage) {
+        message += error.fullMessage;
+      } else if(error.attribute && error.attribute !== 'base') {
+        let attributeTitle = I18n.t(modelI18nRoot + '.' + inflection.underscore(error.attribute), { defaultValue: false });
+        if(attributeTitle === false) {
+          attributeTitle = inflection.titleize(inflection.underscore(error.attribute));
+        }
+
+        message += attributeTitle + ': ';
+        message += error.message || 'Unexpected error';
+      } else {
+        if(error.message) {
+          message += error.message.charAt(0).toUpperCase() + error.message.slice(1);
+        } else {
+          message += 'Unexpected error';
+        }
+      }
+
       messages.push(marked(message));
     });
 

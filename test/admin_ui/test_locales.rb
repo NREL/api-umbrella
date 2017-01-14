@@ -62,7 +62,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
 
   # Test all the available locales except the special test "zy" (which we use
   # to test for incomplete data).
-  valid_locales = I18n.available_locales - [:zy]
+  valid_locales = EXPECTED_I18N.keys
   valid_locales.each do |locale|
     locale_method_name = locale.to_s.downcase.gsub(/[^\w]/, "_")
 

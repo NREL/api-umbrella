@@ -61,13 +61,18 @@ class Api::V1::BaseController < ApplicationController
   def errors_response(record)
     response = { :errors => [] }
 
-    record.errors.each do |field, message|
-      response[:errors] << {
-        :code => "INVALID_INPUT",
-        :message => message,
-        :field => field,
-        :full_message => record.errors.full_message(field, message),
-      }
+    record.errors.to_hash.each do |field, field_messages|
+      field_messages.each do |message|
+        full_message = record.errors.full_message(field, message)
+        full_message[0] = full_message[0].upcase
+
+        response[:errors] << {
+          :code => "INVALID_INPUT",
+          :message => message,
+          :field => field,
+          :full_message => full_message,
+        }
+      end
     end
 
     response

@@ -27,7 +27,8 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     admin = FactoryGirl.create(:admin, :username => "admin@example.com")
     assert_nil(admin.reset_password_token)
     assert_nil(admin.reset_password_sent_at)
-    assert_nil(admin.encrypted_password)
+    original_encrypted_password = admin.encrypted_password
+    assert(original_encrypted_password)
 
     visit "/admins/password/new"
 
@@ -40,7 +41,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     admin.reload
     assert(admin.reset_password_token)
     assert(admin.reset_password_sent_at)
-    assert_nil(admin.encrypted_password)
+    assert_equal(original_encrypted_password, admin.encrypted_password)
 
     # Find sent email
     messages = delayed_job_sent_messages
@@ -62,7 +63,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     visit reset_url
 
     fill_in "New password", :with => "password"
-    fill_in "Confirm your new password", :with => "password"
+    fill_in "Confirm new password", :with => "password"
     click_button "Change my password"
 
     # Ensure the user gets logged in.
@@ -73,5 +74,6 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     assert_nil(admin.reset_password_token)
     assert_nil(admin.reset_password_sent_at)
     assert(admin.encrypted_password)
+    refute_equal(original_encrypted_password, admin.encrypted_password)
   end
 end
