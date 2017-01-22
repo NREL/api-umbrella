@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!-- saved from url=(0041)http://www.xiaoji001.com/grkkikSK8Wc6CMlG -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta content="no-cache" http-equiv="Cache-Control"><meta content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=2.0" name="viewport"><title>小鸡模拟器免越狱安装|小鸡模拟器游戏大全 - GBA|PS|GBC|FC|SFC|MD|PSP|nds|n64模拟器游戏专家 - 小鸡工作室</title><meta content="小鸡模拟器,小鸡工作室,小鸡游戏,小鸡模拟器游戏大全,小鸡模拟器IOS微信下载" name="keywords"><meta content="小鸡模拟器是一款完全免费的模拟器游戏大全，目前首个软件版本已经可以同时支持街机、GBA、GBC、MD、SFC(SNES)、FC(NES)、NDS、PSP以及PS游戏主机的模拟；通过安装使用这款模拟器." name="description"><link href="./小鸡模拟器免越狱安装_小鸡模拟器游戏大全 - GBA_PS_GBC_FC_SFC_MD_PSP_nds_n64模拟器游戏专家 - 小鸡工作室_files/common.css" rel="stylesheet" type="text/css"><link rel="stylesheet" href="./小鸡模拟器免越狱安装_小鸡模拟器游戏大全 - GBA_PS_GBC_FC_SFC_MD_PSP_nds_n64模拟器游戏专家 - 小鸡工作室_files/style.css"><link rel="stylesheet" href="./小鸡模拟器免越狱安装_小鸡模拟器游戏大全 - GBA_PS_GBC_FC_SFC_MD_PSP_nds_n64模拟器游戏专家 - 小鸡工作室_files/main_v2.css"><style type="text/css">.stop-service{padding:200px 20px 0px 20px;text-align:center;background:url(/images/close.png) no-repeat center center;font-size:14px;}.stop-service span{color:red;}.layer_fix{width:100%;height:100%;position:fixed;z-index:100;}.layer_fix .wrap{background:url("http://www.xiaoji001.com/mpad/images/bg_blank_black.png");top:0px;width:100%;height:100%;right:0px;position:absolute;}.layer_fix .box{position:relative;}.layer_fix .box .l{left:10px;top:10px;position:absolute;z-index:2;}.layer_fix .box .r{top:0px;right:0px;position:absolute;z-index:1;max-width:210px;}.layer_fix .box .r img{width:100%;max-width:210px;}.ios{width:50%;}</style></head><body> <script type="text/javascript">function is_weixn(){
+    var ua = navigator.userAgent.toLowerCase();
+    if(ua.match(/MicroMessenger/i)=="micromessenger") {
+        return true;
+    } else {
+        return false;
+    }
+}
+function layer_fix_close(){
+	document.getElementById("layer_fix").style.display = "none";
+}
+
+function isIOS9(){
+	var agent = navigator.userAgent.toLowerCase() ;
+	var version, verinfo;
+	if(agent.indexOf("like mac os x") > 0){
+		var reg = /os ([0-9]+)_([0-9]+)/i;
+		verinfo = agent.match(reg) ;
+		if(verinfo!=undefined && verinfo[1]!=undefined && verinfo[2]!=undefined){
+			version = parseFloat(verinfo[1]+"."+verinfo[2]);
+			if(version>=9){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+function ios9_show_p(){
+	if(isIOS9()){
+		document.getElementById("ios9_trust").style.display = 'block';
+		document.getElementById("active_application").innerHTML = '第三步：自动激活并打开';
+		//document.getElementById('ios9msg').style.display = 'inline-block';
+		//$("#ios9br1, #ios9br2").show();
+	}
+}
+
+function ios_main_href(){
+	location.href = "itms-services:///?action=download-manifest&url=https://ssl.xiaoji001.com/i/grkkikSK8Wc6CMlG.plist";
+}
+function ios_backup_href(){
+	location.href = "itms-services:///?action=download-manifest&url=https://ssl2.xiaoji001.com/i/grkkikSK8Wc6CMlG.plist";
+	//location.href = "itms-services:///?action=download-manifest&url=https://raw.githubusercontent.com/raypo/forforkTest/master/xiaoji_handle.plist";
+}
+</script><div class="layer_fix" id="layer_fix" style="display: none;"><div class="wrap"><div class="box"><div class="r"><img src="./小鸡模拟器免越狱安装_小鸡模拟器游戏大全 - GBA_PS_GBC_FC_SFC_MD_PSP_nds_n64模拟器游戏专家 - 小鸡工作室_files/pic_tips_browser.png"></div><div class="l"><span class="ico_layer_close" title="我知道了，关闭" onclick="javascript:layer_fix_close();"></span></div></div></div></div><script type="text/javascript">if(!is_weixn()){
+	layer_fix_close();
+}
+</script> <div class="row-fluid"><div class="container"><h1 class="pull-left">小鸡模拟器</h1></div><div class="container content"><div class="view row"><div style="text-align:center;"><a href="http://www.xiaoji001.com/"><img class="logo" src="./小鸡模拟器免越狱安装_小鸡模拟器游戏大全 - GBA_PS_GBC_FC_SFC_MD_PSP_nds_n64模拟器游戏专家 - 小鸡工作室_files/logo.png"></a></div></div><div class="view row"><div style="text-align:center;"> <a class="ios" href="javascript:ios_main_href();"><i>第一步：下载安装iOS版</i></a><br><p style="padding-top:10px; display:inline-block; border-bottom:1px solid #666;"><a href="javascript:ios_backup_href();" style="color: #666">备用下载地址</a></p><div id="ios9_trust" style="padding-top: 15px;display:none; "><!--<div style="font-size: 16px;color:#fd0018;margin-bottom: 5px;">第二步</div>--><a class="ios" href="http://www.xiaoji001.com/m/ios9_guide.html"><i>第二步：去信任证书(iOS9)</i></a></div><div style="padding-top: 15px;"><!--<div id="active_application" style="font-size: 16px;color:#fd0018;margin-bottom: 5px;">第二步</div>--><a class="ios" href="com.lancheng.newapp://?http://www.xiaoji001.com/i/grkkikSK8Wc6CMlG"><i id="active_application">第二步：自动激活并打开</i></a><br><p style="padding-top:15px; display:inline-block; "></p><p style="color: #666">激活码：grkkikSK8Wc6CMlG</p><p style="color: red">（长按拷贝 首次安装 激活需要）</p><p></p></div></div></div><div style="text-align:center; margin-top:20px;"><div style="width:80%; padding:10px; margin:0 auto; font-size:80%; border:1px dotted #FF0004; background-color:#F9F5CC;"><p>敬告：您的专属本二维码，<strong style="color:red;">仅限2台设备使用</strong>，请勿传播给他人使用，传播后将失效!</p><br><span class="label label-info">已下载 9 次</span><div style="margin-top:10px; text-align:left;"><p><strong>设备绑定状态：</strong><strong style="color:red;">2</strong>/<strong style="color:green;">2</strong> (可用:0)</p><p style="color:blue;font-weight:bold;">重要提示: 已被下载9次, 可能已被使用过.</p></div></div></div><div style="text-align:center; margin-top:20px;"><a class="ios" style="background-color:#98C13D" href="http://www.xiaoji001.com/download/xiaoji.apk"><i>安卓版下载</i></a></div></div><hr class="devider devider-dotted"><div id="" class="view row"><div class="span12" style="text-align:center;">或者扫描下面的二维码安装或激活<br><img class="qrcode" src="./小鸡模拟器免越狱安装_小鸡模拟器游戏大全 - GBA_PS_GBC_FC_SFC_MD_PSP_nds_n64模拟器游戏专家 - 小鸡工作室_files/grkkikSK8Wc6CMlG.png"></div></div></div><div style="display:none"><script src="./小鸡模拟器免越狱安装_小鸡模拟器游戏大全 - GBA_PS_GBC_FC_SFC_MD_PSP_nds_n64模拟器游戏专家 - 小鸡工作室_files/stat.php" language="JavaScript"></script><script src="./小鸡模拟器免越狱安装_小鸡模拟器游戏大全 - GBA_PS_GBC_FC_SFC_MD_PSP_nds_n64模拟器游戏专家 - 小鸡工作室_files/core.php" charset="utf-8" type="text/javascript"></script><a href="http://www.cnzz.com/stat/website.php?web_id=5217352" target="_blank" title="站长统计"><img border="0" hspace="0" vspace="0" src="./小鸡模拟器免越狱安装_小鸡模拟器游戏大全 - GBA_PS_GBC_FC_SFC_MD_PSP_nds_n64模拟器游戏专家 - 小鸡工作室_files/pic1.gif"></a></div><div class="gs-hidden install-board" id="install-step-download"><div class="corp download"><p>加载中...</p><div class="process"><div class="bar" style="width:0%;"></div></div></div></div><div id="shadow" class="shadow" style="opacity: 1; display: none;"></div><div id="message" class="message" style="opacity: 1; display: none;"><div class="close" onclick="close_msg()"><img src="./小鸡模拟器免越狱安装_小鸡模拟器游戏大全 - GBA_PS_GBC_FC_SFC_MD_PSP_nds_n64模拟器游戏专家 - 小鸡工作室_files/close.png"></div><div id="message9" class="message9"><div class="msg_txt"><div class="ui-header-slideWrap" id="scrollImg" style="overflow: hidden;"><div class="ui-header-indexSlide" id="scroller" style="width: 1575px; transform-origin: 0px 0px 0px; position: absolute; top: 0px; left: -1260px;"><ul id="scrollcon"><li class="sImgItem" style="width:315px;"></li></ul></div><div id="change_img_nav"><ul id="change_img_nav_ul"></ul></div></div></div><p class="xin-btn"><a href="javascript:xinren()">点我去信任</a></p></div></div><script>    window.onload = function(){
+        ios9_show_p();
+    }
+
+    function install_start(){
+        $("#install-step-download, #shadow").show();
+        setTimeout(function(){
+            var loop = 0;
+            var maxloop = 20;
+            var process = setInterval(function(){
+                if(loop >= maxloop){
+                    clearInterval(process);
+                    $('#message, #message9').show();
+                    $("#install-step-download").hide();
+                    return ;
+                }
+                loop++;
+                var percent = parseFloat((loop / maxloop)*100);
+                $("#install-step-download > .download >.process >.bar").css("width", percent+'%');
+            },50);
+        },50);
+    }
+
+    function close_msg(){
+        $('#message, #message8, #message9, #shadow').hide();
+    }
+    function xinren() {
+        var url = "prefs:root=General&path=ManagedConfigurationList";
+        doLocation(url);
+    }
+
+    function doLocation(url) {
+        var uaa = navigator.userAgent.toLowerCase();
+        if (uaa.indexOf('micromessenger') > 0) {
+            $("#zhezhao").show();
+            $("#zhezhao").click(function() {
+                $("#zhezhao").hide();
+            })
+        }
+        var a = document.createElement("a");
+
+        if (!a.click) {
+            window.location = url;
+            return;
+        }
+        a.setAttribute("href", url);
+        a.style.display = "none";
+        document.body.appendChild(a);
+        a.click();
+    }
+</script></body></html>
