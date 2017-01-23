@@ -1,91 +1,244 @@
 import Ember from 'ember';
+import echarts from 'npm:echarts';
 
 export default Ember.Component.extend({
-  chartOptions: {
-    width: 640,
-    colorAxis: {
-      colors: ['#B0DBFF', '#4682B4'],
-    },
-  },
-
-  chartData: {
-    cols: [],
-    rows: [],
-  },
+  routing: Ember.inject.service('-routing'),
 
   didInsertElement() {
-    google.charts.setOnLoadCallback(this.renderChart.bind(this));
+    this.renderChart();
   },
 
   renderChart() {
-    this.chart = new google.visualization.GeoChart(this.$()[0]);
-    google.visualization.events.addListener(this.chart, 'regionClick', _.bind(this.handleRegionClick, this));
-    google.visualization.events.addListener(this.chart, 'select', _.bind(this.handleCityClick, this));
+    this.$()[0].style = "width: 100%; height: 400px; margin-top: 15px"
+    this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
+    this.chart.showLoading();
+    this.chart.on('mapselectchanged', this.handleRegionClick.bind(this));
+    this.chart.on('click', this.handleCityClick.bind(this));
+    this.draw();
 
-    // On first load, refresh the data. Afterwards the observer should handle
-    // refreshing.
-    if(!this.dataTable) {
-      this.refreshData();
+    $(window).on('resize', _.debounce(this.chart.resize, 100));
+  },
+
+  handleRegionClick(event) {
+    let queryParams = _.clone(this.get('queryParamValues'));
+    queryParams.region = event.name;
+    this.get('routing').transitionTo('stats.map', undefined, queryParams);
+  },
+
+  handleCityClick(event) {
+    if(event.seriesType === 'scatter') {
+      let currentRegion = this.get('allQueryParamValues.region').split('-');
+      let currentCountry = currentRegion[0];
+      currentRegion = currentRegion[1];
+      let queryParams = _.clone(this.get('queryParamValues'));
+      queryParams.query = JSON.stringify({
+        condition: 'AND',
+        rules: [
+          {
+            field: 'gatekeeper_denied_code',
+            id: 'gatekeeper_denied_code',
+            input: 'select',
+            operator: 'is_null',
+            type: 'string',
+            value: null,
+          },
+          {
+            field: 'request_ip_country',
+            id: 'request_ip_country',
+            input: 'text',
+            operator: 'equal',
+            type: 'string',
+            value: currentCountry,
+          },
+          {
+            field: 'request_ip_region',
+            id: 'request_ip_region',
+            input: 'text',
+            operator: 'equal',
+            type: 'string',
+            value: currentRegion,
+          },
+          {
+            field: 'request_ip_city',
+            id: 'request_ip_city',
+            input: 'text',
+            operator: 'equal',
+            type: 'string',
+            value: event.name,
+          },
+        ],
+      });
+
+      this.get('routing').transitionTo('stats.logs', undefined, queryParams);
     }
-
-    $(window).on('resize', _.debounce(this.draw.bind(this), 100));
   },
 
-  handleRegionClick(region) {
-    this.set('controller.query.params.region', region.region);
-  },
+  refreshMap: Ember.on('init', Ember.observer('allQueryParamValues.region', function() {
+    let currentRegion = this.get('allQueryParamValues.region');
+    $.get('/admin/maps/' + currentRegion + '.json', (geojson) => {
+      this.labels = geojson._labels || {};
 
-  handleCityClick() {
-    if(this.get('regionField') === 'request_ip_city') {
-      let selection = this.chart.getSelection();
-      if(selection) {
-        let rowIndex = selection[0].row;
-        let region = this.dataTable.getValue(rowIndex, 2);
+      let specialMapAreas = {};
+      if(currentRegion === 'US') {
+        specialMapAreas = {
+          'US-AK': {
+            left: -131,
+            top: 25,
+            width: 15,
+          },
+          'US-HI': {
+            left: -112,
+            top: 26,
+            width: 5,
+          },
+        };
+      }
 
-        let params = _.clone(this.get('controller.query.params'));
-        params.search = 'request_ip_city:"' + region + '"';
-        let router = this.get('controller.target.router');
-        router.transitionTo('stats.logs', $.param(params));
+      echarts.registerMap('region', geojson, specialMapAreas);
+
+      this.set('loadedMapRegion', this.get('allQueryParamValues.region'));
+      this.draw();
+    });
+  })),
+
+  refreshData: Ember.on('init', Ember.observer('regions', function() {
+    let currentRegion = this.get('allQueryParamValues.region');
+
+    let data = [];
+    let maxValue = 2;
+    let maxValueDisplay = '2';
+    let hits = this.get('regions');
+    let regionField = this.get('regionField');
+    for(let i = 0; i < hits.length; i++) {
+      let value, valueDisplay;
+      if(regionField === 'request_ip_city') {
+        value = hits[i].c[3].v;
+        valueDisplay = hits[i].c[3].f;
+        let lat = hits[i].c[0].v;
+        let lng = hits[i].c[1].v;
+        data.push({
+          name: hits[i].c[2].v,
+          value: [lng, lat, value],
+          valueDisplay: valueDisplay,
+        });
+      } else {
+        value = hits[i].c[1].v;
+        valueDisplay = hits[i].c[1].f;
+        let code = hits[i].c[0].v;
+        if(currentRegion === 'US') {
+          code = 'US-' + code;
+        }
+
+        data.push({
+          name: code,
+          value: value,
+          valueDisplay: valueDisplay,
+        });
+      }
+
+      if(value > maxValue) {
+        maxValue = value;
+        maxValueDisplay = valueDisplay;
       }
     }
-  },
 
-  refreshData: Ember.observer('regions', function() {
-    // Defer until Google Charts is loaded if this got called earlier from the
-    // observer.
-    if(!google || !google.visualization || !google.visualization.DataTable) {
+    this.set('chartData', data);
+    this.set('chartDataMaxValue', maxValue);
+    this.set('chartDataMaxValueDisplay', maxValueDisplay);
+    this.set('loadedDataRegion', this.get('allQueryParamValues.region'));
+
+    this.draw();
+  })),
+
+  draw() {
+    let currentRegion = this.get('allQueryParamValues.region');
+    if(!this.chart || this.get('loadedDataRegion') !== currentRegion || this.get('loadedMapRegion') !== currentRegion) {
       return;
     }
 
-    this.chartData.rows = this.get('regions') || [];
-    this.chartData.cols = [
-      {id: 'region', label: 'Region', type: 'string'},
-      {id: 'startDate', label: 'Hits', type: 'number'},
-    ];
-
+    let geo;
+    let series = {};
     if(this.get('regionField') === 'request_ip_city') {
-      this.chartData.cols.unshift({id: 'latitude', label: 'Latitude', type: 'number'},
-        {id: 'longitude', label: 'Longitude', type: 'number'});
-    }
+      geo = {
+        map: 'region',
+        silent: true,
+      };
 
-    this.chartOptions.region = this.get('allQueryParamValues.region');
-    if(this.chartOptions.region.indexOf('US') === 0) {
-      this.chartOptions.resolution = 'provinces';
+      let maxValue = this.get('chartDataMaxValue');
+      series = [
+        {
+          name: 'Hits Scatter',
+          type: 'scatter',
+          coordinateSystem: 'geo',
+          data: this.get('chartData'),
+          symbolSize: (val) => {
+            return Math.max(Math.round((val[2] / maxValue) * 30), 6);
+          },
+        },
+      ];
     } else {
-      this.chartOptions.resolution = 'countries';
+      series = [
+        {
+          name: 'Hits',
+          type: 'map',
+          map: 'region',
+          selectedMode: 'single',
+          data: this.get('chartData'),
+        },
+      ];
     }
 
-    if(this.chartOptions.region === 'world' || this.chartOptions.region === 'US') {
-      this.chartOptions.displayMode = 'regions';
-    } else {
-      this.chartOptions.displayMode = 'markers';
-    }
-
-    this.dataTable = new google.visualization.DataTable(this.chartData);
-    this.draw();
-  }),
-
-  draw() {
-    this.chart.draw(this.dataTable, this.chartOptions);
+    this.chart.hideLoading();
+    this.chart.setOption({
+      tooltip: {
+        trigger: 'item',
+        formatter: function(params) {
+          let label = this.labels[params.name] || params.name;
+          let valueDisplay = params.data.valueDisplay || 0;
+          return '<strong>' + label + '</strong><br>Hits: <strong>' + valueDisplay + '</strong>';
+        }.bind(this),
+      },
+      toolbox: {
+        orient: 'vertical',
+        iconStyle: {
+          emphasis: {
+            textPosition: 'left',
+            textAlign: 'right',
+          },
+        },
+        feature: {
+          saveAsImage: {
+            title: 'save as image',
+            name: 'api_umbrella_chart',
+            excludeComponents: ['toolbox', 'dataZoom'],
+            pixelRatio: 2,
+          },
+        },
+      },
+      visualMap: {
+        type: 'continuous',
+        min: 1,
+        max: this.get('chartDataMaxValue'),
+        orient: 'horizontal',
+        text: [
+          this.get('chartDataMaxValueDisplay'),
+          '1',
+        ],
+      },
+      geo: geo,
+      series: series,
+      title: {
+        show: false,
+      },
+      legend: {
+        show: false,
+      },
+      grid: {
+        show: false,
+        left: 90,
+        top: 10,
+        right: 30,
+      },
+    });
   },
 });

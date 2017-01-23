@@ -32,7 +32,6 @@ module.exports = {
     '_': true,
     'ace': true,
     'bootbox': true,
-    'google': true,
     'inflection': true,
     'jstz': true,
     'marked': true,

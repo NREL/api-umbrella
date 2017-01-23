@@ -30,19 +30,6 @@
 
     {{content-for "body"}}
 
-    <script type="text/javascript">
-      if(!window.DISABLE_GOOGLE_CHARTS) {
-        var script = document.createElement('script');
-        script.src = 'https://www.gstatic.com/charts/loader.js';
-        document.write(script.outerHTML);
-      }
-    </script>
-    <script type="text/javascript">
-      if(!window.DISABLE_GOOGLE_CHARTS) {
-        google.charts.load('current', { 'packages': ['corechart', 'geochart'] });
-      }
-    </script>
-
     <script src="assets/vendor.js"></script>
     <script src="/admin/i18n_detection.js"></script>
     <script src="/web-assets/admin/server_side_loader.js"></script>

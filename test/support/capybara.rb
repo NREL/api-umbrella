@@ -42,7 +42,6 @@ Capybara.register_driver :poltergeist do |app|
     ],
     :extensions => [
       File.join(API_UMBRELLA_SRC_ROOT, "test/support/capybara/disable_animations.js"),
-      File.join(API_UMBRELLA_SRC_ROOT, "test/support/capybara/disable_google_charts.js"),
       File.join(API_UMBRELLA_SRC_ROOT, "test/support/capybara/disable_fixed_header.js"),
     ],
   })
