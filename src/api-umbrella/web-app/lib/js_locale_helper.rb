@@ -1,6 +1,6 @@
 module JsLocaleHelper
   def self.output_locale(locale)
-    translations = YAML.load(File.open("#{Rails.root}/config/locales/#{locale}.yml"))
+    translations = YAML.safe_load(File.open(Rails.root.join("config", "locales", "#{locale}.yml")))
     markdown!(translations)
 
     options = {

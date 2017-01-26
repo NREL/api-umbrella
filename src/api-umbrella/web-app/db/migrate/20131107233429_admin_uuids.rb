@@ -34,8 +34,8 @@ class AdminUuids < Mongoid::Migration
       if(legacy_id.present?)
         [:admins, :api_users, :apis].each do |collection|
           puts "#{collection}: #{db[collection].find(:created_by => Moped::BSON::ObjectId.from_string(legacy_id.to_s)).to_a.inspect}"
-          db[collection].find(:created_by => Moped::BSON::ObjectId.from_string(legacy_id.to_s)).update_all("$set" => { :created_by => id })
-          db[collection].find(:updated_by => Moped::BSON::ObjectId.from_string(legacy_id.to_s)).update_all("$set" => { :updated_by => id })
+          db[collection].find(:created_by => Moped::BSON::ObjectId.from_string(legacy_id.to_s)).update_all("$set" => { :created_by => id }) # rubocop:disable Rails/SkipsModelValidations
+          db[collection].find(:updated_by => Moped::BSON::ObjectId.from_string(legacy_id.to_s)).update_all("$set" => { :updated_by => id }) # rubocop:disable Rails/SkipsModelValidations
         end
       end
     end

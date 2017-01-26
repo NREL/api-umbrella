@@ -10,6 +10,7 @@ class Api
   field :balance_algorithm, :type => String
   field :created_by, :type => String
   field :updated_by, :type => String
+  field :deleted_at, :type => Time
   embeds_one :settings, :class_name => "Api::Settings"
   embeds_many :servers, :class_name => "Api::Server"
   embeds_many :url_matches, :class_name => "Api::UrlMatch"

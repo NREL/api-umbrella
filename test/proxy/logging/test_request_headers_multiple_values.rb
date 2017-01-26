@@ -79,11 +79,10 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
 
     # Verify that the request received by the API backend contained 2 distinct
     # headers, except in the cases where we overwrite the header during proxying.
+    data = MultiJson.load(response.body)
     if(MULTIPLE_OVERRIDEN_INSIDE_PROXY.include?(header))
-      data = MultiJson.load(response.body)
       assert_equal(0, data["header_occurrences_received"])
     else
-      data = MultiJson.load(response.body)
       assert_equal(2, data["header_occurrences_received"])
       assert_equal(["11", "22"], data["header_value"])
     end
