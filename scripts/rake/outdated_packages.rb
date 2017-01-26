@@ -160,6 +160,9 @@ class OutdatedPackages
     "ruby" => {
       :git => "https://github.com/ruby/ruby.git",
     },
+    "rubygems" => {
+      :git => "https://github.com/rubygems/rubygems.git",
+    },
     "rsyslog" => {
       :git => "https://github.com/rsyslog/rsyslog.git",
     },
