@@ -37,6 +37,10 @@ class LogSearch::ElasticSearch < LogSearch::Base
       :ignore_unavailable => "missing",
       :allow_no_indices => true,
     }
+
+    if(@options[:query_timeout])
+      @query_options[:timeout] = "#{@options[:query_timeout]}s"
+    end
   end
 
   def result
@@ -52,6 +56,10 @@ class LogSearch::ElasticSearch < LogSearch::Base
       query_options[:body].delete(:aggregations)
     end
     raw_result = @client.search(query_options)
+    if(raw_result["timed_out"])
+      # Don't return partial results.
+      raise "Elasticsearch request timed out"
+    end
     @result = LogResult.factory(self, raw_result)
   end
 

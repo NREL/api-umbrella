@@ -31,6 +31,8 @@ class LogSearch::Base
       @end_time = Time.zone.now
     end
 
+    @options[:query_timeout] ||= 90
+
     @interval = options[:interval]
     @region = options[:region]
     @query = {}
