@@ -20,13 +20,24 @@ ExternalProject_Add(
 )
 
 ExternalProject_Add(
-  bundler
+  rubygems
   DEPENDS ruby
+  URL https://rubygems.org/downloads/rubygems-update-${RUBYGEMS_VERSION}.gem
+  URL_HASH SHA256=${RUBYGEMS_HASH}
+  DOWNLOAD_NO_EXTRACT 1
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} gem update --system ${RUBYGEMS_VERSION} --no-document
+)
+
+ExternalProject_Add(
+  bundler
+  DEPENDS rubygems
   URL https://rubygems.org/downloads/bundler-${BUNDLER_VERSION}.gem
   URL_HASH SHA256=${BUNDLER_HASH}
   DOWNLOAD_NO_EXTRACT 1
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} gem uninstall bundler --all --executables
-    COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} gem install <DOWNLOADED_FILE> --no-rdoc --no-ri --env-shebang --local
+    COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} gem install <DOWNLOADED_FILE> --no-document --env-shebang --local
 )

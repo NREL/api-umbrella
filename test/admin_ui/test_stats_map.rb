@@ -48,7 +48,7 @@ class Test::AdminUi::TestStatsMap < Minitest::Capybara::Test
     # complete, or else the download link seems to be flakey in Capybara.
     assert_text("Download CSV")
     assert_text("United States")
-    assert_text("Côte D'Ivoire")
+    assert_text("Côte d'Ivoire")
     refute_selector(".busy-blocker")
     click_link "Download CSV"
 

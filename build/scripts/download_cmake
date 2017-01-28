@@ -2,8 +2,8 @@
 
 set -e -u
 
-version=3.7.0
-checksum=e075f63e6a9104b1c3d11666ae9546bc8812f7e791a49c4ce11effc063141b2a
+version=3.7.2
+checksum=0e6ec35d4fa9bf79800118916b51928b6471d5725ff36f1d0de5ebb34dcd5406
 
 source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
 version_stamp="$source_dir/build/work/cmake/version-$version"

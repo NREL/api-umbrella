@@ -102,7 +102,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     api1 = FactoryGirl.create(:api, :name => "Before")
     ConfigVersion.publish!(ConfigVersion.pending_config)
 
-    api1.update_attribute(:name, "After")
+    api1.update_attributes(:name => "After")
     api2 = FactoryGirl.create(:api)
     api3 = FactoryGirl.create(:api)
 
@@ -134,7 +134,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     initial = ConfigVersion.publish!(ConfigVersion.pending_config)
     initial.reload
 
-    api1.update_attribute(:name, "After")
+    api1.update_attributes(:name => "After")
     FactoryGirl.create(:api)
     FactoryGirl.create(:api)
 
