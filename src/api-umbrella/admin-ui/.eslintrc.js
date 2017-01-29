@@ -36,6 +36,5 @@ module.exports = {
     'jstz': true,
     'marked': true,
     'moment': true,
-    'numeral': true,
   },
 };
