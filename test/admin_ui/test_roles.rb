@@ -6,6 +6,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
   end
 

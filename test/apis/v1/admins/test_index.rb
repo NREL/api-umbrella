@@ -5,6 +5,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
     Admin.where(:registration_source.ne => "seed").delete_all
   end

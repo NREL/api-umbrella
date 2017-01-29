@@ -6,6 +6,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
   include ApiUmbrellaTestHelpers::DelayedJob
 
   def setup
+    super
     setup_server
     ApiUser.where(:registration_source.ne => "seed").delete_all
 

@@ -8,6 +8,7 @@ class Test::Proxy::Dns::TestNegativeCaching < Minitest::Test
   NEGATIVE_TTL = 6
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       override_config_set({

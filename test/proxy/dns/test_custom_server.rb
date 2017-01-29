@@ -6,6 +6,7 @@ class Test::Proxy::Dns::TestCustomServer < Minitest::Test
   include Minitest::Hooks
 
   def setup
+    super
     @local_interface_ips = [
       "127.0.0.1",
       "127.0.0.2",

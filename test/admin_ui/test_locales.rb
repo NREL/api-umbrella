@@ -10,6 +10,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
   end
 

@@ -6,6 +6,7 @@ class Test::Proxy::Caching::TestBasics < Minitest::Test
   parallelize_me!
 
   def setup
+    super
     setup_server
   end
 

@@ -6,6 +6,7 @@ class Test::Proxy::Caching::TestGzip < Minitest::Test
   parallelize_me!
 
   def setup
+    super
     setup_server
   end
 

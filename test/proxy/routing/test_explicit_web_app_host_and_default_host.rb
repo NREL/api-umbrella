@@ -5,6 +5,7 @@ class Test::Proxy::Routing::TestExplicitWebAppHostAndDefaultHost < Minitest::Tes
   include Minitest::Hooks
 
   def setup
+    super
     @assert_default_host = true
     @assert_fallback_website = true
     setup_server

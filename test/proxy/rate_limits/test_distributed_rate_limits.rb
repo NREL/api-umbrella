@@ -6,6 +6,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     @override_config = {
       :apiSettings => {
