@@ -6,22 +6,27 @@ class Admin::SessionsController < Devise::SessionsController
   def auth
     response = {
       "authenticated" => !current_admin.nil?,
-      "enable_beta_analytics" => (ApiUmbrellaConfig[:analytics][:adapter] == "kylin" || (ApiUmbrellaConfig[:analytics][:outputs] && ApiUmbrellaConfig[:analytics][:outputs].include?("kylin"))),
-      "username_is_email" => ApiUmbrellaConfig[:web][:admin][:username_is_email],
-      "local_auth_enabled" => ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?],
-      "password_length_min" => ApiUmbrellaConfig[:web][:admin][:password_length_min],
     }
 
     if current_admin
-      response["api_umbrella_version"] = API_UMBRELLA_VERSION
-      response["admin"] = current_admin.as_json.slice(
-        "email",
-        "id",
-        "superuser",
-        "username",
-      )
-      response["api_key"] = ApiUser.where(:email => "web.admin.ajax@internal.apiumbrella").order_by(:created_at.asc).first.api_key
-      response["csrf_token"] = form_authenticity_token if(protect_against_forgery?)
+      response.merge!({
+        "enable_beta_analytics" => (ApiUmbrellaConfig[:analytics][:adapter] == "kylin" || (ApiUmbrellaConfig[:analytics][:outputs] && ApiUmbrellaConfig[:analytics][:outputs].include?("kylin"))),
+        "username_is_email" => ApiUmbrellaConfig[:web][:admin][:username_is_email],
+        "local_auth_enabled" => ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?],
+        "password_length_min" => ApiUmbrellaConfig[:web][:admin][:password_length_min],
+        "api_umbrella_version" => API_UMBRELLA_VERSION,
+        "admin" => current_admin.as_json.slice(
+          "email",
+          "id",
+          "superuser",
+          "username",
+        ),
+        "api_key" => ApiUser.where(:email => "web.admin.ajax@internal.apiumbrella").order_by(:created_at.asc).first.api_key,
+      })
+
+      if(protect_against_forgery?)
+        response["csrf_token"] = form_authenticity_token
+      end
     end
 
     respond_to do|format|
