@@ -1,11 +1,14 @@
 class Admin::SessionsController < Devise::SessionsController
-  before_action :first_time_setup
+  before_action :first_time_setup_check
+  before_action :only_for_local_auth, :only => [:create]
   skip_after_action :verify_authorized
 
   def auth
     response = {
       "authenticated" => !current_admin.nil?,
       "enable_beta_analytics" => (ApiUmbrellaConfig[:analytics][:adapter] == "kylin" || (ApiUmbrellaConfig[:analytics][:outputs] && ApiUmbrellaConfig[:analytics][:outputs].include?("kylin"))),
+      "username_is_email" => ApiUmbrellaConfig[:web][:admin][:username_is_email],
+      "local_auth_enabled" => ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?],
     }
 
     if current_admin
@@ -37,9 +40,15 @@ class Admin::SessionsController < Devise::SessionsController
     end
   end
 
-  def first_time_setup
+  def first_time_setup_check
     if(Admin.needs_first_account?)
       redirect_to new_admin_registration_path
+    end
+  end
+
+  def only_for_local_auth
+    unless(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?])
+      raise ActionController::RoutingError.new("Not Found")
     end
   end
 end

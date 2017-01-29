@@ -71,8 +71,7 @@ class Admin
     :if => :username_is_email?
   validates :email,
     :presence => true,
-    :format => Devise.email_regexp,
-    :if => :email_required?
+    :format => Devise.email_regexp
   validates :password,
     :presence => true,
     :confirmation => true,
@@ -97,7 +96,7 @@ class Admin
   end
 
   def self.needs_first_account?
-    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].include?("local") && self.unscoped.count == 0
+    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?] && self.unscoped.count == 0
   end
 
   def group_names
@@ -211,11 +210,7 @@ class Admin
   end
 
   def username_is_email?
-    true
-  end
-
-  def email_required?
-    !username_is_email?
+    ApiUmbrellaConfig[:web][:admin][:username_is_email]
   end
 
   def password_required?

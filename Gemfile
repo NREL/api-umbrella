@@ -5,6 +5,9 @@ gem "rake", "~> 12.0.0"
 # Tests
 gem "minitest", "~> 5.10.1"
 
+# CLI helper for running tests
+gem "minitest-sprint", "~> 1.2.0"
+
 # More test outputs
 gem "minitest-reporters", "~> 1.1.14"
 

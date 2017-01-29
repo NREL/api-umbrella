@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import I18n from 'npm:i18n-js';
 
 export default Ember.Component.extend({
   store: Ember.inject.service(),

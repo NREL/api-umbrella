@@ -6,11 +6,9 @@
       <legend>User Info</legend>
 
       {{f.text-field "username" label=(t "mongoid.attributes.admin.username")}}
-      {{#if model.email}}
-        {{#if (not-eq (unbound model.email) (unbound model.username))}}
-          {{f.static-field "email" label=(t "mongoid.attributes.admin.email")}}
-        {{/if}}
-      {{/if}}
+      {{#unless session.data.authenticated.username_is_email}}
+        {{f.text-field "email" label=(t "mongoid.attributes.admin.email")}}
+      {{/unless}}
       {{#if model.name}}
         {{f.static-field "name" label=(t "mongoid.attributes.admin.name")}}
       {{/if}}
@@ -18,16 +16,16 @@
     </fieldset>
 
     {{#if model.authenticationToken}}
-      <fieldset class="form-horizontal condensed">
-        <legend>Change Password</legend>
+      {{#if session.data.authenticated.local_auth_enabled}}
+        <fieldset class="form-horizontal condensed">
+          <legend>{{t "devise.passwords.edit.change_your_password"}}</legend>
 
-        {{f.password-field "currentPassword" label=(t "mongoid.attributes.admin.current_password")}}
-        {{f.password-field "password" label=(t "mongoid.attributes.admin.password")}}
-        {{f.password-field "passwordConfirmation" label=(t "mongoid.attributes.admin.password_confirmation")}}
-      </fieldset>
-    {{/if}}
+          {{f.password-field "currentPassword" label=(t "mongoid.attributes.admin.current_password")}}
+          {{f.password-field "password" label=(t "devise.passwords.edit.new_password")}}
+          {{f.password-field "passwordConfirmation" label=(t "devise.passwords.edit.confirm_new_password")}}
+        </fieldset>
+      {{/if}}
 
-    {{#if model.authenticationToken}}
       <fieldset class="form-horizontal condensed">
         <legend>Admin API Access</legend>
 

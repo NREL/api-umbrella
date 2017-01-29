@@ -367,6 +367,11 @@ local function set_computed_config()
       dir = src_root_dir,
     },
     web = {
+      admin = {
+        auth_strategies = {
+          ["_local_enabled?"] = array_includes(config["web"]["admin"]["auth_strategies"]["enabled"], "local"),
+        },
+      },
       dir = path.join(src_root_dir, "src/api-umbrella/web-app"),
       puma = {
         bind = "unix://" .. config["run_dir"] .. "/puma.sock",

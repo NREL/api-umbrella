@@ -64,6 +64,24 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     ], buttons)
   end
 
+  def test_local_login_endpoint_disabled
+    admin = FactoryGirl.create(:admin)
+    response = Typhoeus.post("https://127.0.0.1:9081/admin/login", keyless_http_options.deep_merge(csrf_session).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => {
+        :admin => {
+          :username => admin.username,
+          :password => "password123456",
+        },
+      },
+    }))
+    assert_response_code(404, response)
+  end
+
+  def test_no_password_field_on_admin_forms
+    assert_no_password_fields_on_admin_forms
+  end
+
   [
     {
       :provider => :facebook,

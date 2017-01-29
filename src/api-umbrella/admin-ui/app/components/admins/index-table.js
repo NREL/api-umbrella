@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import I18n from 'npm:i18n-js';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 
 export default Ember.Component.extend({

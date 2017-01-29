@@ -96,6 +96,8 @@ GEM
       builder
       minitest (>= 5.0)
       ruby-progressbar
+    minitest-sprint (1.2.0)
+      path_expander (~> 1.0)
     mongo (2.4.1)
       bson (>= 4.2.1, < 5.0.0)
     mongoid (6.0.3)
@@ -108,6 +110,7 @@ GEM
     oj (2.18.1)
     parser (2.3.3.1)
       ast (~> 2.2)
+    path_expander (1.0.1)
     poltergeist (1.13.0)
       capybara (~> 2.1)
       cliver (~> 0.3.1)
@@ -168,6 +171,7 @@ DEPENDENCIES
   minitest-ci (~> 3.1.0)
   minitest-hooks (~> 1.4.0)
   minitest-reporters (~> 1.1.14)
+  minitest-sprint (~> 1.2.0)
   mongoid (~> 6.0.3)
   multi_json (~> 1.12.1)
   nokogiri (~> 1.7.0)

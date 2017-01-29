@@ -99,6 +99,7 @@ module ApiUmbrella
               :read => {
                 :mode => ApiUmbrellaConfig[:mongodb][:read_preference].to_s.underscore.to_sym,
               },
+              :truncate_logs => false,
             },
           },
         },

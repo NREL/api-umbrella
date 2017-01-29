@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import DS from 'ember-data';
+import I18n from 'npm:i18n-js';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({

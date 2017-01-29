@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import I18n from 'npm:i18n-js';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 
 export default Ember.Component.extend(Save, {
