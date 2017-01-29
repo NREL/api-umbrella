@@ -201,7 +201,7 @@ flume:
 kafka:
   brokers: []
   topic: api_umbrella_logs
-log_template_version: v1
+log_template_version: v2
 strip_cookies:
   - ^__utm.*$
   - ^_ga$

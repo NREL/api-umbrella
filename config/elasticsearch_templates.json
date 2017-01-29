@@ -34,9 +34,9 @@
     }
   },
   {
-    "id": "api-umbrella-log-v1-template",
+    "id": "api-umbrella-log-v2-template",
     "template": {
-      "template": "api-umbrella-logs-v1-*",
+      "template": "api-umbrella-logs-v2-*",
       "settings": {
         "index": {
           "number_of_shards": 3
@@ -61,182 +61,185 @@
           "_all": {
             "enabled": false
           },
-          "date_detection": false,
-          "numeric_detection": false,
-          "dynamic_templates": [
-            {
-              "string_template": {
-                "match": "*",
-                "match_mapping_type": "string",
-                "mapping": {
-                  "type": "string",
-                  "index": "analyzed",
-                  "analyzer": "keyword_lowercase"
-                }
-              }
-            }
-          ],
+          "dynamic": "strict",
           "properties": {
             "api_key": {
               "type": "string",
-              "index": "not_analyzed"
-            },
-            "backend_response_time": {
-              "type": "integer"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "gatekeeper_denied_code": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
-            },
-            "internal_gatekeeper_time": {
-              "type": "float"
-            },
-            "internal_response_time": {
-              "type": "float"
-            },
-            "proxy_overhead": {
-              "type": "integer"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_accept": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_accept_encoding": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_at": {
-              "type": "date"
+              "type": "date",
+              "doc_values": true
             },
             "request_basic_auth_username": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_connection": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_content_type": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_hierarchy": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_host": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_ip": {
               "type": "string",
-              "index": "not_analyzed"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_ip_city": {
               "type": "string",
-              "index": "not_analyzed"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_ip_country": {
               "type": "string",
-              "index": "not_analyzed"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_ip_location": {
               "type": "geo_point",
-              "lat_lon": true
+              "lat_lon": true,
+              "doc_values": true
             },
             "request_ip_region": {
               "type": "string",
-              "index": "not_analyzed"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_method": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_origin": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_path": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_path_hierarchy": {
               "type": "string",
-              "analyzer": "path_hierarchy_lowercase"
+              "analyzer": "path_hierarchy_lowercase",
+              "doc_values": false
             },
             "request_referer": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_scheme": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_size": {
-              "type": "integer"
+              "type": "integer",
+              "doc_values": true
             },
             "request_url": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_user_agent": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_user_agent_family": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "request_user_agent_type": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "response_age": {
-              "type": "integer"
+              "type": "integer",
+              "doc_values": true
             },
             "response_cache": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "response_content_encoding": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "response_content_length": {
-              "type": "integer"
+              "type": "integer",
+              "doc_values": true
             },
             "response_content_type": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "response_server": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "response_size": {
-              "type": "integer"
+              "type": "integer",
+              "doc_values": true
             },
             "response_status": {
-              "type": "short"
+              "type": "short",
+              "doc_values": true
             },
             "response_time": {
-              "type": "integer"
+              "type": "integer",
+              "doc_values": true
             },
             "response_transfer_encoding": {
               "type": "string",
-              "analyzer": "keyword_lowercase"
-            },
-            "user_email": {
-              "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             },
             "user_id": {
               "type": "string",
-              "index": "not_analyzed"
-            },
-            "user_registration_source": {
-              "type": "string",
-              "analyzer": "keyword_lowercase"
+              "index": "not_analyzed",
+              "doc_values": true
             }
           }
         }

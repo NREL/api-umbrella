@@ -163,7 +163,7 @@ if($!raw!legacy_user_registration_source != "") then {
 }
 
 # Define templates for ElasticSearch output.
-template(name="elasticsearch-index" type="string" string="api-umbrella-logs-v1-%timereported:1:7:date-rfc3339%")
+template(name="elasticsearch-index" type="string" string="api-umbrella-logs-write-%timereported:1:7:date-rfc3339%")
 template(name="elasticsearch-id" type="subtree" subtree="$!raw!id")
 template(name="elasticsearch-json-record" type="subtree" subtree="$!usr!es")
 
