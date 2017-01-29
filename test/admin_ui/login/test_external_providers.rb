@@ -42,7 +42,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   def test_shows_external_login_links_in_order_and_no_local_fields
     visit "/admin/login"
 
-    assert_content("Admin Sign In")
+    assert_text("Admin Sign In")
 
     # No local login fields
     refute_field("Email")
@@ -52,7 +52,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     refute_button("Sign in")
 
     # External login links
-    assert_content("Sign in with")
+    assert_text("Sign in with")
 
     # Order matches enabled array order.
     buttons = page.all(".external-login .btn").map { |btn| btn.text }

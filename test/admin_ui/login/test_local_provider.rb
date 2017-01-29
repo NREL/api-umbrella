@@ -7,6 +7,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
     Admin.delete_all
     @admin = FactoryGirl.create(:admin)
@@ -21,7 +22,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
   def test_shows_local_login_fields_no_external_login_links
     visit "/admin/login"
 
-    assert_content("Admin Sign In")
+    assert_text("Admin Sign In")
 
     # Local login fields
     assert_field("Email")
@@ -31,7 +32,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     assert_button("Sign in")
 
     # No external login links
-    refute_content("Sign in with")
+    refute_text("Sign in with")
   end
 
   def test_password_fields_only_for_my_account
@@ -51,7 +52,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "admin_username", :with => @admin.username
     fill_in "admin_password", :with => "password1234567"
     click_button "sign_in"
-    assert_content("Invalid Email or password")
+    assert_text("Invalid Email or password")
   end
 
   def test_login_empty_password
@@ -59,7 +60,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "admin_username", :with => @admin.username
     fill_in "admin_password", :with => ""
     click_button "sign_in"
-    assert_content("Invalid Email or password")
+    assert_text("Invalid Email or password")
   end
 
   def test_login_empty_password_for_admin_without_password
@@ -70,7 +71,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "admin_username", :with => admin.username
     fill_in "admin_password", :with => ""
     click_button "sign_in"
-    assert_content("Invalid Email or password")
+    assert_text("Invalid Email or password")
   end
 
   def test_login_requires_csrf
@@ -102,14 +103,14 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
       visit "/admin/"
 
       # Ensure we get the loading spinner until authentication takes place.
-      assert_content("Loading...")
+      assert_text("Loading...")
 
       # Navigation should not be visible while loading.
       refute_selector("nav")
-      refute_content("Analytics")
+      refute_text("Analytics")
 
       # Ensure that we eventually get redirected to the login page.
-      assert_content("Admin Sign In")
+      assert_text("Admin Sign In")
     end
   end
 
@@ -118,7 +119,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
   # up.
   def test_login_assets
     visit "/admin/login"
-    assert_content("Admin Sign In")
+    assert_text("Admin Sign In")
 
     # Find the stylesheet on the Rails login page, which should have a
     # cache-busted URL (note that the href on the page appears to be relative,
@@ -140,7 +141,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
 
     fill_in "Notes", :with => "Foo"
     click_button "Save"
-    assert_content("Successfully saved the admin")
+    assert_text("Successfully saved the admin")
 
     @admin.reload
     assert_equal("Foo", @admin.notes)
@@ -158,7 +159,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "New Password", :with => "short"
     fill_in "Confirm New Password", :with => "short"
     click_button "Save"
-    assert_content("Password: is too short (minimum is 14 characters)")
+    assert_text("Password: is too short (minimum is 14 characters)")
     @admin.reload
     assert_equal(original_encrypted_password, @admin.encrypted_password)
     assert_nil(@admin.notes)
@@ -167,7 +168,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "New Password", :with => "mismatch123456"
     fill_in "Confirm New Password", :with => "mismatcH123456"
     click_button "Save"
-    assert_content("Password Confirmation: doesn't match Password")
+    assert_text("Password Confirmation: doesn't match Password")
     @admin.reload
     assert_equal(original_encrypted_password, @admin.encrypted_password)
     assert_nil(@admin.notes)
@@ -177,7 +178,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "New Password", :with => "password234567"
     fill_in "Confirm New Password", :with => "password234567"
     click_button "Save"
-    assert_content("Current Password: can't be blank")
+    assert_text("Current Password: can't be blank")
     @admin.reload
     assert_equal(original_encrypted_password, @admin.encrypted_password)
     assert_nil(@admin.notes)
@@ -187,7 +188,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "New Password", :with => "password234567"
     fill_in "Confirm New Password", :with => "password234567"
     click_button "Save"
-    assert_content("Current Password: is invalid")
+    assert_text("Current Password: is invalid")
     @admin.reload
     assert_equal(original_encrypted_password, @admin.encrypted_password)
     assert_nil(@admin.notes)
@@ -197,7 +198,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "New Password", :with => "password234567"
     fill_in "Confirm New Password", :with => "password234567"
     click_button "Save"
-    assert_content("Successfully saved the admin")
+    assert_text("Successfully saved the admin")
     @admin.reload
     assert(@admin.encrypted_password)
     refute_equal(original_encrypted_password, @admin.encrypted_password)

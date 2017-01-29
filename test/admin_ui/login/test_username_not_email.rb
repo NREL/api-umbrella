@@ -7,6 +7,7 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       Admin.delete_all
@@ -29,25 +30,25 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
 
   def test_username_label_on_login
     visit "/admin/login"
-    assert_content("Admin Sign In")
+    assert_text("Admin Sign In")
 
-    assert_content("Username")
-    refute_content("Email")
+    assert_text("Username")
+    refute_text("Email")
   end
 
   def test_username_label_on_listing
     admin_login
     visit "/admin/#/admins"
-    assert_content("Admins")
+    assert_text("Admins")
 
-    assert_content("Username")
-    refute_content("Email")
+    assert_text("Username")
+    refute_text("Email")
   end
 
   def test_username_and_email_label_on_form
     admin_login
     visit "/admin/#/admins/new"
-    assert_content("Add Admin")
+    assert_text("Add Admin")
 
     assert_field("Username", :count => 1)
     assert_field("Email", :count => 1)
@@ -58,12 +59,12 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
 
     # Create admin
     visit "/admin/#/admins/new"
-    assert_content("Add Admin")
+    assert_text("Add Admin")
     fill_in "Username", :with => unique_test_id.upcase
     fill_in "Email", :with => "#{unique_test_id.upcase}@example.com"
     check "Superuser"
     click_button "Save"
-    assert_content("Successfully saved the admin")
+    assert_text("Successfully saved the admin")
     page.execute_script("PNotify.removeAll()")
 
     # Find admin record, and ensure username and email are different.
@@ -74,13 +75,13 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
 
     # Edit admin
     visit "/admin/#/admins/#{admin.id}/edit"
-    assert_content("Edit Admin")
+    assert_text("Edit Admin")
     assert_field("Username", :with => unique_test_id.downcase)
     assert_field("Email", :with => "#{unique_test_id.downcase}@example.com")
     fill_in "Username", :with => "#{unique_test_id.upcase}-update"
     fill_in "Email", :with => "#{unique_test_id.upcase}-different@example.com"
     click_button "Save"
-    assert_content("Successfully saved the admin")
+    assert_text("Successfully saved the admin")
     page.execute_script("PNotify.removeAll()")
 
     # Ensure edits still keep things different.

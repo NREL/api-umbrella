@@ -7,6 +7,7 @@ class Test::AdminUi::Login::TestLocalAndExternalProviders < Minitest::Capybara::
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     Admin.delete_all
     once_per_class_setup do
@@ -39,7 +40,7 @@ class Test::AdminUi::Login::TestLocalAndExternalProviders < Minitest::Capybara::
     FactoryGirl.create(:admin)
     visit "/admin/login"
 
-    assert_content("Admin Sign In")
+    assert_text("Admin Sign In")
 
     # Local login fields
     assert_field("Email")
@@ -49,7 +50,7 @@ class Test::AdminUi::Login::TestLocalAndExternalProviders < Minitest::Capybara::
     assert_button("Sign in")
 
     # External login links
-    assert_content("Sign in with")
+    assert_text("Sign in with")
 
     buttons = page.all(".external-login .btn").map { |btn| btn.text }
     assert_equal(["Sign in with Google"], buttons)
