@@ -98,7 +98,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
 
     find("nav a", :text => /Configuration/).click
     find("nav a", :text => /API Backends/).click
-    assert_content("Add API Backend")
+    assert_text("Add API Backend")
 
     FactoryGirl.create(:api)
     find("nav a", :text => /Configuration/).click

@@ -66,18 +66,18 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     find(".selectize-dropdown-content div", :text => /Add test-new-user-role/).click
     click_button("Save")
 
-    assert_content("Successfully saved the user")
+    assert_text("Successfully saved the user")
 
     visit "/admin/#/apis/new"
     assert_text("Add API")
 
     find("a", :text => /Global Request Settings/).click
     find(".selectize-input").click
-    assert_content("test-new-user-role")
+    assert_text("test-new-user-role")
 
     find("a", :text => /Sub-URL Request Settings/).click
     find("button", :text => /Add URL Settings/).click
     find(".modal .selectize-input").click
-    assert_content("test-new-user-role")
+    assert_text("test-new-user-role")
   end
 end

@@ -21,10 +21,10 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
     check "User agrees to the terms and conditions"
     click_button("Save")
 
-    assert_content("Successfully saved the user")
+    assert_text("Successfully saved the user")
     user = ApiUser.order_by(:created_at.asc).last
     assert_equal("Doe", user.last_name)
-    assert_content(user.api_key)
+    assert_text(user.api_key)
   end
 
   def test_api_key_can_be_revealed_when_admin_has_permissions
@@ -33,17 +33,17 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
     admin_login(admin)
     visit "/admin/#/api_users/#{user.id}/edit"
 
-    assert_content(user.api_key_preview)
-    refute_content(user.api_key)
+    assert_text(user.api_key_preview)
+    refute_text(user.api_key)
     assert_link("(reveal)")
     click_link("(reveal)")
-    assert_content(user.api_key)
-    refute_content(user.api_key_preview)
+    assert_text(user.api_key)
+    refute_text(user.api_key_preview)
     refute_link("(reveal)")
     assert_link("(hide)")
     click_link("(hide)")
-    assert_content(user.api_key_preview)
-    refute_content(user.api_key)
+    assert_text(user.api_key_preview)
+    refute_text(user.api_key)
     assert_link("(reveal)")
   end
 
@@ -53,8 +53,8 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
     admin_login(admin)
     visit "/admin/#/api_users/#{user.id}/edit"
 
-    assert_content(user.api_key_preview)
-    refute_content(user.api_key)
+    assert_text(user.api_key_preview)
+    refute_text(user.api_key)
     refute_link("(reveal)")
   end
 end

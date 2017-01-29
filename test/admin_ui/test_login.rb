@@ -19,15 +19,15 @@ class Test::AdminUi::TestLogin < Minitest::Capybara::Test
       visit "/admin/"
 
       # Ensure we get the loading spinner until authentication takes place.
-      assert_content("Loading...")
+      assert_text("Loading...")
 
       # Navigation should not be visible while loading.
       refute_selector("nav")
-      refute_content("Analytics")
+      refute_text("Analytics")
 
       # Ensure that we eventually get redirected to the login page.
-      assert_content("Admin Login")
-      assert_content("Login with")
+      assert_text("Admin Login")
+      assert_text("Login with")
     end
   end
 
@@ -36,7 +36,7 @@ class Test::AdminUi::TestLogin < Minitest::Capybara::Test
   # up.
   def test_login_assets
     visit "/admin/login"
-    assert_content("Admin Login")
+    assert_text("Admin Login")
 
     # Find the stylesheet on the Rails login page, which should have a
     # cache-busted URL (note that the href on the page appears to be relative,

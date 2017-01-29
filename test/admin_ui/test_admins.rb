@@ -14,16 +14,16 @@ class Test::AdminUi::TestAdmins < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/admins/new"
 
-    assert_content("Username")
-    assert_content("Superuser")
+    assert_text("Username")
+    assert_text("Superuser")
   end
 
   def test_superuser_checkbox_as_limited_admin
     admin_login(FactoryGirl.create(:limited_admin))
     visit "/admin/#/admins/new"
 
-    assert_content("Username")
-    refute_content("Superuser")
+    assert_text("Username")
+    refute_text("Superuser")
   end
 
   def test_adds_groups_when_checked
@@ -43,7 +43,7 @@ class Test::AdminUi::TestAdmins < Minitest::Capybara::Test
 
     click_button("Save")
 
-    assert_content("Successfully saved the admin")
+    assert_text("Successfully saved the admin")
 
     admin = Admin.find(admin.id)
     assert_equal([@group1.id, @group3.id].sort, admin.group_ids.sort)
@@ -67,7 +67,7 @@ class Test::AdminUi::TestAdmins < Minitest::Capybara::Test
 
     click_button("Save")
 
-    assert_content("Successfully saved the admin")
+    assert_text("Successfully saved the admin")
 
     admin = Admin.find(admin.id)
     assert_equal([@group3.id].sort, admin.group_ids.sort)

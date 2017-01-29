@@ -35,8 +35,8 @@ class Test::AdminUi::TestNoscript < Minitest::Capybara::Test
     # quickly for the tests to catch).
     delay_server_responses(0.5) do
       visit "/admin/"
-      assert_content("Loading...")
-      refute_content("This application requires JavaScript")
+      assert_text("Loading...")
+      refute_text("This application requires JavaScript")
     end
   end
 end
