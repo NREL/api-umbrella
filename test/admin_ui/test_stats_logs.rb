@@ -81,11 +81,11 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
     visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
     refute_selector(".busy-blocker")
     assert_link("Download CSV", :href => /start_at=2015-01-12/)
-    assert_link("Download CSV", :href => /%22rules%22%3A%5B%7B/)
+    assert_link("Download CSV", :href => /#{Regexp.escape(CGI.escape('"rules":[{'))}/)
     click_button "Delete" # Remove the initial filter
     click_button "Filter"
     refute_selector(".busy-blocker")
-    assert_link("Download CSV", :href => /%22rules%22%3A%5B%5D%7D/)
+    assert_link("Download CSV", :href => /#{Regexp.escape(CGI.escape('"rules":[]'))}/)
     link = find_link("Download CSV")
     uri = Addressable::URI.parse(link[:href])
     assert_equal("/admin/stats/logs.csv", uri.path)
@@ -94,7 +94,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "start_at" => "2015-01-12",
       "end_at" => "2015-01-18",
       "interval" => "day",
-      "query" => JSON.generate({ "condition" => "AND", "rules" => [] }),
+      "query" => JSON.generate({ "condition" => "AND", "rules" => [], "valid" => true }),
       "search" => "",
       "beta_analytics" => "false",
     }, uri.query_values)

@@ -11,7 +11,7 @@
     {{#each facets as |facet|}}
       <tr>
         <td><a href="{{facet.link}}">{{facet.key}}</a></td>
-        <td class="value">{{formatNumber facet.count}}</td>
+        <td class="value">{{format-number facet.count}}</td>
         <td class="value">{{facet.percent}}%</td>
       </tr>
     {{/each}}
