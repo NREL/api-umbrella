@@ -173,7 +173,6 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
       select "Required & return message - HTTP requests will receive a message to use HTTPS", :from => "HTTPS Requirements"
       select "Disabled - API keys are optional", :from => "API Key Checks"
       select "E-mail verification required - Existing API keys will break, only new API keys will work if verified", :from => "API Key Verification Requirements"
-      sleep 1
       fill_in "Required Roles", :with => "sub-role"
     end
     find(".selectize-dropdown-content div.create", :text => /Add sub-role/).click

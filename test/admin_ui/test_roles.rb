@@ -14,7 +14,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     FactoryGirl.create(:api_user, :roles => ["test-user-role"])
     admin_login
     visit "/admin/#/api_users/new"
-    wait_for_ajax
+    assert_text("Add API User")
 
     find(".selectize-input").click
     assert_text("test-user-role")
@@ -24,7 +24,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     FactoryGirl.create(:api, :settings => { :required_roles => ["test-api-role"] })
     admin_login
     visit "/admin/#/api_users/new"
-    wait_for_ajax
+    assert_text("Add API User")
 
     find(".selectize-input").click
     assert_text("test-api-role")
@@ -33,7 +33,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
   def test_refresh_prefilled_options_added_during_current_session
     admin_login
     visit "/admin/#/api_users/new"
-    wait_for_ajax
+    assert_text("Add API User")
 
     fill_in "E-mail", :with => "example@example.com"
     fill_in "First Name", :with => "John"
@@ -48,7 +48,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     refute_text("Successfully saved the user")
 
     click_link("Add New API User")
-    wait_for_ajax
+    assert_text("Add API User")
     find(".selectize-input").click
     assert_text("test-new-role")
   end
@@ -56,7 +56,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
   def test_share_roles_between_users_and_apis_forms
     admin_login
     visit "/admin/#/api_users/new"
-    wait_for_ajax
+    assert_text("Add API User")
 
     fill_in "E-mail", :with => "example@example.com"
     fill_in "First Name", :with => "John"
@@ -69,7 +69,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     assert_content("Successfully saved the user")
 
     visit "/admin/#/apis/new"
-    wait_for_ajax
+    assert_text("Add API")
 
     find("a", :text => /Global Request Settings/).click
     find(".selectize-input").click
@@ -79,16 +79,5 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     find("button", :text => /Add URL Settings/).click
     find(".modal .selectize-input").click
     assert_content("test-new-user-role")
-  end
-
-  private
-
-  def wait_for_ajax
-    Timeout.timeout(Capybara.default_max_wait_time) do
-      while(page.evaluate_script("jQuery.active") > 0)
-        sleep 0.1
-      end
-    end
-    refute_content(".busy-blocker")
   end
 end
