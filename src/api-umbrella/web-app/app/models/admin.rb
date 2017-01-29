@@ -54,6 +54,9 @@ class Admin
   field :invitation_accepted_at, :type => Time
   field :invitation_limit, :type => Integer
 
+  # Virtual fields
+  attr_accessor :current_password_invalid_reason
+
   # Relations
   has_and_belongs_to_many :groups, :class_name => "AdminGroup", :inverse_of => nil
 
@@ -68,24 +71,31 @@ class Admin
     :uniqueness => true
   validates :username,
     :format => Devise.email_regexp,
+    :allow_blank => true,
     :if => :username_is_email?
   validates :email,
     :presence => true,
-    :format => Devise.email_regexp
+    :if => :email_required?
+  validates :email,
+    :format => Devise.email_regexp,
+    :allow_blank => true
   validates :password,
     :presence => true,
     :confirmation => true,
-    :length => { :in => Devise.password_length },
     :if => :password_required?
+  validates :password,
+    :length => { :in => Devise.password_length },
+    :allow_blank => true
   if(ApiUmbrellaConfig[:web][:admin][:password_regex])
     validates :password,
       :format => { :with => Regexp.new(ApiUmbrellaConfig[:web][:admin][:password_regex]), :message => :password_format },
-      :if => :password_required?
+      :allow_blank => true
   end
   validates :password_confirmation,
     :presence => true,
     :if => :password_required?
   validate :validate_superuser_or_groups
+  validate :validate_current_password
 
   # Callbacks
   before_validation :sync_username_and_email
@@ -213,8 +223,18 @@ class Admin
     ApiUmbrellaConfig[:web][:admin][:username_is_email]
   end
 
+  # Only require the password fields for validation if they've been entered (if
+  # they're left blank, we don't want to require these fields).
   def password_required?
     password.present? || password_confirmation.present?
+  end
+
+  # Only require the email field for validation if it won't be synced with the
+  # username field. This just prevents duplicate validation errors from showing
+  # up when the fields are synced (since the user doesn't see the separate
+  # email field, even though we populate it).
+  def email_required?
+    !ApiUmbrellaConfig[:web][:admin][:username_is_email]
   end
 
   def assign_without_password(params, *options)
@@ -227,16 +247,16 @@ class Admin
     current_password = params.delete(:current_password)
 
     # Don't try to set the password unless it was explicitly set.
-    if(params[:password].blank?)
+    if(params[:password].present? || params[:password_confirmation].present?)
+      unless(valid_password?(current_password))
+        self.current_password_invalid_reason = if(current_password.blank?) then :blank else :invalid end
+      end
+    else
       params.delete(:password)
-      params.delete(:password_confirmation) if(params[:password_confirmation].blank?)
+      params.delete(:password_confirmation)
     end
 
     self.assign_attributes(params, *options)
-    if(!valid_password?(current_password))
-      self.valid?
-      self.errors.add(:current_password, current_password.blank? ? :blank : :invalid)
-    end
   end
 
   private
@@ -263,6 +283,12 @@ class Admin
   def validate_superuser_or_groups
     if(!self.superuser? && self.groups.blank?)
       self.errors.add(:groups, "must belong to at least one group or be a superuser")
+    end
+  end
+
+  def validate_current_password
+    if(self.current_password_invalid_reason)
+      self.errors.add(:current_password, self.current_password_invalid_reason)
     end
   end
 end

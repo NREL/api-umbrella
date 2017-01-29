@@ -58,7 +58,7 @@ class Api::V1::AdminsController < Api::V1::BaseController
         # If a user is updating themselves, make sure they remain signed in.
         # This eliminates the current user getting logged out if they change
         # their password.
-        if(current_admin && @admin.id == current_admin.id)
+        if(@admin.id == current_admin.id)
           bypass_sign_in(@admin, :scope => :admin)
         end
 
@@ -80,7 +80,11 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
   def save!
     authorize(@admin) unless(@admin.new_record?)
-    @admin.assign_with_password(admin_params)
+    if(@admin.id && @admin.id == current_admin.id)
+      @admin.assign_with_password(admin_params)
+    else
+      @admin.assign_without_password(admin_params)
+    end
     authorize(@admin)
   end
 

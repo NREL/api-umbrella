@@ -158,7 +158,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "New Password", :with => "short"
     fill_in "Confirm New Password", :with => "short"
     click_button "Save"
-    assert_content("is too short (minimum is 14 characters)")
+    assert_content("Password: is too short (minimum is 14 characters)")
     @admin.reload
     assert_equal(original_encrypted_password, @admin.encrypted_password)
     assert_nil(@admin.notes)
@@ -167,19 +167,45 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "New Password", :with => "mismatch123456"
     fill_in "Confirm New Password", :with => "mismatcH123456"
     click_button "Save"
-    assert_content("doesn't match Password")
+    assert_content("Password Confirmation: doesn't match Password")
+    @admin.reload
+    assert_equal(original_encrypted_password, @admin.encrypted_password)
+    assert_nil(@admin.notes)
+
+    # No current password
+    fill_in "Current Password", :with => ""
+    fill_in "New Password", :with => "password234567"
+    fill_in "Confirm New Password", :with => "password234567"
+    click_button "Save"
+    assert_content("Current Password: can't be blank")
+    @admin.reload
+    assert_equal(original_encrypted_password, @admin.encrypted_password)
+    assert_nil(@admin.notes)
+
+    # Invalid current password
+    fill_in "Current Password", :with => "password345678"
+    fill_in "New Password", :with => "password234567"
+    fill_in "Confirm New Password", :with => "password234567"
+    click_button "Save"
+    assert_content("Current Password: is invalid")
     @admin.reload
     assert_equal(original_encrypted_password, @admin.encrypted_password)
     assert_nil(@admin.notes)
 
     # Valid password
-    fill_in "New Password", :with => "password123456"
-    fill_in "Confirm New Password", :with => "password123456"
+    fill_in "Current Password", :with => "password123456"
+    fill_in "New Password", :with => "password234567"
+    fill_in "Confirm New Password", :with => "password234567"
     click_button "Save"
     assert_content("Successfully saved the admin")
     @admin.reload
     assert(@admin.encrypted_password)
     refute_equal(original_encrypted_password, @admin.encrypted_password)
     assert_equal("Foo", @admin.notes)
+
+    # Stays signed in after changing password
+    admin = FactoryGirl.create(:admin, :notes => "After password change")
+    visit "/admin/#/admins/#{admin.id}/edit"
+    assert_field("Notes", :with => "After password change")
   end
 end
