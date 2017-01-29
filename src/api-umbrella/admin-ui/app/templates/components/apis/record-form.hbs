@@ -45,7 +45,7 @@
         {{f.text-field "httpBasicAuth" label="HTTP Basic Authentication" placeholder="username:password"}}
       {{/fields-for}}
 
-      {{apis/settings/common-fields model=model.settings}}
+      {{apis/settings/common-fields model=model.settings roleOptions=roleOptions}}
     </div>
   </fieldset>
 
@@ -53,7 +53,7 @@
     <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="fa fa-caret-down"></i> {{t "admin.api.sub_settings.legend"}}</a></legend>
     <div id="sub_settings" class="collapse">
       <p class="fieldset-note">{{t "admin.api.sub_settings.note"}}</p>
-      {{apis/sub-settings-table model=model}}
+      {{apis/sub-settings-table model=model roleOptions=roleOptions}}
     </div>
   </fieldset>
 

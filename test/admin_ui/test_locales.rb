@@ -52,6 +52,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
   }.freeze
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       # Ensure at least one admin exists so the login page can be hit directly

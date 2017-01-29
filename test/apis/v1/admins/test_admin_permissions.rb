@@ -6,6 +6,7 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
     Admin.delete_all
     AdminGroup.delete_all

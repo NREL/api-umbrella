@@ -6,6 +6,7 @@ class Test::AdminUi::TestVersionDisplay < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
     @expected_version = File.read(File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/version.txt")).strip
   end

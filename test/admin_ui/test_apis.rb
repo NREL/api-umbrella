@@ -6,6 +6,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
 
     Api.delete_all
@@ -376,5 +377,83 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     assert_equal(1, api.settings.rate_limits.length)
     rate_limit = api.settings.rate_limits.first
     assert_equal(200, rate_limit.limit)
+  end
+
+  def test_nested_select_menu_behavior_inside_modals
+    api = FactoryGirl.create(:api, :name => unique_test_id)
+    admin_login
+    visit "/admin/#/apis/#{api.id}/edit"
+
+    # Add a sub-url setting.
+    find("legend a", :text => /Sub-URL Request Settings/).click
+    find("button", :text => /Add URL Settings/).click
+    assert_selector(".modal")
+    within(".modal") do
+      fill_in "Regex", :with => "^/foo.*"
+      click_button("OK")
+    end
+
+    # Ensure the item got added to the table.
+    assert_selector("#sub_settings_table")
+    within("#sub_settings_table") do
+      # "any" for the HTTP Method should be shown despite not being explicitly
+      # selected (since it's the default/first option).
+      assert_content("any")
+      assert_content("^/foo.*")
+    end
+
+    # Save the API.
+    click_button("Save")
+    assert_content("Successfully saved")
+
+    # Edit again.
+    click_link api.name
+
+    # Verify the sub-url setting in the table.
+    find("legend a", :text => /Sub-URL Request Settings/).click
+    assert_selector("#sub_settings_table")
+    within("#sub_settings_table") do
+      assert_content("any")
+      assert_content("^/foo.*")
+    end
+
+    # Verify the sub-url setting in the modal and make explicit change the HTTP
+    # method select.
+    find("#sub_settings_table a", :text => /Edit/).click
+    assert_selector(".modal")
+    within(".modal") do
+      assert_select("HTTP Method", :selected => "Any")
+
+      # Make another change.
+      select "OPTIONS", :from => "HTTP Method"
+      click_button("OK")
+    end
+    assert_selector("#sub_settings_table")
+    within("#sub_settings_table") do
+      assert_content("OPTIONS")
+      assert_content("^/foo.*")
+    end
+
+    # Save the API.
+    click_button("Save")
+    assert_content("Successfully saved")
+
+    # Edit again.
+    click_link api.name
+
+    # Verify all of the edit updates are displayed properly (we saw an issue
+    # where the select menu handling didn't work properly on the second display
+    # of an edited record).
+    find("legend a", :text => /Sub-URL Request Settings/).click
+    assert_selector("#sub_settings_table")
+    within("#sub_settings_table") do
+      assert_content("OPTIONS")
+      assert_content("^/foo.*")
+    end
+    find("#sub_settings_table a", :text => /Edit/).click
+    assert_selector(".modal")
+    within(".modal") do
+      assert_select("HTTP Method", :selected => "OPTIONS")
+    end
   end
 end

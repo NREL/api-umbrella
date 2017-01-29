@@ -5,6 +5,7 @@ class Test::Proxy::Routing::TestDefaultWildcardWebAppHostAndDefaultHost < Minite
   include Minitest::Hooks
 
   def setup
+    super
     @assert_default_host = true
     setup_server
     once_per_class_setup do

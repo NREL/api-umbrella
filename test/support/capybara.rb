@@ -51,3 +51,15 @@ Capybara.default_driver = :poltergeist
 Capybara.run_server = false
 Capybara.app_host = "https://127.0.0.1:9081"
 Capybara.save_path = File.join(API_UMBRELLA_SRC_ROOT, "test/tmp/capybara")
+
+class Minitest::Capybara::Test
+  # After each capybara test, also clear the memory cache in Poltergeist. This
+  # seems to be necessary to prevent Poltergeist from incorrectly caching
+  # redirect results across different tests, and other oddities:
+  # https://github.com/teampoltergeist/poltergeist/issues/754
+  def teardown
+    super
+    ::Capybara.reset_session!
+    page.driver.clear_memory_cache
+  end
+end

@@ -5,6 +5,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
   end
 

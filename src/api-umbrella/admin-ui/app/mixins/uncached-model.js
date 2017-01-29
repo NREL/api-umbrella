@@ -22,6 +22,14 @@ export default Ember.Mixin.create({
   //     - reload or shouldReloadRecord continues to persist the local edits
   //       despite fetching the record from the remote ajax call again.
   //     - rollbackAttributes doesn't work for embedded relationship data.
+  //
+  // Note that this should be combined with { reload: true } options on the
+  // subsequent finds. unloadAll only schedules the unloading for the next
+  // Ember run cycle, and this combination seems necessary to fully refresh
+  // things:
+  //
+  // https://github.com/emberjs/data/issues/4564
+  // https://github.com/emberjs/data/issues/4595
   clearStoreCache() {
     this.get('store').unloadAll();
   },

@@ -7,6 +7,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     Admin.delete_all
     once_per_class_setup do

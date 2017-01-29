@@ -7,6 +7,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all

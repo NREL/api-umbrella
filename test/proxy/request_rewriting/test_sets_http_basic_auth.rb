@@ -5,6 +5,7 @@ class Test::Proxy::RequestRewriting::TestSetsHttpBasicAuth < Minitest::Test
   parallelize_me!
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       prepend_api_backends([

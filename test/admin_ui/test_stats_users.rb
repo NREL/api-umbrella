@@ -6,6 +6,7 @@ class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
     ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
   end

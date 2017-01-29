@@ -7,6 +7,7 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::DelayedJob
 
   def setup
+    super
     setup_server
 
     response = Typhoeus.delete("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")

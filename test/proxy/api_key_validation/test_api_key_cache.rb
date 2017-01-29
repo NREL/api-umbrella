@@ -5,6 +5,7 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
   include ApiUmbrellaTestHelpers::ExerciseAllWorkers
 
   def setup
+    super
     setup_server
   end
 

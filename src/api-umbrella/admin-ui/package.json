@@ -47,7 +47,7 @@
     "ember-resolver": "^2.0.3",
     "ember-simple-auth": "~1.1.0",
     "ember-truth-helpers": "~1.2.0",
-    "emberx-select": "~2.2.2",
+    "emberx-select": "~3.0.0",
     "i18n-js": "http://github.com/fnando/i18n-js/archive/v3.0.0.rc15.tar.gz",
     "loader.js": "^4.0.1"
   },
