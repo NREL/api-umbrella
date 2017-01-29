@@ -2,16 +2,6 @@ import Ember from 'ember';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 
 export default Ember.Component.extend(Save, {
-  store: Ember.inject.service(),
-
-  apiScopeOptions: Ember.computed(function() {
-    return this.get('store').findAll('api-scope');
-  }),
-
-  permissionOptions: Ember.computed(function() {
-    return this.get('store').findAll('admin-permission');
-  }),
-
   actions: {
     submit() {
       this.saveRecord({

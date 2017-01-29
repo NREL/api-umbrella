@@ -3,11 +3,6 @@ import Save from 'api-umbrella-admin-ui/mixins/save';
 
 export default Ember.Component.extend(Save, {
   session: Ember.inject.service(),
-  store: Ember.inject.service(),
-
-  groupOptions: Ember.computed(function() {
-    return this.get('store').findAll('admin-group');
-  }),
 
   currentAdmin: Ember.computed(function() {
     return this.get('session.data.authenticated.admin');
