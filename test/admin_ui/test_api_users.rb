@@ -43,7 +43,7 @@ class Test::AdminUi::TestApiUsers < Minitest::Capybara::Test
     select "Disabled", :from => "Account Enabled"
 
     click_button("Save")
-    assert_content("Successfully saved")
+    assert_text("Successfully saved")
 
     user = ApiUser.desc(:created_at).first
     visit "/admin/#/api_users/#{user.id}/edit"

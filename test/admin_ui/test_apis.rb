@@ -26,7 +26,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     fill_in "API Key Missing", :with => "hello1: foo\nhello2: bar", :visible => :all
 
     click_button("Save")
-    assert_content("Successfully saved")
+    assert_text("Successfully saved")
 
     api = Api.find(api.id)
     assert_equal({
@@ -41,14 +41,14 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     api = FactoryGirl.create(:api_with_settings, :name => "Test Load API", :frontend_host => "example1.com")
     admin_login
     visit "/admin/#/apis"
-    assert_content("Add API Backend")
+    assert_text("Add API Backend")
 
     click_link "Test Load API"
     assert_equal("example1.com", find_field("Frontend Host").value)
 
     find("nav a", :text => /Configuration/).click
     find("nav a", :text => /API Backends/).click
-    assert_content("Add API Backend")
+    assert_text("Add API Backend")
 
     api.frontend_host = "example2.com"
     api.save!
@@ -64,7 +64,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     find("#servers_table a", :text => /Remove/).click
     click_button("OK")
     click_button("Save")
-    assert_content("Must have at least one servers")
+    assert_text("Must have at least one servers")
 
     api = Api.find(api.id)
     assert_equal(1, api.servers.length)
@@ -77,7 +77,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     find("#url_matches_table a", :text => /Remove/).click
     click_button("OK")
     click_button("Save")
-    assert_content("Must have at least one url_matches")
+    assert_text("Must have at least one url_matches")
 
     api = Api.find(api.id)
     assert_equal(1, api.url_matches.length)
@@ -173,7 +173,6 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
       select "Required & return message - HTTP requests will receive a message to use HTTPS", :from => "HTTPS Requirements"
       select "Disabled - API keys are optional", :from => "API Key Checks"
       select "E-mail verification required - Existing API keys will break, only new API keys will work if verified", :from => "API Key Verification Requirements"
-      sleep 1
       fill_in "Required Roles", :with => "sub-role"
     end
     find(".selectize-dropdown-content div.create", :text => /Add sub-role/).click
@@ -224,7 +223,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     fill_in "HTTPS Required", :with => "foo6: bar6\nbar6: foo6", :visible => :all
 
     click_button("Save")
-    assert_content("Successfully saved")
+    assert_text("Successfully saved")
 
     api = Api.desc(:created_at).first
     visit "/admin/#/apis/#{api.id}/edit"
@@ -370,7 +369,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     end
 
     click_button("Save")
-    assert_content("Successfully saved")
+    assert_text("Successfully saved")
 
     api.reload
 
@@ -398,13 +397,13 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     within("#sub_settings_table") do
       # "any" for the HTTP Method should be shown despite not being explicitly
       # selected (since it's the default/first option).
-      assert_content("any")
-      assert_content("^/foo.*")
+      assert_text("any")
+      assert_text("^/foo.*")
     end
 
     # Save the API.
     click_button("Save")
-    assert_content("Successfully saved")
+    assert_text("Successfully saved")
 
     # Edit again.
     click_link api.name
@@ -413,8 +412,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     find("legend a", :text => /Sub-URL Request Settings/).click
     assert_selector("#sub_settings_table")
     within("#sub_settings_table") do
-      assert_content("any")
-      assert_content("^/foo.*")
+      assert_text("any")
+      assert_text("^/foo.*")
     end
 
     # Verify the sub-url setting in the modal and make explicit change the HTTP
@@ -430,13 +429,13 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     end
     assert_selector("#sub_settings_table")
     within("#sub_settings_table") do
-      assert_content("OPTIONS")
-      assert_content("^/foo.*")
+      assert_text("OPTIONS")
+      assert_text("^/foo.*")
     end
 
     # Save the API.
     click_button("Save")
-    assert_content("Successfully saved")
+    assert_text("Successfully saved")
 
     # Edit again.
     click_link api.name
@@ -447,8 +446,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     find("legend a", :text => /Sub-URL Request Settings/).click
     assert_selector("#sub_settings_table")
     within("#sub_settings_table") do
-      assert_content("OPTIONS")
-      assert_content("^/foo.*")
+      assert_text("OPTIONS")
+      assert_text("^/foo.*")
     end
     find("#sub_settings_table a", :text => /Edit/).click
     assert_selector(".modal")

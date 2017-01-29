@@ -2342,12 +2342,12 @@ ember-wormhole@^0.4.1:
     ember-cli-babel "^5.1.6"
     ember-cli-htmlbars "^1.0.3"
 
-emberx-select@~2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/emberx-select/-/emberx-select-2.2.2.tgz#43837c467b64e52235142c53e5112dbd57082bed"
+emberx-select@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/emberx-select/-/emberx-select-3.0.0.tgz#472e56ae75a928b759a30c55d0c5e88d7b639004"
   dependencies:
-    ember-cli-babel "^5.1.6"
-    ember-cli-htmlbars "^1.0.3"
+    ember-cli-babel "^5.1.7"
+    ember-cli-htmlbars "^1.0.10"
     ember-cli-version-checker "^1.1.6"
 
 encodeurl@~1.0.1:

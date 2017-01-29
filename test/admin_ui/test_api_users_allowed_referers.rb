@@ -20,7 +20,7 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
     check "User agrees to the terms and conditions"
     click_button("Save")
 
-    assert_content("Successfully saved the user")
+    assert_text("Successfully saved the user")
     user = ApiUser.order_by(:created_at.asc).last
     assert_nil(user["settings"]["allowed_referers"])
   end
@@ -36,7 +36,7 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
     fill_in "Restrict Access to HTTP Referers", :with => "*.example.com/*\n\n\n\nhttp://google.com/*"
     click_button("Save")
 
-    assert_content("Successfully saved the user")
+    assert_text("Successfully saved the user")
     user = ApiUser.order_by(:created_at.asc).last
     assert_equal(["*.example.com/*", "http://google.com/*"], user["settings"]["allowed_referers"])
   end
@@ -58,7 +58,7 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
     fill_in "Restrict Access to HTTP Referers", :with => ""
     click_button("Save")
 
-    assert_content("Successfully saved the user")
+    assert_text("Successfully saved the user")
     user.reload
     assert_nil(user["settings"]["allowed_referers"])
   end

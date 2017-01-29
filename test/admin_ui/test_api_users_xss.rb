@@ -15,11 +15,11 @@ class Test::AdminUi::TestApiUsersXss < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/api_users"
 
-    assert_content(@user.email)
-    assert_content(@user.first_name)
-    assert_content(@user.last_name)
-    assert_content(@user.use_description)
-    assert_content(@user.registration_source)
+    assert_text(@user.email)
+    assert_text(@user.first_name)
+    assert_text(@user.last_name)
+    assert_text(@user.use_description)
+    assert_text(@user.registration_source)
     refute_selector(".xss-test", :visible => :all)
   end
 
@@ -32,7 +32,7 @@ class Test::AdminUi::TestApiUsersXss < Minitest::Capybara::Test
     assert_equal(@user.first_name, find_field("First Name").value)
     assert_equal(@user.last_name, find_field("Last Name").value)
     assert_equal(@user.use_description, find_field("Purpose").value)
-    assert_content(@user.registration_source)
+    assert_text(@user.registration_source)
     refute_selector(".xss-test", :visible => :all)
   end
 
@@ -44,7 +44,7 @@ class Test::AdminUi::TestApiUsersXss < Minitest::Capybara::Test
     fill_in "Last Name", :with => "Doe"
     click_button("Save")
 
-    assert_content("Successfully saved the user \"#{@user.email}\"")
+    assert_text("Successfully saved the user \"#{@user.email}\"")
     refute_selector(".xss-test", :visible => :all)
   end
 end
