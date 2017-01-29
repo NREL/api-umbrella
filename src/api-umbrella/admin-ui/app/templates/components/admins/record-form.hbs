@@ -21,7 +21,7 @@
           <legend>{{t "devise.passwords.edit.change_your_password"}}</legend>
 
           {{f.password-field "currentPassword" label=(t "mongoid.attributes.admin.current_password")}}
-          {{f.password-field "password" label=(t "devise.passwords.edit.new_password")}}
+          {{f.password-field "password" label=(t "devise.passwords.edit.new_password") hint=(t "devise.passwords.password_length_hint" min=session.data.authenticated.password_length_min)}}
           {{f.password-field "passwordConfirmation" label=(t "devise.passwords.edit.confirm_new_password")}}
         </fieldset>
       {{/if}}

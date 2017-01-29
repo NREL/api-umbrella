@@ -16,6 +16,7 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
 
     assert_content("Welcome!")
     assert_content("It looks like you're setting up API Umbrella for the first time. Create your first admin account to get started.")
+    assert_content("14 characters minimum")
     assert_equal("/admins/signup", page.current_path)
 
     fill_in "Email", :with => "new@example.com"

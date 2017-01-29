@@ -109,6 +109,7 @@ module ApiUmbrellaTestHelpers
       assert_field("Current Password")
       assert_field("New Password")
       assert_field("Confirm New Password")
+      assert_content("14 characters minimum")
 
       # Admins cannot set new admin passwords
       visit "/admin/#/admins/new"

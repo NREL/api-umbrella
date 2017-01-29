@@ -438,6 +438,7 @@ en:
       new:
         admin_sign_in: Admin Sign In
     passwords:
+      password_length_hint: "%{min} characters minimum"
       edit:
         change_my_password: Change My Password
         change_your_password: Change Your Password

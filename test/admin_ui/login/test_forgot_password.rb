@@ -62,6 +62,9 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     reset_url = message["_mime_parts"]["text/html; charset=UTF-8"]["Body"].match(%r{/admins/password/edit\?reset_password_token=[^"]+})[0]
     visit reset_url
 
+    assert_text("Change Your Password")
+    assert_content("14 characters minimum")
+
     # Too short password
     fill_in "New Password", :with => "short"
     fill_in "Confirm New Password", :with => "short"

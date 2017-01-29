@@ -9,6 +9,7 @@ class Admin::SessionsController < Devise::SessionsController
       "enable_beta_analytics" => (ApiUmbrellaConfig[:analytics][:adapter] == "kylin" || (ApiUmbrellaConfig[:analytics][:outputs] && ApiUmbrellaConfig[:analytics][:outputs].include?("kylin"))),
       "username_is_email" => ApiUmbrellaConfig[:web][:admin][:username_is_email],
       "local_auth_enabled" => ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?],
+      "password_length_min" => ApiUmbrellaConfig[:web][:admin][:password_length_min],
     }
 
     if current_admin
