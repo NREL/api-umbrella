@@ -32,6 +32,7 @@ class Test::Proxy::Logging::TestRequestHeadersMultipleValues < Minitest::Test
   ].freeze
 
   def setup
+    super
     setup_server
   end
 

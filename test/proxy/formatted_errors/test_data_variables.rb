@@ -6,6 +6,7 @@ class Test::Proxy::FormattedErrors::TestDataVariables < Minitest::Test
   parallelize_me!
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       @@escape_test_value = "'\"&><,\\"

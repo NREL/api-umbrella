@@ -7,6 +7,7 @@ class Test::Proxy::Logging::TestTiming < Minitest::Test
   include ApiUmbrellaTestHelpers::Logging
 
   def setup
+    super
     setup_server
   end
 

@@ -6,6 +6,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
   parallelize_me!
 
   def setup
+    super
     setup_server
   end
 

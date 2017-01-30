@@ -6,6 +6,7 @@ class Test::Proxy::FormattedErrors::TestInvalidData < Minitest::Test
   parallelize_me!
 
   def setup
+    super
     setup_server
     @api = {
       :frontend_host => "127.0.0.1",

@@ -6,6 +6,7 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all

@@ -5,6 +5,7 @@ class Test::Proxy::Caching::TestThunderingHerds < Minitest::Test
   include ApiUmbrellaTestHelpers::Caching
 
   def setup
+    super
     setup_server
   end
 

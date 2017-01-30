@@ -6,6 +6,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
   parallelize_me!
 
   def setup
+    super
     setup_server
   end
 

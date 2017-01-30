@@ -5,6 +5,7 @@ class Test::Proxy::ResponseRewriting::TestResponseHeadersTestOnly < Minitest::Te
   parallelize_me!
 
   def setup
+    super
     setup_server
   end
 

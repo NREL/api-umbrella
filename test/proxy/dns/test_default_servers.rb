@@ -5,6 +5,7 @@ class Test::Proxy::Dns::TestDefaultServers < Minitest::Test
   parallelize_me!
 
   def setup
+    super
     setup_server
   end
 

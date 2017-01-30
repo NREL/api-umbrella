@@ -5,6 +5,7 @@ class Test::Proxy::TestMongodbReplicaSet < Minitest::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       # Setup the replica set in mongo-orchestration.

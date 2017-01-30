@@ -4,6 +4,7 @@ class Test::Proxy::Gzip::TestStreaming < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
   end
 

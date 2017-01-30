@@ -2,6 +2,7 @@ import Form from './form';
 
 export default Form.extend({
   model() {
-    return this.get('store').createRecord('admin');
+    this.clearStoreCache();
+    return this.fetchModels(this.get('store').createRecord('admin', { sendInviteEmail: true }));
   },
 });

@@ -4,6 +4,7 @@ class Test::Proxy::KeepAlive::TestServerSide < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
     reset_nginx_connections
     once_per_class_setup do

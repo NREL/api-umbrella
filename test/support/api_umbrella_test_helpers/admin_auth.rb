@@ -83,18 +83,20 @@ module ApiUmbrellaTestHelpers
 
       # Admin cannot edit their own password
       visit "/admin/#/admins/#{admin1.id}/edit"
-      assert_content("Edit Admin")
-      refute_content("Password")
-
-      # Admins cannot set new admin passwords
-      visit "/admin/#/admins/new"
-      assert_content("Add Admin")
-      refute_content("Password")
+      assert_text("Edit Admin")
+      assert_field("Email", :with => admin1.username)
+      refute_text("Password")
 
       # Admins cannot edit other admin passwords
       visit "/admin/#/admins/#{admin2.id}/edit"
-      assert_content("Edit Admin")
-      refute_content("Password")
+      assert_text("Edit Admin")
+      assert_field("Email", :with => admin2.username)
+      refute_text("Password")
+
+      # Admins cannot set new admin passwords
+      visit "/admin/#/admins/new"
+      assert_text("Add Admin")
+      refute_text("Password")
     end
 
     def assert_password_fields_on_my_account_admin_form_only
@@ -104,22 +106,24 @@ module ApiUmbrellaTestHelpers
 
       # Admin can edit their own password
       visit "/admin/#/admins/#{admin1.id}/edit"
-      assert_content("Edit Admin")
-      assert_content("Change Your Password")
+      assert_text("Edit Admin")
+      assert_field("Email", :with => admin1.username)
+      assert_text("Change Your Password")
       assert_field("Current Password")
       assert_field("New Password")
       assert_field("Confirm New Password")
-      assert_content("14 characters minimum")
-
-      # Admins cannot set new admin passwords
-      visit "/admin/#/admins/new"
-      assert_content("Add Admin")
-      refute_content("Password")
+      assert_text("14 characters minimum")
 
       # Admins cannot edit other admin passwords
       visit "/admin/#/admins/#{admin2.id}/edit"
-      assert_content("Edit Admin")
-      refute_content("Password")
+      assert_text("Edit Admin")
+      assert_field("Email", :with => admin2.username)
+      refute_text("Password")
+
+      # Admins cannot set new admin passwords
+      visit "/admin/#/admins/new"
+      assert_text("Add Admin")
+      refute_text("Password")
     end
 
     def make_first_time_admin_creation_requests

@@ -1,107 +1,126 @@
 import Ember from 'ember';
+import echarts from 'npm:echarts';
 
 export default Ember.Component.extend({
-  chartOptions: {
-    focusTarget: 'category',
-    width: '100%',
-    chartArea: {
-      width: '95%',
-      height: '88%',
-      top: 0,
-    },
-    fontSize: 12,
-    colors: ['#4682B4'],
-    areaOpacity: 0.2,
-    vAxis: {
-      gridlines: {
-        count: 4,
-      },
-      textStyle: {
-        fontSize: 11,
-      },
-      textPosition: 'in',
-    },
-    hAxis: {
-      format: 'MMM d',
-      baselineColor: 'transparent',
-      gridlines: {
-        color: 'transparent',
-      },
-    },
-    legend: {
-      position: 'none',
-    },
-  },
-
-  chartData: {
-    cols: [
-      {id: 'date', label: 'Date', type: 'datetime'},
-      {id: 'hits', label: 'Hits', type: 'number'},
-    ],
-    rows: [],
-  },
+  classNames: ['stats-logs-results-chart'],
 
   didInsertElement() {
-    google.charts.setOnLoadCallback(this.renderChart.bind(this));
+    this.renderChart();
   },
 
   renderChart() {
-    this.chart = new google.visualization.AreaChart(this.$()[0]);
+    this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
+    this.draw();
 
-    // On first load, refresh the data. Afterwards the observer should handle
-    // refreshing.
-    if(!this.dataTable) {
-      this.refreshData();
-    }
-
-    $(window).on('resize', _.debounce(this.draw.bind(this), 100));
+    $(window).on('resize', _.debounce(this.chart.resize, 100));
   },
 
-  refreshData: Ember.observer('hitsOverTime', function() {
-    // Defer until Google Charts is loaded if this got called earlier from the
-    // observer.
-    if(!google || !google.visualization || !google.visualization.DataTable) {
+  refreshData: Ember.on('init', Ember.observer('hitsOverTime', function() {
+    let data = []
+    let labels = [];
+
+    let hits = this.get('hitsOverTime');
+    for(let i = 0; i < hits.length; i++) {
+      data.push(hits[i].c[1].v);
+      labels.push(hits[i].c[0].f);
+    }
+
+    this.setProperties({
+      chartData: data,
+      chartLabels: labels,
+    });
+
+    this.draw();
+  })),
+
+  draw() {
+    if(!this.chart || !this.get('chartData')) {
       return;
     }
 
-    this.chartData.rows = this.get('hitsOverTime') || [];
-    for(let i = 0; i < this.chartData.rows.length; i++) {
-      this.chartData.rows[i].c[0].v = new Date(this.chartData.rows[i].c[0].v);
+    let showAllSymbol = false;
+    let lineWidth = 2;
+    if(this.get('chartData').length < 100) {
+      showAllSymbol = true;
+      lineWidth = 4;
     }
 
-    if(this.chartData.rows.length < 100) {
-      this.chartOptions.pointSize = 8;
-      this.chartOptions.lineWidth = 4;
-    } else {
-      this.chartOptions.pointSize = 0;
-      this.chartOptions.lineWidth = 3;
-    }
-
-    // Show hours on the axis when viewing minutely date.
-    switch(this.get('controller.query.params.interval')) {
-      case 'minute':
-        this.chartOptions.hAxis.format = 'MMM d h a';
-        break;
-      default:
-        this.chartOptions.hAxis.format = 'MMM d';
-        break;
-    }
-
-    // Show hours on the axis when viewing less than 2 days of hourly data.
-    if(this.get('controller.query.params.interval') === 'hour') {
-      let start = moment(this.get('controller.query.params.start_at'));
-      let end = moment(this.get('controller.query.params.end_at'));
-      let maxDuration = 2 * 24 * 60 * 60; // 2 days
-      if(end.unix() - start.unix() <= maxDuration) {
-        this.chartOptions.hAxis.format = 'MMM d h a';
-      }
-    }
-
-    this.dataTable = new google.visualization.DataTable(this.chartData);
-    this.draw();
-  }),
-
-  draw() {
-    this.chart.draw(this.dataTable, this.chartOptions);
+    this.chart.setOption({
+      tooltip: {
+        trigger: 'axis',
+      },
+      toolbox: {
+        orient: 'vertical',
+        iconStyle: {
+          emphasis: {
+            textPosition: 'left',
+            textAlign: 'right',
+          },
+        },
+        feature: {
+          saveAsImage: {
+            title: 'save as image',
+            name: 'api_umbrella_chart',
+            excludeComponents: ['toolbox', 'dataZoom'],
+            pixelRatio: 2,
+          },
+          dataZoom: {
+            yAxisIndex: 'none',
+            title: {
+              zoom: 'zoom',
+              back: 'restore zoom',
+            },
+          },
+        },
+      },
+      yAxis: {
+        type: 'value',
+        min: 0,
+        minInterval: 1,
+        splitNumber: 3,
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: this.get('chartLabels'),
+      },
+      series: [
+        {
+          name: 'Hits',
+          type: 'line',
+          sampling: 'average',
+          showAllSymbol: showAllSymbol,
+          symbolSize: lineWidth + 4,
+          areaStyle: {
+            normal: {},
+          },
+          lineStyle: {
+            normal: {
+              width: lineWidth,
+            },
+          },
+          data: this.get('chartData'),
+        },
+      ],
+      title: {
+        show: false,
+      },
+      legend: {
+        show: false,
+      },
+      grid: {
+        show: false,
+        left: 90,
+        top: 10,
+        right: 30,
+      },
+      dataZoom: [
+        {
+          type: 'slider',
+          start: 0,
+          end: 100,
+        },
+      ],
+    });
   },
 });

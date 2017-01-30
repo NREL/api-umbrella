@@ -5,6 +5,7 @@ class Test::Proxy::ApiKeyValidation::TestDeny < Minitest::Test
   parallelize_me!
 
   def setup
+    super
     setup_server
   end
 

@@ -5,6 +5,7 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
     ApiUser.where(:registration_source.ne => "seed").delete_all
   end

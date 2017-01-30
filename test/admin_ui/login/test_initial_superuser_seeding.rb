@@ -5,6 +5,7 @@ class Test::AdminUi::Login::TestInitialSuperuserSeeding < Minitest::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       Admin.delete_all

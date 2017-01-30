@@ -109,7 +109,7 @@ Rails.application.routes.draw do
   # detection, and some shared validations.
   get "/admin/server_side_loader.js", :to => proc { |env|
     # Detect the user's language based on their Accept-Language HTTP header.
-    locale = env["http_accept_language.parser"].language_region_compatible_from(I18n.available_locales) || I18n.default_locale
+    locale = (env["http_accept_language.parser"].language_region_compatible_from(I18n.available_locales) || I18n.default_locale).to_s
 
     # Cache the generated javascript on a per-locale basis (since the response
     # will differ depending on the user's locale).
@@ -121,11 +121,17 @@ Rails.application.routes.draw do
     end
 
     unless(script)
+      # Fetch the locale data just for the user's language, as well as the
+      # default language (if it's different) for fallback support.
+      locale_data = {}
+      locale_data[locale] = I18n::JS.translations[locale.to_sym]
+      locale_data[I18n.default_locale.to_s] ||= I18n::JS.translations[I18n.default_locale.to_sym]
+
       script = <<~eos
         I18n = window.I18n || {};
         I18n.defaultLocale = #{I18n.default_locale.to_json};
         I18n.locale = #{locale.to_json};
-        I18n.translations = #{{ locale => I18n::JS.translations[locale.to_sym] }.to_json};
+        I18n.translations = #{locale_data.to_json};
         I18n.fallbacks = true;
         var CommonValidations = {
           host_format: new RegExp(#{CommonValidations.to_js(CommonValidations::HOST_FORMAT).to_json}),

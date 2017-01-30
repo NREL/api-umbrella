@@ -6,6 +6,7 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::AdminAuth
 
   def setup
+    super
     setup_server
     Admin.delete_all
   end
@@ -14,9 +15,9 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
     assert_equal(0, Admin.count)
     visit "/admin/"
 
-    assert_content("Welcome!")
-    assert_content("It looks like you're setting up API Umbrella for the first time. Create your first admin account to get started.")
-    assert_content("14 characters minimum")
+    assert_text("Welcome!")
+    assert_text("It looks like you're setting up API Umbrella for the first time. Create your first admin account to get started.")
+    assert_text("14 characters minimum")
     assert_equal("/admins/signup", page.current_path)
 
     fill_in "Email", :with => "new@example.com"
@@ -38,8 +39,8 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
     assert_equal(1, Admin.count)
     visit "/admin/"
 
-    assert_content("Admin Sign In")
-    refute_content("An initial admin account already exists.")
+    assert_text("Admin Sign In")
+    refute_text("An initial admin account already exists.")
     assert_equal("/admin/login", page.current_path)
   end
 
@@ -48,8 +49,8 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
     assert_equal(1, Admin.count)
     visit "/admins/signup"
 
-    assert_content("Admin Sign In")
-    assert_content("An initial admin account already exists.")
+    assert_text("Admin Sign In")
+    assert_text("An initial admin account already exists.")
     assert_equal("/admin/login", page.current_path)
   end
 
@@ -57,8 +58,8 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
     assert_equal(0, Admin.count)
     visit "/admins/signup"
 
-    assert_content("Welcome!")
-    assert_content("It looks like you're setting up API Umbrella for the first time. Create your first admin account to get started.")
+    assert_text("Welcome!")
+    assert_text("It looks like you're setting up API Umbrella for the first time. Create your first admin account to get started.")
 
     fill_in "Email", :with => "new@example.com"
     fill_in "Password", :with => "password123456"
@@ -71,8 +72,8 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
 
     click_button "Sign up"
 
-    assert_content("Admin Sign In")
-    assert_content("An initial admin account already exists.")
+    assert_text("Admin Sign In")
+    assert_text("An initial admin account already exists.")
     assert_equal("/admin/login", page.current_path)
 
     assert_equal(1, Admin.count)

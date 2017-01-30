@@ -34,7 +34,7 @@ export default Ember.Component.extend({
           render: DataTablesHelpers.renderListEscaped,
         },
         {
-          data: 'last_sign_in_at',
+          data: 'current_sign_in_at',
           type: 'date',
           name: 'Last Signed In',
           title: 'Last Signed In',

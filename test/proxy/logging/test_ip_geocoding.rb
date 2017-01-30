@@ -6,6 +6,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   parallelize_me!
 
   def setup
+    super
     setup_server
   end
 

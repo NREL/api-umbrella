@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import numeral from 'numeral';
 
 export default Ember.Component.extend({
   didInsertElement() {

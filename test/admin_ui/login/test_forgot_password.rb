@@ -7,6 +7,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::DelayedJob
 
   def setup
+    super
     setup_server
     Admin.delete_all
     response = Typhoeus.delete("http://127.0.0.1:#{$config["mailhog"]["api_port"]}/api/v1/messages")
@@ -18,7 +19,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
 
     fill_in "Email", :with => "foobar@example.com"
     click_button "Send me reset password instructions"
-    assert_content("If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes.")
+    assert_text("If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes.")
 
     assert_equal(0, delayed_job_sent_messages.length)
   end
@@ -35,7 +36,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     # Reset password
     fill_in "Email", :with => "admin@example.com"
     click_button "Send me reset password instructions"
-    assert_content("If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes.")
+    assert_text("If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes.")
 
     # Check for reset token on database record.
     admin.reload
@@ -54,7 +55,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     # Subject
     assert_equal(["Reset password instructions"], message["Content"]["Headers"]["Subject"])
 
-    # Use description in body
+    # Password reset URL in body
     assert_match(%r{http://localhost/admins/password/edit\?reset_password_token=[^"]+}, message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
     assert_match(%r{http://localhost/admins/password/edit\?reset_password_token=[^"]+}, message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
 
@@ -63,13 +64,13 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     visit reset_url
 
     assert_text("Change Your Password")
-    assert_content("14 characters minimum")
+    assert_text("14 characters minimum")
 
     # Too short password
     fill_in "New Password", :with => "short"
     fill_in "Confirm New Password", :with => "short"
     click_button "Change My Password"
-    assert_content("is too short (minimum is 14 characters)")
+    assert_text("is too short (minimum is 14 characters)")
     admin.reload
     assert_equal(original_encrypted_password, admin.encrypted_password)
 
@@ -77,7 +78,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     fill_in "New Password", :with => "mismatch123456"
     fill_in "Confirm New Password", :with => "mismatcH123456"
     click_button "Change My Password"
-    assert_content("doesn't match Password")
+    assert_text("doesn't match Password")
     admin.reload
     assert_equal(original_encrypted_password, admin.encrypted_password)
 

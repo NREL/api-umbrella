@@ -6,18 +6,19 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
   end
 
   def test_redirect_to_login_for_unauthenticated_requests
     visit "/admin/elasticsearch"
-    assert_content("You need to sign in")
-    refute_content('"lucene_version"')
+    assert_text("You need to sign in")
+    refute_text('"lucene_version"')
     assert_match(%r{/admin/login\z}, page.current_url)
 
     visit "/admin/elasticsearch/_search"
-    assert_content("You need to sign in")
-    refute_content('"hits"')
+    assert_text("You need to sign in")
+    refute_text('"hits"')
     assert_match(%r{/admin/login\z}, page.current_url)
   end
 
@@ -26,13 +27,13 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
 
     visit "/admin/elasticsearch"
     assert_equal(403, page.status_code)
-    assert_content("Forbidden")
-    refute_content('"lucene_version"')
+    assert_text("Forbidden")
+    refute_text('"lucene_version"')
 
     visit "/admin/elasticsearch/_search"
     assert_equal(403, page.status_code)
-    assert_content("Forbidden")
-    refute_content('"hits"')
+    assert_text("Forbidden")
+    refute_text('"hits"')
   end
 
   def test_allowed_for_superuser_admins
@@ -40,11 +41,11 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
 
     visit "/admin/elasticsearch"
     assert_equal(200, page.status_code)
-    assert_content('"lucene_version"')
+    assert_text('"lucene_version"')
 
     visit "/admin/elasticsearch/_search"
     assert_equal(200, page.status_code)
-    assert_content('"hits"')
+    assert_text('"hits"')
 
     # Redirect rewriting
     response = Typhoeus.get("https://127.0.0.1:9081/admin/elasticsearch/_plugin/foobar", keyless_http_options.deep_merge({
