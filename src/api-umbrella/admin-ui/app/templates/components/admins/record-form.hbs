@@ -13,6 +13,13 @@
         {{f.static-field "name" label=(t "mongoid.attributes.admin.name")}}
       {{/if}}
       {{f.textarea-field "notes" label=(t "mongoid.attributes.admin.notes")}}
+      {{#if model.id}}
+        {{#unless model.currentSignInAt}}
+          {{f.checkbox-field "sendInviteEmail" label="Resend invite email"}}
+        {{/unless}}
+      {{else}}
+        {{f.checkbox-field "sendInviteEmail" label="Send invite email"}}
+      {{/if}}
     </fieldset>
 
     {{#if model.authenticationToken}}
@@ -52,7 +59,7 @@
         {{#if model.id}}
           Created: {{format-date model.createdAt}} by {{model.creator.username}}<br>
           Last Updated: {{format-date model.updatedAt}} by {{model.updater.username}}<br>
-          Last Login: {{format-date model.lastSignInAt}} from {{model.lastSignInIp}} via {{model.lastSignInProvider}}<br>
+          {{#if model.currentSignInAt}}Last Login: {{format-date model.currentSignInAt}} from {{model.currentSignInIp}} via {{model.currentSignInProvider}}<br>{{/if}}
           Logged in: {{model.signInCount}} times<br>
         {{/if}}
       </div>

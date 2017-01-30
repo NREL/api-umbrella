@@ -12,7 +12,7 @@
           {{#if model.admins}}
             <ul>
               {{#each model.admins as |admin|}}
-                <li>{{#link-to "admins.edit" admin.id}}{{admin.username}}{{/link-to}} (Last Login: {{#if admin.last_sign_in_at}}{{format-date admin.last_sign_in_at}}{{else}}Never{{/if}})</li>
+                <li>{{#link-to "admins.edit" admin.id}}{{admin.username}}{{/link-to}} (Last Login: {{#if admin.current_sign_in_at}}{{format-date admin.current_sign_in_at}}{{else}}Never{{/if}})</li>
               {{/each}}
             </ul>
           {{else}}

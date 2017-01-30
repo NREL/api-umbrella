@@ -55,7 +55,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     # Subject
     assert_equal(["Reset password instructions"], message["Content"]["Headers"]["Subject"])
 
-    # Use description in body
+    # Password reset URL in body
     assert_match(%r{http://localhost/admins/password/edit\?reset_password_token=[^"]+}, message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
     assert_match(%r{http://localhost/admins/password/edit\?reset_password_token=[^"]+}, message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
 

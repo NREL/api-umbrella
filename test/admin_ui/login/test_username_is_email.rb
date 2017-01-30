@@ -50,7 +50,7 @@ class Test::AdminUi::Login::TestUsernameIsEmail < Minitest::Capybara::Test
     assert_text("Successfully saved the admin")
     page.execute_script("PNotify.removeAll()")
 
-    # Find admin record, and ensure username and email are different.
+    # Find admin record, and ensure username and email are the same.
     admin = Admin.where(:username => "#{unique_test_id.downcase}@example.com").first
     assert(admin)
     assert_equal("#{unique_test_id.downcase}@example.com", admin.username)
@@ -65,7 +65,7 @@ class Test::AdminUi::Login::TestUsernameIsEmail < Minitest::Capybara::Test
     assert_text("Successfully saved the admin")
     page.execute_script("PNotify.removeAll()")
 
-    # Ensure edits still keep things different.
+    # Ensure edits still keep things the same.
     admin.reload
     assert_equal("#{unique_test_id.downcase}-update@example.com", admin.username)
     assert_equal(admin.username, admin.email)

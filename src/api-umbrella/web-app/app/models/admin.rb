@@ -12,8 +12,7 @@ class Admin
     :registerable,
     :rememberable,
     :trackable,
-    :lockable,
-    :invitable
+    :lockable
 
   # Fields
   field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
@@ -22,6 +21,7 @@ class Admin
   field :notes, :type => String
   field :superuser, :type => Boolean
   field :authentication_token, :type => String
+  field :current_sign_in_provider, :type => String
   field :last_sign_in_provider, :type => String
 
   ## Database authenticatable
@@ -46,13 +46,6 @@ class Admin
   field :failed_attempts, :type => Integer, :default => 0 # Only if lock strategy is :failed_attempts
   field :unlock_token, :type => String # Only if unlock strategy is :email or :both
   field :locked_at, :type => Time
-
-  ## Invitable
-  field :invitation_token, :type => String
-  field :invitation_created_at, :type => Time
-  field :invitation_sent_at, :type => Time
-  field :invitation_accepted_at, :type => Time
-  field :invitation_limit, :type => Integer
 
   # Virtual fields
   attr_accessor :current_password_invalid_reason
@@ -260,6 +253,31 @@ class Admin
     self.assign_attributes(params, *options)
   end
 
+  def send_invite_instructions
+    token = nil
+    if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?])
+      token = set_invite_reset_password_token
+    end
+
+    AdminMailer.invite(self.id, token).deliver_later
+  end
+
+  def update_tracked_fields(request)
+    old_current = self.current_sign_in_provider
+    new_current = "local"
+    if(request.env["omniauth.auth"] && request.env["omniauth.auth"]["provider"])
+      new_current = request.env["omniauth.auth"]["provider"]
+    end
+    self.last_sign_in_provider = old_current || new_current
+    self.current_sign_in_provider = new_current
+
+    super
+  end
+
+  def last_sign_in_provider
+    self.read_attribute(:last_sign_in_provider) || self.current_sign_in_provider
+  end
+
   private
 
   def sync_username_and_email
@@ -291,5 +309,19 @@ class Admin
     if(self.current_password_invalid_reason)
       self.errors.add(:current_password, self.current_password_invalid_reason)
     end
+  end
+
+  # Like Devise Recoverable's reset_password_sent_at, but set the
+  # reset_password_sent_at date 2 weeks into the future. This allows for the
+  # normal reset password valid period to be shorter (6 hours), but we can
+  # leverage the same reset password process for the initial invite where we
+  # want the period to be longer.
+  def set_invite_reset_password_token
+    raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
+
+    self.reset_password_token = enc
+    self.reset_password_sent_at = Time.now.utc + 2.weeks
+    save(:validate => false)
+    raw
   end
 end

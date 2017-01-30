@@ -133,9 +133,6 @@ GEM
       responders
       warden (~> 1.2.3)
     devise-i18n (1.1.1)
-    devise_invitable (1.7.0)
-      actionmailer (>= 4.0.0)
-      devise (>= 4.0.0)
     elasticsearch (2.0.1)
       elasticsearch-api (= 2.0.1)
       elasticsearch-transport (= 2.0.1)
@@ -339,7 +336,6 @@ DEPENDENCIES
   delayed_job_mongoid (~> 2.2.0)
   devise (~> 4.2.0)
   devise-i18n (~> 1.1.1)
-  devise_invitable (~> 1.7.0)
   elasticsearch (~> 2.0.1)
   font-awesome-rails (~> 4.7.0)
   http_accept_language (~> 2.1.0)

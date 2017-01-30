@@ -42,6 +42,10 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
     respond_to do |format|
       if(@admin.save)
+        if(send_invite_email)
+          @admin.send_invite_instructions
+        end
+
         format.json { render("show", :status => :created, :location => api_v1_admin_url(@admin)) }
       else
         format.json { render(:json => errors_response(@admin), :status => :unprocessable_entity) }
@@ -55,6 +59,10 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
     respond_to do |format|
       if(@admin.save)
+        if(!@admin.current_sign_in_at && send_invite_email)
+          @admin.send_invite_instructions
+        end
+
         # If a user is updating themselves, make sure they remain signed in.
         # This eliminates the current user getting logged out if they change
         # their password.
@@ -103,5 +111,17 @@ class Api::V1::AdminsController < Api::V1::BaseController
   rescue => e
     logger.error("Parameters error: #{e}")
     ActionController::Parameters.new({}).permit!
+  end
+
+  def send_invite_email
+    send_invite_email = (params[:options] && params[:options][:send_invite_email].to_s == "true")
+
+    # For the admin tool, it's easier to have this attribute on the user
+    # model, rather than options.
+    if(!send_invite_email && params[:admin] && params[:admin][:send_invite_email].to_s == "true")
+      send_invite_email = true
+    end
+
+    send_invite_email
   end
 end
