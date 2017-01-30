@@ -2,12 +2,13 @@ import Ember from 'ember';
 import echarts from 'npm:echarts';
 
 export default Ember.Component.extend({
+  classNames: ['stats-drilldown-results-chart'],
+
   didInsertElement() {
     this.renderChart();
   },
 
   renderChart() {
-    this.$()[0].style = "width: 100%; height: 220px; margin-top: 15px"
     this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
     this.draw();
 

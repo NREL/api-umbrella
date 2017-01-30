@@ -2,6 +2,7 @@ import Ember from 'ember';
 import echarts from 'npm:echarts';
 
 export default Ember.Component.extend({
+  classNames: ['stats-map-results-map'],
   routing: Ember.inject.service('-routing'),
 
   didInsertElement() {
@@ -9,7 +10,6 @@ export default Ember.Component.extend({
   },
 
   renderChart() {
-    this.$()[0].style = "width: 100%; height: 400px; margin-top: 15px"
     this.chart = echarts.init(this.$()[0], 'api-umbrella-theme');
     this.chart.showLoading();
     this.chart.on('mapselectchanged', this.handleRegionClick.bind(this));
