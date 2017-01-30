@@ -7,6 +7,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all
@@ -23,8 +24,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
     deleted_api = FactoryGirl.create(:api)
     modified_api = FactoryGirl.create(:api, :name => "Before")
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    deleted_api.update_attribute(:deleted_at, Time.now.utc)
-    modified_api.update_attribute(:name, "After")
+    deleted_api.update_attributes(:deleted_at => Time.now.utc)
+    modified_api.update_attributes(:name => "After")
     FactoryGirl.create(:api)
 
     admin_login
@@ -57,7 +58,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   def test_diff_of_config_changes
     api = FactoryGirl.create(:api, :name => "Before")
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    api.update_attribute(:name, "After")
+    api.update_attributes(:name => "After")
 
     admin_login
     visit "/admin/#/config/publish"
@@ -97,7 +98,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
 
     find("nav a", :text => /Configuration/).click
     find("nav a", :text => /API Backends/).click
-    assert_content("Add API Backend")
+    assert_text("Add API Backend")
 
     FactoryGirl.create(:api)
     find("nav a", :text => /Configuration/).click

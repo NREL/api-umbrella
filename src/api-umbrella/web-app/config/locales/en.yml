@@ -22,7 +22,7 @@ en:
   mongoid:
     attributes:
       admin:
-        username: Email
+        username: Username
         email: Email
         password: Password
         password_confirmation: Password Confirmation
@@ -437,3 +437,10 @@ en:
     sessions:
       new:
         admin_sign_in: Admin Sign In
+    passwords:
+      password_length_hint: "%{min} characters minimum"
+      edit:
+        change_my_password: Change My Password
+        change_your_password: Change Your Password
+        new_password: New Password
+        confirm_new_password: Confirm New Password

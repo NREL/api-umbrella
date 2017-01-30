@@ -45,7 +45,7 @@ class LogSearch::Kylin < LogSearch::Sql
       req.headers["X-Presto-Catalog"] = "hive"
       req.headers["X-Presto-Schema"] = "default"
       if(@options[:query_timeout])
-        req.headers["X-Presto-Session"] = "query_max_run_time=#{@options[:query_timeout]}"
+        req.headers["X-Presto-Session"] = "query_max_run_time=#{@options[:query_timeout]}s"
       end
       req.body = sql
     end

@@ -33,7 +33,7 @@ module ApiUmbrella
       # in the test environment, since we don't want development environment
       # config to be used in test (assuming you're testing from the same
       # machine you're developing on).
-      if(config_files.blank? && Rails.env != "test")
+      if(config_files.blank? && Rails.env != "test" && !ENV["RAILS_ASSETS_PRECOMPILE"])
         default_runtime_config_file = "/opt/api-umbrella/var/run/runtime_config.yml"
         if(File.exist?(default_runtime_config_file) && File.readable?(default_runtime_config_file))
           config_files << default_runtime_config_file
@@ -99,6 +99,7 @@ module ApiUmbrella
               :read => {
                 :mode => ApiUmbrellaConfig[:mongodb][:read_preference].to_s.underscore.to_sym,
               },
+              :truncate_logs => false,
             },
           },
         },

@@ -60,7 +60,7 @@ In this simple example, the API Umbrella configuration can be stored in the `con
 
 ```sh
 $ mkdir config && touch config/api-umbrella.yml
-$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v $PWD/config:/etc/api-umbrella nrel/api-umbrella
+$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v "$(pwd)/config":/etc/api-umbrella nrel/api-umbrella
 ```
 
 ### Installing From Source Code

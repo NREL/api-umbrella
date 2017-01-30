@@ -27,7 +27,7 @@ dependencies:
     # make is dependent on file timestamps and every CI test run operates on a
     # fresh clone.
     - if [[ ! -e build/work/git-restore-mtime ]]; then mkdir -p build/work && curl -f -L https://raw.githubusercontent.com/MestreLion/git-tools/0fc841a3e49d041576e5b21d1644c8df2d2ef801/git-restore-mtime > build/work/git-restore-mtime && chmod +x build/work/git-restore-mtime; fi
-    - ./build/work/git-restore-mtime -f .
+    # - ./build/work/git-restore-mtime -f .
   override:
     # Build all the API Umbrella software dependencies.
     - ./configure --enable-test-dependencies

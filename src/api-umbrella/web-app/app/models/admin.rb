@@ -12,8 +12,7 @@ class Admin
     :registerable,
     :rememberable,
     :trackable,
-    :lockable,
-    :invitable
+    :lockable
 
   # Fields
   field :_id, :type => String, :overwrite => true, :default => lambda { SecureRandom.uuid }
@@ -22,6 +21,7 @@ class Admin
   field :notes, :type => String
   field :superuser, :type => Boolean
   field :authentication_token, :type => String
+  field :current_sign_in_provider, :type => String
   field :last_sign_in_provider, :type => String
 
   ## Database authenticatable
@@ -47,12 +47,8 @@ class Admin
   field :unlock_token, :type => String # Only if unlock strategy is :email or :both
   field :locked_at, :type => Time
 
-  ## Invitable
-  field :invitation_token, :type => String
-  field :invitation_created_at, :type => Time
-  field :invitation_sent_at, :type => Time
-  field :invitation_accepted_at, :type => Time
-  field :invitation_limit, :type => Integer
+  # Virtual fields
+  attr_accessor :current_password_invalid_reason
 
   # Relations
   has_and_belongs_to_many :groups, :class_name => "AdminGroup", :inverse_of => nil
@@ -68,25 +64,32 @@ class Admin
     :uniqueness => true
   validates :username,
     :format => Devise.email_regexp,
+    :allow_blank => true,
     :if => :username_is_email?
   validates :email,
     :presence => true,
+    :if => :email_required?
+  validates :email,
     :format => Devise.email_regexp,
+    :allow_blank => true,
     :if => :email_required?
   validates :password,
     :presence => true,
     :confirmation => true,
-    :length => { :in => Devise.password_length },
     :if => :password_required?
+  validates :password,
+    :length => { :in => Devise.password_length },
+    :allow_blank => true
   if(ApiUmbrellaConfig[:web][:admin][:password_regex])
     validates :password,
       :format => { :with => Regexp.new(ApiUmbrellaConfig[:web][:admin][:password_regex]), :message => :password_format },
-      :if => :password_required?
+      :allow_blank => true
   end
   validates :password_confirmation,
     :presence => true,
     :if => :password_required?
   validate :validate_superuser_or_groups
+  validate :validate_current_password
 
   # Callbacks
   before_validation :sync_username_and_email
@@ -97,7 +100,7 @@ class Admin
   end
 
   def self.needs_first_account?
-    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].include?("local") && self.unscoped.count == 0
+    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?] && self.unscoped.count == 0
   end
 
   def group_names
@@ -211,15 +214,21 @@ class Admin
   end
 
   def username_is_email?
-    true
+    ApiUmbrellaConfig[:web][:admin][:username_is_email]
   end
 
-  def email_required?
-    !username_is_email?
-  end
-
+  # Only require the password fields for validation if they've been entered (if
+  # they're left blank, we don't want to require these fields).
   def password_required?
     password.present? || password_confirmation.present?
+  end
+
+  # Only require the email field for validation if it won't be synced with the
+  # username field. This just prevents duplicate validation errors from showing
+  # up when the fields are synced (since the user doesn't see the separate
+  # email field, even though we populate it).
+  def email_required?
+    !ApiUmbrellaConfig[:web][:admin][:username_is_email]
   end
 
   def assign_without_password(params, *options)
@@ -232,16 +241,41 @@ class Admin
     current_password = params.delete(:current_password)
 
     # Don't try to set the password unless it was explicitly set.
-    if(params[:password].blank?)
+    if(params[:password].present? || params[:password_confirmation].present?)
+      unless(valid_password?(current_password))
+        self.current_password_invalid_reason = if(current_password.blank?) then :blank else :invalid end
+      end
+    else
       params.delete(:password)
-      params.delete(:password_confirmation) if(params[:password_confirmation].blank?)
+      params.delete(:password_confirmation)
     end
 
     self.assign_attributes(params, *options)
-    if(!valid_password?(current_password))
-      self.valid?
-      self.errors.add(:current_password, current_password.blank? ? :blank : :invalid)
+  end
+
+  def send_invite_instructions
+    token = nil
+    if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?])
+      token = set_invite_reset_password_token
     end
+
+    AdminMailer.invite(self.id, token).deliver_later
+  end
+
+  def update_tracked_fields(request)
+    old_current = self.current_sign_in_provider
+    new_current = "local"
+    if(request.env["omniauth.auth"] && request.env["omniauth.auth"]["provider"])
+      new_current = request.env["omniauth.auth"]["provider"]
+    end
+    self.last_sign_in_provider = old_current || new_current
+    self.current_sign_in_provider = new_current
+
+    super
+  end
+
+  def last_sign_in_provider
+    self.read_attribute(:last_sign_in_provider) || self.current_sign_in_provider
   end
 
   private
@@ -269,5 +303,25 @@ class Admin
     if(!self.superuser? && self.groups.blank?)
       self.errors.add(:groups, "must belong to at least one group or be a superuser")
     end
+  end
+
+  def validate_current_password
+    if(self.current_password_invalid_reason)
+      self.errors.add(:current_password, self.current_password_invalid_reason)
+    end
+  end
+
+  # Like Devise Recoverable's reset_password_sent_at, but set the
+  # reset_password_sent_at date 2 weeks into the future. This allows for the
+  # normal reset password valid period to be shorter (6 hours), but we can
+  # leverage the same reset password process for the initial invite where we
+  # want the period to be longer.
+  def set_invite_reset_password_token
+    raw, enc = Devise.token_generator.generate(self.class, :reset_password_token)
+
+    self.reset_password_token = enc
+    self.reset_password_sent_at = Time.now.utc + 2.weeks
+    save(:validate => false)
+    raw
   end
 end

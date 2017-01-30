@@ -6,18 +6,19 @@ class Test::AdminUi::TestPageTitle < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
   end
 
   def test_rails_login_page_title
     visit "/admin/"
-    assert_content("Admin Sign In")
+    assert_text("Admin Sign In")
     assert_equal("API Umbrella Admin", page.title)
   end
 
   def test_ember_page_title
     admin_login
-    assert_content("Analytics")
+    assert_text("Analytics")
     assert_equal("API Umbrella Admin", page.title)
   end
 end

@@ -1,9 +1,8 @@
 import Ember from 'ember';
+import I18n from 'npm:i18n-js';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 
 export default Ember.Component.extend(Save, {
-  store: Ember.inject.service(),
-
   throttleByIpOptions: [
     { id: false, name: 'Rate limit by API key' },
     { id: true, name: 'Rate limit by IP address' },
@@ -13,10 +12,6 @@ export default Ember.Component.extend(Save, {
     { id: true, name: 'Enabled' },
     { id: false, name: 'Disabled' },
   ],
-
-  roleOptions: Ember.computed(function() {
-    return this.get('store').findAll('api-user-role');
-  }),
 
   actions: {
     apiKeyRevealToggle() {

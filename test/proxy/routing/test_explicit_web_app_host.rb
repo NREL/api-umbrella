@@ -5,6 +5,7 @@ class Test::Proxy::Routing::TestExplicitWebAppHost < Minitest::Test
   include Minitest::Hooks
 
   def setup
+    super
     @refute_fallback_website = true
     setup_server
     once_per_class_setup do

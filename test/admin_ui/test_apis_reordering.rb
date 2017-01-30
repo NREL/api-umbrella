@@ -6,6 +6,7 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
 
     Api.delete_all

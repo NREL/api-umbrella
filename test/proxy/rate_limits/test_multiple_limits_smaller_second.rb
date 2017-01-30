@@ -6,6 +6,7 @@ class Test::Proxy::RateLimits::TestMultipleLimitsSmallerSecond < Minitest::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       override_config_set({

@@ -5,6 +5,7 @@ class Test::Proxy::ApiMatching::TestDefaultHost < Minitest::Test
   include ApiUmbrellaTestHelpers::ApiMatching
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       prepend_api_backends([

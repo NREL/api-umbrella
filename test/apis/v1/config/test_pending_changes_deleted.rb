@@ -6,6 +6,7 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all
@@ -13,7 +14,7 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Test
 
     @api = FactoryGirl.create(:api)
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    @api.update_attribute(:deleted_at, Time.now.utc)
+    @api.update_attributes(:deleted_at => Time.now.utc)
   end
 
   def after_all

@@ -8,6 +8,7 @@ class Test::Proxy::Dns::TestStaleCaching < Minitest::Test
   MAX_STALE = 3
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       override_config_set({

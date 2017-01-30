@@ -5,6 +5,7 @@ class Test::Proxy::TestHttpsRequirements < Minitest::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     once_per_class_setup do
       # Restore the real global default setting for "require_https" (as defined

@@ -6,6 +6,7 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
   end
 
@@ -25,7 +26,7 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
     end
 
     click_button("Save")
-    assert_content("Successfully saved")
+    assert_text("Successfully saved")
 
     user.reload
 
@@ -55,7 +56,7 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
     click_button("OK")
 
     click_button("Save")
-    assert_content("Successfully saved")
+    assert_text("Successfully saved")
 
     user.reload
 

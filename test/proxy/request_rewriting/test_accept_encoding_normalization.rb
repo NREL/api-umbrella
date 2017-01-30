@@ -7,6 +7,7 @@ class Test::Proxy::RequestRewriting::TestAcceptEncodingNormalization < Minitest:
   parallelize_me!
 
   def setup
+    super
     setup_server
   end
 

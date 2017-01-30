@@ -5,6 +5,7 @@ class Test::Apis::V1::AdminPermissions::TestIndex < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
   end
 

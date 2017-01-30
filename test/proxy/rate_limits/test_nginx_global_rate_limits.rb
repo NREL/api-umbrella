@@ -5,6 +5,7 @@ class Test::Proxy::RateLimits::TestNginxGlobalRateLimits < Minitest::Test
   include ApiUmbrellaTestHelpers::Logging
 
   def setup
+    super
     setup_server
   end
 

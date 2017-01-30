@@ -104,29 +104,53 @@ Rails.application.routes.draw do
     mount ApiUmbrella::ElasticsearchProxy.new => ApiUmbrella::ElasticsearchProxy::PREFIX
   end
 
-  # Add an endpoint for admin-ui to hit to return the detected language based
-  # on the Accept-Language HTTP header.
-  #
-  # At some point we may want to revisit this to be purely client-side, but
-  # this currently seems like the easiest approach to ensure that the parsed
-  # client-side language is consistent with the server-side language, and this
-  # can be tested with Capybara (purely client-side approaches based on
-  # "navigator.languages" can't really seem to be changed in
-  # Capybara+poltergeist).
-  get "/admin/i18n_detection.js", :to => proc { |env|
-    locale = env["http_accept_language.parser"].language_region_compatible_from(I18n.available_locales) || I18n.default_locale
+  # Add an endpoint for admin-ui to hit to return server-side data to share
+  # with the client side. This consists of shared locale data, locale
+  # detection, and some shared validations.
+  get "/admin/server_side_loader.js", :to => proc { |env|
+    # Detect the user's language based on their Accept-Language HTTP header.
+    locale = (env["http_accept_language.parser"].language_region_compatible_from(I18n.available_locales) || I18n.default_locale).to_s
+
+    # Cache the generated javascript on a per-locale basis (since the response
+    # will differ depending on the user's locale).
+    cache_key = :"server_side_loader_cache_#{locale}"
+
+    script = nil
+    unless(Rails.env.development?)
+      script = Thread.current[cache_key]
+    end
+
+    unless(script)
+      # Fetch the locale data just for the user's language, as well as the
+      # default language (if it's different) for fallback support.
+      locale_data = {}
+      locale_data[locale] = I18n::JS.translations[locale.to_sym]
+      locale_data[I18n.default_locale.to_s] ||= I18n::JS.translations[I18n.default_locale.to_sym]
+
+      script = <<~eos
+        I18n = window.I18n || {};
+        I18n.defaultLocale = #{I18n.default_locale.to_json};
+        I18n.locale = #{locale.to_json};
+        I18n.translations = #{locale_data.to_json};
+        I18n.fallbacks = true;
+        var CommonValidations = {
+          host_format: new RegExp(#{CommonValidations.to_js(CommonValidations::HOST_FORMAT).to_json}),
+          host_format_with_wildcard: new RegExp(#{CommonValidations.to_js(CommonValidations::HOST_FORMAT_WITH_WILDCARD).to_json}),
+          url_prefix_format: new RegExp(#{CommonValidations.to_js(CommonValidations::URL_PREFIX_FORMAT).to_json})
+        };
+      eos
+
+      Thread.current[cache_key] = script
+    end
 
     [
       200,
       {
         "Content-Type" => "application/javascript",
-        "Cache-Control" => "max-age=0, private, must-revalidate",
+        "Cache-Control" => "max-age=0, private, no-cache, no-store, must-revalidate",
       },
       [
-        "I18n = {};",
-        "I18n.defaultLocale = #{I18n.default_locale.to_json};",
-        "I18n.locale = #{locale.to_json};",
-        "I18n.fallbacks = true;",
+        script,
       ],
     ]
   }

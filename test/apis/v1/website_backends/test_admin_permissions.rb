@@ -6,6 +6,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
     WebsiteBackend.delete_all
   end

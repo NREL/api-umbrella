@@ -106,7 +106,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
       # This query can take a long time to run against PrestoDB, so set a long
       # timeout. But since we're only delivering cached results and refreshing
       # periodically in the background, this long timeout should be okay.
-      :query_timeout => "20m",
+      :query_timeout => 20 * 60, # 20 minutes
     })
 
     # Try to ignore some of the baseline monitoring traffic. Only include

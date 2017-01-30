@@ -65,18 +65,12 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
     end
 
     if @admin
-      @admin.last_sign_in_provider = request.env["omniauth.auth"]["provider"]
       if request.env["omniauth.auth"]["info"].present?
-        if request.env["omniauth.auth"]["info"]["email"].present?
-          @admin.email = request.env["omniauth.auth"]["info"]["email"]
-        end
-
         if request.env["omniauth.auth"]["info"]["name"].present?
           @admin.name = request.env["omniauth.auth"]["info"]["name"]
+          @admin.save!
         end
       end
-
-      @admin.save!
 
       sign_in_and_redirect(:admin, @admin)
     else

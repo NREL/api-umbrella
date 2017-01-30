@@ -1,5 +1,5 @@
 class Admin::RegistrationsController < Devise::RegistrationsController
-  before_action :first_time_setup
+  before_action :first_time_setup_check
 
   protected
 
@@ -12,7 +12,7 @@ class Admin::RegistrationsController < Devise::RegistrationsController
 
   private
 
-  def first_time_setup
+  def first_time_setup_check
     unless(Admin.needs_first_account?)
       flash[:notice] = "An initial admin account already exists."
       redirect_to admin_path

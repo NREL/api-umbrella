@@ -7,6 +7,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   include Minitest::Hooks
 
   def setup
+    super
     setup_server
     Admin.delete_all
     once_per_class_setup do
@@ -41,7 +42,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   def test_shows_external_login_links_in_order_and_no_local_fields
     visit "/admin/login"
 
-    assert_content("Admin Sign In")
+    assert_text("Admin Sign In")
 
     # No local login fields
     refute_field("Email")
@@ -51,7 +52,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     refute_button("Sign in")
 
     # External login links
-    assert_content("Sign in with")
+    assert_text("Sign in with")
 
     # Order matches enabled array order.
     buttons = page.all(".external-login .btn").map { |btn| btn.text }
@@ -62,6 +63,24 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       "Sign in with Google",
       "Sign in with LDAP",
     ], buttons)
+  end
+
+  def test_local_login_endpoint_disabled
+    admin = FactoryGirl.create(:admin)
+    response = Typhoeus.post("https://127.0.0.1:9081/admin/login", keyless_http_options.deep_merge(csrf_session).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => {
+        :admin => {
+          :username => admin.username,
+          :password => "password123456",
+        },
+      },
+    }))
+    assert_response_code(404, response)
+  end
+
+  def test_no_password_field_on_admin_forms
+    assert_no_password_fields_on_admin_forms
   end
 
   [

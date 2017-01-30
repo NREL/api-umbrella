@@ -5,6 +5,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
+    super
     setup_server
   end
 
@@ -16,11 +17,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
 
     assert_equal([
       "authenticated",
-      "enable_beta_analytics",
     ].sort, data.keys.sort)
-
-    assert_includes([TrueClass, FalseClass], data["authenticated"].class)
-    assert_includes([TrueClass, FalseClass], data["enable_beta_analytics"].class)
 
     assert_equal(false, data["authenticated"])
   end
@@ -38,6 +35,9 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
       "authenticated",
       "csrf_token",
       "enable_beta_analytics",
+      "local_auth_enabled",
+      "password_length_min",
+      "username_is_email",
     ].sort, data.keys.sort)
 
     assert_kind_of(Hash, data["admin"])

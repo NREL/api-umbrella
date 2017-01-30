@@ -80,7 +80,8 @@ web:
     max_threads: 24
   admin:
     initial_superusers: []
-    password_length_min: 8
+    username_is_email: true
+    password_length_min: 14
     password_length_max: 72
     email_regex: "\\A[^@\\s]+@[^@\\s]+\\z"
     password_regex:

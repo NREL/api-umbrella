@@ -3,36 +3,51 @@ import ConfirmationMixin from 'ember-onbeforeunload/mixins/confirmation';
 
 export default Ember.Mixin.create(ConfirmationMixin, {
   afterModel(model) {
+    let record = model
+    if(model && !model.serialize && model.record && model.record.serialize) {
+      record = model.record;
+    }
+
+    if(!record || !record.serialize) {
+      Ember.Logger.error('Confirmation mixin was unable to detect the model');
+      return false;
+    }
+
     // Store the full JSON representation of the model after fetching. This is
     // used in isPageDirty() to determine if the model has changed. We can't
     // rely on ember-data's builtin dirty tracking, since it considers all new
     // records dirty and also doesn't currently support nested/embedded models:
     // https://github.com/emberjs/rfcs/pull/21
-    model.set('_confirmationRecordInitialSerialized', model.serialize());
+    record.set('_confirmationRecordInitialSerialized', record.serialize());
 
     // Determine when the record gets saved, since we don't want to prompt
     // about navigating away if we're in the process of saving the record.
-    model.set('_confirmationRecordIsSaved', false);
-    model.on('didCreate', function() {
-      model.set('_confirmationRecordIsSaved', true);
+    record.set('_confirmationRecordIsSaved', false);
+    record.on('didCreate', function() {
+      record.set('_confirmationRecordIsSaved', true);
     });
-    model.on('didUpdate', function() {
-      model.set('_confirmationRecordIsSaved', true);
+    record.on('didUpdate', function() {
+      record.set('_confirmationRecordIsSaved', true);
     });
   },
 
   isPageDirty(model) {
-    if(model) {
-      let saved = model.get('_confirmationRecordIsSaved');
-      if(saved) {
-        return false;
-      } else {
-        let initialSerialized = model.get('_confirmationRecordInitialSerialized');
-        let currentSerialized = model.serialize();
-        return !_.isEqual(currentSerialized, initialSerialized);
-      }
-    } else {
+    let record = model
+    if(model && !model.serialize && model.record && model.record.serialize) {
+      record = model.record;
+    }
+
+    if(!record || !record.serialize) {
       return false;
+    }
+
+    let saved = record.get('_confirmationRecordIsSaved');
+    if(saved) {
+      return false;
+    } else {
+      let initialSerialized = record.get('_confirmationRecordInitialSerialized');
+      let currentSerialized = record.serialize();
+      return !_.isEqual(currentSerialized, initialSerialized);
     }
   },
 });

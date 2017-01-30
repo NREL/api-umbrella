@@ -7,6 +7,7 @@ class Admin
   field :notes, :type => String
   field :superuser, :type => Boolean
   field :authentication_token, :type => String, :default => lambda { SecureRandom.hex(20) }
+  field :current_sign_in_provider, :type => String
   field :last_sign_in_provider, :type => String
   field :email, :type => String
   field :encrypted_password, :type => String

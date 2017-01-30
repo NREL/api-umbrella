@@ -284,7 +284,7 @@ http {
     }
     {{/_development_env?}}
 
-    location ~ ^/admin/(login|logout|auth|stats|config|api_users|elasticsearch|i18n_detection) {
+    location ~ ^/admin/(login|logout|auth|stats|config|api_users|elasticsearch|server_side_loader) {
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header Host $http_host;
       proxy_pass http://puma;

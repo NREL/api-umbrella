@@ -1,8 +1,7 @@
 import Ember from 'ember';
+import I18n from 'npm:i18n-js';
 
 export default Ember.Component.extend({
-  store: Ember.inject.service(),
-
   requireHttpsOptions: [
     { id: null, name: I18n.t('admin.api.settings.require_https_options.inherit') },
     { id: 'required_return_error', name: I18n.t('admin.api.settings.require_https_options.required_return_error') },
@@ -24,10 +23,6 @@ export default Ember.Component.extend({
     { id: 'transition_email', name: I18n.t('admin.api.settings.api_key_verification_level_options.transition_email') },
     { id: 'required_email', name: I18n.t('admin.api.settings.api_key_verification_level_options.required_email') },
   ],
-
-  roleOptions: Ember.computed(function() {
-    return this.get('store').findAll('api-user-role');
-  }),
 
   passApiKeyOptions: [
     { id: 'header', name: I18n.t('admin.api.settings.pass_api_key_header') },

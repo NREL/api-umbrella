@@ -8,6 +8,7 @@ module ApiUmbrellaTestHelpers
     TTL_BUFFER_POS = 2.1
 
     def teardown
+      super
       if(@custom_dns_records_set_during_this_test)
         # Remove any custom DNS entries to prevent rapid reloads (for short TTL
         # records) after these DNS tests finish.
