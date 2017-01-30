@@ -1,3 +1,5 @@
+[![Dependency Status](https://gemnasium.com/badges/github.com/nrel/api-umbrella.svg)](https://gemnasium.com/github.com/nrel/api-umbrella)
+
 # API Umbrella
 
 ## What Is API Umbrella?
