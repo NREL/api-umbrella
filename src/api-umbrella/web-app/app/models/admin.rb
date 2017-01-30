@@ -78,7 +78,8 @@ class Admin
     :if => :email_required?
   validates :email,
     :format => Devise.email_regexp,
-    :allow_blank => true
+    :allow_blank => true,
+    :if => :email_required?
   validates :password,
     :presence => true,
     :confirmation => true,
