@@ -38,17 +38,8 @@ module(load="omelasticsearch")
 if($!raw!legacy_api_key != "") then {
   set $!usr!es!api_key = $!raw!legacy_api_key;
 }
-if($!raw!timer_backend_response != "") then {
-  set $!usr!es!backend_response_time = $!raw!timer_backend_response;
-}
 if($!raw!denied_reason != "") then {
   set $!usr!es!gatekeeper_denied_code = $!raw!denied_reason;
-}
-if($!raw!timer_internal != "") then {
-  set $!usr!es!internal_gatekeeper_time = $!raw!timer_internal;
-}
-if($!raw!timer_proxy_overhead != "") then {
-  set $!usr!es!proxy_overhead = $!raw!timer_proxy_overhead;
 }
 if($!raw!request_accept != "") then {
   set $!usr!es!request_accept = $!raw!request_accept;
@@ -83,9 +74,6 @@ if($!raw!request_ip_city != "") then {
 if($!raw!request_ip_country != "") then {
   set $!usr!es!request_ip_country = $!raw!request_ip_country;
 }
-if($!raw!legacy_request_ip_location != "") then {
-  set $!usr!es!request_ip_location = $!raw!legacy_request_ip_location;
-}
 if($!raw!request_ip_region != "") then {
   set $!usr!es!request_ip_region = $!raw!request_ip_region;
 }
@@ -98,9 +86,6 @@ if($!raw!request_origin != "") then {
 if($!raw!request_url_path != "") then {
   set $!usr!es!request_path = $!raw!request_url_path;
 }
-if($!raw!legacy_request_url_query_hash != "") then {
-  set $!usr!es!request_query = $!raw!legacy_request_url_query_hash;
-}
 if($!raw!request_referer != "") then {
   set $!usr!es!request_referer = $!raw!request_referer;
 }
@@ -109,9 +94,6 @@ if($!raw!request_url_scheme != "") then {
 }
 if($!raw!request_size != "") then {
   set $!usr!es!request_size = $!raw!request_size;
-}
-if($!raw!legacy_request_url != "") then {
-  set $!usr!es!request_url = $!raw!legacy_request_url;
 }
 if($!raw!request_user_agent != "") then {
   set $!usr!es!request_user_agent = $!raw!request_user_agent;
@@ -152,11 +134,11 @@ if($!raw!timer_response != "") then {
 if($!raw!response_transfer_encoding != "") then {
   set $!usr!es!response_transfer_encoding = $!raw!response_transfer_encoding;
 }
-if($!raw!legacy_user_email != "") then {
-  set $!usr!es!user_email = $!raw!legacy_user_email;
-}
 if($!raw!user_id != "") then {
   set $!usr!es!user_id = $!raw!user_id;
+}
+if($!raw!user_email != "") then {
+  set $!usr!es!user_email = $!raw!legacy_user_email;
 }
 if($!raw!legacy_user_registration_source != "") then {
   set $!usr!es!user_registration_source = $!raw!legacy_user_registration_source;
@@ -185,6 +167,8 @@ local0.info action(
   bulkId="elasticsearch-id"
   dynBulkId="on"
 
+  errorfile="{{log_dir}}/rsyslog/elasticsearch_error.log"
+
   # Allow bulk indexing of batches *up to* this size.
   #
   # Note that as long as Elasticsearch is keeping up and data isn't being
@@ -192,9 +176,6 @@ local0.info action(
   # Elasticsearch (so the batch sizes might be much smaller). See
   # http://www.gossamer-threads.com/lists/rsyslog/users/17550
   queue.dequeuebatchsize="5000"
-
-  # Require indexing by all replica shards.
-  asyncrepl="off"
 
   # For the in-memory queue, use a linked-list (so the memory doesn't have to
   # be pre-allocated based on a fixed size).
@@ -347,15 +328,6 @@ if($!raw!response_status != "") then {
 }
 if($!raw!response_transfer_encoding != "") then {
   set $!usr!sql!response_transfer_encoding = $!raw!response_transfer_encoding;
-}
-if($!raw!timer_backend_response != "") then {
-  set $!usr!sql!timer_backend_response = $!raw!timer_backend_response;
-}
-if($!raw!timer_internal != "") then {
-  set $!usr!sql!timer_internal = $!raw!timer_internal;
-}
-if($!raw!timer_proxy_overhead != "") then {
-  set $!usr!sql!timer_proxy_overhead = $!raw!timer_proxy_overhead;
 }
 if($!raw!timer_response != "") then {
   set $!usr!sql!timer_response = $!raw!timer_response;

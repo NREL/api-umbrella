@@ -224,9 +224,12 @@ class LogSearch::Sql < LogSearch::Base
         operator = nil
         value = rule["value"]
 
-        if(!CASE_SENSITIVE_FIELDS.include?(rule["field"]) && value.kind_of?(String))
-          # FIXME: Is this needed now that everything is case-sensitive in SQL?
-          # value.downcase!
+        if(value.kind_of?(String))
+          if(UPPERCASE_FIELDS.include?(rule["field"]))
+            value.upcase!
+          else
+            value.downcase!
+          end
         end
 
         if(value.present?)
