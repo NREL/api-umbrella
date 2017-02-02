@@ -71,13 +71,9 @@ module ApiUmbrellaTestHelpers
       assert_operator(record["request_path"].length, :>=, 1)
       assert_equal("http", record["request_scheme"])
       assert_kind_of(Numeric, record["request_size"])
-      assert_kind_of(String, record["request_url"])
-      assert_equal(true, record["request_url"].start_with?("http://127.0.0.1:9080/"), record["request_url"])
       assert_kind_of(Numeric, record["response_size"])
       assert_kind_of(Numeric, record["response_status"])
       assert_kind_of(Numeric, record["response_time"])
-      assert_kind_of(Numeric, record["internal_gatekeeper_time"])
-      assert_kind_of(Numeric, record["proxy_overhead"])
 
       if(user)
         assert_equal(user.api_key, record["api_key"])
@@ -87,12 +83,10 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def assert_logs_backend_fields(record)
-      assert_kind_of(Numeric, record["backend_response_time"])
-    end
-
-    def refute_logs_backend_fields(record)
-      refute(record["backend_response_time"])
+    def assert_logged_url(expected_url, record)
+      logged_url = "#{record["request_scheme"]}://#{record["request_host"]}#{record["request_path"]}"
+      logged_url += "?#{record["request_query"]}" if(record["request_query"])
+      assert_equal(expected_url, logged_url)
     end
   end
 end

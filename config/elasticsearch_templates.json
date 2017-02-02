@@ -127,7 +127,7 @@
               "type": "integer",
               "doc_values": true
             },
-            "request_url": {
+            "request_query": {
               "type": "string",
               "index": "not_analyzed",
               "doc_values": true

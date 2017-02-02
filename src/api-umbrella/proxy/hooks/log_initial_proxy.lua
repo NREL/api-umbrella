@@ -1,12 +1,13 @@
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
 local log_utils = require "api-umbrella.proxy.log_utils"
 
-if log_utils.ignore_request() then
+local ngx_ctx = ngx.ctx
+local ngx_var = ngx.var
+
+if log_utils.ignore_request(ngx_ctx, ngx_var) then
   return
 end
 
-local ngx_ctx = ngx.ctx
-local ngx_var = ngx.var
 local sec_to_ms = log_utils.sec_to_ms
 
 local function build_log_data()
@@ -52,15 +53,16 @@ local function build_log_data()
     legacy_user_registration_source = ngx_ctx.user_registration_source,
   }
 
-  log_utils.set_request_ip_geo_fields(data)
+  log_utils.set_request_ip_geo_fields(data, ngx_var)
   log_utils.set_computed_timestamp_fields(data)
-  log_utils.set_computed_url_fields(data)
+  log_utils.set_computed_url_fields(data, ngx_ctx)
   log_utils.set_computed_user_agent_fields(data)
 
   return log_utils.normalized_data(data)
 end
 
 local function log_request()
+  -- Build the log message and send to rsyslog for processing.
   local data = build_log_data()
   local syslog_message = log_utils.build_syslog_message(data)
   local _, err = log_utils.send_syslog_message(syslog_message)
@@ -69,11 +71,11 @@ local function log_request()
     return
   end
 
+  -- After logging, cache any new cities we see from GeoIP in our database.
   if data["request_ip_lat"] then
     log_utils.cache_new_city_geocode(data)
   end
 end
-
 
 local ok, err = pcall(log_request)
 if not ok then

@@ -86,6 +86,9 @@ if($!raw!request_origin != "") then {
 if($!raw!request_url_path != "") then {
   set $!usr!es!request_path = $!raw!request_url_path;
 }
+if($!raw!request_url_query != "") then {
+  set $!usr!es!request_query = $!raw!request_url_query;
+}
 if($!raw!request_referer != "") then {
   set $!usr!es!request_referer = $!raw!request_referer;
 }
@@ -137,7 +140,7 @@ if($!raw!response_transfer_encoding != "") then {
 if($!raw!user_id != "") then {
   set $!usr!es!user_id = $!raw!user_id;
 }
-if($!raw!user_email != "") then {
+if($!raw!legacy_user_email != "") then {
   set $!usr!es!user_email = $!raw!legacy_user_email;
 }
 if($!raw!legacy_user_registration_source != "") then {

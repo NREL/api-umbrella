@@ -10,8 +10,6 @@ local str = require "resty.string"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
 local utils = require "api-umbrella.proxy.utils"
 
-local ngx_ctx = ngx.ctx
-local ngx_var = ngx.var
 local round = utils.round
 local split = plutils.split
 
@@ -168,7 +166,7 @@ local function cache_city_geocode(premature, id, data)
   end
 end
 
-function _M.ignore_request()
+function _M.ignore_request(ngx_ctx, ngx_var)
   -- Don't log some of our internal API calls used to determine if API Umbrella
   -- is fully started and ready (since logging of these requests will likely
   -- fail anyway if things aren't ready).
@@ -207,7 +205,7 @@ function _M.cache_new_city_geocode(data)
   end
 end
 
-function _M.set_request_ip_geo_fields(data)
+function _M.set_request_ip_geo_fields(data, ngx_var)
   -- The GeoIP module returns ISO-8859-1 encoded city names, but we need UTF-8
   -- for inserting into ElasticSearch.
   local geoip_city = ngx_var.geoip_city
@@ -264,7 +262,7 @@ function _M.set_computed_timestamp_fields(data)
   data["timestamp_tz_minute"] = tz_time -- YYYY-MM-DD HH:MM:00
 end
 
-function _M.set_computed_url_fields(data)
+function _M.set_computed_url_fields(data, ngx_ctx)
   -- Extract just the path portion of the URL.
   --
   -- Note: we're extracting this from the original "request_uri" variable here,
@@ -317,7 +315,7 @@ function _M.normalized_data(data)
     request_size = tonumber(data["request_size"]),
     request_url_hierarchy = data["request_url_hierarchy"],
     request_url_host = lowercase_truncate(data["request_url_host"], 200),
-    request_url_path = lowercase_truncate(data["request_url_path"], 400),
+    request_url_path = lowercase_truncate(data["request_url_path"], 4000),
     request_url_path_level1 = lowercase_truncate(data["request_url_path_level1"], 40),
     request_url_path_level2 = lowercase_truncate(data["request_url_path_level2"], 40),
     request_url_path_level3 = lowercase_truncate(data["request_url_path_level3"], 40),
@@ -325,7 +323,7 @@ function _M.normalized_data(data)
     request_url_path_level5 = lowercase_truncate(data["request_url_path_level5"], 40),
     request_url_path_level6 = lowercase_truncate(data["request_url_path_level6"], 40),
     request_url_port = tonumber(data["request_url_port"]),
-    request_url_query = lowercase_truncate(data["request_url_query"], 400),
+    request_url_query = lowercase_truncate(data["request_url_query"], 4000),
     request_url_scheme = lowercase_truncate(data["request_url_scheme"], 10),
     request_user_agent = lowercase_truncate(data["request_user_agent"], 400),
     request_user_agent_family = lowercase_truncate(data["request_user_agent_family"], 100),

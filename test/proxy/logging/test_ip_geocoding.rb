@@ -23,7 +23,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :ip => "8.8.8.8",
       :country => "US",
       :region => "CA",
-      :city => "Mountain View",
+      :city => "mountain view",
       :lat => 37.386,
       :lon => -122.0838,
     })
@@ -61,7 +61,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :ip => "::ffff:8.8.8.8",
       :country => "US",
       :region => "CA",
-      :city => "Mountain View",
+      :city => "mountain view",
       :lat => 37.386,
       :lon => -122.0838,
     })
@@ -80,7 +80,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :ip => "104.250.168.24",
       :country => "MC",
       :region => nil,
-      :city => "Monte-carlo",
+      :city => "monte-carlo",
       :lat => 43.7333,
       :lon => 7.4167,
     })
@@ -118,7 +118,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :ip => "191.102.110.22",
       :country => "CO",
       :region => "34",
-      :city => "Bogotá",
+      :city => "bogotá",
       :lat => 4.6492,
       :lon => -74.0628,
     })
@@ -146,9 +146,6 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
     else
       assert_equal(options.fetch(:city), record.fetch("request_ip_city"))
     end
-    assert_equal(["lat", "lon"].sort, record.fetch("request_ip_location").keys.sort)
-    assert_in_delta(options[:lat], record.fetch("request_ip_location").fetch("lat"), 0.02)
-    assert_in_delta(options[:lon], record.fetch("request_ip_location").fetch("lon"), 0.02)
   end
 
   def assert_geocode_cache(record, options)

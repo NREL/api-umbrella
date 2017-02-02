@@ -45,8 +45,8 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal("/api/hello/utf8/%E2%9C%93/encoded_utf8/%E2%9C%93/", record["request_path"])
-    assert_equal("http://127.0.0.1:9080/api/hello/utf8/%E2%9C%93/encoded_utf8/%E2%9C%93/?utf8=%E2%9C%93&utf8_url_encoded=%E2%9C%93&more_utf8=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&more_utf8_hex_lowercase=%C2%AC%C2%B6%C2%AA%C3%BE%C2%A4l&actual_backslash_x=\\xC2\\xAC\\xC2\\xB6\\xC2\\xAA\\xC3\\xBE\\xC2\\xA4l", record["request_url"])
+    assert_equal("/api/hello/utf8/%e2%9c%93/encoded_utf8/%e2%9c%93/", record["request_path"])
+    assert_equal("utf8=%e2%9c%93&utf8_url_encoded=%e2%9c%93&more_utf8=%c2%ac%c2%b6%c2%aa%c3%be%c2%a4l&more_utf8_hex=%c2%ac%c2%b6%c2%aa%c3%be%c2%a4l&more_utf8_hex_lowercase=%c2%ac%c2%b6%c2%aa%c3%be%c2%a4l&actual_backslash_x=\\xc2\\xac\\xc2\\xb6\\xc2\\xaa\\xc3\\xbe\\xc2\\xa4l", record["request_query"])
   end
 
   def test_valid_utf8_encoding_in_url_path_url_params_headers
@@ -69,23 +69,21 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     # logged as the url encoded version.
     expected_raw_in_url = url_encoded
 
-    # URL path
-    assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/", record["request_path"])
+    # URL
+    assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/".downcase, record["request_path"])
     assert_equal([
       "0/127.0.0.1:9080/",
       "1/127.0.0.1:9080/api/",
       "2/127.0.0.1:9080/api/hello/",
-      "3/127.0.0.1:9080/api/hello/#{url_encoded}/",
-      "4/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/",
-      "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}",
+      "3/127.0.0.1:9080/api/hello/#{url_encoded}/".downcase,
+      "4/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/".downcase,
+      "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}".downcase,
     ], record["request_hierarchy"])
-
-    # Full URL
-    assert_equal("http://127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/?url_encoded=#{url_encoded}&base64ed=#{base64ed}&raw=#{expected_raw_in_url}", record["request_url"])
+    assert_equal("url_encoded=#{url_encoded}&base64ed=#{base64ed}&raw=#{expected_raw_in_url}".downcase, record["request_query"])
 
     # HTTP headers
-    assert_equal(url_encoded, record["request_content_type"])
-    assert_equal(base64ed, record["request_referer"])
+    assert_equal(url_encoded.downcase, record["request_content_type"])
+    assert_equal(base64ed.downcase, record["request_referer"])
     assert_equal(raw, record["request_origin"])
   end
 
@@ -116,24 +114,22 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     expected_raw_utf8_in_url = "%EF%BF%BD"
     expected_raw_utf8_in_header = Base64.decode64("77+9").force_encoding("utf-8")
 
-    # URL path
-    assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}/", record["request_path"])
+    # URL
+    assert_equal("/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}/".downcase, record["request_path"])
     assert_equal([
       "0/127.0.0.1:9080/",
       "1/127.0.0.1:9080/api/",
       "2/127.0.0.1:9080/api/hello/",
-      "3/127.0.0.1:9080/api/hello/#{url_encoded}/",
-      "4/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/",
-      "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/",
-      "6/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}",
+      "3/127.0.0.1:9080/api/hello/#{url_encoded}/".downcase,
+      "4/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/".downcase,
+      "5/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/".downcase,
+      "6/127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}".downcase,
     ], record["request_hierarchy"])
-
-    # Full URL
-    assert_equal("http://127.0.0.1:9080/api/hello/#{url_encoded}/#{base64ed}/#{expected_raw_in_url}/#{expected_raw_utf8_in_url}/?url_encoded=#{url_encoded}&base64ed=#{base64ed}&raw=#{expected_raw_in_url}&raw_utf8=#{expected_raw_utf8_in_url}", record["request_url"])
+    assert_equal("url_encoded=#{url_encoded}&base64ed=#{base64ed}&raw=#{expected_raw_in_url}&raw_utf8=#{expected_raw_utf8_in_url}".downcase, record["request_query"])
 
     # HTTP headers
-    assert_equal(url_encoded, record["request_content_type"])
-    assert_equal(base64ed, record["request_referer"])
+    assert_equal(url_encoded.downcase, record["request_content_type"])
+    assert_equal(base64ed.downcase, record["request_referer"])
     assert_nil(expected_raw_in_header)
     assert_nil(record["request_origin"])
     assert_equal(expected_raw_utf8_in_header, record["request_accept"])
@@ -150,20 +146,18 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     record = wait_for_log(response)[:hit_source]
 
-    # URL path
-    assert_equal("/api/hello/#{url_encoded}/", record["request_path"])
+    # URL
+    assert_equal("/api/hello/#{url_encoded}/".downcase, record["request_path"])
     assert_equal([
       "0/127.0.0.1:9080/",
       "1/127.0.0.1:9080/api/",
       "2/127.0.0.1:9080/api/hello/",
-      "3/127.0.0.1:9080/api/hello/#{url_encoded}",
+      "3/127.0.0.1:9080/api/hello/#{url_encoded}".downcase,
     ], record["request_hierarchy"])
-
-    # Full URL
-    assert_equal("http://127.0.0.1:9080/api/hello/#{url_encoded}/?url_encoded=#{url_encoded}", record["request_url"])
+    assert_equal("url_encoded=#{url_encoded}".downcase, record["request_query"])
 
     # HTTP headers
-    assert_equal(url_encoded, record["request_content_type"])
+    assert_equal(url_encoded.downcase, record["request_content_type"])
   end
 
   def test_optionally_encodable_ascii_strings_as_given
@@ -177,21 +171,19 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
 
     record = wait_for_log(response)[:hit_source]
 
-    # URL path
-    assert_equal("/api/hello/#{as_is}/", record["request_path"])
+    # URL
+    assert_equal("/api/hello/#{as_is.downcase}/", record["request_path"])
     assert_equal([
       "0/127.0.0.1:9080/",
       "1/127.0.0.1:9080/api/",
       "2/127.0.0.1:9080/api/hello/",
-      "3/127.0.0.1:9080/api/hello/-%2D ;%3B +%2B /",
-      "4/127.0.0.1:9080/api/hello/-%2D ;%3B +%2B /%2F :%3A 0%30 >%3E {%7B",
+      "3/127.0.0.1:9080/api/hello/-%2d ;%3b +%2b /",
+      "4/127.0.0.1:9080/api/hello/-%2d ;%3b +%2b /%2f :%3a 0%30 >%3e {%7b",
     ], record["request_hierarchy"])
-
-    # Full URL
-    assert_equal("http://127.0.0.1:9080/api/hello/#{as_is}/?as_is=#{as_is}", record["request_url"])
+    assert_equal("as_is=#{as_is.downcase}", record["request_query"])
 
     # HTTP headers
-    assert_equal(as_is, record["request_content_type"])
+    assert_equal(as_is.downcase, record["request_content_type"])
   end
 
   def test_slashes_and_backslashes
@@ -200,7 +192,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal("/api/hello/extra//slash/some\\backslash/encoded%5Cbackslash/encoded%2Fslash", record["request_path"])
-    assert_equal(url, record["request_url"])
+    assert_equal("/api/hello/extra//slash/some\\backslash/encoded%5cbackslash/encoded%2fslash", record["request_path"])
+    assert_equal("&forward_slash=/slash&encoded_forward_slash=%2f&back_slash=\\&encoded_back_slash=%5c", record["request_query"])
   end
 end
