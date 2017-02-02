@@ -25,7 +25,7 @@ http {
     '$x_api_umbrella_request_id '
     '$scheme://$host:$server_port '
     '$request_time $sent_http_x_cache';
-  access_log {{log_dir}}/nginx/access.log combined_extended {{nginx.access_log_options}};
+  access_log {{log_dir}}/nginx/{{nginx.access_log_filename}} combined_extended {{nginx.access_log_options}};
 
   client_body_temp_path {{tmp_dir}}/nginx-client_body_temp;
   proxy_temp_path {{tmp_dir}}/nginx-proxy_temp;
