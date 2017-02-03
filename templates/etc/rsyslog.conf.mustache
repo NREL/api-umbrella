@@ -402,6 +402,9 @@ local0.info action(
   queue.size="15000"
   queue.highwatermark="10000"
   queue.lowwatermark="2000"
-  zipLevel="3"
+  zipLevel="4"
+  asyncWriting="on"
+  flushInterval="10"
+  ioBufferSize="256k"
   action.resumeRetryCount="-1"
 )

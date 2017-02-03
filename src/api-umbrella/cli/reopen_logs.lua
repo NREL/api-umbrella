@@ -30,6 +30,14 @@ local function reopen_nginx(perp_base)
   end
 end
 
+local function reopen_rsyslog(perp_base)
+  local _, _, err = run_command("perpctl -b " .. perp_base .. " hup rsyslog")
+  if err then
+    print("Failed to reopen logs for rsyslog\n" .. err)
+    os.exit(1)
+  end
+end
+
 return function()
   local running = status()
   if not running then
@@ -44,5 +52,6 @@ return function()
 
   if config["_service_router_enabled?"] then
     reopen_nginx(perp_base)
+    reopen_rsyslog(perp_base)
   end
 end
