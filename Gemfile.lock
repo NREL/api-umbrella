@@ -48,10 +48,10 @@ GEM
     database_cleaner (1.5.3)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
-    elasticsearch (2.0.1)
-      elasticsearch-api (= 2.0.1)
-      elasticsearch-transport (= 2.0.1)
-    elasticsearch-api (2.0.1)
+    elasticsearch (5.0.1)
+      elasticsearch-api (= 5.0.1)
+      elasticsearch-transport (= 5.0.1)
+    elasticsearch-api (5.0.1)
       multi_json
     elasticsearch-model (0.1.9)
       activesupport (> 3)
@@ -64,7 +64,7 @@ GEM
       elasticsearch-model (>= 0.1)
       hashie
       virtus
-    elasticsearch-transport (2.0.1)
+    elasticsearch-transport (5.0.1)
       faraday
       multi_json
     equalizer (0.0.11)
@@ -161,7 +161,7 @@ DEPENDENCIES
   childprocess (~> 0.6.1)
   concurrent-ruby (~> 1.0.4)
   database_cleaner (~> 1.5.3)
-  elasticsearch (~> 2.0.1)
+  elasticsearch (~> 5.0.1)
   elasticsearch-persistence (~> 0.1.9)
   factory_girl (~> 4.8.0)
   faker (~> 1.7.2)

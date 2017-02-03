@@ -3,7 +3,7 @@ find_package(Java 1.7 REQUIRED COMPONENTS Runtime)
 # Elasticsearch: Analytics database
 ExternalProject_Add(
   elasticsearch
-  URL https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
+  URL https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ELASTICSEARCH_VERSION}.tar.gz
   URL_HASH SHA1=${ELASTICSEARCH_HASH}
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""

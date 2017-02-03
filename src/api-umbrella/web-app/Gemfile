@@ -51,7 +51,7 @@ gem "mongoid-store", :git => "https://github.com/ahoward/mongoid-store.git"
 gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
 
 # Elasticsearch
-gem "elasticsearch", "~> 2.0.1"
+gem "elasticsearch", "~> 5.0.1"
 
 # OmniAuth-based authentication
 gem "devise", "~> 4.2.0"

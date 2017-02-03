@@ -149,7 +149,7 @@ elasticsearch:
     - "http://127.0.0.1:14002"
   embedded_server_env:
     heap_size: 512m
-  api_version: 2
+  api_version: 5
   embedded_server_config:
     network:
       host: 127.0.0.1
@@ -167,13 +167,6 @@ elasticsearch:
       breaker:
         fielddata:
           limit: 60%
-    index:
-      translog:
-        # Sync the data to disk asynchronously on a fixed interval, rather than
-        # for every request. This significantly helps indexing throughput (at
-        # the risk of losing a few seconds of data if things crash).
-        durability: async
-        sync_interval: 10s
 analytics:
   adapter: elasticsearch
   timezone: UTC

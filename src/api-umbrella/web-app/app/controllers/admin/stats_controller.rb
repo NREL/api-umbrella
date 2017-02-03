@@ -89,7 +89,7 @@ class Admin::StatsController < Admin::BaseController
             csv_time(row["request_at"]),
             row["request_method"],
             row["request_host"],
-            strip_api_key_from_url(row["request_url"]),
+            strip_api_key_from_url(row),
             row["user_email"],
             row["request_ip"],
             row["request_ip_country"],
@@ -227,7 +227,10 @@ class Admin::StatsController < Admin::BaseController
 
   private
 
-  def strip_api_key_from_url(url)
+  def strip_api_key_from_url(record)
+    url = "#{record["request_scheme"]}://#{record["request_host"]}#{record["request_path"]}"
+    url += "?#{record["request_query"]}" if(record["request_query"])
+
     stripped = url.gsub(/\bapi_key=?[^&]*(&|$)/, "")
     stripped.gsub!(/&$/, "")
     stripped

@@ -8,13 +8,16 @@
           "number_of_shards": 1
         },
         "analysis": {
-          "analyzer": {
-            "path_hierarchy_lowercase": {
+          "normalizer": {
+            "lowercase_normalizer": {
               "type": "custom",
-              "tokenizer": "path_hierarchy",
-              "filter": ["lowercase"]
+              "filter": ["lowercase", "asciifolding"]
             }
           }
+        },
+        "translog": {
+          "durability": "async",
+          "sync_interval": "10s"
         }
       },
       "mappings": {
@@ -22,158 +25,127 @@
           "_all": {
             "enabled": false
           },
-          "dynamic": "strict",
+          "dynamic": false,
           "properties": {
             "api_key": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "gatekeeper_denied_code": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_accept": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_accept_encoding": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_at": {
               "type": "date",
               "doc_values": true
             },
             "request_basic_auth_username": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_connection": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_content_type": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_hierarchy": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_host": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_ip": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_ip_city": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_ip_country": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
-            },
-            "request_ip_location": {
-              "type": "geo_point",
-              "lat_lon": true,
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_ip_region": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_method": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_origin": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_path": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_referer": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_scheme": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_size": {
               "type": "integer",
               "doc_values": true
             },
             "request_query": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_user_agent": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_user_agent_family": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_user_agent_type": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "response_age": {
               "type": "integer",
               "doc_values": true
             },
             "response_cache": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "response_content_encoding": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "response_content_length": {
               "type": "integer",
               "doc_values": true
             },
             "response_content_type": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "response_server": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "response_size": {
               "type": "integer",
@@ -188,24 +160,20 @@
               "doc_values": true
             },
             "response_transfer_encoding": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "user_id": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "user_email": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "user_registration_source": {
-              "type": "string",
-              "index": "not_analyzed",
-              "doc_values": true
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             }
           }
         }
