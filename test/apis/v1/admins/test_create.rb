@@ -8,6 +8,7 @@ class Test::Apis::V1::Admins::TestCreate < Minitest::Test
   def setup
     super
     setup_server
+    Admin.delete_all
   end
 
   def test_downcases_username
