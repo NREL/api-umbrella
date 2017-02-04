@@ -68,7 +68,8 @@ class Admin
     :if => :username_is_email?
   validates :email,
     :format => Devise.email_regexp,
-    :allow_nil => true
+    :allow_nil => true,
+    :unless => :username_is_email?
   validates :password,
     :presence => true,
     :confirmation => true,
