@@ -284,7 +284,9 @@ Devise.setup do |config|
     when "ldap"
       require "omniauth-ldap"
       config.omniauth :ldap,
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options]
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options].merge({
+          :form => Admin::Admins::OmniauthCustomFormsController.action(:ldap),
+        })
     when "max.gov"
       require "omniauth-cas"
       config.omniauth :cas,

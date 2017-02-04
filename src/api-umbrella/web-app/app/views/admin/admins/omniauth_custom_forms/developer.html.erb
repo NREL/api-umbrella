@@ -9,8 +9,8 @@
   <%= form_tag(admin_developer_omniauth_callback_path) do |f| %>
     <div class="form-inputs">
       <div class="form-group string optional admin_username">
-        <%= label_tag :username, t("mongoid.attributes.admin.username"), :class => "control-label" %>
-        <%= text_field_tag :username, nil, :class => "form-control" %>
+        <%= label_tag :username, t("mongoid.attributes.admin.username"), :class => "control-label string optional" %>
+        <%= text_field_tag :username, nil, :class => "form-control string optional" %>
       </div>
     </div>
 
