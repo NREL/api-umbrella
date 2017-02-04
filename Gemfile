@@ -28,7 +28,7 @@ gem "multi_json", "~> 1.12.1"
 gem "oj", "~> 2.18.1"
 
 # Database libraries
-gem "mongoid", "~> 6.0.3"
+gem "mongoid", "~> 6.1.0"
 gem "elasticsearch", "~> 2.0.1"
 gem "elasticsearch-persistence", "~> 0.1.9"
 
@@ -42,7 +42,7 @@ gem "database_cleaner", "~> 1.5.3"
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
 
 # Localization tests
-gem "i18n", "~> 0.7.0"
+gem "i18n", "~> 0.8.0"
 
 # URL parsing/generation
 gem "addressable", "~> 2.5.0"
