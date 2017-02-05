@@ -67,6 +67,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       "Sign in with Facebook",
       "Sign in with MAX.gov",
       "Sign in with GitHub",
+      "Sign in with GitLab",
       "Sign in with Google",
       "Sign in with LDAP",
     ], buttons)
