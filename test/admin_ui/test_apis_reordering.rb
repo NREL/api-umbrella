@@ -19,6 +19,8 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
   def test_toggle_drag_handles
     admin_login
     visit "/admin/#/apis"
+    refute_selector(".busy-blocker")
+    assert_text("API A")
 
     refute_selector("tbody td.reorder-handle")
     click_button "Reorder"
@@ -30,6 +32,8 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
   def test_remove_filters_while_reordering
     admin_login
     visit "/admin/#/apis"
+    refute_selector(".busy-blocker")
+    assert_text("API A")
 
     assert_selector("tbody tr", :count => 4)
     find(".dataTables_filter input").set("testing-fi")
@@ -41,6 +45,8 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
   def test_forces_sorting_while_reordering
     admin_login
     visit "/admin/#/apis"
+    refute_selector(".busy-blocker")
+    assert_text("API A")
 
     assert_selector("tbody tr:first-child td:first-child", :text => "API A")
     click_button "Reorder"
@@ -50,6 +56,8 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
   def test_exits_reorder_mode_on_filter
     admin_login
     visit "/admin/#/apis"
+    refute_selector(".busy-blocker")
+    assert_text("API A")
 
     click_button "Reorder"
     assert_selector("tbody td.reorder-handle", :count => 4)
@@ -60,6 +68,8 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
   def test_exit_reorder_mode_on_sort
     admin_login
     visit "/admin/#/apis"
+    refute_selector(".busy-blocker")
+    assert_text("API A")
 
     click_button "Reorder"
     assert_selector("tbody td.reorder-handle", :count => 4)
@@ -70,6 +80,8 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
   def test_reordering_on_drag
     admin_login
     visit "/admin/#/apis"
+    refute_selector(".busy-blocker")
+    assert_text("API A")
 
     names = Api.order_by(:sort_order.asc).all.map { |api| api.name }
     assert_equal(["API B", "API C", "API A", "API testing-filter"], names)
