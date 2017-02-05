@@ -42,6 +42,14 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
     login
   end
 
+  def gitlab
+    # GitLab only appears to return verified email addresses (so there's not an
+    # explicit email verification attribute or check needed).
+    @username = request.env["omniauth.auth"]["info"]["email"]
+
+    login
+  end
+
   def google_oauth2
     if(request.env["omniauth.auth"]["extra"]["raw_info"]["email_verified"])
       @username = request.env["omniauth.auth"]["info"]["email"]

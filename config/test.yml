@@ -44,6 +44,9 @@ web:
       github:
         client_id: test_fake
         client_secret: test_fake
+      gitlab:
+        client_id: test_fake
+        client_secret: test_fake
       google:
         client_id: test_fake
         client_secret: test_fake

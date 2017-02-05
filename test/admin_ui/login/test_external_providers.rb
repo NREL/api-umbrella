@@ -19,6 +19,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
                 "facebook",
                 "max.gov",
                 "github",
+                "gitlab",
                 "google",
                 "ldap",
               ],
@@ -101,6 +102,11 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       :login_button_text => "Sign in with GitHub",
       :username_path => "info.email",
       :verified_path => "info.email_verified",
+    },
+    {
+      :provider => :gitlab,
+      :login_button_text => "Sign in with GitLab",
+      :username_path => "info.email",
     },
     {
       :provider => :google_oauth2,

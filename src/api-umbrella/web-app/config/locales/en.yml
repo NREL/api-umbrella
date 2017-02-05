@@ -5,6 +5,7 @@ en:
     developer: dummy login (development only)
     facebook: Facebook
     github: GitHub
+    gitlab: GitLab
     google_oauth2: Google
     ldap: LDAP
   errors:

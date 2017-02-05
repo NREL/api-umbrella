@@ -95,6 +95,9 @@ web:
       github:
         client_id:
         client_secret:
+      gitlab:
+        client_id:
+        client_secret:
       google:
         client_id:
         client_secret:
