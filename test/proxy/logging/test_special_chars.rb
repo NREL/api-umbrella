@@ -110,7 +110,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     # we test situations where it's sent as the raw ISO-8859-1 value, as well
     # as the UTF-8 replacement character.
     expected_raw_in_url = url_encoded
-    expected_raw_in_header = nil
+    expected_raw_in_header = " "
     expected_raw_utf8_in_url = "%EF%BF%BD"
     expected_raw_utf8_in_header = Base64.decode64("77+9").force_encoding("utf-8")
 
@@ -130,8 +130,7 @@ class Test::Proxy::Logging::TestSpecialChars < Minitest::Test
     # HTTP headers
     assert_equal(url_encoded, record["request_content_type"])
     assert_equal(base64ed, record["request_referer"])
-    assert_nil(expected_raw_in_header)
-    assert_nil(record["request_origin"])
+    assert_equal(expected_raw_in_header, record["request_origin"])
     assert_equal(expected_raw_utf8_in_header, record["request_accept"])
   end
 
