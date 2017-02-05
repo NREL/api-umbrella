@@ -138,6 +138,9 @@ class OutdatedPackages
       :git => "https://github.com/nodejs/node.git",
       :constraint => "~> 6.9.1",
     },
+    "openldap" => {
+      :git => "https://github.com/openldap/openldap.git",
+    },
     "openresty" => {
       :git => "https://github.com/openresty/openresty.git",
     },
@@ -218,6 +221,9 @@ class OutdatedPackages
       tag.gsub!(/^go/, "")
     when "json_c"
       tag.gsub!(/-\d{8}$/, "")
+    when "openldap"
+      tag.gsub!(/^rel_eng_/, "")
+      tag.gsub!(/_/, ".")
     when "openssl", "ruby"
       tag.gsub!(/_/, ".")
     end

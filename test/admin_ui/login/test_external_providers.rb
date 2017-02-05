@@ -39,6 +39,12 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     assert_first_time_admin_creation_forbidden
   end
 
+  def test_shows_message_when_no_admins_exist
+    assert_equal(0, Admin.count)
+    visit "/admin/login"
+    assert_text("No admins currently exist")
+  end
+
   def test_shows_external_login_links_in_order_and_no_local_fields
     visit "/admin/login"
 

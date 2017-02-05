@@ -14,7 +14,8 @@ https_port: 443
 nginx:
   workers: auto
   worker_connections: 8192
-  access_log_options: buffer=32k flush=10s
+  access_log_filename: access.log.gz
+  access_log_options: buffer=256k gzip=4 flush=10s
   proxy_connect_timeout: 60
   proxy_read_timeout: 60
   proxy_send_timeout: 60

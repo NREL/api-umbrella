@@ -12,7 +12,7 @@ nginx:
   # hard-coded for test purposes so we have a more stable baseline and ensure
   # our tests always run with multiple workers.
   workers: 2
-  access_log_options:
+  access_log_options: gzip=4
   proxy_connect_timeout: 10
   proxy_read_timeout: 10
   proxy_send_timeout: 10
@@ -102,5 +102,7 @@ mailhog:
   smtp_port: 13102
   api_port: 13103
   ui_port: 13103
+openldap:
+  port: 13104
 apiSettings:
   require_https: optional

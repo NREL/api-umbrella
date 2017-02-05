@@ -67,12 +67,9 @@ class Admin
     :allow_blank => true,
     :if => :username_is_email?
   validates :email,
-    :presence => true,
-    :if => :email_required?
-  validates :email,
     :format => Devise.email_regexp,
-    :allow_blank => true,
-    :if => :email_required?
+    :allow_nil => true,
+    :unless => :username_is_email?
   validates :password,
     :presence => true,
     :confirmation => true,
@@ -221,14 +218,6 @@ class Admin
   # they're left blank, we don't want to require these fields).
   def password_required?
     password.present? || password_confirmation.present?
-  end
-
-  # Only require the email field for validation if it won't be synced with the
-  # username field. This just prevents duplicate validation errors from showing
-  # up when the fields are synced (since the user doesn't see the separate
-  # email field, even though we populate it).
-  def email_required?
-    !ApiUmbrellaConfig[:web][:admin][:username_is_email]
   end
 
   def assign_without_password(params, *options)
