@@ -42,6 +42,12 @@ export default Ember.Component.extend({
     this.set('canShowErrors', true);
   },
 
+  // If the page is submitted, show any errors on the page (even if the fields
+  // haven't been focused and then unfocused yet).
+  showErrorsOnSubmit: Ember.observer('model.clientErrors', function() {
+    this.set('canShowErrors', true);
+  }),
+
   // Anytime the model changes, reset the error display so errors aren't
   // displayed until the field is unfocused again.
   //

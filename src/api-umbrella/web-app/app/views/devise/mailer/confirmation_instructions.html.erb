@@ -1,0 +1,5 @@
+<% require 'devise/version' %>
+<p><%= t('.greeting', recipient: @resource.email) %></p>
+
+<p><%= t('.instruction') %></p>
+<p><%= link_to t('.action'), confirmation_url(@resource, confirmation_token: (Devise::VERSION.start_with?('3.') ? @token : @resource.confirmation_token)) %></p>

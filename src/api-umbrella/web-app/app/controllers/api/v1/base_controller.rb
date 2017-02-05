@@ -1,4 +1,7 @@
 class Api::V1::BaseController < ApplicationController
+  # API requests won't pass CSRF tokens, so don't reject requests without them.
+  protect_from_forgery :with => :null_session
+
   # Try authenticating from an admin token (for direct API access).
   before_action :authenticate_admin_from_token!
 
@@ -58,12 +61,18 @@ class Api::V1::BaseController < ApplicationController
   def errors_response(record)
     response = { :errors => [] }
 
-    record.errors.each do |field, message|
-      response[:errors] << {
-        :code => "INVALID_INPUT",
-        :message => message,
-        :field => field,
-      }
+    record.errors.to_hash.each do |field, field_messages|
+      field_messages.each do |message|
+        full_message = record.errors.full_message(field, message)
+        full_message[0] = full_message[0].upcase
+
+        response[:errors] << {
+          :code => "INVALID_INPUT",
+          :message => message,
+          :field => field,
+          :full_message => full_message,
+        }
+      end
     end
 
     response

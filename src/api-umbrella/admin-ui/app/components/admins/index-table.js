@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import I18n from 'npm:i18n-js';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 
 export default Ember.Component.extend({
@@ -14,30 +15,16 @@ export default Ember.Component.extend({
         {
           data: 'username',
           name: 'Username',
-          title: 'Username',
+          title: I18n.t('mongoid.attributes.admin.username'),
           defaultContent: '-',
-          render: _.bind(function(email, type, data) {
-            if(type === 'display' && email && email !== '-') {
+          render: _.bind(function(username, type, data) {
+            if(type === 'display' && username && username !== '-') {
               let link = '#/admins/' + data.id + '/edit';
-              return '<a href="' + link + '">' + _.escape(email) + '</a>';
+              return '<a href="' + link + '">' + _.escape(username) + '</a>';
             }
 
-            return email;
+            return username;
           }, this),
-        },
-        {
-          data: 'email',
-          name: 'E-mail',
-          title: 'E-mail',
-          defaultContent: '-',
-          render: DataTablesHelpers.renderEscaped,
-        },
-        {
-          data: 'name',
-          name: 'Name',
-          title: 'Name',
-          defaultContent: '-',
-          render: DataTablesHelpers.renderEscaped,
         },
         {
           data: 'group_names',
@@ -47,7 +34,7 @@ export default Ember.Component.extend({
           render: DataTablesHelpers.renderListEscaped,
         },
         {
-          data: 'last_sign_in_at',
+          data: 'current_sign_in_at',
           type: 'date',
           name: 'Last Signed In',
           title: 'Last Signed In',

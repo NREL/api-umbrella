@@ -1,4 +1,7 @@
 class Api::HealthChecksController < ApplicationController
+  # API requests won't pass CSRF tokens, so don't reject requests without them.
+  protect_from_forgery :with => :null_session
+
   def ip
     render(:json => { :ip => request.ip })
   end

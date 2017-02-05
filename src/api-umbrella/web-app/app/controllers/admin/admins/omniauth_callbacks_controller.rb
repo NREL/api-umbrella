@@ -1,32 +1,34 @@
 class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksController
   skip_after_action :verify_authorized
 
-  # The developer strategy doesn't include the CSRF token in the form:
-  # https://github.com/omniauth/omniauth/pull/674
-  skip_before_action :verify_authenticity_token, :only => :developer
-
   # For the developer strategy, simply find or create a new admin account with
   # whatever login details they give. This is not for use on production.
   def developer
-    unless(%w(development test).include?(Rails.env))
+    unless(Rails.env == "development")
       raise "The developer OmniAuth strategy should not be used outside of development or test."
     end
 
-    @email = request.env["omniauth.auth"]["uid"]
-    @admin = Admin.where(:username => @email).first
-    @admin ||= Admin.create!(:username => @email, :superuser => true)
+    @username = request.env["omniauth.auth"]["uid"]
+    @admin = Admin.find_for_database_authentication(:username => @username)
+    unless(@admin)
+      @admin = Admin.new(:username => @username, :superuser => true)
+      @admin.save!
+    end
 
     login
+  rescue Mongoid::Errors::Validations
+    flash[:error] = @admin.errors.full_messages.join(", ")
+    redirect_to admin_developer_omniauth_authorize_path
   end
 
   def cas
-    @email = request.env["omniauth.auth"]["uid"]
+    @username = request.env["omniauth.auth"]["uid"]
     login
   end
 
   def facebook
     if(request.env["omniauth.auth"]["info"]["verified"])
-      @email = request.env["omniauth.auth"]["info"]["email"]
+      @username = request.env["omniauth.auth"]["info"]["email"]
     end
 
     login
@@ -34,7 +36,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
   def github
     if(request.env["omniauth.auth"]["info"]["email_verified"])
-      @email = request.env["omniauth.auth"]["info"]["email"]
+      @username = request.env["omniauth.auth"]["info"]["email"]
     end
 
     login
@@ -42,7 +44,7 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
   def google_oauth2
     if(request.env["omniauth.auth"]["extra"]["raw_info"]["email_verified"])
-      @email = request.env["omniauth.auth"]["info"]["email"]
+      @username = request.env["omniauth.auth"]["info"]["email"]
     end
 
     login
@@ -51,36 +53,30 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
   def ldap
     uid_field = request.env["omniauth.strategy"].options[:uid]
     uid = [request.env["omniauth.auth"]["extra"]["raw_info"][uid_field]].flatten.compact.first
-    @email = uid
+    @username = uid
     login
   end
 
   private
 
   def login
-    if(!@admin && @email.present?)
-      @admin = Admin.where(:username => @email.downcase).first
+    if(!@admin && @username.present?)
+      @admin = Admin.find_for_database_authentication(:username => @username)
     end
 
     if @admin
-      @admin.last_sign_in_provider = request.env["omniauth.auth"]["provider"]
       if request.env["omniauth.auth"]["info"].present?
-        if request.env["omniauth.auth"]["info"]["email"].present?
-          @admin.email = request.env["omniauth.auth"]["info"]["email"]
-        end
-
         if request.env["omniauth.auth"]["info"]["name"].present?
           @admin.name = request.env["omniauth.auth"]["info"]["name"]
+          @admin.save!
         end
       end
-
-      @admin.save!
 
       sign_in_and_redirect(:admin, @admin)
     else
       flash[:error] = ActionController::Base.helpers.safe_join([
         "The account for '",
-        @email,
+        @username,
         "' is not authorized to access the admin. Please ",
         ActionController::Base.helpers.content_tag(:a, "contact us", :href => ApiUmbrellaConfig[:contact_url]),
         " for further assistance.",
@@ -88,10 +84,6 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
       redirect_to new_admin_session_path
     end
-  end
-
-  def signed_in_root_path(resource_or_scope)
-    admin_path
   end
 
   def after_omniauth_failure_path_for(scope)

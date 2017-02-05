@@ -78,16 +78,6 @@ class Test::Proxy::TestDatabaseSeeding < Minitest::Test
     assert_match(/\A[0-9a-f\-]{36}\z/, user["settings"]["_id"])
   end
 
-  def test_initial_superusers
-    admins = Admin.where(:username => "initial.admin@example.com").all
-    assert_equal(1, admins.length)
-
-    admin = admins.first.attributes
-    assert(admin["superuser"])
-    assert_match(/\A[0-9a-f\-]{36}\z/, admin["_id"])
-    assert_match(/\A[a-zA-Z0-9]{40}\z/, admin["authentication_token"])
-  end
-
   def test_admin_permission_records
     permissions = AdminPermission.all
     assert_equal(6, permissions.length)

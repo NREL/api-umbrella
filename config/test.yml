@@ -35,16 +35,9 @@ api_server:
   port: 13010
 web:
   port: 13012
+  rails_secret_token: aeec385fb48a0594b6bb0b18f62473190f1d01b0b6113766af525be2ae1a317a03ab0ee1b3ee6aca3fb1572dc87684e033dcec21acd90d0ca0f111ca1785d0e9
   admin:
-    initial_superusers:
-      - initial.admin@example.com
     auth_strategies:
-      enabled:
-        - facebook
-        - github
-        - google
-        - ldap
-        - max.gov
       facebook:
         client_id: test_fake
         client_secret: test_fake
@@ -105,8 +98,11 @@ unbound:
   port: 13100
   control_port: 13101
 mailhog:
-  smtp_bind_addr: "127.0.0.1:13102"
-  api_bind_addr: "127.0.0.1:13103"
-  ui_bind_addr: "127.0.0.1:13103"
+  bind_addr: "127.0.0.1"
+  smtp_port: 13102
+  api_port: 13103
+  ui_port: 13103
+openldap:
+  port: 13104
 apiSettings:
   require_https: optional

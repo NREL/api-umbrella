@@ -1,6 +1,9 @@
 require "csv_streamer"
 
 class Admin::StatsController < Admin::BaseController
+  # API requests won't pass CSRF tokens, so don't reject requests without them.
+  protect_from_forgery :with => :null_session
+
   before_action :set_analytics_adapter
   around_action :set_time_zone
   skip_after_action :verify_authorized

@@ -18,9 +18,9 @@ export default Ember.Component.extend(Save, {
 
     delete() {
       this.destroyRecord({
-        prompt: 'Are you sure you want to delete the admin "' + _.escape(this.get('model.name')) + '"?',
+        prompt: 'Are you sure you want to delete the admin "' + _.escape(this.get('model.username')) + '"?',
         transitionToRoute: 'admins',
-        message: 'Successfully deleted the admin "' + _.escape(this.get('model.name')) + '"',
+        message: 'Successfully deleted the admin "' + _.escape(this.get('model.username')) + '"',
       });
     },
   },

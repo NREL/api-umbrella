@@ -8,6 +8,17 @@ export default Ember.Mixin.create({
     $.scrollTo('#error_messages', { offset: -60, duration: 200 });
   },
 
+  afterSaveComplete(options, button) {
+    button.button('reset');
+    new PNotify({
+      type: 'success',
+      title: 'Saved',
+      text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
+    });
+
+    this.get('routing').transitionTo(options.transitionToRoute);
+  },
+
   saveRecord(options) {
     let button = $('#save_button');
     button.button('loading');
@@ -23,14 +34,11 @@ export default Ember.Mixin.create({
         this.scrollToErrors();
       } else {
         this.get('model').save().then(function() {
-          button.button('reset');
-          new PNotify({
-            type: 'success',
-            title: 'Saved',
-            text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
-          });
-
-          this.get('routing').transitionTo(options.transitionToRoute);
+          if(options.afterSave) {
+            options.afterSave(this.afterSaveComplete.bind(this, options, button));
+          } else {
+            this.afterSaveComplete(options, button);
+          }
         }.bind(this), function(error) {
           // Set the errors from the server response on a "serverErrors" property
           // for the error-messages component display.

@@ -1,4 +1,7 @@
 class Api::V0::AnalyticsController < Api::V1::BaseController
+  # API requests won't pass CSRF tokens, so don't reject requests without them.
+  protect_from_forgery :with => :null_session
+
   before_action :set_analytics_adapter
   skip_before_action :authenticate_admin!, :only => [:summary]
   skip_after_action :verify_authorized, :only => [:summary]

@@ -5,6 +5,9 @@ gem "rake", "~> 12.0.0"
 # Tests
 gem "minitest", "~> 5.10.1"
 
+# CLI helper for running tests
+gem "minitest-sprint", "~> 1.2.0"
+
 # More test outputs
 gem "minitest-reporters", "~> 1.1.14"
 
@@ -41,9 +44,6 @@ gem "database_cleaner", "~> 1.5.3"
 # Programmatically generate Rails session cookies.
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
 
-# Localization tests
-gem "i18n", "~> 0.8.0"
-
 # URL parsing/generation
 gem "addressable", "~> 2.5.0"
 
@@ -76,6 +76,9 @@ gem "concurrent-ruby", "~> 1.0.4"
 
 # Time zone randomization for tests.
 gem "zonebie", "~> 0.6.1"
+
+# Encrypting admin passwords.
+gem "bcrypt", "~> 3.1.11"
 
 # Color output
 gem "rainbow", "~> 2.2.1"

@@ -12,7 +12,7 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = 'please-change-me-at-config-initializers-devise@example.com'
+  config.mailer_sender = "noreply@#{ApiUmbrellaConfig[:web][:default_host]}"
 
   # Configure the class responsible to send e-mails.
   # config.mailer = 'Devise::Mailer'
@@ -34,7 +34,7 @@ Devise.setup do |config|
   # session. If you need permissions, you should implement that in a before filter.
   # You can also supply a hash where the value is a boolean determining whether
   # or not authentication should be aborted when the value is not present.
-  # config.authentication_keys = [:email]
+  config.authentication_keys = [:username]
 
   # Configure parameters from the request object used for authentication. Each entry
   # given should be a request method and it will automatically be passed to the
@@ -75,7 +75,7 @@ Devise.setup do |config|
   # It will change confirmation, password recovery and other workflows
   # to behave the same regardless if the e-mail provided was right or wrong.
   # Does not affect registerable.
-  # config.paranoid = true
+  config.paranoid = true
 
   # By default Devise will store the user in session. You can skip storage for
   # particular strategies by setting this option.
@@ -113,7 +113,7 @@ Devise.setup do |config|
   # config.pepper = '4cec288f0a01acf8450902e2fa70c6bec7ae2e6053bbf54c502b70a700020863b46e32aceab69d52df637db8473e55a85c3aca79b6ecc42f8f26091e6024fd92'
 
   # Send a notification email when the user's password is changed
-  # config.send_password_change_notification = false
+  config.send_password_change_notification = true
 
   # ==> Configuration for :confirmable
   # A period that the user is allowed to access the website even without
@@ -129,7 +129,7 @@ Devise.setup do |config|
   # their account can't be confirmed with the token any more.
   # Default is nil, meaning there is no restriction on how long a user can take
   # before confirming their account.
-  # config.confirm_within = 3.days
+  config.confirm_within = 3.days
 
   # If true, requires any email changes to be confirmed (exactly the same way as
   # initial account confirmation) to be applied. Requires additional unconfirmed_email
@@ -156,12 +156,12 @@ Devise.setup do |config|
 
   # ==> Configuration for :validatable
   # Range for password length.
-  config.password_length = 6..128
+  config.password_length = ApiUmbrellaConfig[:web][:admin][:password_length_min]..ApiUmbrellaConfig[:web][:admin][:password_length_max]
 
   # Email regex used to validate email formats. It simply asserts that
   # one (and only one) @ exists in the given string. This is mainly
   # to give user feedback and not to assert the e-mail validity.
-  config.email_regexp = /\A[^@\s]+@[^@\s]+\z/
+  config.email_regexp = Regexp.new(ApiUmbrellaConfig[:web][:admin][:email_regex])
 
   # ==> Configuration for :timeoutable
   # The time you want to timeout the user session without activity. After this
@@ -172,7 +172,7 @@ Devise.setup do |config|
   # Defines which strategy will be used to lock an account.
   # :failed_attempts = Locks an account after a number of failed attempts to sign in.
   # :none            = No lock strategy. You should handle locking by yourself.
-  # config.lock_strategy = :failed_attempts
+  config.lock_strategy = :failed_attempts
 
   # Defines which key will be used when locking and unlocking an account
   # config.unlock_keys = [:email]
@@ -182,14 +182,14 @@ Devise.setup do |config|
   # :time  = Re-enables login after a certain amount of time (see :unlock_in below)
   # :both  = Enables both strategies
   # :none  = No unlock strategy. You should handle unlocking by yourself.
-  # config.unlock_strategy = :both
+  config.unlock_strategy = :both
 
   # Number of authentication tries before locking an account if lock_strategy
   # is failed attempts.
-  # config.maximum_attempts = 20
+  config.maximum_attempts = 10
 
   # Time interval to unlock the account if :time is enabled as unlock_strategy.
-  # config.unlock_in = 1.hour
+  config.unlock_in = 2.hours
 
   # Warn on the last attempt before the account is locked.
   # config.last_attempt_warning = true
@@ -250,9 +250,11 @@ Devise.setup do |config|
   # Add a new OmniAuth provider. Check the wiki for more information on setting
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
-  if(%w(development test).include?(Rails.env))
+  if(Rails.env == "development")
     config.omniauth :developer,
-      :fields => [:email]
+      :fields => [:username],
+      :uid_field => :username,
+      :form => Admin::Admins::OmniauthCustomFormsController.action(:developer)
   end
 
   ApiUmbrellaConfig[:web][:admin][:auth_strategies][:enabled].each do |strategy|
@@ -282,7 +284,9 @@ Devise.setup do |config|
     when "ldap"
       require "omniauth-ldap"
       config.omniauth :ldap,
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options]
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options].merge({
+          :form => Admin::Admins::OmniauthCustomFormsController.action(:ldap),
+        })
     when "max.gov"
       require "omniauth-cas"
       config.omniauth :cas,
@@ -291,6 +295,8 @@ Devise.setup do |config|
         :service_validate_url => "/cas/serviceValidate",
         :logout_url => "/cas/logout",
         :ssl => true
+    when "local" # rubocop:disable Lint/EmptyWhen
+      # Ignore
     else
       raise "Unknown authentication strategy enabled in config: #{strategy.inspect}"
     end

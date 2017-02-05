@@ -126,7 +126,6 @@ local function set_cached_random_tokens()
   local cached = {
     web = {
       rails_secret_token = random_token(128),
-      devise_secret_key = random_token(128),
     },
     static_site = {
       api_key = random_token(40),
@@ -368,6 +367,12 @@ local function set_computed_config()
       dir = src_root_dir,
     },
     web = {
+      admin = {
+        auth_strategies = {
+          ["_local_enabled?"] = array_includes(config["web"]["admin"]["auth_strategies"]["enabled"], "local"),
+          ["_only_ldap_enabled?"] = (#config["web"]["admin"]["auth_strategies"]["enabled"] == 1 and config["web"]["admin"]["auth_strategies"]["enabled"][1] == "ldap"),
+        },
+      },
       dir = path.join(src_root_dir, "src/api-umbrella/web-app"),
       puma = {
         bind = "unix://" .. config["run_dir"] .. "/puma.sock",

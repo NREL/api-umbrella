@@ -5,21 +5,38 @@
     <fieldset class="form-horizontal condensed">
       <legend>User Info</legend>
 
-      {{f.text-field "username" label="Username"}}
-      {{f.textarea-field "notes" label="Notes"}}
-      {{#if model.email}}
-        {{f.static-field "email" label="E-mail"}}
-      {{/if}}
+      {{f.text-field "username" label=(t "mongoid.attributes.admin.username")}}
+      {{#unless session.data.authenticated.username_is_email}}
+        {{f.text-field "email" label=(t "mongoid.attributes.admin.email")}}
+      {{/unless}}
       {{#if model.name}}
-        {{f.static-field "name" label="Name"}}
+        {{f.static-field "name" label=(t "mongoid.attributes.admin.name")}}
+      {{/if}}
+      {{f.textarea-field "notes" label=(t "mongoid.attributes.admin.notes")}}
+      {{#if model.id}}
+        {{#unless model.currentSignInAt}}
+          {{f.checkbox-field "sendInviteEmail" label="Resend invite email"}}
+        {{/unless}}
+      {{else}}
+        {{f.checkbox-field "sendInviteEmail" label="Send invite email"}}
       {{/if}}
     </fieldset>
 
     {{#if model.authenticationToken}}
+      {{#if session.data.authenticated.local_auth_enabled}}
+        <fieldset class="form-horizontal condensed">
+          <legend>{{t "devise.passwords.edit.change_your_password"}}</legend>
+
+          {{f.password-field "currentPassword" label=(t "mongoid.attributes.admin.current_password")}}
+          {{f.password-field "password" label=(t "devise.passwords.edit.new_password") hint=(t "devise.passwords.password_length_hint" min=session.data.authenticated.password_length_min)}}
+          {{f.password-field "passwordConfirmation" label=(t "devise.passwords.edit.confirm_new_password")}}
+        </fieldset>
+      {{/if}}
+
       <fieldset class="form-horizontal condensed">
         <legend>Admin API Access</legend>
 
-        {{#f.static-field "authenticationToken" label="Admin API Token"}}
+        {{#f.static-field "authenticationToken" label=(t "mongoid.attributes.admin.authentication_token")}}
           <span class="api-key">{{model.authenticationToken}}</span>
         {{/f.static-field}}
       </fieldset>
@@ -28,9 +45,9 @@
     <fieldset class="form-horizontal condensed">
       <legend>Permissions</legend>
 
-      {{f.checkboxes-field "groupIds" label="Groups" options=groupOptions}}
+      {{f.checkboxes-field "groupIds" label=(t "mongoid.attributes.admin.groups") options=groupOptions}}
       {{#if currentAdmin.superuser}}
-        {{f.checkbox-field "superuser" label="Superuser"}}
+        {{f.checkbox-field "superuser" label=(t "mongoid.attributes.admin.superuser")}}
       {{/if}}
     </fieldset>
 
@@ -42,7 +59,7 @@
         {{#if model.id}}
           Created: {{format-date model.createdAt}} by {{model.creator.username}}<br>
           Last Updated: {{format-date model.updatedAt}} by {{model.updater.username}}<br>
-          Last Login: {{format-date model.lastSignInAt}} from {{model.lastSignInIp}} via {{model.lastSignInProvider}}<br>
+          {{#if model.currentSignInAt}}Last Login: {{format-date model.currentSignInAt}} from {{model.currentSignInIp}} via {{model.currentSignInProvider}}<br>{{/if}}
           Logged in: {{model.signInCount}} times<br>
         {{/if}}
       </div>

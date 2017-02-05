@@ -1,4 +1,4 @@
-{{#form-fields/field-wrapper model=model style=style fieldName=fieldName inputId=inputId label=label tooltip=tooltip}}
+{{#form-fields/field-wrapper model=model style=style fieldName=fieldName inputId=inputId label=label tooltip=tooltip hint=hint}}
   {{#multiselect-checkboxes options=options selection=(get model fieldName) tagName="div" valueProperty="id" as |option isSelected|}}
     <div class="checkbox">
       <label>{{input type="checkbox" checked=isSelected}} {{option.name}}</label>

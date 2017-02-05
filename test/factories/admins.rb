@@ -1,6 +1,8 @@
 FactoryGirl.define do
   factory :admin do
-    sequence(:username) { |n| "aburnside#{n}" }
+    sequence(:username) { |n| "aburnside#{n}@example.com" }
+    email { username }
+    encrypted_password { BCrypt::Password.create("password123456") }
     superuser true
 
     factory :limited_admin do

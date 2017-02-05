@@ -137,7 +137,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def self.reload(flag)
-      reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload", flag].compact)
+      reload = ChildProcess.build(*[File.join(API_UMBRELLA_SRC_ROOT, "bin/api-umbrella"), "reload", flag].flatten.compact)
       reload.io.inherit!
       reload.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
       reload.environment["API_UMBRELLA_CONFIG"] = CONFIG

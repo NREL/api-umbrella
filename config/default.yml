@@ -75,19 +75,22 @@ web:
   host: 127.0.0.1
   port: 14012
   rails_secret_token:
-  devise_secret_key:
   puma:
     workers: 2
     min_threads: 2
     max_threads: 24
   admin:
     initial_superusers: []
+    username_is_email: true
+    password_length_min: 14
+    password_length_max: 72
+    email_regex: "\\A[^@\\s]+@[^@\\s]+\\z"
+    password_regex:
     auth_strategies:
       enabled:
-        - github
-        - google
+        - local
       cas:
-        options:
+        options: {}
       facebook:
         client_id:
         client_secret:
@@ -98,7 +101,9 @@ web:
         client_id:
         client_secret:
       ldap:
-        options:
+        options: {}
+  mailer:
+    smtp_settings:
 static_site:
   host: 127.0.0.1
   port: 14013

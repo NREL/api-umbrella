@@ -13,7 +13,7 @@ class Test::AdminUi::TestVersionDisplay < Minitest::Capybara::Test
 
   def test_rails_login_page_no_version
     visit "/admin/"
-    assert_text("Admin Login")
+    assert_text("Admin Sign In")
     refute_text("API Umbrella Version")
     refute_text(@expected_version)
   end

@@ -26,7 +26,6 @@ module.exports = {
   globals: {
     '$': true,
     'CommonValidations': true,
-    'I18n': true,
     'JsDiff': true,
     'PNotify': true,
     '_': true,

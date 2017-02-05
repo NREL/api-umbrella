@@ -1,8 +1,10 @@
 import Ember from 'ember';
+import I18n from 'npm:i18n-js';
 
 export default Ember.Component.extend({
   messages: Ember.computed('model.clientErrors', 'model.serverErrors', function() {
     let errors = [];
+    let modelI18nRoot = 'mongoid.attributes.' + this.get('model.constructor.modelName').replace('-', '_');
 
     let clientErrors = this.get('model.clientErrors');
     if(clientErrors) {
@@ -39,6 +41,7 @@ export default Ember.Component.extend({
             errors.push({
               attribute: serverError.field,
               message: message,
+              fullMessage: serverError.full_message,
             });
           } else {
             errors.push({ message: 'Unexpected error' });
@@ -52,8 +55,15 @@ export default Ember.Component.extend({
     let messages = [];
     _.each(errors, function(error) {
       let message = '';
-      if(error.attribute && error.attribute !== 'base') {
-        message += inflection.titleize(inflection.underscore(error.attribute)) + ': ';
+      if(error.fullMessage) {
+        message += error.fullMessage;
+      } else if(error.attribute && error.attribute !== 'base') {
+        let attributeTitle = I18n.t(modelI18nRoot + '.' + inflection.underscore(error.attribute), { defaultValue: false });
+        if(attributeTitle === false) {
+          attributeTitle = inflection.titleize(inflection.underscore(error.attribute));
+        }
+
+        message += attributeTitle + ': ';
         message += error.message || 'Unexpected error';
       } else {
         if(error.message) {

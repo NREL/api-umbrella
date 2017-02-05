@@ -2,7 +2,7 @@ class ApplicationController < ActionController::Base
   include Pundit
   include DatatablesHelper
   prepend_around_filter :use_locale
-  protect_from_forgery :with => :null_session
+  protect_from_forgery :with => :exception
 
   around_action :set_userstamp
 
@@ -83,7 +83,7 @@ class ApplicationController < ActionController::Base
   end
 
   def use_locale
-    locale = http_accept_language.compatible_language_from(I18n.available_locales) || I18n.default_locale
+    locale = http_accept_language.language_region_compatible_from(I18n.available_locales) || I18n.default_locale
     I18n.with_locale(locale) do
       yield
     end
@@ -103,6 +103,14 @@ class ApplicationController < ActionController::Base
     yield
   ensure
     Time.zone = old_time_zone
+  end
+
+  def signed_in_root_path(resource_or_scope)
+    admin_path
+  end
+
+  def after_sign_out_path_for(resource_or_scope)
+    admin_path
   end
 
   private

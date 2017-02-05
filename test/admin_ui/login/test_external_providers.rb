@@ -1,83 +1,121 @@
-require_relative "../test_helper"
+require_relative "../../test_helper"
 
-class Test::AdminUi::TestLogin < Minitest::Capybara::Test
+class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
-  include ApiUmbrellaTestHelpers::DelayServerResponses
   include ApiUmbrellaTestHelpers::Setup
+  include ApiUmbrellaTestHelpers::AdminAuth
+  include Minitest::Hooks
 
   def setup
     super
     setup_server
-    Admin.where(:registration_source.ne => "seed").delete_all
-  end
-
-  def test_login_redirects
-    # Slow down the server side responses to validate the "Loading..." spinner
-    # shows up (without slowing things down, it periodically goes away too
-    # quickly for the tests to catch).
-    delay_server_responses(0.5) do
-      visit "/admin/"
-
-      # Ensure we get the loading spinner until authentication takes place.
-      assert_text("Loading...")
-
-      # Navigation should not be visible while loading.
-      refute_selector("nav")
-      refute_text("Analytics")
-
-      # Ensure that we eventually get redirected to the login page.
-      assert_text("Admin Login")
-      assert_text("Login with")
+    Admin.delete_all
+    once_per_class_setup do
+      override_config_set({
+        "web" => {
+          "admin" => {
+            "auth_strategies" => {
+              "enabled" => [
+                "facebook",
+                "max.gov",
+                "github",
+                "google",
+                "ldap",
+              ],
+            },
+          },
+        },
+      }, ["--router", "--web"])
     end
   end
 
-  # Since we do some custom things related to the Rails asset path, make sure
-  # everything is hooked up and the production cache-bused assets are served
-  # up.
-  def test_login_assets
+  def after_all
+    super
+    override_config_reset(["--router", "--web"])
+  end
+
+  def test_forbids_first_time_admin_creation
+    assert_equal(0, Admin.count)
+    assert_first_time_admin_creation_forbidden
+  end
+
+  def test_shows_message_when_no_admins_exist
+    assert_equal(0, Admin.count)
     visit "/admin/login"
-    assert_text("Admin Login")
+    assert_text("No admins currently exist")
+  end
 
-    # Find the stylesheet on the Rails login page, which should have a
-    # cache-busted URL (note that the href on the page appears to be relative,
-    # but capybara seems to read it as absolute. That's fine, but noting it in
-    # case Capybara's future behavior changes).
-    stylesheet = find("link[rel=stylesheet]", :visible => :hidden)
-    assert_match(%r{\Ahttps://127\.0\.0\.1:9081/web-assets/admin/login-\w{64}\.css\z}, stylesheet[:href])
+  def test_shows_external_login_links_in_order_and_no_local_fields
+    visit "/admin/login"
 
-    # Verify that the asset URL can be fetched and returns data.
-    response = Typhoeus.get(stylesheet[:href], keyless_http_options)
-    assert_response_code(200, response)
-    assert_equal("text/css", response.headers["content-type"])
+    assert_text("Admin Sign In")
+
+    # No local login fields
+    refute_field("Email")
+    refute_field("Password")
+    refute_field("Remember me")
+    refute_link("Forgot your password?")
+    refute_button("Sign in")
+
+    # External login links
+    assert_text("Sign in with")
+
+    # Order matches enabled array order.
+    buttons = page.all(".external-login .btn").map { |btn| btn.text }
+    assert_equal([
+      "Sign in with Facebook",
+      "Sign in with MAX.gov",
+      "Sign in with GitHub",
+      "Sign in with Google",
+      "Sign in with LDAP",
+    ], buttons)
+  end
+
+  def test_local_login_endpoint_disabled
+    admin = FactoryGirl.create(:admin)
+    response = Typhoeus.post("https://127.0.0.1:9081/admin/login", keyless_http_options.deep_merge(csrf_session).deep_merge({
+      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
+      :body => {
+        :admin => {
+          :username => admin.username,
+          :password => "password123456",
+        },
+      },
+    }))
+    assert_response_code(404, response)
+  end
+
+  def test_no_password_field_on_admin_forms
+    assert_no_password_fields_on_admin_forms
   end
 
   [
     {
       :provider => :facebook,
-      :login_button_text => "Login with Facebook",
+      :login_button_text => "Sign in with Facebook",
       :username_path => "info.email",
       :verified_path => "info.verified",
     },
     {
       :provider => :github,
-      :login_button_text => "Login with GitHub",
+      :login_button_text => "Sign in with GitHub",
       :username_path => "info.email",
       :verified_path => "info.email_verified",
     },
     {
       :provider => :google_oauth2,
-      :login_button_text => "Login with Google",
+      :login_button_text => "Sign in with Google",
       :username_path => "info.email",
       :verified_path => "extra.raw_info.email_verified",
     },
     {
       :provider => :ldap,
-      :login_button_text => "Login with LDAP",
+      :login_button_text => "Sign in with LDAP",
       :username_path => "extra.raw_info.sAMAccountName",
     },
     {
       :provider => :cas,
-      :login_button_text => "Login with MAX.gov",
+      :login_button_text => "Sign in with MAX.gov",
       :username_path => "uid",
     },
   ].each do |options|

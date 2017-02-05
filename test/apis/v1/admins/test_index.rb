@@ -7,7 +7,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
   def setup
     super
     setup_server
-    Admin.where(:registration_source.ne => "seed").delete_all
+    Admin.delete_all
   end
 
   def test_paginate_results

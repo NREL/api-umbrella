@@ -8,16 +8,15 @@
     <%= csrf_meta_tags %>
   </head>
   <body>
-    <div class="container">
-      <div id="main" class="row">
-        <% flash.each do |flash_type, message| %>
-          <div class="alert <%= bootstrap_class_for(flash_type) %>">
-            <%= message.html_safe %>
-          </div>
-        <% end %>
+    <div class="login">
+      <% flash.each do |flash_type, message| %>
+        <% next unless(message.kind_of?(String)) %>
+        <div class="alert <%= bootstrap_class_for(flash_type) %>">
+          <%= message.html_safe %>
+        </div>
+      <% end %>
 
-        <%= yield %>
-      </div>
+      <%= yield %>
     </div>
   </body>
 </html>

@@ -9,7 +9,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
     super
     setup_server
     ApiUser.where(:registration_source.ne => "seed").delete_all
-    Admin.where(:registration_source.ne => "seed").delete_all
+    Admin.delete_all
     AdminGroup.delete_all
     Api.delete_all
     ApiScope.delete_all

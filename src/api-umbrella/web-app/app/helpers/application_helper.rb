@@ -30,4 +30,24 @@ module ApplicationHelper
 
     user
   end
+
+  def omniauth_external_providers
+    unless @omniauth_external_providers
+      @omniauth_external_providers = Admin.omniauth_providers
+      if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_only_ldap_enabled?])
+        @omniauth_external_providers.delete(:ldap)
+      end
+    end
+
+    @omniauth_external_providers
+  end
+
+  def display_login_form?
+    ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?] || ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_only_ldap_enabled?]
+  end
+
+  def ldap_title
+    strategy = Devise.omniauth_configs[:ldap].strategy
+    strategy[:title].presence || t(:ldap, :scope => [:omniauth_providers])
+  end
 end

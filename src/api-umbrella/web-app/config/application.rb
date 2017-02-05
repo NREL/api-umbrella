@@ -99,6 +99,7 @@ module ApiUmbrella
               :read => {
                 :mode => ApiUmbrellaConfig[:mongodb][:read_preference].to_s.underscore.to_sym,
               },
+              :truncate_logs => false,
             },
           },
         },
@@ -121,6 +122,8 @@ module ApiUmbrella
     # config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
     # config.i18n.default_locale = :de
 
+    # Allow the Rails tmp path to be configured to be outside of the source
+    # directory.
     if(ENV["RAILS_TMP_PATH"].present?)
       config.paths["tmp"] = ENV["RAILS_TMP_PATH"]
       config.assets.configure do |env|
@@ -132,7 +135,13 @@ module ApiUmbrella
       end
     end
 
-    if(ENV["RAILS_PUBLIC_PATH"].present?)
+    # Allow the Rails public path to be configured to be outside of the source
+    # directory. This allows API Umbrella builds (resulting in precompiled
+    # assets) to happen in a build-specific directory.
+    #
+    # However, in development, ignore this, since we don't want precompiled
+    # assets from a build to be picked up and used.
+    if(ENV["RAILS_PUBLIC_PATH"].present? && Rails.env != "development")
       config.paths["public"] = ENV["RAILS_PUBLIC_PATH"]
     end
 

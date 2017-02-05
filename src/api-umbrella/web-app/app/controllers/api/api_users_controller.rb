@@ -1,4 +1,7 @@
 class Api::ApiUsersController < ApplicationController
+  # API requests won't pass CSRF tokens, so don't reject requests without them.
+  protect_from_forgery :with => :null_session
+
   def validate
     @user = ApiUser.where(:api_key => params[:id]).first
 
