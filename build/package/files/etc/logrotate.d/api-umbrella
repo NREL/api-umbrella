@@ -1,12 +1,41 @@
 # Rotate all the perp stdout/stderr logs, as well as any logs that can be
 # reopend via the "api-umbrella reopen-logs" command.
-/opt/api-umbrella/var/log/*/current /opt/api-umbrella/var/log/nginx/*.log {
+/opt/api-umbrella/var/log/*/current /opt/api-umbrella/var/log/nginx/*.log /opt/api-umbrella/var/log/rsyslog/*.log {
   daily
   rotate 90
   create 644 api-umbrella api-umbrella
   missingok
   compress
   delaycompress
+  notifempty
+  sharedscripts
+  postrotate
+    api-umbrella reopen-logs
+  endscript
+}
+
+# Skip compression for already gzipped logs.
+/opt/api-umbrella/var/log/nginx/*.log.gz {
+  daily
+  rotate 90
+  create 644 api-umbrella api-umbrella
+  missingok
+  nocompress
+  notifempty
+  sharedscripts
+  postrotate
+    api-umbrella reopen-logs
+  endscript
+}
+
+# Skip compression for already gzipped logs and use shorter duration for these
+# logs since the data is mostly duplicative.
+/opt/api-umbrella/var/log/rsyslog/*.log.gz {
+  daily
+  rotate 21
+  create 644 api-umbrella api-umbrella
+  missingok
+  nocompress
   notifempty
   sharedscripts
   postrotate
@@ -23,19 +52,6 @@
   missingok
   compress
   delaycompress
-  notifempty
-  copytruncate
-}
-
-# Shorter rotation for these redundant request logs (we're just keeping them in
-# place as we work on some of the new analytics updates). And disable
-# compression since they're already gzipped on write.
-/opt/api-umbrella/var/log/rsyslog/requests.log.gz {
-  daily
-  rotate 10
-  create 644 api-umbrella api-umbrella
-  missingok
-  nocompress
   notifempty
   copytruncate
 }
