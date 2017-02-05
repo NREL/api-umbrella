@@ -12,6 +12,8 @@ module ApiUmbrellaTestHelpers
     end
 
     def wait_for_log(response, options = {})
+      options[:timeout] ||= 15
+
       # We prefer to fetch the log based on the unique request ID. However, for
       # some tests, this isn't part of the response (for example, when testing
       # what happens when the client cancels the request before receiving a
@@ -29,7 +31,7 @@ module ApiUmbrellaTestHelpers
       end
 
       begin
-        Timeout.timeout(15) do
+        Timeout.timeout(options[:timeout]) do
           loop do
             result = LogItem.gateway.client.search({
               :index => "_all",
@@ -76,8 +78,6 @@ module ApiUmbrellaTestHelpers
       assert_kind_of(Numeric, record["response_size"])
       assert_kind_of(Numeric, record["response_status"])
       assert_kind_of(Numeric, record["response_time"])
-      assert_kind_of(Numeric, record["internal_gatekeeper_time"])
-      assert_kind_of(Numeric, record["proxy_overhead"])
 
       if(user)
         assert_equal(user.api_key, record["api_key"])
@@ -87,12 +87,11 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def assert_logs_backend_fields(record)
-      assert_kind_of(Numeric, record["backend_response_time"])
-    end
-
-    def refute_logs_backend_fields(record)
-      refute(record["backend_response_time"])
+    def assert_logged_url(expected_url, record)
+      logged_url = "#{record["request_scheme"]}://#{record["request_host"]}#{record["request_path"]}"
+      logged_url += "?#{record["request_url_query"]}" if(record["request_url_query"])
+      assert_equal(expected_url, logged_url)
+      assert_equal(expected_url, record["request_url"])
     end
   end
 end

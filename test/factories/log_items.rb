@@ -1,10 +1,6 @@
 FactoryGirl.define do
   factory :log_item do
     api_key "UfhkQUBgWQbJ0ZVqnJ4TvA7quGCZHYTFCXwSfOTQ"
-    backend_response_time 0
-    internal_gatekeeper_time 1.4
-    internal_response_time 1.8
-    proxy_overhead 3
     request_accept_encoding "*/*"
     request_at { Time.now.utc }
     request_hierarchy ["0/127.0.0.1/", "1/127.0.0.1/hello"]
@@ -19,6 +15,7 @@ FactoryGirl.define do
     request_scheme "http"
     request_size 140
     request_url "http://127.0.0.1/hello/?foo=bar"
+    request_url_query("foo=bar")
     request_user_agent "ApacheBench/2.3"
     request_user_agent_family "AB (Apache Bench)"
     request_user_agent_type "Other"
@@ -42,6 +39,7 @@ FactoryGirl.define do
       request_path '"><script class="xss-test">alert("6");</script>'
       request_query({ "foo" => '"><script class="xss-test">alert("7");</script>' })
       request_url '"><script class="xss-test">alert("8");</script>'
+      request_url_query '"><script class="xss-test">alert("8");</script>'
       request_user_agent '"><script class="xss-test">alert("9");</script>'
       response_content_type '"><script class="xss-test">alert("10");</script>'
       response_server '"><script class="xss-test">alert("11");</script>'

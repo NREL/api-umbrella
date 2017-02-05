@@ -89,20 +89,28 @@ local function create_aliases()
 
   local httpc = http.new()
   for _, alias in ipairs(aliases) do
-    -- Make sure the index exists.
-    local _, create_err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"], {
-      method = "PUT",
+    -- Only create aliases if they don't already exist.
+    local exists_res, exists_err = httpc:request_uri(elasticsearch_host .. "/_alias/" .. alias["alias"], {
+      method = "HEAD",
     })
-    if create_err then
-      ngx.log(ngx.ERR, "failed to create elasticsearch index: ", create_err)
-    end
+    if exists_err then
+      ngx.log(ngx.ERR, "failed to check elasticsearch index alias: ", exists_err)
+    elseif exists_res.status == 404 then
+      -- Make sure the index exists.
+      local _, create_err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"], {
+        method = "PUT",
+      })
+      if create_err then
+        ngx.log(ngx.ERR, "failed to create elasticsearch index: ", create_err)
+      end
 
-    -- Create the alias for the index.
-    local _, alias_err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"] .. "/_alias/" .. alias["alias"], {
-      method = "PUT",
-    })
-    if alias_err then
-      ngx.log(ngx.ERR, "failed to create elasticsearch index alias: ", alias_err)
+      -- Create the alias for the index.
+      local _, alias_err = httpc:request_uri(elasticsearch_host .. "/" .. alias["index"] .. "/_alias/" .. alias["alias"], {
+        method = "PUT",
+      })
+      if alias_err then
+        ngx.log(ngx.ERR, "failed to create elasticsearch index alias: ", alias_err)
+      end
     end
   end
 end

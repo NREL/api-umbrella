@@ -1,28 +1,56 @@
+local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_encode_json"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
+local iconv = require "iconv"
+local logger = require "resty.logger.socket"
+local luatz = require "luatz"
+local mongo = require "api-umbrella.utils.mongo"
 local plutils = require "pl.utils"
+local sha256 = require "resty.sha256"
+local str = require "resty.string"
+local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
+local utils = require "api-umbrella.proxy.utils"
 
+local round = utils.round
 local split = plutils.split
+
+local syslog_facility = 16 -- local0
+local syslog_severity = 6 -- info
+local syslog_priority = (syslog_facility * 8) + syslog_severity
+local syslog_version = 1
+local timezone = luatz.get_tz(config["analytics"]["timezone"])
 
 local _M = {}
 
-_M.MSEC_FIELDS = {
-  "timer_backend_response",
-  "timer_internal",
-  "timer_proxy_overhead",
-  "timer_response",
-  "timestamp_utc",
-}
-
-function _M.ignore_request()
-  -- Don't log some of our internal API calls used to determine if API Umbrella
-  -- is fully started and ready (since logging of these requests will likely
-  -- fail anyway if things aren't ready).
-  local uri = ngx.ctx.original_uri or ngx.var.uri
-  if uri == "/api-umbrella/v1/health" or uri == "/api-umbrella/v1/state" then
-    return true
+local function truncate_string(value, max_length)
+  if string.len(value) > max_length then
+    return string.sub(value, 1, max_length)
   else
-    return false
+    return value
   end
+end
+
+local function truncate(value, max_length)
+  if not value or type(value) ~= "string" then
+    return nil
+  end
+
+  return truncate_string(value, max_length)
+end
+
+local function lowercase_truncate(value, max_length)
+  if not value or type(value) ~= "string" then
+    return nil
+  end
+
+  return string.lower(truncate_string(value, max_length))
+end
+
+local function uppercase_truncate(value, max_length)
+  if not value or type(value) ~= "string" then
+    return nil
+  end
+
+  return string.upper(truncate_string(value, max_length))
 end
 
 -- To make drill-downs queries easier, split up how the path is stored.
@@ -107,66 +135,156 @@ local function set_url_hierarchy(data)
   end
 end
 
-local function elasticsearch_sanitize_args(data)
-  if not data then return end
+-- Cache the last geocoded location for each city in a separate index. When
+-- faceting by city names on the log index (for displaying on a map), there
+-- doesn't appear to be an easy way to fetch the associated locations for each
+-- city facet. This allows us to perform a separate lookup to fetch the
+-- pre-geocoded locations for each city.
+--
+-- The geoip stuff actually returns different geocodes for different parts of
+-- cities. This approach rolls up each city to the last geocoded location
+-- within that city, so it's not perfect, but for now it'll do.
+local function cache_city_geocode(premature, id, data)
+  if premature then
+    return
+  end
 
-  for key, value in pairs(data) do
-    local value_type = type(value)
-    if value_type == "table" then
-      -- Flatten any arguments with array values.
-      --
-      -- These stem from duplicate argument names, like ?foo=bar&foo=baz
-      -- (resulting in { foo = { bar, baz } }). These need to be flattened into
-      -- a string value so ElasticSearch doesn't try to store these as
-      -- differing types depending on whether a single values comes in
-      -- (?foo=bar) or an array (?foo=bar&foo=baz).
-      --
-      -- ngx.decode_args doesn't support other more deeply nested tables, so we
-      -- don't need to worry about recursing.
-      value = escape_uri_non_ascii(table.concat(value, ","))
-    elseif value_type ~= "string" then
-      -- Convert any other types to strings to ensure ElasticSearch always
-      -- indexes things as a consistent type.
-      --
-      -- This helps ensure boolean arguments from ngx.decode_args (?foo,
-      -- resulting in { foo = true }), can be mixed with string types.
-      value = tostring(value)
-    end
+  local id_hash = sha256:new()
+  id_hash:update(id)
+  id_hash = id_hash:final()
+  id_hash = str.to_hex(id_hash)
+  local record = {
+    _id = id_hash,
+    country = data["request_ip_country"],
+    region = data["request_ip_region"],
+    city = data["request_ip_city"],
+    location = {
+      type = "Point",
+      coordinates = {
+        data["request_ip_lon"],
+        data["request_ip_lat"],
+      },
+    },
+    updated_at = { ["$date"] = { ["$numberLong"] = tostring(ngx.now() * 1000) } },
+  }
 
-    -- Escaping any non-ASCII chars to prevent invalid or wonky UTF-8
-    -- sequences from generating invalid JSON that will prevent ElasticSearch
-    -- from indexing the request.
-    data[key] = escape_uri_non_ascii(value)
-
-    -- As of ElasticSearch 2, field names cannot contain dots. This affects our
-    -- nested hash of query parameters, since incoming query parameters may
-    -- contain dots. For storage purposes, replace these dots with underscores
-    -- (the same approach LogStash's de_dot plugin takes).
-    --
-    -- See:
-    -- https://www.elastic.co/guide/en/elasticsearch/reference/2.0/breaking_20_mapping_changes.html#_field_names_may_not_contain_dots
-    --
-    -- However, dots look like they'll be allowed again (although, treated as
-    -- nested objects) in ElasticSearch 5:
-    -- https://github.com/elastic/elasticsearch/issues/15951
-    -- https://github.com/elastic/elasticsearch/pull/18106
-    -- https://www.elastic.co/blog/elasticsearch-5-0-0-alpha3-released#_dots_in_field_names
-    local sanitized_key = ngx.re.gsub(key, "\\.", "_", "jo")
-    if key ~= sanitized_key then
-      data[sanitized_key] = data[key]
-      data[key] = nil
-    end
+  local _, err = mongo.update("log_city_locations", record["_id"], record)
+  if err then
+    ngx.log(ngx.ERR, "failed to cache city location: ", err)
   end
 end
 
-function _M.set_url_fields(data)
+function _M.ignore_request(ngx_ctx, ngx_var)
+  -- Only log API requests (not web app or website backend requests).
+  if ngx_ctx.matched_api then
+    -- Don't log some of our internal API calls used to determine if API
+    -- Umbrella is fully started and ready (since logging of these requests
+    -- will likely fail anyway if things aren't ready).
+    local uri = ngx_ctx.original_uri or ngx_var.uri
+    if uri == "/api-umbrella/v1/health" or uri == "/api-umbrella/v1/state" then
+      return true
+    else
+      return false
+    end
+  else
+    return true
+  end
+end
+
+function _M.sec_to_ms(value)
+  value = tonumber(value)
+  if not value then
+    return nil
+  end
+
+  -- Round the results after turning into milliseconds. Since all the nginx
+  -- timers only have millisecond precision, any decimals left after
+  -- converting are just an artifact of the original float storage or math
+  -- (eg, 1.00001... or 1.999988..).
+  return round(value * 1000)
+end
+
+function _M.cache_new_city_geocode(data)
+  local id = (data["request_ip_country"] or "") .. "-" .. (data["request_ip_region"] or "") .. "-" .. (data["request_ip_city"] or "")
+
+  -- Only cache the first city location per startup to prevent lots of indexing
+  -- churn re-indexing the same city.
+  if not ngx.shared.geocode_city_cache:get(id) then
+    ngx.shared.geocode_city_cache:set(id, true)
+
+    -- Perform the actual cache call in a timer because the http library isn't
+    -- supported directly in the log_by_lua context.
+    ngx.timer.at(0, cache_city_geocode, id, data)
+  end
+end
+
+function _M.set_request_ip_geo_fields(data, ngx_var)
+  -- The GeoIP module returns ISO-8859-1 encoded city names, but we need UTF-8
+  -- for inserting into ElasticSearch.
+  local geoip_city = ngx_var.geoip_city
+  if geoip_city then
+    local encoding_converter = iconv.new("utf-8//IGNORE", "iso-8859-1")
+    local geoip_city_encoding_err
+    geoip_city, geoip_city_encoding_err  = encoding_converter:iconv(geoip_city)
+    if geoip_city_encoding_err then
+      ngx.log(ngx.ERR, "encoding error for geoip city: ", geoip_city_encoding_err, geoip_city)
+    end
+  end
+
+  -- The geoip database returns "00" for unknown regions sometimes:
+  -- http://maxmind.com/download/geoip/kml/index.html Remove these and treat
+  -- these as nil.
+  local geoip_region = ngx_var.geoip_region
+  if geoip_region == "00" then
+    geoip_region = nil
+  end
+
+  data["request_ip_city"] = geoip_city
+  data["request_ip_country"] = ngx_var.geoip_city_country_code
+  data["request_ip_region"] = geoip_region
+
+  local geoip_latitude = ngx_var.geoip_latitude
+  if geoip_latitude then
+    data["request_ip_lat"] = tonumber(geoip_latitude)
+    data["request_ip_lon"] = tonumber(ngx_var.geoip_longitude)
+  end
+end
+
+function _M.set_computed_timestamp_fields(data)
+  local utc_sec = data["timestamp_utc"] / 1000
+  local tz_offset = timezone:find_current(utc_sec).gmtoff
+  local tz_sec = utc_sec + tz_offset
+  local tz_time = os.date("!%Y-%m-%d %H:%M:00", tz_sec)
+
+  -- Determine the first day in the ISO week (the most recent Monday).
+  local tz_week = luatz.gmtime(tz_sec)
+  if tz_week.wday == 1 then
+    tz_week.day = tz_week.day - 6
+    tz_week:normalize()
+  elseif tz_week.wday > 2 then
+    tz_week.day = tz_week.day - tz_week.wday + 2
+    tz_week:normalize()
+  end
+
+  data["timestamp_tz_offset"] = tz_offset * 1000
+  data["timestamp_tz_year"] = string.sub(tz_time, 1, 4) .. "-01-01" -- YYYY-01-01
+  data["timestamp_tz_month"] = string.sub(tz_time, 1, 7) .. "-01" -- YYYY-MM-01
+  data["timestamp_tz_week"] = tz_week:strftime("%Y-%m-%d") -- YYYY-MM-DD of first day in ISO week.
+  data["timestamp_tz_date"] = string.sub(tz_time, 1, 10) -- YYYY-MM-DD
+  data["timestamp_tz_hour"] = string.sub(tz_time, 1, 13) .. ":00:00" -- YYYY-MM-DD HH:00:00
+  data["timestamp_tz_minute"] = tz_time -- YYYY-MM-DD HH:MM:00
+end
+
+function _M.set_computed_url_fields(data, ngx_ctx)
+  data["request_url_host"] = lowercase_truncate(data["request_url_host"], 200)
+
   -- Extract just the path portion of the URL.
   --
   -- Note: we're extracting this from the original "request_uri" variable here,
   -- rather than just using the original "uri" variable by itself, since
   -- "request_uri" has the raw encoding of the URL as it was passed in (eg, for
   -- url escaped encodings), which we'll prefer for consistency.
-  local parts = split(ngx.ctx.original_request_uri, "?", true, 2)
+  local parts = split(ngx_ctx.original_request_uri, "?", true, 2)
   data["request_url_path"] = escape_uri_non_ascii(parts[1])
 
   -- Extract the query string arguments.
@@ -176,14 +294,6 @@ function _M.set_url_fields(data)
   -- reflect the original URL (and not after any internal rewriting).
   if parts[2] then
     data["request_url_query"] = escape_uri_non_ascii(parts[2])
-
-    if config["analytics"]["log_request_url_query_params_separately"] then
-      data["legacy_request_url_query_hash"] = ngx.decode_args(data["request_url_query"])
-
-      -- Sanitize the decoded the argument string table to prepare it for
-      -- ElasticSearch storage.
-      elasticsearch_sanitize_args(data["legacy_request_url_query_hash"])
-    end
   end
 
   data["legacy_request_url"] = data["request_url_scheme"] .. "://" .. data["request_url_host"] .. data["request_url_path"]
@@ -194,16 +304,133 @@ function _M.set_url_fields(data)
   set_url_hierarchy(data)
 end
 
-function _M.truncate_header(value, max_length)
-  if not value or type(value) ~= "string" then
-    return value
+function _M.set_computed_user_agent_fields(data)
+  if data["request_user_agent"] then
+    local user_agent_data = user_agent_parser(data["request_user_agent"])
+    if user_agent_data then
+      data["request_user_agent_family"] = user_agent_data["family"]
+      data["request_user_agent_type"] = user_agent_data["type"]
+    end
+  end
+end
+
+function _M.normalized_data(data)
+  local normalized = {
+    denied_reason = lowercase_truncate(data["denied_reason"], 50),
+    id = lowercase_truncate(data["id"], 20),
+    request_accept = truncate(data["request_accept"], 200),
+    request_accept_encoding = truncate(data["request_accept_encoding"], 200),
+    request_basic_auth_username = truncate(data["request_basic_auth_username"], 200),
+    request_connection = truncate(data["request_connection"], 200),
+    request_content_type = truncate(data["request_content_type"], 200),
+    request_ip = lowercase_truncate(data["request_ip"], 45),
+    request_ip_city = truncate(data["request_ip_city"], 200),
+    request_ip_country = uppercase_truncate(data["request_ip_country"], 2),
+    request_ip_lat = tonumber(data["request_ip_lat"]),
+    request_ip_lon = tonumber(data["request_ip_lon"]),
+    request_ip_region = uppercase_truncate(data["request_ip_region"], 2),
+    request_method = uppercase_truncate(data["request_method"], 10),
+    request_origin = truncate(data["request_origin"], 200),
+    request_referer = truncate(data["request_referer"], 200),
+    request_size = tonumber(data["request_size"]),
+    request_url_hierarchy = data["request_url_hierarchy"],
+    request_url_host = lowercase_truncate(data["request_url_host"], 200),
+    request_url_path = truncate(data["request_url_path"], 4000),
+    request_url_path_level1 = truncate(data["request_url_path_level1"], 40),
+    request_url_path_level2 = truncate(data["request_url_path_level2"], 40),
+    request_url_path_level3 = truncate(data["request_url_path_level3"], 40),
+    request_url_path_level4 = truncate(data["request_url_path_level4"], 40),
+    request_url_path_level5 = truncate(data["request_url_path_level5"], 40),
+    request_url_path_level6 = truncate(data["request_url_path_level6"], 40),
+    request_url_port = tonumber(data["request_url_port"]),
+    request_url_query = truncate(data["request_url_query"], 4000),
+    request_url_scheme = lowercase_truncate(data["request_url_scheme"], 10),
+    request_user_agent = truncate(data["request_user_agent"], 400),
+    request_user_agent_family = truncate(data["request_user_agent_family"], 100),
+    request_user_agent_type = truncate(data["request_user_agent_type"], 100),
+    response_age = tonumber(data["response_age"]),
+    response_cache = truncate(data["response_cache"], 200),
+    response_content_encoding = truncate(data["response_content_encoding"], 200),
+    response_content_length = tonumber(data["response_content_length"]),
+    response_content_type = truncate(data["response_content_type"], 200),
+    response_server = truncate(data["response_server"], 100),
+    response_size = tonumber(data["response_size"]),
+    response_status = tonumber(data["response_status"]),
+    response_transfer_encoding = truncate(data["response_transfer_encoding"], 200),
+    timer_response = tonumber(data["timer_response"]),
+    timestamp_tz_date = uppercase_truncate(data["timestamp_tz_date"], 20),
+    timestamp_tz_hour = uppercase_truncate(data["timestamp_tz_hour"], 20),
+    timestamp_tz_minute = uppercase_truncate(data["timestamp_tz_minute"], 20),
+    timestamp_tz_month = uppercase_truncate(data["timestamp_tz_month"], 20),
+    timestamp_tz_offset = tonumber(data["timestamp_tz_offset"]),
+    timestamp_tz_week = uppercase_truncate(data["timestamp_tz_week"], 20),
+    timestamp_tz_year = uppercase_truncate(data["timestamp_tz_year"], 20),
+    timestamp_utc = tonumber(data["timestamp_utc"]),
+    user_id = lowercase_truncate(data["user_id"], 36),
+
+    -- Deprecated
+    legacy_api_key = truncate(data["legacy_api_key"], 40),
+    legacy_request_url = truncate(data["legacy_request_url"], 8000),
+    legacy_user_email = truncate(data["legacy_user_email"], 200),
+    legacy_user_registration_source = truncate(data["legacy_user_registration_source"], 200),
+  }
+
+  if normalized["request_url_hierarchy"] then
+    for index, path in ipairs(normalized["request_url_hierarchy"]) do
+      normalized["request_url_hierarchy"][index] = truncate(path, 400)
+    end
   end
 
-  if string.len(value) > max_length then
-    return string.sub(value, 1, max_length)
-  else
-    return value
+  return normalized
+end
+
+function _M.build_syslog_message(data)
+  local syslog_message = "<" .. syslog_priority .. ">"
+    .. syslog_version
+    .. " " .. os.date("!%Y-%m-%dT%TZ", data["timestamp_utc"] / 1000) -- timestamp
+    .. " -" -- hostname
+    .. " api-umbrella" -- app-name
+    .. " -" -- procid
+    .. " -" -- msgid
+    .. " -" -- structured-data
+    .. " @cee:" -- CEE-enhanced logging for rsyslog to parse JSON
+    .. elasticsearch_encode_json({ raw = data }) -- JSON data
+    .. "\n"
+
+  return syslog_message
+end
+
+function _M.send_syslog_message(syslog_message)
+  -- Check the syslog message length to ensure it doesn't exceed the configured
+  -- rsyslog maxMessageSize value.
+  --
+  -- In general, this shouldn't be possible, since URLs can't exceed 8KB, and
+  -- we truncate the various headers that users can control for logging
+  -- purposes. However, this provides an extra sanity check to ensure this
+  -- doesn't unexpectedly pop up (eg, if we add additional headers we forget to
+  -- truncate).
+  local syslog_message_length = string.len(syslog_message)
+  if syslog_message_length > 32000 then
+    ngx.log(ngx.ERR, "request syslog message longer than expected - analytics logging may fail: ", syslog_message_length)
   end
+
+  -- Init the resty logger socket.
+  if not logger.initted() then
+    local ok, err = logger.init{
+      host = config["rsyslog"]["host"],
+      port = config["rsyslog"]["port"],
+      flush_limit = 4096, -- 4KB
+      drop_limit = 10485760, -- 10MB
+      periodic_flush = 0.1,
+    }
+
+    if not ok then
+      ngx.log(ngx.ERR, "failed to initialize the logger: ", err)
+      return
+    end
+  end
+
+  return logger.log(syslog_message)
 end
 
 return _M
