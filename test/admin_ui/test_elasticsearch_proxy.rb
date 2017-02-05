@@ -11,6 +11,8 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
   end
 
   def test_redirect_to_login_for_unauthenticated_requests
+    FactoryGirl.create(:admin)
+
     visit "/admin/elasticsearch"
     assert_text("You need to sign in")
     refute_text('"lucene_version"')

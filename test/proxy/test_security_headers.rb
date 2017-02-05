@@ -18,6 +18,7 @@ class Test::Proxy::TestSecurityHeaders < Minitest::Test
   end
 
   def test_adds_security_headers_to_web_app
+    FactoryGirl.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/login", keyless_http_options)
     assert_response_code(200, response)
     assert_equal("1; mode=block", response.headers["X-XSS-Protection"])
@@ -26,6 +27,7 @@ class Test::Proxy::TestSecurityHeaders < Minitest::Test
   end
 
   def test_adds_security_headers_to_admin_ui
+    FactoryGirl.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/login", keyless_http_options)
     assert_response_code(200, response)
     assert_equal("1; mode=block", response.headers["X-XSS-Protection"])
