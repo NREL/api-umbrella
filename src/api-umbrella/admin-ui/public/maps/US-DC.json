@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"US-DC"},"geometry":{"type":"Polygon","coordinates":[[[-77.0303611,0.38889252963519105E2],[-77.122053,38.9435364],[-77.0421164,39.0117835],[-76.9312424,0.38888220248635896E2],[-77.0197373,38.8065259],[-77.0303611,0.38889252963519105E2]]]}}],"_labels":{"US-DC":"District of Columbia"}}
