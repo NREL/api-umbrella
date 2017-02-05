@@ -7,6 +7,7 @@ class Test::Proxy::Routing::TestAdmin < Minitest::Test
   def setup
     super
     setup_server
+    FactoryGirl.create(:admin)
   end
 
   def test_https_redirect
