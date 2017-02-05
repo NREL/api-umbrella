@@ -22,9 +22,14 @@ http {
   log_format combined_extended '$remote_addr - $remote_user [$time_local] '
     '"$request" $status $body_bytes_sent '
     '"$http_referer" "$http_user_agent" '
-    '$x_api_umbrella_request_id '
-    '$scheme://$host:$server_port '
-    '$request_time $sent_http_x_cache';
+    'id=$x_api_umbrella_request_id c=$sent_http_x_cache '
+    'p=$api_umbrella_proxy_pass '
+    's=$scheme h=$host sp=$server_port '
+    'bes=$http_x_api_umbrella_backend_scheme beid=$http_x_api_umbrella_backend_id '
+    'ca=$connections_active cr=$connections_reading cw=$connections_writing '
+    'ct=$connections_waiting cq=$connection_requests bs=$bytes_sent '
+    'rl=$request_length rt=$request_time uct=$upstream_connect_time '
+    'uht=$upstream_header_time urt=$upstream_response_time';
   access_log {{log_dir}}/nginx/{{nginx.access_log_filename}} combined_extended {{nginx.access_log_options}};
 
   client_body_temp_path {{tmp_dir}}/nginx-client_body_temp;
@@ -47,7 +52,6 @@ http {
   lua_shared_dict geocode_city_cache {{nginx.shared_dicts.geocode_city_cache.size}};
   lua_shared_dict interval_locks {{nginx.shared_dicts.interval_locks.size}};
   lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
-  lua_shared_dict logs {{nginx.shared_dicts.logs.size}};
   lua_shared_dict resolved_hosts {{nginx.shared_dicts.resolved_hosts.size}};
   lua_shared_dict stats {{nginx.shared_dicts.stats.size}};
   lua_shared_dict upstream_checksums {{nginx.shared_dicts.upstream_checksums.size}};
@@ -226,7 +230,6 @@ http {
     server_name _;
 
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
-    log_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/log_api_backend_proxy.lua';
 
     # Enable keep alive connections to the backend servers.
     proxy_http_version 1.1;

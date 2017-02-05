@@ -7,11 +7,7 @@ class LogItem
   document_type "log"
 
   attribute :api_key, String
-  attribute :backend_response_time, Integer
   attribute :gatekeeper_denied_code, String
-  attribute :internal_gatekeeper_time, Float
-  attribute :internal_response_time, Float
-  attribute :proxy_overhead, Integer
   attribute :request_accept_encoding, String
   attribute :request_at, Time
   attribute :request_hierarchy, Array
@@ -26,6 +22,7 @@ class LogItem
   attribute :request_scheme, String
   attribute :request_size, Integer
   attribute :request_url, String
+  attribute :request_url_query, String
   attribute :request_user_agent, String
   attribute :request_user_agent_family, String
   attribute :request_user_agent_type, String

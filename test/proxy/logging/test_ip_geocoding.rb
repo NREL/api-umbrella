@@ -146,9 +146,6 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
     else
       assert_equal(options.fetch(:city), record.fetch("request_ip_city"))
     end
-    assert_equal(["lat", "lon"].sort, record.fetch("request_ip_location").keys.sort)
-    assert_in_delta(options[:lat], record.fetch("request_ip_location").fetch("lat"), 0.02)
-    assert_in_delta(options[:lon], record.fetch("request_ip_location").fetch("lon"), 0.02)
   end
 
   def assert_geocode_cache(record, options)

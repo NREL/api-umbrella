@@ -6,7 +6,8 @@ node(:recordsFiltered) { @result.total }
 node :data do
   @result.documents.map do |log|
     filtered = log["_source"].except("api_key", "_type", "_score", "_index").merge({
-      "request_url" => strip_api_key_from_url(log["_source"]["request_url"]).gsub(%r{^.*://[^/]*}, "")
+      "request_url" => sanitized_url_path_and_query(log["_source"]),
+      "request_url_query" => strip_api_key_from_query(log["_source"]["request_url_query"]),
     })
 
     if(filtered["request_query"] && filtered["request_query"]["api_key"])

@@ -1,5 +1,3 @@
-local start_time = ngx.now()
-
 local api_matcher = require "api-umbrella.proxy.middleware.api_matcher"
 local error_handler = require "api-umbrella.proxy.error_handler"
 local host_normalize = require "api-umbrella.utils.host_normalize"
@@ -44,10 +42,6 @@ end
 local function route_to_api(api)
   ngx.ctx.matched_api = api
   ngx.var.api_umbrella_proxy_pass = "http://api_umbrella_trafficserver_backend"
-
-  -- Compute how much time we spent in Lua processing during this phase of the
-  -- request.
-  utils.overhead_timer(start_time)
 end
 
 local function route_to_website(website)

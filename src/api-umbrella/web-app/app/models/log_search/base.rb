@@ -4,9 +4,13 @@ class LogSearch::Base
 
   CASE_SENSITIVE_FIELDS = [
     "api_key",
+    "request_ip_city",
+  ].freeze
+
+  UPPERCASE_FIELDS = [
+    "request_method",
     "request_ip_country",
     "request_ip_region",
-    "request_ip_city",
   ].freeze
 
   def self.policy_class

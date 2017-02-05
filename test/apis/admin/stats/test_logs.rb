@@ -11,7 +11,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
   end
 
   def test_strips_api_keys_from_request_url_in_json
-    FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_url => "http://127.0.0.1/with_api_key/?foo=bar&api_key=my_secret_key", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" }, :request_user_agent => unique_test_id)
+    FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_url => "http://127.0.0.1/with_api_key/?foo=bar&api_key=my_secret_key", :request_path => "/with_api_key/", :request_url_query => "foo=bar&api_key=my_secret_key", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" }, :request_user_agent => unique_test_id)
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
@@ -30,12 +30,13 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     data = MultiJson.load(body)
     assert_equal(1, data["recordsTotal"], data)
     assert_equal("/with_api_key/?foo=bar", data["data"][0]["request_url"])
+    assert_equal("foo=bar", data["data"][0]["request_url_query"])
     assert_equal({ "foo" => "bar" }, data["data"][0]["request_query"])
     refute_match("my_secret_key", body)
   end
 
   def test_strips_api_keys_from_request_url_in_csv
-    FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_url => "http://127.0.0.1/with_api_key/?api_key=my_secret_key&foo=bar", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" }, :request_user_agent => unique_test_id)
+    FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_url => "http://127.0.0.1/with_api_key/?api_key=my_secret_key&foo=bar", :request_path => "/with_api_key/", :request_url_query => "api_key=my_secret_key&foo=bar", :request_query => { "foo" => "bar", "api_key" => "my_secret_key" }, :request_user_agent => unique_test_id)
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.csv", http_options.deep_merge(admin_session).deep_merge({

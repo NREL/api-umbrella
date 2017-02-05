@@ -37,9 +37,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
     assert_equal([
       "api_key",
-      "backend_response_time",
-      "internal_gatekeeper_time",
-      "proxy_overhead",
       "request_accept",
       "request_accept_encoding",
       "request_at",
@@ -56,6 +53,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "request_scheme",
       "request_size",
       "request_url",
+      "request_url_query",
       "request_user_agent",
       "request_user_agent_family",
       "request_user_agent_type",
@@ -73,10 +71,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     ].sort, record.keys.sort)
 
     assert_equal(self.api_key, record["api_key"])
-    assert_kind_of(Numeric, record["backend_response_time"])
-    assert_kind_of(Numeric, record["internal_gatekeeper_time"])
-    assert_kind_of(Numeric, record["proxy_overhead"])
-    assert_kind_of(Numeric, record["proxy_overhead"])
     assert_equal("text/plain; q=0.5, text/html", record["request_accept"])
     assert_equal("compress, gzip", record["request_accept_encoding"])
     assert_kind_of(Numeric, record["request_at"])
@@ -100,6 +94,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("http", record["request_scheme"])
     assert_kind_of(Numeric, record["request_size"])
     assert_equal(url, record["request_url"])
+    assert_equal("url1=#{param_url1}&url2=#{param_url2}&url3=#{param_url3}", record["request_url_query"])
     assert_equal("curl/7.37.1", record["request_user_agent"])
     assert_equal("cURL", record["request_user_agent_family"])
     assert_equal("Library", record["request_user_agent_type"])
@@ -205,7 +200,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal(url, record["request_url"])
+    assert_logged_url(url, record)
   end
 
   def test_requests_with_duplicate_query_params
@@ -214,7 +209,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal(url, record["request_url"])
+    assert_logged_url(url, record)
   end
 
   def test_logs_request_at_as_date
@@ -305,7 +300,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     record = wait_for_log(response)[:hit_source]
     assert_equal(403, record["response_status"])
     assert_logs_base_fields(record)
-    refute_logs_backend_fields(record)
     assert_equal("INVALID_KEY", record["api_key"])
     assert_equal("api_key_invalid", record["gatekeeper_denied_code"])
     refute(record["user_email"])
@@ -328,23 +322,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       record = wait_for_log(response)[:hit_source]
       assert_equal(502, record["response_status"])
       assert_logs_base_fields(record, api_user)
-      assert_logs_backend_fields(record)
     end
-  end
-
-  def test_logs_requests_when_logging_is_out_of_order
-    response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
-      :headers => {
-        "X-Api-Umbrella-Test-Simulate-Out-Of-Order-Logging" => "true",
-      },
-    }))
-    assert_response_code(200, response)
-
-    record = wait_for_log(response)[:hit_source]
-    assert_equal(200, record["response_status"])
-    assert_logs_base_fields(record, api_user)
-    assert_logs_backend_fields(record)
-    assert_equal(99000, record["backend_response_time"])
   end
 
   def test_logs_requests_with_maximum_8kb_url_limit
@@ -357,7 +335,8 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
-    assert_equal(url, record["request_url"])
+    assert_equal("/api/hello", record["request_path"])
+    assert_equal("long=#{long_value}"[0, 4000], record["request_url_query"])
   end
 
   # We may actually want to revisit this behavior and log these requests, but
@@ -377,12 +356,37 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_response_code(414, response)
 
     error = assert_raises Timeout::Error do
-      wait_for_log(response, :lookup_by_unique_user_agent => true)
+      wait_for_log(response, :lookup_by_unique_user_agent => true, :timeout => 5)
     end
     assert_match("Log not found: ", error.message)
   end
 
-  def test_logs_long_url_and_headers_truncating_headers
+  def test_truncates_url_path_length_in_logs
+    long_path = "/api/hello/#{Faker::Lorem.characters(6000)}"
+    response = Typhoeus.get("http://127.0.0.1:9080#{long_path}", log_http_options)
+    assert_response_code(200, response)
+
+    record = wait_for_log(response)[:hit_source]
+    assert_operator(long_path.length, :>, 4000)
+    assert_equal(4000, record["request_path"].length)
+    assert_equal(long_path[0, 4000], record["request_path"])
+  end
+
+  def test_truncates_url_query_length_in_logs
+    long_query = "long=#{Faker::Lorem.characters(6000)}"
+    response = Typhoeus.get("http://127.0.0.1:9080/api/hello?#{long_query}", log_http_options)
+    assert_response_code(200, response)
+
+    record = wait_for_log(response)[:hit_source]
+    assert_operator(long_query.length, :>, 4000)
+    assert_equal(4000, record["request_url_query"].length)
+    assert_equal(long_query[0, 4000], record["request_url_query"])
+  end
+
+  # Try to log a long version of all inputs to ensure the overall log message
+  # doesn't exceed rsyslog's buffer size.
+  def test_long_url_and_request_headers_and_response_headers
+    # Setup a backend to accept wildcard hosts so we can test a long hostname.
     prepend_api_backends([
       {
         :frontend_host => "*",
@@ -414,8 +418,10 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
       record = wait_for_log(response)[:hit_source]
 
-      # Ensure the full URL got logged.
-      assert_equal("http://#{long_host[0, 200]}#{url_path}#{long_value}", record["request_url"])
+      # Check the logged URL.
+      assert_equal(long_host[0, 200], record["request_host"])
+      assert_equal("/#{unique_test_id}/logging-long-response-headers/", record["request_path"])
+      assert_equal("long=#{long_value}"[0, 4000], record["request_url_query"])
 
       # Ensure the long header values got truncated so we're not susceptible to
       # exceeding rsyslog's message buffers and we're also not storing an
@@ -431,5 +437,92 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       assert_equal(200, record["response_content_encoding"].length, record["response_content_encoding"])
       assert_equal(200, record["response_content_type"].length, record["response_content_type"])
     end
+  end
+
+  def test_case_sensitivity
+    # Setup a backend to accept wildcard hosts so we can test an uppercase hostname.
+    prepend_api_backends([
+      {
+        :frontend_host => "*",
+        :backend_host => "127.0.0.1",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
+      },
+    ]) do
+      url = "HTTP://127.0.0.1:9080/#{unique_test_id}/logging-example/FOO/BAR/?URL1=FOO"
+      response = Typhoeus.get(url, log_http_options.deep_merge({
+        :headers => {
+          "Accept" => "TEXT/PLAIN",
+          "Accept-Encoding" => "GZIP",
+          "Connection" => "CLOSE",
+          "Content-Type" => "APPLICATION/X-WWW-FORM-URLENCODED",
+          "Host" => "FOOBAR.EXAMPLE",
+          "Origin" => "HTTP://FOO.EXAMPLE",
+          "User-Agent" => "CURL/7.37.1",
+          "Referer" => "HTTP://EXAMPLE.COM",
+          "X-Forwarded-For" => "0:0:0:0:0:FFFF:808:808",
+        },
+        :userpwd => "BASIC-AUTH-USERNAME-EXAMPLE:MY-SECRET-PASSWORD",
+      }))
+      assert_response_code(200, response)
+
+      record = wait_for_log(response)[:hit_source]
+
+      # Explicitly lowercased fields.
+      assert_equal("foobar.example", record["request_host"])
+      assert_equal("::ffff:8.8.8.8", record["request_ip"])
+      assert_equal("http", record["request_scheme"])
+
+      # Explicitly uppercased fields.
+      assert_equal("GET", record["request_method"])
+      assert_equal("US", record["request_ip_country"])
+      assert_equal("CA", record["request_ip_region"])
+
+      # Everything else should retain original case.
+      assert_equal(self.api_key, record["api_key"])
+      assert_equal("TEXT/PLAIN", record["request_accept"])
+      assert_equal("GZIP", record["request_accept_encoding"])
+      assert_equal("CLOSE", record["request_connection"])
+      assert_equal("BASIC-AUTH-USERNAME-EXAMPLE", record["request_basic_auth_username"])
+      assert_equal("APPLICATION/X-WWW-FORM-URLENCODED", record["request_content_type"])
+      assert_equal([
+        "0/foobar.example/",
+        "1/foobar.example/#{unique_test_id}/",
+        "2/foobar.example/#{unique_test_id}/logging-example/",
+        "3/foobar.example/#{unique_test_id}/logging-example/FOO/",
+        "4/foobar.example/#{unique_test_id}/logging-example/FOO/BAR",
+      ], record["request_hierarchy"])
+      assert_equal("Mountain View", record["request_ip_city"])
+      assert_equal("HTTP://FOO.EXAMPLE", record["request_origin"])
+      assert_equal("/#{unique_test_id}/logging-example/FOO/BAR/", record["request_path"])
+      assert_equal("URL1=FOO", record["request_url_query"])
+      assert_equal("HTTP://EXAMPLE.COM", record["request_referer"])
+      assert_equal("CURL/7.37.1", record["request_user_agent"])
+      assert_equal("cURL", record["request_user_agent_family"])
+      assert_equal("Library", record["request_user_agent_type"])
+      assert_equal("MISS", record["response_cache"])
+      assert_equal("text/plain; charset=utf-8", record["response_content_type"])
+    end
+  end
+
+  def test_does_not_website_backend_requests
+    response = Typhoeus.get("http://127.0.0.1:9080/", log_http_options)
+    assert_response_code(200, response)
+
+    error = assert_raises Timeout::Error do
+      wait_for_log(response, :timeout => 5)
+    end
+    assert_match("Log not found: ", error.message)
+  end
+
+  def test_does_not_log_web_app_requests
+    FactoryGirl.create(:admin)
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/login", log_http_options)
+    assert_response_code(200, response)
+
+    error = assert_raises Timeout::Error do
+      wait_for_log(response, :timeout => 5)
+    end
+    assert_match("Log not found: ", error.message)
   end
 end
