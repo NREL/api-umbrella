@@ -64,6 +64,11 @@ gem "omniauth-gitlab", "~> 1.0.2", :require => false
 gem "omniauth-google-oauth2", "~> 0.4.1", :require => false
 gem "omniauth-ldap", "~> 1.0.5", :require => false
 
+# Hashie is a dependency of OmniAuth (we don't use it directly), but pin to an
+# older version until the various warnings with the 3.5 release get sorted out:
+# https://github.com/omniauth/omniauth/issues/872
+gem "hashie", "< 3.5"
+
 # Authorization
 gem "pundit", "~> 1.1.0"
 
