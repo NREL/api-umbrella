@@ -8,6 +8,7 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND rsync -a -v --delete-after <SOURCE_DIR>/ ${STAGE_EMBEDDED_DIR}/elasticsearch/
+    COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/elasticsearch/plugins
     COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../elasticsearch/bin/plugin ./plugin
     COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../elasticsearch/bin/elasticsearch ./elasticsearch
 )
