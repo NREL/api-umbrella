@@ -9,6 +9,7 @@ ExternalProject_Add(
   URL_HASH MD5=${LIBGEOIP_HASH}
   CONFIGURE_COMMAND ${LIBGEOIP_CONFIGURE_CMD}
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
+    COMMAND chrpath -d ${STAGE_EMBEDDED_DIR}/lib/libGeoIP.so
     COMMAND find ${STAGE_EMBEDDED_DIR}/bin/ -name geoiplookup* -exec chrpath -d {} $<SEMICOLON>
 )
 
