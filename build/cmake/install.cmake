@@ -47,12 +47,14 @@ install(
   message(STATUS \"Directories: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core/${RELEASE_TIMESTAMP}\")
   execute_process(
     WORKING_DIRECTORY \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core
+    COMMAND rm -rf releases/${RELEASE_TIMESTAMP}
     COMMAND mv releases/0 releases/${RELEASE_TIMESTAMP}
     COMMAND ln -snf releases/${RELEASE_TIMESTAMP} ./current
   )
   message(STATUS \"Directories: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/static-site/${RELEASE_TIMESTAMP}\")
   execute_process(
     WORKING_DIRECTORY \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/static-site
+    COMMAND rm -rf releases/${RELEASE_TIMESTAMP}
     COMMAND mv releases/0 releases/${RELEASE_TIMESTAMP}
     COMMAND ln -snf releases/${RELEASE_TIMESTAMP} ./current
   )

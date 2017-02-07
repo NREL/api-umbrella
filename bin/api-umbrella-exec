@@ -6,5 +6,4 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=bin/api-umbrella-env
 source "$DIR/api-umbrella-env"
 
-# Run the Lua CLI app.
-exec "$API_UMBRELLA_SRC_ROOT/bin/api-umbrella-cli" "$@"
+exec "$@"
