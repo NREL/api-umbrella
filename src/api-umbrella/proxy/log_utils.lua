@@ -317,6 +317,8 @@ end
 
 function _M.normalized_data(data)
   local normalized = {
+    api_backend_id = lowercase_truncate(data["api_backend_id"], 36),
+    api_backend_url_match_id = lowercase_truncate(data["api_backend_url_match_id"], 36),
     denied_reason = lowercase_truncate(data["denied_reason"], 50),
     id = lowercase_truncate(data["id"], 20),
     request_accept = truncate(data["request_accept"], 200),

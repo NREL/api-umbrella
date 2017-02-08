@@ -101,7 +101,7 @@ module ApiUmbrellaTestHelpers
                   { "host" => "127.0.0.1", "port" => 9444 },
                 ],
                 "url_matches" => [
-                  { "frontend_prefix" => "/api/", "backend_prefix" => "/" },
+                  { "_id" => SecureRandom.uuid, "frontend_prefix" => "/api/", "backend_prefix" => "/" },
                 ],
               },
             ],
@@ -175,9 +175,18 @@ module ApiUmbrellaTestHelpers
 
     def prepend_api_backends(apis)
       @prepend_api_backends_counter ||= 0
-      apis.each do |api|
+      apis.map! do |api|
+        api.deep_stringify_keys!
+
         @prepend_api_backends_counter += 1
-        api["_id"] = "#{unique_test_id}-#{@prepend_api_backends_counter}"
+        api["_id"] ||= "#{unique_test_id}-#{@prepend_api_backends_counter}"
+        if(api["url_matches"])
+          api["url_matches"].each do |url_match|
+            url_match["_id"] ||= SecureRandom.uuid
+          end
+        end
+
+        api
       end
 
       publish_backends("apis", apis)
@@ -191,9 +200,13 @@ module ApiUmbrellaTestHelpers
 
     def prepend_website_backends(websites)
       @prepend_website_backends_counter ||= 0
-      websites.each do |website|
+      websites.map! do |website|
+        website.deep_stringify_keys!
+
         @prepend_website_backends_counter += 1
         website["_id"] = "#{unique_test_id}-#{@prepend_website_backends_counter}"
+
+        website
       end
 
       publish_backends("website_backends", websites)

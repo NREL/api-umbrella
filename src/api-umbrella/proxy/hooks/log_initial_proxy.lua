@@ -53,6 +53,14 @@ local function build_log_data()
     legacy_user_registration_source = ngx_ctx.user_registration_source,
   }
 
+  if ngx_ctx.matched_api then
+    data["api_backend_id"] = ngx_ctx.matched_api["_id"]
+  end
+
+  if ngx_ctx.matched_api_url_match then
+    data["api_backend_url_match_id"] = ngx_ctx.matched_api_url_match["_id"]
+  end
+
   log_utils.set_request_ip_geo_fields(data, ngx_var)
   log_utils.set_computed_timestamp_fields(data)
   log_utils.set_computed_url_fields(data, ngx_ctx)

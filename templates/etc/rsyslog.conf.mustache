@@ -35,6 +35,12 @@ module(load="omelasticsearch")
 # Define the ElasticSearch-based output.
 # This aliases some of the logged fields to different names for backwards
 # compatibility with the ElasticSearch data.
+if($!raw!api_backend_id != "") then {
+  set $!usr!es!api_backend_id = $!raw!api_backend_id;
+}
+if($!raw!api_backend_url_match_id != "") then {
+  set $!usr!es!api_backend_url_match_id = $!raw!api_backend_url_match_id;
+}
 if($!raw!legacy_api_key != "") then {
   set $!usr!es!api_key = $!raw!legacy_api_key;
 }

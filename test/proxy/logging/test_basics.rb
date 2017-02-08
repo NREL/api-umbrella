@@ -36,6 +36,8 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     record = wait_for_log(response)[:hit_source]
 
     assert_equal([
+      "api_backend_id",
+      "api_backend_url_match_id",
       "api_key",
       "request_accept",
       "request_accept_encoding",
@@ -70,6 +72,8 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "user_registration_source",
     ].sort, record.keys.sort)
 
+    assert_kind_of(String, record["api_backend_id"])
+    assert_kind_of(String, record["api_backend_url_match_id"])
     assert_equal(self.api_key, record["api_key"])
     assert_equal("text/plain; q=0.5, text/html", record["request_accept"])
     assert_equal("compress, gzip", record["request_accept_encoding"])
@@ -524,5 +528,27 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       wait_for_log(response, :timeout => 5)
     end
     assert_match("Log not found: ", error.message)
+  end
+
+  def test_logs_matched_api_backend_id
+    api_id = SecureRandom.uuid
+    url_match_id = SecureRandom.uuid
+
+    prepend_api_backends([
+      {
+        :_id => api_id,
+        :frontend_host => "127.0.0.1",
+        :backend_host => "127.0.0.1",
+        :servers => [{ :host => "127.0.0.1", :port => 9444 }],
+        :url_matches => [{ :_id => url_match_id, :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
+      },
+    ]) do
+      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello", log_http_options)
+      assert_response_code(200, response)
+
+      record = wait_for_log(response)[:hit_source]
+      assert_equal(api_id, record["api_backend_id"])
+      assert_equal(url_match_id, record["api_backend_url_match_id"])
+    end
   end
 end
