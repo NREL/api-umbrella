@@ -10,6 +10,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
   end
 
   def test_unauthenticated
+    FactoryGirl.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/auth", keyless_http_options)
     assert_response_code(200, response)
     body = response.body
@@ -30,10 +31,10 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
 
     assert_equal([
       "admin",
+      "admin_auth_token",
       "api_key",
       "api_umbrella_version",
       "authenticated",
-      "csrf_token",
       "enable_beta_analytics",
       "local_auth_enabled",
       "password_length_min",
@@ -41,10 +42,10 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
     ].sort, data.keys.sort)
 
     assert_kind_of(Hash, data["admin"])
+    assert_kind_of(String, data["admin_auth_token"])
     assert_kind_of(String, data["api_key"])
     assert_kind_of(String, data["api_umbrella_version"])
     assert_includes([TrueClass, FalseClass], data["authenticated"].class)
-    assert_kind_of(String, data["csrf_token"])
     assert_includes([TrueClass, FalseClass], data["enable_beta_analytics"].class)
 
     assert_equal([

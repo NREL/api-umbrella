@@ -24,7 +24,7 @@ module ApiUmbrellaTestHelpers
 
     def admin_csrf_session(admin = nil)
       csrf_token = SecureRandom.base64(32)
-      session_cookie = encrypt_session_cookie(admin_session_data.merge(csrf_session_data(csrf_token)))
+      session_cookie = encrypt_session_cookie(admin_session_data(admin).merge(csrf_session_data(csrf_token)))
       { :headers => { "Cookie" => "_api_umbrella_session=#{session_cookie}", "X-CSRF-Token" => csrf_token } }
     end
 
