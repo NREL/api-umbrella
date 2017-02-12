@@ -43,9 +43,12 @@ set(TEST_VENDOR_DIR ${TEST_INSTALL_PREFIX}/vendor)
 set(TEST_VENDOR_LUA_SHARE_DIR ${TEST_VENDOR_DIR}/share/lua/5.1)
 set(TEST_VENDOR_LUA_LIB_DIR ${TEST_VENDOR_DIR}/lib/lua/5.1)
 
-# Define a timestamped release name for our app installations.
-execute_process(COMMAND date -u +%Y%m%d%H%M%S OUTPUT_VARIABLE RELEASE_TIMESTAMP OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND date -u +%Y%m%d OUTPUT_VARIABLE RELEASE_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
+# Define a timestamped release name for our app installations. Base this on the
+# last git commit timestamp so installs are consistent for each git commit.
+include(${CMAKE_SOURCE_DIR}/build/cmake/GetGitRevisionDescription.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/GetGitTimestamp.cmake)
+get_git_timestamp(RELEASE_TIMESTAMP)
+string(SUBSTRING ${RELEASE_TIMESTAMP} 0 8 RELEASE_DATE)
 
 include(ExternalProject)
 
