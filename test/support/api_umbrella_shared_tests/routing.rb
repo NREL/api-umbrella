@@ -218,7 +218,7 @@ module ApiUmbrellaSharedTests
     def test_admin_ui
       response = Typhoeus.get("https://127.0.0.1:9081/admin/", keyless_http_options)
       assert_response_code(200, response)
-      assert_match('<script src="assets/api-umbrella-admin-ui.js">', response.body)
+      assert_match(%r{<script src="assets/api-umbrella-admin-ui-\w+\.js"}, response.body)
     end
 
     def test_admin_ui_wildcard_host
@@ -241,7 +241,7 @@ module ApiUmbrellaSharedTests
         end
       else
         assert_response_code(200, response)
-        assert_match('<script src="assets/api-umbrella-admin-ui.js">', response.body)
+        assert_match(%r{<script src="assets/api-umbrella-admin-ui-\w+\.js"}, response.body)
       end
     end
 

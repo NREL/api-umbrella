@@ -4,6 +4,11 @@ let EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function(defaults) {
   let app = new EmberApp(defaults, {
+    sourcemaps: {
+      // Always enable sourcemaps, even for the production build.
+      enabled: true,
+    },
+
     sassOptions: {
       // The Sass number precision must be increased to 8 for Bootstrap, or
       // else certain things don't line up:
