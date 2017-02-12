@@ -14,6 +14,7 @@ set(INSTALL_PREFIX_EMBEDDED ${CMAKE_INSTALL_PREFIX}/embedded)
 set(EP_BASE build/work/external-projects)
 set_directory_properties(PROPERTIES EP_BASE ${EP_BASE})
 set(WORK_DIR ${CMAKE_BINARY_DIR}/build/work)
+set(PACKAGE_WORK_DIR ${CMAKE_BINARY_DIR}/build/package/work)
 
 # Directory to store "stamp" files indicating when a step was completed or last
 # touched.

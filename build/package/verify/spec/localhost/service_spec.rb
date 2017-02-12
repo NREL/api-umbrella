@@ -103,11 +103,6 @@ RSpec.shared_examples("package upgrade") do |package_version|
   # Skip testing upgrades if we don't have binary packages for certain distro
   # and version combinations.
   case(ENV["DIST"])
-  when "debian-8"
-    # No Debian 8 packages until v0.9
-    if(Gem::Version.new(package_version) < Gem::Version.new("0.9.0-1"))
-      next
-    end
   when "ubuntu-16.04"
     # No Ubuntu 16.04 packages until v0.12
     if(Gem::Version.new(package_version) < Gem::Version.new("0.12.0-1"))
@@ -134,9 +129,9 @@ RSpec.shared_examples("package upgrade") do |package_version|
 
   def install_package(version)
     if(version == :current)
-      package_path = "#{ENV["SOURCE_DIR"]}/build/work/package/current/#{ENV["DIST"]}/core/*"
+      package_path = "#{ENV["SOURCE_DIR"]}/build/package/work/current/#{ENV["DIST"]}/core/*"
     else
-      package_path = "#{ENV["SOURCE_DIR"]}/build/work/package/archives/#{version}/#{ENV["DIST"]}/core/*"
+      package_path = "#{ENV["SOURCE_DIR"]}/build/package/work/archives/#{version}/#{ENV["DIST"]}/core/*"
     end
 
     case(os[:family])
@@ -535,10 +530,6 @@ describe "api-umbrella" do
     end
   end
 
-  it_behaves_like "package upgrade", "0.8.0-1"
-  it_behaves_like "package upgrade", "0.9.0-1"
-  it_behaves_like "package upgrade", "0.10.0-1"
-  it_behaves_like "package upgrade", "0.11.0-1"
   it_behaves_like "package upgrade", "0.11.1-1"
   it_behaves_like "package upgrade", "0.12.0-1"
 end

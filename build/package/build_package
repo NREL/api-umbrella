@@ -59,6 +59,6 @@ elif [ "$PACKAGE" == "hadoop-analytics" ]; then
   fpm_args+=("--depends" "api-umbrella")
 fi
 
-mkdir -p "$WORK_DIR/package/build/$PACKAGE"
-cd "$WORK_DIR/package/build/$PACKAGE"
+mkdir -p "$PACKAGE_WORK_DIR/build/$PACKAGE"
+cd "$PACKAGE_WORK_DIR/build/$PACKAGE"
 env XZ_OPT=-9 bundle exec fpm "${fpm_args[@]}"

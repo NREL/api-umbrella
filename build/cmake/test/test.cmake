@@ -16,7 +16,6 @@ if(POLICY CMP0037)
 endif()
 add_custom_target(
   test
-  COMMAND ${CMAKE_BUILD_TOOL} all
-  COMMAND ${CMAKE_BUILD_TOOL} test-target
+  DEPENDS all test-target
 )
 cmake_policy(POP)

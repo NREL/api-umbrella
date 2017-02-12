@@ -20,9 +20,11 @@ docker run \
   --volume="$source_dir:/api-umbrella" \
   --env="DIST=$DIST" \
   --tty \
-  --rm \
   --privileged \
   "$docker_image" \
   /bin/bash -c "/api-umbrella/build/package/verify/docker_script"
+
+# Delete after successful run.
+docker rm "$container_name"
 
 echo "Completed package verification for $DIST"

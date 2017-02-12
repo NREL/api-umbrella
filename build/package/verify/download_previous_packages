@@ -13,10 +13,6 @@ function compare_version {
 }
 
 previous_versions=(
-  0.8.0-1
-  0.9.0-1
-  0.10.0-1
-  0.11.0-1
   0.11.1-1
   0.12.0-1
 )
@@ -34,7 +30,6 @@ if [ -n "${DIST:-}" ]; then
   distros=($DIST)
 fi
 
-sourceforge_url_root="http://pilotfiber.dl.sourceforge.net/project/api-umbrella"
 bintray_url_root="https://bintray.com/artifact/download/nrel"
 checksums="$(cat "$source_dir/sha256sums.txt")"
 
@@ -48,32 +43,18 @@ for dist in "${distros[@]}"; do
       centos-6)
         filename="api-umbrella-${version}.el6.x86_64.rpm"
         url_prefix="$bintray_url_root/api-umbrella-el6"
-        if [ "$version" == "0.8.0-1" ]; then
-          url_prefix="$sourceforge_url_root/el/6"
-        fi
         ;;
       centos-7)
         filename="api-umbrella-${version}.el7.x86_64.rpm"
         url_prefix="$bintray_url_root/api-umbrella-el7"
-        if [ "$version" == "0.8.0-1" ]; then
-          url_prefix="$sourceforge_url_root/el/7"
-        fi
         ;;
       ubuntu-12.04)
         filename="api-umbrella_${version}~precise_amd64.deb"
         url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
-        if [ "$version" == "0.8.0-1" ]; then
-          url_filename="api-umbrella_${version}_amd64.deb"
-          url_prefix="$sourceforge_url_root/ubuntu/12.04"
-        fi
         ;;
       ubuntu-14.04)
         filename="api-umbrella_${version}~trusty_amd64.deb"
         url_prefix="$bintray_url_root/api-umbrella-ubuntu/pool/main/a/api-umbrella"
-        if [ "$version" == "0.8.0-1" ]; then
-          url_filename="api-umbrella_${version}_amd64.deb"
-          url_prefix="$sourceforge_url_root/ubuntu/14.04"
-        fi
         ;;
       ubuntu-16.04)
         filename="api-umbrella_${version}~xenial_amd64.deb"
@@ -86,18 +67,10 @@ for dist in "${distros[@]}"; do
       debian-7)
         filename="api-umbrella_${version}~wheezy_amd64.deb"
         url_prefix="$bintray_url_root/api-umbrella-debian/pool/main/a/api-umbrella"
-        if [ "$version" == "0.8.0-1" ]; then
-          url_filename="api-umbrella_${version}_amd64.deb"
-          url_prefix="$sourceforge_url_root/debian/7"
-        fi
         ;;
       debian-8)
         filename="api-umbrella_${version}~jessie_amd64.deb"
         url_prefix="$bintray_url_root/api-umbrella-debian/pool/main/a/api-umbrella"
-        if [ "$(compare_version "$version")" -lt "$(compare_version "0.9.0")" ]; then
-          # No Debian 8 packages until v0.9
-          filename=""
-        fi
         ;;
       *)
         echo "Unknown distribution: $dist"
@@ -110,7 +83,7 @@ for dist in "${distros[@]}"; do
         url_filename="$filename"
       fi
 
-      download_dir="$source_dir/build/work/package/archives/$version/$dist/core"
+      download_dir="$source_dir/build/package/work/archives/$version/$dist/core"
       download_path="$download_dir/$filename"
       echo "$download_path"
       if [ ! -f "$download_path" ]; then
@@ -121,7 +94,7 @@ for dist in "${distros[@]}"; do
       fi
 
       cd "$download_dir"
-      file_checksum=$(openssl dgst -sha256 $filename)
+      file_checksum=$(openssl dgst -sha256 "$filename")
       if [[ -z "$file_checksum" ]] || [[ $checksums != *$file_checksum* ]]; then
         echo "Checksum mismatch for $download_path"
         echo "$file_checksum"

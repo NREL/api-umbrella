@@ -8,13 +8,13 @@ source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$source_dir/build/package/parse_version"
 
 packages=(
-  build/work/package/current/centos-6/core/api-umbrella-$version-$package_iteration.el6.x86_64.rpm
-  build/work/package/current/centos-7/core/api-umbrella-$version-$package_iteration.el7.x86_64.rpm
-  build/work/package/current/debian-7/core/api-umbrella_$version-$package_iteration~wheezy_amd64.deb
-  build/work/package/current/debian-8/core/api-umbrella_$version-$package_iteration~jessie_amd64.deb
-  build/work/package/current/ubuntu-12.04/core/api-umbrella_$version-$package_iteration~precise_amd64.deb
-  build/work/package/current/ubuntu-14.04/core/api-umbrella_$version-$package_iteration~trusty_amd64.deb
-  build/work/package/current/ubuntu-16.04/core/api-umbrella_$version-$package_iteration~xenial_amd64.deb
+  build/package/work/current/centos-6/core/api-umbrella-$version-$package_iteration.el6.x86_64.rpm
+  build/package/work/current/centos-7/core/api-umbrella-$version-$package_iteration.el7.x86_64.rpm
+  build/package/work/current/debian-7/core/api-umbrella_$version-$package_iteration~wheezy_amd64.deb
+  build/package/work/current/debian-8/core/api-umbrella_$version-$package_iteration~jessie_amd64.deb
+  build/package/work/current/ubuntu-12.04/core/api-umbrella_$version-$package_iteration~precise_amd64.deb
+  build/package/work/current/ubuntu-14.04/core/api-umbrella_$version-$package_iteration~trusty_amd64.deb
+  build/package/work/current/ubuntu-16.04/core/api-umbrella_$version-$package_iteration~xenial_amd64.deb
 )
 
 for package in "${packages[@]}"; do
