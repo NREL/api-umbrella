@@ -101,7 +101,7 @@ add_custom_command(
   DEPENDS ${STAMP_DIR}/core-build-release
   DEPENDS ${STAMP_DIR}/core-build-install-dist
   COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core
-  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/ ${STAGE_EMBEDDED_DIR}/apps/core/
+  COMMAND rsync -a --delete-after --delete-excluded --exclude=/tmp ${CORE_BUILD_DIR}/ ${STAGE_EMBEDDED_DIR}/apps/core/
   COMMAND touch -c ${STAGE_EMBEDDED_DIR}/apps/core
 )
 
