@@ -2,9 +2,17 @@
 
 set -e -u
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve the current path, taking into account symlinks.
+source="${BASH_SOURCE[0]}"
+while [ -L "$source" ]; do
+  dir="$(cd -P "$(dirname "$source")" && pwd)"
+  source="$(readlink "$source")"
+  [[ $source != /* ]] && source="$dir/$source"
+done
+dir="$(cd -P "$(dirname "$source")" && pwd)"
+
 # shellcheck source=bin/api-umbrella-env
-source "$DIR/api-umbrella-env"
+source "$dir/api-umbrella-env"
 
 # Run the Lua CLI app.
 exec "$API_UMBRELLA_SRC_ROOT/bin/api-umbrella-cli" "$@"
