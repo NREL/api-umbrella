@@ -17,8 +17,8 @@ Map.reopenClass({
         data: params,
       }).then(function(data) {
         resolve(new Map(data));
-      }, function() {
-        reject();
+      }, function(data) {
+        reject(data.responseText);
       });
     }.bind(this));
   },

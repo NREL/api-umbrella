@@ -48,7 +48,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, {
       if(error) {
         Ember.Logger.error(error.stack || error);
         this.get('busy').hide();
-        bootbox.alert('Unexpected error occurred');
+        return this.intermediateTransitionTo('error');
       }
     },
   },

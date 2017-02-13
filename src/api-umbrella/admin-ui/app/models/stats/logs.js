@@ -17,8 +17,8 @@ Logs.reopenClass({
         data: params,
       }).then(function(data) {
         resolve(new Logs(data));
-      }, function() {
-        reject();
+      }, function(data) {
+        reject(data.responseText);
       });
     }.bind(this));
   },

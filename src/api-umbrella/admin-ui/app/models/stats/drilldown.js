@@ -14,8 +14,8 @@ Drilldown.reopenClass({
         data: params,
       }).then(function(data) {
         resolve(new Drilldown(data));
-      }, function() {
-        reject();
+      }, function(data) {
+        reject(data.responseText);
       });
     }.bind(this));
   },
