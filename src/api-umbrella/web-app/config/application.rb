@@ -6,10 +6,6 @@ require "action_mailer/railtie"
 require "active_job/railtie"
 require "sprockets/railtie"
 
-# Log to stdout when running as a server process (like all the other perpd
-# processes API Umbrella manages).
-require "rails_stdout_logging" if(ENV["RAILS_LOG_TO_STDOUT"].present?)
-
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)

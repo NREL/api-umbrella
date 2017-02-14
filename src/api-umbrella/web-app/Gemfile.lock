@@ -24,6 +24,12 @@ GIT
       mongoid (>= 3)
 
 GIT
+  remote: https://github.com/heroku/rails_stdout_logging.git
+  revision: 92fb79ed040a88808aaf5bcb5e88ae8d85176a85
+  specs:
+    rails_stdout_logging (0.0.5)
+
+GIT
   remote: https://github.com/zerowidth/lucene_query_parser.git
   revision: ef723c40103203a55f85b3ec02743b17d4d5e773
   specs:
@@ -254,7 +260,6 @@ GEM
       rails-deprecated_sanitizer (>= 1.0.1)
     rails-html-sanitizer (1.0.3)
       loofah (~> 2.0)
-    rails_stdout_logging (0.0.5)
     railties (4.2.7.1)
       actionpack (= 4.2.7.1)
       activesupport (= 4.2.7.1)
@@ -343,7 +348,7 @@ DEPENDENCIES
   rack-proxy (~> 0.6.0)
   rack-timeout (~> 0.4.2)
   rails (~> 4.2.7.1)
-  rails_stdout_logging (~> 0.0.5)
+  rails_stdout_logging!
   request_store (~> 1.3.2)
   rollbar (~> 2.14.0)
   safe_yaml (~> 1.0.4)
