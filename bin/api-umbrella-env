@@ -73,3 +73,21 @@ fi
 export LUA_CPATH="$API_UMBRELLA_EMBEDDED_ROOT/apps/core/shared/vendor/lib/lua/5.1/?.so;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/lualib/?.so;\
 $API_UMBRELLA_EMBEDDED_ROOT/openresty/luajit/lib/lua/5.1/?.so"
+
+# Ignore any Ruby Bundler wrapper settings, since we always want to use our
+# internal gems and bundler.
+#
+# This helps ensure we don't accidentally pick up another version of Ruby or
+# another Gemfile if the process calling api-umbrella has its own bundler
+# environment set (while probably rare, this happens in some of our
+# build/package/verify scripts, since they use Ruby to perform tests).
+unset BUNDLER_ORIG_PATH
+unset BUNDLER_VERSION
+unset BUNDLE_APP_CONFIG
+unset BUNDLE_BIN_PATH
+unset BUNDLE_GEMFILE
+unset GEM_HOME
+unset GEM_PATH
+unset RUBYLIB
+unset RUBYOPT
+unset RUBY_ROOT
