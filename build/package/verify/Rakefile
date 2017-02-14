@@ -4,13 +4,6 @@ require "rspec/core/rake_task"
 task :spec    => "spec:all"
 task :default => :spec
 
-# Wipe the bundler environment variables, so they don't propagate down to the
-# various api-umbrella restart commands the tests run (otherwise, the
-# api-umbrella processes might try to use this verify bundle for starting the
-# web app).
-ENV.delete("BUNDLE_GEMFILE")
-ENV.delete("BUNDLE_APP_CONFIG")
-
 namespace :spec do
   targets = []
   Dir.glob("./spec/*").each do |dir|

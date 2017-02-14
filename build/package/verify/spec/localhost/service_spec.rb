@@ -1,7 +1,8 @@
 require "spec_helper"
 
 require "multi_json"
-require "rest-client"
+require "net/http"
+require "uri"
 require "yaml"
 
 MultiJson.use(:ok_json)
@@ -142,13 +143,6 @@ RSpec.shared_examples("package upgrade") do |package_version|
     end
     expect(command_result.exit_status).to eql(0)
 
-    # We may get some warnings during upgrades (due to non-empty directories),
-    # but make sure we don't have any other unexpected STDERR output.
-    stderr = command_result.stderr
-    stderr.gsub!(/^dpkg: warning:.*/, "")
-    stderr.strip!
-    expect(stderr).to eql("")
-
     expect(package("api-umbrella")).to be_installed
   end
 
@@ -271,7 +265,11 @@ describe "api-umbrella" do
   end
 
   it "reports green from the health api endpoint" do
-    response = RestClient::Request.execute(:method => :get, :url => "https://localhost/api-umbrella/v1/health.json", :verify_ssl => false)
+    uri = URI.parse("https://localhost/api-umbrella/v1/health.json")
+    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
+      http.request(Net::HTTP::Get.new(uri))
+    end
+    expect(response.code).to eql("200")
     data = MultiJson.load(response.body)
     expect(data["status"]).to eql("green")
   end
@@ -306,31 +304,39 @@ describe "api-umbrella" do
   end
 
   it "signup page loads" do
-    response = RestClient::Request.execute(:method => :get, :url => "https://localhost/signup/", :verify_ssl => false)
-    expect(response).to include("API Key Signup")
+    uri = URI.parse("https://localhost/signup/")
+    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
+      http.request(Net::HTTP::Get.new(uri))
+    end
+    expect(response.code).to eql("200")
+    expect(response.body).to include("API Key Signup")
   end
 
-  it "admin login page loads" do
-    response = RestClient::Request.execute(:method => :get, :url => "https://localhost/admin/login", :verify_ssl => false)
-    expect(response).to include("Admin Sign In")
+  it "admin first-time signup page loads" do
+    uri = URI.parse("https://localhost/admins/signup")
+    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
+      http.request(Net::HTTP::Get.new(uri))
+    end
+    expect(response.code).to eql("200")
+    expect(response.body).to include("Password Confirmation")
   end
 
   it "gatekeeper blocks key-less requests" do
-    expect do
-      RestClient::Request.execute(:method => :get, :url => "https://localhost/api-umbrella/v1/test.json", :verify_ssl => false)
-    end.to raise_error do |error|
-      expect(error).to be_a(RestClient::Forbidden)
-      expect(error.response).to include("API_KEY_MISSING")
+    uri = URI.parse("https://localhost/api-umbrella/v1/test.json")
+    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
+      http.request(Net::HTTP::Get.new(uri))
     end
+    expect(response.code).to eql("403")
+    expect(response.body).to include("API_KEY_MISSING")
   end
 
   it "gatekeeper blocks invalid key requests" do
-    expect do
-      response = RestClient::Request.execute(:method => :get, :url => "https://localhost/api-umbrella/v1/test.json?api_key=INVALID_KEY", :verify_ssl => false)
-    end.to raise_error do |error|
-      expect(error).to be_a(RestClient::Forbidden)
-      expect(error.response).to include("API_KEY_INVALID")
+    uri = URI.parse("https://localhost/api-umbrella/v1/test.json?api_key=INVALID_KEY")
+    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
+      http.request(Net::HTTP::Get.new(uri))
     end
+    expect(response.code).to eql("403")
+    expect(response.body).to include("API_KEY_INVALID")
   end
 
   it "fails immediately when startup script is called as an unauthorized user" do
@@ -358,6 +364,32 @@ describe "api-umbrella" do
     # Wait for API Umbrella to become fully started and health again, to ensure
     # subsequent tests don't fail.
     expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
+
+    # After reloading, do some sanity checks on the Rails log files for some
+    # issues we've seen crop up.
+    ["web-puma", "web-delayed-job"].each do |type|
+      log = file("/var/log/api-umbrella/#{type}/current")
+
+      # Ensure we've properly cleared the bundler environment so API Umbrella's
+      # Puma process doesn't pay attention to the bundler environment from these
+      # serverspec tests when we send the reload command.
+      expect(log.content).to_not include("You have already activated bundler")
+      expect(log.content).to_not include("failed to load command")
+      expect(log.content).to_not include("bundle exec")
+
+      # Ensure bundler isn't warning about home directory issues:
+      # https://github.com/bundler/bundler/blob/v1.14.4/lib/bundler.rb#L146-L166
+      expect(log.content).to_not include("Your home directory")
+      expect(log.content).to_not include("is not a directory")
+      expect(log.content).to_not include("is not writable")
+      expect(log.content).to_not include("home directory temporarily")
+
+      # Ensure rails_stdout_logging is kicking in early enough and we aren't
+      # attempting to write to the production.log file:
+      # https://github.com/heroku/rails_stdout_logging/pull/28
+      expect(log.content).to_not include("Unable to access log file")
+      expect(log.content).to_not include("production.log")
+    end
   end
 
   it "can be stopped and started again" do
