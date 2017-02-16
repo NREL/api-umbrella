@@ -9,7 +9,7 @@
       {{/if}}
 
       {{#if enableInterval}}
-        {{#bs-button-group value=interval type="radio" size="xs"}}
+        {{#bs-button-group value=interval type="radio" size="xs" id="interval_buttons"}}
           {{#bs-button value="minute"}}{{t "admin.stats.minute"}}{{/bs-button}}
           {{#bs-button value="hour"}}{{t "admin.stats.hour"}}{{/bs-button}}
           {{#bs-button value="day"}}{{t "admin.stats.day"}}{{/bs-button}}
