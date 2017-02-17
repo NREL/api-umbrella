@@ -46,7 +46,16 @@ export default Ember.Route.extend(ApplicationRouteMixin, {
 
     error(error) {
       if(error) {
-        Ember.Logger.error(error.stack || error);
+        let errorMessage = error.stack
+        if(!errorMessage) {
+          errorMessage = error;
+          // Very long text error messages can seem to hang some of the console
+          // tools, so truncate the messages.
+          if(_.isString(errorMessage)) {
+            errorMessage = errorMessage.substring(0, 1000);
+          }
+        }
+        Ember.Logger.error(errorMessage);
         this.get('busy').hide();
         return this.intermediateTransitionTo('error');
       }
