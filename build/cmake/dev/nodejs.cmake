@@ -16,10 +16,6 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND rsync -a -v --delete <SOURCE_DIR>/ ${DEV_INSTALL_PREFIX}/yarn/
-    # Allow the "yarn" bin to be symlinked into place in v0.19.1. Shouldn't be
-    # necessary after next release: https://github.com/yarnpkg/yarn/pull/2441
-    COMMAND sed -i -e "s%\\(basedir=.*readlink\\) \"%\\1 -f \"%" ${DEV_INSTALL_PREFIX}/yarn/bin/yarn
-    COMMAND cd ${DEV_INSTALL_PREFIX}/bin && ln -snf ../yarn/bin/yarn ./yarn
     # Remove the previous bin symlink that was necessary.
     COMMAND rm -f ${DEV_INSTALL_PREFIX}/bin/yarn.js
 )
