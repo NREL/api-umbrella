@@ -52,7 +52,8 @@
     "emberx-select": "~3.0.0",
     "i18n-js": "http://github.com/fnando/i18n-js/archive/v3.0.0.rc15.tar.gz",
     "loader.js": "^4.0.1",
-    "moment-timezone": "~0.5.11"
+    "moment-timezone": "~0.5.11",
+    "node-sass": "^4.5.0"
   },
   "ember-addon": {
     "paths": [
