@@ -2,7 +2,7 @@ import Base from './base';
 
 export default Base.extend({
   queryParams: [
-    'tz',
+    'date_range',
     'start_at',
     'end_at',
     'interval',

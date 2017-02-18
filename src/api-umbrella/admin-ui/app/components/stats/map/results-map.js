@@ -20,7 +20,7 @@ export default Ember.Component.extend({
   },
 
   handleRegionClick(event) {
-    let queryParams = _.clone(this.get('queryParamValues'));
+    let queryParams = _.clone(this.get('presentQueryParamValues'));
     queryParams.region = event.name;
     this.get('routing').transitionTo('stats.map', undefined, queryParams);
   },
@@ -30,7 +30,7 @@ export default Ember.Component.extend({
       let currentRegion = this.get('allQueryParamValues.region').split('-');
       let currentCountry = currentRegion[0];
       currentRegion = currentRegion[1];
-      let queryParams = _.clone(this.get('queryParamValues'));
+      let queryParams = _.clone(this.get('presentQueryParamValues'));
       queryParams.query = JSON.stringify({
         condition: 'AND',
         rules: [

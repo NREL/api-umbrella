@@ -17,7 +17,6 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
-        :tz => "America/Denver",
         :search => "",
         :start_at => "2015-01-13",
         :end_at => "2015-01-18",
@@ -56,7 +55,6 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
-        :tz => "America/Denver",
         :search => "",
         :start_at => "2015-01-13",
         :end_at => "2015-01-18",
@@ -97,7 +95,6 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
-        :tz => "America/Denver",
         :search => "",
         :start_at => "2015-01-13",
         :end_at => "2015-01-18",
@@ -141,7 +138,6 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
-        :tz => "America/Denver",
         :search => "",
         :start_at => "2015-01-13",
         :end_at => "2015-01-18",
@@ -189,7 +185,6 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
-        :tz => "America/Denver",
         :search => "",
         :start_at => "2015-01-13",
         :end_at => "2015-01-18",
@@ -257,7 +252,6 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
-        :tz => "America/Denver",
         :search => "",
         :start_at => "2015-01-13",
         :end_at => "2015-01-18",
@@ -293,7 +287,6 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
-        :tz => "America/Denver",
         :search => "",
         :start_at => "2015-03-07",
         :end_at => "2015-03-09",
@@ -331,7 +324,6 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
-        :tz => "America/Denver",
         :search => "",
         :start_at => "2015-03-08",
         :end_at => "2015-03-08",
@@ -375,7 +367,6 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
-        :tz => "America/Denver",
         :search => "",
         :start_at => "2014-11-01",
         :end_at => "2014-11-03",
@@ -413,7 +404,6 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
       :params => {
-        :tz => "America/Denver",
         :search => "",
         :start_at => "2014-11-02",
         :end_at => "2014-11-02",

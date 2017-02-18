@@ -3,6 +3,7 @@ require_relative "../test_helper"
 class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
+  include ApiUmbrellaTestHelpers::DateRangePicker
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
@@ -23,7 +24,7 @@ class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
 
     admin_login
-    visit "/admin/#/stats/users?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18"
+    visit "/admin/#/stats/users?search=&start_at=2015-01-12&end_at=2015-01-18"
     refute_selector(".busy-blocker")
 
     assert_text(user.email)
@@ -57,7 +58,7 @@ class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
     })
 
     admin_login
-    visit "/admin/#/stats/users?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18"
+    visit "/admin/#/stats/users?search=&start_at=2015-01-12&end_at=2015-01-18"
     refute_selector(".busy-blocker")
 
     assert_link("Download CSV", :href => /start_at=2015-01-12/)
@@ -65,7 +66,6 @@ class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
     uri = Addressable::URI.parse(link[:href])
     assert_equal("/admin/stats/users.csv", uri.path)
     assert_equal({
-      "tz" => "America/Denver",
       "start_at" => "2015-01-12",
       "end_at" => "2015-01-18",
       "search" => "",
@@ -89,5 +89,9 @@ class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
     end
     assert_equal(200, page.status_code)
     assert_equal("text/csv", page.response_headers["Content-Type"])
+  end
+
+  def test_date_range_picker
+    assert_date_range_picker("/stats/users")
   end
 end

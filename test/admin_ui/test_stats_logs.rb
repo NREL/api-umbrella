@@ -3,6 +3,7 @@ require_relative "../test_helper"
 class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
+  include ApiUmbrellaTestHelpers::DateRangePicker
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
@@ -16,7 +17,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
 
     admin_login
-    visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+    visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
     refute_selector(".busy-blocker")
 
     assert_text(log.request_method)
@@ -46,14 +47,13 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
     })
 
     admin_login
-    visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+    visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
     refute_selector(".busy-blocker")
     assert_link("Download CSV", :href => /start_at=2015-01-12/)
     link = find_link("Download CSV")
     uri = Addressable::URI.parse(link[:href])
     assert_equal("/admin/stats/logs.csv", uri.path)
     assert_equal({
-      "tz" => "America/Denver",
       "search" => "",
       "start_at" => "2015-01-12",
       "end_at" => "2015-01-18",
@@ -62,14 +62,13 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "beta_analytics" => "false",
     }, uri.query_values)
 
-    visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
+    visit "/admin/#/stats/logs?search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
     refute_selector(".busy-blocker")
     assert_link("Download CSV", :href => /start_at=2015-01-13/)
     link = find_link("Download CSV")
     uri = Addressable::URI.parse(link[:href])
     assert_equal("/admin/stats/logs.csv", uri.path)
     assert_equal({
-      "tz" => "America/Denver",
       "search" => "",
       "start_at" => "2015-01-13",
       "end_at" => "2015-01-18",
@@ -78,7 +77,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "beta_analytics" => "false",
     }, uri.query_values)
 
-    visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+    visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
     refute_selector(".busy-blocker")
     assert_link("Download CSV", :href => /start_at=2015-01-12/)
     assert_link("Download CSV", :href => /#{Regexp.escape(CGI.escape('"rules":[{'))}/)
@@ -90,7 +89,6 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
     uri = Addressable::URI.parse(link[:href])
     assert_equal("/admin/stats/logs.csv", uri.path)
     assert_equal({
-      "tz" => "America/Denver",
       "start_at" => "2015-01-12",
       "end_at" => "2015-01-18",
       "interval" => "day",
@@ -99,7 +97,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
       "beta_analytics" => "false",
     }, uri.query_values)
 
-    visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
+    visit "/admin/#/stats/logs?search=&start_at=2015-01-13&end_at=2015-01-18&interval=day"
     refute_selector(".busy-blocker")
     assert_link("Download CSV", :href => /start_at=2015-01-13/)
     find("a", :text => /Switch to advanced filters/).click
@@ -111,7 +109,6 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
     uri = Addressable::URI.parse(link[:href])
     assert_equal("/admin/stats/logs.csv", uri.path)
     assert_equal({
-      "tz" => "America/Denver",
       "search" => "response_status:200",
       "start_at" => "2015-01-13",
       "end_at" => "2015-01-18",
@@ -127,7 +124,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
     LogItem.gateway.refresh_index!
 
     admin_login
-    visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+    visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
     refute_selector(".busy-blocker")
 
     # Wait for the ajax actions to fetch the graph and tables to both
@@ -150,7 +147,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
 
   def test_changing_intervals
     admin_login
-    visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-13&interval=week"
+    visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-13&interval=week"
     refute_selector(".busy-blocker")
     assert_selector("button.active", :text => "Week")
     assert_link("Download CSV", :href => /interval=week/)
@@ -178,7 +175,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
 
   def test_does_not_show_beta_analytics_toggle_by_default
     admin_login
-    visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+    visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
     assert_text("view top users")
     refute_text("Beta Analytics")
   end
@@ -186,9 +183,13 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
   def test_shows_beta_analytics_toggle_when_enabled
     override_config({ "analytics" => { "outputs" => ["kylin"] } }, nil) do
       admin_login
-      visit "/admin/#/stats/logs?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
+      visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
       assert_text("view top users")
       assert_text("Beta Analytics")
     end
+  end
+
+  def test_date_range_picker
+    assert_date_range_picker("/stats/logs")
   end
 end

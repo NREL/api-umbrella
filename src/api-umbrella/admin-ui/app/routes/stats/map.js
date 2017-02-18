@@ -3,7 +3,7 @@ import StatsMap from 'api-umbrella-admin-ui/models/stats/map';
 
 export default Base.extend({
   queryParams: {
-    tz: {
+    date_range: {
       refreshModel: true,
     },
     start_at: {
@@ -26,7 +26,8 @@ export default Base.extend({
     },
   },
 
-  model(params) {
+  model() {
+    let params = this.get('backendQueryParamValues');
     if(this.validateParams(params)) {
       return StatsMap.find(params);
     } else {

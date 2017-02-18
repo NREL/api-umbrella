@@ -16,7 +16,6 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
-        "tz" => "America/Denver",
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "interval" => "day",
@@ -41,7 +40,6 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.csv", http_options.deep_merge(admin_session).deep_merge({
       :params => {
-        "tz" => "America/Denver",
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "interval" => "day",
@@ -62,7 +60,6 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.csv", http_options.deep_merge(admin_session).deep_merge({
       :params => {
-        "tz" => "America/Denver",
         "search" => "",
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
@@ -85,7 +82,6 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
-        "tz" => "America/Denver",
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "interval" => "day",
@@ -107,7 +103,6 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
-        "tz" => "America/Denver",
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "interval" => "day",
@@ -130,7 +125,6 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
-        "tz" => "America/Denver",
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "interval" => "day",

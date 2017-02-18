@@ -3,6 +3,7 @@ require_relative "../test_helper"
 class Test::AdminUi::TestStatsMap < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
+  include ApiUmbrellaTestHelpers::DateRangePicker
   include ApiUmbrellaTestHelpers::Setup
 
   def setup
@@ -28,7 +29,7 @@ class Test::AdminUi::TestStatsMap < Minitest::Capybara::Test
     })
 
     admin_login
-    visit "/admin/#/stats/map?tz=America%2FDenver&search=&start_at=2015-01-12&end_at=2015-01-18"
+    visit "/admin/#/stats/map?search=&start_at=2015-01-12&end_at=2015-01-18"
     refute_selector(".busy-blocker")
 
     assert_link("Download CSV", :href => /start_at=2015-01-12/)
@@ -36,7 +37,6 @@ class Test::AdminUi::TestStatsMap < Minitest::Capybara::Test
     uri = Addressable::URI.parse(link[:href])
     assert_equal("/admin/stats/map.csv", uri.path)
     assert_equal({
-      "tz" => "America/Denver",
       "start_at" => "2015-01-12",
       "end_at" => "2015-01-18",
       "search" => "",
@@ -62,5 +62,9 @@ class Test::AdminUi::TestStatsMap < Minitest::Capybara::Test
     end
     assert_equal(200, page.status_code)
     assert_equal("text/csv", page.response_headers["Content-Type"])
+  end
+
+  def test_date_range_picker
+    assert_date_range_picker("/stats/map")
   end
 end

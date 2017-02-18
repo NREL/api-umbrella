@@ -15,7 +15,7 @@ export default Ember.Component.extend({
           render: _.bind(function(name, type, data) {
             if(type === 'display' && name && name !== '-') {
               let link;
-              let params = _.clone(this.get('queryParamValues'));
+              let params = _.clone(this.get('presentQueryParamValues'));
               if(this.get('regionField') === 'request_ip_city') {
                 delete params.region;
                 params.search = 'request_ip_city:"' + data.id + '"';
@@ -54,7 +54,7 @@ export default Ember.Component.extend({
     table.draw();
   }),
 
-  downloadUrl: Ember.computed('allQueryParamValues', function() {
-    return '/admin/stats/map.csv?' + $.param(this.get('allQueryParamValues'));
+  downloadUrl: Ember.computed('backendQueryParamValues', function() {
+    return '/admin/stats/map.csv?' + $.param(this.get('backendQueryParamValues'));
   }),
 });

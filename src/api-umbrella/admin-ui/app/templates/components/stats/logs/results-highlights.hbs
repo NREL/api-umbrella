@@ -7,13 +7,13 @@
     <strong>{{format-number stats.total_users format="0,0"}}</strong>
     <small>unique {{inflect "user" stats.total_users}}</small>
 
-    {{stats/logs/results-facet-table label="view top users" field="user_email" facets=aggregations.users queryParamValues=queryParamValues}}
+    {{stats/logs/results-facet-table label="view top users" field="user_email" facets=aggregations.users presentQueryParamValues=presentQueryParamValues}}
   </div>
   <div class="col-sm-3 number-highlight">
     <strong>{{format-number stats.total_ips format="0,0"}}</strong>
     <small>unique ip {{inflect "address" stats.total_ips}}</small>
 
-    {{stats/logs/results-facet-table label="view top ips" field="request_ip" facets=aggregations.ips queryParamValues=queryParamValues}}
+    {{stats/logs/results-facet-table label="view top ips" field="request_ip" facets=aggregations.ips presentQueryParamValues=presentQueryParamValues}}
   </div>
   <div class="col-sm-3 number-highlight">
     <strong>{{format-number stats.average_response_time format="0,0"}} <span class="units">ms</span></strong>

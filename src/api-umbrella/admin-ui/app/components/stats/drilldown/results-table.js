@@ -19,7 +19,7 @@ export default Ember.Component.extend({
               if(data.terminal) {
                 return '<i class="fa fa-file-o fa-space-right"></i>' + _.escape(name);
               } else {
-                let params = _.clone(this.get('queryParamValues'));
+                let params = _.clone(this.get('presentQueryParamValues'));
                 params.prefix = data.descendent_prefix;
                 let link = '#/stats/drilldown?' + $.param(params);
 
@@ -53,7 +53,7 @@ export default Ember.Component.extend({
     table.draw();
   }),
 
-  downloadUrl: Ember.computed('allQueryParamValues', function() {
-    return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + $.param(this.get('allQueryParamValues'));
+  downloadUrl: Ember.computed('backendQueryParamValues', function() {
+    return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + $.param(this.get('backendQueryParamValues'));
   }),
 });

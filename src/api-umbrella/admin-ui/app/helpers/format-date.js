@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import moment from 'npm:moment-timezone';
 
 export function formatDate(params) {
   let date = params[0];

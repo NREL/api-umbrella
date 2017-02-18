@@ -143,6 +143,20 @@ module ApiUmbrellaTestHelpers
       [get_response, create_response]
     end
 
+    def assert_current_admin_url(fragment_path, fragment_query_values)
+      uri = Addressable::URI.parse(page.current_url)
+      assert_equal("/admin/", uri.path)
+      assert(uri.fragment)
+
+      fragment_uri = Addressable::URI.parse(uri.fragment)
+      assert_equal(fragment_path, fragment_uri.path)
+      if(fragment_query_values.nil?)
+        assert_nil(fragment_uri.query_values)
+      else
+        assert_equal(fragment_query_values, fragment_uri.query_values)
+      end
+    end
+
     private
 
     @@test_rails_secret_token = nil
