@@ -30,6 +30,15 @@ add_custom_command(
     yarn
     ${STAMP_DIR}/core-admin-ui-build-dir
   COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} yarn install --frozen-lockfile
+  # In the CI environment, the "node-sass/vendor" directory seems to sometimes
+  # go away. A bit of a hack, but try to workaround this by forcing node-sass
+  # to be reinstalled if the vendor dir is missing.
+  #
+  # See:
+  # https://github.com/yarnpkg/yarn/issues/1981
+  # https://github.com/yarnpkg/yarn/issues/1832
+  # https://github.com/sass/node-sass/issues/1579
+  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && test -d node_modules/node-sass && test -d node_modules/node-sass/vendor || env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} yarn add node-sass --force
   COMMAND touch ${STAMP_DIR}/core-admin-ui-yarn-install
 )
 
