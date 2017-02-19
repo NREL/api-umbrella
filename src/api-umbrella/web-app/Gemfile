@@ -44,12 +44,6 @@ gem "mongoid_rails_migrations", "~> 1.1.0"
 # Use master from git for Rails 4 compatibility.
 gem "mongoid-store", :git => "https://github.com/ahoward/mongoid-store.git"
 
-# Database seeding
-#
-# This branch adds mongoid compatibility:
-# https://github.com/mbleigh/seed-fu/pull/80
-gem "seed-fu", :git => "https://github.com/GUI/seed-fu.git", :branch => "mongoid"
-
 # Elasticsearch
 gem "elasticsearch", "~> 2.0.1"
 

@@ -8,14 +8,6 @@ GIT
       omniauth (~> 1.2)
 
 GIT
-  remote: https://github.com/GUI/seed-fu.git
-  revision: 7b265f853514923bf1e2ce9908d6134d69b3ad5c
-  branch: mongoid
-  specs:
-    seed-fu (2.3.6)
-      activesupport (>= 3.1)
-
-GIT
   remote: https://github.com/ahoward/mongoid-store.git
   revision: 7b7e34e263a1e25fc0149861e1560f7f483c16ac
   specs:
@@ -352,7 +344,6 @@ DEPENDENCIES
   rollbar (~> 2.14.0)
   safe_yaml (~> 1.0.4)
   sass-rails (~> 5.0)
-  seed-fu!
   sequel (~> 4.43.0)
   simple_form (~> 3.4.0)
 
