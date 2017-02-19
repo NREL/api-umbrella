@@ -4,7 +4,7 @@ module.exports = function(environment) {
   let ENV = {
     modulePrefix: 'api-umbrella-admin-ui',
     environment: environment,
-    baseURL: '/admin/',
+    rootURL: '/admin/',
     locationType: 'hash',
     EmberENV: {
       FEATURES: {
@@ -29,7 +29,6 @@ module.exports = function(environment) {
 
   if(environment === 'test') {
     // Testem prefers this...
-    ENV.baseURL = '/';
     ENV.locationType = 'none';
 
     // keep test console output quieter

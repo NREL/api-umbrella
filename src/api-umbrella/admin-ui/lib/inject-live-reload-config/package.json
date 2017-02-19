@@ -1,0 +1,9 @@
+{
+  "name": "inject-live-reload-config",
+  "keywords": [
+    "ember-addon"
+  ],
+  "ember-addon": {
+    "before": "ember-cli-inject-live-reload"
+  }
+}
