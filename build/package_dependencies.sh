@@ -39,13 +39,16 @@ if [ -f /etc/redhat-release ]; then
 
     # ElasticSearch
     java-1.8.0-openjdk-headless
-    # For getopt, should no longer be necessary in ElasticSearch 2:
-    # https://github.com/elastic/elasticsearch/pull/12165
-    $util_linux_package
     which
 
     # init.d script helpers
     initscripts
+
+    # For kill used in stop/reopen-logs commands.
+    $util_linux_package
+
+    # For pstree used in reopen-logs command.
+    psmisc
 
     # For pkill/pgrep used for legacy status/stop commands.
     $procps_package
@@ -141,6 +144,12 @@ elif [ -f /etc/debian_version ]; then
     # init.d script helpers
     sysvinit-utils
     lsb-base
+
+    # For kill used in stop/reopen-logs commands.
+    procps
+
+    # For pstree used in reopen-logs command.
+    psmisc
 
     # For pkill/pgrep used for legacy status/stop commands.
     procps
