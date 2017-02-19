@@ -6,8 +6,8 @@ module.exports = {
   // In combination with the .ember-cli "liveReloadJsUrl" config, this takes
   // into account the HTTPS proxy that's in front of the ember development
   // server.
-  contentFor: function(type) {
-    var liveReloadPort = process.env.EMBER_CLI_INJECT_LIVE_RELOAD_PORT;
+  contentFor(type) {
+    let liveReloadPort = process.env.EMBER_CLI_INJECT_LIVE_RELOAD_PORT;
     if(liveReloadPort && type === 'head') {
       return '<script type="text/javascript">\n' +
         '  window.LiveReloadOptions = {\n' +
