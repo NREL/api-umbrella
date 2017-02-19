@@ -16,6 +16,7 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND rsync -a -v --delete <SOURCE_DIR>/ ${DEV_INSTALL_PREFIX}/yarn/
+    COMMAND cd ${DEV_INSTALL_PREFIX}/bin && ln -snf ../yarn/bin/yarn ./yarn
     # Remove the previous bin symlink that was necessary.
     COMMAND rm -f ${DEV_INSTALL_PREFIX}/bin/yarn.js
 )
