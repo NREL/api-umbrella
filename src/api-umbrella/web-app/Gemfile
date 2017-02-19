@@ -56,11 +56,10 @@ gem "elasticsearch", "~> 2.0.1"
 # OmniAuth-based authentication
 gem "devise", "~> 4.2.0"
 gem "devise-i18n", "~> 1.1.1"
-gem "omniauth", "~> 1.5.0"
+gem "omniauth", "~> 1.6.1"
 gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml", :require => false
 gem "omniauth-facebook", "~> 4.0.0", :require => false
-# https://github.com/intridea/omniauth-github/pull/70
-gem "omniauth-github", :git => "https://github.com/andrew/omniauth-github.git", :branch => "omniauth-1.5.0", :require => false
+gem "omniauth-github", "~> 1.2.3", :require => false
 gem "omniauth-gitlab", "~> 1.0.2", :require => false
 gem "omniauth-google-oauth2", "~> 0.4.1", :require => false
 gem "omniauth-ldap", "~> 1.0.5", :require => false

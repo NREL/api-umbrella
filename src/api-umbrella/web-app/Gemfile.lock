@@ -24,15 +24,6 @@ GIT
       mongoid (>= 3)
 
 GIT
-  remote: https://github.com/andrew/omniauth-github.git
-  revision: 6498f617d301c12bfddb0faef41b4f8efec188c0
-  branch: omniauth-1.5.0
-  specs:
-    omniauth-github (1.2.2)
-      omniauth (~> 1.5.0)
-      omniauth-oauth2 (>= 1.4.0, < 2.0)
-
-GIT
   remote: https://github.com/heroku/rails_stdout_logging.git
   revision: 92fb79ed040a88808aaf5bcb5e88ae8d85176a85
   specs:
@@ -87,7 +78,7 @@ GEM
     addressable (2.5.0)
       public_suffix (~> 2.0, >= 2.0.2)
     arel (6.0.4)
-    autoprefixer-rails (6.7.2)
+    autoprefixer-rails (6.7.3)
       execjs
     awesome_print (1.7.0)
     bcrypt (3.1.11)
@@ -102,7 +93,7 @@ GEM
       bundler (~> 1.2)
       thor (~> 0.18)
     concurrent-ruby (1.0.4)
-    countries (2.0.6)
+    countries (2.0.7)
       i18n_data (~> 0.7.0)
       money (~> 6.7)
       sixarm_ruby_unaccent (~> 1.1)
@@ -203,11 +194,14 @@ GEM
       rack (>= 1.2, < 3)
     oj (2.18.1)
     oj_mimic_json (1.0.1)
-    omniauth (1.5.0)
-      hashie (~> 3.5.0, < 4)
+    omniauth (1.6.1)
+      hashie (>= 3.4.6, < 3.6.0)
       rack (>= 1.6.2, < 3)
     omniauth-facebook (4.0.0)
       omniauth-oauth2 (~> 1.2)
+    omniauth-github (1.2.3)
+      omniauth (~> 1.5)
+      omniauth-oauth2 (>= 1.4.0, < 2.0)
     omniauth-gitlab (1.0.2)
       omniauth (~> 1.0)
       omniauth-oauth2 (~> 1.0)
@@ -339,10 +333,10 @@ DEPENDENCIES
   nokogiri (~> 1.7.0)
   oj (~> 2.18.1)
   oj_mimic_json (~> 1.0.1)
-  omniauth (~> 1.5.0)
+  omniauth (~> 1.6.1)
   omniauth-cas (~> 1.1.0)!
   omniauth-facebook (~> 4.0.0)
-  omniauth-github!
+  omniauth-github (~> 1.2.3)
   omniauth-gitlab (~> 1.0.2)
   omniauth-google-oauth2 (~> 0.4.1)
   omniauth-ldap (~> 1.0.5)
