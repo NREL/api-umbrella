@@ -102,7 +102,6 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       :provider => :github,
       :login_button_text => "Sign in with GitHub",
       :username_path => "info.email",
-      :verified_path => "info.email_verified",
     },
     {
       :provider => :gitlab,
@@ -172,7 +171,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     LazyHash.add(omniauth_data, options.fetch(:username_path), "noadmin@example.com")
 
     mock_omniauth(omniauth_data) do
-      assert_login_forbidden(options.fetch(:login_button_text))
+      assert_login_forbidden(options.fetch(:login_button_text), "not authorized")
     end
   end
 
@@ -183,7 +182,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     LazyHash.add(omniauth_data, options.fetch(:verified_path), false)
 
     mock_omniauth(omniauth_data) do
-      assert_login_forbidden(options.fetch(:login_button_text))
+      assert_login_forbidden(options.fetch(:login_button_text), "not verified")
     end
   end
 
@@ -193,10 +192,10 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     assert_link("my_account_nav_link", :href => /#{admin.id}/, :visible => :all)
   end
 
-  def assert_login_forbidden(login_button_text)
+  def assert_login_forbidden(login_button_text, error_text)
     visit "/admin/"
     trigger_click_link(login_button_text)
-    assert_text("not authorized")
+    assert_text(error_text)
     refute_link("my_account_nav_link")
   end
 

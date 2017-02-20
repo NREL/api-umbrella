@@ -264,7 +264,8 @@ Devise.setup do |config|
       config.omniauth :facebook,
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_id],
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_secret],
-        :scope => "email"
+        :scope => "email",
+        :info_fields => "name,email,verified"
     when "cas"
       require "omniauth-cas"
       config.omniauth :cas,
