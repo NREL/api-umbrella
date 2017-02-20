@@ -24,8 +24,8 @@ else
 end
 ngx.ctx.host_normalized = host_normalize(ngx.ctx.host)
 ngx.ctx.http_x_api_key = ngx_var.http_x_api_key
-ngx.ctx.port = ngx_var.http_x_forwarded_port or ngx_var.server_port
-ngx.ctx.protocol = ngx_var.http_x_forwarded_proto or ngx_var.scheme
+ngx.ctx.port = ngx_var.real_port
+ngx.ctx.protocol = ngx_var.real_scheme
 ngx.ctx.remote_addr = ngx_var.remote_addr
 ngx.ctx.remote_user = ngx_var.remote_user
 ngx.ctx.request_method = string.lower(ngx.var.request_method)

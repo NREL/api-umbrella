@@ -11,26 +11,6 @@ limit_conn api_umbrella_conn_addr_zone {{router.global_rate_limits.ip_connection
 limit_req zone=api_umbrella_req_addr_zone{{#router.global_rate_limits.ip_burst}} burst={{router.global_rate_limits.ip_burst}}{{/router.global_rate_limits.ip_burst}} nodelay;
 {{/router.global_rate_limits.ip_rate}}
 
-# Conditional proxy headers. Don't set these x-forwarded headers if they've
-# already been set (by the SSL terminator).
-set $real_scheme $http_x_forwarded_proto;
-if ($real_scheme = "") {
-  set $real_scheme $scheme;
-}
-
-set $real_port $http_x_forwarded_port;
-if ($real_port = "") {
-  set $real_port $server_port;
-}
-
-# Setup a variable for appending to the host header when the port is
-# non-default (non 80 or 443) and needs to be appended to host headers.
-set $non_default_port_suffix "";
-set $scheme_and_port "$real_scheme:$real_port";
-if ($scheme_and_port !~ "^(http:80|https:443)$") {
-  set $non_default_port_suffix ":$real_port";
-}
-
 # Only retry backends in the event of connection errors (and not also
 # connection timeouts as is the default). This prevents slow backend timeouts
 # triggering multiple requests (since there are usually multiple gatekeeper
