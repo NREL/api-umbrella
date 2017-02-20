@@ -1,20 +1,4 @@
 module JsLocaleHelper
-  def self.output_locale(locale)
-    translations = YAML.safe_load(File.open(Rails.root.join("config", "locales", "#{locale}.yml")))
-    markdown!(translations)
-
-    options = {
-      "locale" => locale.to_s,
-      "phrases" => translations[locale.to_s],
-    }
-
-    result = <<-EOS
-      var polyglot = new Polyglot(#{options.to_json});
-    EOS
-
-    result
-  end
-
   def self.markdown!(data)
     if(data.kind_of?(Hash))
       data.each do |key, value|

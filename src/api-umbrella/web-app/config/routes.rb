@@ -126,6 +126,7 @@ Rails.application.routes.draw do
       locale_data = {}
       locale_data[locale] = I18n::JS.translations[locale.to_sym]
       locale_data[I18n.default_locale.to_s] ||= I18n::JS.translations[I18n.default_locale.to_sym]
+      JsLocaleHelper.markdown!(locale_data)
 
       script = <<~eos
         I18n = window.I18n || {};
