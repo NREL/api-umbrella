@@ -5,9 +5,7 @@ export default Ember.Component.extend({
   requireHttpsOptions: [
     { id: null, name: I18n.t('admin.api.settings.require_https_options.inherit') },
     { id: 'required_return_error', name: I18n.t('admin.api.settings.require_https_options.required_return_error') },
-    { id: 'required_return_redirect', name: I18n.t('admin.api.settings.require_https_options.required_return_redirect') },
     { id: 'transition_return_error', name: I18n.t('admin.api.settings.require_https_options.transition_return_error') },
-    { id: 'transition_return_redirect', name: I18n.t('admin.api.settings.require_https_options.transition_return_redirect') },
     { id: 'optional', name: I18n.t('admin.api.settings.require_https_options.optional') },
   ],
 

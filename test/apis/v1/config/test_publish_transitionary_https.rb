@@ -22,7 +22,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
     assert_set_timestamp(:transition_return_error)
   end
 
-  ["transition_return_error", "transition_return_redirect"].each do |mode|
+  ["transition_return_error"].each do |mode|
     define_method("test_#{mode}_set_timestamp") do
       api = FactoryGirl.create(:api, {
         :settings => {
@@ -125,9 +125,6 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       api.settings.require_https = "required_return_error"
       api.save!
 
-      api.settings.require_https = "required_return_redirect"
-      api.save!
-
       api.settings.require_https = "optional"
       api.save!
 
@@ -160,7 +157,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
     end
   end
 
-  ["required_return_error", "required_return_redirect", "optional", nil].each do |mode|
+  ["required_return_error", "optional", nil].each do |mode|
     mode_method_name = mode || mode.inspect
 
     define_method("test_#{mode_method_name}_unset_timestamp") do
