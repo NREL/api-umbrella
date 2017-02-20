@@ -5,7 +5,7 @@
 # first, then without exiting immediately, delayed_job can get stuck waiting
 # for a new mongo primary (until the 30s server_selection_timeout is hit)
 # before exiting.
-Delayed::Worker.raise_signal_exceptions = true
+Delayed::Worker.raise_signal_exceptions = :term
 
 # Keep failed jobs in the database.
 Delayed::Worker.destroy_failed_jobs = false

@@ -15,7 +15,7 @@ local function reload_perp(perp_base)
 end
 
 local function reload_web_delayed_job(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " term web-delayed-job")
+  local _, _, err = run_command("perpctl -b " .. perp_base .. " int web-delayed-job")
   if err then
     print("Failed to reload web-delayed-job\n" .. err)
     os.exit(1)
