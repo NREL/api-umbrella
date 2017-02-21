@@ -1,5 +1,99 @@
 # API Umbrella Change Log
 
+## 0.14.0 (Unreleased)
+
+This update focuses on upgrading various internal components of API Umbrella. It also offers new features and various bug fixes. A few potential security issues are also addressed. Upgrading is recommended, but there are some potential compatibility issues to note. See the Upgrade Instructions section below.
+
+Many thanks to everyone that contributed with pull requests and bug reports!
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` package using your package manager.
+
+This version has a few potential compatibility issues, depending on your setup, so be sure to read the following upgrade notes:
+
+- **Database network binds:** For security reasons, Elasticsearch and MongoDB only listen for local connections now. If you have a multi-server setup, you'll need to [adjust the bind addresses](https://api-umbrella.readthedocs.io/en/latest/server/multi-server.html#bind-address). If you cannot upgrade to API Umbrella v0.14.0 immediately, you should check your current bind addresses to ensure they're secure.
+- **Elasticsearch and MongoDB upgrades:**
+  - The default version of Elasticsearch bundled with API Umbrella has been updated from 1.7 to 2.3.
+  - The default version of MongoDB bundled with API Umbrella has been updated from 3.0 to 3.2.
+  - If you're running a single server, all that should be required is a full restart (`sudo /etc/init.d/api-umbrella restart`).
+  - If you're running a cluster of multiple database servers, then you may need to be more careful about the sequence of upgrades. See [Elasticsearch's upgrade notes](https://www.elastic.co/guide/en/elasticsearch/reference/2.3/restart-upgrade.html) and [MongoDB's upgrade notes](https://docs.mongodb.com/manual/release-notes/3.2-upgrade/) for more details.
+  - The data API Umbrella stores in Elasticsearch should be compatible with the upgrade without further steps. However, if you store non-API Umbrella data in the same Elasticsearch server, you may want to check for data compatibility issues with the [elasticsearch-migration plugin](https://github.com/elastic/elasticsearch-migration/tree/1.x).
+- **Admin login changes:** API Umbrella now defaults to using local login accounts for the accessing the admin (instead of using external login providers like Google, or GitHub). If you'd still like to use external login providers, they will need to be [explicitly enabled](https://api-umbrella.readthedocs.io/en/latest/server/admin-auth.html).
+
+### Added
+
+- **Local admin accounts:** There is now ([\#332](https://github.com/NREL/api-umbrella/pull/332), [\#314](https://github.com/NREL/api-umbrella/issues/314), [\#207](https://github.com/NREL/api-umbrella/issues/207), [\#247](https://github.com/NREL/api-umbrella/issues/247), [\#124](https://github.com/NREL/api-umbrella/issues/124), [\#45](https://github.com/NREL/api-umbrella/issues/45))
+- **Default Elasticsearch query timeout:** For admin analytics queries, there's now a default timeout for the queries to try and prevent complex queries from running indefinitely. ([6b1187d3](https://github.com/NREL/api-umbrella/commit/6b1187d311f9fc17dcc7d8323ac82a6d2ec149a3))
+- **Log API backend IDs:** Add logging of the matched API backend ID to the analytics database. [\#252](https://github.com/NREL/api-umbrella/issues/252)
+- **Add GitLab login provider:** GitLab as been added as an external login provider. ([\#311](https://github.com/NREL/api-umbrella/issues/311))
+- **Add security-related HTTP headers:**  Default `X-XSS-Protection`, `X-Frame-Options`, and `X-Content-Type-Options` headers have been added to website backend and web-app responses. ([f15ac873](https://github.com/NREL/api-umbrella/commit/f15ac87304aa233f94d96d794d1126ef4eb41d51))
+- **Log rsyslog statistics:** Log additional statistics on rsyslog's queue size and processing information. ([c3afad9f](https://github.com/NREL/api-umbrella/commit/c3afad9faa7b9713d7aff8280c3904a4fe395691))
+- **Redirect to admin URLs after login:** Deep links to areas in the admin are now retained throughout the login process. ([\#257](https://github.com/NREL/api-umbrella/issues/257))
+- **Allow overriding the public HTTP/HTTPS ports:** When placing a load balancer in front of API Umbrella, allow for additional configuration to override the public ports. ([\#329](https://github.com/NREL/api-umbrella/issues/329), [\#296](https://github.com/NREL/api-umbrella/issues/296))
+- **MongoDB WiredTiger storage support:** API Umbrella is now compatible with the newer MongoDB WiredTiger storage engine. ([\#260](https://github.com/NREL/api-umbrella/issues/260), [\#312](https://github.com/NREL/api-umbrella/pull/312))
+- **MongoDB SCRAM-SHA-1 authentication support:** API Umbrella is now compatible with the default authentication mechanism in MongoDB 3.0+.  ([\#260](https://github.com/NREL/api-umbrella/issues/260), [\#312](https://github.com/NREL/api-umbrella/pull/312))
+
+### Changed
+
+- **Rails 4.2:** The internal `web-app` component (that provides the admin APIs) has been upgraded from Rails 3.2 to Rails 4.2. ([\#259](https://github.com/NREL/api-umbrella/issues/259))
+- **Ember 2.8:** The internal `admin-ui` component (that provides the admin user interface) has been upgraded from Ember 1.7 to Ember 2.8. It has also been separate from the Rails codebase to be a standalone Ember app. ([\#257](https://github.com/NREL/api-umbrella/issues/257))
+- **Bootstrap 3:** The admin user interface has been upgraded from using Bootstrap 2 to Bootstrap 3. ([\#258](https://github.com/NREL/api-umbrella/issues/258))
+- **Elasticsearch 2.3:** The bundled version of Elasticsearch has been upgraded from Elasticsearch 1.7 to Elasticsearch 2.3. ([\#315](https://github.com/NREL/api-umbrella/pull/315), [\#261](https://github.com/NREL/api-umbrella/issues/261))
+- **MongoDB 3.2:** The bundled version of MongoDB has been upgraded from MongoDB 3.0 to MongoDB 3.2. ([\#260](https://github.com/NREL/api-umbrella/issues/260))
+- **ECharts for admin charts:** The admin interface has switched to use ECharts for its charts and maps. ([\#333](https://github.com/NREL/api-umbrella/pull/333), [\#124](https://github.com/NREL/api-umbrella/issues/124))
+- More debugging details in nginx logs [\#334](https://github.com/NREL/api-umbrella/pull/334)
+- **Unified test suite:** API Umbrella's internal test suite has been cleaned up, unified, and made more stable. ([\#305](https://github.com/NREL/api-umbrella/issues/305))
+- **Disable X-Fowarded-Host parsing:** When determining which API backend to match, don't parse the `X-Forwarded-Host` header by default. ([api.data.gov#355](https://github.com/18F/api.data.gov/issues/355))
+- **Quiet duplicative nginx error logging:** Don't log duplicate nginx errors to nginx's error log. ([3f90e158](https://github.com/NREL/api-umbrella/commit/3f90e1589619bc4f893c1aaafe26bacd78a1a48a))
+- **Disable elasticsearch heapdumps:** If Elasticsearch runs out of memory, don't perform a heapdump by default. ([api.data.gov#351](https://github.com/18F/api.data.gov/issues/351))
+- **Relative dates for admin analytics URLs:** Links to analytics URLs in the admin for the "last 30 days" will always reflect the last 30 days from the current date (rather than when the link was generated). [api.data.gov#73](https://github.com/18F/api.data.gov/issues/73)
+- **Quicker process stops:** Allow API Umbrella to stop more quickly by changing how delayed-job terminates. ([837ca8f1](https://github.com/NREL/api-umbrella/commit/837ca8f1f344528add7060101d1e8c4cd575d2a9))
+- **Upgrade bundled software dependencies:**
+  - Elasticsearch 1.7.5 -\> 2.4.4
+  - MongoDB 3.0.12 -\> 3.2.12
+  - OpenResty 1.9.15.1 -\> 1.11.2.2
+  - OpenSSL 1.0.2h -\> 1.0.2k
+  - Ruby 2.2.5 -\> 2.3.3
+  - Rsyslog 8.14.0 -\> 8.24.0
+
+### Removed
+
+- **Don't log website backend requests to analytics:** Requests to the website backend routes are no longer logged in the analytics database. [\#334](https://github.com/NREL/api-umbrella/pull/334)
+- **Don't log unused fields to analytics database:** Several fields were being logged to the analytics database that API Umbrella was not using. These fields are no longer being logged to simplify things and reduce space. The fields no longer being stored are: `backend_response_time`, `internal_gatekeeper_time`, `proxy_overhead`, `request_ip_location`, and `request_query`. ([\#334](https://github.com/NREL/api-umbrella/pull/334))
+- **Removed Mozilla Persona login option:** The Mozilla Persona service was shutdown, so it's no longer a valid long option for the admin. ([\#313](https://github.com/NREL/api-umbrella/issues/313), [\#323](https://github.com/NREL/api-umbrella/issues/323))
+- **Removed non-functional HTTPS redirect options:** In the API Backends administration there were some "redirect" options for the "HTTPS Requirements" setting. These redirect options stopped working in API Umbrella v0.9.0. ([8d986169](https://github.com/NREL/api-umbrella/commit/8d986169b5a5bcd204419ea9b173ac737d0a8232))
+- **Removed code for upgrading from API Umbrella v0.8:** Code for directly upgrading from API Umbrella v0.8 packages has been removed. ([101ac1e3](https://github.com/NREL/api-umbrella/commit/101ac1e390394329a496477876b6530c8c951428))
+
+### Fixed
+
+- **Missing analytics in Docker:** If running API Umbrella from the default Docker container, analytics information was missing. ([\#284](https://github.com/NREL/api-umbrella/issues/284), [\#327](https://github.com/NREL/api-umbrella/issues/327), [\#328](https://github.com/NREL/api-umbrella/pull/328))
+- **LDAP authentication:** The LDAP login provider for the admin was broken. ([\#316](https://github.com/NREL/api-umbrella/issues/316), [\#278](https://github.com/NREL/api-umbrella/issues/278))
+- **Startup race condition:** There was a race condition on API Umbrella's first startup that could lead to the database not being properly seeded. ([\#300](https://github.com/NREL/api-umbrella/issues/300), [f8495f11](https://github.com/NREL/api-umbrella/commit/f8495f11bb6a244deaaff6d1be6e683359903a00))
+- **Corrupt rsyslog/request.log.gz file:** Rsyslog's `request.log.gz` log file could become correct (although this file isn't currently used). ([\#324](https://github.com/NREL/api-umbrella/issues/324))
+- **Running Docker container from directory with spaces:** If you were running the API Umbrella Docker container from a directory containing spaces, it would error. ([\#322](https://github.com/NREL/api-umbrella/pull/322))
+- **Improve MongoDB replicaset failover:** If using a MongoDB replicaset, improve the resiliency during a replicaset primary change.  ([89903486](https://github.com/NREL/api-umbrella/commit/89903486cfa1228bff38b1109ac0df599bd545c3))
+- **Mixed up admin locale data:** In the admin, there was a possibility of locale data being mixed up across different users. ([2a98714a](https://github.com/NREL/api-umbrella/commit/2a98714a4ff76bb0f83c19fdaeefe7c503745520))
+- **Missing analytics logs in certain cases:** Certain URLs with duplicate URL query parameters could fail to be logged in the analytics database in certain cases. [api.data.gov#358](https://github.com/18F/api.data.gov/issues/358)
+- **Temp files in Docker container:** Fix generation of many geoip-auto-updater files in Docker container. ([\#290](https://github.com/NREL/api-umbrella/issues/290))
+- **Missing package dependencies:** Add missing dependencies for the packages on minimal containers. ([\#290](https://github.com/NREL/api-umbrella/issues/290), [\#292](https://github.com/NREL/api-umbrella/pull/292), [\#328](https://github.com/NREL/api-umbrella/pull/328), [4a269133 ](https://github.com/NREL/api-umbrella/commit/4a2691338db1ee24f937a1dc32c1819b4958ae42))
+- **Prevent double analytics requests in admin:** Sometimes 2 analytics requests would be made in the admin when loading an analytics page. ([\#257](https://github.com/NREL/api-umbrella/issues/257))
+- **Proxying to SNI API backends:** Fix proxying to API backends that require SNI SSL support. ([api.data.gov#357](https://github.com/18F/api.data.gov/issues/357))
+- **Overriding null values in api-umbrella.yml:** Fix overriding null values in the api-umbrella.yml config file. ([d8c5f743](https://github.com/NREL/api-umbrella/commit/d8c5f74377ae34b233ddcbd1f19fbef3220ef5d4), [\#278](https://github.com/NREL/api-umbrella/issues/278#issuecomment-238776123))
+- **Intermittent test suite failures:** The reliability of the test suite has been improved. ([\#303](https://github.com/NREL/api-umbrella/issues/303))
+- **Improve rsyslog queueing:** Fix the queue size settings for rsyslog. ([c3afad9f](https://github.com/NREL/api-umbrella/commit/c3afad9faa7b9713d7aff8280c3904a4fe395691))
+- **Admin analytics timezones:** Fix timezone handling for dates in the admin date pickers. ([90ed2b62](https://github.com/NREL/api-umbrella/commit/90ed2b621fe7a331151ce826e62e828e4cbcdbee))
+- **localhost DNS failures:** Fix startup issues if "localhost" possibly fails to resolve. ([\#212](https://github.com/NREL/api-umbrella/issues/212))
+- **Log rotation issues:** The perpd log files weren't being rotated properly, and other log files could have rotation problems if API Umbrella was running as a non-default user. ([4d28e1e3](https://github.com/NREL/api-umbrella/commit/4d28e1e389811db86738b4df2463940dab8d5012))
+- **Email verification with GitHub and Facebook:** If using GitHub or Facebook login providers for the admin, fix some issues with how verified emails are identified. ([d4e6fc5f](https://github.com/NREL/api-umbrella/commit/d4e6fc5ff2acd0f0e789639e3117e9a233eab4e6))
+- **Ensure clean Ruby environment:** Ensure system-wide Ruby or Bundler installations don't conflict with API Umbrella's embedded version of Ruby. ([7d9208ca](https://github.com/NREL/api-umbrella/commit/7d9208caf6a1aa25d6ed10a6a95330dcb0a9bc1e))
+
+### Security
+
+- **Database network binds:** For security reasons, Elasticsearch and MongoDB only listen for local connections now. If you have a multi-server setup, you'll need to [adjust the bind addresses](https://api-umbrella.readthedocs.io/en/latest/server/multi-server.html#bind-address). If you cannot upgrade to API Umbrella v0.14.0 immediately, you should check your current bind addresses to ensure they're secure. ([\#287](https://github.com/NREL/api-umbrella/issues/287))
+- **XSS in signup form:** Fix possible cross-site-scripting issue in the default signup form. ([api-umbrella-static-site#486950b1](https://github.com/NREL/api-umbrella-static-site/commit/486950b17db1b71ca71e624dbfb073f4a47ff379))
+- **Admin group permissions:** If a limited admin knew the random UUID for another admin group, they could add admins to that group, despite not necessarily having permissions. ([c5ca3c1f](https://github.com/NREL/api-umbrella/commit/c5ca3c1f16829be77d71d55de57add0ae948ecc9))
+
 ## 0.13.0 (2016-07-30)
 
 This update fixes one security issue and one small bug fix. Upgrading is recommended.
