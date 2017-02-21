@@ -39,6 +39,7 @@ API Umbrella is an open source API management platform for exposing web service 
    :caption: For System Admins
    :maxdepth: 1
 
+   server/admin-auth
    server/https-config
    server/smtp-config
    server/multi-server
