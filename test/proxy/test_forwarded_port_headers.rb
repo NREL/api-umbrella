@@ -7,21 +7,21 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
   def setup
     super
     setup_server
+
+    @default_config = {
+      :web => {
+        :admin => {
+          :auth_strategies => {
+            :enabled => ["google"],
+          },
+        },
+      },
+    }
+
     once_per_class_setup do
       Admin.delete_all
       FactoryGirl.create(:admin)
-
-      override_config_set({
-        "web" => {
-          "admin" => {
-            "auth_strategies" => {
-              "enabled" => [
-                "google",
-              ],
-            },
-          },
-        },
-      }, ["--router", "--web"])
+      override_config_set(@default_config, ["--router", "--web"])
     end
   end
 
@@ -176,9 +176,9 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
   end
 
   def test_override_public_http_port
-    override_config({
+    override_config(@default_config.deep_merge({
       :override_public_http_port => 2222,
-    }, "--router") do
+    }), "--router") do
       headers = { "X-Forwarded-Port" => "1111" }
       responses = make_requests(headers)
       responses.each do |type, response|
@@ -209,9 +209,9 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
   end
 
   def test_override_public_https_port
-    override_config({
+    override_config(@default_config.deep_merge({
       :override_public_https_port => 3333,
-    }, "--router") do
+    }), "--router") do
       headers = { "X-Forwarded-Port" => "1111" }
       responses = make_requests(headers)
       responses.each do |type, response|
@@ -242,9 +242,9 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
   end
 
   def test_override_public_http_proto
-    override_config({
+    override_config(@default_config.deep_merge({
       :override_public_http_proto => "https",
-    }, "--router") do
+    }), "--router") do
       headers = { "X-Forwarded-Proto" => "http" }
       responses = make_requests(headers)
       responses.each do |type, response|
@@ -275,9 +275,9 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
   end
 
   def test_override_public_https_proto
-    override_config({
+    override_config(@default_config.deep_merge({
       :override_public_https_proto => "http",
-    }, "--router") do
+    }), "--router") do
       headers = { "X-Forwarded-Proto" => "https" }
       responses = make_requests(headers)
       responses.each do |type, response|
@@ -308,10 +308,10 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
   end
 
   def test_override_public_ports_defaults
-    override_config({
+    override_config(@default_config.deep_merge({
       :override_public_http_port => 80,
       :override_public_https_port => 443,
-    }, "--router") do
+    }), "--router") do
       headers = {}
       responses = make_requests(headers)
       responses.each do |type, response|
@@ -342,12 +342,12 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
   end
 
   def test_override_public_ports_and_proto_ssl_terminator
-    override_config({
+    override_config(@default_config.deep_merge({
       :override_public_http_port => 443,
       :override_public_http_proto => "https",
       :override_public_https_port => 443,
       :override_public_https_proto => "https",
-    }, "--router") do
+    }), "--router") do
       headers = {}
       responses = make_requests(headers)
       responses.each do |type, response|
