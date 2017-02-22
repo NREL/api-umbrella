@@ -41,6 +41,9 @@ if [ -f /etc/redhat-release ]; then
     java-1.8.0-openjdk-headless
     which
 
+    # rsyslog omelasticsearch
+    libcurl
+
     # init.d script helpers
     initscripts
 
@@ -140,6 +143,9 @@ elif [ -f /etc/debian_version ]; then
 
     # ElasticSearch
     openjdk-$openjdk_version-jre-headless
+
+    # rsyslog omelasticsearch
+    libcurl3
 
     # init.d script helpers
     sysvinit-utils
