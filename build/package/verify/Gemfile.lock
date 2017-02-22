@@ -5,9 +5,9 @@ GEM
     multi_json (1.12.1)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
-    net-ssh (4.0.1)
+    net-ssh (2.9.4)
     net-telnet (0.1.1)
-    rake (12.0.0)
+    rake (10.5.0)
     rspec (3.5.0)
       rspec-core (~> 3.5.0)
       rspec-expectations (~> 3.5.0)
@@ -30,7 +30,7 @@ GEM
       rspec-its
       specinfra (~> 2.48)
     sfl (2.3)
-    specinfra (2.67.0)
+    specinfra (2.67.1)
       net-scp
       net-ssh (>= 2.7, < 5.0)
       net-telnet
@@ -41,7 +41,8 @@ PLATFORMS
 
 DEPENDENCIES
   multi_json (~> 1.12.1)
-  rake (~> 12.0.0)
+  net-ssh (~> 2.9)
+  rake (~> 10.5)
   rspec (~> 3.5.0)
   serverspec (= 2.30.0)
 

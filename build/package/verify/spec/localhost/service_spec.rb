@@ -1,7 +1,7 @@
 require "spec_helper"
 
 require "multi_json"
-require "net/http"
+require "net/https"
 require "uri"
 require "yaml"
 
@@ -194,22 +194,11 @@ RSpec.shared_examples("package upgrade") do |package_version|
       end
 
       it "starts the service before the upgrade" do
-        # The Docker image of centos 7 we use for testing seems to be missing
-        # the /run/lock directory (which /var/lock symlinks to). The API
-        # Umbrella v0.8.0 init.d script relies on touching
-        # /var/lock/api-umbrella, so make sure this directory exists prior to
-        # running the legacy start script.
-        if(ENV["DIST"] == "centos-7" && package_version == "0.8.0")
-          FileUtils.mkdir_p("/run/lock")
-        end
-
         command_result = command("/etc/init.d/api-umbrella start")
         expect(command_result.exit_status).to eql(0)
         expect(command_result.stderr).to eql("")
         expect(service("api-umbrella")).to be_running.under(:init)
-        if(package_version >= "0.9.0")
-          expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
-        end
+        expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
 
         command_result = command("/etc/init.d/api-umbrella status")
         expect(command_result.stdout).to match(/pid \d+/)
@@ -222,34 +211,15 @@ RSpec.shared_examples("package upgrade") do |package_version|
         expect(package("api-umbrella").version.version).to_not start_with(package_version)
       end
 
-      # Due to a bug in the prerm script in v0.8.0, API Umbrella will always be
-      # stopped during upgrades from v0.8 on Ubuntu & Debian. There's not a
-      # very clean solution, so we'll just ensure this doesn't happen for
-      # future upgrades.
-      if(["ubuntu", "debian"].include?(os[:family]) && package_version == "0.8.0")
-        it "is not running after upgrade (due to v0.8.0 prerm script bug)" do
-          expect(service("api-umbrella")).to_not be_running.under(:init)
-        end
+      it "restarts the service during the upgrade" do
+        expect(service("api-umbrella")).to be_running.under(:init)
+        expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
 
-        it "can start the service" do
-          command_result = command("/etc/init.d/api-umbrella start")
-          expect(command_result.exit_status).to eql(0)
-          expect(command_result.stderr).to eql("")
+        command_result = command("/etc/init.d/api-umbrella status")
+        expect(command_result.stdout).to match(/pid \d+/)
+        post_upgrade_pid = command_result.stdout.match(/pid (\d+)/)[1]
 
-          expect(service("api-umbrella")).to be_running.under(:init)
-          expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
-        end
-      else
-        it "restarts the service during the upgrade" do
-          expect(service("api-umbrella")).to be_running.under(:init)
-          expect(command("api-umbrella health --wait-for-status green").exit_status).to eql(0)
-
-          command_result = command("/etc/init.d/api-umbrella status")
-          expect(command_result.stdout).to match(/pid \d+/)
-          post_upgrade_pid = command_result.stdout.match(/pid (\d+)/)[1]
-
-          expect(post_upgrade_pid).to_not eql(@pre_upgrade_pid)
-        end
+        expect(post_upgrade_pid).to_not eql(@pre_upgrade_pid)
       end
 
       it_behaves_like "installed"
@@ -264,11 +234,66 @@ describe "api-umbrella" do
     expect(service("api-umbrella")).to be_running.under(:init)
   end
 
+  it "all processes are running" do
+    command_result = command("api-umbrella processes")
+    expect(command_result.exit_status).to eql(0)
+    output = command_result.stdout
+    [
+      "elasticsearch",
+      "geoip-auto-updater",
+      "mongod",
+      "mora",
+      "nginx",
+      "nginx-reloader",
+      "rsyslog",
+      "trafficserver",
+      "web-delayed-job",
+      "web-puma",
+    ].each do |service|
+      # Make sure all the expected processes are reported as running and aren't
+      # flapping up and down.
+      expect(command_result.stdout).to match(%r{^\[\+ \+\+\+ \+\+\+\] +#{service} +uptime: \d+s/\d+s +pids: \d+/\d+$})
+    end
+  end
+
+  it "does not contain unexpected errors in logs" do
+    logs = Dir.glob("/opt/api-umbrella/var/log/*/current").sort
+    expect(logs).to eql([
+      "/opt/api-umbrella/var/log/elasticsearch/current",
+      "/opt/api-umbrella/var/log/geoip-auto-updater/current",
+      "/opt/api-umbrella/var/log/mongod/current",
+      "/opt/api-umbrella/var/log/mora/current",
+      "/opt/api-umbrella/var/log/nginx-reloader/current",
+      "/opt/api-umbrella/var/log/nginx/current",
+      "/opt/api-umbrella/var/log/perpd/current",
+      "/opt/api-umbrella/var/log/rsyslog/current",
+      "/opt/api-umbrella/var/log/trafficserver/current",
+      "/opt/api-umbrella/var/log/web-delayed-job/current",
+      "/opt/api-umbrella/var/log/web-puma/current",
+    ].sort)
+    logs.each do |log|
+      content = File.read(log)
+      # Check the log output to ensure there's no unexpected errors. This batch
+      # of tests is based on discovering rsylogd was missing a libcurl
+      # dependency, but the error messages seem generic enough to test in all
+      # the log files for. Based on these errors:
+      #
+      # rsyslogd: could not load module '/opt/api-umbrella/embedded/lib/rsyslog/omelasticsearch.so', dlopen: libcurl.so.4: cannot open shared object file: No such file or directory  [v8.24.0 try http://www.rsyslog.com/e/2066 ]
+      # rsyslogd: module name 'omelasticsearch' is unknown [v8.24.0 try http://www.rsyslog.com/e/2209 ]
+      expect(content).to_not include("dlopen")
+      expect(content).to_not include("could not load module")
+      expect(content).to_not include("cannot open shared object file")
+      expect(content).to_not include("No such file or directory")
+      expect(content).to_not match(/module name .+ is unknown/)
+    end
+  end
+
   it "reports green from the health api endpoint" do
     uri = URI.parse("https://localhost/api-umbrella/v1/health.json")
-    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
-      http.request(Net::HTTP::Get.new(uri))
-    end
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    response = http.request(Net::HTTP::Get.new(uri.request_uri))
     expect(response.code).to eql("200")
     data = MultiJson.load(response.body)
     expect(data["status"]).to eql("green")
@@ -286,9 +311,17 @@ describe "api-umbrella" do
     # This accounts for HOME being different under Ubuntu's boot than when
     # running "sudo /etc/init.d/api-umbrella *"
     # See: https://github.com/NREL/api-umbrella/issues/89
-    expect(command("env HOME=/ /etc/init.d/api-umbrella status").stdout).to include("is running")
-    expect(command("env HOME=/foo /etc/init.d/api-umbrella status").stdout).to include("is running")
-    expect(command("env HOME=/root /etc/init.d/api-umbrella status").stdout).to include("is running")
+    ["/", "/foo", "/root"].each do |home|
+      command_result = command("env HOME=#{home} /etc/init.d/api-umbrella status")
+      expect(command_result.exit_status).to eql(0)
+      case(ENV["DIST"])
+      when "ubuntu-16.04"
+        expect(command_result.stdout).to include("Active: active")
+        #expect(command_result.stdout).to include("Active: active (running)")
+      else
+        expect(command_result.stdout).to include("is running")
+      end
+    end
   end
 
   it "listens on port 80" do
@@ -305,54 +338,84 @@ describe "api-umbrella" do
 
   it "signup page loads" do
     uri = URI.parse("https://localhost/signup/")
-    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
-      http.request(Net::HTTP::Get.new(uri))
-    end
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    response = http.request(Net::HTTP::Get.new(uri.request_uri))
     expect(response.code).to eql("200")
     expect(response.body).to include("API Key Signup")
   end
 
   it "admin first-time signup page loads" do
     uri = URI.parse("https://localhost/admins/signup")
-    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
-      http.request(Net::HTTP::Get.new(uri))
-    end
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    response = http.request(Net::HTTP::Get.new(uri.request_uri))
     expect(response.code).to eql("200")
     expect(response.body).to include("Password Confirmation")
   end
 
   it "gatekeeper blocks key-less requests" do
     uri = URI.parse("https://localhost/api-umbrella/v1/test.json")
-    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
-      http.request(Net::HTTP::Get.new(uri))
-    end
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    response = http.request(Net::HTTP::Get.new(uri.request_uri))
     expect(response.code).to eql("403")
     expect(response.body).to include("API_KEY_MISSING")
   end
 
   it "gatekeeper blocks invalid key requests" do
     uri = URI.parse("https://localhost/api-umbrella/v1/test.json?api_key=INVALID_KEY")
-    response = Net::HTTP.start(uri.host, uri.port, :use_ssl => true, :verify_mode => OpenSSL::SSL::VERIFY_NONE) do |http|
-      http.request(Net::HTTP::Get.new(uri))
-    end
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    response = http.request(Net::HTTP::Get.new(uri.request_uri))
     expect(response.code).to eql("403")
     expect(response.body).to include("API_KEY_INVALID")
   end
 
   it "fails immediately when startup script is called as an unauthorized user" do
-    expect(command("sudo -u api-umbrella-deploy /etc/init.d/api-umbrella start").stdout).to include("Must be started with super-user privileges")
-    expect($?.to_i).not_to eql(0)
+    command_result = command("sudo -u api-umbrella-deploy /etc/init.d/api-umbrella start")
+    expect(command_result.exit_status).to_not eql(0)
+    case(ENV["DIST"])
+    when "centos-7"
+      expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
+      expect(command_result.stdout).to include("FAILED")
+    when "ubuntu-16.04"
+      expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
+      expect(command_result.stdout).to include("failed")
+    else
+      expect(command_result.stdout).to include("Must be started with super-user privileges")
+    end
   end
 
   it "allows the deploy user to execute api-umbrella commands as root" do
     expect(command("sudo -u api-umbrella-deploy sudo -n api-umbrella status").stdout).to include("is running")
-    expect(command("sudo -u api-umbrella-deploy sudo -n /etc/init.d/api-umbrella status").stdout).to include("is running")
+    command_result = command("sudo -u api-umbrella-deploy sudo -n /etc/init.d/api-umbrella status")
+    case(ENV["DIST"])
+    when "ubuntu-16.04"
+      #expect(command_result.stdout).to include("Active: active (running)")
+      expect(command_result.stdout).to include("Active: active")
+    else
+      expect(command_result.stdout).to include("is running")
+    end
   end
 
   it "exits immediately if start is called when already started" do
     command_result = command("/etc/init.d/api-umbrella start")
     expect(command_result.exit_status).to eql(0)
-    expect(command_result.stdout).to include("api-umbrella is already running")
+    case(ENV["DIST"])
+    when "centos-7"
+      expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
+      expect(command_result.stdout).to include("OK")
+    when "ubuntu-16.04"
+      expect(command_result.stdout).to include("Starting api-umbrella (via systemctl)")
+      expect(command_result.stdout).to_not include("failed")
+    else
+      expect(command_result.stdout).to include("api-umbrella is already running")
+    end
     expect(command_result.stderr).to eql("")
   end
 
@@ -402,7 +465,12 @@ describe "api-umbrella" do
     expect(service("api-umbrella")).to_not be_running.under(:init)
     command_result = command("/etc/init.d/api-umbrella status")
     expect(command_result.exit_status).to eql(3)
-    expect(command_result.stdout).to include("api-umbrella is stopped")
+    case(ENV["DIST"])
+    when "ubuntu-16.04"
+      expect(command_result.stdout).to include("Active: inactive")
+    else
+      expect(command_result.stdout).to include("api-umbrella is stopped")
+    end
     expect(command_result.stderr).to eql("")
 
     # Run some extra tests while we have API Umbrella in the stopped state:
@@ -410,20 +478,48 @@ describe "api-umbrella" do
     # Verify behavior of stop command after already stopped.
     command_result = command("/etc/init.d/api-umbrella stop")
     expect(command_result.exit_status).to eql(0)
-    expect(command_result.stdout).to include("api-umbrella is already stopped")
+    case(ENV["DIST"])
+    when "centos-7"
+      expect(command_result.stdout).to include("Stopping api-umbrella (via systemctl)")
+      expect(command_result.stdout).to include("OK")
+    when "ubuntu-16.04"
+      expect(command_result.stdout).to include("Stopping api-umbrella (via systemctl)")
+      expect(command_result.stdout).to_not include("failed")
+    else
+      expect(command_result.stdout).to include("api-umbrella is already stopped")
+    end
     expect(command_result.stderr).to eql("")
 
     # Verify behavior of reload command when stopped.
     command_result = command("/etc/init.d/api-umbrella reload")
-    expect(command_result.exit_status).to eql(7)
-    expect(command_result.stdout).to include("api-umbrella is stopped")
-    expect(command_result.stderr).to eql("")
+    case(ENV["DIST"])
+    when "centos-7"
+      expect(command_result.exit_status).to eql(1)
+      expect(command_result.stdout).to include("Reloading api-umbrella configuration (via systemctl)")
+      expect(command_result.stdout).to include("FAILED")
+    when "ubuntu-16.04"
+      expect(command_result.exit_status).to eql(1)
+      expect(command_result.stdout).to include("Reloading api-umbrella configuration (via systemctl)")
+      expect(command_result.stdout).to include("failed")
+    else
+      expect(command_result.exit_status).to eql(7)
+      expect(command_result.stdout).to include("api-umbrella is stopped")
+      expect(command_result.stderr).to eql("")
+    end
 
     # Verify behavior of condrestart command when stopped.
+    expect(service("api-umbrella")).to_not be_running.under(:init)
     command_result = command("/etc/init.d/api-umbrella condrestart")
     expect(command_result.exit_status).to eql(0)
-    expect(command_result.stdout).to eql("")
+    case(ENV["DIST"])
+    when "centos-7"
+      expect(command_result.stdout).to include("Restarting api-umbrella (via systemctl)")
+      expect(command_result.stdout).to include("OK")
+    else
+      expect(command_result.stdout).to eql("")
+    end
     expect(command_result.stderr).to eql("")
+    expect(service("api-umbrella")).to_not be_running.under(:init)
 
     # Start again
     command_result = command("/etc/init.d/api-umbrella start")
@@ -564,4 +660,5 @@ describe "api-umbrella" do
 
   it_behaves_like "package upgrade", "0.11.1-1"
   it_behaves_like "package upgrade", "0.12.0-1"
+  it_behaves_like "package upgrade", "0.13.0-1"
 end
