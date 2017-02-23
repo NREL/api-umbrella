@@ -85,7 +85,7 @@ elasticsearch:
     - http://10.0.0.3:14002
 ```
 
-For the MongoDB servers (any server with the `general_db` role), define the server IPs and replicaset name:
+For the MongoDB servers (any server with the `general_db` role), define the server IPs and replica set name:
 
 ```yaml
 mongodb:
@@ -94,3 +94,5 @@ mongodb:
     replication:
       replSetName: api-umbrella
 ```
+
+Note that for MongoDB, you'll still need to follow the normal procedure to [deploy a replica set](https://docs.mongodb.com/manual/tutorial/deploy-replica-set/) (for example, running `rs.initiate()`). In order to connect to MongoDB on the API Umbrella servers you can use this command: `/opt/api-umbrella/embedded/bin/mongo --port 14001`
