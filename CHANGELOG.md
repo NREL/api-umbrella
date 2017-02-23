@@ -1,6 +1,6 @@
 # API Umbrella Change Log
 
-## 0.14.0 (2017-02-21)
+## 0.14.0 (2017-02-22)
 
 This update focuses on upgrading various internal components of API Umbrella. It also offers new features and various bug fixes. A few potential security issues are also addressed. Upgrading is recommended, but there are some potential compatibility issues to note. See the Upgrade Instructions section below.
 
