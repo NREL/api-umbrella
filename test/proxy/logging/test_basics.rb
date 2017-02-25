@@ -33,9 +33,11 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     }))
     assert_response_code(200, response)
 
-    record = wait_for_log(response)[:hit_source]
+    result = wait_for_log(response)
+    record = result[:hit_source]
+    hit = result[:hit]
 
-    assert_equal([
+    expected_fields = [
       "api_backend_id",
       "api_backend_url_match_id",
       "api_key",
@@ -70,7 +72,22 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "user_email",
       "user_id",
       "user_registration_source",
-    ].sort, record.keys.sort)
+    ]
+    assert_equal(expected_fields.sort, record.keys.sort)
+
+    mapping = LogItem.gateway.client.indices.get_mapping({
+      :index => hit["_index"],
+      :type => hit["_type"],
+    })
+    expected_mapping_fields = expected_fields + [
+      "gatekeeper_denied_code",
+      "request_ip_city",
+      "request_ip_country",
+      "request_ip_region",
+      "response_content_encoding",
+      "response_transfer_encoding",
+    ]
+    assert_equal(expected_mapping_fields.sort, mapping[hit["_index"]]["mappings"][hit["_type"]]["properties"].keys.sort)
 
     assert_kind_of(String, record["api_backend_id"])
     assert_kind_of(String, record["api_backend_url_match_id"])

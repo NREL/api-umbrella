@@ -28,12 +28,12 @@
           "dynamic": false,
           "properties": {
             "api_backend_id": {
-              "type": "string",
-              "index": "not_analyzed"
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "api_backend_url_match_id": {
-              "type": "string",
-              "index": "not_analyzed"
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "api_key": {
               "type": "keyword",
@@ -52,8 +52,7 @@
               "normalizer": "lowercase_normalizer"
             },
             "request_at": {
-              "type": "date",
-              "doc_values": true
+              "type": "date"
             },
             "request_basic_auth_username": {
               "type": "keyword",
@@ -112,16 +111,15 @@
               "normalizer": "lowercase_normalizer"
             },
             "request_size": {
-              "type": "integer",
-              "doc_values": true
+              "type": "integer"
             },
-            "request_query": {
+            "request_url": {
               "type": "keyword",
               "normalizer": "lowercase_normalizer"
             },
             "request_url_query": {
-              "type": "string",
-              "analyzer": "lowercase_normalizer"
+              "type": "keyword",
+              "normalizer": "lowercase_normalizer"
             },
             "request_user_agent": {
               "type": "keyword",
@@ -136,8 +134,7 @@
               "normalizer": "lowercase_normalizer"
             },
             "response_age": {
-              "type": "integer",
-              "doc_values": true
+              "type": "integer"
             },
             "response_cache": {
               "type": "keyword",
@@ -148,8 +145,7 @@
               "normalizer": "lowercase_normalizer"
             },
             "response_content_length": {
-              "type": "integer",
-              "doc_values": true
+              "type": "integer"
             },
             "response_content_type": {
               "type": "keyword",
@@ -160,16 +156,13 @@
               "normalizer": "lowercase_normalizer"
             },
             "response_size": {
-              "type": "integer",
-              "doc_values": true
+              "type": "integer"
             },
             "response_status": {
-              "type": "short",
-              "doc_values": true
+              "type": "short"
             },
             "response_time": {
-              "type": "integer",
-              "doc_values": true
+              "type": "integer"
             },
             "response_transfer_encoding": {
               "type": "keyword",
