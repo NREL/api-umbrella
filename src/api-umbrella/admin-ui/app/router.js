@@ -52,6 +52,7 @@ Router.map(function() {
   });
 
   this.route('login');
+  this.route('error');
   this.route('not-found', { path: '/*wildcard' });
 });
 

@@ -14,6 +14,7 @@ set(INSTALL_PREFIX_EMBEDDED ${CMAKE_INSTALL_PREFIX}/embedded)
 set(EP_BASE build/work/external-projects)
 set_directory_properties(PROPERTIES EP_BASE ${EP_BASE})
 set(WORK_DIR ${CMAKE_BINARY_DIR}/build/work)
+set(PACKAGE_WORK_DIR ${CMAKE_BINARY_DIR}/build/package/work)
 
 # Directory to store "stamp" files indicating when a step was completed or last
 # touched.
@@ -43,9 +44,12 @@ set(TEST_VENDOR_DIR ${TEST_INSTALL_PREFIX}/vendor)
 set(TEST_VENDOR_LUA_SHARE_DIR ${TEST_VENDOR_DIR}/share/lua/5.1)
 set(TEST_VENDOR_LUA_LIB_DIR ${TEST_VENDOR_DIR}/lib/lua/5.1)
 
-# Define a timestamped release name for our app installations.
-execute_process(COMMAND date -u +%Y%m%d%H%M%S OUTPUT_VARIABLE RELEASE_TIMESTAMP OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND date -u +%Y%m%d OUTPUT_VARIABLE RELEASE_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
+# Define a timestamped release name for our app installations. Base this on the
+# last git commit timestamp so installs are consistent for each git commit.
+include(${CMAKE_SOURCE_DIR}/build/cmake/GetGitRevisionDescription.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/GetGitTimestamp.cmake)
+get_git_timestamp(RELEASE_TIMESTAMP)
+string(SUBSTRING ${RELEASE_TIMESTAMP} 0 8 RELEASE_DATE)
 
 include(ExternalProject)
 
@@ -92,6 +96,7 @@ if(ENABLE_TEST_DEPENDENCIES)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/lua-deps.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/mailhog.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/mongo-orchestration.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/test/openldap.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/phantomjs.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/shellcheck.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/test/unbound.cmake)

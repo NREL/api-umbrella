@@ -5,6 +5,7 @@ en:
     developer: dummy login (development only)
     facebook: Facebook
     github: GitHub
+    gitlab: GitLab
     google_oauth2: Google
     ldap: LDAP
   errors:
@@ -113,10 +114,8 @@ en:
         require_https_tooltip_markdown: |-
           Choose whether HTTPS is required to access this API. HTTPS is encouraged to protect the API keys.
 
-          - **Required & return message:** HTTPS is required to access the API. HTTP requests will return an error message instructing the user to use an HTTPS URL instead. This is the recommended and default strategy.
-          - **Required & return redirect:** HTTPS is required to access the API. HTTP requests will return a redirect to the HTTPS URL.
-          - **Transitionary & return message:** New API keys that signup after choosing this setting will be forced to use HTTPS. Existing API keys may continue to use either HTTP or HTTPS. New API keys using HTTP will return an error message instructing the user to use an HTTPS URL instead.
-          - **Transitionary & return redirect:** New API keys that signup after choosing this setting will be forced to use HTTPS. Existing API keys may continue to use either HTTP or HTTPS. New API keys using HTTP will return a redirect to the HTTPS URL.
+          - **Required:** HTTPS is required to access the API. HTTP requests will return an error message instructing the user to use an HTTPS URL instead. This is the recommended and default strategy.
+          - **Transitionary:** New API keys that signup after choosing this setting will be forced to use HTTPS. Existing API keys may continue to use either HTTP or HTTPS. New API keys using HTTP will return an error message instructing the user to use an HTTPS URL instead.
           - **Optional**: HTTPS is optional and either HTTP or HTTPS may be used.
 
           *Notes on redirects:*
@@ -125,11 +124,9 @@ en:
           - If API clients rely on the redirect for HTTPS access, this strategy does not secure the API keys, since the client may still be making an insecure initial HTTP request with their API key.
           - For GET requests a `301 Moved Permanently` redirect will be returned. For all other HTTP methods a `307 Temporary Redirect` redirect will be returned (to instruct the client to retry using the same HTTP method).
         require_https_options:
-          inherit: Inherit (default - required & return message)
-          required_return_error: Required & return message - HTTP requests will receive a message to use HTTPS
-          required_return_redirect: Required & return redirects - HTTP requests will be redirected to HTTPS
-          transition_return_error: Transitionary & return message - Optional for existing API keys, required for new API keys
-          transition_return_redirect: Transitionary & return redirects - Optional for existing API keys, required for new API keys
+          inherit: Inherit (default - required)
+          required_return_error: Required - HTTP requests will receive a message to use HTTPS
+          transition_return_error: Transitionary - Optional for existing API keys, required for new API keys
           optional: Optional - HTTPS is optional
         disable_api_key: API Key Checks
         disable_api_key_options:

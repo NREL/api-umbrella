@@ -1,4 +1,4 @@
-local elasticsearch_encode_json = require "api-umbrella.utils.elasticsearch_encode_json"
+local cjson = require "cjson"
 local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local iconv = require "iconv"
 local logger = require "resty.logger.socket"
@@ -10,6 +10,7 @@ local str = require "resty.string"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
 local utils = require "api-umbrella.proxy.utils"
 
+local cjson_encode = cjson.encode
 local round = utils.round
 local split = plutils.split
 
@@ -27,6 +28,14 @@ local function truncate_string(value, max_length)
   else
     return value
   end
+end
+
+local function truncate(value, max_length)
+  if not value or type(value) ~= "string" then
+    return nil
+  end
+
+  return truncate_string(value, max_length)
 end
 
 local function lowercase_truncate(value, max_length)
@@ -167,14 +176,19 @@ local function cache_city_geocode(premature, id, data)
 end
 
 function _M.ignore_request(ngx_ctx, ngx_var)
-  -- Don't log some of our internal API calls used to determine if API Umbrella
-  -- is fully started and ready (since logging of these requests will likely
-  -- fail anyway if things aren't ready).
-  local uri = ngx_ctx.original_uri or ngx_var.uri
-  if uri == "/api-umbrella/v1/health" or uri == "/api-umbrella/v1/state" then
-    return true
+  -- Only log API requests (not web app or website backend requests).
+  if ngx_ctx.matched_api then
+    -- Don't log some of our internal API calls used to determine if API
+    -- Umbrella is fully started and ready (since logging of these requests
+    -- will likely fail anyway if things aren't ready).
+    local uri = ngx_ctx.original_uri or ngx_var.uri
+    if uri == "/api-umbrella/v1/health" or uri == "/api-umbrella/v1/state" then
+      return true
+    else
+      return false
+    end
   else
-    return false
+    return true
   end
 end
 
@@ -263,6 +277,8 @@ function _M.set_computed_timestamp_fields(data)
 end
 
 function _M.set_computed_url_fields(data, ngx_ctx)
+  data["request_url_host"] = lowercase_truncate(data["request_url_host"], 200)
+
   -- Extract just the path portion of the URL.
   --
   -- Note: we're extracting this from the original "request_uri" variable here,
@@ -281,6 +297,11 @@ function _M.set_computed_url_fields(data, ngx_ctx)
     data["request_url_query"] = escape_uri_non_ascii(parts[2])
   end
 
+  data["legacy_request_url"] = data["request_url_scheme"] .. "://" .. data["request_url_host"] .. data["request_url_path"]
+  if data["request_url_query"] then
+    data["legacy_request_url"] = data["legacy_request_url"] .. "?" .. data["request_url_query"]
+  end
+
   set_url_hierarchy(data)
 end
 
@@ -296,47 +317,49 @@ end
 
 function _M.normalized_data(data)
   local normalized = {
+    api_backend_id = lowercase_truncate(data["api_backend_id"], 36),
+    api_backend_url_match_id = lowercase_truncate(data["api_backend_url_match_id"], 36),
     denied_reason = lowercase_truncate(data["denied_reason"], 50),
     id = lowercase_truncate(data["id"], 20),
-    request_accept = lowercase_truncate(data["request_accept"], 200),
-    request_accept_encoding = lowercase_truncate(data["request_accept_encoding"], 200),
-    request_basic_auth_username = lowercase_truncate(data["request_basic_auth_username"], 200),
-    request_connection = lowercase_truncate(data["request_connection"], 200),
-    request_content_type = lowercase_truncate(data["request_content_type"], 200),
+    request_accept = truncate(data["request_accept"], 200),
+    request_accept_encoding = truncate(data["request_accept_encoding"], 200),
+    request_basic_auth_username = truncate(data["request_basic_auth_username"], 200),
+    request_connection = truncate(data["request_connection"], 200),
+    request_content_type = truncate(data["request_content_type"], 200),
     request_ip = lowercase_truncate(data["request_ip"], 45),
-    request_ip_city = lowercase_truncate(data["request_ip_city"], 200),
+    request_ip_city = truncate(data["request_ip_city"], 200),
     request_ip_country = uppercase_truncate(data["request_ip_country"], 2),
     request_ip_lat = tonumber(data["request_ip_lat"]),
     request_ip_lon = tonumber(data["request_ip_lon"]),
     request_ip_region = uppercase_truncate(data["request_ip_region"], 2),
     request_method = uppercase_truncate(data["request_method"], 10),
-    request_origin = lowercase_truncate(data["request_origin"], 200),
-    request_referer = lowercase_truncate(data["request_referer"], 200),
+    request_origin = truncate(data["request_origin"], 200),
+    request_referer = truncate(data["request_referer"], 200),
     request_size = tonumber(data["request_size"]),
     request_url_hierarchy = data["request_url_hierarchy"],
     request_url_host = lowercase_truncate(data["request_url_host"], 200),
-    request_url_path = lowercase_truncate(data["request_url_path"], 4000),
-    request_url_path_level1 = lowercase_truncate(data["request_url_path_level1"], 40),
-    request_url_path_level2 = lowercase_truncate(data["request_url_path_level2"], 40),
-    request_url_path_level3 = lowercase_truncate(data["request_url_path_level3"], 40),
-    request_url_path_level4 = lowercase_truncate(data["request_url_path_level4"], 40),
-    request_url_path_level5 = lowercase_truncate(data["request_url_path_level5"], 40),
-    request_url_path_level6 = lowercase_truncate(data["request_url_path_level6"], 40),
+    request_url_path = truncate(data["request_url_path"], 4000),
+    request_url_path_level1 = truncate(data["request_url_path_level1"], 40),
+    request_url_path_level2 = truncate(data["request_url_path_level2"], 40),
+    request_url_path_level3 = truncate(data["request_url_path_level3"], 40),
+    request_url_path_level4 = truncate(data["request_url_path_level4"], 40),
+    request_url_path_level5 = truncate(data["request_url_path_level5"], 40),
+    request_url_path_level6 = truncate(data["request_url_path_level6"], 40),
     request_url_port = tonumber(data["request_url_port"]),
-    request_url_query = lowercase_truncate(data["request_url_query"], 4000),
+    request_url_query = truncate(data["request_url_query"], 4000),
     request_url_scheme = lowercase_truncate(data["request_url_scheme"], 10),
-    request_user_agent = lowercase_truncate(data["request_user_agent"], 400),
-    request_user_agent_family = lowercase_truncate(data["request_user_agent_family"], 100),
-    request_user_agent_type = lowercase_truncate(data["request_user_agent_type"], 100),
+    request_user_agent = truncate(data["request_user_agent"], 400),
+    request_user_agent_family = truncate(data["request_user_agent_family"], 100),
+    request_user_agent_type = truncate(data["request_user_agent_type"], 100),
     response_age = tonumber(data["response_age"]),
-    response_cache = lowercase_truncate(data["response_cache"], 200),
-    response_content_encoding = lowercase_truncate(data["response_content_encoding"], 200),
+    response_cache = truncate(data["response_cache"], 200),
+    response_content_encoding = truncate(data["response_content_encoding"], 200),
     response_content_length = tonumber(data["response_content_length"]),
-    response_content_type = lowercase_truncate(data["response_content_type"], 200),
-    response_server = lowercase_truncate(data["response_server"], 100),
+    response_content_type = truncate(data["response_content_type"], 200),
+    response_server = truncate(data["response_server"], 100),
     response_size = tonumber(data["response_size"]),
     response_status = tonumber(data["response_status"]),
-    response_transfer_encoding = lowercase_truncate(data["response_transfer_encoding"], 200),
+    response_transfer_encoding = truncate(data["response_transfer_encoding"], 200),
     timer_response = tonumber(data["timer_response"]),
     timestamp_tz_date = uppercase_truncate(data["timestamp_tz_date"], 20),
     timestamp_tz_hour = uppercase_truncate(data["timestamp_tz_hour"], 20),
@@ -349,14 +372,15 @@ function _M.normalized_data(data)
     user_id = lowercase_truncate(data["user_id"], 36),
 
     -- Deprecated
-    legacy_api_key = lowercase_truncate(data["legacy_api_key"], 40),
-    legacy_user_email = lowercase_truncate(data["legacy_user_email"], 200),
-    legacy_user_registration_source = lowercase_truncate(data["legacy_user_registration_source"], 200),
+    legacy_api_key = truncate(data["legacy_api_key"], 40),
+    legacy_request_url = truncate(data["legacy_request_url"], 8000),
+    legacy_user_email = truncate(data["legacy_user_email"], 200),
+    legacy_user_registration_source = truncate(data["legacy_user_registration_source"], 200),
   }
 
   if normalized["request_url_hierarchy"] then
     for index, path in ipairs(normalized["request_url_hierarchy"]) do
-      normalized["request_url_hierarchy"][index] = lowercase_truncate(path, 400)
+      normalized["request_url_hierarchy"][index] = truncate(path, 400)
     end
   end
 
@@ -373,7 +397,7 @@ function _M.build_syslog_message(data)
     .. " -" -- msgid
     .. " -" -- structured-data
     .. " @cee:" -- CEE-enhanced logging for rsyslog to parse JSON
-    .. elasticsearch_encode_json({ raw = data }) -- JSON data
+    .. cjson_encode({ raw = data }) -- JSON data
     .. "\n"
 
   return syslog_message

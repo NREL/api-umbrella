@@ -4,6 +4,11 @@ let EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function(defaults) {
   let app = new EmberApp(defaults, {
+    sourcemaps: {
+      // Always enable sourcemaps, even for the production build.
+      enabled: true,
+    },
+
     sassOptions: {
       // The Sass number precision must be increased to 8 for Bootstrap, or
       // else certain things don't line up:
@@ -54,10 +59,8 @@ module.exports = function(defaults) {
   app.import('bower_components/jquery-bbq-deparam/jquery-deparam.js');
   app.import('bower_components/jquery.scrollTo/jquery.scrollTo.js');
   app.import('bower_components/jsdiff/diff.js');
-  app.import('bower_components/jstz-detect/jstz.js');
   app.import('bower_components/lodash/dist/lodash.js');
   app.import('bower_components/marked/lib/marked.js');
-  app.import('bower_components/moment/moment.js');
   app.import('bower_components/pnotify/dist/pnotify.css');
   app.import('bower_components/pnotify/dist/pnotify.buttons.css');
   app.import('bower_components/pnotify/dist/pnotify.mobile.css');
@@ -76,8 +79,6 @@ module.exports = function(defaults) {
   app.import('bower_components/jquery-ui/ui/widgets/mouse.js');
   app.import('bower_components/jquery-ui/ui/widgets/sortable.js');
   app.import('bower_components/tbasse-jquery-truncate/jquery.truncate.js');
-
-  app.import('bower_components/bootstrap-daterangepicker/daterangepicker.js');
 
   return app.toTree();
 };

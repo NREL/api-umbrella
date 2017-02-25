@@ -23,7 +23,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :ip => "8.8.8.8",
       :country => "US",
       :region => "CA",
-      :city => "mountain view",
+      :city => "Mountain View",
       :lat => 37.386,
       :lon => -122.0838,
     })
@@ -61,7 +61,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :ip => "::ffff:8.8.8.8",
       :country => "US",
       :region => "CA",
-      :city => "mountain view",
+      :city => "Mountain View",
       :lat => 37.386,
       :lon => -122.0838,
     })
@@ -80,7 +80,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :ip => "104.250.168.24",
       :country => "MC",
       :region => nil,
-      :city => "monte-carlo",
+      :city => "Monte-carlo",
       :lat => 43.7333,
       :lon => 7.4167,
     })
@@ -118,7 +118,7 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
       :ip => "191.102.110.22",
       :country => "CO",
       :region => "34",
-      :city => "bogotá",
+      :city => "Bogotá",
       :lat => 4.6492,
       :lon => -74.0628,
     })

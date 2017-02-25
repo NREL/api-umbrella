@@ -24,7 +24,7 @@ module ApiUmbrellaTestHelpers
 
     def admin_csrf_session(admin = nil)
       csrf_token = SecureRandom.base64(32)
-      session_cookie = encrypt_session_cookie(admin_session_data.merge(csrf_session_data(csrf_token)))
+      session_cookie = encrypt_session_cookie(admin_session_data(admin).merge(csrf_session_data(csrf_token)))
       { :headers => { "Cookie" => "_api_umbrella_session=#{session_cookie}", "X-CSRF-Token" => csrf_token } }
     end
 
@@ -141,6 +141,20 @@ module ApiUmbrellaTestHelpers
       }))
 
       [get_response, create_response]
+    end
+
+    def assert_current_admin_url(fragment_path, fragment_query_values)
+      uri = Addressable::URI.parse(page.current_url)
+      assert_equal("/admin/", uri.path)
+      assert(uri.fragment)
+
+      fragment_uri = Addressable::URI.parse(uri.fragment)
+      assert_equal(fragment_path, fragment_uri.path)
+      if(fragment_query_values.nil?)
+        assert_nil(fragment_uri.query_values)
+      else
+        assert_equal(fragment_query_values, fragment_uri.query_values)
+      end
     end
 
     private

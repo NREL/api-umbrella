@@ -13,16 +13,25 @@ if [ "$existing" != "" ]; then
   docker rm -f "$existing"
 fi
 
-# Run inside a privileged container so the ulimit settings that API Umbrella
-# v0.8 attempt work (needed so we can test upgrades from v0.8).
+# Run inside a privileged container for systemd things to work. First run
+# /sbin/init so we can better emulate a real server for systemd testing.
 docker run \
   --name="$container_name" \
   --volume="$source_dir:/api-umbrella" \
+  --env="container=docker" \
   --env="DIST=$DIST" \
   --tty \
-  --rm \
   --privileged \
+  --detach \
   "$docker_image" \
-  /bin/bash -c "/api-umbrella/build/package/verify/docker_script"
+  /sbin/init
+
+# Next run our script to install the API Umbrella package and perform
+# verification tests.
+docker exec --tty "$container_name" /bin/bash -c "/api-umbrella/build/package/verify/docker_script"
+
+# Delete after successful run.
+docker stop "$container_name"
+docker rm -f "$container_name"
 
 echo "Completed package verification for $DIST"

@@ -300,7 +300,8 @@ if [ "x${LDFLAGS}" != "x" ]; then
 fi
 
 "$TOP_SRCDIR/build/scripts/download_cmake"
-PATH="$TOP_SRCDIR/build/work/cmake/bin:$PATH"
+build_dir="$(pwd)"
+PATH="$build_dir/build/work/cmake/bin:$PATH"
 export PATH
 
 eval "cmake ${TOP_SRCDIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${PREFIX} ${CMAKE_ARGS}"

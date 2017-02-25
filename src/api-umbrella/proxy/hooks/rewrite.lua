@@ -1,5 +1,3 @@
-local start_time = ngx.now()
-
 local api_matcher = require "api-umbrella.proxy.middleware.api_matcher"
 local error_handler = require "api-umbrella.proxy.error_handler"
 local host_normalize = require "api-umbrella.utils.host_normalize"
@@ -26,8 +24,8 @@ else
 end
 ngx.ctx.host_normalized = host_normalize(ngx.ctx.host)
 ngx.ctx.http_x_api_key = ngx_var.http_x_api_key
-ngx.ctx.port = ngx_var.http_x_forwarded_port or ngx_var.server_port
-ngx.ctx.protocol = ngx_var.http_x_forwarded_proto or ngx_var.scheme
+ngx.ctx.port = ngx_var.real_port
+ngx.ctx.protocol = ngx_var.real_scheme
 ngx.ctx.remote_addr = ngx_var.remote_addr
 ngx.ctx.remote_user = ngx_var.remote_user
 ngx.ctx.request_method = string.lower(ngx.var.request_method)
@@ -41,13 +39,10 @@ local function route_to_web_app()
   ngx.var.api_umbrella_proxy_pass = "http://api_umbrella_web_app_backend"
 end
 
-local function route_to_api(api)
+local function route_to_api(api, url_match)
   ngx.ctx.matched_api = api
+  ngx.ctx.matched_api_url_match = url_match
   ngx.var.api_umbrella_proxy_pass = "http://api_umbrella_trafficserver_backend"
-
-  -- Compute how much time we spent in Lua processing during this phase of the
-  -- request.
-  utils.overhead_timer(start_time)
 end
 
 local function route_to_website(website)
@@ -61,9 +56,9 @@ if web_app then
 else
   local active_config = get_packed(ngx.shared.active_config, "packed_data") or {}
 
-  local api, api_err = api_matcher(active_config)
-  if api then
-    route_to_api(api)
+  local api, url_match, api_err = api_matcher(active_config)
+  if api and url_match then
+    route_to_api(api, url_match)
   elseif api_err == "not_found" then
     local website, website_err = website_matcher(active_config)
     if website then

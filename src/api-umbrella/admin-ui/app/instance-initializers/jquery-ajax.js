@@ -1,10 +1,10 @@
 export function initialize(appInstance) {
   let session = appInstance.lookup('service:session');
   $.ajaxPrefilter(function(options) {
-    session.authorize('authorizer:devise-server-side', function(apiKey, csrfToken) {
+    session.authorize('authorizer:devise-server-side', function(apiKey, adminAuthToken) {
       options.headers = options.headers || {};
       options.headers['X-Api-Key'] = apiKey;
-      options.headers['X-CSRF-Token'] = csrfToken;
+      options.headers['X-Admin-Auth-Token'] = adminAuthToken;
     });
   });
 }

@@ -30,6 +30,7 @@
 /install_manifest_hadoop-analytics.txt
 
 /build/work
+/build/package/work
 /build/package/verify/.rnd
 /deploy/.env
 /log/*

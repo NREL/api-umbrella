@@ -14,10 +14,11 @@ add_custom_command(
   DEPENDS
     ${admin_ui_files}
     ${CMAKE_SOURCE_DIR}/src/api-umbrella/admin-ui/bower.json
+    ${CMAKE_SOURCE_DIR}/src/api-umbrella/admin-ui/ember-cli-build.js
     ${CMAKE_SOURCE_DIR}/src/api-umbrella/admin-ui/package.json
     ${CMAKE_SOURCE_DIR}/src/api-umbrella/admin-ui/yarn.lock
   COMMAND mkdir -p ${CORE_BUILD_DIR}/tmp/admin-ui-build
-  COMMAND rsync -a -v --delete-after "--filter=:- ${CMAKE_SOURCE_DIR}/src/api-umbrella/admin-ui/.gitignore" --exclude=/dist-prod --exclude=/dist-dev ${CMAKE_SOURCE_DIR}/src/api-umbrella/admin-ui/ ${CORE_BUILD_DIR}/tmp/admin-ui-build/
+  COMMAND rsync -a -v --delete-after "--filter=:- ${CMAKE_SOURCE_DIR}/src/api-umbrella/admin-ui/.gitignore" --exclude=/dist ${CMAKE_SOURCE_DIR}/src/api-umbrella/admin-ui/ ${CORE_BUILD_DIR}/tmp/admin-ui-build/
   COMMAND touch ${STAMP_DIR}/core-admin-ui-build-dir
 )
 
@@ -28,7 +29,16 @@ add_custom_command(
   DEPENDS
     yarn
     ${STAMP_DIR}/core-admin-ui-build-dir
-  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} yarn install
+  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} yarn install --frozen-lockfile
+  # In the CI environment, the "node-sass/vendor" directory seems to sometimes
+  # go away. A bit of a hack, but try to workaround this by forcing node-sass
+  # to be reinstalled if the vendor dir is missing.
+  #
+  # See:
+  # https://github.com/yarnpkg/yarn/issues/1981
+  # https://github.com/yarnpkg/yarn/issues/1832
+  # https://github.com/sass/node-sass/issues/1579
+  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && test -d node_modules/node-sass && test -d node_modules/node-sass/vendor || env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} yarn add node-sass --force
   COMMAND touch ${STAMP_DIR}/core-admin-ui-yarn-install
 )
 
@@ -46,14 +56,12 @@ add_custom_command(
 add_custom_command(
   OUTPUT
     ${STAMP_DIR}/core-admin-ui-build
-    ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist-dev
-    ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist-prod
+    ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist
   DEPENDS
     ${STAMP_DIR}/core-admin-ui-build-dir
     ${STAMP_DIR}/core-admin-ui-yarn-install
     ${STAMP_DIR}/core-admin-ui-bower-install
-  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && rm -rf ./dist-dev && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/ember build --environment=development --output-path=./dist-dev
-  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && rm -rf ./dist-prod && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/ember build --environment=production --output-path=./dist-prod
+  COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && rm -rf ./dist && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/ember build --environment=production --output-path=./dist
   COMMAND touch ${STAMP_DIR}/core-admin-ui-build
 )
 

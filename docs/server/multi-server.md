@@ -21,7 +21,7 @@ This configuration enables all the available services. To disable a service, rem
 The services available are:
 
 - `general_db`: The MongoDB database used for configuration, user information, and other miscellaneous data.
-- `log_db`: The ElasticSearch database used for logging and analytics.
+- `log_db`: The Elasticsearch database used for logging and analytics.
 - `router`: The core reverse proxy and routing capabilities of API Umbrella.
 - `web`: The web application providing API Umbrella's administration app and REST APIs.
 
@@ -45,9 +45,37 @@ If you have multiple proxy or web servers running, you'll need to load balance b
 
 ## Database Configuration
 
+### Bind Address
+
+By default, the database processes bind to `127.0.0.1`, which means they will only accept connections from the same server. If you decide to run the database processes on separate servers, or you have multiple database servers, then you'll need to adjust the bind addresses to allow for communication between servers.
+
+**Warning:** Elasticsearch offers no built-in security, and by default, passwords are not enabled on MongoDB. So it's important that you do not expose the servers to the public or unprotected networks.
+
+Changing the bind addresses to `0.0.0.0` will allow for database communication between servers, but this setting is only appropriate if you have other firewall or network restrictions in place to prevent public access. Again, **be careful** not to expose your database servers to the internet.
+
+For the Elasticsearch servers (any server with the `log_db` role):
+
+```yaml
+elasticsearch:
+  embedded_server_config:
+    network:
+      host: 127.0.0.1
+```
+
+For the MongoDB servers (any server with the `general_db` role):
+
+```yaml
+mongodb:
+  embedded_server_config:
+    net:
+      bindIp: 127.0.0.1
+```
+
+### Multiple Servers
+
 If you have multiple database servers, you'll need to adjust the `/etc/api-umbrella/api-umbrella.yml` configuration on all the servers to define the addresses of each database servers.
 
-For the ElasticSearch servers (any server with the `log_db` role), define the server IPs:
+For the Elasticsearch servers (any server with the `log_db` role), define the server IPs:
 
 ```yaml
 elasticsearch:
@@ -57,7 +85,7 @@ elasticsearch:
     - http://10.0.0.3:14002
 ```
 
-For the MongoDB servers (any server with the `general_db` role), define the server IPs and replicaset name:
+For the MongoDB servers (any server with the `general_db` role), define the server IPs and replica set name:
 
 ```yaml
 mongodb:
@@ -66,3 +94,5 @@ mongodb:
     replication:
       replSetName: api-umbrella
 ```
+
+Note that for MongoDB, you'll still need to follow the normal procedure to [deploy a replica set](https://docs.mongodb.com/manual/tutorial/deploy-replica-set/) (for example, running `rs.initiate()`). In order to connect to MongoDB on the API Umbrella servers you can use this command: `/opt/api-umbrella/embedded/bin/mongo --port 14001`

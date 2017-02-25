@@ -308,14 +308,4 @@ function _M.round(value)
   return math.floor(value + 0.5)
 end
 
-function _M.overhead_timer(start_time)
-  local ngx_ctx = ngx.ctx
-
-  if not ngx_ctx.internal_overhead then
-    ngx_ctx.internal_overhead = 0
-  end
-
-  ngx_ctx.internal_overhead = ngx_ctx.internal_overhead + (ngx.now() - start_time)
-end
-
 return _M

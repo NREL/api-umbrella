@@ -3,6 +3,12 @@ class Admin::SessionsController < Devise::SessionsController
   before_action :only_for_local_auth, :only => [:create]
   skip_after_action :verify_authorized
 
+  # Allow the logout endpoint to be hit via ajax from the Ember app, where the
+  # request has the admin auth token, but not the default csrf token.
+  prepend_before_action :authenticate_admin_from_token!, :only => [:destroy]
+  skip_before_action :verify_authenticity_token, :only => [:destroy]
+  before_action :verify_authenticity_token_with_admin_token, :only => [:destroy]
+
   def auth
     response = {
       "authenticated" => !current_admin.nil?,
@@ -10,6 +16,7 @@ class Admin::SessionsController < Devise::SessionsController
 
     if current_admin
       response.merge!({
+        "analytics_timezone" => ApiUmbrellaConfig[:analytics][:timezone],
         "enable_beta_analytics" => (ApiUmbrellaConfig[:analytics][:adapter] == "kylin" || (ApiUmbrellaConfig[:analytics][:outputs] && ApiUmbrellaConfig[:analytics][:outputs].include?("kylin"))),
         "username_is_email" => ApiUmbrellaConfig[:web][:admin][:username_is_email],
         "local_auth_enabled" => ApiUmbrellaConfig[:web][:admin][:auth_strategies][:_local_enabled?],
@@ -22,11 +29,8 @@ class Admin::SessionsController < Devise::SessionsController
           "username",
         ),
         "api_key" => ApiUser.where(:email => "web.admin.ajax@internal.apiumbrella").order_by(:created_at.asc).first.api_key,
+        "admin_auth_token" => current_admin.authentication_token,
       })
-
-      if(protect_against_forgery?)
-        response["csrf_token"] = form_authenticity_token
-      end
     end
 
     respond_to do|format|

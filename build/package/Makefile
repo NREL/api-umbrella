@@ -1,5 +1,5 @@
 SOURCE_DIR:=$(shell dirname $(shell dirname $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))))
-WORK_DIR:=$(SOURCE_DIR)/build/work/package
+WORK_DIR:=$(SOURCE_DIR)/build/package/work
 LOG_DIR:=$(WORK_DIR)/log
 
 .PHONY: \

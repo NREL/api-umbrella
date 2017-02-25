@@ -5,9 +5,10 @@ set -e -u
 version=3.7.2
 checksum=0e6ec35d4fa9bf79800118916b51928b6471d5725ff36f1d0de5ebb34dcd5406
 
-source_dir="$(dirname "$(dirname "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")")"
-version_stamp="$source_dir/build/work/cmake/version-$version"
-prefix="$source_dir/build/work/cmake"
+build_dir=$(pwd)
+work_dir="$build_dir/build/work"
+version_stamp="$work_dir/cmake/version-$version"
+prefix="$work_dir/cmake"
 
 if [[ ! -e "$prefix/bin/cmake" || ! -e "$version_stamp" ]]; then
   rm -rf "$prefix"
@@ -16,7 +17,7 @@ if [[ ! -e "$prefix/bin/cmake" || ! -e "$version_stamp" ]]; then
   download_filename="cmake-$version-Linux-x86_64.tar.gz"
   minor_version=${version%.*}
   download_url="https://cmake.org/files/v$minor_version/$download_filename"
-  download_path="$source_dir/build/work/$download_filename"
+  download_path="$work_dir/$download_filename"
   if [ ! -e "$download_path" ]; then
     echo "Downloading CMake $version..."
     curl -fL -o "$download_path" "$download_url"

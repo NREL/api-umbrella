@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import DS from 'ember-data';
+import moment from 'npm:moment-timezone';
 
 export default DS.Model.extend({
   duration: DS.attr('number'),

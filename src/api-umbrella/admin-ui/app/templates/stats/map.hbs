@@ -1,6 +1,6 @@
-{{stats/query-form enableInterval=false start_at=start_at end_at=end_at query=query search=search region=region beta_analytics=beta_analytics}}
+{{stats/query-form enableInterval=false date_range=date_range start_at=start_at end_at=end_at query=query search=search interval=interval beta_analytics=beta_analytics allQueryParamValues=allQueryParamValues dateRanges=dateRanges}}
 <div id="map_container">
   {{stats/map/results-breadcrumbs breadcrumbs=model.map_breadcrumbs}}
-  {{stats/map/results-map regions=model.map_regions regionField=model.region_field queryParamValues=queryParamValues allQueryParamValues=allQueryParamValues}}
+  {{stats/map/results-map regions=model.map_regions regionField=model.region_field presentQueryParamValues=presentQueryParamValues allQueryParamValues=allQueryParamValues}}
 </div>
-{{stats/map/results-table regions=model.regions regionField=model.region_field queryParamValues=queryParamValues allQueryParamValues=allQueryParamValues}}
+{{stats/map/results-table regions=model.regions regionField=model.region_field presentQueryParamValues=presentQueryParamValues backendQueryParamValues=backendQueryParamValues}}

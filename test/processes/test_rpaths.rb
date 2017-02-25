@@ -4,16 +4,27 @@ require "find"
 class Test::Processes::TestRpaths < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
 
-  # Ensure that any binaries that get compiled with rpath settings get compiled
-  # with the build/work/stage path before the /opt/api-umbrella path. This is
-  # to ensure that when running tests the staged binaries always get picked up
-  # before any system-wide binaries. Setting up our rpaths this way helps
-  # prevent weird debugging issues when you may have both a local build and a
-  # system build during development.
+  # Ensure that any binaries have RPATH settings stripped before they're
+  # installed. This ensures that the load path is always determined by
+  # LD_LIBRARY_PATH, rather than whatever RPATH was set at compile time.
+  #
+  # This makes the installation path more relocatable, but also helps prevent
+  # conflicts with the files installed in "build/work/stage" during
+  # development/testing and the files in "/opt/api-umbrella." This primarily
+  # impacts development and testing (since normal installations won't have
+  # conflicting versions of things), but this helps ensure the staged binaries
+  # always get picked up before system-wide binaries when running tests
+  # (assuming LD_LIBRARY_PATH is set correctly). This helps prevent frustrating
+  # debugging in development environments where both might be present. Since
+  # this also makes the paths more configurable and relocatable, this also
+  # seems like a decent approach for production purposes.
   def test_binary_rpaths
     # Find all the binaries.
-    bins = Find.find(File.join($config["_embedded_root_dir"], "bin")).to_a
-    bins += Find.find(File.join($config["_embedded_root_dir"], "sbin")).to_a
+    bins = Dir.glob(File.join($config["_embedded_root_dir"], "bin/**/*"))
+    bins += Dir.glob(File.join($config["_embedded_root_dir"], "sbin/**/*"))
+    bins += Dir.glob(File.join($config["_embedded_root_dir"], "lib/**/*.so"))
+    bins += Dir.glob(File.join($config["_embedded_root_dir"], "libexec/**/*.so"))
+    bins += Dir.glob(File.join($config["_embedded_root_dir"], "/apps/core/shared/vendor/**/*.so"))
     bins.map! { |path| File.realpath(path) }
     bins.select! { |path| File.file?(path) }
     bins.reject! { |path| `file #{path}` =~ /(text executable|ASCII)/ }
@@ -21,26 +32,23 @@ class Test::Processes::TestRpaths < Minitest::Test
     # Spot check to ensure our list of binaries actually includes things we
     # expect.
     assert_operator(bins.length, :>, 0)
-    assert(bins.find { |path| path.end_with?("embedded/openresty/nginx/sbin/nginx") })
-    assert(bins.find { |path| path.end_with?("embedded/sbin/rsyslogd") })
-    assert(bins.find { |path| path.end_with?("embedded/bin/ruby") })
-
-    # Find the rpath of each binary.
-    rpaths = []
-    bins.each do |path|
-      output, status = run_shell("readelf -d #{path}")
-      assert_equal(0, status, "#{path}: #{output}: " + `file #{path}`)
-      output.scan(/RPATH.*\[(.+?)\]/) do |rpath|
-        rpaths += rpath
-      end
+    [
+      "/embedded/bin/ruby",
+      "/embedded/sbin/rsyslogd",
+      "/embedded/openresty/nginx/sbin/nginx",
+      "/embedded/libexec/trafficserver/ssl_cert_loader.so",
+      # LuaRock
+      "/embedded/apps/core/shared/vendor/lib/lua/5.1/iconv.so",
+      # Rubygem
+      "/oj/oj.so",
+    ].each do |expected_path_end|
+      assert(bins.find { |path| path.end_with?(expected_path_end) }, "Expected #{bins.inspect} to include #{expected_path_end.inspect}")
     end
 
-    rpaths.uniq!
-    # Ensure that the rpaths have the local path listed before system paths.
-    assert_equal([
-      "#{File.join($config["_embedded_root_dir"], "lib")}:/opt/api-umbrella/embedded/lib",
-      # OpenResty's nginx rpath also has the luajit path present.
-      "#{File.join($config["_embedded_root_dir"], "openresty/luajit/lib")}:#{File.join($config["_embedded_root_dir"], "lib")}:/opt/api-umbrella/embedded/openresty/luajit/lib:/opt/api-umbrella/embedded/lib",
-    ].sort, rpaths.sort)
+    # Ensure each binary file has no rpath or runpath setting.
+    bins.each do |path|
+      output, _status = run_shell("chrpath -l #{path}")
+      assert_match("no rpath or runpath tag found", output)
+    end
   end
 end

@@ -10,7 +10,7 @@ export default Ember.Component.extend({
       ajax: {
         url: '/admin/stats/users.json',
         data: function(data) {
-          return _.extend({}, data, this.get('allQueryParamValues'));
+          return _.extend({}, data, this.get('backendQueryParamValues'));
         }.bind(this),
       },
       order: [[4, 'desc']],
@@ -21,7 +21,7 @@ export default Ember.Component.extend({
           defaultContent: '-',
           render: function(email, type, data) {
             if(type === 'display' && email && email !== '-') {
-              let params = _.clone(this.get('queryParamValues'));
+              let params = _.clone(this.get('presentQueryParamValues'));
               params.search = 'user_id:"' + data.id + '"';
               let link = '#/stats/logs?' + $.param(params);
 
@@ -79,11 +79,11 @@ export default Ember.Component.extend({
     });
   },
 
-  refreshData: Ember.observer('allQueryParamValues', function() {
+  refreshData: Ember.observer('backendQueryParamValues', function() {
     this.$().find('table').DataTable().draw();
   }),
 
-  downloadUrl: Ember.computed('allQueryParamValues', function() {
-    return '/admin/stats/users.csv?' + $.param(this.get('allQueryParamValues'));
+  downloadUrl: Ember.computed('backendQueryParamValues', function() {
+    return '/admin/stats/users.csv?' + $.param(this.get('backendQueryParamValues'));
   }),
 });

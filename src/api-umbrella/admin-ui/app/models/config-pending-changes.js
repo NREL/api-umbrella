@@ -14,8 +14,8 @@ ConfigPendingChanges.reopenClass({
         data: params,
       }).then(function(data) {
         resolve(new ConfigPendingChanges(data));
-      }, function() {
-        reject();
+      }, function(data) {
+        reject(data.responseText);
       });
     }.bind(this));
   },

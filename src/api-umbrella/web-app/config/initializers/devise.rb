@@ -264,7 +264,8 @@ Devise.setup do |config|
       config.omniauth :facebook,
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_id],
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:facebook][:client_secret],
-        :scope => "email"
+        :scope => "email",
+        :info_fields => "name,email,verified"
     when "cas"
       require "omniauth-cas"
       config.omniauth :cas,
@@ -275,6 +276,12 @@ Devise.setup do |config|
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:github][:client_id],
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:github][:client_secret],
         :scope => "user:email"
+    when "gitlab"
+      require "omniauth-gitlab"
+      config.omniauth :gitlab,
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:gitlab][:client_id],
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:gitlab][:client_secret],
+        :scope => "read_user"
     when "google"
       require "omniauth-google-oauth2"
       config.omniauth :google_oauth2,
@@ -284,7 +291,9 @@ Devise.setup do |config|
     when "ldap"
       require "omniauth-ldap"
       config.omniauth :ldap,
-        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options]
+        ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options].merge({
+          :form => Admin::Admins::OmniauthCustomFormsController.action(:ldap),
+        })
     when "max.gov"
       require "omniauth-cas"
       config.omniauth :cas,

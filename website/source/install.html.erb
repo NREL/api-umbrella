@@ -39,19 +39,10 @@ header: Install
   %>
 
   <div id="docker" class="platform-download" style="display: none;">
-    <p>In this simple example, the API Umbrella configuration can be stored in the <code>config/api-umbrella.yml</code> file on host machine.</p>
+    <p>In this simple example, custom API Umbrella configuration can be defined in the <code>config/api-umbrella.yml</code> file on host machine. This gets mounted as <code>/etc/api-umbrella/api-umbrella.yml</code> inside the container, which is the path for the configuration file the rest of the documentation will reference.</p>
 
-    <pre>$ mkdir config && touch config/api-umbrella.yml</pre>
-
-    <p>Open the configuration file for editing. In the config file, define an e-mail address for your first admin account:</p>
-
-    <pre>web:
-  admin:
-    initial_superusers:
-      - your.email@example.com</pre>
-
-    <p>Start API Umbrella:</p>
-    <pre>$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v "$(pwd)/config":/etc/api-umbrella nrel/api-umbrella</pre>
+    <pre>$ mkdir config && touch config/api-umbrella.yml
+$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v "$(pwd)/config":/etc/api-umbrella nrel/api-umbrella</pre>
   </div>
 
   <% packages.each do |id, distro| %>
@@ -74,25 +65,14 @@ sudo yum install api-umbrella</pre>
 
   <div id="other" class="platform-download" style="display: none;">
     <p>We build binary packages for a variety of Linux distributions. These binary packages are the recommended way to install API Umbrella. However, if binary packages aren't available, you can also compile from source (also, please <a href="https://github.com/NREL/api-umbrella/issues">let us know</a> if you'd like to see binaries for other operating systems):</p>
-    <pre>$ curl -OLJ https://github.com/NREL/api-umbrella/archive/v0.13.0.tar.gz
-$ tar -xvf api-umbrella-0.13.0.tar.gz
-$ cd api-umbrella-0.13.0
+    <pre>$ curl -OLJ https://github.com/NREL/api-umbrella/archive/v0.14.0.tar.gz
+$ tar -xvf api-umbrella-0.14.0.tar.gz
+$ cd api-umbrella-0.14.0
 $ make
 $ sudo make install</pre>
   </div>
 
   <div id="setup_packages" class="platform-download" style="display: none;">
-    <p>Open the configuration file for editing:</p>
-    <pre>sudo -e /etc/api-umbrella/api-umbrella.yml</pre>
-
-    <p>In the config file, define an e-mail address for your first admin account:</p>
-
-    <pre>web:
-  admin:
-    initial_superusers:
-      - your.email@example.com</pre>
-
-    <p>Start API Umbrella:</p>
     <pre>sudo /etc/init.d/api-umbrella start</pre>
   </div>
 

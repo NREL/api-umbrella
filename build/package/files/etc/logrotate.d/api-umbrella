@@ -3,7 +3,6 @@
 /opt/api-umbrella/var/log/*/current /opt/api-umbrella/var/log/nginx/*.log /opt/api-umbrella/var/log/rsyslog/*.log {
   daily
   rotate 90
-  create 644 api-umbrella api-umbrella
   missingok
   compress
   delaycompress
@@ -18,7 +17,6 @@
 /opt/api-umbrella/var/log/nginx/*.log.gz {
   daily
   rotate 90
-  create 644 api-umbrella api-umbrella
   missingok
   nocompress
   notifempty
@@ -33,7 +31,6 @@
 /opt/api-umbrella/var/log/rsyslog/*.log.gz {
   daily
   rotate 21
-  create 644 api-umbrella api-umbrella
   missingok
   nocompress
   notifempty
@@ -48,7 +45,6 @@
 /opt/api-umbrella/var/log/elasticsearch/*.log /opt/api-umbrella/var/log/trafficserver/*.blog /opt/api-umbrella/var/log/trafficserver/*.log /opt/api-umbrella/var/log/trafficserver/*.out {
   daily
   rotate 90
-  create 644 api-umbrella api-umbrella
   missingok
   compress
   delaycompress

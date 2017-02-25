@@ -1033,7 +1033,7 @@ definitions:
         description: HTTP basic authentication
       require_https:
         type: string
-        enum: ["required_return_error", "required_return_redirect", "transition_return_error", "transition_return_redirect optional"]
+        enum: ["required_return_error", "transition_return_error", "optional"]
         description: HTTPS requirements
       require_https_transition_start_at:
         type: string

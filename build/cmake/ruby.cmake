@@ -1,13 +1,9 @@
 # Ruby & Bundler: For Rails web-app component
 list(APPEND RUBY_CONFIGURE_CMD env)
-if(ENABLE_TEST_DEPENDENCIES)
-  list(APPEND RUBY_CONFIGURE_CMD LDFLAGS=-Wl,-rpath,${STAGE_EMBEDDED_DIR}/lib:${INSTALL_PREFIX_EMBEDDED}/lib)
-else()
-  list(APPEND RUBY_CONFIGURE_CMD LDFLAGS=-Wl,-rpath,${INSTALL_PREFIX_EMBEDDED}/lib)
-endif()
 list(APPEND RUBY_CONFIGURE_CMD <SOURCE_DIR>/configure)
 list(APPEND RUBY_CONFIGURE_CMD --prefix=${INSTALL_PREFIX_EMBEDDED})
 list(APPEND RUBY_CONFIGURE_CMD --enable-load-relative)
+list(APPEND RUBY_CONFIGURE_CMD --disable-rpath)
 list(APPEND RUBY_CONFIGURE_CMD --disable-install-doc)
 
 ExternalProject_Add(

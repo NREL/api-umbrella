@@ -17,7 +17,6 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
-        "tz" => "America/Denver",
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "region" => "world",
@@ -50,7 +49,6 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
-        "tz" => "America/Denver",
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "region" => "CA",
@@ -84,7 +82,6 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
-        "tz" => "America/Denver",
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "region" => "US",
@@ -119,7 +116,6 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
-        "tz" => "America/Denver",
         "start_at" => "2015-01-13",
         "end_at" => "2015-01-18",
         "region" => "US-CO",

@@ -44,17 +44,21 @@ install(
 
 install(
   CODE "
-  message(STATUS \"Directories: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core/${RELEASE_TIMESTAMP}\")
+  message(STATUS \"Directories: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core/releases/${RELEASE_TIMESTAMP}\")
   execute_process(
     WORKING_DIRECTORY \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/core
-    COMMAND mv releases/0 releases/${RELEASE_TIMESTAMP}
-    COMMAND ln -snf releases/${RELEASE_TIMESTAMP} ./current
+    # Multiple commands in execute_process are executed in parallel
+    # (http://public.kitware.com/pipermail/cmake/2016-March/063076.html). Since
+    # the order of these matter, use a shell wrapper.
+    COMMAND sh -c \"rm -rf releases/${RELEASE_TIMESTAMP} && mv releases/0 releases/${RELEASE_TIMESTAMP} && ln -snf releases/${RELEASE_TIMESTAMP} ./current\"
   )
-  message(STATUS \"Directories: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/static-site/${RELEASE_TIMESTAMP}\")
+  message(STATUS \"Directories: \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/static-site/releases/${RELEASE_TIMESTAMP}\")
   execute_process(
     WORKING_DIRECTORY \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/embedded/apps/static-site
-    COMMAND mv releases/0 releases/${RELEASE_TIMESTAMP}
-    COMMAND ln -snf releases/${RELEASE_TIMESTAMP} ./current
+    # Multiple commands in execute_process are executed in parallel
+    # (http://public.kitware.com/pipermail/cmake/2016-March/063076.html). Since
+    # the order of these matter, use a shell wrapper.
+    COMMAND sh -c \"rm -rf releases/${RELEASE_TIMESTAMP} && mv releases/0 releases/${RELEASE_TIMESTAMP} && ln -snf releases/${RELEASE_TIMESTAMP} ./current\"
   )
   message(STATUS \"Directories: \$ENV{DESTDIR}/usr/bin \$ENV{DESTDIR}/var/log \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/etc \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/db \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/log \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/run \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/var/tmp\")
   execute_process(

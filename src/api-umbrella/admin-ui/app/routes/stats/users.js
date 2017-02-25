@@ -2,7 +2,7 @@ import Base from './base';
 
 export default Base.extend({
   queryParams: {
-    tz: {
+    date_range: {
       refreshModel: true,
     },
     start_at: {
@@ -20,5 +20,9 @@ export default Base.extend({
     beta_analytics: {
       refreshModel: true,
     },
+  },
+
+  model() {
+    return {};
   },
 });

@@ -3,7 +3,7 @@ import StatsLogs from 'api-umbrella-admin-ui/models/stats/logs';
 
 export default Base.extend({
   queryParams: {
-    tz: {
+    date_range: {
       refreshModel: true,
     },
     start_at: {
@@ -26,7 +26,8 @@ export default Base.extend({
     },
   },
 
-  model(params) {
+  model() {
+    let params = this.get('backendQueryParamValues');
     if(this.validateParams(params)) {
       return StatsLogs.find(params);
     } else {

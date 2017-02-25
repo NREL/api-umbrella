@@ -19,6 +19,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
                 "facebook",
                 "max.gov",
                 "github",
+                "gitlab",
                 "google",
                 "ldap",
               ],
@@ -37,6 +38,12 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
   def test_forbids_first_time_admin_creation
     assert_equal(0, Admin.count)
     assert_first_time_admin_creation_forbidden
+  end
+
+  def test_shows_message_when_no_admins_exist
+    assert_equal(0, Admin.count)
+    visit "/admin/login"
+    assert_text("No admins currently exist")
   end
 
   def test_shows_external_login_links_in_order_and_no_local_fields
@@ -60,6 +67,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       "Sign in with Facebook",
       "Sign in with MAX.gov",
       "Sign in with GitHub",
+      "Sign in with GitLab",
       "Sign in with Google",
       "Sign in with LDAP",
     ], buttons)
@@ -94,7 +102,11 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       :provider => :github,
       :login_button_text => "Sign in with GitHub",
       :username_path => "info.email",
-      :verified_path => "info.email_verified",
+    },
+    {
+      :provider => :gitlab,
+      :login_button_text => "Sign in with GitLab",
+      :username_path => "info.email",
     },
     {
       :provider => :google_oauth2,
@@ -159,7 +171,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     LazyHash.add(omniauth_data, options.fetch(:username_path), "noadmin@example.com")
 
     mock_omniauth(omniauth_data) do
-      assert_login_forbidden(options.fetch(:login_button_text))
+      assert_login_forbidden(options.fetch(:login_button_text), "not authorized")
     end
   end
 
@@ -170,7 +182,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     LazyHash.add(omniauth_data, options.fetch(:verified_path), false)
 
     mock_omniauth(omniauth_data) do
-      assert_login_forbidden(options.fetch(:login_button_text))
+      assert_login_forbidden(options.fetch(:login_button_text), "not verified")
     end
   end
 
@@ -180,10 +192,10 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     assert_link("my_account_nav_link", :href => /#{admin.id}/, :visible => :all)
   end
 
-  def assert_login_forbidden(login_button_text)
+  def assert_login_forbidden(login_button_text, error_text)
     visit "/admin/"
     trigger_click_link(login_button_text)
-    assert_text("not authorized")
+    assert_text(error_text)
     refute_link("my_account_nav_link")
   end
 

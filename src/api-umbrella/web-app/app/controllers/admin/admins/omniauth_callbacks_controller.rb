@@ -27,24 +27,35 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
   end
 
   def facebook
-    if(request.env["omniauth.auth"]["info"]["verified"])
-      @username = request.env["omniauth.auth"]["info"]["email"]
+    @username = request.env["omniauth.auth"]["info"]["email"]
+    if(!request.env["omniauth.auth"]["info"]["verified"])
+      return email_unverified_error
     end
 
     login
   end
 
   def github
-    if(request.env["omniauth.auth"]["info"]["email_verified"])
-      @username = request.env["omniauth.auth"]["info"]["email"]
-    end
+    # omniauth-github only returns verified emails by default (so no explicit
+    # verification check is needed):
+    # https://github.com/intridea/omniauth-github/pull/48
+    @username = request.env["omniauth.auth"]["info"]["email"]
+
+    login
+  end
+
+  def gitlab
+    # GitLab only appears to return verified email addresses (so there's not an
+    # explicit email verification attribute or check needed).
+    @username = request.env["omniauth.auth"]["info"]["email"]
 
     login
   end
 
   def google_oauth2
-    if(request.env["omniauth.auth"]["extra"]["raw_info"]["email_verified"])
-      @username = request.env["omniauth.auth"]["info"]["email"]
+    @username = request.env["omniauth.auth"]["info"]["email"]
+    if(!request.env["omniauth.auth"]["extra"]["raw_info"]["email_verified"])
+      return email_unverified_error
     end
 
     login
@@ -84,6 +95,18 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
 
       redirect_to new_admin_session_path
     end
+  end
+
+  def email_unverified_error
+    flash[:error] = ActionController::Base.helpers.safe_join([
+      "The email address '",
+      @username,
+      "' is not verified. Please ",
+      ActionController::Base.helpers.content_tag(:a, "contact us", :href => ApiUmbrellaConfig[:contact_url]),
+      " for further assistance.",
+    ])
+
+    redirect_to new_admin_session_path
   end
 
   def after_omniauth_failure_path_for(scope)

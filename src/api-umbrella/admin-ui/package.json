@@ -20,6 +20,7 @@
   "license": "MIT",
   "devDependencies": {
     "bower": "~1.8.0",
+    "bootstrap-daterangepicker": "~2.1.25",
     "broccoli-asset-rev": "^2.4.2",
     "echarts": "~3.4.0",
     "ember-bootstrap": "~0.11.2",
@@ -33,6 +34,7 @@
     "ember-cli-format-number": "~2.0.0",
     "ember-cli-htmlbars": "^1.0.3",
     "ember-cli-htmlbars-inline-precompile": "^0.3.1",
+    "ember-cli-inject-live-reload": "^1.6.1",
     "ember-cli-qunit": "^2.1.0",
     "ember-cli-sass": "~6.1.1",
     "ember-cli-sri": "^2.1.0",
@@ -46,15 +48,16 @@
     "ember-onbeforeunload": "~1.1.0",
     "ember-one-way-controls": "~2.0.0",
     "ember-resolver": "^2.0.3",
-    "ember-simple-auth": "~1.1.0",
+    "ember-simple-auth": "~1.2.0",
     "ember-truth-helpers": "~1.3.0",
     "emberx-select": "~3.0.0",
     "i18n-js": "http://github.com/fnando/i18n-js/archive/v3.0.0.rc15.tar.gz",
-    "loader.js": "^4.0.1"
+    "loader.js": "^4.0.1",
+    "moment-timezone": "~0.5.11"
   },
   "ember-addon": {
     "paths": [
-      "lib/inject-live-reload"
+      "lib/inject-live-reload-config"
     ]
   }
 }

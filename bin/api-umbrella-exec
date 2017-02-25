@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -e -u
+
+# Resolve the current path, taking into account symlinks.
+source="${BASH_SOURCE[0]}"
+while [ -L "$source" ]; do
+  dir="$(cd -P "$(dirname "$source")" && pwd)"
+  source="$(readlink "$source")"
+  [[ $source != /* ]] && source="$dir/$source"
+done
+dir="$(cd -P "$(dirname "$source")" && pwd)"
+
+# shellcheck source=bin/api-umbrella-env
+source "$dir/api-umbrella-env"
+
+exec "$@"

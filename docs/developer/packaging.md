@@ -26,7 +26,7 @@ $ cd api-umbrella
 $ make -C build/package -j4 docker_all # Adjust concurrency with -j flag as desired
 ```
 
-Packages for each distribution will be created inside an isolated docker container, with the resulting packages being placed in the `build/work/package/current` directory.
+Packages for each distribution will be created inside an isolated docker container, with the resulting packages being placed in the `build/package/work/current` directory.
 
 ## Publishing Packages
 

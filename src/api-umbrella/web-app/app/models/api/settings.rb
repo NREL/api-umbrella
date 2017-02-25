@@ -33,7 +33,7 @@ class Api::Settings
 
   # Validations
   validates :require_https,
-    :inclusion => { :in => %w(required_return_error required_return_redirect transition_return_error transition_return_redirect optional), :allow_blank => true }
+    :inclusion => { :in => %w(required_return_error transition_return_error optional), :allow_blank => true }
   validates :api_key_verification_level,
     :inclusion => { :in => %w(none transition_email required_email), :allow_blank => true }
   validates :rate_limit_mode,

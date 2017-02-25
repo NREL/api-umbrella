@@ -2,7 +2,10 @@ require "csv_streamer"
 
 class Admin::StatsController < Admin::BaseController
   # API requests won't pass CSRF tokens, so don't reject requests without them.
-  protect_from_forgery :with => :null_session
+  skip_before_action :verify_authenticity_token
+
+  # Try authenticating from an admin token (for direct API access).
+  before_action :authenticate_admin_from_token!
 
   before_action :set_analytics_adapter
   around_action :set_time_zone
@@ -89,7 +92,7 @@ class Admin::StatsController < Admin::BaseController
             csv_time(row["request_at"]),
             row["request_method"],
             row["request_host"],
-            strip_api_key_from_url(row),
+            sanitized_full_url(row),
             row["user_email"],
             row["request_ip"],
             row["request_ip_country"],
@@ -227,13 +230,27 @@ class Admin::StatsController < Admin::BaseController
 
   private
 
-  def strip_api_key_from_url(record)
+  def sanitized_full_url(record)
     url = "#{record["request_scheme"]}://#{record["request_host"]}#{record["request_path"]}"
-    url += "?#{record["request_query"]}" if(record["request_query"])
+    url += "?#{strip_api_key_from_query(record["request_url_query"])}" if(record["request_url_query"])
+    url
+  end
 
-    stripped = url.gsub(/\bapi_key=?[^&]*(&|$)/, "")
-    stripped.gsub!(/&$/, "")
+  def sanitized_url_path_and_query(record)
+    url = record["request_path"].to_s.dup
+    url += "?#{strip_api_key_from_query(record["request_url_query"])}" if(record["request_url_query"])
+    url
+  end
+  helper_method :sanitized_url_path_and_query
+
+  def strip_api_key_from_query(query)
+    stripped = query
+    if(query)
+      stripped = query.gsub(/\bapi_key=?[^&]*(&|$)/i, "")
+      stripped.gsub!(/&$/, "")
+    end
+
     stripped
   end
-  helper_method :strip_api_key_from_url
+  helper_method :strip_api_key_from_query
 end

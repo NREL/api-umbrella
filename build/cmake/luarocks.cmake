@@ -23,6 +23,7 @@ function(_luarocks_install tree_dir package version hash)
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${tree_dir} install ${package} ${version} ${ARGV4}
+      COMMAND find ${tree_dir} -name *.so -exec chrpath -d {} $<SEMICOLON>
   )
 endfunction()
 

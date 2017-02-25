@@ -35,6 +35,12 @@ module(load="omelasticsearch")
 # Define the ElasticSearch-based output.
 # This aliases some of the logged fields to different names for backwards
 # compatibility with the ElasticSearch data.
+if($!raw!api_backend_id != "") then {
+  set $!usr!es!api_backend_id = $!raw!api_backend_id;
+}
+if($!raw!api_backend_url_match_id != "") then {
+  set $!usr!es!api_backend_url_match_id = $!raw!api_backend_url_match_id;
+}
 if($!raw!legacy_api_key != "") then {
   set $!usr!es!api_key = $!raw!legacy_api_key;
 }
@@ -86,9 +92,6 @@ if($!raw!request_origin != "") then {
 if($!raw!request_url_path != "") then {
   set $!usr!es!request_path = $!raw!request_url_path;
 }
-if($!raw!request_url_query != "") then {
-  set $!usr!es!request_query = $!raw!request_url_query;
-}
 if($!raw!request_referer != "") then {
   set $!usr!es!request_referer = $!raw!request_referer;
 }
@@ -97,6 +100,12 @@ if($!raw!request_url_scheme != "") then {
 }
 if($!raw!request_size != "") then {
   set $!usr!es!request_size = $!raw!request_size;
+}
+if($!raw!legacy_request_url != "") then {
+  set $!usr!es!request_url = $!raw!legacy_request_url;
+}
+if($!raw!request_url_query != "") then {
+  set $!usr!es!request_url_query = $!raw!request_url_query;
 }
 if($!raw!request_user_agent != "") then {
   set $!usr!es!request_user_agent = $!raw!request_user_agent;
@@ -137,11 +146,11 @@ if($!raw!timer_response != "") then {
 if($!raw!response_transfer_encoding != "") then {
   set $!usr!es!response_transfer_encoding = $!raw!response_transfer_encoding;
 }
-if($!raw!user_id != "") then {
-  set $!usr!es!user_id = $!raw!user_id;
-}
 if($!raw!legacy_user_email != "") then {
   set $!usr!es!user_email = $!raw!legacy_user_email;
+}
+if($!raw!user_id != "") then {
+  set $!usr!es!user_id = $!raw!user_id;
 }
 if($!raw!legacy_user_registration_source != "") then {
   set $!usr!es!user_registration_source = $!raw!legacy_user_registration_source;

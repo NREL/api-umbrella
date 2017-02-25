@@ -21,8 +21,10 @@ docker run \
   --name="$container_name" \
   --volume="$source_dir:/api-umbrella" \
   --env="DIST=$DIST" \
-  --rm \
   "$docker_image" \
   /bin/bash -c "/api-umbrella/build/package/docker_script"
+
+# Delete after successful run.
+docker rm "$container_name"
 
 echo "Completed package build for $DIST"

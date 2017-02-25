@@ -115,6 +115,45 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def authenticate_admin_from_token!
+    admin_token = request.headers['X-Admin-Auth-Token'].presence
+    admin = admin_token && Admin.where(:authentication_token => admin_token.to_s).first
+
+    if admin
+      # Don't store the user on the session, so the token is required on every
+      # request.
+      sign_in(admin, :store => false)
+
+      # The normal userstamp before_action that set's the current admin fires
+      # before we handle token authentication. To fix that, force the userstamp
+      # model to pickup the current admin account after this token-based login.
+      unless RequestStore.store[:current_userstamp_user]
+        begin
+          RequestStore.store[:current_userstamp_user] = current_admin
+        rescue => e
+          Rails.logger.warn("Unexpected error setting userstamp: #{e}")
+        end
+      end
+    end
+  end
+
+  # This can be used to replace the default Rails "verify_authenticity_token"
+  # CSRF protection in cases where the endpoint may be hit via ajax by an admin
+  # (with the X-Admin-Auth-Token header provided), or via a normal Rails
+  # server-side submit (in which case the default CSRF token will be present).
+  #
+  # If the "X-Admin-Auth-Token" header is being passed in, then we can consider
+  # that an effective replacement of the CSRF token value (since only a local
+  # application should have knowledge of this token). But if this auth token
+  # isn't passed in, then we fallback to the default rails CSRF logic in
+  # verify_authenticity_token.
+  def verify_authenticity_token_with_admin_token
+    admin_token = request.headers['X-Admin-Auth-Token'].presence
+    if(!current_admin || !admin_token || admin_token != current_admin.authentication_token)
+      verify_authenticity_token
+    end
+  end
+
   def set_userstamp
     orig = RequestStore.store[:current_userstamp_user]
     RequestStore.store[:current_userstamp_user] = current_admin

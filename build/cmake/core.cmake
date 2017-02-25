@@ -34,7 +34,6 @@ add_custom_command(
   OUTPUT
     ${STAMP_DIR}/core-build-install-dist
     ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets
-    ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui-dev
     ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui
   DEPENDS
     ${STAMP_DIR}/core-admin-ui-build
@@ -42,8 +41,7 @@ add_custom_command(
     ${STAMP_DIR}/core-build-release-dir
   COMMAND mkdir -p ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets
   COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/web-app-build/web-assets/ ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets/web-assets/
-  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist-dev/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui-dev/
-  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist-prod/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui/
+  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui/
   COMMAND touch ${STAMP_DIR}/core-build-install-dist
 )
 
@@ -101,7 +99,7 @@ add_custom_command(
   DEPENDS ${STAMP_DIR}/core-build-release
   DEPENDS ${STAMP_DIR}/core-build-install-dist
   COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/apps/core
-  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/ ${STAGE_EMBEDDED_DIR}/apps/core/
+  COMMAND rsync -a --delete-after --delete-excluded --exclude=/tmp ${CORE_BUILD_DIR}/ ${STAGE_EMBEDDED_DIR}/apps/core/
   COMMAND touch -c ${STAGE_EMBEDDED_DIR}/apps/core
 )
 
@@ -113,6 +111,20 @@ add_custom_command(
   COMMAND cd ${STAGE_PREFIX_DIR}/bin && ln -snf ../embedded/apps/core/current/bin/api-umbrella ./api-umbrella
   COMMAND touch ${STAMP_DIR}/core-api-umbrella-bin-symlink
 )
+add_custom_command(
+  OUTPUT ${STAMP_DIR}/core-api-umbrella-env-bin-symlink
+  DEPENDS ${STAGE_EMBEDDED_DIR}/apps/core
+  COMMAND mkdir -p ${STAGE_PREFIX_DIR}/bin
+  COMMAND cd ${STAGE_PREFIX_DIR}/bin && ln -snf ../embedded/apps/core/current/bin/api-umbrella-env ./api-umbrella-env
+  COMMAND touch ${STAMP_DIR}/core-api-umbrella-env-bin-symlink
+)
+add_custom_command(
+  OUTPUT ${STAMP_DIR}/core-api-umbrella-exec-bin-symlink
+  DEPENDS ${STAGE_EMBEDDED_DIR}/apps/core
+  COMMAND mkdir -p ${STAGE_PREFIX_DIR}/bin
+  COMMAND cd ${STAGE_PREFIX_DIR}/bin && ln -snf ../embedded/apps/core/current/bin/api-umbrella-exec ./api-umbrella-exec
+  COMMAND touch ${STAMP_DIR}/core-api-umbrella-exec-bin-symlink
+)
 
 #
 # Install the core app into the stage location.
@@ -122,6 +134,8 @@ add_custom_command(
   DEPENDS
     ${STAGE_EMBEDDED_DIR}/apps/core
     ${STAMP_DIR}/core-api-umbrella-bin-symlink
+    ${STAMP_DIR}/core-api-umbrella-env-bin-symlink
+    ${STAMP_DIR}/core-api-umbrella-exec-bin-symlink
   COMMAND touch ${STAMP_DIR}/core
 )
 

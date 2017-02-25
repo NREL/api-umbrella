@@ -1,46 +1,36 @@
 import Ember from 'ember';
 import I18n from 'npm:i18n-js';
+import moment from 'npm:moment-timezone';
+import 'npm:bootstrap-daterangepicker';
 
 export default Ember.Component.extend({
   session: Ember.inject.service('session'),
 
   enableInterval: false,
 
-  datePickerRanges: {
-    'Today': [
-      moment().startOf('day'),
-      moment().endOf('day'),
-    ],
-    'Yesterday': [
-      moment().subtract(1, 'days'),
-      moment().subtract(1, 'days').endOf('day'),
-    ],
-    'Last 7 Days': [
-      moment().subtract(6, 'days'),
-      moment().endOf('day'),
-    ],
-    'Last 30 Days': [
-      moment().subtract(29, 'days').startOf('day'),
-      moment().endOf('day'),
-    ],
-    'This Month': [
-      moment().startOf('month'),
-      moment().endOf('month'),
-    ],
-    'Last Month': [
-      moment().subtract(1, 'month').startOf('month'),
-      moment().subtract(1, 'month').endOf('month'),
-    ],
-  },
-
   didInsertElement() {
-    this.updateDateRange();
+    let rangeOptions = {};
+    let rangeKeys = {};
+    _.forEach(this.get('dateRanges'), function(range, key) {
+      rangeOptions[range.label] = [
+        range.start_at,
+        range.end_at,
+      ];
+      rangeKeys[range.label] = key;
+    });
+    this.set('rangeOptions', rangeOptions);
+    this.set('rangeKeys', rangeKeys);
 
-    $('#reportrange').daterangepicker({
-      ranges: this.datePickerRanges,
-      startDate: moment(this.get('start_at'), 'YYYY-MM-DD'),
-      endDate: moment(this.get('end_at'), 'YYYY-MM-DD'),
-    }, _.bind(this.handleDateRangeChange, this));
+    let $dateRangePicker = $('#reportrange');
+    $dateRangePicker.daterangepicker({
+      ranges: rangeOptions,
+    });
+    $dateRangePicker.on('showCalendar.daterangepicker', this.handleDateRangeCalendarShow.bind(this));
+    $dateRangePicker.on('hideCalendar.daterangepicker', this.handleDateRangeCalendarHide.bind(this));
+    $dateRangePicker.on('apply.daterangepicker', this.handleDateRangeApply.bind(this));
+
+    this.dateRangePicker = $dateRangePicker.data('daterangepicker');
+    this.updateDateRange();
 
     let stringOperators = [
       'begins_with',
@@ -293,18 +283,59 @@ export default Ember.Component.extend({
     }
   }.observes('query'),
 
-  updateDateRange: function() {
-    let start = moment(this.get('start_at'));
-    let end = moment(this.get('end_at'));
+  updateDateRange: Ember.observer('allQueryParamValues.start_at', 'allQueryParamValues.end_at', function() {
+    let start = moment(this.get('allQueryParamValues.start_at'), 'YYYY-MM-DD');
+    let end = moment(this.get('allQueryParamValues.end_at'), 'YYYY-MM-DD');
 
-    $('#reportrange span.text').html(start.format('MMM D, YYYY') + ' - ' + end.format('MMM D, YYYY'));
-  }.observes('start_at', 'end_at'),
+    this.dateRangePicker.hideCalendars();
+    this.dateRangePicker.setStartDate(start);
+    this.dateRangePicker.setEndDate(end);
+    $('#reportrange span.text').html(start.format('ll') + ' - ' + end.format('ll'));
+  }),
 
-  handleDateRangeChange(start, end) {
-    this.setProperties({
-      'start_at': start.format('YYYY-MM-DD'),
-      'end_at': end.format('YYYY-MM-DD'),
-    });
+  handleDateRangeCalendarShow() {
+    this.set('calendarShown', true);
+  },
+
+  handleDateRangeCalendarHide() {
+    this.set('calendarShown', false);
+  },
+
+  handleDateRangeApply(event, picker) {
+    // If the user selects a predefined date range (like "Last 7 Days"), then
+    // don't set explicit dates in the URL query params. This allows for the
+    // URLs that are bookmarked or shared to use relative dates (eg, you'll
+    // always see the last 7 days regardless of when the URL was first
+    // bookmarked).
+    //
+    // If the user selects a custom date range, then explicit dates will be set
+    // in the URL (so the data is fixed in time).
+    //
+    // Note that if the user picks "Custom Range" and happens to select dates
+    // that correspond with the one of the predefined ranges, then the
+    // Bootstrap Date Picker sets the "chosenLabel" as if the user picked the
+    // predefined range. To workaround this issue (so any dates picked when
+    // "Custom Range" is open are treated the same), we check to see if the
+    // "Custom Range" calendars are visible or not.
+    let rangeOptions = this.get('rangeOptions');
+    if(rangeOptions[picker.chosenLabel] && !this.get('calendarShown')) {
+      let rangeKeys = this.get('rangeKeys');
+      this.setProperties({
+        start_at: '',
+        end_at: '',
+        date_range: rangeKeys[picker.chosenLabel],
+      });
+    } else {
+      this.setProperties({
+        start_at: picker.startDate.format('YYYY-MM-DD'),
+        end_at: picker.endDate.format('YYYY-MM-DD'),
+        // In this case the "date_range" param isn't being used ("start_at" and
+        // "end_at" take precedence), so reset it back to the default value
+        // (defined in app/controllers/stats/base.js), so it's hidden from the
+        // URL.
+        date_range: '30d',
+      });
+    }
   },
 
   actions: {

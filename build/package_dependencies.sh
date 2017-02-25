@@ -39,16 +39,19 @@ if [ -f /etc/redhat-release ]; then
 
     # ElasticSearch
     java-1.8.0-openjdk-headless
-    # For getopt, should no longer be necessary in ElasticSearch 2:
-    # https://github.com/elastic/elasticsearch/pull/12165
-    $util_linux_package
     which
+
+    # rsyslog omelasticsearch
+    libcurl
 
     # init.d script helpers
     initscripts
 
-    # For pkill/pgrep used for legacy status/stop commands.
-    $procps_package
+    # For kill used in stop/reopen-logs commands.
+    $util_linux_package
+
+    # For pstree used in reopen-logs command.
+    psmisc
   )
   hadoop_analytics_package_dependencies=(
     java-1.8.0-openjdk-headless
@@ -57,6 +60,7 @@ if [ -f /etc/redhat-release ]; then
     autoconf
     automake
     bzip2
+    chrpath
     gcc
     gcc-c++
     git
@@ -102,6 +106,9 @@ if [ -f /etc/redhat-release ]; then
 
     # Fonts for Capybara screenshots.
     urw-fonts
+
+    # For pkill/pgrep used for process tests.
+    $procps_package
   )
 elif [ -f /etc/debian_version ]; then
   libffi_version=6
@@ -137,12 +144,18 @@ elif [ -f /etc/debian_version ]; then
     # ElasticSearch
     openjdk-$openjdk_version-jre-headless
 
+    # rsyslog omelasticsearch
+    libcurl3
+
     # init.d script helpers
     sysvinit-utils
     lsb-base
 
-    # For pkill/pgrep used for legacy status/stop commands.
+    # For kill used in stop/reopen-logs commands.
     procps
+
+    # For pstree used in reopen-logs command.
+    psmisc
   )
   hadoop_analytics_package_dependencies=(
     openjdk-$openjdk_version-jre-headless
@@ -151,6 +164,7 @@ elif [ -f /etc/debian_version ]; then
     autoconf
     automake
     bzip2
+    chrpath
     g++
     gcc
     git
@@ -196,6 +210,9 @@ elif [ -f /etc/debian_version ]; then
 
     # Fonts for Capybara screenshots.
     gsfonts
+
+    # For pkill/pgrep used for process tests.
+    procps
   )
 
   if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then

@@ -1,5 +1,7 @@
 Rails.application.config.after_initialize do
   I18n.available_locales.each do |locale|
+    overrides = {}
+
     # Copy the locale data from devise-i18n's built in data for activerecord
     # "user" attributes to the mongoid attributes for the "admin" model. This
     # is so the default fields like "Password" can use the data built into
@@ -18,6 +20,18 @@ Rails.application.config.after_initialize do
       admin_data[:username] = admin_data[:email]
     end
 
-    I18n.backend.store_translations(locale, { :mongoid => { :attributes => { :admin => admin_data } } })
+    overrides.deep_merge!({
+      :mongoid => { :attributes => { :admin => admin_data } },
+    })
+
+    if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap] && ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options] && ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options][:title].presence)
+      overrides.deep_merge!({
+        :omniauth_providers => {
+          :ldap => ApiUmbrellaConfig[:web][:admin][:auth_strategies][:ldap][:options][:title],
+        },
+      })
+    end
+
+    I18n.backend.store_translations(locale, overrides)
   end
 end

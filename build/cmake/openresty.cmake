@@ -52,9 +52,9 @@ list(APPEND OPENRESTY_CONFIGURE_CMD <SOURCE_DIR>/configure)
 list(APPEND OPENRESTY_CONFIGURE_CMD --prefix=${INSTALL_PREFIX_EMBEDDED}/openresty)
 list(APPEND OPENRESTY_CONFIGURE_CMD --with-cc-opt=-I${STAGE_EMBEDDED_DIR}/include)
 if(ENABLE_TEST_DEPENDENCIES)
-  list(APPEND OPENRESTY_CONFIGURE_CMD "--with-ld-opt=-L${STAGE_EMBEDDED_DIR}/lib -Wl,-rpath,${STAGE_EMBEDDED_DIR}/openresty/luajit/lib:${STAGE_EMBEDDED_DIR}/lib:${INSTALL_PREFIX_EMBEDDED}/openresty/luajit/lib:${INSTALL_PREFIX_EMBEDDED}/lib")
+  list(APPEND OPENRESTY_CONFIGURE_CMD "--with-ld-opt=-L${STAGE_EMBEDDED_DIR}/lib")
 else()
-  list(APPEND OPENRESTY_CONFIGURE_CMD "--with-ld-opt=-L${STAGE_EMBEDDED_DIR}/lib -Wl,-rpath,${INSTALL_PREFIX_EMBEDDED}/openresty/luajit/lib:${INSTALL_PREFIX_EMBEDDED}/lib")
+  list(APPEND OPENRESTY_CONFIGURE_CMD "--with-ld-opt=-L${STAGE_EMBEDDED_DIR}/lib")
 endif()
 list(APPEND OPENRESTY_CONFIGURE_CMD --error-log-path=stderr)
 list(APPEND OPENRESTY_CONFIGURE_CMD --with-ipv6)
@@ -78,16 +78,13 @@ ExternalProject_Add(
   URL https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz
   URL_HASH MD5=${OPENRESTY_HASH}
   BUILD_IN_SOURCE 1
-  # Append OpenResty's default rpath settings for LuaJIT, instead of prepending
-  # them. This is so our custom rpath settings in --with-ld-opts can take
-  # precedence over the default paths.
-  PATCH_COMMAND sed -i -e "s%unshift @ngx_ld_opts,%push @ngx_ld_opts,%" configure
   CONFIGURE_COMMAND ${OPENRESTY_CONFIGURE_CMD}
   # Wipe the .openssl directory inside the openssl dir, or else openresty
   # will fail to build on rebuilds: https://trac.nginx.org/nginx/ticket/583
   BUILD_COMMAND COMMAND cd ${OPENSSL_SOURCE_DIR} && rm -rf .openssl
     COMMAND make
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
+    COMMAND chrpath -d ${STAGE_EMBEDDED_DIR}/openresty/nginx/sbin/nginx
     COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../openresty/bin/resty ./resty
     COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../openresty/luajit/bin/luajit-2.1.0-beta2 ./luajit
     COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/sbin && cd ${STAGE_EMBEDDED_DIR}/sbin && ln -snf ../openresty/nginx/sbin/nginx ./nginx

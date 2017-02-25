@@ -32,8 +32,6 @@ module.exports = {
     'ace': true,
     'bootbox': true,
     'inflection': true,
-    'jstz': true,
     'marked': true,
-    'moment': true,
   },
 };

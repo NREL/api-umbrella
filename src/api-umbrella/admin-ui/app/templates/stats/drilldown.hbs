@@ -1,4 +1,4 @@
-{{stats/query-form enableInterval=true start_at=start_at end_at=end_at query=query search=search interval=interval beta_analytics=beta_analytics}}
+{{stats/query-form enableInterval=true date_range=date_range start_at=start_at end_at=end_at query=query search=search interval=interval beta_analytics=beta_analytics allQueryParamValues=allQueryParamValues dateRanges=dateRanges}}
 {{stats/drilldown/results-chart hitsOverTime=model.hits_over_time}}
 {{stats/drilldown/results-breadcrumbs breadcrumbs=model.breadcrumbs}}
-{{stats/drilldown/results-table results=model.results queryParamValues=queryParamValues allQueryParamValues=allQueryParamValues}}
+{{stats/drilldown/results-table results=model.results presentQueryParamValues=presentQueryParamValues backendQueryParamValues=backendQueryParamValues}}

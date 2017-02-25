@@ -170,7 +170,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     within(".modal") do
       select "OPTIONS", :from => "HTTP Method"
       fill_in "Regex", :with => "^/foo.*"
-      select "Required & return message - HTTP requests will receive a message to use HTTPS", :from => "HTTPS Requirements"
+      select "Required - HTTP requests will receive a message to use HTTPS", :from => "HTTPS Requirements"
       select "Disabled - API keys are optional", :from => "API Key Checks"
       select "E-mail verification required - Existing API keys will break, only new API keys will work if verified", :from => "API Key Verification Requirements"
       # FIXME: Without this sleep, then the selectize test below will randomly
@@ -290,7 +290,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     within(".modal") do
       assert_select("HTTP Method", :selected => "OPTIONS")
       assert_field("Regex", :with => "^/foo.*")
-      assert_select("HTTPS Requirements", :selected => "Required & return message - HTTP requests will receive a message to use HTTPS")
+      assert_select("HTTPS Requirements", :selected => "Required - HTTP requests will receive a message to use HTTPS")
       assert_select("API Key Checks", :selected => "Disabled - API keys are optional")
       assert_select("API Key Verification Requirements", :selected => "E-mail verification required - Existing API keys will break, only new API keys will work if verified")
       field = find_field("Required Roles")

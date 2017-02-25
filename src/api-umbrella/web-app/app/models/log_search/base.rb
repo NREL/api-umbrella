@@ -2,6 +2,11 @@ class LogSearch::Base
   attr_accessor :query, :query_options
   attr_reader :client, :start_time, :end_time, :interval, :region, :country, :state
 
+  CASE_SENSITIVE_FIELDS = [
+    "api_key",
+    "request_ip_city",
+  ].freeze
+
   UPPERCASE_FIELDS = [
     "request_method",
     "request_ip_country",

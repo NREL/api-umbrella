@@ -97,8 +97,8 @@ return function(active_config)
     -- affect the cache key should be fine.
     ngx.var.proxy_host_header = api["_id"]
 
-    return api
+    return api, url_match
   else
-    return nil, "not_found"
+    return nil, nil, "not_found"
   end
 end
