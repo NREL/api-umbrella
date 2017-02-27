@@ -47,6 +47,8 @@ if [ -z "${API_UMBRELLA_EMBEDDED_ROOT:-}" ]; then
   fi
 fi
 
+#export API_UMBRELLA_RUNTIME_CONFIG="$API_UMBRELLA_ROOT/var/run/runtime_config.yml"
+
 # Set the path for binaries.
 export PATH="$API_UMBRELLA_EMBEDDED_ROOT/sbin:$API_UMBRELLA_EMBEDDED_ROOT/bin:$PATH"
 

@@ -56,7 +56,11 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "request_referer",
       "request_scheme",
       "request_size",
-      "request_url",
+      "request_url_hierarchy_level0",
+      "request_url_hierarchy_level1",
+      "request_url_hierarchy_level2",
+      "request_url_hierarchy_level3",
+      "request_url_hierarchy_level4",
       "request_url_query",
       "request_user_agent",
       "request_user_agent_family",
@@ -84,6 +88,8 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "request_ip_city",
       "request_ip_country",
       "request_ip_region",
+      "request_url_hierarchy_level5",
+      "request_url_hierarchy_level6",
       "response_content_encoding",
       "response_transfer_encoding",
     ]
@@ -114,8 +120,12 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("http://example.com", record["request_referer"])
     assert_equal("http", record["request_scheme"])
     assert_kind_of(Numeric, record["request_size"])
-    assert_equal(url, record["request_url"])
     assert_equal("url1=#{param_url1}&url2=#{param_url2}&url3=#{param_url3}", record["request_url_query"])
+    assert_equal("127.0.0.1:9080/", record["request_url_hierarchy_level0"])
+    assert_equal("api/", record["request_url_hierarchy_level1"])
+    assert_equal("logging-example/", record["request_url_hierarchy_level2"])
+    assert_equal("foo/", record["request_url_hierarchy_level3"])
+    assert_equal("bar", record["request_url_hierarchy_level4"])
     assert_equal("curl/7.37.1", record["request_user_agent"])
     assert_equal("cURL", record["request_user_agent_family"])
     assert_equal("Library", record["request_user_agent_type"])
