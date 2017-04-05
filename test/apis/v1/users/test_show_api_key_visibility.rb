@@ -102,7 +102,7 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
 
     data = MultiJson.load(response.body)
     assert_equal(user.api_key, data["user"]["api_key"])
-    assert_equal((user.created_at + 2.weeks).utc.iso8601, data["user"]["api_key_hides_at"])
+    assert_equal((user.created_at.utc + 2.weeks).utc.iso8601, data["user"]["api_key_hides_at"])
     assert_equal("#{user.api_key[0, 6]}...", data["user"]["api_key_preview"])
   end
 
