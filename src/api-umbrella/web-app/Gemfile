@@ -80,7 +80,7 @@ gem "daemons", "~> 1.2.4"
 # nokogiri is a soft-dependency for premailer-rails so we need to explicitly
 # include it here.
 gem "premailer-rails", "~> 1.9.5"
-gem "nokogiri", "~> 1.7.0"
+gem "nokogiri", "~> 1.7.1"
 
 # Localization in the admin based on the Accept-Language header
 gem "http_accept_language", "~> 2.1.0"
