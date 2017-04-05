@@ -1,22 +1,19 @@
 config = require "api-umbrella.proxy.models.file_config"
 require "api-umbrella.proxy.startup.init_user_agent_parser_data"
-local elasticsearch_setup = require "api-umbrella.proxy.jobs.elasticsearch_setup"
 
-elasticsearch_setup.wait_for_elasticsearch()
-elasticsearch_setup.create_templates()
-
-local log_utils = require "api-umbrella.proxy.log_utils"
-local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
-local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
-local inspect = require "inspect"
-local cjson = require "cjson"
-local argparse = require "argparse"
-local luatz = require "luatz"
-local http = require "resty.http"
-local tablex = require "pl.tablex"
-local pretty = require "pl.pretty"
 local Date = require "pl.Date"
+local argparse = require "argparse"
+local cjson = require "cjson"
+local elasticsearch_setup = require "api-umbrella.proxy.jobs.elasticsearch_setup"
+local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
+local http = require "resty.http"
+local inspect = require "inspect"
+local log_utils = require "api-umbrella.proxy.log_utils"
+local luatz = require "luatz"
+local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
 local plutils = require "pl.utils"
+local pretty = require "pl.pretty"
+local tablex = require "pl.tablex"
 
 local cjson_encode = cjson.encode
 local keys = tablex.keys
@@ -33,23 +30,40 @@ local function table_difference(t1, t2)
   return res
 end
 
+local function parse_date(string)
+  local date
+  if string then
+    local m = ngx.re.match(string, "^(\\d{4})-(\\d{2})-(\\d{2})$")
+    if m then
+      date = luatz.timetable.new(tonumber(m[1]), tonumber(m[2]), tonumber(m[3]), 0, 0, 0)
+    end
+  end
+
+  return date
+end
+
 local function parse_args()
   local parser = argparse("api-umbrella", "Open source API management")
 
-  parser:option("--input", "Input connection."):count(1)
-  parser:option("--output", "Output connection."):count(1)
+  parser:option("--input", "Input Elasticsearch database URL."):count(1)
+  parser:option("--output", "Output Elasticsearch database URL."):count(1)
+  parser:option("--start-date", "Migrate data starting at this date (YYYY-MM-DD format). Defaults to earliest data available from the input database."):count("0-1")
+  parser:option("--end-date", "Migrate data ending on this date (YYYY-MM-DD format). Defaults to current date."):count("0-1")
+  parser:flag("--debug", "Debug")
 
   local args = parser:parse()
 
   local input_uri, input_err = http:parse_uri(args["input"], false)
   if not input_uri then
+    print("--input could not be parsed. Elasticsearch URL expected.")
     print(input_err)
     os.exit(1)
   end
 
   local output_uri, output_err = http:parse_uri(args["output"], false)
   if not output_uri then
-    print(output_err)
+    print("--output could not be parsed. Elasticsearch URL expected.")
+    print(output_uri)
     os.exit(1)
   end
 
@@ -61,7 +75,22 @@ local function parse_args()
   args["output_host"] = output_host
   args["output_port"] = output_port
 
-  --print(inspect(args))
+  if args["start_date"] then
+    args["_start_date"] = parse_date(args["start_date"])
+    if not args["_start_date"] then
+      print("--start-date could not be parsed. YYYY-MM-DD format expected.")
+      os.exit(1)
+    end
+  end
+
+  if args["end_date"] then
+    args["_end_date"] = parse_date(args["end_date"])
+    if not args["_end_date"] then
+      print("--start-date could not be parsed. YYYY-MM-DD format expected.")
+      os.exit(1)
+    end
+  end
+
   return args
 end
 
@@ -289,8 +318,12 @@ local function process_hit(hit, output_index)
     imported = source["imported"],
   }
 
-  --print(inspect(table_difference(source, new_source)))
-  --print(inspect(table_difference(new_source, source)))
+  if args["debug"] then
+    if #bulk_commands % 1000 == 0 then
+      print("DIFF - " .. inspect(table_difference(source, new_source)))
+      print("DIFF + " .. inspect(table_difference(new_source, source)))
+    end
+  end
 
   table.insert(bulk_commands, cjson_encode({
     create = {
@@ -379,12 +412,17 @@ local function search_day(date_start, date_end)
 end
 
 local function search()
-  --local date = v1_first_index_time(args)
-  --local end_date = luatz.now()
-  local date = luatz.timetable.new(2010, 8, 1, 0, 0, 0)
-  local end_date = luatz.timetable.new(2010, 9, 1, 0, 0, 0)
-  local date = luatz.timetable.new(2016, 12, 7, 0, 0, 0)
-  local end_date = luatz.timetable.new(2016, 12, 31, 0, 0, 0)
+  local start_date = args["_start_date"]
+  if not start_date then
+    start_date = v1_first_index_time(args)
+  end
+
+  local end_date = args["_end_date"]
+  if not end_date then
+    end_date = luatz.now()
+  end
+
+  local date = start_date
   while date:timestamp() <= end_date:timestamp() do
     next_day = date:clone()
     next_day["day"] = next_day["day"] + 1
@@ -392,14 +430,16 @@ local function search()
 
     search_day(date, next_day)
 
-    --print(date:rfc_3339())
-    --print(date:timestamp())
     date = next_day
   end
 end
 
 local function run()
   args = parse_args()
+
+  elasticsearch_setup.wait_for_elasticsearch()
+  elasticsearch_setup.create_templates()
+
   search()
 end
 
