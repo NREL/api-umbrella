@@ -1,7 +1,7 @@
 DEPENDENCIES
   api-umbrella
     git: https://github.com/NREL/api-umbrella-cookbook.git
-    revision: 908aefb0c9eb4ecf97bc1aaecb9f64c7ecc26dd6
+    revision: 5c6b64bf31780b8e6a933ba00b32305a4a3f8960
 
 GRAPH
   api-umbrella (0.7.1)
@@ -10,22 +10,19 @@ GRAPH
     ulimit (>= 0.0.0)
     yum (>= 0.0.0)
     yum-epel (>= 0.0.0)
-  build-essential (7.0.2)
-    compat_resource (>= 12.14)
+  build-essential (8.0.0)
     mingw (>= 1.1)
     seven_zip (>= 0.0.0)
-  compat_resource (12.16.2)
-  mingw (1.2.4)
-    compat_resource (>= 0.0.0)
+  compat_resource (12.16.3)
+  mingw (2.0.0)
     seven_zip (>= 0.0.0)
-  ohai (4.2.3)
-    compat_resource (>= 12.14.7)
+  ohai (5.0.3)
   seven_zip (2.0.2)
     windows (>= 1.2.2)
-  sudo (3.1.0)
+  sudo (3.3.1)
   ulimit (0.4.0)
-  windows (2.1.1)
+  windows (3.0.5)
     ohai (>= 4.0.0)
-  yum (4.1.0)
-  yum-epel (2.0.0)
-    compat_resource (>= 12.14.6)
+  yum (5.0.1)
+  yum-epel (2.1.1)
+    compat_resource (>= 12.16.3)
