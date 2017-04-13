@@ -49,11 +49,13 @@ $ docker run -d --name=api-umbrella -p 80:80 -p 443:443 -v "$(pwd)/config":/etc/
     <div id="<%= id %>" class="platform-download" style="display: none;">
       <p>Download and install the package:</p>
 <% if(id =~ /^ubuntu/) %>
-<pre>echo "deb https://dl.bintray.com/nrel/api-umbrella-ubuntu <%= distro %> main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+<pre>apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61
+echo "deb https://dl.bintray.com/nrel/api-umbrella-ubuntu <%= distro %> main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
 sudo apt-get update
 sudo apt-get install api-umbrella</pre>
 <% elsif(id =~ /^debian/) %>
-<pre>echo "deb https://dl.bintray.com/nrel/api-umbrella-debian <%= distro %> main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
+<pre>apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 379CE192D401AB61 
+echo "deb https://dl.bintray.com/nrel/api-umbrella-debian <%= distro %> main" | sudo tee /etc/apt/sources.list.d/api-umbrella.list
 sudo apt-get update
 sudo apt-get install api-umbrella</pre>
 <% else %>
