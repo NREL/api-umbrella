@@ -79,7 +79,7 @@ class Admin
     :allow_blank => true
   if(ApiUmbrellaConfig[:web][:admin][:password_regex])
     validates :password,
-      :format => { :with => Regexp.new(ApiUmbrellaConfig[:web][:admin][:password_regex]), :message => :password_format },
+      :format => { :with => ::Regexp.new(ApiUmbrellaConfig[:web][:admin][:password_regex]), :message => :password_format },
       :allow_blank => true
   end
   validates :password_confirmation,

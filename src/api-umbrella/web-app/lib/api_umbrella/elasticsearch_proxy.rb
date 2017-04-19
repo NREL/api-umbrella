@@ -41,7 +41,7 @@ module ApiUmbrella
       if(status >= 300 && status < 400)
         # Rewrite Location header redirects
         url = [headers["location"]].flatten.join("")
-        if(url && !url.empty? && url.start_with?("/") && !url.start_with?(PREFIX))
+        if(url.present? && url.start_with?("/") && !url.start_with?(PREFIX))
           headers["location"] = File.join(PREFIX, url)
         end
 

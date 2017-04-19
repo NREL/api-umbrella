@@ -33,7 +33,7 @@ class ApiScope
     }
 
   def path_prefix_matcher
-    /^#{Regexp.escape(self.path_prefix)}/
+    /^#{::Regexp.escape(self.path_prefix)}/
   end
 
   def display_name

@@ -1,5 +1,7 @@
 Rails.application.config.after_initialize do
-  I18n.available_locales.each do |locale|
+  I18n.backend.available_locales
+  translations = I18n.backend.send(:translations)
+  translations.each do |locale, locale_data|
     overrides = {}
 
     # Copy the locale data from devise-i18n's built in data for activerecord
@@ -7,11 +9,11 @@ Rails.application.config.after_initialize do
     # is so the default fields like "Password" can use the data built into
     # devise-i18n when using the Mongoid Admin model.
     admin_data = {}
-    if(I18n.backend.exists?(locale, "activerecord.attributes.user"))
-      admin_data.deep_merge!(I18n.backend.translate(locale, "activerecord.attributes.user"))
+    if(locale_data[:activerecord] && locale_data[:activerecord][:attributes] && locale_data[:activerecord][:attributes][:user])
+      admin_data.deep_merge!(locale_data[:activerecord][:attributes][:user])
     end
-    if(I18n.backend.exists?(locale, "mongoid.attributes.admin"))
-      admin_data.deep_merge!(I18n.backend.translate(locale, "mongoid.attributes.admin"))
+    if(locale_data[:mongoid] && locale_data[:mongoid][:attributes] && locale_data[:mongoid][:attributes][:admin])
+      admin_data.deep_merge!(locale_data[:mongoid][:attributes][:admin])
     end
 
     # If we're treating all usernames as e-mail addresses, then change the

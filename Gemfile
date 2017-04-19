@@ -15,10 +15,10 @@ gem "minitest-reporters", "~> 1.1.14"
 gem "minitest-hooks", "~> 1.4.0"
 
 # Test metadata for CI environment.
-gem "minitest-ci", "~> 3.1.0"
+gem "minitest-ci", "~> 3.2.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.47.1", :require => false
+gem "rubocop", "~> 0.48.1", :require => false
 
 # Running background processes
 gem "childprocess", "~> 0.6.1"
@@ -28,11 +28,11 @@ gem "typhoeus", "~> 1.1.2"
 
 # JSON parsing
 gem "multi_json", "~> 1.12.1"
-gem "oj", "~> 2.18.1"
+gem "oj", "~> 2.18.5"
 
 # Database libraries
 gem "mongoid", "~> 6.1.0"
-gem "elasticsearch", "~> 2.0.1"
+gem "elasticsearch", "~> 2.0.2"
 gem "elasticsearch-persistence", "~> 0.1.9"
 
 # Factories for test database data
@@ -45,16 +45,16 @@ gem "database_cleaner", "~> 1.5.3"
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
 
 # URL parsing/generation
-gem "addressable", "~> 2.5.0"
+gem "addressable", "~> 2.5.1"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 2.12.0"
+gem "capybara", "~> 2.13.0"
 # Use fork to fix failure messages:
 # https://github.com/wojtekmach/minitest-capybara/pull/17
 gem "minitest-capybara", "~> 0.8.2", :git => "https://github.com/GUI/minitest-capybara.git"
 
 # Webkit-based driver for capybara
-gem "poltergeist", "~> 1.13.0"
+gem "poltergeist", "~> 1.14.0"
 
 # Take screenshots on capybara test failures
 gem "capybara-screenshot", "~> 1.0.14"
@@ -63,7 +63,7 @@ gem "capybara-screenshot", "~> 1.0.14"
 gem "nokogiri", "~> 1.7.0"
 
 # Useful additions
-gem "activesupport", "~> 5.0.1"
+gem "activesupport", "~> 5.0.2"
 
 # Path-based setting of hashes
 gem "lazyhash", "~> 0.1.1"
@@ -72,7 +72,7 @@ gem "lazyhash", "~> 0.1.1"
 gem "faker", "~> 1.7.2"
 
 # Concurrency helpers.
-gem "concurrent-ruby", "~> 1.0.4"
+gem "concurrent-ruby", "~> 1.0.5"
 
 # Time zone randomization for tests.
 gem "zonebie", "~> 0.6.1"

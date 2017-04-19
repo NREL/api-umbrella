@@ -34,8 +34,8 @@ list(APPEND LIBLOGGING_CONFIGURE_CMD --prefix=${INSTALL_PREFIX_EMBEDDED})
 list(APPEND LIBLOGGING_CONFIGURE_CMD --disable-man-pages)
 ExternalProject_Add(
   liblogging
-  URL https://github.com/rsyslog/liblogging/archive/${LIBLOGGING_VERSION}.tar.gz
-  URL_HASH MD5=${LIBLOGGING_HASH}
+  URL http://download.rsyslog.com/liblogging/liblogging-${LIBLOGGING_VERSION}.tar.gz
+  URL_HASH SHA256=${LIBLOGGING_HASH}
   BUILD_IN_SOURCE 1
   # Run autoreconf to fix issues with the bundled configure file being built
   # with specific versions of autoreconf and libtool that might be newer than

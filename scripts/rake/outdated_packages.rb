@@ -18,9 +18,6 @@ class OutdatedPackages
     "flume" => {
       :git => "https://github.com/apache/flume.git",
     },
-    "glide" => {
-      :git => "https://github.com/Masterminds/glide.git",
-    },
     "golang" => {
       :git => "https://go.googlesource.com/go",
     },
@@ -44,7 +41,6 @@ class OutdatedPackages
     },
     "liblogging" => {
       :git => "https://github.com/rsyslog/liblogging.git",
-      :git_ref => "master",
     },
     "librdkafka" => {
       :git => "https://github.com/edenhill/librdkafka.git",
@@ -136,7 +132,7 @@ class OutdatedPackages
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
-      :constraint => "~> 6.9.1",
+      :constraint => "~> 6.10.2",
     },
     "openldap" => {
       :git => "https://github.com/openldap/openldap.git",
@@ -162,6 +158,7 @@ class OutdatedPackages
     },
     "ruby" => {
       :git => "https://github.com/ruby/ruby.git",
+      :constraint => "~> 2.3.4",
     },
     "rubygems" => {
       :git => "https://github.com/rubygems/rubygems.git",

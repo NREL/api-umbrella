@@ -21,7 +21,7 @@ export default Ember.Component.extend({
 
   handleRegionClick(event) {
     let queryParams = _.clone(this.get('presentQueryParamValues'));
-    queryParams.region = event.name;
+    queryParams.region = event.batch[0].name;
     this.get('routing').transitionTo('stats.map', undefined, queryParams);
   },
 

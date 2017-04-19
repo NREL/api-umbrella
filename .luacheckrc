@@ -8,3 +8,5 @@ globals = {
   "ngx",
   "user_agent_parser_data",
 }
+
+max_line_length = false

@@ -2,8 +2,8 @@
 
 set -e -u
 
-version=3.7.2
-checksum=0e6ec35d4fa9bf79800118916b51928b6471d5725ff36f1d0de5ebb34dcd5406
+version=3.8.0
+checksum=330357990d84599f9c1a87f568a724f0fe5de1687c32961dda689d52588a5b24
 
 build_dir=$(pwd)
 work_dir="$build_dir/build/work"

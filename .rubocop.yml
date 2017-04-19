@@ -132,6 +132,9 @@ Style/OneLineConditional:
 Style/ParenthesesAroundCondition:
   Enabled: false
 
+Style/PercentLiteralDelimiters:
+  Enabled: false
+
 Style/RaiseArgs:
   Enabled: false
 
@@ -151,6 +154,9 @@ Style/StringLiterals:
   Enabled: false
 
 Style/StringLiteralsInInterpolation:
+  Enabled: false
+
+Style/SymbolArray:
   Enabled: false
 
 Style/SymbolProc:
