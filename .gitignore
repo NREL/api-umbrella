@@ -39,4 +39,5 @@
 /ci_cache
 /vendor
 /website/build
+/website/.sass-cache
 /docs/_build

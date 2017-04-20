@@ -1,4 +1,4 @@
-//= require "jquery-1.11.0"
+//= require "_jquery-1.11.0"
 //= require "bootstrap"
-//= require "retina-1.1.0"
-//= require "main"
+//= require "_retina-1.1.0"
+//= require "_main"

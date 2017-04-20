@@ -66,7 +66,7 @@
     <%= yield %>
 
     <div style="text-align: center; font-style: italic; padding: 2em 0.5em;">
-      <a href="https://github.com/NREL/api-umbrella/blob/master/website/source<%= current_page.source_file.gsub(current_page.app.source_dir, '') %>">Help Improve this Content</a>
+      <a href="https://github.com/NREL/api-umbrella/blob/master/website/source<%= current_page.source_file.gsub(app.source_dir.to_s, '') %>">Help Improve this Content</a>
     </div>
   </body>
 </html>

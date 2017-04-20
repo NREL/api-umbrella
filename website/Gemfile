@@ -1,27 +1,19 @@
 source "https://rubygems.org"
 
-gem "middleman", "~> 3.3.7"
+gem "middleman", "~> 4.2.1"
 
-# Live-reloading plugin
-gem "middleman-livereload", "~> 3.3.4"
-
-# For faster file watcher updates on Windows:
-gem "wdm", "~> 0.1.0", :platforms => [:mswin, :mingw]
+# Assets
+gem "middleman-sprockets", "~> 4.1.0"
 
 # For execjs
-gem "therubyracer"
+gem "mini_racer", "~> 0.1.9"
 
 # Deploy to GitHub Pages
 gem "middleman-gh-pages", "~> 0.3.1"
 
 # Markdown
-gem "kramdown", "~> 1.5.0"
-
-# Deployment
-gem "capistrano", "~> 3.3.5"
-gem "capistrano-npm", "~> 1.0.1"
-gem "dotenv", "~> 1.0.2"
+gem "kramdown", "~> 1.13.2"
 
 # Assets
-gem "bootstrap-sass", "~> 3.3.6"
-gem "font-awesome-sass", "~> 4.6.2"
+gem "bootstrap-sass", "~> 3.3.7"
+gem "font-awesome-sass", "~> 4.7.0"
