@@ -116,7 +116,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     assert_selector(".modal")
     within(".modal") do
       fill_in "Host", :with => "google.com"
-      fill_in "Port", :with => "443"
+      assert_field("Port", :with => "443")
       click_button("OK")
     end
 
@@ -130,6 +130,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
     within(".modal") do
       fill_in "Frontend Prefix", :with => "/foo"
       fill_in "Backend Prefix", :with => "/bar"
+      assert_text("Incoming Frontend Request: https://api.foo.com/fooexample.json?param=value")
+      assert_text("Outgoing Backend Request: https://api.bar.com/barexample.json?param=value")
       click_button("OK")
     end
 

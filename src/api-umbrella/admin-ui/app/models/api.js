@@ -59,11 +59,11 @@ export default DS.Model.extend(Validations, {
   },
 
   exampleIncomingUrlRoot: Ember.computed('frontendHost', function() {
-    return 'http://' + (this.get('frontendHost') || '');
+    return 'https://' + (this.get('frontendHost') || '');
   }),
 
-  exampleOutgoingUrlRoot: Ember.computed('backendHost', function() {
-    return 'http://' + (this.get('backendHost') || this.get('frontendHost') || '');
+  exampleOutgoingUrlRoot: Ember.computed('backendProtocol', 'backendHost', 'fontendHost', function() {
+    return this.get('backendProtocol') + '://' + (this.get('backendHost') || this.get('frontendHost') || '');
   }),
 }).reopenClass({
   urlRoot: '/api-umbrella/v1/apis',

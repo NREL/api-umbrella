@@ -26,7 +26,7 @@ export default Ember.Component.extend({
   }),
 
   exampleOutgoingUrl: Ember.computed('bufferedModel.frontendPrefix', 'bufferedModel.backendPrefix', function() {
-    let root = this.get('apiExampleIncomingUrlRoot') || '';
+    let root = this.get('apiExampleOutgoingUrlRoot') || '';
     let prefix = this.get('bufferedModel.backendPrefix') || this.get('bufferedModel.frontendPrefix') || '';
     return root + prefix + this.get('exampleSuffix');
   }),
