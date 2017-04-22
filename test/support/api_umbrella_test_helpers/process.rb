@@ -130,6 +130,10 @@ module ApiUmbrellaTestHelpers
           stop.environment["API_UMBRELLA_CONFIG"] = CONFIG
           stop.start
           stop.wait
+
+          if(stop.exit_code != 0)
+            raise "api-umbrella failed to stop"
+          end
         ensure
           $api_umbrella_process.stop
         end
