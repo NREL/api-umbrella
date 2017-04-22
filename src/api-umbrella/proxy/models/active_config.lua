@@ -78,7 +78,7 @@ local function cache_computed_api(api)
       -- Route pattern matching implementation based on
       -- https://github.com/bjoerge/route-pattern
       -- TODO: Cleanup!
-      if rewrite["matcher_type"] == "route" then
+      if rewrite["matcher_type"] == "route" and rewrite["frontend_matcher"] and rewrite["backend_replacement"] then
         local backend_replacement = mustache_unescape(rewrite["backend_replacement"])
         local backend_parts = split(backend_replacement, "?", true, 2)
         rewrite["_backend_replacement_path"] = backend_parts[1]
@@ -162,26 +162,40 @@ local function sort_by_frontend_host_length(a, b)
   return string.len(tostring(a["frontend_host"])) > string.len(tostring(b["frontend_host"]))
 end
 
+local function parse_api(api)
+  if not api["_id"] then
+    api["_id"] = ngx.md5(cjson.encode(api))
+  end
+
+  cache_computed_api(api)
+  cache_computed_settings(api["settings"])
+  cache_computed_sub_settings(api["sub_settings"])
+end
+
 local function parse_apis(apis)
   for _, api in ipairs(apis) do
-    if not api["_id"] then
-      api["_id"] = ngx.md5(cjson.encode(api))
+    local ok, err = pcall(parse_api, api)
+    if not ok then
+      ngx.log(ngx.ERR, "failed parsing API config: ", err)
     end
+  end
+end
 
-    cache_computed_api(api)
-    cache_computed_settings(api["settings"])
-    cache_computed_sub_settings(api["sub_settings"])
+local function parse_website_backend(website_backend)
+  if not website_backend["_id"] then
+    website_backend["_id"] = ndk.set_var.set_secure_random_alphanum(32)
+  end
+
+  if website_backend["frontend_host"] then
+    set_hostname_regex(website_backend, "frontend_host")
   end
 end
 
 local function parse_website_backends(website_backends)
   for _, website_backend in ipairs(website_backends) do
-    if not website_backend["_id"] then
-      website_backend["_id"] = ndk.set_var.set_secure_random_alphanum(32)
-    end
-
-    if website_backend["frontend_host"] then
-      set_hostname_regex(website_backend, "frontend_host")
+    local ok, err = pcall(parse_website_backend, website_backend)
+    if not ok then
+      ngx.log(ngx.ERR, "failed parsing website backend config: ", err)
     end
   end
 

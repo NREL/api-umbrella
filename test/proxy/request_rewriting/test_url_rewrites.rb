@@ -18,6 +18,11 @@ class Test::Proxy::RequestRewriting::TestUrlRewrites < Minitest::Test
             { :frontend_prefix => "/#{unique_test_class_id}/", :backend_prefix => "/" },
           ],
           :rewrites => [
+            # Make sure other tests can run, even if backend contains invalid
+            # entries of both types without frontend/backend details.
+            { :matcher_type => "route", :http_method => "any" },
+            { :matcher_type => "regex", :http_method => "any" },
+
             {
               :matcher_type => "route",
               :http_method => "any",

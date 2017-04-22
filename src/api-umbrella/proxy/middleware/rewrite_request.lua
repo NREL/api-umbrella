@@ -181,7 +181,7 @@ local function url_rewrites(api)
 
   for _, rewrite in ipairs(api["rewrites"]) do
     if rewrite["http_method"] == "any" or rewrite["http_method"] == request_method then
-      if rewrite["matcher_type"] == "regex" then
+      if rewrite["matcher_type"] == "regex" and rewrite["frontend_matcher"] and rewrite["backend_replacement"] then
         local _, gsub_err
         new_uri, _, gsub_err = gsub(new_uri, rewrite["frontend_matcher"], rewrite["backend_replacement"], "io")
         if gsub_err then
@@ -191,7 +191,7 @@ local function url_rewrites(api)
       -- Route pattern matching implementation based on
       -- https://github.com/bjoerge/route-pattern
       -- TODO: Cleanup!
-      elseif rewrite["matcher_type"] == "route" then
+      elseif rewrite["matcher_type"] == "route" and rewrite["_frontend_path_regex"] then
         local parts = split(new_uri, "?", true, 2)
         local path = parts[1]
         local args = parts[2]

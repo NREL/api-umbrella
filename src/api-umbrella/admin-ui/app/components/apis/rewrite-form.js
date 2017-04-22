@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import BufferedProxy from 'ember-buffered-proxy/proxy';
+import Rewrite from 'api-umbrella-admin-ui/models/api/rewrite';
 
 export default Ember.Component.extend({
   openModal: false,
@@ -29,7 +30,8 @@ export default Ember.Component.extend({
   }),
 
   bufferedModel: Ember.computed('model', function() {
-    return BufferedProxy.create({ content: this.get('model') });
+    let owner = Ember.getOwner(this).ownerInjection();
+    return BufferedProxy.extend(Rewrite.validationClass).create(owner, { content: this.get('model') });
   }),
 
   actions: {

@@ -16,4 +16,8 @@ class Api::Rewrite
     :inclusion => { :in => %w(route regex) }
   validates :http_method,
     :inclusion => { :in => %w(any GET POST PUT DELETE HEAD TRACE OPTIONS CONNECT PATCH) }
+  validates :frontend_matcher,
+    :presence => true
+  validates :backend_replacement,
+    :presence => true
 end
