@@ -21,8 +21,5 @@
     "qtip2": "2.2.1",
     "selectize": "0.12.4",
     "tbasse-jquery-truncate": "#2247c21d70591a516d9a484aaba83db0a908e32f"
-  },
-  "resolutions": {
-    "doT": ">=1.0.3"
   }
 }
