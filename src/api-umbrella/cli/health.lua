@@ -1,5 +1,5 @@
 local cjson = require "cjson"
-local http = require("socket.http")
+local http = require "resty.http"
 local read_config = require "api-umbrella.cli.read_config"
 local unistd = require "posix.unistd"
 
@@ -12,19 +12,19 @@ local function health(options, config)
     url = url .. "?wait_for_status=" .. options["wait_for_status"] .. "&wait_timeout=" .. options["wait_timeout"]
   end
 
-  local body, response_code, headers = http.request(url)
-  if not body then
-    local err = response_code
-    return status, exit_code, err
-  elseif headers["content-type"] ~= "application/json" then
+  local httpc = http.new()
+  local res, http_err = httpc:request_uri(url)
+  if not res then
+    return status, exit_code, http_err
+  elseif res.headers["Content-Type"] ~= "application/json" then
     local err = "nginx error"
     return status, exit_code, err
   else
-    local data = cjson.decode(body)
+    local data = cjson.decode(res.body)
     if data["status"] then
       status = data["status"]
 
-      if response_code == 200 and status ~= "red" then
+      if res.status == 200 and status ~= "red" then
         exit_code = 0
       end
     else

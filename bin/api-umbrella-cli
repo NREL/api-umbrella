@@ -1,4 +1,4 @@
-#!/usr/bin/env luajit
+#!/usr/bin/env resty
 
 local cli = require "api-umbrella.cli"
 cli()

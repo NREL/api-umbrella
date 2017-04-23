@@ -86,6 +86,6 @@ ExternalProject_Add(
   INSTALL_COMMAND make install DESTDIR=${STAGE_DIR}
     COMMAND chrpath -d ${STAGE_EMBEDDED_DIR}/openresty/nginx/sbin/nginx
     COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../openresty/bin/resty ./resty
-    COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../openresty/luajit/bin/luajit-2.1.0-beta2 ./luajit
+    COMMAND cd ${STAGE_EMBEDDED_DIR}/bin && ln -snf ../openresty/luajit/bin/luajit ./luajit
     COMMAND mkdir -p ${STAGE_EMBEDDED_DIR}/sbin && cd ${STAGE_EMBEDDED_DIR}/sbin && ln -snf ../openresty/nginx/sbin/nginx ./nginx
 )

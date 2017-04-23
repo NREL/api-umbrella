@@ -69,9 +69,6 @@ class OutdatedPackages
     "luarock_luaposix" => {
       :luarock => "luaposix",
     },
-    "luarock_luasocket" => {
-      :luarock => "luasocket",
-    },
     "luarock_luatz" => {
       :luarock => "luatz",
     },
@@ -92,6 +89,10 @@ class OutdatedPackages
     },
     "luarock_resty_uuid" => {
       :luarock => "lua-resty-uuid",
+    },
+    "lua_luasocket" => {
+      :git => "https://github.com/diegonehab/luasocket.git",
+      :git_ref => "master",
     },
     "lua_resty_dns_cache" => {
       :git => "https://github.com/hamishforbes/lua-resty-dns-cache.git",

@@ -52,6 +52,10 @@ if [ -f /etc/redhat-release ]; then
 
     # For pstree used in reopen-logs command.
     psmisc
+
+    # For OpenResty's "resty" CLI.
+    perl
+    perl-Time-HiRes
   )
   hadoop_analytics_package_dependencies=(
     java-1.8.0-openjdk-headless
@@ -156,6 +160,9 @@ elif [ -f /etc/debian_version ]; then
 
     # For pstree used in reopen-logs command.
     psmisc
+
+    # For OpenResty's "resty" CLI.
+    perl
   )
   hadoop_analytics_package_dependencies=(
     openjdk-$openjdk_version-jre-headless
