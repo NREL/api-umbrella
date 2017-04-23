@@ -38,7 +38,12 @@ class Test::Proxy::RequestRewriting::TestAddsRolesHeader < Minitest::Test
     }))
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal("private,foo,bar", data["headers"]["x-api-roles"])
+    assert(data["headers"]["x-api-roles"])
+    assert_equal([
+      "bar",
+      "foo",
+      "private",
+    ].sort, data["headers"]["x-api-roles"].split(",").sort)
   end
 
   def test_strips_forged_values
