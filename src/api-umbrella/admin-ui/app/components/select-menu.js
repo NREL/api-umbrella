@@ -2,7 +2,9 @@ import Ember from 'ember';
 
 export default Ember.Component.extend({
   didRender() {
-    this.updateDefault();
+    // Defer update to within the run loop, to prevent ember warnings about
+    // updates within the actual rendering (which can cause poor performance).
+    Ember.run.once(this, this.updateDefault);
   },
 
   // If a select menu doesn't have a value set on the model, set it to the
