@@ -1,3 +1,7 @@
+import PNotify from 'npm:pnotify';
+import 'npm:pnotify/dist/pnotify.buttons';
+import 'npm:pnotify/dist/pnotify.mobile';
+
 export function initialize() {
   _.merge(PNotify.prototype.options, {
     styling: 'bootstrap3',

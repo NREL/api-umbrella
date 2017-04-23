@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import PNotify from 'npm:pnotify';
 
 export default Ember.Component.extend({
   routing: Ember.inject.service('-routing'),

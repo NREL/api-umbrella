@@ -61,12 +61,6 @@ module.exports = function(defaults) {
   app.import('bower_components/jsdiff/diff.js');
   app.import('bower_components/lodash/dist/lodash.js');
   app.import('bower_components/marked/lib/marked.js');
-  app.import('bower_components/pnotify/dist/pnotify.css');
-  app.import('bower_components/pnotify/dist/pnotify.buttons.css');
-  app.import('bower_components/pnotify/dist/pnotify.mobile.css');
-  app.import('bower_components/pnotify/dist/pnotify.js');
-  app.import('bower_components/pnotify/dist/pnotify.buttons.js');
-  app.import('bower_components/pnotify/dist/pnotify.mobile.js');
   app.import('bower_components/qtip2/jquery.qtip.css');
   app.import('bower_components/qtip2/jquery.qtip.js');
   app.import('bower_components/selectize/dist/css/selectize.default.css');

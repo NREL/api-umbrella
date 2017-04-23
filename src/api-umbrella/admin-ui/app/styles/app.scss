@@ -7,6 +7,9 @@
 
 @import "bower_components/jQuery-QueryBuilder/dist/scss/default.scss";
 @import "node_modules/bootstrap-daterangepicker/daterangepicker.scss";
+@import "node_modules/pnotify/dist/pnotify";
+@import "node_modules/pnotify/dist/pnotify.buttons";
+@import "node_modules/pnotify/dist/pnotify.mobile";
 @import "_noscript.scss";
 @import "_busy-blocker.scss";
 @import "_input-xs.scss";

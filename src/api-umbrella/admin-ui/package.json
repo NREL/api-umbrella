@@ -53,7 +53,8 @@
     "emberx-select": "~3.0.1",
     "i18n-js": "https://github.com/fnando/i18n-js/archive/v3.0.0.rc15.tar.gz",
     "loader.js": "^4.0.1",
-    "moment-timezone": "~0.5.13"
+    "moment-timezone": "~0.5.13",
+    "pnotify": "~3.0.1"
   },
   "ember-addon": {
     "paths": [
