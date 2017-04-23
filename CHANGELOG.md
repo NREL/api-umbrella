@@ -1,5 +1,31 @@
 # API Umbrella Change Log
 
+## 0.14.1 (2017-04-23)
+
+This update contains a few bug fixes and one potential security fix. Upgrading is recommended.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` package using your package manager.
+
+### Changed
+
+- **Upgrade bundled software dependencies:**
+  - OpenResty 1.11.2.2 -\> 1.11.2.3
+  - Ruby 2.3.3 -\> 2.3.4
+  - Rsyslog 8.24.0 -\> 8.26.0
+
+### Fixed
+
+- **Missing validations on API backends:** It was possible to create API backends that omitted fields that should have been required in the Sub-URL Request Settings and Advanced Requests Rewriting sections. This could cause errors in loading the API configuration. ([#360](https://github.com/NREL/api-umbrella/issues/360))
+- **Creating new admin groups:** Creating new admin groups in the admin was broken in v0.14.0. ([#347](https://github.com/NREL/api-umbrella/issues/347))
+- **Outgoing example URL in admin:** In the API backend form of the admin, the example outgoing URL was incorrect in v0.14.0. ([b4ce3e28](https://github.cmm/NREL/api-umbrella/commit/b4ce3e28e77859c05b1989342cc8f0ce6fe85a06))
+- **Ember.js deprecation warnings:** Fix some deprecation warnings in the admin tool. ([3e019140](https://github.cmm/NREL/api-umbrella/commit/3e0191409c1b24db3733b04d450de904b1492389), [27bf988d](https://github.cmm/NREL/api-umbrella/commit/27bf988d5b7c6f5d9bc1e6e8ef22f22a67e84064))
+
+### Security
+
+- **Don't pass admin session cookie to API backends:** The session cookie the API Umbrella admin uses is now stripped from requests to API backends. ([89371149](https://github.cmm/NREL/api-umbrella/commit/89371149585c1c94d1420bd8ce190a6fcdadb59b))
+
 ## 0.14.0 (2017-02-22)
 
 This update focuses on upgrading various internal components of API Umbrella. It also offers new features and various bug fixes. A few potential security issues are also addressed. Upgrading is recommended, but there are some potential compatibility issues to note. See the Upgrade Instructions section below.
