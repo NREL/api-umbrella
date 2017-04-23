@@ -21,7 +21,7 @@ return function(api)
     local request_method = ngx.ctx.request_method
     local request_uri = ngx.ctx.request_uri
     for _, sub_settings in ipairs(api["sub_settings"]) do
-      if sub_settings["http_method"] == "any" or sub_settings["http_method"] == request_method then
+      if (sub_settings["http_method"] == "any" or sub_settings["http_method"] == request_method) and sub_settings["regex"] then
         local matches, match_err = ngx.re.match(request_uri, sub_settings["regex"], "ijo")
         if matches then
           local original_required_roles

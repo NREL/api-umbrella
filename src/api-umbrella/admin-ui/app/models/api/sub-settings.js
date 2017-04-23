@@ -1,6 +1,16 @@
 import DS from 'ember-data';
+import { validator, buildValidations } from 'ember-cp-validations';
 
-export default DS.Model.extend({
+const Validations = buildValidations({
+  httpMethod: [
+    validator('presence', true),
+  ],
+  regex: [
+    validator('presence', true),
+  ],
+});
+
+export default DS.Model.extend(Validations, {
   sortOrder: DS.attr('number'),
   httpMethod: DS.attr(),
   regex: DS.attr(),
@@ -17,4 +27,6 @@ export default DS.Model.extend({
       this.set('settings', this.get('store').createRecord('api/settings'));
     }
   },
+}).reopenClass({
+  validationClass: Validations,
 });

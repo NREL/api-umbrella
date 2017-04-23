@@ -13,6 +13,8 @@ class Api::SubSettings
   # Validations
   validates :http_method,
     :inclusion => { :in => %w(any GET POST PUT DELETE HEAD TRACE OPTIONS CONNECT PATCH) }
+  validates :regex,
+    :presence => true
 
   # Nested attributes
   accepts_nested_attributes_for :settings
