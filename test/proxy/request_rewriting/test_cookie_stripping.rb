@@ -63,4 +63,15 @@ class Test::Proxy::RequestRewriting::TestCookieStripping < Minitest::Test
     data = MultiJson.load(response.body)
     assert_equal("foo=bar; moo=boo", data["headers"]["cookie"])
   end
+
+  def test_strips_admin_session_cookie
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
+      :headers => {
+        "Cookie" => "foo1=bar1; _api_umbrella_session=foo; foo2=bar2",
+      },
+    }))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal("foo1=bar1; foo2=bar2", data["headers"]["cookie"])
+  end
 end

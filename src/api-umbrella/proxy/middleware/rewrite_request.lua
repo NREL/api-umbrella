@@ -133,12 +133,15 @@ local function set_http_basic_auth(settings)
   end
 end
 
-local function strip_cookies()
+local function strip_cookies(api)
   local cookie_header = ngx.var.http_cookie
   if not cookie_header then return end
 
-  local strips = config["strip_cookies"]
-  if not strips then return end
+  local strips = config["strip_cookies"] or {}
+  if api["_id"] ~= "api-umbrella-web-backend" then
+    table.insert(strips, "^_api_umbrella_session$")
+  end
+  if #strips == 0 then return end
 
   local cookies = split(cookie_header, "; *")
   local kept_cookies = {}
@@ -266,6 +269,6 @@ return function(user, api, settings)
   append_query_string(settings)
   set_headers(settings)
   set_http_basic_auth(settings)
-  strip_cookies()
+  strip_cookies(api)
   url_rewrites(api)
 end
