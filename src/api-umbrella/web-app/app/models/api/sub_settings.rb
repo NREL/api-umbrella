@@ -16,4 +16,13 @@ class Api::SubSettings
 
   # Nested attributes
   accepts_nested_attributes_for :settings
+
+  def serializable_hash(options = nil)
+    hash = super(options)
+    # Ensure all embedded relationships are at least null in the JSON output
+    # (rather than not being present), or else Ember-Data's serialization
+    # throws warnings.
+    hash["settings"] ||= nil
+    hash
+  end
 end

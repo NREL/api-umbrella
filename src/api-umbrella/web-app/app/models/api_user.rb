@@ -130,6 +130,15 @@ class ApiUser
     @api_key_hides_at ||= self.created_at + 2.weeks
   end
 
+  def serializable_hash(options = nil)
+    hash = super(options)
+    # Ensure all embedded relationships are at least null in the JSON output
+    # (rather than not being present), or else Ember-Data's serialization
+    # throws warnings.
+    hash["settings"] ||= nil
+    hash
+  end
+
   private
 
   def normalize_terms_and_conditions

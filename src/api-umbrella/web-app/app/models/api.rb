@@ -280,4 +280,17 @@ class Api
     roles.uniq!
     roles
   end
+
+  def serializable_hash(options = nil)
+    hash = super(options)
+    # Ensure all embedded relationships are at least null in the JSON output
+    # (rather than not being present), or else Ember-Data's serialization
+    # throws warnings.
+    hash["rewrites"] ||= nil
+    hash["servers"] ||= nil
+    hash["settings"] ||= nil
+    hash["sub_settings"] ||= nil
+    hash["url_matches"] ||= nil
+    hash
+  end
 end

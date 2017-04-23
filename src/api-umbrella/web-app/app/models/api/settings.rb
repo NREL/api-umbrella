@@ -134,6 +134,18 @@ class Api::Settings
     end
   end
 
+  def serializable_hash(options = nil)
+    hash = super(options)
+    # Ensure all embedded relationships are at least null in the JSON output
+    # (rather than not being present), or else Ember-Data's serialization
+    # throws warnings.
+    hash["default_response_headers"] ||= nil
+    hash["headers"] ||= nil
+    hash["override_response_headers"] ||= nil
+    hash["rate_limits"] ||= nil
+    hash
+  end
+
   private
 
   def read_headers_string(field)
