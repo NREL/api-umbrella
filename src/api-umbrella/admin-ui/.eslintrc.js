@@ -27,7 +27,6 @@ module.exports = {
     '$': true,
     'CommonValidations': true,
     'JsDiff': true,
-    'PNotify': true,
     '_': true,
     'ace': true,
     'bootbox': true,

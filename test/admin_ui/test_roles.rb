@@ -44,7 +44,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     click_button("Save")
 
     assert_text("Successfully saved the user")
-    page.execute_script("PNotify.removeAll()")
+    page.execute_script("window.PNotifyRemoveAll()")
     refute_text("Successfully saved the user")
 
     click_link("Add New API User")

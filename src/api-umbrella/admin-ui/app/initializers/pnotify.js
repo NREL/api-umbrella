@@ -15,6 +15,9 @@ export function initialize() {
       sticker: false,
     },
   });
+
+  // Export the removeAll function as a global, for use in our test suite.
+  window.PNotifyRemoveAll = PNotify.removeAll;
 }
 
 export default {

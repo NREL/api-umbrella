@@ -65,7 +65,7 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
     check "Superuser"
     click_button "Save"
     assert_text("Successfully saved the admin")
-    page.execute_script("PNotify.removeAll()")
+    page.execute_script("window.PNotifyRemoveAll()")
 
     # Find admin record, and ensure username and email are different.
     admin = Admin.where(:username => unique_test_id.downcase).first
@@ -82,7 +82,7 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
     fill_in "Email", :with => "#{unique_test_id.upcase}-different@example.com"
     click_button "Save"
     assert_text("Successfully saved the admin")
-    page.execute_script("PNotify.removeAll()")
+    page.execute_script("window.PNotifyRemoveAll()")
 
     # Ensure edits still keep things different.
     admin.reload
