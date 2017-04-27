@@ -19,12 +19,12 @@ If you're upgrading a previous API Umbrella version, you may upgrade the `api-um
 
 - **Missing validations on API backends:** It was possible to create API backends that omitted fields that should have been required in the Sub-URL Request Settings and Advanced Requests Rewriting sections. This could cause errors in loading the API configuration. ([#360](https://github.com/NREL/api-umbrella/issues/360))
 - **Creating new admin groups:** Creating new admin groups in the admin was broken in v0.14.0. ([#347](https://github.com/NREL/api-umbrella/issues/347))
-- **Outgoing example URL in admin:** In the API backend form of the admin, the example outgoing URL was incorrect in v0.14.0. ([b4ce3e28](https://github.cmm/NREL/api-umbrella/commit/b4ce3e28e77859c05b1989342cc8f0ce6fe85a06))
-- **Ember.js deprecation warnings:** Fix some deprecation warnings in the admin tool. ([3e019140](https://github.cmm/NREL/api-umbrella/commit/3e0191409c1b24db3733b04d450de904b1492389), [27bf988d](https://github.cmm/NREL/api-umbrella/commit/27bf988d5b7c6f5d9bc1e6e8ef22f22a67e84064))
+- **Outgoing example URL in admin:** In the API backend form of the admin, the example outgoing URL was incorrect in v0.14.0. ([b4ce3e28](https://github.com/NREL/api-umbrella/commit/b4ce3e28e77859c05b1989342cc8f0ce6fe85a06))
+- **Ember.js deprecation warnings:** Fix some deprecation warnings in the admin tool. ([3e019140](https://github.com/NREL/api-umbrella/commit/3e0191409c1b24db3733b04d450de904b1492389), [27bf988d](https://github.com/NREL/api-umbrella/commit/27bf988d5b7c6f5d9bc1e6e8ef22f22a67e84064))
 
 ### Security
 
-- **Don't pass admin session cookie to API backends:** The session cookie the API Umbrella admin uses is now stripped from requests to API backends. ([89371149](https://github.cmm/NREL/api-umbrella/commit/89371149585c1c94d1420bd8ce190a6fcdadb59b))
+- **Don't pass admin session cookie to API backends:** The session cookie the API Umbrella admin uses is now stripped from requests to API backends. ([89371149](https://github.com/NREL/api-umbrella/commit/89371149585c1c94d1420bd8ce190a6fcdadb59b))
 
 ## 0.14.0 (2017-02-22)
 
