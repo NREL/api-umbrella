@@ -55,6 +55,8 @@ http {
   lua_shared_dict resolved_hosts {{nginx.shared_dicts.resolved_hosts.size}};
   lua_shared_dict stats {{nginx.shared_dicts.stats.size}};
   lua_shared_dict upstream_checksums {{nginx.shared_dicts.upstream_checksums.size}};
+  lua_ssl_trusted_certificate {{nginx.lua_ssl_trusted_certificate}};
+  lua_ssl_verify_depth {{nginx.lua_ssl_verify_depth}};
 
   {{#dns_resolver._nameservers_nginx}}
     resolver {{dns_resolver._nameservers_nginx}};
