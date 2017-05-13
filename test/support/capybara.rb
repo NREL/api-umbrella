@@ -36,6 +36,9 @@ Capybara.register_driver :poltergeist do |app|
     :phantomjs_logger => PoltergeistLogger.new(File.join(root_dir, "phantomjs.log")),
     :phantomjs_options => [
       "--ignore-ssl-errors=true",
+      # Use disk-based cache for more accurate browser caching behavior:
+      # https://github.com/teampoltergeist/poltergeist/issues/754#issuecomment-228433228
+      "--disk-cache=true",
       "--disk-cache-path=#{File.join(root_dir, "disk-cache")}",
       "--offline-storage-path=#{File.join(root_dir, "offline-storage")}",
       "--local-storage-path=#{File.join(root_dir, "local-storage")}",
