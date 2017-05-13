@@ -21,14 +21,14 @@ gem "minitest-ci", "~> 3.2.0"
 gem "rubocop", "~> 0.48.1", :require => false
 
 # Running background processes
-gem "childprocess", "~> 0.6.1"
+gem "childprocess", "~> 0.7.0"
 
 # Making HTTP requests
 gem "typhoeus", "~> 1.1.2"
 
 # JSON parsing
 gem "multi_json", "~> 1.12.1"
-gem "oj", "~> 2.18.5"
+gem "oj", "~> 3.0.7"
 
 # Database libraries
 gem "mongoid", "~> 6.1.0"
@@ -39,7 +39,7 @@ gem "elasticsearch-persistence", "~> 0.1.9"
 gem "factory_girl", "~> 4.8.0"
 
 # Deleting database data between tests.
-gem "database_cleaner", "~> 1.5.3"
+gem "database_cleaner", "~> 1.6.1"
 
 # Programmatically generate Rails session cookies.
 gem "rails_compatible_cookies_utils", "~> 0.1.0"
@@ -48,13 +48,13 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.5.1"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 2.13.0"
+gem "capybara", "~> 2.14.0"
 # Use fork to fix failure messages:
 # https://github.com/wojtekmach/minitest-capybara/pull/17
 gem "minitest-capybara", "~> 0.8.2", :git => "https://github.com/GUI/minitest-capybara.git"
 
 # Webkit-based driver for capybara
-gem "poltergeist", "~> 1.14.0"
+gem "poltergeist", "~> 1.15.0"
 
 # Take screenshots on capybara test failures
 gem "capybara-screenshot", "~> 1.0.14"
@@ -63,7 +63,7 @@ gem "capybara-screenshot", "~> 1.0.14"
 gem "nokogiri", "~> 1.7.0"
 
 # Useful additions
-gem "activesupport", "~> 5.0.2"
+gem "activesupport", "~> 5.1.1"
 
 # Path-based setting of hashes
 gem "lazyhash", "~> 0.1.1"

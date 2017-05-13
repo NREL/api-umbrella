@@ -16,13 +16,10 @@ gem "rack-proxy", "~> 0.6.1"
 
 # JSON handling
 gem "multi_json", "~> 1.12.1"
-gem "oj", "~> 2.18.5", :platforms => [:ruby]
-
-# Use Oj for the default Rails to_json calls.
-gem "oj_mimic_json", "~> 1.0.1", :platforms => [:ruby]
+gem "oj", "~> 3.0.7", :platforms => [:ruby]
 
 # SQL escape libraries for Kylin analytics.
-gem "sequel", "~> 4.45.0"
+gem "sequel", "~> 4.46.0"
 
 # MongoDB
 gem "mongoid", "~> 5.2.0"
