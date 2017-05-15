@@ -13,8 +13,8 @@ class Test::Apis::V1::Admins::TestCreate < Minitest::Test
   def test_downcases_username
     attributes = FactoryGirl.build(:admin, :username => "HELLO-#{unique_test_id}@example.com").serializable_hash
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admins.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(201, response)
 
@@ -28,8 +28,8 @@ class Test::Apis::V1::Admins::TestCreate < Minitest::Test
 
   def test_required_validations
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admins.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => {} },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => {}),
     }))
     assert_response_code(422, response)
 

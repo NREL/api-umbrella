@@ -293,4 +293,24 @@ class Api
     hash["url_matches"] ||= nil
     hash
   end
+
+  def save(*args)
+    # If a sub-settings record is being removed at the same time another
+    # sub-setting record is being changed, this triggers a save failure, due to
+    # how Mongoid saves the data. Similar to this issue:
+    # https://jira.mongodb.org/browse/MONGOID-3964
+    #
+    # Since Mongoid doesn't handle this out of the box, we'll try to work
+    # around the issue by first saving the changed records before the removes
+    # happen as part of the normal save.
+    if(self.valid? && self.sub_settings)
+      self.sub_settings.each do |sub_setting|
+        if(sub_setting.changed?)
+          sub_setting.save!
+        end
+      end
+    end
+
+    super
+  end
 end

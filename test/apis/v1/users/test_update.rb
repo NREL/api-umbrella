@@ -16,8 +16,8 @@ class Test::Apis::V1::Users::TestUpdate < Minitest::Test
     attributes = user.serializable_hash
     attributes["first_name"] = "Updated"
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(200, response)
 
@@ -33,8 +33,8 @@ class Test::Apis::V1::Users::TestUpdate < Minitest::Test
 
     attributes = user.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(200, response)
 
@@ -52,8 +52,8 @@ class Test::Apis::V1::Users::TestUpdate < Minitest::Test
     refute(attributes["api_key"])
 
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(200, response)
 
@@ -70,8 +70,8 @@ class Test::Apis::V1::Users::TestUpdate < Minitest::Test
     attributes["api_key"] = "new_api_key"
 
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(200, response)
 

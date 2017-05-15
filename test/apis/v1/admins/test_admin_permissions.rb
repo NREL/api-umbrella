@@ -116,15 +116,15 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
 
     attributes = record.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(200, response)
 
     attributes["group_ids"] = [yahoo_admin_group.id]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", @@http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
@@ -142,15 +142,15 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
 
     attributes = record.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(403, response)
 
     attributes["group_ids"] = [google_admin_group.id]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
@@ -167,8 +167,8 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     attributes = record.serializable_hash
     attributes["superuser"] = "1"
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
 
     assert_response_code(403, response)
@@ -182,8 +182,8 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     attributes = record.serializable_hash
     attributes["superuser"] = "1"
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(record)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
 
     assert_response_code(403, response)
@@ -198,8 +198,8 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     attributes = record.serializable_hash
     attributes["superuser"] = "0"
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
 
     assert_response_code(403, response)
@@ -214,8 +214,8 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     attributes = record.serializable_hash
     attributes["superuser"] = "1"
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
 
     assert_response_code(200, response)
@@ -230,8 +230,8 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     attributes = record.serializable_hash
     attributes["superuser"] = "0"
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
 
     assert_response_code(200, response)
@@ -299,8 +299,8 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     attributes = FactoryGirl.build(factory).serializable_hash
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admins.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
 
     assert_response_code(201, response)
@@ -314,8 +314,8 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     attributes = FactoryGirl.build(factory).serializable_hash
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admins.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
 
     assert_response_code(403, response)
@@ -330,8 +330,8 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     attributes = record.serializable_hash
     attributes["username"] += rand(999_999).to_s
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
 
     assert_response_code(200, response)
@@ -350,8 +350,8 @@ class Test::Apis::V1::Admins::TestAdminPermissions < Minitest::Test
     attributes = record.serializable_hash
     attributes["username"] += rand(999_999).to_s
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
 
     assert_response_code(403, response)

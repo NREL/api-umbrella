@@ -94,13 +94,13 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Test
   def create_or_update(action, attributes)
     if(action == :create)
       Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-        :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-        :body => { :api => attributes },
+        :headers => { "Content-Type" => "application/json" },
+        :body => MultiJson.dump(:api => attributes),
       }))
     elsif(action == :update)
       Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{attributes["id"]}.json", http_options.deep_merge(admin_token).deep_merge({
-        :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-        :body => { :api => attributes },
+        :headers => { "Content-Type" => "application/json" },
+        :body => MultiJson.dump(:api => attributes),
       }))
     else
       flunk("Unknown action: #{action.inspect}")

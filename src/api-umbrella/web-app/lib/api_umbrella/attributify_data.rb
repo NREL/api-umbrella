@@ -53,6 +53,7 @@ module ApiUmbrella
     end
 
     def attributify_settings!(data, old_data)
+      return unless(data.key?("settings"))
       data["settings_attributes"] = data.delete("settings") || {}
 
       settings_data = data["settings_attributes"]
@@ -69,7 +70,7 @@ module ApiUmbrella
           # object setter expects). So ensure only one of these is set.
           object_key = collection_name
           string_key = "#{collection_name}_string"
-          if(settings_data[string_key].present?)
+          if(settings_data.key?(string_key))
             settings_data.delete(object_key)
           else
             settings_data.delete(string_key)
@@ -80,6 +81,7 @@ module ApiUmbrella
     end
 
     def attributify_embeds_many!(data, collection_name, old_data)
+      return unless(data.key?(collection_name))
       attribute_key = "#{collection_name}_attributes"
       data[attribute_key] = data.delete(collection_name) || []
 

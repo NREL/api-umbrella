@@ -155,8 +155,8 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
       },
     }).deep_stringify_keys
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
 
     assert_response_code(201, response)
@@ -164,7 +164,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     data = MultiJson.load(response.body)
     record = ApiUser.find(data["user"]["id"])
     assert_nil(record.roles)
-    assert_nil(record.settings.rate_limit_mode)
+    assert_nil(record.settings)
   end
 
   def test_admin_uses_private_fields
@@ -183,8 +183,8 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
       },
     }).deep_stringify_keys
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
 
     assert_response_code(201, response)
@@ -299,8 +299,8 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     attributes = FactoryGirl.attributes_for(:api_user).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
 
     assert_response_code(201, response)
@@ -314,8 +314,8 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     attributes = FactoryGirl.attributes_for(:api_user).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
 
     if(role_based_error)
@@ -340,8 +340,8 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     attributes = record.serializable_hash
     attributes["first_name"] += rand(999_999).to_s
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
 
     assert_response_code(200, response)
@@ -356,8 +356,8 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     attributes = record.serializable_hash
     attributes["first_name"] += rand(999_999).to_s
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
 
     if(role_based_error)

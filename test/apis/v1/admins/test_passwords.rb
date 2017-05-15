@@ -17,8 +17,8 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
       "password_confirmation" => "password234567",
     })
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admins.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(201, response)
 
@@ -37,8 +37,8 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
       "password_confirmation" => "password234567",
     })
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{other_admin.id}.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(200, response)
 
@@ -57,8 +57,8 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
       "password_confirmation" => "password234567",
     })
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(200, response)
 
@@ -75,8 +75,8 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
       "password_confirmation" => "password234567",
     })
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
@@ -98,8 +98,8 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
       "password_confirmation" => "password234567",
     })
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
@@ -121,8 +121,8 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
       "password_confirmation" => "password234567",
     })
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
@@ -143,8 +143,8 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
       "password" => "password234567",
     })
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
@@ -165,8 +165,8 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
       "password_confirmation" => "password234567",
     })
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
@@ -189,8 +189,8 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
       "password_confirmation" => "short",
     })
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
@@ -212,8 +212,8 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
       "password_confirmation" => "mismatcH123456",
     })
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admins/#{admin.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :admin => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:admin => attributes),
     }))
     assert_response_code(422, response)
     data = MultiJson.load(response.body)

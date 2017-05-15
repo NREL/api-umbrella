@@ -99,14 +99,17 @@ class Api::V1::ApisController < Api::V1::BaseController
       :authenticated_rate_limit_behavior,
       :pass_api_key_header,
       :pass_api_key_query_param,
+      :rate_limits,
+      :required_roles,
       :required_roles_override,
+      :headers,
       :headers_string,
+      :default_response_headers,
       :default_response_headers_string,
+      :override_response_headers,
       :override_response_headers_string,
       {
         :required_roles => [],
-        :allowed_ips => [],
-        :allowed_referers => [],
         :error_templates => [
           :json,
           :xml,
@@ -153,6 +156,10 @@ class Api::V1::ApisController < Api::V1::BaseController
       :frontend_host,
       :backend_host,
       :balance_algorithm,
+      :servers,
+      :url_matches,
+      :sub_settings,
+      :rewrites,
       {
         :settings => settings_permitted,
         :servers => [

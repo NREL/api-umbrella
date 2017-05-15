@@ -80,4 +80,78 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     find(".modal .selectize-input").click
     assert_text("test-new-user-role")
   end
+
+  def test_removes_user_roles
+    user = FactoryGirl.create(:api_user, :roles => ["test-role1", "test-role2"])
+    admin_login
+
+    # Remove 1 role
+    visit "/admin/#/api_users/#{user.id}/edit"
+    assert_text("Edit API User")
+
+    field = find_field("Roles")
+    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role1×test-role2×")
+    find("#" + field["data-selectize-control-id"] + " [data-value=test-role1] .remove").click
+    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role2×")
+
+    click_button("Save")
+    assert_text("Successfully saved")
+    page.execute_script("window.PNotifyRemoveAll()")
+
+    user.reload
+    assert_equal(user.roles, ["test-role2"])
+
+    # Remove last role
+    visit "/admin/#/api_users/#{user.id}/edit"
+    assert_text("Edit API User")
+
+    field = find_field("Roles")
+    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role2×")
+    find("#" + field["data-selectize-control-id"] + " [data-value=test-role2] .remove").click
+    assert_selector("#" + field["data-selectize-control-id"], :text => "")
+
+    click_button("Save")
+    assert_text("Successfully saved")
+
+    user.reload
+    assert_nil(user.roles)
+  end
+
+  def test_removes_api_roles
+    api = FactoryGirl.create(:api, :settings => { :required_roles => ["test-role1", "test-role2"] })
+    admin_login
+
+    # Remove 1 role
+    visit "/admin/#/apis/#{api.id}/edit"
+    assert_text("Edit API")
+
+    find("legend a", :text => /Global Request Settings/).click
+    field = find_field("Required Roles")
+    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role1×test-role2×")
+    find("#" + field["data-selectize-control-id"] + " [data-value=test-role1] .remove").click
+    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role2×")
+
+    click_button("Save")
+    assert_text("Successfully saved")
+    page.execute_script("window.PNotifyRemoveAll()")
+
+    api.reload
+    assert_equal(api.settings.required_roles, ["test-role2"])
+
+    # Remove 1 role
+    visit "/admin/#/apis/#{api.id}/edit"
+    assert_text("Edit API")
+
+    find("legend a", :text => /Global Request Settings/).click
+    field = find_field("Required Roles")
+    assert_selector("#" + field["data-selectize-control-id"], :text => "test-role2×")
+    find("#" + field["data-selectize-control-id"] + " [data-value=test-role2] .remove").click
+    assert_selector("#" + field["data-selectize-control-id"], :text => "")
+
+    click_button("Save")
+    assert_text("Successfully saved")
+
+    api.reload
+    assert_nil(api.settings.required_roles)
+  end
 end

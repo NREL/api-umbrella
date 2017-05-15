@@ -13,8 +13,8 @@ class Test::Apis::V1::Users::TestServerSideTimestamps < Minitest::Test
   def test_create
     attributes = FactoryGirl.attributes_for(:api_user)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(201, response)
     assert_server_side_timestamp(response)
@@ -25,8 +25,8 @@ class Test::Apis::V1::Users::TestServerSideTimestamps < Minitest::Test
     attributes = record.serializable_hash
     attributes["use_description"] = rand(999_999).to_s
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(200, response)
     assert_server_side_timestamp(response)

@@ -14,8 +14,8 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
     attributes = FactoryGirl.attributes_for(:api)
     3.times do |i|
       response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-        :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-        :body => { :api => attributes },
+        :headers => { "Content-Type" => "application/json" },
+        :body => MultiJson.dump(:api => attributes),
       }))
       assert_response_code(201, response)
       data = MultiJson.load(response.body)
@@ -26,8 +26,8 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
   def test_saves_when_sort_order_is_null
     attributes = FactoryGirl.attributes_for(:api, :sort_order => nil)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
     assert_response_code(201, response)
     data = MultiJson.load(response.body)
@@ -37,8 +37,8 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
   def test_pre_set_sort_order
     attributes = FactoryGirl.attributes_for(:api, :sort_order => 8)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
     assert_response_code(201, response)
     data = MultiJson.load(response.body)
@@ -50,24 +50,24 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
 
     attributes = FactoryGirl.attributes_for(:api)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
     assert_response_code(201, response)
     data = MultiJson.load(response.body)
     assert_equal(2_147_483_624, data["api"]["sort_order"])
 
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
     assert_response_code(201, response)
     data = MultiJson.load(response.body)
     assert_equal(2_147_483_636, data["api"]["sort_order"])
 
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
     assert_response_code(201, response)
     data = MultiJson.load(response.body)
@@ -80,8 +80,8 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
 
     attributes = FactoryGirl.attributes_for(:api)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
     assert_response_code(201, response)
     data = MultiJson.load(response.body)
@@ -89,8 +89,8 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
     assert_equal(2_147_483_646, data["api"]["sort_order"])
 
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
     assert_response_code(201, response)
     data = MultiJson.load(response.body)
@@ -98,8 +98,8 @@ class Test::Apis::V1::Apis::TestCreateSortOrder < Minitest::Test
     assert_equal(2_147_483_647, data["api"]["sort_order"])
 
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
     assert_response_code(201, response)
     data = MultiJson.load(response.body)

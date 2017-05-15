@@ -190,8 +190,8 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
     attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
 
     assert_response_code(201, response)
@@ -213,8 +213,8 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
     attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
 
     assert_response_code(403, response)
@@ -229,8 +229,8 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
     attributes = record.serializable_hash.deep_merge(attr_overrides)
     attributes["name"] += rand(999_999).to_s
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
 
     assert_response_code(204, response)
@@ -252,8 +252,8 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
     attributes = record.serializable_hash.deep_merge(attr_overrides)
     attributes["name"] += rand(999_999).to_s
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
 
     assert_response_code(403, response)

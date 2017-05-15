@@ -144,6 +144,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       attrs += [
         :throttle_by_ip,
         :enabled,
+        :roles,
         {
           :roles => [],
           :settings => [
@@ -151,6 +152,7 @@ class Api::V1::UsersController < Api::V1::BaseController
             :rate_limit_mode,
             :allowed_ips,
             :allowed_referers,
+            :rate_limits,
             {
               :allowed_ips => [],
               :allowed_referers => [],
@@ -167,7 +169,21 @@ class Api::V1::UsersController < Api::V1::BaseController
       ]
     end
 
-    params.require(:user).permit(attrs)
+    p = params.require(:user).permit(attrs)
+
+    # Deal with array fields that might get parsed as empty strings if empty
+    # values are passed in via urlencoded form parameters.
+    #
+    # I think ideally we'd deprecate accepting urlencoded form parameters and
+    # just accept JSON, but the api key signup form currently uses form params.
+    if(request.form_data?)
+      p["roles"] = nil if(p["roles"] == "")
+      p["settings"]["allowed_ips"] = nil if(p["settings"] && p["settings"]["allowed_ips"] == "")
+      p["settings"]["allowed_referers"] = nil if(p["settings"] && p["settings"]["allowed_referers"] == "")
+      p["settings"]["rate_limits"] = nil if(p["settings"] && p["settings"]["rate_limits"] == "")
+    end
+
+    p
   rescue => e
     logger.error("Parameters error: #{e}")
     ActionController::Parameters.new({}).permit!

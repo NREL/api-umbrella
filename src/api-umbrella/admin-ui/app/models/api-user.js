@@ -67,7 +67,8 @@ export default DS.Model.extend(Validations, {
       return rolesString;
     },
     set(key, value) {
-      let roles = value.split(',');
+      let roles = _.compact(value.split(','));
+      if(roles.length === 0) { roles = null; }
       this.set('roles', roles);
       return value;
     },

@@ -64,11 +64,17 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Test
     attributes["settings"].delete(field.to_s)
 
     api, data = create_or_update(action, attributes)
-    assert_equal([], api.settings.send(field))
-    if(action == :update_clears_existing_headers)
-      assert_equal([], data["api"]["settings"][field.to_s])
+    value = api.settings.send(field)
+    if(value.nil?)
+      assert_nil(value)
     else
-      assert_nil(data["api"]["settings"][field.to_s])
+      assert_equal([], value)
+    end
+    api_value = data["api"]["settings"][field.to_s]
+    if(api_value.nil?)
+      assert_nil(api_value)
+    else
+      assert_equal([], api_value)
     end
     assert_equal("", data["api"]["settings"]["#{field}_string"])
   end
@@ -84,11 +90,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Test
 
     api, data = create_or_update(action, attributes)
     assert_equal([], api.settings.send(field))
-    if(action == :update_clears_existing_headers)
-      assert_equal([], data["api"]["settings"][field.to_s])
-    else
-      assert_nil(data["api"]["settings"][field.to_s])
-    end
+    assert_nil(data["api"]["settings"][field.to_s])
     assert_equal("", data["api"]["settings"]["#{field}_string"])
   end
 
@@ -243,16 +245,16 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedHeaders < Minitest::Test
   def create_or_update(action, attributes)
     if(action == :create)
       response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-        :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-        :body => { :api => attributes },
+        :headers => { "Content-Type" => "application/json" },
+        :body => MultiJson.dump(:api => attributes),
       }))
       assert_response_code(201, response)
       data = MultiJson.load(response.body)
       api = Api.find(data["api"]["id"])
     elsif(action == :update || action == :update_clears_existing_headers)
       response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{attributes["id"]}.json", http_options.deep_merge(admin_token).deep_merge({
-        :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-        :body => { :api => attributes },
+        :headers => { "Content-Type" => "application/json" },
+        :body => MultiJson.dump(:api => attributes),
       }))
       assert_response_code(204, response)
       api = Api.find(attributes["id"])

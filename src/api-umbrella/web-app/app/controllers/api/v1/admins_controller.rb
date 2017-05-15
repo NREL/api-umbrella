@@ -106,6 +106,7 @@ class Api::V1::AdminsController < Api::V1::BaseController
       :name,
       :notes,
       :superuser,
+      :group_ids,
       { :group_ids => [] },
     ])
   rescue => e

@@ -65,6 +65,8 @@ class Api::V1::AdminGroupsController < Api::V1::BaseController
   def admin_group_params
     params.require(:admin_group).permit([
       :name,
+      :permission_ids,
+      :api_scope_ids,
       {
         :permission_ids => [],
         :api_scope_ids => [],
