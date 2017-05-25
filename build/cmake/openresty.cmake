@@ -75,7 +75,7 @@ list(APPEND OPENRESTY_CONFIGURE_CMD --add-module=${NGX_TXID_SOURCE_DIR})
 ExternalProject_Add(
   openresty
   DEPENDS libgeoip ngx_dyups ngx_txid openssl pcre
-  URL https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz
+  URL https://github.com/openresty/openresty/releases/download/v${OPENRESTY_VERSION}/openresty-${OPENRESTY_VERSION}.tar.gz
   URL_HASH MD5=${OPENRESTY_HASH}
   BUILD_IN_SOURCE 1
   CONFIGURE_COMMAND ${OPENRESTY_CONFIGURE_CMD}
