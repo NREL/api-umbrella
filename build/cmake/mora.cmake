@@ -13,6 +13,7 @@ set(GOLANG_SOURCE_DIR ${SOURCE_DIR})
 
 ExternalProject_Add(
   mora
+  DEPENDS golang
   URL https://github.com/emicklei/mora/archive/${MORA_VERSION}.tar.gz
   URL_HASH MD5=${MORA_HASH}
   SOURCE_DIR ${WORK_DIR}/gocode/src/github.com/emicklei/mora
