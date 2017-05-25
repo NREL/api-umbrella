@@ -50,10 +50,19 @@ Metrics/PerceivedComplexity:
 Performance/RedundantMerge:
   Enabled: false
 
-Style/AlignHash:
+Layout/AlignHash:
   Enabled: false
 
-Style/AlignParameters:
+Layout/AlignParameters:
+  Enabled: false
+
+Layout/IndentArray:
+  EnforcedStyle: consistent
+
+Layout/IndentHash:
+  EnforcedStyle: consistent
+
+Layout/SpaceAroundKeyword:
   Enabled: false
 
 Style/AsciiComments:
@@ -105,12 +114,6 @@ Style/IfInsideElse:
 Style/IfUnlessModifier:
   Enabled: false
 
-Style/IndentArray:
-  EnforcedStyle: consistent
-
-Style/IndentHash:
-  EnforcedStyle: consistent
-
 Style/Lambda:
   Enabled: false
 
@@ -145,9 +148,6 @@ Style/RegexpLiteral:
   Enabled: false
 
 Style/SignalException:
-  Enabled: false
-
-Style/SpaceAroundKeyword:
   Enabled: false
 
 Style/StringLiterals:
