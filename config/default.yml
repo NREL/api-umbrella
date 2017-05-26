@@ -35,7 +35,7 @@ nginx:
     port: 14005
   shared_dicts:
     active_config:
-      size: 600k
+      size: 3m
     api_users:
       size: 3m
     dns_cache:
