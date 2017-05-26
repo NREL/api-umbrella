@@ -11,9 +11,9 @@ Installing from a [binary package](../getting-started.html#installation) is reco
 ## Compiling & Installing
 
 ```sh
-$ curl -OLJ https://github.com/NREL/api-umbrella/archive/v0.14.1.tar.gz
-$ tar -xvf api-umbrella-0.14.1.tar.gz
-$ cd api-umbrella-0.14.1
+$ curl -OLJ https://github.com/NREL/api-umbrella/archive/v0.14.2.tar.gz
+$ tar -xvf api-umbrella-0.14.2.tar.gz
+$ cd api-umbrella-0.14.2
 $ sudo ./build/scripts/install_build_dependencies
 $ ./configure
 $ make

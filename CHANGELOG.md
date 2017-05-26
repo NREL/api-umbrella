@@ -1,5 +1,20 @@
 # API Umbrella Change Log
 
+## 0.14.2 (2017-05-26)
+
+### Changed
+
+- **Upgrade bundled software dependencies:**
+  - Elasticsearch 2.4.4 -\> 2.4.5
+  - MongoDB 3.2.12 -\> 3.2.13
+  - Rsyslog 8.26.0 -\> 8.27.0
+
+### Fixed
+
+- **Fix removing last item from array fields in admin:** A regression in v0.14.0 prevented admins from removing the last items in certain array fields in the admin (for example, removing all roles from a user or API). ([#367](https://github.com/NREL/api-umbrella/issues/367))
+- **Fix SSL validation against external Elasticsearch databse:** Allow for explicit configuration of SSL settings when connecting to an external Elasticsearch database that is using HTTPS. Thanks to [@martinzuern](https://github.com/martinzuern). ([#364](https://github.com/NREL/api-umbrella/issues/364))
+- **Increase default memory storge for configuration data**: Increase the default memory allocated for storing the live API backend configuration data from 600KB to 3MB to prevent potential issues when publishing lots of API backends. ([api.data.gov#385](https://github.com/18F/api.data.gov/issues/385))
+
 ## 0.14.1 (2017-04-23)
 
 This update contains a few bug fixes and one potential security fix. Upgrading is recommended.
