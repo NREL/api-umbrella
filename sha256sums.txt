@@ -69,3 +69,4 @@ SHA256(api-umbrella_0.14.1-1~wheezy_amd64.deb)= c7144bc296ff576830c546a951854d1a
 SHA256(api-umbrella_0.14.1-1~jessie_amd64.deb)= 8a527188189b87c7bd6f3db75bf3aefbe3922c849e9feaa5f330b1fdba6813d0
 SHA256(api-umbrella_0.14.1-1~precise_amd64.deb)= 7c12ee7dcce5dcca0f629b3e02094ba9d36205ad44715064bfc828760c8ac129
 SHA256(api-umbrella_0.14.1-1~trusty_amd64.deb)= 28feffd29da54c116703e2824cd85a02a56fc95506ad1703b57da8045f48dba0
+SHA256(api-umbrella_0.14.1-1~xenial_amd64.deb)= 2e4c771c8739d2cdc49feef40851ab28d1a519fcc2d9db93ee83f1cb82ed796e
