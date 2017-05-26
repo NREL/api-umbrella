@@ -2,6 +2,12 @@
 
 ## 0.14.2 (2017-05-26)
 
+This update contains a few bug fixes. Upgrading is recommended.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` package using your package manager.
+
 ### Changed
 
 - **Upgrade bundled software dependencies:**
