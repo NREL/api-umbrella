@@ -1,8 +1,4 @@
-if(Rails.env.development?)
-  Rack::Timeout.timeout = 60 # seconds
-else
-  Rack::Timeout.timeout = 15 # seconds
-end
+Rack::Timeout.timeout = ApiUmbrellaConfig[:web][:request_timeout] # seconds
 
 Rack::Timeout::Logger.device = $stderr
 Rack::Timeout::Logger.level = Logger::ERROR
