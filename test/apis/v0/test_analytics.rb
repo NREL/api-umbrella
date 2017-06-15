@@ -7,7 +7,7 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
     super
     setup_server
     ApiUser.where(:registration_source.ne => "seed").delete_all
-    ElasticsearchHelper.clean_es_indices(["2013-06", "2013-07"])
+    ElasticsearchHelper.clean_es_indices(["2013-07", "2013-08"])
 
     @db = Mongoid.client(:default)
     @db[:rails_cache].delete_many
@@ -28,8 +28,8 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
   end
 
   def test_expected_response
-    FactoryGirl.create_list(:api_user, 3, :created_at => Time.parse("2013-07-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2013-07-15T00:00:00Z").utc)
+    FactoryGirl.create_list(:api_user, 3, :created_at => Time.parse("2013-08-15T00:00:00Z").utc)
+    FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2013-08-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
     response = make_request
@@ -44,23 +44,23 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
 
     assert_equal({
       "year" => 2013,
-      "month" => 6,
+      "month" => 7,
       "count" => 0,
     }, data["hits_by_month"][0])
     assert_equal({
       "year" => 2013,
-      "month" => 7,
+      "month" => 8,
       "count" => 2,
     }, data["hits_by_month"][1])
 
     assert_equal({
       "year" => 2013,
-      "month" => 6,
+      "month" => 7,
       "count" => 0,
     }, data["users_by_month"][0])
     assert_equal({
       "year" => 2013,
-      "month" => 7,
+      "month" => 8,
       "count" => 3,
     }, data["users_by_month"][1])
   end

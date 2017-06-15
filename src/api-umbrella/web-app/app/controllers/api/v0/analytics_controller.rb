@@ -52,7 +52,7 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
       :hits_by_month => [],
     }
 
-    start_time = Time.parse("2013-07-01").utc
+    start_time = Time.utc(2013, 7, 1)
 
     # Fetch the user signups by month, trying to remove duplicate signups for
     # the same e-mail address (each e-mail address only gets counted for the first
