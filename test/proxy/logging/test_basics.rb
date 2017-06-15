@@ -464,7 +464,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
           "Origin" => "HTTP://FOO.EXAMPLE",
           "User-Agent" => "CURL/7.37.1",
           "Referer" => "HTTP://EXAMPLE.COM",
-          "X-Forwarded-For" => "0:0:0:0:0:FFFF:808:808",
+          "X-Forwarded-For" => "0:0:0:0:0:FFFF:3434:76C0",
         },
         :userpwd => "BASIC-AUTH-USERNAME-EXAMPLE:MY-SECRET-PASSWORD",
       }))
@@ -474,7 +474,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
       # Explicitly lowercased fields.
       assert_equal("foobar.example", record["request_host"])
-      assert_equal("::ffff:8.8.8.8", record["request_ip"])
+      assert_equal("::ffff:52.52.118.192", record["request_ip"])
       assert_equal("http", record["request_scheme"])
 
       # Explicitly uppercased fields.
@@ -496,7 +496,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
         "3/foobar.example/#{unique_test_id}/logging-example/FOO/",
         "4/foobar.example/#{unique_test_id}/logging-example/FOO/BAR",
       ], record["request_hierarchy"])
-      assert_equal("Mountain View", record["request_ip_city"])
+      assert_equal("San Jose", record["request_ip_city"])
       assert_equal("HTTP://FOO.EXAMPLE", record["request_origin"])
       assert_equal("/#{unique_test_id}/logging-example/FOO/BAR/", record["request_path"])
       assert_equal("URL1=FOO", record["request_url_query"])

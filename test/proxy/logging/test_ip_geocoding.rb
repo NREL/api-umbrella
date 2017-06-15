@@ -13,19 +13,19 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   def test_ipv4_address
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "8.8.8.8",
+        "X-Forwarded-For" => "52.52.118.192",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "8.8.8.8",
+      :ip => "52.52.118.192",
       :country => "US",
       :region => "CA",
-      :city => "Mountain View",
-      :lat => 37.386,
-      :lon => -122.0838,
+      :city => "San Jose",
+      :lat => 37.3388,
+      :lon => -121.8914,
     })
   end
 
@@ -51,19 +51,19 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   def test_ipv4_mapped_ipv6_address
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "0:0:0:0:0:ffff:808:808",
+        "X-Forwarded-For" => "0:0:0:0:0:ffff:3434:76c0",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "::ffff:8.8.8.8",
+      :ip => "::ffff:52.52.118.192",
       :country => "US",
       :region => "CA",
-      :city => "Mountain View",
-      :lat => 37.386,
-      :lon => -122.0838,
+      :city => "San Jose",
+      :lat => 37.3388,
+      :lon => -121.8914,
     })
   end
 
