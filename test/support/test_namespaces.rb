@@ -12,6 +12,8 @@ module Test
       module Stats; end
     end
 
+    module V0; end
+
     module V1
       module AdminGroups; end
       module AdminPermissions; end

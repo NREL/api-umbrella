@@ -68,7 +68,7 @@ module ApiUmbrellaTestHelpers
 
           # For simplicity sake, we're assuming our tests only deal with a few explicit
           # indexes currently.
-          ["2014-11", "2015-01", "2015-03"].each do |month|
+          ["2013-06", "2013-07", "2014-11", "2015-01", "2015-03"].each do |month|
             # First delete any existing indexes.
             ["api-umbrella-logs-v1-#{month}", "api-umbrella-logs-#{month}", "api-umbrella-logs-write-#{month}"].each do |index_name|
               begin

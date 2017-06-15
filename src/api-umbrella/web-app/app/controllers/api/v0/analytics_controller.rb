@@ -15,9 +15,13 @@ class Api::V0::AnalyticsController < Api::V1::BaseController
 
     # Try to fetch the summary data out of the cache.
     summary = Rails.cache.read("analytics_summary")
+    if(summary)
+      headers["X-Cache"] = "HIT"
+    end
 
     # If it's not cached, generate it now.
     if(!summary || !summary[:cached_at])
+      headers["X-Cache"] = "MISS"
       summary = generate_summary
       Rails.cache.write("analytics_summary", summary, :expires_in => 2.days)
 

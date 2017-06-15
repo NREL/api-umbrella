@@ -8,18 +8,18 @@ GIT
       omniauth (~> 1.2)
 
 GIT
-  remote: https://github.com/ahoward/mongoid-store.git
-  revision: 7b7e34e263a1e25fc0149861e1560f7f483c16ac
-  specs:
-    mongoid-store (0.5.0)
-      activesupport (>= 3)
-      mongoid (>= 3)
-
-GIT
   remote: https://github.com/heroku/rails_stdout_logging.git
   revision: 92fb79ed040a88808aaf5bcb5e88ae8d85176a85
   specs:
     rails_stdout_logging (0.0.5)
+
+GIT
+  remote: https://github.com/lucianoshl/mongoid_store.git
+  revision: 17053a38482c6ab41f4457a96a488041cd6c8c3c
+  specs:
+    mongoid_store (0.1.2)
+      activesupport (> 3.0)
+      mongoid (> 3.0)
 
 GIT
   remote: https://github.com/zerowidth/lucene_query_parser.git
@@ -315,9 +315,9 @@ DEPENDENCIES
   mongoid (~> 5.2.0)
   mongoid-embedded-errors (~> 2.1.1)
   mongoid-paranoia (~> 2.0.0)
-  mongoid-store!
   mongoid_delorean (~> 1.3.0)
   mongoid_rails_migrations (~> 1.1.0)
+  mongoid_store!
   multi_json (~> 1.12.1)
   nokogiri (~> 1.8.0)
   oj (~> 3.1.3)

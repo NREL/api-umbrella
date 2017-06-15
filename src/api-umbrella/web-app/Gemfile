@@ -39,7 +39,7 @@ gem "mongoid_rails_migrations", "~> 1.1.0"
 # Rails cache store using mongo.
 #
 # Use master from git for Rails 4 compatibility.
-gem "mongoid-store", :git => "https://github.com/ahoward/mongoid-store.git"
+gem "mongoid_store", :git => "https://github.com/lucianoshl/mongoid_store.git"
 
 # Elasticsearch
 gem "elasticsearch", "~> 2.0.2"
