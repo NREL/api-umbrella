@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.4.0"
 gem "minitest-ci", "~> 3.2.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.49.0", :require => false
+gem "rubocop", "~> 0.49.1", :require => false
 
 # Running background processes
 gem "childprocess", "~> 0.7.0"
@@ -28,10 +28,10 @@ gem "typhoeus", "~> 1.1.2"
 
 # JSON parsing
 gem "multi_json", "~> 1.12.1"
-gem "oj", "~> 3.0.7"
+gem "oj", "~> 3.1.3"
 
 # Database libraries
-gem "mongoid", "~> 6.1.0"
+gem "mongoid", "~> 6.2.0"
 gem "elasticsearch", "~> 2.0.2"
 gem "elasticsearch-persistence", "~> 0.1.9"
 
@@ -48,7 +48,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.5.1"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 2.14.0"
+gem "capybara", "~> 2.14.3"
 # Use fork to fix failure messages:
 # https://github.com/wojtekmach/minitest-capybara/pull/17
 gem "minitest-capybara", "~> 0.8.2", :git => "https://github.com/GUI/minitest-capybara.git"
@@ -60,7 +60,7 @@ gem "poltergeist", "~> 1.15.0"
 gem "capybara-screenshot", "~> 1.0.14"
 
 # HTML or XML parsing
-gem "nokogiri", "~> 1.7.0"
+gem "nokogiri", "~> 1.8.0"
 
 # Useful additions
 gem "activesupport", "~> 5.1.1"
