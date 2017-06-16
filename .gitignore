@@ -33,6 +33,8 @@
 /build/package/work
 /build/package/verify/.rnd
 /deploy/.env
+/deploy/log
+/deploy/tmp
 /log/*
 /test/reports
 /test/tmp

@@ -1,7 +1,9 @@
+include(${CMAKE_SOURCE_DIR}/build/cmake/luarocks_install.cmake)
+
 # LuaRock app dependencies
 luarocks_install(argparse ${LUAROCK_ARGPARSE_VERSION} ${LUAROCK_ARGPARSE_HASH})
 luarocks_install(inspect ${LUAROCK_INSPECT_VERSION} ${LUAROCK_INSPECT_HASH})
-luarocks_install(libcidr-ffi ${LUAROCK_LIBCIDR_VERSION} ${LUAROCK_LIBCIDR_HASH} CIDR_DIR=${STAGE_EMBEDDED_DIR} libcidr)
+luarocks_install(libcidr-ffi ${LUAROCK_LIBCIDR_VERSION} ${LUAROCK_LIBCIDR_HASH} CIDR_DIR=${LUA_PREFIX} libcidr)
 luarocks_install(lua-cmsgpack ${LUAROCK_CMSGPACK_VERSION} ${LUAROCK_CMSGPACK_HASH})
 luarocks_install(lua-iconv ${LUAROCK_ICONV_VERSION} ${LUAROCK_ICONV_HASH})
 luarocks_install(lua-resty-auto-ssl ${LUAROCK_RESTY_AUTO_SSL_VERSION} ${LUAROCK_RESTY_AUTO_SSL_HASH})

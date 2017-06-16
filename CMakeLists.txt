@@ -3,6 +3,7 @@ project(api-umbrella)
 
 option(ENABLE_HADOOP_ANALYTICS "Build dependencies for Hadoop analytics" off)
 option(ENABLE_TEST_DEPENDENCIES "Build dependencies for running tests" off)
+option(ENABLE_DEPLOY_ONLY "Only build dependencies for a deployment overlaying an existing package install" off)
 
 # Installation prefix
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -32,7 +33,12 @@ set(HADOOP_ANALYTICS_STAGE_EMBEDDED_DIR ${HADOOP_ANALYTICS_STAGE_DIR}${INSTALL_P
 # Where to install app-level vendor dependencies.
 set(VENDOR_DIR ${WORK_DIR}/vendor)
 set(VENDOR_LUA_DIR ${VENDOR_DIR}/share/lua/5.1)
-set(LUAROCKS_CMD env LUA_PATH=${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?.lua$<SEMICOLON>${STAGE_EMBEDDED_DIR}/openresty/luajit/share/lua/5.1/?/init.lua$<SEMICOLON>$<SEMICOLON> ${STAGE_EMBEDDED_DIR}/bin/luarocks)
+if(ENABLE_DEPLOY_ONLY)
+  set(LUA_PREFIX ${INSTALL_PREFIX_EMBEDDED})
+else()
+  set(LUA_PREFIX ${STAGE_EMBEDDED_DIR})
+endif()
+set(LUAROCKS_CMD env LUA_PATH=${LUA_PREFIX}/openresty/luajit/share/lua/5.1/?.lua$<SEMICOLON>${LUA_PREFIX}/openresty/luajit/share/lua/5.1/?/init.lua$<SEMICOLON>$<SEMICOLON> ${LUA_PREFIX}/bin/luarocks)
 
 # Where to install development-only dependencies.
 set(DEV_INSTALL_PREFIX ${WORK_DIR}/dev-env)
@@ -60,62 +66,74 @@ function(require_program name)
   endif()
 endfunction(require_program)
 
-find_package(LibXml2 REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_search_module(LIBUUID REQUIRED uuid)
-pkg_search_module(LIBFFI REQUIRED libffi)
-require_program(rsync)
+if(ENABLE_DEPLOY_ONLY)
+  # Create stub/empty targets for things the core build process depends on. But
+  # for deploy-based builds, we'll assume these dependencies have already been
+  # installed (since we're assuming the deploys are overlaying a package
+  # installation).
+  add_custom_target(bundler)
+  add_custom_target(libcidr)
+  add_custom_target(luarocks)
 
-include(${CMAKE_SOURCE_DIR}/build/cmake/versions.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/dev/nodejs.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/elasticsearch.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/libcidr.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/libgeoip.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/mongodb.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/mora.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/openresty.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/luarocks.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/perp.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/runit_svlogd.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/ruby.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/rsyslog.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/trafficserver.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/static-site.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/core.cmake)
-if(ENABLE_HADOOP_ANALYTICS)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/flume.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/kylin.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/presto.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/processor.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/versions.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/core.cmake)
+else()
+  find_package(LibXml2 REQUIRED)
+  find_package(PkgConfig REQUIRED)
+  pkg_search_module(LIBUUID REQUIRED uuid)
+  pkg_search_module(LIBFFI REQUIRED libffi)
+  require_program(rsync)
+
+  include(${CMAKE_SOURCE_DIR}/build/cmake/versions.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/elasticsearch.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/libcidr.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/libgeoip.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/mongodb.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/mora.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/openresty.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/luarocks.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/perp.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/runit_svlogd.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/ruby.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/rsyslog.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/trafficserver.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/static-site.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/core.cmake)
+  if(ENABLE_HADOOP_ANALYTICS)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/flume.cmake)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/kylin.cmake)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/presto.cmake)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/hadoop-analytics/processor.cmake)
+  endif()
+
+  #
+  # Testing
+  #
+  if(ENABLE_TEST_DEPENDENCIES)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/test/lua-deps.cmake)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/test/mailhog.cmake)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/test/mongo-orchestration.cmake)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/test/openldap.cmake)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/test/phantomjs.cmake)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/test/shellcheck.cmake)
+    include(${CMAKE_SOURCE_DIR}/build/cmake/test/unbound.cmake)
+  endif()
+  include(${CMAKE_SOURCE_DIR}/build/cmake/test/bundle.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/test/test.cmake)
+
+  #
+  # Installation
+  #
+  include(${CMAKE_SOURCE_DIR}/build/cmake/install.cmake)
+
+  #
+  # Packaging
+  #
+  include(${CMAKE_SOURCE_DIR}/build/cmake/package.cmake)
+
+  #
+  # Clean Task
+  #
+  include(${CMAKE_SOURCE_DIR}/build/cmake/clean-download-archives.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/distclean.cmake)
 endif()
-
-#
-# Testing
-#
-if(ENABLE_TEST_DEPENDENCIES)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/test/lua-deps.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/test/mailhog.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/test/mongo-orchestration.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/test/openldap.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/test/phantomjs.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/test/shellcheck.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/test/unbound.cmake)
-endif()
-include(${CMAKE_SOURCE_DIR}/build/cmake/test/bundle.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/test/test.cmake)
-
-#
-# Installation
-#
-include(${CMAKE_SOURCE_DIR}/build/cmake/install.cmake)
-
-#
-# Packaging
-#
-include(${CMAKE_SOURCE_DIR}/build/cmake/package.cmake)
-
-#
-# Clean Task
-#
-include(${CMAKE_SOURCE_DIR}/build/cmake/clean-download-archives.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/distclean.cmake)

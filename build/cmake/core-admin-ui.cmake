@@ -1,3 +1,5 @@
+include(${CMAKE_SOURCE_DIR}/build/cmake/dev/nodejs.cmake)
+
 file(GLOB_RECURSE admin_ui_files
   ${CMAKE_SOURCE_DIR}/src/api-umbrella/admin-ui/app/*.hbs
   ${CMAKE_SOURCE_DIR}/src/api-umbrella/admin-ui/app/*.html

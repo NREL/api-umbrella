@@ -34,7 +34,7 @@ if [ -e "${TOP_SRCDIR}/.configure-custom.sh" ]; then
 fi
 
 PREFIX=/opt/api-umbrella
-ENABLE_VARS="hadoop-analytics|on|ENABLE_HADOOP_ANALYTICS test-dependencies|on|ENABLE_TEST_DEPENDENCIES"
+ENABLE_VARS="hadoop-analytics|on|ENABLE_HADOOP_ANALYTICS test-dependencies|on|ENABLE_TEST_DEPENDENCIES deploy-only|on|ENABLE_DEPLOY_ONLY"
 
 quote() {
     echo "$1" | sed -e "s|'|'\\\\''|g; 1s/^/'/; \$s/\$/'/"
