@@ -51,6 +51,9 @@ GEM
       erubis (~> 2.7.0)
       rails-dom-testing (~> 1.0, >= 1.0.5)
       rails-html-sanitizer (~> 1.0, >= 1.0.3)
+    active_attr (0.10.1)
+      activemodel (>= 3.0.2, < 5.2)
+      activesupport (>= 3.0.2, < 5.2)
     activejob (4.2.8)
       activesupport (= 4.2.8)
       globalid (>= 0.3.0)
@@ -295,6 +298,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  active_attr (~> 0.10.1)
   awesome_print (~> 1.7.0)
   bootstrap-sass (~> 3.3.7)
   brakeman

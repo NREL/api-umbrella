@@ -1,7 +1,11 @@
 class Contact
-  include ActiveModel::Model
+  include ActiveAttr::Model
 
-  attr_accessor :name, :email, :api, :subject, :message
+  attribute :name, :type => String
+  attribute :email, :type => String
+  attribute :api, :type => String
+  attribute :subject, :type => String
+  attribute :message, :type => String
 
   validates :name,
     :presence => { :message => "Provide your first name." }
@@ -21,7 +25,7 @@ class Contact
 
   def deliver
     if self.valid?
-      ContactMailer.contact_email(self).deliver_later
+      ContactMailer.contact_email(self.as_json).deliver_later
     else
       false
     end

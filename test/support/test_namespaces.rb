@@ -22,6 +22,7 @@ module Test
       module ApiScopes; end
       module Apis; end
       module Config; end
+      module Contact; end
       module Users; end
       module WebsiteBackends; end
     end
@@ -43,6 +44,8 @@ module Test
     module ResponseRewriting; end
     module Routing; end
   end
+
+  module StaticSite; end
 
   module TestingSanityChecks; end
 end
