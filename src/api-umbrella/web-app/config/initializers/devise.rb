@@ -287,6 +287,7 @@ Devise.setup do |config|
       config.omniauth :google_oauth2,
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:google][:client_id],
         ApiUmbrellaConfig[:web][:admin][:auth_strategies][:google][:client_secret],
+        :prompt => "select_account",
         :scope => "userinfo.email"
     when "ldap"
       require "omniauth-ldap"
