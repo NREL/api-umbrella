@@ -2,7 +2,6 @@ class ContactMailer < ActionMailer::Base
   default :from => "noreply@#{ApiUmbrellaConfig[:web][:default_host]}"
 
   def contact_email(contact_params)
-    Rails.logger.info("CONTACT PARAMS: #{contact_params.inspect}")
     @contact = Contact.new(contact_params)
 
     mail :reply_to => @contact.email,
