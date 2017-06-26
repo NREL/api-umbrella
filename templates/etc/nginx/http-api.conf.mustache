@@ -1,0 +1,46 @@
+worker_processes {{nginx.workers}};
+error_log stderr notice;
+daemon off;
+pid {{run_dir}}/nginx-http-api.pid;
+
+{{#user}}
+user {{user}} {{group}};
+{{/user}}
+
+events {
+  worker_connections {{nginx.worker_connections}};
+}
+
+env API_UMBRELLA_SRC_ROOT;
+env API_UMBRELLA_RUNTIME_CONFIG;
+
+pcre_jit on;
+
+http {
+  access_log {{log_dir}}/nginx-http-api/{{nginx.access_log_filename}} combined;
+
+  client_body_temp_path {{tmp_dir}}/nginx-http-api-client_body_temp;
+  proxy_temp_path {{tmp_dir}}/nginx-http-api-proxy_temp;
+  fastcgi_temp_path {{tmp_dir}}/nginx-http-api-fastcgi_temp;
+  uwsgi_temp_path {{tmp_dir}}/nginx-http-api-uwsgi_temp;
+  scgi_temp_path {{tmp_dir}}/nginx-http-api-scgi_temp;
+  server_tokens off;
+
+  lua_package_path '{{_package_path}}';
+  lua_package_cpath '{{_package_cpath}}';
+  lua_check_client_abort on;
+  if_modified_since off;
+
+  include ./mime.conf;
+  include ./realip.conf;
+
+  server {
+    listen {{http_api_server.host}}:{{http_api_server.port}};
+
+    lua_code_cache off;
+    location / {
+      default_type text/html;
+      content_by_lua 'require("lapis").serve("api-umbrella.lapis.app")';
+    }
+  }
+}

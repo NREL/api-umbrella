@@ -1,5 +1,8 @@
 inherit_from: ../.rubocop.yml
 
+Rails/ApplicationRecord:
+  Enabled: false
+
 Rails/DynamicFindBy:
   Whitelist:
     # Capybara finder.

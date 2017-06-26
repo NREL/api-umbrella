@@ -56,6 +56,10 @@ if [ -f /etc/redhat-release ]; then
     # For OpenResty's "resty" CLI.
     perl
     perl-Time-HiRes
+
+    # Postgresql
+    readline
+    tzdata
   )
   hadoop_analytics_package_dependencies=(
     java-1.8.0-openjdk-headless
@@ -82,6 +86,7 @@ if [ -f /etc/redhat-release ]; then
     pcre-devel
     pkgconfig
     python
+    readline-devel
     rpm-build
     rsync
     tar
@@ -163,6 +168,10 @@ elif [ -f /etc/debian_version ]; then
 
     # For OpenResty's "resty" CLI.
     perl
+
+    # Postgresql
+    libreadline6
+    tzdata
   )
   hadoop_analytics_package_dependencies=(
     openjdk-$openjdk_version-jre-headless
@@ -179,6 +188,7 @@ elif [ -f /etc/debian_version ]; then
     libffi-dev
     libncurses5-dev
     libpcre3-dev
+    libreadline-dev
     libssl-dev
     libtool
     libxml2-dev

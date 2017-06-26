@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# Redirect stderr to stdout
+exec 2>&1
+
+if [ "${1}" = "start" ]; then
+  echo "starting ${2}..."
+  api_umbrella_user="{{user}}"
+
+  run_args=("-e" "rc.env")
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
+
+  if [ ! -d "{{db_dir}}/postgresql" ]; then
+    runtool "${run_args[@]}" initdb -D "{{db_dir}}/postgresql"
+    pg_ctl -D "{{db_dir}}/postgresql" -o "-c listen_addresses='localhost'" -w start
+    createdb api_umbrella_test
+    pg_ctl -D "{{db_dir}}/postgresql" -m fast -w stop
+  fi
+
+  exec \
+    runtrap postgresql "${0}" \
+    runtool "${run_args[@]}" \
+    postgres -D "{{db_dir}}/postgresql"
+fi
+
+# perpboot sends SIGTERM signals on shutdown, but let's exit with SIGINT for
+# faster postgresql shutdowns.
+if [ "${1}" = "trap" ] && [ "${4}" = "15" ]; then
+  echo "stopping ${2}..."
+  kill -2 "${3}"
+fi
+
+exit 0

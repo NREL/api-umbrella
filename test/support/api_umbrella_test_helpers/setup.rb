@@ -52,6 +52,19 @@ module ApiUmbrellaTestHelpers
     def setup_server
       self.setup_mutex.synchronize do
         unless self.setup_complete
+          output, status = run_shell("api-umbrella-exec psql --dbname=api_umbrella_test --file=#{File.join(API_UMBRELLA_SRC_ROOT, "db/schema.sql")}")
+          assert_equal(0, status, output)
+
+          ActiveRecord::Base.establish_connection({
+            :adapter => "postgresql",
+            :database => "api_umbrella_test",
+            :username => "vagrant",
+            :variables => {
+              "application.name" => "test",
+              'application."user"' => "test",
+            },
+          })
+
           Mongoid.load_configuration({
             :clients => {
               :default => {

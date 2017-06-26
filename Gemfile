@@ -31,6 +31,8 @@ gem "multi_json", "~> 1.12.1"
 gem "oj", "~> 3.1.3"
 
 # Database libraries
+gem "activerecord", "~> 5.1.1", :require => "active_record"
+gem "pg", "~> 0.21.0"
 gem "mongoid", "~> 6.2.0"
 gem "elasticsearch", "~> 2.0.2"
 gem "elasticsearch-persistence", "~> 0.1.9"

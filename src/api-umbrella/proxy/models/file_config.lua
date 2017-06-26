@@ -35,12 +35,16 @@ local function set_defaults(data)
             server["host"] = data["web"]["host"]
           elseif server["host"] == "{{api_server.host}}" then
             server["host"] = data["api_server"]["host"]
+          elseif server["host"] == "{{http_api_server.host}}" then
+            server["host"] = data["http_api_server"]["host"]
           end
 
           if server["port"] == "{{web.port}}" then
             server["port"] = data["web"]["port"]
           elseif server["port"] == "{{api_server.port}}" then
             server["port"] = data["api_server"]["port"]
+          elseif server["port"] == "{{http_api_server.port}}" then
+            server["port"] = data["http_api_server"]["port"]
           end
         end
       end

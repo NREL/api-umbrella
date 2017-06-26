@@ -9,11 +9,26 @@ luarocks_install(lua-iconv ${LUAROCK_ICONV_VERSION} ${LUAROCK_ICONV_HASH})
 luarocks_install(lua-resty-auto-ssl ${LUAROCK_RESTY_AUTO_SSL_VERSION} ${LUAROCK_RESTY_AUTO_SSL_HASH})
 luarocks_install(lua-resty-http ${LUAROCK_RESTY_HTTP_VERSION} ${LUAROCK_RESTY_HTTP_HASH})
 luarocks_install(lua-resty-uuid ${LUAROCK_RESTY_UUID_VERSION} ${LUAROCK_RESTY_UUID_HASH})
+luarocks_install(lua-resty-validation ${LUAROCK_RESTY_VALIDATION_VERSION} ${LUAROCK_RESTY_VALIDATION_HASH})
 luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION} ${LUAROCK_LUAPOSIX_HASH})
 luarocks_install(luatz ${LUAROCK_LUATZ_VERSION} ${LUAROCK_LUATZ_HASH})
 luarocks_install(lustache ${LUAROCK_LUSTACHE_VERSION} ${LUAROCK_LUSTACHE_HASH})
 luarocks_install(lyaml ${LUAROCK_LYAML_VERSION} ${LUAROCK_LYAML_HASH})
 luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION} ${LUAROCK_PENLIGHT_HASH})
+
+ExternalProject_Add(
+  luarock_lapis
+  DEPENDS luarocks
+  URL https://luarocks.org/manifests/leafo/lapis-${LUAROCK_LAPIS_VERSION}.rockspec
+  URL_HASH MD5=${LUAROCK_LAPIS_HASH}
+  DOWNLOAD_NO_EXTRACT 1
+  # Patch to fix Lapis dependencies being broken under newer versions of
+  # OpenResty: https://github.com/leafo/lapis/issues/539
+  PATCH_COMMAND sed -i -e "s%\"lua-cjson\",%%" <DOWNLOADED_FILE>
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${VENDOR_DIR} install <DOWNLOADED_FILE>
+)
 
 # Other Lua app dependencies (non-luarocks)
 ExternalProject_Add(
@@ -70,12 +85,14 @@ set(
   lua_resty_shcache
   luarock_argparse
   luarock_inspect
+  luarock_lapis
   luarock_libcidr-ffi
   luarock_lua-cmsgpack
   luarock_lua-iconv
   luarock_lua-resty-auto-ssl
   luarock_lua-resty-http
   luarock_lua-resty-uuid
+  luarock_lua-resty-validation
   luarock_luaposix
   luarock_luatz
   luarock_lustache
