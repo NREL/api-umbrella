@@ -17,7 +17,8 @@ class ApiUser
   field :registration_user_agent
   field :registration_referer
   field :registration_origin
-  field :created_by
+  field :created_by, :type => String
+  field :updated_by, :type => String
   attr_accessor :terms_and_conditions
   embeds_one :settings, :class_name => "Api::Settings"
   after_save :touch_server_side_timestamp

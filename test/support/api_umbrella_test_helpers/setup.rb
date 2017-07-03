@@ -1,9 +1,12 @@
 require "English"
 require "ipaddr"
+require "support/api_umbrella_test_helpers/common_asserts"
 
 module ApiUmbrellaTestHelpers
   module Setup
     extend ActiveSupport::Concern
+
+    include ApiUmbrellaTestHelpers::CommonAsserts
 
     @@incrementing_unique_ip_addr = IPAddr.new("127.0.0.1")
     @@current_override_config = {}
@@ -320,28 +323,6 @@ module ApiUmbrellaTestHelpers
           "X-Empty-Http-Header-Curl-Workaround#{@empty_http_header_counter}" => "ignore\r\n#{header}:",
         },
       }
-    end
-
-    def assert_response_code(expected_code, response)
-      message = nil
-      if(expected_code != response.code)
-        message = <<~eos
-          Response code did not match
-          return_code: #{response.return_code}
-          return_message: #{response.return_message}
-          total_time: #{response.total_time}
-          starttransfer_time: #{response.starttransfer_time}
-          appconnect_time: #{response.appconnect_time}
-          pretransfer_time: #{response.pretransfer_time}
-          connect_time: #{response.connect_time}
-          namelookup_time: #{response.namelookup_time}
-          redirect_time: #{response.redirect_time}
-          effective_url: #{response.effective_url}
-          primary_ip: #{response.primary_ip}
-          response_body: #{response.body}
-        eos
-      end
-      assert_equal(expected_code, response.code, message)
     end
 
     def run_shell(command)

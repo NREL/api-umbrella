@@ -1,8 +1,8 @@
 FactoryGirl.define do
   factory :api_scope do
-    name "Example"
+    sequence(:name) { |n| "Example #{n}" }
     host "localhost"
-    path_prefix "/example"
+    sequence(:path_prefix) { |n| "/example/#{n}/" }
 
     factory :localhost_root_api_scope do
       path_prefix "/"
