@@ -23,6 +23,7 @@ class Api::V1::WebsiteBackendsController < Api::V1::BaseController
       @website_backends = @website_backends.or([
         { :frontend_host => /#{Regexp.escape(params[:search][:value])}/i },
         { :server_host => /#{Regexp.escape(params[:search][:value])}/i },
+        { :_id => params[:search][:value].downcase },
       ])
     end
   end

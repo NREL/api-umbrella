@@ -24,6 +24,7 @@ class Api::V1::ApiScopesController < Api::V1::BaseController
         { :name => /#{Regexp.escape(params[:search][:value])}/i },
         { :host => /#{Regexp.escape(params[:search][:value])}/i },
         { :path_prefix => /#{Regexp.escape(params[:search][:value])}/i },
+        { :_id => params[:search][:value].downcase },
       ])
     end
   end

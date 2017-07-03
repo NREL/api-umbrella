@@ -26,7 +26,7 @@ class Api::V1::UsersController < Api::V1::BaseController
         { :api_key => /#{Regexp.escape(params["search"]["value"])}/i },
         { :registration_source => /#{Regexp.escape(params["search"]["value"])}/i },
         { :roles => /#{Regexp.escape(params["search"]["value"])}/i },
-        { :_id => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :_id => params[:search][:value].downcase },
       ])
     end
   end

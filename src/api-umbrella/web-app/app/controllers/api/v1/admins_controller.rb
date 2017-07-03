@@ -22,7 +22,7 @@ class Api::V1::AdminsController < Api::V1::BaseController
         { :email => /#{Regexp.escape(params["search"]["value"])}/i },
         { :username => /#{Regexp.escape(params["search"]["value"])}/i },
         { :authentication_token => /#{Regexp.escape(params["search"]["value"])}/i },
-        { :_id => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :_id => params[:search][:value].downcase },
       ])
     end
 
