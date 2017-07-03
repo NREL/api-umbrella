@@ -298,7 +298,7 @@ CREATE FUNCTION set_updated_at() RETURNS trigger
     AS $$
       BEGIN
         IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
-          NEW.updated_at = now();
+          NEW.updated_at = (now() at time zone 'UTC');
           RETURN NEW;
         ELSE
           RETURN OLD;
@@ -518,9 +518,9 @@ CREATE TABLE api_scopes (
     name character varying(255) NOT NULL,
     host character varying(255) NOT NULL,
     path_prefix character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_at timestamp with time zone DEFAULT (now() at time zone 'UTC') NOT NULL,
     created_by uuid,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT (now() at time zone 'UTC') NOT NULL,
     updated_by uuid
 );
 

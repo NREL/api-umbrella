@@ -2,7 +2,10 @@ local Model = require("lapis.db.model").Model
 local types = require "pl.types"
 require "resty.validation.ngx"
 local validation = require "resty.validation"
+local iso8601 = require "api-umbrella.utils.iso8601"
+local cjson = require "cjson"
 
+local json_null = cjson.null
 local is_empty = types.is_empty
 
 local function validate(errors, values, key, validator, message)
@@ -38,12 +41,16 @@ local ApiScope = Model:extend("api_scopes", {
 
   as_json = function(self)
     return {
-      id = self.id,
-      name = self.name,
-      host = self.host,
-      path_prefix = self.path_prefix,
-      created_at = self.created_at,
-      updated_at = self.updated_at,
+      id = self.id or json_null,
+      name = self.name or json_null,
+      host = self.host or json_null,
+      path_prefix = self.path_prefix or json_null,
+      created_at = iso8601.format_postgres(self.created_at) or json_null,
+      created_by = self.created_by or json_null,
+      updated_at = iso8601.format_postgres(self.updated_at) or json_null,
+      updated_by = self.updated_by or json_null,
+      deleted_at = json_null,
+      version = 1,
     }
   end,
 })

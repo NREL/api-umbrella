@@ -9,7 +9,7 @@ return {
       RETURNS TRIGGER AS $$
       BEGIN
         IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
-          NEW.updated_at = now();
+          NEW.updated_at = (now() at time zone 'UTC');
           RETURN NEW;
         ELSE
           RETURN OLD;
@@ -24,9 +24,9 @@ return {
         name varchar(255) NOT NULL,
         host varchar(255) NOT NULL,
         path_prefix varchar(255) NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        created_at timestamp with time zone NOT NULL DEFAULT (now() at time zone 'UTC'),
         created_by uuid,
-        updated_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL DEFAULT (now() at time zone 'UTC'),
         updated_by uuid
       )
     ]])
