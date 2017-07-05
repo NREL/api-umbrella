@@ -237,6 +237,19 @@ of the audit trigger its self.
 SET search_path = public, pg_catalog;
 
 --
+-- Name: current_app_user(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION current_app_user() RETURNS character varying
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        RETURN current_setting('application.user');
+      END;
+      $$;
+
+
+--
 -- Name: jsonb_minus(jsonb, text[]); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -290,15 +303,16 @@ $$;
 
 
 --
--- Name: set_updated_at(); Type: FUNCTION; Schema: public; Owner: -
+-- Name: set_updated(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION set_updated_at() RETURNS trigger
+CREATE FUNCTION set_updated() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
       BEGIN
         IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
-          NEW.updated_at = (now() at time zone 'UTC');
+          NEW.updated_at := (now() AT TIME ZONE 'UTC');
+          NEW.updated_by := current_app_user();
           RETURN NEW;
         ELSE
           RETURN OLD;
@@ -510,18 +524,151 @@ ALTER SEQUENCE log_id_seq OWNED BY log.id;
 SET search_path = public, pg_catalog;
 
 --
+-- Name: admin_groups; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE admin_groups (
+    id uuid NOT NULL,
+    name character varying(255) NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255)
+);
+
+
+--
+-- Name: admin_groups_admin_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE admin_groups_admin_permissions (
+    admin_group_id uuid NOT NULL,
+    admin_permission_id character varying(50) NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
+-- Name: admin_groups_api_scopes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE admin_groups_api_scopes (
+    admin_group_id uuid NOT NULL,
+    api_scope_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
+-- Name: admin_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE admin_permissions (
+    id character varying(50) NOT NULL,
+    name character varying(255) NOT NULL,
+    display_order smallint NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL
+);
+
+
+--
+-- Name: admins; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE admins (
+    id uuid NOT NULL,
+    username character varying(255) NOT NULL,
+    email character varying(255),
+    name character varying(255),
+    notes text,
+    superuser boolean DEFAULT false NOT NULL,
+    authentication_token character varying(40) NOT NULL,
+    current_sign_in_provider character varying(100),
+    last_sign_in_provider character varying(100),
+    encrypted_password character varying(60),
+    reset_password_token character varying(40),
+    reset_password_sent_at timestamp with time zone,
+    remember_created_at timestamp with time zone,
+    sign_in_count integer DEFAULT 0 NOT NULL,
+    current_sign_in_at timestamp with time zone,
+    last_sign_in_at timestamp with time zone,
+    current_sign_in_ip inet,
+    last_sign_in_ip inet,
+    failed_attempts integer DEFAULT 0 NOT NULL,
+    unlock_token character varying(40),
+    locked_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
+-- Name: api_backends; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_backends (
+    id uuid NOT NULL,
+    name character varying(255) NOT NULL,
+    sort_order integer NOT NULL,
+    config jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
 -- Name: api_scopes; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE api_scopes (
-    id uuid DEFAULT (md5(((random())::text || (clock_timestamp())::text)))::uuid NOT NULL,
+    id uuid NOT NULL,
     name character varying(255) NOT NULL,
     host character varying(255) NOT NULL,
     path_prefix character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT (now() at time zone 'UTC') NOT NULL,
-    created_by uuid,
-    updated_at timestamp with time zone DEFAULT (now() at time zone 'UTC') NOT NULL,
-    updated_by uuid
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
+-- Name: api_users; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_users (
+    id uuid NOT NULL,
+    api_key character varying(40) NOT NULL,
+    email character varying(255) NOT NULL,
+    email_verified boolean DEFAULT false NOT NULL,
+    first_name character varying(255),
+    last_name character varying(255),
+    use_description character varying(2000),
+    user_metadata jsonb,
+    registration_ip inet,
+    registration_source character varying(255),
+    registration_user_agent character varying(1000),
+    registration_referer character varying(1000),
+    registration_origin character varying(1000),
+    throttle_by_ip boolean DEFAULT false NOT NULL,
+    roles character varying(100)[],
+    settings jsonb,
+    disabled_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
 );
 
 
@@ -534,6 +681,57 @@ CREATE TABLE lapis_migrations (
 );
 
 
+--
+-- Name: published_config; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE published_config (
+    id integer NOT NULL,
+    config jsonb NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
+-- Name: published_config_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE published_config_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: published_config_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE published_config_id_seq OWNED BY published_config.id;
+
+
+--
+-- Name: website_backends; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE website_backends (
+    id uuid NOT NULL,
+    frontend_host character varying(255) NOT NULL,
+    backend_protocol character varying(5) NOT NULL,
+    server_host character varying(255) NOT NULL,
+    server_port integer NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    CONSTRAINT website_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY ((ARRAY['http'::character varying, 'https'::character varying])::text[])))
+);
+
+
 SET search_path = audit, pg_catalog;
 
 --
@@ -542,6 +740,17 @@ SET search_path = audit, pg_catalog;
 
 ALTER TABLE ONLY log ALTER COLUMN id SET DEFAULT nextval('log_id_seq'::regclass);
 
+
+SET search_path = public, pg_catalog;
+
+--
+-- Name: published_config id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY published_config ALTER COLUMN id SET DEFAULT nextval('published_config_id_seq'::regclass);
+
+
+SET search_path = audit, pg_catalog;
 
 --
 -- Name: log log_pkey; Type: CONSTRAINT; Schema: audit; Owner: -
@@ -554,6 +763,54 @@ ALTER TABLE ONLY log
 SET search_path = public, pg_catalog;
 
 --
+-- Name: admin_groups_admin_permissions admin_groups_admin_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_groups_admin_permissions
+    ADD CONSTRAINT admin_groups_admin_permissions_pkey PRIMARY KEY (admin_group_id, admin_permission_id);
+
+
+--
+-- Name: admin_groups_api_scopes admin_groups_api_scopes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_groups_api_scopes
+    ADD CONSTRAINT admin_groups_api_scopes_pkey PRIMARY KEY (admin_group_id, api_scope_id);
+
+
+--
+-- Name: admin_groups admin_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_groups
+    ADD CONSTRAINT admin_groups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: admin_permissions admin_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_permissions
+    ADD CONSTRAINT admin_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: admins admins_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admins
+    ADD CONSTRAINT admins_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_backends api_backends_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backends
+    ADD CONSTRAINT api_backends_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: api_scopes api_scopes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -562,11 +819,35 @@ ALTER TABLE ONLY api_scopes
 
 
 --
+-- Name: api_users api_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_users
+    ADD CONSTRAINT api_users_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: lapis_migrations lapis_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY lapis_migrations
     ADD CONSTRAINT lapis_migrations_pkey PRIMARY KEY (name);
+
+
+--
+-- Name: published_config published_config_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY published_config
+    ADD CONSTRAINT published_config_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: website_backends website_backends_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY website_backends
+    ADD CONSTRAINT website_backends_pkey PRIMARY KEY (id);
 
 
 SET search_path = audit, pg_catalog;
@@ -595,6 +876,41 @@ CREATE INDEX log_relid_idx ON log USING btree (relid);
 SET search_path = public, pg_catalog;
 
 --
+-- Name: admin_permissions_display_order_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX admin_permissions_display_order_idx ON admin_permissions USING btree (display_order);
+
+
+--
+-- Name: admins_authentication_token_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX admins_authentication_token_idx ON admins USING btree (authentication_token);
+
+
+--
+-- Name: admins_reset_password_token_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX admins_reset_password_token_idx ON admins USING btree (reset_password_token);
+
+
+--
+-- Name: admins_unlock_token_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX admins_unlock_token_idx ON admins USING btree (unlock_token);
+
+
+--
+-- Name: admins_username_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX admins_username_idx ON admins USING btree (username);
+
+
+--
 -- Name: api_scopes_host_path_prefix_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -602,10 +918,80 @@ CREATE UNIQUE INDEX api_scopes_host_path_prefix_idx ON api_scopes USING btree (h
 
 
 --
+-- Name: api_users_api_key_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_users_api_key_idx ON api_users USING btree (api_key);
+
+
+--
+-- Name: admin_groups_admin_permissions admin_groups_admin_permissions_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER admin_groups_admin_permissions_updated_at BEFORE UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: admin_groups_api_scopes admin_groups_api_scopes_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER admin_groups_api_scopes_updated_at BEFORE UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: admin_groups admin_groups_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER admin_groups_updated_at BEFORE UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: admin_permissions admin_permissions_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER admin_permissions_updated_at BEFORE UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: admins admins_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER admins_updated_at BEFORE UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: api_backends api_backends_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backends_updated_at BEFORE UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
 -- Name: api_scopes api_scopes_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_scopes_updated_at BEFORE UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE set_updated_at();
+CREATE TRIGGER api_scopes_updated_at BEFORE UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: api_users api_users_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_users_updated_at BEFORE UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: admins audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: admin_permissions audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -616,10 +1002,168 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_scopes 
 
 
 --
+-- Name: admin_groups audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: admin_groups_admin_permissions audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: admin_groups_api_scopes audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backends audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_users audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: published_config audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: website_backends audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: admins audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admins FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: admin_permissions audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_permissions FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_scopes audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_scopes FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: admin_groups audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: admin_groups_admin_permissions audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_admin_permissions FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: admin_groups_api_scopes audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_api_scopes FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backends audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_users audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_users FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: published_config audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON published_config FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: website_backends audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON website_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: published_config published_config_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER published_config_updated_at BEFORE UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: website_backends website_backends_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER website_backends_updated_at BEFORE UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: admin_groups_admin_permissions admin_groups_admin_permissions_admin_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_groups_admin_permissions
+    ADD CONSTRAINT admin_groups_admin_permissions_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id);
+
+
+--
+-- Name: admin_groups_admin_permissions admin_groups_admin_permissions_admin_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_groups_admin_permissions
+    ADD CONSTRAINT admin_groups_admin_permissions_admin_permission_id_fkey FOREIGN KEY (admin_permission_id) REFERENCES admin_permissions(id);
+
+
+--
+-- Name: admin_groups_api_scopes admin_groups_api_scopes_admin_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_groups_api_scopes
+    ADD CONSTRAINT admin_groups_api_scopes_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id);
+
+
+--
+-- Name: admin_groups_api_scopes admin_groups_api_scopes_api_scope_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_groups_api_scopes
+    ADD CONSTRAINT admin_groups_api_scopes_api_scope_id_fkey FOREIGN KEY (api_scope_id) REFERENCES api_scopes(id);
 
 
 --

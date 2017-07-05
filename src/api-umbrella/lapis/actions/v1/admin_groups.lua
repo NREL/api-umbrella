@@ -1,5 +1,5 @@
 local respond_to = require("lapis.application").respond_to
-local ApiScope = require "api-umbrella.lapis.models.api_scope"
+local AdminGroup = require "api-umbrella.lapis.models.admin_group"
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local json_params = require("lapis.application").json_params
@@ -11,21 +11,21 @@ local capture_errors_json = lapis_helpers.capture_errors_json
 local _M = {}
 
 function _M.index(self)
-  return lapis_datatables.index(self, ApiScope)
+  return lapis_datatables.index(self, AdminGroup)
 end
 
 function _M.show(self)
   local response = {
-    api_scope = self.api_scope:as_json(),
+    admin_group = self.admin_group:as_json(),
   }
 
   return lapis_json(self, response)
 end
 
 function _M.create(self)
-  local api_scope = assert(ApiScope:create(_M.api_scope_params(self)))
+  local admin_group = assert(AdminGroup:create(_M.admin_group_params(self)))
   local response = {
-    api_scope = api_scope:as_json(),
+    admin_group = admin_group:as_json(),
   }
 
   self.res.status = 201
@@ -33,36 +33,37 @@ function _M.create(self)
 end
 
 function _M.update(self)
-  self.api_scope:update(_M.api_scope_params(self))
+  self.admin_group:update(_M.admin_group_params(self))
 
   return { status = 204 }
 end
 
 function _M.destroy(self)
-  self.api_scope:delete()
+  self.admin_group:delete()
 
   return { status = 204 }
 end
 
-function _M.api_scope_params(self)
+function _M.admin_group_params(self)
   local params = {}
-  if self.params and self.params["api_scope"] then
-    local input = self.params["api_scope"]
+  if self.params and self.params["admin_group"] then
+    local input = self.params["admin_group"]
     params = dbify_json_nulls({
       name = input["name"],
-      host = input["host"],
-      path_prefix = input["path_prefix"],
+      -- permission_ids = input["permission_ids"],
+      -- api_scope_ids = input["api_scope_ids"],
     })
+    ngx.log(ngx.NOTICE, "INPUTS: " .. inspect(params))
   end
 
   return params
 end
 
 return function(app)
-  app:match("/api-umbrella/v1/api_scopes/:id(.:format)", respond_to({
+  app:match("/api-umbrella/v1/admin_groups/:id(.:format)", respond_to({
     before = function(self)
-      self.api_scope = ApiScope:find(self.params["id"])
-      if not self.api_scope then
+      self.admin_group = AdminGroup:find(self.params["id"])
+      if not self.admin_group then
         self:write({"Not Found", status = 404})
       end
     end,
@@ -72,6 +73,6 @@ return function(app)
     DELETE = _M.destroy,
   }))
 
-  app:get("/api-umbrella/v1/api_scopes(.:format)", _M.index)
-  app:post("/api-umbrella/v1/api_scopes(.:format)", capture_errors_json(json_params(_M.create)))
+  app:get("/api-umbrella/v1/admin_groups(.:format)", _M.index)
+  app:post("/api-umbrella/v1/admin_groups(.:format)", capture_errors_json(json_params(_M.create)))
 end

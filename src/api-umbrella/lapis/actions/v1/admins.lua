@@ -1,5 +1,5 @@
 local respond_to = require("lapis.application").respond_to
-local ApiScope = require "api-umbrella.lapis.models.api_scope"
+local Admin = require "api-umbrella.lapis.models.admin"
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local json_params = require("lapis.application").json_params
@@ -11,21 +11,21 @@ local capture_errors_json = lapis_helpers.capture_errors_json
 local _M = {}
 
 function _M.index(self)
-  return lapis_datatables.index(self, ApiScope)
+  return lapis_datatables.index(self, Admin)
 end
 
 function _M.show(self)
   local response = {
-    api_scope = self.api_scope:as_json(),
+    admin = self.admin:as_json(),
   }
 
   return lapis_json(self, response)
 end
 
 function _M.create(self)
-  local api_scope = assert(ApiScope:create(_M.api_scope_params(self)))
+  local admin = assert(Admin:create(_M.admin_params(self)))
   local response = {
-    api_scope = api_scope:as_json(),
+    admin = admin:as_json(),
   }
 
   self.res.status = 201
@@ -33,36 +33,43 @@ function _M.create(self)
 end
 
 function _M.update(self)
-  self.api_scope:update(_M.api_scope_params(self))
+  self.admin:update(_M.admin_params(self))
 
   return { status = 204 }
 end
 
 function _M.destroy(self)
-  self.api_scope:delete()
+  self.admin:delete()
 
   return { status = 204 }
 end
 
-function _M.api_scope_params(self)
+function _M.admin_params(self)
   local params = {}
-  if self.params and self.params["api_scope"] then
-    local input = self.params["api_scope"]
+  if self.params and self.params["admin"] then
+    local input = self.params["admin"]
     params = dbify_json_nulls({
+      username = input["username"],
+      password = input["password"],
+      password_confirmation = input["password_confirmation"],
+      current_password = input["current_password"],
+      email = input["email"],
       name = input["name"],
-      host = input["host"],
-      path_prefix = input["path_prefix"],
+      notes = input["notes"],
+      superuser = input["superuser"],
+      -- group_ids = input["group_ids"],
     })
+    ngx.log(ngx.NOTICE, "INPUTS: " .. inspect(params))
   end
 
   return params
 end
 
 return function(app)
-  app:match("/api-umbrella/v1/api_scopes/:id(.:format)", respond_to({
+  app:match("/api-umbrella/v1/admins/:id(.:format)", respond_to({
     before = function(self)
-      self.api_scope = ApiScope:find(self.params["id"])
-      if not self.api_scope then
+      self.admin = Admin:find(self.params["id"])
+      if not self.admin then
         self:write({"Not Found", status = 404})
       end
     end,
@@ -72,6 +79,6 @@ return function(app)
     DELETE = _M.destroy,
   }))
 
-  app:get("/api-umbrella/v1/api_scopes(.:format)", _M.index)
-  app:post("/api-umbrella/v1/api_scopes(.:format)", capture_errors_json(json_params(_M.create)))
+  app:get("/api-umbrella/v1/admins(.:format)", _M.index)
+  app:post("/api-umbrella/v1/admins(.:format)", capture_errors_json(json_params(_M.create)))
 end

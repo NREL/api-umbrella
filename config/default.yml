@@ -344,8 +344,16 @@ internal_apis:
       - host: "{{http_api_server.host}}"
         port: "{{http_api_server.port}}"
     url_matches:
+      - frontend_prefix: "/api-umbrella/v1/admin_groups"
+        backend_prefix: "/api-umbrella/v1/admin_groups"
+      - frontend_prefix: "/api-umbrella/v1/admin_permissions"
+        backend_prefix: "/api-umbrella/v1/admin_permissions"
+      - frontend_prefix: "/api-umbrella/v1/admins"
+        backend_prefix: "/api-umbrella/v1/admins"
       - frontend_prefix: "/api-umbrella/v1/api_scopes"
         backend_prefix: "/api-umbrella/v1/api_scopes"
+      - frontend_prefix: "/api-umbrella/v1/users"
+        backend_prefix: "/api-umbrella/v1/users"
   - _id: api-umbrella-web-backend
     name: API Umbrella - Web APIs
     frontend_host: "{{router.web_app_host}}"

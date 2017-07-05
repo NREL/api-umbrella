@@ -1,5 +1,6 @@
 FactoryGirl.define do
   factory :api_scope do
+    id { SecureRandom.uuid }
     sequence(:name) { |n| "Example #{n}" }
     host "localhost"
     sequence(:path_prefix) { |n| "/example/#{n}/" }
