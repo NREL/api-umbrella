@@ -108,19 +108,19 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   def test_city_accent_chars
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", log_http_options.deep_merge({
       :headers => {
-        "X-Forwarded-For" => "191.102.110.22",
+        "X-Forwarded-For" => "178.203.88.46",
       },
     }))
     assert_response_code(200, response)
 
     record = wait_for_log(response)[:hit_source]
     assert_geocode(record, {
-      :ip => "191.102.110.22",
-      :country => "CO",
-      :region => "34",
-      :city => "Bogotá",
-      :lat => 4.6492,
-      :lon => -74.0628,
+      :ip => "178.203.88.46",
+      :country => "DE",
+      :region => "07",
+      :city => "Düsseldorf",
+      :lat => 51.216499,
+      :lon => 6.783600,
     })
   end
 
