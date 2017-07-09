@@ -1,6 +1,6 @@
 local Model = require("lapis.db.model").Model
-local iso8601 = require "api-umbrella.utils.iso8601"
 local cjson = require "cjson"
+local iso8601 = require "api-umbrella.utils.iso8601"
 
 local json_null = cjson.null
 

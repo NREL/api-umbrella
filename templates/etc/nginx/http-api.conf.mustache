@@ -26,7 +26,7 @@ http {
   scgi_temp_path {{tmp_dir}}/nginx-http-api-scgi_temp;
   server_tokens off;
 
-  lua_package_path '{{_package_path}}';
+  lua_package_path '{{_src_root_dir}}/src/api-umbrella/lapis/?.lua;{{_package_path}}';
   lua_package_cpath '{{_package_cpath}}';
   lua_check_client_abort on;
   if_modified_since off;
@@ -34,13 +34,20 @@ http {
   include ./mime.conf;
   include ./realip.conf;
 
+  init_by_lua_block {
+    inspect = require "inspect"
+    config = require "api-umbrella.proxy.models.file_config"
+  }
+
   server {
     listen {{http_api_server.host}}:{{http_api_server.port}};
 
     lua_code_cache off;
     location / {
       default_type text/html;
-      content_by_lua 'require("lapis").serve("api-umbrella.lapis.app")';
+      content_by_lua_block {
+        require("lapis").serve("api-umbrella.lapis.app")
+      }
     }
   }
 }

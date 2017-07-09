@@ -1,29 +1,35 @@
 local Model = require("lapis.db.model").Model
-local validation = require "resty.validation"
+local _ = require("resty.gettext").gettext
+local cjson = require "cjson"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
-local cjson = require "cjson"
+local validation = require "resty.validation"
 
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
-local function before_create(_, values)
+local function before_validate_on_create(_, values)
   values["api_key"] = random_token(40)
 end
 
 local function validate(values)
   local errors = {}
-  validate_field(errors, values, "first_name", validation.string:minlen(1), "Provide your first name.")
-  validate_field(errors, values, "last_name", validation.string:minlen(1), "Provide your last name.")
-  validate_field(errors, values, "email", validation.string:minlen(1), "Provide your email address.")
-  validate_field(errors, values, "email", validation:regex([[.+@.+\..+]], "jo"), "Provide a valid email address.")
-  validate_field(errors, values, "website", validation.optional:regex([[\w+\.\w+]], "jo"), "Your website must be a valid URL in the form of http://example.com")
+  validate_field(errors, values, "first_name", validation.string:minlen(1), _("Provide your first name."))
+  validate_field(errors, values, "last_name", validation.string:minlen(1), _("Provide your last name."))
+  validate_field(errors, values, "email", validation.string:minlen(1), _("Provide your email address."))
+  validate_field(errors, values, "email", validation:regex([[.+@.+\..+]], "jo"), _("Provide a valid email address."))
+  validate_field(errors, values, "website", validation.optional:regex([[\w+\.\w+]], "jo"), _("Your website must be a valid URL in the form of http://example.com"))
   return errors
 end
 
+local save_options = {
+  before_validate_on_create = before_validate_on_create,
+  validate = validate,
+}
+
 local ApiUser = Model:extend("api_users", {
-  update = model_ext.update({ validate = validate }),
+  update = model_ext.update(save_options),
 
   api_key_preview = function(self)
     local preview
@@ -62,9 +68,6 @@ local ApiUser = Model:extend("api_users", {
   end,
 })
 
-ApiUser.create = model_ext.create({
-  before_create = before_create,
-  validate = validate,
-})
+ApiUser.create = model_ext.create(save_options)
 
 return ApiUser

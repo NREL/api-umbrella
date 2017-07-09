@@ -1,9 +1,11 @@
-local config = require("lapis.config")
+local lapis_config = require("lapis.config")
 
-config("development", {
+lapis_config("development", {
   postgres = {
-    host = "127.0.0.1",
-    user = "vagrant",
-    database = "api_umbrella_test"
+    host = config["postgresql"]["host"],
+    port = config["postgresql"]["port"],
+    database = config["postgresql"]["database"],
+    user = config["postgresql"]["username"],
+    password = config["postgresql"]["password"],
   }
 })

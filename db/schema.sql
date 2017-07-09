@@ -552,6 +552,20 @@ CREATE TABLE admin_groups_admin_permissions (
 
 
 --
+-- Name: admin_groups_admins; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE admin_groups_admins (
+    admin_group_id uuid NOT NULL,
+    admin_id uuid NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
 -- Name: admin_groups_api_scopes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -771,6 +785,14 @@ ALTER TABLE ONLY admin_groups_admin_permissions
 
 
 --
+-- Name: admin_groups_admins admin_groups_admins_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_groups_admins
+    ADD CONSTRAINT admin_groups_admins_pkey PRIMARY KEY (admin_group_id, admin_id);
+
+
+--
 -- Name: admin_groups_api_scopes admin_groups_api_scopes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -932,6 +954,13 @@ CREATE TRIGGER admin_groups_admin_permissions_updated_at BEFORE UPDATE ON admin_
 
 
 --
+-- Name: admin_groups_admins admin_groups_admins_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER admin_groups_admins_updated_at BEFORE UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
 -- Name: admin_groups_api_scopes admin_groups_api_scopes_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1016,6 +1045,13 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_group
 
 
 --
+-- Name: admin_groups_admins audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: admin_groups_api_scopes audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1086,6 +1122,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_admin_permission
 
 
 --
+-- Name: admin_groups_admins audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_admins FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: admin_groups_api_scopes audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1151,6 +1194,22 @@ ALTER TABLE ONLY admin_groups_admin_permissions
 
 
 --
+-- Name: admin_groups_admins admin_groups_admins_admin_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_groups_admins
+    ADD CONSTRAINT admin_groups_admins_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id);
+
+
+--
+-- Name: admin_groups_admins admin_groups_admins_admin_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY admin_groups_admins
+    ADD CONSTRAINT admin_groups_admins_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES admins(id);
+
+
+--
 -- Name: admin_groups_api_scopes admin_groups_api_scopes_admin_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1164,6 +1223,104 @@ ALTER TABLE ONLY admin_groups_api_scopes
 
 ALTER TABLE ONLY admin_groups_api_scopes
     ADD CONSTRAINT admin_groups_api_scopes_api_scope_id_fkey FOREIGN KEY (api_scope_id) REFERENCES api_scopes(id);
+
+
+--
+-- Name: public; Type: ACL; Schema: -; Owner: -
+--
+
+GRANT USAGE ON SCHEMA public TO api_umbrella_app_user;
+
+
+--
+-- Name: admin_groups; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_groups TO api_umbrella_app_user;
+
+
+--
+-- Name: admin_groups_admin_permissions; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_groups_admin_permissions TO api_umbrella_app_user;
+
+
+--
+-- Name: admin_groups_admins; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_groups_admins TO api_umbrella_app_user;
+
+
+--
+-- Name: admin_groups_api_scopes; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_groups_api_scopes TO api_umbrella_app_user;
+
+
+--
+-- Name: admin_permissions; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_permissions TO api_umbrella_app_user;
+
+
+--
+-- Name: admins; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admins TO api_umbrella_app_user;
+
+
+--
+-- Name: api_backends; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backends TO api_umbrella_app_user;
+
+
+--
+-- Name: api_scopes; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_scopes TO api_umbrella_app_user;
+
+
+--
+-- Name: api_users; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users TO api_umbrella_app_user;
+
+
+--
+-- Name: lapis_migrations; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE lapis_migrations TO api_umbrella_app_user;
+
+
+--
+-- Name: published_config; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE published_config TO api_umbrella_app_user;
+
+
+--
+-- Name: published_config_id_seq; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,UPDATE ON SEQUENCE published_config_id_seq TO api_umbrella_app_user;
+
+
+--
+-- Name: website_backends; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE website_backends TO api_umbrella_app_user;
 
 
 --

@@ -14,15 +14,22 @@ if [ "${1}" = "start" ]; then
 
   if [ ! -d "{{db_dir}}/postgresql" ]; then
     runtool "${run_args[@]}" initdb -D "{{db_dir}}/postgresql"
-    pg_ctl -D "{{db_dir}}/postgresql" -o "-c listen_addresses='localhost'" -w start
-    createdb api_umbrella_test
-    pg_ctl -D "{{db_dir}}/postgresql" -m fast -w stop
   fi
+
+  runtool "${run_args[@]}" mkdir -p "{{run_dir}}/postgresql_startup"
+  runtool "${run_args[@]}" pg_ctl -D "{{db_dir}}/postgresql" -o "-c 'listen_addresses=' -c 'unix_socket_directories={{run_dir}}/postgresql_startup' -c 'unix_socket_permissions=0700'" -w start
+  export PGHOST="{{run_dir}}/postgresql_startup"
+  export PGDATABASE="postgres"
+  runtool "${run_args[@]}" psql -t -c "SELECT 1 FROM pg_roles WHERE rolname = '{{postgresql.username}}'" | grep -q 1 || runtool "${run_args[@]}" psql -c "CREATE ROLE {{postgresql.username}} WITH LOGIN"
+  runtool "${run_args[@]}" psql -t -c "SELECT 1 FROM pg_database WHERE datname = '{{postgresql.database}}'" | grep -q 1 || (runtool "${run_args[@]}" psql -c "CREATE DATABASE {{postgresql.database}}" && runtool "${run_args[@]}" psql -d "{{postgresql.database}}" -f "{{_src_root_dir}}/db/schema.sql")
+  unset PGHOST
+  unset PGDATABASE
+  runtool "${run_args[@]}" pg_ctl -D "{{db_dir}}/postgresql" -m fast -w stop
 
   exec \
     runtrap postgresql "${0}" \
     runtool "${run_args[@]}" \
-    postgres -D "{{db_dir}}/postgresql"
+    postgres -D "{{db_dir}}/postgresql" -c "listen_addresses={{postgresql.embedded_server_config.listen_addresses}}" -c "port={{postgresql.embedded_server_config.port}}"
 fi
 
 # perpboot sends SIGTERM signals on shutdown, but let's exit with SIGINT for

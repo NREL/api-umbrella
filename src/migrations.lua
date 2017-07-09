@@ -4,7 +4,7 @@ local db = require("lapis.db")
 
 return {
   [1498350289] = function()
-    db.query("BEGIN")
+    db.query("START TRANSACTION")
 
     local audit_sql_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/audit.sql")
     local audit_sql = file.read(audit_sql_path, true)
@@ -127,6 +127,20 @@ return {
     db.query("SELECT audit.audit_table('admin_groups_admin_permissions')")
 
     db.query([[
+      CREATE TABLE admin_groups_admins(
+        admin_group_id uuid REFERENCES admin_groups(id),
+        admin_id uuid REFERENCES admins(id),
+        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        updated_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        PRIMARY KEY(admin_group_id, admin_id)
+      )
+    ]])
+    db.query("CREATE TRIGGER admin_groups_admins_updated_at BEFORE UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("SELECT audit.audit_table('admin_groups_admins')")
+
+    db.query([[
       CREATE TABLE admin_groups_api_scopes(
         admin_group_id uuid REFERENCES admin_groups(id),
         api_scope_id uuid REFERENCES api_scopes(id),
@@ -212,6 +226,10 @@ return {
     ]])
     db.query("CREATE TRIGGER website_backends_updated_at BEFORE UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE set_updated()")
     db.query("SELECT audit.audit_table('website_backends')")
+
+    db.query("GRANT USAGE ON SCHEMA public TO api_umbrella_app_user")
+    db.query("GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO api_umbrella_app_user")
+    db.query("GRANT SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO api_umbrella_app_user")
 
     db.query("COMMIT")
   end

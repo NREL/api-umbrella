@@ -138,6 +138,15 @@ dns_resolver:
   max_stale: 86400
   timeout: 2000
   retries: 3
+postgresql:
+  host: 127.0.0.1
+  port: 14006
+  database: api_umbrella
+  username: api_umbrella_app_user
+  password:
+  embedded_server_config:
+    listen_addresses: 127.0.0.1
+    port: 14006
 mongodb:
   url: "mongodb://127.0.0.1:14001/api_umbrella"
   read_preference: primaryPreferred

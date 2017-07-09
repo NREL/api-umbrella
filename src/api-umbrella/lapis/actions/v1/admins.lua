@@ -11,7 +11,9 @@ local capture_errors_json = lapis_helpers.capture_errors_json
 local _M = {}
 
 function _M.index(self)
-  return lapis_datatables.index(self, Admin)
+  return lapis_datatables.index(self, Admin, {
+    preload = { "groups" },
+  })
 end
 
 function _M.show(self)
@@ -57,7 +59,7 @@ function _M.admin_params(self)
       name = input["name"],
       notes = input["notes"],
       superuser = input["superuser"],
-      -- group_ids = input["group_ids"],
+      group_ids = input["group_ids"],
     })
     ngx.log(ngx.NOTICE, "INPUTS: " .. inspect(params))
   end

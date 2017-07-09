@@ -1,24 +1,33 @@
 local Model = require("lapis.db.model").Model
-local validation = require "resty.validation"
+local _ = require("resty.gettext").gettext
+local cjson = require "cjson"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
-local cjson = require "cjson"
+local validation = require "resty.validation"
 
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
 local function validate(values)
   local errors = {}
-  validate_field(errors, values, "name", validation.string:minlen(1), "can't be blank")
-  validate_field(errors, values, "host", validation.string:minlen(1), "can't be blank")
-  validate_field(errors, values, "host", validation:regex([[^(\*|(\*\.|\.)[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*|[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*)$]], "jo"), 'must be in the format of "example.com"')
-  validate_field(errors, values, "path_prefix", validation.string:minlen(1), "can't be blank")
-  validate_field(errors, values, "path_prefix", validation:regex("^/", "jo"), 'must start with "/"')
+  validate_field(errors, values, "name", validation.string:minlen(1), _("can't be blank"))
+  validate_field(errors, values, "host", validation.string:minlen(1), _("can't be blank"))
+  validate_field(errors, values, "host", validation:regex([[^(\*|(\*\.|\.)[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*|[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*)$]], "jo"), _('must be in the format of "example.com"'))
+  validate_field(errors, values, "path_prefix", validation.string:minlen(1), _("can't be blank"))
+  validate_field(errors, values, "path_prefix", validation:regex("^/", "jo"), _('must start with "/"'))
   return errors
 end
 
+local save_options = {
+  validate = validate,
+}
+
 local ApiScope = Model:extend("api_scopes", {
-  update = model_ext.update({ validate = validate }),
+  update = model_ext.update(save_options),
+
+  display_name = function(self)
+    return self.name .. " - " .. self.host .. self.path_prefix
+  end,
 
   as_json = function(self)
     return {
@@ -36,6 +45,6 @@ local ApiScope = Model:extend("api_scopes", {
   end,
 })
 
-ApiScope.create = model_ext.create({ validate = validate })
+ApiScope.create = model_ext.create(save_options)
 
 return ApiScope

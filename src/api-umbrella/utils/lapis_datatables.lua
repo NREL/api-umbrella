@@ -9,7 +9,7 @@ local table_keys = tablex.keys
 
 local _M = {}
 
-function _M.index(self, model)
+function _M.index(self, model, options)
   local query = {
     where = {},
     clause = {},
@@ -98,6 +98,10 @@ function _M.index(self, model)
   }
 
   local records = model:select(where)
+  if options and options["preload"] then
+    model:preload_relations(records, unpack(options["preload"]))
+  end
+
   for _, record in ipairs(records) do
     table.insert(response["data"], record:as_json())
   end

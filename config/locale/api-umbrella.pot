@@ -1,0 +1,64 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-07-09 17:28-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/api-umbrella/lapis/models/api_user.lua:21
+msgid "Provide a valid email address."
+msgstr ""
+
+#: src/api-umbrella/lapis/models/api_user.lua:20
+msgid "Provide your email address."
+msgstr ""
+
+#: src/api-umbrella/lapis/models/api_user.lua:18
+msgid "Provide your first name."
+msgstr ""
+
+#: src/api-umbrella/lapis/models/api_user.lua:19
+msgid "Provide your last name."
+msgstr ""
+
+#: src/api-umbrella/lapis/models/admin.lua:74
+msgid "Superuser"
+msgstr ""
+
+#: src/api-umbrella/lapis/models/api_user.lua:22
+msgid "Your website must be a valid URL in the form of http://example.com"
+msgstr ""
+
+#: src/api-umbrella/lapis/models/admin.lua:20
+#: src/api-umbrella/lapis/models/admin_group.lua:13
+#: src/api-umbrella/lapis/models/admin_group.lua:14
+#: src/api-umbrella/lapis/models/admin_group.lua:15
+#: src/api-umbrella/lapis/models/api_scope.lua:13
+#: src/api-umbrella/lapis/models/api_scope.lua:14
+#: src/api-umbrella/lapis/models/api_scope.lua:16
+msgid "can't be blank"
+msgstr ""
+
+#: src/api-umbrella/lapis/models/api_scope.lua:15
+msgid "must be in the format of \"example.com\""
+msgstr ""
+
+#: src/api-umbrella/lapis/models/admin.lua:26
+msgid "must belong to at least one group or be a superuser"
+msgstr ""
+
+#: src/api-umbrella/lapis/models/api_scope.lua:17
+msgid "must start with \"/\""
+msgstr ""

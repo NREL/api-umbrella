@@ -19,15 +19,15 @@ luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION} ${LUAROCK_PENLIGHT_HASH})
 ExternalProject_Add(
   luarock_lapis
   DEPENDS luarocks
-  URL https://luarocks.org/manifests/leafo/lapis-${LUAROCK_LAPIS_VERSION}.rockspec
+  URL https://github.com/leafo/lapis/archive/${LUAROCK_LAPIS_VERSION}.tar.gz
   URL_HASH MD5=${LUAROCK_LAPIS_HASH}
-  DOWNLOAD_NO_EXTRACT 1
+  BUILD_IN_SOURCE 1
   # Patch to fix Lapis dependencies being broken under newer versions of
   # OpenResty: https://github.com/leafo/lapis/issues/539
-  PATCH_COMMAND sed -i -e "s%\"lua-cjson\",%%" <DOWNLOADED_FILE>
+  PATCH_COMMAND sed -i -e "s%\"lua-cjson\",%%" lapis-dev-1.rockspec
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
-  INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${VENDOR_DIR} install <DOWNLOADED_FILE>
+  INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${VENDOR_DIR} install lapis-dev-1.rockspec
 )
 
 # Other Lua app dependencies (non-luarocks)
@@ -58,6 +58,16 @@ ExternalProject_Add(
 )
 
 ExternalProject_Add(
+  lua_resty_gettext
+  DEPENDS luarocks
+  URL https://github.com/bungle/lua-resty-gettext/archive/${LUA_RESTY_GETTEXT_VERSION}.tar.gz
+  URL_HASH MD5=${LUA_RESTY_GETTEXT_HASH}
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/lib/resty/gettext.lua ${VENDOR_LUA_DIR}/resty/gettext.lua
+)
+
+ExternalProject_Add(
   lua_resty_logger_socket
   DEPENDS luarocks
   URL https://github.com/cloudflare/lua-resty-logger-socket/archive/${LUA_RESTY_LOGGER_SOCKET_VERSION}.tar.gz
@@ -81,6 +91,7 @@ set(
   LUA_DEPS
   lua_luasocket_url
   lua_resty_dns_cache
+  lua_resty_gettext
   lua_resty_logger_socket
   lua_resty_shcache
   luarock_argparse

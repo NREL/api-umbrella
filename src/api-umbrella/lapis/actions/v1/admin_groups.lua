@@ -11,7 +11,13 @@ local capture_errors_json = lapis_helpers.capture_errors_json
 local _M = {}
 
 function _M.index(self)
-  return lapis_datatables.index(self, AdminGroup)
+  return lapis_datatables.index(self, AdminGroup, {
+    preload = {
+      "admins",
+      "api_scopes",
+      "permissions",
+    },
+  })
 end
 
 function _M.show(self)
@@ -50,8 +56,8 @@ function _M.admin_group_params(self)
     local input = self.params["admin_group"]
     params = dbify_json_nulls({
       name = input["name"],
-      -- permission_ids = input["permission_ids"],
-      -- api_scope_ids = input["api_scope_ids"],
+      api_scope_ids = input["api_scope_ids"],
+      permission_ids = input["permission_ids"],
     })
     ngx.log(ngx.NOTICE, "INPUTS: " .. inspect(params))
   end
