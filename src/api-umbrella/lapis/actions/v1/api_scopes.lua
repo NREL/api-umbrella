@@ -11,7 +11,9 @@ local capture_errors_json = lapis_helpers.capture_errors_json
 local _M = {}
 
 function _M.index(self)
-  return lapis_datatables.index(self, ApiScope)
+  return lapis_datatables.index(self, ApiScope, {
+    search_fields = { "name", "host", "path_prefix" },
+  })
 end
 
 function _M.show(self)

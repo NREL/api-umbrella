@@ -18,6 +18,7 @@ app:before_filter(function()
   db.query("SET application.\"user\" = 'admin'")
 end)
 
+require("api-umbrella.lapis.actions.admin.auth")(app)
 require("api-umbrella.lapis.actions.v1.admins")(app)
 require("api-umbrella.lapis.actions.v1.admin_groups")(app)
 require("api-umbrella.lapis.actions.v1.admin_permissions")(app)

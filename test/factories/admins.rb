@@ -1,5 +1,7 @@
 FactoryGirl.define do
   factory :admin do
+    id { SecureRandom.uuid }
+    authentication_token { SecureRandom.hex(20) }
     sequence(:username) { |n| "aburnside#{n}@example.com" }
     email { username }
     encrypted_password { BCrypt::Password.create("password123456") }

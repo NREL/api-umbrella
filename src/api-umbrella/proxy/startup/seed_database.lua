@@ -1,18 +1,17 @@
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local interval_lock = require "api-umbrella.utils.interval_lock"
-local pgmoon = require "pgmoon"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local random_token = require "api-umbrella.utils.random_token"
 local uuid = require "resty.uuid"
 
-local function wait_for_postgres(pg)
+local function wait_for_postgres()
   local postgres_alive = false
   local wait_time = 0
   local sleep_time = 0.5
   local max_time = 14
   repeat
-    local _, err = pg:connect()
-    if err then
+    local ok, err = pg_utils.connect()
+    if not ok then
       ngx.log(ngx.NOTICE, "failed to establish connection to postgres (this is expected if postgres is starting up at the same time): ", err)
     else
       postgres_alive = true
@@ -31,7 +30,7 @@ local function wait_for_postgres(pg)
   end
 end
 
-local function seed_api_keys(pg)
+local function seed_api_keys()
   local keys = {
     -- static.site.ajax@internal.apiumbrella
     {
@@ -78,7 +77,7 @@ local function seed_api_keys(pg)
   }
 
   for _, data in ipairs(keys) do
-    local result, user_err = pg_utils.query(pg, "SELECT * FROM api_users WHERE email = $1 ORDER BY created_at LIMIT 1", data["email"])
+    local result, user_err = pg_utils.query("SELECT * FROM api_users WHERE email = $1 ORDER BY created_at LIMIT 1", data["email"])
     if not result then
       ngx.log(ngx.ERR, "failed to query api_users: ", user_err)
       break
@@ -117,12 +116,12 @@ local function seed_api_keys(pg)
     end
 
     if result[1] then
-      local update_result, update_err = pg_utils.update(pg, "api_users", { id = user["id"] }, user)
+      local update_result, update_err = pg_utils.update("api_users", { id = user["id"] }, user)
       if not update_result then
         ngx.log(ngx.ERR, "failed to update record in api_users: ", update_err)
       end
     else
-      local insert_result, insert_err = pg_utils.insert(pg, "api_users", user)
+      local insert_result, insert_err = pg_utils.insert("api_users", user)
       if not insert_result then
         ngx.log(ngx.ERR, "failed to create record in api_users: ", insert_err)
       end
@@ -130,9 +129,9 @@ local function seed_api_keys(pg)
   end
 end
 
-local function seed_initial_superusers(pg)
+local function seed_initial_superusers()
   for _, username in ipairs(config["web"]["admin"]["initial_superusers"]) do
-    local result, admin_err = pg_utils.query(pg, "SELECT * FROM admins WHERE username = $1 LIMIT 1", username)
+    local result, admin_err = pg_utils.query("SELECT * FROM admins WHERE username = $1 LIMIT 1", username)
     if not result then
       ngx.log(ngx.ERR, "failed to query admins: ", admin_err)
       break
@@ -159,12 +158,12 @@ local function seed_initial_superusers(pg)
     end
 
     if result[1] then
-      local update_result, update_err = pg_utils.update(pg, "admins", { id = admin["id"] }, admin)
+      local update_result, update_err = pg_utils.update("admins", { id = admin["id"] }, admin)
       if not update_result then
         ngx.log(ngx.ERR, "failed to update record in admins: ", update_err)
       end
     else
-      local insert_result, insert_err = pg_utils.insert(pg, "admins", admin)
+      local insert_result, insert_err = pg_utils.insert("admins", admin)
       if not insert_result then
         ngx.log(ngx.ERR, "failed to create record in admins: ", insert_err)
       end
@@ -172,7 +171,7 @@ local function seed_initial_superusers(pg)
   end
 end
 
-local function seed_admin_permissions(pg)
+local function seed_admin_permissions()
   local permissions = {
     {
       id = "analytics",
@@ -207,7 +206,7 @@ local function seed_admin_permissions(pg)
   }
 
   for _, data in ipairs(permissions) do
-    local result, permission_err = pg_utils.query(pg, "SELECT * FROM admin_permissions WHERE id = $1 LIMIT 1", data["id"])
+    local result, permission_err = pg_utils.query("SELECT * FROM admin_permissions WHERE id = $1 LIMIT 1", data["id"])
     if not result then
       ngx.log(ngx.ERR, "failed to query admin_permissions: ", permission_err)
       break
@@ -221,12 +220,12 @@ local function seed_admin_permissions(pg)
     end
 
     if result[1] then
-      local update_result, update_err = pg_utils.update(pg, "admin_permissions", { id = permission["id"] }, permission)
+      local update_result, update_err = pg_utils.update("admin_permissions", { id = permission["id"] }, permission)
       if not update_result then
         ngx.log(ngx.ERR, "failed to update record in admin_permissions: ", update_err)
       end
     else
-      local insert_result, insert_err = pg_utils.insert(pg, "admin_permissions", permission)
+      local insert_result, insert_err = pg_utils.insert("admin_permissions", permission)
       if not insert_result then
         ngx.log(ngx.ERR, "failed to create record in admin_permissions: ", insert_err)
       end
@@ -235,29 +234,19 @@ local function seed_admin_permissions(pg)
 end
 
 local function seed()
-  local pg = pgmoon.new({
-    host = config["postgresql"]["host"],
-    port = config["postgresql"]["port"],
-    database = config["postgresql"]["database"],
-    user = config["postgresql"]["username"],
-    password = config["postgresql"]["password"],
-  })
-
-  local _, err = wait_for_postgres(pg)
+  local _, err = wait_for_postgres()
   if err then
     ngx.log(ngx.ERR, "timed out waiting for postgres before seeding, rerunning...")
     ngx.sleep(5)
     return seed()
   end
 
-  pg_utils.query(pg, "SET application.name = 'proxy'")
-  pg_utils.query(pg, "SET application.\"user\" = 'proxy'")
+  pg_utils.query("SET application.name = 'proxy'")
+  pg_utils.query("SET application.\"user\" = 'proxy'")
 
-  seed_api_keys(pg)
-  seed_initial_superusers(pg)
-  seed_admin_permissions(pg)
-
-  pg:disconnect()
+  seed_api_keys()
+  seed_initial_superusers()
+  seed_admin_permissions()
 end
 
 local function seed_once()

@@ -12,6 +12,7 @@ local _M = {}
 
 function _M.index(self)
   return lapis_datatables.index(self, AdminGroup, {
+    search_fields = { "name" },
     preload = {
       "admins",
       "api_scopes",

@@ -1,13 +1,10 @@
 FactoryGirl.define do
   factory :api_user do
+    id { SecureRandom.uuid }
+    api_key { SecureRandom.hex(20) }
     first_name "Ambrose"
     last_name "Burnside"
     sequence(:email) { |n| "ambrose.burnside#{n}@example.com" }
-    terms_and_conditions "1"
-
-    factory :invalid_api_user do
-      terms_and_conditions ""
-    end
 
     factory :xss_api_user do
       email 'a@"><script class="xss-test">alert("Hello first_name");</script>.com'

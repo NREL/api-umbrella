@@ -1,5 +1,6 @@
 FactoryGirl.define do
   factory :admin_group do
+    id { SecureRandom.uuid }
     sequence(:name) { |n| "Example#{n}" }
     api_scopes { [ApiScope.find_or_create_by_instance!(FactoryGirl.build(:api_scope))] }
     permission_ids [

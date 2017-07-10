@@ -14,7 +14,16 @@ local capture_errors_json = lapis_helpers.capture_errors_json
 local _M = {}
 
 function _M.index(self)
-  return lapis_datatables.index(self, ApiUser)
+  return lapis_datatables.index(self, ApiUser, {
+    search_fields = {
+      "first_name",
+      "last_name",
+      "email",
+      "api_key",
+      "registration_source",
+      "roles",
+    },
+  })
 end
 
 function _M.show(self)

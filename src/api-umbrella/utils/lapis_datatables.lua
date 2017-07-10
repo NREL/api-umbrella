@@ -17,15 +17,17 @@ function _M.index(self, model, options)
   }
 
   if self.params["search"] and not is_empty(self.params["search"]["value"]) then
-    local fields = { "id", "name", "host", "path_prefix" }
     local search_sql = {}
-    for _, field in ipairs(fields) do
-      local value, _, gsub_err = ngx.re.gsub(self.params["search"]["value"], "[%_\\\\]", "\\$0", "jo")
-      if gsub_err then
-        ngx.log(ngx.ERR, "regex error: ", gsub_err)
-      end
+    table.insert(search_sql, db.interpolate_query("id = ?", self.params["search"]["value"]))
+    if options["search_fields"] then
+      for _, field in ipairs(options["search_fields"]) do
+        local value, _, gsub_err = ngx.re.gsub(self.params["search"]["value"], "[%_\\\\]", "\\$0", "jo")
+        if gsub_err then
+          ngx.log(ngx.ERR, "regex error: ", gsub_err)
+        end
 
-      table.insert(search_sql, db.interpolate_query(db.escape_identifier(field) .. "::text ILIKE '%' || ? || '%'", value))
+        table.insert(search_sql, db.interpolate_query(db.escape_identifier(field) .. "::text ILIKE '%' || ? || '%'", value))
+      end
     end
     table.insert(query["where"], "(" .. table.concat(search_sql, " OR ") .. ")")
   end

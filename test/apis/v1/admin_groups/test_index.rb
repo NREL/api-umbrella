@@ -7,6 +7,8 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
   def setup
     super
     setup_server
+    AdminGroup.connection.execute("DELETE FROM admin_groups_api_scopes")
+    AdminGroup.connection.execute("DELETE FROM admin_groups_admin_permissions")
     AdminGroup.delete_all
   end
 
@@ -134,7 +136,7 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
   end
 
   def data_tables_record_count
-    AdminGroup.where(:deleted_at => nil).count
+    AdminGroup.count
   end
 
   def assert_base_record_fields(record_data)
