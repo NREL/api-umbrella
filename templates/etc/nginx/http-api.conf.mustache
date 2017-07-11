@@ -34,15 +34,17 @@ http {
   include ./mime.conf;
   include ./realip.conf;
 
-  init_by_lua_block {
-    inspect = require "inspect"
-    config = require "api-umbrella.proxy.models.file_config"
-  }
+  init_by_lua_file '{{_src_root_dir}}/src/api-umbrella/lapis/hooks/init.lua';
 
   server {
     listen {{http_api_server.host}}:{{http_api_server.port}};
 
     lua_code_cache off;
+
+    location /admin/auth-assets/ {
+      alias {{_embedded_root_dir}}/apps/core/current/build/dist/admin-auth-assets/;
+    }
+
     location / {
       default_type text/html;
       content_by_lua_block {

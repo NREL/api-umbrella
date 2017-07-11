@@ -1,6 +1,8 @@
 globals = {
   "DEBUG",
   "WORKER_GROUP_ID",
+  "API_UMBRELLA_VERSION",
+  "LOGIN_CSS_FILENAME",
   "config",
   "elasticsearch_templates",
   "inspect",

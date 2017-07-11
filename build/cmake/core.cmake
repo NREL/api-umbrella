@@ -1,8 +1,10 @@
 set(CORE_BUILD_DIR ${WORK_DIR}/src/api-umbrella-core)
 
+include(${CMAKE_SOURCE_DIR}/build/cmake/dev/nodejs.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-lua-deps.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-web-app.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-admin-ui.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/core-admin-auth-assets.cmake)
 
 # Copy the vendored libraries into the shared build directory.
 add_custom_command(
@@ -35,13 +37,16 @@ add_custom_command(
     ${STAMP_DIR}/core-build-install-dist
     ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets
     ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui
+    ${CORE_BUILD_DIR}/releases/0/build/dist/admin-auth-assets
   DEPENDS
     ${STAMP_DIR}/core-admin-ui-build
+    ${STAMP_DIR}/core-admin-auth-assets-build
     ${STAMP_DIR}/core-web-app-precompile
     ${STAMP_DIR}/core-build-release-dir
   COMMAND mkdir -p ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets
   COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/web-app-build/web-assets/ ${CORE_BUILD_DIR}/releases/0/build/dist/web-app-assets/web-assets/
   COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui/
+  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-auth-assets-build/assets/dist/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-auth-assets/
   COMMAND touch ${STAMP_DIR}/core-build-install-dist
 )
 

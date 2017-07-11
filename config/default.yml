@@ -127,7 +127,7 @@ router:
     ip_connections:
     ip_connections_size: 5m
   web_app_host: "*"
-  web_app_backend_regex: "^/(admin(?!/auth)|admins|web-assets)(/|$)"
+  web_app_backend_regex: "^/(admin|admins|web-assets)(/|$)"
   web_app_backend_required_https_regex: "^/(admin|admins)(/|$)"
   website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
 rsyslog:
@@ -353,8 +353,6 @@ internal_apis:
       - host: "{{http_api_server.host}}"
         port: "{{http_api_server.port}}"
     url_matches:
-      - frontend_prefix: "/admin/auth"
-        backend_prefix: "/admin/auth"
       - frontend_prefix: "/api-umbrella/v1/admin_groups"
         backend_prefix: "/api-umbrella/v1/admin_groups"
       - frontend_prefix: "/api-umbrella/v1/admin_permissions"
@@ -365,11 +363,6 @@ internal_apis:
         backend_prefix: "/api-umbrella/v1/api_scopes"
       - frontend_prefix: "/api-umbrella/v1/users"
         backend_prefix: "/api-umbrella/v1/users"
-    sub_settings:
-      - http_method: get
-        regex: "^/admin/"
-        settings:
-          disable_api_key: true
   - _id: api-umbrella-web-backend
     name: API Umbrella - Web APIs
     frontend_host: "{{router.web_app_host}}"

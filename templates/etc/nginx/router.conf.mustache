@@ -192,6 +192,11 @@ http {
     server_names_hash_bucket_size {{nginx.server_names_hash_bucket_size}};
   {{/nginx.server_names_hash_bucket_size}}
 
+  upstream api_umbrella_http_api_backend {
+    server {{http_api_server.host}}:{{http_api_server.port}};
+    keepalive 10;
+  }
+
   upstream api_umbrella_web_app_backend {
     server {{web.host}}:{{web.port}};
     keepalive 10;
@@ -344,6 +349,12 @@ http {
       alias {{_embedded_root_dir}}/apps/core/current/build/dist/web-app-assets/web-assets/;
     }
     {{/_development_env?}}
+
+    location ~ ^/admin/(login|auth|auth-assets) {
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_pass http://api_umbrella_http_api_backend;
+    }
 
     location ~ ^/admin/(login|logout|auth|stats|config|api_users|elasticsearch|server_side_loader) {
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

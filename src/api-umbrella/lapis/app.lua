@@ -12,13 +12,15 @@ if not ok then
 end
 
 local app = lapis.Application()
+app:enable("etlua")
+app.layout = require "views.layout"
 
 app:before_filter(function()
   db.query("SET application.name = 'admin'")
   db.query("SET application.\"user\" = 'admin'")
 end)
 
-require("api-umbrella.lapis.actions.admin.auth")(app)
+require("api-umbrella.lapis.actions.admin.sessions")(app)
 require("api-umbrella.lapis.actions.v1.admins")(app)
 require("api-umbrella.lapis.actions.v1.admin_groups")(app)
 require("api-umbrella.lapis.actions.v1.admin_permissions")(app)

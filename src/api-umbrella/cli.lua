@@ -60,11 +60,8 @@ function _M.health(args)
 end
 
 function _M.version()
-  local file = require "pl.file"
-  local path = require "pl.path"
-  local stringx = require "pl.stringx"
-  local src_root_dir = os.getenv("API_UMBRELLA_SRC_ROOT")
-  local version = stringx.strip(file.read(path.join(src_root_dir, "src/api-umbrella/version.txt")))
+  local get_api_umbrella_version = require "api-umbrella.utils.get_api_umbrella_version"
+  local version = get_api_umbrella_version()
   print(version)
   os.exit(0)
 end

@@ -5,6 +5,17 @@ local lapis_json = require "api-umbrella.utils.lapis_json"
 
 local _M = {}
 
+function _M.new()
+  return { render = "admin.sessions.new" }
+end
+
+function _M.create()
+  return { redirect_to = "/admin/" }
+end
+
+function _M.destroy()
+end
+
 function _M.auth(self)
   local response = {
     authenticated = false,
@@ -21,7 +32,7 @@ function _M.auth(self)
     response["username_is_email"] = config["web"]["admin"]["username_is_email"]
     response["local_auth_enabled"] = config["web"]["admin"]["auth_strategies"]["_local_enabled?"]
     response["password_length_min"] = config["web"]["admin"]["password_length_min"]
-    -- response["api_umbrella_version"] = API_UMBRELLA_VERSION
+    response["api_umbrella_version"] = API_UMBRELLA_VERSION
     response["admin"] = {}
     response["admin"]["email"] = admin["email"]
     response["admin"]["id"] = admin["id"]
@@ -31,11 +42,12 @@ function _M.auth(self)
     response["admin_auth_token"] = current_admin.authentication_token
   end
 
-  ngx.log(ngx.ERR, "RESPONSE: " .. inspect(response))
-
   return lapis_json(self, response)
 end
 
 return function(app)
+  app:get("/admin/login(.:format)", _M.new)
+  app:post("/admin/login(.:format)", _M.create)
+  app:delete("/admin/logout(.:format)", _M.destroy)
   app:get("/admin/auth(.:format)", _M.auth)
 end
