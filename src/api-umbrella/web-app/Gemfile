@@ -1,12 +1,12 @@
 source "https://rubygems.org"
 
-gem "rails", "~> 4.2.8"
+gem "rails", "~> 4.2.9"
 
 # Rails app server
 gem "puma", "~> 3.9.1"
 
 # Error notification service (optional)
-gem "rollbar", "~> 2.14.1"
+gem "rollbar", "~> 2.15.0"
 
 # Abort requests that take too long
 gem "rack-timeout", "~> 0.4.2"
@@ -16,10 +16,10 @@ gem "rack-proxy", "~> 0.6.1"
 
 # JSON handling
 gem "multi_json", "~> 1.12.1"
-gem "oj", "~> 3.1.3", :platforms => [:ruby]
+gem "oj", "~> 3.3.2", :platforms => [:ruby]
 
 # SQL escape libraries for Kylin analytics.
-gem "sequel", "~> 4.47.0"
+gem "sequel", "~> 4.48.0"
 
 # MongoDB
 gem "mongoid", "~> 5.2.0"
@@ -39,7 +39,7 @@ gem "mongoid_rails_migrations", "~> 1.1.0"
 # Rails cache store using mongo.
 #
 # Use master from git for Rails 4 compatibility.
-gem "mongoid_store", :git => "https://github.com/lucianoshl/mongoid_store.git"
+gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 
 # Elasticsearch
 gem "elasticsearch", "~> 2.0.2"
@@ -76,14 +76,14 @@ gem "daemons", "~> 1.2.4"
 # HTML email styling
 # nokogiri is a soft-dependency for premailer-rails so we need to explicitly
 # include it here.
-gem "premailer-rails", "~> 1.9.5"
+gem "premailer-rails", "~> 1.9.7"
 gem "nokogiri", "~> 1.8.0"
 
 # Localization in the admin based on the Accept-Language header
-gem "http_accept_language", "~> 2.1.0"
+gem "http_accept_language", "~> 2.1.1"
 
 # Markdown
-gem "kramdown", "~> 1.13.2"
+gem "kramdown", "~> 1.14.0"
 
 # Lucene query parsing for translating into SQL.
 gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_parser.git"
@@ -122,5 +122,5 @@ group :development, :test do
   gem "brakeman", :require => false
 
   # Debug inspecting/printing.
-  gem "awesome_print", "~> 1.7.0"
+  gem "awesome_print", "~> 1.8.0"
 end
