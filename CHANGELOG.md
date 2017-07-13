@@ -1,5 +1,41 @@
 # API Umbrella Change Log
 
+## 0.14.3 (2017-07-13)
+
+This update contains a few bug fixes and some potential security fixes. Upgrading is recommended.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` package using your package manager.
+
+### Changed
+
+- **Make web-app timeouts configurable:** Timeouts in the Rails web application are now configurable. ([bfe3f06](https://github.com/NREL/api-umbrella/commit/bfe3f06b53a1444aa346962e47d13b90782b87a3))
+- **On admin sign in with Google, prompt for specific account:** When the admin tool is configured to use Google for logins, always prompt for which Google account to use. ([c11ea16](https://github.com/NREL/api-umbrella/commit/c11ea1666a0b0287e1764ed031e42342a987e795))
+- **Search behavior in admin APIs:** The free-form text search functionality provided by most of the admin APIs has been tweaked slightly. Now searching for an ID requires a full match instead of a partial match, and the "admins" API endpoint no longer searches the authentication token field. ([e936932](https://github.com/NREL/api-umbrella/commit/e936932bfce1c42b7c10b8c9e391f0d0b66e54c3), [aac482e](https://github.com/NREL/api-umbrella/commit/aac482e4c931e5de4d639a6cc5e94c11348d064c))
+- **Upgrade bundled software dependencies:**
+  - MongoDB 3.2.13 -\> 3.2.15
+  - OpenResty 1.11.2.3 -\> 1.11.2.4 (security update: [CVE-2017-7529](http://mailman.nginx.org/pipermail/nginx-announce/2017/000200.html))
+  - Rsyslog 8.27.0 -\> 8.28.0
+
+### Fixed
+
+- **Fix logrotation inside Docker container:** Log files could grow unbounded in size inside the API Umbrella Docker container. ([#365](https://github.com/NREL/api-umbrella/issues/365))
+- **Fix the default "contact us" form:** A regression in v0.14.0 broke the default contact form's ability to send e-mails. ([api.data.gov#390](https://github.com/18F/api.data.gov/issues/390))
+- **Fix logging data to authenticated Elasticsearch:** If using a custom Elasticsearch instance that uses HTTP basic authentication, this should work now. ([eae9553](https://github.com/NREL/api-umbrella/commit/eae95531b7b262cd59e9ecd8947079eaae5163d6))
+- **Fix an internal analytics endpoint:** A regression in v0.14.0 broke a non-public API endpoint for summary analytics. ([api.data.gov#387](https://github.com/18F/api.data.gov/issues/387))
+
+### Security
+
+- **Fix admin password hashes exposure:**
+  - If you use the local authentication mechanism for logging into the admin (new in v0.14.0 and the default), then upgrading to API Umbrella v0.14.3 is highly recommended.
+  - If you rely only on external login providers (Google, GitHub, etc), then this issue should *not* affect your installation.
+  - This issue could lead to the password hashes for admins being exposed to other admin users. Similarly, hashed password reset tokens or account unlock tokens could also be exposed to other admin users.
+  - No plain text passwords or tokens would have been exposed, and these hashes would have only been exposed to other API Umbrella admin users. So the likelihood of this information being exploitable is hopefully very low (the hashes are considered strong and not easy to brute force), but upgrading is recommended to remedy this. You'll also want to weigh the risks for your installation, but it would be prudent to instruct your admins to resets their password.
+  - Hash details: The exposed password hashes would have been hashed using bcrypt (with a cost factor of 11), and the exposed reset/unlock tokens would have been hashed using HMAC-256 (with the key being a random 128 character string, or the `web.rails_secret_token` value if you manually set that in your config). ([82dfe06](https://github.com/NREL/api-umbrella/commit/82dfe0641d0b43e2a634bbc8a1a820a78c93721d))
+- **Updated bundled dependencies:**
+  - OpenResty to 1.11.2.4 ([CVE-2017-7529](http://mailman.nginx.org/pipermail/nginx-announce/2017/000200.html))
+
 ## 0.14.2 (2017-05-26)
 
 This update contains a few bug fixes. Upgrading is recommended.
@@ -18,7 +54,7 @@ If you're upgrading a previous API Umbrella version, you may upgrade the `api-um
 ### Fixed
 
 - **Fix removing last item from array fields in admin:** A regression in v0.14.0 prevented admins from removing the last items in certain array fields in the admin (for example, removing all roles from a user or API). ([#367](https://github.com/NREL/api-umbrella/issues/367))
-- **Fix SSL validation against external Elasticsearch databse:** Allow for explicit configuration of SSL settings when connecting to an external Elasticsearch database that is using HTTPS. Thanks to [@martinzuern](https://github.com/martinzuern). ([#364](https://github.com/NREL/api-umbrella/issues/364))
+- **Fix SSL validation against external Elasticsearch database:** Allow for explicit configuration of SSL settings when connecting to an external Elasticsearch database that is using HTTPS. Thanks to [@martinzuern](https://github.com/martinzuern). ([#364](https://github.com/NREL/api-umbrella/issues/364))
 - **Increase default memory storge for configuration data**: Increase the default memory allocated for storing the live API backend configuration data from 600KB to 3MB to prevent potential issues when publishing lots of API backends. ([api.data.gov#385](https://github.com/18F/api.data.gov/issues/385))
 
 ## 0.14.1 (2017-04-23)
