@@ -40,5 +40,33 @@ FactoryGirl.define do
         end
       end
     end
+
+    factory :empty_attributes_admin do
+    end
+
+    factory :filled_attributes_admin do
+      created_at Time.utc(2017, 1, 1)
+      created_by { SecureRandom.uuid }
+      current_sign_in_at Time.utc(2017, 1, 5)
+      current_sign_in_ip "10.11.2.3"
+      current_sign_in_provider "Provider1"
+      failed_attempts 3
+      last_sign_in_at Time.utc(2017, 1, 6)
+      last_sign_in_ip "10.11.2.4"
+      last_sign_in_provider "Provider2"
+      locked_at Time.utc(2017, 1, 7)
+      name "Name"
+      notes "Notes"
+      remember_created_at Time.utc(2017, 1, 4)
+      reset_password_sent_at Time.utc(2017, 1, 3)
+      reset_password_token { SecureRandom.hex(20) }
+      sign_in_count 10
+      unlock_token { SecureRandom.hex(20) }
+      updated_at Time.utc(2017, 1, 2)
+      updated_by { SecureRandom.uuid }
+      groups do
+        [FactoryGirl.create(:admin_group, :name => "ExampleFilledGroup")]
+      end
+    end
   end
 end

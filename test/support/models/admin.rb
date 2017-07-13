@@ -22,5 +22,7 @@ class Admin
   field :failed_attempts, :type => Integer, :default => 0
   field :unlock_token, :type => String
   field :locked_at, :type => Time
+  field :created_by, :type => String
+  field :updated_by, :type => String
   has_and_belongs_to_many :groups, :class_name => "AdminGroup", :inverse_of => nil
 end
