@@ -1,5 +1,17 @@
 # API Umbrella Change Log
 
+## 0.14.4 (2017-07-15)
+
+This update contains one important fix for v0.14.3. Upgrading is recommended if you are currently running v0.14.3.
+
+### Upgrade Instructions
+
+If you're upgrading a previous API Umbrella version, you may upgrade the `api-umbrella` package using your package manager.
+
+### Fixed
+
+- **Rollback rsyslog to fix memory leak:** The version of rsyslog included in API Umbrella v0.14.3 (rsyslog v8.28.0) has a memory leak with the way API Umbrella configures it. This leads to rsyslog's memory use growing indefinitely. To fix this, the included version of rsyslog has been downgraded to v8.27.0 (and a bug report has been filed with rsyslog). ([api.data.gov#395](https://github.com/18F/api.data.gov/issues/395))
+
 ## 0.14.3 (2017-07-13)
 
 This update contains a few bug fixes and some potential security fixes. Upgrading is recommended.
