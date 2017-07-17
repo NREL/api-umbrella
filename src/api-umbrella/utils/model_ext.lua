@@ -22,15 +22,19 @@ local function values_for_table(model_class, values)
   return column_values
 end
 
+function _M.add_error(errors, field, message)
+  if not errors[field] then
+    errors[field] = {}
+  end
+
+  table.insert(errors[field], message)
+end
+
 function _M.validate_field(errors, values, field, validator, message)
   local value = values[field]
   local ok = validator(value)
   if not ok then
-    if not errors[field] then
-      errors[field] = {}
-    end
-
-    table.insert(errors[field], message)
+    _M.add_error(errors, field, message)
   end
 end
 
@@ -43,14 +47,18 @@ function _M.create(options)
     end
 
     if options["before_validate_on_create"] then
-      options["before_validate_on_create"](values)
+      options["before_validate_on_create"](self, values)
     end
 
     if options["validate"] then
-      local errors = options["validate"](values)
+      local errors = options["validate"](self, values)
       if not is_empty(errors) then
         return coroutine.yield("error", errors)
       end
+    end
+
+    if options["after_validate"] then
+      options["after_validate"](self, values)
     end
 
     local new_record = Model.create(model_class, values_for_table(model_class, values), opts)
@@ -70,10 +78,14 @@ function _M.update(options)
     db.query("START TRANSACTION")
 
     if options["validate"] then
-      local errors = options["validate"](values)
+      local errors = options["validate"](self, values)
       if not is_empty(errors) then
         return coroutine.yield("error", errors)
       end
+    end
+
+    if options["after_validate"] then
+      options["after_validate"](self, values)
     end
 
     local return_value = Model.update(self, values_for_table(model_class, values), opts)

@@ -10,6 +10,19 @@ local capture_errors_json = lapis_helpers.capture_errors_json
 
 local _M = {}
 
+local function set_current_admin(self)
+  local current_admin
+  local auth_token = ngx.var.http_x_admin_auth_token
+  if auth_token then
+    local admin = Admin:find({ authentication_token_hash = auth_token })
+    if not admin:is_access_locked() then
+      current_admin = admin
+    end
+  end
+
+  self.current_admin = current_admin
+end
+
 function _M.index(self)
   return lapis_datatables.index(self, Admin, {
     search_fields = {

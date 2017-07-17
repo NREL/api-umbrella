@@ -1,20 +1,27 @@
 include(${CMAKE_SOURCE_DIR}/build/cmake/luarocks_install.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/opm_install.cmake)
 
 # LuaRock app dependencies
 luarocks_install(argparse ${LUAROCK_ARGPARSE_VERSION} ${LUAROCK_ARGPARSE_HASH})
+luarocks_install(bcrypt ${LUAROCK_BCRYPT_VERSION} ${LUAROCK_BCRYPT_HASH})
 luarocks_install(inspect ${LUAROCK_INSPECT_VERSION} ${LUAROCK_INSPECT_HASH})
-luarocks_install(libcidr-ffi ${LUAROCK_LIBCIDR_VERSION} ${LUAROCK_LIBCIDR_HASH} CIDR_DIR=${LUA_PREFIX} libcidr)
 luarocks_install(lua-cmsgpack ${LUAROCK_CMSGPACK_VERSION} ${LUAROCK_CMSGPACK_HASH})
 luarocks_install(lua-iconv ${LUAROCK_ICONV_VERSION} ${LUAROCK_ICONV_HASH})
 luarocks_install(lua-resty-auto-ssl ${LUAROCK_RESTY_AUTO_SSL_VERSION} ${LUAROCK_RESTY_AUTO_SSL_HASH})
-luarocks_install(lua-resty-http ${LUAROCK_RESTY_HTTP_VERSION} ${LUAROCK_RESTY_HTTP_HASH})
 luarocks_install(lua-resty-uuid ${LUAROCK_RESTY_UUID_VERSION} ${LUAROCK_RESTY_UUID_HASH})
-luarocks_install(lua-resty-validation ${LUAROCK_RESTY_VALIDATION_VERSION} ${LUAROCK_RESTY_VALIDATION_HASH})
 luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION} ${LUAROCK_LUAPOSIX_HASH})
 luarocks_install(luatz ${LUAROCK_LUATZ_VERSION} ${LUAROCK_LUATZ_HASH})
 luarocks_install(lustache ${LUAROCK_LUSTACHE_VERSION} ${LUAROCK_LUSTACHE_HASH})
 luarocks_install(lyaml ${LUAROCK_LYAML_VERSION} ${LUAROCK_LYAML_HASH})
 luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION} ${LUAROCK_PENLIGHT_HASH})
+
+# OPM app dependencies
+opm_install(lua-libcidr-ffi GUI ${OPM_LIBCIDR_VERSION} ${OPM_LIBCIDR_HASH} libcidr)
+opm_install(lua-resty-hmac jkeys089 ${OPM_RESTY_HMAC_VERSION} ${OPM_RESTY_HMAC_HASH})
+opm_install(lua-resty-http pintsized ${OPM_RESTY_HTTP_VERSION} ${OPM_RESTY_HTTP_HASH})
+opm_install(lua-resty-session bungle ${OPM_RESTY_SESSION_VERSION} ${OPM_RESTY_SESSION_HASH})
+opm_install(lua-resty-validation bungle ${OPM_RESTY_VALIDATION_VERSION} ${OPM_RESTY_VALIDATION_HASH})
+opm_install(lua-basex un-def ${OPM_BASEX_VERSION} ${OPM_BASEX_HASH})
 
 ExternalProject_Add(
   luarock_lapis
@@ -95,20 +102,24 @@ set(
   lua_resty_logger_socket
   lua_resty_shcache
   luarock_argparse
+  luarock_bcrypt
   luarock_inspect
   luarock_lapis
-  luarock_libcidr-ffi
   luarock_lua-cmsgpack
   luarock_lua-iconv
   luarock_lua-resty-auto-ssl
-  luarock_lua-resty-http
   luarock_lua-resty-uuid
-  luarock_lua-resty-validation
   luarock_luaposix
   luarock_luatz
   luarock_lustache
   luarock_lyaml
   luarock_penlight
+  opm_lua-libcidr-ffi
+  opm_lua-resty-hmac
+  opm_lua-resty-http
+  opm_lua-resty-session
+  opm_lua-resty-validation
+  opm_lua-basex
 )
 
 # Also depend on the internal stamp files used by ExternalProject_Add, since

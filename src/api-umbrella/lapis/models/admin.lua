@@ -1,21 +1,26 @@
 local Model = require("lapis.db.model").Model
 local _ = require("resty.gettext").gettext
 local cjson = require "cjson"
+local bcrypt = require "bcrypt"
 local db = require "lapis.db"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local validation = require "resty.validation"
+local types = require "pl.types"
 
+local is_empty = types.is_empty
 local db_null = db.NULL
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
-local function before_validate_on_create(values)
-  values["authentication_token"] = random_token(40)
+local function before_validate_on_create(self, values)
+  local authentication_token = random_token(40)
+  values["authentication_token_hash"] = authentication_token
+  values["authentication_token_encrypted"] = authentication_token
 end
 
-local function validate(values)
+local function validate(self, values)
   local errors = {}
   validate_field(errors, values, "username", validation.string:minlen(1), _("can't be blank"))
 
@@ -26,7 +31,26 @@ local function validate(values)
     validate_field(errors, values, "group_ids", validation.table:minlen(1), _("must belong to at least one group or be a superuser"))
   end
 
+  if not is_empty(values["password"]) or not is_empty(values["password_confirmation"]) then
+    validate_field(errors, values, "password", validation.string:minlen(1), _("can't be blank"))
+    validate_field(errors, values, "password_confirmation", validation.string:minlen(1), _("can't be blank"))
+    validate_field(errors, values, "password", validation.string:equals(values["password_confirmation"]), _("doesn't match password"))
+
+    validate_field(errors, values, "current_password", validation.string:minlen(1), _("can't be blank"))
+    if not is_empty(values["current_password"]) then
+      if not self:is_valid_password(values["current_password"]) then
+        model_ext.add_error(errors, "current_password", _("is invalid"))
+      end
+    end
+  end
+
   return errors
+end
+
+local function after_validate(self, values)
+  if not is_empty(values["password"]) then
+    values["password_hash"] = bcrypt.digest(values["password"], 11)
+  end
 end
 
 local function after_save(self, values)
@@ -40,6 +64,7 @@ end
 local save_options = {
   before_validate_on_create = before_validate_on_create,
   validate = validate,
+  after_validate = after_validate,
   after_save = after_save,
 }
 
@@ -54,6 +79,34 @@ local Admin = Model:extend("admins", {
   },
 
   update = model_ext.update(save_options),
+
+  is_valid_password = function(self, password)
+    if self.password_hash and password and bcrypt.verify(password, self.password_hash) then
+      return true
+    else
+      return false
+    end
+  end,
+
+  is_access_locked = function(self)
+    if self.locked_at and not self:is_lock_expired() then
+      return true
+    else
+      return false
+    end
+  end,
+
+  is_lock_expired = function(self)
+    if self.locked_at and self.locked_at < 0 then -- TODO
+      return true
+    else
+      return false
+    end
+  end,
+
+  authentication_token_decrypted = function(self)
+    return self.authentication_token_encrypted
+  end,
 
   group_ids = function(self)
     local group_ids = {}

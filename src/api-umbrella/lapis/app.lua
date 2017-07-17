@@ -21,6 +21,7 @@ app:before_filter(function()
 end)
 
 require("api-umbrella.lapis.actions.admin.sessions")(app)
+require("api-umbrella.lapis.actions.admin.registrations")(app)
 require("api-umbrella.lapis.actions.v1.admins")(app)
 require("api-umbrella.lapis.actions.v1.admin_groups")(app)
 require("api-umbrella.lapis.actions.v1.admin_permissions")(app)

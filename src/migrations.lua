@@ -42,11 +42,12 @@ return {
         name varchar(255),
         notes text,
         superuser boolean NOT NULL DEFAULT FALSE,
-        authentication_token varchar(40) NOT NULL,
+        authentication_token_hash varchar(64) NOT NULL,
+        authentication_token_encrypted varchar(40) NOT NULL,
         current_sign_in_provider varchar(100),
         last_sign_in_provider varchar(100),
-        encrypted_password varchar(60),
-        reset_password_token varchar(40),
+        password_hash varchar(60),
+        reset_password_token_hash varchar(64),
         reset_password_sent_at timestamp with time zone,
         remember_created_at timestamp with time zone,
         sign_in_count integer NOT NULL DEFAULT 0,
@@ -55,7 +56,7 @@ return {
         current_sign_in_ip inet,
         last_sign_in_ip inet,
         failed_attempts integer NOT NULL DEFAULT 0,
-        unlock_token varchar(40),
+        unlock_token_hash varchar(64),
         locked_at timestamp with time zone,
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
         created_by varchar(255) NOT NULL DEFAULT current_app_user(),
@@ -64,9 +65,10 @@ return {
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON admins(username)")
-    db.query("CREATE UNIQUE INDEX ON admins(authentication_token)")
-    db.query("CREATE UNIQUE INDEX ON admins(reset_password_token)")
-    db.query("CREATE UNIQUE INDEX ON admins(unlock_token)")
+    db.query("CREATE UNIQUE INDEX ON admins(authentication_token_hash)")
+    db.query("CREATE UNIQUE INDEX ON admins(authentication_token_encrypted)")
+    db.query("CREATE UNIQUE INDEX ON admins(reset_password_token_hash)")
+    db.query("CREATE UNIQUE INDEX ON admins(unlock_token_hash)")
     db.query("CREATE TRIGGER admins_updated_at BEFORE UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE set_updated()")
     db.query("SELECT audit.audit_table('admins')")
 
@@ -226,6 +228,19 @@ return {
     ]])
     db.query("CREATE TRIGGER website_backends_updated_at BEFORE UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE set_updated()")
     db.query("SELECT audit.audit_table('website_backends')")
+
+    db.query([[
+      CREATE TABLE sessions(
+        id varchar(40) PRIMARY KEY,
+        expires timestamp with time zone,
+        encrypted_data TEXT NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+      )
+    ]])
+    db.query("CREATE TRIGGER sessions_updated_at BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE set_updated()")
 
     db.query("GRANT USAGE ON SCHEMA public TO api_umbrella_app_user")
     db.query("GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO api_umbrella_app_user")

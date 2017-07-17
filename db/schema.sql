@@ -603,11 +603,12 @@ CREATE TABLE admins (
     name character varying(255),
     notes text,
     superuser boolean DEFAULT false NOT NULL,
-    authentication_token character varying(40) NOT NULL,
+    authentication_token_hash character varying(64) NOT NULL,
+    authentication_token_encrypted character varying(40) NOT NULL,
     current_sign_in_provider character varying(100),
     last_sign_in_provider character varying(100),
-    encrypted_password character varying(60),
-    reset_password_token character varying(40),
+    password_hash character varying(60),
+    reset_password_token_hash character varying(64),
     reset_password_sent_at timestamp with time zone,
     remember_created_at timestamp with time zone,
     sign_in_count integer DEFAULT 0 NOT NULL,
@@ -616,7 +617,7 @@ CREATE TABLE admins (
     current_sign_in_ip inet,
     last_sign_in_ip inet,
     failed_attempts integer DEFAULT 0 NOT NULL,
-    unlock_token character varying(40),
+    unlock_token_hash character varying(64),
     locked_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
@@ -726,6 +727,21 @@ CREATE SEQUENCE published_config_id_seq
 --
 
 ALTER SEQUENCE published_config_id_seq OWNED BY published_config.id;
+
+
+--
+-- Name: sessions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE sessions (
+    id character varying(40) NOT NULL,
+    expires timestamp with time zone,
+    encrypted_data text NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
 
 
 --
@@ -865,6 +881,14 @@ ALTER TABLE ONLY published_config
 
 
 --
+-- Name: sessions sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY sessions
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: website_backends website_backends_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -905,24 +929,31 @@ CREATE INDEX admin_permissions_display_order_idx ON admin_permissions USING btre
 
 
 --
--- Name: admins_authentication_token_idx; Type: INDEX; Schema: public; Owner: -
+-- Name: admins_authentication_token_encrypted_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX admins_authentication_token_idx ON admins USING btree (authentication_token);
-
-
---
--- Name: admins_reset_password_token_idx; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX admins_reset_password_token_idx ON admins USING btree (reset_password_token);
+CREATE UNIQUE INDEX admins_authentication_token_encrypted_idx ON admins USING btree (authentication_token_encrypted);
 
 
 --
--- Name: admins_unlock_token_idx; Type: INDEX; Schema: public; Owner: -
+-- Name: admins_authentication_token_hash_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX admins_unlock_token_idx ON admins USING btree (unlock_token);
+CREATE UNIQUE INDEX admins_authentication_token_hash_idx ON admins USING btree (authentication_token_hash);
+
+
+--
+-- Name: admins_reset_password_token_hash_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX admins_reset_password_token_hash_idx ON admins USING btree (reset_password_token_hash);
+
+
+--
+-- Name: admins_unlock_token_hash_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX admins_unlock_token_hash_idx ON admins USING btree (unlock_token_hash);
 
 
 --
@@ -1171,6 +1202,13 @@ CREATE TRIGGER published_config_updated_at BEFORE UPDATE ON published_config FOR
 
 
 --
+-- Name: sessions sessions_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER sessions_updated_at BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
 -- Name: website_backends website_backends_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1314,6 +1352,13 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE published_config TO api_umbrella_app_
 --
 
 GRANT SELECT,UPDATE ON SEQUENCE published_config_id_seq TO api_umbrella_app_user;
+
+
+--
+-- Name: sessions; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE sessions TO api_umbrella_app_user;
 
 
 --

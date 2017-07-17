@@ -1,0 +1,30 @@
+<h1>Welcome!</h1>
+
+<div class="alert alert-info">
+  It looks like you're setting up API Umbrella for the first time. Create your first admin account to get started.
+</div>
+
+<div class="login-container">
+  <form novalidate="novalidate" class="simple_form new_admin" id="new_admin" action="/admins" accept-charset="UTF-8" method="post">
+    <input type="hidden" name="csrf_token" value="<%= csrf_token %>" />
+    <div class="form-inputs">
+      <div class="form-group string required admin_username">
+        <label class="control-label string required" for="admin_username">Email</label>
+        <input class="form-control string required" autofocus="autofocus" required="required" aria-required="true" type="text" name="admin[username]" id="admin_username" />
+      </div>
+      <div class="form-group password required admin_password">
+        <label class="control-label password required" for="admin_password">Password</label>
+        <input class="form-control password required" required="required" aria-required="true" type="password" name="admin[password]" id="admin_password" />
+        <p class="help-block">14 characters minimum</p>
+      </div>
+      <div class="form-group password required admin_password_confirmation">
+        <label class="control-label password required" for="admin_password_confirmation">Password Confirmation</label>
+        <input class="form-control password required" required="required" aria-required="true" type="password" name="admin[password_confirmation]" id="admin_password_confirmation" />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <input type="submit" name="commit" value="Sign up" class="btn btn-default" />
+    </div>
+  </form>
+</div>
