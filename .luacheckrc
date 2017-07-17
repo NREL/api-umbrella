@@ -1,3 +1,5 @@
+std = "ngx_lua"
+
 globals = {
   "DEBUG",
   "WORKER_GROUP_ID",
@@ -6,8 +8,6 @@ globals = {
   "config",
   "elasticsearch_templates",
   "inspect",
-  "ndk",
-  "ngx",
   "user_agent_parser_data",
 }
 

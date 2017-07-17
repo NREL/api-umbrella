@@ -21,14 +21,14 @@ gem "minitest-ci", "~> 3.2.0"
 gem "rubocop", "~> 0.49.1", :require => false
 
 # Running background processes
-gem "childprocess", "~> 0.7.0"
+gem "childprocess", "~> 0.7.1"
 
 # Making HTTP requests
 gem "typhoeus", "~> 1.1.2"
 
 # JSON parsing
 gem "multi_json", "~> 1.12.1"
-gem "oj", "~> 3.1.3"
+gem "oj", "~> 3.3.2"
 
 # Database libraries
 gem "activerecord", "~> 5.1.1", :require => "active_record"
@@ -50,7 +50,7 @@ gem "rails_compatible_cookies_utils", "~> 0.1.0"
 gem "addressable", "~> 2.5.1"
 
 # Browser/JavaScript integration tests
-gem "capybara", "~> 2.14.3"
+gem "capybara", "~> 2.14.4"
 # Use fork to fix failure messages:
 # https://github.com/wojtekmach/minitest-capybara/pull/17
 gem "minitest-capybara", "~> 0.8.2", :git => "https://github.com/GUI/minitest-capybara.git"
@@ -65,13 +65,13 @@ gem "capybara-screenshot", "~> 1.0.14"
 gem "nokogiri", "~> 1.8.0"
 
 # Useful additions
-gem "activesupport", "~> 5.1.1"
+gem "activesupport", "~> 5.1.2"
 
 # Path-based setting of hashes
 gem "lazyhash", "~> 0.1.1"
 
 # Generating fake strings and data.
-gem "faker", "~> 1.7.2"
+gem "faker", "~> 1.8.3"
 
 # Concurrency helpers.
 gem "concurrent-ruby", "~> 1.0.5"
@@ -86,4 +86,4 @@ gem "bcrypt", "~> 3.1.11"
 gem "rainbow", "~> 2.2.1"
 
 # Debug printing
-gem "awesome_print", "~> 1.7.0"
+gem "awesome_print", "~> 1.8.0"

@@ -23,6 +23,7 @@ if [ -f /etc/redhat-release ]; then
     libffi
     libuuid
     libyaml
+    logrotate
     ncurses-libs
     openssl
     pcre
@@ -138,6 +139,7 @@ elif [ -f /etc/debian_version ]; then
     libpcre3
     libuuid1
     libyaml-0-2
+    logrotate
     openssl
     zlib1g
 

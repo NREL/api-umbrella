@@ -204,7 +204,12 @@ class Admin
 
   def serializable_hash(options = nil)
     options ||= {}
-    options[:force_except] = options.fetch(:force_except, []) + [:authentication_token]
+    options[:force_except] = options.fetch(:force_except, []) + [
+      :authentication_token,
+      :encrypted_password,
+      :reset_password_token,
+      :unlock_token,
+    ]
     hash = super(options)
     hash["group_names"] = self.group_names
     hash

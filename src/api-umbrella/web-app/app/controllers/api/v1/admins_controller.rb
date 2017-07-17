@@ -17,11 +17,9 @@ class Api::V1::AdminsController < Api::V1::BaseController
 
     if(params["search"] && params["search"]["value"].present?)
       @admins = @admins.or([
-        { :first_name => /#{Regexp.escape(params["search"]["value"])}/i },
-        { :last_name => /#{Regexp.escape(params["search"]["value"])}/i },
+        { :name => /#{Regexp.escape(params["search"]["value"])}/i },
         { :email => /#{Regexp.escape(params["search"]["value"])}/i },
         { :username => /#{Regexp.escape(params["search"]["value"])}/i },
-        { :authentication_token => /#{Regexp.escape(params["search"]["value"])}/i },
         { :_id => params[:search][:value].downcase },
       ])
     end
