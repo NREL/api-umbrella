@@ -1,4 +1,5 @@
 local Admin = require "api-umbrella.lapis.models.admin"
+local _ = require("resty.gettext").gettext
 local cjson = require "cjson"
 local respond_to = require("lapis.application").respond_to
 local ApiUser = require "api-umbrella.lapis.models.api_user"
@@ -14,7 +15,7 @@ local json_null = cjson.null
 local _M = {}
 
 local session = require("resty.session").new({
-  storage = "shm",
+  -- storage = "shm",
   name = "_api_umbrella_session",
   secret = config["web"]["rails_secret_token"],
   random = {
@@ -45,6 +46,7 @@ function _M.new(self)
   ngx.log(ngx.ERR, "SESSION DATA: " .. inspect(session.data))
   ngx.log(ngx.ERR, "SESSION DATA: " .. inspect(session.data.name))
 
+  self.admin_params = {}
   return { render = "admin.sessions.new" }
 end
 
@@ -52,12 +54,13 @@ function _M.create(self)
   csrf.assert_token(self, self.cookies.csrf_token)
 
   local admin_id
-  if self.params["admin"] then
-    local username = self.params["admin"]["username"]
-    local password = self.params["admin"]["password"]
+  local admin_params = _M.admin_params(self)
+  if admin_params then
+    local username = admin_params["username"]
+    local password = admin_params["password"]
     if not is_empty(username) and not is_empty(password) then
       local admin = Admin:find({ username = username })
-      if admin:is_valid_password(password) then
+      if admin and admin:is_valid_password(password) then
         admin_id = admin.id
       end
     end
@@ -70,6 +73,8 @@ function _M.create(self)
 
     return { redirect_to = "/admin/" }
   else
+    self.admin_params = admin_params
+    self.flash["warning"] = _("Invalid email or password.")
     return { render = "admin.sessions.new" }
   end
 end
@@ -113,9 +118,29 @@ function _M.auth(self)
   return lapis_json(self, response)
 end
 
+function _M.admin_params(self)
+  local params = {}
+  if self.params and self.params["admin"] then
+    local input = self.params["admin"]
+    params = {
+      username = input["username"],
+      password = input["password"],
+    }
+  end
+
+  return params
+end
+
+function _M.first_time_setup_check(self)
+  if Admin.needs_first_account() then
+    return self:write({ redirect_to = "/admins/signup" })
+  end
+end
+
 return function(app)
   app:match("/admin/login(.:format)", respond_to({
     before = function(self)
+      _M.first_time_setup_check(self)
       set_current_admin(self)
       if self.current_admin then
         ngx.log(ngx.ERR, "REDIRECT TO ADMIN")

@@ -36,10 +36,12 @@ local function validate(self, values)
     validate_field(errors, values, "password_confirmation", validation.string:minlen(1), _("can't be blank"))
     validate_field(errors, values, "password", validation.string:equals(values["password_confirmation"]), _("doesn't match password"))
 
-    validate_field(errors, values, "current_password", validation.string:minlen(1), _("can't be blank"))
-    if not is_empty(values["current_password"]) then
-      if not self:is_valid_password(values["current_password"]) then
-        model_ext.add_error(errors, "current_password", _("is invalid"))
+    if self and self.id then
+      validate_field(errors, values, "current_password", validation.string:minlen(1), _("can't be blank"))
+      if not is_empty(values["current_password"]) then
+        if not self:is_valid_password(values["current_password"]) then
+          model_ext.add_error(errors, "current_password", _("is invalid"))
+        end
       end
     end
   end
@@ -164,5 +166,14 @@ local Admin = Model:extend("admins", {
 })
 
 Admin.create = model_ext.create(save_options)
+
+Admin.needs_first_account = function()
+  local needs = false
+  if config["web"]["admin"]["auth_strategies"]["_local_enabled?"] and Admin:count() == 0 then
+    needs = true
+  end
+
+  return needs
+end
 
 return Admin

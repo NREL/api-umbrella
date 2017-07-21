@@ -10,7 +10,7 @@
     <div class="form-inputs">
       <div class="form-group string required admin_username">
         <label class="control-label string required" for="admin_username">Email</label>
-        <input class="form-control string required" autofocus="autofocus" required="required" aria-required="true" type="text" name="admin[username]" id="admin_username" />
+        <input class="form-control string required" autofocus="autofocus" required="required" aria-required="true" type="text" name="admin[username]" id="admin_username" value="<%= admin_params["username"] or "" %>" />
       </div>
       <div class="form-group password required admin_password">
         <label class="control-label password required" for="admin_password">Password</label>

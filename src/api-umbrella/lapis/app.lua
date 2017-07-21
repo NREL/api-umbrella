@@ -15,9 +15,11 @@ local app = lapis.Application()
 app:enable("etlua")
 app.layout = require "views.layout"
 
-app:before_filter(function()
+app:before_filter(function(self)
   db.query("SET application.name = 'admin'")
   db.query("SET application.\"user\" = 'admin'")
+
+  self.flash = {}
 end)
 
 require("api-umbrella.lapis.actions.admin.sessions")(app)

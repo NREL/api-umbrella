@@ -8,6 +8,13 @@
   </head>
   <body>
     <div class="login">
+      <% if flash and next(flash) ~= nil then %>
+        <% for flash_type, message in pairs(flash) do %>
+          <div class="alert alert-<%= flash_type %>">
+            <%= message %>
+          </div>
+        <% end %>
+      <% end %>
       <% content_for("inner") %>
     </div>
   </body>
