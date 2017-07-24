@@ -86,6 +86,7 @@ else()
 
   include(${CMAKE_SOURCE_DIR}/build/cmake/versions.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/elasticsearch.cmake)
+  include(${CMAKE_SOURCE_DIR}/build/cmake/emailrelay.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/libcidr.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/libgeoip.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/mongodb.cmake)

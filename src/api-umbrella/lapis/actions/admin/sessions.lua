@@ -1,16 +1,14 @@
 local Admin = require "api-umbrella.lapis.models.admin"
-local _ = require("resty.gettext").gettext
-local cjson = require "cjson"
-local respond_to = require("lapis.application").respond_to
 local ApiUser = require "api-umbrella.lapis.models.api_user"
 local array_includes = require "api-umbrella.utils.array_includes"
+local csrf = require "lapis.csrf"
+local flash = require "api-umbrella.utils.lapis_flash"
+local is_empty = require("pl.types").is_empty
+local json_null = require("cjson").null
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local random_token = require "api-umbrella.utils.random_token"
-local csrf = require "lapis.csrf"
-local types = require "pl.types"
-
-local is_empty = types.is_empty
-local json_null = cjson.null
+local respond_to = require("lapis.application").respond_to
+local t = require("resty.gettext").gettext
 
 local _M = {}
 
@@ -23,7 +21,7 @@ local session = require("resty.session").new({
   },
 })
 
-local function set_current_admin(self)
+local function set_current_admin_from_session(self)
   local current_admin
 
   session:open()
@@ -60,7 +58,7 @@ function _M.create(self)
     local password = admin_params["password"]
     if not is_empty(username) and not is_empty(password) then
       local admin = Admin:find({ username = username })
-      if admin and admin:is_valid_password(password) then
+      if admin and not admin:is_access_locked() and admin:is_valid_password(password) then
         admin_id = admin.id
       end
     end
@@ -74,13 +72,12 @@ function _M.create(self)
     return { redirect_to = "/admin/" }
   else
     self.admin_params = admin_params
-    self.flash["warning"] = _("Invalid email or password.")
+    flash.now(self, "warning", t("Invalid email or password."))
     return { render = "admin.sessions.new" }
   end
 end
 
-function _M.destroy()
-  set_current_admin(self)
+function _M.destroy(self)
   if self.current_admin then
     session:destroy()
     return { status = 204 }
@@ -88,7 +85,7 @@ function _M.destroy()
 end
 
 function _M.auth(self)
-  set_current_admin(self)
+  set_current_admin_from_session(self)
 
   local response = {
     authenticated = false,
@@ -111,9 +108,11 @@ function _M.auth(self)
     response["admin"]["id"] = admin["id"] or json_null
     response["admin"]["superuser"] = admin["superuser"] or json_null
     response["admin"]["username"] = admin["username"] or json_null
-    response["api_key"] = api_user.api_key or json_null
+    response["api_key"] = api_user:api_key_decrypted() or json_null
     response["admin_auth_token"] = current_admin:authentication_token_decrypted() or json_null
   end
+
+  ngx.log(ngx.ERR, "AUTH: " .. inspect(response))
 
   return lapis_json(self, response)
 end
@@ -141,7 +140,6 @@ return function(app)
   app:match("/admin/login(.:format)", respond_to({
     before = function(self)
       _M.first_time_setup_check(self)
-      set_current_admin(self)
       if self.current_admin then
         ngx.log(ngx.ERR, "REDIRECT TO ADMIN")
         return self:write({ redirect_to = "/admin/" })

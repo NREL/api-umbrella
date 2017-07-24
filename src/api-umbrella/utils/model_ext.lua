@@ -1,12 +1,9 @@
-local db = require "lapis.db"
 local Model = require("lapis.db.model").Model
-local uuid = require "resty.uuid"
-local types = require "pl.types"
+local db = require "lapis.db"
+local is_empty = require("pl.types").is_empty
+local uuid_generate = require("resty.uuid").generate_random
 
 require "resty.validation.ngx"
-
-local uuid_generate = uuid.generate_random
-local is_empty = types.is_empty
 
 local _M = {}
 
@@ -47,18 +44,22 @@ function _M.create(options)
     end
 
     if options["before_validate_on_create"] then
-      options["before_validate_on_create"](self, values)
+      options["before_validate_on_create"](nil, values)
+    end
+
+    if options["before_validate"] then
+      options["before_validate"](nil, values)
     end
 
     if options["validate"] then
-      local errors = options["validate"](self, values)
+      local errors = options["validate"](nil, values)
       if not is_empty(errors) then
         return coroutine.yield("error", errors)
       end
     end
 
     if options["after_validate"] then
-      options["after_validate"](self, values)
+      options["after_validate"](nil, values)
     end
 
     local new_record = Model.create(model_class, values_for_table(model_class, values), opts)
@@ -76,6 +77,10 @@ function _M.update(options)
   return function(self, values, opts)
     local model_class = self.__class
     db.query("START TRANSACTION")
+
+    if options["before_validate"] then
+      options["before_validate"](self, values)
+    end
 
     if options["validate"] then
       local errors = options["validate"](self, values)

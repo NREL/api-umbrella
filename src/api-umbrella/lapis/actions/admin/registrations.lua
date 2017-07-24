@@ -1,10 +1,8 @@
 local Admin = require "api-umbrella.lapis.models.admin"
-local respond_to = require("lapis.application").respond_to
-local _ = require("resty.gettext").gettext
 local capture_errors = require("lapis.application").capture_errors
-local db = require "lapis.db"
-
-local db_null = db.NULL
+local flash = require "api-umbrella.utils.lapis_flash"
+local respond_to = require("lapis.application").respond_to
+local t = require("resty.gettext").gettext
 
 local _M = {}
 
@@ -14,11 +12,8 @@ function _M.new(self)
 end
 
 function _M.create(self)
-  local admin_params = _M.admin_params(self)
-  local admin = assert(Admin:create(admin_params))
-  local response = {
-    admin = admin:as_json(),
-  }
+  self.admin_params = _M.admin_params(self)
+  assert(Admin:create(self.admin_params))
 
   return { redirect_to = "/admin/#/login" }
 end
@@ -35,7 +30,6 @@ function _M.admin_params(self)
       -- Make the first admin a superuser on initial setup.
       superuser = true,
     }
-    ngx.log(ngx.NOTICE, "INPUTS: " .. inspect(params))
   end
 
   return params
@@ -43,7 +37,7 @@ end
 
 function _M.first_time_setup_check(self)
   if not Admin.needs_first_account() then
-    self.flash["notice"] = _("An initial admin account already exists.")
+    flash.session(self, "info", t("An initial admin account already exists."))
     return self:write({ redirect_to = "/admin/" })
   end
 end
@@ -60,8 +54,7 @@ return function(app)
       _M.first_time_setup_check(self)
     end,
     POST = capture_errors({
-      on_error = function(self)
-        ngx.log(ngx.ERR, "ERRORS: " .. inspect(self.errors))
+      on_error = function()
         return { render = "admin.registrations.new" }
       end,
       _M.create,

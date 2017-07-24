@@ -43,7 +43,8 @@ return {
         notes text,
         superuser boolean NOT NULL DEFAULT FALSE,
         authentication_token_hash varchar(64) NOT NULL,
-        authentication_token_encrypted varchar(40) NOT NULL,
+        authentication_token_encrypted varchar(76) NOT NULL,
+        authentication_token_encrypted_iv varchar(12) NOT NULL,
         current_sign_in_provider varchar(100),
         last_sign_in_provider varchar(100),
         password_hash varchar(60),
@@ -66,7 +67,6 @@ return {
     ]])
     db.query("CREATE UNIQUE INDEX ON admins(username)")
     db.query("CREATE UNIQUE INDEX ON admins(authentication_token_hash)")
-    db.query("CREATE UNIQUE INDEX ON admins(authentication_token_encrypted)")
     db.query("CREATE UNIQUE INDEX ON admins(reset_password_token_hash)")
     db.query("CREATE UNIQUE INDEX ON admins(unlock_token_hash)")
     db.query("CREATE TRIGGER admins_updated_at BEFORE UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE set_updated()")
@@ -174,7 +174,10 @@ return {
     db.query([[
       CREATE TABLE api_users(
         id uuid PRIMARY KEY,
-        api_key varchar(40) NOT NULL,
+        api_key_hash varchar(64) NOT NULL,
+        api_key_encrypted varchar(76) NOT NULL,
+        api_key_encrypted_iv varchar(12) NOT NULL,
+        api_key_prefix varchar(10) NOT NULL,
         email varchar(255) NOT NULL,
         email_verified boolean NOT NULL DEFAULT FALSE,
         first_name varchar(255),
@@ -196,7 +199,7 @@ return {
         updated_by varchar(255) NOT NULL DEFAULT current_app_user()
       )
     ]])
-    db.query("CREATE UNIQUE INDEX ON api_users(api_key)")
+    db.query("CREATE UNIQUE INDEX ON api_users(api_key_hash)")
     db.query("CREATE TRIGGER api_users_updated_at BEFORE UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE set_updated()")
     db.query("SELECT audit.audit_table('api_users')")
 

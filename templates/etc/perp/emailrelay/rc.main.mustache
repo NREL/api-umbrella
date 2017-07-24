@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# Redirect stderr to stdout
+exec 2>&1
+
+if [ "${1}" = "start" ]; then
+  echo "starting ${2}..."
+  api_umbrella_user="{{user}}"
+
+  run_args=()
+  if [ -n "$api_umbrella_user" ]; then
+    run_args+=("-u" "$api_umbrella_user")
+  fi
+
+  exec \
+    runtool "${run_args[@]}" \
+    emailrelay \
+      --port="{{emailrelay.port}}" \
+      --spool-dir="{{db_dir}}/emailrelay" \
+      --no-daemon \
+      --log \
+      --no-syslog \
+      --poll=0 \
+      --forward-to="smtp.gmail.com:587" \
+      --client-tls --client-auth=/tmp/emailrelay.txt \
+      --verbose
+fi
+
+exit 0

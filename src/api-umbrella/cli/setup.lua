@@ -97,6 +97,7 @@ local function prepare()
     config["tmp_dir"],
     path.join(config["db_dir"], "elasticsearch"),
     path.join(config["etc_dir"], "elasticsearch_scripts"),
+    path.join(config["db_dir"], "emailrelay"),
     path.join(config["db_dir"], "mongodb"),
     path.join(config["db_dir"], "rsyslog"),
     path.join(config["etc_dir"], "trafficserver/snapshots"),

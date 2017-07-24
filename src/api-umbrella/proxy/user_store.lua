@@ -5,6 +5,7 @@ local cmsgpack = require "cmsgpack"
 local invert_table = require "api-umbrella.utils.invert_table"
 local lrucache = require "resty.lrucache.pureffi"
 local pg_utils = require "api-umbrella.utils.pg_utils"
+local hmac = require "api-umbrella.utils.hmac"
 local shcache = require "shcache"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
@@ -13,7 +14,10 @@ local cache_computed_settings = utils.cache_computed_settings
 local is_empty = types.is_empty
 
 local function lookup_user(api_key)
-  local result, err = pg_utils.query("SELECT * FROM api_users WHERE api_key = " .. pg_utils.escape_literal(api_key))
+  ngx.log(ngx.ERR, "KEY: " .. inspect(api_key))
+  local api_key_hash = hmac(api_key)
+  ngx.log(ngx.ERR, "HASH: " .. inspect(api_key_hash))
+  local result, err = pg_utils.query("SELECT * FROM api_users WHERE api_key_hash = " .. pg_utils.escape_literal(api_key_hash))
   if not result then
     ngx.log(ngx.ERR, "failed to fetch user from database: ", err)
     return nil

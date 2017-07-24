@@ -19,9 +19,33 @@ luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION} ${LUAROCK_PENLIGHT_HASH})
 opm_install(lua-libcidr-ffi GUI ${OPM_LIBCIDR_VERSION} ${OPM_LIBCIDR_HASH} libcidr)
 opm_install(lua-resty-hmac jkeys089 ${OPM_RESTY_HMAC_VERSION} ${OPM_RESTY_HMAC_HASH})
 opm_install(lua-resty-http pintsized ${OPM_RESTY_HTTP_VERSION} ${OPM_RESTY_HTTP_HASH})
+opm_install(lua-resty-nettle bungle ${OPM_RESTY_NETTLE_VERSION} ${OPM_RESTY_NETTLE_HASH})
 opm_install(lua-resty-session bungle ${OPM_RESTY_SESSION_VERSION} ${OPM_RESTY_SESSION_HASH})
 opm_install(lua-resty-validation bungle ${OPM_RESTY_VALIDATION_VERSION} ${OPM_RESTY_VALIDATION_HASH})
 opm_install(lua-basex un-def ${OPM_BASEX_VERSION} ${OPM_BASEX_HASH})
+
+ExternalProject_Add(
+  luarock_lua-resty-smtp
+  DEPENDS luarocks
+  URL https://github.com/duhoobo/lua-resty-smtp/archive/${LUAROCK_RESTY_SMTP_VERSION}.tar.gz
+  URL_HASH MD5=${LUAROCK_RESTY_SMTP_HASH}
+  BUILD_IN_SOURCE 1
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${VENDOR_DIR} make rockspec/resty.smtp-scm-1.rockspec
+)
+
+ExternalProject_Add(
+  luarock_luaossl
+  DEPENDS luarocks
+  URL https://github.com/wahern/luaossl/archive/${LUAROCK_LUAOSSL_VERSION}.tar.gz
+  URL_HASH MD5=${LUAROCK_LUAOSSL_HASH}
+  BUILD_IN_SOURCE 1
+  PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/build/patches/luaossl.patch
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${VENDOR_DIR} make luaossl-git-0.rockspec
+)
 
 ExternalProject_Add(
   luarock_lapis
@@ -104,10 +128,12 @@ set(
   luarock_argparse
   luarock_bcrypt
   luarock_inspect
+  luarock_luaossl
   luarock_lapis
   luarock_lua-cmsgpack
   luarock_lua-iconv
   luarock_lua-resty-auto-ssl
+  luarock_lua-resty-smtp
   luarock_lua-resty-uuid
   luarock_luaposix
   luarock_luatz
@@ -117,6 +143,7 @@ set(
   opm_lua-libcidr-ffi
   opm_lua-resty-hmac
   opm_lua-resty-http
+  opm_lua-resty-nettle
   opm_lua-resty-session
   opm_lua-resty-validation
   opm_lua-basex

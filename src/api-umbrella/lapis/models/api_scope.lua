@@ -1,8 +1,8 @@
 local Model = require("lapis.db.model").Model
-local _ = require("resty.gettext").gettext
 local cjson = require "cjson"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
+local t = require("resty.gettext").gettext
 local validation = require "resty.validation"
 
 local json_null = cjson.null
@@ -10,11 +10,11 @@ local validate_field = model_ext.validate_field
 
 local function validate(values)
   local errors = {}
-  validate_field(errors, values, "name", validation.string:minlen(1), _("can't be blank"))
-  validate_field(errors, values, "host", validation.string:minlen(1), _("can't be blank"))
-  validate_field(errors, values, "host", validation:regex([[^(\*|(\*\.|\.)[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*|[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*)$]], "jo"), _('must be in the format of "example.com"'))
-  validate_field(errors, values, "path_prefix", validation.string:minlen(1), _("can't be blank"))
-  validate_field(errors, values, "path_prefix", validation:regex("^/", "jo"), _('must start with "/"'))
+  validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
+  validate_field(errors, values, "host", validation.string:minlen(1), t("can't be blank"))
+  validate_field(errors, values, "host", validation:regex([[^(\*|(\*\.|\.)[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*|[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*)$]], "jo"), t('must be in the format of "example.com"'))
+  validate_field(errors, values, "path_prefix", validation.string:minlen(1), t("can't be blank"))
+  validate_field(errors, values, "path_prefix", validation:regex("^/", "jo"), t('must start with "/"'))
   return errors
 end
 

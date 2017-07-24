@@ -2,6 +2,8 @@ local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overw
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local random_token = require "api-umbrella.utils.random_token"
+local hmac = require "api-umbrella.utils.hmac"
+local encryptor = require "api-umbrella.utils.encryptor"
 local uuid = require "resty.uuid"
 
 local function wait_for_postgres()
@@ -93,9 +95,20 @@ local function seed_api_keys()
     if not user["id"] then
       user["id"] = uuid.generate_random()
     end
-    if not user["api_key"] then
-      user["api_key"] = random_token(40)
+
+    local api_key = user["api_key"]
+    user["api_key"] = nil
+    if not user["api_key_hash"] then
+      if not api_key then
+        api_key = random_token(40)
+      end
+      user["api_key_hash"] = hmac(api_key)
+      local encrypted, iv = encryptor.encrypt(api_key, user["id"])
+      user["api_key_encrypted"] = encrypted
+      user["api_key_encrypted_iv"] = iv
+      user["api_key_prefix"] = string.sub(api_key, 1, 10)
     end
+
     if user["roles"] then
       user["roles"] = pg_utils.as_array(user["roles"])
     end

@@ -74,6 +74,9 @@ api_server:
 http_api_server:
   host: 127.0.0.1
   port: 14017
+emailrelay:
+  host: 127.0.0.1
+  port: 14018
 web:
   host: 127.0.0.1
   port: 14012

@@ -1,25 +1,31 @@
 local Model = require("lapis.db.model").Model
-local _ = require("resty.gettext").gettext
-local cjson = require "cjson"
+local encryptor = require "api-umbrella.utils.encryptor"
+local hmac = require "api-umbrella.utils.hmac"
 local iso8601 = require "api-umbrella.utils.iso8601"
+local json_null = require("cjson").null
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
+local t = require("resty.gettext").gettext
 local validation = require "resty.validation"
 
-local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
 local function before_validate_on_create(_, values)
-  values["api_key"] = random_token(40)
+  local api_key = random_token(40)
+  values["api_key_hash"] = hmac(api_key)
+  local encrypted, iv = encryptor.encrypt(api_key, values["id"])
+  values["api_key_encrypted"] = encrypted
+  values["api_key_encrypted_iv"] = iv
+  values["api_key_prefix"] = string.sub(api_key, 1, 10)
 end
 
 local function validate(values)
   local errors = {}
-  validate_field(errors, values, "first_name", validation.string:minlen(1), _("Provide your first name."))
-  validate_field(errors, values, "last_name", validation.string:minlen(1), _("Provide your last name."))
-  validate_field(errors, values, "email", validation.string:minlen(1), _("Provide your email address."))
-  validate_field(errors, values, "email", validation:regex([[.+@.+\..+]], "jo"), _("Provide a valid email address."))
-  validate_field(errors, values, "website", validation.optional:regex([[\w+\.\w+]], "jo"), _("Your website must be a valid URL in the form of http://example.com"))
+  validate_field(errors, values, "first_name", validation.string:minlen(1), t("Provide your first name."))
+  validate_field(errors, values, "last_name", validation.string:minlen(1), t("Provide your last name."))
+  validate_field(errors, values, "email", validation.string:minlen(1), t("Provide your email address."))
+  validate_field(errors, values, "email", validation:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
+  validate_field(errors, values, "website", validation.optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
   return errors
 end
 
@@ -31,10 +37,19 @@ local save_options = {
 local ApiUser = Model:extend("api_users", {
   update = model_ext.update(save_options),
 
+  api_key_decrypted = function(self)
+    local decrypted
+    if self.api_key_encrypted and self.api_key_encrypted_iv then
+      decrypted = encryptor.decrypt(self.api_key_encrypted, self.api_key_encrypted_iv, self.id)
+    end
+
+    return decrypted
+  end,
+
   api_key_preview = function(self)
     local preview
-    if self.api_key then
-      preview = string.sub(self.api_key, 1, 6) .. "..."
+    if self.api_key_prefix then
+      preview = string.sub(self.api_key_prefix, 1, 6) .. "..."
     end
 
     return preview

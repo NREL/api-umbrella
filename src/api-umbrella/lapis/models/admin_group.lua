@@ -1,8 +1,8 @@
 local Model = require("lapis.db.model").Model
-local _ = require("resty.gettext").gettext
 local cjson = require "cjson"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
+local t = require("resty.gettext").gettext
 local validation = require "resty.validation"
 
 local json_null = cjson.null
@@ -10,9 +10,9 @@ local validate_field = model_ext.validate_field
 
 local function validate(values)
   local errors = {}
-  validate_field(errors, values, "name", validation.string:minlen(1), _("can't be blank"))
-  validate_field(errors, values, "api_scope_ids", validation.table:minlen(1), _("can't be blank"))
-  validate_field(errors, values, "permission_ids", validation.table:minlen(1), _("can't be blank"))
+  validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
+  validate_field(errors, values, "api_scope_ids", validation.table:minlen(1), t("can't be blank"))
+  validate_field(errors, values, "permission_ids", validation.table:minlen(1), t("can't be blank"))
   return errors
 end
 

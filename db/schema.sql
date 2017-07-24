@@ -604,7 +604,8 @@ CREATE TABLE admins (
     notes text,
     superuser boolean DEFAULT false NOT NULL,
     authentication_token_hash character varying(64) NOT NULL,
-    authentication_token_encrypted character varying(40) NOT NULL,
+    authentication_token_encrypted character varying(76) NOT NULL,
+    authentication_token_encrypted_iv character varying(12) NOT NULL,
     current_sign_in_provider character varying(100),
     last_sign_in_provider character varying(100),
     password_hash character varying(60),
@@ -664,7 +665,10 @@ CREATE TABLE api_scopes (
 
 CREATE TABLE api_users (
     id uuid NOT NULL,
-    api_key character varying(40) NOT NULL,
+    api_key_hash character varying(64) NOT NULL,
+    api_key_encrypted character varying(76) NOT NULL,
+    api_key_encrypted_iv character varying(12) NOT NULL,
+    api_key_prefix character varying(10) NOT NULL,
     email character varying(255) NOT NULL,
     email_verified boolean DEFAULT false NOT NULL,
     first_name character varying(255),
@@ -929,13 +933,6 @@ CREATE INDEX admin_permissions_display_order_idx ON admin_permissions USING btre
 
 
 --
--- Name: admins_authentication_token_encrypted_idx; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX admins_authentication_token_encrypted_idx ON admins USING btree (authentication_token_encrypted);
-
-
---
 -- Name: admins_authentication_token_hash_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -971,10 +968,10 @@ CREATE UNIQUE INDEX api_scopes_host_path_prefix_idx ON api_scopes USING btree (h
 
 
 --
--- Name: api_users_api_key_idx; Type: INDEX; Schema: public; Owner: -
+-- Name: api_users_api_key_hash_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX api_users_api_key_idx ON api_users USING btree (api_key);
+CREATE UNIQUE INDEX api_users_api_key_hash_idx ON api_users USING btree (api_key_hash);
 
 
 --

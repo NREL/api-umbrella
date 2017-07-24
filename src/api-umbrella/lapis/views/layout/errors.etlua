@@ -1,0 +1,5 @@
+<% if errors and next(errors) ~= nil then %>
+  <div class="alert alert-danger">
+    <%= t("Please review the problems below:") %>
+  </div>
+<% end %>

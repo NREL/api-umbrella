@@ -1,0 +1,8 @@
+<% flashes = restore_flashes() %>
+<% if flashes and next(flashes) ~= nil then %>
+  <% for flash_type, message in pairs(flashes) do %>
+    <div class="alert alert-<%= flash_type %>">
+      <%= message %>
+    </div>
+  <% end %>
+<% end %>
