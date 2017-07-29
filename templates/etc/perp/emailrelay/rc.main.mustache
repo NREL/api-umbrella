@@ -20,9 +20,9 @@ if [ "${1}" = "start" ]; then
       --no-daemon \
       --log \
       --no-syslog \
-      --poll=0 \
-      --forward-to="smtp.gmail.com:587" \
-      --client-tls --client-auth=/tmp/emailrelay.txt \
+      --poll=1 \
+      --forward-to="127.0.0.1:1025" \
+      --client-tls \
       --verbose
 fi
 

@@ -1,6 +1,6 @@
 local etlua = require "etlua"
 local t = require("resty.gettext").gettext
-local smtp = require "resty.smtp"
+local smtp = require "api-umbrella.utils.smtp"
 
 local template_html = etlua.compile([[
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
@@ -41,24 +41,17 @@ return function(admin, token)
   ngx.log(ngx.ERR, template_html(data))
   ngx.log(ngx.ERR, template_text(data))
 
-  local ret, err = smtp.send({
-    server = config["emailrelay"]["host"],
+  local smtp_conn = smtp.new({
+    host = config["emailrelay"]["host"],
     port = config["emailrelay"]["port"],
-    from = "<noreply@localhost>",
-    rcpt = { "<" .. admin.email .. ">" },
-    source = smtp.message({
-      headers = {
-        subject = t("Reset password instructions"),
-      },
-      body = {
-        [1] = {
-          body = template_text(data),
-        },
-        [2] = {
-          body = template_html(data),
-        },
-      },
-    }),
+  })
+
+  local ret, err = smtp_conn:send({
+    from = "noreply@localhost",
+    to = admin.email,
+    subject = t("Reset password instructions"),
+    text = template_text(data),
+    html = template_html(data),
   })
   ngx.log(ngx.ERR, "SMTP RET: " .. inspect(ret))
   ngx.log(ngx.ERR, "SMTP ERR: " .. inspect(err))
