@@ -119,6 +119,9 @@ if [ -f /etc/redhat-release ]; then
 
     # For pkill/pgrep used for process tests.
     $procps_package
+
+    # OpenLDAP
+    groff
   )
 elif [ -f /etc/debian_version ]; then
   libffi_version=6
@@ -232,6 +235,9 @@ elif [ -f /etc/debian_version ]; then
 
     # For pkill/pgrep used for process tests.
     procps
+
+    # OpenLDAP
+    groff-base
   )
 
   if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
