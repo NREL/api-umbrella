@@ -17,7 +17,7 @@ module ApiUmbrellaTestHelpers
       end
 
       start_time = Time.now.utc
-      FileUtils.rm_rf(Dir.glob(File.join(TEST_RUN_ROOT, "*"), File::FNM_DOTMATCH))
+      FileUtils.rm_rf(Dir.glob(File.join(TEST_RUN_ROOT, "*"), File::FNM_DOTMATCH) - [File.join(TEST_RUN_ROOT, "."), File.join(TEST_RUN_ROOT, "..")])
       FileUtils.mkdir_p(File.join(TEST_RUN_API_UMBRELLA_ROOT, "var/log"))
 
       original_env = ENV.to_hash
@@ -38,11 +38,20 @@ module ApiUmbrellaTestHelpers
         # Read the initial test config file.
         $config = YAML.load_file(CONFIG_PATH)
 
-        # Create an empty config file for overrides.
-        File.write(CONFIG_COMPUTED_PATH, YAML.dump({ "root_dir" => TEST_RUN_API_UMBRELLA_ROOT }))
+        # Create an config file for computed overrides.
+        computed = {
+          "root_dir" => TEST_RUN_API_UMBRELLA_ROOT,
+        }
+        if(::Process.euid == 0)
+          # If tests are running as root (Docker environment), then add the
+          # user to run things as.
+          computed["user"] = "api-umbrella"
+          computed["group"] = "api-umbrella"
+        end
+        File.write(CONFIG_COMPUTED_PATH, YAML.dump(computed))
         $config.deep_merge!(YAML.load_file(CONFIG_COMPUTED_PATH))
 
-        # Create an empty config file for overrides.
+        # Create an empty config file for test-specific overrides.
         File.write(CONFIG_OVERRIDES_PATH, YAML.dump({ "version" => 0 }))
 
         # Trigger a build to ensure the tests get run with the latest
@@ -55,14 +64,6 @@ module ApiUmbrellaTestHelpers
         build.wait
         if(build.crashed?)
           exit build.exit_code
-        end
-
-        progress = Thread.new do
-          print "Waiting for api-umbrella to start..."
-          loop do
-            print "."
-            sleep 2
-          end
         end
 
         # Spin up API Umbrella and the embedded databases as a background
@@ -80,8 +81,21 @@ module ApiUmbrellaTestHelpers
         health.environment["API_UMBRELLA_EMBEDDED_ROOT"] = EMBEDDED_ROOT
         health.environment["API_UMBRELLA_CONFIG"] = CONFIG
         health.start
-        health.wait
 
+        progress = Thread.new do
+          print "Waiting for api-umbrella to start..."
+          loop do
+            if($api_umbrella_process.crashed?)
+              health.stop
+              break
+            end
+
+            print "."
+            sleep 2
+          end
+        end
+
+        health.wait
         progress.exit
 
         end_time = Time.now.utc
