@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec docker-compose run --rm app bundle exec "$(basename "$0")" "$@"

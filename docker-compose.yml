@@ -1,0 +1,14 @@
+version: "2"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/dev/Dockerfile-build
+    volumes:
+      - .:/app
+      - build_cache:/build
+    ports:
+      - "80:80"
+      - "443:443"
+volumes:
+  build_cache:
