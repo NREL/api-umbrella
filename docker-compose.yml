@@ -3,12 +3,15 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile-dev-build
+      dockerfile: Dockerfile-dev
     volumes:
       - .:/app
       - build_cache:/build
+    environment:
+      HTTP_PORT: 8100
+      HTTPS_PORT: 8101
     ports:
-      - "80:80"
-      - "443:443"
+      - "8100:8100"
+      - "8101:8101"
 volumes:
   build_cache:
