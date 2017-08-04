@@ -1,0 +1,4 @@
+FROM nrel/api-umbrella-dev-env:latest
+
+RUN cd /build && make
+WORKDIR /app

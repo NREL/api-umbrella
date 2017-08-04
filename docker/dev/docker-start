@@ -1,11 +1,20 @@
 #!/usr/bin/env bash
 
+set -e -u -x
+
+mkdir -p /etc/api-umbrella
+if [ ! -f /etc/api-umbrella/api-umbrella.yml ]; then
+  printf "http_port: $HTTP_PORT\nhttps_port: $HTTPS_PORT" > /etc/api-umbrella/api-umbrella.yml
+fi
+
 ln -snf /build/build/work ./build/work
 ln -snf /build/CMakeFiles ./CMakeFiles
 ln -snf /build/CMakeCache.txt ./CMakeCache.txt
 ln -snf /build/Makefile ./Makefile
-mkdir -p /build/test/tmp/run && ln -snf /build/test/tmp/run ./test/tmp/run
+mkdir -p /build/test/tmp/run
+mkdir -p ./test/tmp
+ln -snf /build/test/tmp/run ./test/tmp/run
 
 (cd /build && make)
 
-exec api-umbrella run
+api-umbrella run

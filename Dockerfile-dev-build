@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM ubuntu:xenial
 
 RUN mkdir /app
 COPY build/scripts/install_build_dependencies /app/build/scripts/install_build_dependencies
