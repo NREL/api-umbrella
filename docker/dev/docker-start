@@ -7,6 +7,7 @@ if [ ! -f /etc/api-umbrella/api-umbrella.yml ]; then
   printf "http_port: $HTTP_PORT\nhttps_port: $HTTPS_PORT" > /etc/api-umbrella/api-umbrella.yml
 fi
 
+ln -snf /build/build/work/stage/opt/api-umbrella/var/log /var/log/api-umbrella
 ln -snf /build/build/work ./build/work
 ln -snf /build/CMakeFiles ./CMakeFiles
 ln -snf /build/CMakeCache.txt ./CMakeCache.txt
