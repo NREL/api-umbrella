@@ -1,4 +1,5 @@
 local Admin = require "api-umbrella.lapis.models.admin"
+local build_url = require "api-umbrella.utils.build_url"
 local capture_errors = require("lapis.application").capture_errors
 local flash = require "api-umbrella.utils.lapis_flash"
 local respond_to = require("lapis.application").respond_to
@@ -15,7 +16,7 @@ function _M.create(self)
   self.admin_params = _M.admin_params(self)
   assert(Admin:create(self.admin_params))
 
-  return { redirect_to = "/admin/#/login" }
+  return { redirect_to = build_url("/admin/#/login") }
 end
 
 function _M.admin_params(self)
@@ -38,7 +39,7 @@ end
 function _M.first_time_setup_check(self)
   if not Admin.needs_first_account() then
     flash.session(self, "info", t("An initial admin account already exists."))
-    return self:write({ redirect_to = "/admin/" })
+    return self:write({ redirect_to = build_url("/admin/") })
   end
 end
 

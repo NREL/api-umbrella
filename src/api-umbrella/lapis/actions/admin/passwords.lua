@@ -1,5 +1,6 @@
 local Admin = require "api-umbrella.lapis.models.admin"
 local admin_reset_password_mailer = require "api-umbrella.lapis.mailers.admin_reset_password"
+local build_url = require "api-umbrella.utils.build_url"
 local flash = require "api-umbrella.utils.lapis_flash"
 local is_empty = require("pl.types").is_empty
 local t = require("resty.gettext").gettext
@@ -25,7 +26,7 @@ function _M.create(self)
   end
 
   flash.session(self, "info", t("If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes."))
-  return self:write({ redirect_to = "/admin/login" })
+  return self:write({ redirect_to = build_url("/admin/login") })
 end
 
 function _M.edit()

@@ -1,6 +1,7 @@
 local Admin = require "api-umbrella.lapis.models.admin"
 local ApiUser = require "api-umbrella.lapis.models.api_user"
 local array_includes = require "api-umbrella.utils.array_includes"
+local build_url = require "api-umbrella.utils.build_url"
 local csrf = require "lapis.csrf"
 local flash = require "api-umbrella.utils.lapis_flash"
 local is_empty = require("pl.types").is_empty
@@ -69,7 +70,7 @@ function _M.create(self)
     session.data["admin_id"] = admin_id
     session:save()
 
-    return { redirect_to = "/admin/" }
+    return { redirect_to = build_url("/admin/") }
   else
     self.admin_params = admin_params
     flash.now(self, "warning", t("Invalid email or password."))
@@ -132,7 +133,7 @@ end
 
 function _M.first_time_setup_check(self)
   if Admin.needs_first_account() then
-    return self:write({ redirect_to = "/admins/signup" })
+    return self:write({ redirect_to = build_url("/admins/signup") })
   end
 end
 
@@ -142,7 +143,7 @@ return function(app)
       _M.first_time_setup_check(self)
       if self.current_admin then
         ngx.log(ngx.ERR, "REDIRECT TO ADMIN")
-        return self:write({ redirect_to = "/admin/" })
+        return self:write({ redirect_to = build_url("/admin/") })
       end
     end,
     GET = _M.new,
