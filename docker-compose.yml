@@ -8,10 +8,10 @@ services:
       - .:/app
       - build_cache:/build
     environment:
-      HTTP_PORT: 8100
-      HTTPS_PORT: 8101
+      HTTP_PORT: 8200
+      HTTPS_PORT: 8201
     ports:
-      - "8100:8100"
-      - "8101:8101"
+      - "8200:8200"
+      - "8201:8201"
 volumes:
   build_cache:

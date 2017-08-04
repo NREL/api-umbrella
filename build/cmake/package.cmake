@@ -1,7 +1,6 @@
 add_custom_command(
   OUTPUT ${STAMP_DIR}/package-bundle
   DEPENDS
-    bundler
     ${CMAKE_SOURCE_DIR}/build/package/Gemfile
     ${CMAKE_SOURCE_DIR}/build/package/Gemfile.lock
   COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/build/package/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/src/package/.bundle bundle install --clean --path=${WORK_DIR}/src/package/bundle

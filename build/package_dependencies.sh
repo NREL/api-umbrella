@@ -99,6 +99,10 @@ if [ -f /etc/redhat-release ]; then
     java-1.8.0-openjdk-devel
   )
   test_build_dependencies=(
+    # Running tests
+    ruby
+    rubygem-bundler
+
     # Binary and readelf tests
     file
     binutils
@@ -125,13 +129,19 @@ if [ -f /etc/redhat-release ]; then
   )
 elif [ -f /etc/debian_version ]; then
   libffi_version=6
+  libreadline_version=6
   openjdk_version=7
 
   if [[ "$ID" == "debian" && "$VERSION_ID" == "7" ]]; then
     libffi_version=5
-  elif [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+  fi
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
     openjdk_version=8
   fi
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]]; then
+    libreadline_version=7
+  fi
+
 
   core_package_dependencies=(
     # General
@@ -175,7 +185,7 @@ elif [ -f /etc/debian_version ]; then
     perl
 
     # Postgresql
-    libreadline6
+    libreadline$libreadline_version
     tzdata
   )
   hadoop_analytics_package_dependencies=(
@@ -215,6 +225,10 @@ elif [ -f /etc/debian_version ]; then
     openjdk-$openjdk_version-jdk
   )
   test_build_dependencies=(
+    # Running tests
+    ruby
+    bundler
+
     # Binary and readelf tests
     file
     binutils
@@ -240,7 +254,7 @@ elif [ -f /etc/debian_version ]; then
     groff-base
   )
 
-  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
     core_build_dependencies+=("libtool-bin")
   fi
 else

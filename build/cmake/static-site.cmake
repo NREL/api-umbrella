@@ -1,7 +1,6 @@
 # api-umbrella-static-site: Example website content
 ExternalProject_Add(
   api_umbrella_static_site
-  DEPENDS bundler
   URL https://github.com/NREL/api-umbrella-static-site/archive/${API_UMBRELLA_STATIC_SITE_VERSION}.tar.gz
   URL_HASH MD5=${API_UMBRELLA_STATIC_SITE_HASH}
   BUILD_IN_SOURCE 1

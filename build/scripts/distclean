@@ -21,11 +21,5 @@ rm -rf \
   "$source_dir/cmake_install.cmake" \
   "$source_dir/install_manifest.txt" \
   "$source_dir/src/api-umbrella/hadoop-analytics"/*/dependency-reduced-pom.xml \
-  "$source_dir/src/api-umbrella/web-app/.bundle" \
-  "$source_dir/src/api-umbrella/web-app/brakeman.html" \
-  "$source_dir/src/api-umbrella/web-app/log"/* \
-  "$source_dir/src/api-umbrella/web-app/public/test-assets" \
-  "$source_dir/src/api-umbrella/web-app/spec/reports" \
-  "$source_dir/src/api-umbrella/web-app/tmp"/* \
   "$source_dir/test/config/.overrides.yml" \
   "$source_dir/test/tmp"/*

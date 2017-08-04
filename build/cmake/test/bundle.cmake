@@ -4,7 +4,7 @@ add_custom_command(
     ${WORK_DIR}/.bundle
     ${WORK_DIR}/bundle
   DEPENDS
-    bundler
+    postgresql
     ${CMAKE_SOURCE_DIR}/Gemfile
     ${CMAKE_SOURCE_DIR}/Gemfile.lock
   COMMAND env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} BUNDLE_GEMFILE=${CMAKE_SOURCE_DIR}/Gemfile BUNDLE_APP_CONFIG=${WORK_DIR}/.bundle bundle install --clean --path=${WORK_DIR}/bundle

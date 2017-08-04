@@ -49,8 +49,8 @@ ExternalProject_Add(
 
 ExternalProject_Add(
   luarock_lapis
-  DEPENDS luarocks
-  URL https://github.com/leafo/lapis/archive/${LUAROCK_LAPIS_VERSION}.tar.gz
+  DEPENDS luarocks luarock_luaossl
+  URL https://github.com/leafo/lapis/archive/v${LUAROCK_LAPIS_VERSION}.tar.gz
   URL_HASH MD5=${LUAROCK_LAPIS_HASH}
   BUILD_IN_SOURCE 1
   # Patch to fix Lapis dependencies being broken under newer versions of
