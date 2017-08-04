@@ -4,7 +4,9 @@ set -e -u -x
 
 mkdir -p /etc/api-umbrella
 if [ ! -f /etc/api-umbrella/api-umbrella.yml ]; then
-  printf "http_port: $HTTP_PORT\nhttps_port: $HTTPS_PORT" > /etc/api-umbrella/api-umbrella.yml
+  printf "http_port: $HTTP_PORT\n" > /etc/api-umbrella/api-umbrella.yml
+  printf "https_port: $HTTPS_PORT\n" >> /etc/api-umbrella/api-umbrella.yml
+  printf "secret_key: $SECRET_KEY\n" >> /etc/api-umbrella/api-umbrella.yml
 fi
 
 ln -snf /build/build/work/stage/opt/api-umbrella/var/log /var/log/api-umbrella

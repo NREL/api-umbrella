@@ -10,6 +10,7 @@ services:
     environment:
       HTTP_PORT: 8200
       HTTPS_PORT: 8201
+      SECRET_KEY: for-development-not-secure
     ports:
       - "8200:8200"
       - "8201:8201"

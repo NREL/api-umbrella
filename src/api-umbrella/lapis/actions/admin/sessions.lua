@@ -16,7 +16,7 @@ local _M = {}
 local session = require("resty.session").new({
   -- storage = "shm",
   name = "_api_umbrella_session",
-  secret = config["web"]["rails_secret_token"],
+  secret = assert(config["secret_key"]),
   random = {
     length = 30,
   },
@@ -29,7 +29,7 @@ local function set_current_admin_from_session(self)
   if session and session.data and session.data["admin_id"] then
     local admin_id = session.data["admin_id"]
     local admin = Admin:find({ id = admin_id })
-    if not admin:is_access_locked() then
+    if admin and not admin:is_access_locked() then
       current_admin = admin
     end
   end

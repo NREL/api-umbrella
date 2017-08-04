@@ -1,7 +1,13 @@
+-- Hash values using HMAC SHA-256
+--
+-- The "secret_key" config value defined in api-umbrella.yml is used as the
+-- hash key. When this key changes, previously hashed data will need to be
+-- re-hashed.
+
 local hmac = require "resty.nettle.hmac"
 local to_hex = require("resty.string").to_hex
 
-local secret_key = config["web"]["rails_secret_token"]
+local secret_key = assert(config["secret_key"])
 local hmac_sha256 = hmac.sha256.new(secret_key)
 
 return function(value)

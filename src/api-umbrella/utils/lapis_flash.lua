@@ -5,7 +5,7 @@ local _M = {}
 local flash_session = require("resty.session").new({
   storage = "cookie",
   name = "_api_umbrella_messages",
-  secret = config["web"]["rails_secret_token"],
+  secret = assert(config["secret_key"]),
 })
 
 function _M.now(self, flash_type, message)
