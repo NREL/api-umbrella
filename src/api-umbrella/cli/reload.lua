@@ -14,22 +14,6 @@ local function reload_perp(perp_base)
   end
 end
 
-local function reload_web_delayed_job(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " int web-delayed-job")
-  if err then
-    print("Failed to reload web-delayed-job\n" .. err)
-    os.exit(1)
-  end
-end
-
-local function reload_web_puma(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " 2 web-puma")
-  if err then
-    print("Failed to reload web-puma\n" .. err)
-    os.exit(1)
-  end
-end
-
 local function reload_trafficserver(perp_base)
   local _, _, err = run_command("perpctl -b " .. perp_base .. " hup trafficserver")
   if err then
@@ -83,11 +67,6 @@ return function(options)
   local perp_base = path.join(config["etc_dir"], "perp")
 
   reload_perp(perp_base)
-
-  if config["_service_web_enabled?"] and (is_empty(options) or options["web"]) then
-    reload_web_delayed_job(perp_base)
-    reload_web_puma(perp_base)
-  end
 
   if config["_service_router_enabled?"] and (is_empty(options) or options["router"]) then
     reload_trafficserver(perp_base)
