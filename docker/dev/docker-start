@@ -17,4 +17,4 @@ ln -snf /build/test/tmp/run ./test/tmp/run
 
 (cd /build && make)
 
-exec api-umbrella run
+api-umbrella run
