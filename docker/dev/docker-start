@@ -16,6 +16,6 @@ mkdir -p /build/test/tmp/run
 mkdir -p ./test/tmp
 ln -snf /build/test/tmp/run ./test/tmp/run
 
-(cd /build && make)
+(cd /build && env PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" make)
 
 api-umbrella run
