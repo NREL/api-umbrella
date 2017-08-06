@@ -107,9 +107,6 @@ if [ -f /etc/redhat-release ]; then
     file
     binutils
 
-    # For installing the mongo-orchestration test dependency.
-    python-virtualenv
-
     # For checking for file descriptor leaks during the tests.
     lsof
 
@@ -232,9 +229,6 @@ elif [ -f /etc/debian_version ]; then
     # Binary and readelf tests
     file
     binutils
-
-    # For installing the mongo-orchestration test dependency.
-    python-virtualenv
 
     # For checking for file descriptor leaks during the tests.
     lsof

@@ -9,6 +9,10 @@ local startswith = stringx.startswith
 local _M = {}
 
 local function try_query(path, http_options)
+  if true then
+    return {}
+  end
+
   if not http_options then
     http_options = {}
   end

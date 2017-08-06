@@ -98,7 +98,6 @@ local function prepare()
     path.join(config["db_dir"], "elasticsearch"),
     path.join(config["etc_dir"], "elasticsearch_scripts"),
     path.join(config["db_dir"], "emailrelay"),
-    path.join(config["db_dir"], "mongodb"),
     path.join(config["db_dir"], "rsyslog"),
     path.join(config["etc_dir"], "trafficserver/snapshots"),
     path.join(config["log_dir"], "trafficserver"),
@@ -246,7 +245,7 @@ local function activate_services()
     -- enabled in api-umbrella.yml's "services" list.
     if is_active then
       if not config["_service_general_db_enabled?"] then
-        if array_includes({ "mongod" }, service_name) then
+        if array_includes({ "postgresql" }, service_name) then
           is_active = false
         end
       end
@@ -264,7 +263,7 @@ local function activate_services()
       end
 
       if not config["_service_router_enabled?"] then
-        if array_includes({ "geoip-auto-updater", "mora", "nginx", "rsyslog", "trafficserver" }, service_name) then
+        if array_includes({ "geoip-auto-updater", "nginx", "rsyslog", "trafficserver" }, service_name) then
           is_active = false
         end
       end

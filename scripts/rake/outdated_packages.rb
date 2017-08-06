@@ -18,9 +18,6 @@ class OutdatedPackages
     "flume" => {
       :git => "https://github.com/apache/flume.git",
     },
-    "golang" => {
-      :git => "https://go.googlesource.com/go",
-    },
     "json_c" => {
       :git => "https://github.com/json-c/json-c.git",
     },
@@ -111,17 +108,6 @@ class OutdatedPackages
     },
     "mailhog" => {
       :git => "https://github.com/mailhog/MailHog.git",
-    },
-    "mongo_orchestration" => {
-      :git => "https://github.com/10gen/mongo-orchestration.git",
-    },
-    "mongodb" => {
-      :git => "https://github.com/mongodb/mongo.git",
-      :constraint => "~> 3.2.9",
-    },
-    "mora" => {
-      :git => "https://github.com/emicklei/mora.git",
-      :git_ref => "master",
     },
     "ngx_dyups" => {
       :git => "https://github.com/yzprofile/ngx_http_dyups_module.git",
@@ -215,8 +201,6 @@ class OutdatedPackages
 
     # Project-specific normalizations.
     case(name)
-    when "golang"
-      tag.gsub!(/^go/, "")
     when "json_c"
       tag.gsub!(/-\d{8}$/, "")
     when "openldap"
