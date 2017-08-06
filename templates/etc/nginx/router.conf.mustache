@@ -192,20 +192,6 @@ http {
     server_names_hash_bucket_size {{nginx.server_names_hash_bucket_size}};
   {{/nginx.server_names_hash_bucket_size}}
 
-  upstream api_umbrella_http_api_backend {
-    server {{http_api_server.host}}:{{http_api_server.port}};
-    keepalive 10;
-  }
-
-  upstream api_umbrella_web_app_backend {
-    server {{web.host}}:{{web.port}};
-    keepalive 10;
-  }
-
-  upstream puma {
-    server unix://{{run_dir}}/web-puma.sock;
-  }
-
   upstream api_umbrella_trafficserver_backend {
     server {{trafficserver.host}}:{{trafficserver.port}};
     keepalive 10;
@@ -328,54 +314,6 @@ http {
     location / {
       access_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/api_backends_access.lua';
       proxy_pass $http_x_api_umbrella_backend_scheme://api_umbrella_${http_x_api_umbrella_backend_id}_backend;
-    }
-  }
-
-  server {
-    listen {{web.host}}:{{web.port}};
-    server_name _;
-
-    set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
-    root {{web.dir}}/public;
-
-    # Security headers
-    # https://www.owasp.org/index.php/OWASP_Secure_Headers_Project#tab=Headers
-    more_set_headers "X-XSS-Protection: 1; mode=block";
-    more_set_headers "X-Frame-Options: DENY";
-    more_set_headers "X-Content-Type-Options: nosniff";
-
-    {{^_development_env?}}
-    location /web-assets/ {
-      alias {{_embedded_root_dir}}/apps/core/current/build/dist/web-app-assets/web-assets/;
-    }
-    {{/_development_env?}}
-
-    location ~ ^(/admin/(login|auth|auth-assets)|/admins) {
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header Host $http_host;
-      proxy_pass http://api_umbrella_http_api_backend;
-    }
-
-    location ~ ^/admin/(login|logout|auth|stats|config|api_users|elasticsearch|server_side_loader) {
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header Host $http_host;
-      proxy_pass http://puma;
-    }
-
-    rewrite ^/admin$ /admin/ permanent;
-    location /admin/ {
-      {{^_development_env?}}
-        alias {{_embedded_root_dir}}/apps/core/current/build/dist/admin-ui/;
-      {{/_development_env?}}
-      {{#_development_env?}}
-      proxy_pass http://127.0.0.1:{{ember_server.port}};
-      {{/_development_env?}}
-    }
-
-    location / {
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header Host $http_host;
-      proxy_pass http://puma;
     }
   }
 }

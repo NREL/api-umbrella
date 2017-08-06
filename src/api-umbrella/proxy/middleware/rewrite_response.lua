@@ -90,7 +90,14 @@ local function rewrite_redirects()
   local changed = false
 
   if host_matches then
-    parsed["authority"] = matched_api["frontend_host"]
+    -- For wildcard hosts, keep the same host as on the incoming request. For
+    -- all others, use the frontend host declared on the API.
+    if matched_api["frontend_host"] == "*" then
+      parsed["authority"] = ngx.ctx.host
+    else
+      parsed["authority"] = matched_api["frontend_host"]
+    end
+
     parsed["host"] = nil
     changed = true
   end

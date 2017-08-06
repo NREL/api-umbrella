@@ -71,21 +71,13 @@ trafficserver:
 api_server:
   host: 127.0.0.1
   port: 14010
-http_api_server:
-  host: 127.0.0.1
-  port: 14017
 emailrelay:
   host: 127.0.0.1
   port: 14018
 web:
   host: 127.0.0.1
   port: 14012
-  rails_secret_token:
   request_timeout: 30
-  puma:
-    workers: 2
-    min_threads: 2
-    max_threads: 24
   admin:
     initial_superusers: []
     username_is_email: true
@@ -345,45 +337,44 @@ internal_apis:
           disable_api_key: true
           rate_limit_mode: unlimited
           require_https: optional
-  - _id: api-umbrella-http-apis-backend
+  - _id: api-umbrella-web-app-backend
     name: API Umbrella - HTTP APIs
     frontend_host: "{{router.web_app_host}}"
     backend_host: 127.0.0.1
     backend_protocol: http
     balance_algorithm: least_conn
-    sort_order: 1
-    servers:
-      - host: "{{http_api_server.host}}"
-        port: "{{http_api_server.port}}"
-    url_matches:
-      - frontend_prefix: "/api-umbrella/v1/admin_groups"
-        backend_prefix: "/api-umbrella/v1/admin_groups"
-      - frontend_prefix: "/api-umbrella/v1/admin_permissions"
-        backend_prefix: "/api-umbrella/v1/admin_permissions"
-      - frontend_prefix: "/api-umbrella/v1/admins"
-        backend_prefix: "/api-umbrella/v1/admins"
-      - frontend_prefix: "/api-umbrella/v1/api_scopes"
-        backend_prefix: "/api-umbrella/v1/api_scopes"
-      - frontend_prefix: "/api-umbrella/v1/users"
-        backend_prefix: "/api-umbrella/v1/users"
-  - _id: api-umbrella-web-backend
-    name: API Umbrella - Web APIs
-    frontend_host: "{{router.web_app_host}}"
-    backend_host: 127.0.0.1
-    backend_protocol: http
-    balance_algorithm: least_conn
-    sort_order: 1
+    sort_order: 2
     servers:
       - host: "{{web.host}}"
         port: "{{web.port}}"
     url_matches:
       - frontend_prefix: "/api-umbrella/"
         backend_prefix: "/api-umbrella/"
+      - frontend_prefix: "/admin/"
+        backend_prefix: "/admin/"
+      - frontend_prefix: "/admins/"
+        backend_prefix: "/admins/"
+      - frontend_prefix: "/admin"
+        backend_prefix: "/admin"
+        exact_match: true
     sub_settings:
-      - http_method: post
-        regex: "^/api-umbrella/v1/users"
-      - http_method: post
-        regex: "^/api-umbrella/v1/contact"
+      - http_method: POST
+        regex: "^/admin/login"
+        settings:
+          disable_api_key: true
+          rate_limit_mode: custom
+          rate_limits:
+            - duration: 15000
+              accuracy: 1000
+              limit_by: ip
+              limit: 100
+              distributed: true
+              response_headers: true
+      - http_method: any
+        regex: "^/admin"
+        settings:
+          disable_api_key: true
+          rate_limit_mode: unlimited
 internal_website_backends:
   - _id: api-umbrella-website-backend
     frontend_host: "{{router.web_app_host}}"

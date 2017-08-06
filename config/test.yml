@@ -33,8 +33,6 @@ trafficserver:
       - CONFIG proxy.config.http.cache.fuzz.time INT 0
 api_server:
   port: 13010
-http_api_server:
-  port: 13017
 web:
   port: 13012
   rails_secret_token: aeec385fb48a0594b6bb0b18f62473190f1d01b0b6113766af525be2ae1a317a03ab0ee1b3ee6aca3fb1572dc87684e033dcec21acd90d0ca0f111ca1785d0e9

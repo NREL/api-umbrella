@@ -36,7 +36,14 @@ local function match_api(active_config, request_path)
   for _, api in ipairs(apis) do
     if api["url_matches"] then
       for _, url_match in ipairs(api["url_matches"]) do
-        if startswith(request_path, url_match["frontend_prefix"]) then
+        local matches = false
+        if not url_match["exact_match"] and startswith(request_path, url_match["frontend_prefix"]) then
+          matches = true
+        elseif url_match["exact_match"] and request_path == url_match["frontend_prefix"] then
+          matches = true
+        end
+
+        if matches then
           return api, url_match
         end
       end

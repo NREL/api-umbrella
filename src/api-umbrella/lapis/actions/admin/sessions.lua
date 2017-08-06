@@ -38,8 +38,8 @@ local function set_current_admin_from_session(self)
 end
 
 function _M.new(self)
-  self.cookies.csrf_token = random_token(40)
-  self.csrf_token = csrf.generate_token(self, self.cookies.csrf_token)
+  self.cookies["_api_umbrella_csrf_token"] = random_token(40)
+  self.csrf_token = csrf.generate_token(self, self.cookies["_api_umbrella_csrf_token"])
 
   ngx.log(ngx.ERR, "SESSION COOKIE: " .. inspect(ngx.var.http_cookie))
   ngx.log(ngx.ERR, "SESSION DATA: " .. inspect(session.data))
@@ -50,7 +50,7 @@ function _M.new(self)
 end
 
 function _M.create(self)
-  csrf.assert_token(self, self.cookies.csrf_token)
+  csrf.assert_token(self, self.cookies["_api_umbrella_csrf_token"])
 
   local admin_id
   local admin_params = _M.admin_params(self)
