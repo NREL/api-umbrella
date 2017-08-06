@@ -3,12 +3,14 @@
 set -e -u -x
 
 mkdir -p /etc/api-umbrella
-if [ ! -f /etc/api-umbrella/api-umbrella.yml ]; then
-  printf "http_port: $HTTP_PORT\n" > /etc/api-umbrella/api-umbrella.yml
-  printf "https_port: $HTTPS_PORT\n" >> /etc/api-umbrella/api-umbrella.yml
-  printf "secret_key: $SECRET_KEY\n" >> /etc/api-umbrella/api-umbrella.yml
-fi
+{
+  echo "app_env: development"
+  echo "http_port: $HTTP_PORT"
+  echo "https_port: $HTTPS_PORT"
+  echo "secret_key: $SECRET_KEY"
+} > /etc/api-umbrella/api-umbrella.yml
 
+ln -snf /build/build/work/stage/opt/api-umbrella /opt/api-umbrella
 ln -snf /build/build/work/stage/opt/api-umbrella/var/log /var/log/api-umbrella
 ln -snf /build/build/work ./build/work
 ln -snf /build/CMakeFiles ./CMakeFiles
@@ -19,5 +21,7 @@ mkdir -p ./test/tmp
 ln -snf /build/test/tmp/run ./test/tmp/run
 
 (cd /build && env PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" make)
+
+chmod 1777 /app/src/api-umbrella/admin-ui/tmp
 
 api-umbrella run
