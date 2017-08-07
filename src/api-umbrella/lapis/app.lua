@@ -16,10 +16,10 @@ app:enable("etlua")
 app.layout = require "views.layout"
 
 app:before_filter(function(self)
-  local ok = os.setlocale("fr_FR")
-  if not ok then
-    ngx.log(ngx.ERR, "setlocale failed")
-  end
+  -- local ok = os.setlocale("fr_FR")
+  -- if not ok then
+  --   ngx.log(ngx.ERR, "setlocale failed")
+  -- end
 
   db.query("SET application.name = 'admin'")
   db.query("SET application.\"user\" = 'admin'")

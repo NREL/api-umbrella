@@ -4,7 +4,17 @@ local path = require "pl.path"
 
 local _M = {}
 
-local data = cjson.decode(file.read(path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/locale/fr/LC_MESSAGES/api-umbrella.json")))
+-- local data = cjson.decode(file.read(path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/locale/fr/LC_MESSAGES/api-umbrella.json")))
+local data = {
+  locale_data = {
+    ["api-umbrella"] = {
+      [""] = {
+        domain = "api-umbrella",
+        lang = "en_US",
+      },
+    },
+  },
+}
 
 function _M.loader(self)
   self.res.headers["Content-Type"] = "text/javascript; charset=utf-8"
