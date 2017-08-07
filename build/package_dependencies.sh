@@ -72,6 +72,7 @@ if [ -f /etc/redhat-release ]; then
     chrpath
     gcc
     gcc-c++
+    gettext
     git
     libcurl-devel
     libffi-devel
@@ -195,6 +196,7 @@ elif [ -f /etc/debian_version ]; then
     chrpath
     g++
     gcc
+    gettext
     git
     libcurl4-openssl-dev
     libffi-dev

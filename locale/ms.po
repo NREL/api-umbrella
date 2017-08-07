@@ -1,0 +1,94 @@
+msgid ""
+msgstr ""
+"Language: ms\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# devise.registrations.destroyed
+msgid "Bye! Your account has been successfully cancelled. We hope to see you again soon."
+msgstr "Selamat Tinggal, akaun anda telah di tutup"
+
+# devise.mailer.confirmation_instructions.subject
+msgid "Confirmation instructions"
+msgstr "Arahan proses pengesahan"
+
+# devise.mailer.reset_password_instructions.subject
+msgid "Reset password instructions"
+msgstr "Arahan mengubah password"
+
+# devise.sessions.signed_in
+msgid "Signed in successfully."
+msgstr "Proses sign in berjaya."
+
+# devise.sessions.signed_out
+msgid "Signed out successfully."
+msgstr "Proses sign out berjaya."
+
+# devise.mailer.unlock_instructions.subject
+msgid "Unlock instructions"
+msgstr "Arahan membuka akaun kembali"
+
+# devise.registrations.signed_up
+msgid "Welcome! You have signed up successfully."
+msgstr "Proses pendaftaran berjaya. Link untuk mengaktifkan akaun telah dihantar di e-mail."
+
+# devise.failure.unconfirmed
+msgid "You have to confirm your email address before continuing."
+msgstr "Anda harus melakukan proses pengesahan sebalum meneruskan."
+
+# devise.failure.unauthenticated
+msgid "You need to sign in or sign up before continuing."
+msgstr "Anda harus mendaftar atau sign in sebelum meneruskan ."
+
+# devise.confirmations.send_instructions
+msgid "You will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Anda akan menerima e-mail mengenai langkah proses pengesahan akaun sebentar lagi."
+
+# devise.unlocks.send_instructions
+msgid "You will receive an email with instructions for how to unlock your account in a few minutes."
+msgstr "Anda akan menerima e-mail mengenai langkah membuka akaun kembali sebentar lagi."
+
+# devise.passwords.send_instructions
+msgid "You will receive an email with instructions on how to reset your password in a few minutes."
+msgstr "Anda akan menerima e-mail mengenai langkah mengubah password sebentar lagi."
+
+# devise.unlocks.unlocked
+msgid "Your account has been unlocked successfully. Please sign in to continue."
+msgstr "Akun anda telah berjaya dibuka. Anda telah sign in."
+
+# devise.registrations.updated
+msgid "Your account has been updated successfully."
+msgstr "Akaun anda telah dikemaskini"
+
+# devise.failure.locked
+msgid "Your account is locked."
+msgstr "Akun anda terkunci."
+
+# devise.failure.inactive
+msgid "Your account is not activated yet."
+msgstr "Akun anda belum diaktifkan."
+
+# devise.confirmations.confirmed
+msgid "Your email address has been successfully confirmed."
+msgstr "Akaun anda telah berjaya disahkan. Anda telah sign in."
+
+# devise.passwords.updated
+msgid "Your password has been changed successfully. You are now signed in."
+msgstr "Password anda telah berjaya diubah. Anda telah sign in."
+
+# devise.failure.timeout
+msgid "Your session expired. Please sign in again to continue."
+msgstr "Sesi anda telah tamat, silahkan sign in bagi meneruskan sesi yang baru."
+
+# errors.messages.not_found
+msgid "not found"
+msgstr "tidak dijumpai"
+
+# errors.messages.already_confirmed
+msgid "was already confirmed, please try signing in"
+msgstr "sudah disahkan"
+
+# errors.messages.not_locked
+msgid "was not locked"
+msgstr "tidak dikunci"

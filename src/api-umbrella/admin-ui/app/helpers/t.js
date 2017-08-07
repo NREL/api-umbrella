@@ -1,9 +1,9 @@
 import Ember from 'ember';
-import I18n from 'npm:i18n-js';
+import i18n from 'api-umbrella-admin-ui/utils/i18n';
 
 export function t(params, options) {
   let key = params[0];
-  return I18n.t(key, options);
+  return i18n.t(key, options);
 }
 
 export default Ember.Helper.helper(t);

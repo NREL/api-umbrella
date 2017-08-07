@@ -17,24 +17,24 @@
             <td>{{urlMatch.frontendPrefix}}</td>
             <td>{{urlMatch.backendPrefixWithDefault}}</td>
             <td class="table-row-actions">
-              <a href="#" {{action "edit" urlMatch}}><i class="fa fa-pencil"></i>{{t "admin.edit"}}</a>
-              <a href="#" class="remove-action" {{action "remove" urlMatch}}><i class="fa fa-times"></i>{{t "admin.remove"}}</a>
+              <a href="#" {{action "edit" urlMatch}}><i class="fa fa-pencil"></i>{{t "Edit"}}</a>
+              <a href="#" class="remove-action" {{action "remove" urlMatch}}><i class="fa fa-times"></i>{{t "Remove"}}</a>
             </td>
             <td class="reorder-handle"><i class="fa fa-reorder"></i></td>
           </tr>
         {{/each}}
       {{else}}
-        <tr class="empty"><td colspan="2">{{t "admin.api.url_matches.empty_list" add=(t "admin.api.url_matches.add")}}</td></tr>
+        <tr class="empty"><td colspan="2">{{t "No URL prefix matches have been added yet. Click \"%{add}\" below to get started." add=(t "admin.api.url_matches.add")}}</td></tr>
       {{/if}}
     </tbody>
   </table>
   <div class="row">
     <div class="col-xs-6">
-      <button type="button" class="btn btn-default btn-xs" {{action "add"}}><i class="fa fa-plus-circle"></i> {{t "admin.api.url_matches.add"}}</button>
+      <button type="button" class="btn btn-default btn-xs" {{action "add"}}><i class="fa fa-plus-circle"></i> {{t "Add URL Prefix"}}</button>
     </div>
     <div class="col-xs-6 text-right">
       {{#if isReorderable}}
-        <button type="button" id="url_matches_reorder" class="btn btn-default btn-xs" {{action "reorderCollection" "url_matches"}}><i class="fa fa-reorder"></i> <span class="reorder-button-text">{{t "admin.reorder"}}</span></button>
+        <button type="button" id="url_matches_reorder" class="btn btn-default btn-xs" {{action "reorderCollection" "url_matches"}}><i class="fa fa-reorder"></i> <span class="reorder-button-text">{{t "Reorder"}}</span></button>
       {{/if}}
     </div>
   </div>

@@ -1,30 +1,30 @@
 import Ember from 'ember';
-import I18n from 'npm:i18n-js';
+import i18n from 'api-umbrella-admin-ui/utils/i18n';
 
 export default Ember.Component.extend({
   requireHttpsOptions: [
-    { id: null, name: I18n.t('admin.api.settings.require_https_options.inherit') },
-    { id: 'required_return_error', name: I18n.t('admin.api.settings.require_https_options.required_return_error') },
-    { id: 'transition_return_error', name: I18n.t('admin.api.settings.require_https_options.transition_return_error') },
-    { id: 'optional', name: I18n.t('admin.api.settings.require_https_options.optional') },
+    { id: null, name: i18n.t('admin.api.settings.require_https_options.inherit') },
+    { id: 'required_return_error', name: i18n.t('Required - HTTP requests will receive a message to use HTTPS') },
+    { id: 'transition_return_error', name: i18n.t('Transitionary - Optional for existing API keys, required for new API keys') },
+    { id: 'optional', name: i18n.t('Optional - HTTPS is optional') },
   ],
 
   disableApiKeyOptions: [
-    { id: null, name: I18n.t('admin.api.settings.disable_api_key_options.inherit') },
-    { id: false, name: I18n.t('admin.api.settings.disable_api_key_options.required') },
-    { id: true, name: I18n.t('admin.api.settings.disable_api_key_options.disabled') },
+    { id: null, name: i18n.t('Inherit (default - required)') },
+    { id: false, name: i18n.t('Required - API keys are mandatory') },
+    { id: true, name: i18n.t('Disabled - API keys are optional') },
   ],
 
   apiKeyVerificationLevelOptions: [
-    { id: null, name: I18n.t('admin.api.settings.api_key_verification_level_options.inherit') },
-    { id: 'none', name: I18n.t('admin.api.settings.api_key_verification_level_options.none') },
-    { id: 'transition_email', name: I18n.t('admin.api.settings.api_key_verification_level_options.transition_email') },
-    { id: 'required_email', name: I18n.t('admin.api.settings.api_key_verification_level_options.required_email') },
+    { id: null, name: i18n.t('Inherit (default - none)') },
+    { id: 'none', name: i18n.t('None - API keys can be used without any verification') },
+    { id: 'transition_email', name: i18n.t('E-mail verification transition - Existing API keys will continue to work, new API keys will only work if verified') },
+    { id: 'required_email', name: i18n.t('E-mail verification required - Existing API keys will break, only new API keys will work if verified') },
   ],
 
   passApiKeyOptions: [
-    { id: 'header', name: I18n.t('admin.api.settings.pass_api_key_header') },
-    { id: 'param', name: I18n.t('admin.api.settings.pass_api_key_param') },
+    { id: 'header', name: i18n.t('Via HTTP header') },
+    { id: 'param', name: i18n.t('Via GET query parameter') },
   ],
 
   anonymousRateLimitBehaviorOptions: [

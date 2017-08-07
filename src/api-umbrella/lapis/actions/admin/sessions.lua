@@ -41,10 +41,6 @@ function _M.new(self)
   self.cookies["_api_umbrella_csrf_token"] = random_token(40)
   self.csrf_token = csrf.generate_token(self, self.cookies["_api_umbrella_csrf_token"])
 
-  ngx.log(ngx.ERR, "SESSION COOKIE: " .. inspect(ngx.var.http_cookie))
-  ngx.log(ngx.ERR, "SESSION DATA: " .. inspect(session.data))
-  ngx.log(ngx.ERR, "SESSION DATA: " .. inspect(session.data.name))
-
   self.admin_params = {}
   return { render = "admin.sessions.new" }
 end

@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import I18n from 'npm:i18n-js';
+import i18n from 'api-umbrella-admin-ui/utils/i18n';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 
 export default Ember.Component.extend(Save, {
@@ -21,11 +21,11 @@ export default Ember.Component.extend(Save, {
       if($key.data('revealed') === 'true') {
         $key.text($key.data('api-key-preview'));
         $key.data('revealed', 'false');
-        $toggle.text(I18n.t('admin.reveal_action'));
+        $toggle.text(i18n.t('(reveal)'));
       } else {
         $key.text($key.data('api-key'));
         $key.data('revealed', 'true');
-        $toggle.text(I18n.t('admin.hide_action'));
+        $toggle.text(i18n.t('(hide)'));
       }
     },
 

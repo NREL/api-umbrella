@@ -20,6 +20,7 @@ mkdir -p /build/test/tmp/run
 mkdir -p ./test/tmp
 ln -snf /build/test/tmp/run ./test/tmp/run
 
+(cd /build && env INSTALL_TEST_DEPENDENCIES=true /app/build/scripts/install_build_dependencies)
 (cd /build && env PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" make)
 
 chmod 1777 /app/src/api-umbrella/admin-ui/tmp

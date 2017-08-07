@@ -25,7 +25,7 @@
     {{#if model.authenticationToken}}
       {{#if session.data.authenticated.local_auth_enabled}}
         <fieldset class="form-horizontal condensed">
-          <legend>{{t "devise.passwords.edit.change_your_password"}}</legend>
+          <legend>{{t "Change Your Password"}}</legend>
 
           {{f.password-field "currentPassword" label=(t "mongoid.attributes.admin.current_password")}}
           {{f.password-field "password" label=(t "devise.passwords.edit.new_password") hint=(t "devise.passwords.password_length_hint" min=session.data.authenticated.password_length_min)}}

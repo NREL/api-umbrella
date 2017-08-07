@@ -5,16 +5,16 @@
     {{f.text-field "name" label=(t "mongoid.attributes.api.name")}}
 
     <fieldset>
-      <legend>{{t "admin.api.servers.legend"}}</legend>
-      <p class="fieldset-note">{{t "admin.api.servers.note"}}</p>
+      <legend>{{t "Backend"}}</legend>
+      <p class="fieldset-note">{{t "Define the server where the API is hosted. Multiple servers can be defined to perform load balancing."}}</p>
       {{f.select-field "backendProtocol" label=(t "mongoid.attributes.api.backend_protocol") options=backendProtocolOptions}}
 
       {{apis/server-table model=model}}
     </fieldset>
 
     <fieldset>
-      <legend>{{t "admin.api.host.legend"}}</legend>
-      <p class="fieldset-note">{{t "admin.api.host.note"}}</p>
+      <legend>{{t "Host"}}</legend>
+      <p class="fieldset-note">{{t "Define the host that we will listen for, and then the host the API backend is listening for."}}</p>
       <div class="row">
         <div class="col-sm-5">
           {{f.text-field "frontendHost" label="Frontend Host"}}
@@ -31,8 +31,8 @@
   {{/fields-for}}
 
   <fieldset>
-    <legend>{{t "admin.api.url_matches.legend"}}</legend>
-    <p class="fieldset-note">{{t "admin.api.url_matches.note"}}</p>
+    <legend>{{t "Matching URL Prefixes"}}</legend>
+    <p class="fieldset-note">{{t "What URL prefixes should be routed to this backend?"}}</p>
     {{apis/url-match-table model=model}}
   </fieldset>
 
@@ -50,17 +50,17 @@
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="fa fa-caret-down"></i> {{t "admin.api.sub_settings.legend"}}</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#sub_settings"><i class="fa fa-caret-down"></i> {{t "Sub-URL Request Settings"}}</a></legend>
     <div id="sub_settings" class="collapse">
-      <p class="fieldset-note">{{t "admin.api.sub_settings.note"}}</p>
+      <p class="fieldset-note">{{t "Change settings for specific sub-URLs within this API."}}</p>
       {{apis/sub-settings-table model=model roleOptions=roleOptions}}
     </div>
   </fieldset>
 
   <fieldset class="collapsible">
-    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites"><i class="fa fa-caret-down"></i> {{t "admin.api.rewrites.legend"}}</a></legend>
+    <legend><a data-toggle="collapse" class="collapsed" data-target="#rewrites"><i class="fa fa-caret-down"></i> {{t "Advanced Requests Rewriting"}}</a></legend>
     <div id="rewrites" class="collapse">
-      <p class="fieldset-note">{{t "admin.api.rewrites.note"}}</p>
+      <p class="fieldset-note">{{t "Modify the incoming request's URL or headers before passing it to the backend."}}</p>
       {{apis/rewrite-table model=model}}
     </div>
   </fieldset>
@@ -73,14 +73,14 @@
        {{/fields-for}}
 
       {{#fields-for model=model.settings.errorTemplates style="horizontal-wide-labels" as |f|}}
-        <h4>{{t "mongoid.attributes.api/settings.error_templates"}}</h4>
+        <h4>{{t "Error Templates"}}</h4>
         {{f.ace-field "json" label=(t "admin.api.settings.error_templates_json") tooltip=(t "admin.api.settings.error_templates_json_tooltip_markdown") mode="json"}}
         {{f.ace-field "xml" label=(t "admin.api.settings.error_templates_xml") tooltip=(t "admin.api.settings.error_templates_xml_tooltip_markdown") mode="xml"}}
         {{f.ace-field "csv" label=(t "admin.api.settings.error_templates_csv") tooltip=(t "admin.api.settings.error_templates_csv_tooltip_markdown") mode="text"}}
       {{/fields-for}}
 
       {{#fields-for model=model.settings.errorDataYamlStrings style="horizontal-wide-labels" as |f|}}
-        <h4>{{t "mongoid.attributes.api/settings.error_data"}}</h4>
+        <h4>{{t "Error Data"}}</h4>
         {{f.ace-field "common" label=(t "admin.api.settings.error_data_common") tooltip=(t "admin.api.settings.error_data_common_tooltip_markdown") mode="yaml"}}
         {{f.ace-field "api_key_missing" label=(t "admin.api.settings.error_data_api_key_missing") tooltip=(t "admin.api.settings.error_data_api_key_missing_tooltip_markdown") mode="yaml"}}
         {{f.ace-field "api_key_invalid" label=(t "admin.api.settings.error_data_api_key_invalid") tooltip=(t "admin.api.settings.error_data_api_key_invalid_tooltip_markdown") mode="yaml"}}

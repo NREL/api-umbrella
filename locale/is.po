@@ -1,0 +1,150 @@
+msgid ""
+msgstr ""
+"Language: is\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+# errors.messages.not_saved.other
+msgid "%{count} errors prohibited this %{resource} from being saved:"
+msgstr "%{count} villur komu í veg fyrir að hægt væri að vista þennan %{resource}:"
+
+# errors.messages.not_saved.one
+msgid "1 error prohibited this %{resource} from being saved:"
+msgstr "1 villa kom í veg fyrir að hægt væri að vista þennan %{resource}:"
+
+# devise.registrations.signed_up_but_unconfirmed
+msgid "A message with a confirmation link has been sent to your email address. Please follow the link to activate your account."
+msgstr "Staðfestingartengill hefur verið sendur á netfangið þitt. Vinsamlegast smelltu á tengilinn til að virkja aðganginn."
+
+# devise.registrations.destroyed
+msgid "Bye! Your account has been successfully cancelled. We hope to see you again soon."
+msgstr "Bless! Aðgangnum þínum hefur verið lokað. Vonandi sjáumst við aftur."
+
+# devise.mailer.confirmation_instructions.subject
+msgid "Confirmation instructions"
+msgstr "Staðfestingarleiðbeiningar"
+
+# devise.omniauth_callbacks.failure
+msgid "Could not authenticate you from %{kind} because \"%{reason}\"."
+msgstr "Innskráning með %{kind} aðgangi mistókst: %{reason}."
+
+# devise.unlocks.send_paranoid_instructions
+msgid "If your account exists, you will receive an email with instructions for how to unlock it in a few minutes."
+msgstr "Ef aðgangurinn þinn er til munt þú fá leiðbeiningar um hvernig hægt er að aflæsa honum sendar í tölvupósti innan nokkurra mínútna."
+
+# devise.passwords.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes."
+msgstr "Ef netfangið þitt er til í gagnagrunninum okkar munt þú fá leiðbeiningar um endurstillingu sendar í tölvupósti innan nokkra mínútna."
+
+# devise.confirmations.send_paranoid_instructions
+msgid "If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Ef netfangið þitt er til í gagnagrunninum okkar munt þú fá leiðbeiningar um hvernig eigi að staðfesta aðganginn sendar tölvupósti innan nokkurra mínútna."
+
+# devise.mailer.reset_password_instructions.subject
+msgid "Reset password instructions"
+msgstr "Leiðbeiningar um endurstillingu lykilorðs"
+
+# devise.sessions.signed_in
+msgid "Signed in successfully."
+msgstr "Innskráning tókst."
+
+# devise.sessions.signed_out
+msgid "Signed out successfully."
+msgstr "Útskráning tókst."
+
+# devise.omniauth_callbacks.success
+msgid "Successfully authenticated from %{kind} account."
+msgstr "Innskráning með %{kind} aðgangi tókst."
+
+# devise.mailer.unlock_instructions.subject
+msgid "Unlock instructions"
+msgstr "Aflæsingarleiðbeiningar"
+
+# devise.registrations.signed_up
+msgid "Welcome! You have signed up successfully."
+msgstr "Velkomin(n)! Þú hefur nýskráð þig."
+
+# devise.failure.already_authenticated
+msgid "You are already signed in."
+msgstr "Þú ert nú þegar innskráð(ur)."
+
+# devise.registrations.signed_up_but_locked
+msgid "You have signed up successfully. However, we could not sign you in because your account is locked."
+msgstr "Þú hefur nýskráð þig. Hins vegar gátum við ekki innskráð þig því að aðgangurinn þinn er læstur."
+
+# devise.registrations.signed_up_but_inactive
+msgid "You have signed up successfully. However, we could not sign you in because your account is not yet activated."
+msgstr "Þú hefur nýskráð þig. Hins vegar gátum við ekki innskráð þig því að aðgangurinn þinn hefur ekki verið virktur."
+
+# devise.failure.unconfirmed
+msgid "You have to confirm your email address before continuing."
+msgstr "Þú verður að staðfesta aðganginn þinn áður en þú getur haldið áfram."
+
+# devise.failure.unauthenticated
+msgid "You need to sign in or sign up before continuing."
+msgstr "Þú þarft að vera innskráð(ur) til þess að halda áfram."
+
+# devise.registrations.update_needs_confirmation
+msgid "You updated your account successfully, but we need to verify your new email address. Please check your email and follow the confirm link to confirm your new email address."
+msgstr "Aðgangurinn þinn hefur verið uppfærður, en þú þarft að staðfesta netfangið þitt. Vinsamlegast skoðaðu tölvupóstinn þinn og smelltu á staðfestingartengilinn til þess að staðfesta netfangið."
+
+# devise.confirmations.send_instructions
+msgid "You will receive an email with instructions for how to confirm your email address in a few minutes."
+msgstr "Eftir nokkrar mínútur munt þú fá tölvupóst með leiðbeiningum um hverning eigi að staðfesta aðganginn."
+
+# devise.unlocks.send_instructions
+msgid "You will receive an email with instructions for how to unlock your account in a few minutes."
+msgstr "Innan nokkurra mínútna færðu tölvupóst með leiðbeiningum um hvernig hægt er að aflæsa aðgangi þínum."
+
+# devise.passwords.send_instructions
+msgid "You will receive an email with instructions on how to reset your password in a few minutes."
+msgstr "Innan nokkra mínútna færðu tölvupóst með leiðbeiningum um hvernig hægt sé að endurstilla aðganginn þinn."
+
+# devise.unlocks.unlocked
+msgid "Your account has been unlocked successfully. Please sign in to continue."
+msgstr "Aðgangnum þínum hefur verið aflæst. Þú ert innskráð(ur)."
+
+# devise.registrations.updated
+msgid "Your account has been updated successfully."
+msgstr "Aðgangurinn þinn hefur verið uppfærður."
+
+# devise.failure.locked
+msgid "Your account is locked."
+msgstr "Aðgangurinn þinn er læstur."
+
+# devise.failure.inactive
+msgid "Your account is not activated yet."
+msgstr "Aðgangurinn þinn hefur ekki verið staðfestur."
+
+# devise.confirmations.confirmed
+msgid "Your email address has been successfully confirmed."
+msgstr "Aðgangurinn hefur verið staðfestur. Þú ert núna innskráð(ur)."
+
+# devise.passwords.updated_not_active
+msgid "Your password has been changed successfully."
+msgstr "Lykilorði þínu hefur nú verið breytt."
+
+# devise.passwords.updated
+msgid "Your password has been changed successfully. You are now signed in."
+msgstr "Lykilorði þínu hefur nú verið breytt. Þú ert núna innskráð(ur)."
+
+# devise.failure.timeout
+msgid "Your session expired. Please sign in again to continue."
+msgstr "Seta þín hefur runnið út, skráðu þig aftur inn til að halda áfram."
+
+# errors.messages.expired
+msgid "has expired, please request a new one"
+msgstr "hefur runnið út, vinsamlegast biðjið um nýtt"
+
+# errors.messages.not_found
+msgid "not found"
+msgstr "fannst ekki"
+
+# errors.messages.already_confirmed
+msgid "was already confirmed, please try signing in"
+msgstr "var nú þegar staðfestur, prófaðu að skrá þig inn"
+
+# errors.messages.not_locked
+msgid "was not locked"
+msgstr "var ekki læstur"

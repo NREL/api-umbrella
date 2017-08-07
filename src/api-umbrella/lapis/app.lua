@@ -8,19 +8,19 @@ local is_empty = require("pl.types").is_empty
 local lapis = require "lapis"
 local path = require "pl.path"
 
-gettext.bindtextdomain("api-umbrella", path.join(config["_src_root_dir"], "config/locale"))
+gettext.bindtextdomain("api-umbrella", path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/locale"))
 gettext.textdomain("api-umbrella")
-
-local ok = os.setlocale("fr_FR")
-if not ok then
-  ngx.log(ngx.ERR, "setlocale failed")
-end
 
 local app = lapis.Application()
 app:enable("etlua")
 app.layout = require "views.layout"
 
 app:before_filter(function(self)
+  local ok = os.setlocale("fr_FR")
+  if not ok then
+    ngx.log(ngx.ERR, "setlocale failed")
+  end
+
   db.query("SET application.name = 'admin'")
   db.query("SET application.\"user\" = 'admin'")
 

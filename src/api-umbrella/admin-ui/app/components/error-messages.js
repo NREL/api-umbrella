@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import I18n from 'npm:i18n-js';
+import i18n from 'api-umbrella-admin-ui/utils/i18n';
 
 export default Ember.Component.extend({
   messages: Ember.computed('model.clientErrors', 'model.serverErrors', function() {
@@ -58,7 +58,7 @@ export default Ember.Component.extend({
       if(error.fullMessage) {
         message += error.fullMessage;
       } else if(error.attribute && error.attribute !== 'base') {
-        let attributeTitle = I18n.t(modelI18nRoot + '.' + inflection.underscore(error.attribute), { defaultValue: false });
+        let attributeTitle = i18n.t(modelI18nRoot + '.' + inflection.underscore(error.attribute), { defaultValue: false });
         if(attributeTitle === false) {
           attributeTitle = inflection.titleize(inflection.underscore(error.attribute));
         }

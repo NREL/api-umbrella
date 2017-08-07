@@ -4,6 +4,7 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/dev/nodejs.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-lua-deps.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-admin-ui.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-admin-auth-assets.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/core-locale.cmake)
 
 # Copy the vendored libraries into the shared build directory.
 add_custom_command(
@@ -34,13 +35,16 @@ add_custom_command(
     ${STAMP_DIR}/core-build-install-dist
     ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui
     ${CORE_BUILD_DIR}/releases/0/build/dist/admin-auth-assets
+    ${CORE_BUILD_DIR}/releases/0/build/dist/locale
   DEPENDS
     ${STAMP_DIR}/core-admin-ui-build
     ${STAMP_DIR}/core-admin-auth-assets-build
     ${STAMP_DIR}/core-build-release-dir
+    ${STAMP_DIR}/core-locale-build
   COMMAND mkdir -p ${CORE_BUILD_DIR}/releases/0/build/dist
   COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-ui-build/dist/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-ui/
   COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/admin-auth-assets-build/assets/dist/ ${CORE_BUILD_DIR}/releases/0/build/dist/admin-auth-assets/
+  COMMAND rsync -a --delete-after ${CORE_BUILD_DIR}/tmp/locale-build/ ${CORE_BUILD_DIR}/releases/0/build/dist/locale/
   COMMAND touch ${STAMP_DIR}/core-build-install-dist
 )
 

@@ -1,7 +1,7 @@
 <form id="filter_form" action="#" method="get" {{action "submit" on="submit"}}>
   <div class="row">
     <div class="col-sm-4">
-      <a id="filter_toggle" {{action "toggleFilters"}}><i class="fa fa-caret-right"></i>{{t "admin.stats.filter_results"}}</a>
+      <a id="filter_toggle" {{action "toggleFilters"}}><i class="fa fa-caret-right"></i>{{t "Filter Results"}}</a>
     </div>
     <div class="col-sm-8 filter-times">
       {{#if session.data.authenticated.enable_beta_analytics}}
@@ -10,11 +10,11 @@
 
       {{#if enableInterval}}
         {{#bs-button-group value=interval type="radio" size="xs" id="interval_buttons"}}
-          {{#bs-button value="minute"}}{{t "admin.stats.minute"}}{{/bs-button}}
-          {{#bs-button value="hour"}}{{t "admin.stats.hour"}}{{/bs-button}}
-          {{#bs-button value="day"}}{{t "admin.stats.day"}}{{/bs-button}}
-          {{#bs-button value="week"}}{{t "admin.stats.week"}}{{/bs-button}}
-          {{#bs-button value="month"}}{{t "admin.stats.month"}}{{/bs-button}}
+          {{#bs-button value="minute"}}{{t "Minute"}}{{/bs-button}}
+          {{#bs-button value="hour"}}{{t "Hour"}}{{/bs-button}}
+          {{#bs-button value="day"}}{{t "Day"}}{{/bs-button}}
+          {{#bs-button value="week"}}{{t "Week"}}{{/bs-button}}
+          {{#bs-button value="month"}}{{t "Month"}}{{/bs-button}}
         {{/bs-button-group}}
       {{/if}}
 
@@ -34,39 +34,39 @@
           <div id="query_builder"></div>
           <div class="row">
             <div class="col-sm-6">
-              <button class="btn btn-default btn-sm" type="submit">{{t "admin.stats.filter"}}</button>
+              <button class="btn btn-default btn-sm" type="submit">{{t "Filter"}}</button>
             </div>
             <div class="col-sm-6 text-right">
-              <a {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "admin.stats.switch_advanced_filters"}}</a>
+              <a {{action "toggleFilterType" "advanced"}} class="filter-type-toggle">{{t "Switch to advanced filters"}}</a>
             </div>
           </div>
         </div>
         <div id="filter_type_advanced" class="filter-type" style="display: none;">
           <div id="search_field">
             <div class="input-group">
-              <input type="text" name="search" class="form-control" placeholder="{{t "admin.stats.advanced_filters_placeholder"}}" value="{{query.params.search}}" />
+              <input type="text" name="search" class="form-control" placeholder="{{t "Advanced filters..."}}" value="{{query.params.search}}" />
               <span class="input-group-btn">
-                <button class="btn btn-default" type="submit">{{t "admin.stats.filter"}}</button>
+                <button class="btn btn-default" type="submit">{{t "Filter"}}</button>
               </span>
             </div>
             <div class="row">
               <div class="col-sm-6">
-                <span class="help-block">{{{t "admin.stats.advanced_filters_tip"}}}</span>
+                <span class="help-block">{{{t "Advanced filters use <a href=\"#query_syntax_help_content\" rel=\"popover\">Lucene's Query Syntax</a>."}}}</span>
               </div>
               <div class="col-sm-6 text-right">
-                <a {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "admin.stats.switch_simple_filters"}}</a>
+                <a {{action "toggleFilterType" "builder"}} class="filter-type-toggle">{{t "Switch to simple filters"}}</a>
               </div>
             </div>
             <div id="query_syntax_help_content" style="display: none;">
-              <p>{{{t "admin.stats.advanced_filters_help_content"}}}</p>
-              <p>{{t "admin.stats.example"}}:</p>
+              <p>{{{t "Use <a href=\"http://www.lucenetutorial.com/lucene-query-syntax.html\" target=\"_blank\">Lucene's query syntax</a> to perform complex queries."}}}</p>
+              <p>{{t "Example"}}:</p>
               <pre>request_method:"POST" AND response_status:[400 TO *]</pre>
-              <p>{{t "admin.stats.available_fields"}}:</p>
+              <p>{{t "Available Fields"}}:</p>
               <table class="table table-condensed query-syntax-help">
                 <thead>
                   <tr>
-                    <th>{{t "admin.stats.field"}}</th>
-                    <th class="example">{{t "admin.stats.example"}}</th>
+                    <th>{{t "Field"}}</th>
+                    <th class="example">{{t "Example"}}</th>
                   </tr>
                 </thead>
                 <tbody>

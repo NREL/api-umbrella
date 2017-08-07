@@ -16,7 +16,7 @@
         {{/f.static-field}}
         {{#f.static-field "apiKey" label="API Key"}}
           {{#if model.apiKey}}
-            <span class="api-key" data-api-key="{{model.apiKey}}" data-api-key-preview="{{model.apiKeyPreview}}">{{model.apiKeyPreview}}</span> <a href="#" {{action "apiKeyRevealToggle"}} class="api-key-reveal-toggle">{{t "admin.reveal_action"}}</a>
+            <span class="api-key" data-api-key="{{model.apiKey}}" data-api-key-preview="{{model.apiKeyPreview}}">{{model.apiKeyPreview}}</span> <a href="#" {{action "apiKeyRevealToggle"}} class="api-key-reveal-toggle">{{t "(reveal)"}}</a>
           {{else}}
             <span class="api-key">{{model.apiKeyPreview}}</span>
           {{/if}}

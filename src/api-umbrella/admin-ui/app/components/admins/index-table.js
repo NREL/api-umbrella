@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import I18n from 'npm:i18n-js';
+import i18n from 'api-umbrella-admin-ui/utils/i18n';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 
 export default Ember.Component.extend({
@@ -15,7 +15,7 @@ export default Ember.Component.extend({
         {
           data: 'username',
           name: 'Username',
-          title: I18n.t('mongoid.attributes.admin.username'),
+          title: i18n.t('mongoid.attributes.admin.username'),
           defaultContent: '-',
           render: _.bind(function(username, type, data) {
             if(type === 'display' && username && username !== '-') {
