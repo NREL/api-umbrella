@@ -108,7 +108,7 @@ GEM
       railties (>= 4.1.0, < 5.2)
       responders
       warden (~> 1.2.3)
-    devise-i18n (1.1.2)
+    devise-i18n (1.2.0)
     elasticsearch (2.0.2)
       elasticsearch-api (= 2.0.2)
       elasticsearch-transport (= 2.0.2)
@@ -308,7 +308,7 @@ DEPENDENCIES
   daemons (~> 1.2.4)
   delayed_job_mongoid (~> 2.3.0)
   devise (~> 4.3.0)
-  devise-i18n (~> 1.1.2)
+  devise-i18n (~> 1.2.0)
   elasticsearch (~> 2.0.2)
   font-awesome-rails (~> 4.7.0)
   http_accept_language (~> 2.1.1)
