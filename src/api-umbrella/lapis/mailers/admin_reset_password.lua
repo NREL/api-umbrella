@@ -1,6 +1,6 @@
 local build_url = require "api-umbrella.utils.build_url"
 local etlua = require "etlua"
-local smtp = require "api-umbrella.utils.smtp"
+local mail = require "resty.mail"
 local t = require("resty.gettext").gettext
 
 local template_html = etlua.compile([[
@@ -39,21 +39,29 @@ return function(admin, token)
     instruction_3 = t("Your password won't change until you access the link above and create a new one."),
   }
 
-  ngx.log(ngx.ERR, template_html(data))
-  ngx.log(ngx.ERR, template_text(data))
-
-  local smtp_conn = smtp.new({
-    host = config["emailrelay"]["host"],
-    port = config["emailrelay"]["port"],
+  local mailer, mailer_err = mail.new({
+    host = config["web"]["mailer"]["smtp_settings"]["host"],
+    port = config["web"]["mailer"]["smtp_settings"]["port"],
+    username = config["web"]["mailer"]["smtp_settings"]["user_name"],
+    password = config["web"]["mailer"]["smtp_settings"]["password"],
+    auth_type = config["web"]["mailer"]["smtp_settings"]["authentication"],
+    domain = config["web"]["mailer"]["smtp_settings"]["domain"],
+    ssl = config["web"]["mailer"]["smtp_settings"]["ssl"],
   })
+  if not mailer then
+    return nil, mailer_err
+  end
 
-  local ret, err = smtp_conn:send({
+  local ok, send_err = mailer:send({
     from = "noreply@localhost",
-    to = admin.email,
+    to = { admin.email },
     subject = t("Reset password instructions"),
     text = template_text(data),
     html = template_html(data),
   })
-  ngx.log(ngx.ERR, "SMTP RET: " .. inspect(ret))
-  ngx.log(ngx.ERR, "SMTP ERR: " .. inspect(err))
+  if not ok then
+    return nil, send_err
+  end
+
+  return true
 end

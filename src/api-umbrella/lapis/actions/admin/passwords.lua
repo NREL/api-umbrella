@@ -20,12 +20,17 @@ function _M.create(self)
     end
   end
 
+  local message = t("If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes.")
   if admin then
     local token = admin:set_reset_password_token()
-    admin_reset_password_mailer(admin, token)
+    local ok, err = admin_reset_password_mailer(admin, token)
+    if not ok then
+      ngx.log(ngx.ERR, "mail error: ", err)
+      message = t("An unexpected error occurred when sending the email.")
+    end
   end
 
-  flash.session(self, "info", t("If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes."))
+  flash.session(self, "info", message)
   return self:write({ redirect_to = build_url("/admin/login") })
 end
 

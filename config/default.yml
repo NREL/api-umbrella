@@ -71,9 +71,6 @@ trafficserver:
 api_server:
   host: 127.0.0.1
   port: 14010
-emailrelay:
-  host: 127.0.0.1
-  port: 14018
 web:
   host: 127.0.0.1
   port: 14012
@@ -106,6 +103,8 @@ web:
         options: {}
   mailer:
     smtp_settings:
+      host: 127.0.0.1
+      port: 25
 static_site:
   host: 127.0.0.1
   port: 14013

@@ -19,6 +19,7 @@ luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION} ${LUAROCK_PENLIGHT_HASH})
 opm_install(lua-libcidr-ffi GUI ${OPM_LIBCIDR_VERSION} ${OPM_LIBCIDR_HASH} libcidr)
 opm_install(lua-resty-hmac jkeys089 ${OPM_RESTY_HMAC_VERSION} ${OPM_RESTY_HMAC_HASH})
 opm_install(lua-resty-http pintsized ${OPM_RESTY_HTTP_VERSION} ${OPM_RESTY_HTTP_HASH})
+opm_install(lua-resty-mail GUI ${OPM_RESTY_MAIL_VERSION} ${OPM_RESTY_MAIL_HASH})
 opm_install(lua-resty-nettle bungle ${OPM_RESTY_NETTLE_VERSION} ${OPM_RESTY_NETTLE_HASH})
 opm_install(lua-resty-session bungle ${OPM_RESTY_SESSION_VERSION} ${OPM_RESTY_SESSION_HASH})
 opm_install(lua-resty-validation bungle ${OPM_RESTY_VALIDATION_VERSION} ${OPM_RESTY_VALIDATION_HASH})
@@ -143,6 +144,7 @@ set(
   opm_lua-libcidr-ffi
   opm_lua-resty-hmac
   opm_lua-resty-http
+  opm_lua-resty-mail
   opm_lua-resty-nettle
   opm_lua-resty-session
   opm_lua-resty-validation
