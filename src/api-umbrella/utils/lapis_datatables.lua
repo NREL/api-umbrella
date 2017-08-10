@@ -18,7 +18,7 @@ function _M.index(self, model, options)
 
   if self.params["search"] and not is_empty(self.params["search"]["value"]) then
     local search_sql = {}
-    table.insert(search_sql, db.interpolate_query("id = ?", self.params["search"]["value"]))
+    --table.insert(search_sql, db.interpolate_query("id = ?", self.params["search"]["value"]))
     if options["search_fields"] then
       for _, field in ipairs(options["search_fields"]) do
         local value, _, gsub_err = ngx.re.gsub(self.params["search"]["value"], "[%_\\\\]", "\\$0", "jo")
@@ -32,11 +32,16 @@ function _M.index(self, model, options)
     table.insert(query["where"], "(" .. table.concat(search_sql, " OR ") .. ")")
   end
 
-  local where
-  if not is_empty(query["where"]) then
-    where = "(" .. table.concat(query["where"], ") AND (") .. ")"
+  local where = ""
+  if not is_empty(options["joins"]) then
+    where = table.concat(options["joins"], " ") .. " " .. where
   end
-  local total_count = model:count(where)
+
+  if not is_empty(query["where"]) then
+    where = where .. " WHERE (" .. table.concat(query["where"], ") AND (") .. ")"
+  end
+  -- local total_count = model:count(where)
+  local total_count = model:select(where, { fields = "COUNT(*) AS c", load = false })["c"]
 
   if is_empty(self.params["order"]) then
     table.insert(query["order"], "name ASC")
@@ -80,16 +85,12 @@ function _M.index(self, model, options)
     table.insert(query["clause"], db.interpolate_query("OFFSET ?", tonumber(self.params["start"])))
   end
 
-  if where then
-    where = "WHERE " .. where
-  end
-
   if not is_empty(query["order"]) then
-    where = (where or "") .. " ORDER BY " .. table.concat(query["order"], ", ")
+    where = where .. " ORDER BY " .. table.concat(query["order"], ", ")
   end
 
   if not is_empty(query["clause"]) then
-    where = (where or "") .. " " .. table.concat(query["clause"], " ")
+    where = where .. " " .. table.concat(query["clause"], " ")
   end
 
   local response = {

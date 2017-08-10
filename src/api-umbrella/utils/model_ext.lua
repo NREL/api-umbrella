@@ -62,6 +62,10 @@ function _M.create(options)
       options["after_validate"](nil, values)
     end
 
+    if options["before_save"] then
+      options["before_save"](nil, values)
+    end
+
     local new_record = Model.create(model_class, values_for_table(model_class, values), opts)
 
     if options["after_save"] then
@@ -91,6 +95,10 @@ function _M.update(options)
 
     if options["after_validate"] then
       options["after_validate"](self, values)
+    end
+
+    if options["before_save"] then
+      options["before_save"](self, values)
     end
 
     local return_value = Model.update(self, values_for_table(model_class, values), opts)
