@@ -19,7 +19,7 @@ local function before_validate_on_create(_, values)
   values["api_key_prefix"] = string.sub(api_key, 1, 10)
 end
 
-local function validate(values)
+local function validate(self, values)
   local errors = {}
   validate_field(errors, values, "first_name", validation.string:minlen(1), t("Provide your first name."))
   validate_field(errors, values, "last_name", validation.string:minlen(1), t("Provide your last name."))

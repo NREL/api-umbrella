@@ -8,7 +8,7 @@ local validation = require "resty.validation"
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
-local function validate(values)
+local function validate(self, values)
   local errors = {}
   validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
   validate_field(errors, values, "host", validation.string:minlen(1), t("can't be blank"))
