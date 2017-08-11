@@ -351,10 +351,13 @@ internal_apis:
         backend_prefix: "/api-umbrella/"
       - frontend_prefix: "/admin/"
         backend_prefix: "/admin/"
-      - frontend_prefix: "/admins/"
-        backend_prefix: "/admins/"
       - frontend_prefix: "/admin"
         backend_prefix: "/admin"
+        exact_match: true
+      - frontend_prefix: "/admins/"
+        backend_prefix: "/admins/"
+      - frontend_prefix: "/admins"
+        backend_prefix: "/admins"
         exact_match: true
     sub_settings:
       - http_method: POST
