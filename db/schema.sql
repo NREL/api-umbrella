@@ -8,7 +8,7 @@
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
+SET client_encoding = 'SQL_ASCII';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
@@ -628,6 +628,55 @@ CREATE TABLE admins (
 
 
 --
+-- Name: api_backend_rewrites; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_backend_rewrites (
+    id uuid NOT NULL,
+    matcher_type character varying(5) NOT NULL,
+    http_method character varying(7) NOT NULL,
+    frontend_matcher character varying(255) NOT NULL,
+    backend_replacement character varying(255) NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    CONSTRAINT api_backend_rewrites_http_method_check CHECK (((http_method)::text = ANY ((ARRAY['any'::character varying, 'GET'::character varying, 'POST'::character varying, 'PUT'::character varying, 'DELETE'::character varying, 'HEAD'::character varying, 'TRACE'::character varying, 'OPTIONS'::character varying, 'CONNECT'::character varying, 'PATCH'::character varying])::text[]))),
+    CONSTRAINT api_backend_rewrites_matcher_type_check CHECK (((matcher_type)::text = ANY ((ARRAY['route'::character varying, 'regex'::character varying])::text[])))
+);
+
+
+--
+-- Name: api_backend_servers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_backend_servers (
+    id uuid NOT NULL,
+    host character varying(255) NOT NULL,
+    port integer NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
+-- Name: api_backend_url_matches; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_backend_url_matches (
+    id uuid NOT NULL,
+    frontend_prefix character varying(255) NOT NULL,
+    backend_prefix character varying(255) NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
 -- Name: api_backends; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -635,11 +684,21 @@ CREATE TABLE api_backends (
     id uuid NOT NULL,
     name character varying(255) NOT NULL,
     sort_order integer NOT NULL,
-    config jsonb NOT NULL,
+    backend_protocol character varying(5) NOT NULL,
+    frontend_host character varying(255) NOT NULL,
+    backend_host character varying(255) NOT NULL,
+    balance_algorithm character varying(11) NOT NULL,
+    servers jsonb NOT NULL,
+    url_matches jsonb NOT NULL,
+    settings jsonb,
+    sub_settings jsonb,
+    rewrites jsonb,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
     updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    CONSTRAINT api_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY ((ARRAY['http'::character varying, 'https'::character varying])::text[]))),
+    CONSTRAINT api_backends_balance_algorithm_check CHECK (((balance_algorithm)::text = ANY ((ARRAY['round_robin'::character varying, 'least_conn'::character varying, 'ip_hash'::character varying])::text[])))
 );
 
 
@@ -845,6 +904,30 @@ ALTER TABLE ONLY admins
 
 
 --
+-- Name: api_backend_rewrites api_backend_rewrites_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_rewrites
+    ADD CONSTRAINT api_backend_rewrites_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_backend_servers api_backend_servers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_servers
+    ADD CONSTRAINT api_backend_servers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_backend_url_matches api_backend_url_matches_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_url_matches
+    ADD CONSTRAINT api_backend_url_matches_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: api_backends api_backends_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1017,6 +1100,27 @@ CREATE TRIGGER admins_updated_at BEFORE UPDATE ON admins FOR EACH ROW EXECUTE PR
 
 
 --
+-- Name: api_backend_rewrites api_backend_rewrites_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_rewrites_updated_at BEFORE UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: api_backend_servers api_backend_servers_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_servers_updated_at BEFORE UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: api_backend_url_matches api_backend_url_matches_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_url_matches_updated_at BEFORE UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
 -- Name: api_backends api_backends_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1094,6 +1198,20 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend
 
 
 --
+-- Name: api_backend_rewrites audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_servers audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_users audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1168,6 +1286,20 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_api_scopes FOR E
 --
 
 CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backends FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_rewrites audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_rewrites FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_servers audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_servers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -1307,6 +1439,27 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_permissions TO api_umbrella_app
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admins TO api_umbrella_app_user;
+
+
+--
+-- Name: api_backend_rewrites; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_rewrites TO api_umbrella_app_user;
+
+
+--
+-- Name: api_backend_servers; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_servers TO api_umbrella_app_user;
+
+
+--
+-- Name: api_backend_url_matches; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_url_matches TO api_umbrella_app_user;
 
 
 --

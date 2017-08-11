@@ -54,6 +54,11 @@ function _M.processes()
   processes()
 end
 
+function _M.migrate()
+  local migrate = require "api-umbrella.cli.migrate"
+  migrate()
+end
+
 function _M.health(args)
   local health = require "api-umbrella.cli.health"
   health(args)
@@ -109,6 +114,10 @@ parser:command("reopen-logs")
 parser:command("processes")
   :description("List the status of the processes running under API Umbrella.")
   :action(_M.processes)
+
+parser:command("migrate")
+  :description("Run the database migrations task.")
+  :action(_M.migrate)
 
 local health_command = parser:command("health")
   :description("Print the health of the API Umbrella services.")

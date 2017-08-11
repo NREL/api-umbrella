@@ -161,7 +161,15 @@ return {
         id uuid PRIMARY KEY,
         name varchar(255) NOT NULL,
         sort_order int NOT NULL,
-        config jsonb NOT NULL,
+        backend_protocol varchar(5) NOT NULL CHECK(backend_protocol IN('http', 'https')),
+        frontend_host varchar(255) NOT NULL,
+        backend_host varchar(255) NOT NULL,
+        balance_algorithm varchar(11) NOT NULL CHECK(balance_algorithm IN('round_robin', 'least_conn', 'ip_hash')),
+        servers jsonb NOT NULL,
+        url_matches jsonb NOT NULL,
+        settings jsonb,
+        sub_settings jsonb,
+        rewrites jsonb,
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
         created_by varchar(255) NOT NULL DEFAULT current_app_user(),
         updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
@@ -170,6 +178,50 @@ return {
     ]])
     db.query("CREATE TRIGGER api_backends_updated_at BEFORE UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE set_updated()")
     db.query("SELECT audit.audit_table('api_backends')")
+
+    db.query([[
+      CREATE TABLE api_backend_rewrites(
+        id uuid PRIMARY KEY,
+        matcher_type varchar(5) NOT NULL CHECK(matcher_type IN('route', 'regex')),
+        http_method varchar(7) NOT NULL CHECK(http_method IN('any', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'OPTIONS', 'CONNECT', 'PATCH')),
+        frontend_matcher varchar(255) NOT NULL,
+        backend_replacement varchar(255) NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+      )
+    ]])
+    db.query("CREATE TRIGGER api_backend_rewrites_updated_at BEFORE UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("SELECT audit.audit_table('api_backend_rewrites')")
+
+    db.query([[
+      CREATE TABLE api_backend_servers(
+        id uuid PRIMARY KEY,
+        host varchar(255) NOT NULL,
+        port int NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+      )
+    ]])
+    db.query("CREATE TRIGGER api_backend_servers_updated_at BEFORE UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("SELECT audit.audit_table('api_backend_servers')")
+
+    db.query([[
+      CREATE TABLE api_backend_url_matches(
+        id uuid PRIMARY KEY,
+        frontend_prefix varchar(255) NOT NULL,
+        backend_prefix varchar(255) NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+      )
+    ]])
+    db.query("CREATE TRIGGER api_backend_url_matches_updated_at BEFORE UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("SELECT audit.audit_table('api_backend_servers')")
 
     db.query([[
       CREATE TABLE api_users(

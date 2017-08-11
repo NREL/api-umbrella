@@ -15,16 +15,16 @@ local _M = {}
 function _M.index(self)
   return lapis_datatables.index(self, ApiBackend, {
     joins = {
-      "LEFT JOIN LATERAL jsonb_array_elements(config->'url_matches') AS config_url_matches ON true",
-      "LEFT JOIN LATERAL jsonb_array_elements(config->'servers') AS config_servers ON true",
+      "LEFT JOIN LATERAL jsonb_array_elements(url_matches) AS url_matches ON true",
+      "LEFT JOIN LATERAL jsonb_array_elements(servers) AS servers ON true",
     },
     search_fields = {
       "name",
-      db.raw("config->>'frontend_host'"),
-      db.raw("config->>'backend_host'"),
-      db.raw("config_url_matches->>'backend_prefix'"),
-      db.raw("config_url_matches->>'frontend_prefix'"),
-      db.raw("config_servers->>'host'"),
+      "frontend_host",
+      "backend_host",
+      db.raw("url_matches->>'backend_prefix'"),
+      db.raw("url_matches->>'frontend_prefix'"),
+      db.raw("servers->>'host'"),
     },
   })
 end
@@ -69,18 +69,20 @@ function _M.api_backend_params(self)
     params = dbify_json_nulls({
       name = input["name"],
       sort_order = input["sort_order"],
-      config = {
-        backend_protocol = input["backend_protocol"],
-        frontend_host = input["frontend_host"],
-        backend_host = input["backend_host"],
-        balance_algorithm = input["balance_algorithm"],
-      },
+      backend_protocol = input["backend_protocol"],
+      frontend_host = input["frontend_host"],
+      backend_host = input["backend_host"],
+      balance_algorithm = input["balance_algorithm"],
+      servers = {},
+      url_matches = {},
+      settings = {},
+      sub_settings = {},
+      rewrites = {},
     })
 
     if is_array(input["servers"]) then
-      params["config"]["servers"] = {}
       for _, input_server in ipairs(input["servers"]) do
-        table.insert(params["config"]["servers"], dbify_json_nulls({
+        table.insert(params["servers"], dbify_json_nulls({
           id = input_server["id"],
           host = input_server["host"],
           port = input_server["port"],
@@ -89,12 +91,11 @@ function _M.api_backend_params(self)
     end
 
     if is_array(input["url_matches"]) then
-      params["config"]["url_matches"] = {}
-      for _, input_match in ipairs(input["url_matches"]) do
-        table.insert(params["config"]["url_matches"], dbify_json_nulls({
-          id = input_match["id"],
-          host = input_match["frontend_prefix"],
-          port = input_match["backend_prefix"],
+      for _, input_url_match in ipairs(input["url_matches"]) do
+        table.insert(params["url_matches"], dbify_json_nulls({
+          id = input_url_match["id"],
+          frontend_prefix = input_url_match["frontend_prefix"],
+          backend_prefix = input_url_match["backend_prefix"],
         }))
       end
     end

@@ -27,11 +27,16 @@ function _M.add_error(errors, field, message)
   table.insert(errors[field], message)
 end
 
-function _M.validate_field(errors, values, field, validator, message)
+function _M.validate_field(errors, values, field, validator, message, error_field_prefix)
   local value = values[field]
   local ok = validator(value)
   if not ok then
-    _M.add_error(errors, field, message)
+    local error_field = field
+    if error_field_prefix then
+      error_field = error_field_prefix .. error_field
+    end
+
+    _M.add_error(errors, error_field, message)
   end
 end
 
