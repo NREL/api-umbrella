@@ -19,6 +19,71 @@ local function values_for_table(model_class, values)
   return column_values
 end
 
+local function start_transaction()
+  -- Only open a new transaction if one isn't already opened.
+  --
+  -- When dealing with saving nested relationships, this ensures that only the
+  -- parent model opens the transaction, and all associated child records are
+  -- saved as part of that single transaction (assuming these child records are
+  -- saved in the "after_save" callback, which still lives inside the parent's
+  -- transaction). This ensures that the parent record save will only be
+  -- committed if all child records also save successfully.
+  local started = false
+  if not ngx.ctx.model_transaction_started then
+    db.query("START TRANSACTION")
+    started = true
+    ngx.ctx.model_transaction_started = true
+  end
+
+  return started
+end
+
+local function commit_transaction(started)
+  -- Only commit the transaction if the current record started the transaction
+  -- (see start_transaction).
+  if started then
+    db.query("COMMIT")
+    ngx.ctx.model_transaction_started = false
+  end
+end
+
+local function before_save(self, action, options, values)
+  if action == "create" then
+    if not values["id"] then
+      values["id"] = uuid_generate()
+    end
+
+    if options["before_validate_on_create"] then
+      options["before_validate_on_create"](self, values)
+    end
+  end
+
+  if options["before_validate"] then
+    options["before_validate"](self, values)
+  end
+
+  if options["validate"] then
+    local errors = options["validate"](self, values)
+    if not is_empty(errors) then
+      return coroutine.yield("error", errors)
+    end
+  end
+
+  if options["after_validate"] then
+    options["after_validate"](self, values)
+  end
+
+  if options["before_save"] then
+    options["before_save"](self, values)
+  end
+end
+
+local function after_save(self, _, options, values)
+  if options["after_save"] then
+    options["after_save"](self, values)
+  end
+end
+
 function _M.add_error(errors, field, message)
   if not errors[field] then
     errors[field] = {}
@@ -42,42 +107,14 @@ end
 
 function _M.create(options)
   return function(model_class, values, opts)
-    db.query("START TRANSACTION")
-
-    if not values["id"] then
-      values["id"] = uuid_generate()
-    end
-
-    if options["before_validate_on_create"] then
-      options["before_validate_on_create"](nil, values)
-    end
-
-    if options["before_validate"] then
-      options["before_validate"](nil, values)
-    end
-
-    if options["validate"] then
-      local errors = options["validate"](nil, values)
-      if not is_empty(errors) then
-        return coroutine.yield("error", errors)
-      end
-    end
-
-    if options["after_validate"] then
-      options["after_validate"](nil, values)
-    end
-
-    if options["before_save"] then
-      options["before_save"](nil, values)
-    end
+    local transaction_started = start_transaction()
+    before_save(nil, "create", options, values)
 
     local new_record = Model.create(model_class, values_for_table(model_class, values), opts)
 
-    if options["after_save"] then
-      options["after_save"](new_record, values)
-    end
+    after_save(new_record, "create", options, values)
+    commit_transaction(transaction_started)
 
-    db.query("COMMIT")
     return new_record
   end
 end
@@ -85,34 +122,14 @@ end
 function _M.update(options)
   return function(self, values, opts)
     local model_class = self.__class
-    db.query("START TRANSACTION")
-
-    if options["before_validate"] then
-      options["before_validate"](self, values)
-    end
-
-    if options["validate"] then
-      local errors = options["validate"](self, values)
-      if not is_empty(errors) then
-        return coroutine.yield("error", errors)
-      end
-    end
-
-    if options["after_validate"] then
-      options["after_validate"](self, values)
-    end
-
-    if options["before_save"] then
-      options["before_save"](self, values)
-    end
+    local transaction_started = start_transaction()
+    before_save(self, "update", options, values)
 
     local return_value = Model.update(self, values_for_table(model_class, values), opts)
 
-    if options["after_save"] then
-      options["after_save"](self, values)
-    end
+    after_save(self, "update", options, values)
+    commit_transaction(transaction_started)
 
-    db.query("COMMIT")
     return return_value
   end
 end
@@ -181,6 +198,13 @@ function _M.save_has_and_belongs_to_many(self, association_foreign_key_ids, opti
       db.query("DELETE FROM " .. join_table .. " WHERE " .. foreign_key .. " = ? AND " .. association_foreign_key .. " NOT IN ?", self.id, db.list(association_foreign_key_ids))
     end
   end
+end
+
+function _M.new_class(table_name, model_options, save_options)
+  model_options.update = _M.update(save_options)
+  local model_class = Model:extend(table_name, model_options)
+  model_class.create = _M.create(save_options)
+  return model_class
 end
 
 return _M

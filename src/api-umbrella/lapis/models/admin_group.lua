@@ -1,4 +1,3 @@
-local Model = require("lapis.db.model").Model
 local cjson = require "cjson"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
@@ -8,36 +7,7 @@ local validation = require "resty.validation"
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
-local function validate(self, values)
-  local errors = {}
-  validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
-  validate_field(errors, values, "api_scope_ids", validation.table:minlen(1), t("can't be blank"))
-  validate_field(errors, values, "permission_ids", validation.table:minlen(1), t("can't be blank"))
-  return errors
-end
-
-local function after_save(self, values)
-  model_ext.save_has_and_belongs_to_many(self, values["api_scope_ids"], {
-    join_table = "admin_groups_api_scopes",
-    foreign_key = "admin_group_id",
-    association_foreign_key = "api_scope_id",
-  })
-
-  model_ext.save_has_and_belongs_to_many(self, values["permission_ids"], {
-    join_table = "admin_groups_admin_permissions",
-    foreign_key = "admin_group_id",
-    association_foreign_key = "admin_permission_id",
-  })
-end
-
-local save_options = {
-  validate = validate,
-  after_save = after_save,
-}
-
-local AdminGroup = Model:extend("admin_groups", {
-  update = model_ext.update(save_options),
-
+local AdminGroup = model_ext.new_class("admin_groups", {
   relations = {
     model_ext.has_and_belongs_to_many("admins", "Admin", {
       join_table = "admin_groups_admins",
@@ -142,8 +112,28 @@ local AdminGroup = Model:extend("admin_groups", {
     setmetatable(data["admin_usernames"], cjson.empty_array_mt)
     return data
   end,
-})
+}, {
+  validate = function(_, values)
+    local errors = {}
+    validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, values, "api_scope_ids", validation.table:minlen(1), t("can't be blank"))
+    validate_field(errors, values, "permission_ids", validation.table:minlen(1), t("can't be blank"))
+    return errors
+  end,
 
-AdminGroup.create = model_ext.create(save_options)
+  after_save = function(self, values)
+    model_ext.save_has_and_belongs_to_many(self, values["api_scope_ids"], {
+      join_table = "admin_groups_api_scopes",
+      foreign_key = "admin_group_id",
+      association_foreign_key = "api_scope_id",
+    })
+
+    model_ext.save_has_and_belongs_to_many(self, values["permission_ids"], {
+      join_table = "admin_groups_admin_permissions",
+      foreign_key = "admin_group_id",
+      association_foreign_key = "admin_permission_id",
+    })
+  end,
+})
 
 return AdminGroup

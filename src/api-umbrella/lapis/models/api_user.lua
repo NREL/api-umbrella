@@ -1,4 +1,3 @@
-local Model = require("lapis.db.model").Model
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
 local iso8601 = require "api-umbrella.utils.iso8601"
@@ -10,33 +9,7 @@ local validation = require "resty.validation"
 
 local validate_field = model_ext.validate_field
 
-local function before_validate_on_create(_, values)
-  local api_key = random_token(40)
-  values["api_key_hash"] = hmac(api_key)
-  local encrypted, iv = encryptor.encrypt(api_key, values["id"])
-  values["api_key_encrypted"] = encrypted
-  values["api_key_encrypted_iv"] = iv
-  values["api_key_prefix"] = string.sub(api_key, 1, 10)
-end
-
-local function validate(self, values)
-  local errors = {}
-  validate_field(errors, values, "first_name", validation.string:minlen(1), t("Provide your first name."))
-  validate_field(errors, values, "last_name", validation.string:minlen(1), t("Provide your last name."))
-  validate_field(errors, values, "email", validation.string:minlen(1), t("Provide your email address."))
-  validate_field(errors, values, "email", validation:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
-  validate_field(errors, values, "website", validation.optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
-  return errors
-end
-
-local save_options = {
-  before_validate_on_create = before_validate_on_create,
-  validate = validate,
-}
-
-local ApiUser = Model:extend("api_users", {
-  update = model_ext.update(save_options),
-
+local ApiUser = model_ext.new_class("api_users", {
   api_key_decrypted = function(self)
     local decrypted
     if self.api_key_encrypted and self.api_key_encrypted_iv then
@@ -81,8 +54,25 @@ local ApiUser = Model:extend("api_users", {
       version = 1,
     }
   end,
-})
+}, {
+  before_validate_on_create = function(_, values)
+    local api_key = random_token(40)
+    values["api_key_hash"] = hmac(api_key)
+    local encrypted, iv = encryptor.encrypt(api_key, values["id"])
+    values["api_key_encrypted"] = encrypted
+    values["api_key_encrypted_iv"] = iv
+    values["api_key_prefix"] = string.sub(api_key, 1, 10)
+  end,
 
-ApiUser.create = model_ext.create(save_options)
+  validate = function(_, values)
+    local errors = {}
+    validate_field(errors, values, "first_name", validation.string:minlen(1), t("Provide your first name."))
+    validate_field(errors, values, "last_name", validation.string:minlen(1), t("Provide your last name."))
+    validate_field(errors, values, "email", validation.string:minlen(1), t("Provide your email address."))
+    validate_field(errors, values, "email", validation:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
+    validate_field(errors, values, "website", validation.optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
+    return errors
+  end,
+})
 
 return ApiUser

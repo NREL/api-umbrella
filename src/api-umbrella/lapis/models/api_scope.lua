@@ -1,30 +1,12 @@
-local Model = require("lapis.db.model").Model
-local cjson = require "cjson"
 local iso8601 = require "api-umbrella.utils.iso8601"
+local json_null = require("cjson").null
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
 local validation = require "resty.validation"
 
-local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
-local function validate(self, values)
-  local errors = {}
-  validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
-  validate_field(errors, values, "host", validation.string:minlen(1), t("can't be blank"))
-  validate_field(errors, values, "host", validation:regex([[^(\*|(\*\.|\.)[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*|[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*)$]], "jo"), t('must be in the format of "example.com"'))
-  validate_field(errors, values, "path_prefix", validation.string:minlen(1), t("can't be blank"))
-  validate_field(errors, values, "path_prefix", validation:regex("^/", "jo"), t('must start with "/"'))
-  return errors
-end
-
-local save_options = {
-  validate = validate,
-}
-
-local ApiScope = Model:extend("api_scopes", {
-  update = model_ext.update(save_options),
-
+local ApiScope = model_ext.new_class("api_scopes", {
   display_name = function(self)
     return self.name .. " - " .. self.host .. self.path_prefix
   end,
@@ -43,8 +25,16 @@ local ApiScope = Model:extend("api_scopes", {
       version = 1,
     }
   end,
+}, {
+  validate = function(_, values)
+    local errors = {}
+    validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, values, "host", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, values, "host", validation:regex([[^(\*|(\*\.|\.)[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*|[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*)$]], "jo"), t('must be in the format of "example.com"'))
+    validate_field(errors, values, "path_prefix", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, values, "path_prefix", validation:regex("^/", "jo"), t('must start with "/"'))
+    return errors
+  end,
 })
-
-ApiScope.create = model_ext.create(save_options)
 
 return ApiScope

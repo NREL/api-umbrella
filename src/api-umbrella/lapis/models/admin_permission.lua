@@ -1,10 +1,8 @@
-local Model = require("lapis.db.model").Model
-local cjson = require "cjson"
 local iso8601 = require "api-umbrella.utils.iso8601"
+local json_null = require("cjson").null
+local model_ext = require "api-umbrella.utils.model_ext"
 
-local json_null = cjson.null
-
-local AdminPermission = Model:extend("admin_permissions", {
+local AdminPermission = model_ext.new_class("admin_permissions", {
   as_json = function(self)
     return {
       id = self.id or json_null,

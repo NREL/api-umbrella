@@ -14,17 +14,22 @@ local _M = {}
 
 function _M.index(self)
   return lapis_datatables.index(self, ApiBackend, {
-    joins = {
-      "LEFT JOIN LATERAL jsonb_array_elements(url_matches) AS url_matches ON true",
-      "LEFT JOIN LATERAL jsonb_array_elements(servers) AS servers ON true",
+    search_joins = {
+      "LEFT JOIN api_backend_servers ON api_backends.id = api_backend_servers.api_backend_id",
+      "LEFT JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id",
     },
     search_fields = {
       "name",
       "frontend_host",
       "backend_host",
-      db.raw("url_matches->>'backend_prefix'"),
-      db.raw("url_matches->>'frontend_prefix'"),
-      db.raw("servers->>'host'"),
+      db.raw("api_backend_servers.host"),
+      db.raw("api_backend_url_matches.backend_prefix"),
+      db.raw("api_backend_url_matches.frontend_prefix"),
+    },
+    preload = {
+      "rewrites",
+      "servers",
+      "url_matches",
     },
   })
 end

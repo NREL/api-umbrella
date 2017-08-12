@@ -1,4 +1,3 @@
-local Model = require("lapis.db.model").Model
 local bcrypt = require "bcrypt"
 local cjson = require "cjson"
 local db = require "lapis.db"
@@ -14,22 +13,6 @@ local validation = require "resty.validation"
 
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
-
-local function before_validate_on_create(_, values)
-  ngx.log(ngx.ERR, "before_validate_on_create")
-  local authentication_token = random_token(40)
-  values["authentication_token_hash"] = hmac(authentication_token)
-  local encrypted, iv = encryptor.encrypt(authentication_token, values["id"])
-  values["authentication_token_encrypted"] = encrypted
-  values["authentication_token_encrypted_iv"] = iv
-end
-
-local function before_validate(_, values)
-  ngx.log(ngx.ERR, "before_validate" .. inspect(values))
-  if config["web"]["admin"]["username_is_email"] then
-    values["email"] = values["username"]
-  end
-end
 
 local function validate_email(_, values, errors)
   validate_field(errors, values, "username", validation.string:minlen(1), t("can't be blank"))
@@ -85,41 +68,7 @@ local function validate_password(self, values, errors)
   end
 end
 
-local function validate(self, values)
-  ngx.log(ngx.ERR, "validate")
-  local errors = {}
-  validate_email(self, values, errors)
-  validate_groups(self, values, errors)
-  validate_password(self, values, errors)
-
-  return errors
-end
-
-local function after_validate(_, values)
-  ngx.log(ngx.ERR, "after_validate")
-  if not is_empty(values["password"]) then
-    values["password_hash"] = bcrypt.digest(values["password"], 11)
-  end
-end
-
-local function after_save(self, values)
-  ngx.log(ngx.ERR, "after_save")
-  model_ext.save_has_and_belongs_to_many(self, values["group_ids"], {
-    join_table = "admin_groups_admins",
-    foreign_key = "admin_id",
-    association_foreign_key = "admin_group_id",
-  })
-end
-
-local save_options = {
-  before_validate_on_create = before_validate_on_create,
-  before_validate = before_validate,
-  validate = validate,
-  after_validate = after_validate,
-  after_save = after_save,
-}
-
-local Admin = Model:extend("admins", {
+local Admin = model_ext.new_class("admins", {
   relations = {
     model_ext.has_and_belongs_to_many("groups", "AdminGroup", {
       join_table = "admin_groups_admins",
@@ -128,8 +77,6 @@ local Admin = Model:extend("admins", {
       order = "name",
     }),
   },
-
-  update = model_ext.update(save_options),
 
   is_valid_password = function(self, password)
     if self.password_hash and password and bcrypt.verify(password, self.password_hash) then
@@ -217,7 +164,6 @@ local Admin = Model:extend("admins", {
     setmetatable(data["group_ids"], cjson.empty_array_mt)
     setmetatable(data["group_names"], cjson.empty_array_mt)
 
-    ngx.log(ngx.ERR, "CURRENT: " .. inspect(current_admin))
     if current_admin and current_admin.id == self.id then
       data["authentication_token"] = self:authentication_token_decrypted()
     end
@@ -236,9 +182,44 @@ local Admin = Model:extend("admins", {
 
     return token
   end,
-})
+}, {
+  before_validate_on_create = function(_, values)
+    local authentication_token = random_token(40)
+    values["authentication_token_hash"] = hmac(authentication_token)
+    local encrypted, iv = encryptor.encrypt(authentication_token, values["id"])
+    values["authentication_token_encrypted"] = encrypted
+    values["authentication_token_encrypted_iv"] = iv
+  end,
 
-Admin.create = model_ext.create(save_options)
+  before_validate = function(_, values)
+    if config["web"]["admin"]["username_is_email"] then
+      values["email"] = values["username"]
+    end
+  end,
+
+  validate = function(self, values)
+    local errors = {}
+    validate_email(self, values, errors)
+    validate_groups(self, values, errors)
+    validate_password(self, values, errors)
+
+    return errors
+  end,
+
+  after_validate = function(_, values)
+    if not is_empty(values["password"]) then
+      values["password_hash"] = bcrypt.digest(values["password"], 11)
+    end
+  end,
+
+  after_save = function(self, values)
+    model_ext.save_has_and_belongs_to_many(self, values["group_ids"], {
+      join_table = "admin_groups_admins",
+      foreign_key = "admin_id",
+      association_foreign_key = "admin_group_id",
+    })
+  end,
+})
 
 Admin.needs_first_account = function()
   local needs = false

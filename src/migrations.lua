@@ -165,11 +165,6 @@ return {
         frontend_host varchar(255) NOT NULL,
         backend_host varchar(255) NOT NULL,
         balance_algorithm varchar(11) NOT NULL CHECK(balance_algorithm IN('round_robin', 'least_conn', 'ip_hash')),
-        servers jsonb NOT NULL,
-        url_matches jsonb NOT NULL,
-        settings jsonb,
-        sub_settings jsonb,
-        rewrites jsonb,
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
         created_by varchar(255) NOT NULL DEFAULT current_app_user(),
         updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
@@ -182,6 +177,7 @@ return {
     db.query([[
       CREATE TABLE api_backend_rewrites(
         id uuid PRIMARY KEY,
+        api_backend_id uuid NOT NULL REFERENCES api_backends,
         matcher_type varchar(5) NOT NULL CHECK(matcher_type IN('route', 'regex')),
         http_method varchar(7) NOT NULL CHECK(http_method IN('any', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'OPTIONS', 'CONNECT', 'PATCH')),
         frontend_matcher varchar(255) NOT NULL,
@@ -198,6 +194,7 @@ return {
     db.query([[
       CREATE TABLE api_backend_servers(
         id uuid PRIMARY KEY,
+        api_backend_id uuid NOT NULL REFERENCES api_backends,
         host varchar(255) NOT NULL,
         port int NOT NULL,
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
@@ -212,6 +209,7 @@ return {
     db.query([[
       CREATE TABLE api_backend_url_matches(
         id uuid PRIMARY KEY,
+        api_backend_id uuid NOT NULL REFERENCES api_backends,
         frontend_prefix varchar(255) NOT NULL,
         backend_prefix varchar(255) NOT NULL,
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),

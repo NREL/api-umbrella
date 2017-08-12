@@ -633,6 +633,7 @@ CREATE TABLE admins (
 
 CREATE TABLE api_backend_rewrites (
     id uuid NOT NULL,
+    api_backend_id uuid NOT NULL,
     matcher_type character varying(5) NOT NULL,
     http_method character varying(7) NOT NULL,
     frontend_matcher character varying(255) NOT NULL,
@@ -652,6 +653,7 @@ CREATE TABLE api_backend_rewrites (
 
 CREATE TABLE api_backend_servers (
     id uuid NOT NULL,
+    api_backend_id uuid NOT NULL,
     host character varying(255) NOT NULL,
     port integer NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
@@ -667,6 +669,7 @@ CREATE TABLE api_backend_servers (
 
 CREATE TABLE api_backend_url_matches (
     id uuid NOT NULL,
+    api_backend_id uuid NOT NULL,
     frontend_prefix character varying(255) NOT NULL,
     backend_prefix character varying(255) NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
@@ -688,11 +691,6 @@ CREATE TABLE api_backends (
     frontend_host character varying(255) NOT NULL,
     backend_host character varying(255) NOT NULL,
     balance_algorithm character varying(11) NOT NULL,
-    servers jsonb NOT NULL,
-    url_matches jsonb NOT NULL,
-    settings jsonb,
-    sub_settings jsonb,
-    rewrites jsonb,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
     updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
@@ -1390,6 +1388,30 @@ ALTER TABLE ONLY admin_groups_api_scopes
 
 ALTER TABLE ONLY admin_groups_api_scopes
     ADD CONSTRAINT admin_groups_api_scopes_api_scope_id_fkey FOREIGN KEY (api_scope_id) REFERENCES api_scopes(id);
+
+
+--
+-- Name: api_backend_rewrites api_backend_rewrites_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_rewrites
+    ADD CONSTRAINT api_backend_rewrites_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id);
+
+
+--
+-- Name: api_backend_servers api_backend_servers_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_servers
+    ADD CONSTRAINT api_backend_servers_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id);
+
+
+--
+-- Name: api_backend_url_matches api_backend_url_matches_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_url_matches
+    ADD CONSTRAINT api_backend_url_matches_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id);
 
 
 --

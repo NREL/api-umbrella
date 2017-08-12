@@ -16,6 +16,8 @@ function _M.index(self, model, options)
     order = {},
   }
 
+  local where = ""
+
   if self.params["search"] and not is_empty(self.params["search"]["value"]) then
     local search_sql = {}
     --table.insert(search_sql, db.interpolate_query("id = ?", self.params["search"]["value"]))
@@ -30,11 +32,10 @@ function _M.index(self, model, options)
       end
     end
     table.insert(query["where"], "(" .. table.concat(search_sql, " OR ") .. ")")
-  end
 
-  local where = ""
-  if not is_empty(options["joins"]) then
-    where = table.concat(options["joins"], " ") .. " " .. where
+    if not is_empty(options["search_joins"]) then
+      where = table.concat(options["search_joins"], " ") .. " " .. where
+    end
   end
 
   if not is_empty(query["where"]) then
@@ -100,7 +101,9 @@ function _M.index(self, model, options)
     data = {},
   }
 
-  local records = model:select(where)
+  local records = model:select(where, {
+    fields = "DISTINCT " .. db.escape_identifier(model:table_name()) .. ".*",
+  })
   if options and options["preload"] then
     model:preload_relations(records, unpack(options["preload"]))
   end
