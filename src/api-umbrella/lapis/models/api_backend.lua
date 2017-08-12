@@ -140,6 +140,15 @@ local ApiBackend = model_ext.new_class("api_backends", {
   end,
 
   after_save = function(self, values)
+    if is_array(values["rewrites"]) then
+      local rewrite_ids = {}
+      for _, rewrite_values in ipairs(values["rewrites"]) do
+        local rewrite = self:update_or_create_rewrite(rewrite_values)
+        table.insert(rewrite_ids, assert(rewrite.id))
+      end
+      self:delete_rewrites_except(rewrite_ids)
+    end
+
     if is_array(values["servers"]) then
       local server_ids = {}
       for _, server_values in ipairs(values["servers"]) do

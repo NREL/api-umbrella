@@ -78,12 +78,24 @@ function _M.api_backend_params(self)
       frontend_host = input["frontend_host"],
       backend_host = input["backend_host"],
       balance_algorithm = input["balance_algorithm"],
+      rewrites = {},
       servers = {},
-      url_matches = {},
       settings = {},
       sub_settings = {},
-      rewrites = {},
+      url_matches = {},
     })
+
+    if is_array(input["rewrites"]) then
+      for _, input_rewrite in ipairs(input["rewrites"]) do
+        table.insert(params["rewrites"], dbify_json_nulls({
+          id = input_rewrite["id"],
+          matcher_type = input_rewrite["matcher_type"],
+          http_method = input_rewrite["http_method"],
+          frontend_matcher = input_rewrite["frontend_matcher"],
+          backend_replacement = input_rewrite["backend_replacement"],
+        }))
+      end
+    end
 
     if is_array(input["servers"]) then
       for _, input_server in ipairs(input["servers"]) do
