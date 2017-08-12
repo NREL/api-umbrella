@@ -14,7 +14,7 @@ local ApiBackendServer = model_ext.new_class("api_backend_servers", {
     }
   end,
 }, {
-  validate = function(self, values)
+  validate = function(_, values)
     local errors = {}
     validate_field(errors, values, "host", validation.string:minlen(1), t("can't be blank"))
     validate_field(errors, values, "port", validation.number, t("can't be blank"))

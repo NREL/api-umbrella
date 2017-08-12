@@ -2,7 +2,9 @@ local ApiBackendRewrite = require "api-umbrella.lapis.models.api_backend_rewrite
 local ApiBackendServer = require "api-umbrella.lapis.models.api_backend_server"
 local ApiBackendUrlMatch = require "api-umbrella.lapis.models.api_backend_url_match"
 local cjson = require "cjson"
+local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
+local is_empty = require("pl.types").is_empty
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
@@ -10,6 +12,34 @@ local validation = require "resty.validation"
 
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
+
+local function update_or_create_has_many(self, relation_model, relation_values)
+  relation_values["api_backend_id"] = assert(self.id)
+
+  local relation_record
+  if relation_values["id"] then
+    relation_record = relation_model:find({
+      api_backend_id = relation_values["api_backend_id"],
+      id = relation_values["id"],
+    })
+    assert(relation_record:update(relation_values))
+  else
+    relation_record = assert(relation_model:create(relation_values))
+  end
+
+  return relation_record
+end
+
+local function delete_has_many_except(self, relation_model, keep_ids)
+  local table_name = assert(relation_model:table_name())
+  local api_backend_id = assert(self.id)
+
+  if is_empty(keep_ids) then
+    db.delete(table_name, "api_backend_id = ?", api_backend_id)
+  else
+    db.delete(table_name, "api_backend_id = ? AND id NOT IN ?", api_backend_id, db.list(keep_ids))
+  end
+end
 
 local ApiBackend = model_ext.new_class("api_backends", {
   relations = {
@@ -64,54 +94,27 @@ local ApiBackend = model_ext.new_class("api_backends", {
   end,
 
   update_or_create_rewrite = function(self, rewrite_values)
-    rewrite_values["api_backend_id"] = assert(self.id)
-
-    local rewrite
-    if rewrite_values["id"] then
-      rewrite = ApiBackendRewrite:find({
-        api_backend_id = rewrite_values["api_backend_id"],
-        id = rewrite_values["id"],
-      })
-      assert(rewrite:update(rewrite_values))
-    else
-      rewrite = assert(ApiBackendRewrite:create(rewrite_values))
-    end
-
-    return rewrite
+    return update_or_create_has_many(self, ApiBackendRewrite, rewrite_values)
   end,
 
   update_or_create_server = function(self, server_values)
-    server_values["api_backend_id"] = assert(self.id)
-
-    local server
-    if server_values["id"] then
-      server = ApiBackendServer:find({
-        api_backend_id = server_values["api_backend_id"],
-        id = server_values["id"],
-      })
-      assert(server:update(server_values))
-    else
-      server = assert(ApiBackendServer:create(server_values))
-    end
-
-    return server
+    return update_or_create_has_many(self, ApiBackendServer, server_values)
   end,
 
   update_or_create_url_match = function(self, url_match_values)
-    url_match_values["api_backend_id"] = assert(self.id)
+    return update_or_create_has_many(self, ApiBackendUrlMatch, url_match_values)
+  end,
 
-    local url_match
-    if url_match_values["id"] then
-      url_match = ApiBackendUrlMatch:find({
-        api_backend_id = url_match_values["api_backend_id"],
-        id = url_match_values["id"],
-      })
-      assert(url_match:update(url_match_values))
-    else
-      url_match = assert(ApiBackendUrlMatch:create(url_match_values))
-    end
+  delete_rewrites_except = function(self, keep_rewrite_ids)
+    return delete_has_many_except(self, ApiBackendRewrite, keep_rewrite_ids)
+  end,
 
-    return url_match
+  delete_servers_except = function(self, keep_server_ids)
+    return delete_has_many_except(self, ApiBackendServer, keep_server_ids)
+  end,
+
+  delete_url_matches_except = function(self, keep_url_match_ids)
+    return delete_has_many_except(self, ApiBackendUrlMatch, keep_url_match_ids)
   end,
 }, {
   before_validate_on_create = function(_, values)
@@ -133,15 +136,21 @@ local ApiBackend = model_ext.new_class("api_backends", {
 
   after_save = function(self, values)
     if is_array(values["servers"]) then
+      local server_ids = {}
       for _, server_values in ipairs(values["servers"]) do
-        self:update_or_create_server(server_values)
+        local server = self:update_or_create_server(server_values)
+        table.insert(server_ids, assert(server.id))
       end
+      self:delete_servers_except(server_ids)
     end
 
     if is_array(values["url_matches"]) then
+      local url_match_ids = {}
       for _, url_match_values in ipairs(values["url_matches"]) do
-        self:update_or_create_url_match(url_match_values)
+        local url_match = self:update_or_create_url_match(url_match_values)
+        table.insert(url_match_ids, assert(url_match.id))
       end
+      self:delete_url_matches_except(url_match_ids)
     end
   end,
 })
