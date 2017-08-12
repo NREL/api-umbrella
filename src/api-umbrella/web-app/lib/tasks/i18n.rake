@@ -64,7 +64,7 @@ namespace :i18n do
     en_data = I18n.with_locale(:en) { I18n.t(".") }
     gettext_data = i18n_to_gettext(en_data, {})
     Dir.chdir(File.join(root_dir, "src/api-umbrella/admin-ui")) do
-      js_paths = `git grep -l "\\.t\("`.strip.split("\n")
+      js_paths = `git grep --fixed-strings -l ".t("`.strip.split("\n")
       js_paths.each do |path|
         puts path.inspect
         content = File.read(path)
@@ -76,13 +76,16 @@ namespace :i18n do
         File.open(path, "w") { |f| f.write(content) }
       end
 
-      hbs_paths = `git grep -l "\{\{t "`.strip.split("\n")
+      hbs_paths = `git grep --fixed-strings -l "{{t "`.strip.split("\n")
+      hbs_paths += `git grep --fixed-strings -l "(t "`.strip.split("\n")
+      hbs_paths.uniq!
       hbs_paths.each do |path|
         puts path.inspect
         content = File.read(path)
 
         gettext_data.each do |en_key, data|
           content.gsub!("{{t \"#{data[:path].join(".")}\"", "{{t #{en_key.inspect}")
+          content.gsub!("(t \"#{data[:path].join(".")}\"", "(t #{en_key.inspect}")
         end
 
         File.open(path, "w") { |f| f.write(content) }
