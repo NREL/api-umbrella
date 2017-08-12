@@ -1,3 +1,4 @@
+local common_validations = require "api-umbrella.utils.common_validations"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local json_null = require("cjson").null
 local model_ext = require "api-umbrella.utils.model_ext"
@@ -30,9 +31,9 @@ local ApiScope = model_ext.new_class("api_scopes", {
     local errors = {}
     validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
     validate_field(errors, values, "host", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "host", validation:regex([[^(\*|(\*\.|\.)[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*|[a-zA-Z0-9:][a-zA-Z0-9\-\.:]*)$]], "jo"), t('must be in the format of "example.com"'))
+    validate_field(errors, values, "host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     validate_field(errors, values, "path_prefix", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "path_prefix", validation:regex("^/", "jo"), t('must start with "/"'))
+    validate_field(errors, values, "path_prefix", validation.optional:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"'))
     return errors
   end,
 })

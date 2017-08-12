@@ -1,3 +1,4 @@
+local common_validations = require "api-umbrella.utils.common_validations"
 local json_null = require("cjson").null
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
@@ -17,6 +18,7 @@ local ApiBackendServer = model_ext.new_class("api_backend_servers", {
   validate = function(_, values)
     local errors = {}
     validate_field(errors, values, "host", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, values, "host", validation.optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"'))
     validate_field(errors, values, "port", validation.number, t("can't be blank"))
     validate_field(errors, values, "port", validation.number:between(0, 65535), t("is not included in the list"))
     return errors

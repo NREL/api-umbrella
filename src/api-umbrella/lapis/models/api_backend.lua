@@ -2,6 +2,7 @@ local ApiBackendRewrite = require "api-umbrella.lapis.models.api_backend_rewrite
 local ApiBackendServer = require "api-umbrella.lapis.models.api_backend_server"
 local ApiBackendUrlMatch = require "api-umbrella.lapis.models.api_backend_url_match"
 local cjson = require "cjson"
+local common_validations = require "api-umbrella.utils.common_validations"
 local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
@@ -125,10 +126,14 @@ local ApiBackend = model_ext.new_class("api_backends", {
     local errors = {}
     validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
     validate_field(errors, values, "sort_order", validation.number, t("can't be blank"))
-    validate_field(errors, values, "backend_protocol", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, values, "backend_protocol", validation:regex("^(http|https)$", "jo"), t("is not included in the list"))
     validate_field(errors, values, "frontend_host", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "backend_host", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "balance_algorithm", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, values, "frontend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
+    if not values["frontend_host"] or string.sub(values["frontend_host"], 1, 1) ~= "*" then
+      validate_field(errors, values, "backend_host", validation.string:minlen(1), t("can't be blank"))
+      validate_field(errors, values, "backend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
+    end
+    validate_field(errors, values, "balance_algorithm", validation:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))
     validate_field(errors, values, "servers", validation.table:minlen(1), t("can't be blank"))
     validate_field(errors, values, "url_matches", validation.table:minlen(1), t("can't be blank"))
     return errors
