@@ -140,6 +140,14 @@ function _M.cache_computed_settings(settings)
 
   if settings["rate_limits"] then
     for _, limit in ipairs(settings["rate_limits"]) do
+      -- Backwards compatibility for YAML configs with the old "limit" field
+      -- (instead of the renamed "limit_to" we now use for easier SQL
+      -- compatibility).
+      if not limit["limit_to"] and limit["limit"] then
+        limit["limit_to"] = limit["limit"]
+        limit["limit"] = nil
+      end
+
       local num_buckets = math.ceil(limit["duration"] / limit["accuracy"])
 
       -- For each bucket in this limit, store the time difference we'll

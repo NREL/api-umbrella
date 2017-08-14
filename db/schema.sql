@@ -664,6 +664,63 @@ CREATE TABLE api_backend_servers (
 
 
 --
+-- Name: api_backend_settings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_backend_settings (
+    id uuid NOT NULL,
+    append_query_string character varying(255),
+    headers jsonb,
+    http_basic_auth character varying(255),
+    require_https character varying(23),
+    require_https_transition_start_at timestamp with time zone,
+    disable_api_key boolean DEFAULT false NOT NULL,
+    api_key_verification_level character varying(16),
+    api_key_verification_transition_start_at timestamp with time zone,
+    required_roles character varying(100)[],
+    required_roles_override boolean DEFAULT false NOT NULL,
+    allowed_ips inet[],
+    allowed_referers character varying(255)[],
+    pass_api_key_header character varying(255),
+    pass_api_key_query_param character varying(255),
+    rate_limit_mode character varying(9),
+    anonymous_rate_limit_behavior character varying(11),
+    authenticated_rate_limit_behavior character varying(12),
+    default_response_headers jsonb,
+    override_response_headers jsonb,
+    error_templates jsonb,
+    error_data jsonb,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    CONSTRAINT api_backend_settings_anonymous_rate_limit_behavior_check CHECK (((anonymous_rate_limit_behavior)::text = ANY ((ARRAY['ip_fallback'::character varying, 'ip_only'::character varying])::text[]))),
+    CONSTRAINT api_backend_settings_api_key_verification_level_check CHECK (((api_key_verification_level)::text = ANY ((ARRAY['none'::character varying, 'transition_email'::character varying, 'required_email'::character varying])::text[]))),
+    CONSTRAINT api_backend_settings_authenticated_rate_limit_behavior_check CHECK (((authenticated_rate_limit_behavior)::text = ANY ((ARRAY['all'::character varying, 'api_key_only'::character varying])::text[]))),
+    CONSTRAINT api_backend_settings_rate_limit_mode_check CHECK (((rate_limit_mode)::text = ANY ((ARRAY['unlimited'::character varying, 'custom'::character varying])::text[]))),
+    CONSTRAINT api_backend_settings_require_https_check CHECK (((require_https)::text = ANY ((ARRAY['required_return_error'::character varying, 'transition_return_error'::character varying, 'optional'::character varying])::text[])))
+);
+
+
+--
+-- Name: api_backend_sub_url_settings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_backend_sub_url_settings (
+    id uuid NOT NULL,
+    api_backend_id uuid NOT NULL,
+    api_backend_settings_id uuid NOT NULL,
+    http_method character varying(7) NOT NULL,
+    regex character varying(255) NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    CONSTRAINT api_backend_sub_url_settings_http_method_check CHECK (((http_method)::text = ANY ((ARRAY['any'::character varying, 'GET'::character varying, 'POST'::character varying, 'PUT'::character varying, 'DELETE'::character varying, 'HEAD'::character varying, 'TRACE'::character varying, 'OPTIONS'::character varying, 'CONNECT'::character varying, 'PATCH'::character varying])::text[])))
+);
+
+
+--
 -- Name: api_backend_url_matches; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -691,6 +748,7 @@ CREATE TABLE api_backends (
     frontend_host character varying(255) NOT NULL,
     backend_host character varying(255) NOT NULL,
     balance_algorithm character varying(11) NOT NULL,
+    api_backend_settings_id uuid,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
     updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
@@ -717,6 +775,23 @@ CREATE TABLE api_scopes (
 
 
 --
+-- Name: api_user_settings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_user_settings (
+    id uuid NOT NULL,
+    rate_limit_mode character varying(9),
+    allowed_ips inet[],
+    allowed_referers character varying(255)[],
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    CONSTRAINT api_user_settings_rate_limit_mode_check CHECK (((rate_limit_mode)::text = ANY ((ARRAY['unlimited'::character varying, 'custom'::character varying])::text[])))
+);
+
+
+--
 -- Name: api_users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -739,13 +814,73 @@ CREATE TABLE api_users (
     registration_origin character varying(1000),
     throttle_by_ip boolean DEFAULT false NOT NULL,
     roles character varying(100)[],
-    settings jsonb,
+    api_user_settings_id uuid,
     disabled_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
     updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     updated_by character varying(255) DEFAULT current_app_user() NOT NULL
 );
+
+
+--
+-- Name: rate_limits; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE rate_limits (
+    id uuid NOT NULL,
+    api_backend_settings_id uuid,
+    api_user_settings_id uuid,
+    duration bigint NOT NULL,
+    accuracy bigint NOT NULL,
+    limit_by character varying(7) NOT NULL,
+    limit_to bigint NOT NULL,
+    distributed boolean DEFAULT false NOT NULL,
+    response_headers boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    CONSTRAINT rate_limits_limit_by_check CHECK (((limit_by)::text = ANY ((ARRAY['ip'::character varying, 'api_key'::character varying])::text[]))),
+    CONSTRAINT settings_id_not_null CHECK ((((api_backend_settings_id IS NOT NULL) AND (api_user_settings_id IS NULL)) OR ((api_backend_settings_id IS NULL) AND (api_user_settings_id IS NOT NULL))))
+);
+
+
+--
+-- Name: api_users_with_settings; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW api_users_with_settings AS
+ SELECT u.id,
+    u.api_key_hash,
+    u.api_key_encrypted,
+    u.api_key_encrypted_iv,
+    u.api_key_prefix,
+    u.email,
+    u.email_verified,
+    u.first_name,
+    u.last_name,
+    u.use_description,
+    u.user_metadata,
+    u.registration_ip,
+    u.registration_source,
+    u.registration_user_agent,
+    u.registration_referer,
+    u.registration_origin,
+    u.throttle_by_ip,
+    u.roles,
+    u.api_user_settings_id,
+    u.disabled_at,
+    u.created_at,
+    u.created_by,
+    u.updated_at,
+    u.updated_by,
+    row_to_json(s.*) AS settings,
+    ( SELECT json_agg(r.*) AS json_agg
+           FROM rate_limits r
+          WHERE (r.api_user_settings_id = u.api_user_settings_id)) AS rate_limits
+   FROM (api_users u
+     LEFT JOIN api_user_settings s ON ((u.api_user_settings_id = s.id)));
 
 
 --
@@ -762,7 +897,7 @@ CREATE TABLE lapis_migrations (
 --
 
 CREATE TABLE published_config (
-    id integer NOT NULL,
+    id bigint NOT NULL,
     config jsonb NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
@@ -918,6 +1053,22 @@ ALTER TABLE ONLY api_backend_servers
 
 
 --
+-- Name: api_backend_settings api_backend_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_settings
+    ADD CONSTRAINT api_backend_settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_backend_sub_url_settings api_backend_sub_url_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_sub_url_settings
+    ADD CONSTRAINT api_backend_sub_url_settings_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: api_backend_url_matches api_backend_url_matches_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -942,6 +1093,14 @@ ALTER TABLE ONLY api_scopes
 
 
 --
+-- Name: api_user_settings api_user_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_user_settings
+    ADD CONSTRAINT api_user_settings_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: api_users api_users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -963,6 +1122,14 @@ ALTER TABLE ONLY lapis_migrations
 
 ALTER TABLE ONLY published_config
     ADD CONSTRAINT published_config_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: rate_limits rate_limits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY rate_limits
+    ADD CONSTRAINT rate_limits_pkey PRIMARY KEY (id);
 
 
 --
@@ -1112,6 +1279,20 @@ CREATE TRIGGER api_backend_servers_updated_at BEFORE UPDATE ON api_backend_serve
 
 
 --
+-- Name: api_backend_settings api_backend_settings_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_settings_updated_at BEFORE UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: api_backend_sub_url_settings api_backend_sub_url_settings_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_sub_url_settings_updated_at BEFORE UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
 -- Name: api_backend_url_matches api_backend_url_matches_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1130,6 +1311,13 @@ CREATE TRIGGER api_backends_updated_at BEFORE UPDATE ON api_backends FOR EACH RO
 --
 
 CREATE TRIGGER api_scopes_updated_at BEFORE UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: api_user_settings api_user_settings_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_user_settings_updated_at BEFORE UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE set_updated();
 
 
 --
@@ -1189,6 +1377,13 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_group
 
 
 --
+-- Name: api_backend_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_backends audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1203,10 +1398,24 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend
 
 
 --
+-- Name: api_backend_sub_url_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_backend_servers audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_user_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -1221,6 +1430,13 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_users F
 --
 
 CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: rate_limits audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -1280,6 +1496,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_api_scopes FOR E
 
 
 --
+-- Name: api_backend_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_backends audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1294,10 +1517,24 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_rewrites FOR EACH
 
 
 --
+-- Name: api_backend_sub_url_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_sub_url_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_backend_servers audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_servers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_user_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_user_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -1315,6 +1552,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON published_config FOR EACH STA
 
 
 --
+-- Name: rate_limits audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON rate_limits FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: website_backends audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1326,6 +1570,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON website_backends FOR EACH STA
 --
 
 CREATE TRIGGER published_config_updated_at BEFORE UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: rate_limits rate_limits_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER rate_limits_updated_at BEFORE UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE set_updated();
 
 
 --
@@ -1407,11 +1658,59 @@ ALTER TABLE ONLY api_backend_servers
 
 
 --
+-- Name: api_backend_sub_url_settings api_backend_sub_url_settings_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_sub_url_settings
+    ADD CONSTRAINT api_backend_sub_url_settings_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id);
+
+
+--
+-- Name: api_backend_sub_url_settings api_backend_sub_url_settings_api_backend_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_sub_url_settings
+    ADD CONSTRAINT api_backend_sub_url_settings_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id);
+
+
+--
 -- Name: api_backend_url_matches api_backend_url_matches_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY api_backend_url_matches
     ADD CONSTRAINT api_backend_url_matches_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id);
+
+
+--
+-- Name: api_backends api_backends_api_backend_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backends
+    ADD CONSTRAINT api_backends_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id);
+
+
+--
+-- Name: api_users api_users_api_user_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_users
+    ADD CONSTRAINT api_users_api_user_settings_id_fkey FOREIGN KEY (api_user_settings_id) REFERENCES api_user_settings(id);
+
+
+--
+-- Name: rate_limits rate_limits_api_backend_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY rate_limits
+    ADD CONSTRAINT rate_limits_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id);
+
+
+--
+-- Name: rate_limits rate_limits_api_user_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY rate_limits
+    ADD CONSTRAINT rate_limits_api_user_settings_id_fkey FOREIGN KEY (api_user_settings_id) REFERENCES api_user_settings(id);
 
 
 --
@@ -1478,6 +1777,20 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_servers TO api_umbrella_a
 
 
 --
+-- Name: api_backend_settings; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_settings TO api_umbrella_app_user;
+
+
+--
+-- Name: api_backend_sub_url_settings; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_sub_url_settings TO api_umbrella_app_user;
+
+
+--
 -- Name: api_backend_url_matches; Type: ACL; Schema: public; Owner: -
 --
 
@@ -1499,10 +1812,31 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_scopes TO api_umbrella_app_user;
 
 
 --
+-- Name: api_user_settings; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_user_settings TO api_umbrella_app_user;
+
+
+--
 -- Name: api_users; Type: ACL; Schema: public; Owner: -
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users TO api_umbrella_app_user;
+
+
+--
+-- Name: rate_limits; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE rate_limits TO api_umbrella_app_user;
+
+
+--
+-- Name: api_users_with_settings; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users_with_settings TO api_umbrella_app_user;
 
 
 --

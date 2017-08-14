@@ -50,14 +50,14 @@ local function seed_api_keys()
             duration = 1 * 60 * 1000, -- 1 minute
             accuracy = 5 * 1000, -- 5 seconds
             limit_by = "ip",
-            limit = 5,
+            limit_to = 5,
             response_headers = false,
           },
           {
             duration = 60 * 60 * 1000, -- 1 hour
             accuracy = 1 * 60 * 1000, -- 1 minute
             limit_by = "ip",
-            limit = 20,
+            limit_to = 20,
             response_headers = true,
           },
         },
@@ -79,6 +79,8 @@ local function seed_api_keys()
   }
 
   for _, data in ipairs(keys) do
+    pg_utils.query("START TRANSACTION")
+
     local result, user_err = pg_utils.query("SELECT * FROM api_users WHERE email = $1 ORDER BY created_at LIMIT 1", data["email"])
     if not result then
       ngx.log(ngx.ERR, "failed to query api_users: ", user_err)
@@ -86,8 +88,10 @@ local function seed_api_keys()
     end
 
     local user = result[1]
+    local user_update = false
     if user then
       deep_merge_overwrite_arrays(user, data)
+      user_update = true
     else
       user = data
     end
@@ -112,33 +116,87 @@ local function seed_api_keys()
     if user["roles"] then
       user["roles"] = pg_utils.as_array(user["roles"])
     end
+
     if user["settings"] then
-      if not user["settings"]["id"] then
-        user["settings"]["id"] = uuid.generate_random()
+      local settings_data = user["settings"]
+      user["settings"] = nil
+
+      local settings
+      local settings_update = false
+      local settings_id = user["api_user_settings_id"] or settings_data["id"]
+      if settings_id then
+        local settings_result, settings_err = pg_utils.query("SELECT * FROM api_user_settings WHERE id = $1", settings_id)
+        if not settings_result then
+          ngx.log(ngx.ERR, "failed to query api_user_settings: ", settings_err)
+          break
+        end
+
+        settings = settings_result[1]
+        if settings then
+          settings_update = true
+          deep_merge_overwrite_arrays(settings, settings_data)
+        else
+          settings = settings_data
+        end
+      else
+        settings_id = uuid.generate_random()
+        settings = settings_data
       end
 
-      if user["settings"]["rate_limits"] then
-        for _, rate_limit in ipairs(user["settings"]["rate_limits"]) do
-          if not rate_limit["id"] then
-            rate_limit["id"] = uuid.generate_random()
+      settings["id"] = settings_id
+      user["api_user_settings_id"] = settings_id
+
+      local rate_limits_data = settings["rate_limits"]
+      settings["rate_limits"] = nil
+
+      if settings_update then
+        local update_result, update_err = pg_utils.update("api_user_settings", { id = settings["id"] }, settings)
+        if not update_result then
+          ngx.log(ngx.ERR, "failed to update record in api_user_settings: ", update_err)
+          break
+        end
+      else
+        local insert_result, insert_err = pg_utils.insert("api_user_settings", settings)
+        if not insert_result then
+          ngx.log(ngx.ERR, "failed to create record in api_user_settings: ", insert_err)
+          break
+        end
+      end
+
+      pg_utils.delete("rate_limits", { api_user_settings_id = assert(settings_id) })
+      if rate_limits_data then
+        for _, rate_limit in ipairs(rate_limits_data) do
+          rate_limit["id"] = uuid.generate_random()
+          rate_limit["api_user_settings_id"] = settings_id
+          local insert_result, insert_err = pg_utils.insert("rate_limits", rate_limit)
+          if not insert_result then
+            ngx.log(ngx.ERR, "failed to create record in api_user_settings: ", insert_err)
+            break
           end
         end
       end
 
-      user["settings"] = pg_utils.as_json(user["settings"])
+      user["settings"] = nil
+    elseif user["api_user_settings_id"] then
+      pg_utils.delete("rate_limits", { api_user_settings_id = assert(user["api_user_settings_id"]) })
+      pg_utils.delete("api_user_settings", { id = assert(user["api_user_settings_id"]) })
     end
 
-    if result[1] then
+    if user_update then
       local update_result, update_err = pg_utils.update("api_users", { id = user["id"] }, user)
       if not update_result then
         ngx.log(ngx.ERR, "failed to update record in api_users: ", update_err)
+        break
       end
     else
       local insert_result, insert_err = pg_utils.insert("api_users", user)
       if not insert_result then
         ngx.log(ngx.ERR, "failed to create record in api_users: ", insert_err)
+        break
       end
     end
+
+    pg_utils.query("COMMIT")
   end
 end
 

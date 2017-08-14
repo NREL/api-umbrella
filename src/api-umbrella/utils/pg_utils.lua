@@ -144,4 +144,9 @@ function _M.update(table_name, where, values)
   return _M.query(query)
 end
 
+function _M.delete(table_name, where)
+  local query = "DELETE FROM " .. escape_identifier(table_name) .. " WHERE " .. encode_assigns(where)
+  return _M.query(query)
+end
+
 return _M

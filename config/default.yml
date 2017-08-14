@@ -224,27 +224,27 @@ apiSettings:
     - duration: 1000
       accuracy: 500
       limit_by: ip
-      limit: 50
+      limit_to: 50
       distributed: false
     - duration: 1000
       accuracy: 500
       limit_by: apiKey
-      limit: 20
+      limit_to: 20
       distributed: false
     - duration: 15000
       accuracy: 1000
       limit_by: ip
-      limit: 250
+      limit_to: 250
       distributed: true
     - duration: 15000
       accuracy: 1000
       limit_by: apiKey
-      limit: 150
+      limit_to: 150
       distributed: true
     - duration: 3600000
       accuracy: 60000
       limit_by: apiKey
-      limit: 1000
+      limit_to: 1000
       distributed: true
       response_headers: true
   error_templates:
@@ -369,7 +369,7 @@ internal_apis:
             - duration: 15000
               accuracy: 1000
               limit_by: ip
-              limit: 100
+              limit_to: 100
               distributed: true
               response_headers: true
       - http_method: any

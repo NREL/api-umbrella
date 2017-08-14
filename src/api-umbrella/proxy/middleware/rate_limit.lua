@@ -96,7 +96,7 @@ local function get_remaining_for_limit(settings, user, limit, keys)
   -- Fetch all of the hit counts for each time bucket on this limit. Keep
   -- subtracting them from the limit to determine if the user has exceeded
   -- their limit.
-  local remaining = limit["limit"]
+  local remaining = limit["limit_to"]
   for index, key in ipairs(keys) do
     local bucket_count = ngx.shared.stats:get(key) or 0
 
@@ -128,7 +128,7 @@ local function process_remaining(limit, remaining, over_limit)
     end
 
     if limit["response_headers"] then
-      ngx.ctx.response_header_limit = limit["limit"]
+      ngx.ctx.response_header_limit = limit["limit_to"]
       ngx.ctx.response_header_remaining = remaining
     end
   end

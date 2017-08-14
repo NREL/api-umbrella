@@ -14,10 +14,8 @@ local cache_computed_settings = utils.cache_computed_settings
 local is_empty = types.is_empty
 
 local function lookup_user(api_key)
-  ngx.log(ngx.ERR, "KEY: " .. inspect(api_key))
   local api_key_hash = hmac(api_key)
-  ngx.log(ngx.ERR, "HASH: " .. inspect(api_key_hash))
-  local result, err = pg_utils.query("SELECT * FROM api_users WHERE api_key_hash = " .. pg_utils.escape_literal(api_key_hash))
+  local result, err = pg_utils.query("SELECT * FROM api_users_with_settings WHERE api_key_hash = " .. pg_utils.escape_literal(api_key_hash))
   if not result then
     ngx.log(ngx.ERR, "failed to fetch user from database: ", err)
     return nil
@@ -51,8 +49,21 @@ local function lookup_user(api_key)
       "allowed_ips",
       "allowed_referers",
       "rate_limit_mode",
-      "rate_limits",
     })
+
+    if raw_user["rate_limits"] and raw_user["rate_limits"] ~= cjson.null then
+      user["settings"]["rate_limits"] = {}
+      for _, limit in ipairs(raw_user["rate_limits"]) do
+        table.insert(user["settings"]["rate_limits"], utils.pick_where_present(limit, {
+          "duration",
+          "accuracy",
+          "limit_by",
+          "limit_to",
+          "distributed",
+          "response_headers",
+        }))
+      end
+    end
 
     if is_empty(user["settings"]) then
       user["settings"] = nil
