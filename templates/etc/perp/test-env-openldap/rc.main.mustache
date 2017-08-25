@@ -24,8 +24,8 @@ if [ "${1}" = "start" ]; then
   set -x
   rm -rf "$db_dir"
   mkdir -p "$db_dir"
-  slapadd -F "$db_dir" -n 0 -l "$slapd_ldif_path"
-  slapadd -F "$db_dir" -l "$seed_ldif_path"
+  runtool "${run_args[@]}" slapadd -F "$db_dir" -n 0 -l "$slapd_ldif_path"
+  runtool "${run_args[@]}" slapadd -F "$db_dir" -l "$seed_ldif_path"
 
   exec runtool "${run_args[@]}" slapd -d 1 -h "$bind" -F "$db_dir"
 fi
