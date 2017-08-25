@@ -7,7 +7,9 @@ class Test::Apis::V1::Apis::TestIndex < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
+    ApiBackendUrlMatch.delete_all
+    ApiBackendServer.delete_all
+    ApiBackend.delete_all
   end
 
   include ApiUmbrellaSharedTests::DataTablesApi
@@ -19,10 +21,10 @@ class Test::Apis::V1::Apis::TestIndex < Minitest::Test
   end
 
   def data_tables_factory_name
-    :api
+    :api_backend
   end
 
   def data_tables_record_count
-    Api.where(:deleted_at => nil).count
+    ApiBackend.count
   end
 end

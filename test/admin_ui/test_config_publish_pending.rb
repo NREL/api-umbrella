@@ -11,7 +11,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all
-    ConfigVersion.delete_all
+    PublishedConfig.delete_all
   end
 
   def after_all
@@ -23,7 +23,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
     FactoryGirl.create(:api)
     deleted_api = FactoryGirl.create(:api)
     modified_api = FactoryGirl.create(:api, :name => "Before")
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    PublishedConfig.publish!(PublishedConfig.pending_config)
     deleted_api.update_attributes(:deleted_at => Time.now.utc)
     modified_api.update_attributes(:name => "After")
     FactoryGirl.create(:api)
@@ -36,7 +36,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_hides_categories_without_changes
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    PublishedConfig.publish!(PublishedConfig.pending_config)
     FactoryGirl.create(:api)
 
     admin_login
@@ -48,7 +48,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
 
   def test_message_when_no_changes_to_publish
     FactoryGirl.create(:api)
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    PublishedConfig.publish!(PublishedConfig.pending_config)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -57,7 +57,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
 
   def test_diff_of_config_changes
     api = FactoryGirl.create(:api, :name => "Before")
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    PublishedConfig.publish!(PublishedConfig.pending_config)
     api.update_attributes(:name => "After")
 
     admin_login
@@ -90,7 +90,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
 
   def test_refreshes_changes_on_load
     FactoryGirl.create(:api)
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    PublishedConfig.publish!(PublishedConfig.pending_config)
 
     admin_login
     visit "/admin/#/config/publish"

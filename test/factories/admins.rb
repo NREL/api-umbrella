@@ -4,7 +4,7 @@ FactoryGirl.define do
     authentication_token { SecureRandom.hex(20) }
     sequence(:username) { |n| "aburnside#{n}@example.com" }
     email { username }
-    encrypted_password { BCrypt::Password.create("password123456") }
+    password_hash { BCrypt::Password.create("password123456") }
     superuser true
 
     factory :limited_admin do

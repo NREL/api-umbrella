@@ -41,8 +41,7 @@ function _M.index(self, model, options)
   if not is_empty(query["where"]) then
     where = where .. " WHERE (" .. table.concat(query["where"], ") AND (") .. ")"
   end
-  -- local total_count = model:count(where)
-  local total_count = model:select(where, { fields = "COUNT(*) AS c", load = false })["c"]
+  local total_count = model:select(where, { fields = "COUNT(*) AS c", load = false })[1]["c"]
 
   if is_empty(self.params["order"]) then
     table.insert(query["order"], "name ASC")

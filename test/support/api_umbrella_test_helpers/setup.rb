@@ -67,14 +67,6 @@ module ApiUmbrellaTestHelpers
             },
           })
 
-          Mongoid.load_configuration({
-            :clients => {
-              :default => {
-                :uri => $config["mongodb"]["url"],
-              },
-            },
-          })
-
           require "typhoeus/adapters/faraday"
           client = Elasticsearch::Client.new({
             :hosts => $config["elasticsearch"]["hosts"],
@@ -105,8 +97,8 @@ module ApiUmbrellaTestHelpers
         end
 
         unless self.setup_config_version_complete
-          ConfigVersion.delete_all
-          ConfigVersion.publish!({
+          PublishedConfig.delete_all
+          PublishedConfig.publish!({
             "apis" => [
               {
                 "_id" => "example",
@@ -129,13 +121,14 @@ module ApiUmbrellaTestHelpers
           ApiUser.where("registration_source != 'seed'").delete_all
           user = FactoryGirl.create(:api_user, {
             :registration_source => "seed",
-            :settings => {
+            :settings => FactoryGirl.build(:api_user_settings, {
               :rate_limit_mode => "unlimited",
-            },
+            }),
           })
 
           @@api_user = user
-          @@api_key = user["api_key"]
+          @@api_key = user.api_key
+          assert(@@api_key)
           @@http_options = {
             # Disable SSL verification by default, since most of our tests are
             # against our self-signed SSL certificate for the test environment.
@@ -148,7 +141,7 @@ module ApiUmbrellaTestHelpers
             :params_encoding => :rack,
 
             :headers => {
-              "X-Api-Key" => user["api_key"],
+              "X-Api-Key" => @@api_key,
             }.freeze,
           }.freeze
           @@keyless_http_options = @@http_options.except(:headers).freeze
@@ -158,9 +151,9 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    # If tests need to delete all the ConfigVersion records from the database,
+    # If tests need to delete all the PublishedConfig records from the database,
     # then they need to call this method after finishing so the default
-    # ConfigVersion record will be re-created for other tests that depend on
+    # PublishedConfig record will be re-created for other tests that depend on
     # it.
     def default_config_version_needed
       ApiUmbrellaTestHelpers::Setup.setup_mutex.synchronize do
@@ -235,18 +228,18 @@ module ApiUmbrellaTestHelpers
 
     def publish_backends(type, records)
       self.config_publish_mutex.synchronize do
-        config = ConfigVersion.active_config || {}
+        config = PublishedConfig.active_config || {}
         config[type] = records + (config[type] || [])
-        ConfigVersion.publish!(config).wait_until_live
+        PublishedConfig.publish!(config).wait_until_live
       end
     end
 
     def unpublish_backends(type, records)
       self.config_publish_mutex.synchronize do
         record_ids = records.map { |record| record["_id"] }
-        config = ConfigVersion.active_config || {}
+        config = PublishedConfig.active_config || {}
         config[type].reject! { |record| record_ids.include?(record["_id"]) }
-        ConfigVersion.publish!(config).wait_until_live
+        PublishedConfig.publish!(config).wait_until_live
       end
     end
 

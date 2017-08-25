@@ -202,7 +202,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
 
     self.config_publish_mutex.synchronize do
       begin
-        original_config = ConfigVersion.active_config
+        original_config = PublishedConfig.active_config
         config = original_config.deep_dup
 
         # Find the already published "lower" api backend, change its rate
@@ -210,7 +210,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
         api = config["apis"].find { |a| a["url_matches"].present? && a["url_matches"][0]["frontend_prefix"] == "/#{unique_test_class_id}/lower/" }
         assert_equal(3, api["settings"]["rate_limits"][0]["limit"])
         api["settings"]["rate_limits"][0]["limit"] = 80
-        ConfigVersion.publish!(config).wait_until_live
+        PublishedConfig.publish!(config).wait_until_live
 
         # Make sure any local worker cache is cleared across all possible
         # worker processes.
@@ -219,7 +219,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
           assert_equal("80", resp.headers["x-ratelimit-limit"])
         end
       ensure
-        ConfigVersion.publish!(original_config).wait_until_live
+        PublishedConfig.publish!(original_config).wait_until_live
       end
     end
 

@@ -10,10 +10,10 @@ class Test::Apis::V1::Config::TestPendingChangesIdentical < Minitest::Test
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all
-    ConfigVersion.delete_all
+    PublishedConfig.delete_all
 
     @api = FactoryGirl.create(:api)
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    PublishedConfig.publish!(PublishedConfig.pending_config)
   end
 
   def after_all

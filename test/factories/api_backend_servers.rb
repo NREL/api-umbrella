@@ -1,5 +1,6 @@
 FactoryGirl.define do
-  factory :api_server, :class => "Api::Server" do
+  factory :api_backend_server do
+    id { SecureRandom.uuid }
     host "example.com"
     port 80
   end

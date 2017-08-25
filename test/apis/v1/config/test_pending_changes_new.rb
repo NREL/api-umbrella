@@ -10,7 +10,7 @@ class Test::Apis::V1::Config::TestPendingChangesNew < Minitest::Test
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all
-    ConfigVersion.delete_all
+    PublishedConfig.delete_all
 
     @api = FactoryGirl.create(:api)
   end
@@ -32,7 +32,7 @@ class Test::Apis::V1::Config::TestPendingChangesNew < Minitest::Test
   end
 
   def test_new_if_created_since_publish
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    PublishedConfig.publish!(PublishedConfig.pending_config)
     @google_api = FactoryGirl.create(:google_api)
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))

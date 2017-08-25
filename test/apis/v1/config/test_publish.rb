@@ -10,7 +10,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all
-    ConfigVersion.delete_all
+    PublishedConfig.delete_all
   end
 
   def after_all
@@ -19,7 +19,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
   end
 
   def test_publish_with_no_existing_config
-    assert_equal(0, ConfigVersion.count)
+    assert_equal(0, PublishedConfig.count)
 
     api = FactoryGirl.create(:api)
     config = {
@@ -34,15 +34,15 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     }))
 
     assert_response_code(201, response)
-    assert_equal(1, ConfigVersion.count)
-    active_config = ConfigVersion.active_config
+    assert_equal(1, PublishedConfig.count)
+    active_config = PublishedConfig.active_config
     assert_equal(1, active_config["apis"].length)
   end
 
   def test_publish_with_existing_config
     FactoryGirl.create(:api)
-    ConfigVersion.publish!(ConfigVersion.pending_config)
-    assert_equal(1, ConfigVersion.count)
+    PublishedConfig.publish!(PublishedConfig.pending_config)
+    assert_equal(1, PublishedConfig.count)
 
     api = FactoryGirl.create(:api)
     config = {
@@ -57,16 +57,16 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     }))
 
     assert_response_code(201, response)
-    assert_equal(2, ConfigVersion.count)
-    active_config = ConfigVersion.active_config
+    assert_equal(2, PublishedConfig.count)
+    active_config = PublishedConfig.active_config
     assert_equal(2, active_config["apis"].length)
   end
 
   def test_combines_new_and_existing_config_in_order
     api1 = FactoryGirl.create(:api, :sort_order => 40)
     api2 = FactoryGirl.create(:api, :sort_order => 15)
-    ConfigVersion.publish!(ConfigVersion.pending_config)
-    assert_equal(1, ConfigVersion.count)
+    PublishedConfig.publish!(PublishedConfig.pending_config)
+    assert_equal(1, PublishedConfig.count)
 
     api3 = FactoryGirl.create(:api, :sort_order => 90)
     api4 = FactoryGirl.create(:api, :sort_order => 1)
@@ -88,7 +88,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     }))
 
     assert_response_code(201, response)
-    active_config = ConfigVersion.active_config
+    active_config = PublishedConfig.active_config
     assert_equal([
       api4.id,
       api2.id,
@@ -101,7 +101,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
 
   def test_publish_selected_apis_only
     api1 = FactoryGirl.create(:api, :name => "Before")
-    ConfigVersion.publish!(ConfigVersion.pending_config)
+    PublishedConfig.publish!(PublishedConfig.pending_config)
 
     api1.update_attributes(:name => "After")
     api2 = FactoryGirl.create(:api)
@@ -120,7 +120,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     }))
 
     assert_response_code(201, response)
-    active_config = ConfigVersion.active_config
+    active_config = PublishedConfig.active_config
     assert_equal([
       api1.id,
       api2.id,
@@ -132,7 +132,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
 
   def test_noop_when_no_changes_selected
     api1 = FactoryGirl.create(:api, :name => "Before")
-    initial = ConfigVersion.publish!(ConfigVersion.pending_config)
+    initial = PublishedConfig.publish!(PublishedConfig.pending_config)
     initial.reload
 
     api1.update_attributes(:name => "After")
@@ -145,7 +145,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     }))
 
     assert_response_code(201, response)
-    active = ConfigVersion.active
+    active = PublishedConfig.active
     assert_kind_of(BSON::ObjectId, active.id)
     assert_equal(initial.id, active.id)
     assert_kind_of(Time, active.version)

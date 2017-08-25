@@ -10,7 +10,7 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all
-    ConfigVersion.delete_all
+    PublishedConfig.delete_all
   end
 
   def after_all
@@ -43,8 +43,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(1, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
       assert_kind_of(Time, api.settings.require_https_transition_start_at)
@@ -75,8 +75,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(1, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
       assert_kind_of(Time, api.sub_settings[0].settings.require_https_transition_start_at)
@@ -105,8 +105,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(1, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
       assert_equal(timestamp, api.settings.require_https_transition_start_at)
@@ -148,8 +148,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(1, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
       assert_equal(timestamp, api.settings.require_https_transition_start_at)
@@ -181,8 +181,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(1, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
       assert_nil(api.settings.require_https_transition_start_at)
@@ -214,8 +214,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
       }))
 
       assert_response_code(201, response)
-      assert_equal(1, ConfigVersion.count)
-      active_config = ConfigVersion.active_config
+      assert_equal(1, PublishedConfig.count)
+      active_config = PublishedConfig.active_config
 
       api.reload
       assert_nil(api.sub_settings[0].settings.require_https_transition_start_at)

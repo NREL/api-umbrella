@@ -33,7 +33,6 @@ gem "oj", "~> 3.3.2"
 # Database libraries
 gem "activerecord", "~> 5.1.1", :require => "active_record"
 gem "pg", "~> 0.21.0"
-gem "mongoid", "~> 6.2.0"
 gem "elasticsearch", "~> 2.0.2"
 gem "elasticsearch-persistence", "~> 0.1.9"
 
@@ -79,8 +78,11 @@ gem "concurrent-ruby", "~> 1.0.5"
 # Time zone randomization for tests.
 gem "zonebie", "~> 0.6.1"
 
-# Encrypting admin passwords.
+# Hashing admin passwords.
 gem "bcrypt", "~> 3.1.11"
+
+# Encrypting/decrypting database values.
+gem "encryptor", "~> 3.0.0"
 
 # Color output
 gem "rainbow", "~> 2.2.1"

@@ -10,7 +10,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all
-    ConfigVersion.delete_all
+    PublishedConfig.delete_all
     @api = FactoryGirl.create(:api)
     @google_api = FactoryGirl.create(:google_api)
     @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api)
@@ -38,7 +38,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
     }))
 
     assert_response_code(201, response)
-    active_config = ConfigVersion.active_config
+    active_config = PublishedConfig.active_config
     assert_equal(4, active_config["apis"].length)
     assert_equal([
       @api.id,
@@ -62,7 +62,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
     }))
 
     assert_response_code(201, response)
-    active_config = ConfigVersion.active_config
+    active_config = PublishedConfig.active_config
     assert_equal(1, active_config["apis"].length)
     assert_equal(@google_api.id, active_config["apis"].first["_id"])
   end
@@ -83,7 +83,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(ConfigVersion.active_config)
+    assert_nil(PublishedConfig.active_config)
   end
 
   def test_reject_limited_admins_publish_partial_access_apis
@@ -102,7 +102,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(ConfigVersion.active_config)
+    assert_nil(PublishedConfig.active_config)
   end
 
   def test_reject_limited_admins_without_publish_permission
@@ -121,6 +121,6 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
     assert_response_code(403, response)
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
-    assert_nil(ConfigVersion.active_config)
+    assert_nil(PublishedConfig.active_config)
   end
 end

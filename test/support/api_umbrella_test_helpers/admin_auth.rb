@@ -176,7 +176,7 @@ module ApiUmbrellaTestHelpers
 
     def admin_session_data(admin)
       admin ||= FactoryGirl.create(:admin)
-      authenticatable_salt = admin.encrypted_password[0, 29] if(admin.encrypted_password)
+      authenticatable_salt = admin.password_hash[0, 29] if(admin.password_hash)
       { "warden.user.admin.key" => [[admin.id], authenticatable_salt] }
     end
 

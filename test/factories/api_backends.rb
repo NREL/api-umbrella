@@ -1,17 +1,19 @@
 FactoryGirl.define do
-  factory :api do
+  factory :api_backend do
+    id { SecureRandom.uuid }
     sequence(:name) { |n| "Example #{n}" }
     backend_protocol "http"
     frontend_host "localhost"
     backend_host "example.com"
     balance_algorithm "least_conn"
+    sort_order 0
 
     servers do
-      [FactoryGirl.attributes_for(:api_server, :host => "example.com")]
+      [FactoryGirl.build(:api_backend_server, :host => "example.com")]
     end
 
     url_matches do
-      [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/example", :backend_prefix => "/")]
+      [FactoryGirl.build(:api_backend_url_match, :frontend_prefix => "/example", :backend_prefix => "/")]
     end
 
     factory :api_with_settings do

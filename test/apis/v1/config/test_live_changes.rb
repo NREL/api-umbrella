@@ -10,7 +10,7 @@ class Test::Apis::V1::Config::TestLiveChanges < Minitest::Test
     setup_server
     Api.delete_all
     WebsiteBackend.delete_all
-    ConfigVersion.delete_all
+    PublishedConfig.delete_all
   end
 
   def after_all
