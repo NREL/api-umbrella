@@ -1,6 +1,8 @@
 local lapis_config = require("lapis.config")
 
-lapis_config("development", {
+-- Configuration based on the current environment (pulled from the global API
+-- Umbrella config).
+lapis_config(config["app_env"], {
   postgres = {
     host = config["postgresql"]["host"],
     port = config["postgresql"]["port"],
@@ -8,4 +10,9 @@ lapis_config("development", {
     user = config["postgresql"]["username"],
     password = config["postgresql"]["password"],
   }
+})
+
+-- Environment specific configuration.
+lapis_config("development", {
+  show_errors = true,
 })

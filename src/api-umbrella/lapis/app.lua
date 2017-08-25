@@ -6,6 +6,7 @@ local gettext = require "resty.gettext"
 local hmac = require "api-umbrella.utils.hmac"
 local is_empty = require("pl.types").is_empty
 local lapis = require "lapis"
+local lapis_config = require("lapis.config").get()
 local path = require "pl.path"
 
 gettext.bindtextdomain("api-umbrella", path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/locale"))
@@ -14,6 +15,20 @@ gettext.textdomain("api-umbrella")
 local app = lapis.Application()
 app:enable("etlua")
 app.layout = require "views.layout"
+
+-- Custom error handler so we only show the default lapis debug details in
+-- development, and a generic error page in production.
+app.handle_error = function(self, err, trace)
+  if lapis_config.show_errors then
+    return lapis.Application.handle_error(self, err, trace)
+  else
+    return {
+      status = 500,
+      render = "500",
+      layout = false,
+    }
+  end
+end
 
 app:before_filter(function(self)
   -- local ok = os.setlocale("fr_FR")
@@ -57,7 +72,6 @@ app:before_filter(function(self)
     end
   end
   self.current_admin = current_admin
-
 
   flash.setup(self)
   -- flash.restore(self)
