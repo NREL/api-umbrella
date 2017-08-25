@@ -16,11 +16,14 @@ function _M.index(self, model, options)
     order = {},
   }
 
+  local table_name = model:table_name()
+  local escaped_table_name = db.escape_identifier(table_name)
+
   local where = ""
 
   if self.params["search"] and not is_empty(self.params["search"]["value"]) then
     local search_sql = {}
-    --table.insert(search_sql, db.interpolate_query("id = ?", self.params["search"]["value"]))
+    table.insert(search_sql, db.interpolate_query(escaped_table_name .. ".id::text = ?", string.lower(self.params["search"]["value"])))
     if options["search_fields"] then
       for _, field in ipairs(options["search_fields"]) do
         local value, _, gsub_err = ngx.re.gsub(self.params["search"]["value"], "[%_\\\\]", "\\$0", "jo")
@@ -101,7 +104,7 @@ function _M.index(self, model, options)
   }
 
   local records = model:select(where, {
-    fields = "DISTINCT " .. db.escape_identifier(model:table_name()) .. ".*",
+    fields = "DISTINCT " .. escaped_table_name .. ".*",
   })
   if options and options["preload"] then
     model:preload_relations(records, unpack(options["preload"]))
