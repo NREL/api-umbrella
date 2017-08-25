@@ -1,6 +1,5 @@
 FactoryGirl.define do
   factory :api_user do
-    id { SecureRandom.uuid }
     api_key { SecureRandom.hex(20) }
     first_name "Ambrose"
     last_name "Burnside"

@@ -1,6 +1,5 @@
 FactoryGirl.define do
   factory :api_backend do
-    id { SecureRandom.uuid }
     sequence(:name) { |n| "Example #{n}" }
     backend_protocol "http"
     frontend_host "localhost"

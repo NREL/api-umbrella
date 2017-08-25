@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.6.3
--- Dumped by pg_dump version 9.6.3
+-- Dumped from database version 9.6.4
+-- Dumped by pg_dump version 9.6.4
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -40,6 +40,20 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+--
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 
 SET search_path = audit, pg_catalog;
@@ -528,7 +542,7 @@ SET search_path = public, pg_catalog;
 --
 
 CREATE TABLE admin_groups (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     name character varying(255) NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
@@ -597,7 +611,7 @@ CREATE TABLE admin_permissions (
 --
 
 CREATE TABLE admins (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     username character varying(255) NOT NULL,
     email character varying(255),
     name character varying(255),
@@ -632,7 +646,7 @@ CREATE TABLE admins (
 --
 
 CREATE TABLE api_backend_rewrites (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     api_backend_id uuid NOT NULL,
     matcher_type character varying(5) NOT NULL,
     http_method character varying(7) NOT NULL,
@@ -652,7 +666,7 @@ CREATE TABLE api_backend_rewrites (
 --
 
 CREATE TABLE api_backend_servers (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     api_backend_id uuid NOT NULL,
     host character varying(255) NOT NULL,
     port integer NOT NULL,
@@ -668,7 +682,7 @@ CREATE TABLE api_backend_servers (
 --
 
 CREATE TABLE api_backend_settings (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     append_query_string character varying(255),
     headers jsonb,
     http_basic_auth character varying(255),
@@ -707,7 +721,7 @@ CREATE TABLE api_backend_settings (
 --
 
 CREATE TABLE api_backend_sub_url_settings (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     api_backend_id uuid NOT NULL,
     api_backend_settings_id uuid NOT NULL,
     http_method character varying(7) NOT NULL,
@@ -725,7 +739,7 @@ CREATE TABLE api_backend_sub_url_settings (
 --
 
 CREATE TABLE api_backend_url_matches (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     api_backend_id uuid NOT NULL,
     frontend_prefix character varying(255) NOT NULL,
     backend_prefix character varying(255) NOT NULL,
@@ -741,7 +755,7 @@ CREATE TABLE api_backend_url_matches (
 --
 
 CREATE TABLE api_backends (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     name character varying(255) NOT NULL,
     sort_order integer NOT NULL,
     backend_protocol character varying(5) NOT NULL,
@@ -763,7 +777,7 @@ CREATE TABLE api_backends (
 --
 
 CREATE TABLE api_scopes (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     name character varying(255) NOT NULL,
     host character varying(255) NOT NULL,
     path_prefix character varying(255) NOT NULL,
@@ -779,7 +793,7 @@ CREATE TABLE api_scopes (
 --
 
 CREATE TABLE api_user_settings (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     rate_limit_mode character varying(9),
     allowed_ips inet[],
     allowed_referers character varying(255)[],
@@ -796,7 +810,7 @@ CREATE TABLE api_user_settings (
 --
 
 CREATE TABLE api_users (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     api_key_hash character varying(64) NOT NULL,
     api_key_encrypted character varying(76) NOT NULL,
     api_key_encrypted_iv character varying(12) NOT NULL,
@@ -828,7 +842,7 @@ CREATE TABLE api_users (
 --
 
 CREATE TABLE rate_limits (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     api_backend_settings_id uuid,
     api_user_settings_id uuid,
     duration bigint NOT NULL,
@@ -945,7 +959,7 @@ CREATE TABLE sessions (
 --
 
 CREATE TABLE website_backends (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     frontend_host character varying(255) NOT NULL,
     backend_protocol character varying(5) NOT NULL,
     server_host character varying(255) NOT NULL,

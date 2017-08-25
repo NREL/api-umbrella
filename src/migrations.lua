@@ -36,7 +36,7 @@ return {
 
     db.query([[
       CREATE TABLE admins(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         username varchar(255) NOT NULL,
         email varchar(255),
         name varchar(255),
@@ -87,7 +87,7 @@ return {
 
     db.query([[
       CREATE TABLE api_scopes(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         name varchar(255) NOT NULL,
         host varchar(255) NOT NULL,
         path_prefix varchar(255) NOT NULL,
@@ -103,7 +103,7 @@ return {
 
     db.query([[
       CREATE TABLE admin_groups(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         name varchar(255) NOT NULL,
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
         created_by varchar(255) NOT NULL DEFAULT current_app_user(),
@@ -158,7 +158,7 @@ return {
 
     db.query([[
       CREATE TABLE api_backend_settings(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         append_query_string varchar(255),
         headers jsonb,
         http_basic_auth varchar(255),
@@ -191,7 +191,7 @@ return {
 
     db.query([[
       CREATE TABLE api_backends(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         name varchar(255) NOT NULL,
         sort_order int NOT NULL,
         backend_protocol varchar(5) NOT NULL CHECK(backend_protocol IN('http', 'https')),
@@ -210,7 +210,7 @@ return {
 
     db.query([[
       CREATE TABLE api_backend_rewrites(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         api_backend_id uuid NOT NULL REFERENCES api_backends,
         matcher_type varchar(5) NOT NULL CHECK(matcher_type IN('route', 'regex')),
         http_method varchar(7) NOT NULL CHECK(http_method IN('any', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'OPTIONS', 'CONNECT', 'PATCH')),
@@ -227,7 +227,7 @@ return {
 
     db.query([[
       CREATE TABLE api_backend_servers(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         api_backend_id uuid NOT NULL REFERENCES api_backends,
         host varchar(255) NOT NULL,
         port int NOT NULL,
@@ -242,7 +242,7 @@ return {
 
     db.query([[
       CREATE TABLE api_backend_sub_url_settings(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         api_backend_id uuid NOT NULL REFERENCES api_backends,
         api_backend_settings_id uuid NOT NULL REFERENCES api_backend_settings,
         http_method varchar(7) NOT NULL CHECK(http_method IN('any', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'OPTIONS', 'CONNECT', 'PATCH')),
@@ -258,7 +258,7 @@ return {
 
     db.query([[
       CREATE TABLE api_backend_url_matches(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         api_backend_id uuid NOT NULL REFERENCES api_backends,
         frontend_prefix varchar(255) NOT NULL,
         backend_prefix varchar(255) NOT NULL,
@@ -273,7 +273,7 @@ return {
 
     db.query([[
       CREATE TABLE api_user_settings(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         rate_limit_mode varchar(9) CHECK(rate_limit_mode IN('unlimited', 'custom')),
         allowed_ips inet ARRAY,
         allowed_referers varchar(255) ARRAY,
@@ -288,7 +288,7 @@ return {
 
     db.query([[
       CREATE TABLE api_users(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         api_key_hash varchar(64) NOT NULL,
         api_key_encrypted varchar(76) NOT NULL,
         api_key_encrypted_iv varchar(12) NOT NULL,
@@ -333,7 +333,7 @@ return {
 
     db.query([[
       CREATE TABLE rate_limits(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         api_backend_settings_id uuid REFERENCES api_backend_settings,
         api_user_settings_id uuid REFERENCES api_user_settings,
         duration bigint NOT NULL,
@@ -354,7 +354,7 @@ return {
 
     db.query([[
       CREATE TABLE website_backends(
-        id uuid PRIMARY KEY,
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         frontend_host varchar(255) NOT NULL,
         backend_protocol varchar(5) NOT NULL CHECK(backend_protocol IN('http', 'https')),
         server_host varchar(255) NOT NULL,
