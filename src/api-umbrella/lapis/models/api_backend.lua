@@ -11,6 +11,7 @@ local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
 local validation = require "resty.validation"
 
+local db_null = db.NULL
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
@@ -88,7 +89,8 @@ local function get_new_end_sort_order()
   return new_order
 end
 
-local ApiBackend = model_ext.new_class("api_backends", {
+local ApiBackend
+ApiBackend = model_ext.new_class("api_backends", {
   relations = {
     { "rewrites", has_many = "ApiBackendRewrite" },
     { "servers", has_many = "ApiBackendServer" },
@@ -140,6 +142,37 @@ local ApiBackend = model_ext.new_class("api_backends", {
     return data
   end,
 
+  ensure_unique_sort_order = function(self, new_order)
+    -- Apply the new sort_order value first.
+    if new_order then
+      self.sort_order = new_order
+      db.update(ApiBackend:table_name(), { sort_order = self.sort_order }, { id = self.id })
+    end
+
+    -- Next look for any existing records that have conflicting sort_order
+    -- values. We will then shift those existing sort_order values to be
+    -- unique.
+    --
+    -- Note: This iterative, recursive approach isn't efficient, but since our
+    -- whole approach of having SORT_ORDER_GAP between each sort_order value,
+    -- conflicts like this should be exceedingly rare.
+    conflicting_order_apis = ApiBackend:select("WHERE id != ? AND sort_order = ?", self.id, self.sort_order)
+    if conflicting_order_apis and #conflicting_order_apis > 0 then
+      -- Shift positive rank_orders negatively, and negative rank_orders
+      -- positively. This is designed so that we work away from the
+      -- MAX_SORT_ORDER or MIN_SORT_ORDER values if we're bumping into our
+      -- integer size limits.
+      conflicting_new_order = self.sort_order - 1
+      if self.sort_order < 0 then
+        conflicting_new_order = self.sort_order + 1
+      end
+
+      for _, api in ipairs(conflicting_order_apis) do
+        api:ensure_unique_sort_order(conflicting_new_order)
+      end
+    end
+  end,
+
   update_or_create_rewrite = function(self, rewrite_values)
     return update_or_create_has_many(self, ApiBackendRewrite, rewrite_values)
   end,
@@ -165,7 +198,7 @@ local ApiBackend = model_ext.new_class("api_backends", {
   end,
 }, {
   before_validate_on_create = function(_, values)
-    if not values["sort_order"] then
+    if not values["sort_order"] or values["sort_order"] == db_null then
       values["sort_order"] = get_new_end_sort_order()
     end
   end,
@@ -188,6 +221,8 @@ local ApiBackend = model_ext.new_class("api_backends", {
   end,
 
   after_save = function(self, values)
+    self:ensure_unique_sort_order()
+
     if is_array(values["rewrites"]) then
       local rewrite_ids = {}
       for _, rewrite_values in ipairs(values["rewrites"]) do
