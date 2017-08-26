@@ -3,6 +3,8 @@ local db = require "lapis.db"
 local is_empty = require("pl.types").is_empty
 local uuid_generate = require("resty.uuid").generate_random
 
+local db_null = db.NULL
+
 require "resty.validation.ngx"
 
 local _M = {}
@@ -49,7 +51,7 @@ end
 
 local function before_save(self, action, options, values)
   if action == "create" then
-    if not values["id"] then
+    if not values["id"] or values["id"] == db_null then
       values["id"] = uuid_generate()
     end
 

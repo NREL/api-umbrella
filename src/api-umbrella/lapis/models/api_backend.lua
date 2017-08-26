@@ -14,6 +14,10 @@ local validation = require "resty.validation"
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
+local MAX_SORT_ORDER = 2147483647
+local MIN_SORT_ORDER = -2147483648
+local SORT_ORDER_GAP = 10000
+
 local function update_or_create_has_many(self, relation_model, relation_values)
   relation_values["api_backend_id"] = assert(self.id)
 
@@ -23,6 +27,9 @@ local function update_or_create_has_many(self, relation_model, relation_values)
       api_backend_id = relation_values["api_backend_id"],
       id = relation_values["id"],
     })
+  end
+
+  if relation_record then
     assert(relation_record:update(relation_values))
   else
     relation_record = assert(relation_model:create(relation_values))
@@ -40,6 +47,45 @@ local function delete_has_many_except(self, relation_model, keep_ids)
   else
     db.delete(table_name, "api_backend_id = ? AND id NOT IN ?", api_backend_id, db.list(keep_ids))
   end
+end
+
+local function get_new_beginning_sort_order()
+  local new_order = 0
+
+  -- Find the current first sort_order value and move this record SORT_ORDER_GAP before that value.
+  local res = db.query("SELECT MIN(sort_order) AS current_min FROM api_backends")
+  if res and res[1] and res[1]["current_min"] then
+    local current_min = res[1]["current_min"]
+    new_order = current_min - SORT_ORDER_GAP
+
+    -- If we've hit the minimum allowed value, find an new minimum value in
+    -- between.
+    if new_order < MIN_SORT_ORDER then
+      new_order = math.floor((current_min + MIN_SORT_ORDER) / 2.0)
+    end
+  end
+
+  return new_order
+end
+
+local function get_new_end_sort_order()
+  local new_order = 0
+
+  -- Find the current first sort_order value and move this record
+  -- SORT_ORDER_GAP after that value.
+  local res = db.query("SELECT MAX(sort_order) AS current_max FROM api_backends")
+  if res and res[1] and res[1]["current_max"] then
+    local current_max = res[1]["current_max"]
+    new_order = current_max + SORT_ORDER_GAP
+
+    -- If we've hit the maximum allowed value, find an new maximum value in
+    -- between.
+    if new_order > MAX_SORT_ORDER then
+      new_order = math.ceil((current_max + MAX_SORT_ORDER) / 2.0)
+    end
+  end
+
+  return new_order
 end
 
 local ApiBackend = model_ext.new_class("api_backends", {
@@ -119,7 +165,9 @@ local ApiBackend = model_ext.new_class("api_backends", {
   end,
 }, {
   before_validate_on_create = function(_, values)
-    values["sort_order"] = 0
+    if not values["sort_order"] then
+      values["sort_order"] = get_new_end_sort_order()
+    end
   end,
 
   validate = function(_, values)

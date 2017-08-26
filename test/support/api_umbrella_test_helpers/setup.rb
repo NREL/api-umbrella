@@ -44,6 +44,18 @@ module ApiUmbrellaTestHelpers
           # Start the API Umbrella process to test against.
           ApiUmbrellaTestHelpers::Process.start
           self.start_complete = true
+
+          ActiveRecord::Base.establish_connection({
+            :adapter => "postgresql",
+            :host => $config["postgresql"]["host"],
+            :port => $config["postgresql"]["port"],
+            :database => $config["postgresql"]["database"],
+            :username => "api-umbrella",
+            :variables => {
+              "application.name" => "test",
+              'application."user"' => "test",
+            },
+          })
         end
       end
 
@@ -55,18 +67,6 @@ module ApiUmbrellaTestHelpers
     def setup_server
       self.setup_mutex.synchronize do
         unless self.setup_complete
-          ActiveRecord::Base.establish_connection({
-            :adapter => "postgresql",
-            :host => $config["postgresql"]["host"],
-            :port => $config["postgresql"]["port"],
-            :database => $config["postgresql"]["database"],
-            :username => $config["postgresql"]["username"],
-            :variables => {
-              "application.name" => "test",
-              'application."user"' => "test",
-            },
-          })
-
           require "typhoeus/adapters/faraday"
           client = Elasticsearch::Client.new({
             :hosts => $config["elasticsearch"]["hosts"],

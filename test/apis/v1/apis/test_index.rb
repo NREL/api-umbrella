@@ -7,9 +7,6 @@ class Test::Apis::V1::Apis::TestIndex < Minitest::Test
   def setup
     super
     setup_server
-    ApiBackendUrlMatch.delete_all
-    ApiBackendServer.delete_all
-    ApiBackend.delete_all
   end
 
   include ApiUmbrellaSharedTests::DataTablesApi
