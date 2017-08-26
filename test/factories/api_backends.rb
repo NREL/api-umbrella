@@ -14,9 +14,27 @@ FactoryGirl.define do
       [FactoryGirl.attributes_or_build(@build_strategy, :api_backend_url_match, :frontend_prefix => "/example", :backend_prefix => "/")]
     end
 
-    factory :api_with_settings do
+    factory :api_backend_with_settings do
       settings do
-        FactoryGirl.attributes_or_build(@build_strategy, :api_setting)
+        FactoryGirl.attributes_or_build(@build_strategy, :api_backend_settings)
+      end
+    end
+
+    factory :api_backend_with_all_relationships do
+      settings do
+        FactoryGirl.attributes_or_build(@build_strategy, :custom_rate_limit_api_backend_settings)
+      end
+
+      sub_settings do
+        [
+          FactoryGirl.attributes_or_build(@build_strategy, :api_backend_sub_url_settings, {
+            :settings => FactoryGirl.attributes_or_build(@build_strategy, :custom_rate_limit_api_backend_settings),
+          }),
+        ]
+      end
+
+      rewrites do
+        [FactoryGirl.attributes_or_build(@build_strategy, :api_backend_rewrite)]
       end
     end
 
@@ -34,8 +52,8 @@ FactoryGirl.define do
 
       sub_settings do
         [
-          FactoryGirl.attributes_or_build(@build_strategy, :api_sub_setting, {
-            :settings_attributes => FactoryGirl.attributes_or_build(@build_strategy, :api_setting, {
+          FactoryGirl.attributes_or_build(@build_strategy, :api_backend_sub_url_settings, {
+            :settings_attributes => FactoryGirl.attributes_or_build(@build_strategy, :api_backend_settings, {
               :required_roles => [
                 "google-write",
               ],
@@ -53,7 +71,7 @@ FactoryGirl.define do
         end
 
         settings do
-          FactoryGirl.attributes_or_build(@build_strategy, :api_setting, {
+          FactoryGirl.attributes_or_build(@build_strategy, :api_backend_settings, {
             :required_roles => [
               "google-extra-write",
             ],
@@ -76,8 +94,8 @@ FactoryGirl.define do
 
       sub_settings do
         [
-          FactoryGirl.attributes_or_build(@build_strategy, :api_sub_setting, {
-            :settings_attributes => FactoryGirl.attributes_or_build(@build_strategy, :api_setting, {
+          FactoryGirl.attributes_or_build(@build_strategy, :api_backend_sub_url_settings, {
+            :settings_attributes => FactoryGirl.attributes_or_build(@build_strategy, :api_backend_settings, {
               :required_roles => [
                 "yahoo-write",
               ],

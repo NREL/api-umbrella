@@ -19,6 +19,8 @@ app.layout = require "views.layout"
 -- Custom error handler so we only show the default lapis debug details in
 -- development, and a generic error page in production.
 app.handle_error = function(self, err, trace)
+  ngx.log(ngx.ERR, "Unexpected error: " .. (err or "") .. "\n" .. (trace or ""))
+
   if lapis_config.show_errors then
     return lapis.Application.handle_error(self, err, trace)
   else

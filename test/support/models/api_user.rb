@@ -1,5 +1,5 @@
 class ApiUser < ActiveRecord::Base
-  belongs_to :settings, :class_name => "ApiUserSettings", :foreign_key => "api_user_settings_id"
+  has_one :settings, :class_name => "ApiUserSettings"#, :foreign_key => "api_user_settings_id"
 
   def api_key=(value)
     self.api_key_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], value)

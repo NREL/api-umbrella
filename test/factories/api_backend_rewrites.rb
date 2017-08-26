@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :api_rewrite, :class => "Api::Rewrite" do
+  factory :api_backend_rewrite do
     matcher_type "regex"
     http_method "any"
     frontend_matcher "^/foo"

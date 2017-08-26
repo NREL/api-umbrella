@@ -46,7 +46,7 @@ function _M.update(self)
 end
 
 function _M.destroy(self)
-  self.admin_group:delete()
+  assert(self.admin_group:delete())
 
   return { status = 204 }
 end

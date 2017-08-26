@@ -683,6 +683,8 @@ CREATE TABLE api_backend_servers (
 
 CREATE TABLE api_backend_settings (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
+    api_backend_id uuid,
+    api_backend_sub_url_settings_id uuid,
     append_query_string character varying(255),
     headers jsonb,
     http_basic_auth character varying(255),
@@ -712,7 +714,8 @@ CREATE TABLE api_backend_settings (
     CONSTRAINT api_backend_settings_api_key_verification_level_check CHECK (((api_key_verification_level)::text = ANY ((ARRAY['none'::character varying, 'transition_email'::character varying, 'required_email'::character varying])::text[]))),
     CONSTRAINT api_backend_settings_authenticated_rate_limit_behavior_check CHECK (((authenticated_rate_limit_behavior)::text = ANY ((ARRAY['all'::character varying, 'api_key_only'::character varying])::text[]))),
     CONSTRAINT api_backend_settings_rate_limit_mode_check CHECK (((rate_limit_mode)::text = ANY ((ARRAY['unlimited'::character varying, 'custom'::character varying])::text[]))),
-    CONSTRAINT api_backend_settings_require_https_check CHECK (((require_https)::text = ANY ((ARRAY['required_return_error'::character varying, 'transition_return_error'::character varying, 'optional'::character varying])::text[])))
+    CONSTRAINT api_backend_settings_require_https_check CHECK (((require_https)::text = ANY ((ARRAY['required_return_error'::character varying, 'transition_return_error'::character varying, 'optional'::character varying])::text[]))),
+    CONSTRAINT parent_id_not_null CHECK ((((api_backend_id IS NOT NULL) AND (api_backend_sub_url_settings_id IS NULL)) OR ((api_backend_id IS NULL) AND (api_backend_sub_url_settings_id IS NOT NULL))))
 );
 
 
@@ -723,7 +726,6 @@ CREATE TABLE api_backend_settings (
 CREATE TABLE api_backend_sub_url_settings (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     api_backend_id uuid NOT NULL,
-    api_backend_settings_id uuid NOT NULL,
     http_method character varying(7) NOT NULL,
     regex character varying(255) NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
@@ -762,7 +764,6 @@ CREATE TABLE api_backends (
     frontend_host character varying(255) NOT NULL,
     backend_host character varying(255) NOT NULL,
     balance_algorithm character varying(11) NOT NULL,
-    api_backend_settings_id uuid,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
     updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
@@ -794,6 +795,7 @@ CREATE TABLE api_scopes (
 
 CREATE TABLE api_user_settings (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
+    api_user_id uuid NOT NULL,
     rate_limit_mode character varying(9),
     allowed_ips inet[],
     allowed_referers character varying(255)[],
@@ -828,7 +830,6 @@ CREATE TABLE api_users (
     registration_origin character varying(1000),
     throttle_by_ip boolean DEFAULT false NOT NULL,
     roles character varying(100)[],
-    api_user_settings_id uuid,
     disabled_at timestamp with time zone,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
@@ -883,7 +884,6 @@ CREATE VIEW api_users_with_settings AS
     u.registration_origin,
     u.throttle_by_ip,
     u.roles,
-    u.api_user_settings_id,
     u.disabled_at,
     u.created_at,
     u.created_by,
@@ -892,9 +892,9 @@ CREATE VIEW api_users_with_settings AS
     row_to_json(s.*) AS settings,
     ( SELECT json_agg(r.*) AS json_agg
            FROM rate_limits r
-          WHERE (r.api_user_settings_id = u.api_user_settings_id)) AS rate_limits
+          WHERE (r.api_user_settings_id = s.id)) AS rate_limits
    FROM (api_users u
-     LEFT JOIN api_user_settings s ON ((u.api_user_settings_id = s.id)));
+     LEFT JOIN api_user_settings s ON ((u.id = s.api_user_id)));
 
 
 --
@@ -1179,10 +1179,38 @@ CREATE INDEX log_action_tstamp_tx_stm_idx ON log USING btree (action_tstamp_stm)
 
 
 --
+-- Name: log_application_name_idx; Type: INDEX; Schema: audit; Owner: -
+--
+
+CREATE INDEX log_application_name_idx ON log USING btree (application_name);
+
+
+--
+-- Name: log_application_user_idx; Type: INDEX; Schema: audit; Owner: -
+--
+
+CREATE INDEX log_application_user_idx ON log USING btree (application_user);
+
+
+--
+-- Name: log_expr_idx; Type: INDEX; Schema: audit; Owner: -
+--
+
+CREATE INDEX log_expr_idx ON log USING btree (((original ->> 'id'::text)));
+
+
+--
 -- Name: log_relid_idx; Type: INDEX; Schema: audit; Owner: -
 --
 
 CREATE INDEX log_relid_idx ON log USING btree (relid);
+
+
+--
+-- Name: log_schema_name_table_name_idx; Type: INDEX; Schema: audit; Owner: -
+--
+
+CREATE INDEX log_schema_name_table_name_idx ON log USING btree (schema_name, table_name);
 
 
 SET search_path = public, pg_catalog;
@@ -1391,13 +1419,6 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_group
 
 
 --
--- Name: api_backend_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
 -- Name: api_backends audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1412,13 +1433,6 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend
 
 
 --
--- Name: api_backend_sub_url_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
 -- Name: api_backend_servers audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1426,10 +1440,24 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend
 
 
 --
--- Name: api_user_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+-- Name: api_backend_sub_url_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_url_matches audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -1437,6 +1465,13 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_user_se
 --
 
 CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_user_settings audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -1510,13 +1545,6 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_api_scopes FOR E
 
 
 --
--- Name: api_backend_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
 -- Name: api_backends audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1531,13 +1559,6 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_rewrites FOR EACH
 
 
 --
--- Name: api_backend_sub_url_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_sub_url_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
-
-
---
 -- Name: api_backend_servers audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1545,10 +1566,24 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_servers FOR EACH 
 
 
 --
--- Name: api_user_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+-- Name: api_backend_sub_url_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_user_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_sub_url_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_url_matches audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_url_matches FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_backend_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -1556,6 +1591,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_user_settings FOR EACH ST
 --
 
 CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_users FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_user_settings audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_user_settings FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -1612,7 +1654,7 @@ CREATE TRIGGER website_backends_updated_at BEFORE UPDATE ON website_backends FOR
 --
 
 ALTER TABLE ONLY admin_groups_admin_permissions
-    ADD CONSTRAINT admin_groups_admin_permissions_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id);
+    ADD CONSTRAINT admin_groups_admin_permissions_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id) ON DELETE CASCADE;
 
 
 --
@@ -1620,7 +1662,7 @@ ALTER TABLE ONLY admin_groups_admin_permissions
 --
 
 ALTER TABLE ONLY admin_groups_admin_permissions
-    ADD CONSTRAINT admin_groups_admin_permissions_admin_permission_id_fkey FOREIGN KEY (admin_permission_id) REFERENCES admin_permissions(id);
+    ADD CONSTRAINT admin_groups_admin_permissions_admin_permission_id_fkey FOREIGN KEY (admin_permission_id) REFERENCES admin_permissions(id) ON DELETE CASCADE;
 
 
 --
@@ -1628,7 +1670,7 @@ ALTER TABLE ONLY admin_groups_admin_permissions
 --
 
 ALTER TABLE ONLY admin_groups_admins
-    ADD CONSTRAINT admin_groups_admins_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id);
+    ADD CONSTRAINT admin_groups_admins_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id) ON DELETE CASCADE;
 
 
 --
@@ -1636,7 +1678,7 @@ ALTER TABLE ONLY admin_groups_admins
 --
 
 ALTER TABLE ONLY admin_groups_admins
-    ADD CONSTRAINT admin_groups_admins_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES admins(id);
+    ADD CONSTRAINT admin_groups_admins_admin_id_fkey FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE;
 
 
 --
@@ -1644,7 +1686,7 @@ ALTER TABLE ONLY admin_groups_admins
 --
 
 ALTER TABLE ONLY admin_groups_api_scopes
-    ADD CONSTRAINT admin_groups_api_scopes_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id);
+    ADD CONSTRAINT admin_groups_api_scopes_admin_group_id_fkey FOREIGN KEY (admin_group_id) REFERENCES admin_groups(id) ON DELETE CASCADE;
 
 
 --
@@ -1652,7 +1694,7 @@ ALTER TABLE ONLY admin_groups_api_scopes
 --
 
 ALTER TABLE ONLY admin_groups_api_scopes
-    ADD CONSTRAINT admin_groups_api_scopes_api_scope_id_fkey FOREIGN KEY (api_scope_id) REFERENCES api_scopes(id);
+    ADD CONSTRAINT admin_groups_api_scopes_api_scope_id_fkey FOREIGN KEY (api_scope_id) REFERENCES api_scopes(id) ON DELETE CASCADE;
 
 
 --
@@ -1660,7 +1702,7 @@ ALTER TABLE ONLY admin_groups_api_scopes
 --
 
 ALTER TABLE ONLY api_backend_rewrites
-    ADD CONSTRAINT api_backend_rewrites_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id);
+    ADD CONSTRAINT api_backend_rewrites_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id) ON DELETE CASCADE;
 
 
 --
@@ -1668,7 +1710,23 @@ ALTER TABLE ONLY api_backend_rewrites
 --
 
 ALTER TABLE ONLY api_backend_servers
-    ADD CONSTRAINT api_backend_servers_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id);
+    ADD CONSTRAINT api_backend_servers_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id) ON DELETE CASCADE;
+
+
+--
+-- Name: api_backend_settings api_backend_settings_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_settings
+    ADD CONSTRAINT api_backend_settings_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id) ON DELETE CASCADE;
+
+
+--
+-- Name: api_backend_settings api_backend_settings_api_backend_sub_url_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_settings
+    ADD CONSTRAINT api_backend_settings_api_backend_sub_url_settings_id_fkey FOREIGN KEY (api_backend_sub_url_settings_id) REFERENCES api_backend_sub_url_settings(id) ON DELETE CASCADE;
 
 
 --
@@ -1676,15 +1734,7 @@ ALTER TABLE ONLY api_backend_servers
 --
 
 ALTER TABLE ONLY api_backend_sub_url_settings
-    ADD CONSTRAINT api_backend_sub_url_settings_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id);
-
-
---
--- Name: api_backend_sub_url_settings api_backend_sub_url_settings_api_backend_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY api_backend_sub_url_settings
-    ADD CONSTRAINT api_backend_sub_url_settings_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id);
+    ADD CONSTRAINT api_backend_sub_url_settings_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id) ON DELETE CASCADE;
 
 
 --
@@ -1692,23 +1742,15 @@ ALTER TABLE ONLY api_backend_sub_url_settings
 --
 
 ALTER TABLE ONLY api_backend_url_matches
-    ADD CONSTRAINT api_backend_url_matches_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id);
+    ADD CONSTRAINT api_backend_url_matches_api_backend_id_fkey FOREIGN KEY (api_backend_id) REFERENCES api_backends(id) ON DELETE CASCADE;
 
 
 --
--- Name: api_backends api_backends_api_backend_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: api_user_settings api_user_settings_api_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY api_backends
-    ADD CONSTRAINT api_backends_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id);
-
-
---
--- Name: api_users api_users_api_user_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY api_users
-    ADD CONSTRAINT api_users_api_user_settings_id_fkey FOREIGN KEY (api_user_settings_id) REFERENCES api_user_settings(id);
+ALTER TABLE ONLY api_user_settings
+    ADD CONSTRAINT api_user_settings_api_user_id_fkey FOREIGN KEY (api_user_id) REFERENCES api_users(id) ON DELETE CASCADE;
 
 
 --
@@ -1716,7 +1758,7 @@ ALTER TABLE ONLY api_users
 --
 
 ALTER TABLE ONLY rate_limits
-    ADD CONSTRAINT rate_limits_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id);
+    ADD CONSTRAINT rate_limits_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id) ON DELETE CASCADE;
 
 
 --
@@ -1724,7 +1766,7 @@ ALTER TABLE ONLY rate_limits
 --
 
 ALTER TABLE ONLY rate_limits
-    ADD CONSTRAINT rate_limits_api_user_settings_id_fkey FOREIGN KEY (api_user_settings_id) REFERENCES api_user_settings(id);
+    ADD CONSTRAINT rate_limits_api_user_settings_id_fkey FOREIGN KEY (api_user_settings_id) REFERENCES api_user_settings(id) ON DELETE CASCADE;
 
 
 --

@@ -64,7 +64,7 @@ function _M.update(self)
 end
 
 function _M.destroy(self)
-  self.api_user:delete()
+  assert(self.api_user:delete())
 
   return { status = 204 }
 end

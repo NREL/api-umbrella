@@ -59,7 +59,7 @@ function _M.update(self)
 end
 
 function _M.destroy(self)
-  self.api_backend:delete()
+  assert(self.api_backend:delete())
 
   return { status = 204 }
 end

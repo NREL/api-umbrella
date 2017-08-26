@@ -1,8 +1,8 @@
 class ApiBackend < ActiveRecord::Base
-  # embeds_one :settings, :class_name => "Api::Settings"
+  has_one :settings, :class_name => "ApiBackendSettings"
   has_many :servers, :class_name => "ApiBackendServer"
   has_many :url_matches, :class_name => "ApiBackendUrlMatch"
-  # embeds_many :sub_settings, :class_name => "Api::SubSettings"
+  has_many :sub_settings, :class_name => "ApiBackendSubUrlSettings"
   has_many :rewrites, :class_name => "ApiBackendRewrite"
 
   before_save :set_defaults
