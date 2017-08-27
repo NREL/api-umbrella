@@ -3,41 +3,34 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
-    Api.delete_all
   end
 
-  def test_validate_error_data_yaml_strings
-    assert_embedded_yaml(:error_data)
+  [:error_data].each do |field|
+    [:create, :update].each do |action|
+      define_method("test_#{field}_#{action}_invalid_yaml") do
+        assert_embedded_yaml_invalid_yaml(action, field)
+      end
+
+      define_method("test_#{field}_#{action}_non_hash") do
+        assert_embedded_yaml_non_hash(action, field)
+      end
+
+      define_method("test_#{field}_#{action}_valid") do
+        assert_embedded_yaml_valid(action, field)
+      end
+    end
   end
 
   private
 
-  def assert_embedded_yaml(field)
-    assert_embedded_yaml_create(field)
-    assert_embedded_yaml_update(field)
-  end
-
-  def assert_embedded_yaml_create(field)
-    assert_embedded_yaml_action(:create, field)
-  end
-
-  def assert_embedded_yaml_update(field)
-    assert_embedded_yaml_action(:update, field)
-  end
-
-  def assert_embedded_yaml_action(action, field)
-    assert_embedded_yaml_invalid_yaml(action, field)
-    assert_embedded_yaml_non_hash(action, field)
-    assert_embedded_yaml_valid(action, field)
-  end
-
   def assert_embedded_yaml_invalid_yaml(action, field)
     attributes = attributes_for(action)
-    attributes["settings"] = FactoryGirl.attributes_for(:api_setting, {
+    attributes["settings"] = FactoryGirl.attributes_for(:api_backend_settings, {
       :"#{field}_yaml_strings" => {
         :api_key_invalid => "foo: &",
         :api_key_missing => "foo: bar\nhello: `world",
@@ -49,14 +42,14 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal({
-      "settings.#{field}_yaml_strings.api_key_invalid" => ["YAML parsing error: (<unknown>): did not find expected alphabetic or numeric character while scanning an anchor at line 1 column 6"],
-      "settings.#{field}_yaml_strings.api_key_missing" => ["YAML parsing error: (<unknown>): found character that cannot start any token while scanning for the next token at line 2 column 8"],
+      "settings.#{field}_yaml_strings.api_key_invalid" => ["YAML parsing error: 1:1: did not find expected alphabetic or numeric character"],
+      "settings.#{field}_yaml_strings.api_key_missing" => ["YAML parsing error: 2:1: found character that cannot start any token"],
     }, data["errors"])
   end
 
   def assert_embedded_yaml_non_hash(action, field)
     attributes = attributes_for(action)
-    attributes["settings"] = FactoryGirl.attributes_for(:api_setting, {
+    attributes["settings"] = FactoryGirl.attributes_for(:api_backend_settings, {
       :"#{field}_yaml_strings" => {
         :api_key_invalid => "foo",
       },
@@ -73,7 +66,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
 
   def assert_embedded_yaml_valid(action, field)
     attributes = attributes_for(action)
-    attributes["settings"] = FactoryGirl.attributes_for(:api_setting, {
+    attributes["settings"] = FactoryGirl.attributes_for(:api_backend_settings, {
       :"#{field}_yaml_strings" => {
         :api_key_invalid => "status_code: 422\nfoo: bar",
       },
@@ -83,10 +76,10 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
     if(action == :create)
       assert_response_code(201, response)
       data = MultiJson.load(response.body)
-      api = Api.find(data["api"]["id"])
+      api = ApiBackend.find(data["api"]["id"])
     elsif(action == :update)
       assert_response_code(204, response)
-      api = Api.find(attributes["id"])
+      api = ApiBackend.find(attributes["id"])
     end
     assert_equal({
       "api_key_invalid" => {
@@ -98,9 +91,9 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
 
   def attributes_for(action)
     if(action == :create)
-      FactoryGirl.attributes_for(:api).deep_stringify_keys
+      FactoryGirl.attributes_for(:api_backend).deep_stringify_keys
     elsif(action == :update)
-      FactoryGirl.create(:api).serializable_hash
+      FactoryGirl.create(:api_backend).serializable_hash
     else
       flunk("Unknown action: #{action.inspect}")
     end

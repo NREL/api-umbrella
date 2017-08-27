@@ -134,8 +134,6 @@ function _M.api_backend_params(self)
         authenticated_rate_limit_behavior = input_settings["authenticated_rate_limit_behavior"],
         default_response_headers_string = input_settings["default_response_headers_string"],
         disable_api_key = input_settings["disable_api_key"],
-        error_data = input_settings["error_data"],
-        error_templates = input_settings["error_templates"],
         headers_string = input_settings["headers_string"],
         http_basic_auth = input_settings["http_basic_auth"],
         override_response_headers_string = input_settings["override_response_headers_string"],
@@ -147,6 +145,24 @@ function _M.api_backend_params(self)
         required_roles = input_settings["required_roles"],
         required_roles_override = input_settings["required_roles_override"],
       })
+
+      if input_settings["error_data_yaml_strings"] then
+        params["settings"]["error_data_yaml_strings"] = {}
+        if is_hash(input_settings["error_data_yaml_strings"]) then
+          local error_data_fields = {
+            "common",
+            "api_key_missing",
+            "api_key_invalid",
+            "api_key_disabled",
+            "api_key_unauthorized",
+            "over_rate_limit",
+            "https_required",
+          }
+          for _, error_data_field in ipairs(error_data_fields) do
+            params["settings"]["error_data_yaml_strings"][error_data_field] = input_settings["error_data_yaml_strings"][error_data_field]
+          end
+        end
+      end
 
       local header_fields = {
         "default_response_headers",

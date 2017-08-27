@@ -1,7 +1,10 @@
 local ApiBackendHttpHeader = require "api-umbrella.lapis.models.api_backend_http_header"
 local cjson = require "cjson"
 local is_empty = require("pl.types").is_empty
+local is_hash = require "api-umbrella.utils.is_hash"
+local lyaml = require "lyaml"
 local model_ext = require "api-umbrella.utils.model_ext"
+local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local split = require("ngx.re").split
 local strip = require("pl.stringx").strip
 local t = require("resty.gettext").gettext
@@ -70,7 +73,16 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
   end,
 
   error_data_yaml_strings = function(self)
-    return ""
+    if not self._error_data_yaml_strings then
+      self._error_data_yaml_strings = {}
+      if self.error_data then
+        for key, value in pairs(self.error_data) do
+          self._error_data_yaml_strings[key] = lyaml.dump(value)
+        end
+      end
+    end
+
+    return self._error_data_yaml_strings
   end,
 
   headers_string = function(self)
@@ -153,6 +165,27 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
   end,
 }, {
   before_validate = function(_, values)
+    if values["error_data_yaml_strings"] then
+      values["error_data"] = {}
+      if is_hash(values["error_data_yaml_strings"]) then
+        for key, value in pairs(values["error_data_yaml_strings"]) do
+          local ok, field_data = pcall(lyaml.load, value)
+          if ok then
+            if is_hash(field_data) then
+              nillify_yaml_nulls(field_data)
+            end
+            values["error_data"][key] = field_data
+          else
+            if not values["_error_data_yaml_strings_parse_errors"] then
+              values["_error_data_yaml_strings_parse_errors"] = {}
+            end
+
+            values["_error_data_yaml_strings_parse_errors"][key] = string.format(t("YAML parsing error: %s"), (field_data or ""))
+          end
+        end
+      end
+    end
+
     if values["default_response_headers_string"] then
       values["default_response_headers"] = string_to_http_headers(values["default_response_headers_string"])
     end
@@ -175,14 +208,39 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     end
   end,
 
-  validate = function(_, data)
+  validate = function(_, data, values)
     local errors = {}
     validate_field(errors, data, "require_https", validation.optional:regex("^(required_return_error|transition_return_error|optional)$", "jo"), t("is not included in the list"))
     validate_field(errors, data, "api_key_verification_level", validation.optional:regex("^(none|transition_email|required_email)$", "jo"), t("is not included in the list"))
     validate_field(errors, data, "rate_limit_mode", validation.optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list"))
     validate_field(errors, data, "anonymous_rate_limit_behavior", validation.optional:regex("^(ip_fallback|ip_only)$", "jo"), t("is not included in the list"))
     validate_field(errors, data, "authenticated_rate_limit_behavior", validation.optional:regex("^(all|api_key_only)$", "jo"), t("is not included in the list"))
+
+    if data["error_data"] then
+      if not is_hash(data["error_data"]) then
+        model_ext.add_error(errors, "settings.error_data", t("unexpected type (must be a hash)"))
+      else
+        for key, value in pairs(data["error_data"]) do
+          if not is_hash(value) then
+            model_ext.add_error(errors, "settings.error_data." .. key, t("unexpected type (must be a hash)"))
+          end
+        end
+      end
+    end
+
+    if data["_error_data_yaml_strings_parse_errors"] then
+      for key, value in pairs(data["_error_data_yaml_strings_parse_errors"]) do
+        model_ext.add_error(errors, "settings.error_data_yaml_strings." .. key, value)
+      end
+    end
+
     return errors
+  end,
+
+  before_save = function(self, values)
+    if values["error_data"] then
+      values["error_data"] = cjson.encode(values["error_data"])
+    end
   end,
 
   after_save = function(self, values)
