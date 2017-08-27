@@ -202,8 +202,8 @@ ApiBackend = model_ext.new_class("api_backends", {
       validate_field(errors, data, "backend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     end
     validate_field(errors, data, "balance_algorithm", validation:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "servers", validation.table:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "url_matches", validation.table:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "servers", validation.table:minlen(1), t("must have at least one servers"), { error_field = "base" })
+    validate_field(errors, data, "url_matches", validation.table:minlen(1), t("must have at least one url_matches"), { error_field = "base" })
     return errors
   end,
 

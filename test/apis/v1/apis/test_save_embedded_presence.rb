@@ -3,41 +3,30 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
-    Api.delete_all
   end
 
-  def test_validate_servers_presence
-    assert_embedded_presence(:servers)
-  end
+  [:servers, :url_matches].each do |field|
+    [:create, :update].each do |action|
+      define_method("test_#{field}_#{action}_nil") do
+        assert_embedded_presence_nil(action, field)
+      end
 
-  def test_validate_url_matches_presence
-    assert_embedded_presence(:url_matches)
+      define_method("test_#{field}_#{action}_empty_array") do
+        assert_embedded_presence_empty_array(action, field)
+      end
+
+      define_method("test_#{field}_#{action}_exists") do
+        assert_embedded_presence_exists(action, field)
+      end
+    end
   end
 
   private
-
-  def assert_embedded_presence(field)
-    assert_embedded_presence_create(field)
-    assert_embedded_presence_update(field)
-  end
-
-  def assert_embedded_presence_create(field)
-    assert_embedded_presence_action(:create, field)
-  end
-
-  def assert_embedded_presence_update(field)
-    assert_embedded_presence_action(:update, field)
-  end
-
-  def assert_embedded_presence_action(action, field)
-    assert_embedded_presence_nil(action, field)
-    assert_embedded_presence_empty_array(action, field)
-    assert_embedded_presence_exists(action, field)
-  end
 
   def assert_embedded_presence_nil(action, field)
     attributes = attributes_for(action)
@@ -67,25 +56,25 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Test
 
   def assert_embedded_presence_exists(action, field)
     attributes = attributes_for(action)
-    attributes[field.to_s] = [FactoryGirl.attributes_for(:"api_#{field.to_s.singularize}")]
+    attributes[field.to_s] = [FactoryGirl.attributes_for(:"api_backend_#{field.to_s.singularize}")]
 
     response = create_or_update(action, attributes)
     if(action == :create)
       assert_response_code(201, response)
       data = MultiJson.load(response.body)
-      api = Api.find(data["api"]["id"])
+      api = ApiBackend.find(data["api"]["id"])
     elsif(action == :update)
       assert_response_code(204, response)
-      api = Api.find(attributes["id"])
+      api = ApiBackend.find(attributes["id"])
     end
-    assert_equal(1, api[field].length)
+    assert_equal(1, api.send(field).length)
   end
 
   def attributes_for(action)
     if(action == :create)
-      FactoryGirl.attributes_for(:api).deep_stringify_keys
+      FactoryGirl.attributes_for(:api_backend).deep_stringify_keys
     elsif(action == :update)
-      FactoryGirl.create(:api).serializable_hash
+      FactoryGirl.create(:api_backend).serializable_hash
     else
       flunk("Unknown action: #{action.inspect}")
     end

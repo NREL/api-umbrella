@@ -51,7 +51,7 @@ local function merge_record_and_values(self, values)
             end
             table.insert(merged[name], readonly(record_values))
           end
-        else
+        elseif is_hash(records) then
           local record_values = {}
           for key, value in pairs(records) do
             record_values[key] = value
@@ -189,13 +189,17 @@ function _M.add_error(errors, field, message)
   table.insert(errors[field], message)
 end
 
-function _M.validate_field(errors, values, field, validator, message, error_field_prefix)
+function _M.validate_field(errors, values, field, validator, message, options)
   local value = values[field]
   local ok = validator(value)
   if not ok then
     local error_field = field
-    if error_field_prefix then
-      error_field = error_field_prefix .. error_field
+    if options then
+      if options["error_field"] then
+        error_field = options["error_field"]
+      elseif options["error_field_prefix"] then
+        error_field = options["error_field_prefix"] .. error_field
+      end
     end
 
     _M.add_error(errors, error_field, message)
