@@ -39,6 +39,15 @@ return {
     ]])
 
     db.query([[
+      CREATE OR REPLACE FUNCTION next_api_backend_sort_order()
+      RETURNS int AS $$
+      BEGIN
+        RETURN (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM api_backends);
+      END;
+      $$ LANGUAGE plpgsql;
+    ]])
+
+    db.query([[
       CREATE TABLE admins(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         username varchar(255) NOT NULL,
@@ -164,7 +173,7 @@ return {
       CREATE TABLE api_backends(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         name varchar(255) NOT NULL,
-        sort_order int NOT NULL,
+        sort_order int NOT NULL DEFAULT next_api_backend_sort_order(),
         backend_protocol varchar(5) NOT NULL CHECK(backend_protocol IN('http', 'https')),
         frontend_host varchar(255) NOT NULL,
         backend_host varchar(255) NOT NULL,
@@ -175,6 +184,7 @@ return {
         updated_by varchar(255) NOT NULL DEFAULT current_app_user()
       )
     ]])
+    db.query("CREATE INDEX ON api_backends(sort_order)")
     db.query("CREATE TRIGGER api_backends_updated_at BEFORE UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE set_updated()")
     db.query("SELECT audit.audit_table('api_backends')")
 
@@ -246,7 +256,6 @@ return {
         api_backend_id uuid REFERENCES api_backends ON DELETE CASCADE,
         api_backend_sub_url_settings_id uuid REFERENCES api_backend_sub_url_settings ON DELETE CASCADE,
         append_query_string varchar(255),
-        headers jsonb,
         http_basic_auth varchar(255),
         require_https varchar(23) CHECK(require_https IN('required_return_error', 'transition_return_error', 'optional')),
         require_https_transition_start_at timestamp with time zone,
@@ -262,8 +271,6 @@ return {
         rate_limit_mode varchar(9) CHECK(rate_limit_mode IN('unlimited', 'custom')),
         anonymous_rate_limit_behavior varchar(11) CHECK(anonymous_rate_limit_behavior IN('ip_fallback', 'ip_only')),
         authenticated_rate_limit_behavior varchar(12) CHECK(authenticated_rate_limit_behavior IN('all', 'api_key_only')),
-        default_response_headers jsonb,
-        override_response_headers jsonb,
         error_templates jsonb,
         error_data jsonb,
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
@@ -273,8 +280,28 @@ return {
         CONSTRAINT parent_id_not_null CHECK((api_backend_id IS NOT NULL AND api_backend_sub_url_settings_id IS NULL) OR (api_backend_id IS NULL AND api_backend_sub_url_settings_id IS NOT NULL))
       )
     ]])
+    db.query("CREATE UNIQUE INDEX ON api_backend_settings(api_backend_id)")
+    db.query("CREATE UNIQUE INDEX ON api_backend_settings(api_backend_sub_url_settings_id)")
     db.query("CREATE TRIGGER api_backend_settings_updated_at BEFORE UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE set_updated()")
     db.query("SELECT audit.audit_table('api_backend_settings')")
+
+    db.query([[
+      CREATE TABLE api_backend_http_headers(
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        api_backend_settings_id uuid NOT NULL REFERENCES api_backend_settings ON DELETE CASCADE,
+        header_type varchar(17) NOT NULL CHECK(header_type IN('request', 'response_default', 'response_override')),
+        sort_order int NOT NULL,
+        key varchar(255) NOT NULL,
+        value varchar(255),
+        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+      )
+    ]])
+    db.query("CREATE UNIQUE INDEX ON api_backend_http_headers(api_backend_settings_id, header_type, sort_order)")
+    db.query("CREATE TRIGGER api_backend_http_headers_updated_at BEFORE UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("SELECT audit.audit_table('api_backend_http_headers')")
 
     db.query([[
       CREATE TABLE api_users(

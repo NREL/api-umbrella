@@ -317,6 +317,19 @@ $$;
 
 
 --
+-- Name: next_api_backend_sort_order(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION next_api_backend_sort_order() RETURNS integer
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        RETURN (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM api_backends);
+      END;
+      $$;
+
+
+--
 -- Name: set_updated(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -642,6 +655,25 @@ CREATE TABLE admins (
 
 
 --
+-- Name: api_backend_http_headers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_backend_http_headers (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    api_backend_settings_id uuid NOT NULL,
+    header_type character varying(17) NOT NULL,
+    sort_order integer NOT NULL,
+    key character varying(255) NOT NULL,
+    value character varying(255),
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    CONSTRAINT api_backend_http_headers_header_type_check CHECK (((header_type)::text = ANY ((ARRAY['request'::character varying, 'response_default'::character varying, 'response_override'::character varying])::text[])))
+);
+
+
+--
 -- Name: api_backend_rewrites; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -686,7 +718,6 @@ CREATE TABLE api_backend_settings (
     api_backend_id uuid,
     api_backend_sub_url_settings_id uuid,
     append_query_string character varying(255),
-    headers jsonb,
     http_basic_auth character varying(255),
     require_https character varying(23),
     require_https_transition_start_at timestamp with time zone,
@@ -702,8 +733,6 @@ CREATE TABLE api_backend_settings (
     rate_limit_mode character varying(9),
     anonymous_rate_limit_behavior character varying(11),
     authenticated_rate_limit_behavior character varying(12),
-    default_response_headers jsonb,
-    override_response_headers jsonb,
     error_templates jsonb,
     error_data jsonb,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
@@ -759,7 +788,7 @@ CREATE TABLE api_backend_url_matches (
 CREATE TABLE api_backends (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     name character varying(255) NOT NULL,
-    sort_order integer NOT NULL,
+    sort_order integer DEFAULT next_api_backend_sort_order() NOT NULL,
     backend_protocol character varying(5) NOT NULL,
     frontend_host character varying(255) NOT NULL,
     backend_host character varying(255) NOT NULL,
@@ -1051,6 +1080,14 @@ ALTER TABLE ONLY admins
 
 
 --
+-- Name: api_backend_http_headers api_backend_http_headers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_http_headers
+    ADD CONSTRAINT api_backend_http_headers_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: api_backend_rewrites api_backend_rewrites_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1251,6 +1288,34 @@ CREATE UNIQUE INDEX admins_username_idx ON admins USING btree (username);
 
 
 --
+-- Name: api_backend_http_headers_api_backend_settings_id_header_typ_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_http_headers_api_backend_settings_id_header_typ_idx ON api_backend_http_headers USING btree (api_backend_settings_id, header_type, sort_order);
+
+
+--
+-- Name: api_backend_settings_api_backend_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_settings_api_backend_id_idx ON api_backend_settings USING btree (api_backend_id);
+
+
+--
+-- Name: api_backend_settings_api_backend_sub_url_settings_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_settings_api_backend_sub_url_settings_id_idx ON api_backend_settings USING btree (api_backend_sub_url_settings_id);
+
+
+--
+-- Name: api_backends_sort_order_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX api_backends_sort_order_idx ON api_backends USING btree (sort_order);
+
+
+--
 -- Name: api_scopes_host_path_prefix_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1304,6 +1369,13 @@ CREATE TRIGGER admin_permissions_updated_at BEFORE UPDATE ON admin_permissions F
 --
 
 CREATE TRIGGER admins_updated_at BEFORE UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: api_backend_http_headers api_backend_http_headers_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_http_headers_updated_at BEFORE UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE set_updated();
 
 
 --
@@ -1461,6 +1533,13 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend
 
 
 --
+-- Name: api_backend_http_headers audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_users audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1587,6 +1666,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_settings FOR EACH
 
 
 --
+-- Name: api_backend_http_headers audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_http_headers FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_users audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1695,6 +1781,14 @@ ALTER TABLE ONLY admin_groups_api_scopes
 
 ALTER TABLE ONLY admin_groups_api_scopes
     ADD CONSTRAINT admin_groups_api_scopes_api_scope_id_fkey FOREIGN KEY (api_scope_id) REFERENCES api_scopes(id) ON DELETE CASCADE;
+
+
+--
+-- Name: api_backend_http_headers api_backend_http_headers_api_backend_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_http_headers
+    ADD CONSTRAINT api_backend_http_headers_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id) ON DELETE CASCADE;
 
 
 --
@@ -1816,6 +1910,13 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_permissions TO api_umbrella_app
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admins TO api_umbrella_app_user;
+
+
+--
+-- Name: api_backend_http_headers; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_http_headers TO api_umbrella_app_user;
 
 
 --

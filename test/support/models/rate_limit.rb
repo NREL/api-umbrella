@@ -1,2 +1,2 @@
-class RateLimit < ActiveRecord::Base
+class RateLimit < ApplicationRecord
 end

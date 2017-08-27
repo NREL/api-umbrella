@@ -1,3 +1,3 @@
-class ApiBackendServer < ActiveRecord::Base
+class ApiBackendServer < ApplicationRecord
   belongs_to :api_backend
 end

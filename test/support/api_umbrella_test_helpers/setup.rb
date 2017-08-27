@@ -51,6 +51,7 @@ module ApiUmbrellaTestHelpers
             :port => $config["postgresql"]["port"],
             :database => $config["postgresql"]["database"],
             :username => "api-umbrella",
+            :pool => 50,
             :variables => {
               "application.name" => "test",
               'application."user"' => "test",

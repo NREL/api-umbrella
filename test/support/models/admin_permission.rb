@@ -1,2 +1,2 @@
-class AdminPermission < ActiveRecord::Base
+class AdminPermission < ApplicationRecord
 end

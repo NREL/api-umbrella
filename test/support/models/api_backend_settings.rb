@@ -1,4 +1,41 @@
-class ApiBackendSettings < ActiveRecord::Base
+class ApiBackendSettings < ApplicationRecord
   belongs_to :api_backend
+  has_many :http_headers, :class_name => "ApiBackendHttpHeader"
   has_many :rate_limits
+
+  def headers
+    get_http_headers("request")
+  end
+
+  def headers=(values)
+    set_http_headers("request", values)
+  end
+
+  def default_response_headers
+    get_http_headers("response_default")
+  end
+
+  def default_response_headers=(values)
+    set_http_headers("response_default", values)
+  end
+
+  def override_response_headers
+    get_http_headers("response_override")
+  end
+
+  def override_response_headers=(values)
+    set_http_headers("response_override", values)
+  end
+
+  private
+
+  def get_http_headers(header_type)
+    self.http_headers.select { |h| h.header_type == header_type }
+  end
+
+  def set_http_headers(header_type, values)
+    headers = self.http_headers.reject { |h| h.header_type == header_type }
+    values.each_with_index { |v, i| v.header_type = header_type; v.sort_order = i }
+    self.http_headers = headers + values
+  end
 end

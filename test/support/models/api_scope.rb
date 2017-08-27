@@ -1,4 +1,4 @@
-class ApiScope < ActiveRecord::Base
+class ApiScope < ApplicationRecord
   def self.find_or_create_by_instance!(other)
     attributes = other.attributes.slice("host", "path_prefix")
     record = self.where(attributes).first

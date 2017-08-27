@@ -1,2 +1,2 @@
-class WebsiteBackend < ActiveRecord::Base
+class WebsiteBackend < ApplicationRecord
 end

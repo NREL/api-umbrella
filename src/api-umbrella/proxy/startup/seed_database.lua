@@ -172,11 +172,11 @@ local function seed_api_keys()
         end
       end
 
-      pg_utils.delete("rate_limits", { api_user_settings_id = assert(settings_id) })
+      pg_utils.delete("rate_limits", { api_user_settings_id = assert(settings["id"]) })
       if rate_limits_data then
         for _, rate_limit in ipairs(rate_limits_data) do
           rate_limit["id"] = uuid.generate_random()
-          rate_limit["api_user_settings_id"] = settings_id
+          rate_limit["api_user_settings_id"] = settings["id"]
           local insert_result, insert_err = pg_utils.insert("rate_limits", rate_limit)
           if not insert_result then
             ngx.log(ngx.ERR, "failed to create record in api_user_settings: ", insert_err)

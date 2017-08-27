@@ -64,13 +64,13 @@ local ApiUser = model_ext.new_class("api_users", {
     values["api_key_prefix"] = string.sub(api_key, 1, 10)
   end,
 
-  validate = function(_, values)
+  validate = function(_, data)
     local errors = {}
-    validate_field(errors, values, "first_name", validation.string:minlen(1), t("Provide your first name."))
-    validate_field(errors, values, "last_name", validation.string:minlen(1), t("Provide your last name."))
-    validate_field(errors, values, "email", validation.string:minlen(1), t("Provide your email address."))
-    validate_field(errors, values, "email", validation:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
-    validate_field(errors, values, "website", validation.optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
+    validate_field(errors, data, "first_name", validation.string:minlen(1), t("Provide your first name."))
+    validate_field(errors, data, "last_name", validation.string:minlen(1), t("Provide your last name."))
+    validate_field(errors, data, "email", validation.string:minlen(1), t("Provide your email address."))
+    validate_field(errors, data, "email", validation:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
+    validate_field(errors, data, "website", validation.optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
     return errors
   end,
 })

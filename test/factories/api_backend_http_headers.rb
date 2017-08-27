@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :api_header, :class => "Api::Header" do
+  factory :api_backend_http_header do
     key "X-Custom"
     value "value"
   end

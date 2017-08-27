@@ -1,4 +1,4 @@
-class PublishedConfig < ActiveRecord::Base
+class PublishedConfig < ApplicationRecord
   self.table_name = "published_config"
 
   def self.publish!(config)

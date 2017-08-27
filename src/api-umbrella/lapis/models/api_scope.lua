@@ -27,13 +27,13 @@ local ApiScope = model_ext.new_class("api_scopes", {
     }
   end,
 }, {
-  validate = function(_, values)
+  validate = function(_, data)
     local errors = {}
-    validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "host", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
-    validate_field(errors, values, "path_prefix", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "path_prefix", validation.optional:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"'))
+    validate_field(errors, data, "name", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "host", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
+    validate_field(errors, data, "path_prefix", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "path_prefix", validation.optional:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"'))
     return errors
   end,
 })

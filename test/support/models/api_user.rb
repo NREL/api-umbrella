@@ -1,4 +1,4 @@
-class ApiUser < ActiveRecord::Base
+class ApiUser < ApplicationRecord
   has_one :settings, :class_name => "ApiUserSettings"#, :foreign_key => "api_user_settings_id"
 
   def api_key=(value)

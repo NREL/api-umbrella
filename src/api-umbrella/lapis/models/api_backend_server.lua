@@ -15,12 +15,12 @@ local ApiBackendServer = model_ext.new_class("api_backend_servers", {
     }
   end,
 }, {
-  validate = function(_, values)
+  validate = function(_, data)
     local errors = {}
-    validate_field(errors, values, "host", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "host", validation.optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"'))
-    validate_field(errors, values, "port", validation.number, t("can't be blank"))
-    validate_field(errors, values, "port", validation.number:between(0, 65535), t("is not included in the list"))
+    validate_field(errors, data, "host", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "host", validation.optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"'))
+    validate_field(errors, data, "port", validation.number, t("can't be blank"))
+    validate_field(errors, data, "port", validation.number:between(0, 65535), t("is not included in the list"))
     return errors
   end,
 })

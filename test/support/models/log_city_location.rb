@@ -1,2 +1,2 @@
-class LogCityLocation < ActiveRecord::Base
+class LogCityLocation < ApplicationRecord
 end

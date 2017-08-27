@@ -2,6 +2,7 @@ local respond_to = require("lapis.application").respond_to
 local db = require "lapis.db"
 local ApiBackend = require "api-umbrella.lapis.models.api_backend"
 local is_array = require "api-umbrella.utils.is_array"
+local is_hash = require "api-umbrella.utils.is_hash"
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local json_params = require("lapis.application").json_params
@@ -78,14 +79,10 @@ function _M.api_backend_params(self)
       frontend_host = input["frontend_host"],
       backend_host = input["backend_host"],
       balance_algorithm = input["balance_algorithm"],
-      rewrites = {},
-      servers = {},
-      settings = {},
-      sub_settings = {},
-      url_matches = {},
     })
 
     if is_array(input["rewrites"]) then
+      params["rewrites"] = {}
       for _, input_rewrite in ipairs(input["rewrites"]) do
         table.insert(params["rewrites"], dbify_json_nulls({
           id = input_rewrite["id"],
@@ -98,6 +95,7 @@ function _M.api_backend_params(self)
     end
 
     if is_array(input["servers"]) then
+      params["servers"] = {}
       for _, input_server in ipairs(input["servers"]) do
         table.insert(params["servers"], dbify_json_nulls({
           id = input_server["id"],
@@ -108,12 +106,60 @@ function _M.api_backend_params(self)
     end
 
     if is_array(input["url_matches"]) then
+      params["url_matches"] = {}
       for _, input_url_match in ipairs(input["url_matches"]) do
         table.insert(params["url_matches"], dbify_json_nulls({
           id = input_url_match["id"],
           frontend_prefix = input_url_match["frontend_prefix"],
           backend_prefix = input_url_match["backend_prefix"],
         }))
+      end
+    end
+
+    local input_settings = input["settings"]
+    if is_hash(input_settings) then
+      params["settings"] = dbify_json_nulls({
+        id = input_settings["id"],
+        anonymous_rate_limit_behavior = input_settings["anonymous_rate_limit_behavior"],
+        api_key_verification_level = input_settings["api_key_verification_level"],
+        api_key_verification_transition_start_at = input_settings["api_key_verification_transition_start_at"],
+        append_query_string = input_settings["append_query_string"],
+        authenticated_rate_limit_behavior = input_settings["authenticated_rate_limit_behavior"],
+        default_response_headers = {},
+        default_response_headers_string = input_settings["default_response_headers_string"],
+        disable_api_key = input_settings["disable_api_key"],
+        error_data = input_settings["error_data"],
+        error_templates = input_settings["error_templates"],
+        headers = {},
+        headers_string = input_settings["headers_string"],
+        http_basic_auth = input_settings["http_basic_auth"],
+        override_response_headers = {},
+        override_response_headers_string = input_settings["override_response_headers_string"],
+        pass_api_key_header = input_settings["pass_api_key_header"],
+        pass_api_key_query_param = input_settings["pass_api_key_query_param"],
+        rate_limit_mode = input_settings["rate_limit_mode"],
+        rate_limits = {},
+        require_https = input_settings["require_https"],
+        require_https_transition_start_at = input_settings["require_https_transition_start_at"],
+        required_roles = input_settings["required_roles"],
+        required_roles_override = input_settings["required_roles_override"],
+      })
+
+      local header_fields = {
+        "default_response_headers",
+        "headers",
+        "override_response_headers",
+      }
+      for _, header_field in ipairs(header_fields) do
+        if is_array(input_settings[header_field]) then
+          for _, input_header in ipairs(input_settings[header_field]) do
+            table.insert(params["settings"][header_field], dbify_json_nulls({
+              id = input_header["id"],
+              key = input_header["key"],
+              value = input_header["value"],
+            }))
+          end
+        end
       end
     end
   end

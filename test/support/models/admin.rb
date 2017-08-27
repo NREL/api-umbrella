@@ -1,4 +1,4 @@
-class Admin < ActiveRecord::Base
+class Admin < ApplicationRecord
   has_and_belongs_to_many :groups, :class => "AdminGroup"
 
   def authentication_token=(value)

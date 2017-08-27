@@ -113,11 +113,11 @@ local AdminGroup = model_ext.new_class("admin_groups", {
     return data
   end,
 }, {
-  validate = function(_, values)
+  validate = function(_, data)
     local errors = {}
-    validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "api_scope_ids", validation.table:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "permission_ids", validation.table:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "name", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "api_scope_ids", validation.table:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "permission_ids", validation.table:minlen(1), t("can't be blank"))
     return errors
   end,
 

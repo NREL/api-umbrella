@@ -1,11 +1,10 @@
 local ApiBackendRewrite = require "api-umbrella.lapis.models.api_backend_rewrite"
 local ApiBackendServer = require "api-umbrella.lapis.models.api_backend_server"
+local ApiBackendSettings = require "api-umbrella.lapis.models.api_backend_settings"
 local ApiBackendUrlMatch = require "api-umbrella.lapis.models.api_backend_url_match"
 local cjson = require "cjson"
 local common_validations = require "api-umbrella.utils.common_validations"
 local db = require "lapis.db"
-local is_array = require "api-umbrella.utils.is_array"
-local is_empty = require("pl.types").is_empty
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
@@ -18,37 +17,6 @@ local validate_field = model_ext.validate_field
 local MAX_SORT_ORDER = 2147483647
 local MIN_SORT_ORDER = -2147483648
 local SORT_ORDER_GAP = 10000
-
-local function update_or_create_has_many(self, relation_model, relation_values)
-  relation_values["api_backend_id"] = assert(self.id)
-
-  local relation_record
-  if relation_values["id"] then
-    relation_record = relation_model:find({
-      api_backend_id = relation_values["api_backend_id"],
-      id = relation_values["id"],
-    })
-  end
-
-  if relation_record then
-    assert(relation_record:update(relation_values))
-  else
-    relation_record = assert(relation_model:create(relation_values))
-  end
-
-  return relation_record
-end
-
-local function delete_has_many_except(self, relation_model, keep_ids)
-  local table_name = assert(relation_model:table_name())
-  local api_backend_id = assert(self.id)
-
-  if is_empty(keep_ids) then
-    db.delete(table_name, "api_backend_id = ?", api_backend_id)
-  else
-    db.delete(table_name, "api_backend_id = ? AND id NOT IN ?", api_backend_id, db.list(keep_ids))
-  end
-end
 
 local function get_new_beginning_sort_order()
   local new_order = 0
@@ -95,6 +63,7 @@ ApiBackend = model_ext.new_class("api_backends", {
     { "rewrites", has_many = "ApiBackendRewrite" },
     { "servers", has_many = "ApiBackendServer" },
     { "url_matches", has_many = "ApiBackendUrlMatch" },
+    { "settings", has_one = "ApiBackendSettings" },
   },
 
   as_json = function(self)
@@ -110,6 +79,7 @@ ApiBackend = model_ext.new_class("api_backends", {
       rewrites = {},
       servers = {},
       url_matches = {},
+      settings = json_null,
       created_at = iso8601.format_postgres(self.created_at) or json_null,
       created_by = self.created_by or json_null,
       updated_at = iso8601.format_postgres(self.updated_at) or json_null,
@@ -136,65 +106,82 @@ ApiBackend = model_ext.new_class("api_backends", {
       table.insert(data["frontend_prefixes"], url_match.frontend_prefix)
     end
     setmetatable(data["url_matches"], cjson.empty_array_mt)
-
     data["frontend_prefixes"] = table.concat(data["frontend_prefixes"], ", ")
+
+    local settings = self:get_settings()
+    if settings then
+      data["settings"] = settings:as_json()
+    end
 
     return data
   end,
 
-  ensure_unique_sort_order = function(self, new_order)
-    -- Apply the new sort_order value first.
-    if new_order then
-      self.sort_order = new_order
-      db.update(ApiBackend:table_name(), { sort_order = self.sort_order }, { id = self.id })
-    end
-
-    -- Next look for any existing records that have conflicting sort_order
-    -- values. We will then shift those existing sort_order values to be
-    -- unique.
+  ensure_unique_sort_order = function(self, original_order)
+    -- Look for any existing records that have conflicting sort_order values.
+    -- We will then shift those existing sort_order values to be unique.
     --
     -- Note: This iterative, recursive approach isn't efficient, but since our
     -- whole approach of having SORT_ORDER_GAP between each sort_order value,
     -- conflicts like this should be exceedingly rare.
-    conflicting_order_apis = ApiBackend:select("WHERE id != ? AND sort_order = ?", self.id, self.sort_order)
+    local conflicting_order_apis = ApiBackend:select("WHERE id != ? AND sort_order = ?", self.id, self.sort_order)
     if conflicting_order_apis and #conflicting_order_apis > 0 then
-      -- Shift positive rank_orders negatively, and negative rank_orders
-      -- positively. This is designed so that we work away from the
-      -- MAX_SORT_ORDER or MIN_SORT_ORDER values if we're bumping into our
-      -- integer size limits.
-      conflicting_new_order = self.sort_order - 1
-      if self.sort_order < 0 then
-        conflicting_new_order = self.sort_order + 1
+      for index, api in ipairs(conflicting_order_apis) do
+        -- Shift positive rank_orders negatively, and negative rank_orders
+        -- positively. This is designed so that we work away from the
+        -- MAX_SORT_ORDER or MIN_SORT_ORDER values if we're bumping into our
+        -- integer size limits.
+        --
+        -- Base this positive and negative logic on the original sort_order
+        -- that triggered this process. This prevents the recursive logic from
+        -- getting stuck in infinite loops if based on the current record's
+        -- sort_order (since 0 will become -1, which on recursion will become
+        -- 0).
+        local new_order
+        if original_order < 0 then
+          new_order = api.sort_order + index
+        else
+          new_order = api.sort_order - index
+        end
+        api.sort_order = new_order
+        db.update(ApiBackend:table_name(), { sort_order = api.sort_order }, { id = api.id })
       end
 
       for _, api in ipairs(conflicting_order_apis) do
-        api:ensure_unique_sort_order(conflicting_new_order)
+        api:ensure_unique_sort_order(original_order)
       end
     end
   end,
 
-  update_or_create_rewrite = function(self, rewrite_values)
-    return update_or_create_has_many(self, ApiBackendRewrite, rewrite_values)
+  rewrites_update_or_create = function(self, rewrite_values)
+    return model_ext.has_many_update_or_create(self, ApiBackendRewrite, "api_backend_id", rewrite_values)
   end,
 
-  update_or_create_server = function(self, server_values)
-    return update_or_create_has_many(self, ApiBackendServer, server_values)
+  rewrites_delete_except = function(self, keep_rewrite_ids)
+    return model_ext.has_many_delete_except(self, ApiBackendRewrite, "api_backend_id", keep_rewrite_ids)
   end,
 
-  update_or_create_url_match = function(self, url_match_values)
-    return update_or_create_has_many(self, ApiBackendUrlMatch, url_match_values)
+  servers_update_or_create = function(self, server_values)
+    return model_ext.has_many_update_or_create(self, ApiBackendServer, "api_backend_id", server_values)
   end,
 
-  delete_rewrites_except = function(self, keep_rewrite_ids)
-    return delete_has_many_except(self, ApiBackendRewrite, keep_rewrite_ids)
+  servers_delete_except = function(self, keep_server_ids)
+    return model_ext.has_many_delete_except(self, ApiBackendServer, "api_backend_id", keep_server_ids)
   end,
 
-  delete_servers_except = function(self, keep_server_ids)
-    return delete_has_many_except(self, ApiBackendServer, keep_server_ids)
+  settings_update_or_create = function(self, settings_values)
+    return model_ext.has_one_update_or_create(self, ApiBackendSettings, "api_backend_id", settings_values)
   end,
 
-  delete_url_matches_except = function(self, keep_url_match_ids)
-    return delete_has_many_except(self, ApiBackendUrlMatch, keep_url_match_ids)
+  settings_delete = function(self)
+    return model_ext.has_one_delete(self, ApiBackendSettings, "api_backend_id", {})
+  end,
+
+  url_matches_update_or_create = function(self, url_match_values)
+    return model_ext.has_many_update_or_create(self, ApiBackendUrlMatch, "api_backend_id", url_match_values)
+  end,
+
+  url_matches_delete_except = function(self, keep_url_match_ids)
+    return model_ext.has_many_delete_except(self, ApiBackendUrlMatch, "api_backend_id", keep_url_match_ids)
   end,
 }, {
   before_validate_on_create = function(_, values)
@@ -203,52 +190,32 @@ ApiBackend = model_ext.new_class("api_backends", {
     end
   end,
 
-  validate = function(_, values)
+  validate = function(_, data)
     local errors = {}
-    validate_field(errors, values, "name", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "sort_order", validation.number, t("can't be blank"))
-    validate_field(errors, values, "backend_protocol", validation:regex("^(http|https)$", "jo"), t("is not included in the list"))
-    validate_field(errors, values, "frontend_host", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "frontend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
-    if not values["frontend_host"] or string.sub(values["frontend_host"], 1, 1) ~= "*" then
-      validate_field(errors, values, "backend_host", validation.string:minlen(1), t("can't be blank"))
-      validate_field(errors, values, "backend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
+    validate_field(errors, data, "name", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "sort_order", validation.number, t("can't be blank"))
+    validate_field(errors, data, "backend_protocol", validation:regex("^(http|https)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "frontend_host", validation.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "frontend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
+    if not data["frontend_host"] or string.sub(data["frontend_host"], 1, 1) ~= "*" then
+      validate_field(errors, data, "backend_host", validation.string:minlen(1), t("can't be blank"))
+      validate_field(errors, data, "backend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     end
-    validate_field(errors, values, "balance_algorithm", validation:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))
-    validate_field(errors, values, "servers", validation.table:minlen(1), t("can't be blank"))
-    validate_field(errors, values, "url_matches", validation.table:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "balance_algorithm", validation:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "servers", validation.table:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "url_matches", validation.table:minlen(1), t("can't be blank"))
     return errors
   end,
 
   after_save = function(self, values)
-    self:ensure_unique_sort_order()
+    model_ext.has_many_save(self, values, "rewrites")
+    model_ext.has_many_save(self, values, "servers")
+    model_ext.has_many_save(self, values, "url_matches")
+    model_ext.has_one_save(self, values, "settings")
+  end,
 
-    if is_array(values["rewrites"]) then
-      local rewrite_ids = {}
-      for _, rewrite_values in ipairs(values["rewrites"]) do
-        local rewrite = self:update_or_create_rewrite(rewrite_values)
-        table.insert(rewrite_ids, assert(rewrite.id))
-      end
-      self:delete_rewrites_except(rewrite_ids)
-    end
-
-    if is_array(values["servers"]) then
-      local server_ids = {}
-      for _, server_values in ipairs(values["servers"]) do
-        local server = self:update_or_create_server(server_values)
-        table.insert(server_ids, assert(server.id))
-      end
-      self:delete_servers_except(server_ids)
-    end
-
-    if is_array(values["url_matches"]) then
-      local url_match_ids = {}
-      for _, url_match_values in ipairs(values["url_matches"]) do
-        local url_match = self:update_or_create_url_match(url_match_values)
-        table.insert(url_match_ids, assert(url_match.id))
-      end
-      self:delete_url_matches_except(url_match_ids)
-    end
+  after_commit = function(self)
+    self:ensure_unique_sort_order(self.sort_order)
   end,
 })
 
