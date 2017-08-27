@@ -199,6 +199,8 @@ ApiBackend = model_ext.new_class("api_backends", {
     validate_field(errors, data, "frontend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     if not data["frontend_host"] or string.sub(data["frontend_host"], 1, 1) ~= "*" then
       validate_field(errors, data, "backend_host", validation.string:minlen(1), t("can't be blank"))
+    end
+    if data["backend_host"] and data["backend_host"] ~= db_null then
       validate_field(errors, data, "backend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     end
     validate_field(errors, data, "balance_algorithm", validation:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))

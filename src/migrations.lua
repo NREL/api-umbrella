@@ -176,7 +176,7 @@ return {
         sort_order int NOT NULL DEFAULT next_api_backend_sort_order(),
         backend_protocol varchar(5) NOT NULL CHECK(backend_protocol IN('http', 'https')),
         frontend_host varchar(255) NOT NULL,
-        backend_host varchar(255) NOT NULL,
+        backend_host varchar(255),
         balance_algorithm varchar(11) NOT NULL CHECK(balance_algorithm IN('round_robin', 'least_conn', 'ip_hash')),
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
         created_by varchar(255) NOT NULL DEFAULT current_app_user(),

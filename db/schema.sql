@@ -791,7 +791,7 @@ CREATE TABLE api_backends (
     sort_order integer DEFAULT next_api_backend_sort_order() NOT NULL,
     backend_protocol character varying(5) NOT NULL,
     frontend_host character varying(255) NOT NULL,
-    backend_host character varying(255) NOT NULL,
+    backend_host character varying(255),
     balance_algorithm character varying(11) NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,

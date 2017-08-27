@@ -47,7 +47,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => "*",
       :backend_host => "*",
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "*"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "*"),
       ],
     }, [:servers])
   end
@@ -57,7 +57,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => "*",
       :backend_host => "",
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "127.0.0.1"),
       ],
     })
   end
@@ -67,7 +67,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => "*",
       :backend_host => nil,
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "127.0.0.1"),
       ],
     })
   end
@@ -77,7 +77,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => "*.example.com",
       :backend_host => nil,
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "127.0.0.1"),
       ],
     })
   end
@@ -87,7 +87,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => "example.com",
       :backend_host => nil,
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "127.0.0.1"),
       ],
     }, [:backend_host])
   end
@@ -97,7 +97,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => "exam*ple.com",
       :backend_host => nil,
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "127.0.0.1"),
       ],
     }, [:frontend_host, :backend_host])
   end
@@ -107,7 +107,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => "*example.com",
       :backend_host => "*example.com",
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "127.0.0.1"),
       ],
     }, [:frontend_host, :backend_host])
   end
@@ -117,7 +117,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => "*.example.com",
       :backend_host => "*.example.com",
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "127.0.0.1"),
       ],
     })
   end
@@ -127,7 +127,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => ".example.com",
       :backend_host => ".example.com",
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "127.0.0.1"),
       ],
     })
   end
@@ -137,7 +137,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => ".",
       :backend_host => "example.com",
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "127.0.0.1"),
       ],
     }, [:frontend_host])
   end
@@ -147,7 +147,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => "*.",
       :backend_host => "example.com",
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => "127.0.0.1"),
+        FactoryGirl.attributes_for(:api_backend_server, :host => "127.0.0.1"),
       ],
     }, [:frontend_host])
   end
@@ -159,7 +159,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
       :frontend_host => value,
       :backend_host => value,
       :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => value),
+        FactoryGirl.attributes_for(:api_backend_server, :host => value),
       ],
     }
 
@@ -186,10 +186,10 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
     if(action == :create)
       assert_response_code(201, response)
       data = MultiJson.load(response.body)
-      api = Api.find(data["api"]["id"])
+      api = ApiBackend.find(data["api"]["id"])
     elsif(action == :update)
       assert_response_code(204, response)
-      api = Api.find(attributes["id"])
+      api = ApiBackend.find(attributes["id"])
     end
     assert_equal(attributes.fetch("frontend_host"), api.frontend_host)
     if(attributes.fetch("backend_host").nil?)
@@ -205,14 +205,18 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
     overrides = {
       :frontend_host => value,
       :backend_host => value,
-      :servers => [
-        FactoryGirl.attributes_for(:api_server, :host => value),
-      ],
     }
-
     assert_hostnames_invalid(overrides, [
       :frontend_host,
       :backend_host,
+    ])
+
+    overrides = {
+      :servers => [
+        FactoryGirl.attributes_for(:api_backend_server, :host => value),
+      ],
+    }
+    assert_hostnames_invalid(overrides, [
       :servers,
     ])
   end
@@ -240,11 +244,7 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
 
     expected_error_fields = expected_error_fields.map do |field|
       if(field == :servers)
-        if(action == :create)
-          field = "servers[0].host"
-        elsif(action == :update)
-          field = "servers[1].host"
-        end
+        field = "servers[0].host"
       end
 
       field.to_s
@@ -262,9 +262,9 @@ class Test::Apis::V1::Apis::TestSaveHostValidations < Minitest::Test
 
   def attributes_for(action)
     if(action == :create)
-      FactoryGirl.attributes_for(:api).deep_stringify_keys
+      FactoryGirl.attributes_for(:api_backend).deep_stringify_keys
     elsif(action == :update)
-      FactoryGirl.create(:api).serializable_hash
+      FactoryGirl.create(:api_backend).serializable_hash
     else
       flunk("Unknown action: #{action.inspect}")
     end

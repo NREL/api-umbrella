@@ -103,6 +103,8 @@ local function commit_transaction(started)
 end
 
 local function rollback_transaction(started)
+  ngx.ctx.validate_error_field_prefix = nil
+
   -- Only rollback the transaction if the current record started the
   -- transaction (see start_transaction).
   if started then
@@ -197,9 +199,15 @@ function _M.validate_field(errors, values, field, validator, message, options)
     if options then
       if options["error_field"] then
         error_field = options["error_field"]
-      elseif options["error_field_prefix"] then
+      end
+
+      if options["error_field_prefix"] then
         error_field = options["error_field_prefix"] .. error_field
       end
+    end
+
+    if ngx.ctx.validate_error_field_prefix then
+      error_field = ngx.ctx.validate_error_field_prefix .. error_field
     end
 
     _M.add_error(errors, error_field, message)
@@ -351,8 +359,10 @@ function _M.has_many_save(self, values, name)
   local relations_values = values[name]
   if is_array(relations_values) then
     local keep_ids = {}
-    for _, relation_values in ipairs(relations_values) do
+    for index, relation_values in ipairs(relations_values) do
+      ngx.ctx.validate_error_field_prefix = name .. "[" .. (index - 1) .. "]."
       local record = self[name .. "_update_or_create"](self, relation_values)
+      ngx.ctx.validate_error_field_prefix = nil
       table.insert(keep_ids, assert(record.id))
     end
     self[name .. "_delete_except"](self, keep_ids)
