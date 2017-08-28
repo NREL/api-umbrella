@@ -69,6 +69,77 @@ end
 function _M.move_after(self)
 end
 
+local function api_backend_settings_params(input_settings)
+  if not input_settings then
+    return nil
+  end
+
+  if not is_hash(input_settings) then
+    return db_null
+  end
+
+  local params_settings = dbify_json_nulls({
+    id = input_settings["id"],
+    anonymous_rate_limit_behavior = input_settings["anonymous_rate_limit_behavior"],
+    api_key_verification_level = input_settings["api_key_verification_level"],
+    api_key_verification_transition_start_at = input_settings["api_key_verification_transition_start_at"],
+    append_query_string = input_settings["append_query_string"],
+    authenticated_rate_limit_behavior = input_settings["authenticated_rate_limit_behavior"],
+    default_response_headers_string = input_settings["default_response_headers_string"],
+    disable_api_key = input_settings["disable_api_key"],
+    headers_string = input_settings["headers_string"],
+    http_basic_auth = input_settings["http_basic_auth"],
+    override_response_headers_string = input_settings["override_response_headers_string"],
+    pass_api_key_header = input_settings["pass_api_key_header"],
+    pass_api_key_query_param = input_settings["pass_api_key_query_param"],
+    rate_limit_mode = input_settings["rate_limit_mode"],
+    require_https = input_settings["require_https"],
+    require_https_transition_start_at = input_settings["require_https_transition_start_at"],
+    required_roles = input_settings["required_roles"],
+    required_roles_override = input_settings["required_roles_override"],
+  })
+
+  if input_settings["error_data_yaml_strings"] then
+    params_settings["error_data_yaml_strings"] = {}
+    if is_hash(input_settings["error_data_yaml_strings"]) then
+      local error_data_fields = {
+        "common",
+        "api_key_missing",
+        "api_key_invalid",
+        "api_key_disabled",
+        "api_key_unauthorized",
+        "over_rate_limit",
+        "https_required",
+      }
+      for _, error_data_field in ipairs(error_data_fields) do
+        params_settings["error_data_yaml_strings"][error_data_field] = input_settings["error_data_yaml_strings"][error_data_field]
+      end
+    end
+  end
+
+  local header_fields = {
+    "default_response_headers",
+    "headers",
+    "override_response_headers",
+  }
+  for _, header_field in ipairs(header_fields) do
+    if input_settings[header_field] then
+      params_settings[header_field] = {}
+      if is_array(input_settings[header_field]) then
+        for _, input_header in ipairs(input_settings[header_field]) do
+          table.insert(params_settings[header_field], dbify_json_nulls({
+            id = input_header["id"],
+            key = input_header["key"],
+            value = input_header["value"],
+          }))
+        end
+      end
+    end
+  end
+
+  return params_settings
+end
+
 function _M.api_backend_params(self)
   local params = {}
   if self.params and self.params["api"] then
@@ -123,68 +194,27 @@ function _M.api_backend_params(self)
       end
     end
 
-    local input_settings = input["settings"]
-    if is_hash(input_settings) then
-      params["settings"] = dbify_json_nulls({
-        id = input_settings["id"],
-        anonymous_rate_limit_behavior = input_settings["anonymous_rate_limit_behavior"],
-        api_key_verification_level = input_settings["api_key_verification_level"],
-        api_key_verification_transition_start_at = input_settings["api_key_verification_transition_start_at"],
-        append_query_string = input_settings["append_query_string"],
-        authenticated_rate_limit_behavior = input_settings["authenticated_rate_limit_behavior"],
-        default_response_headers_string = input_settings["default_response_headers_string"],
-        disable_api_key = input_settings["disable_api_key"],
-        headers_string = input_settings["headers_string"],
-        http_basic_auth = input_settings["http_basic_auth"],
-        override_response_headers_string = input_settings["override_response_headers_string"],
-        pass_api_key_header = input_settings["pass_api_key_header"],
-        pass_api_key_query_param = input_settings["pass_api_key_query_param"],
-        rate_limit_mode = input_settings["rate_limit_mode"],
-        require_https = input_settings["require_https"],
-        require_https_transition_start_at = input_settings["require_https_transition_start_at"],
-        required_roles = input_settings["required_roles"],
-        required_roles_override = input_settings["required_roles_override"],
-      })
+    if input["sub_settings"] then
+      params["sub_settings"] = {}
+      if is_array(input["sub_settings"]) then
+        for _, input_sub_settings in ipairs(input["sub_settings"]) do
+          local params_sub_settings = dbify_json_nulls({
+            id = input_sub_settings["id"],
+            http_method = input_sub_settings["http_method"],
+            regex = input_sub_settings["regex"],
+          })
 
-      if input_settings["error_data_yaml_strings"] then
-        params["settings"]["error_data_yaml_strings"] = {}
-        if is_hash(input_settings["error_data_yaml_strings"]) then
-          local error_data_fields = {
-            "common",
-            "api_key_missing",
-            "api_key_invalid",
-            "api_key_disabled",
-            "api_key_unauthorized",
-            "over_rate_limit",
-            "https_required",
-          }
-          for _, error_data_field in ipairs(error_data_fields) do
-            params["settings"]["error_data_yaml_strings"][error_data_field] = input_settings["error_data_yaml_strings"][error_data_field]
+          if is_hash(input_sub_settings) then
+            params_sub_settings["settings"] = api_backend_settings_params(input["settings"])
           end
+
+          table.insert(params["sub_settings"], params_sub_settings)
         end
       end
+    end
 
-      local header_fields = {
-        "default_response_headers",
-        "headers",
-        "override_response_headers",
-      }
-      for _, header_field in ipairs(header_fields) do
-        if input_settings[header_field] then
-          params["settings"][header_field] = {}
-          if is_array(input_settings[header_field]) then
-            for _, input_header in ipairs(input_settings[header_field]) do
-              table.insert(params["settings"][header_field], dbify_json_nulls({
-                id = input_header["id"],
-                key = input_header["key"],
-                value = input_header["value"],
-              }))
-            end
-          end
-        end
-      end
-    elseif input_settings then
-      params["settings"] = db_null
+    if input["settings"] then
+      params["settings"] = api_backend_settings_params(input["settings"])
     end
   end
 

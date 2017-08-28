@@ -208,7 +208,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     end
   end,
 
-  validate = function(_, data, values)
+  validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "require_https", validation.optional:regex("^(required_return_error|transition_return_error|optional)$", "jo"), t("is not included in the list"))
     validate_field(errors, data, "api_key_verification_level", validation.optional:regex("^(none|transition_email|required_email)$", "jo"), t("is not included in the list"))
@@ -237,7 +237,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     return errors
   end,
 
-  before_save = function(self, values)
+  before_save = function(_, values)
     if values["error_data"] then
       values["error_data"] = cjson.encode(values["error_data"])
     end

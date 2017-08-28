@@ -1,6 +1,7 @@
 local ApiBackendRewrite = require "api-umbrella.lapis.models.api_backend_rewrite"
 local ApiBackendServer = require "api-umbrella.lapis.models.api_backend_server"
 local ApiBackendSettings = require "api-umbrella.lapis.models.api_backend_settings"
+local ApiBackendSubUrlSettings = require "api-umbrella.lapis.models.api_backend_sub_url_settings"
 local ApiBackendUrlMatch = require "api-umbrella.lapis.models.api_backend_url_match"
 local cjson = require "cjson"
 local common_validations = require "api-umbrella.utils.common_validations"
@@ -62,8 +63,9 @@ ApiBackend = model_ext.new_class("api_backends", {
   relations = {
     { "rewrites", has_many = "ApiBackendRewrite" },
     { "servers", has_many = "ApiBackendServer" },
-    { "url_matches", has_many = "ApiBackendUrlMatch" },
     { "settings", has_one = "ApiBackendSettings" },
+    { "sub_settings", has_many = "ApiBackendSubUrlSettings" },
+    { "url_matches", has_many = "ApiBackendUrlMatch" },
   },
 
   as_json = function(self)
@@ -78,8 +80,9 @@ ApiBackend = model_ext.new_class("api_backends", {
       frontend_prefixes = {},
       rewrites = {},
       servers = {},
-      url_matches = {},
       settings = json_null,
+      sub_settings = {},
+      url_matches = {},
       created_at = iso8601.format_postgres(self.created_at) or json_null,
       created_by = self.created_by or json_null,
       updated_at = iso8601.format_postgres(self.updated_at) or json_null,
@@ -99,6 +102,12 @@ ApiBackend = model_ext.new_class("api_backends", {
       table.insert(data["servers"], server:as_json())
     end
     setmetatable(data["servers"], cjson.empty_array_mt)
+
+    local sub_settings = self:get_sub_settings()
+    for _, sub_setting in ipairs(sub_settings) do
+      table.insert(data["sub_settings"], sub_setting:as_json())
+    end
+    setmetatable(data["sub_settings"], cjson.empty_array_mt)
 
     local url_matches = self:get_url_matches()
     for _, url_match in ipairs(url_matches) do
@@ -176,6 +185,14 @@ ApiBackend = model_ext.new_class("api_backends", {
     return model_ext.has_one_delete(self, ApiBackendSettings, "api_backend_id", {})
   end,
 
+  sub_settings_update_or_create = function(self, sub_settings_values)
+    return model_ext.has_many_update_or_create(self, ApiBackendSubUrlSettings, "api_backend_id", sub_settings_values)
+  end,
+
+  sub_settings_delete_except = function(self, keep_sub_settings_ids)
+    return model_ext.has_many_delete_except(self, ApiBackendSubUrlSettings, "api_backend_id", keep_sub_settings_ids)
+  end,
+
   url_matches_update_or_create = function(self, url_match_values)
     return model_ext.has_many_update_or_create(self, ApiBackendUrlMatch, "api_backend_id", url_match_values)
   end,
@@ -212,6 +229,7 @@ ApiBackend = model_ext.new_class("api_backends", {
   after_save = function(self, values)
     model_ext.has_many_save(self, values, "rewrites")
     model_ext.has_many_save(self, values, "servers")
+    model_ext.has_many_save(self, values, "sub_settings")
     model_ext.has_many_save(self, values, "url_matches")
     model_ext.has_one_save(self, values, "settings")
   end,
