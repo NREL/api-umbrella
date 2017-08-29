@@ -14,23 +14,20 @@ class Test::Processes::TestRsyslog < Minitest::Test
   def test_memory_leak
     # Make some initial requests, to ensure rsyslog is warmed up, which should
     # stabilize its memory use.
-    make_requests(1000)
+    make_requests(2000)
     warmed_memory_use = memory_use
     warmed_error_log_size = elasticsearch_error_log_size
 
     # Make more requests.
-    make_requests(5000)
+    make_requests(8000)
     final_memory_use = memory_use
     final_error_log_size = elasticsearch_error_log_size
 
     # Compare the memory use before and after making requests. We're going to
-    # assume it should be not growing, or within 2% of the starting point.
-    if(final_memory_use.fetch(:vsz) > warmed_memory_use.fetch(:vsz))
-      assert_in_epsilon(warmed_memory_use.fetch(:vsz), final_memory_use.fetch(:vsz), 0.02)
-    end
-    if(final_memory_use.fetch(:rss) > warmed_memory_use.fetch(:rss))
-      assert_in_epsilon(warmed_memory_use.fetch(:rss), final_memory_use.fetch(:rss), 0.02)
-    end
+    # assume it should be not grow more than 1MB (we need to allow for some
+    # fluctuations under normal use).
+    rss_diff = final_memory_use.fetch(:rss) - warmed_memory_use.fetch(:rss)
+    assert_operator(rss_diff, :<=, 1024)
 
     # Also ensure nothing was generated in the elasticsearch error log file,
     # since the specific problem in v8.28.0 generated error data.
