@@ -3,11 +3,11 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Apis::TestShow < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
-    Api.delete_all
   end
 
   def test_request_headers
@@ -23,8 +23,8 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
   end
 
   def test_embedded_custom_rate_limit_object
-    api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.build(:custom_rate_limit_api_setting),
+    api = FactoryGirl.create(:api_backend, {
+      :settings => FactoryGirl.build(:custom_rate_limit_api_backend_settings),
     })
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_response_code(200, response)
@@ -59,8 +59,8 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
   end
 
   def assert_headers_field_no_headers(field)
-    api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.attributes_for(:api_setting, {
+    api = FactoryGirl.create(:api_backend, {
+      :settings => FactoryGirl.build(:api_backend_settings, {
       }),
     })
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
@@ -68,14 +68,14 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
 
     data = MultiJson.load(response.body)
     assert_equal("", data["api"]["settings"]["#{field}_string"])
-    assert_nil(data["api"]["settings"][field.to_s])
+    assert_equal([], data["api"]["settings"][field.to_s])
   end
 
   def assert_headers_field_single_header(field)
-    api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.attributes_for(:api_setting, {
+    api = FactoryGirl.create(:api_backend, {
+      :settings => FactoryGirl.build(:api_backend_settings, {
         :"#{field}" => [
-          FactoryGirl.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
+          FactoryGirl.build(:api_backend_http_header, { :key => "X-Add1", :value => "test1" }),
         ],
       }),
     })
@@ -92,11 +92,11 @@ class Test::Apis::V1::Apis::TestShow < Minitest::Test
   end
 
   def assert_headers_field_multiple_headers(field)
-    api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.attributes_for(:api_setting, {
+    api = FactoryGirl.create(:api_backend, {
+      :settings => FactoryGirl.build(:api_backend_settings, {
         :"#{field}" => [
-          FactoryGirl.attributes_for(:api_header, { :key => "X-Add1", :value => "test1" }),
-          FactoryGirl.attributes_for(:api_header, { :key => "X-Add2", :value => "test2" }),
+          FactoryGirl.build(:api_backend_http_header, { :key => "X-Add1", :value => "test1" }),
+          FactoryGirl.build(:api_backend_http_header, { :key => "X-Add2", :value => "test2" }),
         ],
       }),
     })
