@@ -3,7 +3,15 @@
 # which won't share the transaction).
 DatabaseCleaner.strategy = :truncation, {
   :except => [
+    # Don't truncate the Lapis migrations table.
     "lapis_migrations",
+
+    # Don't truncate the API users table (or the associated relationships),
+    # since we want to keep seeded users between tests. We'll manually clear
+    # non-seeded records.
+    "api_users",
+    "api_user_settings",
+    "rate_limits",
   ]
 }
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
@@ -27,6 +35,9 @@ class Minitest::Test
 
     if(self.class.test_order != :parallel)
       DatabaseCleaner.clean
+
+      # Manually delete all the non-seeded users.
+      ApiUser.where(:registration_source.ne => "seed").delete_all
     end
   end
 end
