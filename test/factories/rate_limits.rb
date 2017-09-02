@@ -4,7 +4,7 @@ FactoryGirl.define do
     accuracy 5000
     distributed true
     limit_by "ip"
-    limit_to 500
+    limit 500
     response_headers false
   end
 end

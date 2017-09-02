@@ -1,4 +1,5 @@
 local ApiBackendHttpHeader = require "api-umbrella.lapis.models.api_backend_http_header"
+local RateLimit = require "api-umbrella.lapis.models.rate_limit"
 local cjson = require "cjson"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
@@ -8,7 +9,7 @@ local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local split = require("ngx.re").split
 local strip = require("pl.stringx").strip
 local t = require("resty.gettext").gettext
-local validation = require "resty.validation"
+local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
@@ -66,6 +67,7 @@ end
 local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
   relations = {
     { "http_headers", has_many = "ApiBackendHttpHeader", key = "api_backend_settings_id" },
+    { "rate_limits", has_many = "RateLimit", key = "api_backend_settings_id" },
   },
 
   default_response_headers_string = function(self)
@@ -117,6 +119,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       pass_api_key_header = self.pass_api_key_header or json_null,
       pass_api_key_query_param = self.pass_api_key_query_param or json_null,
       rate_limit_mode = self.rate_limit_mode or json_null,
+      rate_limits = {},
       require_https = self.require_https or json_null,
       require_https_transition_start_at = self.require_https_transition_start_at or json_null,
       required_roles = self.required_roles or json_null,
@@ -136,6 +139,12 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     setmetatable(data["default_response_headers"], cjson.empty_array_mt)
     setmetatable(data["headers"], cjson.empty_array_mt)
     setmetatable(data["override_response_headers"], cjson.empty_array_mt)
+
+    local rate_limits = self:get_rate_limits()
+    for _, rate_limit in ipairs(rate_limits) do
+      table.insert(data["rate_limits"], rate_limit:as_json())
+    end
+    setmetatable(data["rate_limits"], cjson.empty_array_mt)
 
     return data
   end,
@@ -162,6 +171,14 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
 
   override_response_headers_delete_except = function(self, keep_header_ids)
     return model_ext.has_many_delete_except(self, ApiBackendHttpHeader, "api_backend_settings_id", keep_header_ids, "header_type = 'response_override'")
+  end,
+
+  rate_limits_update_or_create = function(self, rate_limit_values)
+    return model_ext.has_many_update_or_create(self, RateLimit, "api_backend_settings_id", rate_limit_values)
+  end,
+
+  rate_limits_delete_except = function(self, keep_rate_limit_ids)
+    return model_ext.has_many_delete_except(self, RateLimit, "api_backend_settings_id", keep_rate_limit_ids)
   end,
 }, {
   before_validate = function(_, values)
@@ -210,11 +227,11 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "require_https", validation.optional:regex("^(required_return_error|transition_return_error|optional)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "api_key_verification_level", validation.optional:regex("^(none|transition_email|required_email)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "rate_limit_mode", validation.optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "anonymous_rate_limit_behavior", validation.optional:regex("^(ip_fallback|ip_only)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "authenticated_rate_limit_behavior", validation.optional:regex("^(all|api_key_only)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "require_https", validation_ext.db_null_optional:regex("^(required_return_error|transition_return_error|optional)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "api_key_verification_level", validation_ext.db_null_optional:regex("^(none|transition_email|required_email)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "rate_limit_mode", validation_ext.db_null_optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "anonymous_rate_limit_behavior", validation_ext.db_null_optional:regex("^(ip_fallback|ip_only)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "authenticated_rate_limit_behavior", validation_ext.db_null_optional:regex("^(all|api_key_only)$", "jo"), t("is not included in the list"))
 
     if data["error_data"] then
       if not is_hash(data["error_data"]) then
@@ -247,6 +264,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     model_ext.has_many_save(self, values, "default_response_headers")
     model_ext.has_many_save(self, values, "headers")
     model_ext.has_many_save(self, values, "override_response_headers")
+    model_ext.has_many_save(self, values, "rate_limits")
   end
 })
 

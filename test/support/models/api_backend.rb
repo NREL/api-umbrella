@@ -23,4 +23,32 @@ class ApiBackend < ApplicationRecord
     roles.uniq!
     roles
   end
+
+  def serializable_hash(options = nil)
+    options ||= {}
+    options.merge!({
+      :include => {
+        :settings => {
+          :include => {
+            :http_headers => {},
+            :rate_limits => {},
+          },
+        },
+        :servers => {},
+        :url_matches => {},
+        :sub_settings => {
+          :include => {
+            :settings => {
+              :include => {
+                :http_headers => {},
+                :rate_limits => {},
+              },
+            },
+          },
+        },
+        :rewrites => {},
+      },
+    })
+    super(options)
+  end
 end

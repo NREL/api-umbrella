@@ -137,6 +137,21 @@ local function api_backend_settings_params(input_settings)
     end
   end
 
+  if input_settings["rate_limits"] then
+    params_settings["rate_limits"] = {}
+    if is_array(input_settings["rate_limits"]) then
+      for _, input_rate_limit in ipairs(input_settings["rate_limits"]) do
+        table.insert(params_settings["rate_limits"], dbify_json_nulls({
+          id = input_rate_limit["id"],
+          duration = input_rate_limit["duration"],
+          limit_by = input_rate_limit["limit_by"],
+          limit_to = input_rate_limit["limit"],
+          response_headers = input_rate_limit["response_headers"],
+        }))
+      end
+    end
+  end
+
   return params_settings
 end
 

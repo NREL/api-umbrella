@@ -5,7 +5,7 @@ local json_null = require("cjson").null
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("resty.gettext").gettext
-local validation = require "resty.validation"
+local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local validate_field = model_ext.validate_field
 
@@ -66,11 +66,11 @@ local ApiUser = model_ext.new_class("api_users", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "first_name", validation.string:minlen(1), t("Provide your first name."))
-    validate_field(errors, data, "last_name", validation.string:minlen(1), t("Provide your last name."))
-    validate_field(errors, data, "email", validation.string:minlen(1), t("Provide your email address."))
-    validate_field(errors, data, "email", validation:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
-    validate_field(errors, data, "website", validation.optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
+    validate_field(errors, data, "first_name", validation_ext.string:minlen(1), t("Provide your first name."))
+    validate_field(errors, data, "last_name", validation_ext.string:minlen(1), t("Provide your last name."))
+    validate_field(errors, data, "email", validation_ext.string:minlen(1), t("Provide your email address."))
+    validate_field(errors, data, "email", validation_ext:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
+    validate_field(errors, data, "website", validation_ext.db_null_optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
     return errors
   end,
 })

@@ -9,7 +9,7 @@ local db = require "lapis.db"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
-local validation = require "resty.validation"
+local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local db_null = db.NULL
 local json_null = cjson.null
@@ -209,20 +209,20 @@ ApiBackend = model_ext.new_class("api_backends", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "name", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "sort_order", validation.number, t("can't be blank"))
-    validate_field(errors, data, "backend_protocol", validation:regex("^(http|https)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "frontend_host", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "frontend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
+    validate_field(errors, data, "name", validation_ext.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "sort_order", validation_ext.number, t("can't be blank"))
+    validate_field(errors, data, "backend_protocol", validation_ext:regex("^(http|https)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "frontend_host", validation_ext.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "frontend_host", validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     if not data["frontend_host"] or string.sub(data["frontend_host"], 1, 1) ~= "*" then
-      validate_field(errors, data, "backend_host", validation.string:minlen(1), t("can't be blank"))
+      validate_field(errors, data, "backend_host", validation_ext.string:minlen(1), t("can't be blank"))
     end
     if data["backend_host"] and data["backend_host"] ~= db_null then
-      validate_field(errors, data, "backend_host", validation.optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
+      validate_field(errors, data, "backend_host", validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     end
-    validate_field(errors, data, "balance_algorithm", validation:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "servers", validation.table:minlen(1), t("must have at least one servers"), { error_field = "base" })
-    validate_field(errors, data, "url_matches", validation.table:minlen(1), t("must have at least one url_matches"), { error_field = "base" })
+    validate_field(errors, data, "balance_algorithm", validation_ext:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "servers", validation_ext.table:minlen(1), t("must have at least one servers"), { error_field = "base" })
+    validate_field(errors, data, "url_matches", validation_ext.table:minlen(1), t("must have at least one url_matches"), { error_field = "base" })
     return errors
   end,
 

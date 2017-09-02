@@ -3,19 +3,19 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Apis::TestUpdateCustomRateLimits < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
-    Api.delete_all
   end
 
   def test_updates_embedded_rate_limit_records
-    api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+    api = FactoryGirl.create(:api_backend, {
+      :settings => FactoryGirl.build(:custom_rate_limit_api_backend_settings, {
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+          FactoryGirl.build(:rate_limit, :duration => 5000, :limit => 10),
+          FactoryGirl.build(:rate_limit, :duration => 10000, :limit => 20),
         ],
       }),
     })
@@ -39,18 +39,18 @@ class Test::Apis::V1::Apis::TestUpdateCustomRateLimits < Minitest::Test
   end
 
   def test_removes_embedded_rate_limit_records
-    api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+    api = FactoryGirl.create(:api_backend, {
+      :settings => FactoryGirl.build(:custom_rate_limit_api_backend_settings, {
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+          FactoryGirl.build(:rate_limit, :duration => 5000, :limit => 10),
+          FactoryGirl.build(:rate_limit, :duration => 10000, :limit => 20),
         ],
       }),
     })
 
     attributes = api.as_json
     attributes["settings"]["rate_limits"] = [
-      FactoryGirl.attributes_for(:api_rate_limit, :duration => 1000, :limit => 5),
+      FactoryGirl.attributes_for(:rate_limit, :duration => 1000, :limit => 5),
     ]
 
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token).deep_merge({

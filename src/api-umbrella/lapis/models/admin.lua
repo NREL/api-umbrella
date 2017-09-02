@@ -9,27 +9,27 @@ local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("resty.gettext").gettext
-local validation = require "resty.validation"
+local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
 local function validate_email(_, data, errors)
-  validate_field(errors, data, "username", validation.string:minlen(1), t("can't be blank"))
+  validate_field(errors, data, "username", validation_ext.string:minlen(1), t("can't be blank"))
   if config["web"]["admin"]["username_is_email"] then
     if not is_empty(data["username"]) then
-      validate_field(errors, data, "username", validation:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid"))
+      validate_field(errors, data, "username", validation_ext:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid"))
     end
   else
     if not is_empty(data["email"]) then
-      validate_field(errors, data, "email", validation:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid"))
+      validate_field(errors, data, "email", validation_ext:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid"))
     end
   end
 end
 
 local function validate_groups(_, data, errors)
   if not data["superuser"] then
-    validate_field(errors, data, "group_ids", validation.table:minlen(1), t("must belong to at least one group or be a superuser"))
+    validate_field(errors, data, "group_ids", validation_ext.table:minlen(1), t("must belong to at least one group or be a superuser"))
   end
 end
 
@@ -43,19 +43,19 @@ local function validate_password(self, data, errors)
   end
 
   if is_password_required then
-    validate_field(errors, data, "password", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "password_confirmation", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "password_confirmation", validation.string:equals(data["password"]), t("doesn't match password"))
+    validate_field(errors, data, "password", validation_ext.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "password_confirmation", validation_ext.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "password_confirmation", validation_ext.string:equals(data["password"]), t("doesn't match password"))
 
     if not is_empty(data["password"]) then
       local password_length_min = config["web"]["admin"]["password_length_min"]
       local password_length_max = config["web"]["admin"]["password_length_max"]
-      validate_field(errors, data, "password", validation.string:minlen(password_length_min), string.format(t("is too short (minimum is %d characters)"), password_length_min))
-      validate_field(errors, data, "password", validation.string:maxlen(password_length_max), string.format(t("is too long (maximum is %d characters)"), password_length_max))
+      validate_field(errors, data, "password", validation_ext.string:minlen(password_length_min), string.format(t("is too short (minimum is %d characters)"), password_length_min))
+      validate_field(errors, data, "password", validation_ext.string:maxlen(password_length_max), string.format(t("is too long (maximum is %d characters)"), password_length_max))
     end
 
     if self and self.id then
-      validate_field(errors, data, "current_password", validation.string:minlen(1), t("can't be blank"))
+      validate_field(errors, data, "current_password", validation_ext.string:minlen(1), t("can't be blank"))
       if not is_empty(data["current_password"]) then
         if not self:is_valid_password(data["current_password"]) then
           model_ext.add_error(errors, "current_password", t("is invalid"))

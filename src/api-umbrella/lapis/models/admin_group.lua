@@ -2,7 +2,7 @@ local cjson = require "cjson"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
-local validation = require "resty.validation"
+local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
@@ -115,9 +115,9 @@ local AdminGroup = model_ext.new_class("admin_groups", {
 }, {
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "name", validation.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "api_scope_ids", validation.table:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "permission_ids", validation.table:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "name", validation_ext.string:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "api_scope_ids", validation_ext.table:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "permission_ids", validation_ext.table:minlen(1), t("can't be blank"))
     return errors
   end,
 
