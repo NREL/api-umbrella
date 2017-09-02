@@ -37,7 +37,7 @@ class Minitest::Test
       DatabaseCleaner.clean
 
       # Manually delete all the non-seeded users.
-      ApiUser.where(:registration_source.ne => "seed").delete_all
+      ApiUser.where("registration_source != 'seed'").delete_all
     end
   end
 end
