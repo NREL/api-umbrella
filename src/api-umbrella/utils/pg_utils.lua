@@ -1,5 +1,5 @@
 local pgmoon = require "pgmoon"
-local encode_array = require("pgmoon.arrays").encode_array
+local encode_array = require "api-umbrella.utils.pg_encode_array"
 local encode_json = require("pgmoon.json").encode_json
 
 local _escape_literal = pgmoon.Postgres.escape_literal

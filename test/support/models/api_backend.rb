@@ -25,25 +25,26 @@ class ApiBackend < ApplicationRecord
   end
 
   def serializable_hash(options = nil)
+    settings_options = {
+      :methods => [
+        :headers,
+        :default_response_headers,
+        :override_response_headers,
+      ],
+      :include => {
+        :http_headers => {},
+        :rate_limits => {},
+      },
+    }
     options ||= {}
     options.merge!({
       :include => {
-        :settings => {
-          :include => {
-            :http_headers => {},
-            :rate_limits => {},
-          },
-        },
+        :settings => settings_options,
         :servers => {},
         :url_matches => {},
         :sub_settings => {
           :include => {
-            :settings => {
-              :include => {
-                :http_headers => {},
-                :rate_limits => {},
-              },
-            },
+            :settings => settings_options,
           },
         },
         :rewrites => {},

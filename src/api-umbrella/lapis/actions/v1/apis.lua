@@ -213,17 +213,12 @@ function _M.api_backend_params(self)
       params["sub_settings"] = {}
       if is_array(input["sub_settings"]) then
         for _, input_sub_settings in ipairs(input["sub_settings"]) do
-          local params_sub_settings = dbify_json_nulls({
+          table.insert(params["sub_settings"], dbify_json_nulls({
             id = input_sub_settings["id"],
             http_method = input_sub_settings["http_method"],
             regex = input_sub_settings["regex"],
-          })
-
-          if is_hash(input_sub_settings) then
-            params_sub_settings["settings"] = api_backend_settings_params(input["settings"])
-          end
-
-          table.insert(params["sub_settings"], params_sub_settings)
+            settings = api_backend_settings_params(input_sub_settings["settings"]),
+          }))
         end
       end
     end

@@ -1,16 +1,22 @@
 local ApiBackendHttpHeader = require "api-umbrella.lapis.models.api_backend_http_header"
 local RateLimit = require "api-umbrella.lapis.models.rate_limit"
 local cjson = require "cjson"
+local db = require("lapis.db")
+local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local lyaml = require "lyaml"
 local model_ext = require "api-umbrella.utils.model_ext"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
+local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
+local pg_encode_json = require("pgmoon.json").encode_json
 local split = require("ngx.re").split
 local strip = require("pl.stringx").strip
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
+local db_null = db.NULL
+local db_raw = db.raw
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
@@ -255,8 +261,12 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
   end,
 
   before_save = function(_, values)
-    if values["error_data"] then
-      values["error_data"] = cjson.encode(values["error_data"])
+    if is_hash(values["error_data"]) and values["error_data"] ~= db_null then
+      values["error_data"] = db_raw(pg_encode_json(values["error_data"]))
+    end
+
+    if is_array(values["required_roles"]) and values["required_roles"] ~= db_null then
+      values["required_roles"] = db_raw(pg_encode_array(values["required_roles"]))
     end
   end,
 

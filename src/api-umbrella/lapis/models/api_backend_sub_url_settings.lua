@@ -1,3 +1,4 @@
+local ApiBackendSettings = require "api-umbrella.lapis.models.api_backend_settings"
 local json_null = require("cjson").null
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
@@ -24,6 +25,14 @@ local ApiBackendSubUrlSettings = model_ext.new_class("api_backend_sub_url_settin
     end
 
     return data
+  end,
+
+  settings_update_or_create = function(self, settings_values)
+    return model_ext.has_one_update_or_create(self, ApiBackendSettings, "api_backend_sub_url_settings_id", settings_values)
+  end,
+
+  settings_delete = function(self)
+    return model_ext.has_one_delete(self, ApiBackendSettings, "api_backend_sub_url_settings_id", {})
   end,
 }, {
   validate = function(_, data)
