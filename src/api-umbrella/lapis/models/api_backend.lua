@@ -125,6 +125,40 @@ ApiBackend = model_ext.new_class("api_backends", {
     return data
   end,
 
+  move_to_beginning = function(self)
+    local order = get_new_beginning_sort_order()
+    self:update({ sort_order = order })
+  end,
+
+  move_after = function(self, after_api)
+    local order
+    local after_after_api = ApiBackend:select("WHERE id != ? AND sort_order > ? ORDER BY sort_order ASC LIMIT 1", self.id, after_api.sort_order)[1]
+    if after_after_api then
+      if after_api.sort_order and after_after_api.sort_order then
+        order = ((after_api.sort_order + after_after_api.sort_order) / 2.0)
+        if order < 0 then
+          order = math.ceil(order)
+        else
+          order = math.floor(order)
+        end
+      end
+    else
+      if after_api.sort_order then
+        order = after_api.sort_order + SORT_ORDER_GAP
+      end
+    end
+
+    if order then
+      if order > MAX_SORT_ORDER then
+        order = math.ceil((after_api.sort_order + MAX_SORT_ORDER) / 2.0)
+      elseif order < MIN_SORT_ORDER then
+        order = math.floor((after_api.sort_order + MIN_SORT_ORDER) / 2.0)
+      end
+    end
+
+    self:update({ sort_order = order })
+  end,
+
   ensure_unique_sort_order = function(self, original_order)
     -- Look for any existing records that have conflicting sort_order values.
     -- We will then shift those existing sort_order values to be unique.

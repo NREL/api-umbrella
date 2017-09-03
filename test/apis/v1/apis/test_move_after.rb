@@ -7,7 +7,6 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
   end
 
   def test_move_to_beginning_when_move_after_id_null
@@ -38,7 +37,7 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Test
   end
 
   def test_move_to_beginning_gap_10000
-    api1 = FactoryGirl.create(:api, :sort_order => 99)
+    api1 = FactoryGirl.create(:api_backend, :sort_order => 99)
     api2 = create_with_default_sort_order
 
     assert_equal(99, api1.sort_order)
@@ -103,9 +102,9 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Test
   end
 
   def test_no_movement_updates_sort_order_if_not_evenly_distributed
-    api1 = FactoryGirl.create(:api, :sort_order => 0)
-    api2 = FactoryGirl.create(:api, :sort_order => 10_000)
-    api3 = FactoryGirl.create(:api, :sort_order => 100_000)
+    api1 = FactoryGirl.create(:api_backend, :sort_order => 0)
+    api2 = FactoryGirl.create(:api_backend, :sort_order => 10_000)
+    api3 = FactoryGirl.create(:api_backend, :sort_order => 100_000)
 
     assert_equal(0, api1.sort_order)
     assert_equal(10_000, api2.sort_order)
@@ -126,8 +125,8 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Test
   end
 
   def test_no_movement_updates_sort_order_if_no_subsequent_record
-    api1 = FactoryGirl.create(:api, :sort_order => 0)
-    api2 = FactoryGirl.create(:api, :sort_order => 3_000)
+    api1 = FactoryGirl.create(:api_backend, :sort_order => 0)
+    api2 = FactoryGirl.create(:api_backend, :sort_order => 3_000)
 
     assert_equal(0, api1.sort_order)
     assert_equal(3_000, api2.sort_order)
@@ -145,11 +144,11 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Test
   end
 
   def test_no_gaps_reshuffles_positive_orders
-    api1 = FactoryGirl.create(:api, :sort_order => 0)
-    api2 = FactoryGirl.create(:api, :sort_order => 1)
-    api3 = FactoryGirl.create(:api, :sort_order => 2)
-    api4 = FactoryGirl.create(:api, :sort_order => 3)
-    api5 = FactoryGirl.create(:api, :sort_order => 10)
+    api1 = FactoryGirl.create(:api_backend, :sort_order => 0)
+    api2 = FactoryGirl.create(:api_backend, :sort_order => 1)
+    api3 = FactoryGirl.create(:api_backend, :sort_order => 2)
+    api4 = FactoryGirl.create(:api_backend, :sort_order => 3)
+    api5 = FactoryGirl.create(:api_backend, :sort_order => 10)
 
     assert_equal(0, api1.sort_order)
     assert_equal(1, api2.sort_order)
@@ -176,10 +175,10 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Test
   end
 
   def test_no_gaps_reshuffles_positive_orders_near_integer_limit
-    api1 = FactoryGirl.create(:api, :sort_order => 2_147_483_640)
-    api2 = FactoryGirl.create(:api, :sort_order => 2_147_483_645)
-    api3 = FactoryGirl.create(:api, :sort_order => 2_147_483_646)
-    api4 = FactoryGirl.create(:api, :sort_order => 2_147_483_647)
+    api1 = FactoryGirl.create(:api_backend, :sort_order => 2_147_483_640)
+    api2 = FactoryGirl.create(:api_backend, :sort_order => 2_147_483_645)
+    api3 = FactoryGirl.create(:api_backend, :sort_order => 2_147_483_646)
+    api4 = FactoryGirl.create(:api_backend, :sort_order => 2_147_483_647)
 
     assert_equal(2_147_483_640, api1.sort_order)
     assert_equal(2_147_483_645, api2.sort_order)
@@ -218,11 +217,11 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Test
   end
 
   def test_no_gaps_reshuffles_negative_orders
-    api1 = FactoryGirl.create(:api, :sort_order => -10)
-    api2 = FactoryGirl.create(:api, :sort_order => -9)
-    api3 = FactoryGirl.create(:api, :sort_order => -8)
-    api4 = FactoryGirl.create(:api, :sort_order => -7)
-    api5 = FactoryGirl.create(:api, :sort_order => 0)
+    api1 = FactoryGirl.create(:api_backend, :sort_order => -10)
+    api2 = FactoryGirl.create(:api_backend, :sort_order => -9)
+    api3 = FactoryGirl.create(:api_backend, :sort_order => -8)
+    api4 = FactoryGirl.create(:api_backend, :sort_order => -7)
+    api5 = FactoryGirl.create(:api_backend, :sort_order => 0)
 
     assert_equal(-10, api1.sort_order)
     assert_equal(-9, api2.sort_order)
@@ -249,10 +248,10 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Test
   end
 
   def test_no_gaps_reshuffles_negative_orders_near_integer_limit
-    api1 = FactoryGirl.create(:api, :sort_order => -2_147_483_648)
-    api2 = FactoryGirl.create(:api, :sort_order => -2_147_483_647)
-    api3 = FactoryGirl.create(:api, :sort_order => -2_147_483_646)
-    api4 = FactoryGirl.create(:api, :sort_order => -2_147_483_640)
+    api1 = FactoryGirl.create(:api_backend, :sort_order => -2_147_483_648)
+    api2 = FactoryGirl.create(:api_backend, :sort_order => -2_147_483_647)
+    api3 = FactoryGirl.create(:api_backend, :sort_order => -2_147_483_646)
+    api4 = FactoryGirl.create(:api_backend, :sort_order => -2_147_483_640)
 
     assert_equal(-2_147_483_648, api1.sort_order)
     assert_equal(-2_147_483_647, api2.sort_order)
@@ -293,13 +292,13 @@ class Test::Apis::V1::Apis::TestMoveAfter < Minitest::Test
   private
 
   def create_with_default_sort_order
-    attributes = FactoryGirl.attributes_for(:api)
+    attributes = FactoryGirl.attributes_for(:api_backend)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :api => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:api => attributes),
     }))
     assert_response_code(201, response)
     data = MultiJson.load(response.body)
-    Api.find(data["api"]["id"])
+    ApiBackend.find(data["api"]["id"])
   end
 end

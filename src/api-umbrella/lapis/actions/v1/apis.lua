@@ -2,6 +2,7 @@ local respond_to = require("lapis.application").respond_to
 local db = require "lapis.db"
 local ApiBackend = require "api-umbrella.lapis.models.api_backend"
 local is_array = require "api-umbrella.utils.is_array"
+local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
 local lapis_json = require "api-umbrella.utils.lapis_json"
@@ -67,6 +68,17 @@ function _M.destroy(self)
 end
 
 function _M.move_after(self)
+  if self.params and not is_empty(self.params["move_after_id"]) then
+    local after_api = ApiBackend:find(self.params["move_after_id"])
+    if after_api then
+      -- authorize(after_api)
+      self.api_backend:move_after(after_api)
+    end
+  else
+    self.api_backend:move_to_beginning()
+  end
+
+  return { status = 204 }
 end
 
 local function api_backend_settings_params(input_settings)
@@ -232,13 +244,15 @@ function _M.api_backend_params(self)
 end
 
 return function(app)
+  local function find_api_backend(self)
+    self.api_backend = ApiBackend:find(self.params["id"])
+    if not self.api_backend then
+      self:write({"Not Found", status = 404})
+    end
+  end
+
   app:match("/api-umbrella/v1/apis/:id(.:format)", respond_to({
-    before = function(self)
-      self.api_backend = ApiBackend:find(self.params["id"])
-      if not self.api_backend then
-        self:write({"Not Found", status = 404})
-      end
-    end,
+    before = find_api_backend,
     GET = _M.show,
     POST = capture_errors_json(json_params(_M.update)),
     PUT = capture_errors_json(json_params(_M.update)),
@@ -247,5 +261,8 @@ return function(app)
 
   app:get("/api-umbrella/v1/apis(.:format)", _M.index)
   app:post("/api-umbrella/v1/apis(.:format)", capture_errors_json(json_params(_M.create)))
-  app:put("/api-umbrella/v1/apis/:id/move_after(.:format)", _M.move_after)
+  app:match("/api-umbrella/v1/apis/:id/move_after(.:format)", respond_to({
+    before = find_api_backend,
+    PUT = capture_errors_json(json_params(_M.move_after)),
+  }))
 end
