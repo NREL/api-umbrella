@@ -187,6 +187,10 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     return model_ext.has_many_delete_except(self, RateLimit, "api_backend_settings_id", keep_rate_limit_ids)
   end,
 }, {
+  authorize = function(data)
+    return true
+  end,
+
   before_validate = function(_, values)
     if values["error_data_yaml_strings"] then
       values["error_data"] = {}

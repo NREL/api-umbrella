@@ -25,40 +25,50 @@ local function values_for_table(model_class, values)
   return column_values
 end
 
+local function record_attributes(self)
+  local attributes = {}
+
+  -- Fetch values from the record directly.
+  for key, value in pairs(self) do
+    attributes[key] = value
+  end
+
+  -- Fetch the values from relations on the record.
+  local model_class = self.__class
+  if model_class.relations then
+    for _, relation in ipairs(model_class.relations) do
+      local name = relation[1]
+      local records = self["get_" .. name](self)
+      if is_array(records) then
+        attributes[name] = {}
+        for _, record in ipairs(records) do
+          local record_values = {}
+          for key, value in pairs(record) do
+            record_values[key] = value
+          end
+          table.insert(attributes[name], readonly(record_values))
+        end
+      elseif is_hash(records) then
+        local record_values = {}
+        for key, value in pairs(records) do
+          record_values[key] = value
+        end
+        attributes[name] = readonly(record_values)
+      end
+    end
+  end
+
+  return readonly(attributes)
+end
+
 local function merge_record_and_values(self, values)
   local merged = {}
 
   -- If a current record exists (during updates), then first fetch all of its
   -- values to provide the base, default values.
   if self then
-    -- Fetch values from the record directly.
-    for key, value in pairs(self) do
+    for key, value in pairs(self:attributes()) do
       merged[key] = value
-    end
-
-    -- Fetch the values from relations on the record.
-    local model_class = self.__class
-    if model_class.relations then
-      for _, relation in ipairs(model_class.relations) do
-        local name = relation[1]
-        local records = self["get_" .. name](self)
-        if is_array(records) then
-          merged[name] = {}
-          for _, record in ipairs(records) do
-            local record_values = {}
-            for key, value in pairs(record) do
-              record_values[key] = value
-            end
-            table.insert(merged[name], readonly(record_values))
-          end
-        elseif is_hash(records) then
-          local record_values = {}
-          for key, value in pairs(records) do
-            record_values[key] = value
-          end
-          merged[name] = readonly(record_values)
-        end
-      end
     end
   end
 
@@ -113,52 +123,71 @@ local function rollback_transaction(started)
   end
 end
 
-local function before_save(self, action, options, values)
+local function before_save(self, action, callbacks, values, opts)
+  local current_admin
+  if opts and opts["_current_admin"] then
+    current_admin = opts["_current_admin"]
+    opts["_current_admin"] = nil
+  end
+
   if action == "create" then
     if not values["id"] or values["id"] == db_null then
       values["id"] = uuid_generate()
     end
 
-    if options["before_validate_on_create"] then
-      options["before_validate_on_create"](self, values)
+    if callbacks["before_validate_on_create"] then
+      callbacks["before_validate_on_create"](self, values)
     end
   end
 
-  if options["before_validate"] then
-    options["before_validate"](self, values)
+  if callbacks["before_validate"] then
+    callbacks["before_validate"](self, values)
   end
 
-  if options["validate"] then
-    -- The "values" object only contains values currently being set as part of
-    -- the current request. But for partial updates, this may not include the
-    -- existing data that isn't being updated. For validation purposes, we're
-    -- usually interested in the combined view, so merge the values on top of
-    -- the existing record.
-    local data = merge_record_and_values(self, values)
-    local errors = options["validate"](self, data, values)
+  -- The "values" object only contains values currently being set as part of
+  -- the current request. But for partial updates, this may not include the
+  -- existing data that isn't being updated. For validation purposes, we're
+  -- usually interested in the combined view, so merge the values on top of the
+  -- existing record.
+  local data = merge_record_and_values(self, values)
+
+  -- Authorize that on create or on updates, the current user is authorized to
+  -- the resulting record.
+  --
+  -- On updates, this is actually the second authorization call we make. We
+  -- authorize once before making any updates, and again here with the
+  -- potential updates taken into account. This ensures a user can't take a
+  -- record they're authorized to and update it to something outside their
+  -- permissions.
+  if callbacks["authorize"] then
+    callbacks["authorize"](data)
+  end
+
+  if callbacks["validate"] then
+    local errors = callbacks["validate"](self, data, values)
     if not is_empty(errors) then
       return coroutine.yield("error", errors)
     end
   end
 
-  if options["after_validate"] then
-    options["after_validate"](self, values)
+  if callbacks["after_validate"] then
+    callbacks["after_validate"](self, values)
   end
 
-  if options["before_save"] then
-    options["before_save"](self, values)
-  end
-end
-
-local function after_save(self, _, options, values)
-  if options["after_save"] then
-    options["after_save"](self, values)
+  if callbacks["before_save"] then
+    callbacks["before_save"](self, values)
   end
 end
 
-local function after_commit(self, _, options, values)
-  if options["after_commit"] then
-    options["after_commit"](self, values)
+local function after_save(self, _, callbacks, values)
+  if callbacks["after_save"] then
+    callbacks["after_save"](self, values)
+  end
+end
+
+local function after_commit(self, _, callbacks, values)
+  if callbacks["after_commit"] then
+    callbacks["after_commit"](self, values)
   end
 end
 
@@ -214,38 +243,42 @@ function _M.validate_field(errors, values, field, validator, message, options)
   end
 end
 
-function _M.create(options)
+local function create(callbacks)
   return function(model_class, values, opts)
     local transaction_started = start_transaction()
 
     local new_record
     try_save(function()
-      before_save(nil, "create", options, values)
+      before_save(nil, "create", callbacks, values, opts)
       new_record = Model.create(model_class, values_for_table(model_class, values), opts)
-      after_save(new_record, "create", options, values)
+      after_save(new_record, "create", callbacks, values)
     end, transaction_started)
 
     commit_transaction(transaction_started)
-    after_commit(new_record, "create", options, values)
+    after_commit(new_record, "create", callbacks, values)
 
     return new_record
   end
 end
 
-function _M.update(options)
+local function update(callbacks)
   return function(self, values, opts)
+    -- Before starting the update, ensure the current user is authorized to
+    -- this record.
+    callbacks["authorize"](self:attributes())
+
     local model_class = self.__class
     local transaction_started = start_transaction()
 
     local return_value
     try_save(function()
-      before_save(self, "update", options, values)
+      before_save(self, "update", callbacks, values, opts)
       return_value = Model.update(self, values_for_table(model_class, values), opts)
-      after_save(self, "update", options, values)
+      after_save(self, "update", callbacks, values)
     end, transaction_started)
 
     commit_transaction(transaction_started)
-    after_commit(self, "update", options, values)
+    after_commit(self, "update", callbacks, values)
 
     return return_value
   end
@@ -401,10 +434,13 @@ function _M.has_one_save(self, values, name)
   end
 end
 
-function _M.new_class(table_name, model_options, save_options)
-  model_options.update = _M.update(save_options)
+function _M.new_class(table_name, model_options, callbacks)
+  model_options.update = update(callbacks)
+  model_options.attributes = record_attributes
+
   local model_class = Model:extend(table_name, model_options)
-  model_class.create = _M.create(save_options)
+  model_class.create = create(callbacks)
+
   return model_class
 end
 

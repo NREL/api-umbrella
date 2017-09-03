@@ -15,6 +15,10 @@ local ApiBackendUrlMatch = model_ext.new_class("api_backend_url_matches", {
     }
   end,
 }, {
+  authorize = function(data)
+    return true
+  end,
+
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "frontend_prefix", validation_ext.string:minlen(1), t("can't be blank"))

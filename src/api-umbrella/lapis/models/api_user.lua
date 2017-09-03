@@ -55,6 +55,10 @@ local ApiUser = model_ext.new_class("api_users", {
     }
   end,
 }, {
+  authorize = function(data)
+    return true
+  end,
+
   before_validate_on_create = function(_, values)
     local api_key = random_token(40)
     values["api_key_hash"] = hmac(api_key)

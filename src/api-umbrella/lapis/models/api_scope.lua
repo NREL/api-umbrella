@@ -27,6 +27,10 @@ local ApiScope = model_ext.new_class("api_scopes", {
     }
   end,
 }, {
+  authorize = function(data)
+    return true
+  end,
+
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "name", validation_ext.string:minlen(1), t("can't be blank"))

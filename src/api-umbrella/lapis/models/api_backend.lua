@@ -1,4 +1,5 @@
 local ApiBackendRewrite = require "api-umbrella.lapis.models.api_backend_rewrite"
+local api_backend_policy = require "api-umbrella.lapis.policies.api_backend_policy"
 local ApiBackendServer = require "api-umbrella.lapis.models.api_backend_server"
 local ApiBackendSettings = require "api-umbrella.lapis.models.api_backend_settings"
 local ApiBackendSubUrlSettings = require "api-umbrella.lapis.models.api_backend_sub_url_settings"
@@ -67,6 +68,10 @@ ApiBackend = model_ext.new_class("api_backends", {
     { "sub_settings", has_many = "ApiBackendSubUrlSettings" },
     { "url_matches", has_many = "ApiBackendUrlMatch" },
   },
+
+  authorize = function(self)
+    api_backend_policy.authorize_record(ngx.ctx.current_admin, self:attributes())
+  end,
 
   as_json = function(self)
     local data = {
@@ -235,6 +240,10 @@ ApiBackend = model_ext.new_class("api_backends", {
     return model_ext.has_many_delete_except(self, ApiBackendUrlMatch, "api_backend_id", keep_url_match_ids)
   end,
 }, {
+  authorize = function(data)
+    api_backend_policy.authorize_record(ngx.ctx.current_admin, data)
+  end,
+
   before_validate_on_create = function(_, values)
     if not values["sort_order"] or values["sort_order"] == db_null then
       values["sort_order"] = get_new_end_sort_order()

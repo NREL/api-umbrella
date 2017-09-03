@@ -87,6 +87,18 @@ local AdminGroup = model_ext.new_class("admin_groups", {
     return permission_names
   end,
 
+  allows_permission = function(self, permission_id)
+    assert(permission_id)
+
+    for _, id in ipairs(self:permission_ids()) do
+      if id == permission_id then
+        return true
+      end
+    end
+
+    return false
+  end,
+
   as_json = function(self)
     local data = {
       id = self.id or json_null,
@@ -113,6 +125,10 @@ local AdminGroup = model_ext.new_class("admin_groups", {
     return data
   end,
 }, {
+  authorize = function(data)
+    return true
+  end,
+
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "name", validation_ext.string:minlen(1), t("can't be blank"))

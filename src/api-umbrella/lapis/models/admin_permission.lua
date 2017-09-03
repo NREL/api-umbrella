@@ -16,6 +16,10 @@ local AdminPermission = model_ext.new_class("admin_permissions", {
       version = 1,
     }
   end,
+}, {
+  authorize = function(data)
+    return true
+  end,
 })
 
 return AdminPermission

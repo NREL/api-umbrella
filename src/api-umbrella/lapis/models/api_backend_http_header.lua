@@ -18,6 +18,10 @@ local ApiBackendHttpHeader = model_ext.new_class("api_backend_http_headers", {
     }
   end,
 }, {
+  authorize = function(data)
+    return true
+  end,
+
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "header_type", validation_ext:regex("^(request|response_default|response_override)$", "jo"), t("is not included in the list"))

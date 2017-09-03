@@ -58,6 +58,10 @@ local RateLimit = model_ext.new_class("rate_limits", {
     }
   end,
 }, {
+  authorize = function(data)
+    return true
+  end,
+
   before_validate = function(_, values)
     auto_calculate_accuracy(values)
     auto_calculate_distributed(values)

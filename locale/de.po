@@ -541,10 +541,6 @@ msgstr "What URL prefixes should be routed to this backend?"
 msgid "You are already signed in."
 msgstr "Sie sind bereits angemeldet."
 
-# errors.messages.admin_not_authorized
-msgid "You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n%{authorized_scopes_list}\n\nContact your API Umbrella administrator if you need access to new APIs."
-msgstr "You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n%{authorized_scopes_list}\n\nContact your API Umbrella administrator if you need access to new APIs."
-
 # devise.mailer.confirmation_instructions.instruction
 msgid "You can confirm your account email through the link below:"
 msgstr "Folgen Sie dem untenstehenden Link, um Ihr Konto zu bestätigen:"

@@ -74,6 +74,7 @@ app:before_filter(function(self)
     end
   end
   self.current_admin = current_admin
+  ngx.ctx.current_admin = current_admin
 
   flash.setup(self)
   -- flash.restore(self)

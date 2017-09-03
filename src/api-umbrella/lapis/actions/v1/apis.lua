@@ -1,14 +1,15 @@
-local respond_to = require("lapis.application").respond_to
-local db = require "lapis.db"
 local ApiBackend = require "api-umbrella.lapis.models.api_backend"
+local api_backend_policy = require "api-umbrella.lapis.policies.api_backend_policy"
+local db = require "lapis.db"
+local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
 local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
-local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
-local lapis_json = require "api-umbrella.utils.lapis_json"
 local json_params = require("lapis.application").json_params
-local lapis_helpers = require "api-umbrella.utils.lapis_helpers"
 local lapis_datatables = require "api-umbrella.utils.lapis_datatables"
+local lapis_helpers = require "api-umbrella.utils.lapis_helpers"
+local lapis_json = require "api-umbrella.utils.lapis_json"
+local respond_to = require("lapis.application").respond_to
 
 local capture_errors_json = lapis_helpers.capture_errors_json
 local db_null = db.NULL
@@ -17,6 +18,9 @@ local _M = {}
 
 function _M.index(self)
   return lapis_datatables.index(self, ApiBackend, {
+    where = {
+      api_backend_policy.scope(self.current_admin),
+    },
     search_joins = {
       "LEFT JOIN api_backend_servers ON api_backends.id = api_backend_servers.api_backend_id",
       "LEFT JOIN api_backend_url_matches ON api_backends.id = api_backend_url_matches.api_backend_id",
@@ -38,6 +42,7 @@ function _M.index(self)
 end
 
 function _M.show(self)
+  self.api_backend:authorize()
   local response = {
     api = self.api_backend:as_json(),
   }
@@ -62,16 +67,18 @@ function _M.update(self)
 end
 
 function _M.destroy(self)
+  self.api_backend:authorize()
   assert(self.api_backend:delete())
 
   return { status = 204 }
 end
 
 function _M.move_after(self)
+  self.api_backend:authorize()
   if self.params and not is_empty(self.params["move_after_id"]) then
     local after_api = ApiBackend:find(self.params["move_after_id"])
     if after_api then
-      -- authorize(after_api)
+      after_api:authorize()
       self.api_backend:move_after(after_api)
     end
   else
@@ -247,19 +254,19 @@ return function(app)
   local function find_api_backend(self)
     self.api_backend = ApiBackend:find(self.params["id"])
     if not self.api_backend then
-      self:write({"Not Found", status = 404})
+      return self:write({"Not Found", status = 404})
     end
   end
 
   app:match("/api-umbrella/v1/apis/:id(.:format)", respond_to({
     before = find_api_backend,
-    GET = _M.show,
+    GET = capture_errors_json(_M.show),
     POST = capture_errors_json(json_params(_M.update)),
     PUT = capture_errors_json(json_params(_M.update)),
-    DELETE = _M.destroy,
+    DELETE = capture_errors_json(_M.destroy),
   }))
 
-  app:get("/api-umbrella/v1/apis(.:format)", _M.index)
+  app:get("/api-umbrella/v1/apis(.:format)", capture_errors_json(_M.index))
   app:post("/api-umbrella/v1/apis(.:format)", capture_errors_json(json_params(_M.create)))
   app:match("/api-umbrella/v1/apis/:id/move_after(.:format)", respond_to({
     before = find_api_backend,

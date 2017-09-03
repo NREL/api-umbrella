@@ -16,6 +16,10 @@ local ApiBackendRewrite = model_ext.new_class("api_backend_rewrites", {
     }
   end,
 }, {
+  authorize = function(data)
+    return true
+  end,
+
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "matcher_type", validation_ext:regex("^(route|regex)$", "jo"), t("is not included in the list"))

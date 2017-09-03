@@ -1,5 +1,5 @@
 class Admin < ApplicationRecord
-  has_and_belongs_to_many :groups, :class => "AdminGroup"
+  has_and_belongs_to_many :groups, :class_name => "AdminGroup"
 
   def authentication_token=(value)
     self.authentication_token_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], value)

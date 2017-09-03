@@ -9,6 +9,7 @@ local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("resty.gettext").gettext
+local table_values = require("pl.tablex").values
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local json_null = cjson.null
@@ -179,7 +180,45 @@ local Admin = model_ext.new_class("admins", {
 
     return token
   end,
+
+  groups_with_permission = function(self, permission_id)
+    local groups_with_permission = {}
+    local groups = self:get_groups()
+    for _, group in ipairs(groups) do
+      if group:allows_permission(permission_id) then
+        table.insert(groups_with_permission, group)
+      end
+    end
+
+    return groups_with_permission
+  end,
+
+  api_scopes = function(self)
+    local api_scopes = {}
+    for _, group in ipairs(self:get_groups()) do
+      for _, api_scope in ipairs(group:get_api_scopes()) do
+        api_scopes[api_scope.id] = api_scope
+      end
+    end
+
+    return table_values(api_scopes)
+  end,
+
+  api_scopes_with_permission = function(self, permission_id)
+    local api_scopes_with_permission = {}
+    for _, group in ipairs(self:groups_with_permission(permission_id)) do
+      for _, api_scope in ipairs(group:get_api_scopes()) do
+        api_scopes_with_permission[api_scope.id] = api_scope
+      end
+    end
+
+    return table_values(api_scopes_with_permission)
+  end,
 }, {
+  authorize = function(data)
+    return true
+  end,
+
   before_validate_on_create = function(_, values)
     local authentication_token = random_token(40)
     values["authentication_token_hash"] = hmac(authentication_token)

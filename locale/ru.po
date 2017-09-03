@@ -478,8 +478,8 @@ msgid "You are already signed in."
 msgstr "Вы уже вошли в систему."
 
 # errors.messages.admin_not_authorized
-msgid "You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n%{authorized_scopes_list}\n\nContact your API Umbrella administrator if you need access to new APIs."
-msgstr "Вы не авторизованы на эту операцию. Операции в API возможны только в следующих местах:\n\n %{authorized_scopes_list}\n\nСвяжитесь с администратором вашего API Umbrella если понадобится доступ к новому API."
+msgid "You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n%s\n\nContact your API Umbrella administrator if you need access to new APIs."
+msgstr "Вы не авторизованы на эту операцию. Операции в API возможны только в следующих местах:\n\n%s\n\nСвяжитесь с администратором вашего API Umbrella если понадобится доступ к новому API."
 
 # devise.mailer.confirmation_instructions.instruction
 msgid "You can confirm your account email through the link below:"
