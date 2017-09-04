@@ -1,7 +1,8 @@
 local ApiBackendHttpHeader = require "api-umbrella.lapis.models.api_backend_http_header"
+local ApiRole = require "api-umbrella.lapis.models.api_role"
 local RateLimit = require "api-umbrella.lapis.models.rate_limit"
 local cjson = require "cjson"
-local db = require("lapis.db")
+local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
@@ -74,6 +75,12 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
   relations = {
     { "http_headers", has_many = "ApiBackendHttpHeader", key = "api_backend_settings_id" },
     { "rate_limits", has_many = "RateLimit", key = "api_backend_settings_id" },
+    model_ext.has_and_belongs_to_many("required_roles", "ApiRole", {
+      join_table = "api_backend_settings_required_roles",
+      foreign_key = "api_backend_settings_id",
+      association_foreign_key = "api_role_id",
+      order = "id",
+    }),
   },
 
   default_response_headers_string = function(self)
@@ -99,6 +106,15 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
 
   override_response_headers_string = function(self)
     return http_headers_to_string(self, "response_override")
+  end,
+
+  required_role_ids = function(self)
+    local required_role_ids = {}
+    for _, role in ipairs(self:get_required_roles()) do
+      table.insert(required_role_ids, role.id)
+    end
+
+    return required_role_ids
   end,
 
   as_json = function(self)
@@ -128,9 +144,10 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       rate_limits = {},
       require_https = self.require_https or json_null,
       require_https_transition_start_at = self.require_https_transition_start_at or json_null,
-      required_roles = self.required_roles or json_null,
+      required_roles = self:required_role_ids() or json_null,
       required_roles_override = self.required_roles_override or json_null,
     }
+    setmetatable(data["required_roles"], cjson.empty_array_mt)
 
     local http_headers = self:get_http_headers()
     for _, http_header in ipairs(http_headers) do
@@ -268,10 +285,6 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     if is_hash(values["error_data"]) and values["error_data"] ~= db_null then
       values["error_data"] = db_raw(pg_encode_json(values["error_data"]))
     end
-
-    if is_array(values["required_roles"]) and values["required_roles"] ~= db_null then
-      values["required_roles"] = db_raw(pg_encode_array(values["required_roles"]))
-    end
   end,
 
   after_save = function(self, values)
@@ -279,6 +292,12 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     model_ext.has_many_save(self, values, "headers")
     model_ext.has_many_save(self, values, "override_response_headers")
     model_ext.has_many_save(self, values, "rate_limits")
+    ApiRole.insert_missing(values["required_roles"])
+    model_ext.save_has_and_belongs_to_many(self, values["required_roles"], {
+      join_table = "api_backend_settings_required_roles",
+      foreign_key = "api_backend_settings_id",
+      association_foreign_key = "api_role_id",
+    })
   end
 })
 

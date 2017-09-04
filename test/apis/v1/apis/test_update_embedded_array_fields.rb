@@ -80,7 +80,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
     assert_response_code(204, response)
 
     api.reload
-    assert_equal(["test-role1", "test-role2"], api.settings.required_roles)
+    assert_equal(["test-role1", "test-role2"].sort, api.settings.required_roles.sort)
     assert_equal(1, api.settings.default_response_headers.length)
     assert_equal("X-Default1", api.settings.default_response_headers[0].key)
     assert_equal(1, api.settings.override_response_headers.length)
@@ -122,7 +122,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
 
     api.reload
     assert_equal(1, api.sub_settings.length)
-    assert_equal(["test-role1", "test-role2"], api.sub_settings[0].settings.required_roles)
+    assert_equal(["test-role1", "test-role2"].sort, api.sub_settings[0].settings.required_roles.sort)
     assert_equal(1, api.sub_settings[0].settings.default_response_headers.length)
     assert_equal("X-SubDefault1", api.sub_settings[0].settings.default_response_headers[0].key)
     assert_equal(1, api.sub_settings[0].settings.override_response_headers.length)
@@ -213,7 +213,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
         ],
       }),
     })
-    assert_equal(["test-role1"], api.settings.required_roles)
+    assert_equal(["test-role1"].sort, api.settings.required_roles.sort)
     assert_equal(1, api.settings.default_response_headers.length)
     assert_equal("X-Default1", api.settings.default_response_headers[0].key)
     assert_equal(1, api.settings.override_response_headers.length)
@@ -238,7 +238,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
     assert_response_code(204, response)
 
     api.reload
-    assert_equal(["test-role5", "test-role4"], api.settings.required_roles)
+    assert_equal(["test-role5", "test-role4"].sort, api.settings.required_roles.sort)
     assert_equal(1, api.settings.default_response_headers.length)
     assert_equal("X-Default2", api.settings.default_response_headers[0].key)
     assert_equal(1, api.settings.override_response_headers.length)
@@ -277,7 +277,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
       ],
     })
     assert_equal(1, api.sub_settings.length)
-    assert_equal(["test-role1"], api.sub_settings[0].settings.required_roles)
+    assert_equal(["test-role1"].sort, api.sub_settings[0].settings.required_roles.sort)
     assert_equal(1, api.sub_settings[0].settings.default_response_headers.length)
     assert_equal("X-SubDefault1", api.sub_settings[0].settings.default_response_headers[0].key)
     assert_equal(1, api.sub_settings[0].settings.override_response_headers.length)
@@ -303,7 +303,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
 
     api.reload
     assert_equal(1, api.sub_settings.length)
-    assert_equal(["test-role3", "test-role4"], api.sub_settings[0].settings.required_roles)
+    assert_equal(["test-role3", "test-role4"].sort, api.sub_settings[0].settings.required_roles.sort)
     assert_equal(1, api.sub_settings[0].settings.default_response_headers.length)
     assert_equal("X-SubDefault2", api.sub_settings[0].settings.default_response_headers[0].key)
     assert_equal(1, api.sub_settings[0].settings.override_response_headers.length)
@@ -406,7 +406,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
         ],
       }),
     })
-    assert_equal(["test-role1", "test-role2"], api.settings.required_roles)
+    assert_equal(["test-role1", "test-role2"].sort, api.settings.required_roles.sort)
     assert_equal(2, api.settings.default_response_headers.length)
     assert_equal("X-Default1", api.settings.default_response_headers[0].key)
     assert_equal("X-Default2", api.settings.default_response_headers[1].key)
@@ -433,7 +433,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
     assert_response_code(204, response)
 
     api.reload
-    assert_equal(["test-role2"], api.settings.required_roles)
+    assert_equal(["test-role2"].sort, api.settings.required_roles.sort)
     assert_equal(1, api.settings.default_response_headers.length)
     assert_equal("X-Default2", api.settings.default_response_headers[0].key)
     assert_equal(1, api.settings.override_response_headers.length)
@@ -474,7 +474,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
       ],
     })
     assert_equal(2, api.sub_settings.length)
-    assert_equal(["test-role1", "test-role2"], api.sub_settings[1].settings.required_roles)
+    assert_equal(["test-role1", "test-role2"].sort, api.sub_settings[1].settings.required_roles.sort)
     assert_equal(2, api.sub_settings[1].settings.default_response_headers.length)
     assert_equal("X-SubDefault1", api.sub_settings[1].settings.default_response_headers[0].key)
     assert_equal("X-SubDefault2", api.sub_settings[1].settings.default_response_headers[1].key)
@@ -506,7 +506,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
 
     api.reload
     assert_equal(1, api.sub_settings.length)
-    assert_equal(["test-role2"], api.sub_settings[0].settings.required_roles)
+    assert_equal(["test-role2"].sort, api.sub_settings[0].settings.required_roles.sort)
     assert_equal(1, api.sub_settings[0].settings.default_response_headers.length)
     assert_equal("X-SubDefault2", api.sub_settings[0].settings.default_response_headers[0].key)
     assert_equal(1, api.sub_settings[0].settings.override_response_headers.length)
@@ -622,7 +622,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
           ],
         }),
       })
-      assert_equal(["test-role1"], api.settings.required_roles)
+      assert_equal(["test-role1"].sort, api.settings.required_roles.sort)
       assert_equal(1, api.settings.default_response_headers.length)
       assert_equal("X-Default1", api.settings.default_response_headers[0].key)
       assert_equal(1, api.settings.override_response_headers.length)
@@ -646,11 +646,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
       assert_response_code(204, response)
 
       api.reload
-      if(empty_value.nil?)
-        assert_nil(api.settings.required_roles)
-      else
-        assert_equal([], api.settings.required_roles)
-      end
+      assert_equal([], api.settings.required_roles)
       assert_equal([], api.settings.default_response_headers)
       assert_equal([], api.settings.override_response_headers)
       assert_equal([], api.settings.headers)
@@ -700,7 +696,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
         ],
       })
       assert_equal(1, api.sub_settings.length)
-      assert_equal(["test-role1"], api.sub_settings[0].settings.required_roles)
+      assert_equal(["test-role1"].sort, api.sub_settings[0].settings.required_roles.sort)
       assert_equal(1, api.sub_settings[0].settings.default_response_headers.length)
       assert_equal("X-SubDefault1", api.sub_settings[0].settings.default_response_headers[0].key)
       assert_equal(1, api.sub_settings[0].settings.override_response_headers.length)
@@ -724,11 +720,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
       assert_response_code(204, response)
 
       api.reload
-      if(empty_value.nil?)
-        assert_nil(api.sub_settings[0].settings.required_roles)
-      else
-        assert_equal([], api.sub_settings[0].settings.required_roles)
-      end
+      assert_equal([], api.sub_settings[0].settings.required_roles)
       assert_equal([], api.sub_settings[0].settings.default_response_headers)
       assert_equal([], api.sub_settings[0].settings.override_response_headers)
       assert_equal([], api.sub_settings[0].settings.headers)
@@ -822,7 +814,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
       }),
     })
     refute_equal("Updated", api.name)
-    assert_equal(["test-role1"], api.settings.required_roles)
+    assert_equal(["test-role1"].sort, api.settings.required_roles.sort)
     assert_equal(1, api.settings.default_response_headers.length)
     assert_equal("X-Default1", api.settings.default_response_headers[0].key)
     assert_equal(1, api.settings.override_response_headers.length)
@@ -848,7 +840,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
 
     api.reload
     assert_equal("Updated", api.name)
-    assert_equal(["test-role1"], api.settings.required_roles)
+    assert_equal(["test-role1"].sort, api.settings.required_roles.sort)
     assert_equal(1, api.settings.default_response_headers.length)
     assert_equal("X-Default1", api.settings.default_response_headers[0].key)
     assert_equal(1, api.settings.override_response_headers.length)
@@ -907,7 +899,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
     })
     refute_equal("Updated", api.name)
     assert_equal(1, api.sub_settings.length)
-    assert_equal(["test-role1"], api.sub_settings[0].settings.required_roles)
+    assert_equal(["test-role1"].sort, api.sub_settings[0].settings.required_roles.sort)
     assert_equal(1, api.sub_settings[0].settings.default_response_headers.length)
     assert_equal("X-SubDefault1", api.sub_settings[0].settings.default_response_headers[0].key)
     assert_equal(1, api.sub_settings[0].settings.override_response_headers.length)
@@ -933,7 +925,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
 
     api.reload
     assert_equal(1, api.sub_settings.length)
-    assert_equal(["test-role1"], api.sub_settings[0].settings.required_roles)
+    assert_equal(["test-role1"].sort, api.sub_settings[0].settings.required_roles.sort)
     assert_equal(1, api.sub_settings[0].settings.default_response_headers.length)
     assert_equal("X-SubDefault1", api.sub_settings[0].settings.default_response_headers[0].key)
     assert_equal(1, api.sub_settings[0].settings.override_response_headers.length)

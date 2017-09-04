@@ -170,6 +170,18 @@ return {
     db.query("SELECT audit.audit_table('admin_groups_api_scopes')")
 
     db.query([[
+      CREATE TABLE api_roles(
+        id varchar(255) PRIMARY KEY,
+        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+      )
+    ]])
+    db.query("CREATE TRIGGER api_roles_updated_at BEFORE UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("SELECT audit.audit_table('api_roles')")
+
+    db.query([[
       CREATE TABLE api_backends(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         name varchar(255) NOT NULL,
@@ -262,10 +274,9 @@ return {
         disable_api_key boolean NOT NULL DEFAULT FALSE,
         api_key_verification_level varchar(16) CHECK(api_key_verification_level IN('none', 'transition_email', 'required_email')),
         api_key_verification_transition_start_at timestamp with time zone,
-        required_roles varchar(100) ARRAY,
         required_roles_override boolean NOT NULL DEFAULT FALSE,
         allowed_ips inet ARRAY,
-        allowed_referers varchar(255) ARRAY,
+        allowed_referers varchar(500) ARRAY,
         pass_api_key_header varchar(255),
         pass_api_key_query_param varchar(255),
         rate_limit_mode varchar(9) CHECK(rate_limit_mode IN('unlimited', 'custom')),
@@ -284,6 +295,20 @@ return {
     db.query("CREATE UNIQUE INDEX ON api_backend_settings(api_backend_sub_url_settings_id)")
     db.query("CREATE TRIGGER api_backend_settings_updated_at BEFORE UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE set_updated()")
     db.query("SELECT audit.audit_table('api_backend_settings')")
+
+    db.query([[
+      CREATE TABLE api_backend_settings_required_roles(
+        api_backend_settings_id uuid NOT NULL REFERENCES api_backend_settings ON DELETE CASCADE,
+        api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE CASCADE,
+        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        updated_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        PRIMARY KEY(api_backend_settings_id, api_role_id)
+      )
+    ]])
+    db.query("CREATE TRIGGER api_backend_settings_required_roles_updated_at BEFORE UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("SELECT audit.audit_table('api_backend_settings_required_roles')")
 
     db.query([[
       CREATE TABLE api_backend_http_headers(
@@ -322,7 +347,6 @@ return {
         registration_referer varchar(1000),
         registration_origin varchar(1000),
         throttle_by_ip boolean NOT NULL DEFAULT FALSE,
-        roles varchar(100) ARRAY,
         disabled_at timestamp with time zone,
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
         created_by varchar(255) NOT NULL DEFAULT current_app_user(),
@@ -335,12 +359,26 @@ return {
     db.query("SELECT audit.audit_table('api_users')")
 
     db.query([[
+      CREATE TABLE api_users_roles(
+        api_user_id uuid NOT NULL REFERENCES api_users ON DELETE CASCADE,
+        api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE CASCADE,
+        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+        updated_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        PRIMARY KEY(api_user_id, api_role_id)
+      )
+    ]])
+    db.query("CREATE TRIGGER api_users_roles_updated_at BEFORE UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("SELECT audit.audit_table('api_users_roles')")
+
+    db.query([[
       CREATE TABLE api_user_settings(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         api_user_id uuid NOT NULL REFERENCES api_users ON DELETE CASCADE,
         rate_limit_mode varchar(9) CHECK(rate_limit_mode IN('unlimited', 'custom')),
         allowed_ips inet ARRAY,
-        allowed_referers varchar(255) ARRAY,
+        allowed_referers varchar(500) ARRAY,
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
         created_by varchar(255) NOT NULL DEFAULT current_app_user(),
         updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
@@ -414,10 +452,11 @@ return {
     db.query("CREATE TRIGGER sessions_updated_at BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE set_updated()")
 
     db.query([[
-      CREATE VIEW api_users_with_settings AS
+      CREATE VIEW api_users_flattened AS
         SELECT u.*,
           row_to_json(s.*) AS settings,
-          (SELECT json_agg(r.*) FROM rate_limits AS r WHERE r.api_user_settings_id = s.id) AS rate_limits
+          (SELECT json_agg(r.*) FROM rate_limits AS r WHERE r.api_user_settings_id = s.id) AS rate_limits,
+          ARRAY(SELECT ar.api_role_id FROM api_users_roles AS ar WHERE ar.api_user_id = s.id) AS roles
         FROM api_users AS u
           LEFT JOIN api_user_settings AS s ON u.id = s.api_user_id
     ]])

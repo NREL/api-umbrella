@@ -1,3 +1,4 @@
+local ApiRole = require "api-umbrella.lapis.models.api_role"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
 local iso8601 = require "api-umbrella.utils.iso8601"
@@ -10,6 +11,15 @@ local validation_ext = require "api-umbrella.utils.validation_ext"
 local validate_field = model_ext.validate_field
 
 local ApiUser = model_ext.new_class("api_users", {
+  relations = {
+    model_ext.has_and_belongs_to_many("roles", "ApiRole", {
+      join_table = "api_users_roles",
+      foreign_key = "api_user_id",
+      association_foreign_key = "api_role_id",
+      order = "id",
+    }),
+  },
+
   api_key_decrypted = function(self)
     local decrypted
     if self.api_key_encrypted and self.api_key_encrypted_iv then
@@ -28,8 +38,17 @@ local ApiUser = model_ext.new_class("api_users", {
     return preview
   end,
 
+  role_ids = function(self)
+    local role_ids = {}
+    for _, role in ipairs(self:get_roles()) do
+      table.insert(role_ids, role.id)
+    end
+
+    return role_ids
+  end,
+
   as_json = function(self)
-    return {
+    local data = {
       id = self.id or json_null,
       api_key_preview = self:api_key_preview() or json_null,
       email = self.email or json_null,
@@ -43,7 +62,7 @@ local ApiUser = model_ext.new_class("api_users", {
       registration_referer = self.registration_referer or json_null,
       registration_origin = self.registration_origin or json_null,
       throttle_by_ip = self.throttle_by_ip or json_null,
-      roles = self.roles or json_null,
+      roles = self:role_ids() or json_null,
       settings = self.settings or json_null,
       disabled_at = self.disabled_at or json_null,
       created_at = iso8601.format_postgres(self.created_at) or json_null,
@@ -53,6 +72,9 @@ local ApiUser = model_ext.new_class("api_users", {
       deleted_at = json_null,
       version = 1,
     }
+    setmetatable(data["roles"], cjson.empty_array_mt)
+
+    return data
   end,
 }, {
   authorize = function(data)
@@ -76,6 +98,15 @@ local ApiUser = model_ext.new_class("api_users", {
     validate_field(errors, data, "email", validation_ext:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
     validate_field(errors, data, "website", validation_ext.db_null_optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
     return errors
+  end,
+
+  after_save = function(self, values)
+    ApiRole.insert_missing(values["roles"])
+    model_ext.save_has_and_belongs_to_many(self, values["roles"], {
+      join_table = "api_users_roles",
+      foreign_key = "api_user_id",
+      association_foreign_key = "api_role_id",
+    })
   end,
 })
 

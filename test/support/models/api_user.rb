@@ -1,5 +1,15 @@
 class ApiUser < ApplicationRecord
   has_one :settings, :class_name => "ApiUserSettings"
+  has_and_belongs_to_many :roles, :class_name => "ApiRole"
+
+  def roles
+    self.role_ids
+  end
+
+  def roles=(ids)
+    ApiRole.insert_missing(ids)
+    self.role_ids = ids
+  end
 
   def api_key=(value)
     self.api_key_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], value)

@@ -113,9 +113,8 @@ local function seed_api_keys()
       user["api_key_prefix"] = string.sub(api_key, 1, 10)
     end
 
-    if user["roles"] then
-      user["roles"] = pg_utils.as_array(user["roles"])
-    end
+    local roles = user["roles"]
+    user["roles"] = nil
 
     local settings_data = user["settings"]
     user["settings"] = nil
@@ -134,7 +133,35 @@ local function seed_api_keys()
       end
     end
 
-    if user["settings"] then
+    if roles then
+      for _, role in ipairs(roles) do
+        local insert_result, insert_err = pg_utils.query("INSERT INTO api_roles(id) VALUES($1) ON CONFLICT DO NOTHING", role)
+        if not insert_result then
+          ngx.log(ngx.ERR, "failed to create record in api_roles: ", insert_err)
+          break
+        end
+
+        insert_result, insert_err = pg_utils.query("INSERT INTO api_users_roles(api_user_id, api_role_id) VALUES($1, $2) ON CONFLICT DO NOTHING", user["id"], role)
+        if not insert_result then
+          ngx.log(ngx.ERR, "failed to create record in api_users_roles: ", insert_err)
+          break
+        end
+      end
+
+      local delete_result, delete_err = pg_utils.query("DELETE FROM api_users_roles WHERE api_user_id = $1 AND api_role_id NOT IN($2)", user["id"], roles)
+      if not delete_result then
+        ngx.log(ngx.ERR, "failed to delete records in api_users_roles: ", delete_err)
+        break
+      end
+    else
+      local delete_result, delete_err = pg_utils.query("DELETE FROM api_users_roles WHERE api_user_id = $1", user["id"])
+      if not delete_result then
+        ngx.log(ngx.ERR, "failed to delete records in api_users_roles: ", delete_err)
+        break
+      end
+    end
+
+    if settings_data then
       local settings_result, settings_err = pg_utils.query("SELECT * FROM api_user_settings WHERE api_user_id = $1", user["id"])
       if not settings_result then
         ngx.log(ngx.ERR, "failed to query api_user_settings: ", settings_err)

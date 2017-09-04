@@ -27,6 +27,7 @@ class ApiBackend < ApplicationRecord
   def serializable_hash(options = nil)
     settings_options = {
       :methods => [
+        :required_roles,
         :headers,
         :default_response_headers,
         :override_response_headers,

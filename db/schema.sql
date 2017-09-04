@@ -724,10 +724,9 @@ CREATE TABLE api_backend_settings (
     disable_api_key boolean DEFAULT false NOT NULL,
     api_key_verification_level character varying(16),
     api_key_verification_transition_start_at timestamp with time zone,
-    required_roles character varying(100)[],
     required_roles_override boolean DEFAULT false NOT NULL,
     allowed_ips inet[],
-    allowed_referers character varying(255)[],
+    allowed_referers character varying(500)[],
     pass_api_key_header character varying(255),
     pass_api_key_query_param character varying(255),
     rate_limit_mode character varying(9),
@@ -745,6 +744,20 @@ CREATE TABLE api_backend_settings (
     CONSTRAINT api_backend_settings_rate_limit_mode_check CHECK (((rate_limit_mode)::text = ANY ((ARRAY['unlimited'::character varying, 'custom'::character varying])::text[]))),
     CONSTRAINT api_backend_settings_require_https_check CHECK (((require_https)::text = ANY ((ARRAY['required_return_error'::character varying, 'transition_return_error'::character varying, 'optional'::character varying])::text[]))),
     CONSTRAINT parent_id_not_null CHECK ((((api_backend_id IS NOT NULL) AND (api_backend_sub_url_settings_id IS NULL)) OR ((api_backend_id IS NULL) AND (api_backend_sub_url_settings_id IS NOT NULL))))
+);
+
+
+--
+-- Name: api_backend_settings_required_roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_backend_settings_required_roles (
+    api_backend_settings_id uuid NOT NULL,
+    api_role_id character varying(255) NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
 );
 
 
@@ -803,6 +816,19 @@ CREATE TABLE api_backends (
 
 
 --
+-- Name: api_roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_roles (
+    id character varying(255) NOT NULL,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
 -- Name: api_scopes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -827,7 +853,7 @@ CREATE TABLE api_user_settings (
     api_user_id uuid NOT NULL,
     rate_limit_mode character varying(9),
     allowed_ips inet[],
-    allowed_referers character varying(255)[],
+    allowed_referers character varying(500)[],
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
     updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
@@ -858,8 +884,21 @@ CREATE TABLE api_users (
     registration_referer character varying(1000),
     registration_origin character varying(1000),
     throttle_by_ip boolean DEFAULT false NOT NULL,
-    roles character varying(100)[],
     disabled_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+);
+
+
+--
+-- Name: api_users_roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE api_users_roles (
+    api_user_id uuid NOT NULL,
+    api_role_id character varying(255) NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
     updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
@@ -891,10 +930,10 @@ CREATE TABLE rate_limits (
 
 
 --
--- Name: api_users_with_settings; Type: VIEW; Schema: public; Owner: -
+-- Name: api_users_flattened; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE VIEW api_users_with_settings AS
+CREATE VIEW api_users_flattened AS
  SELECT u.id,
     u.api_key_hash,
     u.api_key_encrypted,
@@ -912,7 +951,6 @@ CREATE VIEW api_users_with_settings AS
     u.registration_referer,
     u.registration_origin,
     u.throttle_by_ip,
-    u.roles,
     u.disabled_at,
     u.created_at,
     u.created_by,
@@ -921,7 +959,10 @@ CREATE VIEW api_users_with_settings AS
     row_to_json(s.*) AS settings,
     ( SELECT json_agg(r.*) AS json_agg
            FROM rate_limits r
-          WHERE (r.api_user_settings_id = s.id)) AS rate_limits
+          WHERE (r.api_user_settings_id = s.id)) AS rate_limits,
+    ARRAY( SELECT ar.api_role_id
+           FROM api_users_roles ar
+          WHERE (ar.api_user_id = s.id)) AS roles
    FROM (api_users u
      LEFT JOIN api_user_settings s ON ((u.id = s.api_user_id)));
 
@@ -1112,6 +1153,14 @@ ALTER TABLE ONLY api_backend_settings
 
 
 --
+-- Name: api_backend_settings_required_roles api_backend_settings_required_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_settings_required_roles
+    ADD CONSTRAINT api_backend_settings_required_roles_pkey PRIMARY KEY (api_backend_settings_id, api_role_id);
+
+
+--
 -- Name: api_backend_sub_url_settings api_backend_sub_url_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1136,6 +1185,14 @@ ALTER TABLE ONLY api_backends
 
 
 --
+-- Name: api_roles api_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_roles
+    ADD CONSTRAINT api_roles_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: api_scopes api_scopes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1157,6 +1214,14 @@ ALTER TABLE ONLY api_user_settings
 
 ALTER TABLE ONLY api_users
     ADD CONSTRAINT api_users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: api_users_roles api_users_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_users_roles
+    ADD CONSTRAINT api_users_roles_pkey PRIMARY KEY (api_user_id, api_role_id);
 
 
 --
@@ -1393,6 +1458,13 @@ CREATE TRIGGER api_backend_servers_updated_at BEFORE UPDATE ON api_backend_serve
 
 
 --
+-- Name: api_backend_settings_required_roles api_backend_settings_required_roles_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_settings_required_roles_updated_at BEFORE UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
 -- Name: api_backend_settings api_backend_settings_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1421,6 +1493,13 @@ CREATE TRIGGER api_backends_updated_at BEFORE UPDATE ON api_backends FOR EACH RO
 
 
 --
+-- Name: api_roles api_roles_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_roles_updated_at BEFORE UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
 -- Name: api_scopes api_scopes_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1432,6 +1511,13 @@ CREATE TRIGGER api_scopes_updated_at BEFORE UPDATE ON api_scopes FOR EACH ROW EX
 --
 
 CREATE TRIGGER api_user_settings_updated_at BEFORE UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE set_updated();
+
+
+--
+-- Name: api_users_roles api_users_roles_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_users_roles_updated_at BEFORE UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE set_updated();
 
 
 --
@@ -1491,6 +1577,13 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON admin_group
 
 
 --
+-- Name: api_roles audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_backends audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1533,6 +1626,13 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend
 
 
 --
+-- Name: api_backend_settings_required_roles audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_backend_http_headers audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1544,6 +1644,13 @@ CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_backend
 --
 
 CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_users_roles audit_trigger_row; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_row AFTER INSERT OR DELETE OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -1624,6 +1731,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON admin_groups_api_scopes FOR E
 
 
 --
+-- Name: api_roles audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_backends audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1666,6 +1780,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_settings FOR EACH
 
 
 --
+-- Name: api_backend_settings_required_roles audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_settings_required_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
 -- Name: api_backend_http_headers audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -1677,6 +1798,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_backend_http_headers FOR 
 --
 
 CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_users FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
+
+
+--
+-- Name: api_users_roles audit_trigger_stm; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON api_users_roles FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('true');
 
 
 --
@@ -1824,6 +1952,22 @@ ALTER TABLE ONLY api_backend_settings
 
 
 --
+-- Name: api_backend_settings_required_roles api_backend_settings_required_role_api_backend_settings_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_settings_required_roles
+    ADD CONSTRAINT api_backend_settings_required_role_api_backend_settings_id_fkey FOREIGN KEY (api_backend_settings_id) REFERENCES api_backend_settings(id) ON DELETE CASCADE;
+
+
+--
+-- Name: api_backend_settings_required_roles api_backend_settings_required_roles_api_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_backend_settings_required_roles
+    ADD CONSTRAINT api_backend_settings_required_roles_api_role_id_fkey FOREIGN KEY (api_role_id) REFERENCES api_roles(id) ON DELETE CASCADE;
+
+
+--
 -- Name: api_backend_sub_url_settings api_backend_sub_url_settings_api_backend_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1845,6 +1989,22 @@ ALTER TABLE ONLY api_backend_url_matches
 
 ALTER TABLE ONLY api_user_settings
     ADD CONSTRAINT api_user_settings_api_user_id_fkey FOREIGN KEY (api_user_id) REFERENCES api_users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: api_users_roles api_users_roles_api_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_users_roles
+    ADD CONSTRAINT api_users_roles_api_role_id_fkey FOREIGN KEY (api_role_id) REFERENCES api_roles(id) ON DELETE CASCADE;
+
+
+--
+-- Name: api_users_roles api_users_roles_api_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY api_users_roles
+    ADD CONSTRAINT api_users_roles_api_user_id_fkey FOREIGN KEY (api_user_id) REFERENCES api_users(id) ON DELETE CASCADE;
 
 
 --
@@ -1941,6 +2101,13 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_settings TO api_umbrella_
 
 
 --
+-- Name: api_backend_settings_required_roles; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_settings_required_roles TO api_umbrella_app_user;
+
+
+--
 -- Name: api_backend_sub_url_settings; Type: ACL; Schema: public; Owner: -
 --
 
@@ -1959,6 +2126,13 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backend_url_matches TO api_umbrel
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_backends TO api_umbrella_app_user;
+
+
+--
+-- Name: api_roles; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_roles TO api_umbrella_app_user;
 
 
 --
@@ -1983,6 +2157,13 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users TO api_umbrella_app_user;
 
 
 --
+-- Name: api_users_roles; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users_roles TO api_umbrella_app_user;
+
+
+--
 -- Name: rate_limits; Type: ACL; Schema: public; Owner: -
 --
 
@@ -1990,10 +2171,10 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE rate_limits TO api_umbrella_app_user;
 
 
 --
--- Name: api_users_with_settings; Type: ACL; Schema: public; Owner: -
+-- Name: api_users_flattened; Type: ACL; Schema: public; Owner: -
 --
 
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users_with_settings TO api_umbrella_app_user;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users_flattened TO api_umbrella_app_user;
 
 
 --

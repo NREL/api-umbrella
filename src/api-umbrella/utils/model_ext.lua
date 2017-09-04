@@ -338,14 +338,14 @@ function _M.save_has_and_belongs_to_many(self, association_foreign_key_ids, opti
     local foreign_key = db.escape_identifier(options["foreign_key"])
     local association_foreign_key = db.escape_identifier(options["association_foreign_key"])
 
-    for _, association_foreign_key_id in ipairs(association_foreign_key_ids) do
-      db.query("INSERT INTO " .. join_table .. "(" .. foreign_key .. ", " .. association_foreign_key .. ") VALUES(?, ?) ON CONFLICT DO NOTHING", self.id, association_foreign_key_id)
-    end
+    if not is_empty(association_foreign_key_ids) and association_foreign_key_ids ~= db_null then
+      for _, association_foreign_key_id in ipairs(association_foreign_key_ids) do
+        db.query("INSERT INTO " .. join_table .. "(" .. foreign_key .. ", " .. association_foreign_key .. ") VALUES(?, ?) ON CONFLICT DO NOTHING", self.id, association_foreign_key_id)
+      end
 
-    if is_empty(association_foreign_key_ids) then
-      db.query("DELETE FROM " .. join_table .. " WHERE " .. foreign_key .. " = ?", self.id)
-    else
       db.query("DELETE FROM " .. join_table .. " WHERE " .. foreign_key .. " = ? AND " .. association_foreign_key .. " NOT IN ?", self.id, db.list(association_foreign_key_ids))
+    else
+      db.query("DELETE FROM " .. join_table .. " WHERE " .. foreign_key .. " = ?", self.id)
     end
   end
 end
