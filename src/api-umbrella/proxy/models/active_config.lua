@@ -8,6 +8,7 @@ local plutils = require "pl.utils"
 local resolve_backend_dns = require "api-umbrella.proxy.jobs.resolve_backend_dns"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local append_array = utils.append_array
 local cache_computed_settings = utils.cache_computed_settings
@@ -174,7 +175,7 @@ end
 
 local function parse_apis(apis)
   for _, api in ipairs(apis) do
-    local ok, err = pcall(parse_api, api)
+    local ok, err = xpcall(parse_api, xpcall_error_handler, api)
     if not ok then
       ngx.log(ngx.ERR, "failed parsing API config: ", err)
     end
@@ -193,7 +194,7 @@ end
 
 local function parse_website_backends(website_backends)
   for _, website_backend in ipairs(website_backends) do
-    local ok, err = pcall(parse_website_backend, website_backend)
+    local ok, err = xpcall(parse_website_backend, xpcall_error_handler, website_backend)
     if not ok then
       ngx.log(ngx.ERR, "failed parsing website backend config: ", err)
     end

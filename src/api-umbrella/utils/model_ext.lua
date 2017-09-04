@@ -6,6 +6,7 @@ local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local readonly = require("pl.tablex").readonly
 local uuid_generate = require("resty.uuid").generate_random
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local db_null = db.NULL
 
@@ -205,7 +206,7 @@ local function try_save(fn, transaction_started)
 
   -- Handle lower-level Lua errors by wrapping things in pcall. This ensures we
   -- can also abort the transaction in the event of these lower-level errors.
-  local ok, err = pcall(save, {})
+  local ok, err = xpcall(save, xpcall_error_handler, {})
   if not ok then
     rollback_transaction(transaction_started)
     error(err)

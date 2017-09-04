@@ -1,5 +1,6 @@
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
 local log_utils = require "api-umbrella.proxy.log_utils"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local ngx_ctx = ngx.ctx
 local ngx_var = ngx.var
@@ -85,7 +86,7 @@ local function log_request()
   end
 end
 
-local ok, err = pcall(log_request)
+local ok, err = xpcall(log_request, xpcall_error_handler)
 if not ok then
   ngx.log(ngx.ERR, "failed to log request: ", err)
 end

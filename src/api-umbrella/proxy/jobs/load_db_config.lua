@@ -6,6 +6,7 @@ local interval_lock = require "api-umbrella.utils.interval_lock"
 local load_backends = require "api-umbrella.proxy.load_backends"
 local lock = require "resty.lock"
 local utils = require "api-umbrella.proxy.utils"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local ERR = ngx.ERR
 local get_packed = utils.get_packed
@@ -85,7 +86,7 @@ local function setup(premature)
     return
   end
 
-  local ok, err = pcall(restore_active_config_backends_after_reload)
+  local ok, err = xpcall(restore_active_config_backends_after_reload, xpcall_error_handler)
   if not ok then
     ngx.log(ngx.ERR, "failed to run api load cycle: ", err)
   end
