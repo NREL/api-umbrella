@@ -1,5 +1,6 @@
 local cjson = require "cjson"
 local config = require "api-umbrella.proxy.models.file_config"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local elasticsearch_templates
 
@@ -18,7 +19,7 @@ if err then
 else
   local content = f:read("*all")
   if content then
-    local ok, data = pcall(cjson.decode, content)
+    local ok, data = xpcall(cjson.decode, xpcall_error_handler, content)
     if ok then
       elasticsearch_templates = data
 

@@ -6,6 +6,7 @@ local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rat
 local mongo = require "api-umbrella.utils.mongo"
 local plutils = require "pl.utils"
 local types = require "pl.types"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local is_empty = types.is_empty
 local split = plutils.split
@@ -102,7 +103,7 @@ local function check(premature)
     return
   end
 
-  local ok, err = pcall(do_check)
+  local ok, err = xpcall(do_check, xpcall_error_handler)
   if not ok then
     ngx.log(ngx.ERR, "failed to run backend load cycle: ", err)
   end

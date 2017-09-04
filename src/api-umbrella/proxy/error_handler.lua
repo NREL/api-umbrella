@@ -8,6 +8,7 @@ local path = require "pl.path"
 local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
 local utils = require "api-umbrella.proxy.utils"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local append_array = utils.append_array
 local deepcopy = tablex.deepcopy
@@ -114,7 +115,7 @@ local function render_template(template, data, format, strip_whitespace)
     end
   end
 
-  local ok, output = pcall(lustache.render, lustache, template, data)
+  local ok, output = xpcall(lustache.render, xpcall_error_handler, lustache, template, data)
   if ok then
     return output
   else

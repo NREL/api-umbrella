@@ -5,6 +5,7 @@ local stringx = require "pl.stringx"
 local tablex = require "pl.tablex"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local gsub = ngx.re.gsub
 local is_empty = types.is_empty
@@ -111,7 +112,7 @@ local function set_headers(settings)
           setmetatable(template_vars["headers"], nil)
         end
 
-        local ok, output = pcall(lustache.render, lustache, header["value"], template_vars)
+        local ok, output = xpcall(lustache.render, xpcall_error_handler, lustache, header["value"], template_vars)
         if ok then
           value = output
         else
@@ -232,7 +233,7 @@ local function url_rewrites(api)
               end
             end
 
-            local ok, output = pcall(lustache.render, lustache, rewrite["_backend_replacement_path"], matches)
+            local ok, output = xpcall(lustache.render, xpcall_error_handler, lustache, rewrite["_backend_replacement_path"], matches)
             if ok then
               new_uri = output
             else
@@ -244,7 +245,7 @@ local function url_rewrites(api)
                 matches[key] = ngx.escape_uri(value)
               end
 
-              ok, output = pcall(lustache.render, lustache, rewrite["_backend_replacement_args"], matches)
+              ok, output = xpcall(lustache.render, xpcall_error_handler, lustache, rewrite["_backend_replacement_args"], matches)
               if ok then
                 new_uri = new_uri .. "?" .. output
               else

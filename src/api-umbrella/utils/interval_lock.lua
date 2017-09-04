@@ -1,4 +1,5 @@
 local lock = require "resty.lock"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local _M = {}
 
@@ -11,7 +12,7 @@ _M.mutex_exec = function(name, fn)
   local check_lock = lock:new("locks", {["timeout"] = 0})
   local _, lock_err = check_lock:lock("mutex_exec:" .. name)
   if not lock_err then
-    local pcall_ok, pcall_err = pcall(fn)
+    local pcall_ok, pcall_err = xpcall(fn, xpcall_error_handler)
     -- always attempt to unlock, even if the call failed
     local unlock_ok, unlock_err = check_lock:unlock()
     if not pcall_ok then
@@ -36,7 +37,7 @@ _M.timeout_exec = function(name, interval, fn)
   -- if not mem_ok and mem_err == "exists" is an acceptable scenario; it means
   -- that the mutex hasn't expired yet. NOOP in this situation
   elseif mem_ok then
-    local pcall_ok, pcall_err = pcall(fn)
+    local pcall_ok, pcall_err = xpcall(fn, xpcall_error_handler)
     if not pcall_ok then
       ngx.log(ngx.ERR, "timeout exec pcall failed: ", pcall_err)
     end
@@ -61,7 +62,7 @@ _M.repeat_exec = function(interval, fn)
     ngx.log(ngx.ERR, "failed to create timer: ", err)
   else
     -- execute fn now (may tie down this thread)
-    local pcall_ok, pcall_err = pcall(fn)
+    local pcall_ok, pcall_err = xpcall(fn, xpcall_error_handler)
     if not pcall_ok then
       ngx.log(ngx.ERR, "repeat exec pcall failed: ", pcall_err)
     end
