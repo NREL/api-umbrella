@@ -1,6 +1,4 @@
 local pgmoon = require "pgmoon"
-local encode_array = require "api-umbrella.utils.pg_encode_array"
-local encode_json = require("pgmoon.json").encode_json
 
 local _escape_literal = pgmoon.Postgres.escape_literal
 local _escape_identifier = pgmoon.Postgres.escape_identifier
@@ -15,33 +13,14 @@ local db_config = {
 
 local _M = {}
 
-local function escape_literal(value)
-  return _escape_literal(nil, value)
-end
-
-local function escape_identifier(value)
-  return _escape_identifier(nil, value)
-end
-
-local function escape_value(value)
-  if type(value) == "function" then
-    local escaped, escaped_value = value()
-    if escaped == "escaped" then
-      return escaped_value
-    else
-      return escape_literal(escaped_value)
-    end
-  else
-    return escape_literal(value)
-  end
-end
+local LIST_METATABLE = {}
 
 local function encode_values(values)
   local escaped_columns = {}
   local escaped_values = {}
   for column, value in pairs(values) do
-    table.insert(escaped_columns, escape_identifier(column))
-    table.insert(escaped_values, escape_value(value))
+    table.insert(escaped_columns, _M.escape_identifier(column))
+    table.insert(escaped_values, _M.escape_literal(value))
   end
 
   return "(" .. table.concat(escaped_columns, ", ") .. ") VALUES (" .. table.concat(escaped_values, ", ") .. ")"
@@ -50,25 +29,34 @@ end
 local function encode_assigns(values)
   local escaped_assigns = {}
   for column, value in pairs(values) do
-    table.insert(escaped_assigns, escape_identifier(column) .. " = " .. escape_value(value))
+    table.insert(escaped_assigns, _M.escape_identifier(column) .. " = " .. _M.escape_literal(value))
   end
 
   return table.concat(escaped_assigns, ", ")
 end
 
-_M.escape_literal = escape_literal
-_M.escape_identifier = escape_identifier
+function _M.list(value)
+  return setmetatable({ value }, LIST_METATABLE)
+end
 
-function _M.as_array(value)
-  return function()
-    return "escaped", encode_array(value)
+function _M.is_list(value)
+  return getmetatable(value) == LIST_METATABLE
+end
+
+function _M.escape_literal(value)
+  if _M.is_list(value) then
+    local escaped = {}
+    for _, val in ipairs(value[1]) do
+      table.insert(escaped, _escape_literal(nil, val))
+    end
+    return "(" .. table.concat(escaped, ", ") .. ")"
+  else
+    return _escape_literal(nil, value)
   end
 end
 
-function _M.as_json(value)
-  return function()
-    return "escaped", encode_json(value)
-  end
+function _M.escape_identifier(value)
+  return _escape_identifier(nil, value)
 end
 
 function _M.connect()
@@ -107,7 +95,7 @@ function _M.query(query, ...)
     local escaped_values = {}
     for i = 1, num_values do
       local value = select(i, ...)
-      table.insert(escaped_values, escape_value(value))
+      table.insert(escaped_values, _M.escape_literal(value))
     end
 
     local _, gsub_err
@@ -135,17 +123,17 @@ function _M.query(query, ...)
 end
 
 function _M.insert(table_name, values)
-  local query = "INSERT INTO " .. escape_identifier(table_name) .. " " .. encode_values(values)
+  local query = "INSERT INTO " .. _M.escape_identifier(table_name) .. " " .. encode_values(values)
   return _M.query(query)
 end
 
 function _M.update(table_name, where, values)
-  local query = "UPDATE " .. escape_identifier(table_name) .. " SET " .. encode_assigns(values) .. " WHERE " .. encode_assigns(where)
+  local query = "UPDATE " .. _M.escape_identifier(table_name) .. " SET " .. encode_assigns(values) .. " WHERE " .. encode_assigns(where)
   return _M.query(query)
 end
 
 function _M.delete(table_name, where)
-  local query = "DELETE FROM " .. escape_identifier(table_name) .. " WHERE " .. encode_assigns(where)
+  local query = "DELETE FROM " .. _M.escape_identifier(table_name) .. " WHERE " .. encode_assigns(where)
   return _M.query(query)
 end
 

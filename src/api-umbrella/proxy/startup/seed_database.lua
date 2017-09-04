@@ -148,7 +148,7 @@ local function seed_api_keys()
         end
       end
 
-      local delete_result, delete_err = pg_utils.query("DELETE FROM api_users_roles WHERE api_user_id = $1 AND api_role_id NOT IN($2)", user["id"], roles)
+      local delete_result, delete_err = pg_utils.query("DELETE FROM api_users_roles WHERE api_user_id = $1 AND api_role_id NOT IN $2", user["id"], pg_utils.list(roles))
       if not delete_result then
         ngx.log(ngx.ERR, "failed to delete records in api_users_roles: ", delete_err)
         break
