@@ -1,13 +1,14 @@
+local api_role_policy = require "api-umbrella.lapis.policies.api_role_policy"
 local db = require "lapis.db"
-local is_empty = require("pl.types").is_empty
 local escape_db_like = require "api-umbrella.utils.escape_db_like"
-local yield_error = require("lapis.application").yield_error
-local t = require("resty.gettext").gettext
+local is_array = require "api-umbrella.utils.is_array"
+local is_empty = require("pl.types").is_empty
 local startswith = require("pl.stringx").startswith
+local throw_authorization_error = require "api-umbrella.lapis.policies.throw_authorization_error"
 
 local _M = {}
 
-function _M.scope(current_admin, permission_id)
+function _M.authorized_query_scope(current_admin, permission_id)
   assert(current_admin)
 
   if current_admin.superuser then
@@ -50,7 +51,7 @@ function _M.scope(current_admin, permission_id)
   end
 end
 
-function _M.authorize_record(current_admin, data, permission_id)
+function _M.authorize_show(current_admin, data, permission_id)
   assert(current_admin)
   assert(data)
 
@@ -87,21 +88,39 @@ function _M.authorize_record(current_admin, data, permission_id)
   if all_url_matches_allowed then
     return true
   else
-    local authorized_scopes_list = {}
-    local api_scopes = current_admin:api_scopes()
-    for _, api_scope in ipairs(api_scopes) do
-      table.insert(authorized_scopes_list, "- " .. (api_scope.host or "") .. (api_scope.path_prefix or ""))
-    end
-    table.sort(authorized_scopes_list)
-
-    coroutine.yield("error", {
-      {
-        code = "FORBIDDEN",
-        message = string.format(t("You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n%s\n\nContact your API Umbrella administrator if you need access to new APIs."), table.concat(authorized_scopes_list, "\n")),
-      }
-    })
-    return false
+    return throw_authorization_error(current_admin)
   end
+end
+
+function _M.authorize_modify(current_admin, data, permission_id)
+  if _M.authorize_show(current_admin, data, permission_id) then
+    local roles = {}
+
+    -- Collect all the roles from the backend settings.
+    if data["settings"] and is_array(data["settings"]["required_role_ids"]) then
+      for _, role in ipairs(data["settings"]["required_role_ids"]) do
+        table.insert(roles, role)
+      end
+    end
+
+    -- Collect all the roles from the sub-URL settings.
+    if is_array(data["sub_settings"]) then
+      for _, sub_settings in ipairs(data["sub_settings"]) do
+        if sub_settings["settings"] and is_array(sub_settings["settings"]["required_role_ids"]) then
+          for _, role in ipairs(sub_settings["settings"]["required_role_ids"]) do
+            table.insert(roles, role)
+          end
+        end
+      end
+    end
+
+    -- Verify that the admin is authorized for all of the roles being set.
+    if api_role_policy.authorize_roles(current_admin, roles) then
+      return true
+    end
+  end
+
+  return throw_authorization_error(current_admin)
 end
 
 return _M

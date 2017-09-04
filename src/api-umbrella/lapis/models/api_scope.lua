@@ -27,7 +27,7 @@ local ApiScope = model_ext.new_class("api_scopes", {
     }
   end,
 }, {
-  authorize = function(data)
+  authorize = function()
     return true
   end,
 

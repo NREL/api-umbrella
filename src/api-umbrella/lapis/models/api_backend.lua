@@ -70,7 +70,7 @@ ApiBackend = model_ext.new_class("api_backends", {
   },
 
   authorize = function(self)
-    api_backend_policy.authorize_record(ngx.ctx.current_admin, self:attributes())
+    api_backend_policy.authorize_show(ngx.ctx.current_admin, self:attributes())
   end,
 
   as_json = function(self)
@@ -241,7 +241,7 @@ ApiBackend = model_ext.new_class("api_backends", {
   end,
 }, {
   authorize = function(data)
-    api_backend_policy.authorize_record(ngx.ctx.current_admin, data)
+    api_backend_policy.authorize_modify(ngx.ctx.current_admin, data)
   end,
 
   before_validate_on_create = function(_, values)

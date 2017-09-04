@@ -7,4 +7,8 @@ class ApiRole < ApplicationRecord
       end
     end
   end
+
+  def self.all_ids
+    ApiRole.all.pluck(:id)
+  end
 end

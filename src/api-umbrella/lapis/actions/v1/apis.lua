@@ -19,7 +19,7 @@ local _M = {}
 function _M.index(self)
   return lapis_datatables.index(self, ApiBackend, {
     where = {
-      api_backend_policy.scope(self.current_admin),
+      api_backend_policy.authorized_query_scope(self.current_admin),
     },
     search_joins = {
       "LEFT JOIN api_backend_servers ON api_backends.id = api_backend_servers.api_backend_id",
@@ -114,7 +114,7 @@ local function api_backend_settings_params(input_settings)
     rate_limit_mode = input_settings["rate_limit_mode"],
     require_https = input_settings["require_https"],
     require_https_transition_start_at = input_settings["require_https_transition_start_at"],
-    required_roles = input_settings["required_roles"],
+    required_role_ids = input_settings["required_roles"],
     required_roles_override = input_settings["required_roles_override"],
   })
 

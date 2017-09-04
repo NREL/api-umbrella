@@ -15,7 +15,7 @@ local ApiBackendServer = model_ext.new_class("api_backend_servers", {
     }
   end,
 }, {
-  authorize = function(data)
+  authorize = function()
     return true
   end,
 

@@ -16,7 +16,7 @@ DatabaseCleaner.strategy = :truncation, {
     # Don't truncate the admin permissions table, since it's a static list of
     # seeded values.
     "admin_permissions",
-  ]
+  ],
 }
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
 # DatabaseCleaner.logger = ActiveRecord::Base.logger

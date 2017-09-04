@@ -43,18 +43,10 @@ local function record_attributes(self)
       if is_array(records) then
         attributes[name] = {}
         for _, record in ipairs(records) do
-          local record_values = {}
-          for key, value in pairs(record) do
-            record_values[key] = value
-          end
-          table.insert(attributes[name], readonly(record_values))
+          table.insert(attributes[name], record:attributes())
         end
-      elseif is_hash(records) then
-        local record_values = {}
-        for key, value in pairs(records) do
-          record_values[key] = value
-        end
-        attributes[name] = readonly(record_values)
+      elseif records then
+        attributes[name] = records:attributes()
       end
     end
   end
@@ -124,13 +116,7 @@ local function rollback_transaction(started)
   end
 end
 
-local function before_save(self, action, callbacks, values, opts)
-  local current_admin
-  if opts and opts["_current_admin"] then
-    current_admin = opts["_current_admin"]
-    opts["_current_admin"] = nil
-  end
-
+local function before_save(self, action, callbacks, values)
   if action == "create" then
     if not values["id"] or values["id"] == db_null then
       values["id"] = uuid_generate()
@@ -250,7 +236,7 @@ local function create(callbacks)
 
     local new_record
     try_save(function()
-      before_save(nil, "create", callbacks, values, opts)
+      before_save(nil, "create", callbacks, values)
       new_record = Model.create(model_class, values_for_table(model_class, values), opts)
       after_save(new_record, "create", callbacks, values)
     end, transaction_started)
@@ -273,7 +259,7 @@ local function update(callbacks)
 
     local return_value
     try_save(function()
-      before_save(self, "update", callbacks, values, opts)
+      before_save(self, "update", callbacks, values)
       return_value = Model.update(self, values_for_table(model_class, values), opts)
       after_save(self, "update", callbacks, values)
     end, transaction_started)

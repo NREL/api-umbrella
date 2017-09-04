@@ -1,3 +1,4 @@
+local api_backend_policy = require "api-umbrella.lapis.policies.api_backend_policy"
 local bcrypt = require "bcrypt"
 local cjson = require "cjson"
 local db = require "lapis.db"
@@ -214,8 +215,34 @@ local Admin = model_ext.new_class("admins", {
 
     return table_values(api_scopes_with_permission)
   end,
+
+  disallowed_role_ids = function(self)
+    if not self._disallowed_role_ids then
+      self._disallowed_role_ids = {}
+      local scope = api_backend_policy.authorized_query_scope(self)
+      if scope then
+        local rows = db.query([[
+          WITH allowed_api_backends AS (
+            SELECT id FROM api_backends
+            WHERE ]] .. scope .. [[
+          )
+          SELECT r.api_role_id
+          FROM api_backend_settings_required_roles AS r
+            LEFT JOIN api_backend_settings AS s ON r.api_backend_settings_id = s.id
+            LEFT JOIN api_backend_sub_url_settings AS sub ON s.api_backend_sub_url_settings_id = sub.id
+            LEFT JOIN allowed_api_backends AS b ON s.api_backend_id = b.id OR sub.api_backend_id = b.id
+          WHERE b.id IS NULL
+        ]])
+        for _, row in ipairs(rows) do
+          table.insert(self._disallowed_role_ids, row["api_role_id"])
+        end
+      end
+    end
+
+    return self._disallowed_role_ids
+  end,
 }, {
-  authorize = function(data)
+  authorize = function()
     return true
   end,
 

@@ -1,13 +1,14 @@
 local ApiRole = require "api-umbrella.lapis.models.api_role"
+local cjson = require "cjson"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
 local iso8601 = require "api-umbrella.utils.iso8601"
-local json_null = require("cjson").null
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
+local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
 local ApiUser = model_ext.new_class("api_users", {
@@ -77,7 +78,7 @@ local ApiUser = model_ext.new_class("api_users", {
     return data
   end,
 }, {
-  authorize = function(data)
+  authorize = function()
     return true
   end,
 

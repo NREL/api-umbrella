@@ -45,7 +45,10 @@ class ApiBackendSettings < ApplicationRecord
 
   def set_http_headers(header_type, values)
     headers = self.http_headers.reject { |h| h.header_type == header_type }
-    values.each_with_index { |v, i| v.header_type = header_type; v.sort_order = i }
+    values.each_with_index do |v, i|
+      v.header_type = header_type
+      v.sort_order = i
+    end
     self.http_headers = headers + values
   end
 end

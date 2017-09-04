@@ -58,7 +58,7 @@ local RateLimit = model_ext.new_class("rate_limits", {
     }
   end,
 }, {
-  authorize = function(data)
+  authorize = function()
     return true
   end,
 

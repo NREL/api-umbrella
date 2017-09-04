@@ -15,7 +15,7 @@ local ApiBackendUrlMatch = model_ext.new_class("api_backend_url_matches", {
     }
   end,
 }, {
-  authorize = function(data)
+  authorize = function()
     return true
   end,
 

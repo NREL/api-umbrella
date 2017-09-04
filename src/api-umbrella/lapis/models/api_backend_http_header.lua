@@ -18,7 +18,7 @@ local ApiBackendHttpHeader = model_ext.new_class("api_backend_http_headers", {
     }
   end,
 }, {
-  authorize = function(data)
+  authorize = function()
     return true
   end,
 

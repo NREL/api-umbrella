@@ -16,7 +16,7 @@ local ApiBackendRewrite = model_ext.new_class("api_backend_rewrites", {
     }
   end,
 }, {
-  authorize = function(data)
+  authorize = function()
     return true
   end,
 

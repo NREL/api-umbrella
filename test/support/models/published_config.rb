@@ -23,7 +23,6 @@ class PublishedConfig < ApplicationRecord
   end
 
   def wait_until_live
-    version = self.id
-    ApiUmbrellaTestHelpers::Process.wait_for_config_version("db_config_version", id)
+    ApiUmbrellaTestHelpers::Process.wait_for_config_version("db_config_version", self.id)
   end
 end

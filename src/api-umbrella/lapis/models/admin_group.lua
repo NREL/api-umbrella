@@ -125,7 +125,7 @@ local AdminGroup = model_ext.new_class("admin_groups", {
     return data
   end,
 }, {
-  authorize = function(data)
+  authorize = function()
     return true
   end,
 

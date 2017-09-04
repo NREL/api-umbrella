@@ -3,13 +3,11 @@ local ApiRole = require "api-umbrella.lapis.models.api_role"
 local RateLimit = require "api-umbrella.lapis.models.rate_limit"
 local cjson = require "cjson"
 local db = require "lapis.db"
-local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local lyaml = require "lyaml"
 local model_ext = require "api-umbrella.utils.model_ext"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
-local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
 local pg_encode_json = require("pgmoon.json").encode_json
 local split = require("ngx.re").split
 local strip = require("pl.stringx").strip
@@ -204,7 +202,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     return model_ext.has_many_delete_except(self, RateLimit, "api_backend_settings_id", keep_rate_limit_ids)
   end,
 }, {
-  authorize = function(data)
+  authorize = function()
     return true
   end,
 
@@ -292,8 +290,8 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     model_ext.has_many_save(self, values, "headers")
     model_ext.has_many_save(self, values, "override_response_headers")
     model_ext.has_many_save(self, values, "rate_limits")
-    ApiRole.insert_missing(values["required_roles"])
-    model_ext.save_has_and_belongs_to_many(self, values["required_roles"], {
+    ApiRole.insert_missing(values["required_role_ids"])
+    model_ext.save_has_and_belongs_to_many(self, values["required_role_ids"], {
       join_table = "api_backend_settings_required_roles",
       foreign_key = "api_backend_settings_id",
       association_foreign_key = "api_role_id",
