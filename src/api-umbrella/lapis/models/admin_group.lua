@@ -1,3 +1,4 @@
+local admin_group_policy = require "api-umbrella.lapis.policies.admin_group_policy"
 local cjson = require "cjson"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
@@ -29,13 +30,31 @@ local AdminGroup = model_ext.new_class("admin_groups", {
     }),
   },
 
+  attributes = function(self, options)
+    if not options then
+      options = {
+        includes = {
+          admins = {},
+          api_scopes = {},
+          permissions = {},
+        },
+      }
+    end
+
+    return model_ext.record_attributes(self, options)
+  end,
+
+  authorize = function(self)
+    admin_group_policy.authorize_show(ngx.ctx.current_admin, self:attributes())
+  end,
+
   admins_as_json = function(self)
     local admins = {}
     for _, admin in ipairs(self:get_admins()) do
       table.insert(admins, {
         id = admin.id,
         username = admin.username,
-        last_sign_in_at = admin.last_sign_in_at,
+        last_sign_in_at = iso8601.format_postgres(admin.last_sign_in_at) or json_null,
       })
     end
 
@@ -125,15 +144,15 @@ local AdminGroup = model_ext.new_class("admin_groups", {
     return data
   end,
 }, {
-  authorize = function()
-    return true
+  authorize = function(data)
+    admin_group_policy.authorize_modify(ngx.ctx.current_admin, data)
   end,
 
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "name", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "api_scope_ids", validation_ext.table:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "permission_ids", validation_ext.table:minlen(1), t("can't be blank"))
+    validate_field(errors, data, "api_scope_ids", validation_ext.non_null_table:minlen(1), t("can't be blank"), { error_field = "api_scopes" })
+    validate_field(errors, data, "permission_ids", validation_ext.non_null_table:minlen(1), t("can't be blank"), { error_field = "permissions" })
     return errors
   end,
 

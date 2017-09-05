@@ -121,7 +121,7 @@ return {
         created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
         created_by varchar(255) NOT NULL DEFAULT current_app_user(),
         updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255)
+        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
       )
     ]])
     db.query("CREATE TRIGGER admin_groups_updated_at BEFORE UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE set_updated()")

@@ -7,9 +7,6 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
   def setup
     super
     setup_server
-    AdminGroup.connection.execute("DELETE FROM admin_groups_api_scopes")
-    AdminGroup.connection.execute("DELETE FROM admin_groups_admin_permissions")
-    AdminGroup.delete_all
   end
 
   include ApiUmbrellaSharedTests::DataTablesApi
@@ -113,8 +110,8 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
     record_data = data.fetch("data").first
     assert_base_record_fields(record_data)
 
-    assert_nil(record_data.fetch("created_by"))
-    assert_nil(record_data.fetch("updated_by"))
+    assert_equal("test_app_user", record_data.fetch("created_by"))
+    assert_equal("test_app_user", record_data.fetch("updated_by"))
   end
 
   def test_search_name
@@ -142,6 +139,7 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
   def assert_base_record_fields(record_data)
     assert_equal([
       "admin_usernames",
+      "admins",
       "api_scope_display_names",
       "api_scope_ids",
       "created_at",
@@ -155,6 +153,7 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
       "updated_by",
       "version",
     ].sort, record_data.keys.sort)
+    assert_kind_of(Array, record_data.fetch("admins"))
     assert_kind_of(Array, record_data.fetch("admin_usernames"))
     assert_kind_of(Array, record_data.fetch("api_scope_display_names"))
     assert_kind_of(Array, record_data.fetch("api_scope_ids"))

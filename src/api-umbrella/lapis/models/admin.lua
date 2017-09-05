@@ -1,16 +1,17 @@
+local ApiScope = require "api-umbrella.lapis.models.api_scope"
 local api_backend_policy = require "api-umbrella.lapis.policies.api_backend_policy"
 local bcrypt = require "bcrypt"
 local cjson = require "cjson"
 local db = require "lapis.db"
 local db_null = require("lapis.db").NULL
 local encryptor = require "api-umbrella.utils.encryptor"
+local escape_db_like = require "api-umbrella.utils.escape_db_like"
 local hmac = require "api-umbrella.utils.hmac"
 local is_empty = require("pl.types").is_empty
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("resty.gettext").gettext
-local table_values = require("pl.tablex").values
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local json_null = cjson.null
@@ -31,7 +32,7 @@ end
 
 local function validate_groups(_, data, errors)
   if not data["superuser"] then
-    validate_field(errors, data, "group_ids", validation_ext.table:minlen(1), t("must belong to at least one group or be a superuser"))
+    validate_field(errors, data, "group_ids", validation_ext.non_null_table:minlen(1), t("must belong to at least one group or be a superuser"))
   end
 end
 
@@ -142,14 +143,14 @@ local Admin = model_ext.new_class("admins", {
       superuser = self.superuser or json_null,
       current_sign_in_provider = self.current_sign_in_provider or json_null,
       last_sign_in_provider = self.last_sign_in_provider or json_null,
-      reset_password_sent_at = self.reset_password_sent_at or json_null,
+      reset_password_sent_at = iso8601.format_postgres(self.reset_password_sent_at) or json_null,
       sign_in_count = self.sign_in_count or json_null,
-      current_sign_in_at = self.current_sign_in_at or json_null,
-      last_sign_in_at = self.last_sign_in_at or json_null,
+      current_sign_in_at = iso8601.format_postgres(self.current_sign_in_at) or json_null,
+      last_sign_in_at = iso8601.format_postgres(self.last_sign_in_at) or json_null,
       current_sign_in_ip = self.current_sign_in_ip or json_null,
       last_sign_in_ip = self.last_sign_in_ip or json_null,
       failed_attempts = self.failed_attempts or json_null,
-      locked_at = self.locked_at or json_null,
+      locked_at = iso8601.format_postgres(self.locked_at) or json_null,
       created_at = iso8601.format_postgres(self.created_at) or json_null,
       created_by = self.created_by or json_null,
       updated_at = iso8601.format_postgres(self.updated_at) or json_null,
@@ -182,38 +183,61 @@ local Admin = model_ext.new_class("admins", {
     return token
   end,
 
-  groups_with_permission = function(self, permission_id)
-    local groups_with_permission = {}
-    local groups = self:get_groups()
-    for _, group in ipairs(groups) do
-      if group:allows_permission(permission_id) then
-        table.insert(groups_with_permission, group)
-      end
-    end
-
-    return groups_with_permission
-  end,
-
   api_scopes = function(self)
-    local api_scopes = {}
-    for _, group in ipairs(self:get_groups()) do
-      for _, api_scope in ipairs(group:get_api_scopes()) do
-        api_scopes[api_scope.id] = api_scope
-      end
-    end
-
-    return table_values(api_scopes)
+    return ApiScope:load_all(db.query([[
+      SELECT DISTINCT api_scopes.*
+      FROM api_scopes
+        INNER JOIN admin_groups_api_scopes ON api_scopes.id = admin_groups_api_scopes.api_scope_id
+        INNER JOIN admin_groups_admins ON admin_groups_api_scopes.admin_group_id = admin_groups_admins.admin_group_id
+      WHERE admin_groups_admins.admin_id = ?]], self.id))
   end,
 
+  -- Fetch all the API scopes this admin belongs to (through their group
+  -- membership) that has a certain permission.
   api_scopes_with_permission = function(self, permission_id)
-    local api_scopes_with_permission = {}
-    for _, group in ipairs(self:groups_with_permission(permission_id)) do
-      for _, api_scope in ipairs(group:get_api_scopes()) do
-        api_scopes_with_permission[api_scope.id] = api_scope
-      end
+    return ApiScope:load_all(db.query([[
+      SELECT DISTINCT api_scopes.*
+      FROM api_scopes
+        INNER JOIN admin_groups_api_scopes ON api_scopes.id = admin_groups_api_scopes.api_scope_id
+        INNER JOIN admin_groups_admin_permissions ON admin_groups_api_scopes.admin_group_id = admin_groups_admin_permissions.admin_group_id
+        INNER JOIN admin_groups_admins ON admin_groups_api_scopes.admin_group_id = admin_groups_admins.admin_group_id
+      WHERE admin_groups_admins.admin_id = ?
+        AND admin_groups_admin_permissions.admin_permission_id = ?]], self.id, permission_id))
+  end,
+
+  -- Fetch all the API scopes this admin belongs to that has a certain
+  -- permission. Differing from #api_scopes_with_permission, this also includes
+  -- any nested duplicative scopes.
+  --
+  -- For example, if the user were explicitly granted permissions on a
+  -- "api.example.com/" scope, this would also return any other sub-scopes that
+  -- might exist, like "api.example.com/foo" (even if the admin account didn't
+  -- have explicit permissions on that scope). This can be useful when needing
+  -- a full list of scope IDs that the admin can operate on (since our prefix
+  -- based approach means there might be other scopes that exist, but haven't
+  -- been explicitly granted permissions to).
+  nested_api_scopes_with_permission = function(self, permission_id)
+    local api_scopes = self:api_scopes_with_permission(permission_id)
+    if is_empty(api_scopes) then
+      return api_scopes
     end
 
-    return table_values(api_scopes_with_permission)
+    local query = {}
+    for _, api_scope in ipairs(api_scopes) do
+      table.insert(query, db.interpolate_query("(host = ? AND path_prefix LIKE ? || '%')",api_scope.host, escape_db_like(api_scope.path_prefix)))
+    end
+
+    return ApiScope:select("WHERE " .. table.concat(query, " OR "))
+  end,
+
+  nested_api_scope_ids_with_permission = function(self, permission_id)
+    local api_scope_ids = {}
+    local api_scopes = self:nested_api_scopes_with_permission(permission_id)
+    for _, api_scope in ipairs(api_scopes) do
+      table.insert(api_scope_ids, api_scope.id)
+    end
+
+    return api_scope_ids
   end,
 
   disallowed_role_ids = function(self)

@@ -30,8 +30,8 @@ class Test::Apis::V1::AdminGroups::TestUpdateEmbeddedArrayFields < Minitest::Tes
     assert_response_code(204, response)
 
     admin_group.reload
-    assert_equal([api_scope1.id, api_scope2.id], admin_group.api_scope_ids)
-    assert_equal(["analytics", "user_view"], admin_group.permission_ids)
+    assert_equal([api_scope1.id, api_scope2.id].sort, admin_group.api_scope_ids.sort)
+    assert_equal(["analytics", "user_view"].sort, admin_group.permission_ids.sort)
   end
 
   def test_updates
@@ -65,12 +65,12 @@ class Test::Apis::V1::AdminGroups::TestUpdateEmbeddedArrayFields < Minitest::Tes
       :api_scope_ids => [api_scope1.id, api_scope2.id],
       :permission_ids => ["analytics", "user_view"],
     })
-    assert_equal([api_scope1.id, api_scope2.id], admin_group.api_scope_ids)
-    assert_equal(["analytics", "user_view"], admin_group.permission_ids)
+    assert_equal([api_scope1.id, api_scope2.id].sort, admin_group.api_scope_ids.sort)
+    assert_equal(["analytics", "user_view"].sort, admin_group.permission_ids.sort)
 
     attributes = admin_group.serializable_hash
-    attributes["api_scope_ids"].shift
-    attributes["permission_ids"].shift
+    attributes["api_scope_ids"] -= [api_scope1.id]
+    attributes["permission_ids"] -= ["analytics"]
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{admin_group.id}.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:admin_group => attributes),

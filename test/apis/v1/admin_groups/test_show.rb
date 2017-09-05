@@ -3,11 +3,11 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::AdminGroups::TestShow < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
-    AdminGroup.delete_all
   end
 
   def test_admins_in_group_metadata

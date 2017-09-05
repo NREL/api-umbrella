@@ -5,6 +5,8 @@ local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local readonly = require("pl.tablex").readonly
+local relations_loaded_key = require("lapis.db.model.relations").LOADED_KEY
+local singularize = require("lapis.util").singularize
 local uuid_generate = require("resty.uuid").generate_random
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
@@ -24,34 +26,6 @@ local function values_for_table(model_class, values)
   end
 
   return column_values
-end
-
-local function record_attributes(self)
-  local attributes = {}
-
-  -- Fetch values from the record directly.
-  for key, value in pairs(self) do
-    attributes[key] = value
-  end
-
-  -- Fetch the values from relations on the record.
-  local model_class = self.__class
-  if model_class.relations then
-    for _, relation in ipairs(model_class.relations) do
-      local name = relation[1]
-      local records = self["get_" .. name](self)
-      if is_array(records) then
-        attributes[name] = {}
-        for _, record in ipairs(records) do
-          table.insert(attributes[name], record:attributes())
-        end
-      elseif records then
-        attributes[name] = records:attributes()
-      end
-    end
-  end
-
-  return readonly(attributes)
 end
 
 local function merge_record_and_values(self, values)
@@ -197,6 +171,45 @@ local function try_save(fn, transaction_started)
     rollback_transaction(transaction_started)
     error(err)
   end
+end
+
+function _M.record_attributes(self, options)
+  local includes = {}
+  if options and options["includes"] then
+    includes = options["includes"]
+  end
+
+  local attributes = {}
+
+  -- Fetch values from the record directly.
+  for key, value in pairs(self) do
+    attributes[key] = value
+  end
+
+  -- Fetch the values from relations on the record.
+  for relation_name, relation_options in pairs(includes) do
+    local singular_relation_name = singularize(relation_name)
+    local records = self["get_" .. relation_name](self)
+    if is_array(records) then
+      attributes[relation_name] = {}
+      attributes[singular_relation_name .. "_ids"] = {}
+      for _, record in ipairs(records) do
+        local record_attrs = record:attributes(relation_options)
+        table.insert(attributes[relation_name], record_attrs)
+        table.insert(attributes[singular_relation_name .. "_ids"], record_attrs["id"])
+      end
+    elseif records then
+      local record_attrs = records:attributes(relation_options)
+      attributes[relation_name] = record_attrs
+      attributes[singular_relation_name .. "_id"] = record_attrs["id"]
+    end
+  end
+
+  -- Unset the special key indicating that the relations are loaded, since it's
+  -- not relevant for this attributes-only table of data.
+  attributes[relations_loaded_key] = nil
+
+  return readonly(attributes)
 end
 
 function _M.add_error(errors, field, message)
@@ -423,10 +436,20 @@ end
 
 function _M.new_class(table_name, model_options, callbacks)
   model_options.update = update(callbacks)
-  model_options.attributes = record_attributes
+  if not model_options.attributes then
+    model_options.attributes = _M.record_attributes
+  end
+
+  -- Our overwritten create/update always perform authorization callbacks, but
+  -- alias these functions to more explicitly named "authorized" versions. This
+  -- is just to make the intent clearer when calling (but we'll still leave the
+  -- original create/update functions overridden, so we can ensure any default
+  -- create/updates also get authorized).
+  model_options.authorized_update = model_options.update
 
   local model_class = Model:extend(table_name, model_options)
   model_class.create = create(callbacks)
+  model_class.authorized_create = model_class.create
 
   return model_class
 end

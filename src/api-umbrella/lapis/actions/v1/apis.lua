@@ -51,7 +51,7 @@ function _M.show(self)
 end
 
 function _M.create(self)
-  local api_backend = assert(ApiBackend:create(_M.api_backend_params(self)))
+  local api_backend = assert(ApiBackend:authorized_create(_M.api_backend_params(self)))
   local response = {
     api = api_backend:as_json(),
   }
@@ -61,7 +61,7 @@ function _M.create(self)
 end
 
 function _M.update(self)
-  self.api_backend:update(_M.api_backend_params(self))
+  self.api_backend:authorized_update(_M.api_backend_params(self))
 
   return { status = 204 }
 end

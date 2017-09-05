@@ -1,9 +1,9 @@
 local ApiBackendRewrite = require "api-umbrella.lapis.models.api_backend_rewrite"
-local api_backend_policy = require "api-umbrella.lapis.policies.api_backend_policy"
 local ApiBackendServer = require "api-umbrella.lapis.models.api_backend_server"
 local ApiBackendSettings = require "api-umbrella.lapis.models.api_backend_settings"
 local ApiBackendSubUrlSettings = require "api-umbrella.lapis.models.api_backend_sub_url_settings"
 local ApiBackendUrlMatch = require "api-umbrella.lapis.models.api_backend_url_match"
+local api_backend_policy = require "api-umbrella.lapis.policies.api_backend_policy"
 local cjson = require "cjson"
 local common_validations = require "api-umbrella.utils.common_validations"
 local db = require "lapis.db"
@@ -68,6 +68,33 @@ ApiBackend = model_ext.new_class("api_backends", {
     { "sub_settings", has_many = "ApiBackendSubUrlSettings" },
     { "url_matches", has_many = "ApiBackendUrlMatch" },
   },
+
+  attributes = function(self, options)
+    if not options then
+      local settings_options = {
+        includes = {
+          http_headers = {},
+          rate_limits = {},
+          required_roles = {},
+        },
+      }
+      options = {
+        includes = {
+          rewrites = {},
+          servers = {},
+          settings = settings_options,
+          sub_settings = {
+            includes = {
+              settings = settings_options,
+            },
+          },
+          url_matches = {},
+        },
+      }
+    end
+
+    return model_ext.record_attributes(self, options)
+  end,
 
   authorize = function(self)
     api_backend_policy.authorize_show(ngx.ctx.current_admin, self:attributes())
@@ -264,8 +291,8 @@ ApiBackend = model_ext.new_class("api_backends", {
       validate_field(errors, data, "backend_host", validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     end
     validate_field(errors, data, "balance_algorithm", validation_ext:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "servers", validation_ext.table:minlen(1), t("must have at least one servers"), { error_field = "base" })
-    validate_field(errors, data, "url_matches", validation_ext.table:minlen(1), t("must have at least one url_matches"), { error_field = "base" })
+    validate_field(errors, data, "servers", validation_ext.non_null_table:minlen(1), t("must have at least one servers"), { error_field = "base" })
+    validate_field(errors, data, "url_matches", validation_ext.non_null_table:minlen(1), t("must have at least one url_matches"), { error_field = "base" })
     return errors
   end,
 

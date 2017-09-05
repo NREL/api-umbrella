@@ -10,10 +10,22 @@ local function db_null_optional(default)
   end
 end
 
+local function non_null_table()
+  return function(value)
+    return value ~= db_null and validation.validators.table(value)
+  end
+end
+
+
 local validators = validation.validators
 local validators_metatable = getmetatable(validators)
+
 validators.db_null_optional = db_null_optional()
 validators_metatable.db_null_optional = db_null_optional
+
+validators.non_null_table = non_null_table()
+validators_metatable.non_null_table = non_null_table
+
 setmetatable(validators, validators_metatable)
 
 return validation

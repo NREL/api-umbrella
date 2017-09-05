@@ -560,7 +560,7 @@ CREATE TABLE admin_groups (
     created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
     created_by character varying(255) DEFAULT current_app_user() NOT NULL,
     updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255)
+    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
 );
 
 

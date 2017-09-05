@@ -63,7 +63,7 @@ function _M.connect()
   local pg = pgmoon.new(db_config)
 
   local ok, err
-  for _ = 1, 3 do
+  for _ = 1, 5 do
     ok, err = pg:connect()
     if not ok then
       ngx.log(ngx.ERR, "failed to connect to database: ", err)
