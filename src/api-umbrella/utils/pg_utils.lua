@@ -60,10 +60,15 @@ function _M.escape_identifier(value)
 end
 
 function _M.connect()
-  local pg = pgmoon.new(db_config)
-
-  local ok, err
+  -- Try connecting a few times in case PostgreSQL is being restarted or
+  -- starting up.
+  --
+  -- Note that pgmoon.new also needs to be inside the retry-loop, otherwise
+  -- "the database system is starting up" errors from postgresql can lead to a
+  -- nil socket inside pgmoon's internals on the next retry.
+  local pg, ok, err
   for _ = 1, 5 do
+    pg = pgmoon.new(db_config)
     ok, err = pg:connect()
     if not ok then
       ngx.log(ngx.ERR, "failed to connect to database: ", err)
