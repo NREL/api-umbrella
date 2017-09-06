@@ -10,4 +10,14 @@ class Admin < ApplicationRecord
   def authentication_token
     Encryptor.decrypt(:value => Base64.strict_decode64(self.authentication_token_encrypted), :iv => self.authentication_token_encrypted_iv, :key => Digest::SHA256.digest($config["secret_key"]))
   end
+
+  def serializable_hash(options = nil)
+    options ||= {}
+    options.merge!({
+      :methods => [
+        :group_ids,
+      ],
+    })
+    super(options)
+  end
 end

@@ -1,9 +1,9 @@
 local ApiScope = require "api-umbrella.lapis.models.api_scope"
+local admin_policy = require "api-umbrella.lapis.policies.admin_policy"
 local api_backend_policy = require "api-umbrella.lapis.policies.api_backend_policy"
 local bcrypt = require "bcrypt"
 local cjson = require "cjson"
 local db = require "lapis.db"
-local db_null = require("lapis.db").NULL
 local encryptor = require "api-umbrella.utils.encryptor"
 local escape_db_like = require "api-umbrella.utils.escape_db_like"
 local hmac = require "api-umbrella.utils.hmac"
@@ -14,52 +14,54 @@ local random_token = require "api-umbrella.utils.random_token"
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
+local db_null = db.NULL
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
-local function validate_email(_, data, errors)
-  validate_field(errors, data, "username", validation_ext.string:minlen(1), t("can't be blank"))
+local function username_field_name()
   if config["web"]["admin"]["username_is_email"] then
-    if not is_empty(data["username"]) then
-      validate_field(errors, data, "username", validation_ext:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid"))
-    end
+    return "email"
   else
-    if not is_empty(data["email"]) then
-      validate_field(errors, data, "email", validation_ext:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid"))
-    end
+    return "username"
+  end
+end
+
+local function validate_email(_, data, errors)
+  validate_field(errors, data, "username", validation_ext.string:minlen(1), t("can't be blank"), { error_field = username_field_name() })
+  if config["web"]["admin"]["username_is_email"] then
+    validate_field(errors, data, "username", validation_ext.db_null_optional:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid"), { error_field = username_field_name() })
+  else
+    validate_field(errors, data, "email", validation_ext.db_null_optional:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid"))
   end
 end
 
 local function validate_groups(_, data, errors)
-  if not data["superuser"] then
-    validate_field(errors, data, "group_ids", validation_ext.non_null_table:minlen(1), t("must belong to at least one group or be a superuser"))
+  if data["superuser"] ~= true then
+    validate_field(errors, data, "group_ids", validation_ext.non_null_table:minlen(1), t("must belong to at least one group or be a superuser"), { error_field = "groups" })
   end
 end
 
 local function validate_password(self, data, errors)
   local is_password_required = false
-  local auth_strategies = config["web"]["admin"]["auth_strategies"]["enabled"]
-  if #auth_strategies == 1 and auth_strategies[1] == "local" then
+  if not is_empty(data["password"]) and data["password"] ~= db_null then
     is_password_required = true
-  elseif not is_empty(data["password"]) or not is_empty(data["password_confirmation"]) then
+  elseif not is_empty(data["password_confirmation"]) and data["password_confirmation"] ~= db_null then
     is_password_required = true
   end
 
   if is_password_required then
     validate_field(errors, data, "password", validation_ext.string:minlen(1), t("can't be blank"))
     validate_field(errors, data, "password_confirmation", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "password_confirmation", validation_ext.string:equals(data["password"]), t("doesn't match password"))
+    validate_field(errors, data, "password_confirmation", validation_ext.db_null_optional.string:equals(data["password"]), t("doesn't match Password"))
 
-    if not is_empty(data["password"]) then
-      local password_length_min = config["web"]["admin"]["password_length_min"]
-      local password_length_max = config["web"]["admin"]["password_length_max"]
-      validate_field(errors, data, "password", validation_ext.string:minlen(password_length_min), string.format(t("is too short (minimum is %d characters)"), password_length_min))
-      validate_field(errors, data, "password", validation_ext.string:maxlen(password_length_max), string.format(t("is too long (maximum is %d characters)"), password_length_max))
-    end
+    local password_length_min = config["web"]["admin"]["password_length_min"]
+    local password_length_max = config["web"]["admin"]["password_length_max"]
+    validate_field(errors, data, "password", validation_ext.db_null_optional.string:minlen(password_length_min), string.format(t("is too short (minimum is %d characters)"), password_length_min))
+    validate_field(errors, data, "password", validation_ext.db_null_optional.string:maxlen(password_length_max), string.format(t("is too long (maximum is %d characters)"), password_length_max))
 
     if self and self.id then
       validate_field(errors, data, "current_password", validation_ext.string:minlen(1), t("can't be blank"))
-      if not is_empty(data["current_password"]) then
+      if not is_empty(data["current_password"]) and data["current_password"] ~= db_null then
         if not self:is_valid_password(data["current_password"]) then
           model_ext.add_error(errors, "current_password", t("is invalid"))
         end
@@ -77,6 +79,22 @@ local Admin = model_ext.new_class("admins", {
       order = "name",
     }),
   },
+
+  attributes = function(self, options)
+    if not options then
+      options = {
+        includes = {
+          groups = {},
+        },
+      }
+    end
+
+    return model_ext.record_attributes(self, options)
+  end,
+
+  authorize = function(self)
+    admin_policy.authorize_show(ngx.ctx.current_admin, self:attributes())
+  end,
 
   is_valid_password = function(self, password)
     if self.password_hash and password and bcrypt.verify(password, self.password_hash) then
@@ -133,7 +151,7 @@ local Admin = model_ext.new_class("admins", {
     return group_names
   end,
 
-  as_json = function(self, current_admin)
+  as_json = function(self)
     local data = {
       id = self.id or json_null,
       username = self.username or json_null,
@@ -157,14 +175,13 @@ local Admin = model_ext.new_class("admins", {
       updated_by = self.updated_by or json_null,
       group_ids = self:group_ids() or json_null,
       group_names = self:group_names() or json_null,
-      authentication_token = json_null,
       deleted_at = json_null,
       version = 1,
     }
     setmetatable(data["group_ids"], cjson.empty_array_mt)
     setmetatable(data["group_names"], cjson.empty_array_mt)
 
-    if current_admin and current_admin.id == self.id then
+    if ngx.ctx.current_admin and ngx.ctx.current_admin.id == self.id then
       data["authentication_token"] = self:authentication_token_decrypted()
     end
 
@@ -266,8 +283,8 @@ local Admin = model_ext.new_class("admins", {
     return self._disallowed_role_ids
   end,
 }, {
-  authorize = function()
-    return true
+  authorize = function(data)
+    admin_policy.authorize_modify(ngx.ctx.current_admin, data)
   end,
 
   before_validate_on_create = function(_, values)
@@ -279,12 +296,26 @@ local Admin = model_ext.new_class("admins", {
   end,
 
   before_validate = function(_, values)
-    if values["superuser"] == db_null then
-      values["superuser"] = false
+    if values["superuser"] then
+      -- For backwards compatibility (with how Mongoid parsed booleans), accept
+      -- some alternate values for true.
+      if values["superuser"] == true or values["superuser"] == 1 or values["superuser"] == "1" or values["superuser"] == "true" then
+        values["superuser"] = true
+      else
+        values["superuser"] = false
+      end
     end
 
     if config["web"]["admin"]["username_is_email"] and values["username"] then
       values["email"] = values["username"]
+    end
+
+    if type(values["email"]) == "string" then
+      values["email"] = string.lower(values["email"])
+    end
+
+    if type(values["username"]) == "string" then
+      values["username"] = string.lower(values["username"])
     end
   end,
 
@@ -293,6 +324,7 @@ local Admin = model_ext.new_class("admins", {
     validate_email(self, data, errors)
     validate_groups(self, data, errors)
     validate_password(self, data, errors)
+    validate_field(errors, data, "superuser", validation_ext.db_null_optional.boolean, t("can't be blank"))
 
     return errors
   end,

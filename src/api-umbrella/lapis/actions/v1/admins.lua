@@ -1,41 +1,41 @@
-local respond_to = require("lapis.application").respond_to
 local Admin = require "api-umbrella.lapis.models.admin"
+local admin_policy = require "api-umbrella.lapis.policies.admin_policy"
+local capture_errors_json_full = require("api-umbrella.utils.lapis_helpers").capture_errors_json_full
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
-local lapis_json = require "api-umbrella.utils.lapis_json"
 local json_params = require("lapis.application").json_params
-local lapis_helpers = require "api-umbrella.utils.lapis_helpers"
 local lapis_datatables = require "api-umbrella.utils.lapis_datatables"
-
-local capture_errors_json = lapis_helpers.capture_errors_json
+local lapis_json = require "api-umbrella.utils.lapis_json"
+local respond_to = require("lapis.application").respond_to
 
 local _M = {}
 
 function _M.index(self)
   return lapis_datatables.index(self, Admin, {
+    where = {
+      admin_policy.authorized_query_scope(self.current_admin),
+    },
     search_fields = {
-      "first_name",
-      "last_name",
+      "name",
       "email",
       "username",
-      "authentication_token",
     },
     preload = { "groups" },
   })
 end
 
 function _M.show(self)
-  ngx.log(ngx.ERR, "CURRENT ADMIN: " .. inspect(self.current_admin))
+  self.admin:authorize()
   local response = {
-    admin = self.admin:as_json(self.current_admin),
+    admin = self.admin:as_json(),
   }
 
   return lapis_json(self, response)
 end
 
 function _M.create(self)
-  local admin = assert(Admin:create(_M.admin_params(self)))
+  local admin = assert(Admin:authorized_create(_M.admin_params(self)))
   local response = {
-    admin = admin:as_json(self.current_admin),
+    admin = admin:as_json(),
   }
 
   self.res.status = 201
@@ -43,12 +43,17 @@ function _M.create(self)
 end
 
 function _M.update(self)
-  self.admin:update(_M.admin_params(self))
+  self.admin:authorized_update(_M.admin_params(self))
+  local response = {
+    admin = self.admin:as_json(),
+  }
 
-  return { status = 204 }
+  self.res.status = 200
+  return lapis_json(self, response)
 end
 
 function _M.destroy(self)
+  self.admin:authorize()
   assert(self.admin:delete())
 
   return { status = 204 }
@@ -69,7 +74,14 @@ function _M.admin_params(self)
       superuser = input["superuser"],
       group_ids = input["group_ids"],
     })
-    ngx.log(ngx.NOTICE, "INPUTS: " .. inspect(params))
+
+    -- Only allow the current admin to update their own password. For creates
+    -- we assume that invites are sent with a password reset e-mail link.
+    if not self.admin or not self.current_admin or self.admin.id ~= self.current_admin.id then
+      params["password"] = nil
+      params["password_confirmation"] = nil
+      params["current_password"] = nil
+    end
   end
 
   return params
@@ -83,12 +95,12 @@ return function(app)
         self:write({"Not Found", status = 404})
       end
     end,
-    GET = _M.show,
-    POST = capture_errors_json(json_params(_M.update)),
-    PUT = capture_errors_json(json_params(_M.update)),
-    DELETE = _M.destroy,
+    GET = capture_errors_json_full(_M.show),
+    POST = capture_errors_json_full(json_params(_M.update)),
+    PUT = capture_errors_json_full(json_params(_M.update)),
+    DELETE = capture_errors_json_full(_M.destroy),
   }))
 
-  app:get("/api-umbrella/v1/admins(.:format)", _M.index)
-  app:post("/api-umbrella/v1/admins(.:format)", capture_errors_json(json_params(_M.create)))
+  app:get("/api-umbrella/v1/admins(.:format)", capture_errors_json_full(_M.index))
+  app:post("/api-umbrella/v1/admins(.:format)", capture_errors_json_full(json_params(_M.create)))
 end

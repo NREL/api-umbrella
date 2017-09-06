@@ -7,7 +7,6 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
   def setup
     super
     setup_server
-    Admin.delete_all
   end
 
   include ApiUmbrellaSharedTests::DataTablesApi
@@ -50,7 +49,6 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     assert_equal("2017-01-07T00:00:00Z", record_data.fetch("locked_at"))
     assert_equal("Name", record_data.fetch("name"))
     assert_equal("Notes", record_data.fetch("notes"))
-    assert_equal("2017-01-04T00:00:00Z", record_data.fetch("remember_created_at"))
     assert_equal("2017-01-03T00:00:00Z", record_data.fetch("reset_password_sent_at"))
     assert_equal(10, record_data.fetch("sign_in_count"))
     assert_equal(true, record_data.fetch("superuser"))
@@ -76,8 +74,8 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     record_data = data.fetch("data").first
     assert_base_record_fields(record_data)
 
-    assert_nil(record_data.fetch("created_by"))
-    assert_nil(record_data.fetch("updated_by"))
+    assert_equal("test_app_user", record_data.fetch("created_by"))
+    assert_equal("test_app_user", record_data.fetch("updated_by"))
     assert_equal([], record_data.fetch("group_ids"))
     assert_equal(["Superuser"], record_data.fetch("group_names"))
   end
@@ -117,7 +115,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
   end
 
   def data_tables_record_count
-    Admin.where(:deleted_at => nil).count
+    Admin.count
   end
 
   def assert_base_record_fields(record_data)
@@ -139,7 +137,6 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
       "locked_at",
       "name",
       "notes",
-      "remember_created_at",
       "reset_password_sent_at",
       "sign_in_count",
       "superuser",

@@ -12,7 +12,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
 
   def test_ignores_passwords_on_create
     attributes = FactoryGirl.build(:admin).serializable_hash.deep_merge({
-      "encrypted_password" => BCrypt::Password.create("password234567"),
+      "password_hash" => BCrypt::Password.create("password234567"),
       "password" => "password234567",
       "password_confirmation" => "password234567",
     })
@@ -24,15 +24,15 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
 
     data = MultiJson.load(response.body)
     admin = Admin.find(data["admin"]["id"])
-    assert_nil(admin.encrypted_password)
+    assert_nil(admin.password_hash)
   end
 
   def test_ignores_passwords_when_updating_another_admin
     other_admin = FactoryGirl.create(:admin)
-    original_encrypted_password = other_admin.encrypted_password
+    original_password_hash = other_admin.password_hash
 
     attributes = FactoryGirl.build(:admin).serializable_hash.deep_merge({
-      "encrypted_password" => BCrypt::Password.create("password234567"),
+      "password_hash" => BCrypt::Password.create("password234567"),
       "password" => "password234567",
       "password_confirmation" => "password234567",
     })
@@ -43,15 +43,15 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     assert_response_code(200, response)
 
     other_admin.reload
-    assert_equal(original_encrypted_password, other_admin.encrypted_password)
+    assert_equal(original_password_hash, other_admin.password_hash)
   end
 
   def test_accepts_password_change_when_updating_own_admin
     admin = FactoryGirl.create(:admin)
-    original_encrypted_password = admin.encrypted_password
+    original_password_hash = admin.password_hash
 
     attributes = admin.serializable_hash.deep_merge({
-      "encrypted_password" => BCrypt::Password.create("ignored"),
+      "password_hash" => BCrypt::Password.create("ignored"),
       "current_password" => "password123456",
       "password" => "password234567",
       "password_confirmation" => "password234567",
@@ -63,12 +63,12 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     assert_response_code(200, response)
 
     admin.reload
-    refute_equal(original_encrypted_password, admin.encrypted_password)
+    refute_equal(original_password_hash, admin.password_hash)
   end
 
   def test_rejects_password_change_when_current_password_missing
     admin = FactoryGirl.create(:admin)
-    original_encrypted_password = admin.encrypted_password
+    original_password_hash = admin.password_hash
 
     attributes = admin.serializable_hash.deep_merge({
       "password" => "password234567",
@@ -85,12 +85,12 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
-    assert_equal(original_encrypted_password, admin.encrypted_password)
+    assert_equal(original_password_hash, admin.password_hash)
   end
 
   def test_rejects_password_change_when_current_password_empty
     admin = FactoryGirl.create(:admin)
-    original_encrypted_password = admin.encrypted_password
+    original_password_hash = admin.password_hash
 
     attributes = admin.serializable_hash.deep_merge({
       "current_password" => "",
@@ -108,12 +108,12 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
-    assert_equal(original_encrypted_password, admin.encrypted_password)
+    assert_equal(original_password_hash, admin.password_hash)
   end
 
   def test_rejects_password_change_when_current_password_invalid
     admin = FactoryGirl.create(:admin)
-    original_encrypted_password = admin.encrypted_password
+    original_password_hash = admin.password_hash
 
     attributes = admin.serializable_hash.deep_merge({
       "current_password" => "password234567",
@@ -131,12 +131,12 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
-    assert_equal(original_encrypted_password, admin.encrypted_password)
+    assert_equal(original_password_hash, admin.password_hash)
   end
 
   def test_requires_confirmation_if_password_present
     admin = FactoryGirl.create(:admin)
-    original_encrypted_password = admin.encrypted_password
+    original_password_hash = admin.password_hash
 
     attributes = admin.serializable_hash.deep_merge({
       "current_password" => "password123456",
@@ -153,12 +153,12 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
-    assert_equal(original_encrypted_password, admin.encrypted_password)
+    assert_equal(original_password_hash, admin.password_hash)
   end
 
   def test_requires_password_if_confirmation_present
     admin = FactoryGirl.create(:admin)
-    original_encrypted_password = admin.encrypted_password
+    original_password_hash = admin.password_hash
 
     attributes = admin.serializable_hash.deep_merge({
       "current_password" => "password123456",
@@ -176,12 +176,12 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
-    assert_equal(original_encrypted_password, admin.encrypted_password)
+    assert_equal(original_password_hash, admin.password_hash)
   end
 
   def test_validates_password_length
     admin = FactoryGirl.create(:admin)
-    original_encrypted_password = admin.encrypted_password
+    original_password_hash = admin.password_hash
 
     attributes = admin.serializable_hash.deep_merge({
       "current_password" => "password123456",
@@ -199,12 +199,12 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
-    assert_equal(original_encrypted_password, admin.encrypted_password)
+    assert_equal(original_password_hash, admin.password_hash)
   end
 
   def test_validates_password_confirmation_matches
     admin = FactoryGirl.create(:admin)
-    original_encrypted_password = admin.encrypted_password
+    original_password_hash = admin.password_hash
 
     attributes = admin.serializable_hash.deep_merge({
       "current_password" => "password123456",
@@ -222,6 +222,6 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
-    assert_equal(original_encrypted_password, admin.encrypted_password)
+    assert_equal(original_password_hash, admin.password_hash)
   end
 end

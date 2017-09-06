@@ -60,9 +60,9 @@ FactoryGirl.define do
       notes "Notes"
       remember_created_at Time.utc(2017, 1, 4)
       reset_password_sent_at Time.utc(2017, 1, 3)
-      reset_password_token { SecureRandom.hex(20) }
+      reset_password_token_hash { SecureRandom.hex(20) }
       sign_in_count 10
-      unlock_token { SecureRandom.hex(20) }
+      unlock_token_hash { SecureRandom.hex(20) }
       updated_at Time.utc(2017, 1, 2)
       updated_by { SecureRandom.uuid }
       groups do

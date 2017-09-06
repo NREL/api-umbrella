@@ -1,5 +1,7 @@
 local admin_group_policy = require "api-umbrella.lapis.policies.admin_group_policy"
 local cjson = require "cjson"
+local db = require "lapis.db"
+local is_empty = require("pl.types").is_empty
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
@@ -170,5 +172,17 @@ local AdminGroup = model_ext.new_class("admin_groups", {
     })
   end,
 })
+
+AdminGroup.api_scope_ids_for_admin_group_ids = function(admin_group_ids)
+  local api_scope_ids = {}
+  if not is_empty(admin_group_ids) then
+    local rows = db.query("SELECT DISTINCT api_scope_id FROM admin_groups_api_scopes WHERE admin_group_id IN ?", db.list(admin_group_ids))
+    for _, row in ipairs(rows) do
+      table.insert(api_scope_ids, row["api_scope_id"])
+    end
+  end
+
+  return api_scope_ids
+end
 
 return AdminGroup

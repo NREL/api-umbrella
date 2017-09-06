@@ -1,15 +1,12 @@
-local respond_to = require("lapis.application").respond_to
-local flatten_headers = require "api-umbrella.utils.flatten_headers"
 local ApiUser = require "api-umbrella.lapis.models.api_user"
+local capture_errors_json_full = require("api-umbrella.utils.lapis_helpers").capture_errors_json_full
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
-local lapis_json = require "api-umbrella.utils.lapis_json"
+local flatten_headers = require "api-umbrella.utils.flatten_headers"
+local is_empty = require("pl.types").is_empty
 local json_params = require("lapis.application").json_params
-local lapis_helpers = require "api-umbrella.utils.lapis_helpers"
 local lapis_datatables = require "api-umbrella.utils.lapis_datatables"
-local types = require "pl.types"
-
-local is_empty = types.is_empty
-local capture_errors_json = lapis_helpers.capture_errors_json
+local lapis_json = require "api-umbrella.utils.lapis_json"
+local respond_to = require("lapis.application").respond_to
 
 local _M = {}
 
@@ -92,12 +89,12 @@ return function(app)
         self:write({"Not Found", status = 404})
       end
     end,
-    GET = _M.show,
-    POST = capture_errors_json(json_params(_M.update)),
-    PUT = capture_errors_json(json_params(_M.update)),
-    DELETE = _M.destroy,
+    GET = capture_errors_json_full(_M.show),
+    POST = capture_errors_json_full(json_params(_M.update)),
+    PUT = capture_errors_json_full(json_params(_M.update)),
+    DELETE = capture_errors_json_full(_M.destroy),
   }))
 
-  app:get("/api-umbrella/v1/users(.:format)", _M.index)
-  app:post("/api-umbrella/v1/users(.:format)", capture_errors_json(json_params(_M.create)))
+  app:get("/api-umbrella/v1/users(.:format)", capture_errors_json_full(_M.index))
+  app:post("/api-umbrella/v1/users(.:format)", capture_errors_json_full(json_params(_M.create)))
 end
