@@ -2,13 +2,25 @@ class Admin < ApplicationRecord
   has_and_belongs_to_many :groups, :class_name => "AdminGroup"
 
   def authentication_token=(value)
+    # Ensure the record ID is set (it may not be on initial create), since we
+    # need the ID for the auth data.
+    self.id ||= SecureRandom.uuid
+
     self.authentication_token_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], value)
     self.authentication_token_encrypted_iv = SecureRandom.hex(6)
-    self.authentication_token_encrypted = Base64.strict_encode64(Encryptor.encrypt(:value => value, :iv => self.authentication_token_encrypted_iv, :key => Digest::SHA256.digest($config["secret_key"])))
+    self.authentication_token_encrypted = Base64.strict_encode64(Encryptor.encrypt({
+      :value => value,
+      :iv => self.authentication_token_encrypted_iv, :key => Digest::SHA256.digest($config["secret_key"]),
+      :auth_data => self.id,
+    }))
   end
 
   def authentication_token
-    Encryptor.decrypt(:value => Base64.strict_decode64(self.authentication_token_encrypted), :iv => self.authentication_token_encrypted_iv, :key => Digest::SHA256.digest($config["secret_key"]))
+    Encryptor.decrypt({
+      :value => Base64.strict_decode64(self.authentication_token_encrypted),
+      :iv => self.authentication_token_encrypted_iv, :key => Digest::SHA256.digest($config["secret_key"]),
+      :auth_data => self.id,
+    })
   end
 
   def serializable_hash(options = nil)

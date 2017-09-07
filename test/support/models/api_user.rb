@@ -12,14 +12,28 @@ class ApiUser < ApplicationRecord
   end
 
   def api_key=(value)
+    # Ensure the record ID is set (it may not be on initial create), since we
+    # need the ID for the auth data.
+    self.id ||= SecureRandom.uuid
+
     self.api_key_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], value)
     self.api_key_encrypted_iv = SecureRandom.hex(6)
-    self.api_key_encrypted = Base64.strict_encode64(Encryptor.encrypt(:value => value, :iv => self.api_key_encrypted_iv, :key => Digest::SHA256.digest($config["secret_key"])))
+    self.api_key_encrypted = Base64.strict_encode64(Encryptor.encrypt({
+      :value => value,
+      :iv => self.api_key_encrypted_iv,
+      :key => Digest::SHA256.digest($config.fetch("secret_key")),
+      :auth_data => self.id,
+    }))
     self.api_key_prefix = value[0, 10]
   end
 
   def api_key
-    Encryptor.decrypt(:value => Base64.strict_decode64(self.api_key_encrypted), :iv => self.api_key_encrypted_iv, :key => Digest::SHA256.digest($config["secret_key"]))
+    Encryptor.decrypt({
+      :value => Base64.strict_decode64(self.api_key_encrypted),
+      :iv => self.api_key_encrypted_iv,
+      :key => Digest::SHA256.digest($config.fetch("secret_key")),
+      :auth_data => self.id,
+    })
   end
 
   def api_key_preview
