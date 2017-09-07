@@ -419,6 +419,7 @@ return {
         CONSTRAINT settings_id_not_null CHECK((api_backend_settings_id IS NOT NULL AND api_user_settings_id IS NULL) OR (api_backend_settings_id IS NULL AND api_user_settings_id IS NOT NULL))
       )
     ]])
+    db.query("CREATE UNIQUE INDEX ON rate_limits(api_backend_settings_id, api_user_settings_id, limit_by, duration)")
     db.query("CREATE TRIGGER rate_limits_updated_at BEFORE UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE set_updated()")
     db.query("SELECT audit.audit_table('rate_limits')")
 

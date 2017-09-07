@@ -1,8 +1,10 @@
+local db = require "lapis.db"
 local json_null = require("cjson").null
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
+local db_null = db.NULL
 local validate_field = model_ext.validate_field
 
 local function auto_calculate_accuracy(values)
@@ -45,7 +47,8 @@ local function auto_calculate_distributed(values)
   end
 end
 
-local RateLimit = model_ext.new_class("rate_limits", {
+local RateLimit
+RateLimit = model_ext.new_class("rate_limits", {
   as_json = function(self)
     return {
       id = self.id or json_null,
@@ -74,6 +77,18 @@ local RateLimit = model_ext.new_class("rate_limits", {
     validate_field(errors, data, "limit_by", validation_ext:regex("^(ip|apiKey)$", "jo"), t("is not included in the list"))
     validate_field(errors, data, "limit_to", validation_ext.number, t("can't be blank"), { error_field = "limit" })
     validate_field(errors, data, "distributed", validation_ext.boolean, t("can't be blank"))
+
+    if data["limit_by"] and data["duration"] then
+      local settings_id_column = "api_backend_settings_id"
+      if data["api_user_settings_id"] and data["api_user_settings_id"] ~= db_null then
+        settings_id_column = "api_user_settings_id"
+      end
+
+      if RateLimit:count("id != ? AND " .. db.escape_identifier(settings_id_column) .. " = ? AND limit_by = ? AND duration = ?", data["id"], data[settings_id_column], data["limit_by"], data["duration"]) > 0 then
+        model_ext.add_error(errors, "duration", t("is already taken"))
+      end
+    end
+
     return errors
   end,
 })

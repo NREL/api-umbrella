@@ -1,13 +1,11 @@
 local AdminGroup = require "api-umbrella.lapis.models.admin_group"
 local admin_group_policy = require "api-umbrella.lapis.policies.admin_group_policy"
+local capture_errors_json = require("api-umbrella.utils.lapis_helpers").capture_errors_json
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
 local json_params = require("lapis.application").json_params
 local lapis_datatables = require "api-umbrella.utils.lapis_datatables"
-local lapis_helpers = require "api-umbrella.utils.lapis_helpers"
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local respond_to = require("lapis.application").respond_to
-
-local capture_errors_json = lapis_helpers.capture_errors_json
 
 local _M = {}
 

@@ -7,7 +7,6 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
   def setup
     super
     setup_server
-    ApiScope.delete_all
   end
 
   include ApiUmbrellaSharedTests::DataTablesApi
@@ -63,8 +62,8 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
     record_data = data.fetch("data").first
     assert_base_record_fields(record_data)
 
-    assert_nil(record_data.fetch("created_by"))
-    assert_nil(record_data.fetch("updated_by"))
+    assert_equal("test_app_user", record_data.fetch("created_by"))
+    assert_equal("test_app_user", record_data.fetch("updated_by"))
   end
 
   def test_search_name

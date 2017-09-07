@@ -1395,6 +1395,13 @@ CREATE UNIQUE INDEX api_users_api_key_hash_idx ON api_users USING btree (api_key
 
 
 --
+-- Name: rate_limits_api_backend_settings_id_api_user_settings_id_li_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX rate_limits_api_backend_settings_id_api_user_settings_id_li_idx ON rate_limits USING btree (api_backend_settings_id, api_user_settings_id, limit_by, duration);
+
+
+--
 -- Name: admin_groups_admin_permissions admin_groups_admin_permissions_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 

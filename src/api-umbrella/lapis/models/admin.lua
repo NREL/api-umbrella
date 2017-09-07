@@ -70,7 +70,8 @@ local function validate_password(self, data, errors)
   end
 end
 
-local Admin = model_ext.new_class("admins", {
+local Admin
+Admin = model_ext.new_class("admins", {
   relations = {
     model_ext.has_and_belongs_to_many("groups", "AdminGroup", {
       join_table = "admin_groups_admins",
@@ -325,6 +326,12 @@ local Admin = model_ext.new_class("admins", {
     validate_groups(self, data, errors)
     validate_password(self, data, errors)
     validate_field(errors, data, "superuser", validation_ext.db_null_optional.boolean, t("can't be blank"))
+
+    if data["username"] then
+      if Admin:count("id != ? AND username = ?", data["id"], data["username"]) > 0 then
+        model_ext.add_error(errors, "username", t("is already taken"))
+      end
+    end
 
     return errors
   end,

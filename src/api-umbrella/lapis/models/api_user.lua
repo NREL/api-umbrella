@@ -11,7 +11,8 @@ local validation_ext = require "api-umbrella.utils.validation_ext"
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
-local ApiUser = model_ext.new_class("api_users", {
+local ApiUser
+ApiUser = model_ext.new_class("api_users", {
   relations = {
     model_ext.has_and_belongs_to_many("roles", "ApiRole", {
       join_table = "api_users_roles",
@@ -98,6 +99,13 @@ local ApiUser = model_ext.new_class("api_users", {
     validate_field(errors, data, "email", validation_ext.string:minlen(1), t("Provide your email address."))
     validate_field(errors, data, "email", validation_ext:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
     validate_field(errors, data, "website", validation_ext.db_null_optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
+
+    if data["api_key_hash"] then
+      if ApiUser:count("id != ? AND api_key_hash = ?", data["id"], data["api_key_hash"]) > 0 then
+        model_ext.add_error(errors, "api_key", t("is already taken"))
+      end
+    end
+
     return errors
   end,
 
