@@ -2,16 +2,31 @@ local date = require "date"
 
 local _M = {}
 
-function _M.format_postgres(time)
+function _M.format(parsed)
   local result
-  if time then
-    local parsed = _M.parse_postgres(time)
-    if parsed then
-      result = parsed:fmt("${iso}Z")
-    end
+  if type(parsed) == "table" and parsed.fmt then
+    result = parsed:fmt("${iso}Z")
   end
 
   return result
+end
+
+function _M.to_timestamp(parsed)
+  local result
+  if type(parsed) == "table" and parsed.fmt then
+    result = (parsed - date.epoch()):spanseconds()
+  end
+
+  return result
+end
+
+function _M.format_postgres(time)
+  local parsed
+  if type(time) == "string" then
+    parsed = _M.parse_postgres(time)
+  end
+
+  return _M.format(parsed)
 end
 
 function _M.parse_postgres(time)

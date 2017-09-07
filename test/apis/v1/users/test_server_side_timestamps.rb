@@ -7,7 +7,6 @@ class Test::Apis::V1::Users::TestServerSideTimestamps < Minitest::Test
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
   end
 
   def test_create

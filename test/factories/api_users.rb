@@ -15,7 +15,7 @@ FactoryGirl.define do
 
     factory :custom_rate_limit_api_user do
       settings do
-        FactoryGirl.build(:custom_rate_limit_api_setting)
+        FactoryGirl.build(:custom_rate_limit_api_user_settings)
       end
     end
   end

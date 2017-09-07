@@ -275,8 +275,6 @@ return {
         api_key_verification_level varchar(16) CHECK(api_key_verification_level IN('none', 'transition_email', 'required_email')),
         api_key_verification_transition_start_at timestamp with time zone,
         required_roles_override boolean NOT NULL DEFAULT FALSE,
-        allowed_ips inet ARRAY,
-        allowed_referers varchar(500) ARRAY,
         pass_api_key_header varchar(255),
         pass_api_key_query_param varchar(255),
         rate_limit_mode varchar(9) CHECK(rate_limit_mode IN('unlimited', 'custom')),

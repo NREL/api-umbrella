@@ -50,7 +50,7 @@ end
 local RateLimit
 RateLimit = model_ext.new_class("rate_limits", {
   as_json = function(self)
-    return {
+    local data = {
       id = self.id or json_null,
       duration = self.duration or json_null,
       accuracy = self.accuracy or json_null,
@@ -59,6 +59,14 @@ RateLimit = model_ext.new_class("rate_limits", {
       distributed = self.distributed or json_null,
       response_headers = self.response_headers or json_null,
     }
+
+    -- Return the legacy capitalization of "apiKey" for backwards compatibility
+    -- (revisit if we introduce v2 of the API).
+    if data["limit_by"] == "api_key" then
+      data["limit_by"] = "apiKey"
+    end
+
+    return data
   end,
 }, {
   authorize = function()
@@ -68,13 +76,20 @@ RateLimit = model_ext.new_class("rate_limits", {
   before_validate = function(_, values)
     auto_calculate_accuracy(values)
     auto_calculate_distributed(values)
+
+    -- Normalize the legacy value of "apiKey" to be stored internally as
+    -- "api_key" (just be more consistent with the rest of the capitalization
+    -- in all our values).
+    if values["limit_by"] == "apiKey" then
+      values["limit_by"] = "api_key"
+    end
   end,
 
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "duration", validation_ext.number, t("can't be blank"))
     validate_field(errors, data, "accuracy", validation_ext.number, t("can't be blank"))
-    validate_field(errors, data, "limit_by", validation_ext:regex("^(ip|apiKey)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "limit_by", validation_ext:regex("^(ip|api_key)$", "jo"), t("is not included in the list"))
     validate_field(errors, data, "limit_to", validation_ext.number, t("can't be blank"), { error_field = "limit" })
     validate_field(errors, data, "distributed", validation_ext.boolean, t("can't be blank"))
 

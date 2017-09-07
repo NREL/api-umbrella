@@ -3,11 +3,11 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
+  parallelize_me!
 
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
   end
 
   def test_new_accounts_they_created_without_roles

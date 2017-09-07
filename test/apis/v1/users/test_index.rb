@@ -7,7 +7,6 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
   end
 
   include ApiUmbrellaSharedTests::DataTablesApi
@@ -27,7 +26,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       :registration_source => "test",
       :registration_user_agent => "curl",
       :roles => ["role1", "role2"],
-      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting, {
+      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_user_settings, {
         :rate_limits => [
           FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
         ],
@@ -212,7 +211,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
   end
 
   def data_tables_record_count
-    ApiUser.where(:deleted_at => nil).count
+    ApiUser.count
   end
 
   def assert_base_record_fields(record_data)

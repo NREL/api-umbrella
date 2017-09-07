@@ -8,11 +8,6 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
-    Admin.delete_all
-    AdminGroup.delete_all
-    Api.delete_all
-    ApiScope.delete_all
   end
 
   def test_no_admin_and_api_key_with_key_creator_role
@@ -425,6 +420,6 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def active_count
-    ApiUser.where(:deleted_at => nil).count
+    ApiUser.count
   end
 end

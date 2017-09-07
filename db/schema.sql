@@ -725,8 +725,6 @@ CREATE TABLE api_backend_settings (
     api_key_verification_level character varying(16),
     api_key_verification_transition_start_at timestamp with time zone,
     required_roles_override boolean DEFAULT false NOT NULL,
-    allowed_ips inet[],
-    allowed_referers character varying(500)[],
     pass_api_key_header character varying(255),
     pass_api_key_query_param character varying(255),
     rate_limit_mode character varying(9),

@@ -147,6 +147,16 @@ local function after_save(self, _, callbacks, values)
 end
 
 local function after_commit(self, _, callbacks, values)
+  -- After making changes, refresh the record to read in changes that may have
+  -- taken place in the database layer. This accounts for default values set by
+  -- the database or values set by triggers (like updated_at/updated_by).
+  --
+  -- While doing a separate SELECT statement to refresh the record isn't the
+  -- most efficient (a better approach would be to account for all the fields
+  -- in the RETURNING clause of the INSERT/UPDATE), this is the simplest way to
+  -- ensure we get all the potential changes from the database.
+  self:refresh()
+
   if callbacks["after_commit"] then
     callbacks["after_commit"](self, values)
   end

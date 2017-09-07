@@ -7,7 +7,6 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
   end
 
   def test_valid_create
@@ -85,12 +84,13 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   def test_permits_private_fields_as_admin
     attributes = FactoryGirl.attributes_for(:api_user, :roles => ["admin"])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
+    assert_equal(["admin"], data["user"]["roles"])
     user = ApiUser.find(data["user"]["id"])
     assert_equal(["admin"], user.roles)
   end
@@ -98,14 +98,15 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   def test_ignores_private_fields_as_non_admin
     attributes = FactoryGirl.attributes_for(:api_user, :roles => ["admin"])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(201, response)
 
     data = MultiJson.load(response.body)
+    assert_equal([], data["user"]["roles"])
     user = ApiUser.find(data["user"]["id"])
-    assert_nil(user.roles)
+    assert_equal([], user.roles)
   end
 
   def test_registration_source_default
@@ -154,7 +155,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_equal("http://example.com", data["user"]["registration_origin"])
 
     user = ApiUser.find(data["user"]["id"])
-    assert_equal("1.2.3.4", user.registration_ip)
+    assert_equal(IPAddr.new("1.2.3.4"), user.registration_ip)
     assert_equal("foo", user.registration_user_agent)
     assert_equal("http://example.com/foo", user.registration_referer)
     assert_equal("http://example.com", user.registration_origin)
@@ -181,7 +182,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_nil(data["user"]["registration_origin"])
 
     user = ApiUser.find(data["user"]["id"])
-    assert_equal("1.2.3.4", user.registration_ip)
+    assert_equal(IPAddr.new("1.2.3.4"), user.registration_ip)
     assert_equal("foo", user.registration_user_agent)
     assert_equal("http://example.com/foo", user.registration_referer)
     assert_equal("http://example.com", user.registration_origin)
@@ -207,18 +208,18 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
 
   def test_custom_rate_limits_reject_same_duration_and_limit_by
     attributes = FactoryGirl.attributes_for(:api_user, {
-      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting, {
+      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_user_settings, {
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 20),
+          FactoryGirl.attributes_for(:rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
+          FactoryGirl.attributes_for(:rate_limit, :duration => 5000, :limit_by => "ip", :limit => 20),
         ],
       }),
     })
 
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(422, response)
 
@@ -230,18 +231,18 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
 
   def test_custom_rate_limits_accept_same_duration_different_limit_by
     attributes = FactoryGirl.attributes_for(:api_user, {
-      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting, {
+      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_user_settings, {
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "apiKey", :limit => 20),
+          FactoryGirl.attributes_for(:rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
+          FactoryGirl.attributes_for(:rate_limit, :duration => 5000, :limit_by => "apiKey", :limit => 20),
         ],
       }),
     })
 
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
-      :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => attributes },
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
     }))
     assert_response_code(201, response)
 
@@ -261,10 +262,10 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
       :roles => ["api-umbrella-key-creator"],
     })
 
-    { :headers => { "X-Api-Key" => user["api_key"] } }
+    { :headers => { "X-Api-Key" => user.api_key } }
   end
 
   def active_count
-    ApiUser.where(:deleted_at => nil).count
+    ApiUser.count
   end
 end
