@@ -313,6 +313,12 @@ module ApiUmbrellaTestHelpers
       @empty_http_header_counter += 1
       {
         :headers => {
+          # First set the header to null to prevent Typheous from adding some
+          # default headers back in (like Content-Type).
+          header => nil,
+
+          # Next, add a fake header, and in the content of the header add line
+          # breaks and the real header without a value.
           "X-Empty-Http-Header-Curl-Workaround#{@empty_http_header_counter}" => "ignore\r\n#{header}:",
         },
       }

@@ -1,6 +1,6 @@
 local ApiUser = require "api-umbrella.lapis.models.api_user"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
-local capture_errors_json_full = require("api-umbrella.utils.lapis_helpers").capture_errors_json_full
+local lapis_helpers = require "api-umbrella.utils.lapis_helpers"
 local db_null = require("lapis.db").NULL
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
@@ -10,6 +10,9 @@ local json_params = require("lapis.application").json_params
 local lapis_datatables = require "api-umbrella.utils.lapis_datatables"
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local respond_to = require("lapis.application").respond_to
+
+local capture_errors_json_full = lapis_helpers.capture_errors_json_full
+local parse_post_for_pseudo_ie_cors = lapis_helpers.parse_post_for_pseudo_ie_cors
 
 local _M = {}
 
@@ -171,5 +174,5 @@ return function(app)
   }))
 
   app:get("/api-umbrella/v1/users(.:format)", capture_errors_json_full(_M.index))
-  app:post("/api-umbrella/v1/users(.:format)", capture_errors_json_full(json_params(_M.create)))
+  app:post("/api-umbrella/v1/users(.:format)", capture_errors_json_full(parse_post_for_pseudo_ie_cors(json_params(_M.create))))
 end

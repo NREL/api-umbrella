@@ -57,6 +57,6 @@ class Test::Apis::V1::Users::TestCreateIePseudoCorsCompatibility < Minitest::Tes
       :roles => ["api-umbrella-key-creator"],
     })
 
-    { :headers => { "X-Api-Key" => user["api_key"] } }
+    { :headers => { "X-Api-Key" => user.api_key } }
   end
 end
