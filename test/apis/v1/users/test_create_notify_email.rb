@@ -3,7 +3,7 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
-  include ApiUmbrellaTestHelpers::DelayedJob
+  include ApiUmbrellaTestHelpers::SentEmails
 
   def setup
     super
@@ -22,7 +22,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(1, delayed_job_sent_messages.length)
+    assert_equal(1, sent_emails.length)
   end
 
   def test_no_email_when_disabled
@@ -34,7 +34,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.length)
   end
 
   def test_no_email_when_unknown_value
@@ -46,7 +46,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.length)
   end
 
   def test_no_email_by_default
@@ -57,7 +57,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.length)
   end
 
   def test_content
@@ -70,7 +70,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
     }))
     assert_response_code(201, response)
 
-    messages = delayed_job_sent_messages
+    messages = sent_emails
     assert_equal(1, messages.length)
 
     data = MultiJson.load(response.body)
@@ -84,8 +84,8 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
     assert_equal(["#{user.first_name} #{user.last_name} just subscribed"], message["Content"]["Headers"]["Subject"])
 
     # Use description in body
-    assert_match("I wanna do everything.", message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    assert_match("I wanna do everything.", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+    assert_match("I wanna do everything.", message["_mime_parts"]["text/html"]["_body"])
+    assert_nil(message["_mime_parts"]["text/plain"])
   end
 
   def test_global_config_enabling_by_default
@@ -104,7 +104,7 @@ class Test::Apis::V1::Users::TestCreateNotifyEmail < Minitest::Test
       }))
       assert_response_code(201, response)
 
-      messages = delayed_job_sent_messages
+      messages = sent_emails
       assert_equal(1, messages.length)
 
       message = messages.first

@@ -1,9 +1,9 @@
 local build_url = require "api-umbrella.utils.build_url"
 local etlua = require "etlua"
-local mail = require "resty.mail"
+local mail = require "api-umbrella.utils.mail"
 local t = require("resty.gettext").gettext
 
-local template_html = etlua.compile([[
+local template_html, template_html_err = etlua.compile([[
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <html><body>
 <p><%= greeting %></p>
@@ -16,8 +16,11 @@ local template_html = etlua.compile([[
 <p><%= instruction_3 %></p>
 </body></html>
 ]])
+if template_html_err then
+  ngx.log(ngx.ERR, "template compile error: ", template_html_err)
+end
 
-local template_text = etlua.compile([[
+local template_text, template_text_err = etlua.compile([[
 <%- greeting %>
 
 <%- instruction %>
@@ -28,6 +31,9 @@ local template_text = etlua.compile([[
 
 <%- instruction_3 %>
 ]])
+if template_text_err then
+  ngx.log(ngx.ERR, "template compile error: ", template_text_err)
+end
 
 return function(admin, token)
   local data = {
@@ -39,21 +45,13 @@ return function(admin, token)
     instruction_3 = t("Your password won't change until you access the link above and create a new one."),
   }
 
-  local mailer, mailer_err = mail.new({
-    host = config["web"]["mailer"]["smtp_settings"]["host"],
-    port = config["web"]["mailer"]["smtp_settings"]["port"],
-    username = config["web"]["mailer"]["smtp_settings"]["user_name"],
-    password = config["web"]["mailer"]["smtp_settings"]["password"],
-    auth_type = config["web"]["mailer"]["smtp_settings"]["authentication"],
-    domain = config["web"]["mailer"]["smtp_settings"]["domain"],
-    ssl = config["web"]["mailer"]["smtp_settings"]["ssl"],
-  })
+  local mailer, mailer_err = mail()
   if not mailer then
     return nil, mailer_err
   end
 
   local ok, send_err = mailer:send({
-    from = "noreply@localhost",
+    from = "noreply@" .. config["web"]["default_host"],
     to = { admin.email },
     subject = t("Reset password instructions"),
     text = template_text(data),

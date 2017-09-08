@@ -247,6 +247,27 @@ local function set_computed_config()
     config["_default_hostname_normalized"] = host_normalize(default_hostname)
   end
 
+  if not config["web"] then
+    config["web"] = {}
+  end
+
+  -- Set the default host used for web application links (for mailers, contact
+  -- URLs, etc).
+  --
+  -- By default, pick this up from the `hosts` array where `default` has been
+  -- set to true (this gets put on `_default_hostname` for easier access). But
+  -- still allow the web host to be explicitly set via `web.default_host`.
+  if not config["web"]["default_host"] then
+    config["web"]["default_host"] = config["_default_hostname"]
+
+    -- Fallback to something that will at least generate valid URLs if there's
+    -- no default, or the default is "*" (since in this context, a wildcard
+    -- doesn't make sense for generating URLs).
+    if not config["web"]["default_host"] or config["web"]["default_host"] == "*" then
+      config["web"]["default_host"] = "localhost"
+    end
+  end
+
   -- Determine the nameservers for DNS resolution. Prefer explicitly configured
   -- nameservers, but fallback to nameservers defined in resolv.conf, and then
   -- Google's DNS servers if nothing else is defined.

@@ -1,13 +1,15 @@
 local ApiUser = require "api-umbrella.lapis.models.api_user"
-local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
-local lapis_helpers = require "api-umbrella.utils.lapis_helpers"
+local api_user_welcome_mailer = require "api-umbrella.lapis.mailers.api_user_welcome"
+local api_user_admin_notification_mailer = require "api-umbrella.lapis.mailers.api_user_admin_notification"
 local db_null = require("lapis.db").NULL
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
+local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
 local is_array = require "api-umbrella.utils.is_array"
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_params = require("lapis.application").json_params
 local lapis_datatables = require "api-umbrella.utils.lapis_datatables"
+local lapis_helpers = require "api-umbrella.utils.lapis_helpers"
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local respond_to = require("lapis.application").respond_to
 
@@ -15,6 +17,50 @@ local capture_errors_json_full = lapis_helpers.capture_errors_json_full
 local parse_post_for_pseudo_ie_cors = lapis_helpers.parse_post_for_pseudo_ie_cors
 
 local _M = {}
+
+local function send_admin_notification_email(self, api_user)
+  local send_email = false
+  if self.params and self.params["options"] and self.params["options"]["send_notify_email"] == "true" then
+    send_email = true
+  end
+
+  if not send_email and tostring(config["web"]["send_notify_email"]) == "true" then
+    send_email = true
+  end
+
+  if not send_email then
+    return nil
+  end
+
+  local ok, err = api_user_admin_notification_mailer(api_user, self.params["options"])
+  if not ok then
+    ngx.log(ngx.ERR, "mail error: ", err)
+  end
+end
+
+local function send_welcome_email(self, api_user)
+  local send_email = false
+  if self.params and self.params["options"] and self.params["options"]["send_welcome_email"] == "true" then
+    send_email = true
+  end
+
+  -- For the admin tool, it's easier to have this attribute on the user model,
+  -- rather than options, so check there for whether we should send e-mail.
+  -- Also note that for backwards compatibility, we only check for the presence
+  -- of this attribute, and not it's actual value.
+  if not send_email and self.params and self.params["user"] and self.params["user"]["send_welcome_email"] then
+    send_email = true
+  end
+
+  if not send_email then
+    return nil
+  end
+
+  local ok, err = api_user_welcome_mailer(api_user, self.params["options"])
+  if not ok then
+    ngx.log(ngx.ERR, "mail error: ", err)
+  end
+end
 
 function _M.index(self)
   return lapis_datatables.index(self, ApiUser, {
@@ -80,6 +126,9 @@ function _M.create(self)
   if not self.current_admin and not verify_email then
     response["user"]["api_key"] = api_user:api_key_decrypted()
   end
+
+  send_admin_notification_email(self, api_user)
+  send_welcome_email(self, api_user)
 
   self.res.status = 201
   return lapis_json(self, response)

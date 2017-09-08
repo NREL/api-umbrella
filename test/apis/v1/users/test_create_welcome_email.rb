@@ -3,7 +3,7 @@ require_relative "../../../test_helper"
 class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
-  include ApiUmbrellaTestHelpers::DelayedJob
+  include ApiUmbrellaTestHelpers::SentEmails
 
   def setup
     super
@@ -22,7 +22,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(1, delayed_job_sent_messages.length)
+    assert_equal(1, sent_emails.length)
   end
 
   def test_no_email_when_disabled
@@ -34,7 +34,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.length)
   end
 
   def test_no_email_when_unknown_value
@@ -46,7 +46,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.length)
   end
 
   def test_no_email_by_default
@@ -57,7 +57,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.length)
   end
 
   def test_sends_email_when_user_attribute_has_any_value
@@ -70,7 +70,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
       },
     }))
     assert_response_code(201, response)
-    assert_equal(1, delayed_job_sent_messages.length)
+    assert_equal(1, sent_emails.length)
   end
 
   def test_default_content
@@ -83,7 +83,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     }))
     assert_response_code(201, response)
 
-    messages = delayed_job_sent_messages
+    messages = sent_emails
     assert_equal(1, messages.length)
 
     data = MultiJson.load(response.body)
@@ -96,8 +96,8 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
 
     # API key
     refute_nil(user.api_key)
-    assert_match(user.api_key, message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    assert_match(user.api_key, message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+    assert_match(user.api_key, message["_mime_parts"]["text/html"]["_body"])
+    assert_match(user.api_key, message["_mime_parts"]["text/plain"]["_body"])
 
     # Subject
     assert_equal(["Your API Umbrella API key"], message["Content"]["Headers"]["Subject"])
@@ -106,12 +106,12 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     assert_equal(["noreply@localhost"], message["Content"]["Headers"]["From"])
 
     # Example API URL
-    refute_match("Here's an example", message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    refute_match("Here's an\r\nexample", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+    refute_match("Here's an example", message["_mime_parts"]["text/html"]["_body"])
+    refute_match("Here's an example", message["_mime_parts"]["text/plain"]["_body"])
 
     # Contact URL
-    assert_match(%(<a href="http://localhost/contact/">contact us</a>), message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    assert_match("contact us \r\n( http://localhost/contact/ )", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+    assert_match(%(<a href="http://localhost/contact/">contact us</a>), message["_mime_parts"]["text/html"]["_body"])
+    assert_match("contact us ( http://localhost/contact/ )", message["_mime_parts"]["text/plain"]["_body"])
   end
 
   def test_customized_content
@@ -131,7 +131,7 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     }))
     assert_response_code(201, response)
 
-    messages = delayed_job_sent_messages
+    messages = sent_emails
     assert_equal(1, messages.length)
 
     data = MultiJson.load(response.body)
@@ -144,8 +144,8 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
 
     # API key
     refute_nil(user.api_key)
-    assert_match(user.api_key, message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    assert_match(user.api_key, message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+    assert_match(user.api_key, message["_mime_parts"]["text/html"]["_body"])
+    assert_match(user.api_key, message["_mime_parts"]["text/plain"]["_body"])
 
     # Subject
     assert_equal(["Your External Example API key"], message["Content"]["Headers"]["Subject"])
@@ -154,13 +154,13 @@ class Test::Apis::V1::Users::TestCreateWelcomeEmail < Minitest::Test
     assert_equal(["Tester <test@google.com>"], message["Content"]["Headers"]["From"])
 
     # URL Example
-    assert_match("Here's an example", message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    assert_match("Here's an\r\nexample", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
-    assert_match(%(<a href="https://example.com/api.json?api_key=#{user.api_key}&amp;test=1">https://example.com/api.json?<strong>api_key=#{user.api_key}</strong>&amp;test=1</a>), message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    assert_match("https://example.com/api.json?api_key=#{user.api_key}&test=1\r\n\r\n( https://example.com/api.json?api_key=#{user.api_key}&test=1 )", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+    assert_match("Here's an example", message["_mime_parts"]["text/html"]["_body"])
+    assert_match("Here's an example", message["_mime_parts"]["text/plain"]["_body"])
+    assert_match(%(<a href="https://example.com/api.json?api_key=#{user.api_key}&amp;test=1">https://example.com/api.json?<strong>api_key=#{user.api_key}</strong>&amp;test=1</a>), message["_mime_parts"]["text/html"]["_body"])
+    assert_match("https://example.com/api.json?api_key=#{user.api_key}&test=1", message["_mime_parts"]["text/plain"]["_body"])
 
     # Contact URL
-    assert_match(%(<a href="https://example.com/contact-us">contact us</a>), message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    assert_match("contact us \r\n( https://example.com/contact-us )", message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+    assert_match(%(<a href="https://example.com/contact-us">contact us</a>), message["_mime_parts"]["text/html"]["_body"])
+    assert_match("contact us ( https://example.com/contact-us )", message["_mime_parts"]["text/plain"]["_body"])
   end
 end
