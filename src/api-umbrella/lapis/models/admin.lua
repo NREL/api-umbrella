@@ -171,9 +171,15 @@ Admin = model_ext.new_class("admins", {
       failed_attempts = self.failed_attempts or json_null,
       locked_at = iso8601.format_postgres(self.locked_at) or json_null,
       created_at = iso8601.format_postgres(self.created_at) or json_null,
-      created_by = self.created_by or json_null,
+      created_by = self.created_by_id or json_null,
+      creator = {
+        username = self.created_by_username or json_null,
+      },
       updated_at = iso8601.format_postgres(self.updated_at) or json_null,
-      updated_by = self.updated_by or json_null,
+      updated_by = self.updated_by_id or json_null,
+      updater = {
+        username = self.updated_by_username or json_null,
+      },
       group_ids = self:group_ids() or json_null,
       group_names = self:group_names() or json_null,
       deleted_at = json_null,

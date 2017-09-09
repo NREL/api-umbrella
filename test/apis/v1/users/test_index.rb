@@ -14,7 +14,8 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
   def test_response_fields
     record = FactoryGirl.create(data_tables_factory_name, {
       :created_at => Time.utc(2017, 1, 1),
-      :created_by => SecureRandom.uuid,
+      :created_by_id => SecureRandom.uuid,
+      :created_by_username => "creator@example.com",
       :disabled_at => Time.utc(2017, 1, 2),
       :email => "foo@example.com",
       :email_verified => true,
@@ -33,7 +34,8 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       }),
       :throttle_by_ip => true,
       :updated_at => Time.utc(2017, 1, 3),
-      :updated_by => SecureRandom.uuid,
+      :updated_by_id => SecureRandom.uuid,
+      :updated_by_username => "updater@example.com",
       :use_description => "Usage",
       :website => "http://foo.example.com",
     })
@@ -51,6 +53,9 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     record_data = data.fetch("data").first
     assert_base_record_fields(record_data)
 
+    assert_equal("2017-01-01T00:00:00Z", record_data.fetch("created_at"))
+    assert_equal(record.created_by_id, record_data.fetch("created_by"))
+    assert_equal("creator@example.com", record_data.fetch("creator").fetch("username"))
     assert_equal("2017-01-02T00:00:00Z", record_data.fetch("disabled_at"))
     assert_equal("foo@example.com", record_data.fetch("email"))
     assert_equal(true, record_data.fetch("email_verified"))
@@ -85,10 +90,10 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       "response_headers",
     ].sort, record_data.fetch("settings").fetch("rate_limits").first.keys.sort)
     assert_equal(true, record_data.fetch("throttle_by_ip"))
-    assert_match_iso8601(record_data.fetch("updated_at"))
     assert_equal("2017-01-03T00:00:00Z", record_data.fetch("updated_at"))
-    assert_match_uuid(record_data.fetch("updated_by"))
-    assert_equal(record.updated_by, record_data.fetch("updated_by"))
+    assert_equal(record.updated_by_id, record_data.fetch("updated_by"))
+    assert_equal("updater@example.com", record_data.fetch("updater").fetch("username"))
+
     assert_equal("Usage", record_data.fetch("use_description"))
     assert_equal("http://foo.example.com", record_data.fetch("website"))
   end
@@ -109,7 +114,8 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     record_data = data.fetch("data").first
     assert_base_record_fields(record_data)
 
-    assert_equal("test_app_user", record_data.fetch("created_by"))
+    assert_equal("00000000-1111-2222-3333-444444444444", record_data.fetch("created_by"))
+    assert_equal("test_example_admin_username", record_data.fetch("creator").fetch("username"))
     assert_nil(record_data.fetch("disabled_at"))
     assert_nil(record_data.fetch("email_verified"))
     assert_equal(true, record_data.fetch("enabled"))
@@ -121,7 +127,8 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_equal([], record_data.fetch("roles"))
     assert_nil(record_data.fetch("settings"))
     assert_nil(record_data.fetch("throttle_by_ip"))
-    assert_equal("test_app_user", record_data.fetch("updated_by"))
+    assert_equal("00000000-1111-2222-3333-444444444444", record_data.fetch("updated_by"))
+    assert_equal("test_example_admin_username", record_data.fetch("updater").fetch("username"))
     assert_nil(record_data.fetch("use_description"))
     assert_nil(record_data.fetch("website"))
   end
@@ -223,6 +230,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       "api_key_preview",
       "created_at",
       "created_by",
+      "creator",
       "deleted_at",
       "disabled_at",
       "email",
@@ -242,6 +250,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       "ts",
       "updated_at",
       "updated_by",
+      "updater",
       "use_description",
       "version",
       "website",
@@ -249,6 +258,10 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_kind_of(String, record_data.fetch("api_key_preview"))
     assert_equal(9, record_data.fetch("api_key_preview").length)
     assert_match_iso8601(record_data.fetch("created_at"))
+    assert_match_uuid(record_data.fetch("created_by"))
+    assert_kind_of(Hash, record_data.fetch("creator"))
+    assert_equal(["username"].sort, record_data.fetch("creator").keys)
+    assert_kind_of(String, record_data.fetch("creator").fetch("username"))
     assert_nil(record_data.fetch("deleted_at"))
     assert_kind_of(String, record_data.fetch("email"))
     assert_kind_of(String, record_data.fetch("first_name"))
@@ -261,7 +274,10 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_kind_of(Integer, record_data.fetch("ts").fetch("$timestamp").fetch("i"))
     assert_kind_of(Integer, record_data.fetch("ts").fetch("$timestamp").fetch("t"))
     assert_match_iso8601(record_data.fetch("updated_at"))
-    assert_equal(Time.parse(record_data.fetch("updated_at")).to_i, record_data.fetch("ts").fetch("$timestamp").fetch("t"))
+    assert_match_uuid(record_data.fetch("updated_by"))
+    assert_kind_of(Hash, record_data.fetch("updater"))
+    assert_equal(["username"].sort, record_data.fetch("updater").keys)
+    assert_kind_of(String, record_data.fetch("updater").fetch("username"))
     assert_kind_of(Integer, record_data.fetch("version"))
   end
 end

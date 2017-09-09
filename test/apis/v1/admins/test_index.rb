@@ -29,7 +29,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
 
     assert_equal("2017-01-01T00:00:00Z", record_data.fetch("created_at"))
     assert_match_uuid(record_data.fetch("created_by"))
-    assert_equal(record.created_by, record_data.fetch("created_by"))
+    assert_equal(record.created_by_id, record_data.fetch("created_by"))
     assert_equal("2017-01-05T00:00:00Z", record_data.fetch("current_sign_in_at"))
     assert_equal("10.11.2.3", record_data.fetch("current_sign_in_ip"))
     assert_equal("Provider1", record_data.fetch("current_sign_in_provider"))
@@ -54,7 +54,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     assert_equal(true, record_data.fetch("superuser"))
     assert_equal("2017-01-02T00:00:00Z", record_data.fetch("updated_at"))
     assert_match_uuid(record_data.fetch("updated_by"))
-    assert_equal(record.updated_by, record_data.fetch("updated_by"))
+    assert_equal(record.updated_by_id, record_data.fetch("updated_by"))
     assert_match(/@example.com/, record_data.fetch("username"))
   end
 
@@ -74,8 +74,8 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     record_data = data.fetch("data").first
     assert_base_record_fields(record_data)
 
-    assert_equal("test_app_user", record_data.fetch("created_by"))
-    assert_equal("test_app_user", record_data.fetch("updated_by"))
+    assert_equal("00000000-1111-2222-3333-444444444444", record_data.fetch("created_by"))
+    assert_equal("00000000-1111-2222-3333-444444444444", record_data.fetch("updated_by"))
     assert_equal([], record_data.fetch("group_ids"))
     assert_equal(["Superuser"], record_data.fetch("group_names"))
   end

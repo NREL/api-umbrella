@@ -6,33 +6,52 @@ return {
   [1498350289] = function()
     db.query("START TRANSACTION")
 
-    local audit_sql_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/audit.sql")
+    local audit_sql_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/pg-audit-json--1.0.0.sql")
     local audit_sql = file.read(audit_sql_path, true)
     db.query(audit_sql)
     db.query("CREATE INDEX ON audit.log(schema_name, table_name)")
-    db.query("CREATE INDEX ON audit.log(application_name)")
-    db.query("CREATE INDEX ON audit.log(application_user)")
-    db.query("CREATE INDEX ON audit.log((original->>'id'))")
+    db.query("CREATE INDEX ON audit.log(application_user_name)")
+    db.query("CREATE INDEX ON audit.log((row_data->>'id'))")
 
     db.query([[
-      CREATE OR REPLACE FUNCTION current_app_user()
-      RETURNS varchar(255) AS $$
+      CREATE OR REPLACE FUNCTION current_app_user_id()
+      RETURNS uuid AS $$
       BEGIN
-        RETURN current_setting('application.user');
+        RETURN current_setting('audit.user_id')::uuid;
       END;
       $$ LANGUAGE plpgsql;
     ]])
 
     db.query([[
-      CREATE OR REPLACE FUNCTION set_updated()
+      CREATE OR REPLACE FUNCTION current_app_username()
+      RETURNS varchar(255) AS $$
+      BEGIN
+        RETURN current_setting('audit.user_name');
+      END;
+      $$ LANGUAGE plpgsql;
+    ]])
+
+    db.query([[
+      CREATE OR REPLACE FUNCTION stamp_record()
       RETURNS TRIGGER AS $$
       BEGIN
-        IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
-          NEW.updated_at := (now() AT TIME ZONE 'UTC');
-          NEW.updated_by := current_app_user();
+        IF TG_OP = 'INSERT' THEN
+          NEW.created_at := COALESCE(NEW.created_at, now() AT TIME ZONE 'UTC');
+          NEW.created_by_id := COALESCE(NEW.created_by_id, current_app_user_id());
+          NEW.created_by_username := COALESCE(NEW.created_by_username, current_app_username());
+          NEW.updated_at := COALESCE(NEW.updated_at, NEW.created_at);
+          NEW.updated_by_id := COALESCE(NEW.updated_by_id, NEW.created_by_id);
+          NEW.updated_by_username := COALESCE(NEW.updated_by_username, NEW.created_by_username);
           RETURN NEW;
         ELSE
-          RETURN OLD;
+          IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+            NEW.updated_at := COALESCE(NEW.updated_at, now() AT TIME ZONE 'UTC');
+            NEW.updated_by_id := COALESCE(NEW.updated_by_id, current_app_user_id());
+            NEW.updated_by_username := COALESCE(NEW.updated_by_username, current_app_username());
+            RETURN NEW;
+          ELSE
+            RETURN OLD;
+          END IF;
         END IF;
       END;
       $$ LANGUAGE plpgsql;
@@ -72,17 +91,19 @@ return {
         failed_attempts integer NOT NULL DEFAULT 0,
         unlock_token_hash varchar(64),
         locked_at timestamp with time zone,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON admins(username)")
     db.query("CREATE UNIQUE INDEX ON admins(authentication_token_hash)")
     db.query("CREATE UNIQUE INDEX ON admins(reset_password_token_hash)")
     db.query("CREATE UNIQUE INDEX ON admins(unlock_token_hash)")
-    db.query("CREATE TRIGGER admins_updated_at BEFORE UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER admins_updated_at BEFORE INSERT OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admins')")
 
     db.query([[
@@ -90,12 +111,16 @@ return {
         id varchar(50) PRIMARY KEY,
         name varchar(255) NOT NULL,
         display_order smallint NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC')
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
     db.query("CREATE INDEX ON admin_permissions(display_order)")
-    db.query("CREATE TRIGGER admin_permissions_updated_at BEFORE UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER admin_permissions_updated_at BEFORE INSERT OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admin_permissions')")
 
     db.query([[
@@ -104,81 +129,93 @@ return {
         name varchar(255) NOT NULL,
         host varchar(255) NOT NULL,
         path_prefix varchar(255) NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_scopes(host, path_prefix)")
-    db.query("CREATE TRIGGER api_scopes_updated_at BEFORE UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_scopes_updated_at BEFORE INSERT OR UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_scopes')")
 
     db.query([[
       CREATE TABLE admin_groups(
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         name varchar(255) NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_updated_at BEFORE UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER admin_groups_updated_at BEFORE INSERT OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admin_groups')")
 
     db.query([[
       CREATE TABLE admin_groups_admin_permissions(
         admin_group_id uuid REFERENCES admin_groups ON DELETE CASCADE,
         admin_permission_id varchar(50) REFERENCES admin_permissions ON DELETE CASCADE,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL,
         PRIMARY KEY(admin_group_id, admin_permission_id)
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_admin_permissions_updated_at BEFORE UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER admin_groups_admin_permissions_updated_at BEFORE INSERT OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admin_groups_admin_permissions')")
 
     db.query([[
       CREATE TABLE admin_groups_admins(
         admin_group_id uuid REFERENCES admin_groups ON DELETE CASCADE,
         admin_id uuid REFERENCES admins ON DELETE CASCADE,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL,
         PRIMARY KEY(admin_group_id, admin_id)
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_admins_updated_at BEFORE UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER admin_groups_admins_updated_at BEFORE INSERT OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admin_groups_admins')")
 
     db.query([[
       CREATE TABLE admin_groups_api_scopes(
         admin_group_id uuid REFERENCES admin_groups ON DELETE CASCADE,
         api_scope_id uuid REFERENCES api_scopes ON DELETE CASCADE,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL,
         PRIMARY KEY(admin_group_id, api_scope_id)
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_api_scopes_updated_at BEFORE UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER admin_groups_api_scopes_updated_at BEFORE INSERT OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admin_groups_api_scopes')")
 
     db.query([[
       CREATE TABLE api_roles(
         id varchar(255) PRIMARY KEY,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_roles_updated_at BEFORE UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_roles_updated_at BEFORE INSERT OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_roles')")
 
     db.query([[
@@ -190,14 +227,16 @@ return {
         frontend_host varchar(255) NOT NULL,
         backend_host varchar(255),
         balance_algorithm varchar(11) NOT NULL CHECK(balance_algorithm IN('round_robin', 'least_conn', 'ip_hash')),
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
     db.query("CREATE INDEX ON api_backends(sort_order)")
-    db.query("CREATE TRIGGER api_backends_updated_at BEFORE UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_backends_updated_at BEFORE INSERT OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backends')")
 
     db.query([[
@@ -208,13 +247,15 @@ return {
         http_method varchar(7) NOT NULL CHECK(http_method IN('any', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'OPTIONS', 'CONNECT', 'PATCH')),
         frontend_matcher varchar(255) NOT NULL,
         backend_replacement varchar(255) NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_backend_rewrites_updated_at BEFORE UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_backend_rewrites_updated_at BEFORE INSERT OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_rewrites')")
 
     db.query([[
@@ -223,13 +264,15 @@ return {
         api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE,
         host varchar(255) NOT NULL,
         port int NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_backend_servers_updated_at BEFORE UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_backend_servers_updated_at BEFORE INSERT OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_servers')")
 
     db.query([[
@@ -238,13 +281,15 @@ return {
         api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE,
         http_method varchar(7) NOT NULL CHECK(http_method IN('any', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'OPTIONS', 'CONNECT', 'PATCH')),
         regex varchar(255) NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_backend_sub_url_settings_updated_at BEFORE UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_backend_sub_url_settings_updated_at BEFORE INSERT OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_sub_url_settings')")
 
     db.query([[
@@ -253,13 +298,15 @@ return {
         api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE,
         frontend_prefix varchar(255) NOT NULL,
         backend_prefix varchar(255) NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_backend_url_matches_updated_at BEFORE UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_backend_url_matches_updated_at BEFORE INSERT OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_url_matches')")
 
     db.query([[
@@ -282,30 +329,34 @@ return {
         authenticated_rate_limit_behavior varchar(12) CHECK(authenticated_rate_limit_behavior IN('all', 'api_key_only')),
         error_templates jsonb,
         error_data jsonb,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL,
         CONSTRAINT parent_id_not_null CHECK((api_backend_id IS NOT NULL AND api_backend_sub_url_settings_id IS NULL) OR (api_backend_id IS NULL AND api_backend_sub_url_settings_id IS NOT NULL))
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_settings(api_backend_id)")
     db.query("CREATE UNIQUE INDEX ON api_backend_settings(api_backend_sub_url_settings_id)")
-    db.query("CREATE TRIGGER api_backend_settings_updated_at BEFORE UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_backend_settings_updated_at BEFORE INSERT OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_settings')")
 
     db.query([[
       CREATE TABLE api_backend_settings_required_roles(
         api_backend_settings_id uuid NOT NULL REFERENCES api_backend_settings ON DELETE CASCADE,
         api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE CASCADE,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL,
         PRIMARY KEY(api_backend_settings_id, api_role_id)
       )
     ]])
-    db.query("CREATE TRIGGER api_backend_settings_required_roles_updated_at BEFORE UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_backend_settings_required_roles_updated_at BEFORE INSERT OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_settings_required_roles')")
 
     db.query([[
@@ -316,14 +367,16 @@ return {
         sort_order int NOT NULL,
         key varchar(255) NOT NULL,
         value varchar(255),
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_http_headers(api_backend_settings_id, header_type, sort_order)")
-    db.query("CREATE TRIGGER api_backend_http_headers_updated_at BEFORE UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_backend_http_headers_updated_at BEFORE INSERT OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_http_headers')")
 
     db.query([[
@@ -347,28 +400,32 @@ return {
         registration_origin varchar(1000),
         throttle_by_ip boolean NOT NULL DEFAULT FALSE,
         disabled_at timestamp with time zone,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_users(api_key_hash)")
-    db.query("CREATE TRIGGER api_users_updated_at BEFORE UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_users_updated_at BEFORE INSERT OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_users')")
 
     db.query([[
       CREATE TABLE api_users_roles(
         api_user_id uuid NOT NULL REFERENCES api_users ON DELETE CASCADE,
         api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE CASCADE,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL,
         PRIMARY KEY(api_user_id, api_role_id)
       )
     ]])
-    db.query("CREATE TRIGGER api_users_roles_updated_at BEFORE UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_users_roles_updated_at BEFORE INSERT OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_users_roles')")
 
     db.query([[
@@ -378,26 +435,30 @@ return {
         rate_limit_mode varchar(9) CHECK(rate_limit_mode IN('unlimited', 'custom')),
         allowed_ips inet ARRAY,
         allowed_referers varchar(500) ARRAY,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_user_settings_updated_at BEFORE UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER api_user_settings_updated_at BEFORE INSERT OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_user_settings')")
 
     db.query([[
       CREATE TABLE published_config(
         id bigserial PRIMARY KEY,
         config jsonb NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER published_config_updated_at BEFORE UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER published_config_updated_at BEFORE INSERT OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('published_config')")
 
     db.query([[
@@ -411,15 +472,17 @@ return {
         limit_to bigint NOT NULL,
         distributed boolean NOT NULL DEFAULT FALSE,
         response_headers boolean NOT NULL DEFAULT FALSE,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user(),
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL,
         CONSTRAINT settings_id_not_null CHECK((api_backend_settings_id IS NOT NULL AND api_user_settings_id IS NULL) OR (api_backend_settings_id IS NULL AND api_user_settings_id IS NOT NULL))
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON rate_limits(api_backend_settings_id, api_user_settings_id, limit_by, duration)")
-    db.query("CREATE TRIGGER rate_limits_updated_at BEFORE UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER rate_limits_updated_at BEFORE INSERT OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('rate_limits')")
 
     db.query([[
@@ -429,13 +492,15 @@ return {
         backend_protocol varchar(5) NOT NULL CHECK(backend_protocol IN('http', 'https')),
         server_host varchar(255) NOT NULL,
         server_port int NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER website_backends_updated_at BEFORE UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER website_backends_updated_at BEFORE INSERT OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('website_backends')")
 
     db.query([[
@@ -443,13 +508,15 @@ return {
         id varchar(40) PRIMARY KEY,
         expires timestamp with time zone,
         encrypted_data TEXT NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        created_by varchar(255) NOT NULL DEFAULT current_app_user(),
-        updated_at timestamp with time zone NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
-        updated_by varchar(255) NOT NULL DEFAULT current_app_user()
+        created_at timestamp with time zone NOT NULL,
+        created_by_id uuid NOT NULL,
+        created_by_username varchar(255) NOT NULL,
+        updated_at timestamp with time zone NOT NULL,
+        updated_by_id uuid NOT NULL,
+        updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER sessions_updated_at BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE set_updated()")
+    db.query("CREATE TRIGGER sessions_updated_at BEFORE INSERT OR UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
 
     db.query([[
       CREATE VIEW api_users_flattened AS

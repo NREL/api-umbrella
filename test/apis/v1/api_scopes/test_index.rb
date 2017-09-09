@@ -14,12 +14,12 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
   def test_response_fields
     record = FactoryGirl.create(data_tables_factory_name, {
       :created_at => Time.utc(2017, 1, 1),
-      :created_by => SecureRandom.uuid,
+      :created_by_id => SecureRandom.uuid,
       :host => "example.com",
       :name => "Example",
       :path_prefix => "/#{unique_test_id}/",
       :updated_at => Time.utc(2017, 1, 2),
-      :updated_by => SecureRandom.uuid,
+      :updated_by_id => SecureRandom.uuid,
     })
 
     response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token).deep_merge({
@@ -37,13 +37,13 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
 
     assert_equal("2017-01-01T00:00:00Z", record_data.fetch("created_at"))
     assert_match_uuid(record_data.fetch("created_by"))
-    assert_equal(record.created_by, record_data.fetch("created_by"))
+    assert_equal(record.created_by_id, record_data.fetch("created_by"))
     assert_equal("example.com", record_data.fetch("host"))
     assert_equal("Example", record_data.fetch("name"))
     assert_equal("/#{unique_test_id}/", record_data.fetch("path_prefix"))
     assert_equal("2017-01-02T00:00:00Z", record_data.fetch("updated_at"))
     assert_match_uuid(record_data.fetch("updated_by"))
-    assert_equal(record.updated_by, record_data.fetch("updated_by"))
+    assert_equal(record.updated_by_id, record_data.fetch("updated_by"))
   end
 
   def test_empty_response_fields
@@ -62,8 +62,8 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
     record_data = data.fetch("data").first
     assert_base_record_fields(record_data)
 
-    assert_equal("test_app_user", record_data.fetch("created_by"))
-    assert_equal("test_app_user", record_data.fetch("updated_by"))
+    assert_equal("00000000-1111-2222-3333-444444444444", record_data.fetch("created_by"))
+    assert_equal("00000000-1111-2222-3333-444444444444", record_data.fetch("updated_by"))
   end
 
   def test_search_name
@@ -108,6 +108,7 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
     assert_equal([
       "created_at",
       "created_by",
+      "creator",
       "deleted_at",
       "host",
       "id",
@@ -115,15 +116,24 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
       "path_prefix",
       "updated_at",
       "updated_by",
+      "updater",
       "version",
     ].sort, record_data.keys.sort)
     assert_match_iso8601(record_data.fetch("created_at"))
+    assert_match_uuid(record_data.fetch("created_by"))
+    assert_kind_of(Hash, record_data.fetch("creator"))
+    assert_equal(["username"].sort, record_data.fetch("creator").keys)
+    assert_kind_of(String, record_data.fetch("creator").fetch("username"))
     assert_nil(record_data.fetch("deleted_at"))
     assert_kind_of(String, record_data.fetch("host"))
     assert_match_uuid(record_data.fetch("id"))
     assert_kind_of(String, record_data.fetch("name"))
     assert_kind_of(String, record_data.fetch("path_prefix"))
     assert_match_iso8601(record_data.fetch("updated_at"))
+    assert_match_uuid(record_data.fetch("updated_by"))
+    assert_kind_of(Hash, record_data.fetch("updater"))
+    assert_equal(["username"].sort, record_data.fetch("updater").keys)
+    assert_kind_of(String, record_data.fetch("updater").fetch("username"))
     assert_kind_of(Integer, record_data.fetch("version"))
   end
 end

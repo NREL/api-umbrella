@@ -65,7 +65,7 @@ SET search_path = audit, pg_catalog;
 CREATE FUNCTION audit_table(target_table regclass) RETURNS void
     LANGUAGE sql
     AS $_$
-SELECT audit.audit_table($1, BOOLEAN 't', BOOLEAN 't');
+  SELECT audit.audit_table($1, BOOLEAN 't', BOOLEAN 't');
 $_$;
 
 
@@ -74,7 +74,8 @@ $_$;
 --
 
 COMMENT ON FUNCTION audit_table(target_table regclass) IS '
-Add auditing support to the given table. Row-level changes will be logged with full client query text. No cols are ignored.
+Add auditing support to the given table. Row-level changes will be logged with
+full client query text. No cols are ignored.
 ';
 
 
@@ -85,7 +86,7 @@ Add auditing support to the given table. Row-level changes will be logged with f
 CREATE FUNCTION audit_table(target_table regclass, audit_rows boolean, audit_query_text boolean) RETURNS void
     LANGUAGE sql
     AS $_$
-SELECT audit.audit_table($1, $2, $3, ARRAY[]::text[]);
+  SELECT audit.audit_table($1, $2, $3, ARRAY[]::TEXT[]);
 $_$;
 
 
@@ -97,34 +98,35 @@ CREATE FUNCTION audit_table(target_table regclass, audit_rows boolean, audit_que
     LANGUAGE plpgsql
     AS $$
 DECLARE
-  stm_targets text = 'INSERT OR UPDATE OR DELETE OR TRUNCATE';
-  _q_txt text;
-  _ignored_cols_snip text = '';
+  stm_targets TEXT = 'INSERT OR UPDATE OR DELETE OR TRUNCATE';
+  _q_txt TEXT;
+  _ignored_cols_snip TEXT = '';
 BEGIN
-    EXECUTE 'DROP TRIGGER IF EXISTS audit_trigger_row ON ' || target_table::TEXT;
-    EXECUTE 'DROP TRIGGER IF EXISTS audit_trigger_stm ON ' || target_table::TEXT;
+  EXECUTE 'DROP TRIGGER IF EXISTS audit_trigger_row ON ' || target_table::TEXT;
+  EXECUTE 'DROP TRIGGER IF EXISTS audit_trigger_stm ON ' || target_table::TEXT;
 
-    IF audit_rows THEN
-        IF array_length(ignored_cols,1) > 0 THEN
-            _ignored_cols_snip = ', ' || quote_literal(ignored_cols);
-        END IF;
-        _q_txt = 'CREATE TRIGGER audit_trigger_row AFTER INSERT OR UPDATE OR DELETE ON ' ||
-                 target_table::TEXT ||
-                 ' FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func(' ||
-                 quote_literal(audit_query_text) || _ignored_cols_snip || ');';
-        RAISE NOTICE '%',_q_txt;
-        EXECUTE _q_txt;
-        stm_targets = 'TRUNCATE';
-    ELSE
+  IF audit_rows THEN
+    IF array_length(ignored_cols,1) > 0 THEN
+        _ignored_cols_snip = ', ' || quote_literal(ignored_cols);
     END IF;
-
-    _q_txt = 'CREATE TRIGGER audit_trigger_stm AFTER ' || stm_targets || ' ON ' ||
-             target_table ||
-             ' FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('||
-             quote_literal(audit_query_text) || ');';
-    RAISE NOTICE '%',_q_txt;
+    _q_txt = 'CREATE TRIGGER audit_trigger_row ' ||
+             'AFTER INSERT OR UPDATE OR DELETE ON ' ||
+             target_table::TEXT ||
+             ' FOR EACH ROW EXECUTE PROCEDURE audit.if_modified_func(' ||
+             quote_literal(audit_query_text) ||
+             _ignored_cols_snip ||
+             ');';
+    RAISE NOTICE '%', _q_txt;
     EXECUTE _q_txt;
+    stm_targets = 'TRUNCATE';
+  END IF;
 
+  _q_txt = 'CREATE TRIGGER audit_trigger_stm AFTER ' || stm_targets || ' ON ' ||
+           target_table ||
+           ' FOR EACH STATEMENT EXECUTE PROCEDURE audit.if_modified_func('||
+           quote_literal(audit_query_text) || ');';
+  RAISE NOTICE '%', _q_txt;
+  EXECUTE _q_txt;
 END;
 $$;
 
@@ -139,8 +141,10 @@ Add auditing support to a table.
 Arguments:
    target_table:     Table name, schema qualified if not on search_path
    audit_rows:       Record each row change, or only audit at a statement level
-   audit_query_text: Record the text of the client query that triggered the audit event?
-   ignored_cols:     Columns to exclude from update diffs, ignore updates that change only ignored cols.
+   audit_query_text: Record the text of the client query that triggered
+                     the audit event?
+   ignored_cols:     Columns to exclude from update diffs,
+                     ignore updates that change only ignored cols.
 ';
 
 
@@ -154,60 +158,68 @@ CREATE FUNCTION if_modified_func() RETURNS trigger
     AS $$
 DECLARE
     audit_row audit.log;
-    excluded_cols text[] = ARRAY[]::text[];
+    include_values BOOLEAN;
+    log_diffs BOOLEAN;
+    h_old JSONB;
+    h_new JSONB;
+    excluded_cols TEXT[] = ARRAY[]::TEXT[];
 BEGIN
-    IF TG_WHEN <> 'AFTER' THEN
-        RAISE EXCEPTION 'audit.if_modified_func() may only run as an AFTER trigger';
-    END IF;
+  IF TG_WHEN <> 'AFTER' THEN
+    RAISE EXCEPTION 'audit.if_modified_func() may only run as an AFTER trigger';
+  END IF;
 
-    audit_row = ROW(
-        nextval('audit.log_id_seq'),                  -- log ID
-        TG_TABLE_SCHEMA::text,                        -- schema_name
-        TG_TABLE_NAME::text,                          -- table_name
-        TG_RELID,                                     -- relation OID for much quicker searches
-        session_user::text,                           -- session_user
-        current_timestamp,                            -- action_tstamp_tx
-        statement_timestamp(),                        -- action_tstamp_stm
-        clock_timestamp(),                            -- action_tstamp_clk
-        txid_current(),                               -- transaction ID
-        current_setting('application.name'),          -- client application
-        current_setting('application.user'),          -- client user
-        inet_client_addr(),                           -- client_addr
-        inet_client_port(),                           -- client_port
-        current_query(),                              -- top-level query or queries (if multistatement) from client
-        substring(TG_OP,1,1),                         -- action
-        NULL,                                         -- original
-        NULL,                                         -- diff
-        'f'                                           -- statement_only
-        );
+  audit_row = ROW(
+    nextval('audit.log_id_seq'),                    -- ID
+    TG_TABLE_SCHEMA::TEXT,                          -- schema_name
+    TG_TABLE_NAME::TEXT,                            -- table_name
+    TG_RELID,                                       -- relation OID for faster searches
+    session_user::TEXT,                             -- session_user_name
+    current_user::TEXT,                             -- current_user_name
+    current_timestamp,                              -- action_tstamp_tx
+    statement_timestamp(),                          -- action_tstamp_stm
+    clock_timestamp(),                              -- action_tstamp_clk
+    txid_current(),                                 -- transaction ID
+    current_setting('application_name', true),      -- client application
+    current_setting('audit.user_name', true),       -- client user name
+    inet_client_addr(),                             -- client_addr
+    inet_client_port(),                             -- client_port
+    current_query(),                                -- top-level query or queries
+    substring(TG_OP, 1, 1),                         -- action
+    NULL,                                           -- row_data
+    NULL,                                           -- changed_fields
+    'f'                                             -- statement_only
+    );
 
-    IF NOT TG_ARGV[0]::boolean IS DISTINCT FROM 'f'::boolean THEN
-        audit_row.client_query = NULL;
-    END IF;
+  IF NOT TG_ARGV[0]::BOOLEAN IS DISTINCT FROM 'f'::BOOLEAN THEN
+    audit_row.client_query = NULL;
+  END IF;
 
-    IF TG_ARGV[1] IS NOT NULL THEN
-        excluded_cols = TG_ARGV[1]::text[];
-    END IF;
+  IF TG_ARGV[1] IS NOT NULL THEN
+    excluded_cols = TG_ARGV[1]::TEXT[];
+  END IF;
 
-    IF (TG_OP = 'UPDATE' AND TG_LEVEL = 'ROW') THEN
-        audit_row.original = to_jsonb(OLD.*) - excluded_cols;
-        audit_row.diff = (to_jsonb(NEW.*) - audit_row.original) - excluded_cols;
-        IF audit_row.diff = '{}'::jsonb THEN
-            -- All changed fields are ignored. Skip this update.
-            RETURN NULL;
-        END IF;
-    ELSIF (TG_OP = 'DELETE' AND TG_LEVEL = 'ROW') THEN
-        audit_row.original = to_jsonb(OLD.*) - excluded_cols;
-    ELSIF (TG_OP = 'INSERT' AND TG_LEVEL = 'ROW') THEN
-        audit_row.original = to_jsonb(NEW.*) - excluded_cols;
-    ELSIF (TG_LEVEL = 'STATEMENT' AND TG_OP IN ('INSERT','UPDATE','DELETE','TRUNCATE')) THEN
-        audit_row.statement_only = 't';
-    ELSE
-        RAISE EXCEPTION '[audit.if_modified_func] - Trigger func added as trigger for unhandled case: %, %',TG_OP, TG_LEVEL;
-        RETURN NULL;
+  IF (TG_OP = 'UPDATE' AND TG_LEVEL = 'ROW') THEN
+    audit_row.row_data = to_jsonb(OLD.*) - excluded_cols;
+    audit_row.changed_fields =
+      (to_jsonb(NEW.*) - audit_row.row_data) - excluded_cols;
+    IF audit_row.changed_fields = '{}'::JSONB THEN
+      -- All changed fields are ignored. Skip this update.
+      RETURN NULL;
     END IF;
-    INSERT INTO audit.log VALUES (audit_row.*);
+  ELSIF (TG_OP = 'DELETE' AND TG_LEVEL = 'ROW') THEN
+    audit_row.row_data = to_jsonb(OLD.*) - excluded_cols;
+  ELSIF (TG_OP = 'INSERT' AND TG_LEVEL = 'ROW') THEN
+    audit_row.row_data = to_jsonb(NEW.*) - excluded_cols;
+  ELSIF (TG_LEVEL = 'STATEMENT' AND
+         TG_OP IN ('INSERT','UPDATE','DELETE','TRUNCATE')) THEN
+    audit_row.statement_only = 't';
+  ELSE
+    RAISE EXCEPTION '[audit.if_modified_func] - Trigger func added as trigger '
+                    'for unhandled case: %, %', TG_OP, TG_LEVEL;
     RETURN NULL;
+  END IF;
+  INSERT INTO audit.log VALUES (audit_row.*);
+  RETURN NULL;
 END;
 $$;
 
@@ -221,9 +233,9 @@ Track changes to a table at the statement and/or row level.
 
 Optional parameters to trigger in CREATE TRIGGER call:
 
-param 0: boolean, whether to log the query text. Default ''t''.
+param 0: BOOLEAN, whether to log the query text. Default ''t''.
 
-param 1: text[], columns to ignore in updates. Default [].
+param 1: TEXT[], columns to ignore in updates. Default [].
 
          Updates to ignored cols are omitted from changed_fields.
 
@@ -242,23 +254,36 @@ There is no parameter to disable logging of values. Add this trigger as
 a ''FOR EACH STATEMENT'' rather than ''FOR EACH ROW'' trigger if you do not
 want to log row values.
 
-Note that the user name logged is the login role for the session. The audit trigger
-cannot obtain the active role because it is reset by the SECURITY DEFINER invocation
-of the audit trigger its self.
+Note that the user name logged is the login role for the session. The audit
+trigger cannot obtain the active role because it is reset by
+the SECURITY DEFINER invocation of the audit trigger its self.
 ';
 
 
 SET search_path = public, pg_catalog;
 
 --
--- Name: current_app_user(); Type: FUNCTION; Schema: public; Owner: -
+-- Name: current_app_user_id(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION current_app_user() RETURNS character varying
+CREATE FUNCTION current_app_user_id() RETURNS uuid
     LANGUAGE plpgsql
     AS $$
       BEGIN
-        RETURN current_setting('application.user');
+        RETURN current_setting('audit.user_id')::uuid;
+      END;
+      $$;
+
+
+--
+-- Name: current_app_username(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION current_app_username() RETURNS character varying
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        RETURN current_setting('audit.user_name');
       END;
       $$;
 
@@ -267,53 +292,64 @@ CREATE FUNCTION current_app_user() RETURNS character varying
 -- Name: jsonb_minus(jsonb, text[]); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION jsonb_minus(json jsonb, keys text[]) RETURNS jsonb
+CREATE FUNCTION jsonb_minus("left" jsonb, keys text[]) RETURNS jsonb
     LANGUAGE sql IMMUTABLE STRICT
     AS $$
   SELECT
-    -- Only executes opration if the JSON document has the keys
-    CASE WHEN "json" ?| "keys"
-      THEN COALESCE(
-          (SELECT ('{' || string_agg(to_json("key")::text || ':' || "value", ',') || '}')
-           FROM jsonb_each("json")
-           WHERE "key" <> ALL ("keys")),
+    CASE
+      WHEN "left" ?| "keys"
+        THEN COALESCE(
+          (SELECT ('{' ||
+                    string_agg(to_json("key")::TEXT || ':' || "value", ',') ||
+                    '}')
+             FROM jsonb_each("left")
+            WHERE "key" <> ALL ("keys")),
           '{}'
-        )::jsonb
-      ELSE "json"
+        )::JSONB
+      ELSE "left"
     END
 $$;
+
+
+--
+-- Name: FUNCTION jsonb_minus("left" jsonb, keys text[]); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON FUNCTION jsonb_minus("left" jsonb, keys text[]) IS 'Delete specificed keys';
 
 
 --
 -- Name: jsonb_minus(jsonb, jsonb); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION jsonb_minus(arg1 jsonb, arg2 jsonb) RETURNS jsonb
-    LANGUAGE sql
+CREATE FUNCTION jsonb_minus("left" jsonb, "right" jsonb) RETURNS jsonb
+    LANGUAGE sql IMMUTABLE STRICT
     AS $$
-
   SELECT
-    COALESCE(
-      json_object_agg(
-        key,
-        CASE
-          -- if the value is an object and the value of the second argument is
-          -- not null, we do a recursion
-          WHEN jsonb_typeof(value) = 'object' AND arg2 -> key IS NOT NULL
-          THEN jsonb_minus(value, arg2 -> key)
-          -- for all the other types, we just return the value
-          ELSE value
-        END
-      ),
-    '{}'
-    )::jsonb
+    COALESCE(json_object_agg(
+      "key",
+      CASE
+        -- if the value is an object and the value of the second argument is
+        -- not null, we do a recursion
+        WHEN jsonb_typeof("value") = 'object' AND "right" -> "key" IS NOT NULL
+        THEN jsonb_minus("value", "right" -> "key")
+        -- for all the other types, we just return the value
+        ELSE "value"
+      END
+    ), '{}')::JSONB
   FROM
-    jsonb_each(arg1)
+    jsonb_each("left")
   WHERE
-    arg1 -> key <> arg2 -> key
-    OR arg2 -> key IS NULL
-
+    "left" -> "key" <> "right" -> "key"
+    OR "right" -> "key" IS NULL
 $$;
+
+
+--
+-- Name: FUNCTION jsonb_minus("left" jsonb, "right" jsonb); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON FUNCTION jsonb_minus("left" jsonb, "right" jsonb) IS 'Delete matching pairs in the right argument from the left argument';
 
 
 --
@@ -330,19 +366,30 @@ CREATE FUNCTION next_api_backend_sort_order() RETURNS integer
 
 
 --
--- Name: set_updated(); Type: FUNCTION; Schema: public; Owner: -
+-- Name: stamp_record(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION set_updated() RETURNS trigger
+CREATE FUNCTION stamp_record() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
       BEGIN
-        IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
-          NEW.updated_at := (now() AT TIME ZONE 'UTC');
-          NEW.updated_by := current_app_user();
+        IF TG_OP = 'INSERT' THEN
+          NEW.created_at := COALESCE(NEW.created_at, now() AT TIME ZONE 'UTC');
+          NEW.created_by_id := COALESCE(NEW.created_by_id, current_app_user_id());
+          NEW.created_by_username := COALESCE(NEW.created_by_username, current_app_username());
+          NEW.updated_at := COALESCE(NEW.updated_at, NEW.created_at);
+          NEW.updated_by_id := COALESCE(NEW.updated_by_id, NEW.created_by_id);
+          NEW.updated_by_username := COALESCE(NEW.updated_by_username, NEW.created_by_username);
           RETURN NEW;
         ELSE
-          RETURN OLD;
+          IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+            NEW.updated_at := COALESCE(NEW.updated_at, now() AT TIME ZONE 'UTC');
+            NEW.updated_by_id := COALESCE(NEW.updated_by_id, current_app_user_id());
+            NEW.updated_by_username := COALESCE(NEW.updated_by_username, current_app_username());
+            RETURN NEW;
+          ELSE
+            RETURN OLD;
+          END IF;
         END IF;
       END;
       $$;
@@ -360,6 +407,13 @@ CREATE OPERATOR - (
 
 
 --
+-- Name: OPERATOR - (jsonb, text[]); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON OPERATOR - (jsonb, text[]) IS 'Delete specified keys';
+
+
+--
 -- Name: -; Type: OPERATOR; Schema: public; Owner: -
 --
 
@@ -368,6 +422,13 @@ CREATE OPERATOR - (
     LEFTARG = jsonb,
     RIGHTARG = jsonb
 );
+
+
+--
+-- Name: OPERATOR - (jsonb, jsonb); Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON OPERATOR - (jsonb, jsonb) IS 'Delete matching pairs in the right argument from the left argument';
 
 
 SET search_path = audit, pg_catalog;
@@ -385,19 +446,20 @@ CREATE TABLE log (
     schema_name text NOT NULL,
     table_name text NOT NULL,
     relid oid NOT NULL,
-    "session_user" text NOT NULL,
+    session_user_name text NOT NULL,
+    current_user_name text NOT NULL,
     action_tstamp_tx timestamp with time zone NOT NULL,
     action_tstamp_stm timestamp with time zone NOT NULL,
     action_tstamp_clk timestamp with time zone NOT NULL,
-    transaction_id bigint,
+    transaction_id bigint NOT NULL,
     application_name text,
-    application_user text,
+    application_user_name text,
     client_addr inet,
     client_port integer,
     client_query text,
     action text NOT NULL,
-    original jsonb,
-    diff jsonb,
+    row_data jsonb,
+    changed_fields jsonb,
     statement_only boolean NOT NULL,
     CONSTRAINT log_action_check CHECK ((action = ANY (ARRAY['I'::text, 'D'::text, 'U'::text, 'T'::text])))
 );
@@ -407,7 +469,7 @@ CREATE TABLE log (
 -- Name: TABLE log; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON TABLE log IS 'History of auditable actions on audited tables, from audit.if_modified_func()';
+COMMENT ON TABLE log IS 'History of auditable actions on audited tables';
 
 
 --
@@ -435,14 +497,21 @@ COMMENT ON COLUMN log.table_name IS 'Non-schema-qualified table name of table ev
 -- Name: COLUMN log.relid; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.relid IS 'Table OID. Changes with drop/create. Get with ''tablename''::regclass';
+COMMENT ON COLUMN log.relid IS 'Table OID. Changes with drop/create. Get with ''tablename''::REGCLASS';
 
 
 --
--- Name: COLUMN log."session_user"; Type: COMMENT; Schema: audit; Owner: -
+-- Name: COLUMN log.session_user_name; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log."session_user" IS 'Login / session user whose statement caused the audited event';
+COMMENT ON COLUMN log.session_user_name IS 'Login / session user whose statement caused the audited event';
+
+
+--
+-- Name: COLUMN log.current_user_name; Type: COMMENT; Schema: audit; Owner: -
+--
+
+COMMENT ON COLUMN log.current_user_name IS 'Effective user that cased audited event (if authorization level changed)';
 
 
 --
@@ -470,14 +539,21 @@ COMMENT ON COLUMN log.action_tstamp_clk IS 'Wall clock time at which audited eve
 -- Name: COLUMN log.transaction_id; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.transaction_id IS 'Identifier of transaction that made the change. May wrap, but unique paired with action_tstamp_tx.';
+COMMENT ON COLUMN log.transaction_id IS 'Identifier of transaction that made the change. Unique when paired with action_tstamp_tx.';
 
 
 --
 -- Name: COLUMN log.application_name; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.application_name IS 'Application name set when this audit event occurred. Can be changed in-session by client.';
+COMMENT ON COLUMN log.application_name IS 'Client-set session application name when this audit event occurred.';
+
+
+--
+-- Name: COLUMN log.application_user_name; Type: COMMENT; Schema: audit; Owner: -
+--
+
+COMMENT ON COLUMN log.application_user_name IS 'Client-set session application user when this audit event occurred.';
 
 
 --
@@ -491,14 +567,14 @@ COMMENT ON COLUMN log.client_addr IS 'IP address of client that issued query. Nu
 -- Name: COLUMN log.client_port; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.client_port IS 'Remote peer IP port address of client that issued query. Undefined for unix socket.';
+COMMENT ON COLUMN log.client_port IS 'Port address of client that issued query. Undefined for unix socket.';
 
 
 --
 -- Name: COLUMN log.client_query; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.client_query IS 'Top-level query that caused this auditable event. May be more than one statement.';
+COMMENT ON COLUMN log.client_query IS 'Top-level query that caused this auditable event. May be more than one.';
 
 
 --
@@ -509,17 +585,17 @@ COMMENT ON COLUMN log.action IS 'Action type; I = insert, D = delete, U = update
 
 
 --
--- Name: COLUMN log.original; Type: COMMENT; Schema: audit; Owner: -
+-- Name: COLUMN log.row_data; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.original IS 'Record value. Null for statement-level trigger. For INSERT this is the new tuple. For DELETE and UPDATE it is the old tuple.';
+COMMENT ON COLUMN log.row_data IS 'Record value. Null for statement-level trigger. For INSERT this is the new tuple. For DELETE and UPDATE it is the old tuple.';
 
 
 --
--- Name: COLUMN log.diff; Type: COMMENT; Schema: audit; Owner: -
+-- Name: COLUMN log.changed_fields; Type: COMMENT; Schema: audit; Owner: -
 --
 
-COMMENT ON COLUMN log.diff IS 'New values of fields changed by UPDATE. Null except for row-level UPDATE events.';
+COMMENT ON COLUMN log.changed_fields IS 'New values of fields changed by UPDATE. Null except for row-level UPDATE events.';
 
 
 --
@@ -557,10 +633,12 @@ SET search_path = public, pg_catalog;
 CREATE TABLE admin_groups (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     name character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -571,10 +649,12 @@ CREATE TABLE admin_groups (
 CREATE TABLE admin_groups_admin_permissions (
     admin_group_id uuid NOT NULL,
     admin_permission_id character varying(50) NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -585,10 +665,12 @@ CREATE TABLE admin_groups_admin_permissions (
 CREATE TABLE admin_groups_admins (
     admin_group_id uuid NOT NULL,
     admin_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -599,10 +681,12 @@ CREATE TABLE admin_groups_admins (
 CREATE TABLE admin_groups_api_scopes (
     admin_group_id uuid NOT NULL,
     api_scope_id uuid NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -614,8 +698,12 @@ CREATE TABLE admin_permissions (
     id character varying(50) NOT NULL,
     name character varying(255) NOT NULL,
     display_order smallint NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -647,10 +735,12 @@ CREATE TABLE admins (
     failed_attempts integer DEFAULT 0 NOT NULL,
     unlock_token_hash character varying(64),
     locked_at timestamp with time zone,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -665,10 +755,12 @@ CREATE TABLE api_backend_http_headers (
     sort_order integer NOT NULL,
     key character varying(255) NOT NULL,
     value character varying(255),
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL,
     CONSTRAINT api_backend_http_headers_header_type_check CHECK (((header_type)::text = ANY ((ARRAY['request'::character varying, 'response_default'::character varying, 'response_override'::character varying])::text[])))
 );
 
@@ -684,10 +776,12 @@ CREATE TABLE api_backend_rewrites (
     http_method character varying(7) NOT NULL,
     frontend_matcher character varying(255) NOT NULL,
     backend_replacement character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL,
     CONSTRAINT api_backend_rewrites_http_method_check CHECK (((http_method)::text = ANY ((ARRAY['any'::character varying, 'GET'::character varying, 'POST'::character varying, 'PUT'::character varying, 'DELETE'::character varying, 'HEAD'::character varying, 'TRACE'::character varying, 'OPTIONS'::character varying, 'CONNECT'::character varying, 'PATCH'::character varying])::text[]))),
     CONSTRAINT api_backend_rewrites_matcher_type_check CHECK (((matcher_type)::text = ANY ((ARRAY['route'::character varying, 'regex'::character varying])::text[])))
 );
@@ -702,10 +796,12 @@ CREATE TABLE api_backend_servers (
     api_backend_id uuid NOT NULL,
     host character varying(255) NOT NULL,
     port integer NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -732,10 +828,12 @@ CREATE TABLE api_backend_settings (
     authenticated_rate_limit_behavior character varying(12),
     error_templates jsonb,
     error_data jsonb,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL,
     CONSTRAINT api_backend_settings_anonymous_rate_limit_behavior_check CHECK (((anonymous_rate_limit_behavior)::text = ANY ((ARRAY['ip_fallback'::character varying, 'ip_only'::character varying])::text[]))),
     CONSTRAINT api_backend_settings_api_key_verification_level_check CHECK (((api_key_verification_level)::text = ANY ((ARRAY['none'::character varying, 'transition_email'::character varying, 'required_email'::character varying])::text[]))),
     CONSTRAINT api_backend_settings_authenticated_rate_limit_behavior_check CHECK (((authenticated_rate_limit_behavior)::text = ANY ((ARRAY['all'::character varying, 'api_key_only'::character varying])::text[]))),
@@ -752,10 +850,12 @@ CREATE TABLE api_backend_settings (
 CREATE TABLE api_backend_settings_required_roles (
     api_backend_settings_id uuid NOT NULL,
     api_role_id character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -768,10 +868,12 @@ CREATE TABLE api_backend_sub_url_settings (
     api_backend_id uuid NOT NULL,
     http_method character varying(7) NOT NULL,
     regex character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL,
     CONSTRAINT api_backend_sub_url_settings_http_method_check CHECK (((http_method)::text = ANY ((ARRAY['any'::character varying, 'GET'::character varying, 'POST'::character varying, 'PUT'::character varying, 'DELETE'::character varying, 'HEAD'::character varying, 'TRACE'::character varying, 'OPTIONS'::character varying, 'CONNECT'::character varying, 'PATCH'::character varying])::text[])))
 );
 
@@ -785,10 +887,12 @@ CREATE TABLE api_backend_url_matches (
     api_backend_id uuid NOT NULL,
     frontend_prefix character varying(255) NOT NULL,
     backend_prefix character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -804,10 +908,12 @@ CREATE TABLE api_backends (
     frontend_host character varying(255) NOT NULL,
     backend_host character varying(255),
     balance_algorithm character varying(11) NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL,
     CONSTRAINT api_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY ((ARRAY['http'::character varying, 'https'::character varying])::text[]))),
     CONSTRAINT api_backends_balance_algorithm_check CHECK (((balance_algorithm)::text = ANY ((ARRAY['round_robin'::character varying, 'least_conn'::character varying, 'ip_hash'::character varying])::text[])))
 );
@@ -819,10 +925,12 @@ CREATE TABLE api_backends (
 
 CREATE TABLE api_roles (
     id character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -835,10 +943,12 @@ CREATE TABLE api_scopes (
     name character varying(255) NOT NULL,
     host character varying(255) NOT NULL,
     path_prefix character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -852,10 +962,12 @@ CREATE TABLE api_user_settings (
     rate_limit_mode character varying(9),
     allowed_ips inet[],
     allowed_referers character varying(500)[],
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL,
     CONSTRAINT api_user_settings_rate_limit_mode_check CHECK (((rate_limit_mode)::text = ANY ((ARRAY['unlimited'::character varying, 'custom'::character varying])::text[])))
 );
 
@@ -884,10 +996,12 @@ CREATE TABLE api_users (
     registration_origin character varying(1000),
     throttle_by_ip boolean DEFAULT false NOT NULL,
     disabled_at timestamp with time zone,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -898,10 +1012,12 @@ CREATE TABLE api_users (
 CREATE TABLE api_users_roles (
     api_user_id uuid NOT NULL,
     api_role_id character varying(255) NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -919,10 +1035,12 @@ CREATE TABLE rate_limits (
     limit_to bigint NOT NULL,
     distributed boolean DEFAULT false NOT NULL,
     response_headers boolean DEFAULT false NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL,
     CONSTRAINT rate_limits_limit_by_check CHECK (((limit_by)::text = ANY ((ARRAY['ip'::character varying, 'api_key'::character varying])::text[]))),
     CONSTRAINT settings_id_not_null CHECK ((((api_backend_settings_id IS NOT NULL) AND (api_user_settings_id IS NULL)) OR ((api_backend_settings_id IS NULL) AND (api_user_settings_id IS NOT NULL))))
 );
@@ -953,9 +1071,11 @@ CREATE VIEW api_users_flattened AS
     u.throttle_by_ip,
     u.disabled_at,
     u.created_at,
-    u.created_by,
+    u.created_by_id,
+    u.created_by_username,
     u.updated_at,
-    u.updated_by,
+    u.updated_by_id,
+    u.updated_by_username,
     row_to_json(s.*) AS settings,
     ( SELECT json_agg(r.*) AS json_agg
            FROM rate_limits r
@@ -983,10 +1103,12 @@ CREATE TABLE lapis_migrations (
 CREATE TABLE published_config (
     id bigint NOT NULL,
     config jsonb NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -1017,10 +1139,12 @@ CREATE TABLE sessions (
     id character varying(40) NOT NULL,
     expires timestamp with time zone,
     encrypted_data text NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL
 );
 
 
@@ -1034,10 +1158,12 @@ CREATE TABLE website_backends (
     backend_protocol character varying(5) NOT NULL,
     server_host character varying(255) NOT NULL,
     server_port integer NOT NULL,
-    created_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    created_by character varying(255) DEFAULT current_app_user() NOT NULL,
-    updated_at timestamp with time zone DEFAULT timezone('UTC'::text, now()) NOT NULL,
-    updated_by character varying(255) DEFAULT current_app_user() NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    created_by_username character varying(255) NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by_id uuid NOT NULL,
+    updated_by_username character varying(255) NOT NULL,
     CONSTRAINT website_backends_backend_protocol_check CHECK (((backend_protocol)::text = ANY ((ARRAY['http'::character varying, 'https'::character varying])::text[])))
 );
 
@@ -1281,24 +1407,17 @@ CREATE INDEX log_action_tstamp_tx_stm_idx ON log USING btree (action_tstamp_stm)
 
 
 --
--- Name: log_application_name_idx; Type: INDEX; Schema: audit; Owner: -
+-- Name: log_application_user_name_idx; Type: INDEX; Schema: audit; Owner: -
 --
 
-CREATE INDEX log_application_name_idx ON log USING btree (application_name);
-
-
---
--- Name: log_application_user_idx; Type: INDEX; Schema: audit; Owner: -
---
-
-CREATE INDEX log_application_user_idx ON log USING btree (application_user);
+CREATE INDEX log_application_user_name_idx ON log USING btree (application_user_name);
 
 
 --
 -- Name: log_expr_idx; Type: INDEX; Schema: audit; Owner: -
 --
 
-CREATE INDEX log_expr_idx ON log USING btree (((original ->> 'id'::text)));
+CREATE INDEX log_expr_idx ON log USING btree (((row_data ->> 'id'::text)));
 
 
 --
@@ -1405,133 +1524,133 @@ CREATE UNIQUE INDEX rate_limits_api_backend_settings_id_api_user_settings_id_li_
 -- Name: admin_groups_admin_permissions admin_groups_admin_permissions_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_admin_permissions_updated_at BEFORE UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER admin_groups_admin_permissions_updated_at BEFORE INSERT OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: admin_groups_admins admin_groups_admins_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_admins_updated_at BEFORE UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER admin_groups_admins_updated_at BEFORE INSERT OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: admin_groups_api_scopes admin_groups_api_scopes_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_api_scopes_updated_at BEFORE UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER admin_groups_api_scopes_updated_at BEFORE INSERT OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: admin_groups admin_groups_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_updated_at BEFORE UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER admin_groups_updated_at BEFORE INSERT OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: admin_permissions admin_permissions_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_permissions_updated_at BEFORE UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER admin_permissions_updated_at BEFORE INSERT OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: admins admins_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admins_updated_at BEFORE UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER admins_updated_at BEFORE INSERT OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_http_headers api_backend_http_headers_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_http_headers_updated_at BEFORE UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_backend_http_headers_updated_at BEFORE INSERT OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_rewrites api_backend_rewrites_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_rewrites_updated_at BEFORE UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_backend_rewrites_updated_at BEFORE INSERT OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_servers api_backend_servers_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_servers_updated_at BEFORE UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_backend_servers_updated_at BEFORE INSERT OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_settings_required_roles api_backend_settings_required_roles_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_settings_required_roles_updated_at BEFORE UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_backend_settings_required_roles_updated_at BEFORE INSERT OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_settings api_backend_settings_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_settings_updated_at BEFORE UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_backend_settings_updated_at BEFORE INSERT OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_sub_url_settings api_backend_sub_url_settings_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_sub_url_settings_updated_at BEFORE UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_backend_sub_url_settings_updated_at BEFORE INSERT OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_url_matches api_backend_url_matches_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_url_matches_updated_at BEFORE UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_backend_url_matches_updated_at BEFORE INSERT OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backends api_backends_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backends_updated_at BEFORE UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_backends_updated_at BEFORE INSERT OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_roles api_roles_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_roles_updated_at BEFORE UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_roles_updated_at BEFORE INSERT OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_scopes api_scopes_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_scopes_updated_at BEFORE UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_scopes_updated_at BEFORE INSERT OR UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_user_settings api_user_settings_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_user_settings_updated_at BEFORE UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_user_settings_updated_at BEFORE INSERT OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_users_roles api_users_roles_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_users_roles_updated_at BEFORE UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_users_roles_updated_at BEFORE INSERT OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_users api_users_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_users_updated_at BEFORE UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER api_users_updated_at BEFORE INSERT OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
@@ -1846,28 +1965,28 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON website_backends FOR EACH STA
 -- Name: published_config published_config_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER published_config_updated_at BEFORE UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER published_config_updated_at BEFORE INSERT OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: rate_limits rate_limits_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER rate_limits_updated_at BEFORE UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER rate_limits_updated_at BEFORE INSERT OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: sessions sessions_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER sessions_updated_at BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER sessions_updated_at BEFORE INSERT OR UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: website_backends website_backends_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER website_backends_updated_at BEFORE UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE set_updated();
+CREATE TRIGGER website_backends_updated_at BEFORE INSERT OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --

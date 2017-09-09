@@ -53,8 +53,9 @@ module ApiUmbrellaTestHelpers
             :username => "api-umbrella",
             :pool => 50,
             :variables => {
-              "application.name" => "test_app_name",
-              'application."user"' => "test_app_user",
+              "application_name" => "test_app_name",
+              'audit.user_id' => "00000000-1111-2222-3333-444444444444",
+              'audit.user_name' => "test_example_admin_username",
             },
           })
         end

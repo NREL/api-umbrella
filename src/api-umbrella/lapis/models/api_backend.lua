@@ -116,9 +116,15 @@ ApiBackend = model_ext.new_class("api_backends", {
       sub_settings = {},
       url_matches = {},
       created_at = iso8601.format_postgres(self.created_at) or json_null,
-      created_by = self.created_by or json_null,
+      created_by = self.created_by_id or json_null,
+      creator = {
+        username = self.created_by_username or json_null,
+      },
       updated_at = iso8601.format_postgres(self.updated_at) or json_null,
-      updated_by = self.updated_by or json_null,
+      updated_by = self.updated_by_id or json_null,
+      updater = {
+        username = self.updated_by_username or json_null,
+      },
       deleted_at = json_null,
       version = 1,
     }

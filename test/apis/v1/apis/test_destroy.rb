@@ -62,23 +62,23 @@ class Test::Apis::V1::Apis::TestDestroy < Minitest::Test
 
     # Check the audit table, and ensure all the nested association tables are
     # also being audited.
-    api_log = AuditLog.where("table_name = 'api_backends' AND action = 'D' AND original->>'id' = ?", api.id).first!
-    assert_equal(api.name, api_log.original["name"])
-    server_log = AuditLog.where("table_name = 'api_backend_servers' AND action = 'D' AND original->>'id' = ?", server.id).first!
-    assert_equal(server.host, server_log.original["host"])
-    url_match_log = AuditLog.where("table_name = 'api_backend_url_matches' AND action = 'D' AND original->>'id' = ?", url_match.id).first!
-    assert_equal(url_match.frontend_prefix, url_match_log.original["frontend_prefix"])
-    rewrite_log = AuditLog.where("table_name = 'api_backend_rewrites' AND action = 'D' AND original->>'id' = ?", rewrite.id).first!
-    assert_equal(rewrite.frontend_matcher, rewrite_log.original["frontend_matcher"])
-    settings_log = AuditLog.where("table_name = 'api_backend_settings' AND action = 'D' AND original->>'id' = ?", settings.id).first!
-    assert_equal(settings.disable_api_key, settings_log.original["disable_api_key"])
-    sub_settings_log = AuditLog.where("table_name = 'api_backend_sub_url_settings' AND action = 'D' AND original->>'id' = ?", sub_settings.id).first!
-    assert_equal(sub_settings.regex, sub_settings_log.original["regex"])
-    sub_settings_settings_log = AuditLog.where("table_name = 'api_backend_settings' AND action = 'D' AND original->>'id' = ?", sub_settings_settings.id).first!
-    assert_equal(sub_settings_settings.disable_api_key, sub_settings_settings_log.original["disable_api_key"])
-    settings_rate_limit_log = AuditLog.where("table_name = 'rate_limits' AND action = 'D' AND original->>'id' = ?", settings_rate_limit.id).first!
-    assert_equal(settings_rate_limit.duration, settings_rate_limit_log.original["duration"])
-    sub_settings_rate_limit_log = AuditLog.where("table_name = 'rate_limits' AND action = 'D' AND original->>'id' = ?", sub_settings_rate_limit.id).first!
-    assert_equal(sub_settings_rate_limit.duration, sub_settings_rate_limit_log.original["duration"])
+    api_log = AuditLog.where("table_name = 'api_backends' AND action = 'D' AND row_data->>'id' = ?", api.id).first!
+    assert_equal(api.name, api_log.row_data["name"])
+    server_log = AuditLog.where("table_name = 'api_backend_servers' AND action = 'D' AND row_data->>'id' = ?", server.id).first!
+    assert_equal(server.host, server_log.row_data["host"])
+    url_match_log = AuditLog.where("table_name = 'api_backend_url_matches' AND action = 'D' AND row_data->>'id' = ?", url_match.id).first!
+    assert_equal(url_match.frontend_prefix, url_match_log.row_data["frontend_prefix"])
+    rewrite_log = AuditLog.where("table_name = 'api_backend_rewrites' AND action = 'D' AND row_data->>'id' = ?", rewrite.id).first!
+    assert_equal(rewrite.frontend_matcher, rewrite_log.row_data["frontend_matcher"])
+    settings_log = AuditLog.where("table_name = 'api_backend_settings' AND action = 'D' AND row_data->>'id' = ?", settings.id).first!
+    assert_equal(settings.disable_api_key, settings_log.row_data["disable_api_key"])
+    sub_settings_log = AuditLog.where("table_name = 'api_backend_sub_url_settings' AND action = 'D' AND row_data->>'id' = ?", sub_settings.id).first!
+    assert_equal(sub_settings.regex, sub_settings_log.row_data["regex"])
+    sub_settings_settings_log = AuditLog.where("table_name = 'api_backend_settings' AND action = 'D' AND row_data->>'id' = ?", sub_settings_settings.id).first!
+    assert_equal(sub_settings_settings.disable_api_key, sub_settings_settings_log.row_data["disable_api_key"])
+    settings_rate_limit_log = AuditLog.where("table_name = 'rate_limits' AND action = 'D' AND row_data->>'id' = ?", settings_rate_limit.id).first!
+    assert_equal(settings_rate_limit.duration, settings_rate_limit_log.row_data["duration"])
+    sub_settings_rate_limit_log = AuditLog.where("table_name = 'rate_limits' AND action = 'D' AND row_data->>'id' = ?", sub_settings_rate_limit.id).first!
+    assert_equal(sub_settings_rate_limit.duration, sub_settings_rate_limit_log.row_data["duration"])
   end
 end

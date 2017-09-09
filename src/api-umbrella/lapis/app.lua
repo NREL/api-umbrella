@@ -38,8 +38,9 @@ app:before_filter(function(self)
   --   ngx.log(ngx.ERR, "setlocale failed")
   -- end
 
-  db.query("SET application.name = 'admin'")
-  db.query("SET application.\"user\" = 'admin'")
+  db.query("SET application_name = 'api-umbrella-web-app'")
+  db.query("SET audit.user_id = '00000000-0000-0000-0000-000000000000'")
+  db.query("SET audit.user_name = 'admin'")
 
   self.t = function(_, message)
     return gettext.gettext(message)

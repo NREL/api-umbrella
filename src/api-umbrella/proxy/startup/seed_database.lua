@@ -1,4 +1,5 @@
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
+
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local random_token = require "api-umbrella.utils.random_token"
@@ -331,8 +332,9 @@ local function seed()
     return seed()
   end
 
-  pg_utils.query("SET application.name = 'proxy'")
-  pg_utils.query("SET application.\"user\" = 'proxy'")
+  pg_utils.query("SET application_name = 'api-umbrella-proxy'")
+  pg_utils.query("SET audit.user_id = '00000000-0000-0000-0000-000000000000'")
+  pg_utils.query("SET audit.user_name = 'api-umbrella-proxy'")
 
   seed_api_keys()
   seed_initial_superusers()

@@ -84,7 +84,7 @@ ApiUser = model_ext.new_class("api_users", {
         local roles = self:get_roles()
         if is_empty(roles) then
           allowed = true
-        elseif self.created_by == ngx.ctx.current_admin.username then
+        elseif self.created_by_id and ngx.ctx.current_admin.id and self.created_by_id == ngx.ctx.current_admin.id then
           allowed = true
         end
       end
@@ -132,9 +132,15 @@ ApiUser = model_ext.new_class("api_users", {
         },
       },
       created_at = iso8601.format_postgres(self.created_at) or json_null,
-      created_by = self.created_by or json_null,
+      created_by = self.created_by_id or json_null,
+      creator = {
+        username = self.created_by_username or json_null,
+      },
       updated_at = iso8601.format(updated_at) or json_null,
-      updated_by = self.updated_by or json_null,
+      updated_by = self.updated_by_id or json_null,
+      updater = {
+        username = self.updated_by_username or json_null,
+      },
       deleted_at = json_null,
       version = 1,
     }
