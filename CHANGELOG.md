@@ -1,5 +1,11 @@
 # API Umbrella Change Log
 
+## Unreleased
+
+### Fixed
+
+- **Fix URL handling for query strings containing "api\_key":** It was possible that API Umbrella was stripping the string "api\_key" from inside URLs before passing requests to the API backend in some unexpected cases. The `api_key` query parameter should still be stripped, but other instances of "api\_key" elsewhere in the URL (for example as a value, like `?foo=api_key`), are now retained.
+
 ## 0.14.4 (2017-07-15)
 
 This update contains one important fix for v0.14.3. Upgrading is recommended if you are currently running v0.14.3.

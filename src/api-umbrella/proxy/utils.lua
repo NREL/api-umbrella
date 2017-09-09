@@ -248,7 +248,7 @@ function _M.remove_arg(original_args, remove)
     -- matter, but in general it just seems safer to default to doing less
     -- changes to the query string).
     local _, gsub_err
-    args, _, gsub_err = gsub(args, "\\b" .. remove .. "=?[^&]*(&|$)", "")
+    args, _, gsub_err = gsub(args, "(?<=^|&)" .. remove .. "(?:=[^&]*)?(?:&|$)", "", "jo")
     if gsub_err then
       ngx.log(ngx.ERR, "regex error: ", gsub_err)
     end
