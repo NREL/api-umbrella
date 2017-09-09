@@ -56,12 +56,33 @@ local function build_search_where(escaped_table_name, search_fields, search_valu
   local where = {}
 
   -- Always search on the "id" field, but only for exact matches.
-  table.insert(where, db.interpolate_query(escaped_table_name .. ".id::text = ?", string.lower(search_value)))
+  local uuid_matches, uuid_match_err = ngx.re.match(search_value, [[^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$]], "ijo")
+  if uuid_matches then
+    table.insert(where, db.interpolate_query(escaped_table_name .. ".id = ?", string.lower(search_value)))
+  elseif uuid_match_err then
+    ngx.log(ngx.ERR, "regex error: ", uuid_match_err)
+  end
 
   -- Perform wildcard, case-insensitive searches on all the other fields.
   if search_fields then
     for _, field in ipairs(search_fields) do
-      table.insert(where, db.interpolate_query(db.escape_identifier(field) .. "::text ILIKE '%' || ? || '%'", escape_db_like(search_value)))
+      local field_name = field
+      local field_search_value = search_value
+      local prefix_search = false
+      if type(field) == "table" and field["name"] then
+        field_name = field["name"]
+
+        if field["prefix_length"] then
+          prefix_search = true
+          field_search_value = string.sub(search_value, 1, field["prefix_length"])
+        end
+      end
+
+      if prefix_search then
+        table.insert(where, db.interpolate_query(db.escape_identifier(field_name) .. "::text ILIKE ? || '%'", escape_db_like(field_search_value)))
+      else
+        table.insert(where, db.interpolate_query(db.escape_identifier(field_name) .. "::text ILIKE '%' || ? || '%'", escape_db_like(field_search_value)))
+      end
     end
   end
 
@@ -136,9 +157,7 @@ function _M.index(self, model, options)
   local total_count = model:select(sql, { fields = "COUNT(*) AS c", load = false })[1]["c"]
 
   -- Order
-  if is_empty(self.params["order"]) then
-    table.insert(query["order"], "name ASC")
-  else
+  if not is_empty(self.params["order"]) then
     table.insert(query["order"], parse_datatables_order(self.params["order"], self.params["columns"]))
   end
 

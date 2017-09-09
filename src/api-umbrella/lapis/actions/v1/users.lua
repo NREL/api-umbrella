@@ -1,7 +1,7 @@
 local ApiUser = require "api-umbrella.lapis.models.api_user"
 local api_user_welcome_mailer = require "api-umbrella.lapis.mailers.api_user_welcome"
 local api_user_admin_notification_mailer = require "api-umbrella.lapis.mailers.api_user_admin_notification"
-local db_null = require("lapis.db").NULL
+local db = require "lapis.db"
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local flatten_headers = require "api-umbrella.utils.flatten_headers"
@@ -14,6 +14,7 @@ local lapis_json = require "api-umbrella.utils.lapis_json"
 local respond_to = require("lapis.application").respond_to
 
 local capture_errors_json_full = lapis_helpers.capture_errors_json_full
+local db_null = db.NULL
 local parse_post_for_pseudo_ie_cors = lapis_helpers.parse_post_for_pseudo_ie_cors
 
 local _M = {}
@@ -64,12 +65,19 @@ end
 
 function _M.index(self)
   return lapis_datatables.index(self, ApiUser, {
+    search_joins = {
+      "LEFT JOIN api_users_roles ON api_users.id = api_users_roles.api_user_id",
+    },
     search_fields = {
       "first_name",
       "last_name",
       "email",
-      "api_key",
+      { name = "api_key_prefix", prefix_length = ApiUser.API_KEY_PREFIX_LENGTH },
       "registration_source",
+      db.raw("api_users_roles.api_role_id"),
+    },
+    preload = {
+      "settings",
       "roles",
     },
   })
@@ -77,7 +85,7 @@ end
 
 function _M.show(self)
   local response = {
-    user = self.api_user:as_json(),
+    user = self.api_user:as_json({ allow_api_key = true }),
   }
 
   return lapis_json(self, response)
@@ -118,7 +126,7 @@ function _M.create(self)
 
   local api_user = assert(ApiUser:create(user_params))
   local response = {
-    user = api_user:as_json(),
+    user = api_user:as_json({ allow_api_key = true }),
   }
 
   -- On api key signup by public users, return the API key as part of the
@@ -190,6 +198,8 @@ function _M.api_user_params(self)
       first_name = input["first_name"],
       last_name = input["last_name"],
       use_description = input["use_description"],
+      website = input["website"],
+      terms_and_conditions = input["terms_and_conditions"],
     })
 
     if self.current_admin then

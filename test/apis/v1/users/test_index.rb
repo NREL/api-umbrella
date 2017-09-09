@@ -26,9 +26,9 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       :registration_source => "test",
       :registration_user_agent => "curl",
       :roles => ["role1", "role2"],
-      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_user_settings, {
+      :settings => FactoryGirl.build(:custom_rate_limit_api_user_settings, {
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
+          FactoryGirl.build(:rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
         ],
       }),
       :throttle_by_ip => true,
@@ -54,6 +54,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_equal("2017-01-02T00:00:00Z", record_data.fetch("disabled_at"))
     assert_equal("foo@example.com", record_data.fetch("email"))
     assert_equal(true, record_data.fetch("email_verified"))
+    assert_equal(false, record_data.fetch("enabled"))
     assert_equal("Foo", record_data.fetch("first_name"))
     assert_equal("Bar", record_data.fetch("last_name"))
     assert_equal("127.0.0.10", record_data.fetch("registration_ip"))
@@ -66,40 +67,23 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_equal([
       "allowed_ips",
       "allowed_referers",
-      "anonymous_rate_limit_behavior",
-      "api_key_verification_level",
-      "api_key_verification_transition_start_at",
-      "append_query_string",
-      "authenticated_rate_limit_behavior",
-      "default_response_headers",
-      "disable_api_key",
-      "error_data",
-      "error_templates",
-      "headers",
-      "http_basic_auth",
       "id",
-      "override_response_headers",
-      "pass_api_key_header",
-      "pass_api_key_query_param",
       "rate_limit_mode",
       "rate_limits",
-      "require_https",
-      "require_https_transition_start_at",
-      "required_roles",
-      "required_roles_override",
     ].sort, record_data.fetch("settings").keys.sort)
     assert_kind_of(Array, record_data.fetch("settings").fetch("rate_limits"))
     assert_equal(1, record_data.fetch("settings").fetch("rate_limits").length)
     assert_kind_of(Hash, record_data.fetch("settings").fetch("rate_limits").first)
     assert_equal([
+      "_id",
       "accuracy",
       "distributed",
       "duration",
+      "id",
       "limit",
       "limit_by",
       "response_headers",
-      "id",
-    ], record_data.fetch("settings").fetch("rate_limits").first.keys)
+    ].sort, record_data.fetch("settings").fetch("rate_limits").first.keys.sort)
     assert_equal(true, record_data.fetch("throttle_by_ip"))
     assert_match_iso8601(record_data.fetch("updated_at"))
     assert_equal("2017-01-03T00:00:00Z", record_data.fetch("updated_at"))
@@ -125,20 +109,19 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     record_data = data.fetch("data").first
     assert_base_record_fields(record_data)
 
+    assert_equal("test_app_user", record_data.fetch("created_by"))
     assert_nil(record_data.fetch("disabled_at"))
     assert_nil(record_data.fetch("email_verified"))
-    assert_nil(record_data.fetch("created_by"))
-    assert_nil(record_data.fetch("disabled_at"))
-    assert_nil(record_data.fetch("email_verified"))
+    assert_equal(true, record_data.fetch("enabled"))
     assert_nil(record_data.fetch("registration_ip"))
     assert_nil(record_data.fetch("registration_origin"))
     assert_nil(record_data.fetch("registration_referer"))
     assert_nil(record_data.fetch("registration_source"))
     assert_nil(record_data.fetch("registration_user_agent"))
-    assert_nil(record_data.fetch("roles"))
+    assert_equal([], record_data.fetch("roles"))
     assert_nil(record_data.fetch("settings"))
     assert_nil(record_data.fetch("throttle_by_ip"))
-    assert_nil(record_data.fetch("updated_by"))
+    assert_equal("test_app_user", record_data.fetch("updated_by"))
     assert_nil(record_data.fetch("use_description"))
     assert_nil(record_data.fetch("website"))
   end
@@ -169,7 +152,28 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
   end
 
   def test_search_api_key
-    assert_data_tables_search(:api_key, "API_KEY_SEARCH_TEST", "_key_search_tes")
+    assert_data_tables_search(:api_key, "QhcfMp_API_KEY_SEARCH_TEST", "qhcfmp_ap")
+
+    # Since the API key search is a bit special (the values are encrypted in
+    # the database, so we only search by a prefix part that is stored
+    # unencrypted), perform some further search tests.
+    record = ApiUser.find_by!(:api_key_prefix => "QhcfMp_API_KEY")
+
+    # Ensure the full string matches (even though it's longer than the prefix).
+    assert_wildcard_search_match(:api_key, "QhcfMp_API_KEY_SEARCH_TEST", "qhcfmp_api_key_search_test", record)
+
+    # Since we're matching based on the first 14 characters, then search
+    # strings beyond 14 characters will still match the record, even though the
+    # search value doesn't technically match the full API key (but that's okay,
+    # since we assume the first 14 characters should still provide plenty of
+    # uniqueness).
+    assert_wildcard_search_match(:api_key, "API_KEY_SEARCH_TEST", "qhcfmp_api_keyZZZ", record)
+
+    # We only perform a prefix based search, rather than a full wildcard search
+    # (since there's not really a reason to search for strings in the middle of
+    # an API key).
+    refute_wildcard_search_match(:api_key, "API_KEY_SEARCH_TEST", "cfmp_api_key")
+    refute_wildcard_search_match(:api_key, "API_KEY_SEARCH_TEST", "pre_qhcfmp_api_key")
   end
 
   def test_search_registration_source
@@ -223,6 +227,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       "disabled_at",
       "email",
       "email_verified",
+      "enabled",
       "first_name",
       "id",
       "last_name",
@@ -256,6 +261,7 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
     assert_kind_of(Integer, record_data.fetch("ts").fetch("$timestamp").fetch("i"))
     assert_kind_of(Integer, record_data.fetch("ts").fetch("$timestamp").fetch("t"))
     assert_match_iso8601(record_data.fetch("updated_at"))
+    assert_equal(Time.parse(record_data.fetch("updated_at")).to_i, record_data.fetch("ts").fetch("$timestamp").fetch("t"))
     assert_kind_of(Integer, record_data.fetch("version"))
   end
 end

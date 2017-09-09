@@ -26,6 +26,8 @@ class Test::Apis::V1::Users::TestShow < Minitest::Test
       "api_key_preview",
       "created_at",
       "creator",
+      "deleted_at",
+      "disabled_at",
       "email",
       "email_verified",
       "enabled",
@@ -40,14 +42,13 @@ class Test::Apis::V1::Users::TestShow < Minitest::Test
       "roles",
       "settings",
       "throttle_by_ip",
+      "ts",
       "updated_at",
       "updater",
       "use_description",
+      "version",
+      "website",
     ]
-
-    if(ApiUser.fields.include?("website"))
-      expected_keys << "website"
-    end
 
     assert_equal(expected_keys.sort, data["user"].keys.sort)
   end

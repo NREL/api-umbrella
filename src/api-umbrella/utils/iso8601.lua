@@ -1,5 +1,7 @@
 local date = require "date"
 
+local epoch = date.epoch()
+
 local _M = {}
 
 function _M.format(parsed)
@@ -14,7 +16,7 @@ end
 function _M.to_timestamp(parsed)
   local result
   if type(parsed) == "table" and parsed.fmt then
-    result = (parsed - date.epoch()):spanseconds()
+    result = (parsed - epoch):spanseconds()
   end
 
   return result

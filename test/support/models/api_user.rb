@@ -24,7 +24,7 @@ class ApiUser < ApplicationRecord
       :key => Digest::SHA256.digest($config.fetch("secret_key")),
       :auth_data => self.id,
     }))
-    self.api_key_prefix = value[0, 10]
+    self.api_key_prefix = value[0, 14]
   end
 
   def api_key
