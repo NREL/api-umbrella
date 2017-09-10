@@ -1,15 +1,25 @@
 local RateLimit = require "api-umbrella.lapis.models.rate_limit"
 local cjson = require "cjson"
+local db = require "lapis.db"
+local is_array = require "api-umbrella.utils.is_array"
 local model_ext = require "api-umbrella.utils.model_ext"
+local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
+local db_null = db.NULL
+local db_raw = db.raw
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
 local ApiUserSettings = model_ext.new_class("api_user_settings", {
   relations = {
-    { "rate_limits", has_many = "RateLimit", key = "api_user_settings_id" },
+    {
+      "rate_limits",
+      has_many = "RateLimit",
+      key = "api_user_settings_id",
+      order = "duration, limit_by",
+    },
   },
 
   as_json = function(self)
@@ -47,6 +57,16 @@ local ApiUserSettings = model_ext.new_class("api_user_settings", {
     validate_field(errors, data, "rate_limit_mode", validation_ext.db_null_optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list"))
 
     return errors
+  end,
+
+  before_save = function(_, values)
+    if is_array(values["allowed_ips"]) and values["allowed_ips"] ~= db_null then
+      values["allowed_ips"] = db_raw(pg_encode_array(values["allowed_ips"]) .. "::inet[]")
+    end
+
+    if is_array(values["allowed_referers"]) and values["allowed_referers"] ~= db_null then
+      values["allowed_referers"] = db_raw(pg_encode_array(values["allowed_referers"]))
+    end
   end,
 
   after_save = function(self, values)

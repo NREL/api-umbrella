@@ -17,6 +17,7 @@ local validation_ext = require "api-umbrella.utils.validation_ext"
 local db_null = db.NULL
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
+local validate_uniqueness = model_ext.validate_uniqueness
 
 local function username_field_name()
   if config["web"]["admin"]["username_is_email"] then
@@ -332,13 +333,7 @@ Admin = model_ext.new_class("admins", {
     validate_groups(self, data, errors)
     validate_password(self, data, errors)
     validate_field(errors, data, "superuser", validation_ext.db_null_optional.boolean, t("can't be blank"))
-
-    if data["username"] then
-      if Admin:count("id != ? AND username = ?", data["id"], data["username"]) > 0 then
-        model_ext.add_error(errors, "username", t("is already taken"))
-      end
-    end
-
+    validate_uniqueness(errors, data, "username", Admin, { "username" })
     return errors
   end,
 

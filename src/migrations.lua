@@ -103,7 +103,7 @@ return {
     db.query("CREATE UNIQUE INDEX ON admins(authentication_token_hash)")
     db.query("CREATE UNIQUE INDEX ON admins(reset_password_token_hash)")
     db.query("CREATE UNIQUE INDEX ON admins(unlock_token_hash)")
-    db.query("CREATE TRIGGER admins_updated_at BEFORE INSERT OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER admins_stamp_record BEFORE INSERT OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admins')")
 
     db.query([[
@@ -120,7 +120,7 @@ return {
       )
     ]])
     db.query("CREATE INDEX ON admin_permissions(display_order)")
-    db.query("CREATE TRIGGER admin_permissions_updated_at BEFORE INSERT OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER admin_permissions_stamp_record BEFORE INSERT OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admin_permissions')")
 
     db.query([[
@@ -138,7 +138,7 @@ return {
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_scopes(host, path_prefix)")
-    db.query("CREATE TRIGGER api_scopes_updated_at BEFORE INSERT OR UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_scopes_stamp_record BEFORE INSERT OR UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_scopes')")
 
     db.query([[
@@ -153,7 +153,8 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_updated_at BEFORE INSERT OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE UNIQUE INDEX ON admin_groups(name)")
+    db.query("CREATE TRIGGER admin_groups_stamp_record BEFORE INSERT OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admin_groups')")
 
     db.query([[
@@ -169,7 +170,7 @@ return {
         PRIMARY KEY(admin_group_id, admin_permission_id)
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_admin_permissions_updated_at BEFORE INSERT OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER admin_groups_admin_permissions_stamp_record BEFORE INSERT OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admin_groups_admin_permissions')")
 
     db.query([[
@@ -185,7 +186,7 @@ return {
         PRIMARY KEY(admin_group_id, admin_id)
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_admins_updated_at BEFORE INSERT OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER admin_groups_admins_stamp_record BEFORE INSERT OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admin_groups_admins')")
 
     db.query([[
@@ -201,7 +202,7 @@ return {
         PRIMARY KEY(admin_group_id, api_scope_id)
       )
     ]])
-    db.query("CREATE TRIGGER admin_groups_api_scopes_updated_at BEFORE INSERT OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER admin_groups_api_scopes_stamp_record BEFORE INSERT OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('admin_groups_api_scopes')")
 
     db.query([[
@@ -215,7 +216,7 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_roles_updated_at BEFORE INSERT OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_roles_stamp_record BEFORE INSERT OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_roles')")
 
     db.query([[
@@ -236,7 +237,7 @@ return {
       )
     ]])
     db.query("CREATE INDEX ON api_backends(sort_order)")
-    db.query("CREATE TRIGGER api_backends_updated_at BEFORE INSERT OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_backends_stamp_record BEFORE INSERT OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backends')")
 
     db.query([[
@@ -247,6 +248,7 @@ return {
         http_method varchar(7) NOT NULL CHECK(http_method IN('any', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'OPTIONS', 'CONNECT', 'PATCH')),
         frontend_matcher varchar(255) NOT NULL,
         backend_replacement varchar(255) NOT NULL,
+        sort_order int NOT NULL DEFAULT 0,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
@@ -255,7 +257,9 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_backend_rewrites_updated_at BEFORE INSERT OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE UNIQUE INDEX ON api_backend_rewrites(api_backend_id, matcher_type, http_method, frontend_matcher)")
+    db.query("CREATE UNIQUE INDEX ON api_backend_rewrites(api_backend_id, sort_order)")
+    db.query("CREATE TRIGGER api_backend_rewrites_stamp_record BEFORE INSERT OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_rewrites')")
 
     db.query([[
@@ -272,7 +276,8 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_backend_servers_updated_at BEFORE INSERT OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE UNIQUE INDEX ON api_backend_servers(api_backend_id, host, port)")
+    db.query("CREATE TRIGGER api_backend_servers_stamp_record BEFORE INSERT OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_servers')")
 
     db.query([[
@@ -281,6 +286,7 @@ return {
         api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE,
         http_method varchar(7) NOT NULL CHECK(http_method IN('any', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'OPTIONS', 'CONNECT', 'PATCH')),
         regex varchar(255) NOT NULL,
+        sort_order int NOT NULL DEFAULT 0,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
@@ -289,7 +295,9 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_backend_sub_url_settings_updated_at BEFORE INSERT OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE UNIQUE INDEX ON api_backend_sub_url_settings(api_backend_id, http_method, regex)")
+    db.query("CREATE UNIQUE INDEX ON api_backend_sub_url_settings(api_backend_id, sort_order)")
+    db.query("CREATE TRIGGER api_backend_sub_url_settings_stamp_record BEFORE INSERT OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_sub_url_settings')")
 
     db.query([[
@@ -298,6 +306,7 @@ return {
         api_backend_id uuid NOT NULL REFERENCES api_backends ON DELETE CASCADE,
         frontend_prefix varchar(255) NOT NULL,
         backend_prefix varchar(255) NOT NULL,
+        sort_order int NOT NULL DEFAULT 0,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
@@ -306,7 +315,9 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_backend_url_matches_updated_at BEFORE INSERT OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE UNIQUE INDEX ON api_backend_url_matches(api_backend_id, frontend_prefix)")
+    db.query("CREATE UNIQUE INDEX ON api_backend_url_matches(api_backend_id, sort_order)")
+    db.query("CREATE TRIGGER api_backend_url_matches_stamp_record BEFORE INSERT OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_url_matches')")
 
     db.query([[
@@ -340,7 +351,7 @@ return {
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_settings(api_backend_id)")
     db.query("CREATE UNIQUE INDEX ON api_backend_settings(api_backend_sub_url_settings_id)")
-    db.query("CREATE TRIGGER api_backend_settings_updated_at BEFORE INSERT OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_backend_settings_stamp_record BEFORE INSERT OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_settings')")
 
     db.query([[
@@ -356,7 +367,8 @@ return {
         PRIMARY KEY(api_backend_settings_id, api_role_id)
       )
     ]])
-    db.query("CREATE TRIGGER api_backend_settings_required_roles_updated_at BEFORE INSERT OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE UNIQUE INDEX ON api_backend_settings_required_roles(api_backend_settings_id, api_role_id)")
+    db.query("CREATE TRIGGER api_backend_settings_required_roles_stamp_record BEFORE INSERT OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_settings_required_roles')")
 
     db.query([[
@@ -376,7 +388,7 @@ return {
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_backend_http_headers(api_backend_settings_id, header_type, sort_order)")
-    db.query("CREATE TRIGGER api_backend_http_headers_updated_at BEFORE INSERT OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_backend_http_headers_stamp_record BEFORE INSERT OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_backend_http_headers')")
 
     db.query([[
@@ -409,7 +421,7 @@ return {
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON api_users(api_key_hash)")
-    db.query("CREATE TRIGGER api_users_updated_at BEFORE INSERT OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_users_stamp_record BEFORE INSERT OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_users')")
 
     db.query([[
@@ -425,7 +437,8 @@ return {
         PRIMARY KEY(api_user_id, api_role_id)
       )
     ]])
-    db.query("CREATE TRIGGER api_users_roles_updated_at BEFORE INSERT OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE UNIQUE INDEX ON api_users_roles(api_user_id, api_role_id)")
+    db.query("CREATE TRIGGER api_users_roles_stamp_record BEFORE INSERT OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_users_roles')")
 
     db.query([[
@@ -443,7 +456,7 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER api_user_settings_updated_at BEFORE INSERT OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('api_user_settings')")
 
     db.query([[
@@ -458,7 +471,7 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER published_config_updated_at BEFORE INSERT OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER published_config_stamp_record BEFORE INSERT OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('published_config')")
 
     db.query([[
@@ -482,7 +495,7 @@ return {
       )
     ]])
     db.query("CREATE UNIQUE INDEX ON rate_limits(api_backend_settings_id, api_user_settings_id, limit_by, duration)")
-    db.query("CREATE TRIGGER rate_limits_updated_at BEFORE INSERT OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('rate_limits')")
 
     db.query([[
@@ -500,7 +513,8 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER website_backends_updated_at BEFORE INSERT OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE UNIQUE INDEX ON website_backends(frontend_host)")
+    db.query("CREATE TRIGGER website_backends_stamp_record BEFORE INSERT OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
     db.query("SELECT audit.audit_table('website_backends')")
 
     db.query([[
@@ -516,7 +530,7 @@ return {
         updated_by_username varchar(255) NOT NULL
       )
     ]])
-    db.query("CREATE TRIGGER sessions_updated_at BEFORE INSERT OR UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE TRIGGER sessions_stamp_record BEFORE INSERT OR UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
 
     db.query([[
       CREATE VIEW api_users_flattened AS

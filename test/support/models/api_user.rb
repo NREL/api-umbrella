@@ -39,4 +39,21 @@ class ApiUser < ApplicationRecord
   def api_key_preview
     "#{self.api_key_prefix[0, 6]}..."
   end
+
+  def serializable_hash(options = nil)
+    options ||= {}
+    options.merge!({
+      :methods => [
+        :roles,
+      ],
+      :include => {
+        :settings => {
+          :include => {
+            :rate_limits => {},
+          },
+        },
+      },
+    })
+    super(options)
+  end
 end

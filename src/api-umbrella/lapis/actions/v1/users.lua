@@ -144,8 +144,12 @@ end
 
 function _M.update(self)
   self.api_user:update(_M.api_user_params(self))
+  local response = {
+    admin = self.api_user:as_json(),
+  }
 
-  return { status = 204 }
+  self.res.status = 200
+  return lapis_json(self, response)
 end
 
 function _M.destroy(self)

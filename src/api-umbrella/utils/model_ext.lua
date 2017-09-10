@@ -7,6 +7,7 @@ local is_hash = require "api-umbrella.utils.is_hash"
 local readonly = require("pl.tablex").readonly
 local relations_loaded_key = require("lapis.db.model.relations").LOADED_KEY
 local singularize = require("lapis.util").singularize
+local t = require("resty.gettext").gettext
 local uuid_generate = require("resty.uuid").generate_random
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
@@ -253,6 +254,28 @@ function _M.validate_field(errors, values, field, validator, message, options)
   end
 end
 
+function _M.validate_uniqueness(errors, values, error_field, model, unique_fields)
+  assert(values["id"])
+  assert(type(unique_fields) == "table")
+  assert(#unique_fields > 0)
+
+  local conditions = {}
+  table.insert(conditions, "id != " .. db.escape_literal(values["id"]))
+
+  for _, unique_field in ipairs(unique_fields) do
+    if not values[unique_field] or values[unique_field] == db_null then
+      return nil
+    end
+
+    table.insert(conditions, db.escape_identifier(unique_field) .. " = " .. db.escape_literal(values[unique_field]))
+  end
+
+  local where_sql = table.concat(conditions, " AND ")
+  if model:count(where_sql) > 0 then
+    _M.add_error(errors, error_field, t("is already taken"))
+  end
+end
+
 local function create(callbacks)
   return function(model_class, values, opts)
     local transaction_started = start_transaction()
@@ -400,7 +423,9 @@ end
 
 function _M.has_many_save(self, values, name)
   local relations_values = values[name]
-  if is_array(relations_values) then
+  if relations_values == db_null then
+    self[name .. "_delete_except"](self, {})
+  elseif is_array(relations_values) then
     local keep_ids = {}
     for index, relation_values in ipairs(relations_values) do
       ngx.ctx.validate_error_field_prefix = name .. "[" .. (index - 1) .. "]."
@@ -409,8 +434,6 @@ function _M.has_many_save(self, values, name)
       table.insert(keep_ids, assert(record.id))
     end
     self[name .. "_delete_except"](self, keep_ids)
-  elseif relations_values == db_null then
-    self[name .. "_delete_except"](self, {})
   end
 end
 
@@ -437,10 +460,10 @@ end
 
 function _M.has_one_save(self, values, name)
   local relation_values = values[name]
-  if is_hash(relation_values) then
-    self[name .. "_update_or_create"](self, relation_values)
-  elseif relation_values == db_null then
+  if relation_values == db_null then
     self[name .. "_delete"](self)
+  elseif is_hash(relation_values) then
+    self[name .. "_update_or_create"](self, relation_values)
   end
 end
 

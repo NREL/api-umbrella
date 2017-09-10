@@ -1,6 +1,7 @@
 FactoryGirl.define do
   factory :api_backend_sub_url_settings do
     http_method "POST"
-    regex ".*"
+    sequence(:regex) { |n| "^/sub/#{n}/" }
+    sequence(:sort_order) { |n| n }
   end
 end

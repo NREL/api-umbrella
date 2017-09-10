@@ -6,6 +6,7 @@ local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local db_null = db.NULL
 local validate_field = model_ext.validate_field
+local validate_uniqueness = model_ext.validate_uniqueness
 
 local function auto_calculate_accuracy(values)
   if values["duration"] then
@@ -93,16 +94,15 @@ RateLimit = model_ext.new_class("rate_limits", {
     validate_field(errors, data, "limit_to", validation_ext.number, t("can't be blank"), { error_field = "limit" })
     validate_field(errors, data, "distributed", validation_ext.boolean, t("can't be blank"))
 
-    if data["limit_by"] and data["duration"] then
-      local settings_id_column = "api_backend_settings_id"
-      if data["api_user_settings_id"] and data["api_user_settings_id"] ~= db_null then
-        settings_id_column = "api_user_settings_id"
-      end
-
-      if RateLimit:count("id != ? AND " .. db.escape_identifier(settings_id_column) .. " = ? AND limit_by = ? AND duration = ?", data["id"], data[settings_id_column], data["limit_by"], data["duration"]) > 0 then
-        model_ext.add_error(errors, "duration", t("is already taken"))
-      end
+    local settings_id_column = "api_backend_settings_id"
+    if data["api_user_settings_id"] and data["api_user_settings_id"] ~= db_null then
+      settings_id_column = "api_user_settings_id"
     end
+    validate_uniqueness(errors, data, "duration", RateLimit, {
+      settings_id_column,
+      "limit_by",
+      "duration",
+    })
 
     return errors
   end,

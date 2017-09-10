@@ -7,6 +7,7 @@ local api_backend_policy = require "api-umbrella.lapis.policies.api_backend_poli
 local cjson = require "cjson"
 local common_validations = require "api-umbrella.utils.common_validations"
 local db = require "lapis.db"
+local is_array = require "api-umbrella.utils.is_array"
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
@@ -59,14 +60,41 @@ local function get_new_end_sort_order()
   return new_order
 end
 
+local function add_sort_order_from_array_order(array)
+  if is_array(array) and array ~= db_null then
+    for index, values in ipairs(array) do
+      values["sort_order"] = index
+    end
+  end
+end
+
 local ApiBackend
 ApiBackend = model_ext.new_class("api_backends", {
   relations = {
-    { "rewrites", has_many = "ApiBackendRewrite" },
-    { "servers", has_many = "ApiBackendServer" },
-    { "settings", has_one = "ApiBackendSettings" },
-    { "sub_settings", has_many = "ApiBackendSubUrlSettings" },
-    { "url_matches", has_many = "ApiBackendUrlMatch" },
+    {
+      "rewrites",
+      has_many = "ApiBackendRewrite",
+      order = "sort_order",
+    },
+    {
+      "servers",
+      has_many = "ApiBackendServer",
+      order = "host, port",
+    },
+    {
+      "settings",
+      has_one = "ApiBackendSettings",
+    },
+    {
+      "sub_settings",
+      has_many = "ApiBackendSubUrlSettings",
+      order = "sort_order",
+    },
+    {
+      "url_matches",
+      has_many = "ApiBackendUrlMatch",
+      order = "sort_order",
+    },
   },
 
   attributes = function(self, options)
@@ -281,6 +309,12 @@ ApiBackend = model_ext.new_class("api_backends", {
     if not values["sort_order"] or values["sort_order"] == db_null then
       values["sort_order"] = get_new_end_sort_order()
     end
+  end,
+
+  before_validate = function(_, values)
+    add_sort_order_from_array_order(values["rewrites"])
+    add_sort_order_from_array_order(values["sub_settings"])
+    add_sort_order_from_array_order(values["url_matches"])
   end,
 
   validate = function(_, data)

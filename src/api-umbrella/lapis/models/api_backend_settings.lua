@@ -3,6 +3,7 @@ local ApiRole = require "api-umbrella.lapis.models.api_role"
 local RateLimit = require "api-umbrella.lapis.models.rate_limit"
 local cjson = require "cjson"
 local db = require "lapis.db"
+local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local iso8601 = require "api-umbrella.utils.iso8601"
@@ -62,7 +63,7 @@ local function string_to_http_headers(value)
 end
 
 local function add_http_headers_metadata(headers, header_type)
-  if headers then
+  if is_array(headers) and headers ~= db_null then
     for index, header in ipairs(headers) do
       header["header_type"] = header_type
       header["sort_order"] = index
@@ -72,8 +73,18 @@ end
 
 local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
   relations = {
-    { "http_headers", has_many = "ApiBackendHttpHeader", key = "api_backend_settings_id" },
-    { "rate_limits", has_many = "RateLimit", key = "api_backend_settings_id" },
+    {
+      "http_headers",
+      has_many = "ApiBackendHttpHeader",
+      key = "api_backend_settings_id",
+      order = "sort_order",
+    },
+    {
+      "rate_limits",
+      has_many = "RateLimit",
+      key = "api_backend_settings_id",
+      order = "duration, limit_by",
+    },
     model_ext.has_and_belongs_to_many("required_roles", "ApiRole", {
       join_table = "api_backend_settings_required_roles",
       foreign_key = "api_backend_settings_id",
@@ -230,23 +241,17 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     if values["default_response_headers_string"] then
       values["default_response_headers"] = string_to_http_headers(values["default_response_headers_string"])
     end
-    if values["default_response_headers"] then
-      add_http_headers_metadata(values["default_response_headers"], "response_default")
-    end
+    add_http_headers_metadata(values["default_response_headers"], "response_default")
 
     if values["headers_string"] then
       values["headers"] = string_to_http_headers(values["headers_string"])
     end
-    if values["headers"] then
-      add_http_headers_metadata(values["headers"], "request")
-    end
+    add_http_headers_metadata(values["headers"], "request")
 
     if values["override_response_headers_string"] then
       values["override_response_headers"] = string_to_http_headers(values["override_response_headers_string"])
     end
-    if values["override_response_headers"] then
-      add_http_headers_metadata(values["override_response_headers"], "response_override")
-    end
+    add_http_headers_metadata(values["override_response_headers"], "response_override")
   end,
 
   validate = function(_, data)

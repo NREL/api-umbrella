@@ -42,6 +42,16 @@ app:before_filter(function(self)
   db.query("SET audit.user_id = '00000000-0000-0000-0000-000000000000'")
   db.query("SET audit.user_name = 'admin'")
 
+  -- pgmoon is currently missing support for handling PostgreSQL inet array
+  -- types, so it doesn't know how to decode/encode these. So manually add
+  -- inet[]'s oid (1041) so that they're handled as an array of strings.
+  --
+  -- Note that ngx.ctx.pgmoon will only be set after running the db.querys
+  -- above. If this issue gets addressed there might be a better way to access
+  -- the underlying pgmoon object from Lapis:
+  -- https://github.com/leafo/lapis/issues/565
+  ngx.ctx.pgmoon:set_type_oid(1041, "array_string")
+
   self.t = function(_, message)
     return gettext.gettext(message)
   end

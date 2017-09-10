@@ -9,8 +9,10 @@ local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
+local validate_uniqueness = model_ext.validate_uniqueness
 
-local AdminGroup = model_ext.new_class("admin_groups", {
+local AdminGroup
+AdminGroup = model_ext.new_class("admin_groups", {
   relations = {
     model_ext.has_and_belongs_to_many("admins", "Admin", {
       join_table = "admin_groups_admins",
@@ -161,6 +163,7 @@ local AdminGroup = model_ext.new_class("admin_groups", {
     validate_field(errors, data, "name", validation_ext.string:minlen(1), t("can't be blank"))
     validate_field(errors, data, "api_scope_ids", validation_ext.non_null_table:minlen(1), t("can't be blank"), { error_field = "api_scopes" })
     validate_field(errors, data, "permission_ids", validation_ext.non_null_table:minlen(1), t("can't be blank"), { error_field = "permissions" })
+    validate_uniqueness(errors, data, "name", AdminGroup, { "name" })
     return errors
   end,
 

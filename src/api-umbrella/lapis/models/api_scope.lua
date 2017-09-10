@@ -7,6 +7,7 @@ local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local validate_field = model_ext.validate_field
+local validate_uniqueness = model_ext.validate_uniqueness
 
 local ApiScope
 ApiScope = model_ext.new_class("api_scopes", {
@@ -50,13 +51,10 @@ ApiScope = model_ext.new_class("api_scopes", {
     validate_field(errors, data, "host", validation_ext:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     validate_field(errors, data, "path_prefix", validation_ext.string:minlen(1), t("can't be blank"))
     validate_field(errors, data, "path_prefix", validation_ext:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"'))
-
-    if data["host"] and data["path_prefix"] then
-      if ApiScope:count("id != ? AND host = ? AND path_prefix = ?", data["id"], data["host"], data["path_prefix"]) > 0 then
-        model_ext.add_error(errors, "path_prefix", t("is already taken"))
-      end
-    end
-
+    validate_uniqueness(errors, data, "path_prefix", ApiScope, {
+      "host",
+      "path_prefix",
+    })
     return errors
   end,
 })

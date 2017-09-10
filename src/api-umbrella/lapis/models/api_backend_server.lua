@@ -5,8 +5,10 @@ local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local validate_field = model_ext.validate_field
+local validate_uniqueness = model_ext.validate_uniqueness
 
-local ApiBackendServer = model_ext.new_class("api_backend_servers", {
+local ApiBackendServer
+ApiBackendServer = model_ext.new_class("api_backend_servers", {
   as_json = function(self)
     return {
       id = self.id or json_null,
@@ -21,10 +23,16 @@ local ApiBackendServer = model_ext.new_class("api_backend_servers", {
 
   validate = function(_, data)
     local errors = {}
+    validate_field(errors, data, "api_backend_id", validation_ext.string:minlen(1), t("can't be blank"))
     validate_field(errors, data, "host", validation_ext.string:minlen(1), t("can't be blank"))
     validate_field(errors, data, "host", validation_ext.db_null_optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"'))
     validate_field(errors, data, "port", validation_ext.number, t("can't be blank"))
     validate_field(errors, data, "port", validation_ext.number:between(0, 65535), t("is not included in the list"))
+    validate_uniqueness(errors, data, "host", ApiBackendServer, {
+      "api_backend_id",
+      "host",
+      "port",
+    })
     return errors
   end,
 })

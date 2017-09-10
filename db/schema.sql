@@ -776,6 +776,7 @@ CREATE TABLE api_backend_rewrites (
     http_method character varying(7) NOT NULL,
     frontend_matcher character varying(255) NOT NULL,
     backend_replacement character varying(255) NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
     created_by_username character varying(255) NOT NULL,
@@ -868,6 +869,7 @@ CREATE TABLE api_backend_sub_url_settings (
     api_backend_id uuid NOT NULL,
     http_method character varying(7) NOT NULL,
     regex character varying(255) NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
     created_by_username character varying(255) NOT NULL,
@@ -887,6 +889,7 @@ CREATE TABLE api_backend_url_matches (
     api_backend_id uuid NOT NULL,
     frontend_prefix character varying(255) NOT NULL,
     backend_prefix character varying(255) NOT NULL,
+    sort_order integer DEFAULT 0 NOT NULL,
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
     created_by_username character varying(255) NOT NULL,
@@ -1437,6 +1440,13 @@ CREATE INDEX log_schema_name_table_name_idx ON log USING btree (schema_name, tab
 SET search_path = public, pg_catalog;
 
 --
+-- Name: admin_groups_name_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX admin_groups_name_idx ON admin_groups USING btree (name);
+
+
+--
 -- Name: admin_permissions_display_order_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1479,6 +1489,27 @@ CREATE UNIQUE INDEX api_backend_http_headers_api_backend_settings_id_header_typ_
 
 
 --
+-- Name: api_backend_rewrites_api_backend_id_matcher_type_http_metho_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_matcher_type_http_metho_idx ON api_backend_rewrites USING btree (api_backend_id, matcher_type, http_method, frontend_matcher);
+
+
+--
+-- Name: api_backend_rewrites_api_backend_id_sort_order_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_rewrites_api_backend_id_sort_order_idx ON api_backend_rewrites USING btree (api_backend_id, sort_order);
+
+
+--
+-- Name: api_backend_servers_api_backend_id_host_port_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_servers_api_backend_id_host_port_idx ON api_backend_servers USING btree (api_backend_id, host, port);
+
+
+--
 -- Name: api_backend_settings_api_backend_id_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1490,6 +1521,41 @@ CREATE UNIQUE INDEX api_backend_settings_api_backend_id_idx ON api_backend_setti
 --
 
 CREATE UNIQUE INDEX api_backend_settings_api_backend_sub_url_settings_id_idx ON api_backend_settings USING btree (api_backend_sub_url_settings_id);
+
+
+--
+-- Name: api_backend_settings_required_api_backend_settings_id_api_r_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_settings_required_api_backend_settings_id_api_r_idx ON api_backend_settings_required_roles USING btree (api_backend_settings_id, api_role_id);
+
+
+--
+-- Name: api_backend_sub_url_settings_api_backend_id_http_method_reg_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_http_method_reg_idx ON api_backend_sub_url_settings USING btree (api_backend_id, http_method, regex);
+
+
+--
+-- Name: api_backend_sub_url_settings_api_backend_id_sort_order_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_sub_url_settings_api_backend_id_sort_order_idx ON api_backend_sub_url_settings USING btree (api_backend_id, sort_order);
+
+
+--
+-- Name: api_backend_url_matches_api_backend_id_frontend_prefix_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_url_matches_api_backend_id_frontend_prefix_idx ON api_backend_url_matches USING btree (api_backend_id, frontend_prefix);
+
+
+--
+-- Name: api_backend_url_matches_api_backend_id_sort_order_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_backend_url_matches_api_backend_id_sort_order_idx ON api_backend_url_matches USING btree (api_backend_id, sort_order);
 
 
 --
@@ -1514,6 +1580,13 @@ CREATE UNIQUE INDEX api_users_api_key_hash_idx ON api_users USING btree (api_key
 
 
 --
+-- Name: api_users_roles_api_user_id_api_role_id_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_users_roles_api_user_id_api_role_id_idx ON api_users_roles USING btree (api_user_id, api_role_id);
+
+
+--
 -- Name: rate_limits_api_backend_settings_id_api_user_settings_id_li_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1521,136 +1594,143 @@ CREATE UNIQUE INDEX rate_limits_api_backend_settings_id_api_user_settings_id_li_
 
 
 --
--- Name: admin_groups_admin_permissions admin_groups_admin_permissions_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: website_backends_frontend_host_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_admin_permissions_updated_at BEFORE INSERT OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
-
-
---
--- Name: admin_groups_admins admin_groups_admins_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER admin_groups_admins_updated_at BEFORE INSERT OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE UNIQUE INDEX website_backends_frontend_host_idx ON website_backends USING btree (frontend_host);
 
 
 --
--- Name: admin_groups_api_scopes admin_groups_api_scopes_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: admin_groups_admin_permissions admin_groups_admin_permissions_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_api_scopes_updated_at BEFORE INSERT OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
-
-
---
--- Name: admin_groups admin_groups_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER admin_groups_updated_at BEFORE INSERT OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_groups_admin_permissions_stamp_record BEFORE INSERT OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
--- Name: admin_permissions admin_permissions_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: admin_groups_admins admin_groups_admins_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_permissions_updated_at BEFORE INSERT OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
-
-
---
--- Name: admins admins_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER admins_updated_at BEFORE INSERT OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_groups_admins_stamp_record BEFORE INSERT OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
--- Name: api_backend_http_headers api_backend_http_headers_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: admin_groups_api_scopes admin_groups_api_scopes_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_http_headers_updated_at BEFORE INSERT OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record();
-
-
---
--- Name: api_backend_rewrites api_backend_rewrites_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER api_backend_rewrites_updated_at BEFORE INSERT OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_groups_api_scopes_stamp_record BEFORE INSERT OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
--- Name: api_backend_servers api_backend_servers_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: admin_groups admin_groups_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_servers_updated_at BEFORE INSERT OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record();
-
-
---
--- Name: api_backend_settings_required_roles api_backend_settings_required_roles_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER api_backend_settings_required_roles_updated_at BEFORE INSERT OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_groups_stamp_record BEFORE INSERT OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
--- Name: api_backend_settings api_backend_settings_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: admin_permissions admin_permissions_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_settings_updated_at BEFORE INSERT OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
-
-
---
--- Name: api_backend_sub_url_settings api_backend_sub_url_settings_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER api_backend_sub_url_settings_updated_at BEFORE INSERT OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_permissions_stamp_record BEFORE INSERT OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
--- Name: api_backend_url_matches api_backend_url_matches_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: admins admins_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_url_matches_updated_at BEFORE INSERT OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record();
-
-
---
--- Name: api_backends api_backends_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER api_backends_updated_at BEFORE INSERT OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admins_stamp_record BEFORE INSERT OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
--- Name: api_roles api_roles_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: api_backend_http_headers api_backend_http_headers_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_roles_updated_at BEFORE INSERT OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
-
-
---
--- Name: api_scopes api_scopes_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER api_scopes_updated_at BEFORE INSERT OR UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backend_http_headers_stamp_record BEFORE INSERT OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
--- Name: api_user_settings api_user_settings_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: api_backend_rewrites api_backend_rewrites_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_user_settings_updated_at BEFORE INSERT OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
-
-
---
--- Name: api_users_roles api_users_roles_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER api_users_roles_updated_at BEFORE INSERT OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backend_rewrites_stamp_record BEFORE INSERT OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
--- Name: api_users api_users_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: api_backend_servers api_backend_servers_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_users_updated_at BEFORE INSERT OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backend_servers_stamp_record BEFORE INSERT OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_backend_settings_required_roles api_backend_settings_required_roles_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_settings_required_roles_stamp_record BEFORE INSERT OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_backend_settings api_backend_settings_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_settings_stamp_record BEFORE INSERT OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_backend_sub_url_settings api_backend_sub_url_settings_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_sub_url_settings_stamp_record BEFORE INSERT OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_backend_url_matches api_backend_url_matches_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backend_url_matches_stamp_record BEFORE INSERT OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_backends api_backends_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_backends_stamp_record BEFORE INSERT OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_roles api_roles_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_roles_stamp_record BEFORE INSERT OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_scopes api_scopes_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_scopes_stamp_record BEFORE INSERT OR UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_user_settings api_user_settings_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_users_roles api_users_roles_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_users_roles_stamp_record BEFORE INSERT OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_users api_users_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_users_stamp_record BEFORE INSERT OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
@@ -1962,31 +2042,31 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON website_backends FOR EACH STA
 
 
 --
--- Name: published_config published_config_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: published_config published_config_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER published_config_updated_at BEFORE INSERT OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE stamp_record();
-
-
---
--- Name: rate_limits rate_limits_updated_at; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER rate_limits_updated_at BEFORE INSERT OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER published_config_stamp_record BEFORE INSERT OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
--- Name: sessions sessions_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: rate_limits rate_limits_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER sessions_updated_at BEFORE INSERT OR UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
--- Name: website_backends website_backends_updated_at; Type: TRIGGER; Schema: public; Owner: -
+-- Name: sessions sessions_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER website_backends_updated_at BEFORE INSERT OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER sessions_stamp_record BEFORE INSERT OR UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: website_backends website_backends_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER website_backends_stamp_record BEFORE INSERT OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
