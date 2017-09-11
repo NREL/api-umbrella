@@ -82,6 +82,25 @@ function _M.connect()
     return nil, err
   end
 
+  -- The first time this socket is used (but not when reusing keepalive
+  -- sockets), setup any session variables on the connection.
+  if pg.sock:getreusedtimes() == 0 then
+    local queries = {
+      -- Set an application name for connection details.
+      "SET SESSION application_name = 'api-umbrella'",
+
+      -- Always use UTC.
+      "SET SESSION timezone = 'UTC'",
+    }
+    for _, query in ipairs(queries) do
+      ngx.log(ngx.NOTICE, query)
+      local query_result, query_err = pg:query(query)
+      if not query_result then
+        ngx.log(ngx.ERR, "postgresql query error: ", query_err)
+      end
+    end
+  end
+
   return pg
 end
 

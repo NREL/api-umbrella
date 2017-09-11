@@ -33,6 +33,11 @@ local function wait_for_postgres()
   end
 end
 
+local function set_stamping()
+  pg_utils.query("SET LOCAL audit.user_id = '00000000-0000-0000-0000-000000000000'")
+  pg_utils.query("SET LOCAL audit.user_name = 'api-umbrella-proxy'")
+end
+
 local function seed_api_keys()
   local keys = {
     -- static.site.ajax@internal.apiumbrella
@@ -81,6 +86,7 @@ local function seed_api_keys()
 
   for _, data in ipairs(keys) do
     pg_utils.query("START TRANSACTION")
+    set_stamping()
 
     local result, user_err = pg_utils.query("SELECT * FROM api_users WHERE email = $1 ORDER BY created_at LIMIT 1", data["email"])
     if not result then
@@ -222,6 +228,9 @@ end
 
 local function seed_initial_superusers()
   for _, username in ipairs(config["web"]["admin"]["initial_superusers"]) do
+    pg_utils.query("START TRANSACTION")
+    set_stamping()
+
     local result, admin_err = pg_utils.query("SELECT * FROM admins WHERE username = $1 LIMIT 1", username)
     if not result then
       ngx.log(ngx.ERR, "failed to query admins: ", admin_err)
@@ -259,6 +268,8 @@ local function seed_initial_superusers()
         ngx.log(ngx.ERR, "failed to create record in admins: ", insert_err)
       end
     end
+
+    pg_utils.query("COMMIT")
   end
 end
 
@@ -297,6 +308,9 @@ local function seed_admin_permissions()
   }
 
   for _, data in ipairs(permissions) do
+    pg_utils.query("START TRANSACTION")
+    set_stamping()
+
     local result, permission_err = pg_utils.query("SELECT * FROM admin_permissions WHERE id = $1 LIMIT 1", data["id"])
     if not result then
       ngx.log(ngx.ERR, "failed to query admin_permissions: ", permission_err)
@@ -321,6 +335,8 @@ local function seed_admin_permissions()
         ngx.log(ngx.ERR, "failed to create record in admin_permissions: ", insert_err)
       end
     end
+
+    pg_utils.query("COMMIT")
   end
 end
 
@@ -331,10 +347,6 @@ local function seed()
     ngx.sleep(5)
     return seed()
   end
-
-  pg_utils.query("SET application_name = 'api-umbrella-proxy'")
-  pg_utils.query("SET audit.user_id = '00000000-0000-0000-0000-000000000000'")
-  pg_utils.query("SET audit.user_name = 'api-umbrella-proxy'")
 
   seed_api_keys()
   seed_initial_superusers()

@@ -66,6 +66,15 @@ local function start_transaction()
     db.query("START TRANSACTION")
     started = true
     ngx.ctx.model_transaction_started = true
+
+    if ngx.ctx.current_admin then
+      db.query("SET LOCAL audit.user_id = ?", ngx.ctx.current_admin.id)
+      db.query("SET LOCAL audit.user_name = ?", ngx.ctx.current_admin.username)
+    else
+      -- TODO: What to do for stamping for non admins (api key signup)?
+      db.query("SET LOCAL audit.user_id = ?", "00000000-0000-0000-0000-000000000000")
+      db.query("SET LOCAL audit.user_name = ?", "admin")
+    end
   end
 
   return started

@@ -445,7 +445,7 @@ CREATE FUNCTION stamp_record() RETURNS trigger
                 WHERE pgcon.contype = ''f''
                   AND pgcon.conrelid = cast(%L as regclass)', TG_TABLE_NAME)
           LOOP
-            EXECUTE format('UPDATE %I SET updated_at = (transaction_timestamp() AT TIME ZONE ''UTC'') WHERE %I = ($1).%s', foreign_table_row.foreign_table_name, foreign_table_row.foreign_column_name, foreign_table_row.column_name) USING (CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END);
+            EXECUTE format('UPDATE %I SET updated_at = transaction_timestamp() WHERE %I = ($1).%s', foreign_table_row.foreign_table_name, foreign_table_row.foreign_column_name, foreign_table_row.column_name) USING (CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END);
           END LOOP;
 
           -- Set the created/updated timestamp and userstamp columns on INSERT
@@ -456,14 +456,14 @@ CREATE FUNCTION stamp_record() RETURNS trigger
             -- settings on create. The app shouldn't ever set these itself,
             -- this is primarily for the test environment, where it's sometimes
             -- useful to be able to create records with older timestamps.
-            NEW.created_at := COALESCE(NEW.created_at, transaction_timestamp() AT TIME ZONE 'UTC');
+            NEW.created_at := COALESCE(NEW.created_at, transaction_timestamp());
             NEW.created_by_id := COALESCE(NEW.created_by_id, current_app_user_id());
             NEW.created_by_username := COALESCE(NEW.created_by_username, current_app_username());
             NEW.updated_at := COALESCE(NEW.updated_at, NEW.created_at);
             NEW.updated_by_id := COALESCE(NEW.updated_by_id, NEW.created_by_id);
             NEW.updated_by_username := COALESCE(NEW.updated_by_username, NEW.created_by_username);
           WHEN 'UPDATE' THEN
-            NEW.updated_at := transaction_timestamp() AT TIME ZONE 'UTC';
+            NEW.updated_at := transaction_timestamp();
             NEW.updated_by_id := current_app_user_id();
             NEW.updated_by_username := current_app_username();
           WHEN 'DELETE' THEN

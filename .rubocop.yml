@@ -147,6 +147,9 @@ Style/RedundantSelf:
 Style/RegexpLiteral:
   Enabled: false
 
+Style/SafeNavigation:
+  Enabled: false
+
 Style/SignalException:
   Enabled: false
 

@@ -145,7 +145,7 @@ end
 function _M.update(self)
   self.api_user:update(_M.api_user_params(self))
   local response = {
-    admin = self.api_user:as_json(),
+    user = self.api_user:as_json(),
   }
 
   self.res.status = 200

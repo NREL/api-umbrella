@@ -38,9 +38,15 @@ app:before_filter(function(self)
   --   ngx.log(ngx.ERR, "setlocale failed")
   -- end
 
-  db.query("SET application_name = 'api-umbrella-web-app'")
-  db.query("SET audit.user_id = '00000000-0000-0000-0000-000000000000'")
-  db.query("SET audit.user_name = 'admin'")
+  -- Set session variables for the database connection (always use UTC and set
+  -- an app name for auditing).
+  --
+  -- Ideally we would only set these once per connection (and not set it when
+  -- the socket is reused), but Lapi's "db" instance doesn't have a way to get
+  -- the underlying pgmoon connection before executing a query (the connection
+  -- is lazily established after the first query).
+  db.query("SET SESSION application_name = 'api-umbrella-web-app'")
+  db.query("SET SESSION timezone = 'UTC'")
 
   -- pgmoon is currently missing support for handling PostgreSQL inet array
   -- types, so it doesn't know how to decode/encode these. So manually add

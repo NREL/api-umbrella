@@ -10,7 +10,8 @@ class Admin < ApplicationRecord
     self.authentication_token_encrypted_iv = SecureRandom.hex(6)
     self.authentication_token_encrypted = Base64.strict_encode64(Encryptor.encrypt({
       :value => value,
-      :iv => self.authentication_token_encrypted_iv, :key => Digest::SHA256.digest($config["secret_key"]),
+      :iv => self.authentication_token_encrypted_iv,
+      :key => Digest::SHA256.digest($config["secret_key"]),
       :auth_data => self.id,
     }))
   end
@@ -18,7 +19,8 @@ class Admin < ApplicationRecord
   def authentication_token
     Encryptor.decrypt({
       :value => Base64.strict_decode64(self.authentication_token_encrypted),
-      :iv => self.authentication_token_encrypted_iv, :key => Digest::SHA256.digest($config["secret_key"]),
+      :iv => self.authentication_token_encrypted_iv,
+      :key => Digest::SHA256.digest($config["secret_key"]),
       :auth_data => self.id,
     })
   end
