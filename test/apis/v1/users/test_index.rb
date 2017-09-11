@@ -90,9 +90,8 @@ class Test::Apis::V1::Users::TestIndex < Minitest::Test
       "response_headers",
     ].sort, record_data.fetch("settings").fetch("rate_limits").first.keys.sort)
     assert_equal(true, record_data.fetch("throttle_by_ip"))
-    assert_equal("2017-01-03T00:00:00Z", record_data.fetch("updated_at"))
     assert_equal(record.updated_by_id, record_data.fetch("updated_by"))
-    assert_equal("updater@example.com", record_data.fetch("updater").fetch("username"))
+    assert_equal("test_example_admin_username", record_data.fetch("updater").fetch("username"))
 
     assert_equal("Usage", record_data.fetch("use_description"))
     assert_equal("http://foo.example.com", record_data.fetch("website"))
