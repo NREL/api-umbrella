@@ -15,8 +15,7 @@ local is_empty = types.is_empty
 
 local function lookup_user(api_key)
   local api_key_hash = hmac(api_key)
-  local result, err = pg_utils.query("SELECT * FROM api_users_flattened WHERE api_key_hash = " .. pg_utils.escape_literal(api_key_hash))
-  ngx.log(ngx.ERR, "FLATTENED: " .. inspect(result))
+  local result, err = pg_utils.query("SELECT * FROM api_users_flattened WHERE api_key_hash = $1", api_key_hash)
   if not result then
     ngx.log(ngx.ERR, "failed to fetch user from database: ", err)
     return nil
@@ -32,6 +31,7 @@ local function lookup_user(api_key)
     "disabled_at",
     "email",
     "email_verified",
+    "id",
     "registration_source",
     "roles",
     "settings",

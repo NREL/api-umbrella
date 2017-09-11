@@ -263,6 +263,25 @@ the SECURITY DEFINER invocation of the audit trigger its self.
 SET search_path = public, pg_catalog;
 
 --
+-- Name: api_users_increment_version(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION api_users_increment_version() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        -- Only increment the version on INSERT or if the UPDATE actually
+        -- changed any fields.
+        IF TG_OP != 'UPDATE' OR row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+          NEW.version := nextval('api_users_version_seq');
+        END IF;
+
+        return NEW;
+      END;
+      $$;
+
+
+--
 -- Name: current_app_user_id(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -371,28 +390,94 @@ CREATE FUNCTION next_api_backend_sort_order() RETURNS integer
 
 CREATE FUNCTION stamp_record() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$
+    AS $_$
+      DECLARE
+        foreign_table_row record;
       BEGIN
-        IF TG_OP = 'INSERT' THEN
-          NEW.created_at := COALESCE(NEW.created_at, now() AT TIME ZONE 'UTC');
-          NEW.created_by_id := COALESCE(NEW.created_by_id, current_app_user_id());
-          NEW.created_by_username := COALESCE(NEW.created_by_username, current_app_username());
-          NEW.updated_at := COALESCE(NEW.updated_at, NEW.created_at);
-          NEW.updated_by_id := COALESCE(NEW.updated_by_id, NEW.created_by_id);
-          NEW.updated_by_username := COALESCE(NEW.updated_by_username, NEW.created_by_username);
-          RETURN NEW;
+        -- Only perform stamping ON INSERT/DELETE or if the UPDATE actually
+        -- changed any fields.
+        IF TG_OP != 'UPDATE' OR row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+          -- Find any foreign keys on this table, and also update the
+          -- updated_at timestamp on those related tables (which in turn will
+          -- trigger this stamp_record() on that table if the timestamp changes
+          -- to take care of any userstamping).
+          --
+          -- This is done so that insert/updates/deletes of nested data cascade
+          -- the updated stamping information to any parent records. For
+          -- example, when changing rate limits for a API user:
+          --
+          -- 1. The insert/update/delete on rate_limits will trigger an update
+          --    on the parent api_user_settings record.
+          -- 2. The update on the api_user_settings record will trigger an
+          --    update on the parent api_user record.
+          -- 3. The update on the api_user record will trigger its own update
+          --    triggers (which in the case of api_users will result in the
+          --    "version" being incremented).
+          --
+          -- This is primarily for the nested relationship data in api_users
+          -- and api_backends, since it keeps the top-level record's timestamps
+          -- updated whenever any child record is updated. This is useful for
+          -- display purposes (so the updated timestamp of the top-level record
+          -- accurately takes into account child record modifications). More
+          -- importantly, this is necessary for some of our polling mechanisms
+          -- which rely on record timestamps or version increments on the
+          -- top-level records to detect any changes and invalidate caches (for
+          -- example, detecting when api_users are changed to clear the proxy
+          -- cache).
+          FOR foreign_table_row IN
+            -- Find all the foreign tables that any foreign keys on this table
+            -- reference.
+            --
+            -- Note that this doesn't use the more common
+            -- information_schema.constraint_column_usage approach, since that
+            -- only gets foreign keys owned by the current user (so it won't work
+            -- when running as a different user than the table owners).
+            EXECUTE format('SELECT
+                pga1.attname as column_name,
+                cast(pgcon.confrelid as regclass) as foreign_table_name,
+                pga2.attname as foreign_column_name
+              FROM
+                pg_constraint AS pgcon
+                JOIN pg_attribute AS pga1
+                  ON (pgcon.conrelid = pga1.attrelid AND pga1.attnum = ANY(pgcon.conkey))
+                JOIN pg_attribute AS pga2
+                  ON (pgcon.confrelid = pga2.attrelid AND pga2.attnum = ANY(pgcon.confkey))
+                WHERE pgcon.contype = ''f''
+                  AND pgcon.conrelid = cast(%L as regclass)', TG_TABLE_NAME)
+          LOOP
+            EXECUTE format('UPDATE %I SET updated_at = (transaction_timestamp() AT TIME ZONE ''UTC'') WHERE %I = ($1).%s', foreign_table_row.foreign_table_name, foreign_table_row.foreign_column_name, foreign_table_row.column_name) USING (CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END);
+          END LOOP;
+
+          -- Set the created/updated timestamp and userstamp columns on INSERT
+          -- or UPDATE.
+          CASE TG_OP
+          WHEN 'INSERT' THEN
+            -- Use COALESCE to allow for overriding these values with custom
+            -- settings on create. The app shouldn't ever set these itself,
+            -- this is primarily for the test environment, where it's sometimes
+            -- useful to be able to create records with older timestamps.
+            NEW.created_at := COALESCE(NEW.created_at, transaction_timestamp() AT TIME ZONE 'UTC');
+            NEW.created_by_id := COALESCE(NEW.created_by_id, current_app_user_id());
+            NEW.created_by_username := COALESCE(NEW.created_by_username, current_app_username());
+            NEW.updated_at := COALESCE(NEW.updated_at, NEW.created_at);
+            NEW.updated_by_id := COALESCE(NEW.updated_by_id, NEW.created_by_id);
+            NEW.updated_by_username := COALESCE(NEW.updated_by_username, NEW.created_by_username);
+          WHEN 'UPDATE' THEN
+            NEW.updated_at := transaction_timestamp() AT TIME ZONE 'UTC';
+            NEW.updated_by_id := current_app_user_id();
+            NEW.updated_by_username := current_app_username();
+          WHEN 'DELETE' THEN
+            -- Do nothing on deletes.
+          END CASE;
+        END IF;
+
+        IF TG_OP = 'DELETE' THEN
+          RETURN OLD;
         ELSE
-          IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
-            NEW.updated_at := COALESCE(NEW.updated_at, now() AT TIME ZONE 'UTC');
-            NEW.updated_by_id := COALESCE(NEW.updated_by_id, current_app_user_id());
-            NEW.updated_by_username := COALESCE(NEW.updated_by_username, current_app_username());
-            RETURN NEW;
-          ELSE
-            RETURN OLD;
-          END IF;
+          RETURN NEW;
         END IF;
       END;
-      $$;
+      $_$;
 
 
 --
@@ -981,6 +1066,7 @@ CREATE TABLE api_user_settings (
 
 CREATE TABLE api_users (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
+    version bigint NOT NULL,
     api_key_hash character varying(64) NOT NULL,
     api_key_encrypted character varying(76) NOT NULL,
     api_key_encrypted_iv character varying(12) NOT NULL,
@@ -1055,6 +1141,7 @@ CREATE TABLE rate_limits (
 
 CREATE VIEW api_users_flattened AS
  SELECT u.id,
+    u.version,
     u.api_key_hash,
     u.api_key_encrypted,
     u.api_key_encrypted_iv,
@@ -1085,9 +1172,21 @@ CREATE VIEW api_users_flattened AS
           WHERE (r.api_user_settings_id = s.id)) AS rate_limits,
     ARRAY( SELECT ar.api_role_id
            FROM api_users_roles ar
-          WHERE (ar.api_user_id = s.id)) AS roles
+          WHERE (ar.api_user_id = u.id)) AS roles
    FROM (api_users u
      LEFT JOIN api_user_settings s ON ((u.id = s.api_user_id)));
+
+
+--
+-- Name: api_users_version_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE api_users_version_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
 
 
 --
@@ -1587,6 +1686,13 @@ CREATE UNIQUE INDEX api_users_roles_api_user_id_api_role_id_idx ON api_users_rol
 
 
 --
+-- Name: api_users_version_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX api_users_version_idx ON api_users USING btree (version);
+
+
+--
 -- Name: rate_limits_api_backend_settings_id_api_user_settings_id_li_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1604,133 +1710,140 @@ CREATE UNIQUE INDEX website_backends_frontend_host_idx ON website_backends USING
 -- Name: admin_groups_admin_permissions admin_groups_admin_permissions_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_admin_permissions_stamp_record BEFORE INSERT OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_groups_admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admin_groups_admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: admin_groups_admins admin_groups_admins_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_admins_stamp_record BEFORE INSERT OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_groups_admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admin_groups_admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: admin_groups_api_scopes admin_groups_api_scopes_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_api_scopes_stamp_record BEFORE INSERT OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_groups_api_scopes_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admin_groups_api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: admin_groups admin_groups_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_groups_stamp_record BEFORE INSERT OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_groups_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admin_groups FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: admin_permissions admin_permissions_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admin_permissions_stamp_record BEFORE INSERT OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admin_permissions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: admins admins_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER admins_stamp_record BEFORE INSERT OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_http_headers api_backend_http_headers_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_http_headers_stamp_record BEFORE INSERT OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backend_http_headers_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_http_headers FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_rewrites api_backend_rewrites_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_rewrites_stamp_record BEFORE INSERT OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backend_rewrites_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_rewrites FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_servers api_backend_servers_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_servers_stamp_record BEFORE INSERT OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backend_servers_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_servers FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_settings_required_roles api_backend_settings_required_roles_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_settings_required_roles_stamp_record BEFORE INSERT OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backend_settings_required_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_settings_required_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_settings api_backend_settings_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_settings_stamp_record BEFORE INSERT OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backend_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_sub_url_settings api_backend_sub_url_settings_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_sub_url_settings_stamp_record BEFORE INSERT OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backend_sub_url_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_sub_url_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backend_url_matches api_backend_url_matches_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backend_url_matches_stamp_record BEFORE INSERT OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backend_url_matches_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backend_url_matches FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_backends api_backends_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_backends_stamp_record BEFORE INSERT OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_backends_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_roles api_roles_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_roles_stamp_record BEFORE INSERT OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_scopes api_scopes_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_scopes_stamp_record BEFORE INSERT OR UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_scopes_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_scopes FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_user_settings api_user_settings_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_user_settings_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_user_settings FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: api_users api_users_increment_version_trigger; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER api_users_increment_version_trigger BEFORE INSERT OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE api_users_increment_version();
 
 
 --
 -- Name: api_users_roles api_users_roles_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_users_roles_stamp_record BEFORE INSERT OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_users_roles_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_users_roles FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: api_users api_users_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER api_users_stamp_record BEFORE INSERT OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER api_users_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON api_users FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
@@ -2045,28 +2158,28 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON website_backends FOR EACH STA
 -- Name: published_config published_config_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER published_config_stamp_record BEFORE INSERT OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER published_config_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON published_config FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: rate_limits rate_limits_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON rate_limits FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: sessions sessions_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER sessions_stamp_record BEFORE INSERT OR UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER sessions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
 -- Name: website_backends website_backends_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER website_backends_stamp_record BEFORE INSERT OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER website_backends_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON website_backends FOR EACH ROW EXECUTE PROCEDURE stamp_record();
 
 
 --
@@ -2381,6 +2494,13 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE rate_limits TO api_umbrella_app_user;
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users_flattened TO api_umbrella_app_user;
+
+
+--
+-- Name: api_users_version_seq; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,UPDATE ON SEQUENCE api_users_version_seq TO api_umbrella_app_user;
 
 
 --

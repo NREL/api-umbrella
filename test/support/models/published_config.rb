@@ -8,7 +8,7 @@ class PublishedConfig < ApplicationRecord
   end
 
   def self.active
-    self.desc(:id).first
+    self.order(:id).first
   end
 
   def self.active_config

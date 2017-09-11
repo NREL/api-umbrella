@@ -77,6 +77,23 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal(user.id, data["headers"]["x-api-user-id"])
       assert_equal("restricted", data["headers"]["x-api-roles"])
+
+      # Remove the restricted role (to verify role removal also gets picked up)
+      # and ensure that the request goes back to being forbidden.
+      response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/users/#{user.id}.json", http_options.deep_merge(admin_token).deep_merge({
+        :headers => { "Content-Type" => "application/json" },
+        :body => MultiJson.dump(:user => { :roles => [] }),
+      }))
+      assert_response_code(200, response)
+
+      # Wait 2 seconds to ensure the existing cache for this key get purged.
+      sleep 2.1
+
+      # Ensure that the key is rejected from a restricted endpoint.
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_id}/restricted-info/", http_options.deep_merge({
+        :headers => { "X-Api-Key" => user.api_key },
+      }))
+      assert_response_code(403, response)
     end
   end
 
@@ -103,7 +120,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
         :settings => {
           :rate_limit_mode => "custom",
           :rate_limits => [
-            FactoryGirl.attributes_for(:api_rate_limit, :limit => 10, :response_headers => true),
+            FactoryGirl.attributes_for(:rate_limit, :limit => 10, :response_headers => true),
           ],
         },
       }),

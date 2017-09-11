@@ -1,62 +1,38 @@
 local _M = {}
 
+local encryptor = require "api-umbrella.utils.encryptor"
 local interval_lock = require "api-umbrella.utils.interval_lock"
-local mongo = require "api-umbrella.utils.mongo"
-local types = require "pl.types"
-local utils = require "api-umbrella.proxy.utils"
-
-local get_packed = utils.get_packed
-local is_empty = types.is_empty
-local set_packed = utils.set_packed
+local pg_utils = require "api-umbrella.utils.pg_utils"
 
 local api_users = ngx.shared.api_users
 
 local delay = 1 -- in seconds
 
 local function do_check()
-  local current_fetch_time = ngx.now() * 1000
-  local last_fetched_timestamp = get_packed(api_users, "distributed_last_fetched_timestamp") or { t = math.floor((current_fetch_time - 60 * 1000) / 1000), i = 0 }
+  local last_fetched_version = api_users:get("last_fetched_version") or 0
+  local results, err = pg_utils.query("SELECT id, version, api_key_encrypted, api_key_encrypted_iv FROM api_users_flattened WHERE version > $1 ORDER BY version DESC", last_fetched_version)
+  if not results then
+    ngx.log(ngx.ERR, "failed to fetch users from database: ", err)
+    return nil
+  end
 
-  local skip = 0
-  local page_size = 250
-  local success = true
-  repeat
-    local results, mongo_err = mongo.find("api_users", {
-      limit = page_size,
-      skip = skip,
-      sort = "updated_at",
-      query = {
-        ts = {
-          ["$gt"] = {
-            ["$timestamp"] = last_fetched_timestamp,
-          },
-        },
-      },
-    })
-
-    if mongo_err then
-      ngx.log(ngx.ERR, "failed to fetch users from mongodb: ", mongo_err)
-      success = false
-    elseif results then
-      for index, result in ipairs(results) do
-        if skip == 0 and index == 1 then
-          if result["ts"] and result["ts"]["$timestamp"] then
-            set_packed(api_users, "distributed_last_fetched_timestamp", result["ts"]["$timestamp"])
-          end
-        end
-
-        if result["api_key"] then
-          ngx.shared.api_users:delete(result["api_key"])
-        end
-      end
+  for index, row in ipairs(results) do
+    if index == 1 then
+      last_fetched_version = row["version"]
     end
 
-    skip = skip + page_size
-  until is_empty(results)
-
-  if success then
-    api_users:set("last_fetched_at", current_fetch_time)
+    local api_key
+    if row["api_key_encrypted"] and row["api_key_encrypted_iv"] and row["id"] then
+      api_key = encryptor.decrypt(row["api_key_encrypted"], row["api_key_encrypted_iv"], row["id"])
+    end
+    if api_key then
+      ngx.shared.api_users:delete(api_key)
+    else
+      ngx.log(ngx.ERR, "Could not decrypt api key for cache invalidation: ", row["id"])
+    end
   end
+
+  api_users:set("last_fetched_version", last_fetched_version)
 end
 
 function _M.spawn()
