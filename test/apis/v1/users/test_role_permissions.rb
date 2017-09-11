@@ -11,9 +11,9 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_superuser_assign_any_role
-    FactoryGirl.create(:google_api)
-    FactoryGirl.create(:yahoo_api)
-    existing_roles = ApiUserRole.all
+    FactoryGirl.create(:google_api_backend)
+    FactoryGirl.create(:yahoo_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
     refute_includes(existing_roles, "new-write#{unique_test_id}")
@@ -36,8 +36,8 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_limited_admin_assign_role_within_scope
-    FactoryGirl.create(:google_api)
-    existing_roles = ApiUserRole.all
+    FactoryGirl.create(:google_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-write")
 
     admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
@@ -49,8 +49,8 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_assign_role_outside_scope
-    FactoryGirl.create(:yahoo_api)
-    existing_roles = ApiUserRole.all
+    FactoryGirl.create(:yahoo_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "yahoo-write")
 
     admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
@@ -62,8 +62,8 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_assign_role_partial_access
-    FactoryGirl.create(:google_extra_url_match_api)
-    existing_roles = ApiUserRole.all
+    FactoryGirl.create(:google_extra_url_match_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-extra-write")
 
     admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission)])
@@ -102,9 +102,9 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_updating_permitted_users_with_unpermitted_values
-    FactoryGirl.create(:google_api)
-    FactoryGirl.create(:yahoo_api)
-    existing_roles = ApiUserRole.all
+    FactoryGirl.create(:google_api_backend)
+    FactoryGirl.create(:yahoo_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
 
@@ -135,9 +135,9 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_updating_unpermitted_users_with_permitted_values
-    FactoryGirl.create(:google_api)
-    FactoryGirl.create(:yahoo_api)
-    existing_roles = ApiUserRole.all
+    FactoryGirl.create(:google_api_backend)
+    FactoryGirl.create(:yahoo_api_backend)
+    existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
 
@@ -185,7 +185,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
     record = ApiUser.find(data["user"]["id"])
 
     refute_empty(attr_overrides["roles"])
-    assert_equal(attr_overrides["roles"], record.roles)
+    assert_equal(attr_overrides["roles"].sort, record.roles.sort)
   end
 
   def assert_admin_forbidden_create(factory, admin, attr_overrides = {})
@@ -218,7 +218,7 @@ class Test::Apis::V1::Users::TestRolePermissions < Minitest::Test
     assert_equal(attributes["first_name"], record.first_name)
 
     refute_empty(attr_overrides["roles"])
-    assert_equal(attr_overrides["roles"], record.roles)
+    assert_equal(attr_overrides["roles"].sort, record.roles.sort)
   end
 
   def assert_admin_forbidden_update(factory, admin, attr_overrides = {})

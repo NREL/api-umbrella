@@ -131,7 +131,7 @@ local function before_save(self, action, callbacks, values)
   -- record they're authorized to and update it to something outside their
   -- permissions.
   if callbacks["authorize"] then
-    callbacks["authorize"](data)
+    callbacks["authorize"](data, action)
   end
 
   if callbacks["validate"] then

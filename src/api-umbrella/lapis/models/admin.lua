@@ -220,6 +220,10 @@ Admin = model_ext.new_class("admins", {
   -- Fetch all the API scopes this admin belongs to (through their group
   -- membership) that has a certain permission.
   api_scopes_with_permission = function(self, permission_id)
+    if type(permission_id) == "string" then
+      permission_id = { permission_id }
+    end
+
     return ApiScope:load_all(db.query([[
       SELECT DISTINCT api_scopes.*
       FROM api_scopes
@@ -227,7 +231,7 @@ Admin = model_ext.new_class("admins", {
         INNER JOIN admin_groups_admin_permissions ON admin_groups_api_scopes.admin_group_id = admin_groups_admin_permissions.admin_group_id
         INNER JOIN admin_groups_admins ON admin_groups_api_scopes.admin_group_id = admin_groups_admins.admin_group_id
       WHERE admin_groups_admins.admin_id = ?
-        AND admin_groups_admin_permissions.admin_permission_id = ?]], self.id, permission_id))
+        AND admin_groups_admin_permissions.admin_permission_id IN ?]], self.id, db.list(permission_id)))
   end,
 
   -- Fetch all the API scopes this admin belongs to that has a certain
@@ -268,7 +272,7 @@ Admin = model_ext.new_class("admins", {
   disallowed_role_ids = function(self)
     if not self._disallowed_role_ids then
       self._disallowed_role_ids = {}
-      local scope = api_backend_policy.authorized_query_scope(self)
+      local scope = api_backend_policy.authorized_query_scope(self, { "user_manage", "backend_manage" })
       if scope then
         local rows = db.query([[
           WITH allowed_api_backends AS (

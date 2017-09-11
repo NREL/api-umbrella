@@ -44,6 +44,7 @@ class ApiUser < ApplicationRecord
     options ||= {}
     options.merge!({
       :methods => [
+        :api_key,
         :roles,
       ],
       :include => {

@@ -1,6 +1,7 @@
 local ApiUser = require "api-umbrella.lapis.models.api_user"
-local api_user_welcome_mailer = require "api-umbrella.lapis.mailers.api_user_welcome"
 local api_user_admin_notification_mailer = require "api-umbrella.lapis.mailers.api_user_admin_notification"
+local api_user_policy = require "api-umbrella.lapis.policies.api_user_policy"
+local api_user_welcome_mailer = require "api-umbrella.lapis.mailers.api_user_welcome"
 local db = require "lapis.db"
 local dbify_json_nulls = require "api-umbrella.utils.dbify_json_nulls"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
@@ -65,6 +66,9 @@ end
 
 function _M.index(self)
   return lapis_datatables.index(self, ApiUser, {
+    where = {
+      api_user_policy.authorized_query_scope(self.current_admin),
+    },
     search_joins = {
       "LEFT JOIN api_users_roles ON api_users.id = api_users_roles.api_user_id",
     },
@@ -84,6 +88,7 @@ function _M.index(self)
 end
 
 function _M.show(self)
+  self.api_user:authorize()
   local response = {
     user = self.api_user:as_json({ allow_api_key = true }),
   }
@@ -124,7 +129,7 @@ function _M.create(self)
     user_params["email_verified"] = false
   end
 
-  local api_user = assert(ApiUser:create(user_params))
+  local api_user = assert(ApiUser:authorized_create(user_params))
   local response = {
     user = api_user:as_json({ allow_api_key = true }),
   }
@@ -143,19 +148,13 @@ function _M.create(self)
 end
 
 function _M.update(self)
-  self.api_user:update(_M.api_user_params(self))
+  self.api_user:authorized_update(_M.api_user_params(self))
   local response = {
     user = self.api_user:as_json(),
   }
 
   self.res.status = 200
   return lapis_json(self, response)
-end
-
-function _M.destroy(self)
-  assert(self.api_user:delete())
-
-  return { status = 204 }
 end
 
 local function api_user_settings_params(input_settings)
@@ -191,7 +190,6 @@ local function api_user_settings_params(input_settings)
 
   return params_settings
 end
-
 
 function _M.api_user_params(self)
   local params = {}
@@ -233,7 +231,9 @@ return function(app)
     GET = capture_errors_json_full(_M.show),
     POST = capture_errors_json_full(json_params(_M.update)),
     PUT = capture_errors_json_full(json_params(_M.update)),
-    DELETE = capture_errors_json_full(_M.destroy),
+    DELETE = function(self)
+      self:write({ "Not Found", status = 404 })
+    end,
   }))
 
   app:get("/api-umbrella/v1/users(.:format)", capture_errors_json_full(_M.index))

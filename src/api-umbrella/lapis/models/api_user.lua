@@ -1,9 +1,10 @@
 local ApiRole = require "api-umbrella.lapis.models.api_role"
-local is_empty = require("pl.types").is_empty
 local ApiUserSettings = require "api-umbrella.lapis.models.api_user_settings"
+local api_user_policy = require "api-umbrella.lapis.policies.api_user_policy"
 local cjson = require "cjson"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
+local is_empty = require("pl.types").is_empty
 local iso8601 = require "api-umbrella.utils.iso8601"
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
@@ -42,6 +43,10 @@ ApiUser = model_ext.new_class("api_users", {
     end
 
     return model_ext.record_attributes(self, options)
+  end,
+
+  authorize = function(self)
+    api_user_policy.authorize_show(ngx.ctx.current_admin, self:attributes())
   end,
 
   api_key_decrypted = function(self)
@@ -188,8 +193,12 @@ ApiUser = model_ext.new_class("api_users", {
     return model_ext.has_one_delete(self, ApiUserSettings, "api_user_id", {})
   end,
 }, {
-  authorize = function()
-    return true
+  authorize = function(data, action)
+    if action == "create" then
+      api_user_policy.authorize_create(ngx.ctx.current_admin, data)
+    else
+      api_user_policy.authorize_modify(ngx.ctx.current_admin, data)
+    end
   end,
 
   before_validate_on_create = function(_, values)

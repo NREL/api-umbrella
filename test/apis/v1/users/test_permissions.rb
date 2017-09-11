@@ -158,7 +158,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
     assert_equal(1, active_count - initial_count)
     data = MultiJson.load(response.body)
     record = ApiUser.find(data["user"]["id"])
-    assert_nil(record.roles)
+    assert_equal([], record.roles)
     assert_nil(record.settings)
   end
 
