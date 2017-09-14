@@ -16,6 +16,10 @@ DatabaseCleaner.strategy = :truncation, {
     # Don't truncate the admin permissions table, since it's a static list of
     # seeded values.
     "admin_permissions",
+
+    # Don't clean the published config between tests, since we might be
+    # appending/removing items to it in our parallel tests.
+    "published_config",
   ],
 }
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
