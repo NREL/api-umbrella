@@ -199,7 +199,7 @@ Admin = model_ext.new_class("admins", {
   set_reset_password_token = function(self)
     local token = random_token(24)
     local token_hash = hmac(token)
-    db.update("admins", {
+    model_ext.transaction_update("admins", {
       reset_password_token_hash = token_hash,
       reset_password_sent_at = db.raw("now() AT TIME ZONE 'UTC'"),
     }, { id = assert(self.id) })

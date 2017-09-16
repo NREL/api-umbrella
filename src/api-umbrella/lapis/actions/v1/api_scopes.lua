@@ -48,8 +48,7 @@ function _M.update(self)
 end
 
 function _M.destroy(self)
-  self.api_scope:authorize()
-  assert(self.api_scope:delete())
+  assert(self.api_scope:authorized_delete())
 
   return { status = 204 }
 end

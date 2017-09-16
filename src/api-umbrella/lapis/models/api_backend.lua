@@ -252,7 +252,7 @@ ApiBackend = model_ext.new_class("api_backends", {
           new_order = api.sort_order - index
         end
         api.sort_order = new_order
-        db.update(ApiBackend:table_name(), { sort_order = api.sort_order }, { id = api.id })
+        model_ext.transaction_update(ApiBackend:table_name(), { sort_order = api.sort_order }, { id = api.id })
       end
 
       for _, api in ipairs(conflicting_order_apis) do

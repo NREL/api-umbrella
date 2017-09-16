@@ -326,6 +326,26 @@ local function update(callbacks)
   end
 end
 
+local function delete(callbacks)
+  return function(self)
+    -- Before starting the update, ensure the current user is authorized to
+    -- this record.
+    callbacks["authorize"](self:attributes())
+
+    local transaction_started = start_transaction()
+
+    local return_value
+    try_save(function()
+      return_value = Model.delete(self)
+    end, transaction_started)
+
+    commit_transaction(transaction_started)
+
+    return return_value
+  end
+end
+
+
 local function get_join_records(model_name, options, ids)
   local model = Model:get_relation_model(model_name)
   local join_table = db.escape_identifier(options["join_table"])
@@ -478,6 +498,7 @@ end
 
 function _M.new_class(table_name, model_options, callbacks)
   model_options.update = update(callbacks)
+  model_options.delete = delete(callbacks)
   if not model_options.attributes then
     model_options.attributes = _M.record_attributes
   end
@@ -488,12 +509,19 @@ function _M.new_class(table_name, model_options, callbacks)
   -- original create/update functions overridden, so we can ensure any default
   -- create/updates also get authorized).
   model_options.authorized_update = model_options.update
+  model_options.authorized_delete = model_options.delete
 
   local model_class = Model:extend(table_name, model_options)
   model_class.create = create(callbacks)
   model_class.authorized_create = model_class.create
 
   return model_class
+end
+
+function _M.transaction_update(table_name, values, cond, ...)
+  local transaction_started = start_transaction()
+  db.update(table_name, values, cond, ...)
+  commit_transaction(transaction_started)
 end
 
 return _M

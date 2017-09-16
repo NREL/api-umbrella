@@ -53,8 +53,7 @@ function _M.update(self)
 end
 
 function _M.destroy(self)
-  self.admin:authorize()
-  assert(self.admin:delete())
+  assert(self.admin:authorized_delete())
 
   return { status = 204 }
 end
