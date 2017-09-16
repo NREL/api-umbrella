@@ -19,6 +19,8 @@ local function messages_to_full_message_objects(errors)
       })
     end
   end
+
+  return full_messages
 end
 
 local function error_response(errors, translate_to_full_messages)
@@ -31,7 +33,7 @@ local function error_response(errors, translate_to_full_messages)
   if ngx.ctx.error_no_wrap then
     json = errors
   else
-    if translate_to_full_messages and is_hash(errors) and errors[1] and not errors[1]["code"] then
+    if translate_to_full_messages and is_hash(errors) and (not errors[1] or not errors[1]["code"]) then
       json = {
         errors = messages_to_full_message_objects(errors),
       }
