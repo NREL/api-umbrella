@@ -1,5 +1,5 @@
 class Admin < ApplicationRecord
-  has_and_belongs_to_many :groups, :class_name => "AdminGroup"
+  has_and_belongs_to_many :groups, -> { order(:name) }, :class_name => "AdminGroup"
 
   def authentication_token=(value)
     # Ensure the record ID is set (it may not be on initial create), since we

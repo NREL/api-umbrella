@@ -1,8 +1,8 @@
 class ApiBackendSettings < ApplicationRecord
   belongs_to :api_backend
-  has_many :http_headers, :class_name => "ApiBackendHttpHeader"
-  has_many :rate_limits
-  has_and_belongs_to_many :required_roles, :class_name => "ApiRole", :join_table => "api_backend_settings_required_roles"
+  has_many :http_headers, -> { order(:sort_order) }, :class_name => "ApiBackendHttpHeader"
+  has_many :rate_limits, -> { order(:duration, :limit_by) }
+  has_and_belongs_to_many :required_roles, -> { order(:id) }, :class_name => "ApiRole", :join_table => "api_backend_settings_required_roles"
 
   def required_roles
     self.required_role_ids

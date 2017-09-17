@@ -28,7 +28,6 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     assert_base_record_fields(record_data)
 
     assert_equal("2017-01-01T00:00:00Z", record_data.fetch("created_at"))
-    assert_match_uuid(record_data.fetch("created_by"))
     assert_equal(record.created_by_id, record_data.fetch("created_by"))
     assert_equal("2017-01-05T00:00:00Z", record_data.fetch("current_sign_in_at"))
     assert_equal("10.11.2.3", record_data.fetch("current_sign_in_ip"))
@@ -52,8 +51,6 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     assert_equal("2017-01-03T00:00:00Z", record_data.fetch("reset_password_sent_at"))
     assert_equal(10, record_data.fetch("sign_in_count"))
     assert_equal(true, record_data.fetch("superuser"))
-    assert_equal("2017-01-02T00:00:00Z", record_data.fetch("updated_at"))
-    assert_match_uuid(record_data.fetch("updated_by"))
     assert_equal(record.updated_by_id, record_data.fetch("updated_by"))
     assert_match(/@example.com/, record_data.fetch("username"))
   end
@@ -122,6 +119,7 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     assert_equal([
       "created_at",
       "created_by",
+      "creator",
       "current_sign_in_at",
       "current_sign_in_ip",
       "current_sign_in_provider",
@@ -142,10 +140,15 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
       "superuser",
       "updated_at",
       "updated_by",
+      "updater",
       "username",
       "version",
     ].sort, record_data.keys.sort)
     assert_match_iso8601(record_data.fetch("created_at"))
+    assert_match_uuid(record_data.fetch("created_by"))
+    assert_kind_of(Hash, record_data.fetch("creator"))
+    assert_equal(["username"].sort, record_data.fetch("creator").keys)
+    assert_kind_of(String, record_data.fetch("creator").fetch("username"))
     assert_nil(record_data.fetch("deleted_at"))
     assert_kind_of(String, record_data.fetch("email"))
     assert_kind_of(Integer, record_data.fetch("failed_attempts"))
@@ -155,6 +158,10 @@ class Test::Apis::V1::Admins::TestIndex < Minitest::Test
     assert_kind_of(Integer, record_data.fetch("sign_in_count"))
     assert_includes([true, false], record_data.fetch("superuser"))
     assert_match_iso8601(record_data.fetch("updated_at"))
+    assert_match_uuid(record_data.fetch("updated_by"))
+    assert_kind_of(Hash, record_data.fetch("updater"))
+    assert_equal(["username"].sort, record_data.fetch("updater").keys)
+    assert_kind_of(String, record_data.fetch("updater").fetch("username"))
     assert_kind_of(String, record_data.fetch("username"))
     assert_kind_of(Integer, record_data.fetch("version"))
   end

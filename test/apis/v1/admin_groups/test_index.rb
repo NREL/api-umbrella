@@ -89,7 +89,6 @@ class Test::Apis::V1::AdminGroups::TestIndex < Minitest::Test
     assert_equal("Example", record_data.fetch("name"))
     assert_equal(["Analytics", "API Users - View"], record_data.fetch("permission_display_names"))
     assert_equal(["analytics", "user_view"], record_data.fetch("permission_ids"))
-    assert_equal("2017-01-02T00:00:00Z", record_data.fetch("updated_at"))
     assert_match_uuid(record_data.fetch("updated_by"))
     assert_equal(record.updated_by_id, record_data.fetch("updated_by"))
   end
