@@ -455,14 +455,29 @@ function _M.has_many_save(self, values, name)
   if relations_values == db_null then
     self[name .. "_delete_except"](self, {})
   elseif is_array(relations_values) then
+    -- First determine which child records exist and will be kept.
     local keep_ids = {}
+    for index, relation_values in ipairs(relations_values) do
+      if not relation_values["id"] or relation_values["id"] == db_null then
+        relation_values["id"] = uuid_generate()
+      end
+      table.insert(keep_ids, assert(relation_values["id"]))
+    end
+
+    -- Next, delete any child records that won't be retained during this save.
+    --
+    -- We must do this before the subsequent create/updates so that any
+    -- uniqueness validations in those child record validations take into
+    -- account removed records. Since this is all wrapped in a transaction,
+    -- it's safe to go ahead and delete these.
+    self[name .. "_delete_except"](self, keep_ids)
+
+    -- Finally, create or update any child records based on the current values.
     for index, relation_values in ipairs(relations_values) do
       ngx.ctx.validate_error_field_prefix = name .. "[" .. (index - 1) .. "]."
       local record = self[name .. "_update_or_create"](self, relation_values)
       ngx.ctx.validate_error_field_prefix = nil
-      table.insert(keep_ids, assert(record.id))
     end
-    self[name .. "_delete_except"](self, keep_ids)
   end
 end
 
