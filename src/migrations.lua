@@ -127,7 +127,7 @@ return {
       CREATE OR REPLACE FUNCTION next_api_backend_sort_order()
       RETURNS int AS $$
       BEGIN
-        RETURN (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM api_backends);
+        RETURN (SELECT COALESCE(MAX(sort_order), 0) + 10000 FROM api_backends);
       END;
       $$ LANGUAGE plpgsql;
     ]])
