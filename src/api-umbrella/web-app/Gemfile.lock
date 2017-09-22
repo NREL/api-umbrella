@@ -144,7 +144,7 @@ GEM
     mime-types (3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2016.0521)
-    mini_portile2 (2.2.0)
+    mini_portile2 (2.3.0)
     minitest (5.10.2)
     money (6.9.0)
       i18n (>= 0.6.4, < 0.9)
@@ -175,8 +175,8 @@ GEM
     multi_xml (0.6.0)
     multipart-post (2.0.0)
     net-ldap (0.16.0)
-    nokogiri (1.8.0)
-      mini_portile2 (~> 2.2.0)
+    nokogiri (1.8.1)
+      mini_portile2 (~> 2.3.0)
     oauth2 (1.4.0)
       faraday (>= 0.8, < 0.13)
       jwt (~> 1.0)
@@ -323,7 +323,7 @@ DEPENDENCIES
   mongoid_rails_migrations (~> 1.1.0)
   mongoid_store!
   multi_json (~> 1.12.1)
-  nokogiri (~> 1.8.0)
+  nokogiri (~> 1.8.1)
   oj (~> 3.3.2)
   omniauth (~> 1.6.1)
   omniauth-cas (~> 1.1.0)!
@@ -348,4 +348,4 @@ DEPENDENCIES
   simple_form (~> 3.5.0)
 
 BUNDLED WITH
-   1.15.1
+   1.15.4
