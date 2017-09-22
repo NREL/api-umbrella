@@ -99,7 +99,6 @@ local function prepare()
     path.join(config["etc_dir"], "elasticsearch_scripts"),
     path.join(config["db_dir"], "rsyslog"),
     path.join(config["etc_dir"], "trafficserver/snapshots"),
-    path.join(config["log_dir"], "trafficserver"),
     path.join(config["root_dir"], "var/trafficserver"),
   }
 
@@ -302,6 +301,39 @@ local function activate_services()
     local is_hidden = (string.find(service_name, ".", 1, true) == 1)
     if is_hidden then
       is_active = false
+    end
+
+    -- Create the log directory for svlogd output for this service.
+    if is_active or service_name == ".boot" then
+      local service_log_name = service_name
+      if service_name == ".boot" then
+        service_log_name = "perpd"
+      end
+
+      local service_log_dir = path.join(config["log_dir"], service_log_name)
+      dir.makepath(service_log_dir)
+      local _, _, log_chmod_err = run_command("chmod 0755 " .. service_log_dir)
+      if log_chmod_err then
+        print("chmod failed: ", log_chmod_err)
+        os.exit(1)
+      end
+      if config["user"] and config["group"] then
+        local _, _, log_chown_err = run_command("chown " .. config["user"] .. ":" .. config["group"] .. " " .. service_log_dir)
+        if log_chown_err then
+          print("chown failed: ", log_chown_err)
+          os.exit(1)
+        end
+      end
+
+      -- Disable the svlogd script if we want all output to go to
+      -- stdout/stderr.
+      if config["log"]["destination"] == "console" then
+        local _, _, err = run_command("chmod -x " .. service_dir .. "/rc.log")
+        if err then
+          print("chmod failed: ", err)
+          os.exit(1)
+        end
+      end
     end
 
     -- Set the sticky bit for any active services.

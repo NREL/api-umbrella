@@ -127,6 +127,8 @@ router:
 rsyslog:
   host: 127.0.0.1
   port: 14014
+log:
+  destination: file
 dns_resolver:
   negative_ttl: 60
   max_stale: 86400
