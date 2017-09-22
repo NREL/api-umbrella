@@ -32,6 +32,11 @@ http {
   lua_check_client_abort on;
   if_modified_since off;
 
+  {{#dns_resolver._nameservers_nginx}}
+    resolver {{dns_resolver._nameservers_nginx}};
+    resolver_timeout 12s;
+  {{/dns_resolver._nameservers_nginx}}
+
   include ./mime.conf;
   include ./realip.conf;
 
@@ -52,7 +57,7 @@ http {
 
     rewrite ^/admin$ /admin/ permanent;
 
-    location ~ ^/admin/($|assets/.+|fonts/.+|maps/.+|ember.+) {
+    location ~ ^/admin($|/$|/index\.html|/assets/.+|/fonts/.+|/maps/.+|/ember.+) {
       {{^_development_env?}}
         alias {{_embedded_root_dir}}/apps/core/current/build/dist/admin-ui/$1;
       {{/_development_env?}}
