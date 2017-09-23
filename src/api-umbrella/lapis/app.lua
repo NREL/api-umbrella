@@ -32,6 +32,23 @@ app.handle_error = function(self, err, trace)
   end
 end
 
+-- Override the default render_error_request so that backtraces aren't output
+-- as an HTTP header in the test enivironment. This lets us verify that no
+-- backtraces are output, even in the test environment (so we can have tests
+-- around what will happen with error handling in production).
+app.render_error_request = function(self, r, err, trace)
+  r:write(self.handle_error(r, err, trace))
+  return self:render_request(r)
+end
+
+app.handle_404 = function()
+  return {
+    status = 404,
+    render = "404",
+    layout = false,
+  }
+end
+
 app:before_filter(function(self)
   -- local ok = os.setlocale("fr_FR")
   -- if not ok then
@@ -109,5 +126,11 @@ require("api-umbrella.lapis.actions.v1.api_scopes")(app)
 require("api-umbrella.lapis.actions.v1.apis")(app)
 require("api-umbrella.lapis.actions.v1.user_roles")(app)
 require("api-umbrella.lapis.actions.v1.users")(app)
+
+if config["app_env"] == "test" then
+  app:get("/api-umbrella/v1/test-500", function()
+    error("Testing unexpected raised error")
+  end)
+end
 
 return app
