@@ -1,20 +1,25 @@
+local ApiBackend = require "api-umbrella.lapis.models.api_backend"
+local WebsiteBackend = require "api-umbrella.lapis.models.website_backend"
+local api_backend_policy = require "api-umbrella.lapis.policies.api_backend_policy"
 local cjson = require("cjson")
 local db = require "lapis.db"
-local deepcompare = require("pl.tablex").deepcompare
 local is_array = require "api-umbrella.utils.is_array"
+local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local model_ext = require "api-umbrella.utils.model_ext"
 local pg_encode_json = require("pgmoon.json").encode_json
 local pretty_yaml_dump = require "api-umbrella.utils.pretty_yaml_dump"
+local tablex = require "pl.tablex"
+local website_backend_policy = require "api-umbrella.lapis.policies.website_backend_policy"
 
 local db_null = db.NULL
 local db_raw = db.raw
+local deepcompare = tablex.deepcompare
+local deepcopy = tablex.deepcopy
 local json_null = cjson.null
+local table_values = tablex.values
 
 local PublishedConfig = model_ext.new_class("published_config", {
-  as_json = function()
-    return {}
-  end,
 }, {
   authorize = function()
     return true
@@ -31,8 +36,12 @@ local PublishedConfig = model_ext.new_class("published_config", {
   end,
 })
 
+PublishedConfig.active = function()
+  return PublishedConfig:select("ORDER BY id DESC LIMIT 1")[1]
+end
+
 PublishedConfig.active_config = function()
-  local published = PublishedConfig:select("ORDER BY id DESC LIMIT 1")[1]
+  local published = PublishedConfig.active()
   if published then
     return published.config
   else
@@ -86,13 +95,14 @@ local function config_for_comparison(object)
   return compare_object
 end
 
-PublishedConfig.pending_changes_json = function(active_records_config, model, policy, current_admin)
+local function model_pending_changes_json(active_records_config, model, policy, current_admin)
   assert(active_records_config)
   assert(model)
   assert(policy)
   assert(current_admin)
 
-  local where = policy.authorized_query_scope(current_admin, "backend_publish")
+  local policy_permission_id = "backend_publish"
+  local where = policy.authorized_query_scope(current_admin, policy_permission_id)
 
   local pending_records_config = {}
   local pending_records_config_by_id = {}
@@ -131,7 +141,10 @@ PublishedConfig.pending_changes_json = function(active_records_config, model, po
   end
 
   for _, pending_record_config in ipairs(pending_records_config) do
+    policy.authorize_show(current_admin, pending_record_config, policy_permission_id)
+
     local active_record_config = active_records_config_by_id[pending_record_config["id"]]
+
     if not active_record_config then
       table.insert(changes["new"], {
         mode = "new",
@@ -139,6 +152,8 @@ PublishedConfig.pending_changes_json = function(active_records_config, model, po
         pending = pending_record_config,
       })
     else
+      policy.authorize_show(current_admin, active_record_config, policy_permission_id)
+
       local active_record_compare_config = active_records_compare_config_by_id[pending_record_config["id"]]
       local pending_record_compare_config = pending_records_compare_config_by_id[pending_record_config["id"]]
       if deepcompare(active_record_compare_config, pending_record_compare_config) then
@@ -177,6 +192,125 @@ PublishedConfig.pending_changes_json = function(active_records_config, model, po
   end
 
   return changes
+end
+
+PublishedConfig.pending_changes_json = function(current_admin)
+  local active_config = PublishedConfig.active_config() or {}
+  return {
+    apis = model_pending_changes_json(active_config["apis"] or {}, ApiBackend, api_backend_policy, current_admin),
+    website_backends = model_pending_changes_json(active_config["website_backends"] or {}, WebsiteBackend, website_backend_policy, current_admin),
+  }
+end
+
+local function set_config_for_publishing(active_config, new_config, category, model, policy, publish_ids, current_admin)
+  assert(active_config)
+  assert(new_config)
+  assert(category)
+  assert(model)
+  assert(policy)
+  assert(publish_ids)
+  assert(current_admin)
+
+  if not new_config[category] then
+    new_config[category] = {}
+  end
+
+  local changed = false
+  local policy_permission_id = "backend_publish"
+
+  local active_config_by_id = {}
+  if active_config[category] then
+    for _, data in ipairs(active_config[category]) do
+      active_config_by_id[data["id"]] = data
+    end
+  end
+
+  local new_config_by_id = {}
+  for _, data in ipairs(new_config[category]) do
+    new_config_by_id[data["id"]] = data
+  end
+
+  for _, record_id in ipairs(publish_ids) do
+    local active_record_config = active_config_by_id[record_id]
+    if active_record_config then
+      policy.authorize_show(current_admin, active_record_config, policy_permission_id)
+    end
+
+    local record = model:find(record_id)
+    if record then
+      local new_record_config = record:as_json()
+      policy.authorize_show(current_admin, new_record_config, policy_permission_id)
+      new_config_by_id[record_id] = new_record_config
+    else
+      new_config_by_id[record_id] = nil
+    end
+
+    changed = true
+  end
+
+  new_config[category] = table_values(new_config_by_id)
+  return changed
+end
+
+local function set_settings_publish_timestamp(api_backend_ids, mode_column, timestamp_column)
+  local db_ids = db.list(api_backend_ids)
+
+  db.query([[
+    UPDATE api_backend_settings
+    SET ]] .. db.escape_identifier(timestamp_column) .. [[ = transaction_timestamp()
+    WHERE ]] .. db.escape_identifier(mode_column) .. [[ LIKE 'transition_%'
+      AND ]] .. db.escape_identifier(timestamp_column) .. [[ IS NULL
+      AND (
+        api_backend_id IN ?
+        OR api_backend_sub_url_settings_id IN (SELECT id FROM api_backend_sub_url_settings WHERE api_backend_id IN ?)
+      )]], db_ids, db_ids)
+
+  db.query([[
+    UPDATE api_backend_settings
+    SET ]] .. db.escape_identifier(timestamp_column) .. [[ = NULL
+    WHERE (]] .. db.escape_identifier(mode_column) .. [[ IS NULL
+        OR ]] .. db.escape_identifier(mode_column) .. [[ NOT LIKE 'transition_%'
+      )
+      AND (
+        api_backend_id IN ?
+        OR api_backend_sub_url_settings_id IN (SELECT id FROM api_backend_sub_url_settings WHERE api_backend_id IN ?)
+      )]], db_ids, db_ids)
+end
+
+PublishedConfig.publish_ids = function(api_backend_ids, website_backend_ids, current_admin)
+  local active_config = PublishedConfig.active_config() or {}
+  local new_config = deepcopy(active_config)
+  local published_config
+
+  local transaction_started = model_ext.start_transaction()
+  model_ext.try_save(function()
+    if not is_empty(api_backend_ids) then
+      set_settings_publish_timestamp(api_backend_ids, "require_https", "require_https_transition_start_at")
+      set_settings_publish_timestamp(api_backend_ids, "api_key_verification_level", "api_key_verification_transition_start_at")
+    end
+
+    local apis_changed = set_config_for_publishing(active_config, new_config, "apis", ApiBackend, api_backend_policy, api_backend_ids, current_admin)
+    local websites_changed = set_config_for_publishing(active_config, new_config, "website_backends", WebsiteBackend, website_backend_policy, website_backend_ids, current_admin)
+
+    if apis_changed or websites_changed then
+      table.sort(new_config["apis"], function(a, b)
+        return a["sort_order"] < b["sort_order"]
+      end)
+      table.sort(new_config["website_backends"], function(a, b)
+        return a["frontend_host"] < b["frontend_host"]
+      end)
+
+      local published = assert(PublishedConfig:create({
+        config = new_config,
+      }))
+      published_config = published.config
+    else
+      published_config = active_config
+    end
+  end, transaction_started)
+  model_ext.commit_transaction(transaction_started)
+
+  return published_config
 end
 
 return PublishedConfig

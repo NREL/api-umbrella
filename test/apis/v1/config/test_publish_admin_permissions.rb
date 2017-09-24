@@ -9,6 +9,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
     super
     setup_server
 
+    PublishedConfig.delete_all
     @api = FactoryGirl.create(:api_backend)
     @google_api = FactoryGirl.create(:google_api_backend)
     @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api_backend)
@@ -43,7 +44,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
       @google_api.id,
       @google_extra_url_match_api.id,
       @yahoo_api.id,
-    ].sort, active_config["apis"].map { |api| api["_id"] }.sort)
+    ].sort, active_config["apis"].map { |api| api["id"] }.sort)
   end
 
   def test_allow_limited_admins_publish_permitted_apis
@@ -62,7 +63,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
     assert_response_code(201, response)
     active_config = PublishedConfig.active_config
     assert_equal(1, active_config["apis"].length)
-    assert_equal(@google_api.id, active_config["apis"].first["_id"])
+    assert_equal(@google_api.id, active_config["apis"].first["id"])
   end
 
   def test_reject_limited_admins_publish_forbidden_apis

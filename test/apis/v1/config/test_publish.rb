@@ -8,6 +8,8 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
   def setup
     super
     setup_server
+
+    PublishedConfig.delete_all
   end
 
   def after_all
@@ -37,8 +39,8 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
   end
 
   def test_publish_with_existing_config
-    FactoryGirl.create(:api_backend)
-    PublishedConfig.publish!(PublishedConfig.pending_config)
+    api = FactoryGirl.create(:api_backend)
+    publish_api_backends([api.id])
     assert_equal(1, PublishedConfig.count)
 
     api = FactoryGirl.create(:api_backend)
@@ -62,7 +64,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
   def test_combines_new_and_existing_config_in_order
     api1 = FactoryGirl.create(:api_backend, :sort_order => 40)
     api2 = FactoryGirl.create(:api_backend, :sort_order => 15)
-    PublishedConfig.publish!(PublishedConfig.pending_config)
+    publish_api_backends([api1.id, api2.id])
     assert_equal(1, PublishedConfig.count)
 
     api3 = FactoryGirl.create(:api_backend, :sort_order => 90)
@@ -93,12 +95,12 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
       api1.id,
       api5.id,
       api3.id,
-    ], active_config["apis"].map { |api| api["_id"] })
+    ], active_config["apis"].map { |api| api["id"] })
   end
 
   def test_publish_selected_apis_only
     api1 = FactoryGirl.create(:api_backend, :name => "Before")
-    PublishedConfig.publish!(PublishedConfig.pending_config)
+    publish_api_backends([api1.id])
 
     api1.update_attributes(:name => "After")
     api2 = FactoryGirl.create(:api_backend)
@@ -121,16 +123,16 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
     assert_equal([
       api1.id,
       api2.id,
-    ].sort, active_config["apis"].map { |api| api["_id"] }.sort)
+    ].sort, active_config["apis"].map { |api| api["id"] }.sort)
 
-    api1_config = active_config["apis"].detect { |api| api["_id"] == api1.id }
+    api1_config = active_config["apis"].detect { |api| api["id"] == api1.id }
     assert_equal("Before", api1_config["name"])
   end
 
   def test_noop_when_no_changes_selected
     api1 = FactoryGirl.create(:api_backend, :name => "Before")
-    initial = PublishedConfig.publish!(PublishedConfig.pending_config)
-    initial.reload
+    publish_api_backends([api1.id])
+    initial = PublishedConfig.active
 
     api1.update_attributes(:name => "After")
     FactoryGirl.create(:api_backend)
@@ -143,16 +145,14 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
 
     assert_response_code(201, response)
     active = PublishedConfig.active
-    assert_kind_of(BSON::ObjectId, active.id)
+    assert_kind_of(Integer, active.id)
     assert_equal(initial.id, active.id)
-    assert_kind_of(Time, active.version)
-    assert_equal(initial.version, active.version)
     active_config = active.config
     assert_equal([
       api1.id,
-    ].sort, active_config["apis"].map { |api| api["_id"] }.sort)
+    ].sort, active_config["apis"].map { |api| api["id"] }.sort)
 
-    api1_config = active_config["apis"].detect { |api| api["_id"] == api1.id }
+    api1_config = active_config["apis"].detect { |api| api["id"] == api1.id }
     assert_equal("Before", api1_config["name"])
   end
 end

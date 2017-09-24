@@ -52,7 +52,7 @@ local function merge_record_and_values(self, values)
   return readonly(merged)
 end
 
-local function start_transaction()
+function _M.start_transaction()
   -- Only open a new transaction if one isn't already opened.
   --
   -- When dealing with saving nested relationships, this ensures that only the
@@ -80,7 +80,7 @@ local function start_transaction()
   return started
 end
 
-local function commit_transaction(started)
+function _M.commit_transaction(started)
   -- Only commit the transaction if the current record started the transaction
   -- (see start_transaction).
   if started then
@@ -89,7 +89,7 @@ local function commit_transaction(started)
   end
 end
 
-local function rollback_transaction(started)
+function _M.rollback_transaction(started)
   ngx.ctx.validate_error_field_prefix = nil
 
   -- Only rollback the transaction if the current record started the
@@ -172,13 +172,13 @@ local function after_commit(self, _, callbacks, values)
   end
 end
 
-local function try_save(fn, transaction_started)
+function _M.try_save(fn, transaction_started)
   local save = capture_errors({
     -- Handle Lapis validation errors (since these are handled via coroutine
     -- yielding). Be sure to abort the transaction (so it's not left open), and
     -- re-raise the error.
     on_error = function(err)
-      rollback_transaction(transaction_started)
+      _M.rollback_transaction(transaction_started)
       return coroutine.yield("error", err.errors)
     end,
     fn,
@@ -188,7 +188,7 @@ local function try_save(fn, transaction_started)
   -- can also abort the transaction in the event of these lower-level errors.
   local ok, err = xpcall(save, xpcall_error_handler, {})
   if not ok then
-    rollback_transaction(transaction_started)
+    _M.rollback_transaction(transaction_started)
     error(err)
   end
 end
@@ -287,16 +287,16 @@ end
 
 local function create(callbacks)
   return function(model_class, values, opts)
-    local transaction_started = start_transaction()
+    local transaction_started = _M.start_transaction()
 
     local new_record
-    try_save(function()
+    _M.try_save(function()
       before_save(nil, "create", callbacks, values)
       new_record = Model.create(model_class, values_for_table(model_class, values), opts)
       after_save(new_record, "create", callbacks, values)
     end, transaction_started)
 
-    commit_transaction(transaction_started)
+    _M.commit_transaction(transaction_started)
     after_commit(new_record, "create", callbacks, values)
 
     return new_record
@@ -310,16 +310,16 @@ local function update(callbacks)
     callbacks["authorize"](self:attributes())
 
     local model_class = self.__class
-    local transaction_started = start_transaction()
+    local transaction_started = _M.start_transaction()
 
     local return_value
-    try_save(function()
+    _M.try_save(function()
       before_save(self, "update", callbacks, values)
       return_value = Model.update(self, values_for_table(model_class, values), opts)
       after_save(self, "update", callbacks, values)
     end, transaction_started)
 
-    commit_transaction(transaction_started)
+    _M.commit_transaction(transaction_started)
     after_commit(self, "update", callbacks, values)
 
     return return_value
@@ -332,14 +332,14 @@ local function delete(callbacks)
     -- this record.
     callbacks["authorize"](self:attributes())
 
-    local transaction_started = start_transaction()
+    local transaction_started = _M.start_transaction()
 
     local return_value
-    try_save(function()
+    _M.try_save(function()
       return_value = Model.delete(self)
     end, transaction_started)
 
-    commit_transaction(transaction_started)
+    _M.commit_transaction(transaction_started)
 
     return return_value
   end
@@ -537,9 +537,9 @@ function _M.new_class(table_name, model_options, callbacks)
 end
 
 function _M.transaction_update(table_name, values, cond, ...)
-  local transaction_started = start_transaction()
+  local transaction_started = _M.start_transaction()
   db.update(table_name, values, cond, ...)
-  commit_transaction(transaction_started)
+  _M.commit_transaction(transaction_started)
 end
 
 return _M
