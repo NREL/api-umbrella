@@ -8,15 +8,18 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Tes
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    PublishedConfig.delete_all
 
-    @api = FactoryGirl.create(:api)
-    @google_api = FactoryGirl.create(:google_api)
-    @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api)
-    @yahoo_api = FactoryGirl.create(:yahoo_api)
-    PublishedConfig.publish!(PublishedConfig.pending_config)
+    PublishedConfig.delete_all
+    @api = FactoryGirl.create(:api_backend)
+    @google_api = FactoryGirl.create(:google_api_backend)
+    @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api_backend)
+    @yahoo_api = FactoryGirl.create(:yahoo_api_backend)
+    publish_api_backends([
+      @api.id,
+      @google_api.id,
+      @google_extra_url_match_api.id,
+      @yahoo_api.id,
+    ])
   end
 
   def after_all
@@ -29,7 +32,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Tes
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
+    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["id"] }
     assert_includes(api_ids, @api.id)
     assert_includes(api_ids, @google_api.id)
     assert_includes(api_ids, @google_extra_url_match_api.id)
@@ -42,7 +45,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Tes
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
+    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["id"] }
     assert_includes(api_ids, @google_api.id)
   end
 
@@ -52,7 +55,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Tes
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
+    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["id"] }
     refute_includes(api_ids, @yahoo_api.id)
   end
 
@@ -62,7 +65,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Tes
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
+    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["id"] }
     refute_includes(api_ids, @google_extra_url_match_api.id)
   end
 
@@ -72,7 +75,7 @@ class Test::Apis::V1::Config::TestPendingChangesAdminPermissions < Minitest::Tes
 
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["_id"] }
+    api_ids = data["config"]["apis"]["identical"].map { |api| api["pending"]["id"] }
     assert_equal(0, api_ids.length)
   end
 end

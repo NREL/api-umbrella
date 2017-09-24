@@ -13,6 +13,14 @@ function _M.new(self)
 end
 
 function _M.create(self)
+  self.current_admin = {
+    id = "00000000-0000-0000-0000-000000000000",
+    username = "admin",
+    superuser = true,
+  }
+
+  ngx.ctx.current_admin = self.current_admin
+
   self.admin_params = _M.admin_params(self)
   assert(Admin:create(self.admin_params))
 

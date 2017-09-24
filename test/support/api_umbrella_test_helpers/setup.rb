@@ -7,6 +7,7 @@ module ApiUmbrellaTestHelpers
     extend ActiveSupport::Concern
 
     include ApiUmbrellaTestHelpers::CommonAsserts
+    include ApiUmbrellaTestHelpers::AdminAuth
 
     @@incrementing_unique_ip_addr = IPAddr.new("127.0.0.1")
     @@current_override_config = {}
@@ -99,27 +100,6 @@ module ApiUmbrellaTestHelpers
           self.setup_complete = true
         end
 
-        unless self.setup_config_version_complete
-          PublishedConfig.delete_all
-          PublishedConfig.publish!({
-            "apis" => [
-              {
-                "_id" => "example",
-                "frontend_host" => "127.0.0.1",
-                "backend_host" => "127.0.0.1",
-                "servers" => [
-                  { "host" => "127.0.0.1", "port" => 9444 },
-                ],
-                "url_matches" => [
-                  { "_id" => SecureRandom.uuid, "frontend_prefix" => "/api/", "backend_prefix" => "/" },
-                ],
-              },
-            ],
-          }).wait_until_live
-
-          self.setup_config_version_complete = true
-        end
-
         unless self.setup_api_user_complete
           ApiUser.where("registration_source != 'seed'").delete_all
           user = FactoryGirl.create(:api_user, {
@@ -150,6 +130,26 @@ module ApiUmbrellaTestHelpers
           @@keyless_http_options = @@http_options.except(:headers).freeze
 
           self.setup_api_user_complete = true
+        end
+
+        unless self.setup_config_version_complete
+          PublishedConfig.delete_all
+          api_backend = ApiBackend.create!({
+            :name => "default-test-api-backend",
+            :backend_protocol => "http",
+            :balance_algorithm => "least_conn",
+            :frontend_host => "127.0.0.1",
+            :backend_host => "127.0.0.1",
+            :servers => [
+              ApiBackendServer.new(:host => "127.0.0.1", :port => 9444),
+            ],
+            :url_matches => [
+              ApiBackendUrlMatch.new(:frontend_prefix => "/api/", :backend_prefix => "/"),
+            ],
+          })
+          publish_api_backends([api_backend.id])
+          api_backend.delete
+          self.setup_config_version_complete = true
         end
       end
     end
@@ -184,60 +184,77 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def prepend_api_backends(apis)
+    def prepend_api_backends(api_attributes)
       @prepend_api_backends_counter ||= 0
-      apis.map! do |api|
-        api.deep_stringify_keys!
+      api_ids = api_attributes.map! do |attributes|
+        attributes.deep_symbolize_keys!
 
         @prepend_api_backends_counter += 1
-        api["_id"] ||= "#{unique_test_id}-#{@prepend_api_backends_counter}"
-        if(api["url_matches"])
-          api["url_matches"].each do |url_match|
-            url_match["_id"] ||= SecureRandom.uuid
-          end
+        attributes[:name] ||= "#{unique_test_id}-#{@prepend_api_backends_counter}"
+        attributes[:backend_protocol] ||= "http"
+        attributes[:balance_algorithm] ||= "least_conn"
+
+        ApiBackend.create!(attributes).id
+      end
+
+      publish_api_backends(api_ids)
+
+      yield if(block_given?)
+    ensure
+      if(block_given?)
+        unpublish_api_backends(api_ids)
+      end
+    end
+
+    def prepend_website_backends(website_attributes)
+      website_ids = website_attributes.map do |attributes|
+        attributes.deep_stringify_keys!
+        WebsiteBackend.create!(attributes).id
+      end
+
+      publish_website_backends(website_ids)
+
+      yield if(block_given?)
+    ensure
+      if(block_given?)
+        unpublish_website_backends(website_ids)
+      end
+    end
+
+    def publish_api_backends(record_ids)
+      publish_backends("apis", record_ids)
+    end
+
+    def publish_website_backends(record_ids)
+      publish_backends("website_backends", record_ids)
+    end
+
+    def publish_backends(type, record_ids)
+      self.config_publish_mutex.synchronize do
+        config = { type => {} }
+        record_ids.each do |record_id|
+          config[type][record_id] = { :publish => "1" }
         end
 
-        api
-      end
+        response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
+          :headers => { "Content-Type" => "application/json" },
+          :body => MultiJson.dump(:config => config),
+        }))
 
-      publish_backends("apis", apis)
-
-      yield if(block_given?)
-    ensure
-      if(block_given?)
-        unpublish_backends("apis", apis)
+        assert_response_code(201, response)
+        PublishedConfig.active.wait_until_live
       end
     end
 
-    def prepend_website_backends(websites)
-      @prepend_website_backends_counter ||= 0
-      websites.map! do |website|
-        website.deep_stringify_keys!
-
-        @prepend_website_backends_counter += 1
-        website["_id"] = "#{unique_test_id}-#{@prepend_website_backends_counter}"
-
-        website
-      end
-
-      publish_backends("website_backends", websites)
-
-      yield if(block_given?)
-    ensure
-      if(block_given?)
-        unpublish_backends("website_backends", websites)
-      end
+    def unpublish_api_backends(record_ids)
+      unpublish_backends("apis", record_ids)
     end
 
-    def publish_backends(type, records)
-      self.config_publish_mutex.synchronize do
-        config = PublishedConfig.active_config || {}
-        config[type] = records + (config[type] || [])
-        PublishedConfig.publish!(config).wait_until_live
-      end
+    def publish_website_backends(record_ids)
+      unpublish_backends("website_backends", record_ids)
     end
 
-    def unpublish_backends(type, records)
+    def unpublish_backends(type, record_ids)
       self.config_publish_mutex.synchronize do
         record_ids = records.map { |record| record["_id"] }
         config = PublishedConfig.active_config || {}

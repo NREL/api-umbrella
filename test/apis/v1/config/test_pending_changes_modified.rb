@@ -8,12 +8,10 @@ class Test::Apis::V1::Config::TestPendingChangesModified < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    PublishedConfig.delete_all
 
-    @api = FactoryGirl.create(:api, :name => "Before")
-    PublishedConfig.publish!(PublishedConfig.pending_config)
+    PublishedConfig.delete_all
+    @api = FactoryGirl.create(:api_backend, :name => "Before")
+    publish_api_backends([@api.id])
     @api.update_attributes(:name => "After")
   end
 

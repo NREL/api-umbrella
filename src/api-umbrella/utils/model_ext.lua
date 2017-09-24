@@ -345,8 +345,7 @@ local function delete(callbacks)
   end
 end
 
-
-local function get_join_records(model_name, options, ids)
+local function get_join_records(model_name, options, ids, include_foreign_key_id)
   local model = Model:get_relation_model(model_name)
   local join_table = db.escape_identifier(options["join_table"])
   local table_name = db.escape_identifier(model:table_name())
@@ -362,7 +361,10 @@ local function get_join_records(model_name, options, ids)
     " WHERE " .. join_table .. "." .. foreign_key .. " IN ?" ..
     order_by
 
-  local fields = table_name .. ".*, " .. join_table .. "." .. foreign_key .. " AS _foreign_key_id"
+  local fields = table_name .. ".*"
+  if include_foreign_key_id then
+    fields = fields .. ", " .. join_table .. "." .. foreign_key .. " AS _foreign_key_id"
+  end
 
   return model:select(sql, db.list(ids), { fields = fields })
 end
@@ -381,10 +383,11 @@ function _M.has_and_belongs_to_many(name, model_name, options)
       end
 
       if #primary_record_ids > 0 then
-        local join_records = get_join_records(model_name, options, primary_record_ids)
+        local join_records = get_join_records(model_name, options, primary_record_ids, true)
         for _, join_record in ipairs(join_records) do
           for _, primary_record in ipairs(primary_records) do
             if primary_record.id == join_record["_foreign_key_id"] then
+              join_record["_foreign_key_id"] = nil
               table.insert(primary_record[name], join_record)
             end
           end
@@ -457,7 +460,7 @@ function _M.has_many_save(self, values, name)
   elseif is_array(relations_values) then
     -- First determine which child records exist and will be kept.
     local keep_ids = {}
-    for index, relation_values in ipairs(relations_values) do
+    for _, relation_values in ipairs(relations_values) do
       if not relation_values["id"] or relation_values["id"] == db_null then
         relation_values["id"] = uuid_generate()
       end
@@ -475,7 +478,7 @@ function _M.has_many_save(self, values, name)
     -- Finally, create or update any child records based on the current values.
     for index, relation_values in ipairs(relations_values) do
       ngx.ctx.validate_error_field_prefix = name .. "[" .. (index - 1) .. "]."
-      local record = self[name .. "_update_or_create"](self, relation_values)
+      self[name .. "_update_or_create"](self, relation_values)
       ngx.ctx.validate_error_field_prefix = nil
     end
   end

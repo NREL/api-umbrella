@@ -8,13 +8,11 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    PublishedConfig.delete_all
-    @api = FactoryGirl.create(:api)
-    @google_api = FactoryGirl.create(:google_api)
-    @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api)
-    @yahoo_api = FactoryGirl.create(:yahoo_api)
+
+    @api = FactoryGirl.create(:api_backend)
+    @google_api = FactoryGirl.create(:google_api_backend)
+    @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api_backend)
+    @yahoo_api = FactoryGirl.create(:yahoo_api_backend)
   end
 
   def after_all

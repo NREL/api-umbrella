@@ -349,4 +349,14 @@ ApiBackend = model_ext.new_class("api_backends", {
   end,
 })
 
+ApiBackend.all_sorted = function(where)
+  local sql = ""
+  if where then
+    sql = sql .. "WHERE " .. where
+  end
+  sql = sql .. " ORDER BY sort_order"
+
+  return ApiBackend:select(sql)
+end
+
 return ApiBackend

@@ -8,13 +8,11 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    PublishedConfig.delete_all
 
-    @api = FactoryGirl.create(:api)
-    PublishedConfig.publish!(PublishedConfig.pending_config)
-    @api.update_attributes(:deleted_at => Time.now.utc)
+    PublishedConfig.delete_all
+    @api = FactoryGirl.create(:api_backend)
+    publish_api_backends([@api.id])
+    @api.delete
   end
 
   def after_all
@@ -42,7 +40,7 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Test
     assert_equal("deleted", api_data["mode"])
     assert_equal(@api.id, api_data["id"])
     assert_equal(@api.name, api_data["name"])
-    assert_equal(@api.id, api_data["active"]["_id"])
+    assert_equal(@api.id, api_data["active"]["id"])
     assert_includes(api_data["active_yaml"], "name: #{@api.name}")
     assert_nil(api_data["pending"])
     assert_equal("", api_data["pending_yaml"])

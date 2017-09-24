@@ -102,7 +102,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       self._error_data_yaml_strings = {}
       if self.error_data then
         for key, value in pairs(self.error_data) do
-          self._error_data_yaml_strings[key] = lyaml.dump(value)
+          self._error_data_yaml_strings[key] = lyaml.dump({ value })
         end
       end
     end

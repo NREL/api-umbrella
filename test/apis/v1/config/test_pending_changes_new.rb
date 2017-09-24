@@ -8,11 +8,9 @@ class Test::Apis::V1::Config::TestPendingChangesNew < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    PublishedConfig.delete_all
 
-    @api = FactoryGirl.create(:api)
+    PublishedConfig.delete_all
+    @api = FactoryGirl.create(:api_backend)
   end
 
   def after_all
@@ -32,8 +30,8 @@ class Test::Apis::V1::Config::TestPendingChangesNew < Minitest::Test
   end
 
   def test_new_if_created_since_publish
-    PublishedConfig.publish!(PublishedConfig.pending_config)
-    @google_api = FactoryGirl.create(:google_api)
+    publish_api_backends([@api.id])
+    @google_api = FactoryGirl.create(:google_api_backend)
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
@@ -56,7 +54,7 @@ class Test::Apis::V1::Config::TestPendingChangesNew < Minitest::Test
     assert_equal(@api.name, api_data["name"])
     assert_nil(api_data["active"])
     assert_equal("", api_data["active_yaml"])
-    assert_equal(@api.id, api_data["pending"]["_id"])
+    assert_equal(@api.id, api_data["pending"]["id"])
     assert_includes(api_data["pending_yaml"], "name: #{@api.name}")
   end
 end

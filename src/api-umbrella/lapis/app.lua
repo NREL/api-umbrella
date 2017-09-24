@@ -124,6 +124,7 @@ require("api-umbrella.lapis.actions.v1.admin_permissions")(app)
 require("api-umbrella.lapis.actions.v1.admins")(app)
 require("api-umbrella.lapis.actions.v1.api_scopes")(app)
 require("api-umbrella.lapis.actions.v1.apis")(app)
+require("api-umbrella.lapis.actions.v1.config")(app)
 require("api-umbrella.lapis.actions.v1.user_roles")(app)
 require("api-umbrella.lapis.actions.v1.users")(app)
 

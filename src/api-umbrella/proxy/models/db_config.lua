@@ -4,7 +4,7 @@ local pg_utils = require "api-umbrella.utils.pg_utils"
 local _M = {}
 
 function _M.fetch(last_fetched_version)
-  local raw_result, err = pg_utils.query("SELECT * FROM published_config WHERE id > " .. pg_utils.escape_literal(last_fetched_version))
+  local raw_result, err = pg_utils.query("SELECT * FROM published_config WHERE id > " .. pg_utils.escape_literal(last_fetched_version) .. " ORDER BY id DESC LIMIT 1")
   if not raw_result then
     return nil, err
   end

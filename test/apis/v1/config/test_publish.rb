@@ -8,9 +8,6 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    PublishedConfig.delete_all
   end
 
   def after_all
@@ -21,7 +18,7 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
   def test_publish_with_no_existing_config
     assert_equal(0, PublishedConfig.count)
 
-    api = FactoryGirl.create(:api)
+    api = FactoryGirl.create(:api_backend)
     config = {
       :apis => {
         api.id => { :publish => "1" },
@@ -40,11 +37,11 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
   end
 
   def test_publish_with_existing_config
-    FactoryGirl.create(:api)
+    FactoryGirl.create(:api_backend)
     PublishedConfig.publish!(PublishedConfig.pending_config)
     assert_equal(1, PublishedConfig.count)
 
-    api = FactoryGirl.create(:api)
+    api = FactoryGirl.create(:api_backend)
     config = {
       :apis => {
         api.id => { :publish => "1" },
@@ -63,15 +60,15 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
   end
 
   def test_combines_new_and_existing_config_in_order
-    api1 = FactoryGirl.create(:api, :sort_order => 40)
-    api2 = FactoryGirl.create(:api, :sort_order => 15)
+    api1 = FactoryGirl.create(:api_backend, :sort_order => 40)
+    api2 = FactoryGirl.create(:api_backend, :sort_order => 15)
     PublishedConfig.publish!(PublishedConfig.pending_config)
     assert_equal(1, PublishedConfig.count)
 
-    api3 = FactoryGirl.create(:api, :sort_order => 90)
-    api4 = FactoryGirl.create(:api, :sort_order => 1)
-    api5 = FactoryGirl.create(:api, :sort_order => 50)
-    api6 = FactoryGirl.create(:api, :sort_order => 20)
+    api3 = FactoryGirl.create(:api_backend, :sort_order => 90)
+    api4 = FactoryGirl.create(:api_backend, :sort_order => 1)
+    api5 = FactoryGirl.create(:api_backend, :sort_order => 50)
+    api6 = FactoryGirl.create(:api_backend, :sort_order => 20)
 
     config = {
       :apis => {
@@ -100,12 +97,12 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
   end
 
   def test_publish_selected_apis_only
-    api1 = FactoryGirl.create(:api, :name => "Before")
+    api1 = FactoryGirl.create(:api_backend, :name => "Before")
     PublishedConfig.publish!(PublishedConfig.pending_config)
 
     api1.update_attributes(:name => "After")
-    api2 = FactoryGirl.create(:api)
-    api3 = FactoryGirl.create(:api)
+    api2 = FactoryGirl.create(:api_backend)
+    api3 = FactoryGirl.create(:api_backend)
 
     config = {
       :apis => {
@@ -131,13 +128,13 @@ class Test::Apis::V1::Config::TestPublish < Minitest::Test
   end
 
   def test_noop_when_no_changes_selected
-    api1 = FactoryGirl.create(:api, :name => "Before")
+    api1 = FactoryGirl.create(:api_backend, :name => "Before")
     initial = PublishedConfig.publish!(PublishedConfig.pending_config)
     initial.reload
 
     api1.update_attributes(:name => "After")
-    FactoryGirl.create(:api)
-    FactoryGirl.create(:api)
+    FactoryGirl.create(:api_backend)
+    FactoryGirl.create(:api_backend)
 
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
