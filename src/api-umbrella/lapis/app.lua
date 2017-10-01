@@ -55,6 +55,8 @@ app:before_filter(function(self)
   --   ngx.log(ngx.ERR, "setlocale failed")
   -- end
 
+  self.res.headers["Cache-Control"] = "max-age=0, private, must-revalidate"
+
   -- Set session variables for the database connection (always use UTC and set
   -- an app name for auditing).
   --

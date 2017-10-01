@@ -26,9 +26,20 @@ function _M.format_postgres(time)
   local parsed
   if type(time) == "string" then
     parsed = _M.parse_postgres(time)
+  elseif type(time) == "number" then
+    parsed = _M.parse_timestamp(time)
   end
 
   return _M.format(parsed)
+end
+
+function _M.parse_timestamp(time)
+  local parsed
+  if type(time) == "number" then
+    parsed = date(time)
+  end
+
+  return parsed
 end
 
 function _M.parse_postgres(time)

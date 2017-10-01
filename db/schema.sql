@@ -481,6 +481,23 @@ CREATE FUNCTION stamp_record() RETURNS trigger
 
 
 --
+-- Name: update_timestamp(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION update_timestamp() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+          NEW.updated_at := transaction_timestamp();
+        END IF;
+
+        RETURN NEW;
+      END;
+      $$;
+
+
+--
 -- Name: -; Type: OPERATOR; Schema: public; Owner: -
 --
 
@@ -1238,15 +1255,12 @@ ALTER SEQUENCE published_config_id_seq OWNED BY published_config.id;
 --
 
 CREATE TABLE sessions (
-    id character varying(40) NOT NULL,
-    expires timestamp with time zone,
-    encrypted_data text NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    created_by_id uuid NOT NULL,
-    created_by_username character varying(255) NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    updated_by_id uuid NOT NULL,
-    updated_by_username character varying(255) NOT NULL
+    id_hash character varying(64) NOT NULL,
+    expires_at timestamp with time zone,
+    data_encrypted text NOT NULL,
+    data_encrypted_iv character varying(12) NOT NULL,
+    created_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
+    updated_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL
 );
 
 
@@ -1481,7 +1495,7 @@ ALTER TABLE ONLY rate_limits
 --
 
 ALTER TABLE ONLY sessions
-    ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (id_hash);
 
 
 --
@@ -1697,6 +1711,13 @@ CREATE UNIQUE INDEX api_users_version_idx ON api_users USING btree (version);
 --
 
 CREATE UNIQUE INDEX rate_limits_api_backend_settings_id_api_user_settings_id_li_idx ON rate_limits USING btree (api_backend_settings_id, api_user_settings_id, limit_by, duration);
+
+
+--
+-- Name: sessions_expires_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX sessions_expires_at_idx ON sessions USING btree (expires_at);
 
 
 --
@@ -2172,7 +2193,7 @@ CREATE TRIGGER rate_limits_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON rat
 -- Name: sessions sessions_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER sessions_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+CREATE TRIGGER sessions_stamp_record BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
 
 
 --

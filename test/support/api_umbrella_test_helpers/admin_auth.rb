@@ -2,10 +2,16 @@ require "securerandom"
 
 module ApiUmbrellaTestHelpers
   module AdminAuth
+    # Since lua-resty-session checks the user agent when decrypting the session
+    # (to ensure the session hasn't been lifted and being used elsewhere), set
+    # a hard-coded user agent when we're pre-seeding the session cookie value.
+    STATIC_USER_AGENT = "Test - Static user agent for session user agent checks".freeze
+
     def admin_login(admin = nil)
       Capybara.reset_session!
       page.driver.clear_memory_cache
       page.driver.set_cookie("_api_umbrella_session", encrypt_session_cookie(admin_session_data(admin)))
+      page.driver.add_headers("User-Agent", STATIC_USER_AGENT)
 
       visit "/admin/login"
       assert_logged_in(admin)
@@ -14,18 +20,35 @@ module ApiUmbrellaTestHelpers
     def csrf_session
       csrf_token = SecureRandom.base64(32)
       session_cookie = encrypt_session_cookie(csrf_session_data(csrf_token))
-      { :headers => { "Cookie" => "_api_umbrella_session=#{session_cookie}", "X-CSRF-Token" => csrf_token } }
+      {
+        :headers => {
+          "Cookie" => "_api_umbrella_session=#{session_cookie}",
+          "User-Agent" => STATIC_USER_AGENT,
+          "X-CSRF-Token" => csrf_token,
+        },
+      }
     end
 
     def admin_session(admin = nil)
       session_cookie = encrypt_session_cookie(admin_session_data(admin))
-      { :headers => { "Cookie" => "_api_umbrella_session=#{session_cookie}" } }
+      {
+        :headers => {
+          "Cookie" => "_api_umbrella_session=#{session_cookie}",
+          "User-Agent" => STATIC_USER_AGENT,
+        },
+      }
     end
 
     def admin_csrf_session(admin = nil)
       csrf_token = SecureRandom.base64(32)
       session_cookie = encrypt_session_cookie(admin_session_data(admin).merge(csrf_session_data(csrf_token)))
-      { :headers => { "Cookie" => "_api_umbrella_session=#{session_cookie}", "X-CSRF-Token" => csrf_token } }
+      {
+        :headers => {
+          "Cookie" => "_api_umbrella_session=#{session_cookie}",
+          "User-Agent" => STATIC_USER_AGENT,
+          "X-CSRF-Token" => csrf_token,
+        },
+      }
     end
 
     def parse_admin_session_cookie(raw_cookie)
@@ -176,20 +199,79 @@ module ApiUmbrellaTestHelpers
 
     def admin_session_data(admin)
       admin ||= FactoryGirl.create(:admin)
-      authenticatable_salt = admin.password_hash[0, 29] if(admin.password_hash)
-      { "warden.user.admin.key" => [[admin.id], authenticatable_salt] }
+      { "admin_id" => admin.id }
+    end
+
+    def session_base64_encode(value)
+      Base64.strict_encode64(value).tr("+/=", "-_.")
+    end
+
+    def session_base64_decode(value)
+      Base64.strict_decode64(value.tr("-_.", "+/="))
     end
 
     def encrypt_session_cookie(data)
-      cookies_utils = RailsCompatibleCookiesUtils.new(test_rails_secret_token)
-      cookies_utils.encrypt({
-        "session_id" => SecureRandom.hex(16),
-      }.merge(data))
+      id = SecureRandom.hex(20)
+      id_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], id)
+      iv = id[0, 12]
+      expires = Time.now.to_i + 3600
+      data_serialized = MultiJson.dump(data)
+      hmac_data_key = OpenSSL::HMAC.digest("sha1", $config["secret_key"], [
+        id,
+        expires,
+      ].join(""))
+      hmac_data = OpenSSL::HMAC.digest("sha1", hmac_data_key, [
+        id,
+        expires,
+        data_serialized,
+        STATIC_USER_AGENT,
+        "http",
+      ].join(""))
+      auth_data = [
+        STATIC_USER_AGENT,
+        "http",
+      ].join("")
+
+      data_encrypted = Base64.strict_encode64(Encryptor.encrypt({
+        :value => data_serialized,
+        :iv => iv,
+        :key => Digest::SHA256.digest($config["secret_key"]),
+        :auth_data => auth_data,
+      }))
+
+      Session.create!({
+        :id_hash => id_hash,
+        :expires_at => Time.at(expires).utc,
+        :data_encrypted => data_encrypted,
+        :data_encrypted_iv => iv,
+      })
+
+      [
+        session_base64_encode(id),
+        expires,
+        session_base64_encode(hmac_data),
+      ].join("|")
     end
 
     def decrypt_session_cookie(cookie_value)
-      cookies_utils = RailsCompatibleCookiesUtils.new(test_rails_secret_token)
-      cookies_utils.decrypt(cookie_value)
+      parts = cookie_value.split("|")
+      id = parts[0]
+      auth_data = [
+        STATIC_USER_AGENT,
+        "http",
+      ].join("")
+
+      id_hash = OpenSSL::HMAC.hexdigest("sha256", $config["secret_key"], id)
+      session = Session.find_by(:id_hash => id_hash)
+
+      data_serialized = Encryptor.decrypt({
+        :value => Base64.strict_decode64(session.data_encrypted),
+        :iv => session.data_encrypted_iv,
+        :key => Digest::SHA256.digest($config["secret_key"]),
+        :auth_data => auth_data,
+      })
+
+      MultiJson.load(data_serialized)
     end
   end
 end

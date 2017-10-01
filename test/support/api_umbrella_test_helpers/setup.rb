@@ -250,7 +250,7 @@ module ApiUmbrellaTestHelpers
       unpublish_backends("apis", record_ids)
     end
 
-    def publish_website_backends(record_ids)
+    def unpublish_website_backends(record_ids)
       unpublish_backends("website_backends", record_ids)
     end
 

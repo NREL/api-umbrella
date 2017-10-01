@@ -25,17 +25,30 @@ local secret_key_sha256 = sha256:final()
 
 local _M = {}
 
-function _M.encrypt(value, auth_data)
-  local iv = random_token(12)
+function _M.encrypt(value, auth_data, options)
+  local iv
+  if options and options["iv"] then
+    iv = options["iv"]
+  else
+    iv = random_token(12)
+  end
+
   local encryptor = assert(aes.new(secret_key_sha256, "gcm", iv, auth_data))
   local cipher_text, auth_tag = encryptor:encrypt(value)
-  local encoded = encode_base64(cipher_text .. auth_tag)
 
-  return encoded, iv
+  local encrypted_value = cipher_text .. auth_tag
+  if not options or options["base64"] ~= false then
+    encrypted_value = encode_base64(encrypted_value)
+  end
+
+  return encrypted_value, iv
 end
 
-function _M.decrypt(encrypted_value, iv, auth_data)
-  local binary = decode_base64(encrypted_value)
+function _M.decrypt(encrypted_value, iv, auth_data, options)
+  local binary = encrypted_value
+  if not options or options["base64"] ~= false then
+    binary = decode_base64(binary)
+  end
 
   -- Separate out the auth tag from the cipher text from the end of the value.
   local encrypted_cipher_text = string.sub(binary, 1, -1 - auth_tag_length)

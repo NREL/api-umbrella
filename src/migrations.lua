@@ -5,6 +5,7 @@ local db = require("lapis.db")
 return {
   [1498350289] = function()
     db.query("START TRANSACTION")
+    db.query("CREATE EXTENSION IF NOT EXISTS pgcrypto")
 
     local audit_sql_path = path.join(os.getenv("API_UMBRELLA_SRC_ROOT"), "db/pg-audit-json--1.0.0.sql")
     local audit_sql = file.read(audit_sql_path, true)
@@ -122,6 +123,20 @@ return {
       END;
       $$ LANGUAGE plpgsql;
     ]])
+
+    db.query([[
+      CREATE OR REPLACE FUNCTION update_timestamp()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        IF row(NEW.*) IS DISTINCT FROM row(OLD.*) THEN
+          NEW.updated_at := transaction_timestamp();
+        END IF;
+
+        RETURN NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    ]])
+
 
     db.query([[
       CREATE OR REPLACE FUNCTION next_api_backend_sort_order()
@@ -603,18 +618,16 @@ return {
 
     db.query([[
       CREATE TABLE sessions(
-        id varchar(40) PRIMARY KEY,
-        expires timestamp with time zone,
-        encrypted_data TEXT NOT NULL,
-        created_at timestamp with time zone NOT NULL,
-        created_by_id uuid NOT NULL,
-        created_by_username varchar(255) NOT NULL,
-        updated_at timestamp with time zone NOT NULL,
-        updated_by_id uuid NOT NULL,
-        updated_by_username varchar(255) NOT NULL
+        id_hash varchar(64) PRIMARY KEY,
+        expires_at timestamp with time zone,
+        data_encrypted TEXT NOT NULL,
+        data_encrypted_iv varchar(12) NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp(),
+        updated_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp()
       )
     ]])
-    db.query("CREATE TRIGGER sessions_stamp_record BEFORE INSERT OR UPDATE OR DELETE ON sessions FOR EACH ROW EXECUTE PROCEDURE stamp_record()")
+    db.query("CREATE UNIQUE INDEX ON sessions(expires_at)")
+    db.query("CREATE TRIGGER sessions_stamp_record BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
 
     db.query([[
       CREATE VIEW api_users_flattened AS
