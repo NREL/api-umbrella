@@ -5,8 +5,6 @@ local split = require("ngx.re").split
 local hmac = require "api-umbrella.utils.hmac"
 
 local now = ngx.now
-local decode_base64 = ngx.decode_base64
-local encode_base64 = ngx.encode_base64
 
 local _M = {}
 _M.__index = _M
@@ -31,7 +29,8 @@ function _M:open(cookie, lifetime)
     local data
     local res = db.query("SELECT data_encrypted FROM sessions WHERE id_hash = ? AND expires_at > now()", hmac(id))
     if res and res[1] and res[1]["data_encrypted"] then
-      data = decode_base64(res[1]["data_encrypted"])
+      data = res[1]["data_encrypted"]
+      ngx.log(ngx.ERR, "DATA: " .. inspect(data))
       db.query("UPDATE sessions SET expires_at = now() + interval ? WHERE id_hash = ?", lifetime .. " seconds", hmac(id))
     end
 
@@ -48,7 +47,7 @@ function _M:save(id, expires, data, hmac_data)
     return nil, "expired"
   end
 
-  db.query("INSERT INTO sessions(id_hash, expires_at, data_encrypted, data_encrypted_iv) VALUES(?, ?, ?, ?) ON CONFLICT (id_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, data_encrypted = EXCLUDED.data_encrypted, data_encrypted_iv = EXCLUDED.data_encrypted_iv", hmac(id), iso8601.format_postgres(expires), encode_base64(data), iv)
+  db.query("INSERT INTO sessions(id_hash, expires_at, data_encrypted, data_encrypted_iv) VALUES(?, ?, ?, ?) ON CONFLICT (id_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, data_encrypted = EXCLUDED.data_encrypted, data_encrypted_iv = EXCLUDED.data_encrypted_iv", hmac(id), iso8601.format_postgres(expires), db.raw(ngx.ctx.pgmoon:encode_bytea(data)), iv)
   return table.concat({ self.encode(id), expires, self.encode(hmac_data) }, self.delimiter)
 end
 

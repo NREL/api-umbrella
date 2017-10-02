@@ -236,7 +236,7 @@ module ApiUmbrellaTestHelpers
           config[type][record_id] = { :publish => "1" }
         end
 
-        response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token).deep_merge({
+        response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", @@http_options.deep_merge(admin_token).deep_merge({
           :headers => { "Content-Type" => "application/json" },
           :body => MultiJson.dump(:config => config),
         }))

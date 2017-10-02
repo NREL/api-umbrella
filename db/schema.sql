@@ -1102,6 +1102,7 @@ CREATE TABLE api_users (
     registration_origin character varying(1000),
     throttle_by_ip boolean DEFAULT false NOT NULL,
     disabled_at timestamp with time zone,
+    imported boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
     created_by_username character varying(255) NOT NULL,
@@ -1177,6 +1178,7 @@ CREATE VIEW api_users_flattened AS
     u.registration_origin,
     u.throttle_by_ip,
     u.disabled_at,
+    u.imported,
     u.created_at,
     u.created_by_id,
     u.created_by_username,
@@ -1204,6 +1206,19 @@ CREATE SEQUENCE api_users_version_seq
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
+
+
+--
+-- Name: cache; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE cache (
+    id character varying(255) NOT NULL,
+    data bytea NOT NULL,
+    expires_at timestamp with time zone,
+    created_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
+    updated_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL
+);
 
 
 --
@@ -1256,9 +1271,9 @@ ALTER SEQUENCE published_config_id_seq OWNED BY published_config.id;
 
 CREATE TABLE sessions (
     id_hash character varying(64) NOT NULL,
-    expires_at timestamp with time zone,
-    data_encrypted text NOT NULL,
+    data_encrypted bytea NOT NULL,
     data_encrypted_iv character varying(12) NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
     created_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
     updated_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL
 );
@@ -1464,6 +1479,14 @@ ALTER TABLE ONLY api_users
 
 ALTER TABLE ONLY api_users_roles
     ADD CONSTRAINT api_users_roles_pkey PRIMARY KEY (api_user_id, api_role_id);
+
+
+--
+-- Name: cache cache_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY cache
+    ADD CONSTRAINT cache_pkey PRIMARY KEY (id);
 
 
 --
@@ -1707,6 +1730,13 @@ CREATE UNIQUE INDEX api_users_version_idx ON api_users USING btree (version);
 
 
 --
+-- Name: cache_expires_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX cache_expires_at_idx ON cache USING btree (expires_at);
+
+
+--
 -- Name: rate_limits_api_backend_settings_id_api_user_settings_id_li_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1717,7 +1747,7 @@ CREATE UNIQUE INDEX rate_limits_api_backend_settings_id_api_user_settings_id_li_
 -- Name: sessions_expires_at_idx; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX sessions_expires_at_idx ON sessions USING btree (expires_at);
+CREATE INDEX sessions_expires_at_idx ON sessions USING btree (expires_at);
 
 
 --
@@ -2176,6 +2206,13 @@ CREATE TRIGGER audit_trigger_stm AFTER TRUNCATE ON website_backends FOR EACH STA
 
 
 --
+-- Name: cache cache_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER cache_stamp_record BEFORE UPDATE ON cache FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
+
+
+--
 -- Name: published_config published_config_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -2522,6 +2559,13 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE api_users_flattened TO api_umbrella_a
 --
 
 GRANT SELECT,UPDATE ON SEQUENCE api_users_version_seq TO api_umbrella_app_user;
+
+
+--
+-- Name: cache; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE cache TO api_umbrella_app_user;
 
 
 --

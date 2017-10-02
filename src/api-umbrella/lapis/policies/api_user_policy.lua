@@ -1,9 +1,8 @@
 local api_role_policy = require "api-umbrella.lapis.policies.api_role_policy"
 local db_null = require("lapis.db").NULL
-local invert_table = require "api-umbrella.utils.invert_table"
 local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
-local split = require("pl.utils").split
+local request_api_umbrella_roles = require "api-umbrella.utils.request_api_umbrella_roles"
 local throw_authorization_error = require "api-umbrella.lapis.policies.throw_authorization_error"
 
 local _M = {}
@@ -81,12 +80,9 @@ function _M.authorize_create(current_admin, data)
     -- This assumes API Umbrella is sitting in front and controlling access to
     -- this API with roles and other mechanisms (such as referer checking) to
     -- control signup access.
-    local current_roles = ngx.var.http_x_api_roles
-    if current_roles then
-      current_roles = invert_table(split(current_roles, ",", true))
-      if current_roles["api-umbrella-key-creator"] then
-        allowed = true
-      end
+    local current_roles = request_api_umbrella_roles()
+    if current_roles["api-umbrella-key-creator"] then
+      allowed = true
     end
 
     if allowed then

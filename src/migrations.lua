@@ -494,6 +494,7 @@ return {
         registration_origin varchar(1000),
         throttle_by_ip boolean NOT NULL DEFAULT FALSE,
         disabled_at timestamp with time zone,
+        imported boolean NOT NULL DEFAULT FALSE,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
@@ -619,15 +620,27 @@ return {
     db.query([[
       CREATE TABLE sessions(
         id_hash varchar(64) PRIMARY KEY,
-        expires_at timestamp with time zone,
-        data_encrypted TEXT NOT NULL,
+        data_encrypted bytea NOT NULL,
         data_encrypted_iv varchar(12) NOT NULL,
+        expires_at timestamp with time zone NOT NULL,
         created_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp(),
         updated_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp()
       )
     ]])
-    db.query("CREATE UNIQUE INDEX ON sessions(expires_at)")
+    db.query("CREATE INDEX ON sessions(expires_at)")
     db.query("CREATE TRIGGER sessions_stamp_record BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
+
+    db.query([[
+      CREATE TABLE cache(
+        id varchar(255) PRIMARY KEY,
+        data bytea NOT NULL,
+        expires_at timestamp with time zone,
+        created_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp(),
+        updated_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp()
+      )
+    ]])
+    db.query("CREATE INDEX ON cache(expires_at)")
+    db.query("CREATE TRIGGER cache_stamp_record BEFORE UPDATE ON cache FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
 
     db.query([[
       CREATE VIEW api_users_flattened AS

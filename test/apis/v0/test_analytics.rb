@@ -6,11 +6,7 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
   def setup
     super
     setup_server
-    ApiUser.where(:registration_source.ne => "seed").delete_all
     ElasticsearchHelper.clean_es_indices(["2013-07", "2013-08"])
-
-    @db = Mongoid.client(:default)
-    @db[:rails_cache].delete_many
   end
 
   def test_forbids_api_key_without_role
@@ -66,21 +62,29 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
   end
 
   def test_caches_results
-    assert_equal(0, @db[:rails_cache].count)
+    assert_equal(0, Cache.count)
 
     response = make_request
     assert_equal("MISS", response.headers["X-Cache"])
-    assert_equal(1, @db[:rails_cache].count)
+    assert_equal(1, Cache.count)
 
     response = make_request
     assert_equal("HIT", response.headers["X-Cache"])
-    assert_equal(1, @db[:rails_cache].count)
+    assert_equal(1, Cache.count)
 
-    cache = @db[:rails_cache].find.first
-    assert_equal("analytics_summary", cache["_id"])
-    assert_in_delta(Time.now.to_i, cache["created_at"], 10)
-    assert_in_delta(Time.now.to_i + 60 * 60 * 24 * 2, cache["expires_at"], 10)
-    assert(cache["data"])
+    cache = Cache.first
+    assert_equal("analytics_summary", cache.id)
+    assert_in_delta(Time.now.to_i, cache.created_at.to_i, 10)
+    assert_in_delta(Time.now.to_i + 60 * 60 * 24 * 2, cache.expires_at.to_i, 10)
+    assert(cache.data)
+    data = MultiJson.load(cache.data)
+    assert_equal([
+      "users_by_month",
+      "hits_by_month",
+      "total_users",
+      "total_hits",
+      "cached_at",
+    ].sort, data.keys.sort)
   end
 
   private

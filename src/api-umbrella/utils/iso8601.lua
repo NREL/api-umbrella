@@ -22,11 +22,29 @@ function _M.to_timestamp(parsed)
   return result
 end
 
+function _M.postgres_to_timestamp(time)
+  local parsed
+  if type(time) == "string" then
+    parsed = _M.parse_postgres(time)
+  end
+
+  return _M.to_timestamp(parsed)
+end
+
 function _M.format_postgres(time)
   local parsed
   if type(time) == "string" then
     parsed = _M.parse_postgres(time)
   elseif type(time) == "number" then
+    parsed = _M.parse_timestamp(time)
+  end
+
+  return _M.format(parsed)
+end
+
+function _M.format_timestamp(time)
+  local parsed
+  if type(time) == "number" then
     parsed = _M.parse_timestamp(time)
   end
 

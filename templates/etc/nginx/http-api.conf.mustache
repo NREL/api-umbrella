@@ -31,6 +31,8 @@ http {
   lua_check_client_abort on;
   if_modified_since off;
 
+  lua_shared_dict locks {{nginx.shared_dicts.locks.size}};
+
   {{#dns_resolver._nameservers_nginx}}
     resolver {{dns_resolver._nameservers_nginx}};
     resolver_timeout 12s;

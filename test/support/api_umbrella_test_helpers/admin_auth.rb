@@ -232,12 +232,12 @@ module ApiUmbrellaTestHelpers
         "http",
       ].join("")
 
-      data_encrypted = Base64.strict_encode64(Encryptor.encrypt({
+      data_encrypted = Encryptor.encrypt({
         :value => data_serialized,
         :iv => iv,
         :key => Digest::SHA256.digest($config["secret_key"]),
         :auth_data => auth_data,
-      }))
+      })
 
       Session.create!({
         :id_hash => id_hash,
@@ -265,7 +265,7 @@ module ApiUmbrellaTestHelpers
       session = Session.find_by(:id_hash => id_hash)
 
       data_serialized = Encryptor.decrypt({
-        :value => Base64.strict_decode64(session.data_encrypted),
+        :value => session.data_encrypted,
         :iv => session.data_encrypted_iv,
         :key => Digest::SHA256.digest($config["secret_key"]),
         :auth_data => auth_data,
