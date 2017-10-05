@@ -49,21 +49,27 @@ class ApiUser
   validates :api_key,
     :uniqueness => true
   validates :first_name,
-    :presence => { :message => "Provide your first name." }
+    :presence => { :message => "Provide your first name." },
+    :format => { :without => /(http:|https:|www\.|<|>|\r|\n)/i },
+    :length => { :maximum => 80 }
   validates :last_name,
-    :presence => { :message => "Provide your last name." }
+    :presence => { :message => "Provide your last name." },
+    :format => { :without => /(http:|https:|www\.|<|>|\r|\n)/i },
+    :length => { :maximum => 80 }
   validates :email,
     :presence => { :message => "Provide your email address." },
     :format => {
       :with => /.+@.+\..+/,
       :allow_blank => true,
       :message => "Provide a valid email address.",
-    }
+    },
+    :length => { :maximum => 255 }
   validates :website,
     :format => {
       :with => /\w+\.\w+/,
       :message => "Your website must be a valid URL in the form of http://example.com",
     },
+    :length => { :maximum => 255 },
     :allow_blank => true
   validates :terms_and_conditions,
     :acceptance => {
