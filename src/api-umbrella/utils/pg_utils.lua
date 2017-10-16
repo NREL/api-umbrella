@@ -132,7 +132,9 @@ function _M.query(query, ...)
     end
   end
 
-  ngx.log(ngx.NOTICE, query)
+  if config["app_env"] == "development" then
+    ngx.log(ngx.NOTICE, query)
+  end
   local result, err = pg:query(query)
   if not result then
     ngx.log(ngx.ERR, "postgresql query error: ", err)
