@@ -140,10 +140,10 @@ function _M.drilldown(self)
     end_time = self.params["end_at"],
     interval = self.params["interval"],
   })
-  -- search:set_permission_scope(analytics_policy.authorized_query_scope(self.current_admin))
+  search:set_permission_scope(analytics_policy.authorized_query_scope(self.current_admin))
   search:filter_by_time_range()
   search:set_search_query_string(self.params["search"])
-  -- search:set_search_filters(self.params["query"])
+  search:set_search_filters(self.params["query"])
 
   local drilldown_size = 500
   if self.params["format"] == "csv" then

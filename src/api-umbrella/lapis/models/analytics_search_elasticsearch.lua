@@ -2,9 +2,144 @@ local cjson = require "cjson"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local http = require "resty.http"
 local is_empty = require("pl.types").is_empty
+local startswith = require("pl.stringx").startswith
+
+CASE_SENSITIVE_FIELDS = {
+  api_key = 1,
+  request_ip_city = 1,
+}
+
+UPPERCASE_FIELDS = {
+  request_method = 1,
+  request_ip_country = 1,
+  request_ip_region = 1,
+}
 
 local _M = {}
 _M.__index = _M
+
+local function parse_query_builder(query)
+  local query_filter
+  if not is_empty(query) then
+    local filters = {}
+    for _, rule in ipairs(query["rules"]) do
+      local filter
+      local operator = rule["operator"]
+      local field = rule["field"]
+      local value = rule["value"]
+
+      if CASE_SENSITIVE_FIELDS[field] and type(value) == "string" then
+        if UPPERCASE_FIELDS[field] then
+          value = string.upper(value)
+        else
+          value = string.lower(value)
+        end
+      end
+
+      if operator == "equal" or operator == "not_equal" then
+        filter = {
+          term = {
+            [field] = value,
+          },
+        }
+      elseif operator == "not_equal" then
+        filter = {
+          term = {
+            [field] = value,
+          },
+        }
+      elseif operator == "begins_with" or operator == "not_begins_with" then
+        filter = {
+          prefix = {
+            [field] = value,
+          },
+        }
+      elseif operator == "contains" or operator == "not_contains" then
+        filter = {
+          regexp = {
+            [field] = ".*" .. escape_regex(value) .. ".*",
+          },
+        }
+      elseif operator == "is_null" or operator == "is_not_null" then
+        filter = {
+          exists = {
+            field = field,
+          },
+        }
+      elseif operator == "less" then
+        filter = {
+          range = {
+            [field] = {
+              lt = tonumber(value),
+            },
+          },
+        }
+      elseif operator == "less_or_equal" then
+        filter = {
+          range = {
+            [field] = {
+              lte = tonumber(value),
+            },
+          },
+        }
+      elseif operator == "greater" then
+        filter = {
+          range = {
+            [field] = {
+              gt = tonumber(value),
+            },
+          },
+        }
+      elseif operator == "greater_or_equal" then
+        filter = {
+          range = {
+            [field] = {
+              gte = tonumber(value),
+            },
+          },
+        }
+      elseif operator == "between" then
+        filter = {
+          range = {
+            [field] = {
+              gte = tonumber(value[1]),
+              lte = tonumber(value[2]),
+            },
+          },
+        }
+      else
+        error("unknown filter operator: " .. inspect(operator) .. "  (rule: " .. inspect(rule) .. ")")
+      end
+
+      if operator == "is_null" or startswith(operator, "not_") then
+        filter = {
+          bool = {
+            must_not = filter,
+          }
+        }
+      end
+
+      table.insert(filters, filter)
+    end
+
+    if not is_empty(filters) then
+      local condition
+      if query["condition"] == "OR" then
+        condition = "should"
+      else
+        condition = "must"
+      end
+
+      query_filter = {
+        bool = {
+          [condition] = filters,
+        },
+      }
+    end
+  end
+
+  return query_filter
+end
 
 function _M.new(options)
   local self = {
@@ -39,6 +174,8 @@ function _M.new(options)
 end
 
 function _M:set_permission_scope(scopes)
+  local filter = parse_query_builder(scopes)
+  table.insert(self.query["query"]["filtered"]["filter"]["bool"]["must"], filter)
 end
 
 function _M:filter_by_time_range()
@@ -65,7 +202,15 @@ function _M:set_search_query_string(query_string)
   end
 end
 
-function _M:set_search_filters(query_string)
+function _M:set_search_filters(query)
+  if type(query) == "string" and query ~= "" then
+    query = cjson.decode(query)
+  end
+
+  local filter = parse_query_builder(query)
+  if filter then
+    table.insert(self.query["query"]["filtered"]["filter"]["bool"]["must"], filter)
+  end
 end
 
 function _M:aggregate_by_drilldown(prefix, size)
@@ -100,7 +245,7 @@ function _M:aggregate_by_drilldown_over_time(prefix)
         date_histogram = {
           field = "request_at",
           interval = self.interval,
-          time_zone = "America/New_York", -- Time.zone.name,
+          time_zone = config["analytics"]["timezone"], -- "America/New_York", -- Time.zone.name,
           min_doc_count = 0,
           extended_bounds = {
             min = self.start_time,
@@ -115,7 +260,7 @@ function _M:aggregate_by_drilldown_over_time(prefix)
     date_histogram = {
       field = "request_at",
       interval = self.interval,
-      time_zone = "America/New_York", -- Time.zone.name,
+      time_zone = config["analytics"]["timezone"], -- "America/New_York", -- Time.zone.name,
       min_doc_count = 0,
       extended_bounds = {
         min = self.start_time,
