@@ -95,6 +95,10 @@ if [ -f /etc/redhat-release ]; then
     tcl-devel
     unzip
     xz
+
+    # Building the static-site
+    ruby
+    rubygem-bundler
   )
   hadoop_analytics_build_dependencies=(
     java-1.8.0-openjdk-devel
@@ -219,6 +223,10 @@ elif [ -f /etc/debian_version ]; then
     unzip
     uuid-dev
     xz-utils
+
+    # Building the static-site
+    ruby
+    bundler
   )
   hadoop_analytics_build_dependencies=(
     openjdk-$openjdk_version-jdk
