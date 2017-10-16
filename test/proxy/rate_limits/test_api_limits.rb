@@ -16,7 +16,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
             {
               :duration => 60 * 60 * 1000, # 1 hour
               :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
+              :limit_by => "api_key",
               :limit => 5,
               :distributed => true,
               :response_headers => true,
@@ -27,6 +27,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
 
       prepend_api_backends([
         {
+          :name => "#{unique_test_class_id} - Lower",
           :frontend_host => "127.0.0.1",
           :backend_host => "127.0.0.1",
           :servers => [{ :host => "127.0.0.1", :port => 9444 }],
@@ -36,7 +37,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
               {
                 :duration => 60 * 60 * 1000, # 1 hour
                 :accuracy => 1 * 60 * 1000, # 1 minute
-                :limit_by => "apiKey",
+                :limit_by => "api_key",
                 :limit => 3,
                 :distributed => true,
                 :response_headers => true,
@@ -52,7 +53,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
                   {
                     :duration => 60 * 60 * 1000, # 1 hour
                     :accuracy => 1 * 60 * 1000, # 1 minute
-                    :limit_by => "apiKey",
+                    :limit_by => "api_key",
                     :limit => 7,
                     :distributed => true,
                     :response_headers => true,
@@ -182,10 +183,10 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
   def test_user_with_empty_rate_limits_array
     assert_api_key_rate_limit("/#{unique_test_class_id}/lower/hello", 3, {
       :user_factory_overrides => {
-        :settings => {
+        :settings => FactoryGirl.build(:api_user_settings, {
           :rate_limit_mode => nil,
           :rate_limits => [],
-        },
+        }),
       },
     })
   end
@@ -200,17 +201,17 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/lower/info/", http_opts)
     assert_equal("3", response.headers["x-ratelimit-limit"])
 
-    self.config_publish_mutex.synchronize do
+    self.config_publish_lock.synchronize do
       begin
         original_config = PublishedConfig.active_config
         config = original_config.deep_dup
 
         # Find the already published "lower" api backend, change its rate
         # limits, and republish.
-        api = config["apis"].find { |a| a["url_matches"].present? && a["url_matches"][0]["frontend_prefix"] == "/#{unique_test_class_id}/lower/" }
+        api = config["apis"].find { |a| a["name"] == "#{unique_test_class_id} - Lower" }
         assert_equal(3, api["settings"]["rate_limits"][0]["limit"])
         api["settings"]["rate_limits"][0]["limit"] = 80
-        PublishedConfig.publish!(config).wait_until_live
+        PublishedConfig.create!(:config => config).wait_until_live
 
         # Make sure any local worker cache is cleared across all possible
         # worker processes.
@@ -219,7 +220,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
           assert_equal("80", resp.headers["x-ratelimit-limit"])
         end
       ensure
-        PublishedConfig.publish!(original_config).wait_until_live
+        PublishedConfig.create!(:config => original_config).wait_until_live
       end
     end
 

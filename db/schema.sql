@@ -926,6 +926,7 @@ CREATE TABLE api_backend_settings (
     required_roles_override boolean DEFAULT false NOT NULL,
     pass_api_key_header character varying(255),
     pass_api_key_query_param character varying(255),
+    rate_limit_bucket_name character varying(255),
     rate_limit_mode character varying(9),
     anonymous_rate_limit_behavior character varying(11),
     authenticated_rate_limit_behavior character varying(12),

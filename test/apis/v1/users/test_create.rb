@@ -234,7 +234,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
       :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_user_settings, {
         :rate_limits => [
           FactoryGirl.attributes_for(:rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
-          FactoryGirl.attributes_for(:rate_limit, :duration => 5000, :limit_by => "apiKey", :limit => 20),
+          FactoryGirl.attributes_for(:rate_limit, :duration => 5000, :limit_by => "api_key", :limit => 20),
         ],
       }),
     })

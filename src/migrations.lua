@@ -416,6 +416,7 @@ return {
         required_roles_override boolean NOT NULL DEFAULT FALSE,
         pass_api_key_header varchar(255),
         pass_api_key_query_param varchar(255),
+        rate_limit_bucket_name varchar(255),
         rate_limit_mode varchar(9) CHECK(rate_limit_mode IN('unlimited', 'custom')),
         anonymous_rate_limit_behavior varchar(11) CHECK(anonymous_rate_limit_behavior IN('ip_fallback', 'ip_only')),
         authenticated_rate_limit_behavior varchar(12) CHECK(authenticated_rate_limit_behavior IN('all', 'api_key_only')),

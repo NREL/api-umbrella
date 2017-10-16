@@ -14,7 +14,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
           {
             :duration => 50 * 60 * 1000, # 50 minutes
             :accuracy => 1 * 60 * 1000, # 1 minute
-            :limit_by => "apiKey",
+            :limit_by => "api_key",
             :limit => 1001,
             :distributed => true,
             :response_headers => true,
@@ -36,7 +36,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
               {
                 :duration => 45 * 60 * 1000, # 45 minutes
                 :accuracy => 1 * 60 * 1000, # 1 minute
-                :limit_by => "apiKey",
+                :limit_by => "api_key",
                 :limit => 1002,
                 :distributed => true,
                 :response_headers => true,
@@ -52,7 +52,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
                   {
                     :duration => 48 * 60 * 1000, # 48 minutes
                     :accuracy => 1 * 60 * 1000, # 1 minute
-                    :limit_by => "apiKey",
+                    :limit_by => "api_key",
                     :limit => 1003,
                     :distributed => true,
                     :response_headers => true,
@@ -68,7 +68,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
                   {
                     :duration => 12 * 60 * 1000, # 12 minutes
                     :accuracy => 1 * 60 * 1000, # 1 minute
-                    :limit_by => "apiKey",
+                    :limit_by => "api_key",
                     :limit => 1004,
                     :distributed => false,
                     :response_headers => true,
@@ -84,7 +84,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
                   {
                     :duration => 24 * 60 * 60 * 1000, # 1 day
                     :accuracy => 60 * 60 * 1000, # 1 hour
-                    :limit_by => "apiKey",
+                    :limit_by => "api_key",
                     :limit => 1005,
                     :distributed => true,
                     :response_headers => true,
@@ -100,7 +100,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
                   {
                     :duration => 1 * 60 * 1000, # 1 minute
                     :accuracy => 5 * 1000, # 5 seconds
-                    :limit_by => "apiKey",
+                    :limit_by => "api_key",
                     :limit => 1006,
                     :distributed => true,
                     :response_headers => true,
@@ -376,7 +376,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     time = options[:time] || Time.now.utc
     bucket_start_time = ((time.to_f * 1000) / options.fetch(:accuracy)).floor * options.fetch(:accuracy)
     host = options[:host] || "127.0.0.1"
-    key = "apiKey:#{options.fetch(:duration)}:#{options.fetch(:api_key)}:#{host}:#{bucket_start_time}"
+    key = "api_key:#{options.fetch(:duration)}:#{options.fetch(:api_key)}:#{host}:#{bucket_start_time}"
 
     db = Mongoid.client(:default)
     db[:rate_limits].update_one({ :_id => key }, {

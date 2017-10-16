@@ -148,6 +148,12 @@ function _M.cache_computed_settings(settings)
         limit["limit"] = nil
       end
 
+      -- Backwards compatibility for YAML configs with the old camel-case
+      -- capitalization for "limit_by".
+      if limit["limit_by"] == "apiKey" then
+        limit["limit_by"] = "api_key"
+      end
+
       local num_buckets = math.ceil(limit["duration"] / limit["accuracy"])
 
       -- For each bucket in this limit, store the time difference we'll

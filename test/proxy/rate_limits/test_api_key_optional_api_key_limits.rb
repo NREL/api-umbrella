@@ -15,7 +15,7 @@ class Test::Proxy::RateLimits::TestApiKeyOptionalApiKeyLimits < Minitest::Test
             {
               :duration => 60 * 60 * 1000, # 1 hour
               :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
+              :limit_by => "api_key",
               :limit => 5,
               :distributed => true,
               :response_headers => true,

@@ -19,14 +19,14 @@ module ApiUmbrellaTestHelpers
     mattr_accessor :setup_complete
     mattr_accessor :setup_config_version_complete
     mattr_accessor :setup_api_user_complete
-    mattr_accessor(:setup_mutex) { Mutex.new }
-    mattr_accessor(:config_mutex) { Mutex.new }
-    mattr_accessor(:config_set_mutex) { Mutex.new }
-    mattr_accessor(:config_publish_mutex) { Mutex.new }
+    mattr_accessor(:setup_lock) { Monitor.new }
+    mattr_accessor(:config_lock) { Monitor.new }
+    mattr_accessor(:config_set_lock) { Monitor.new }
+    mattr_accessor(:config_publish_lock) { Monitor.new }
 
     included do
       mattr_accessor :class_setup_complete
-      mattr_accessor(:class_setup_mutex) { Mutex.new }
+      mattr_accessor(:class_setup_lock) { Monitor.new }
     end
 
     # Start the API Umbrella server process before any tests run.
@@ -40,7 +40,7 @@ module ApiUmbrellaTestHelpers
     # startup time in the overall test times (just not any individual test
     # times).
     def run
-      self.setup_mutex.synchronize do
+      self.setup_lock.synchronize do
         unless self.start_complete
           # Start the API Umbrella process to test against.
           ApiUmbrellaTestHelpers::Process.start
@@ -69,7 +69,7 @@ module ApiUmbrellaTestHelpers
     private
 
     def setup_server
-      self.setup_mutex.synchronize do
+      self.setup_lock.synchronize do
         unless self.setup_complete
           require "typhoeus/adapters/faraday"
           client = Elasticsearch::Client.new({
@@ -159,7 +159,7 @@ module ApiUmbrellaTestHelpers
     # PublishedConfig record will be re-created for other tests that depend on
     # it.
     def default_config_version_needed
-      ApiUmbrellaTestHelpers::Setup.setup_mutex.synchronize do
+      ApiUmbrellaTestHelpers::Setup.setup_lock.synchronize do
         ApiUmbrellaTestHelpers::Setup.setup_config_version_complete = false
       end
     end
@@ -168,18 +168,30 @@ module ApiUmbrellaTestHelpers
     # they need to call this method after finishing so the default ApiUser
     # record will be re-created for other tests that depend on it.
     def default_api_user_needed
-      ApiUmbrellaTestHelpers::Setup.setup_mutex.synchronize do
+      ApiUmbrellaTestHelpers::Setup.setup_lock.synchronize do
         ApiUmbrellaTestHelpers::Setup.setup_api_user_complete = false
       end
     end
 
     def once_per_class_setup
       unless self.class_setup_complete
-        self.class_setup_mutex.synchronize do
+        self.class_setup_lock.synchronize do
           unless self.class_setup_complete
             yield
             self.class_setup_complete = true
           end
+        end
+      end
+    end
+
+    def cast_attributes_to_model(attributes, key, model)
+      if(attributes && attributes[key])
+        if(attributes[key].instance_of?(Array))
+          attributes[key].map! do |f|
+            model.new(f)
+          end
+        else
+          attributes[key] = model.new(attributes[key])
         end
       end
     end
@@ -193,6 +205,27 @@ module ApiUmbrellaTestHelpers
         attributes[:name] ||= "#{unique_test_id}-#{@prepend_api_backends_counter}"
         attributes[:backend_protocol] ||= "http"
         attributes[:balance_algorithm] ||= "least_conn"
+
+        if attributes[:settings]
+          cast_attributes_to_model(attributes[:settings], :http_headers, ApiBackendHttpHeader)
+          cast_attributes_to_model(attributes[:settings], :rate_limits, RateLimit)
+        end
+
+        if attributes[:sub_settings]
+          attributes[:sub_settings].each do |sub_settings|
+            if sub_settings[:settings]
+              cast_attributes_to_model(sub_settings[:settings], :http_headers, ApiBackendHttpHeader)
+              cast_attributes_to_model(sub_settings[:settings], :rate_limits, RateLimit)
+            end
+            cast_attributes_to_model(sub_settings, :settings, ApiBackendSettings)
+          end
+        end
+
+        cast_attributes_to_model(attributes, :settings, ApiBackendSettings)
+        cast_attributes_to_model(attributes, :servers, ApiBackendServer)
+        cast_attributes_to_model(attributes, :url_matches, ApiBackendUrlMatch)
+        cast_attributes_to_model(attributes, :sub_settings, ApiBackendSubUrlSettings)
+        cast_attributes_to_model(attributes, :rewrites, ApiBackendRewrite)
 
         ApiBackend.create!(attributes).id
       end
@@ -229,8 +262,17 @@ module ApiUmbrellaTestHelpers
       publish_backends("website_backends", record_ids)
     end
 
+    # Publish backend changes for the given record IDs.
+    #
+    # Publishing is performed by hitting the internal publish API endpoint. We
+    # do this via the API, rather than directly manipulating the
+    # PublishedConfig database table, since the resulting published config is
+    # dependent on how backend records get serialized into JSON during the
+    # publishing process. Since the Lua models might do this differently, use
+    # the real API to ensure we're testing the real publishing process, and the
+    # real resulting JSON.
     def publish_backends(type, record_ids)
-      self.config_publish_mutex.synchronize do
+      self.config_publish_lock.synchronize do
         config = { type => {} }
         record_ids.each do |record_id|
           config[type][record_id] = { :publish => "1" }
@@ -247,24 +289,21 @@ module ApiUmbrellaTestHelpers
     end
 
     def unpublish_api_backends(record_ids)
-      unpublish_backends("apis", record_ids)
+      self.config_publish_lock.synchronize do
+        ApiBackend.delete(record_ids)
+        publish_backends("apis", record_ids)
+      end
     end
 
     def unpublish_website_backends(record_ids)
-      unpublish_backends("website_backends", record_ids)
-    end
-
-    def unpublish_backends(type, record_ids)
-      self.config_publish_mutex.synchronize do
-        record_ids = records.map { |record| record["_id"] }
-        config = PublishedConfig.active_config || {}
-        config[type].reject! { |record| record_ids.include?(record["_id"]) }
-        PublishedConfig.publish!(config).wait_until_live
+      self.config_publish_lock.synchronize do
+        WebsiteBackend.delete(record_ids)
+        publish_backends("website_backends", record_ids)
       end
     end
 
     def override_config(config, reload_flag)
-      self.config_mutex.synchronize do
+      self.config_lock.synchronize do
         original_config = @@current_override_config
         original_config["version"] ||= SecureRandom.uuid
 
@@ -278,7 +317,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def override_config_set(config, reload_flag)
-      self.config_set_mutex.synchronize do
+      self.config_set_lock.synchronize do
         if(self.class.test_order == :parallel)
           raise "`override_config_set` cannot be called with `parallelize_me!` in the same class. Since overriding config affects the global state, it cannot be used with parallel tests."
         end

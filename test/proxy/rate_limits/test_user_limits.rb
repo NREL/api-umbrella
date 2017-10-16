@@ -16,7 +16,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
             {
               :duration => 60 * 60 * 1000, # 1 hour
               :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
+              :limit_by => "api_key",
               :limit => 5,
               :distributed => true,
               :response_headers => true,
@@ -47,9 +47,9 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
   def test_user_unlimited
     assert_unlimited_rate_limit("/api/hello", 5, {
       :user_factory_overrides => {
-        :settings => {
+        :settings => FactoryGirl.build(:api_user_settings, {
           :rate_limit_mode => "unlimited",
-        },
+        }),
       },
     })
   end
@@ -57,18 +57,18 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
   def test_user_custom_limit
     assert_api_key_rate_limit("/api/hello", 10, {
       :user_factory_overrides => {
-        :settings => {
+        :settings => FactoryGirl.build(:api_user_settings, {
           :rate_limits => [
             {
               :duration => 60 * 60 * 1000, # 1 hour
               :accuracy => 1 * 60 * 1000, # 1 minute
-              :limit_by => "apiKey",
+              :limit_by => "api_key",
               :limit => 10,
               :distributed => true,
               :response_headers => true,
             },
           ],
-        },
+        }),
       },
     })
   end
@@ -79,7 +79,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
         {
           :duration => 60 * 60 * 1000, # 1 hour
           :accuracy => 1 * 60 * 1000, # 1 minute
-          :limit_by => "apiKey",
+          :limit_by => "api_key",
           :limit => 10,
           :distributed => true,
           :response_headers => true,

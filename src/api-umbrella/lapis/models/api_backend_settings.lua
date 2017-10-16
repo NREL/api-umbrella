@@ -148,6 +148,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       override_response_headers_string = self:override_response_headers_string() or json_null,
       pass_api_key_header = self.pass_api_key_header or json_null,
       pass_api_key_query_param = self.pass_api_key_query_param or json_null,
+      rate_limit_bucket_name = self.rate_limit_bucket_name or json_null,
       rate_limit_mode = self.rate_limit_mode or json_null,
       rate_limits = {},
       require_https = self.require_https or json_null,

@@ -9,7 +9,7 @@ local function bucket_keys(settings, user, limit, current_time)
     limit_by = "ip"
   end
 
-  if limit_by == "apiKey" then
+  if limit_by == "api_key" then
     key_base = key_base .. user["api_key"]
   elseif limit_by == "ip" then
     key_base = key_base .. ngx.ctx.remote_addr
@@ -87,7 +87,7 @@ local function get_remaining_for_limit(settings, user, limit, keys)
   -- context.
   local anonymous_rate_limit_behavior = settings["anonymous_rate_limit_behavior"]
   local authenticated_rate_limit_behavior = settings["authenticated_rate_limit_behavior"]
-  if limit["limit_by"] == "apiKey" and not user and anonymous_rate_limit_behavior == "ip_only" then
+  if limit["limit_by"] == "api_key" and not user and anonymous_rate_limit_behavior == "ip_only" then
     return nil
   elseif limit["limit_by"] == "ip" and user and authenticated_rate_limit_behavior == "api_key_only" then
     return nil
