@@ -11,6 +11,10 @@ rlimits:
   nproc: 20000
 http_port: 80
 https_port: 443
+listen:
+  addresses:
+    - "*"
+    - "[::]"
 nginx:
   workers: auto
   worker_connections: 8192
