@@ -6,6 +6,7 @@ local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
 local is_empty = require("pl.types").is_empty
 local iso8601 = require "api-umbrella.utils.iso8601"
+local json_array_fields = require "api-umbrella.lapis.utils.json_array_fields"
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("resty.gettext").gettext
@@ -149,7 +150,6 @@ ApiUser = model_ext.new_class("api_users", {
       deleted_at = json_null,
       version = 1,
     }
-    setmetatable(data["roles"], cjson.empty_array_mt)
 
     if ngx.ctx.current_admin then
       data["api_key_preview"] = self:api_key_preview() or json_null
@@ -167,7 +167,7 @@ ApiUser = model_ext.new_class("api_users", {
 
     local settings = self:get_settings()
     if settings then
-      data["settings"] = settings:as_json()
+      data["settings"] = settings:as_json(options)
 
       -- Add legacy "_id" fields on the embedded rate limits.
       --
@@ -181,6 +181,8 @@ ApiUser = model_ext.new_class("api_users", {
         end
       end
     end
+
+    json_array_fields(data, {"roles"}, options)
 
     return data
   end,

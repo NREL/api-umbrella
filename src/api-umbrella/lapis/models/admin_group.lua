@@ -3,6 +3,7 @@ local cjson = require "cjson"
 local db = require "lapis.db"
 local is_empty = require("pl.types").is_empty
 local iso8601 = require "api-umbrella.utils.iso8601"
+local json_array_fields = require "api-umbrella.lapis.utils.json_array_fields"
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.utils.validation_ext"
@@ -122,7 +123,7 @@ AdminGroup = model_ext.new_class("admin_groups", {
     return false
   end,
 
-  as_json = function(self)
+  as_json = function(self, options)
     local data = {
       id = self.id or json_null,
       name = self.name or json_null,
@@ -145,12 +146,16 @@ AdminGroup = model_ext.new_class("admin_groups", {
       deleted_at = json_null,
       version = 1,
     }
-    setmetatable(data["api_scope_ids"], cjson.empty_array_mt)
-    setmetatable(data["api_scope_display_names"], cjson.empty_array_mt)
-    setmetatable(data["permission_ids"], cjson.empty_array_mt)
-    setmetatable(data["permission_display_names"], cjson.empty_array_mt)
-    setmetatable(data["admins"], cjson.empty_array_mt)
-    setmetatable(data["admin_usernames"], cjson.empty_array_mt)
+
+    json_array_fields(data, {
+      "api_scope_ids",
+      "api_scope_display_names",
+      "permission_ids",
+      "permission_display_names",
+      "admins",
+      "admin_usernames",
+    }, options)
+
     return data
   end,
 }, {

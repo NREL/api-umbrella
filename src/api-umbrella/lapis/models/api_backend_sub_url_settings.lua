@@ -13,7 +13,7 @@ ApiBackendSubUrlSettings = model_ext.new_class("api_backend_sub_url_settings", {
     { "settings", has_one = "ApiBackendSettings", key = "api_backend_sub_url_settings_id" },
   },
 
-  as_json = function(self)
+  as_json = function(self, options)
     local data = {
       id = self.id or json_null,
       http_method = self.http_method or json_null,
@@ -23,7 +23,7 @@ ApiBackendSubUrlSettings = model_ext.new_class("api_backend_sub_url_settings", {
 
     local settings = self:get_settings()
     if settings then
-      data["settings"] = settings:as_json()
+      data["settings"] = settings:as_json(options)
     end
 
     return data

@@ -9,6 +9,7 @@ local escape_db_like = require "api-umbrella.utils.escape_db_like"
 local hmac = require "api-umbrella.utils.hmac"
 local is_empty = require("pl.types").is_empty
 local iso8601 = require "api-umbrella.utils.iso8601"
+local json_array_fields = require "api-umbrella.lapis.utils.json_array_fields"
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("resty.gettext").gettext
@@ -153,7 +154,7 @@ Admin = model_ext.new_class("admins", {
     return group_names
   end,
 
-  as_json = function(self)
+  as_json = function(self, options)
     local data = {
       id = self.id or json_null,
       username = self.username or json_null,
@@ -186,12 +187,15 @@ Admin = model_ext.new_class("admins", {
       deleted_at = json_null,
       version = 1,
     }
-    setmetatable(data["group_ids"], cjson.empty_array_mt)
-    setmetatable(data["group_names"], cjson.empty_array_mt)
 
     if ngx.ctx.current_admin and ngx.ctx.current_admin.id == self.id then
       data["authentication_token"] = self:authentication_token_decrypted()
     end
+
+    json_array_fields(data, {
+      "group_ids",
+      "group_names",
+    }, options)
 
     return data
   end,

@@ -9,6 +9,7 @@ local common_validations = require "api-umbrella.utils.common_validations"
 local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
 local iso8601 = require "api-umbrella.utils.iso8601"
+local json_array_fields = require "api-umbrella.lapis.utils.json_array_fields"
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.utils.validation_ext"
@@ -128,7 +129,7 @@ ApiBackend = model_ext.new_class("api_backends", {
     api_backend_policy.authorize_show(ngx.ctx.current_admin, self:attributes())
   end,
 
-  as_json = function(self)
+  as_json = function(self, options)
     local data = {
       id = self.id or json_null,
       name = self.name or json_null,
@@ -159,34 +160,37 @@ ApiBackend = model_ext.new_class("api_backends", {
 
     local rewrites = self:get_rewrites()
     for _, rewrite in ipairs(rewrites) do
-      table.insert(data["rewrites"], rewrite:as_json())
+      table.insert(data["rewrites"], rewrite:as_json(options))
     end
-    setmetatable(data["rewrites"], cjson.empty_array_mt)
 
     local servers = self:get_servers()
     for _, server in ipairs(servers) do
-      table.insert(data["servers"], server:as_json())
+      table.insert(data["servers"], server:as_json(options))
     end
-    setmetatable(data["servers"], cjson.empty_array_mt)
 
     local sub_settings = self:get_sub_settings()
     for _, sub_setting in ipairs(sub_settings) do
-      table.insert(data["sub_settings"], sub_setting:as_json())
+      table.insert(data["sub_settings"], sub_setting:as_json(options))
     end
-    setmetatable(data["sub_settings"], cjson.empty_array_mt)
 
     local url_matches = self:get_url_matches()
     for _, url_match in ipairs(url_matches) do
-      table.insert(data["url_matches"], url_match:as_json())
+      table.insert(data["url_matches"], url_match:as_json(options))
       table.insert(data["frontend_prefixes"], url_match.frontend_prefix)
     end
-    setmetatable(data["url_matches"], cjson.empty_array_mt)
     data["frontend_prefixes"] = table.concat(data["frontend_prefixes"], ", ")
 
     local settings = self:get_settings()
     if settings then
-      data["settings"] = settings:as_json()
+      data["settings"] = settings:as_json(options)
     end
+
+    json_array_fields(data, {
+      "rewrites",
+      "servers",
+      "sub_settings",
+      "url_matches",
+    }, options)
 
     return data
   end,

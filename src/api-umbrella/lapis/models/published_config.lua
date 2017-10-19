@@ -19,6 +19,17 @@ local deepcopy = tablex.deepcopy
 local json_null = cjson.null
 local table_values = tablex.values
 
+local as_json_options = {
+  -- Normally we want as_json to return empty array for array fields (so it's
+  -- always a consistent type). However, when we're serializing all the records
+  -- for publishing, we prefer to remove any empty array in the serialized
+  -- data. This is to prevent the empty arrays from overriding higher-level
+  -- config when the various configuration options get merged (for example, an
+  -- API backend an empty list of custom rate limits should not override the
+  -- default rate limits).
+  nullify_empty_arrays = true,
+}
+
 local PublishedConfig = model_ext.new_class("published_config", {
 }, {
   authorize = function()
@@ -109,7 +120,7 @@ local function model_pending_changes_json(active_records_config, model, policy, 
   local pending_records_compare_config_by_id = {}
   local pending_records = model.all_sorted(where)
   for _, record in ipairs(pending_records) do
-    local config = record:as_json()
+    local config = record:as_json(as_json_options)
     table.insert(pending_records_config, config)
     pending_records_config_by_id[config["id"]] = config
     pending_records_compare_config_by_id[config["id"]] = config_for_comparison(config)
@@ -238,7 +249,7 @@ local function set_config_for_publishing(active_config, new_config, category, mo
 
     local record = model:find(record_id)
     if record then
-      local new_record_config = record:as_json()
+      local new_record_config = record:as_json(as_json_options)
       policy.authorize_show(current_admin, new_record_config, policy_permission_id)
       new_config_by_id[record_id] = new_record_config
     else

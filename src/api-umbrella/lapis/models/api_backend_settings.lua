@@ -7,6 +7,7 @@ local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local iso8601 = require "api-umbrella.utils.iso8601"
+local json_array_fields = require "api-umbrella.lapis.utils.json_array_fields"
 local lyaml = require "lyaml"
 local model_ext = require "api-umbrella.utils.model_ext"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
@@ -127,7 +128,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
     return required_role_ids
   end,
 
-  as_json = function(self)
+  as_json = function(self, options)
     local data = {
       id = self.id or json_null,
       anonymous_rate_limit_behavior = self.anonymous_rate_limit_behavior or json_null,
@@ -156,27 +157,30 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       required_roles = self:required_role_ids() or json_null,
       required_roles_override = self.required_roles_override or json_null,
     }
-    setmetatable(data["required_roles"], cjson.empty_array_mt)
 
     local http_headers = self:get_http_headers()
     for _, http_header in ipairs(http_headers) do
       if http_header.header_type == "request" then
-        table.insert(data["headers"], http_header:as_json())
+        table.insert(data["headers"], http_header:as_json(options))
       elseif http_header.header_type == "response_default" then
-        table.insert(data["default_response_headers"], http_header:as_json())
+        table.insert(data["default_response_headers"], http_header:as_json(options))
       elseif http_header.header_type == "response_override" then
-        table.insert(data["override_response_headers"], http_header:as_json())
+        table.insert(data["override_response_headers"], http_header:as_json(options))
       end
     end
-    setmetatable(data["default_response_headers"], cjson.empty_array_mt)
-    setmetatable(data["headers"], cjson.empty_array_mt)
-    setmetatable(data["override_response_headers"], cjson.empty_array_mt)
 
     local rate_limits = self:get_rate_limits()
     for _, rate_limit in ipairs(rate_limits) do
-      table.insert(data["rate_limits"], rate_limit:as_json())
+      table.insert(data["rate_limits"], rate_limit:as_json(options))
     end
-    setmetatable(data["rate_limits"], cjson.empty_array_mt)
+
+    json_array_fields(data, {
+      "default_response_headers",
+      "headers",
+      "override_response_headers",
+      "rate_limits",
+      "required_roles",
+    }, options)
 
     return data
   end,

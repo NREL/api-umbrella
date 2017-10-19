@@ -2,6 +2,7 @@ local RateLimit = require "api-umbrella.lapis.models.rate_limit"
 local cjson = require "cjson"
 local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
+local json_array_fields = require "api-umbrella.lapis.utils.json_array_fields"
 local model_ext = require "api-umbrella.utils.model_ext"
 local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
 local t = require("resty.gettext").gettext
@@ -22,7 +23,7 @@ local ApiUserSettings = model_ext.new_class("api_user_settings", {
     },
   },
 
-  as_json = function(self)
+  as_json = function(self, options)
     local data = {
       id = self.id or json_null,
       allowed_ips = self.allowed_ips or json_null,
@@ -33,9 +34,10 @@ local ApiUserSettings = model_ext.new_class("api_user_settings", {
 
     local rate_limits = self:get_rate_limits()
     for _, rate_limit in ipairs(rate_limits) do
-      table.insert(data["rate_limits"], rate_limit:as_json())
+      table.insert(data["rate_limits"], rate_limit:as_json(options))
     end
-    setmetatable(data["rate_limits"], cjson.empty_array_mt)
+
+    json_array_fields(data, {"rate_limits"}, options)
 
     return data
   end,
