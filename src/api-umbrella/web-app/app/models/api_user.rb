@@ -50,11 +50,11 @@ class ApiUser
     :uniqueness => true
   validates :first_name,
     :presence => { :message => "Provide your first name." },
-    :format => { :without => /(http:|https:|www\.|<|>|\r|\n)/i },
+    :format => { :without => /(http|https|www|<|>|\r|\n)/i },
     :length => { :maximum => 80 }
   validates :last_name,
     :presence => { :message => "Provide your last name." },
-    :format => { :without => /(http:|https:|www\.|<|>|\r|\n)/i },
+    :format => { :without => /(http|https|www|<|>|\r|\n)/i },
     :length => { :maximum => 80 }
   validates :email,
     :presence => { :message => "Provide your email address." },

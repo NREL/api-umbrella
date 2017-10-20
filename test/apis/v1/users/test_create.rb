@@ -276,8 +276,11 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_response_code(201, response)
 
     [
+      "http",
       "http:",
+      "https",
       "https:",
+      "www",
       "www.",
       "<",
       ">",
@@ -320,8 +323,11 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_response_code(201, response)
 
     [
+      "http",
       "http:",
+      "https",
       "https:",
+      "www",
       "www.",
       "<",
       ">",
