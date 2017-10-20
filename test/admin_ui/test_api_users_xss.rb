@@ -41,6 +41,7 @@ class Test::AdminUi::TestApiUsersXss < Minitest::Capybara::Test
     admin_login
     visit "/admin/#/api_users/#{@user.id}/edit"
 
+    fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
     click_button("Save")
 
