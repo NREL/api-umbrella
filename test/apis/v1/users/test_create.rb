@@ -272,7 +272,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_validates_first_name_format
-    response = make_request(:first_name => "wwwx")
+    response = make_request(:first_name => "wwx")
     assert_response_code(201, response)
 
     [
@@ -319,7 +319,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_validates_last_name_format
-    response = make_request(:last_name => "wwwx")
+    response = make_request(:last_name => "wwx")
     assert_response_code(201, response)
 
     [
