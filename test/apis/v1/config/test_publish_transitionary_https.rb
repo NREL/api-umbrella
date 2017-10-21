@@ -122,18 +122,26 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
           :require_https_transition_start_at => timestamp,
         }),
       })
+      original_updated_at = api.updated_at
 
       api.settings.require_https = "required_return_error"
-      api.save!
+      api.settings.save!
+      refute_equal(mode, api.settings.require_https)
 
       api.settings.require_https = "optional"
-      api.save!
+      api.settings.save!
+      refute_equal(mode, api.settings.require_https)
 
       api.settings.require_https = nil
-      api.save!
+      api.settings.save!
+      refute_equal(mode, api.settings.require_https)
 
       api.settings.require_https = mode
-      api.save!
+      api.settings.save!
+      assert_equal(mode, api.settings.require_https)
+
+      api.reload
+      refute_equal(original_updated_at.to_f, api.updated_at.to_f)
 
       config = {
         :apis => {
