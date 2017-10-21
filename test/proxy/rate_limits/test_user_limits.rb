@@ -59,14 +59,14 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
       :user_factory_overrides => {
         :settings => FactoryGirl.build(:api_user_settings, {
           :rate_limits => [
-            {
+            FactoryGirl.build(:rate_limit, {
               :duration => 60 * 60 * 1000, # 1 hour
               :accuracy => 1 * 60 * 1000, # 1 minute
               :limit_by => "api_key",
               :limit => 10,
               :distributed => true,
               :response_headers => true,
-            },
+            }),
           ],
         }),
       },
@@ -74,18 +74,18 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
   end
 
   def test_live_changes_within_2_seconds
-    user = FactoryGirl.create(:api_user, :settings => {
+    user = FactoryGirl.create(:api_user, :settings => FactoryGirl.build(:api_user_settings, {
       :rate_limits => [
-        {
+        FactoryGirl.build(:rate_limit, {
           :duration => 60 * 60 * 1000, # 1 hour
           :accuracy => 1 * 60 * 1000, # 1 minute
           :limit_by => "api_key",
           :limit => 10,
           :distributed => true,
           :response_headers => true,
-        },
+        }),
       ],
-    })
+    }))
     http_opts = keyless_http_options.deep_merge({
       :headers => {
         "X-Api-Key" => user.api_key,
@@ -96,7 +96,7 @@ class Test::Proxy::RateLimits::TestUserLimits < Minitest::Test
     assert_equal("10", response.headers["x-ratelimit-limit"])
 
     user.settings.rate_limits[0].limit = 90
-    user.save!
+    user.settings.rate_limits[0].save!
 
     # Wait for any local caches to expire (2 seconds).
     sleep 2.1
