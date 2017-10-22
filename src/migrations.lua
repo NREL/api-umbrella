@@ -506,7 +506,12 @@ return {
     ]])
     db.query("CREATE UNIQUE INDEX ON api_users(version)")
     db.query("CREATE UNIQUE INDEX ON api_users(api_key_hash)")
-    db.query("CREATE SEQUENCE api_users_version_seq")
+    -- Use the full negative and positive bigint range for this sequence.
+    --
+    -- For the minimum value, we actually use 1 plus the bigint minimum so we
+    -- can more easily perform "last_value - 1" math in some of our queries
+    -- without exceeding the bigint range.
+    db.query("CREATE SEQUENCE api_users_version_seq MINVALUE -9223372036854775807 MAXVALUE 9223372036854775807")
     db.query([[
       CREATE OR REPLACE FUNCTION api_users_increment_version()
       RETURNS TRIGGER AS $$
@@ -630,6 +635,33 @@ return {
     ]])
     db.query("CREATE INDEX ON sessions(expires_at)")
     db.query("CREATE TRIGGER sessions_stamp_record BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
+
+    db.query([[
+      CREATE TABLE distributed_rate_limit_counters(
+        id varchar(500) PRIMARY KEY,
+        version bigint NOT NULL,
+        value bigint NOT NULL,
+        expires_at timestamp with time zone NOT NULL
+      )
+    ]])
+    db.query("CREATE UNIQUE INDEX ON distributed_rate_limit_counters(version)")
+    db.query("CREATE INDEX ON distributed_rate_limit_counters(expires_at)")
+    -- Use the full negative and positive bigint range for this sequence.
+    --
+    -- For the minimum value, we actually use 1 plus the bigint minimum so we
+    -- can more easily perform "last_value - 1" math in some of our queries
+    -- without exceeding the bigint range.
+    db.query("CREATE SEQUENCE distributed_rate_limit_counters_version_seq MINVALUE -9223372036854775807 MAXVALUE 9223372036854775807 CYCLE")
+    db.query([[
+      CREATE OR REPLACE FUNCTION distributed_rate_limit_counters_increment_version()
+      RETURNS TRIGGER AS $$
+      BEGIN
+        NEW.version := nextval('distributed_rate_limit_counters_version_seq');
+        return NEW;
+      END;
+      $$ LANGUAGE plpgsql;
+    ]])
+    db.query("CREATE TRIGGER distributed_rate_limit_counters_increment_version_trigger BEFORE INSERT OR UPDATE ON distributed_rate_limit_counters FOR EACH ROW EXECUTE PROCEDURE distributed_rate_limit_counters_increment_version()")
 
     db.query([[
       CREATE TABLE cache(

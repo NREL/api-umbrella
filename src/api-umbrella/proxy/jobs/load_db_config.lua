@@ -2,6 +2,7 @@ local _M = {}
 
 local active_config = require "api-umbrella.proxy.models.active_config"
 local db_config = require "api-umbrella.proxy.models.db_config"
+local int64 = require "api-umbrella.utils.int64"
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local load_backends = require "api-umbrella.proxy.load_backends"
 local lock = require "resty.lock"
@@ -47,12 +48,12 @@ local function do_check()
 
   -- Query for database config versions that are newer than the previously
   -- fetched version.
-  local last_fetched_version = ngx.shared.active_config:get("db_version") or 0
+  local last_fetched_version = ngx.shared.active_config:get("db_version") or int64.MIN_VALUE_STRING
 
   -- If this set of worker processes hasn't been setup yet (initial boot or
   -- after reload), force a re-fetch of the latest database config.
   if not ngx.shared.active_config:get("worker_group_setup_complete:" .. WORKER_GROUP_ID) then
-    last_fetched_version = 0
+    last_fetched_version = int64.MIN_VALUE_STRING
   end
 
   -- Perform the database fetch.

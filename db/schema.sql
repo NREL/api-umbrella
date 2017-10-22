@@ -308,6 +308,20 @@ CREATE FUNCTION current_app_username() RETURNS character varying
 
 
 --
+-- Name: distributed_rate_limit_counters_increment_version(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION distributed_rate_limit_counters_increment_version() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+      BEGIN
+        NEW.version := nextval('distributed_rate_limit_counters_version_seq');
+        return NEW;
+      END;
+      $$;
+
+
+--
 -- Name: jsonb_minus(jsonb, text[]); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -1202,9 +1216,9 @@ CREATE VIEW api_users_flattened AS
 --
 
 CREATE SEQUENCE api_users_version_seq
-    START WITH 1
+    START WITH -9223372036854775807
     INCREMENT BY 1
-    NO MINVALUE
+    MINVALUE -9223372036854775807
     NO MAXVALUE
     CACHE 1;
 
@@ -1220,6 +1234,31 @@ CREATE TABLE cache (
     created_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
     updated_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL
 );
+
+
+--
+-- Name: distributed_rate_limit_counters; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE distributed_rate_limit_counters (
+    id character varying(500) NOT NULL,
+    version bigint NOT NULL,
+    value bigint NOT NULL,
+    expires_at timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: distributed_rate_limit_counters_version_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE distributed_rate_limit_counters_version_seq
+    START WITH -9223372036854775807
+    INCREMENT BY 1
+    MINVALUE -9223372036854775807
+    NO MAXVALUE
+    CACHE 1
+    CYCLE;
 
 
 --
@@ -1491,6 +1530,14 @@ ALTER TABLE ONLY cache
 
 
 --
+-- Name: distributed_rate_limit_counters distributed_rate_limit_counters_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY distributed_rate_limit_counters
+    ADD CONSTRAINT distributed_rate_limit_counters_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: lapis_migrations lapis_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1735,6 +1782,20 @@ CREATE UNIQUE INDEX api_users_version_idx ON api_users USING btree (version);
 --
 
 CREATE INDEX cache_expires_at_idx ON cache USING btree (expires_at);
+
+
+--
+-- Name: distributed_rate_limit_counters_expires_at_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX distributed_rate_limit_counters_expires_at_idx ON distributed_rate_limit_counters USING btree (expires_at);
+
+
+--
+-- Name: distributed_rate_limit_counters_version_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX distributed_rate_limit_counters_version_idx ON distributed_rate_limit_counters USING btree (version);
 
 
 --
@@ -2214,6 +2275,13 @@ CREATE TRIGGER cache_stamp_record BEFORE UPDATE ON cache FOR EACH ROW EXECUTE PR
 
 
 --
+-- Name: distributed_rate_limit_counters distributed_rate_limit_counters_increment_version_trigger; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER distributed_rate_limit_counters_increment_version_trigger BEFORE INSERT OR UPDATE ON distributed_rate_limit_counters FOR EACH ROW EXECUTE PROCEDURE distributed_rate_limit_counters_increment_version();
+
+
+--
 -- Name: published_config published_config_stamp_record; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -2567,6 +2635,20 @@ GRANT SELECT,UPDATE ON SEQUENCE api_users_version_seq TO api_umbrella_app_user;
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE cache TO api_umbrella_app_user;
+
+
+--
+-- Name: distributed_rate_limit_counters; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE distributed_rate_limit_counters TO api_umbrella_app_user;
+
+
+--
+-- Name: distributed_rate_limit_counters_version_seq; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,UPDATE ON SEQUENCE distributed_rate_limit_counters_version_seq TO api_umbrella_app_user;
 
 
 --

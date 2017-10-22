@@ -53,10 +53,10 @@ RateLimit = model_ext.new_class("rate_limits", {
   as_json = function(self)
     local data = {
       id = self.id or json_null,
-      duration = self.duration or json_null,
-      accuracy = self.accuracy or json_null,
+      duration = tonumber(self.duration) or json_null,
+      accuracy = tonumber(self.accuracy) or json_null,
       limit_by = self.limit_by or json_null,
-      limit = self.limit_to or json_null,
+      limit = tonumber(self.limit_to) or json_null,
       distributed = self.distributed or json_null,
       response_headers = self.response_headers or json_null,
     }

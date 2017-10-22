@@ -1,3 +1,5 @@
+require "api-umbrella.lapis.utils.db_escape_patches"
+
 local Admin = require "api-umbrella.lapis.models.admin"
 local db = require "lapis.db"
 local escape_html = require("lapis.html").escape
@@ -8,6 +10,7 @@ local is_empty = require("pl.types").is_empty
 local lapis = require "lapis"
 local lapis_config = require("lapis.config").get()
 local path = require "pl.path"
+local pg_utils = require "api-umbrella.utils.pg_utils"
 
 gettext.bindtextdomain("api-umbrella", path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/locale"))
 gettext.textdomain("api-umbrella")
@@ -67,15 +70,11 @@ app:before_filter(function(self)
   db.query("SET SESSION application_name = 'api-umbrella-web-app'")
   db.query("SET SESSION timezone = 'UTC'")
 
-  -- pgmoon is currently missing support for handling PostgreSQL inet array
-  -- types, so it doesn't know how to decode/encode these. So manually add
-  -- inet[]'s oid (1041) so that they're handled as an array of strings.
-  --
-  -- Note that ngx.ctx.pgmoon will only be set after running the db.querys
+  -- Note that ngx.ctx.pgmoon will only be set after running the db.query
   -- above. If this issue gets addressed there might be a better way to access
   -- the underlying pgmoon object from Lapis:
   -- https://github.com/leafo/lapis/issues/565
-  ngx.ctx.pgmoon:set_type_oid(1041, "array_string")
+  pg_utils.setup_type_casting(ngx.ctx.pgmoon)
 
   self.t = function(_, message)
     return gettext.gettext(message)

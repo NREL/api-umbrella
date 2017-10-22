@@ -2,7 +2,7 @@ local _M = {}
 
 local array_last = require "api-umbrella.utils.array_last"
 local distributed_rate_limit_queue = require "api-umbrella.proxy.distributed_rate_limit_queue"
-local mongo = require "api-umbrella.utils.mongo"
+local pg_utils = require "api-umbrella.utils.pg_utils"
 local plutils = require "pl.utils"
 local types = require "pl.types"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
@@ -13,43 +13,8 @@ local split = plutils.split
 local delay = 0.25  -- in seconds
 local new_timer = ngx.timer.at
 
-local indexes_created = false
-
-local function create_indexes()
-  if not indexes_created then
-    local _, err = mongo.create("system.indexes", {
-      ns = config["mongodb"]["_database"] .. ".rate_limits",
-      key = {
-        ts = -1,
-      },
-      name = "ts",
-      background = true,
-    })
-    if err then
-      ngx.log(ngx.ERR, "failed to create mongodb ts index: ", err)
-    end
-
-    _, err = mongo.create("system.indexes", {
-      ns = config["mongodb"]["_database"] .. ".rate_limits",
-      key = {
-        expire_at = 1,
-      },
-      name = "expire_at",
-      expireAfterSeconds = 0,
-      background = true,
-    })
-    if err then
-      ngx.log(ngx.ERR, "failed to create mongodb expire_at index: ", err)
-    end
-
-    indexes_created = true
-  end
-end
-
 local function do_check()
-  create_indexes()
-
-  local current_save_time = ngx.now() * 1000
+  local current_save_time = ngx.now()
 
   local data = distributed_rate_limit_queue.pop()
   if is_empty(data) then
@@ -61,29 +26,17 @@ local function do_check()
     local key_parts = split(key, ":", true)
     local duration = tonumber(key_parts[2])
     local bucket_start_time = tonumber(array_last(key_parts))
-    local _, err = mongo.update("rate_limits", key, {
-      ["$currentDate"] = {
-        ts = { ["$type"] = "timestamp" },
-      },
-      ["$inc"] = {
-        count = count,
-      },
-      ["$setOnInsert"] = {
-        -- Set this key to automatically expire after the bucket's duration,
-        -- plus 60 seconds as a small buffer.
-        expire_at = {
-          ["$date"] = { ["$numberLong"] = tostring(bucket_start_time + duration + 60000) },
-        },
-      },
-    })
-    if err then
-      ngx.log(ngx.ERR, "failed to update rate limits in mongodb: ", err)
+    local expires_at = (bucket_start_time + duration + 60000) / 1000
+
+    local result, err = pg_utils.query("INSERT INTO distributed_rate_limit_counters(id, value, expires_at) VALUES($1, $2, to_timestamp($3)) ON CONFLICT (id) DO UPDATE SET value = distributed_rate_limit_counters.value + EXCLUDED.value", key, count, expires_at)
+    if not result then
+      ngx.log(ngx.ERR, "failed to update rate limits in database: ", err)
       success = false
     end
   end
 
   if success then
-    ngx.shared.stats:set("distributed_last_pushed_at", current_save_time)
+    ngx.shared.stats:set("distributed_last_pushed_at", current_save_time * 1000)
   end
 end
 

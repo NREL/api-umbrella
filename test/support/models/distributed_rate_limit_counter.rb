@@ -1,0 +1,2 @@
+class DistributedRateLimitCounter < ApplicationRecord
+end

@@ -184,18 +184,6 @@ module ApiUmbrellaTestHelpers
       end
     end
 
-    def cast_attributes_to_model(attributes, key, model)
-      if(attributes && attributes[key])
-        if(attributes[key].instance_of?(Array))
-          attributes[key].map! do |f|
-            model.new(f)
-          end
-        else
-          attributes[key] = model.new(attributes[key])
-        end
-      end
-    end
-
     def prepend_api_backends(api_attributes)
       @prepend_api_backends_counter ||= 0
       api_ids = api_attributes.map! do |attributes|
@@ -206,28 +194,17 @@ module ApiUmbrellaTestHelpers
         attributes[:backend_protocol] ||= "http"
         attributes[:balance_algorithm] ||= "least_conn"
 
-        if attributes[:settings]
-          cast_attributes_to_model(attributes[:settings], :http_headers, ApiBackendHttpHeader)
-          cast_attributes_to_model(attributes[:settings], :rate_limits, RateLimit)
-        end
+        response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", @@http_options.deep_merge(admin_token).deep_merge({
+          :headers => { "Content-Type" => "application/json" },
+          :body => MultiJson.dump(:api => attributes),
+        }))
+        assert_response_code(201, response)
+        data = MultiJson.load(response.body)
 
-        if attributes[:sub_settings]
-          attributes[:sub_settings].each do |sub_settings|
-            if sub_settings[:settings]
-              cast_attributes_to_model(sub_settings[:settings], :http_headers, ApiBackendHttpHeader)
-              cast_attributes_to_model(sub_settings[:settings], :rate_limits, RateLimit)
-            end
-            cast_attributes_to_model(sub_settings, :settings, ApiBackendSettings)
-          end
-        end
+        id = data["api"]["id"]
+        assert(id)
 
-        cast_attributes_to_model(attributes, :settings, ApiBackendSettings)
-        cast_attributes_to_model(attributes, :servers, ApiBackendServer)
-        cast_attributes_to_model(attributes, :url_matches, ApiBackendUrlMatch)
-        cast_attributes_to_model(attributes, :sub_settings, ApiBackendSubUrlSettings)
-        cast_attributes_to_model(attributes, :rewrites, ApiBackendRewrite)
-
-        ApiBackend.create!(attributes).id
+        id
       end
 
       publish_api_backends(api_ids)

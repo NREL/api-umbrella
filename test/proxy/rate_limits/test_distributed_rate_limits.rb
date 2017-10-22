@@ -334,6 +334,81 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     assert_local_count("/api/hello", 77, options)
   end
 
+  # Perform the sequence cycle tests with a couple different sequence start
+  # values, to ensure the cycle happens properly regardless of whether the
+  # maximum value or maximum value - 1 is actually stored in the database.
+  [9223372036854775804, 9223372036854775805].each do |sequence_start_val|
+    define_method("test_sequence_cycle_start_#{sequence_start_val}") do
+      begin
+        options = {
+          :api_key => FactoryGirl.create(:api_user).api_key,
+          :duration => 50 * 60 * 1000, # 50 minutes
+          :accuracy => 1 * 60 * 1000, # 1 minute
+          :limit => 1001,
+        }.merge(frozen_time)
+
+        # Alter the sequence so that the next value is near the boundary for
+        # bigints.
+        DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_version_seq RESTART WITH #{sequence_start_val}")
+
+        # Manually set the distributed count to insert a single record.
+        set_distributed_count(20, options)
+        assert_distributed_count(20, options)
+        assert_local_count("/api/hello", 20, options)
+
+        # Check that the distributed count record matches the expected version
+        # sequence values.
+        assert_equal(1, DistributedRateLimitCounter.count)
+        counter = DistributedRateLimitCounter.first
+        assert_equal(sequence_start_val, counter.version)
+        assert_equal(20, counter.value)
+
+        # Make 1 normal request, and ensure the counts increment as expected.
+        responses = make_requests("/api/hello", 1, options)
+        assert_response_headers(21, responses, options)
+        assert_distributed_count(21, options)
+        assert_local_count("/api/hello", 21, options)
+
+        # Verify the distributed count record in the database is incrementing
+        # the sequence as expected. Note that the sequence actually increments
+        # by 2 after making a single request, since the upsert operation ends
+        # up calling nextval() on the sequence twice (since trigger is execute
+        # before both insert and updates, and the upsert ends up trying both).
+        assert_equal(1, DistributedRateLimitCounter.count)
+        counter.reload
+        assert_equal(sequence_start_val + 2, counter.version)
+        assert_equal(21, counter.value)
+
+        # Make 1 more normal request
+        responses = make_requests("/api/hello", 1, options)
+        assert_response_headers(22, responses, options)
+        assert_distributed_count(22, options)
+        assert_local_count("/api/hello", 22, options)
+
+        # This last request should have caused the sequence to cycle to the
+        # beginning negative value.
+        assert_equal(1, DistributedRateLimitCounter.count)
+        counter.reload
+        assert_equal(-9223372036854775807 + (sequence_start_val + 4 - 9223372036854775807 - 1), counter.version)
+        assert_equal(22, counter.value)
+
+        # Set the distributed count manually and ensure that the nginx workers
+        # are still polling properly to pick up new changes after the sequence
+        # has cycled.
+        set_distributed_count(99, options)
+        assert_local_count("/api/hello", 99, options)
+
+        assert_equal(1, DistributedRateLimitCounter.count)
+        counter.reload
+        assert_equal(-9223372036854775807 + (sequence_start_val + 6 - 9223372036854775807 - 1), counter.version)
+        assert_equal(99, counter.value)
+      ensure
+        # Restore default sequence settings.
+        DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_version_seq RESTART WITH -9223372036854775807")
+      end
+    end
+  end
+
   private
 
   def frozen_time
@@ -377,48 +452,24 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
     bucket_start_time = ((time.to_f * 1000) / options.fetch(:accuracy)).floor * options.fetch(:accuracy)
     host = options[:host] || "127.0.0.1"
     key = "api_key:#{options.fetch(:duration)}:#{options.fetch(:api_key)}:#{host}:#{bucket_start_time}"
+    expires_at = Time.at((bucket_start_time + options.fetch(:duration) + 60000) / 1000.0).utc
 
-    db = Mongoid.client(:default)
-    db[:rate_limits].update_one({ :_id => key }, {
-      "$currentDate" => {
-        "ts" => { "$type" => "timestamp" },
-      },
-      "$set" => {
-        :count => count,
-      },
-      "$setOnInsert" => {
-        :expire_at => Time.at((bucket_start_time + options.fetch(:duration) + 60000) / 1000.0).utc,
-      },
-    }, :upsert => true)
+    DistributedRateLimitCounter.connection.execute("INSERT INTO distributed_rate_limit_counters(id, value, expires_at) VALUES(#{DistributedRateLimitCounter.connection.quote(key)}, #{DistributedRateLimitCounter.connection.quote(count)}, #{DistributedRateLimitCounter.connection.quote(expires_at)}) ON CONFLICT (id) DO UPDATE SET value = EXCLUDED.value")
   end
 
   def assert_distributed_count(expected_count, options = {})
     # Wait until the distributed count is synced and matches the expected
     # value. Normally this should happen very quickly, but allow some amount
     # of buffer.
-    results = nil
+    result = nil
     count = nil
     Timeout.timeout(5) do
       loop do
-        db = Mongoid.client(:default)
-        results = db[:rate_limits].aggregate([
-          {
-            "$match" => {
-              :_id => /:#{options.fetch(:api_key)}:/,
-              :expire_at => { "$gte" => Time.now.utc },
-            },
-          },
-          {
-            "$group" => {
-              :_id => nil,
-              :count => { "$sum" => "$count" },
-            },
-          },
-        ])
+        result = DistributedRateLimitCounter.where("id LIKE '%:' || ? || ':%' AND expires_at >= now()", options.fetch(:api_key)).select("SUM(value) AS total_value").take
 
         count = 0
-        if(results && results.first && results.first["count"])
-          count = results.first["count"]
+        if(result && result["total_value"])
+          count = result["total_value"]
         end
 
         if(count == expected_count)
@@ -430,22 +481,20 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
       end
     end
   rescue Timeout::Error
-    flunk("Distributed count does not match expected value after timeout. Expected: #{expected_count.inspect} Last count: #{count.inspect} Last result: #{results.to_a.inspect if(results)}")
+    flunk("Distributed count does not match expected value after timeout. Expected: #{expected_count.inspect} Last count: #{count.inspect} Last result: #{result.inspect if(result)}")
   end
 
   def assert_distributed_count_record(options)
-    db = Mongoid.client(:default)
-    record = db[:rate_limits].find(:_id => /:#{options.fetch(:api_key)}:/).sort(:ts => -1).limit(1).first
+    record = DistributedRateLimitCounter.where("id LIKE '%:' || ? || ':%' AND expires_at >= now()", options.fetch(:api_key)).order("version DESC").first
     assert_equal([
-      "_id",
-      "count",
-      "expire_at",
-      "ts",
-    ].sort, record.keys.sort)
-    assert_kind_of(String, record["_id"])
-    assert_kind_of(Numeric, record["count"])
-    assert_kind_of(Time, record["expire_at"])
-    assert_kind_of(BSON::Timestamp, record["ts"])
+      "id",
+      "version",
+      "value",
+      "expires_at",
+    ].sort, record.attributes.keys.sort)
+    assert_kind_of(String, record["id"])
+    assert_kind_of(Numeric, record["value"])
+    assert_kind_of(Time, record["expires_at"])
   end
 
   def assert_local_count(path, expected_count, options = {})

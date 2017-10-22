@@ -2,6 +2,7 @@ local cidr = require "libcidr-ffi"
 local cjson = require "cjson"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local host_normalize = require "api-umbrella.utils.host_normalize"
+local int64 = require "api-umbrella.utils.int64"
 local load_backends = require "api-umbrella.proxy.load_backends"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local plutils = require "pl.utils"
@@ -249,7 +250,11 @@ function _M.set(db_config)
   load_backends.setup_backends(active_config["apis"])
 
   set_packed(ngx.shared.active_config, "packed_data", active_config)
-  ngx.shared.active_config:set("db_version", db_config["version"])
+  if db_config["version"] then
+    ngx.shared.active_config:set("db_version", int64.to_string(db_config["version"]))
+  else
+    ngx.shared.active_config:delete("db_version")
+  end
   ngx.shared.active_config:set("file_version", file_config["version"])
   ngx.shared.active_config:set("worker_group_setup_complete:" .. WORKER_GROUP_ID, true)
 end
