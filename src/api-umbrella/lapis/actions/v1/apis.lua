@@ -110,6 +110,7 @@ local function api_backend_settings_params(input_settings)
     override_response_headers_string = input_settings["override_response_headers_string"],
     pass_api_key_header = input_settings["pass_api_key_header"],
     pass_api_key_query_param = input_settings["pass_api_key_query_param"],
+    rate_limit_bucket_name = input_settings["rate_limit_bucket_name"],
     rate_limit_mode = input_settings["rate_limit_mode"],
     require_https = input_settings["require_https"],
     require_https_transition_start_at = input_settings["require_https_transition_start_at"],
@@ -164,6 +165,7 @@ local function api_backend_settings_params(input_settings)
           duration = input_rate_limit["duration"],
           limit_by = input_rate_limit["limit_by"],
           limit_to = input_rate_limit["limit"],
+          distributed = input_rate_limit["distributed"],
           response_headers = input_rate_limit["response_headers"],
         }))
       end

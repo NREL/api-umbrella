@@ -339,14 +339,23 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
   # maximum value or maximum value - 1 is actually stored in the database.
   [9223372036854775804, 9223372036854775805].each do |sequence_start_val|
     define_method("test_sequence_cycle_start_#{sequence_start_val}") do
-      begin
-        options = {
-          :api_key => FactoryGirl.create(:api_user).api_key,
-          :duration => 50 * 60 * 1000, # 50 minutes
-          :accuracy => 1 * 60 * 1000, # 1 minute
-          :limit => 1001,
-        }.merge(frozen_time)
+      # Before starting, sleep and then clean the counter table again.
+      #
+      # While database cleaner runs before each test, we have to do this here,
+      # since this table might be populated after previous tests actually
+      # finish (since this table gets populated asynchronously by the
+      # "distributed_rate_limit_pusher" which runs every 0.25 seconds).
+      sleep 0.5
+      DistributedRateLimitCounter.delete_all
 
+      options = {
+        :api_key => FactoryGirl.create(:api_user).api_key,
+        :duration => 50 * 60 * 1000, # 50 minutes
+        :accuracy => 1 * 60 * 1000, # 1 minute
+        :limit => 1001,
+      }.merge(frozen_time)
+
+      begin
         # Alter the sequence so that the next value is near the boundary for
         # bigints.
         DistributedRateLimitCounter.connection.execute("ALTER SEQUENCE distributed_rate_limit_counters_version_seq RESTART WITH #{sequence_start_val}")
@@ -481,7 +490,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
       end
     end
   rescue Timeout::Error
-    flunk("Distributed count does not match expected value after timeout. Expected: #{expected_count.inspect} Last count: #{count.inspect} Last result: #{result.inspect if(result)}")
+    flunk("Distributed count does not match expected value after timeout. Expected: #{expected_count.inspect} Last count: #{count.inspect} Last result: #{result.attributes.inspect if(result)}")
   end
 
   def assert_distributed_count_record(options)

@@ -9,6 +9,10 @@ local validate_field = model_ext.validate_field
 local validate_uniqueness = model_ext.validate_uniqueness
 
 local function auto_calculate_accuracy(values)
+  if values["accuracy"] ~= nil then
+    return
+  end
+
   if values["duration"] then
     local duration_seconds = values["duration"] / 1000.0
 
@@ -41,6 +45,10 @@ local function auto_calculate_accuracy(values)
 end
 
 local function auto_calculate_distributed(values)
+  if values["duration"] ~= nil then
+    return
+  end
+
   if values["duration"] and values["duration"] > 10000 then
     values["distributed"] = true
   else

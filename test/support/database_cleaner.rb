@@ -32,20 +32,12 @@ class Minitest::Test
     # runs, since parallel tests should not reset their state between runs
     # (doing so might interfere with the other parallel tests running).
     if(self.class.test_order != :parallel)
-      DatabaseCleaner.start
-    end
-
-    super
-  end
-
-  def teardown
-    super
-
-    if(self.class.test_order != :parallel)
       DatabaseCleaner.clean
 
       # Manually delete all the non-seeded users.
       ApiUser.where("registration_source != 'seed'").delete_all
     end
+
+    super
   end
 end
