@@ -121,8 +121,10 @@ router:
     ip_rate:
     ip_burst:
     ip_rate_size: 8m
+    ip_rate_log_level: error
     ip_connections:
     ip_connections_size: 5m
+    ip_connections_log_level: error
   web_app_host: "*"
   web_app_backend_regex: "^/(admin|admins|web-assets)(/|$)"
   web_app_backend_required_https_regex: "^/(admin|admins)(/|$)"

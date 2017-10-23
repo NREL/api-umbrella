@@ -148,6 +148,7 @@ http {
   # Limit the number of simultaneous connections per IP address.
   limit_conn_zone $binary_remote_addr zone=api_umbrella_conn_addr_zone:{{router.global_rate_limits.ip_connections_size}};
   limit_conn_status {{apiSettings.error_data.over_rate_limit.status_code}};
+  limit_conn_log_level {{router.global_rate_limits.ip_connections_log_level}};
   {{/router.global_rate_limits.ip_connections}}
 
   {{#router.global_rate_limits.ip_rate}}
@@ -159,6 +160,7 @@ http {
   # against misbehaving clients from overloading the Gatekeeper.
   limit_req_zone $binary_remote_addr zone=api_umbrella_req_addr_zone:{{router.global_rate_limits.ip_rate_size}} rate={{router.global_rate_limits.ip_rate}};
   limit_req_status {{apiSettings.error_data.over_rate_limit.status_code}};
+  limit_req_log_level {{router.global_rate_limits.ip_rate_log_level}};
   {{/router.global_rate_limits.ip_rate}}
 
   # Allow any sized uploads to backends.
