@@ -83,7 +83,7 @@ return function(active_config)
     -- request gets proxied to.
     ngx.req.set_header("X-Api-Umbrella-Backend-Scheme", api["backend_protocol"] or "http")
     ngx.req.set_header("X-Api-Umbrella-Backend-Host", host)
-    ngx.req.set_header("X-Api-Umbrella-Backend-Id", api["_id"])
+    ngx.req.set_header("X-Api-Umbrella-Backend-Id", api["id"])
 
     -- Set the host on the request that we forward onto the caching server to
     -- the API backend ID. In combination with TrafficServer's
@@ -102,7 +102,7 @@ return function(active_config)
     -- header once we upgrade to TrafficServer 6. However, since we're
     -- replacing the host afterwards anyway, using this fake temporary host to
     -- affect the cache key should be fine.
-    ngx.var.proxy_host_header = api["_id"]
+    ngx.var.proxy_host_header = api["id"]
 
     return api, url_match
   else

@@ -139,7 +139,7 @@ local function strip_cookies(api)
   if not cookie_header then return end
 
   local strips = config["strip_cookies"] or {}
-  if api["_id"] ~= "api-umbrella-web-app-backend" then
+  if api["id"] ~= "api-umbrella-web-app-backend" then
     table.insert(strips, "^_api_umbrella_session$")
     table.insert(strips, "^_api_umbrella_csrf_token$")
   end

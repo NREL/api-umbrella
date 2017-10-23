@@ -3,9 +3,8 @@ local escape_uri_non_ascii = require "api-umbrella.utils.escape_uri_non_ascii"
 local iconv = require "iconv"
 local logger = require "resty.logger.socket"
 local luatz = require "luatz"
-local mongo = require "api-umbrella.utils.mongo"
+local pg_utils = require "api-umbrella.utils.pg_utils"
 local plutils = require "pl.utils"
-local sha256 = require "resty.sha256"
 local str = require "resty.string"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
 local utils = require "api-umbrella.proxy.utils"
@@ -150,26 +149,7 @@ local function cache_city_geocode(premature, id, data)
     return
   end
 
-  local id_hash = sha256:new()
-  id_hash:update(id)
-  id_hash = id_hash:final()
-  id_hash = str.to_hex(id_hash)
-  local record = {
-    _id = id_hash,
-    country = data["request_ip_country"],
-    region = data["request_ip_region"],
-    city = data["request_ip_city"],
-    location = {
-      type = "Point",
-      coordinates = {
-        data["request_ip_lon"],
-        data["request_ip_lat"],
-      },
-    },
-    updated_at = { ["$date"] = { ["$numberLong"] = tostring(ngx.now() * 1000) } },
-  }
-
-  local _, err = mongo.update("log_city_locations", record["_id"], record)
+  local result, err = pg_utils.query("INSERT INTO analytics_cities(country, region, city, location) VALUES($1, $2, $3, point($4, $5)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location", data["request_ip_country"], data["request_ip_region"], data["request_ip_city"], data["request_ip_lon"], data["request_ip_lat"])
   if err then
     ngx.log(ngx.ERR, "failed to cache city location: ", err)
   end

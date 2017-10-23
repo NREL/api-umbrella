@@ -85,7 +85,7 @@ end
 function _M.setup_backends(apis)
   local upstreams_changed = false
   for _, api in ipairs(apis) do
-    local backend_id = "api_umbrella_" .. api["_id"] .. "_backend"
+    local backend_id = "api_umbrella_" .. api["id"] .. "_backend"
     local upstream_config = generate_upstream_config(api)
 
     -- Only apply the upstream if it differs from the upstream currently

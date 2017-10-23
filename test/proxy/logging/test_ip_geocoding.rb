@@ -149,26 +149,35 @@ class Test::Proxy::Logging::TestIpGeocoding < Minitest::Test
   end
 
   def assert_geocode_cache(record, options)
-    id = Digest::SHA256.hexdigest("#{options.fetch(:country)}-#{options.fetch(:region)}-#{options.fetch(:city)}")
-    locations = LogCityLocation.where(:_id => id).all
-    assert_equal(1, locations.length)
+    cities = AnalyticsCity.where(:country => options.fetch(:country), :region => options.fetch(:region), :city => options.fetch(:city)).all
+    assert_equal(1, cities.length)
 
-    location = locations[0].attributes
-    updated_at = location.delete("updated_at")
-    coordinates = location["location"].delete("coordinates")
+    city = cities.first
+    assert_equal([
+      "id",
+      "country",
+      "region",
+      "city",
+      "location",
+      "created_at",
+      "updated_at",
+    ].sort, city.attributes.keys.sort)
 
-    assert_kind_of(Time, updated_at)
-    assert_equal(2, coordinates.length)
-    assert_in_delta(options.fetch(:lon), coordinates[0], 0.02)
-    assert_in_delta(options.fetch(:lat), coordinates[1], 0.02)
-    assert_equal({
-      "_id" => id,
-      "country" => options.fetch(:country),
-      "region" => options.fetch(:region),
-      "city" => options.fetch(:city),
-      "location" => {
-        "type" => "Point",
-      },
-    }.compact, location)
+    assert_kind_of(Numeric, city.id)
+    assert_equal(options.fetch(:country), city.country)
+    if(options.fetch(:region).nil?)
+      assert_nil(city.region)
+    else
+      assert_equal(options.fetch(:region), city.region)
+    end
+    if(options.fetch(:city).nil?)
+      assert_nil(city.city)
+    else
+      assert_equal(options.fetch(:city), city.city)
+    end
+    assert_in_delta(options.fetch(:lon), city.location.x, 0.02)
+    assert_in_delta(options.fetch(:lat), city.location.y, 0.02)
+    assert_kind_of(Time, city.created_at)
+    assert_kind_of(Time, city.updated_at)
   end
 end

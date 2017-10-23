@@ -637,6 +637,20 @@ return {
     db.query("CREATE TRIGGER sessions_stamp_record BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
 
     db.query([[
+      CREATE TABLE analytics_cities(
+        id serial PRIMARY KEY,
+        country varchar(2) NOT NULL,
+        region varchar(2),
+        city varchar(200),
+        location point NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp(),
+        updated_at timestamp with time zone NOT NULL DEFAULT transaction_timestamp()
+      )
+    ]])
+    db.query("CREATE UNIQUE INDEX ON analytics_cities(country, region, city)")
+    db.query("CREATE TRIGGER analytics_cities_stamp_record BEFORE UPDATE ON analytics_cities FOR EACH ROW EXECUTE PROCEDURE update_timestamp()")
+
+    db.query([[
       CREATE TABLE distributed_rate_limit_counters(
         id varchar(500) PRIMARY KEY,
         version bigint NOT NULL,

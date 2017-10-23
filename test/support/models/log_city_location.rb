@@ -1,2 +1,0 @@
-class LogCityLocation < ApplicationRecord
-end

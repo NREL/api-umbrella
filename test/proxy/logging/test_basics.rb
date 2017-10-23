@@ -531,24 +531,23 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_logs_matched_api_backend_id
-    api_id = SecureRandom.uuid
-    url_match_id = SecureRandom.uuid
-
     prepend_api_backends([
       {
-        :_id => api_id,
+        :name => unique_test_id,
         :frontend_host => "127.0.0.1",
         :backend_host => "127.0.0.1",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
-        :url_matches => [{ :_id => url_match_id, :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
+        :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
+      api = ApiBackend.find_by!(:name => unique_test_id)
+
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/hello", log_http_options)
       assert_response_code(200, response)
 
       record = wait_for_log(response)[:hit_source]
-      assert_equal(api_id, record["api_backend_id"])
-      assert_equal(url_match_id, record["api_backend_url_match_id"])
+      assert_equal(api.id, record["api_backend_id"])
+      assert_equal(api.url_matches.first.id, record["api_backend_url_match_id"])
     end
   end
 end

@@ -3,6 +3,7 @@ local pgmoon = require "pgmoon"
 
 local _escape_literal = pgmoon.Postgres.escape_literal
 local _escape_identifier = pgmoon.Postgres.escape_identifier
+local pg_null = pgmoon.Postgres.NULL
 
 local db_config = {
   host = config["postgresql"]["host"],
@@ -45,7 +46,9 @@ function _M.is_list(value)
 end
 
 function _M.escape_literal(value)
-  if _M.is_list(value) then
+  if value == nil or value == pg_null then
+    return "NULL"
+  elseif _M.is_list(value) then
     local escaped = {}
     for _, val in ipairs(value[1]) do
       table.insert(escaped, _escape_literal(nil, val))

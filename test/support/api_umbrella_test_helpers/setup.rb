@@ -48,6 +48,7 @@ module ApiUmbrellaTestHelpers
 
           ActiveRecord::Base.establish_connection({
             :adapter => "postgresql",
+            :encoding => "unicode",
             :host => $config["postgresql"]["host"],
             :port => $config["postgresql"]["port"],
             :database => $config["postgresql"]["database"],

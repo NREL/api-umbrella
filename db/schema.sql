@@ -861,6 +861,40 @@ CREATE TABLE admins (
 
 
 --
+-- Name: analytics_cities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE analytics_cities (
+    id integer NOT NULL,
+    country character varying(2) NOT NULL,
+    region character varying(2),
+    city character varying(200),
+    location point NOT NULL,
+    created_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL,
+    updated_at timestamp with time zone DEFAULT transaction_timestamp() NOT NULL
+);
+
+
+--
+-- Name: analytics_cities_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE analytics_cities_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: analytics_cities_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE analytics_cities_id_seq OWNED BY analytics_cities.id;
+
+
+--
 -- Name: api_backend_http_headers; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1351,6 +1385,13 @@ ALTER TABLE ONLY log ALTER COLUMN id SET DEFAULT nextval('log_id_seq'::regclass)
 SET search_path = public, pg_catalog;
 
 --
+-- Name: analytics_cities id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY analytics_cities ALTER COLUMN id SET DEFAULT nextval('analytics_cities_id_seq'::regclass);
+
+
+--
 -- Name: published_config id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -1415,6 +1456,14 @@ ALTER TABLE ONLY admin_permissions
 
 ALTER TABLE ONLY admins
     ADD CONSTRAINT admins_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: analytics_cities analytics_cities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY analytics_cities
+    ADD CONSTRAINT analytics_cities_pkey PRIMARY KEY (id);
 
 
 --
@@ -1666,6 +1715,13 @@ CREATE UNIQUE INDEX admins_username_idx ON admins USING btree (username);
 
 
 --
+-- Name: analytics_cities_country_region_city_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX analytics_cities_country_region_city_idx ON analytics_cities USING btree (country, region, city);
+
+
+--
 -- Name: api_backend_http_headers_api_backend_settings_id_header_typ_idx; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1859,6 +1915,13 @@ CREATE TRIGGER admin_permissions_stamp_record BEFORE INSERT OR DELETE OR UPDATE 
 --
 
 CREATE TRIGGER admins_stamp_record BEFORE INSERT OR DELETE OR UPDATE ON admins FOR EACH ROW EXECUTE PROCEDURE stamp_record();
+
+
+--
+-- Name: analytics_cities analytics_cities_stamp_record; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER analytics_cities_stamp_record BEFORE UPDATE ON analytics_cities FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
 
 
 --
@@ -2516,6 +2579,20 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admin_permissions TO api_umbrella_app
 --
 
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE admins TO api_umbrella_app_user;
+
+
+--
+-- Name: analytics_cities; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE analytics_cities TO api_umbrella_app_user;
+
+
+--
+-- Name: analytics_cities_id_seq; Type: ACL; Schema: public; Owner: -
+--
+
+GRANT SELECT,UPDATE ON SEQUENCE analytics_cities_id_seq TO api_umbrella_app_user;
 
 
 --

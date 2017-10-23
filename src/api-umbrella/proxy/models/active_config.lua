@@ -165,8 +165,8 @@ local function sort_by_frontend_host_length(a, b)
 end
 
 local function parse_api(api)
-  if not api["_id"] then
-    api["_id"] = ngx.md5(cjson.encode(api))
+  if not api["id"] then
+    api["id"] = ngx.md5(cjson.encode(api))
   end
 
   cache_computed_api(api)
@@ -184,8 +184,8 @@ local function parse_apis(apis)
 end
 
 local function parse_website_backend(website_backend)
-  if not website_backend["_id"] then
-    website_backend["_id"] = ndk.set_var.set_secure_random_alphanum(32)
+  if not website_backend["id"] then
+    website_backend["id"] = ndk.set_var.set_secure_random_alphanum(32)
   end
 
   if website_backend["frontend_host"] then
