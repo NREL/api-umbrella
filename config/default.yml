@@ -80,6 +80,9 @@ web:
     workers: 2
     min_threads: 2
     max_threads: 24
+  api_user:
+    first_name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
+    last_name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
   admin:
     initial_superusers: []
     username_is_email: true
