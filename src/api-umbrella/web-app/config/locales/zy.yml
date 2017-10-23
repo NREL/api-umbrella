@@ -1,5 +1,0 @@
-# A purposefully invalid/incomplete locale file for testing against (to check
-# the fallback behavior of other locales that might be incomplete).
-zy:
-  omniauth_providers:
-    facebook: Facebook

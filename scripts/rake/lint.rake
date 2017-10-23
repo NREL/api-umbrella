@@ -37,7 +37,6 @@ namespace :lint do
   require "rubocop/rake_task"
   RuboCop::RakeTask.new(:ruby) do |t|
     t.patterns = [
-      File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/web-app/**/*.rb"),
       File.join(API_UMBRELLA_SRC_ROOT, "test/**/*.rb"),
       File.join(API_UMBRELLA_SRC_ROOT, "Rakefile"),
       File.join(API_UMBRELLA_SRC_ROOT, "script/rake/*.rb"),

@@ -35,20 +35,6 @@ namespace :outdated do
     end
   end
 
-  namespace "web-app" do
-    desc "List outdated web-app gem dependencies"
-    task :gems do
-      require "childprocess"
-      Bundler.with_original_env do
-        process = ChildProcess.build("bundle", "outdated")
-        process.cwd = File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/web-app")
-        process.io.inherit!
-        process.start
-        process.wait
-      end
-    end
-  end
-
   desc "List outdated package dependencies"
   task :packages do
     require_relative "./outdated_packages"
@@ -64,10 +50,6 @@ task :outdated do
 
   puts "==== ADMIN-UI: BOWER ===="
   Rake::Task["outdated:admin-ui:bower"].invoke
-  puts "\n\n"
-
-  puts "==== WEB-APP: GEMS ===="
-  Rake::Task["outdated:web-app:gems"].invoke
   puts "\n\n"
 
   puts "==== TEST: GEMS ===="
