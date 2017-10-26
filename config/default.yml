@@ -58,7 +58,9 @@ gatekeeper:
     - header
     - getParam
     - basicAuthUsername
-  api_key_cache: true
+  api_key_cache: false
+  pep_host: 127.0.0.1 # ip or hostname of Pep Proxy host
+  pep_port: 8090 # listen port of Pep Proxy
 trafficserver:
   host: 127.0.0.1
   port: 14009
@@ -282,12 +284,12 @@ apiSettings:
       message: The requested URL was not found on this server.
     api_key_missing:
       status_code: 403
-      code: API_KEY_MISSING
-      message: No api_key was supplied. Get one at {{signup_url}}
+      code: API_KEY_OR_TOKEN_MISSING
+      message: No api_key or token was supplied. Get one at {{signup_url}}
     api_key_invalid:
       status_code: 403
-      code: API_KEY_INVALID
-      message: An invalid api_key was supplied. Get one at {{signup_url}}
+      code: API_KEY_OR_TOKEN_INVALID
+      message: An invalid api_key or token was supplied. Get one at {{signup_url}}
     api_key_disabled:
       status_code: 403
       code: API_KEY_DISABLED
@@ -298,8 +300,8 @@ apiSettings:
       message: The api_key supplied has not been verified yet. Please check your e-mail to verify the API key. Contact us at {{contact_url}} for assistance
     api_key_unauthorized:
       status_code: 403
-      code: API_KEY_UNAUTHORIZED
-      message: The api_key supplied is not authorized to access the given service. Contact us at {{contact_url}} for assistance
+      code: API_KEY_OR_TOKEN_UNAUTHORIZED
+      message: The api_key or token supplied is not authorized to access the given service. Contact us at {{contact_url}} for assistance
     over_rate_limit:
       status_code: 429
       code: OVER_RATE_LIMIT
@@ -368,4 +370,4 @@ ban:
     message: "Please contact us for assistance."
 ember_server:
   port: 14050
-  live_reload_port: 14051
+live_reload_port: 14051
