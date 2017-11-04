@@ -48,6 +48,9 @@ class OutdatedPackages
     "luarock_argparse" => {
       :luarock => "argparse",
     },
+    "luarock_bcrypt" => {
+      :luarock => "bcrypt",
+    },
     "luarock_cmsgpack" => {
       :luarock => "lua-cmsgpack",
     },
@@ -57,8 +60,8 @@ class OutdatedPackages
     "luarock_inspect" => {
       :luarock => "inspect",
     },
-    "luarock_libcidr" => {
-      :luarock => "libcidr-ffi",
+    "luarock_lapis" => {
+      :git => "https://github.com/leafo/lapis.git",
     },
     "luarock_luacheck" => {
       :luarock => "luacheck",
@@ -81,9 +84,6 @@ class OutdatedPackages
     "luarock_resty_auto_ssl" => {
       :luarock => "lua-resty-auto-ssl",
     },
-    "luarock_resty_http" => {
-      :luarock => "lua-resty-http",
-    },
     "luarock_resty_uuid" => {
       :luarock => "lua-resty-uuid",
     },
@@ -93,6 +93,10 @@ class OutdatedPackages
     },
     "lua_resty_dns_cache" => {
       :git => "https://github.com/hamishforbes/lua-resty-dns-cache.git",
+      :git_ref => "master",
+    },
+    "lua_resty_gettext" => {
+      :git => "https://github.com/bungle/lua-resty-gettext.git",
       :git_ref => "master",
     },
     "lua_resty_logger_socket" => {
@@ -119,7 +123,7 @@ class OutdatedPackages
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
-      :constraint => "~> 6.10.2",
+      :constraint => "~> 6.11",
     },
     "openldap" => {
       :git => "https://github.com/openldap/openldap.git",
@@ -131,6 +135,24 @@ class OutdatedPackages
       :git => "https://github.com/openssl/openssl.git",
       :string_version => true,
     },
+    "opm_libcidr" => {
+      :git => "https://github.com/GUI/lua-libcidr-ffi.git",
+    },
+    "opm_resty_http" => {
+      :git => "https://github.com/pintsized/lua-resty-http.git",
+    },
+    "opm_resty_mail" => {
+      :git => "https://github.com/GUI/lua-resty-mail.git",
+    },
+    "opm_resty_nettle" => {
+      :git => "https://github.com/bungle/lua-resty-nettle.git",
+    },
+    "opm_resty_session" => {
+      :git => "https://github.com/bungle/lua-resty-session.git",
+    },
+    "opm_resty_validation" => {
+      :git => "https://github.com/bungle/lua-resty-validation.git",
+    },
     "pcre" => {
       :http => "http://ftp.csx.cam.ac.uk/pub/software/programming/pcre/",
     },
@@ -139,6 +161,9 @@ class OutdatedPackages
     },
     "phantomjs" => {
       :git => "https://github.com/ariya/phantomjs.git",
+    },
+    "postgresql" => {
+      :git => "https://github.com/postgres/postgres.git",
     },
     "presto" => {
       :git => "https://github.com/facebook/presto.git",
@@ -207,6 +232,9 @@ class OutdatedPackages
       tag.gsub!(/^rel_eng_/, "")
       tag.gsub!(/_/, ".")
     when "openssl", "ruby"
+      tag.gsub!(/_/, ".")
+    when "postgresql"
+      tag.gsub!(/^rel/, "")
       tag.gsub!(/_/, ".")
     end
 

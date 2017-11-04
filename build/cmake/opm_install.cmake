@@ -7,7 +7,7 @@ function(_opm_install tree_dir package account version hash)
     DOWNLOAD_NO_EXTRACT 1
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
-    INSTALL_COMMAND cd ${tree_dir} && env PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} LD_LIBRARY_PATH=${STAGE_EMBEDDED_DIR}/openresty/luajit/lib:${STAGE_EMBEDDED_DIR}/lib opm --cwd get ${account}/${package}=${version}
+    INSTALL_COMMAND cd ${tree_dir} && ${OPM_CMD} --cwd get ${account}/${package}=${version}
       COMMAND find ${tree_dir}/resty_modules -name *.so -exec chrpath -d {} $<SEMICOLON>
   )
 endfunction()

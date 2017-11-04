@@ -47,6 +47,9 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Naming/HeredocDelimiterNaming:
+  Enabled: false
+
 Performance/RedundantMerge:
   Enabled: false
 

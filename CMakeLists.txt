@@ -39,6 +39,7 @@ else()
   set(LUA_PREFIX ${STAGE_EMBEDDED_DIR})
 endif()
 set(LUAROCKS_CMD env LUA_PATH=${LUA_PREFIX}/openresty/luajit/share/lua/5.1/?.lua$<SEMICOLON>${LUA_PREFIX}/openresty/luajit/share/lua/5.1/?/init.lua$<SEMICOLON>$<SEMICOLON> ${LUA_PREFIX}/bin/luarocks)
+set(OPM_CMD env LUA_PATH=${LUA_PREFIX}/openresty/lualib/?.lua$<SEMICOLON>${LUA_PREFIX}/openresty/lualib/?/init.lua$<SEMICOLON>$<SEMICOLON> PATH=${STAGE_EMBEDDED_DIR}/bin:$ENV{PATH} LD_LIBRARY_PATH=${STAGE_EMBEDDED_DIR}/openresty/luajit/lib:${STAGE_EMBEDDED_DIR}/lib opm)
 
 # Where to install development-only dependencies.
 set(DEV_INSTALL_PREFIX ${WORK_DIR}/dev-env)

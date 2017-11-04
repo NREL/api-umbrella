@@ -39,7 +39,7 @@ set(PCRE_SOURCE_DIR ${SOURCE_DIR})
 # OpenResty's ssl_certificate_by_lua functionality requires OpenSSL 1.0.2e+
 ExternalProject_Add(
   openssl
-  URL https://www.openssl.org/source/old/1.0.2/openssl-${OPENSSL_VERSION}.tar.gz
+  URL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
   URL_HASH SHA256=${OPENSSL_HASH}
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
@@ -78,6 +78,9 @@ ExternalProject_Add(
   URL https://openresty.org/download/openresty-${OPENRESTY_VERSION}.tar.gz
   URL_HASH MD5=${OPENRESTY_HASH}
   BUILD_IN_SOURCE 1
+  # Patch opm to allow it to pick up dynamic LUA_PATH and LUA_CPATH, since we
+  # need different paths while performing staged installations.
+  PATCH_COMMAND patch -p1 < ${CMAKE_SOURCE_DIR}/build/patches/opm.patch
   CONFIGURE_COMMAND ${OPENRESTY_CONFIGURE_CMD}
   # Wipe the .openssl directory inside the openssl dir, or else openresty
   # will fail to build on rebuilds: https://trac.nginx.org/nginx/ticket/583

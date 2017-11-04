@@ -327,11 +327,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def unique_test_ip_addr
-      unless @unique_test_ip_addr
-        @unique_test_ip_addr = next_unique_ip_addr
-      end
-
-      @unique_test_ip_addr
+      @unique_test_ip_addr ||= next_unique_ip_addr
     end
 
     # Typheous/Ethon doesn't currently support sending empty HTTP headers by
