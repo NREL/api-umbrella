@@ -1,11 +1,12 @@
-local interval_lock = require "api-umbrella.utils.interval_lock"
 local Cache = require "api-umbrella.lapis.models.cache"
-local iso8601 = require "api-umbrella.utils.iso8601"
 local analytics_policy = require "api-umbrella.lapis.policies.analytics_policy"
 local capture_errors_json = require("api-umbrella.utils.lapis_helpers").capture_errors_json
 local cjson = require("cjson")
 local db = require "lapis.db"
 local http = require "resty.http"
+local interval_lock = require "api-umbrella.utils.interval_lock"
+local iso8601 = require "api-umbrella.utils.iso8601"
+local json_encode = require "api-umbrella.utils.json_encode"
 local lapis_json = require "api-umbrella.utils.lapis_json"
 
 local _M = {}
@@ -125,7 +126,7 @@ local function generate_summary_hits(start_time, end_time)
     headers = {
       ["Content-Type"] = "application/json",
     },
-    body = cjson.encode(query),
+    body = json_encode(query),
   })
   local data = cjson.decode(res.body)
 
@@ -162,7 +163,7 @@ local function generate_summary()
   }
 
   local cache_id = "analytics_summary"
-  local response_json = cjson.encode(response)
+  local response_json = json_encode(response)
   local expires_at = ngx.now() + 60 * 60 * 24 * 2
   Cache:upsert(cache_id, response_json, expires_at)
 

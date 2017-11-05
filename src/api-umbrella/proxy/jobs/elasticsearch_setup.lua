@@ -3,6 +3,7 @@ local _M = {}
 local cjson = require "cjson"
 local http = require "resty.http"
 local interval_lock = require "api-umbrella.utils.interval_lock"
+local json_encode = require "api-umbrella.utils.json_encode"
 
 local delay = 3600  -- in seconds
 
@@ -48,7 +49,7 @@ local function create_templates()
     for _, template in ipairs(elasticsearch_templates) do
       local _, err = httpc:request_uri(elasticsearch_host .. "/_template/" .. template["id"], {
         method = "PUT",
-        body = cjson.encode(template["template"]),
+        body = json_encode(template["template"]),
       })
       if err then
         ngx.log(ngx.ERR, "failed to update elasticsearch template: ", err)

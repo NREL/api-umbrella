@@ -1,4 +1,5 @@
 local db = require "lapis.db"
+local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local json_null = require("cjson").null
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
@@ -45,7 +46,7 @@ local function auto_calculate_accuracy(values)
 end
 
 local function auto_calculate_distributed(values)
-  if values["duration"] ~= nil then
+  if values["distributed"] ~= nil then
     return
   end
 
@@ -61,10 +62,10 @@ RateLimit = model_ext.new_class("rate_limits", {
   as_json = function(self)
     local data = {
       id = self.id or json_null,
-      duration = tonumber(self.duration) or json_null,
-      accuracy = tonumber(self.accuracy) or json_null,
+      duration = int64_to_json_number(self.duration) or json_null,
+      accuracy = int64_to_json_number(self.accuracy) or json_null,
       limit_by = self.limit_by or json_null,
-      limit = tonumber(self.limit_to) or json_null,
+      limit = int64_to_json_number(self.limit_to) or json_null,
       distributed = self.distributed or json_null,
       response_headers = self.response_headers or json_null,
     }
@@ -94,7 +95,7 @@ RateLimit = model_ext.new_class("rate_limits", {
     end
   end,
 
-  validate = function(_, data)
+  validate = function(_, data, values)
     local errors = {}
     validate_field(errors, data, "duration", validation_ext.number, t("can't be blank"))
     validate_field(errors, data, "accuracy", validation_ext.number, t("can't be blank"))

@@ -1,6 +1,7 @@
 local cjson = require "cjson"
 local db = require "lapis.db"
 local escape_db_like = require "api-umbrella.utils.escape_db_like"
+local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local tablex = require "pl.tablex"
 local types = require "pl.types"
@@ -177,8 +178,8 @@ function _M.index(self, model, options)
 
   local response = {
     draw = tonumber(self.params["draw"]) or 0,
-    recordsTotal = total_count,
-    recordsFiltered = total_count,
+    recordsTotal = int64_to_json_number(total_count),
+    recordsFiltered = int64_to_json_number(total_count),
     data = {},
   }
 

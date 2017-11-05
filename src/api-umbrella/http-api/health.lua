@@ -1,5 +1,6 @@
 local cjson = require "cjson"
 local http = require "resty.http"
+local json_encode = require "api-umbrella.utils.json_encode"
 
 local function status_response()
   local response = {
@@ -89,7 +90,7 @@ else
   if wait_for_status ~= "green" and wait_for_status ~= "yellow" and wait_for_status ~= "red" then
     ngx.status = 422
     ngx.header["Content-Type"] = "application/json"
-    ngx.say(cjson.encode({
+    ngx.say(json_encode({
       error = "Invalid wait_for_status argument (" .. (tostring(wait_for_status) or "") .. ")",
     }))
     return ngx.exit(ngx.HTTP_OK)
@@ -100,7 +101,7 @@ else
   if not wait_timeout then
     ngx.status = 422
     ngx.header["Content-Type"] = "application/json"
-    ngx.say(cjson.encode({
+    ngx.say(json_encode({
       error = "Invalid wait_timeout argument (" .. (tostring(wait_timeout) or "") .. ")",
     }))
     return ngx.exit(ngx.HTTP_OK)
@@ -138,4 +139,4 @@ if response["status"] == "red" then
 end
 
 ngx.header["Content-Type"] = "application/json"
-ngx.say(cjson.encode(response))
+ngx.say(json_encode(response))

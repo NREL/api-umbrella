@@ -2,6 +2,7 @@ local cjson = require "cjson"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local http = require "resty.http"
 local is_empty = require("pl.types").is_empty
+local json_encode = require "api-umbrella.utils.json_encode"
 local startswith = require("pl.stringx").startswith
 
 CASE_SENSITIVE_FIELDS = {
@@ -288,7 +289,7 @@ function _M:fetch_results()
     headers = {
       ["Content-Type"] = "application/json",
     },
-    body = cjson.encode(self.query),
+    body = json_encode(self.query),
   })
   local data = cjson.decode(res.body)
   ngx.log(ngx.ERR, "FETCH: " .. inspect(res.body))

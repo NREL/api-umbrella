@@ -1,8 +1,8 @@
 local cidr = require "libcidr-ffi"
-local cjson = require "cjson"
 local escape_regex = require "api-umbrella.utils.escape_regex"
 local host_normalize = require "api-umbrella.utils.host_normalize"
 local int64 = require "api-umbrella.utils.int64"
+local json_encode = require "api-umbrella.utils.json_encode"
 local load_backends = require "api-umbrella.proxy.load_backends"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local plutils = require "pl.utils"
@@ -166,7 +166,7 @@ end
 
 local function parse_api(api)
   if not api["id"] then
-    api["id"] = ngx.md5(cjson.encode(api))
+    api["id"] = ngx.md5(json_encode(api))
   end
 
   cache_computed_api(api)

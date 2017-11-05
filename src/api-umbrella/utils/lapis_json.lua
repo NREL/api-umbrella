@@ -1,6 +1,4 @@
-local cjson = require "cjson"
-
-local json_encode = cjson.encode
+local json_encode = require "api-umbrella.utils.json_encode"
 
 return function(self, obj)
   self.res.headers["Content-Type"] = "application/json"

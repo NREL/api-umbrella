@@ -1,6 +1,6 @@
-local cjson = require "cjson"
 local common_validations = require "api-umbrella.utils.common_validations"
 local file = require "pl.file"
+local json_encode = require "api-umbrella.utils.json_encode"
 local path = require "pl.path"
 
 local _M = {}
@@ -21,11 +21,11 @@ function _M.loader(self)
   self.res.headers["Content-Type"] = "text/javascript; charset=utf-8"
   self.res.headers["Cache-Control"] = "max-age=0, private, no-cache, no-store, must-revalidate"
   self.res.content = [[
-    window.localeData = ]] .. cjson.encode(data["locale_data"]["api-umbrella"]) .. [[;
+    window.localeData = ]] .. json_encode(data["locale_data"]["api-umbrella"]) .. [[;
     window.CommonValidations = {
-      host_format: new RegExp(]] .. cjson.encode(common_validations.host_format) .. [[),
-      host_format_with_wildcard: new RegExp(]] .. cjson.encode(common_validations.host_format_with_wildcard) .. [[),
-      url_prefix_format: new RegExp(]] .. cjson.encode(common_validations.url_prefix_format) .. [[)
+      host_format: new RegExp(]] .. json_encode(common_validations.host_format) .. [[),
+      host_format_with_wildcard: new RegExp(]] .. json_encode(common_validations.host_format_with_wildcard) .. [[),
+      url_prefix_format: new RegExp(]] .. json_encode(common_validations.url_prefix_format) .. [[)
     };
   ]]
   return { layout = false }
