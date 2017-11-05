@@ -200,6 +200,7 @@ http {
   dyups_trylock on;
   dyups_read_msg_timeout 300ms;
   server {
+    set $api_umbrella_proxy_pass '';
     listen {{nginx.dyups.host}}:{{nginx.dyups.port}};
     location / {
       dyups_interface;
@@ -207,6 +208,7 @@ http {
   }
 
   server {
+    set $api_umbrella_proxy_pass '';
     listen {{api_server.host}}:{{api_server.port}};
     set $x_api_umbrella_request_id $http_x_api_umbrella_request_id;
 
@@ -221,6 +223,7 @@ http {
 
   {{#hosts}}
   server {
+    set $api_umbrella_proxy_pass '';
     {{#listen.addresses}}
       listen {{.}}:{{http_port}}{{#default}} default_server{{/default}};
     {{/listen.addresses}}
@@ -258,6 +261,7 @@ http {
   {{/hosts}}
 
   server {
+    set $api_umbrella_proxy_pass '';
     listen {{static_site.host}}:{{static_site.port}};
     server_name _;
 
@@ -277,6 +281,7 @@ http {
   }
 
   server {
+    set $api_umbrella_proxy_pass '';
     listen {{router.api_backends.host}}:{{router.api_backends.port}};
     server_name _;
 

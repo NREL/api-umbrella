@@ -19,8 +19,6 @@ proxy_send_timeout {{nginx._initial_proxy_send_timeout}}s;
 # appropriate to meet the Accept headers of the current client.
 gunzip on;
 
-set $api_umbrella_proxy_pass '';
-
 rewrite_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/rewrite.lua';
 access_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/access.lua';
 header_filter_by_lua_file '{{_src_root_dir}}/src/api-umbrella/proxy/hooks/header_filter.lua';
