@@ -2,7 +2,7 @@ require_relative "../../../test_helper"
 
 class Test::Apis::V1::Contact::TestEmail < Minitest::Test
   include ApiUmbrellaTestHelpers::Setup
-  include ApiUmbrellaTestHelpers::DelayedJob
+  include ApiUmbrellaTestHelpers::SentEmails
 
   def setup
     super
@@ -19,7 +19,7 @@ class Test::Apis::V1::Contact::TestEmail < Minitest::Test
 
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/contact.json", http_options.deep_merge({
       :headers => {
-        "X-Api-Key" => user["api_key"],
+        "X-Api-Key" => user.api_key,
         "Content-Type" => "application/x-www-form-urlencoded",
       },
       :body => {
@@ -35,8 +35,9 @@ class Test::Apis::V1::Contact::TestEmail < Minitest::Test
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal(["submitted"], data.keys)
+    assert_match_iso8601(data.fetch("submitted"))
 
-    messages = delayed_job_sent_messages
+    messages = sent_emails
     assert_equal(1, messages.length)
     message = messages.first
 
@@ -44,7 +45,7 @@ class Test::Apis::V1::Contact::TestEmail < Minitest::Test
     assert_equal(["API Umbrella Contact Message from foo@example.com"], message["Content"]["Headers"]["Subject"])
     assert_equal(["noreply@localhost"], message["Content"]["Headers"]["From"])
     assert_equal(["foo@example.com"], message["Content"]["Headers"]["Reply-To"])
-    assert_equal(["text/plain; charset=UTF-8"], message["Content"]["Headers"]["Content-Type"])
-    assert_equal("Name: Foo\r\nEmail: foo@example.com\r\nAPI: Example API\r\nSubject: Support\r\n\r\n-------------------------------------\r\n\r\nMessage body\r\n\r\n-------------------------------------", message["Content"]["Body"])
+    assert_match("Name: Foo\nEmail: foo@example.com\nAPI: Example API\nSubject: Support\n\n-------------------------------------\n\nMessage body\n\n-------------------------------------", message["_mime_parts"]["text/plain"]["_body"])
+    assert_nil(message["_mime_parts"]["text/html"])
   end
 end
