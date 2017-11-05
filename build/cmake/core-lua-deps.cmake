@@ -37,6 +37,17 @@ ExternalProject_Add(
   INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${VENDOR_DIR} make --local lapis-dev-1.rockspec
 )
 
+ExternalProject_Add(
+  opm_lua-icu-date
+  DEPENDS luarocks
+  URL https://github.com/GUI/lua-icu-date/archive/${OPM_ICU_DATE_VERSION}.tar.gz
+  URL_HASH MD5=${OPM_ICU_DATE_HASH}
+  BUILD_IN_SOURCE 1
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND ""
+  INSTALL_COMMAND ${LUAROCKS_CMD} --tree=${VENDOR_DIR} make --local icu-date-git-1.rockspec
+)
+
 # Other Lua app dependencies (non-luarocks)
 ExternalProject_Add(
   lua_luasocket_url
@@ -114,6 +125,7 @@ set(
   luarock_lustache
   luarock_lyaml
   luarock_penlight
+  opm_lua-icu-date
   opm_lua-libcidr-ffi
   opm_lua-resty-http
   opm_lua-resty-mail
