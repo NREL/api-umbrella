@@ -39,6 +39,10 @@ ApiScope = model_ext.new_class("api_scopes", {
       version = 1,
     }
   end,
+
+  is_root = function(self)
+    return self.path_prefix == "/"
+  end
 }, {
   authorize = function(data)
     api_scope_policy.authorize_modify(ngx.ctx.current_admin, data)
