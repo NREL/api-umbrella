@@ -2,10 +2,10 @@ local admin_group_policy = require "api-umbrella.lapis.policies.admin_group_poli
 local cjson = require "cjson"
 local db = require "lapis.db"
 local is_empty = require("pl.types").is_empty
-local iso8601 = require "api-umbrella.utils.iso8601"
 local json_array_fields = require "api-umbrella.lapis.utils.json_array_fields"
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
+local time = require "api-umbrella.utils.time"
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local json_null = cjson.null
@@ -59,7 +59,7 @@ AdminGroup = model_ext.new_class("admin_groups", {
       table.insert(admins, {
         id = admin.id,
         username = admin.username,
-        last_sign_in_at = iso8601.format_postgres(admin.last_sign_in_at) or json_null,
+        last_sign_in_at = time.postgres_to_iso8601(admin.last_sign_in_at) or json_null,
       })
     end
 
@@ -127,12 +127,12 @@ AdminGroup = model_ext.new_class("admin_groups", {
     local data = {
       id = self.id or json_null,
       name = self.name or json_null,
-      created_at = iso8601.format_postgres(self.created_at) or json_null,
+      created_at = time.postgres_to_iso8601(self.created_at) or json_null,
       created_by = self.created_by_id or json_null,
       creator = {
         username = self.created_by_username or json_null,
       },
-      updated_at = iso8601.format_postgres(self.updated_at) or json_null,
+      updated_at = time.postgres_to_iso8601(self.updated_at) or json_null,
       updated_by = self.updated_by_id or json_null,
       updater = {
         username = self.updated_by_username or json_null,

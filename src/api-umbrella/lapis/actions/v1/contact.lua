@@ -1,16 +1,16 @@
 local Contact = require "api-umbrella.lapis.models.contact"
 local capture_errors_json_full = require("api-umbrella.utils.lapis_helpers").capture_errors_json_full
-local iso8601 = require "api-umbrella.utils.iso8601"
 local json_params = require("lapis.application").json_params
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
+local time = require "api-umbrella.utils.time"
 
 local _M = {}
 
 function _M.create(self)
   assert(Contact:authorized_deliver(_M.contact_params(self)))
   local response = {
-    submitted = iso8601.format_timestamp(ngx.now()),
+    submitted = time.timestamp_to_iso8601(ngx.now()),
   }
 
   return lapis_json(self, response)

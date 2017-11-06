@@ -1,9 +1,9 @@
 local api_scope_policy = require "api-umbrella.lapis.policies.api_scope_policy"
 local common_validations = require "api-umbrella.utils.common_validations"
-local iso8601 = require "api-umbrella.utils.iso8601"
 local json_null = require("cjson").null
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
+local time = require "api-umbrella.utils.time"
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local validate_field = model_ext.validate_field
@@ -25,12 +25,12 @@ ApiScope = model_ext.new_class("api_scopes", {
       name = self.name or json_null,
       host = self.host or json_null,
       path_prefix = self.path_prefix or json_null,
-      created_at = iso8601.format_postgres(self.created_at) or json_null,
+      created_at = time.postgres_to_iso8601(self.created_at) or json_null,
       created_by = self.created_by_id or json_null,
       creator = {
         username = self.created_by_username or json_null,
       },
-      updated_at = iso8601.format_postgres(self.updated_at) or json_null,
+      updated_at = time.postgres_to_iso8601(self.updated_at) or json_null,
       updated_by = self.updated_by_id or json_null,
       updater = {
         username = self.updated_by_username or json_null,

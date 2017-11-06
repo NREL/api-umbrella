@@ -5,9 +5,9 @@ local cjson = require("cjson")
 local db = require "lapis.db"
 local http = require "resty.http"
 local interval_lock = require "api-umbrella.utils.interval_lock"
-local iso8601 = require "api-umbrella.utils.iso8601"
 local json_encode = require "api-umbrella.utils.json_encode"
 local lapis_json = require "api-umbrella.utils.lapis_json"
+local time = require "api-umbrella.utils.time"
 
 local _M = {}
 
@@ -150,7 +150,7 @@ end
 
 local function generate_summary()
   local start_time = "2013-07-01T00:00:00"
-  local end_time = iso8601.format_timestamp(ngx.now())
+  local end_time = time.timestamp_to_iso8601(ngx.now())
   local users = generate_summary_users(start_time, end_time)
   local hits = generate_summary_hits(start_time, end_time)
 

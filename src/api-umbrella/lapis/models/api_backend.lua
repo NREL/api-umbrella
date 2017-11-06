@@ -8,10 +8,10 @@ local cjson = require "cjson"
 local common_validations = require "api-umbrella.utils.common_validations"
 local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
-local iso8601 = require "api-umbrella.utils.iso8601"
 local json_array_fields = require "api-umbrella.lapis.utils.json_array_fields"
 local model_ext = require "api-umbrella.utils.model_ext"
 local t = require("resty.gettext").gettext
+local time = require "api-umbrella.utils.time"
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local db_null = db.NULL
@@ -144,12 +144,12 @@ ApiBackend = model_ext.new_class("api_backends", {
       settings = json_null,
       sub_settings = {},
       url_matches = {},
-      created_at = iso8601.format_postgres(self.created_at) or json_null,
+      created_at = time.postgres_to_iso8601(self.created_at) or json_null,
       created_by = self.created_by_id or json_null,
       creator = {
         username = self.created_by_username or json_null,
       },
-      updated_at = iso8601.format_postgres(self.updated_at) or json_null,
+      updated_at = time.postgres_to_iso8601(self.updated_at) or json_null,
       updated_by = self.updated_by_id or json_null,
       updater = {
         username = self.updated_by_username or json_null,

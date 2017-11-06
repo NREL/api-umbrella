@@ -5,11 +5,11 @@ local cjson = require "cjson"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
 local is_empty = require("pl.types").is_empty
-local iso8601 = require "api-umbrella.utils.iso8601"
 local json_array_fields = require "api-umbrella.lapis.utils.json_array_fields"
 local model_ext = require "api-umbrella.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("resty.gettext").gettext
+local time = require "api-umbrella.utils.time"
 local validation_ext = require "api-umbrella.utils.validation_ext"
 
 local json_null = cjson.null
@@ -70,9 +70,9 @@ ApiUser = model_ext.new_class("api_users", {
 
   api_key_hides_at = function(self)
     if not self._api_key_hides_at then
-      local hides_at = iso8601.parse_postgres(self.created_at)
+      local hides_at = time.postgres_to_timestamp(self.created_at)
       if hides_at then
-        hides_at:adddays(14)
+        hides_at = hides_at + 14 * 24 * 60 * 60 -- 14 days
       end
 
       self._api_key_hides_at = hides_at
@@ -86,7 +86,7 @@ ApiUser = model_ext.new_class("api_users", {
     if ngx.ctx.current_admin then
       if ngx.ctx.current_admin.superuser then
         allowed = true
-      elseif ngx.now() < iso8601.to_timestamp(self:api_key_hides_at()) then
+      elseif ngx.now() < self:api_key_hides_at() then
         local roles = self:get_roles()
         if is_empty(roles) then
           allowed = true
@@ -117,7 +117,7 @@ ApiUser = model_ext.new_class("api_users", {
   end,
 
   as_json = function(self, options)
-    local updated_at = iso8601.parse_postgres(self.updated_at)
+    local updated_at = time.postgres_to_timestamp(self.updated_at)
     local data = {
       id = self.id or json_null,
       email = self.email or json_null,
@@ -130,19 +130,19 @@ ApiUser = model_ext.new_class("api_users", {
       roles = self:role_ids() or json_null,
       settings = json_null,
       enabled = self:enabled(),
-      disabled_at = iso8601.format_postgres(self.disabled_at) or json_null,
+      disabled_at = time.postgres_to_iso8601(self.disabled_at) or json_null,
       ts = {
         ["$timestamp"] = {
-          t = math.floor(iso8601.to_timestamp(updated_at)) or json_null,
+          t = math.floor(updated_at) or json_null,
           i = 1,
         },
       },
-      created_at = iso8601.format_postgres(self.created_at) or json_null,
+      created_at = time.postgres_to_iso8601(self.created_at) or json_null,
       created_by = self.created_by_id or json_null,
       creator = {
         username = self.created_by_username or json_null,
       },
-      updated_at = iso8601.format(updated_at) or json_null,
+      updated_at = time.timestamp_to_iso8601(updated_at) or json_null,
       updated_by = self.updated_by_id or json_null,
       updater = {
         username = self.updated_by_username or json_null,
@@ -161,7 +161,7 @@ ApiUser = model_ext.new_class("api_users", {
 
       if options and options["allow_api_key"] and self:admin_can_view_api_key() then
         data["api_key"] = self:api_key_decrypted() or json_null
-        data["api_key_hides_at"] = iso8601.format(self:api_key_hides_at()) or json_null
+        data["api_key_hides_at"] = time.timestamp_to_iso8601(self:api_key_hides_at()) or json_null
       end
     end
 

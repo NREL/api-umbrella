@@ -1,8 +1,8 @@
 local db = require "lapis.db"
 local escape_regex = require "api-umbrella.utils.escape_regex"
-local iso8601 = require "api-umbrella.utils.iso8601"
-local split = require("ngx.re").split
 local hmac = require "api-umbrella.utils.hmac"
+local split = require("ngx.re").split
+local time = require "api-umbrella.utils.time"
 
 local now = ngx.now
 
@@ -47,7 +47,7 @@ function _M:save(id, expires, data, hmac_data)
     return nil, "expired"
   end
 
-  db.query("INSERT INTO sessions(id_hash, expires_at, data_encrypted, data_encrypted_iv) VALUES(?, ?, ?, ?) ON CONFLICT (id_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, data_encrypted = EXCLUDED.data_encrypted, data_encrypted_iv = EXCLUDED.data_encrypted_iv", hmac(id), iso8601.format_postgres(expires), db.raw(ngx.ctx.pgmoon:encode_bytea(data)), iv)
+  db.query("INSERT INTO sessions(id_hash, expires_at, data_encrypted, data_encrypted_iv) VALUES(?, ?, ?, ?) ON CONFLICT (id_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, data_encrypted = EXCLUDED.data_encrypted, data_encrypted_iv = EXCLUDED.data_encrypted_iv", hmac(id), time.postgres_to_iso8601(expires), db.raw(ngx.ctx.pgmoon:encode_bytea(data)), iv)
   return table.concat({ self.encode(id), expires, self.encode(hmac_data) }, self.delimiter)
 end
 
