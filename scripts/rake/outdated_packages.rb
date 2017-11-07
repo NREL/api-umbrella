@@ -69,9 +69,6 @@ class OutdatedPackages
     "luarock_luaposix" => {
       :luarock => "luaposix",
     },
-    "luarock_luatz" => {
-      :luarock => "luatz",
-    },
     "luarock_lustache" => {
       :luarock => "lustache",
     },
