@@ -6,47 +6,32 @@ local is_empty = types.is_empty
 
 local function resolve_api_key()
   local api_key_methods = config["gatekeeper"]["api_key_methods"]
-  local key = {key_value="", key_type="" }
+  local api_key
 
-  -- The api_key variable is a dictionary compose by two elements, the key_value which stores
-  -- the api_key value or the user token value and the key_type field in where is stored
-  -- the type of key that was provided by the user, it value could be an api_key or a token.
-  -- The validation process is made for all the api_key_methods (except basicAuthUsername)
-  -- declared in the configuration file checking if the user sends an api_key or token
-  -- Only the header and get_param methods are supported by the token validation.
   for _, method in ipairs(api_key_methods) do
-    if method == "header" and ngx.ctx.http_x_api_key then
-      key.key_value = ngx.ctx.http_x_api_key
-      key.key_type = "api_key"
-    elseif ngx.ctx.http_x_auth_token then
-      key.key_value = ngx.ctx.http_x_auth_token
-      key.key_type = "token"
-    elseif method == "getParam" and ngx.ctx.arg_api_key then
-      key.key_value = ngx.ctx.arg_api_key
-      key.key_type = "api_key"
-    elseif ngx.ctx.arg_token then
-      key.key_value = ngx.ctx.arg_token
-      key.key_type = "token"
-    elseif method == "basicAuthUsername" and ngx.ctx.remote_user then
-      key.key_value = ngx.ctx.remote_user
-      key.key_type = "api_key"
+    if method == "header" then
+      api_key = ngx.ctx.http_x_api_key
+    elseif method == "getParam" then
+      api_key = ngx.ctx.arg_api_key
+    elseif method == "basicAuthUsername" then
+      api_key = ngx.ctx.remote_user
     end
 
-    if not is_empty(key["key_value"]) then
+    if not is_empty(api_key) then
       break
     end
   end
 
   -- Store the api key for logging.
-  ngx.ctx.api_key = key["key_value"]
+  ngx.ctx.api_key = api_key
 
-  return key
+  return api_key
 end
 
 return function(settings)
   -- Find the API key in the header, query string, or HTTP auth.
   local api_key = resolve_api_key()
-  if is_empty(api_key["key_value"]) then
+  if is_empty(api_key) then
     if settings and settings["disable_api_key"] then
       return nil
     else
@@ -62,7 +47,7 @@ return function(settings)
 
   -- Store the api key on the user object for easier access (the user object
   -- doesn't contain it directly, to save memory storage in the lookup table).
-  user["api_key"] = api_key["key_value"]
+  user["api_key"] = api_key
 
   -- Store user details for logging.
   ngx.ctx.user_id = user["id"]
