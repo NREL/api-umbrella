@@ -320,7 +320,7 @@ apiSettings:
       code: HTTPS_REQUIRED
       message: "Requests must be made over HTTPS. Try accessing the API at: {{https_url}}"
 internal_apis:
-  - _id: api-umbrella-gatekeeper-backend
+  - id: api-umbrella-gatekeeper-backend
     name: API Umbrella - Gatekeeper APIs
     frontend_host: "{{router.web_app_host}}"
     backend_host: 127.0.0.1
@@ -342,7 +342,7 @@ internal_apis:
           disable_api_key: true
           rate_limit_mode: unlimited
           require_https: optional
-  - _id: api-umbrella-web-app-backend
+  - id: api-umbrella-web-app-backend
     name: API Umbrella - HTTP APIs
     frontend_host: "{{router.web_app_host}}"
     backend_host: 127.0.0.1
@@ -384,7 +384,7 @@ internal_apis:
           disable_api_key: true
           rate_limit_mode: unlimited
 internal_website_backends:
-  - _id: api-umbrella-website-backend
+  - id: api-umbrella-website-backend
     frontend_host: "{{router.web_app_host}}"
     backend_protocol: http
     server_host: "{{static_site.host}}"

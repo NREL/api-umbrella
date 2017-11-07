@@ -1,4 +1,5 @@
 local icu_date = require "icu-date"
+local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local date = icu_date.new()
 local format_iso8601 = icu_date.formats.pattern("YYYY-MM-dd'T'HH:mm:ssZZZZZ")
@@ -11,7 +12,7 @@ local function parse_postgres(string)
   local ok, err
   ok = pcall(date.parse, date, format_postgres, string)
   if not ok then
-    ok, err = pcall(date.parse, date, format_postgres_no_millis, string)
+    ok, err = xpcall(date.parse, xpcall_error_handler, date, format_postgres_no_millis, string)
     if not ok then
       ngx.log(ngx.ERR, "Failed to parse postgres time (" .. (tostring(string) or "") .. "): " .. (tostring(err) or ""))
       return false

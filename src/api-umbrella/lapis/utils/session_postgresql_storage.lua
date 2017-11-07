@@ -30,7 +30,6 @@ function _M:open(cookie, lifetime)
     local res = db.query("SELECT data_encrypted FROM sessions WHERE id_hash = ? AND expires_at > now()", hmac(id))
     if res and res[1] and res[1]["data_encrypted"] then
       data = res[1]["data_encrypted"]
-      ngx.log(ngx.ERR, "DATA: " .. inspect(data))
       db.query("UPDATE sessions SET expires_at = now() + interval ? WHERE id_hash = ?", lifetime .. " seconds", hmac(id))
     end
 
@@ -47,7 +46,7 @@ function _M:save(id, expires, data, hmac_data)
     return nil, "expired"
   end
 
-  db.query("INSERT INTO sessions(id_hash, expires_at, data_encrypted, data_encrypted_iv) VALUES(?, ?, ?, ?) ON CONFLICT (id_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, data_encrypted = EXCLUDED.data_encrypted, data_encrypted_iv = EXCLUDED.data_encrypted_iv", hmac(id), time.postgres_to_iso8601(expires), db.raw(ngx.ctx.pgmoon:encode_bytea(data)), iv)
+  db.query("INSERT INTO sessions(id_hash, expires_at, data_encrypted, data_encrypted_iv) VALUES(?, ?, ?, ?) ON CONFLICT (id_hash) DO UPDATE SET expires_at = EXCLUDED.expires_at, data_encrypted = EXCLUDED.data_encrypted, data_encrypted_iv = EXCLUDED.data_encrypted_iv", hmac(id), time.timestamp_to_iso8601(expires), db.raw(ngx.ctx.pgmoon:encode_bytea(data)), iv)
   return table.concat({ self.encode(id), expires, self.encode(hmac_data) }, self.delimiter)
 end
 
