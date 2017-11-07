@@ -8,33 +8,19 @@ local mongo = require "api-umbrella.utils.mongo"
 local shcache = require "shcache"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
-local pep = require "api-umbrella.utils.pep"
 
 local cache_computed_settings = utils.cache_computed_settings
 local is_empty = types.is_empty
 
 local function lookup_user(api_key)
-  local raw_user
-  local db_err
-  local pep_err
+  local raw_user, err = mongo.first("api_users", {
+    query = {
+      api_key = api_key,
+    },
+  })
 
-  -- Checking the field of api_key ["key_type"], if the key_type is api_key
-  -- the api_key value is checked in the database and retrieve the user information
-  -- else if the key_type is token, the token is checked using PEP Proxy and
-  -- the user information is retrieved
-  if not api_key["key_type"] or api_key["key_type"] == "api_key" then
-    raw_user, db_err = mongo.first("api_users", {
-      query = {
-        api_key = api_key["key_value"],
-      },
-    })
-  elseif api_key["key_type"] == "token" then
-    raw_user, pep_err = pep.first(config["gatekeeper"]["pep_host"],config["gatekeeper"]["pep_port"],api_key["key_value"])
-  end
-  if pep_err then
-    ngx.log(ngx.ERR, "failed to autenticate , status code:", pep_err)
-  elseif db_err then
-    ngx.log(ngx.ERR, "failed to fetch user from mongodb", db_err)
+  if err then
+    ngx.log(ngx.ERR, "failed to fetch user from mongodb: ", err)
   elseif raw_user then
     local user = utils.pick_where_present(raw_user, {
       "created_at",
@@ -50,31 +36,15 @@ local function lookup_user(api_key)
     -- Ensure IDs get stored as strings, even if Mongo ObjectIds are in use.
     if raw_user["_id"] and raw_user["_id"]["$oid"] then
       user["id"] = raw_user["_id"]["$oid"]
-    elseif raw_user.Nick_Name then
-        user["id"] = raw_user.Nick_Name
-        if not raw_user.Email then
-            user["email"] = raw_user.Nick_Name
-        else
-            user["email"] = raw_user.Email
-        end
     else
-        user["id"] = raw_user["_id"]
-    end
-    -- If the validation was made using a token, the Nick_Name associate to the token
-    -- is assigned to the id attribute of the user
-    if raw_user.Nick_Name then
-      user["id"] = raw_user.Nick_Name
+      user["id"] = raw_user["_id"]
     end
 
     -- Invert the array of roles into a hashy table for more optimized
     -- lookups (so we can just check if the key exists, rather than
     -- looping over each value).
-    -- Moreover, in case that the user information have been retrieved using a token validation,
-    -- the roles associated with the token are stored in user ["roles"]
     if user["roles"] then
       user["roles"] = invert_table(user["roles"])
-    elseif raw_user.Roles then
-      user["roles"] = invert_table(raw_user.Roles)
     end
 
     if user["created_at"] and user["created_at"]["$date"] then
@@ -133,11 +103,11 @@ function _M.get(api_key)
     return nil
   end
 
-  user = shared_cache:load(api_key["key_value"])
+  user = shared_cache:load(api_key)
   if user then
-    local_cache:set(api_key["key_value"], user, 2)
+    local_cache:set(api_key, user, 2)
   else
-    local_cache:set(api_key["key_value"], EMPTY_DATA, 2)
+    local_cache:set(api_key, EMPTY_DATA, 2)
   end
 
   return user
