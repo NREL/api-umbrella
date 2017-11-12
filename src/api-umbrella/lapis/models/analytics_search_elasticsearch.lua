@@ -29,7 +29,7 @@ local function parse_query_builder(query)
       local field = rule["field"]
       local value = rule["value"]
 
-      if CASE_SENSITIVE_FIELDS[field] and type(value) == "string" then
+      if not CASE_SENSITIVE_FIELDS[field] and type(value) == "string" then
         if UPPERCASE_FIELDS[field] then
           value = string.upper(value)
         else
