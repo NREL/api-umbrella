@@ -11,6 +11,10 @@ local lapis = require "lapis"
 local lapis_config = require("lapis.config").get()
 local path = require "pl.path"
 local pg_utils = require "api-umbrella.utils.pg_utils"
+local resty_session = require "resty.session"
+local session_cipher = require "api-umbrella.lapis.utils.session_cipher"
+local session_identifier = require "api-umbrella.lapis.utils.session_identifier"
+local session_postgresql_storage = require "api-umbrella.lapis.utils.session_postgresql_storage"
 
 gettext.bindtextdomain("api-umbrella", path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/locale"))
 gettext.textdomain("api-umbrella")
@@ -50,6 +54,50 @@ app.handle_404 = function()
     render = "404",
     layout = false,
   }
+end
+
+local function current_admin_from_token(self)
+  local current_admin
+  local auth_token = ngx.var.http_x_admin_auth_token
+  if auth_token then
+    local auth_token_hmac = hmac(auth_token)
+    local admin = Admin:find({ authentication_token_hash = auth_token_hmac })
+    if admin and not admin:is_access_locked() then
+      current_admin = admin
+    end
+  end
+
+  return current_admin
+end
+
+local function init_session(self)
+  if not self.resty_session then
+    self.resty_session = resty_session.new({
+      name = "_api_umbrella_session",
+      secret = assert(config["secret_key"]),
+      random = {
+        length = 40,
+      },
+    })
+    self.resty_session.cipher = session_cipher.new(self.resty_session)
+    self.resty_session.identifier = session_identifier
+    self.resty_session.storage = session_postgresql_storage.new(self.resty_session)
+  end
+end
+
+local function current_admin_from_session(self)
+  local current_admin
+  init_session(self)
+  self.resty_session:open()
+  if self.resty_session and self.resty_session.data and self.resty_session.data["admin_id"] then
+    local admin_id = self.resty_session.data["admin_id"]
+    local admin = Admin:find({ id = admin_id })
+    if admin and not admin:is_access_locked() then
+      current_admin = admin
+    end
+  end
+
+  return current_admin
 end
 
 app:before_filter(function(self)
@@ -97,16 +145,10 @@ app:before_filter(function(self)
     end
   end
 
-  local current_admin
-  local auth_token = ngx.var.http_x_admin_auth_token
-  if auth_token then
-    local auth_token_hmac = hmac(auth_token)
-    ngx.log(ngx.ERR, "AUTH_TOKEN: " .. inspect(auth_token))
-    ngx.log(ngx.ERR, "AUTH_TOKEN hmac: " .. inspect(auth_token_hmac))
-    local admin = Admin:find({ authentication_token_hash = auth_token_hmac })
-    if admin and not admin:is_access_locked() then
-      current_admin = admin
-    end
+  self.init_session = init_session
+  local current_admin = current_admin_from_token(self)
+  if not current_admin then
+    current_admin = current_admin_from_session(self)
   end
   self.current_admin = current_admin
   ngx.ctx.current_admin = current_admin

@@ -9,44 +9,9 @@ local json_null = require("cjson").null
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local random_token = require "api-umbrella.utils.random_token"
 local respond_to = require("lapis.application").respond_to
-local resty_session = require "resty.session"
-local session_cipher = require "api-umbrella.lapis.utils.session_cipher"
-local session_identifier = require "api-umbrella.lapis.utils.session_identifier"
-local session_postgresql_storage = require "api-umbrella.lapis.utils.session_postgresql_storage"
 local t = require("resty.gettext").gettext
 
 local _M = {}
-
-local function init_session(self)
-  if not self.resty_session then
-    self.resty_session = resty_session.new({
-      name = "_api_umbrella_session",
-      secret = assert(config["secret_key"]),
-      random = {
-        length = 40,
-      },
-    })
-    self.resty_session.cipher = session_cipher.new(self.resty_session)
-    self.resty_session.identifier = session_identifier
-    self.resty_session.storage = session_postgresql_storage.new(self.resty_session)
-  end
-end
-
-local function set_current_admin_from_session(self)
-  local current_admin
-
-  init_session(self)
-  self.resty_session:open()
-  if self.resty_session and self.resty_session.data and self.resty_session.data["admin_id"] then
-    local admin_id = self.resty_session.data["admin_id"]
-    local admin = Admin:find({ id = admin_id })
-    if admin and not admin:is_access_locked() then
-      current_admin = admin
-    end
-  end
-
-  self.current_admin = current_admin
-end
 
 function _M.new(self)
   self.cookies["_api_umbrella_csrf_token"] = random_token(40)
@@ -73,7 +38,7 @@ function _M.create(self)
   end
 
   if admin_id then
-    init_session(self)
+    self:init_session()
     self.resty_session:start()
     self.resty_session.data["admin_id"] = admin_id
     self.resty_session:save()
@@ -87,15 +52,13 @@ function _M.create(self)
 end
 
 function _M.destroy(self)
-  init_session(self)
+  self:init_session()
   self.resty_session:open()
   self.resty_session:destroy()
   return { status = 204 }
 end
 
 function _M.auth(self)
-  set_current_admin_from_session(self)
-
   local response = {
     authenticated = false,
   }
