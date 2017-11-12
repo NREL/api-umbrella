@@ -8,10 +8,9 @@ local format_minute = icu_date.formats.pattern("EEE, MMM d, YYYY h:mma zzz")
 local format_day = icu_date.formats.pattern("EEE, MMM d, YYYY")
 local format_week = icu_date.formats.pattern("MMM d, YYYY")
 
-return function(search, timestamp)
+return function(interval, timestamp)
   date:set_millis(timestamp)
 
-  local interval = search.interval
   if interval == "minute" or interval == "hour" then
     return date:format(format_minute)
   elseif interval == "day" then

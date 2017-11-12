@@ -90,7 +90,7 @@ local function drilldown_hits_over_time(raw_results, search)
     local cells = {
       {
         v = total_bucket["key"],
-        f = formatted_interval_time(search, total_bucket["key"]),
+        f = formatted_interval_time(search.interval, total_bucket["key"]),
       },
     }
 

@@ -214,6 +214,82 @@ function _M:set_search_filters(query)
   end
 end
 
+function _M:set_offset(offset)
+  self.query["from"] = offset
+end
+
+function _M:set_limit(limit)
+  self.query["size"] = limit
+end
+
+function _M:aggregate_by_interval()
+  self.query["aggregations"]["hits_over_time"] = {
+    date_histogram = {
+      field = "request_at",
+      interval = self.interval,
+      time_zone = config["analytics"]["timezone"],
+      min_doc_count = 0,
+      extended_bounds = {
+        min = self.start_time,
+        max = self.end_time,
+      },
+    },
+  }
+
+  if config["elasticsearch"]["api_version"] < 2 then
+    self.query["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
+  end
+end
+
+function _M:aggregate_by_term(field, size)
+  self.query["aggregations"]["top_" .. field] = {
+    terms = {
+      field = field,
+      size = size,
+      shard_size = size * 4,
+    },
+  }
+
+  self.query["aggregations"]["value_count_" .. field] = {
+    value_count = {
+      field = field,
+    },
+  }
+
+  self.query["aggregations"]["missing_" .. field] = {
+    missing = {
+      field = field,
+    },
+  }
+end
+
+function _M:aggregate_by_cardinality(field)
+  self.query["aggregations"]["unique_" .. field] = {
+    cardinality = {
+      field = field,
+      precision_threshold = 100,
+    },
+  }
+end
+
+function _M:aggregate_by_users(size)
+  self:aggregate_by_term("user_email", size)
+  self:aggregate_by_cardinality("user_email")
+end
+
+function _M:aggregate_by_request_ip(size)
+  self:aggregate_by_term("request_ip", size)
+  self:aggregate_by_cardinality("request_ip")
+end
+
+function _M:aggregate_by_response_time_average()
+  self.query["aggregations"]["response_time_average"] = {
+    avg = {
+      field = "response_time",
+    },
+  }
+end
+
 function _M:aggregate_by_drilldown(prefix, size)
   if not size then
     size = 0
@@ -246,7 +322,7 @@ function _M:aggregate_by_drilldown_over_time(prefix)
         date_histogram = {
           field = "request_at",
           interval = self.interval,
-          time_zone = config["analytics"]["timezone"], -- "America/New_York", -- Time.zone.name,
+          time_zone = config["analytics"]["timezone"],
           min_doc_count = 0,
           extended_bounds = {
             min = self.start_time,
@@ -261,7 +337,7 @@ function _M:aggregate_by_drilldown_over_time(prefix)
     date_histogram = {
       field = "request_at",
       interval = self.interval,
-      time_zone = config["analytics"]["timezone"], -- "America/New_York", -- Time.zone.name,
+      time_zone = config["analytics"]["timezone"],
       min_doc_count = 0,
       extended_bounds = {
         min = self.start_time,
@@ -281,7 +357,7 @@ function _M:fetch_results()
   setmetatable(self.query["query"]["filtered"]["filter"]["bool"]["must"], cjson.empty_array_mt)
   setmetatable(self.query["sort"], cjson.empty_array_mt)
 
-  ngx.log(ngx.ERR, "FETCH: " .. inspect(self))
+  ngx.log(ngx.ERR, "FETCH: " .. inspect(json_encode(self.query)))
 
   local httpc = http.new()
   local res, err = httpc:request_uri(self.elasticsearch_host .. "/_search", {

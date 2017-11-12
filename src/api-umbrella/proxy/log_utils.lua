@@ -5,11 +5,10 @@ local json_encode = require "api-umbrella.utils.json_encode"
 local logger = require "resty.logger.socket"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local plutils = require "pl.utils"
+local round = require "api-umbrella.utils.round"
 local str = require "resty.string"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
-local utils = require "api-umbrella.proxy.utils"
 
-local round = utils.round
 local split = plutils.split
 
 local syslog_facility = 16 -- local0

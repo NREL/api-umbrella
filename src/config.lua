@@ -17,7 +17,11 @@ lapis_config(app_env, {
     database = config["postgresql"]["database"],
     user = config["postgresql"]["username"],
     password = config["postgresql"]["password"],
-  }
+  },
+
+  -- Increase number of parsed POST arguments, for compatibility with some of
+  -- the datatables APIs (which have a lot of separate arguments).
+  max_request_args = 500,
 })
 
 -- Environment specific configuration.

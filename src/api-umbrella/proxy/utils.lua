@@ -318,8 +318,4 @@ function _M.set_uri(new_path, new_args)
   end
 end
 
-function _M.round(value)
-  return math.floor(value + 0.5)
-end
-
 return _M
