@@ -3,16 +3,13 @@ local analytics_policy = require "api-umbrella.lapis.policies.analytics_policy"
 local array_last = require "api-umbrella.utils.array_last"
 local capture_errors_json = require("api-umbrella.utils.lapis_helpers").capture_errors_json
 local cjson = require("cjson")
-local endswith = require("pl.stringx").endswith
+local csv = require "api-umbrella.lapis.utils.csv"
 local formatted_interval_time = require "api-umbrella.lapis.utils.formatted_interval_time"
 local lapis_json = require "api-umbrella.utils.lapis_json"
 local number_with_delimiter = require "api-umbrella.lapis.utils.number_with_delimiter"
-local path_join = require "api-umbrella.utils.path_join"
 local round = require "api-umbrella.utils.round"
-local send_csv_response = require "api-umbrella.lapis.utils.send_csv_response"
-local split = require("ngx.re").split
 local t = require("resty.gettext").gettext
-local table_sub = require("pl.tablex").sub
+local time = require "api-umbrella.utils.time"
 
 local gsub = ngx.re.gsub
 
@@ -67,7 +64,6 @@ local function hits_over_time(interval, aggregations)
 
   return rows
 end
-
 
 local function aggregation_result(aggregations, name)
   local buckets = {}
@@ -165,7 +161,56 @@ function _M.logs(self)
   search:set_limit(limit)
 
   if self.params["format"] == "csv" then
-    return send_csv_response(self, {})
+    csv.set_response_headers(self, "api_logs (" .. os.date("!%Y-%m-%d", ngx.now()) .. ").csv")
+
+    ngx.say(csv.row_to_csv({
+      "Time",
+      "Method",
+      "Host",
+      "URL",
+      "User",
+      "IP Address",
+      "Country",
+      "State",
+      "City",
+      "Status",
+      "Reason Denied",
+      "Response Time",
+      "Content Type",
+      "Accept Encoding",
+      "User Agent",
+    }))
+    ngx.flush(true)
+
+    search:fetch_results_bulk(function(hits)
+      for _, hit in ipairs(hits) do
+        local row = hit["_source"]
+        ngx.say(csv.row_to_csv({
+          time.elasticsearch_to_csv(row["request_at"]),
+          row["request_method"],
+          row["request_host"],
+          sanitized_full_url(row),
+          row["user_email"],
+          row["request_ip"],
+          row["request_ip_country"],
+          row["request_ip_region"],
+          row["request_ip_city"],
+          row["response_status"],
+          row["gatekeeper_denied_code"],
+          row["response_time"],
+          row["response_content_type"],
+          row["request_accept_encoding"],
+          row["request_user_agent"],
+          row["request_user_agent_family"],
+          row["request_user_agent_type"],
+          row["request_referer"],
+          row["request_origin"],
+        }))
+      end
+      ngx.flush(true)
+    end)
+
+    return { layout = false }
   else
     local raw_results = search:fetch_results()
     local response = {

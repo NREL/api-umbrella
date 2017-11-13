@@ -3,6 +3,8 @@ local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
 local date = icu_date.new()
 local format_iso8601 = icu_date.formats.pattern("YYYY-MM-dd'T'HH:mm:ssZZZZZ")
+local format_iso8601_ms = icu_date.formats.pattern("YYYY-MM-dd'T'HH:mm:ss.SSSZZZZZ")
+local format_csv = icu_date.formats.pattern("YYYY-MM-dd HH:mm:ss")
 local format_postgres = icu_date.formats.pattern("YYYY-MM-dd HH:mm:ss.SSSSxxx")
 local format_postgres_no_millis = icu_date.formats.pattern("YYYY-MM-dd HH:mm:ssxxx")
 
@@ -49,6 +51,36 @@ function _M.postgres_to_iso8601(string)
 
   parse_postgres(string)
   return date:format(format_iso8601)
+end
+
+function _M.timestamp_ms_to_csv(timestamp)
+  if not timestamp then
+    return nil
+  end
+
+  date:set_millis(timestamp)
+  return date:format(format_csv)
+end
+
+function _M.iso8601_ms_to_csv(string)
+  if not string then
+    return nil
+  end
+
+  date:parse(format_iso8601_ms, string)
+  return date:format(format_csv)
+end
+
+function _M.elasticsearch_to_csv(value)
+  if not value then
+    return nil
+  end
+
+  if type(value) == "string" then
+    return _M.iso8601_ms_to_csv(value)
+  else
+    return _M.timestamp_ms_to_csv(value)
+  end
 end
 
 return _M

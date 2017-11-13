@@ -148,7 +148,8 @@ function _M.new(options)
     end_time = assert(options["end_time"]),
     interval = assert(options["interval"]),
     elasticsearch_host = config["elasticsearch"]["hosts"][1],
-    query = {
+    query = {},
+    body = {
       query = {
         filtered = {
           query = {
@@ -176,11 +177,11 @@ end
 
 function _M:set_permission_scope(scopes)
   local filter = parse_query_builder(scopes)
-  table.insert(self.query["query"]["filtered"]["filter"]["bool"]["must"], filter)
+  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], filter)
 end
 
 function _M:filter_by_time_range()
-  table.insert(self.query["query"]["filtered"]["filter"]["bool"]["must"], {
+  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], {
     range = {
       request_at = {
         from = self.start_time,
@@ -195,7 +196,7 @@ end
 
 function _M:set_search_query_string(query_string)
   if not is_empty(query_string) then
-    self.query["query"]["filtered"]["query"] = {
+    self.body["query"]["filtered"]["query"] = {
       query_string = {
         query = query_string,
       },
@@ -210,20 +211,20 @@ function _M:set_search_filters(query)
 
   local filter = parse_query_builder(query)
   if filter then
-    table.insert(self.query["query"]["filtered"]["filter"]["bool"]["must"], filter)
+    table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], filter)
   end
 end
 
 function _M:set_offset(offset)
-  self.query["from"] = offset
+  self.body["from"] = offset
 end
 
 function _M:set_limit(limit)
-  self.query["size"] = limit
+  self.body["size"] = limit
 end
 
 function _M:aggregate_by_interval()
-  self.query["aggregations"]["hits_over_time"] = {
+  self.body["aggregations"]["hits_over_time"] = {
     date_histogram = {
       field = "request_at",
       interval = self.interval,
@@ -237,12 +238,12 @@ function _M:aggregate_by_interval()
   }
 
   if config["elasticsearch"]["api_version"] < 2 then
-    self.query["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
+    self.body["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
   end
 end
 
 function _M:aggregate_by_term(field, size)
-  self.query["aggregations"]["top_" .. field] = {
+  self.body["aggregations"]["top_" .. field] = {
     terms = {
       field = field,
       size = size,
@@ -250,13 +251,13 @@ function _M:aggregate_by_term(field, size)
     },
   }
 
-  self.query["aggregations"]["value_count_" .. field] = {
+  self.body["aggregations"]["value_count_" .. field] = {
     value_count = {
       field = field,
     },
   }
 
-  self.query["aggregations"]["missing_" .. field] = {
+  self.body["aggregations"]["missing_" .. field] = {
     missing = {
       field = field,
     },
@@ -264,7 +265,7 @@ function _M:aggregate_by_term(field, size)
 end
 
 function _M:aggregate_by_cardinality(field)
-  self.query["aggregations"]["unique_" .. field] = {
+  self.body["aggregations"]["unique_" .. field] = {
     cardinality = {
       field = field,
       precision_threshold = 100,
@@ -283,7 +284,7 @@ function _M:aggregate_by_request_ip(size)
 end
 
 function _M:aggregate_by_response_time_average()
-  self.query["aggregations"]["response_time_average"] = {
+  self.body["aggregations"]["response_time_average"] = {
     avg = {
       field = "response_time",
     },
@@ -295,7 +296,7 @@ function _M:aggregate_by_drilldown(prefix, size)
     size = 0
   end
 
-  self.query["aggregations"]["drilldown"] = {
+  self.body["aggregations"]["drilldown"] = {
     terms = {
       field = "request_hierarchy",
       size = size,
@@ -305,13 +306,13 @@ function _M:aggregate_by_drilldown(prefix, size)
 end
 
 function _M:aggregate_by_drilldown_over_time(prefix)
-  table.insert(self.query["query"]["filtered"]["filter"]["bool"]["must"], {
+  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], {
     prefix = {
       request_hierarchy = prefix,
     },
   })
 
-  self.query["aggregations"]["top_path_hits_over_time"] = {
+  self.body["aggregations"]["top_path_hits_over_time"] = {
     terms = {
       field = "request_hierarchy",
       size = 10,
@@ -333,7 +334,7 @@ function _M:aggregate_by_drilldown_over_time(prefix)
     },
   }
 
-  self.query["aggregations"]["hits_over_time"] = {
+  self.body["aggregations"]["hits_over_time"] = {
     date_histogram = {
       field = "request_at",
       interval = self.interval,
@@ -347,17 +348,19 @@ function _M:aggregate_by_drilldown_over_time(prefix)
   }
 
   if config["elasticsearch"]["api_version"] < 2 then
-    self.query["aggregations"]["top_path_hits_over_time"]["aggregations"]["drilldown_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
-    self.query["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
+    self.body["aggregations"]["top_path_hits_over_time"]["aggregations"]["drilldown_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
+    self.body["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
   end
 end
 
 function _M:fetch_results()
-  setmetatable(self.query["query"]["filtered"]["filter"]["bool"]["must_not"], cjson.empty_array_mt)
-  setmetatable(self.query["query"]["filtered"]["filter"]["bool"]["must"], cjson.empty_array_mt)
-  setmetatable(self.query["sort"], cjson.empty_array_mt)
+  setmetatable(self.body["query"]["filtered"]["filter"]["bool"]["must_not"], cjson.empty_array_mt)
+  setmetatable(self.body["query"]["filtered"]["filter"]["bool"]["must"], cjson.empty_array_mt)
+  setmetatable(self.body["sort"], cjson.empty_array_mt)
 
-  ngx.log(ngx.ERR, "FETCH: " .. inspect(json_encode(self.query)))
+  if is_empty(self.body["aggregations"]) then
+    self.body["aggregations"] = nil
+  end
 
   local httpc = http.new()
   local res, err = httpc:request_uri(self.elasticsearch_host .. "/_search", {
@@ -365,13 +368,61 @@ function _M:fetch_results()
     headers = {
       ["Content-Type"] = "application/json",
     },
-    body = json_encode(self.query),
+    query = self.query,
+    body = json_encode(self.body),
   })
   local data = cjson.decode(res.body)
-  ngx.log(ngx.ERR, "FETCH: " .. inspect(res.body))
-  ngx.log(ngx.ERR, "FETCH: " .. inspect(data))
 
   return data
+end
+
+function _M:fetch_results_bulk(callback)
+  self.query["scroll"] = "10m"
+
+  self.query["sort"] = { "_doc" }
+  if config["elasticsearch"]["api_version"] < 2 then
+    self.query["sort"] = nil
+    self.query["search_type"] = "scan"
+  end
+
+  local raw_results = _M.fetch_results(self)
+  callback(raw_results["hits"]["hits"])
+
+  local scroll_id
+  local httpc = http.new()
+  while true do
+    scroll_id = raw_results["_scroll_id"]
+    local res, err = httpc:request_uri(self.elasticsearch_host .. "/_search/scroll", {
+      method = "GET",
+      headers = {
+        ["Content-Type"] = "application/json",
+      },
+      body = json_encode({
+        scroll = self.query["scroll"],
+        scroll_id = scroll_id,
+      })
+    })
+    raw_results = cjson.decode(res.body)
+
+    if not raw_results["hits"] or is_empty(raw_results["hits"]["hits"]) then
+      break
+    end
+
+    callback(raw_results["hits"]["hits"])
+  end
+
+  local res, err = httpc:request_uri(self.elasticsearch_host .. "/_search/scroll", {
+    method = "DELETE",
+    headers = {
+      ["Content-Type"] = "application/json",
+    },
+    body = json_encode({
+      scroll_id = { scroll_id },
+    })
+  })
+  if res.status ~= 200 then
+    ngx.log(ngx.ERR, "elasticsearch scroll clear failed: " .. (res.body or ""))
+  end
 end
 
 return _M
