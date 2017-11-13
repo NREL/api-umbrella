@@ -1,6 +1,7 @@
 require_relative "../../test_helper"
 
 class Test::Proxy::RequestRewriting::TestCookieStripping < Minitest::Test
+  include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 
@@ -73,5 +74,29 @@ class Test::Proxy::RequestRewriting::TestCookieStripping < Minitest::Test
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
     assert_equal("foo1=bar1; foo2=bar2", data["headers"]["cookie"])
+  end
+
+  def test_leave_admin_session_cookie_with_mixed_calls
+    # Call a non-web backend first (to ensure it doesn't persist the list of
+    # cookies to strip).
+    response = Typhoeus.get("http://127.0.0.1:9080/api/info/", http_options.deep_merge({
+      :headers => {
+        "Cookie" => "foo1=bar1; _api_umbrella_session=foo; foo2=bar2",
+      },
+    }))
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal("foo1=bar1; foo2=bar2", data["headers"]["cookie"])
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2015-01-13",
+        :end_at => "2015-01-18",
+        :interval => "day",
+        :prefix => "0/",
+      },
+    }))
+    assert_response_code(200, response)
   end
 end
