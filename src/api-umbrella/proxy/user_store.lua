@@ -48,15 +48,15 @@ local function lookup_user(api_key)
       "throttle_by_ip",
     })
     -- Ensure IDs get stored as strings, even if Mongo ObjectIds are in use.
-    if not api_key["idp"]and raw_user["_id"] and raw_user["_id"]["$oid"] then
+    if api_key["key_type"]=="api_key" and raw_user["_id"] and raw_user["_id"]["$oid"] then
         user["id"] = raw_user["_id"]["$oid"]
     else
       user["id"] = raw_user["_id"]
     end
-    if api_key["idp"] and api_key["idp"]["backend_name"]== "fiware-oauth2" then
+    if api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]["backend_name"]== "fiware-oauth2" then
       user["id"] = raw_user.id
       user["email"] = raw_user.email
-    elseif api_key["idp"] and api_key["idp"]["backend_name"]~= "fiware-oauth2" then
+    elseif api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]["backend_name"]~= "fiware-oauth2" then
       user["id"] = raw_user.name
       user["email"] = raw_user.email
     end
@@ -68,7 +68,7 @@ local function lookup_user(api_key)
     -- the roles associated with the token are stored in user ["roles"]
     if user["roles"] then
       user["roles"] = invert_table(user["roles"])
-    elseif api_key["idp"] and api_key["idp"]["backend_name"]== "fiware-oauth2" and raw_user.Roles then
+    elseif api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]["backend_name"]== "fiware-oauth2" and raw_user.Roles then
       user["roles"] = invert_table(raw_user.Roles)
     end
 
