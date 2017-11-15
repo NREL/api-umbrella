@@ -146,7 +146,7 @@ function _M.new(options)
   local self = {
     start_time = assert(options["start_time"]),
     end_time = assert(options["end_time"]),
-    interval = assert(options["interval"]),
+    interval = options["interval"],
     elasticsearch_host = config["elasticsearch"]["hosts"][1],
     query = {},
     body = {
@@ -350,6 +350,46 @@ function _M:aggregate_by_drilldown_over_time(prefix)
   if config["elasticsearch"]["api_version"] < 2 then
     self.body["aggregations"]["top_path_hits_over_time"]["aggregations"]["drilldown_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
     self.body["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
+  end
+end
+
+function _M:aggregate_by_region_field(field)
+  self.body["aggregations"]["regions"] = {
+    terms = {
+      field = field,
+      size = 500,
+    },
+  }
+
+  self.body["aggregations"]["missing_regions"] = {
+    missing = {
+      field = field,
+    },
+  }
+end
+
+function _M:aggregate_by_country()
+  return _M.aggregate_by_region_field(self, "request_ip_country")
+end
+
+function _M:aggregate_by_region(region)
+  if region == "world" then
+    return _M.aggregate_by_country(self)
+  elseif region == "US" then
+    return _M:aggregate_by_country_regions(region)
+  else
+    local matches, match_err = ngx.re.match(region, [[^(US)-([A-Z]{2})$]], "jo")
+    if matches then
+      local country = matches[1]
+      local state = matches[2]
+      return _M:aggregate_by_us_state_cities(country, state)
+    else
+      if match_err then
+        ngx.log(ngx.ERR, "regex error: ", match_err)
+      end
+
+      return _M:aggregate_by_country_cities(region)
+    end
   end
 end
 

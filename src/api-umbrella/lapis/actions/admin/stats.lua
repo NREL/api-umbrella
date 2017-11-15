@@ -240,8 +240,42 @@ function _M.logs(self)
   end
 end
 
+function _M.users(self)
+end
+
+function _M.map(self)
+  local search = AnalyticsSearch.factory(config["analytics"]["adapter"], {
+    start_time = self.params["start_at"],
+    end_time = self.params["end_at"],
+    interval = self.params["interval"],
+  })
+  search:set_permission_scope(analytics_policy.authorized_query_scope(self.current_admin))
+  search:filter_by_time_range()
+  search:set_search_query_string(self.params["search"])
+  search:set_search_filters(self.params["query"])
+  search:aggregate_by_region(self.params["region"])
+
+  local raw_results = search:fetch_results()
+
+  if self.params["format"] == "csv" then
+  else
+    local response = {
+      region_field = search.body["aggregations"]["regions"]["terms"]["field"],
+      regions = {},
+      map_regions = {},
+      map_breadcrumbs = {},
+    }
+    setmetatable(response["regions"], cjson.empty_array_mt)
+    setmetatable(response["map_regions"], cjson.empty_array_mt)
+    setmetatable(response["map_breadcrumbs"], cjson.empty_array_mt)
+    return lapis_json(self, response)
+  end
+end
+
 return function(app)
   app:get("/admin/stats/search(.:format)", capture_errors_json(_M.search))
   app:get("/admin/stats/logs(.:format)", capture_errors_json(_M.logs))
   app:post("/admin/stats/logs(.:format)", capture_errors_json(_M.logs))
+  app:get("/admin/stats/users(.:format)", capture_errors_json(_M.users))
+  app:get("/admin/stats/map(.:format)", capture_errors_json(_M.map))
 end
