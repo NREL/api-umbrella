@@ -4,6 +4,7 @@ local analytics_policy = require "api-umbrella.lapis.policies.analytics_policy"
 local array_last = require "api-umbrella.utils.array_last"
 local capture_errors_json = require("api-umbrella.utils.lapis_helpers").capture_errors_json
 local cjson = require("cjson")
+local countries = require "api-umbrella.lapis.utils.countries"
 local csv = require "api-umbrella.lapis.utils.csv"
 local db = require "lapis.db"
 local formatted_interval_time = require "api-umbrella.lapis.utils.formatted_interval_time"
@@ -110,6 +111,49 @@ local function aggregation_result(aggregations, name)
   end
 
   return buckets
+end
+
+local function region_id(current_region, code)
+  if current_region == "US" then
+    return "US-" .. code
+  else
+    return code
+  end
+end
+
+local function region_name(current_region, code)
+  local name = code
+  if current_region == "world" then
+    country = countries.countries[code]
+    if country then
+      name = country
+    end
+  elseif current_region and ngx.re.match(current_region, "^[A-Z]{2}$") then
+    subdivisions = countries.subdivisions[current_region]
+    if subdivisions then
+      subdivision = subdivisions[code]
+      if subdivision then
+        name = subdivision
+      end
+    end
+  end
+
+  return name
+end
+
+local function region_location_columns(region_field, bucket)
+  local columns = {}
+  local code = bucket["key"]
+  if region_field == "request_ip_city" then
+    local city = bucket["key"]
+  else
+    table.insert(columns, {
+      v = code,
+      f = region_name(code),
+    })
+  end
+
+  return columns
 end
 
 function _M.search(self)
@@ -396,12 +440,43 @@ function _M.map(self)
 
   if self.params["format"] == "csv" then
   else
+    local region_field = search.body["aggregations"]["regions"]["terms"]["field"]
     local response = {
-      region_field = search.body["aggregations"]["regions"]["terms"]["field"],
+      region_field = region_field,
       regions = {},
       map_regions = {},
       map_breadcrumbs = {},
     }
+
+    local buckets = results["aggregations"]["regions"]["buckets"]
+    for _, bucket in ipairs(buckets) do
+      local current_region = self.params["region"]
+      local code = bucket["key"]
+
+      table.insert(response["regions"], {
+        id = region_id(current_region, code),
+        name = region_name(current_region, code),
+        hits = bucket["doc_count"],
+      })
+
+      local columns = region_location_columns(region_field, bucket)
+      table.insert(columns, {
+        v = bucket["doc_count"],
+        f = number_with_delimiter(bucket["doc_count"]),
+      })
+      table.insert(response["map_regions"], {
+        c = columns
+      })
+    end
+
+    if results["aggregations"]["missing_regions"]["doc_count"] > 0 then
+      table.insert(response["regions"], {
+        id = "missing",
+        name = t("Unknown"),
+        hits = results["aggregations"]["missing_regions"]["doc_count"],
+      })
+    end
+
     setmetatable(response["regions"], cjson.empty_array_mt)
     setmetatable(response["map_regions"], cjson.empty_array_mt)
     setmetatable(response["map_breadcrumbs"], cjson.empty_array_mt)
