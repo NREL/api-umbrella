@@ -11,48 +11,6 @@ local table_keys = tablex.keys
 
 local _M = {}
 
-local function parse_datatables_order(orders, columns)
-  local sql_orders = {}
-
-  -- Extract the numbered indexes from the "order[i][column]" data so we can
-  -- loop over the indexes in sorted order.
-  local order_indexes = {}
-  for _, order_index in ipairs(table_keys(orders)) do
-    table.insert(order_indexes, tonumber(order_index))
-  end
-  table.sort(order_indexes)
-
-  -- Loop over the order data according do the column index ordering (so when
-  -- sorting by multiple columns, which column to order by 1st, 2nd, etc).
-  for _, order_index in ipairs(order_indexes) do
-    local order = orders[tostring(order_index)]
-
-    -- Extract the column column name from the separate columns data.
-    local column_name
-    local column_index = order["column"]
-    if columns then
-      local column = columns[column_index]
-      if column then
-        column_name = column["data"]
-      end
-    end
-
-    -- Sort direction.
-    local dir
-    if order["dir"] and string.lower(order["dir"]) == "desc" then
-      dir = "DESC"
-    else
-      dir = "ASC"
-    end
-
-    if column_name and dir then
-      table.insert(sql_orders, db.escape_identifier(column_name) .. " " .. dir)
-    end
-  end
-
-  return table.concat(sql_orders, ", ")
-end
-
 local function build_search_where(escaped_table_name, search_fields, search_value)
   local where = {}
 
@@ -88,6 +46,18 @@ local function build_search_where(escaped_table_name, search_fields, search_valu
   end
 
   return "(" .. table.concat(where, " OR ") .. ")"
+end
+
+local function build_order(self)
+  local orders = {}
+  local order_fields = _M.parse_order(self)
+  for _, order_field in ipairs(order_fields) do
+    local column_name = order_field[1]
+    local dir = order_field[2]
+    table.insert(orders, db.escape_identifier(column_name) .. " " .. dir)
+  end
+
+  return table.concat(orders, ", ")
 end
 
 local function build_sql_joins(joins)
@@ -130,6 +100,54 @@ local function build_sql_offset(offset)
   end
 end
 
+function _M.parse_order(self)
+  local order_fields = {}
+  local orders = self.params["order"]
+  local columns = self.params["columns"]
+
+  if is_empty(orders) then
+    return order_fields
+  end
+
+  -- Extract the numbered indexes from the "order[i][column]" data so we can
+  -- loop over the indexes in sorted order.
+  local order_indexes = {}
+  for _, order_index in ipairs(table_keys(orders)) do
+    table.insert(order_indexes, tonumber(order_index))
+  end
+  table.sort(order_indexes)
+
+  -- Loop over the order data according do the column index ordering (so when
+  -- sorting by multiple columns, which column to order by 1st, 2nd, etc).
+  for _, order_index in ipairs(order_indexes) do
+    local order = orders[tostring(order_index)]
+
+    -- Extract the column column name from the separate columns data.
+    local column_name
+    local column_index = order["column"]
+    if columns then
+      local column = columns[column_index]
+      if column then
+        column_name = column["data"]
+      end
+    end
+
+    -- Sort direction.
+    local dir
+    if order["dir"] and string.lower(order["dir"]) == "desc" then
+      dir = "DESC"
+    else
+      dir = "ASC"
+    end
+
+    if column_name and dir then
+      table.insert(order_fields, { column_name, dir })
+    end
+  end
+
+  return order_fields
+end
+
 function _M.index(self, model, options)
   local sql = ""
   local query = {
@@ -159,7 +177,7 @@ function _M.index(self, model, options)
 
   -- Order
   if not is_empty(self.params["order"]) then
-    table.insert(query["order"], parse_datatables_order(self.params["order"], self.params["columns"]))
+    table.insert(query["order"], build_order(self))
   end
 
   -- Limit

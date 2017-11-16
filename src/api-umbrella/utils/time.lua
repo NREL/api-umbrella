@@ -1,5 +1,8 @@
 local icu_date = require "icu-date"
+local json_null = require("cjson").null
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
+
+local null = ngx.null
 
 local date = icu_date.new()
 local format_iso8601 = icu_date.formats.pattern("YYYY-MM-dd'T'HH:mm:ssZZZZZ")
@@ -27,7 +30,7 @@ local function parse_postgres(string)
 end
 
 function _M.timestamp_to_iso8601(timestamp)
-  if not timestamp then
+  if not timestamp or timestamp == null or timestamp == json_null then
     return nil
   end
 
@@ -35,8 +38,17 @@ function _M.timestamp_to_iso8601(timestamp)
   return date:format(format_iso8601)
 end
 
+function _M.timestamp_ms_to_iso8601(timestamp)
+  if not timestamp or timestamp == null or timestamp == json_null then
+    return nil
+  end
+
+  date:set_millis(timestamp)
+  return date:format(format_iso8601)
+end
+
 function _M.postgres_to_timestamp(string)
-  if not string then
+  if not string or string == null or string == json_null then
     return nil
   end
 
@@ -45,7 +57,7 @@ function _M.postgres_to_timestamp(string)
 end
 
 function _M.postgres_to_iso8601(string)
-  if not string then
+  if not string or string == null or string == json_null then
     return nil
   end
 
@@ -54,7 +66,7 @@ function _M.postgres_to_iso8601(string)
 end
 
 function _M.timestamp_ms_to_csv(timestamp)
-  if not timestamp then
+  if not timestamp or timestamp == null or timestamp == json_null then
     return nil
   end
 
@@ -62,8 +74,17 @@ function _M.timestamp_ms_to_csv(timestamp)
   return date:format(format_csv)
 end
 
+function _M.iso8601_to_csv(string)
+  if not string or string == null or string == json_null then
+    return nil
+  end
+
+  date:parse(format_iso8601, string)
+  return date:format(format_csv)
+end
+
 function _M.iso8601_ms_to_csv(string)
-  if not string then
+  if not string or string == null or string == json_null then
     return nil
   end
 

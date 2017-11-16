@@ -353,6 +353,26 @@ function _M:aggregate_by_drilldown_over_time(prefix)
   end
 end
 
+function _M:aggregate_by_user_stats(order)
+  self.body["aggregations"]["user_stats"] = {
+    terms = {
+      field = "user_id",
+      size = size,
+    },
+    aggregations = {
+      last_request_at = {
+        max = {
+          field = "request_at",
+        },
+      },
+    },
+  }
+
+  if order then
+    self.body["aggregations"]["user_stats"]["terms"]["order"] = order
+  end
+end
+
 function _M:aggregate_by_region_field(field)
   self.body["aggregations"]["regions"] = {
     terms = {

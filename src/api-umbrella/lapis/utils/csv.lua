@@ -1,4 +1,7 @@
+local json_null = require("cjson").null
+
 local gsub = ngx.re.gsub
+local null = ngx.null
 
 local _M = {}
 
@@ -10,7 +13,7 @@ end
 function _M.row_to_csv(row)
   local output = {}
   for i, value in ipairs(row) do
-    if value == nil then
+    if value == nil or value == null or value == json_null or value == "" then
       output[i] = ""
     else
       output[i] = '"' .. gsub(value, '"', '""', "jo") .. '"'
