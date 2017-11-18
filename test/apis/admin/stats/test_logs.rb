@@ -70,7 +70,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
 
     assert_response_code(200, response)
     assert_equal("text/csv", response.headers["Content-Type"])
-    assert_match("attachment; filename=\"api_logs (#{Time.now.utc.strftime("%Y-%m-%d")}).csv\"", response.headers["Content-Disposition"])
+    assert_match("attachment; filename=\"api_logs_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
 
     lines = response.body.split("\n")
     assert_equal(["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Reason Denied", "Response Time", "Content Type", "Accept Encoding", "User Agent"], CSV.parse_line(lines[0]))

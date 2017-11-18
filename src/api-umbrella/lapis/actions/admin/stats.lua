@@ -309,7 +309,7 @@ function _M.logs(self)
   search:set_limit(limit)
 
   if self.params["format"] == "csv" then
-    csv.set_response_headers(self, "api_logs_" .. os.date("!%Y-%m-%d", ngx.now()) .. ").csv")
+    csv.set_response_headers(self, "api_logs_" .. os.date("!%Y-%m-%d", ngx.now()) .. ".csv")
     ngx.say(csv.row_to_csv({
       "Time",
       "Method",
