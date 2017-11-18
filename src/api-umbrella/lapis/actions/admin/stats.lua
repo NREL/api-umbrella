@@ -1,3 +1,4 @@
+local AnalyticsCity = require "api-umbrella.lapis.models.analytics_city"
 local AnalyticsSearch = require "api-umbrella.lapis.models.analytics_search"
 local ApiUser = require "api-umbrella.lapis.models.api_user"
 local analytics_policy = require "api-umbrella.lapis.policies.analytics_policy"
@@ -8,6 +9,7 @@ local countries = require "api-umbrella.lapis.utils.countries"
 local csv = require "api-umbrella.lapis.utils.csv"
 local db = require "lapis.db"
 local formatted_interval_time = require "api-umbrella.lapis.utils.formatted_interval_time"
+local is_empty = require("pl.types").is_empty
 local json_null = require("cjson").null
 local lapis_datatables = require "api-umbrella.utils.lapis_datatables"
 local lapis_json = require "api-umbrella.utils.lapis_json"
@@ -113,43 +115,139 @@ local function aggregation_result(aggregations, name)
   return buckets
 end
 
-local function region_id(current_region, code)
-  if current_region == "US" then
+local function get_country_name(country_code)
+  assert(country_code)
+
+  local name = country_code
+  local country_name = countries.countries[country_code]
+  if country_name then
+    name = country_name
+  end
+
+  return t(name)
+end
+
+local function get_region_name(country_code, region_code)
+  assert(country_code)
+  assert(region_code)
+
+  local name = region_code
+  local regions = countries.subdivisions[country_code]
+  if regions then
+    local region_name = regions[region_code]
+    if region_name then
+      name = region_name
+    end
+  end
+
+  return t(name)
+end
+
+local function get_child_region_id(filter_country, filter_region, code)
+  if filter_country == "US" and not filter_region then
     return "US-" .. code
   else
     return code
   end
 end
 
-local function region_name(current_region, code)
-  local name = code
-  if current_region == "world" then
-    country = countries.countries[code]
-    if country then
-      name = country
-    end
-  elseif current_region and ngx.re.match(current_region, "^[A-Z]{2}$") then
-    subdivisions = countries.subdivisions[current_region]
-    if subdivisions then
-      subdivision = subdivisions[code]
-      if subdivision then
-        name = subdivision
-      end
+local function get_child_region_name(filter_country, filter_region, code)
+  if not filter_country then
+    return get_country_name(code)
+  elseif filter_country == "US" and not filter_region then
+    return get_region_name(filter_country, code)
+  else
+    return code
+  end
+end
+
+local function fetch_city_locations(buckets, country, region)
+  assert(buckets)
+  assert(country)
+
+  local city_names = {}
+  for _, bucket in ipairs(buckets) do
+    table.insert(city_names, bucket["key"])
+  end
+
+  local conditions = {}
+  table.insert(conditions, "country = " .. db.escape_literal(country))
+  if region then
+    table.insert(conditions, "region = " .. db.escape_literal(region))
+  end
+  if not is_empty(city_names) then
+    table.insert(conditions, "city IN " .. db.escape_literal(db.list(city_names)))
+  end
+
+  local cities = AnalyticsCity:select("WHERE " .. table.concat(conditions, " AND "), {
+    fields = "city, location[0] AS lon, location[1] AS lat",
+  })
+
+  local data = {}
+  for _, city in ipairs(cities) do
+    if city.city then
+      data[city.city] = {
+        lat = city.lat,
+        lon = city.lon,
+      }
     end
   end
 
-  return name
+  return data
 end
 
-local function region_location_columns(region_field, bucket)
+local function map_breadcrumbs(country, region)
+  local breadcrumbs = {}
+  if country then
+    table.insert(breadcrumbs, {
+      region = "world",
+      name = t("World"),
+    })
+
+    local country_name = get_country_name(country)
+    if region then
+      table.insert(breadcrumbs, {
+        region = country,
+        name = country_name,
+      })
+
+      local region_name = get_region_name(country, region)
+      table.insert(breadcrumbs, {
+        name = region_name,
+      })
+    else
+      table.insert(breadcrumbs, {
+        name = country_name,
+      })
+    end
+  end
+
+  return breadcrumbs
+end
+
+local function region_location_columns(region_field, code, name, city_locations)
+  assert(region_field)
+  assert(code)
+
   local columns = {}
-  local code = bucket["key"]
   if region_field == "request_ip_city" then
-    local city = bucket["key"]
+    assert(city_locations)
+
+    local lat
+    local lon
+    local location = city_locations[code]
+    if location then
+      lat = location["lat"]
+      lon = location["lon"]
+    end
+
+    table.insert(columns, { v = lat })
+    table.insert(columns, { v = lon })
+    table.insert(columns, { v = code })
   else
     table.insert(columns, {
       v = code,
-      f = region_name(code),
+      f = name,
     })
   end
 
@@ -434,32 +532,91 @@ function _M.map(self)
   search:filter_by_time_range()
   search:set_search_query_string(self.params["search"])
   search:set_search_filters(self.params["query"])
-  search:aggregate_by_region(self.params["region"])
+
+  local region_param = self.params["region"]
+  local region_field
+  local filter_country
+  local filter_region
+  if region_param == "world" then
+    region_field = "request_ip_country"
+  elseif region_param == "US" then
+    filter_country = region_param
+    region_field = "request_ip_region"
+  else
+    region_field = "request_ip_city"
+
+    local matches, match_err = ngx.re.match(region_param, [[^(US)-([A-Z]{2})$]], "jo")
+    if matches then
+      filter_country = matches[1]
+      filter_region = matches[2]
+    else
+      if match_err then
+        ngx.log(ngx.ERR, "regex error: ", match_err)
+      end
+
+      filter_country = region_param
+    end
+  end
+
+  if filter_country then
+    search:filter_by_ip_country(filter_country)
+  end
+  if filter_region then
+    search:filter_by_ip_region(filter_region)
+  end
+  search:aggregate_by_ip_region_field(region_field)
 
   local results = search:fetch_results()
+  local buckets = results["aggregations"]["regions"]["buckets"]
+  local unknown_hits = results["aggregations"]["missing_regions"]["doc_count"]
+  local city_locations
+  if region_field == "request_ip_city" then
+    city_locations = fetch_city_locations(buckets, filter_country, filter_region)
+  end
 
   if self.params["format"] == "csv" then
+    csv.set_response_headers(self, "api_map_" .. os.date("!%Y-%m-%d", ngx.now()) .. ".csv")
+    ngx.say(csv.row_to_csv({
+      "Location",
+      "Hits",
+    }))
+    ngx.flush(true)
+
+    for _, bucket in ipairs(buckets) do
+      local code = bucket["key"]
+      ngx.say(csv.row_to_csv({
+        get_child_region_name(filter_country, filter_region, code) or null,
+        bucket["doc_count"] or null,
+      }))
+    end
+
+    if unknown_hits > 0 then
+      ngx.say(csv.row_to_csv({
+        t("Unknown") or null,
+        unknown_hits or null,
+      }))
+    end
+    ngx.flush(true)
+
+    return { layout = false }
   else
-    local region_field = search.body["aggregations"]["regions"]["terms"]["field"]
     local response = {
       region_field = region_field,
       regions = {},
       map_regions = {},
-      map_breadcrumbs = {},
+      map_breadcrumbs = map_breadcrumbs(filter_country, filter_region),
     }
 
-    local buckets = results["aggregations"]["regions"]["buckets"]
     for _, bucket in ipairs(buckets) do
-      local current_region = self.params["region"]
       local code = bucket["key"]
-
+      local child_region_name = get_child_region_name(filter_country, filter_region, code)
       table.insert(response["regions"], {
-        id = region_id(current_region, code),
-        name = region_name(current_region, code),
+        id = get_child_region_id(filter_country, filter_region, code),
+        name = child_region_name,
         hits = bucket["doc_count"],
       })
 
-      local columns = region_location_columns(region_field, bucket)
+      local columns = region_location_columns(region_field, bucket["key"], child_region_name, city_locations)
       table.insert(columns, {
         v = bucket["doc_count"],
         f = number_with_delimiter(bucket["doc_count"]),
@@ -469,11 +626,11 @@ function _M.map(self)
       })
     end
 
-    if results["aggregations"]["missing_regions"]["doc_count"] > 0 then
+    if unknown_hits > 0 then
       table.insert(response["regions"], {
         id = "missing",
         name = t("Unknown"),
-        hits = results["aggregations"]["missing_regions"]["doc_count"],
+        hits = unknown_hits,
       })
     end
 

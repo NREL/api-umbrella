@@ -373,7 +373,7 @@ function _M:aggregate_by_user_stats(order)
   end
 end
 
-function _M:aggregate_by_region_field(field)
+function _M:aggregate_by_ip_region_field(field)
   self.body["aggregations"]["regions"] = {
     terms = {
       field = field,
@@ -388,29 +388,20 @@ function _M:aggregate_by_region_field(field)
   }
 end
 
-function _M:aggregate_by_country()
-  return _M.aggregate_by_region_field(self, "request_ip_country")
+function _M:filter_by_ip_country(country)
+  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], {
+    term = {
+      request_ip_country = country,
+    }
+  })
 end
 
-function _M:aggregate_by_region(region)
-  if region == "world" then
-    return _M.aggregate_by_country(self)
-  elseif region == "US" then
-    return _M:aggregate_by_country_regions(region)
-  else
-    local matches, match_err = ngx.re.match(region, [[^(US)-([A-Z]{2})$]], "jo")
-    if matches then
-      local country = matches[1]
-      local state = matches[2]
-      return _M:aggregate_by_us_state_cities(country, state)
-    else
-      if match_err then
-        ngx.log(ngx.ERR, "regex error: ", match_err)
-      end
-
-      return _M:aggregate_by_country_cities(region)
-    end
-  end
+function _M:filter_by_ip_region(region)
+  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], {
+    term = {
+      request_ip_region = region,
+    }
+  })
 end
 
 function _M:fetch_results()
