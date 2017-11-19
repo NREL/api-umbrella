@@ -4,6 +4,7 @@ local capture_errors_json = require("api-umbrella.utils.lapis_helpers").capture_
 local cjson = require("cjson")
 local db = require "lapis.db"
 local http = require "resty.http"
+local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local json_encode = require "api-umbrella.utils.json_encode"
 local lapis_json = require "api-umbrella.utils.lapis_json"
@@ -37,6 +38,7 @@ local function generate_summary_users(start_time, end_time)
 
   local total_users = 0
   for _, month in ipairs(users_by_month) do
+    month["count"] = int64_to_json_number(month["count"])
     total_users = total_users + month["count"]
   end
 
