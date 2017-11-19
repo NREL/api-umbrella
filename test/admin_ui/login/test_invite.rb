@@ -4,7 +4,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
-  include ApiUmbrellaTestHelpers::DelayedJob
+  include ApiUmbrellaTestHelpers::SentEmails
 
   def setup
     super
@@ -35,7 +35,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     assert(admin)
 
     # Find sent email
-    messages = delayed_job_sent_messages
+    messages = sent_emails
     assert_equal(1, messages.length)
     message = messages.first
 
@@ -77,7 +77,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     assert(admin)
 
     # No email
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.length)
   end
 
   def test_invites_can_be_resent
@@ -97,7 +97,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
 
     admin.reload
     assert_equal("Foo", admin.notes)
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.length)
 
     # Force the invite to be resent.
     visit "/admin/#/admins/#{admin.id}/edit"
@@ -111,7 +111,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
 
     admin.reload
     assert_equal("Bar", admin.notes)
-    messages = delayed_job_sent_messages
+    messages = sent_emails
     assert_equal(1, messages.length)
     message = messages.first
     assert_equal(["API Umbrella Admin Access"], message["Content"]["Headers"]["Subject"])

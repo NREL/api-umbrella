@@ -4,7 +4,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::Setup
   include ApiUmbrellaTestHelpers::AdminAuth
-  include ApiUmbrellaTestHelpers::DelayedJob
+  include ApiUmbrellaTestHelpers::SentEmails
 
   def setup
     super
@@ -21,7 +21,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     click_button "Send me reset password instructions"
     assert_text("If your email address exists in our database, you will receive a password recovery link at your email address in a few minutes.")
 
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.length)
   end
 
   def test_reset_process
@@ -45,7 +45,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     assert_equal(original_encrypted_password, admin.encrypted_password)
 
     # Find sent email
-    messages = delayed_job_sent_messages
+    messages = sent_emails
     assert_equal(1, messages.length)
     message = messages.first
 

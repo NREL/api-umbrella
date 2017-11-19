@@ -192,4 +192,31 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
     assert_equal("0", data["hits_over_time"][4]["c"][1]["f"])
     assert_equal(0, data["hits_over_time"][4]["c"][1]["v"])
   end
+
+  def test_no_results_non_existent_indices
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2000-01-13",
+        :end_at => "2000-01-18",
+        :interval => "day",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "hits_over_time" => [],
+      "stats" => {
+        "total_users" => 0,
+        "total_ips" => 0,
+        "total_hits" => 0,
+        "average_response_time" => nil,
+      },
+      "aggregations" => {
+        "ips" => [],
+        "users" => [],
+      },
+    }, data)
+  end
 end

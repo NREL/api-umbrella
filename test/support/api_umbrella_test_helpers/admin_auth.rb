@@ -11,7 +11,7 @@ module ApiUmbrellaTestHelpers
       Capybara.reset_session!
       page.driver.clear_memory_cache
       page.driver.set_cookie("_api_umbrella_session", encrypt_session_cookie(admin_session_data(admin)))
-      page.driver.add_headers("User-Agent", STATIC_USER_AGENT)
+      page.driver.add_headers("User-Agent" => STATIC_USER_AGENT)
 
       visit "/admin/login"
       assert_logged_in(admin)

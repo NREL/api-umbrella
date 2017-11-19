@@ -4,7 +4,7 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
-  include ApiUmbrellaTestHelpers::DelayedJob
+  include ApiUmbrellaTestHelpers::SentEmails
 
   def setup
     super
@@ -25,7 +25,7 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Successfully saved the user")
 
-    assert_equal(0, delayed_job_sent_messages.length)
+    assert_equal(0, sent_emails.length)
   end
 
   def test_email_when_explicitly_requested
@@ -40,6 +40,6 @@ class Test::AdminUi::TestApiUsersWelcomeEmail < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Successfully saved the user")
 
-    assert_equal(1, delayed_job_sent_messages.length)
+    assert_equal(1, sent_emails.length)
   end
 end

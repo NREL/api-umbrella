@@ -3,7 +3,7 @@ require_relative "../test_helper"
 class Test::StaticSite::TestSignup < Minitest::Capybara::Test
   include Capybara::Screenshot::MiniTestPlugin
   include ApiUmbrellaTestHelpers::Setup
-  include ApiUmbrellaTestHelpers::DelayedJob
+  include ApiUmbrellaTestHelpers::SentEmails
 
   def setup
     super
@@ -32,7 +32,7 @@ class Test::StaticSite::TestSignup < Minitest::Capybara::Test
     assert_equal("foo@example.com", user.email)
     assert_text(user.api_key)
 
-    messages = delayed_job_sent_messages
+    messages = sent_emails
     assert_equal(1, messages.length)
   end
 end

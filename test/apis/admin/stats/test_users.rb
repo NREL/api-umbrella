@@ -113,4 +113,22 @@ class Test::Apis::Admin::Stats::TestUsers < Minitest::Test
       @user2.use_description,
     ], csv[2])
   end
+
+  def test_no_results_non_existent_indices
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/users.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        "start_at" => "2000-01-13",
+        "end_at" => "2000-01-18",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "data" => [],
+      "draw" => 0,
+      "recordsFiltered" => 0,
+      "recordsTotal" => 0,
+    }, data)
+  end
 end

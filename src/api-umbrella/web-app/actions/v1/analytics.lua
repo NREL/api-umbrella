@@ -77,59 +77,61 @@ local function drilldown_hits_over_time(raw_results, search)
     rows = {},
   }
 
-  local path_buckets = raw_results["aggregations"]["top_path_hits_over_time"]["buckets"]
-  for _, bucket in ipairs(path_buckets) do
-    table.insert(hits_over_time["cols"], {
-      id = bucket["key"],
-      label = split(bucket["key"], "/", "jo", nil, 2)[2],
-      type = "number",
-    })
-  end
+  if raw_results["aggregations"] then
+    local path_buckets = raw_results["aggregations"]["top_path_hits_over_time"]["buckets"]
+    for _, bucket in ipairs(path_buckets) do
+      table.insert(hits_over_time["cols"], {
+        id = bucket["key"],
+        label = split(bucket["key"], "/", "jo", nil, 2)[2],
+        type = "number",
+      })
+    end
 
-  local has_other_hits = false
-  local total_buckets = raw_results["aggregations"]["hits_over_time"]["buckets"]
-  for index, total_bucket in ipairs(total_buckets) do
-    local cells = {
-      {
-        v = total_bucket["key"],
-        f = formatted_interval_time(search.interval, total_bucket["key"]),
-      },
-    }
+    local has_other_hits = false
+    local total_buckets = raw_results["aggregations"]["hits_over_time"]["buckets"]
+    for index, total_bucket in ipairs(total_buckets) do
+      local cells = {
+        {
+          v = total_bucket["key"],
+          f = formatted_interval_time(search.interval, total_bucket["key"]),
+        },
+      }
 
-    local path_total_hits = 0
-    for _, path_bucket in ipairs(path_buckets) do
-      local bucket = path_bucket["drilldown_over_time"]["buckets"][index]
+      local path_total_hits = 0
+      for _, path_bucket in ipairs(path_buckets) do
+        local bucket = path_bucket["drilldown_over_time"]["buckets"][index]
+        table.insert(cells, {
+          v = bucket["doc_count"],
+          f = number_with_delimiter(bucket["doc_count"]),
+        })
+
+        path_total_hits = path_total_hits + bucket["doc_count"]
+      end
+
+      local other_hits = total_bucket["doc_count"] - path_total_hits
+      if other_hits > 0 then
+        has_other_hits = true
+      end
       table.insert(cells, {
-        v = bucket["doc_count"],
-        f = number_with_delimiter(bucket["doc_count"]),
+        v = other_hits,
+        f = number_with_delimiter(other_hits),
       })
 
-      path_total_hits = path_total_hits + bucket["doc_count"]
+      table.insert(hits_over_time["rows"], {
+        c = cells,
+      })
     end
 
-    local other_hits = total_bucket["doc_count"] - path_total_hits
-    if other_hits > 0 then
-      has_other_hits = true
-    end
-    table.insert(cells, {
-      v = other_hits,
-      f = number_with_delimiter(other_hits),
-    })
-
-    table.insert(hits_over_time["rows"], {
-      c = cells,
-    })
-  end
-
-  if has_other_hits then
-    table.insert(hits_over_time["cols"], {
-      id = "other",
-      label = "Other",
-      type = "number",
-    })
-  else
-    for _, row in ipairs(hits_over_time["rows"]) do
-      table.remove(row["c"])
+    if has_other_hits then
+      table.insert(hits_over_time["cols"], {
+        id = "other",
+        label = "Other",
+        type = "number",
+      })
+    else
+      for _, row in ipairs(hits_over_time["rows"]) do
+        table.remove(row["c"])
+      end
     end
   end
 

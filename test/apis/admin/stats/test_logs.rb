@@ -140,4 +140,25 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     assert_equal(1, data["recordsTotal"])
     assert_equal("#{unique_test_id}-not-null", data["data"][0]["request_user_agent"])
   end
+
+  def test_no_results_non_existent_indices
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/logs.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        "start_at" => "2000-01-13",
+        "end_at" => "2000-01-18",
+        "interval" => "day",
+        "start" => "0",
+        "length" => "10",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "data" => [],
+      "draw" => 0,
+      "recordsFiltered" => 0,
+      "recordsTotal" => 0,
+    }, data)
+  end
 end

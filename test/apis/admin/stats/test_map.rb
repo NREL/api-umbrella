@@ -164,4 +164,23 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
     assert_equal(["United States of America", "2"], csv[1])
     assert_equal(["Canada", "1"], csv[2])
   end
+
+  def test_no_results_non_existent_indices
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        "start_at" => "2000-01-13",
+        "end_at" => "2000-01-18",
+        "region" => "world",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "map_breadcrumbs" => [],
+      "map_regions" => [],
+      "region_field" => "request_ip_country",
+      "regions" => [],
+    }, data)
+  end
 end

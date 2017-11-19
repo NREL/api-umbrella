@@ -173,7 +173,7 @@ function _M.new(options)
     end_time = assert(options["end_time"]),
     interval = options["interval"],
     query = {
-      ignore_unavailable = "missing",
+      ignore_unavailable = "true",
       allow_no_indices = "true",
     },
     body = {

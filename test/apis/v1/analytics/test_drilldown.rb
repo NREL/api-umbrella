@@ -459,4 +459,38 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     assert_equal(["127.0.0.1/", "2"], csv[1])
     assert_equal(["example.com/", "1"], csv[2])
   end
+
+  def test_no_results_non_existent_indices
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2000-01-13",
+        :end_at => "2000-01-18",
+        :interval => "day",
+        :prefix => "0/",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "breadcrumbs" => [
+        {
+          "crumb" => "All Hosts",
+          "prefix" => "0/",
+        },
+      ],
+      "hits_over_time" => {
+        "cols" => [
+          {
+            "id" => "date",
+            "label" => "Date",
+            "type" => "datetime",
+          },
+        ],
+        "rows" => [],
+      },
+      "results" => [],
+    }, data)
+  end
 end

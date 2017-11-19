@@ -76,40 +76,42 @@ end
 
 local function aggregation_result(aggregations, name)
   local buckets = {}
-  local top_buckets = aggregations["top_" .. name]["buckets"]
-  local with_value_count = aggregations["value_count_" .. name]["value"]
-  local missing_count = aggregations["missing_" .. name]["doc_count"]
+  if aggregations then
+    local top_buckets = aggregations["top_" .. name]["buckets"]
+    local with_value_count = aggregations["value_count_" .. name]["value"]
+    local missing_count = aggregations["missing_" .. name]["doc_count"]
 
-  local other_hits = with_value_count
-  for _, bucket in ipairs(top_buckets) do
-    other_hits = other_hits - bucket["doc_count"]
+    local other_hits = with_value_count
+    for _, bucket in ipairs(top_buckets) do
+      other_hits = other_hits - bucket["doc_count"]
 
-    table.insert(buckets, {
-      key = bucket["key"],
-      count = bucket["doc_count"],
-    })
-  end
-
-  if missing_count > 0 then
-    local last_bucket = array_last(buckets)
-    if #buckets < 10 or missing_count >= last_bucket["count"] then
       table.insert(buckets, {
-        key = t("Missing / Unknown"),
-        count = missing_count,
+        key = bucket["key"],
+        count = bucket["doc_count"],
       })
     end
-  end
 
-  local total = with_value_count + missing_count
-  for _, bucket in ipairs(buckets) do
-    bucket["percent"] = round((bucket["count"] / total) * 100)
-  end
+    if missing_count > 0 then
+      local last_bucket = array_last(buckets)
+      if #buckets < 10 or missing_count >= last_bucket["count"] then
+        table.insert(buckets, {
+          key = t("Missing / Unknown"),
+          count = missing_count,
+        })
+      end
+    end
 
-  if other_hits > 0 then
-    table.insert(buckets, {
-      key = t("Other"),
-      count = other_hits,
-    })
+    local total = with_value_count + missing_count
+    for _, bucket in ipairs(buckets) do
+      bucket["percent"] = round((bucket["count"] / total) * 100)
+    end
+
+    if other_hits > 0 then
+      table.insert(buckets, {
+        key = t("Other"),
+        count = other_hits,
+      })
+    end
   end
 
   return buckets
@@ -272,9 +274,9 @@ function _M.search(self)
   local response = {
     stats = {
       total_hits = results["hits"]["total"],
-      total_users = results["aggregations"]["unique_user_email"]["value"],
-      total_ips = results["aggregations"]["unique_request_ip"]["value"],
-      average_response_time = results["aggregations"]["response_time_average"]["value"],
+      total_users = 0,
+      total_ips = 0,
+      average_response_time = json_null,
     },
     hits_over_time = hits_over_time(search.interval, results["aggregations"]),
     aggregations = {
@@ -282,6 +284,13 @@ function _M.search(self)
       ips = aggregation_result(results["aggregations"], "request_ip"),
     },
   }
+
+  if results["aggregations"] then
+    response["total_users"] = results["aggregations"]["unique_user_email"]["value"]
+    response["total_ips"] = results["aggregations"]["unique_request_ip"]["value"]
+    response["average_response_time"] = results["aggregations"]["response_time_average"]["value"]
+  end
+
   setmetatable(response["hits_over_time"], cjson.empty_array_mt)
   setmetatable(response["aggregations"]["users"], cjson.empty_array_mt)
   setmetatable(response["aggregations"]["ips"], cjson.empty_array_mt)
@@ -359,7 +368,7 @@ function _M.logs(self)
   else
     local results = search:fetch_results()
     local response = {
-      draw = tonumber(self.params["draw"]),
+      draw = tonumber(self.params["draw"]) or 0,
       recordsTotal = results["hits"]["total"],
       recordsFiltered = results["hits"]["total"],
       data = {}
@@ -423,7 +432,12 @@ function _M.users(self)
   search:set_offset(offset)
 
   local results = search:fetch_results()
-  local buckets = results["aggregations"]["user_stats"]["buckets"]
+  local buckets
+  if results["aggregations"] then
+    buckets = results["aggregations"]["user_stats"]["buckets"]
+  else
+    buckets = {}
+  end
   local total_count = #buckets
 
   -- If we were sorting by one of the facet fields, then the sorting has
@@ -439,9 +453,11 @@ function _M.users(self)
   end
 
   local users_by_id = {}
-  local users = ApiUser:select("WHERE id IN ?", db.list(user_ids))
-  for _, user in ipairs(users) do
-    users_by_id[user.id] = user
+  if not is_empty(user_ids) then
+    local users = ApiUser:select("WHERE id IN ?", db.list(user_ids))
+    for _, user in ipairs(users) do
+      users_by_id[user.id] = user
+    end
   end
 
   -- Build up the results, combining the stats facet information with the user
@@ -563,8 +579,15 @@ function _M.map(self)
   search:aggregate_by_ip_region_field(region_field)
 
   local results = search:fetch_results()
-  local buckets = results["aggregations"]["regions"]["buckets"]
-  local unknown_hits = results["aggregations"]["missing_regions"]["doc_count"]
+  local buckets
+  local unknown_hits = 0
+  if results["aggregations"] then
+    buckets = results["aggregations"]["regions"]["buckets"]
+    unknown_hits = results["aggregations"]["missing_regions"]["doc_count"]
+  else
+    buckets = {}
+  end
+
   local city_locations
   if region_field == "request_ip_city" then
     city_locations = fetch_city_locations(buckets, filter_country, filter_region)
