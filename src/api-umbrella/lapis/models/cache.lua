@@ -10,7 +10,7 @@ local Cache = model_ext.new_class("cache", {
 })
 
 Cache.upsert = function(_, id, data, expires_at)
-  db.query("INSERT INTO cache(id, data, expires_at) VALUES(?, ?, ?) ON CONFLICT (id) DO UPDATE SET expires_at = EXCLUDED.expires_at, data = EXCLUDED.data", id, db.raw(ngx.ctx.pgmoon:encode_bytea(data)), time.postgres_to_iso8601(expires_at))
+  db.query("INSERT INTO cache(id, data, expires_at) VALUES(?, ?, ?) ON CONFLICT (id) DO UPDATE SET expires_at = EXCLUDED.expires_at, data = EXCLUDED.data", id, db.raw(ngx.ctx.pgmoon:encode_bytea(data)), time.timestamp_to_iso8601(expires_at))
 end
 
 return Cache
