@@ -1,9 +1,9 @@
+local AnalyticsSearch = require "api-umbrella.web-app.models.analytics_search"
 local Cache = require "api-umbrella.web-app.models.cache"
 local analytics_policy = require "api-umbrella.web-app.policies.analytics_policy"
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
 local cjson = require("cjson")
 local db = require "lapis.db"
-local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local json_encode = require "api-umbrella.utils.json_encode"
@@ -49,91 +49,31 @@ local function generate_summary_users(start_time, end_time)
 end
 
 local function generate_summary_hits(start_time, end_time)
-  local interval = "month"
-  local query = {
-    query = {
-      filtered = {
-        query = {
-          match_all = {},
-        },
-        filter = {
-          bool = {
-            must = {},
-            must_not = {},
-          },
-        },
-      },
-    },
-    sort = {
-      { request_at = "desc" },
-    },
-    aggregations = {},
-  }
-
-  table.insert(query["query"]["filtered"]["filter"]["bool"]["must_not"], {
-    exists = {
-      field = "imported",
-    },
+  local search = AnalyticsSearch.factory(config["analytics"]["adapter"], {
+    start_time = start_time,
+    end_time = end_time,
+    interval = "month",
   })
-
-  table.insert(query["query"]["filtered"]["filter"]["bool"]["must"], {
-    range = {
-      request_at = {
-        from = start_time,
-        to = end_time,
-      },
-    },
-  })
+  search:filter_by_time_range()
+  search:filter_exclude_imported()
+  search:aggregate_by_interval()
 
   -- Try to ignore some of the baseline monitoring traffic. Only include
   -- successful responses.
   if config["web"]["analytics_v0_summary_filter"] then
-    query["query"]["filtered"]["query"] = {
-      query_string = {
-        query = config["web"]["analytics_v0_summary_filter"],
-      },
-    }
-  end
-
-  query["aggregations"]["hits_over_time"] = {
-    date_histogram = {
-      field = "request_at",
-      interval = interval,
-      time_zone = "America/New_York", -- Time.zone.name,
-      min_doc_count = 0,
-      extended_bounds = {
-        min = start_time,
-        max = end_time,
-      },
-    },
-  }
-  if config["elasticsearch"]["api_version"] < 2 then
-    query["aggregations"]["hits_over_time"]["date_histogram"]["pre_zone_adjust_large_interval"] = true
+    search:set_search_query_string(config["web"]["analytics_v0_summary_filter"])
   end
 
   -- This query can take a long time to run, so set a long timeout. But since
   -- we're only delivering cached results and refreshing periodically in the
   -- background, this long timeout should be okay.
-  query["timeout"] = 20 * 60 .. "s" -- 20 minutes
+  search:set_timeout(20 * 60) -- 20 minutes
 
-  query["size"] = 0
-
-  setmetatable(query["query"]["filtered"]["filter"]["bool"]["must_not"], cjson.empty_array_mt)
-  setmetatable(query["query"]["filtered"]["filter"]["bool"]["must"], cjson.empty_array_mt)
-  setmetatable(query["sort"], cjson.empty_array_mt)
-  local res, err = elasticsearch_query("/_search", {
-    method = "POST",
-    body = query,
-  })
-  if err then
-    ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
-    return false
-  end
-  local data = res.body_json
+  local results = search:fetch_results()
 
   local total_hits = 0
   local hits_by_month = {}
-  for _, month in ipairs(data["aggregations"]["hits_over_time"]["buckets"]) do
+  for _, month in ipairs(results["aggregations"]["hits_over_time"]["buckets"]) do
     table.insert(hits_by_month, {
       year = tonumber(string.sub(month["key_as_string"], 1, 4)),
       month = tonumber(string.sub(month["key_as_string"], 6, 7)),

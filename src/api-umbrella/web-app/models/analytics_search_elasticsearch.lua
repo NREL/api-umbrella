@@ -166,7 +166,7 @@ function _M.new(options)
       },
       aggregations = {},
       size = 0,
-      timeout = 90,
+      timeout = "90s",
     },
   }
 
@@ -189,8 +189,14 @@ function _M:filter_by_time_range()
   })
 end
 
-function _M:set_interval(start_time, end_time)
+function _M:filter_exclude_imported()
+  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must_not"], {
+    exists = {
+      field = "imported",
+    },
+  })
 end
+
 
 function _M:set_search_query_string(query_string)
   if not is_empty(query_string) then
@@ -219,6 +225,10 @@ end
 
 function _M:set_limit(limit)
   self.body["size"] = limit
+end
+
+function _M:set_timeout(timeout)
+  self.body["timeout"] = timeout .. "s"
 end
 
 function _M:aggregate_by_interval()
