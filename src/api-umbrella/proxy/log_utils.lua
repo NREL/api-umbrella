@@ -6,7 +6,6 @@ local logger = require "resty.logger.socket"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local plutils = require "pl.utils"
 local round = require "api-umbrella.utils.round"
-local str = require "resty.string"
 local user_agent_parser = require "api-umbrella.proxy.user_agent_parser"
 
 local split = plutils.split
@@ -19,9 +18,6 @@ local syslog_version = 1
 local ZONE_OFFSET = icu_date.fields.ZONE_OFFSET
 local DST_OFFSET = icu_date.fields.DST_OFFSET
 local DAY_OF_WEEK = icu_date.fields.DAY_OF_WEEK
-local format_date_time = icu_date.formats.pattern("YYYY-MM-dd HH:mm:ss")
-local format_date = icu_date.formats.pattern("YYYY-MM-dd")
-local date_attributes = icu_date.attributes
 -- Setup the date object in the analytics timezone, and set the first day of
 -- the week to Mondays for ISO week calculations.
 local date = icu_date.new({ zone_id = config["analytics"]["timezone"] })
@@ -152,12 +148,12 @@ end
 -- The geoip stuff actually returns different geocodes for different parts of
 -- cities. This approach rolls up each city to the last geocoded location
 -- within that city, so it's not perfect, but for now it'll do.
-local function cache_city_geocode(premature, id, data)
+local function cache_city_geocode(premature, data)
   if premature then
     return
   end
 
-  local result, err = pg_utils.query("INSERT INTO analytics_cities(country, region, city, location) VALUES($1, $2, $3, point($4, $5)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location", data["request_ip_country"], data["request_ip_region"], data["request_ip_city"], data["request_ip_lon"], data["request_ip_lat"])
+  local _, err = pg_utils.query("INSERT INTO analytics_cities(country, region, city, location) VALUES($1, $2, $3, point($4, $5)) ON CONFLICT (country, region, city) DO UPDATE SET location = EXCLUDED.location", data["request_ip_country"], data["request_ip_region"], data["request_ip_city"], data["request_ip_lon"], data["request_ip_lat"])
   if err then
     ngx.log(ngx.ERR, "failed to cache city location: ", err)
   end
@@ -203,7 +199,7 @@ function _M.cache_new_city_geocode(data)
 
     -- Perform the actual cache call in a timer because the http library isn't
     -- supported directly in the log_by_lua context.
-    ngx.timer.at(0, cache_city_geocode, id, data)
+    ngx.timer.at(0, cache_city_geocode, data)
   end
 end
 

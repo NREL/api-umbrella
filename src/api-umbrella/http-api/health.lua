@@ -1,4 +1,4 @@
-local cjson = require "cjson"
+local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local http = require "resty.http"
 local json_encode = require "api-umbrella.utils.json_encode"
 
@@ -28,22 +28,22 @@ local function status_response()
   httpc:set_timeout(3000)
 
   -- Check the health of the ElasticSearch cluster
-  local res, err = httpc:request_uri(config["elasticsearch"]["hosts"][1] .. "/_cluster/health")
+  local res, err = elasticsearch_query("/_cluster/health")
   if err then
     ngx.log(ngx.ERR, "failed to fetch cluster health from elasticsearch: ", err)
-  elseif res.body then
-    local elasticsearch_health = cjson.decode(res.body)
+  elseif res.body_json then
+    local elasticsearch_health = res.body_json
     response["details"]["analytics_db"] = elasticsearch_health["status"]
 
     -- Check to see if the ElasticSearch index aliases have been setup.
     local today = os.date("!%Y-%m", ngx.time())
     local alias = "api-umbrella-logs-" .. today
     local index = "api-umbrella-logs-" .. config["log_template_version"] .. "-" .. today
-    res, err = httpc:request_uri(config["elasticsearch"]["hosts"][1] .. "/" .. index .. "/_alias/" .. alias)
+    res, err = elasticsearch_query("/" .. index .. "/_alias/" .. alias)
     if err then
       ngx.log(ngx.ERR, "failed to fetch elasticsearch alias details: ", err)
-    elseif res.body then
-      local elasticsearch_alias = cjson.decode(res.body)
+    elseif res.body_json then
+      local elasticsearch_alias = res.body_json
       if not elasticsearch_alias["error"] then
         response["details"]["analytics_db_setup"] = "green"
       end

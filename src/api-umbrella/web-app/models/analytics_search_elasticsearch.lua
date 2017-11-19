@@ -1,16 +1,15 @@
 local cjson = require "cjson"
 local escape_regex = require "api-umbrella.utils.escape_regex"
-local http = require "resty.http"
+local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local is_empty = require("pl.types").is_empty
-local json_encode = require "api-umbrella.utils.json_encode"
 local startswith = require("pl.stringx").startswith
 
-CASE_SENSITIVE_FIELDS = {
+local CASE_SENSITIVE_FIELDS = {
   api_key = 1,
   request_ip_city = 1,
 }
 
-UPPERCASE_FIELDS = {
+local UPPERCASE_FIELDS = {
   request_method = 1,
   request_ip_country = 1,
   request_ip_region = 1,
@@ -147,7 +146,6 @@ function _M.new(options)
     start_time = assert(options["start_time"]),
     end_time = assert(options["end_time"]),
     interval = options["interval"],
-    elasticsearch_host = config["elasticsearch"]["hosts"][1],
     query = {},
     body = {
       query = {
@@ -357,7 +355,7 @@ function _M:aggregate_by_user_stats(order)
   self.body["aggregations"]["user_stats"] = {
     terms = {
       field = "user_id",
-      size = size,
+      size = 0,
     },
     aggregations = {
       last_request_at = {
@@ -413,18 +411,17 @@ function _M:fetch_results()
     self.body["aggregations"] = nil
   end
 
-  local httpc = http.new()
-  local res, err = httpc:request_uri(self.elasticsearch_host .. "/_search", {
+  local res, err = elasticsearch_query("/_search", {
     method = "POST",
-    headers = {
-      ["Content-Type"] = "application/json",
-    },
     query = self.query,
-    body = json_encode(self.body),
+    body = self.body,
   })
-  local data = cjson.decode(res.body)
+  if err then
+    ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
+    return false
+  end
 
-  return data
+  return res.body_json
 end
 
 function _M:fetch_results_bulk(callback)
@@ -440,21 +437,21 @@ function _M:fetch_results_bulk(callback)
   callback(raw_results["hits"]["hits"])
 
   local scroll_id
-  local httpc = http.new()
   while true do
     scroll_id = raw_results["_scroll_id"]
-    local res, err = httpc:request_uri(self.elasticsearch_host .. "/_search/scroll", {
+    local res, err = elasticsearch_query("/_search/scroll", {
       method = "GET",
-      headers = {
-        ["Content-Type"] = "application/json",
-      },
-      body = json_encode({
+      body = {
         scroll = self.query["scroll"],
         scroll_id = scroll_id,
-      })
+      },
     })
-    raw_results = cjson.decode(res.body)
+    if err then
+      ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
+      return false
+    end
 
+    raw_results = res.body_json
     if not raw_results["hits"] or is_empty(raw_results["hits"]["hits"]) then
       break
     end
@@ -462,17 +459,14 @@ function _M:fetch_results_bulk(callback)
     callback(raw_results["hits"]["hits"])
   end
 
-  local res, err = httpc:request_uri(self.elasticsearch_host .. "/_search/scroll", {
+  local _, err = elasticsearch_query("/_search/scroll", {
     method = "DELETE",
-    headers = {
-      ["Content-Type"] = "application/json",
-    },
-    body = json_encode({
+    body = {
       scroll_id = { scroll_id },
-    })
+    },
   })
-  if res.status ~= 200 then
-    ngx.log(ngx.ERR, "elasticsearch scroll clear failed: " .. (res.body or ""))
+  if err then
+    ngx.log(ngx.ERR, "elasticsearch scroll clear failed: ", err)
   end
 end
 

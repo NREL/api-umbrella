@@ -160,16 +160,16 @@ function _M.drilldown(self)
   if self.params["format"] == "csv" then
     return send_csv_response(self, response_json)
   else
-    local response_json = {
+    local response = {
       results = drilldown_results(raw_results),
       hits_over_time = drilldown_hits_over_time(raw_results, search),
       breadcrumbs = drilldown_breadcrumbs(self),
     }
-    setmetatable(response_json["results"], cjson.empty_array_mt)
-    setmetatable(response_json["hits_over_time"]["cols"], cjson.empty_array_mt)
-    setmetatable(response_json["hits_over_time"]["rows"], cjson.empty_array_mt)
-    setmetatable(response_json["breadcrumbs"], cjson.empty_array_mt)
-    return json_response(self, response_json)
+    setmetatable(response["results"], cjson.empty_array_mt)
+    setmetatable(response["hits_over_time"]["cols"], cjson.empty_array_mt)
+    setmetatable(response["hits_over_time"]["rows"], cjson.empty_array_mt)
+    setmetatable(response["breadcrumbs"], cjson.empty_array_mt)
+    return json_response(self, response)
   end
 end
 

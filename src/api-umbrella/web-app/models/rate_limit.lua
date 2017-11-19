@@ -95,7 +95,7 @@ RateLimit = model_ext.new_class("rate_limits", {
     end
   end,
 
-  validate = function(_, data, values)
+  validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "duration", validation_ext.number, t("can't be blank"))
     validate_field(errors, data, "accuracy", validation_ext.number, t("can't be blank"))

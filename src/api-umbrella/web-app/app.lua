@@ -56,7 +56,7 @@ app.handle_404 = function()
   }
 end
 
-local function current_admin_from_token(self)
+local function current_admin_from_token()
   local current_admin
   local auth_token = ngx.var.http_x_admin_auth_token
   if auth_token then
@@ -146,7 +146,7 @@ app:before_filter(function(self)
   end
 
   self.init_session = init_session
-  local current_admin = current_admin_from_token(self)
+  local current_admin = current_admin_from_token()
   if not current_admin then
     current_admin = current_admin_from_session(self)
   end

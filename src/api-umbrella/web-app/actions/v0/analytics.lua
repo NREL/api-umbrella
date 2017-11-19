@@ -3,7 +3,7 @@ local analytics_policy = require "api-umbrella.web-app.policies.analytics_policy
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
 local cjson = require("cjson")
 local db = require "lapis.db"
-local http = require "resty.http"
+local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local json_encode = require "api-umbrella.utils.json_encode"
@@ -49,7 +49,6 @@ local function generate_summary_users(start_time, end_time)
 end
 
 local function generate_summary_hits(start_time, end_time)
-  local elasticsearch_host = config["elasticsearch"]["hosts"][1]
   local interval = "month"
   local query = {
     query = {
@@ -122,15 +121,15 @@ local function generate_summary_hits(start_time, end_time)
   setmetatable(query["query"]["filtered"]["filter"]["bool"]["must_not"], cjson.empty_array_mt)
   setmetatable(query["query"]["filtered"]["filter"]["bool"]["must"], cjson.empty_array_mt)
   setmetatable(query["sort"], cjson.empty_array_mt)
-  local httpc = http.new()
-  local res, err = httpc:request_uri(elasticsearch_host .. "/_search", {
+  local res, err = elasticsearch_query("/_search", {
     method = "POST",
-    headers = {
-      ["Content-Type"] = "application/json",
-    },
-    body = json_encode(query),
+    body = query,
   })
-  local data = cjson.decode(res.body)
+  if err then
+    ngx.log(ngx.ERR, "failed to query elasticsearch: ", err)
+    return false
+  end
+  local data = res.body_json
 
   local total_hits = 0
   local hits_by_month = {}
