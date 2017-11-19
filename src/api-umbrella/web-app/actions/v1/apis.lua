@@ -97,6 +97,7 @@ local function api_backend_settings_params(input_settings)
 
   local params_settings = dbify_json_nulls({
     id = input_settings["id"],
+    allowed_referers = input_settings["allowed_referers"],
     anonymous_rate_limit_behavior = input_settings["anonymous_rate_limit_behavior"],
     api_key_verification_level = input_settings["api_key_verification_level"],
     api_key_verification_transition_start_at = input_settings["api_key_verification_transition_start_at"],

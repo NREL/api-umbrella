@@ -10,6 +10,7 @@ local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
 local lyaml = require "lyaml"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
+local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
 local pg_encode_json = require("pgmoon.json").encode_json
 local split = require("ngx.re").split
 local strip = require("pl.stringx").strip
@@ -131,6 +132,8 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
   as_json = function(self, options)
     local data = {
       id = self.id or json_null,
+      allowed_ips = self.allowed_ips or json_null,
+      allowed_referers = self.allowed_referers or json_null,
       anonymous_rate_limit_behavior = self.anonymous_rate_limit_behavior or json_null,
       api_key_verification_level = self.api_key_verification_level or json_null,
       api_key_verification_transition_start_at = time.postgres_to_iso8601(self.api_key_verification_transition_start_at) or json_null,
@@ -289,6 +292,14 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
   end,
 
   before_save = function(_, values)
+    if is_array(values["allowed_ips"]) and values["allowed_ips"] ~= db_null then
+      values["allowed_ips"] = db_raw(pg_encode_array(values["allowed_ips"]) .. "::inet[]")
+    end
+
+    if is_array(values["allowed_referers"]) and values["allowed_referers"] ~= db_null then
+      values["allowed_referers"] = db_raw(pg_encode_array(values["allowed_referers"]))
+    end
+
     if is_hash(values["error_data"]) and values["error_data"] ~= db_null then
       values["error_data"] = db_raw(pg_encode_json(values["error_data"]))
     end

@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 9.6.4
--- Dumped by pg_dump version 9.6.4
+-- Dumped from database version 9.6.5
+-- Dumped by pg_dump version 9.6.5
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -980,6 +980,8 @@ CREATE TABLE api_backend_settings (
     authenticated_rate_limit_behavior character varying(12),
     error_templates jsonb,
     error_data jsonb,
+    allowed_ips inet[],
+    allowed_referers character varying(500)[],
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
     created_by_username character varying(255) NOT NULL,

@@ -27,11 +27,13 @@ class Test::Proxy::Routing::TestDefaultWildcardWebAppHostAndDefaultHost < Minite
       prepend_website_backends([
         {
           :frontend_host => "#{unique_test_class_id}-default.foo",
+          :backend_protocol => "http",
           :server_host => "127.0.0.1",
           :server_port => 9440,
         },
         {
           :frontend_host => "#{unique_test_class_id}-website.foo",
+          :backend_protocol => "http",
           :server_host => "127.0.0.1",
           :server_port => 9443,
         },

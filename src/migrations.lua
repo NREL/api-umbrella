@@ -422,6 +422,8 @@ return {
         authenticated_rate_limit_behavior varchar(12) CHECK(authenticated_rate_limit_behavior IN('all', 'api_key_only')),
         error_templates jsonb,
         error_data jsonb,
+        allowed_ips inet ARRAY,
+        allowed_referers varchar(500) ARRAY,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,

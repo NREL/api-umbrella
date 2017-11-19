@@ -44,14 +44,14 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
       ])
 
       @@user_with_allowed_referers = FactoryGirl.create(:api_user, {
-        :settings => {
+        :settings => FactoryGirl.build(:api_user_settings, {
           :rate_limit_mode => "unlimited",
           :allowed_referers => [
             "*.example.com/specific*",
             "https://google.com/specific",
             "*.yahoo.com/*",
           ],
-        },
+        }),
       })
     end
   end
@@ -162,10 +162,10 @@ class Test::Proxy::TestRefererValidation < Minitest::Test
 
   def test_user_authorized_when_empty_array
     user = FactoryGirl.create(:api_user, {
-      :settings => {
+      :settings => FactoryGirl.build(:api_user_settings, {
         :rate_limit_mode => "unlimited",
         :allowed_referers => [],
-      },
+      }),
     })
 
     assert_authorized_referer("/api/hello", {
