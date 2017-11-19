@@ -30,8 +30,8 @@ local function reload_nginx(perp_base)
   end
 end
 
-local function reload_nginx_http_api(perp_base)
-  local _, _, err = run_command("perpctl -b " .. perp_base .. " hup nginx-http-api")
+local function reload_nginx_web_app(perp_base)
+  local _, _, err = run_command("perpctl -b " .. perp_base .. " hup nginx-web-app")
   if err then
     print("Failed to reload nginx\n" .. err)
     os.exit(1)
@@ -71,7 +71,7 @@ return function(options)
   if config["_service_router_enabled?"] and (is_empty(options) or options["router"]) then
     reload_trafficserver(perp_base)
     reload_nginx(perp_base)
-    reload_nginx_http_api(perp_base)
+    reload_nginx_web_app(perp_base)
 
     if config["_service_nginx_reloader_enabled?"] then
       reload_nginx_reloader(perp_base)

@@ -42,4 +42,4 @@ _M.subdivisions = ]] .. pretty.write(subdivisions) .. [[
 
 return _M]]
 
-file.write("src/api-umbrella/lapis/utils/countries.lua", output)
+file.write("src/api-umbrella/web-app/utils/countries.lua", output)

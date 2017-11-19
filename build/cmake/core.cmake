@@ -3,7 +3,7 @@ set(CORE_BUILD_DIR ${WORK_DIR}/src/api-umbrella-core)
 include(${CMAKE_SOURCE_DIR}/build/cmake/dev/nodejs.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-lua-deps.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-admin-ui.cmake)
-include(${CMAKE_SOURCE_DIR}/build/cmake/core-admin-auth-assets.cmake)
+include(${CMAKE_SOURCE_DIR}/build/cmake/core-web-app.cmake)
 include(${CMAKE_SOURCE_DIR}/build/cmake/core-locale.cmake)
 
 # Copy the vendored libraries into the shared build directory.
@@ -38,7 +38,7 @@ add_custom_command(
     ${CORE_BUILD_DIR}/releases/0/build/dist/locale
   DEPENDS
     ${STAMP_DIR}/core-admin-ui-build
-    ${STAMP_DIR}/core-admin-auth-assets-build
+    ${STAMP_DIR}/core-web-app-build
     ${STAMP_DIR}/core-build-release-dir
     ${STAMP_DIR}/core-locale-build
   COMMAND mkdir -p ${CORE_BUILD_DIR}/releases/0/build/dist

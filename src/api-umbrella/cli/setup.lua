@@ -267,7 +267,7 @@ local function activate_services()
       end
 
       if not config["_service_web_enabled?"] then
-        if array_includes({ "nginx-http-api" }, service_name) then
+        if array_includes({ "nginx-web-app" }, service_name) then
           is_active = false
         end
       end
