@@ -433,4 +433,30 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
     assert_equal("0", data["hits_over_time"]["rows"][4]["c"][1]["f"])
     assert_equal(0, data["hits_over_time"]["rows"][4]["c"][1]["v"])
   end
+
+  def test_csv_download
+    FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    LogItem.gateway.refresh_index!
+
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.csv", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        :search => "",
+        :start_at => "2015-01-13",
+        :end_at => "2015-01-18",
+        :interval => "day",
+        :prefix => "0/",
+      },
+    }))
+
+    assert_response_code(200, response)
+    assert_equal("text/csv", response.headers["Content-Type"])
+    assert_match("attachment; filename=\"api_drilldown_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
+
+    csv = CSV.parse(response.body)
+    assert_equal(3, csv.length, csv)
+    assert_equal(["Path", "Hits"], csv[0])
+    assert_equal(["127.0.0.1/", "2"], csv[1])
+    assert_equal(["example.com/", "1"], csv[2])
+  end
 end

@@ -2,14 +2,16 @@ local AnalyticsSearch = require "api-umbrella.web-app.models.analytics_search"
 local analytics_policy = require "api-umbrella.web-app.policies.analytics_policy"
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
 local cjson = require("cjson")
+local csv = require "api-umbrella.web-app.utils.csv"
 local endswith = require("pl.stringx").endswith
 local formatted_interval_time = require "api-umbrella.web-app.utils.formatted_interval_time"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local number_with_delimiter = require "api-umbrella.web-app.utils.number_with_delimiter"
 local path_join = require "api-umbrella.utils.path_join"
-local send_csv_response = require "api-umbrella.web-app.utils.send_csv_response"
 local split = require("ngx.re").split
 local table_sub = require("pl.tablex").sub
+
+local null = ngx.null
 
 local _M = {}
 
@@ -155,12 +157,28 @@ function _M.drilldown(self)
   end
 
   local raw_results = search:fetch_results()
+  local results = drilldown_results(raw_results)
 
   if self.params["format"] == "csv" then
-    return send_csv_response(self, response_json)
+    csv.set_response_headers(self, "api_drilldown_" .. os.date("!%Y-%m-%d", ngx.now()) .. ".csv")
+    ngx.say(csv.row_to_csv({
+      "Path",
+      "Hits",
+    }))
+    ngx.flush(true)
+
+    for _, result in ipairs(results) do
+      ngx.say(csv.row_to_csv({
+        result["path"] or null,
+        result["hits"] or null,
+      }))
+    end
+    ngx.flush(true)
+
+    return { layout = false }
   else
     local response = {
-      results = drilldown_results(raw_results),
+      results = results,
       hits_over_time = drilldown_hits_over_time(raw_results, search),
       breadcrumbs = drilldown_breadcrumbs(self),
     }

@@ -49,10 +49,10 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     }))
 
     assert_response_code(200, response)
-    body = response.body
-    lines = body.split("\n")
-    assert_includes(CSV.parse_line(lines[1]), "http://127.0.0.1/with_api_key/?foo=bar")
-    refute_match("my_secret_key", body)
+
+    csv = CSV.parse(response.body)
+    assert_includes(csv[1], "http://127.0.0.1/with_api_key/?foo=bar")
+    refute_match("my_secret_key", response.body)
   end
 
   def test_downloading_csv_that_uses_scan_and_scroll_elasticsearch_query
@@ -72,9 +72,9 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     assert_equal("text/csv", response.headers["Content-Type"])
     assert_match("attachment; filename=\"api_logs_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
 
-    lines = response.body.split("\n")
-    assert_equal(["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Reason Denied", "Response Time", "Content Type", "Accept Encoding", "User Agent"], CSV.parse_line(lines[0]))
-    assert_equal(1506, lines.length, lines)
+    csv = CSV.parse(response.body)
+    assert_equal(1506, csv.length, csv)
+    assert_equal(["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Reason Denied", "Response Time", "Content Type", "Accept Encoding", "User Agent"], csv[0])
   end
 
   def test_query_builder_case_insensitive_defaults
