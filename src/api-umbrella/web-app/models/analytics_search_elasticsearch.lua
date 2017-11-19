@@ -1,8 +1,13 @@
 local cjson = require "cjson"
-local escape_regex = require "api-umbrella.utils.escape_regex"
 local elasticsearch_query = require("api-umbrella.utils.elasticsearch").query
+local escape_regex = require "api-umbrella.utils.escape_regex"
+local icu_date = require "icu-date"
 local is_empty = require("pl.types").is_empty
 local startswith = require("pl.stringx").startswith
+
+local date = icu_date.new()
+local format_month = icu_date.formats.pattern("YYYY-MM")
+local format_iso8601 = icu_date.formats.iso8601()
 
 local CASE_SENSITIVE_FIELDS = {
   api_key = 1,
@@ -17,6 +22,27 @@ local UPPERCASE_FIELDS = {
 
 local _M = {}
 _M.__index = _M
+
+local function index_names(start_time, end_time)
+  date:parse(format_iso8601, end_time)
+  local end_time_millis = date:get_millis()
+
+  date:parse(format_iso8601, start_time)
+  date:set_time_zone_id("UTC")
+  date:set(icu_date.fields.DAY_OF_MONTH, 1)
+  date:set(icu_date.fields.HOUR_OF_DAY, 0)
+  date:set(icu_date.fields.MINUTE, 0)
+  date:set(icu_date.fields.SECOND, 0)
+  date:set(icu_date.fields.MILLISECOND, 0)
+
+  local names = {}
+  while date:get_millis() <= end_time_millis do
+    table.insert(names, "api-umbrella-logs-" .. date:format(format_month))
+    date:add(icu_date.fields.MONTH, 1)
+  end
+
+  return names
+end
 
 local function parse_query_builder(query)
   local query_filter
@@ -146,7 +172,10 @@ function _M.new(options)
     start_time = assert(options["start_time"]),
     end_time = assert(options["end_time"]),
     interval = options["interval"],
-    query = {},
+    query = {
+      ignore_unavailable = "missing",
+      allow_no_indices = "true",
+    },
     body = {
       query = {
         filtered = {
@@ -170,15 +199,8 @@ function _M.new(options)
     },
   }
 
-  return setmetatable(self, _M)
-end
+  self.index_names = table.concat(index_names(self.start_time, self.end_time), ",")
 
-function _M:set_permission_scope(scopes)
-  local filter = parse_query_builder(scopes)
-  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], filter)
-end
-
-function _M:filter_by_time_range()
   table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], {
     range = {
       request_at = {
@@ -187,6 +209,13 @@ function _M:filter_by_time_range()
       },
     },
   })
+
+  return setmetatable(self, _M)
+end
+
+function _M:set_permission_scope(scopes)
+  local filter = parse_query_builder(scopes)
+  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], filter)
 end
 
 function _M:filter_exclude_imported()
@@ -421,7 +450,7 @@ function _M:fetch_results()
     self.body["aggregations"] = nil
   end
 
-  local res, err = elasticsearch_query("/_search", {
+  local res, err = elasticsearch_query("/" .. self.index_names .. "/log/_search", {
     method = "POST",
     query = self.query,
     body = self.body,
@@ -443,7 +472,7 @@ function _M:fetch_results_bulk(callback)
     self.query["search_type"] = "scan"
   end
 
-  local raw_results = _M.fetch_results(self)
+  local raw_results = self:fetch_results()
   callback(raw_results["hits"]["hits"])
 
   local scroll_id

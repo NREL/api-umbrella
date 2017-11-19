@@ -2,7 +2,6 @@ local AnalyticsSearch = require "api-umbrella.web-app.models.analytics_search"
 local Cache = require "api-umbrella.web-app.models.cache"
 local analytics_policy = require "api-umbrella.web-app.policies.analytics_policy"
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
-local cjson = require("cjson")
 local db = require "lapis.db"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
@@ -54,7 +53,6 @@ local function generate_summary_hits(start_time, end_time)
     end_time = end_time,
     interval = "month",
   })
-  search:filter_by_time_range()
   search:filter_exclude_imported()
   search:aggregate_by_interval()
 

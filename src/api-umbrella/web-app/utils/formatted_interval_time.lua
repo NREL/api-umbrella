@@ -18,14 +18,14 @@ return function(interval, timestamp)
   elseif interval == "week" then
     local start_of_week = date:format(format_week)
 
-    date:set(fields.WEEK_OF_YEAR, date:get(fields.WEEK_OF_YEAR) + 1)
+    date:add(fields.WEEK_OF_YEAR, 1)
     local end_of_week = date:format(format_week)
 
     return start_of_week .. " - " .. end_of_week
   elseif interval == "month" then
     local start_of_month = date:format(format_week)
 
-    date:set(fields.MONTH, date:get(fields.MONTH) + 1)
+    date:add(fields.MONTH, 1)
     local end_of_month = date:format(format_week)
 
     return start_of_month .. " - " .. end_of_month
