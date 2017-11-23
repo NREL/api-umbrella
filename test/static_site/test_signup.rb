@@ -26,7 +26,7 @@ class Test::StaticSite::TestSignup < Minitest::Capybara::Test
 
     assert_text("Your API key for foo@example.com is:")
 
-    user = ApiUser.order_by(:created_at.asc).last
+    user = ApiUser.order(:created_at => :asc).last
     assert(user)
     assert(user.api_key)
     assert_equal("foo@example.com", user.email)

@@ -9,7 +9,7 @@ class Test::AdminUi::Login::TestLocalAndExternalProviders < Minitest::Capybara::
   def setup
     super
     setup_server
-    Admin.delete_all
+
     once_per_class_setup do
       override_config_set({
         "web" => {

@@ -8,7 +8,6 @@ class Test::AdminUi::Login::TestFirstTimeSetup < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    Admin.delete_all
   end
 
   def test_redirects_to_signup_on_first_login

@@ -8,7 +8,6 @@ class Test::AdminUi::Login::TestTracking < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    Admin.delete_all
   end
 
   def test_populates_tracking_fields_on_first_login

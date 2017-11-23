@@ -9,11 +9,10 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
     super
     setup_server
 
-    Api.delete_all
-    FactoryGirl.create(:api, :name => "API A", :sort_order => 3)
-    FactoryGirl.create(:api, :name => "API B", :sort_order => 1)
-    FactoryGirl.create(:api, :name => "API C", :sort_order => 2)
-    FactoryGirl.create(:api, :name => "API testing-filter", :sort_order => 4)
+    FactoryGirl.create(:api_backend, :name => "API A", :sort_order => 3)
+    FactoryGirl.create(:api_backend, :name => "API B", :sort_order => 1)
+    FactoryGirl.create(:api_backend, :name => "API C", :sort_order => 2)
+    FactoryGirl.create(:api_backend, :name => "API testing-filter", :sort_order => 4)
   end
 
   def test_toggle_drag_handles
@@ -83,7 +82,7 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
     refute_selector(".busy-blocker")
     assert_text("API A")
 
-    names = Api.order_by(:sort_order.asc).all.map { |api| api.name }
+    names = ApiBackend.order(:sort_order => :asc).all.map { |api| api.name }
     assert_equal(["API B", "API C", "API A", "API testing-filter"], names)
 
     click_button "Reorder"
@@ -95,7 +94,7 @@ class Test::AdminUi::TestApisReordering < Minitest::Capybara::Test
     assert_selector("tbody tr:first-child td:first-child", :text => "API A")
     refute_selector(".busy-blocker")
 
-    names = Api.order_by(:sort_order.asc).all.map { |api| api.name }
+    names = ApiBackend.order(:sort_order => :asc).all.map { |api| api.name }
     assert_equal(["API A", "API B", "API C", "API testing-filter"], names)
   end
 end

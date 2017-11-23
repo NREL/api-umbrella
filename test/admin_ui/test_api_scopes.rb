@@ -8,8 +8,6 @@ class Test::AdminUi::TestApiScopes < Minitest::Capybara::Test
   def setup
     super
     setup_server
-
-    ApiScope.delete_all
   end
 
   def test_create

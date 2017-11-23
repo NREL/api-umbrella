@@ -22,7 +22,7 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
     click_button("Save")
 
     assert_text("Successfully saved the user")
-    user = ApiUser.order_by(:created_at.asc).last
+    user = ApiUser.order(:created_at => :asc).last
     assert_equal("Doe", user.last_name)
     assert_text(user.api_key)
   end

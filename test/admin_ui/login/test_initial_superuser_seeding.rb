@@ -8,7 +8,6 @@ class Test::AdminUi::Login::TestInitialSuperuserSeeding < Minitest::Test
     super
     setup_server
     once_per_class_setup do
-      Admin.delete_all
       assert_equal(0, Admin.count)
 
       override_config_set({

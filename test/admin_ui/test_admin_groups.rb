@@ -8,9 +8,6 @@ class Test::AdminUi::TestAdminGroups < Minitest::Capybara::Test
   def setup
     super
     setup_server
-
-    AdminGroup.delete_all
-    ApiScope.delete_all
   end
 
   def test_create
@@ -26,7 +23,7 @@ class Test::AdminUi::TestAdminGroups < Minitest::Capybara::Test
     click_button("Save")
     assert_text("Successfully saved")
 
-    admin_group = AdminGroup.desc(:created_at).first
+    admin_group = AdminGroup.order(:created_at => :desc).first
     assert_equal("Example", admin_group.name)
     assert_equal([api_scope.id], admin_group.api_scope_ids)
     assert_equal(["analytics"], admin_group.permission_ids)

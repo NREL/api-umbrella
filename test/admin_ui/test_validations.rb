@@ -8,8 +8,6 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
   def setup
     super
     setup_server
-
-    Api.delete_all
   end
 
   def test_client_side_validations

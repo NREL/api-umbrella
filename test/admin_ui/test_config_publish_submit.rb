@@ -9,9 +9,6 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
-    PublishedConfig.delete_all
   end
 
   def after_all
@@ -20,7 +17,7 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
   end
 
   def test_publishing_changes
-    api = FactoryGirl.create(:api)
+    api = FactoryGirl.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -34,8 +31,8 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
   end
 
   def test_publishing_only_selected_changes
-    api1 = FactoryGirl.create(:api)
-    FactoryGirl.create(:api)
+    api1 = FactoryGirl.create(:api_backend)
+    FactoryGirl.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"

@@ -9,8 +9,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    Api.delete_all
-    WebsiteBackend.delete_all
+
     PublishedConfig.delete_all
   end
 
@@ -20,13 +19,17 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_pending_changes_grouped_into_categories
-    FactoryGirl.create(:api)
-    deleted_api = FactoryGirl.create(:api)
-    modified_api = FactoryGirl.create(:api, :name => "Before")
-    PublishedConfig.publish!(PublishedConfig.pending_config)
-    deleted_api.update_attributes(:deleted_at => Time.now.utc)
+    new_api = FactoryGirl.create(:api_backend)
+    deleted_api = FactoryGirl.create(:api_backend)
+    modified_api = FactoryGirl.create(:api_backend, :name => "Before")
+    publish_api_backends([
+      new_api.id,
+      deleted_api.id,
+      modified_api.id,
+    ])
+    deleted_api.delete
     modified_api.update_attributes(:name => "After")
-    FactoryGirl.create(:api)
+    FactoryGirl.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -36,8 +39,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_hides_categories_without_changes
-    PublishedConfig.publish!(PublishedConfig.pending_config)
-    FactoryGirl.create(:api)
+    FactoryGirl.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -47,8 +49,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_message_when_no_changes_to_publish
-    FactoryGirl.create(:api)
-    PublishedConfig.publish!(PublishedConfig.pending_config)
+    api = FactoryGirl.create(:api_backend)
+    publish_api_backends([api.id])
 
     admin_login
     visit "/admin/#/config/publish"
@@ -56,8 +58,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_diff_of_config_changes
-    api = FactoryGirl.create(:api, :name => "Before")
-    PublishedConfig.publish!(PublishedConfig.pending_config)
+    api = FactoryGirl.create(:api_backend, :name => "Before")
+    publish_api_backends([api.id])
     api.update_attributes(:name => "After")
 
     admin_login
@@ -70,7 +72,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_auto_selection_for_single_change
-    FactoryGirl.create(:api)
+    FactoryGirl.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -79,8 +81,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_no_auto_selection_for_multiple_changes
-    FactoryGirl.create(:api)
-    FactoryGirl.create(:api)
+    FactoryGirl.create(:api_backend)
+    FactoryGirl.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -89,8 +91,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_refreshes_changes_on_load
-    FactoryGirl.create(:api)
-    PublishedConfig.publish!(PublishedConfig.pending_config)
+    api = FactoryGirl.create(:api_backend)
+    publish_api_backends([api.id])
 
     admin_login
     visit "/admin/#/config/publish"
@@ -100,15 +102,15 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
     find("nav a", :text => /API Backends/).click
     assert_text("Add API Backend")
 
-    FactoryGirl.create(:api)
+    FactoryGirl.create(:api_backend)
     find("nav a", :text => /Configuration/).click
     find("nav a", :text => /Publish Changes/).click
     assert_text("1 New API Backends")
   end
 
   def test_check_or_uncheck_all_link
-    FactoryGirl.create(:api)
-    FactoryGirl.create(:api)
+    FactoryGirl.create(:api_backend)
+    FactoryGirl.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -138,8 +140,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_disables_publish_button_when_no_changes_checked
-    FactoryGirl.create(:api)
-    FactoryGirl.create(:api)
+    FactoryGirl.create(:api_backend)
+    FactoryGirl.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -162,7 +164,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   end
 
   def test_enables_publish_button_on_load_if
-    FactoryGirl.create(:api)
+    FactoryGirl.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
