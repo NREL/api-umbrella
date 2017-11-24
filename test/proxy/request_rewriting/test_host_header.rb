@@ -41,15 +41,21 @@ class Test::Proxy::RequestRewriting::TestHostHeader < Minitest::Test
     end
   end
 
-  def test_baceknd_host_null
+  def test_backend_host_null
     prepend_api_backends([
       {
+        :name => unique_test_id,
         :frontend_host => "127.0.0.1",
-        :backend_host => nil,
+        :backend_host => "temporary.example.com",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
+      config = PublishedConfig.active_config
+      api_config = config.fetch("apis").find { |a| a["name"] == unique_test_id }
+      api_config["backend_host"] = nil
+      force_publish_config(config)
+
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", http_options)
       assert_response_code(200, response)
       data = MultiJson.load(response.body)
@@ -57,15 +63,21 @@ class Test::Proxy::RequestRewriting::TestHostHeader < Minitest::Test
     end
   end
 
-  def test_baceknd_host_empty_string
+  def test_backend_host_empty_string
     prepend_api_backends([
       {
+        :name => unique_test_id,
         :frontend_host => "127.0.0.1",
-        :backend_host => "",
+        :backend_host => "temporary.example.com",
         :servers => [{ :host => "127.0.0.1", :port => 9444 }],
         :url_matches => [{ :frontend_prefix => "/#{unique_test_id}/", :backend_prefix => "/" }],
       },
     ]) do
+      config = PublishedConfig.active_config
+      api_config = config.fetch("apis").find { |a| a["name"] == unique_test_id }
+      api_config["backend_host"] = ""
+      force_publish_config(config)
+
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_id}/info/", http_options)
       assert_response_code(200, response)
       data = MultiJson.load(response.body)
