@@ -1,17 +1,18 @@
-local _M = {}
-
-local cjson = require "cjson"
 local cmsgpack = require "cmsgpack"
-local invert_table = require "api-umbrella.utils.invert_table"
-local lrucache = require "resty.lrucache.pureffi"
-local pg_utils = require "api-umbrella.utils.pg_utils"
 local hmac = require "api-umbrella.utils.hmac"
+local invert_table = require "api-umbrella.utils.invert_table"
+local json_null = require("cjson").null
+local lrucache = require "resty.lrucache.pureffi"
+local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
+local pg_utils = require "api-umbrella.utils.pg_utils"
 local shcache = require "shcache"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 
 local cache_computed_settings = utils.cache_computed_settings
 local is_empty = types.is_empty
+
+local _M = {}
 
 local function lookup_user(api_key)
   local api_key_hash = hmac(api_key)
@@ -21,22 +22,10 @@ local function lookup_user(api_key)
     return nil
   end
 
-  local raw_user = result[1]
-  if not raw_user then
+  local user = result[1]
+  if not user then
     return nil
   end
-
-  local user = utils.pick_where_present(raw_user, {
-    "created_at",
-    "disabled_at",
-    "email",
-    "email_verified",
-    "id",
-    "registration_source",
-    "roles",
-    "settings",
-    "throttle_by_ip",
-  })
 
   -- Invert the array of roles into a hashy table for more optimized
   -- lookups (so we can just check if the key exists, rather than
@@ -45,32 +34,9 @@ local function lookup_user(api_key)
     user["roles"] = invert_table(user["roles"])
   end
 
-  if user["settings"] and user["settings"] ~= cjson.null then
-    user["settings"] = utils.pick_where_present(user["settings"], {
-      "allowed_ips",
-      "allowed_referers",
-      "rate_limit_mode",
-    })
-
-    if raw_user["rate_limits"] and raw_user["rate_limits"] ~= cjson.null then
-      user["settings"]["rate_limits"] = {}
-      for _, limit in ipairs(raw_user["rate_limits"]) do
-        table.insert(user["settings"]["rate_limits"], utils.pick_where_present(limit, {
-          "duration",
-          "accuracy",
-          "limit_by",
-          "limit_to",
-          "distributed",
-          "response_headers",
-        }))
-      end
-    end
-
-    if is_empty(user["settings"]) then
-      user["settings"] = nil
-    else
-      cache_computed_settings(user["settings"])
-    end
+  if user["settings"] then
+    nillify_json_nulls(user["settings"])
+    cache_computed_settings(user["settings"])
   end
 
   return user

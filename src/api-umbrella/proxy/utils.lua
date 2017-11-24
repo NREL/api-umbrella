@@ -1,21 +1,18 @@
-local _M = {}
-
-local cjson = require "cjson"
 local cmsgpack = require "cmsgpack"
+local is_empty = require("pl.types").is_empty
+local iso8601_to_timestamp = require("api-umbrella.utils.time").iso8601_to_timestamp
+local json_null = require("cjson").null
 local plutils = require "pl.utils"
-local stringx = require "pl.stringx"
-local tablex = require "pl.tablex"
-local types = require "pl.types"
+local strip = require("pl.stringx").strip
+local table_keys = require("pl.tablex").keys
 
 local escape = plutils.escape
 local gsub = ngx.re.gsub
-local is_empty = types.is_empty
-local json_null = cjson.null
 local pack = cmsgpack.pack
 local split = plutils.split
-local strip = stringx.strip
-local table_keys = tablex.keys
 local unpack = cmsgpack.unpack
+
+local _M = {}
 
 -- Append an array to the end of the destination array.
 --
@@ -58,20 +55,6 @@ end
 
 function _M.set_packed(dict, key, value)
   return dict:set(key, pack(value))
-end
-
-function _M.pick_where_present(dict, keys)
-  local selected = {}
-
-  if type(dict) == "table" and type(keys) == "table" then
-    for _, key in ipairs(keys) do
-      if dict[key] and dict[key] ~= false and dict[key] ~= json_null and not is_empty(dict[key]) then
-        selected[key] = dict[key]
-      end
-    end
-  end
-
-  return selected
 end
 
 function _M.cache_computed_settings(settings)
@@ -128,13 +111,13 @@ function _M.cache_computed_settings(settings)
   end
   settings["http_basic_auth"] = nil
 
-  if settings["api_key_verification_transition_start_at"] and settings["api_key_verification_transition_start_at"]["$date"] then
-    settings["_api_key_verification_transition_start_at"] = settings["api_key_verification_transition_start_at"]["$date"]
+  if settings["api_key_verification_transition_start_at"] then
+    settings["_api_key_verification_transition_start_at"] = iso8601_to_timestamp(settings["api_key_verification_transition_start_at"])
   end
   settings["api_key_verification_transition_start_at"] = nil
 
-  if settings["require_https_transition_start_at"] and settings["require_https_transition_start_at"]["$date"] then
-    settings["_require_https_transition_start_at"] = settings["require_https_transition_start_at"]["$date"]
+  if settings["require_https_transition_start_at"] and settings["require_https_transition_start_at"] then
+    settings["_require_https_transition_start_at"] = iso8601_to_timestamp(settings["require_https_transition_start_at"])
   end
   settings["require_https_transition_start_at"] = nil
 

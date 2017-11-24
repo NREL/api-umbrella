@@ -693,9 +693,36 @@ return {
 
     db.query([[
       CREATE VIEW api_users_flattened AS
-        SELECT u.*,
-          row_to_json(s.*) AS settings,
-          (SELECT json_agg(r.*) FROM rate_limits AS r WHERE r.api_user_settings_id = s.id) AS rate_limits,
+        SELECT u.id,
+          u.version,
+          u.api_key_hash,
+          u.api_key_encrypted,
+          u.api_key_encrypted_iv,
+          u.email,
+          u.email_verified,
+          u.registration_source,
+          u.throttle_by_ip,
+          extract(epoch from u.disabled_at) AS disabled_at,
+          extract(epoch from u.created_at) AS created_at,
+          json_build_object(
+            'allowed_ips', s.allowed_ips,
+            'allowed_referers', s.allowed_referers,
+            'rate_limit_mode', s.rate_limit_mode,
+            'rate_limits', (
+              SELECT json_agg(r2.*)
+              FROM (
+                SELECT
+                  r.duration,
+                  r.accuracy,
+                  r.limit_by,
+                  r.limit_to,
+                  r.distributed,
+                  r.response_headers
+                FROM rate_limits AS r
+                WHERE r.api_user_settings_id = s.id
+              ) AS r2
+            )
+          ) AS settings,
           ARRAY(SELECT ar.api_role_id FROM api_users_roles AS ar WHERE ar.api_user_id = u.id) AS roles
         FROM api_users AS u
           LEFT JOIN api_user_settings AS s ON u.id = s.api_user_id

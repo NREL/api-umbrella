@@ -1214,32 +1214,21 @@ CREATE VIEW api_users_flattened AS
     u.api_key_hash,
     u.api_key_encrypted,
     u.api_key_encrypted_iv,
-    u.api_key_prefix,
     u.email,
     u.email_verified,
-    u.first_name,
-    u.last_name,
-    u.use_description,
-    u.website,
-    u.metadata,
-    u.registration_ip,
     u.registration_source,
-    u.registration_user_agent,
-    u.registration_referer,
-    u.registration_origin,
     u.throttle_by_ip,
-    u.disabled_at,
-    u.imported,
-    u.created_at,
-    u.created_by_id,
-    u.created_by_username,
-    u.updated_at,
-    u.updated_by_id,
-    u.updated_by_username,
-    row_to_json(s.*) AS settings,
-    ( SELECT json_agg(r.*) AS json_agg
-           FROM rate_limits r
-          WHERE (r.api_user_settings_id = s.id)) AS rate_limits,
+    date_part('epoch'::text, u.disabled_at) AS disabled_at,
+    date_part('epoch'::text, u.created_at) AS created_at,
+    json_build_object('allowed_ips', s.allowed_ips, 'allowed_referers', s.allowed_referers, 'rate_limit_mode', s.rate_limit_mode, 'rate_limits', ( SELECT json_agg(r2.*) AS json_agg
+           FROM ( SELECT r.duration,
+                    r.accuracy,
+                    r.limit_by,
+                    r.limit_to,
+                    r.distributed,
+                    r.response_headers
+                   FROM rate_limits r
+                  WHERE (r.api_user_settings_id = s.id)) r2)) AS settings,
     ARRAY( SELECT ar.api_role_id
            FROM api_users_roles ar
           WHERE (ar.api_user_id = u.id)) AS roles

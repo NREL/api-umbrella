@@ -74,6 +74,24 @@ function _M.timestamp_ms_to_csv(timestamp)
   return date:format(format_csv)
 end
 
+function _M.iso8601_to_timestamp(string)
+  if not string or string == null or string == json_null then
+    return nil
+  end
+
+  date:parse(format_iso8601, string)
+  return date:get_millis() / 1000
+end
+
+function _M.iso8601_to_timestamp_ms(string)
+  if not string or string == null or string == json_null then
+    return nil
+  end
+
+  date:parse(format_iso8601, string)
+  return date:get_millis()
+end
+
 function _M.iso8601_to_csv(string)
   if not string or string == null or string == json_null then
     return nil
