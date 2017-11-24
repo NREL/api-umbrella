@@ -212,7 +212,7 @@ module ApiUmbrellaTestHelpers
 
       yield if(block_given?)
     ensure
-      if(block_given?)
+      if(block_given? && api_ids && api_ids.any?)
         unpublish_api_backends(api_ids)
       end
     end
@@ -227,7 +227,7 @@ module ApiUmbrellaTestHelpers
 
       yield if(block_given?)
     ensure
-      if(block_given?)
+      if(block_given? && website_ids && website_ids.any?)
         unpublish_website_backends(website_ids)
       end
     end
@@ -277,6 +277,19 @@ module ApiUmbrellaTestHelpers
       self.config_publish_lock.synchronize do
         WebsiteBackend.delete(record_ids)
         publish_backends("website_backends", record_ids)
+      end
+    end
+
+    # Typically we want to publish config by using the "publish_backends"
+    # method, which uses the API to publish config (to better replicate what
+    # will happen in the real app). But in cases where we want to explicitly
+    # test invalid configuration that the app may not allow (eg, to test how
+    # existing data might be handled before extra validations were added), we
+    # can use this method to directly override the published config JSON.
+    def force_publish_config(config)
+      self.config_publish_lock.synchronize do
+        new_config = PublishedConfig.create!(:config => config)
+        new_config.wait_until_live
       end
     end
 
