@@ -4,7 +4,6 @@ local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
-local pg_utils = require "api-umbrella.utils.pg_utils"
 local readonly = require("pl.tablex").readonly
 local relations_loaded_key = require("lapis.db.model.relations").LOADED_KEY
 local singularize = require("lapis.util").singularize
@@ -286,10 +285,7 @@ function _M.validate_uniqueness(errors, values, error_field, model, unique_field
   -- Use a raw query, rather than model:count, since Lapis' models don't
   -- properly handle manually escaped SQL queries that might contain question
   -- marks in strings (it thinks any "?" needs to be interpolated).
-  local result, err = pg_utils.query("SELECT COUNT(*) AS c FROM " .. db.escape_identifier(table_name) .. " WHERE " .. where)
-  if err then
-    return error(err)
-  end
+  local result = db.select("COUNT(*) AS c FROM " .. db.escape_identifier(table_name) .. " WHERE " .. where)
   local count = result[1]["c"]
   if count > 0 then
     _M.add_error(errors, error_field, t("is already taken"))
@@ -461,13 +457,10 @@ function _M.has_many_delete_except(self, relation_model, foreign_key, keep_ids, 
     where = where .. " AND id NOT IN " .. db.escape_literal(db.list(keep_ids))
   end
 
-  -- Use a raw query, rather than model:count, since Lapis' models don't
+  -- Use a raw query, rather than model:delete, since Lapis' models don't
   -- properly handle manually escaped SQL queries that might contain question
   -- marks in strings (it thinks any "?" needs to be interpolated).
-  local result, err = pg_utils.query("DELETE FROM " .. db.escape_identifier(table_name) .. " WHERE " .. where)
-  if err then
-    return error(err)
-  end
+  db.query("DELETE FROM " .. db.escape_identifier(table_name) .. " WHERE " .. where)
 end
 
 function _M.has_many_save(self, values, name)
