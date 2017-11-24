@@ -4,6 +4,7 @@ local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
+local pg_utils = require "api-umbrella.utils.pg_utils"
 local readonly = require("pl.tablex").readonly
 local relations_loaded_key = require("lapis.db.model.relations").LOADED_KEY
 local singularize = require("lapis.util").singularize
@@ -267,6 +268,7 @@ function _M.validate_uniqueness(errors, values, error_field, model, unique_field
   assert(values["id"])
   assert(type(unique_fields) == "table")
   assert(#unique_fields > 0)
+  local table_name = assert(model:table_name())
 
   local conditions = {}
   table.insert(conditions, "id != " .. db.escape_literal(values["id"]))
@@ -279,8 +281,17 @@ function _M.validate_uniqueness(errors, values, error_field, model, unique_field
     table.insert(conditions, db.escape_identifier(unique_field) .. " = " .. db.escape_literal(values[unique_field]))
   end
 
-  local where_sql = table.concat(conditions, " AND ")
-  if model:count(where_sql) > 0 then
+  local where = table.concat(conditions, " AND ")
+
+  -- Use a raw query, rather than model:count, since Lapis' models don't
+  -- properly handle manually escaped SQL queries that might contain question
+  -- marks in strings (it thinks any "?" needs to be interpolated).
+  local result, err = pg_utils.query("SELECT COUNT(*) AS c FROM " .. db.escape_identifier(table_name) .. " WHERE " .. where)
+  if err then
+    return error(err)
+  end
+  local count = result[1]["c"]
+  if count > 0 then
     _M.add_error(errors, error_field, t("is already taken"))
   end
 end
@@ -450,7 +461,13 @@ function _M.has_many_delete_except(self, relation_model, foreign_key, keep_ids, 
     where = where .. " AND id NOT IN " .. db.escape_literal(db.list(keep_ids))
   end
 
-  db.delete(table_name, where)
+  -- Use a raw query, rather than model:count, since Lapis' models don't
+  -- properly handle manually escaped SQL queries that might contain question
+  -- marks in strings (it thinks any "?" needs to be interpolated).
+  local result, err = pg_utils.query("DELETE FROM " .. db.escape_identifier(table_name) .. " WHERE " .. where)
+  if err then
+    return error(err)
+  end
 end
 
 function _M.has_many_save(self, values, name)
