@@ -204,7 +204,7 @@ class Test::Proxy::RequestRewriting::TestUrlRewrites < Minitest::Test
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/info/named-arg?foo=hello3&foo=hello1&foo=hello2", http_options)
     assert_response_code(200, response)
     data = MultiJson.load(response.body)
-    assert_equal("/info/matched-named-arg?bar=hello3,hello1,hello2", data["url"]["path"])
+    assert_equal("/info/matched-named-arg?bar=hello3%2Chello1%2Chello2", data["url"]["path"])
   end
 
   def test_route_matcher_query_params_capturing_args_any_order
