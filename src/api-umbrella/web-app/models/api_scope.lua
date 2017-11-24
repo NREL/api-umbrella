@@ -1,6 +1,7 @@
 local api_scope_policy = require "api-umbrella.web-app.policies.api_scope_policy"
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
 local json_null = require("cjson").null
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local t = require("resty.gettext").gettext
 local time = require "api-umbrella.utils.time"
@@ -21,19 +22,19 @@ ApiScope = model_ext.new_class("api_scopes", {
 
   as_json = function(self)
     return {
-      id = self.id or json_null,
-      name = self.name or json_null,
-      host = self.host or json_null,
-      path_prefix = self.path_prefix or json_null,
-      created_at = time.postgres_to_iso8601(self.created_at) or json_null,
-      created_by = self.created_by_id or json_null,
+      id = json_null_default(self.id),
+      name = json_null_default(self.name),
+      host = json_null_default(self.host),
+      path_prefix = json_null_default(self.path_prefix),
+      created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
+      created_by = json_null_default(self.created_by_id),
       creator = {
-        username = self.created_by_username or json_null,
+        username = json_null_default(self.created_by_username),
       },
-      updated_at = time.postgres_to_iso8601(self.updated_at) or json_null,
-      updated_by = self.updated_by_id or json_null,
+      updated_at = json_null_default(time.postgres_to_iso8601(self.updated_at)),
+      updated_by = json_null_default(self.updated_by_id),
       updater = {
-        username = self.updated_by_username or json_null,
+        username = json_null_default(self.updated_by_username),
       },
       deleted_at = json_null,
       version = 1,

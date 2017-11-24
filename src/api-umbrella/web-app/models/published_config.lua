@@ -6,6 +6,7 @@ local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local pg_encode_json = require("pgmoon.json").encode_json
 local pretty_yaml_dump = require "api-umbrella.web-app.utils.pretty_yaml_dump"
@@ -186,17 +187,17 @@ local function model_pending_changes_json(active_records_config, model, policy, 
   for _, type_changes in pairs(changes) do
     for _, change in ipairs(type_changes) do
       if change["pending"] then
-        change["id"] = change["pending"]["id"] or json_null
-        change["name"] = change["pending"]["name"] or change["pending"]["frontend_host"] or json_null
+        change["id"] = json_null_default(change["pending"]["id"])
+        change["name"] = json_null_default(change["pending"]["name"] or change["pending"]["frontend_host"])
       else
-        change["id"] = change["active"]["id"] or json_null
-        change["name"] = change["active"]["name"] or change["active"]["frontend_host"] or json_null
+        change["id"] = json_null_default(change["active"]["id"])
+        change["name"] = json_null_default(change["active"]["name"] or change["active"]["frontend_host"])
       end
 
       local active_record_compare_config = active_records_compare_config_by_id[change["id"]]
       local pending_record_compare_config = pending_records_compare_config_by_id[change["id"]]
-      change["active_yaml"] = pretty_yaml_dump(active_record_compare_config) or json_null
-      change["pending_yaml"] = pretty_yaml_dump(pending_record_compare_config) or json_null
+      change["active_yaml"] = json_null_default(pretty_yaml_dump(active_record_compare_config))
+      change["pending_yaml"] = json_null_default(pretty_yaml_dump(pending_record_compare_config))
     end
 
     setmetatable(type_changes, cjson.empty_array_mt)

@@ -6,6 +6,7 @@ local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
 local is_empty = require("pl.types").is_empty
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("resty.gettext").gettext
@@ -119,49 +120,49 @@ ApiUser = model_ext.new_class("api_users", {
   as_json = function(self, options)
     local updated_at = time.postgres_to_timestamp(self.updated_at)
     local data = {
-      id = self.id or json_null,
-      email = self.email or json_null,
-      first_name = self.first_name or json_null,
-      last_name = self.last_name or json_null,
-      use_description = self.use_description or json_null,
-      website = self.website or json_null,
-      registration_source = self.registration_source or json_null,
-      throttle_by_ip = self.throttle_by_ip or json_null,
-      roles = self:role_ids() or json_null,
+      id = json_null_default(self.id),
+      email = json_null_default(self.email),
+      first_name = json_null_default(self.first_name),
+      last_name = json_null_default(self.last_name),
+      use_description = json_null_default(self.use_description),
+      website = json_null_default(self.website),
+      registration_source = json_null_default(self.registration_source),
+      throttle_by_ip = json_null_default(self.throttle_by_ip),
+      roles = json_null_default(self:role_ids()),
       settings = json_null,
       enabled = self:enabled(),
-      disabled_at = time.postgres_to_iso8601(self.disabled_at) or json_null,
+      disabled_at = json_null_default(time.postgres_to_iso8601(self.disabled_at)),
       ts = {
         ["$timestamp"] = {
-          t = math.floor(updated_at) or json_null,
+          t = json_null_default(math.floor(updated_at)),
           i = 1,
         },
       },
-      created_at = time.postgres_to_iso8601(self.created_at) or json_null,
-      created_by = self.created_by_id or json_null,
+      created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
+      created_by = json_null_default(self.created_by_id),
       creator = {
-        username = self.created_by_username or json_null,
+        username = json_null_default(self.created_by_username),
       },
-      updated_at = time.timestamp_to_iso8601(updated_at) or json_null,
-      updated_by = self.updated_by_id or json_null,
+      updated_at = json_null_default(time.timestamp_to_iso8601(updated_at)),
+      updated_by = json_null_default(self.updated_by_id),
       updater = {
-        username = self.updated_by_username or json_null,
+        username = json_null_default(self.updated_by_username),
       },
       deleted_at = json_null,
       version = 1,
     }
 
     if ngx.ctx.current_admin then
-      data["api_key_preview"] = self:api_key_preview() or json_null
-      data["email_verified"] = self.email_verified or json_null
-      data["registration_ip"] = self.registration_ip or json_null
-      data["registration_origin"] = self.registration_origin or json_null
-      data["registration_referer"] = self.registration_referer or json_null
-      data["registration_user_agent"] = self.registration_user_agent or json_null
+      data["api_key_preview"] = json_null_default(self:api_key_preview())
+      data["email_verified"] = json_null_default(self.email_verified)
+      data["registration_ip"] = json_null_default(self.registration_ip)
+      data["registration_origin"] = json_null_default(self.registration_origin)
+      data["registration_referer"] = json_null_default(self.registration_referer)
+      data["registration_user_agent"] = json_null_default(self.registration_user_agent)
 
       if options and options["allow_api_key"] and self:admin_can_view_api_key() then
-        data["api_key"] = self:api_key_decrypted() or json_null
-        data["api_key_hides_at"] = time.timestamp_to_iso8601(self:api_key_hides_at()) or json_null
+        data["api_key"] = json_null_default(self:api_key_decrypted())
+        data["api_key_hides_at"] = json_null_default(time.timestamp_to_iso8601(self:api_key_hides_at()))
       end
     end
 

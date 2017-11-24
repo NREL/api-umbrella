@@ -1,17 +1,18 @@
 local json_null = require("cjson").null
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local time = require "api-umbrella.utils.time"
 
 local AdminPermission = model_ext.new_class("admin_permissions", {
   as_json = function(self)
     return {
-      id = self.id or json_null,
-      name = self.name or json_null,
-      display_order = self.display_order or json_null,
-      created_at = time.postgres_to_iso8601(self.created_at) or json_null,
-      created_by = self.created_by_id or json_null,
-      updated_at = time.postgres_to_iso8601(self.updated_at) or json_null,
-      updated_by = self.updated_by_id or json_null,
+      id = json_null_default(self.id),
+      name = json_null_default(self.name),
+      display_order = json_null_default(self.display_order),
+      created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
+      created_by = json_null_default(self.created_by_id),
+      updated_at = json_null_default(time.postgres_to_iso8601(self.updated_at)),
+      updated_by = json_null_default(self.updated_by_id),
       deleted_at = json_null,
       version = 1,
     }

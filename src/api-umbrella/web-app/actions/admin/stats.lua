@@ -12,6 +12,7 @@ local db = require "lapis.db"
 local formatted_interval_time = require "api-umbrella.web-app.utils.formatted_interval_time"
 local is_empty = require("pl.types").is_empty
 local json_null = require("cjson").null
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local number_with_delimiter = require "api-umbrella.web-app.utils.number_with_delimiter"
 local round = require "api-umbrella.utils.round"
@@ -468,16 +469,16 @@ function _M.users(self)
     local user = users_by_id[user_id] or {}
 
     table.insert(user_data, {
-      id = user_id or json_null,
-      email = user.email or json_null,
-      first_name = user.first_name or json_null,
-      last_name = user.last_name or json_null,
-      website = user.website or json_null,
-      registration_source = user.registration_source or json_null,
-      created_at = time.postgres_to_iso8601(user.created_at) or json_null,
-      hits = bucket["doc_count"] or json_null,
-      last_request_at = time.timestamp_ms_to_iso8601(bucket["last_request_at"]["value"]) or json_null,
-      use_description = user.use_description or json_null,
+      id = json_null_default(user_id),
+      email = json_null_default(user.email),
+      first_name = json_null_default(user.first_name),
+      last_name = json_null_default(user.last_name),
+      website = json_null_default(user.website),
+      registration_source = json_null_default(user.registration_source),
+      created_at = json_null_default(time.postgres_to_iso8601(user.created_at)),
+      hits = json_null_default(bucket["doc_count"]),
+      last_request_at = json_null_default(time.timestamp_ms_to_iso8601(bucket["last_request_at"]["value"])),
+      use_description = json_null_default(user.use_description),
     })
   end
 

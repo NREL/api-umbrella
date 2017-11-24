@@ -1,5 +1,5 @@
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
-local json_null = require("cjson").null
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
@@ -11,9 +11,9 @@ local ApiBackendServer
 ApiBackendServer = model_ext.new_class("api_backend_servers", {
   as_json = function(self)
     return {
-      id = self.id or json_null,
-      host = self.host or json_null,
-      port = self.port or json_null,
+      id = json_null_default(self.id),
+      host = json_null_default(self.host),
+      port = json_null_default(self.port),
     }
   end,
 }, {

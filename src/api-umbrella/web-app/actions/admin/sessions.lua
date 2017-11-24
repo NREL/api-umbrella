@@ -5,7 +5,7 @@ local build_url = require "api-umbrella.utils.build_url"
 local csrf = require "lapis.csrf"
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
-local json_null = require("cjson").null
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local random_token = require "api-umbrella.utils.random_token"
 local respond_to = require("lapis.application").respond_to
@@ -69,19 +69,19 @@ function _M.auth(self)
     local api_user = ApiUser:select("WHERE email = ? ORDER BY created_at LIMIT 1", "web.admin.ajax@internal.apiumbrella")[1]
 
     response["authenticated"] = true
-    response["analytics_timezone"] = config["analytics"]["timezone"] or json_null
+    response["analytics_timezone"] = json_null_default(config["analytics"]["timezone"])
     response["enable_beta_analytics"] = (config["analytics"]["adapter"] == "kylin" or (config["analytics"]["outputs"] and array_includes(config["analytics"]["outputs"], "kylin")))
-    response["username_is_email"] = config["web"]["admin"]["username_is_email"] or json_null
-    response["local_auth_enabled"] = config["web"]["admin"]["auth_strategies"]["_local_enabled?"] or json_null
-    response["password_length_min"] = config["web"]["admin"]["password_length_min"] or json_null
-    response["api_umbrella_version"] = API_UMBRELLA_VERSION or json_null
+    response["username_is_email"] = json_null_default(config["web"]["admin"]["username_is_email"])
+    response["local_auth_enabled"] = json_null_default(config["web"]["admin"]["auth_strategies"]["_local_enabled?"])
+    response["password_length_min"] = json_null_default(config["web"]["admin"]["password_length_min"])
+    response["api_umbrella_version"] = json_null_default(API_UMBRELLA_VERSION)
     response["admin"] = {}
-    response["admin"]["email"] = admin["email"] or json_null
-    response["admin"]["id"] = admin["id"] or json_null
-    response["admin"]["superuser"] = admin["superuser"] or json_null
-    response["admin"]["username"] = admin["username"] or json_null
-    response["api_key"] = api_user:api_key_decrypted() or json_null
-    response["admin_auth_token"] = current_admin:authentication_token_decrypted() or json_null
+    response["admin"]["email"] = json_null_default(admin["email"])
+    response["admin"]["id"] = json_null_default(admin["id"])
+    response["admin"]["superuser"] = json_null_default(admin["superuser"])
+    response["admin"]["username"] = json_null_default(admin["username"])
+    response["api_key"] = json_null_default(api_user:api_key_decrypted())
+    response["admin_auth_token"] = json_null_default(current_admin:authentication_token_decrypted())
   end
 
   return json_response(self, response)

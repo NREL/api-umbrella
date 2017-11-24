@@ -1,6 +1,6 @@
 local db = require "lapis.db"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
-local json_null = require("cjson").null
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
@@ -61,13 +61,13 @@ local RateLimit
 RateLimit = model_ext.new_class("rate_limits", {
   as_json = function(self)
     local data = {
-      id = self.id or json_null,
-      duration = int64_to_json_number(self.duration) or json_null,
-      accuracy = int64_to_json_number(self.accuracy) or json_null,
-      limit_by = self.limit_by or json_null,
-      limit = int64_to_json_number(self.limit_to) or json_null,
-      distributed = self.distributed or json_null,
-      response_headers = self.response_headers or json_null,
+      id = json_null_default(self.id),
+      duration = json_null_default(int64_to_json_number(self.duration)),
+      accuracy = json_null_default(int64_to_json_number(self.accuracy)),
+      limit_by = json_null_default(self.limit_by),
+      limit = json_null_default(int64_to_json_number(self.limit_to)),
+      distributed = json_null_default(self.distributed),
+      response_headers = json_null_default(self.response_headers),
     }
 
     -- Return the legacy capitalization of "apiKey" for backwards compatibility

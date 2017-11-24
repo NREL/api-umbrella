@@ -1,12 +1,12 @@
 local ApiBackendHttpHeader = require "api-umbrella.web-app.models.api_backend_http_header"
 local ApiRole = require "api-umbrella.web-app.models.api_role"
 local RateLimit = require "api-umbrella.web-app.models.rate_limit"
-local cjson = require "cjson"
 local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
 local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local lyaml = require "lyaml"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
@@ -20,7 +20,6 @@ local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local db_null = db.NULL
 local db_raw = db.raw
-local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
 local function http_headers_to_string(self, header_type)
@@ -131,34 +130,34 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
 
   as_json = function(self, options)
     local data = {
-      id = self.id or json_null,
-      allowed_ips = self.allowed_ips or json_null,
-      allowed_referers = self.allowed_referers or json_null,
-      anonymous_rate_limit_behavior = self.anonymous_rate_limit_behavior or json_null,
-      api_key_verification_level = self.api_key_verification_level or json_null,
-      api_key_verification_transition_start_at = time.postgres_to_iso8601(self.api_key_verification_transition_start_at) or json_null,
-      append_query_string = self.append_query_string or json_null,
-      authenticated_rate_limit_behavior = self.authenticated_rate_limit_behavior or json_null,
+      id = json_null_default(self.id),
+      allowed_ips = json_null_default(self.allowed_ips),
+      allowed_referers = json_null_default(self.allowed_referers),
+      anonymous_rate_limit_behavior = json_null_default(self.anonymous_rate_limit_behavior),
+      api_key_verification_level = json_null_default(self.api_key_verification_level),
+      api_key_verification_transition_start_at = json_null_default(time.postgres_to_iso8601(self.api_key_verification_transition_start_at)),
+      append_query_string = json_null_default(self.append_query_string),
+      authenticated_rate_limit_behavior = json_null_default(self.authenticated_rate_limit_behavior),
       default_response_headers = {},
-      default_response_headers_string = self:default_response_headers_string() or json_null,
-      disable_api_key = self.disable_api_key or json_null,
-      error_data = self.error_data or json_null,
-      error_data_yaml_strings = self:error_data_yaml_strings() or json_null,
-      error_templates = self.error_templates or json_null,
+      default_response_headers_string = json_null_default(self:default_response_headers_string()),
+      disable_api_key = json_null_default(self.disable_api_key),
+      error_data = json_null_default(self.error_data),
+      error_data_yaml_strings = json_null_default(self:error_data_yaml_strings()),
+      error_templates = json_null_default(self.error_templates),
       headers = {},
-      headers_string = self:headers_string() or json_null,
-      http_basic_auth = self.http_basic_auth or json_null,
+      headers_string = json_null_default(self:headers_string()),
+      http_basic_auth = json_null_default(self.http_basic_auth),
       override_response_headers = {},
-      override_response_headers_string = self:override_response_headers_string() or json_null,
-      pass_api_key_header = self.pass_api_key_header or json_null,
-      pass_api_key_query_param = self.pass_api_key_query_param or json_null,
-      rate_limit_bucket_name = self.rate_limit_bucket_name or json_null,
-      rate_limit_mode = self.rate_limit_mode or json_null,
+      override_response_headers_string = json_null_default(self:override_response_headers_string()),
+      pass_api_key_header = json_null_default(self.pass_api_key_header),
+      pass_api_key_query_param = json_null_default(self.pass_api_key_query_param),
+      rate_limit_bucket_name = json_null_default(self.rate_limit_bucket_name),
+      rate_limit_mode = json_null_default(self.rate_limit_mode),
       rate_limits = {},
-      require_https = self.require_https or json_null,
-      require_https_transition_start_at = time.postgres_to_iso8601(self.require_https_transition_start_at) or json_null,
-      required_roles = self:required_role_ids() or json_null,
-      required_roles_override = self.required_roles_override or json_null,
+      require_https = json_null_default(self.require_https),
+      require_https_transition_start_at = json_null_default(time.postgres_to_iso8601(self.require_https_transition_start_at)),
+      required_roles = json_null_default(self:required_role_ids()),
+      required_roles_override = json_null_default(self.required_roles_override),
     }
 
     local http_headers = self:get_http_headers()
@@ -288,6 +287,18 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       end
     end
 
+    if data["error_templates"] then
+      if not is_hash(data["error_templates"]) then
+        model_ext.add_error(errors, "settings.error_templates", t("unexpected type (must be a hash)"))
+      else
+        for key, value in pairs(data["error_templates"]) do
+          if type(value) ~= "string" then
+            model_ext.add_error(errors, "settings.error_templates." .. key, t("unexpected type (must be a string)"))
+          end
+        end
+      end
+    end
+
     return errors
   end,
 
@@ -302,6 +313,10 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
 
     if is_hash(values["error_data"]) and values["error_data"] ~= db_null then
       values["error_data"] = db_raw(pg_encode_json(values["error_data"]))
+    end
+
+    if is_hash(values["error_templates"]) and values["error_templates"] ~= db_null then
+      values["error_templates"] = db_raw(pg_encode_json(values["error_templates"]))
     end
   end,
 

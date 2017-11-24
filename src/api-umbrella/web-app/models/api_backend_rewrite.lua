@@ -1,4 +1,4 @@
-local json_null = require("cjson").null
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
@@ -10,11 +10,11 @@ local ApiBackendRewrite
 ApiBackendRewrite = model_ext.new_class("api_backend_rewrites", {
   as_json = function(self)
     return {
-      id = self.id or json_null,
-      matcher_type = self.matcher_type or json_null,
-      http_method = self.http_method or json_null,
-      frontend_matcher = self.frontend_matcher or json_null,
-      backend_replacement = self.backend_replacement or json_null,
+      id = json_null_default(self.id),
+      matcher_type = json_null_default(self.matcher_type),
+      http_method = json_null_default(self.http_method),
+      frontend_matcher = json_null_default(self.frontend_matcher),
+      backend_replacement = json_null_default(self.backend_replacement),
     }
   end,
 }, {

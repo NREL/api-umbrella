@@ -1,5 +1,6 @@
 local ApiBackendSettings = require "api-umbrella.web-app.models.api_backend_settings"
 local json_null = require("cjson").null
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local t = require("resty.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
@@ -15,9 +16,9 @@ ApiBackendSubUrlSettings = model_ext.new_class("api_backend_sub_url_settings", {
 
   as_json = function(self, options)
     local data = {
-      id = self.id or json_null,
-      http_method = self.http_method or json_null,
-      regex = self.regex or json_null,
+      id = json_null_default(self.id),
+      http_method = json_null_default(self.http_method),
+      regex = json_null_default(self.regex),
       settings = json_null,
     }
 

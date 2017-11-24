@@ -1,8 +1,8 @@
 local RateLimit = require "api-umbrella.web-app.models.rate_limit"
-local cjson = require "cjson"
 local db = require "lapis.db"
 local is_array = require "api-umbrella.utils.is_array"
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
 local t = require("resty.gettext").gettext
@@ -10,7 +10,6 @@ local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local db_null = db.NULL
 local db_raw = db.raw
-local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
 local ApiUserSettings = model_ext.new_class("api_user_settings", {
@@ -25,10 +24,10 @@ local ApiUserSettings = model_ext.new_class("api_user_settings", {
 
   as_json = function(self, options)
     local data = {
-      id = self.id or json_null,
-      allowed_ips = self.allowed_ips or json_null,
-      allowed_referers = self.allowed_referers or json_null,
-      rate_limit_mode = self.rate_limit_mode or json_null,
+      id = json_null_default(self.id),
+      allowed_ips = json_null_default(self.allowed_ips),
+      allowed_referers = json_null_default(self.allowed_referers),
+      rate_limit_mode = json_null_default(self.rate_limit_mode),
       rate_limits = {},
     }
 

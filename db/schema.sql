@@ -968,7 +968,7 @@ CREATE TABLE api_backend_settings (
     http_basic_auth character varying(255),
     require_https character varying(23),
     require_https_transition_start_at timestamp with time zone,
-    disable_api_key boolean DEFAULT false NOT NULL,
+    disable_api_key boolean,
     api_key_verification_level character varying(16),
     api_key_verification_transition_start_at timestamp with time zone,
     required_roles_override boolean DEFAULT false NOT NULL,

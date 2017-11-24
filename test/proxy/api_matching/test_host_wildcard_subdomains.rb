@@ -9,7 +9,6 @@ class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
     super
     setup_server
     once_per_class_setup do
-      ap unique_test_class_id
       prepend_api_backends([
         {
           :frontend_host => "*.star-dot.#{unique_test_class_id}",
@@ -52,17 +51,6 @@ class Test::Proxy::ApiMatching::TestHostWildcardSubdomains < Minitest::Test
           :settings => {
             :headers => [
               { :key => "X-Backend", :value => "wildcard-dot-backend" },
-            ],
-          },
-        },
-        {
-          :frontend_host => "*star.#{unique_test_class_id}",
-          :backend_host => "example.com",
-          :servers => [{ :host => "127.0.0.1", :port => 9444 }],
-          :url_matches => [{ :frontend_prefix => "/", :backend_prefix => "/" }],
-          :settings => {
-            :headers => [
-              { :key => "X-Backend", :value => "wildcard-star" },
             ],
           },
         },

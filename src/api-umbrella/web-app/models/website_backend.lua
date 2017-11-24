@@ -1,5 +1,6 @@
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
 local json_null = require("cjson").null
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local t = require("resty.gettext").gettext
 local time = require "api-umbrella.utils.time"
@@ -21,20 +22,20 @@ WebsiteBackend = model_ext.new_class("website_backends", {
 
   as_json = function(self)
     return {
-      id = self.id or json_null,
-      frontend_host = self.frontend_host or json_null,
-      backend_protocol = self.backend_protocol or json_null,
-      server_host = self.server_host or json_null,
-      server_port = self.server_port or json_null,
-      created_at = time.postgres_to_iso8601(self.created_at) or json_null,
-      created_by = self.created_by_id or json_null,
+      id = json_null_default(self.id),
+      frontend_host = json_null_default(self.frontend_host),
+      backend_protocol = json_null_default(self.backend_protocol),
+      server_host = json_null_default(self.server_host),
+      server_port = json_null_default(self.server_port),
+      created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
+      created_by = json_null_default(self.created_by_id),
       creator = {
-        username = self.created_by_username or json_null,
+        username = json_null_default(self.created_by_username),
       },
-      updated_at = time.postgres_to_iso8601(self.updated_at) or json_null,
-      updated_by = self.updated_by_id or json_null,
+      updated_at = json_null_default(time.postgres_to_iso8601(self.updated_at)),
+      updated_by = json_null_default(self.updated_by_id),
       updater = {
-        username = self.updated_by_username or json_null,
+        username = json_null_default(self.updated_by_username),
       },
       deleted_at = json_null,
       version = 1,

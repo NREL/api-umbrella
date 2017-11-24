@@ -3,6 +3,7 @@ local cjson = require "cjson"
 local db = require "lapis.db"
 local is_empty = require("pl.types").is_empty
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local t = require("resty.gettext").gettext
 local time = require "api-umbrella.utils.time"
@@ -59,7 +60,7 @@ AdminGroup = model_ext.new_class("admin_groups", {
       table.insert(admins, {
         id = admin.id,
         username = admin.username,
-        last_sign_in_at = time.postgres_to_iso8601(admin.last_sign_in_at) or json_null,
+        last_sign_in_at = json_null_default(time.postgres_to_iso8601(admin.last_sign_in_at)),
       })
     end
 
@@ -125,24 +126,24 @@ AdminGroup = model_ext.new_class("admin_groups", {
 
   as_json = function(self, options)
     local data = {
-      id = self.id or json_null,
-      name = self.name or json_null,
-      created_at = time.postgres_to_iso8601(self.created_at) or json_null,
-      created_by = self.created_by_id or json_null,
+      id = json_null_default(self.id),
+      name = json_null_default(self.name),
+      created_at = json_null_default(time.postgres_to_iso8601(self.created_at)),
+      created_by = json_null_default(self.created_by_id),
       creator = {
-        username = self.created_by_username or json_null,
+        username = json_null_default(self.created_by_username),
       },
-      updated_at = time.postgres_to_iso8601(self.updated_at) or json_null,
-      updated_by = self.updated_by_id or json_null,
+      updated_at = json_null_default(time.postgres_to_iso8601(self.updated_at)),
+      updated_by = json_null_default(self.updated_by_id),
       updater = {
-        username = self.updated_by_username or json_null,
+        username = json_null_default(self.updated_by_username),
       },
-      api_scope_ids = self:api_scope_ids() or json_null,
-      api_scope_display_names = self:api_scope_display_names() or json_null,
-      permission_ids = self:permission_ids() or json_null,
-      permission_display_names = self:permission_names() or json_null,
-      admins = self:admins_as_json() or json_null,
-      admin_usernames = self:admin_usernames() or json_null,
+      api_scope_ids = json_null_default(self:api_scope_ids()),
+      api_scope_display_names = json_null_default(self:api_scope_display_names()),
+      permission_ids = json_null_default(self:permission_ids()),
+      permission_display_names = json_null_default(self:permission_names()),
+      admins = json_null_default(self:admins_as_json()),
+      admin_usernames = json_null_default(self:admin_usernames()),
       deleted_at = json_null,
       version = 1,
     }

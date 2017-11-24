@@ -1,6 +1,6 @@
-local is_empty = require("pl.types").is_empty
 local db = require "lapis.db"
-local json_null = require("cjson").null
+local is_empty = require("pl.types").is_empty
+local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
 
 local db_null = db.NULL
@@ -8,7 +8,7 @@ local db_null = db.NULL
 local ApiRole = model_ext.new_class("api_roles", {
   as_json = function(self)
     return {
-      id = self.id or json_null,
+      id = json_null_default(self.id),
     }
   end,
 }, {

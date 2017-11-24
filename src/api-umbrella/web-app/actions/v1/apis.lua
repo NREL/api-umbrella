@@ -119,20 +119,43 @@ local function api_backend_settings_params(input_settings)
     required_roles_override = input_settings["required_roles_override"],
   })
 
-  if input_settings["error_data_yaml_strings"] then
-    params_settings["error_data_yaml_strings"] = {}
-    if is_hash(input_settings["error_data_yaml_strings"]) then
-      local error_data_fields = {
-        "common",
-        "api_key_missing",
-        "api_key_invalid",
-        "api_key_disabled",
-        "api_key_unauthorized",
-        "over_rate_limit",
-        "https_required",
+  local error_data_param_fields = {
+    "error_data",
+    "error_data_yaml_strings",
+  }
+  local error_data_fields = {
+    "common",
+    "api_key_missing",
+    "api_key_invalid",
+    "api_key_disabled",
+    "api_key_unauthorized",
+    "over_rate_limit",
+    "https_required",
+  }
+  for _, param_field in ipairs(error_data_param_fields) do
+    if input_settings[param_field] then
+      params_settings[param_field] = {}
+      if is_hash(input_settings[param_field]) then
+        for _, error_data_field in ipairs(error_data_fields) do
+          local input_value = input_settings[param_field][error_data_field]
+          params_settings[param_field][error_data_field] = input_value
+        end
+      end
+    end
+  end
+
+  if input_settings["error_templates"] then
+    params_settings["error_templates"] = {}
+    if is_hash(input_settings["error_templates"]) then
+      local error_template_fields = {
+        "csv",
+        "html",
+        "json",
+        "xml",
       }
-      for _, error_data_field in ipairs(error_data_fields) do
-        params_settings["error_data_yaml_strings"][error_data_field] = input_settings["error_data_yaml_strings"][error_data_field]
+      for _, error_template_field in ipairs(error_template_fields) do
+        local input_value = input_settings["error_templates"][error_template_field]
+        params_settings["error_templates"][error_template_field] = input_value
       end
     end
   end
