@@ -1064,6 +1064,7 @@ CREATE TABLE api_backends (
     frontend_host character varying(255) NOT NULL,
     backend_host character varying(255),
     balance_algorithm character varying(11) NOT NULL,
+    keepalive_connections smallint,
     created_at timestamp with time zone NOT NULL,
     created_by_id uuid NOT NULL,
     created_by_username character varying(255) NOT NULL,

@@ -138,6 +138,7 @@ ApiBackend = model_ext.new_class("api_backends", {
       frontend_host = json_null_default(self.frontend_host),
       backend_host = json_null_default(self.backend_host),
       balance_algorithm = json_null_default(self.balance_algorithm),
+      keepalive_connections = json_null_default(self.keepalive_connections),
       frontend_prefixes = {},
       rewrites = {},
       servers = {},
@@ -335,6 +336,7 @@ ApiBackend = model_ext.new_class("api_backends", {
       validate_field(errors, data, "backend_host", validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     end
     validate_field(errors, data, "balance_algorithm", validation_ext:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "keepalive_connections", validation_ext.db_null_optional.number:between(0, 32767), t("is not a number"))
     validate_field(errors, data, "servers", validation_ext.non_null_table:minlen(1), t("must have at least one servers"), { error_field = "base" })
     validate_field(errors, data, "url_matches", validation_ext.non_null_table:minlen(1), t("must have at least one url_matches"), { error_field = "base" })
     return errors

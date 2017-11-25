@@ -211,6 +211,7 @@ function _M.api_backend_params(self)
       frontend_host = input["frontend_host"],
       backend_host = input["backend_host"],
       balance_algorithm = input["balance_algorithm"],
+      keepalive_connections = input["keepalive_connections"],
     })
 
     if input["rewrites"] then

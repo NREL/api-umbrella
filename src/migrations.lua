@@ -309,6 +309,7 @@ return {
         frontend_host varchar(255) NOT NULL,
         backend_host varchar(255),
         balance_algorithm varchar(11) NOT NULL CHECK(balance_algorithm IN('round_robin', 'least_conn', 'ip_hash')),
+        keepalive_connections smallint,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
