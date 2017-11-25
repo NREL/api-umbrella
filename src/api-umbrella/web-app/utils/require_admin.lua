@@ -20,6 +20,8 @@ return function(fn)
       return self:write({ layout = false })
     end
 
-    return fn(self, ...)
+    if fn then
+      return fn(self, ...)
+    end
   end
 end

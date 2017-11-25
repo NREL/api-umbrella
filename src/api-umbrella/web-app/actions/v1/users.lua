@@ -14,7 +14,7 @@ local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local parse_post_for_pseudo_ie_cors = require "api-umbrella.web-app.utils.parse_post_for_pseudo_ie_cors"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
-local respond_to = require("lapis.application").respond_to
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 
 local db_null = db.NULL
 
@@ -225,17 +225,16 @@ return function(app)
     before = require_admin(function(self)
       self.api_user = ApiUser:find(self.params["id"])
       if not self.api_user then
-        self:write({"Not Found", status = 404})
+        return self.app.handle_404(self)
       end
     end),
     GET = capture_errors_json_full(_M.show),
     POST = capture_errors_json_full(json_params(_M.update)),
     PUT = capture_errors_json_full(json_params(_M.update)),
-    DELETE = function(self)
-      self:write({ "Not Found", status = 404 })
-    end,
   }))
 
-  app:get("/api-umbrella/v1/users(.:format)", require_admin(capture_errors_json_full(_M.index)))
-  app:post("/api-umbrella/v1/users(.:format)", capture_errors_json_full(parse_post_for_pseudo_ie_cors(json_params(_M.create))))
+  app:match("/api-umbrella/v1/users(.:format)", respond_to({
+    GET = require_admin(capture_errors_json_full(_M.index)),
+    POST = capture_errors_json_full(parse_post_for_pseudo_ie_cors(json_params(_M.create))),
+  }))
 end

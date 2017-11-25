@@ -33,6 +33,7 @@ app.handle_error = function(self, err, trace)
   if lapis_config.show_errors then
     return lapis.Application.handle_error(self, err, trace)
   else
+    self.res.headers["Content-Type"] = "text/html"
     return {
       status = 500,
       render = "500",
@@ -50,12 +51,13 @@ app.render_error_request = function(self, r, err, trace)
   return self:render_request(r)
 end
 
-app.handle_404 = function()
-  return {
+app.handle_404 = function(self)
+  self.res.headers["Content-Type"] = "text/html"
+  return self:write({
     status = 404,
     render = "404",
     layout = false,
-  }
+  })
 end
 
 local function current_admin_from_token()

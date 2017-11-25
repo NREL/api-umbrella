@@ -6,7 +6,7 @@ local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
 local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
-local respond_to = require("lapis.application").respond_to
+local respond_to = require "api-umbrella.web-app.utils.respond_to"
 
 local _M = {}
 
@@ -64,7 +64,6 @@ function _M.admin_group_params(self)
       api_scope_ids = input["api_scope_ids"],
       permission_ids = input["permission_ids"],
     })
-    ngx.log(ngx.NOTICE, "INPUTS: " .. inspect(params))
   end
 
   return params
@@ -75,7 +74,7 @@ return function(app)
     before = require_admin(function(self)
       self.admin_group = AdminGroup:find(self.params["id"])
       if not self.admin_group then
-        self:write({"Not Found", status = 404})
+        return self.app.handle_404(self)
       end
     end),
     GET = capture_errors_json(_M.show),
@@ -84,6 +83,9 @@ return function(app)
     DELETE = capture_errors_json(_M.destroy),
   }))
 
-  app:get("/api-umbrella/v1/admin_groups(.:format)", require_admin(capture_errors_json(_M.index)))
-  app:post("/api-umbrella/v1/admin_groups(.:format)", require_admin(capture_errors_json(json_params(_M.create))))
+  app:match("/api-umbrella/v1/admin_groups(.:format)", respond_to({
+    before = require_admin(),
+    GET = capture_errors_json(_M.index),
+    POST = capture_errors_json(json_params(_M.create)),
+  }))
 end
