@@ -11,7 +11,6 @@ return function(settings, user)
     return nil
   else
     if settings["redirect_https"] then
-      ngx.ctx.skip_location_rewrites = true
       return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
     end
 

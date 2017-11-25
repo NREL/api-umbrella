@@ -78,10 +78,6 @@ local function rewrite_redirects()
     return
   end
 
-  if ngx.ctx.skip_location_rewrites then
-    return
-  end
-
   local parsed, parse_err = url_parse(location)
   if not parsed or parse_err then
     ngx.log(ngx.ERR, "error parsing Location header: ", location, " error: ", parse_err)
@@ -96,13 +92,37 @@ local function rewrite_redirects()
   if host_matches then
     -- For wildcard hosts, keep the same host as on the incoming request. For
     -- all others, use the frontend host declared on the API.
+    local host
     if matched_api["frontend_host"] == "*" then
-      parsed["authority"] = ngx.ctx.host
+      host = ngx.ctx.host_normalized
     else
-      parsed["authority"] = matched_api["frontend_host"]
+      host = matched_api["_frontend_host_normalized"]
     end
 
-    parsed["host"] = nil
+    local scheme = parsed["scheme"]
+    if scheme == "http" and config["override_public_http_proto"] then
+      scheme = config["override_public_http_proto"]
+    elseif scheme == "https" and config["override_public_https_proto"] then
+      scheme = config["override_public_https_proto"]
+    end
+
+    local port
+    if scheme == "https" then
+      port = config["override_public_https_port"] or config["https_port"]
+      if port == 443 then
+        port = nil
+      end
+    elseif scheme == "http" then
+      port = config["override_public_http_port"] or config["http_port"]
+      if port == 80 then
+        port = nil
+      end
+    end
+
+    parsed["scheme"] = scheme
+    parsed["host"] = host
+    parsed["port"] = port
+    parsed["authority"] = nil
     changed = true
   end
 

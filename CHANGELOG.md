@@ -5,6 +5,7 @@
 ### Fixed
 
 - **Fix URL handling for query strings containing "api\_key":** It was possible that API Umbrella was stripping the string "api\_key" from inside URLs before passing requests to the API backend in some unexpected cases. The `api_key` query parameter should still be stripped, but other instances of "api\_key" elsewhere in the URL (for example as a value, like `?foo=api_key`), are now retained.
+- **Fix redirect rewriting when operating on custom ports:** If API Umbrella was running on custom HTTP or HTTP ports, redirects from API backends may not have been to the correct port.
 
 ## 0.14.4 (2017-07-15)
 
