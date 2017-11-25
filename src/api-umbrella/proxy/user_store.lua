@@ -1,16 +1,13 @@
 local cmsgpack = require "cmsgpack"
 local hmac = require "api-umbrella.utils.hmac"
 local invert_table = require "api-umbrella.utils.invert_table"
-local json_null = require("cjson").null
 local lrucache = require "resty.lrucache.pureffi"
 local nillify_json_nulls = require "api-umbrella.utils.nillify_json_nulls"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local shcache = require "shcache"
-local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 
 local cache_computed_settings = utils.cache_computed_settings
-local is_empty = types.is_empty
 
 local _M = {}
 

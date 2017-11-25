@@ -10,6 +10,11 @@ return function(settings, user)
     -- continue.
     return nil
   else
+    if settings["redirect_https"] then
+      ngx.ctx.skip_location_rewrites = true
+      return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
+    end
+
     local mode = settings["require_https"]
     if not mode or mode == "optional" then
       -- Continue if https isn't required.

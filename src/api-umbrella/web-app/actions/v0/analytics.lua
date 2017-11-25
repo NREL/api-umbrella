@@ -7,6 +7,7 @@ local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local interval_lock = require "api-umbrella.utils.interval_lock"
 local json_encode = require "api-umbrella.utils.json_encode"
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local time = require "api-umbrella.utils.time"
 
 local _M = {}
@@ -142,5 +143,5 @@ function _M.summary(self)
 end
 
 return function(app)
-  app:get("/api-umbrella/v0/analytics/summary(.:format)", capture_errors_json(_M.summary))
+  app:get("/api-umbrella/v0/analytics/summary(.:format)", require_admin(capture_errors_json(_M.summary)))
 end

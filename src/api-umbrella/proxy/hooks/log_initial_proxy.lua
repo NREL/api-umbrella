@@ -5,7 +5,7 @@ local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 local ngx_ctx = ngx.ctx
 local ngx_var = ngx.var
 
-if log_utils.ignore_request(ngx_ctx, ngx_var) then
+if log_utils.ignore_request(ngx_ctx) then
   return
 end
 

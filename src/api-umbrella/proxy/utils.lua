@@ -1,7 +1,6 @@
 local cmsgpack = require "cmsgpack"
 local is_empty = require("pl.types").is_empty
 local iso8601_to_timestamp = require("api-umbrella.utils.time").iso8601_to_timestamp
-local json_null = require("cjson").null
 local plutils = require "pl.utils"
 local strip = require("pl.stringx").strip
 local table_keys = require("pl.tablex").keys

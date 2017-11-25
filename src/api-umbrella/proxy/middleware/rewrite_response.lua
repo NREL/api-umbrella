@@ -78,6 +78,10 @@ local function rewrite_redirects()
     return
   end
 
+  if ngx.ctx.skip_location_rewrites then
+    return
+  end
+
   local parsed, parse_err = url_parse(location)
   if not parsed or parse_err then
     ngx.log(ngx.ERR, "error parsing Location header: ", location, " error: ", parse_err)

@@ -4,6 +4,7 @@ local datatables = require "api-umbrella.web-app.utils.datatables"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
 local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require("lapis.application").respond_to
 local website_backend_policy = require "api-umbrella.web-app.policies.website_backend_policy"
 
@@ -69,18 +70,18 @@ end
 
 return function(app)
   app:match("/api-umbrella/v1/website_backends/:id(.:format)", respond_to({
-    before = function(self)
+    before = require_admin(function(self)
       self.website_backend = WebsiteBackend:find(self.params["id"])
       if not self.website_backend then
         self:write({"Not Found", status = 404})
       end
-    end,
+    end),
     GET = capture_errors_json(_M.show),
     POST = capture_errors_json(json_params(_M.update)),
     PUT = capture_errors_json(json_params(_M.update)),
     DELETE = capture_errors_json(_M.destroy),
   }))
 
-  app:get("/api-umbrella/v1/website_backends(.:format)", capture_errors_json(_M.index))
-  app:post("/api-umbrella/v1/website_backends(.:format)", capture_errors_json(json_params(_M.create)))
+  app:get("/api-umbrella/v1/website_backends(.:format)", require_admin(capture_errors_json(_M.index)))
+  app:post("/api-umbrella/v1/website_backends(.:format)", require_admin(capture_errors_json(json_params(_M.create))))
 end

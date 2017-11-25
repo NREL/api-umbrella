@@ -125,8 +125,6 @@ router:
     ip_connections:
     ip_connections_size: 5m
   web_app_host: "*"
-  web_app_backend_regex: "^/(admin|admins|web-assets)(/|$)"
-  web_app_backend_required_https_regex: "^/(admin|admins)(/|$)"
   website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
 rsyslog:
   host: 127.0.0.1
@@ -342,6 +340,7 @@ internal_apis:
           disable_api_key: true
           rate_limit_mode: unlimited
           require_https: optional
+          disable_analytics: true
   - id: api-umbrella-web-app-backend
     name: API Umbrella - HTTP APIs
     frontend_host: "{{router.web_app_host}}"
@@ -366,6 +365,8 @@ internal_apis:
         backend_prefix: "/admins"
         exact_match: true
     sub_settings:
+      - http_method: any
+        regex: "^/admin/stats"
       - http_method: POST
         regex: "^/admin/login"
         settings:
@@ -383,6 +384,8 @@ internal_apis:
         settings:
           disable_api_key: true
           rate_limit_mode: unlimited
+          redirect_https: true
+          disable_analytics: true
 internal_website_backends:
   - id: api-umbrella-website-backend
     frontend_host: "{{router.web_app_host}}"

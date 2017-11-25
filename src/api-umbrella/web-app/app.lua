@@ -16,6 +16,8 @@ local session_cipher = require "api-umbrella.web-app.utils.session_cipher"
 local session_identifier = require "api-umbrella.web-app.utils.session_identifier"
 local session_postgresql_storage = require "api-umbrella.web-app.utils.session_postgresql_storage"
 
+local t = gettext.gettext
+
 gettext.bindtextdomain("api-umbrella", path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/locale"))
 gettext.textdomain("api-umbrella")
 
@@ -125,7 +127,7 @@ app:before_filter(function(self)
   pg_utils.setup_type_casting(ngx.ctx.pgmoon)
 
   self.t = function(_, message)
-    return gettext.gettext(message)
+    return t(message)
   end
 
   self.field_errors = function(_, field)
@@ -157,6 +159,7 @@ app:before_filter(function(self)
   -- flash.restore(self)
 end)
 
+require("api-umbrella.web-app.actions.admin.auth_external")(app)
 require("api-umbrella.web-app.actions.admin.passwords")(app)
 require("api-umbrella.web-app.actions.admin.registrations")(app)
 require("api-umbrella.web-app.actions.admin.server_side_loader")(app)

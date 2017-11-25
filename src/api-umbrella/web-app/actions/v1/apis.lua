@@ -9,6 +9,7 @@ local is_empty = require("pl.types").is_empty
 local is_hash = require "api-umbrella.utils.is_hash"
 local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require("lapis.application").respond_to
 
 local db_null = db.NULL
@@ -284,17 +285,17 @@ return function(app)
   end
 
   app:match("/api-umbrella/v1/apis/:id(.:format)", respond_to({
-    before = find_api_backend,
+    before = require_admin(find_api_backend),
     GET = capture_errors_json(_M.show),
     POST = capture_errors_json(json_params(_M.update)),
     PUT = capture_errors_json(json_params(_M.update)),
     DELETE = capture_errors_json(_M.destroy),
   }))
 
-  app:get("/api-umbrella/v1/apis(.:format)", capture_errors_json(_M.index))
-  app:post("/api-umbrella/v1/apis(.:format)", capture_errors_json(json_params(_M.create)))
+  app:get("/api-umbrella/v1/apis(.:format)", require_admin(capture_errors_json(_M.index)))
+  app:post("/api-umbrella/v1/apis(.:format)", require_admin(capture_errors_json(json_params(_M.create))))
   app:match("/api-umbrella/v1/apis/:id/move_after(.:format)", respond_to({
-    before = find_api_backend,
+    before = require_admin(find_api_backend),
     PUT = capture_errors_json(json_params(_M.move_after)),
   }))
 end

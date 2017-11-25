@@ -5,6 +5,7 @@ local datatables = require "api-umbrella.web-app.utils.datatables"
 local dbify_json_nulls = require "api-umbrella.web-app.utils.dbify_json_nulls"
 local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require("lapis.application").respond_to
 
 local _M = {}
@@ -88,18 +89,18 @@ end
 
 return function(app)
   app:match("/api-umbrella/v1/admins/:id(.:format)", respond_to({
-    before = function(self)
+    before = require_admin(function(self)
       self.admin = Admin:find(self.params["id"])
       if not self.admin then
         self:write({"Not Found", status = 404})
       end
-    end,
+    end),
     GET = capture_errors_json_full(_M.show),
     POST = capture_errors_json_full(json_params(_M.update)),
     PUT = capture_errors_json_full(json_params(_M.update)),
     DELETE = capture_errors_json_full(_M.destroy),
   }))
 
-  app:get("/api-umbrella/v1/admins(.:format)", capture_errors_json_full(_M.index))
-  app:post("/api-umbrella/v1/admins(.:format)", capture_errors_json_full(json_params(_M.create)))
+  app:get("/api-umbrella/v1/admins(.:format)", require_admin(capture_errors_json_full(_M.index)))
+  app:post("/api-umbrella/v1/admins(.:format)", require_admin(capture_errors_json_full(json_params(_M.create))))
 end

@@ -2,6 +2,7 @@ local PublishedConfig = require "api-umbrella.web-app.models.published_config"
 local capture_errors_json = require("api-umbrella.web-app.utils.capture_errors").json
 local json_params = require("lapis.application").json_params
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local require_admin = require "api-umbrella.web-app.utils.require_admin"
 
 local _M = {}
 
@@ -41,6 +42,6 @@ function _M.publish(self)
 end
 
 return function(app)
-  app:get("/api-umbrella/v1/config/pending_changes(.:format)", capture_errors_json(_M.pending_changes))
-  app:post("/api-umbrella/v1/config/publish(.:format)", capture_errors_json(json_params(_M.publish)))
+  app:get("/api-umbrella/v1/config/pending_changes(.:format)", require_admin(capture_errors_json(_M.pending_changes)))
+  app:post("/api-umbrella/v1/config/publish(.:format)", require_admin(capture_errors_json(json_params(_M.publish))))
 end

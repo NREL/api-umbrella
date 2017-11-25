@@ -1,6 +1,7 @@
 local AdminPermission = require "api-umbrella.web-app.models.admin_permission"
 local cjson = require "cjson"
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local require_admin = require "api-umbrella.web-app.utils.require_admin"
 
 local _M = {}
 
@@ -19,5 +20,5 @@ function _M.index(self)
 end
 
 return function(app)
-  app:get("/api-umbrella/v1/admin_permissions(.:format)", _M.index)
+  app:get("/api-umbrella/v1/admin_permissions(.:format)", require_admin(_M.index))
 end
