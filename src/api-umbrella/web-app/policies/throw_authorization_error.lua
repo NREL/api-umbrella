@@ -1,4 +1,4 @@
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 return function(current_admin)
   if not current_admin then

@@ -2,7 +2,7 @@ local escape_html = require("lapis.html").escape
 local etlua = require "etlua"
 local is_empty = require("pl.types").is_empty
 local mail = require "api-umbrella.utils.mail"
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_copy = require("pl.tablex").copy
 
 local gsub = ngx.re.gsub

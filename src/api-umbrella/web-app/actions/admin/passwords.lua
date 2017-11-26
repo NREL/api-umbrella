@@ -3,7 +3,7 @@ local admin_reset_password_mailer = require "api-umbrella.web-app.mailers.admin_
 local build_url = require "api-umbrella.utils.build_url"
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 local _M = {}
 

@@ -1,27 +1,29 @@
 local common_validations = require "api-umbrella.web-app.utils.common_validations"
-local file = require "pl.file"
 local json_encode = require "api-umbrella.utils.json_encode"
-local path = require "pl.path"
 
 local _M = {}
 
--- local data = cjson.decode(file.read(path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/locale/fr/LC_MESSAGES/api-umbrella.json")))
-local data = {
-  locale_data = {
-    ["api-umbrella"] = {
-      [""] = {
-        domain = "api-umbrella",
-        lang = "en_US",
-      },
-    },
-  },
-}
-
 function _M.loader(self)
+  local data
+  local locale = ngx.ctx.locale
+  if locale and LOCALE_DATA and LOCALE_DATA[locale] and LOCALE_DATA[locale]["locale_data"] then
+    data = LOCALE_DATA[locale]["locale_data"]
+  else
+    data = {
+      ["api-umbrella"] = {
+        [""] = {
+          domain = "api-umbrella",
+          lang = "en",
+          plural_forms = "nplurals=2; plural=(n != 1);",
+        }
+      }
+    }
+  end
+
   self.res.headers["Content-Type"] = "text/javascript; charset=utf-8"
   self.res.headers["Cache-Control"] = "max-age=0, private, no-cache, no-store, must-revalidate"
   self.res.content = [[
-    window.localeData = ]] .. json_encode(data["locale_data"]["api-umbrella"]) .. [[;
+    window.localeData = ]] .. json_encode(data) .. [[;
     window.CommonValidations = {
       host_format: new RegExp(]] .. json_encode(common_validations.host_format) .. [[),
       host_format_with_wildcard: new RegExp(]] .. json_encode(common_validations.host_format_with_wildcard) .. [[),

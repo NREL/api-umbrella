@@ -4,22 +4,20 @@ local Admin = require "api-umbrella.web-app.models.admin"
 local db = require "lapis.db"
 local escape_html = require("lapis.html").escape
 local flash = require "api-umbrella.web-app.utils.flash"
-local gettext = require "resty.gettext"
 local hmac = require "api-umbrella.utils.hmac"
+local http_headers = require "api-umbrella.utils.http_headers"
 local is_empty = require("pl.types").is_empty
 local lapis = require "lapis"
 local lapis_config = require("lapis.config").get()
-local path = require "pl.path"
 local pg_utils = require "api-umbrella.utils.pg_utils"
 local resty_session = require "resty.session"
 local session_cipher = require "api-umbrella.web-app.utils.session_cipher"
 local session_identifier = require "api-umbrella.web-app.utils.session_identifier"
 local session_postgresql_storage = require "api-umbrella.web-app.utils.session_postgresql_storage"
+local t = require("api-umbrella.web-app.utils.gettext").gettext
+local table_keys = require("pl.tablex").keys
 
-local t = gettext.gettext
-
-gettext.bindtextdomain("api-umbrella", path.join(config["_embedded_root_dir"], "apps/core/current/build/dist/locale"))
-gettext.textdomain("api-umbrella")
+local supported_languages = table_keys(LOCALE_DATA)
 
 local app = lapis.Application()
 app:enable("etlua")
@@ -105,10 +103,6 @@ local function current_admin_from_session(self)
 end
 
 app:before_filter(function(self)
-  -- local ok = os.setlocale("fr_FR")
-  -- if not ok then
-  --   ngx.log(ngx.ERR, "setlocale failed")
-  -- end
 
   self.res.headers["Cache-Control"] = "max-age=0, private, must-revalidate"
 
@@ -128,6 +122,7 @@ app:before_filter(function(self)
   -- https://github.com/leafo/lapis/issues/565
   pg_utils.setup_type_casting(ngx.ctx.pgmoon)
 
+  ngx.ctx.locale = http_headers.preferred_accept_language(ngx.var.http_accept_language, supported_languages)
   self.t = function(_, message)
     return t(message)
   end

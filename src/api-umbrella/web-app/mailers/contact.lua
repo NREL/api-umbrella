@@ -1,6 +1,6 @@
 local etlua = require "etlua"
 local mail = require "api-umbrella.utils.mail"
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 local template_text, template_text_err = etlua.compile([[
 Name: <%- name %>

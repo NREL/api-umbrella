@@ -1,10 +1,11 @@
 std = "ngx_lua"
 
 globals = {
-  "DEBUG",
-  "WORKER_GROUP_ID",
   "API_UMBRELLA_VERSION",
+  "DEBUG",
+  "LOCALE_DATA",
   "LOGIN_CSS_FILENAME",
+  "WORKER_GROUP_ID",
   "config",
   "elasticsearch_templates",
   "inspect",

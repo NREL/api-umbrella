@@ -1,5 +1,5 @@
 local json_encode = require "api-umbrella.utils.json_encode"
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 return function(fn)
   return function(self, ...)

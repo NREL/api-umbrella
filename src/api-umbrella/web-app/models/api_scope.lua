@@ -3,7 +3,7 @@ local common_validations = require "api-umbrella.web-app.utils.common_validation
 local json_null = require("cjson").null
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 local time = require "api-umbrella.utils.time"
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 

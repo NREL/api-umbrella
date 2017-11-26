@@ -14,26 +14,16 @@ foreach(locale_file ${locale_files})
   get_filename_component(locale ${locale_file} NAME_WE)
 
   add_custom_command(
-    OUTPUT ${CORE_BUILD_DIR}/tmp/locale-build/${locale}/LC_MESSAGES/api-umbrella.mo
-    DEPENDS
-      ${CORE_BUILD_DIR}/tmp/locale-build
-      ${locale_file}
-    COMMAND mkdir -p ${CORE_BUILD_DIR}/tmp/locale-build/${locale}/LC_MESSAGES
-    COMMAND msgfmt --output-file=${CORE_BUILD_DIR}/tmp/locale-build/${locale}/LC_MESSAGES/api-umbrella.mo ${locale_file}
-  )
-
-  add_custom_command(
-    OUTPUT ${CORE_BUILD_DIR}/tmp/locale-build/${locale}/LC_MESSAGES/api-umbrella.json
+    OUTPUT ${CORE_BUILD_DIR}/tmp/locale-build/${locale}.json
     DEPENDS
       ${STAMP_DIR}/core-admin-ui-yarn-install
       ${CORE_BUILD_DIR}/tmp/locale-build
       ${locale_file}
-    COMMAND mkdir -p ${CORE_BUILD_DIR}/tmp/locale-build/${locale}/LC_MESSAGES
-    COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/po2json --format=jed1.x --domain=api-umbrella ${locale_file} ${CORE_BUILD_DIR}/tmp/locale-build/${locale}/LC_MESSAGES/api-umbrella.json
+    COMMAND mkdir -p ${CORE_BUILD_DIR}/tmp/locale-build/
+    COMMAND cd ${CORE_BUILD_DIR}/tmp/admin-ui-build && env PATH=${DEV_INSTALL_PREFIX}/bin:$ENV{PATH} ./node_modules/.bin/po2json --format=jed1.x --domain=api-umbrella ${locale_file} ${CORE_BUILD_DIR}/tmp/locale-build/${locale}.json
   )
 
-  list(APPEND locale_depends ${CORE_BUILD_DIR}/tmp/locale-build/${locale}/LC_MESSAGES/api-umbrella.mo)
-  list(APPEND locale_depends ${CORE_BUILD_DIR}/tmp/locale-build/${locale}/LC_MESSAGES/api-umbrella.json)
+  list(APPEND locale_depends ${CORE_BUILD_DIR}/tmp/locale-build/${locale}.json)
 endforeach(locale_file)
 
 add_custom_command(

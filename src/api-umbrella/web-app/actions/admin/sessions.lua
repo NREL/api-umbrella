@@ -9,7 +9,7 @@ local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local json_response = require "api-umbrella.web-app.utils.json_response"
 local random_token = require "api-umbrella.utils.random_token"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 local _M = {}
 

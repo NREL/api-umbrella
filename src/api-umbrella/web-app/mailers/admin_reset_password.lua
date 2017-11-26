@@ -1,7 +1,7 @@
 local build_url = require "api-umbrella.utils.build_url"
 local etlua = require "etlua"
 local mail = require "api-umbrella.utils.mail"
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 local template_html, template_html_err = etlua.compile([[
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">

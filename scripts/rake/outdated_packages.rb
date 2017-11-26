@@ -92,10 +92,6 @@ class OutdatedPackages
       :git => "https://github.com/hamishforbes/lua-resty-dns-cache.git",
       :git_ref => "master",
     },
-    "lua_resty_gettext" => {
-      :git => "https://github.com/bungle/lua-resty-gettext.git",
-      :git_ref => "master",
-    },
     "lua_resty_logger_socket" => {
       :git => "https://github.com/cloudflare/lua-resty-logger-socket.git",
       :git_ref => "master",

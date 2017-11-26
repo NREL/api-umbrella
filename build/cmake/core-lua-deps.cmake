@@ -75,16 +75,6 @@ ExternalProject_Add(
 )
 
 ExternalProject_Add(
-  lua_resty_gettext
-  DEPENDS luarocks
-  URL https://github.com/bungle/lua-resty-gettext/archive/${LUA_RESTY_GETTEXT_VERSION}.tar.gz
-  URL_HASH MD5=${LUA_RESTY_GETTEXT_HASH}
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND install -D -m 644 <SOURCE_DIR>/lib/resty/gettext.lua ${VENDOR_LUA_DIR}/resty/gettext.lua
-)
-
-ExternalProject_Add(
   lua_resty_logger_socket
   DEPENDS luarocks
   URL https://github.com/cloudflare/lua-resty-logger-socket/archive/${LUA_RESTY_LOGGER_SOCKET_VERSION}.tar.gz
@@ -108,7 +98,6 @@ set(
   LUA_DEPS
   lua_luasocket_url
   lua_resty_dns_cache
-  lua_resty_gettext
   lua_resty_logger_socket
   lua_resty_shcache
   luarock_argparse

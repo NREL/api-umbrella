@@ -2,7 +2,7 @@ local db = require "lapis.db"
 local int64_to_json_number = require("api-umbrella.utils.int64").to_json_number
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local model_ext = require "api-umbrella.web-app.utils.model_ext"
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local db_null = db.NULL

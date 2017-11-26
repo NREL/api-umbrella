@@ -7,7 +7,7 @@ local is_hash = require "api-umbrella.utils.is_hash"
 local readonly = require("pl.tablex").readonly
 local relations_loaded_key = require("lapis.db.model.relations").LOADED_KEY
 local singularize = require("lapis.util").singularize
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 local uuid_generate = require("resty.uuid").generate_random
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 

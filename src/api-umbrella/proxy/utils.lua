@@ -2,13 +2,11 @@ local cmsgpack = require "cmsgpack"
 local is_empty = require("pl.types").is_empty
 local iso8601_to_timestamp = require("api-umbrella.utils.time").iso8601_to_timestamp
 local plutils = require "pl.utils"
-local strip = require("pl.stringx").strip
 local table_keys = require("pl.tablex").keys
 
 local escape = plutils.escape
 local gsub = ngx.re.gsub
 local pack = cmsgpack.pack
-local split = plutils.split
 local unpack = cmsgpack.unpack
 
 local _M = {}
@@ -150,82 +148,6 @@ function _M.cache_computed_settings(settings)
       end
     end
   end
-end
-
-function _M.parse_accept(header, supported_media_types)
-  if not header then
-    return nil
-  end
-
-  local accepts = {}
-  local accept_header = split(header, ",", true)
-  for index, accept_string in ipairs(accept_header) do
-    local parts = split(accept_string, ";", true, 2)
-    local media = parts[1]
-    local params = parts[2]
-    if params then
-      params = split(params, ";", true)
-    end
-
-    local media_parts = split(media, "/", true)
-    local media_type = strip(media_parts[1] or "")
-    local media_subtype = strip(media_parts[2] or "")
-
-    local q = 1
-    if params then
-      for _, param in ipairs(params) do
-        local param_parts = split(param, "=", true)
-        local param_key = strip(param_parts[1] or "")
-        local param_value = strip(param_parts[2] or "")
-        if param_key == "q" then
-          q = tonumber(param_value) or 0
-        end
-      end
-    end
-
-    if q == 0 then
-      break
-    end
-
-    local accept = {
-      media_type = media_type,
-      media_subtype = media_subtype,
-      q = q,
-      original_index = index,
-    }
-
-    table.insert(accepts, accept)
-  end
-
-  if accepts then
-    table.sort(accepts, function(a, b)
-      if a.q < b.q then
-        return false
-      elseif a.q > b.q then
-        return true
-      elseif (a.media_type == "*" and b.media_type ~= "*") or (a.media_subtype == "*" and b.media_subtype ~= "*") then
-        return false
-      elseif (a.media_type ~= "*" and b.media_type == "*") or (a.media_subtype ~= "*" and b.media_subtype == "*") then
-        return true
-      else
-        return a.original_index < b.original_index
-      end
-    end)
-  end
-
-  for _, accept in ipairs(accepts) do
-    for _, supported in ipairs(supported_media_types) do
-      if accept.media_type == supported.media_type and accept.media_subtype == supported.media_subtype then
-        return supported
-      elseif accept.media_type == supported.media_type and accept.media_subtype == "*" then
-        return supported
-      elseif accept.media_type == "*" and accept.media_subtype == "*" then
-        return supported
-      end
-    end
-  end
-
-  return nil
 end
 
 function _M.remove_arg(original_args, remove)

@@ -3,7 +3,7 @@ local build_url = require "api-umbrella.utils.build_url"
 local capture_errors = require("lapis.application").capture_errors
 local flash = require "api-umbrella.web-app.utils.flash"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 local _M = {}
 

@@ -17,7 +17,7 @@ local json_response = require "api-umbrella.web-app.utils.json_response"
 local number_with_delimiter = require "api-umbrella.web-app.utils.number_with_delimiter"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local round = require "api-umbrella.utils.round"
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 local table_sub = require("pl.tablex").sub
 local time = require "api-umbrella.utils.time"
 

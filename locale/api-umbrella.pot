@@ -125,10 +125,6 @@ msgstr ""
 msgid ","
 msgstr ""
 
-# support.array.words_connector
-msgid ","
-msgstr ""
-
 # support.array.last_word_connector
 msgid ", and"
 msgstr ""

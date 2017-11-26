@@ -14,7 +14,7 @@ local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
 local pg_encode_json = require("pgmoon.json").encode_json
 local split = require("ngx.re").split
 local strip = require("pl.stringx").strip
-local t = require("resty.gettext").gettext
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 local time = require "api-umbrella.utils.time"
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 

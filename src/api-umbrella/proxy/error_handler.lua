@@ -1,5 +1,6 @@
-local is_hash = require "api-umbrella.utils.is_hash"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
+local http_headers = require "api-umbrella.utils.http_headers"
+local is_hash = require "api-umbrella.utils.is_hash"
 local lustache = require "lustache"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
 local path = require "pl.path"
@@ -70,7 +71,7 @@ local function request_format()
 
   local accept_header = ngx.var.http_accept
   if accept_header then
-    local media = utils.parse_accept(accept_header, supported_media_types)
+    local media = http_headers.preferred_accept(accept_header, supported_media_types)
     if media then
       return media["format"], media["media_type"] .. "/" .. media["media_subtype"]
     end
