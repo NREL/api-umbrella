@@ -10,14 +10,90 @@ local json_response = require "api-umbrella.web-app.utils.json_response"
 local random_token = require "api-umbrella.utils.random_token"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
+local username_label = require "api-umbrella.web-app.utils.username_label"
 
 local _M = {}
+
+local function define_view_helpers(self)
+  self.external_providers = {}
+  if config["app_env"] == "development" then
+    table.insert(self.external_providers, {
+      strategy = "developer",
+      name = t("dummy login (development only)"),
+    })
+  end
+  for _, strategy in ipairs(config["web"]["admin"]["auth_strategies"]["enabled"]) do
+    local provider = {}
+
+    provider["strategy"] = strategy
+    if strategy == "cas" then
+      provider["name"] = t("CAS")
+    elseif strategy == "facebook" then
+      provider["name"] = t("Facebook")
+    elseif strategy == "github" then
+      provider["name"] = t("GitHub")
+    elseif strategy == "gitlab" then
+      provider["name"] = t("GitLab")
+    elseif strategy == "google" then
+      provider["name"] = t("Google")
+    elseif strategy == "ldap" then
+      if config["web"]["admin"]["auth_strategies"]["_only_ldap_enabled?"] then
+        provider = nil
+      else
+        provider["name"] = t("LDAP")
+      end
+    elseif strategy == "max.gov" then
+      provider["name"] = t("MAX.gov")
+    elseif strategy == "local" then
+      provider = nil
+    else
+      error("Unknown authentication strategy enabled in config: " .. (strategy or ""))
+    end
+
+    if provider then
+      table.insert(self.external_providers, provider)
+    end
+  end
+
+  self.username_label = username_label()
+
+  self.display_no_admin_alert = false
+  if config["web"]["admin"]["auth_strategies"]["_local_enabled?"] and Admin:count() == 0 then
+    self.display_no_admin_alert = true
+  end
+
+  self.display_login_form_local = false
+  if config["web"]["admin"]["auth_strategies"]["_local_enabled?"] then
+    self.display_login_form_local = true
+  end
+
+  self.display_login_form_ldap = false
+  if config["web"]["admin"]["auth_strategies"]["_only_ldap_enabled?"] then
+    self.display_login_form_ldap = true
+  end
+
+  self.display_login_form = false
+  if self.display_login_form_local or self.display_login_form_ldap then
+    self.display_login_form = true
+  end
+
+  self.display_external_provider_buttons = false
+  if #self.external_providers > 0 then
+    self.display_external_provider_buttons = true
+  end
+
+  self.display_no_auth_alert = false
+  if not self.display_external_provider_buttons and not self.display_login_form then
+    self.display_no_auth_alert = true
+  end
+end
 
 function _M.new(self)
   self.cookies["_api_umbrella_csrf_token"] = random_token(40)
   self.csrf_token = csrf.generate_token(self, self.cookies["_api_umbrella_csrf_token"])
 
   self.admin_params = {}
+  define_view_helpers(self)
   return { render = "admin.sessions.new" }
 end
 
@@ -46,7 +122,12 @@ function _M.create(self)
     return { redirect_to = build_url("/admin/") }
   else
     self.admin_params = admin_params
-    flash.now(self, "warning", t("Invalid email or password."))
+    define_view_helpers(self)
+    if config["web"]["admin"]["username_is_email"] then
+      flash.now(self, "warning", t("Invalid email or password."))
+    else
+      flash.now(self, "warning", t("Invalid username or password."))
+    end
     return { render = "admin.sessions.new" }
   end
 end

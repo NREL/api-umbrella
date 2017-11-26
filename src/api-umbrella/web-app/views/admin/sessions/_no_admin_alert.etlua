@@ -1,0 +1,6 @@
+<% if display_no_admin_alert then %>
+  <div class="alert alert-danger">
+    <strong><%= t("No admins currently exist.") %></strong><br>
+    <%- string.format(t("Initial admin accounts may be defined in %s (see the %s section)"), "<code>/etc/api-umbrella/api-umbrella.yml</code>", "<code>web.admin.initial_superusers</code>") %>
+  </div>
+<% end %>

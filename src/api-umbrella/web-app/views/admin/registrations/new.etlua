@@ -9,7 +9,7 @@
 
     <div class="form-inputs">
       <div class="form-group string required admin_username<%= field_errors_class("username") %>">
-        <label class="control-label string required" for="admin_username"><%= t("Email") %></label>
+        <label class="control-label string required" for="admin_username"><%= username_label %></label>
         <input class="form-control string required" autofocus="autofocus" required="required" aria-required="true" type="text" name="admin[username]" id="admin_username" value="<%= admin_params["username"] or "" %>" />
         <%- field_errors("username") %>
       </div>

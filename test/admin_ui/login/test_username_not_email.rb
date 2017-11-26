@@ -10,9 +10,8 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
     super
     setup_server
 
+    FactoryGirl.create(:admin)
     once_per_class_setup do
-      @admin = FactoryGirl.create(:admin)
-
       override_config_set({
         "web" => {
           "admin" => {

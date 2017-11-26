@@ -26,10 +26,10 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
 
   def test_reset_process
     admin = FactoryGirl.create(:admin, :username => "admin@example.com")
-    assert_nil(admin.reset_password_token)
+    assert_nil(admin.reset_password_token_hash)
     assert_nil(admin.reset_password_sent_at)
-    original_encrypted_password = admin.encrypted_password
-    assert(original_encrypted_password)
+    original_password_hash = admin.password_hash
+    assert(original_password_hash)
 
     visit "/admins/password/new"
 
@@ -40,9 +40,9 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
 
     # Check for reset token on database record.
     admin.reload
-    assert(admin.reset_password_token)
+    assert(admin.reset_password_token_hash)
     assert(admin.reset_password_sent_at)
-    assert_equal(original_encrypted_password, admin.encrypted_password)
+    assert_equal(original_password_hash, admin.password_hash)
 
     # Find sent email
     messages = sent_emails
@@ -72,7 +72,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     click_button "Change My Password"
     assert_text("is too short (minimum is 14 characters)")
     admin.reload
-    assert_equal(original_encrypted_password, admin.encrypted_password)
+    assert_equal(original_password_hash, admin.password_hash)
 
     # Mismatched password
     fill_in "New Password", :with => "mismatch123456"
@@ -80,7 +80,7 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     click_button "Change My Password"
     assert_text("doesn't match Password")
     admin.reload
-    assert_equal(original_encrypted_password, admin.encrypted_password)
+    assert_equal(original_password_hash, admin.password_hash)
 
     # Valid password
     fill_in "New Password", :with => "password123456"
@@ -92,9 +92,9 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
 
     # Check for database record updates.
     admin.reload
-    assert_nil(admin.reset_password_token)
+    assert_nil(admin.reset_password_token_hash)
     assert_nil(admin.reset_password_sent_at)
-    assert(admin.encrypted_password)
-    refute_equal(original_encrypted_password, admin.encrypted_password)
+    assert(admin.password_hash)
+    refute_equal(original_password_hash, admin.password_hash)
   end
 end

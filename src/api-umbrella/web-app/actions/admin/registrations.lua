@@ -4,11 +4,13 @@ local capture_errors = require("lapis.application").capture_errors
 local flash = require "api-umbrella.web-app.utils.flash"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
+local username_label = require "api-umbrella.web-app.utils.username_label"
 
 local _M = {}
 
 function _M.new(self)
   self.admin_params = {}
+  self.username_label = username_label()
   return { render = "admin.registrations.new" }
 end
 

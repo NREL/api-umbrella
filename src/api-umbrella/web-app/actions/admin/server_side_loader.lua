@@ -20,9 +20,18 @@ function _M.loader(self)
     }
   end
 
+  local config = {
+    web = {
+      admin = {
+        username_is_email = config["web"]["admin"]["username_is_email"],
+      },
+    },
+  }
+
   self.res.headers["Content-Type"] = "text/javascript; charset=utf-8"
   self.res.headers["Cache-Control"] = "max-age=0, private, no-cache, no-store, must-revalidate"
   self.res.content = [[
+    window.apiUmbrellaConfig = ]] .. json_encode(config) .. [[;
     window.localeData = ]] .. json_encode(data) .. [[;
     window.CommonValidations = {
       host_format: new RegExp(]] .. json_encode(common_validations.host_format) .. [[),

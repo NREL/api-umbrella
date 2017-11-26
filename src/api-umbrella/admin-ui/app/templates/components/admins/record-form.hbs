@@ -5,12 +5,12 @@
     <fieldset class="form-horizontal condensed">
       <legend>User Info</legend>
 
-      {{f.text-field "username" label=(t "mongoid.attributes.admin.username")}}
+      {{f.text-field "username" label=usernameLabel}}
       {{#unless session.data.authenticated.username_is_email}}
-        {{f.text-field "email" label=(t "mongoid.attributes.admin.email")}}
+        {{f.text-field "email" label=(t "Email")}}
       {{/unless}}
       {{#if model.name}}
-        {{f.static-field "name" label=(t "mongoid.attributes.admin.name")}}
+        {{f.static-field "name" label=(t "Name")}}
       {{/if}}
       {{f.textarea-field "notes" label=(t "Notes")}}
       {{#if model.id}}

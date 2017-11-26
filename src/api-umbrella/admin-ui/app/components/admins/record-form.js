@@ -1,5 +1,7 @@
 import Ember from 'ember';
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import usernameLabel from 'api-umbrella-admin-ui/utils/username-label';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
 export default Ember.Component.extend(Save, {
   session: Ember.inject.service(),
@@ -7,6 +9,8 @@ export default Ember.Component.extend(Save, {
   currentAdmin: Ember.computed(function() {
     return this.get('session.data.authenticated.admin');
   }),
+
+  usernameLabel: Ember.computed(usernameLabel),
 
   actions: {
     submit() {

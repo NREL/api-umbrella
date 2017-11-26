@@ -5,8 +5,8 @@ var i18n = new Jed({
   domain: 'api-umbrella',
 });
 
-export default {
-  t(msgid) {
-    return i18n.gettext(msgid);
-  },
+function t(msgid) {
+  return i18n.gettext(msgid);
 }
+
+export { t }

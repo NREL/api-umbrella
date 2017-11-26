@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import DS from 'ember-data';
-import i18n from 'api-umbrella-admin-ui/utils/i18n';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
@@ -8,14 +8,14 @@ const Validations = buildValidations({
     validator('presence', true),
     validator('format', {
       regex: CommonValidations.url_prefix_format,
-      message: i18n.t('must start with "/"'),
+      message: t('must start with "/"'),
     }),
   ],
   backendPrefix: [
     validator('presence', true),
     validator('format', {
       regex: CommonValidations.url_prefix_format,
-      message: i18n.t('must start with "/"'),
+      message: t('must start with "/"'),
     }),
   ],
 });

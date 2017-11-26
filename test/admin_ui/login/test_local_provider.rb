@@ -52,7 +52,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "admin_username", :with => @admin.username
     fill_in "admin_password", :with => "password1234567"
     click_button "sign_in"
-    assert_text("Invalid Email or password")
+    assert_text("Invalid email or password")
   end
 
   def test_login_empty_password
@@ -60,18 +60,18 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "admin_username", :with => @admin.username
     fill_in "admin_password", :with => ""
     click_button "sign_in"
-    assert_text("Invalid Email or password")
+    assert_text("Invalid email or password")
   end
 
   def test_login_empty_password_for_admin_without_password
-    admin = FactoryGirl.create(:admin, :encrypted_password => nil)
-    assert_nil(admin.encrypted_password)
+    admin = FactoryGirl.create(:admin, :password_hash => nil)
+    assert_nil(admin.password_hash)
 
     visit "/admin/login"
     fill_in "admin_username", :with => admin.username
     fill_in "admin_password", :with => ""
     click_button "sign_in"
-    assert_text("Invalid Email or password")
+    assert_text("Invalid email or password")
   end
 
   def test_login_requires_csrf
@@ -149,7 +149,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
 
   def test_update_my_account_with_password
     admin_login(@admin)
-    original_encrypted_password = @admin.encrypted_password
+    original_password_hash = @admin.password_hash
     assert_nil(@admin.notes)
     visit "/admin/#/admins/#{@admin.id}/edit"
 
@@ -161,7 +161,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     click_button "Save"
     assert_text("Password: is too short (minimum is 14 characters)")
     @admin.reload
-    assert_equal(original_encrypted_password, @admin.encrypted_password)
+    assert_equal(original_password_hash, @admin.password_hash)
     assert_nil(@admin.notes)
 
     # Mismatched password
@@ -170,7 +170,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     click_button "Save"
     assert_text("Password Confirmation: doesn't match Password")
     @admin.reload
-    assert_equal(original_encrypted_password, @admin.encrypted_password)
+    assert_equal(original_password_hash, @admin.password_hash)
     assert_nil(@admin.notes)
 
     # No current password
@@ -180,7 +180,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     click_button "Save"
     assert_text("Current Password: can't be blank")
     @admin.reload
-    assert_equal(original_encrypted_password, @admin.encrypted_password)
+    assert_equal(original_password_hash, @admin.password_hash)
     assert_nil(@admin.notes)
 
     # Invalid current password
@@ -190,7 +190,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     click_button "Save"
     assert_text("Current Password: is invalid")
     @admin.reload
-    assert_equal(original_encrypted_password, @admin.encrypted_password)
+    assert_equal(original_password_hash, @admin.password_hash)
     assert_nil(@admin.notes)
 
     # Valid password
@@ -200,8 +200,8 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     click_button "Save"
     assert_text("Successfully saved the admin")
     @admin.reload
-    assert(@admin.encrypted_password)
-    refute_equal(original_encrypted_password, @admin.encrypted_password)
+    assert(@admin.password_hash)
+    refute_equal(original_password_hash, @admin.password_hash)
     assert_equal("Foo", @admin.notes)
 
     # Stays signed in after changing password

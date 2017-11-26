@@ -1,6 +1,6 @@
 import Ember from 'ember';
-import i18n from 'api-umbrella-admin-ui/utils/i18n';
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
 export default Ember.Component.extend(Save, {
   throttleByIpOptions: [
@@ -21,11 +21,11 @@ export default Ember.Component.extend(Save, {
       if($key.data('revealed') === 'true') {
         $key.text($key.data('api-key-preview'));
         $key.data('revealed', 'false');
-        $toggle.text(i18n.t('(reveal)'));
+        $toggle.text(t('(reveal)'));
       } else {
         $key.text($key.data('api-key'));
         $key.data('revealed', 'true');
-        $toggle.text(i18n.t('(hide)'));
+        $toggle.text(t('(hide)'));
       }
     },
 

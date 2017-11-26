@@ -1,6 +1,7 @@
 import Ember from 'ember';
-import i18n from 'api-umbrella-admin-ui/utils/i18n';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import usernameLabel from 'api-umbrella-admin-ui/utils/username-label';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
 export default Ember.Component.extend({
   session: Ember.inject.service('session'),
@@ -15,7 +16,7 @@ export default Ember.Component.extend({
         {
           data: 'username',
           name: 'Username',
-          title: i18n.t('mongoid.attributes.admin.username'),
+          title: usernameLabel(),
           defaultContent: '-',
           render: _.bind(function(username, type, data) {
             if(type === 'display' && username && username !== '-') {
@@ -29,7 +30,7 @@ export default Ember.Component.extend({
         {
           data: 'group_names',
           name: 'Groups',
-          title: 'Groups',
+          title: t('Groups'),
           orderable: false,
           render: DataTablesHelpers.renderListEscaped,
         },
@@ -37,7 +38,7 @@ export default Ember.Component.extend({
           data: 'current_sign_in_at',
           type: 'date',
           name: 'Last Signed In',
-          title: 'Last Signed In',
+          title: t('Last Signed In'),
           defaultContent: '-',
           render: DataTablesHelpers.renderTime,
         },
@@ -45,7 +46,7 @@ export default Ember.Component.extend({
           data: 'created_at',
           type: 'date',
           name: 'Created',
-          title: 'Created',
+          title: t('Created'),
           defaultContent: '-',
           render: DataTablesHelpers.renderTime,
         },

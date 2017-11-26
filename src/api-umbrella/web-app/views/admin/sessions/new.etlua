@@ -1,33 +1,8 @@
 <h1><%= t("Admin Sign In") %></h1>
 
 <div class="login-container">
-  <form novalidate="novalidate" class="simple_form new_admin" id="new_admin" action="/admin/login" accept-charset="UTF-8" method="post">
-    <input type="hidden" name="csrf_token" value="<%= csrf_token %>" />
-    <% render("views.layout.errors") %>
-
-    <div class="form-inputs">
-      <div class="form-group string optional admin_username">
-        <label class="control-label string optional" for="admin_username"><%= t("Email") %></label>
-        <input class="form-control string optional" autofocus="autofocus" type="text" name="admin[username]" id="admin_username" value="<%= admin_params["username"] or "" %>" />
-      </div>
-      <div class="form-group password optional admin_password">
-        <label class="control-label password optional" for="admin_password"><%= t("Password") %></label>
-        <input class="form-control password optional" type="password" name="admin[password]" id="admin_password" />
-      </div>
-      <div class="row">
-        <div class="col-xs-6">
-          <div class="form-group boolean optional admin_remember_me">
-            <div class="checkbox"><input value="0" type="hidden" name="admin[remember_me]" /><label class="boolean optional" for="admin_remember_me"><input class="boolean optional" type="checkbox" value="1" name="admin[remember_me]" id="admin_remember_me" /><%= t("Remember me") %></label></div>
-          </div>
-        </div>
-        <div class="col-xs-6 text-right">
-          <a href="/admins/password/new"><%= t("Forgot your password?") %></a><br />
-        </div>
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <input type="submit" name="commit" value="<%= t("Sign in") %>" id="sign_in" class="btn btn-default" />
-    </div>
-  </form>
+  <% render("views.admin.sessions._no_admin_alert") %>
+  <% render("views.admin.sessions._login_form") %>
+  <% render("views.admin.sessions._external_provider_buttons") %>
+  <% render("views.admin.sessions._no_auth_alert") %>
 </div>

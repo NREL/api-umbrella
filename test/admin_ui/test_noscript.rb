@@ -8,6 +8,8 @@ class Test::AdminUi::TestNoscript < Minitest::Capybara::Test
   def setup
     super
     setup_server
+
+    FactoryGirl.create(:admin)
   end
 
   def test_noscript_message
