@@ -89,7 +89,7 @@ local function rewrite_redirects()
   local relative = (not parsed["host"])
   local changed = false
 
-  if host_matches then
+  if host_matches and not relative then
     -- For wildcard hosts, keep the same host as on the incoming request. For
     -- all others, use the frontend host declared on the API.
     local host

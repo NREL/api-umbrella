@@ -30,12 +30,17 @@ local function define_view_helpers(self)
       provider["name"] = t("CAS")
     elseif strategy == "facebook" then
       provider["name"] = t("Facebook")
+      provider["not_configured"] = is_empty(config["web"]["admin"]["auth_strategies"]["facebook"]["client_id"])
     elseif strategy == "github" then
       provider["name"] = t("GitHub")
+      provider["not_configured"] = is_empty(config["web"]["admin"]["auth_strategies"]["github"]["client_id"])
     elseif strategy == "gitlab" then
       provider["name"] = t("GitLab")
+      provider["not_configured"] = is_empty(config["web"]["admin"]["auth_strategies"]["gitlab"]["client_id"])
     elseif strategy == "google" then
+      provider["strategy"] = "google_oauth2"
       provider["name"] = t("Google")
+      provider["not_configured"] = is_empty(config["web"]["admin"]["auth_strategies"]["google"]["client_id"])
     elseif strategy == "ldap" then
       if config["web"]["admin"]["auth_strategies"]["_only_ldap_enabled?"] then
         provider = nil

@@ -144,7 +144,6 @@ elif [ -f /etc/debian_version ]; then
     libreadline_version=7
   fi
 
-
   core_package_dependencies=(
     # General
     bash
@@ -189,6 +188,9 @@ elif [ -f /etc/debian_version ]; then
     # Postgresql
     libreadline$libreadline_version
     tzdata
+
+    # cjose
+    libjansson4
   )
   hadoop_analytics_package_dependencies=(
     openjdk-$openjdk_version-jre-headless
@@ -204,6 +206,7 @@ elif [ -f /etc/debian_version ]; then
     git
     libcurl4-openssl-dev
     libffi-dev
+    libjansson-dev
     libncurses5-dev
     libpcre3-dev
     libreadline-dev

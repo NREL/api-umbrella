@@ -2,33 +2,33 @@ local is_empty = require("pl.types").is_empty
 
 local _M = {}
 
-local flash_session = require("resty.session").new({
-  storage = "cookie",
-  name = "_api_umbrella_messages",
-  secret = assert(config["secret_key"]),
-})
-
 function _M.now(self, flash_type, message)
   self.flash[flash_type] = message
 end
 
-function _M.session(_, flash_type, message)
-  flash_session:start()
-  flash_session.data[flash_type] = message
-  flash_session:save()
+function _M.session(self, flash_type, message)
+  self:init_session_client()
+  self.resty_session_client:start()
+  if not self.resty_session_client.data["flash"] then
+    self.resty_session_client.data["flash"] = {}
+  end
+  self.resty_session_client.data["flash"][flash_type] = message
+  self.resty_session_client:save()
 end
 
 function _M.setup(self)
   self.flash = {}
 
   self.restore_flashes = function()
-    flash_session:open()
-    if not is_empty(flash_session.data) then
-      for flash_type, message in pairs(flash_session.data) do
+    self:init_session_client()
+    self.resty_session_client:open()
+    if self.resty_session_client.data and not is_empty(self.resty_session_client.data["flash"]) then
+      for flash_type, message in pairs(self.resty_session_client.data["flash"]) do
         _M.now(self, flash_type, message)
       end
 
-      flash_session:destroy()
+      self.resty_session_client.data["flash"] = nil
+      self.resty_session_client:save()
     end
 
     return self.flash

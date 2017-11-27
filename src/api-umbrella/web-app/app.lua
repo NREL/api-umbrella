@@ -87,6 +87,21 @@ local function init_session(self)
   end
 end
 
+local function init_session_client(self)
+  if not self.resty_session_client then
+    self.resty_session_client = resty_session.new({
+      storage = "cookie",
+      name = "_api_umbrella_session_client",
+      secret = assert(config["secret_key"]),
+      random = {
+        length = 40,
+      },
+    })
+    self.resty_session_client.cipher = session_cipher.new(self.resty_session)
+    self.resty_session_client.identifier = session_identifier
+  end
+end
+
 local function current_admin_from_session(self)
   local current_admin
   init_session(self)
@@ -145,6 +160,7 @@ app:before_filter(function(self)
   end
 
   self.init_session = init_session
+  self.init_session_client = init_session_client
   local current_admin = current_admin_from_token()
   if not current_admin then
     current_admin = current_admin_from_session(self)
