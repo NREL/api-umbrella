@@ -33,10 +33,29 @@ local function login(self)
 end
 
 function _M.cas_login(self)
-  return { redirect_to = "/" }
+  local service_url = build_url("/admins/auth/cas/callback") .. "?" .. ngx.encode_args({
+    url = build_url("/admin/"),
+  })
+
+  local login_url = "https://login.max.gov/cas/login?" .. ngx.encode_args({
+    service = service_url,
+  })
+
+  return { redirect_to = login_url }
 end
 
 function _M.cas_callback(self)
+  local service_url = build_url("/admins/auth/cas/callback") .. "?" .. ngx.encode_args({
+    url = build_url("/admin/"),
+  })
+
+  local validate_url = "https://login.max.gov/cas/serviceValidate?" .. ngx.encode_args({
+    service = service_url,
+    ticket = assert(self.params["ticket"]),
+  })
+
+  ngx.log(ngx.ERR, "VALIDATE: " .. inspect(validate_url))
+
   return { redirect_to = "/" }
 end
 
