@@ -97,10 +97,10 @@ RateLimit = model_ext.new_class("rate_limits", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "duration", validation_ext.number, t("can't be blank"))
-    validate_field(errors, data, "accuracy", validation_ext.number, t("can't be blank"))
+    validate_field(errors, data, "duration", validation_ext.tonumber.number, t("can't be blank"))
+    validate_field(errors, data, "accuracy", validation_ext.tonumber.number, t("can't be blank"))
     validate_field(errors, data, "limit_by", validation_ext:regex("^(ip|api_key)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "limit_to", validation_ext.number, t("can't be blank"), { error_field = "limit" })
+    validate_field(errors, data, "limit_to", validation_ext.tonumber.number, t("can't be blank"), { error_field = "limit" })
     validate_field(errors, data, "distributed", validation_ext.boolean, t("can't be blank"))
 
     local settings_id_column = "api_backend_settings_id"

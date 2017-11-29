@@ -17,10 +17,10 @@ end
 
 function _M.authorize(self, strategy_name, url, params)
   local state = random_token(64)
-  self:init_session_client()
-  self.resty_session_client:start()
-  self.resty_session_client.data["oauth2_state"] = state
-  self.resty_session_client:save()
+  self:init_session_cookie()
+  self.session_cookie:start()
+  self.session_cookie.data["oauth2_state"] = state
+  self.session_cookie:save()
 
   return {
     redirect_to = url .. "?" .. ngx.encode_args(deep_merge_overwrite_arrays({
@@ -34,14 +34,14 @@ function _M.authorize(self, strategy_name, url, params)
 end
 
 function _M.userinfo(self, strategy_name, options)
-  self:init_session_client()
-  self.resty_session_client:open()
-  if not self.resty_session_client or not self.resty_session_client.data or not self.resty_session_client.data["oauth2_state"] then
+  self:init_session_cookie()
+  self.session_cookie:open()
+  if not self.session_cookie or not self.session_cookie.data or not self.session_cookie.data["oauth2_state"] then
     ngx.log(ngx.ERR, "oauth2 state not available")
     return nil
   end
 
-  local stored_state = self.resty_session_client.data["oauth2_state"]
+  local stored_state = self.session_cookie.data["oauth2_state"]
   local state = self.params["state"]
   if state ~= stored_state then
     ngx.log(ngx.ERR, "oauth2 state does not match")

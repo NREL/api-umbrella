@@ -72,24 +72,36 @@ local function current_admin_from_token()
   return current_admin
 end
 
-local function init_session(self)
-  if not self.resty_session then
-    self.resty_session = resty_session.new({
+-- Use the "session_db" instance for storing session data after the admin has
+-- logged in. This session is backed by the database, so we have better
+-- server-side control on expiring sessions, and it can't be spoofed even with
+-- knowledge of the encryption secret key.
+local function init_session_db(self)
+  if not self.session_db then
+    self.session_db = resty_session.new({
       name = "_api_umbrella_session",
       secret = assert(config["secret_key"]),
       random = {
         length = 40,
       },
     })
-    self.resty_session.cipher = session_cipher.new(self.resty_session)
-    self.resty_session.identifier = session_identifier
-    self.resty_session.storage = session_postgresql_storage.new(self.resty_session)
+    self.session_db.cipher = session_cipher.new(self.session_db)
+    self.session_db.identifier = session_identifier
+    self.session_db.storage = session_postgresql_storage.new(self.session_db)
   end
 end
 
-local function init_session_client(self)
-  if not self.resty_session_client then
-    self.resty_session_client = resty_session.new({
+-- Use the "session_cookie" instance for storing session data prior to the
+-- admin logging in (for things like CSRF tokens on the login form and flash
+-- notices on the login page). While still secure (the data is encrypted in the
+-- cookie), we have less control over expiring this data and it can be
+-- manipulated by someone with knowledge of the encryption secret key. But we
+-- use this prior to login to simplify maintenance of the database-backed store
+-- (so random, unauthenticated visits to the login page by bots don't generate
+-- session records in the database for the CSRF token).
+local function init_session_cookie(self)
+  if not self.session_cookie then
+    self.session_cookie = resty_session.new({
       storage = "cookie",
       name = "_api_umbrella_session_client",
       secret = assert(config["secret_key"]),
@@ -97,17 +109,17 @@ local function init_session_client(self)
         length = 40,
       },
     })
-    self.resty_session_client.cipher = session_cipher.new(self.resty_session)
-    self.resty_session_client.identifier = session_identifier
+    self.session_cookie.cipher = session_cipher.new(self.session_cookie)
+    self.session_cookie.identifier = session_identifier
   end
 end
 
 local function current_admin_from_session(self)
   local current_admin
-  init_session(self)
-  self.resty_session:open()
-  if self.resty_session and self.resty_session.data and self.resty_session.data["admin_id"] then
-    local admin_id = self.resty_session.data["admin_id"]
+  self:init_session_db()
+  self.session_db:open()
+  if self.session_db and self.session_db.data and self.session_db.data["admin_id"] then
+    local admin_id = self.session_db.data["admin_id"]
     local admin = Admin:find({ id = admin_id })
     if admin and not admin:is_access_locked() then
       current_admin = admin
@@ -159,8 +171,8 @@ app:before_filter(function(self)
     end
   end
 
-  self.init_session = init_session
-  self.init_session_client = init_session_client
+  self.init_session_db = init_session_db
+  self.init_session_cookie = init_session_cookie
   local current_admin = current_admin_from_token()
   if not current_admin then
     current_admin = current_admin_from_session(self)

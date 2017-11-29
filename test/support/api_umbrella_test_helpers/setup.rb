@@ -149,7 +149,17 @@ module ApiUmbrellaTestHelpers
             ],
           })
           publish_api_backends([api_backend.id])
+
+          # After publishing, delete the API backend and admin account used to
+          # publish the backend (via the API), so that tests that expect a
+          # clean slate of API backends and admin accounts still function.
+          #
+          # We might want to re-think this at some point. Could we just have
+          # this API backend live as part of the static YAML config in the test
+          # environment?
           api_backend.delete
+          Admin.delete_all
+
           self.setup_config_version_complete = true
         end
       end

@@ -93,8 +93,8 @@ module ApiUmbrellaTestHelpers
       assert_response_code(302, get_response)
       assert_response_code(302, create_response)
 
-      assert_equal("https://127.0.0.1:9081/admin", get_response.headers["Location"])
-      assert_equal("https://127.0.0.1:9081/admin", create_response.headers["Location"])
+      assert_equal("https://127.0.0.1:9081/admin/", get_response.headers["Location"])
+      assert_equal("https://127.0.0.1:9081/admin/", create_response.headers["Location"])
 
       assert_equal(initial_count, Admin.count)
     end

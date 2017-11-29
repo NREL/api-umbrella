@@ -24,7 +24,12 @@ function _M.create(self)
   ngx.ctx.current_admin = self.current_admin
 
   self.admin_params = _M.admin_params(self)
-  assert(Admin:create(self.admin_params))
+  local admin = assert(Admin:create(self.admin_params))
+
+  self:init_session_db()
+  self.session_db:start()
+  self.session_db.data["admin_id"] = admin.id
+  self.session_db:save()
 
   return { redirect_to = build_url("/admin/#/login") }
 end

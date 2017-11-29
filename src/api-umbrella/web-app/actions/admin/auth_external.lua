@@ -20,10 +20,10 @@ local function login(self)
   end
 
   if admin then
-    self:init_session()
-    self.resty_session:start()
-    self.resty_session.data["admin_id"] = admin.id
-    self.resty_session:save()
+    self:init_session_db()
+    self.session_db:start()
+    self.session_db.data["admin_id"] = admin.id
+    self.session_db:save()
 
     return { redirect_to = build_url("/admin/") }
   else

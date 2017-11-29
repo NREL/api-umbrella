@@ -37,10 +37,10 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
 
   def test_remove_custom_rate_limits
     user = FactoryGirl.create(:api_user, {
-      :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+      :settings => FactoryGirl.build(:custom_rate_limit_api_user_settings, {
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+          FactoryGirl.build(:rate_limit, :duration => 5000, :limit => 10),
+          FactoryGirl.build(:rate_limit, :duration => 10000, :limit => 20),
         ],
       }),
     })

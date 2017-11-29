@@ -11,7 +11,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   end
 
   def test_saves_when_only_nested_fields_change
-    api = FactoryGirl.create(:api_with_settings, :name => "Save Test API")
+    api = FactoryGirl.create(:api_backend_with_settings, :name => "Save Test API")
     assert_nil(api.settings.error_data)
 
     admin_login
@@ -36,7 +36,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   end
 
   def test_loads_from_server_on_each_load
-    api = FactoryGirl.create(:api_with_settings, :name => "Test Load API", :frontend_host => "example1.com")
+    api = FactoryGirl.create(:api_backend_with_settings, :name => "Test Load API", :frontend_host => "example1.com")
     admin_login
     visit "/admin/#/apis"
     assert_text("Add API Backend")
@@ -356,7 +356,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
 
   def test_edit_custom_rate_limits
     api = FactoryGirl.create(:api_backend, {
-      :settings => FactoryGirl.build(:custom_rate_limit_api_setting),
+      :settings => FactoryGirl.build(:custom_rate_limit_api_backend_settings),
     })
     admin_login
     visit "/admin/#/apis/#{api.id}/edit"

@@ -47,7 +47,7 @@ ApiBackendSubUrlSettings = model_ext.new_class("api_backend_sub_url_settings", {
     validate_field(errors, data, "api_backend_id", validation_ext.string:minlen(1), t("can't be blank"))
     validate_field(errors, data, "http_method", validation_ext:regex("^(any|GET|POST|PUT|DELETE|HEAD|TRACE|OPTIONS|CONNECT|PATCH)$", "jo"), t("is not included in the list"))
     validate_field(errors, data, "regex", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "sort_order", validation_ext.number, t("can't be blank"))
+    validate_field(errors, data, "sort_order", validation_ext.tonumber.number, t("can't be blank"))
     validate_uniqueness(errors, data, "regex", ApiBackendSubUrlSettings, {
       "api_backend_id",
       "http_method",

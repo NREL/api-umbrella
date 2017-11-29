@@ -26,8 +26,8 @@ ApiBackendServer = model_ext.new_class("api_backend_servers", {
     validate_field(errors, data, "api_backend_id", validation_ext.string:minlen(1), t("can't be blank"))
     validate_field(errors, data, "host", validation_ext.string:minlen(1), t("can't be blank"))
     validate_field(errors, data, "host", validation_ext.db_null_optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"'))
-    validate_field(errors, data, "port", validation_ext.number, t("can't be blank"))
-    validate_field(errors, data, "port", validation_ext.number:between(0, 65535), t("is not included in the list"))
+    validate_field(errors, data, "port", validation_ext.tonumber.number, t("can't be blank"))
+    validate_field(errors, data, "port", validation_ext.tonumber.number:between(0, 65535), t("is not included in the list"))
     validate_uniqueness(errors, data, "host", ApiBackendServer, {
       "api_backend_id",
       "host",

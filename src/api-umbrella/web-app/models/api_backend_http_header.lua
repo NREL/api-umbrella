@@ -25,7 +25,7 @@ local ApiBackendHttpHeader = model_ext.new_class("api_backend_http_headers", {
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "header_type", validation_ext:regex("^(request|response_default|response_override)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "sort_order", validation_ext.number, t("can't be blank"))
+    validate_field(errors, data, "sort_order", validation_ext.tonumber.number, t("can't be blank"))
     validate_field(errors, data, "key", validation_ext.string:minlen(1), t("can't be blank"))
     return errors
   end,

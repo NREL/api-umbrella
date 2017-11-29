@@ -325,7 +325,7 @@ ApiBackend = model_ext.new_class("api_backends", {
   validate = function(_, data)
     local errors = {}
     validate_field(errors, data, "name", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "sort_order", validation_ext.number, t("can't be blank"))
+    validate_field(errors, data, "sort_order", validation_ext.tonumber.number, t("can't be blank"))
     validate_field(errors, data, "backend_protocol", validation_ext:regex("^(http|https)$", "jo"), t("is not included in the list"))
     validate_field(errors, data, "frontend_host", validation_ext.string:minlen(1), t("can't be blank"))
     validate_field(errors, data, "frontend_host", validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
@@ -336,7 +336,7 @@ ApiBackend = model_ext.new_class("api_backends", {
       validate_field(errors, data, "backend_host", validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
     end
     validate_field(errors, data, "balance_algorithm", validation_ext:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "keepalive_connections", validation_ext.db_null_optional.number:between(0, 32767), t("is not a number"))
+    validate_field(errors, data, "keepalive_connections", validation_ext.db_null_optional.tonumber.number:between(0, 32767), t("is not a number"))
     validate_field(errors, data, "servers", validation_ext.non_null_table:minlen(1), t("must have at least one servers"), { error_field = "base" })
     validate_field(errors, data, "url_matches", validation_ext.non_null_table:minlen(1), t("must have at least one url_matches"), { error_field = "base" })
     return errors
