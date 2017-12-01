@@ -1,6 +1,7 @@
 local Admin = require "api-umbrella.web-app.models.admin"
 local build_url = require "api-umbrella.utils.build_url"
 local capture_errors = require("lapis.application").capture_errors
+local csrf = require "api-umbrella.web-app.utils.csrf"
 local flash = require "api-umbrella.web-app.utils.flash"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
@@ -69,11 +70,11 @@ return function(app)
     before = function(self)
       _M.first_time_setup_check(self)
     end,
-    POST = capture_errors({
+    POST = csrf.validate_token_filter(capture_errors({
       on_error = function()
         return { render = "admin.registrations.new" }
       end,
       _M.create,
-    }),
+    })),
   }))
 end

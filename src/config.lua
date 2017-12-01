@@ -22,6 +22,9 @@ lapis_config(app_env, {
   -- Increase number of parsed POST arguments, for compatibility with some of
   -- the datatables APIs (which have a lot of separate arguments).
   max_request_args = 500,
+
+  -- Use the API Umbrella secret key for Lapis's secret setup too.
+  secret = assert(config["secret_key"]),
 })
 
 -- Environment specific configuration.

@@ -18,13 +18,13 @@ module ApiUmbrellaTestHelpers
     end
 
     def csrf_session
-      csrf_token = SecureRandom.base64(32)
-      session_cookie = encrypt_session_cookie(csrf_session_data(csrf_token))
+      csrf_token_key = SecureRandom.hex(20)
+      session_client_cookie = encrypt_session_client_cookie(csrf_session_data(csrf_token_key))
       {
         :headers => {
-          "Cookie" => "_api_umbrella_session=#{session_cookie}",
+          "Cookie" => "_api_umbrella_session_client=#{session_client_cookie}",
           "User-Agent" => STATIC_USER_AGENT,
-          "X-CSRF-Token" => csrf_token,
+          "X-CSRF-Token" => csrf_token(csrf_token_key),
         },
       }
     end
@@ -40,21 +40,28 @@ module ApiUmbrellaTestHelpers
     end
 
     def admin_csrf_session(admin = nil)
-      csrf_token = SecureRandom.base64(32)
-      session_cookie = encrypt_session_cookie(admin_session_data(admin).merge(csrf_session_data(csrf_token)))
+      csrf_token_key = SecureRandom.hex(20)
+      session_cookie = encrypt_session_cookie(admin_session_data(admin))
+      session_client_cookie = encrypt_session_client_cookie(csrf_session_data(csrf_token_key))
       {
         :headers => {
-          "Cookie" => "_api_umbrella_session=#{session_cookie}",
+          "Cookie" => "_api_umbrella_session=#{session_cookie}; _api_umbrella_session_client=#{session_client_cookie}",
           "User-Agent" => STATIC_USER_AGENT,
-          "X-CSRF-Token" => csrf_token,
+          "X-CSRF-Token" => csrf_token(csrf_token_key),
         },
       }
     end
 
-    def parse_admin_session_cookie(raw_cookie)
-      cookie_value = raw_cookie.match(/_api_umbrella_session=([^;\s]+)/)[1]
+    def parse_admin_session_cookie(raw_cookies)
+      cookie_value = Array(raw_cookies).join("; ").match(/_api_umbrella_session=([^;\s]+)/)[1]
       cookie_value = CGI.unescape(cookie_value)
       decrypt_session_cookie(cookie_value)
+    end
+
+    def parse_admin_session_client_cookie(raw_cookies)
+      cookie_value = Array(raw_cookies).join("; ").match(/_api_umbrella_session_client=([^;\s]+)/)[1]
+      cookie_value = CGI.unescape(cookie_value)
+      decrypt_session_client_cookie(cookie_value)
     end
 
     def admin_token(admin = nil)
@@ -193,8 +200,18 @@ module ApiUmbrellaTestHelpers
       @@test_rails_secret_token
     end
 
-    def csrf_session_data(csrf_token)
-      { "_csrf_token" => csrf_token }
+    def csrf_session_data(csrf_token_key)
+      { "csrf_token_key" => csrf_token_key }
+    end
+
+    def csrf_token(csrf_token_key)
+      message = Base64.strict_encode64(MultiJson.dump({
+        "key" => csrf_token_key,
+        "expires" => Time.now.to_i + 60 * 60 * 8,
+      })).strip
+      signature = Base64.strict_encode64(OpenSSL::HMAC.digest("sha1", $config["secret_key"], message)).strip
+
+      "#{message}.#{signature}"
     end
 
     def admin_session_data(admin)
@@ -267,6 +284,62 @@ module ApiUmbrellaTestHelpers
       data_serialized = Encryptor.decrypt({
         :value => session.data_encrypted,
         :iv => session.data_encrypted_iv,
+        :key => Digest::SHA256.digest($config["secret_key"]),
+        :auth_data => auth_data,
+      })
+
+      MultiJson.load(data_serialized)
+    end
+
+    def encrypt_session_client_cookie(data)
+      id = SecureRandom.hex(20)
+      iv = id[0, 12]
+      expires = Time.now.to_i + 3600
+      data_serialized = MultiJson.dump(data)
+      hmac_data_key = OpenSSL::HMAC.digest("sha1", $config["secret_key"], [
+        id,
+        expires,
+      ].join(""))
+      hmac_data = OpenSSL::HMAC.digest("sha1", hmac_data_key, [
+        id,
+        expires,
+        data_serialized,
+        STATIC_USER_AGENT,
+        "http",
+      ].join(""))
+      auth_data = [
+        STATIC_USER_AGENT,
+        "http",
+      ].join("")
+
+      data_encrypted = Encryptor.encrypt({
+        :value => data_serialized,
+        :iv => iv,
+        :key => Digest::SHA256.digest($config["secret_key"]),
+        :auth_data => auth_data,
+      })
+
+      [
+        session_base64_encode(id),
+        expires,
+        session_base64_encode(data_encrypted),
+        session_base64_encode(hmac_data),
+      ].join("|")
+    end
+
+    def decrypt_session_client_cookie(cookie_value)
+      parts = cookie_value.split("|")
+      id = session_base64_decode(parts[0])
+      iv = id[0, 12]
+      data = session_base64_decode(parts[2])
+      auth_data = [
+        STATIC_USER_AGENT,
+        "http",
+      ].join("")
+
+      data_serialized = Encryptor.decrypt({
+        :value => data,
+        :iv => iv,
         :key => Digest::SHA256.digest($config["secret_key"]),
         :auth_data => auth_data,
       })

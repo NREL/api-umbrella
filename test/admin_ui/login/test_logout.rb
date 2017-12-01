@@ -30,15 +30,17 @@ class Test::AdminUi::Login::TestLogout < Minitest::Capybara::Test
     # Allowed with session and with CRSF token.
     response = Typhoeus.delete("https://127.0.0.1:9081/admin/logout", keyless_http_options.deep_merge(admin_csrf_session(@admin)))
     assert_response_code(204, response)
-    data = parse_admin_session_cookie(response.headers["Set-Cookie"])
-    assert_nil(data["warden.user.admin.key"])
-    assert_equal("Signed out successfully.", data["flash"]["flashes"]["notice"])
+    set_cookies = Array(response.headers["Set-Cookie"]).join("; ")
+    assert_match("_api_umbrella_session=; Expires=Thu, 01 Jan 1970 00:00:01 GMT", set_cookies)
+    data = parse_admin_session_client_cookie(response.headers["Set-Cookie"])
+    assert_equal("Signed out successfully.", data["flash"]["info"])
 
     # Allowed with session and without CRSF token but with admin token.
     response = Typhoeus.delete("https://127.0.0.1:9081/admin/logout", keyless_http_options.deep_merge(admin_session(@admin)).deep_merge(admin_token(@admin)))
     assert_response_code(204, response)
-    data = parse_admin_session_cookie(response.headers["Set-Cookie"])
-    assert_nil(data["warden.user.admin.key"])
-    assert_equal("Signed out successfully.", data["flash"]["flashes"]["notice"])
+    set_cookies = Array(response.headers["Set-Cookie"]).join("; ")
+    assert_match("_api_umbrella_session=; Expires=Thu, 01 Jan 1970 00:00:01 GMT", set_cookies)
+    data = parse_admin_session_client_cookie(response.headers["Set-Cookie"])
+    assert_equal("Signed out successfully.", data["flash"]["info"])
   end
 end

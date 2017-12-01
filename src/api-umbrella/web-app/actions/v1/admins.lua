@@ -56,7 +56,7 @@ end
 function _M.destroy(self)
   assert(self.admin:authorized_delete())
 
-  return { status = 204 }
+  return { status = 204, layout = false }
 end
 
 function _M.admin_params(self)

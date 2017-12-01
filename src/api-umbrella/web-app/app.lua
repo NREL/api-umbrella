@@ -1,6 +1,7 @@
 require "api-umbrella.web-app.utils.db_escape_patches"
 
 local Admin = require "api-umbrella.web-app.models.admin"
+local csrf = require "api-umbrella.web-app.utils.csrf"
 local db = require "lapis.db"
 local escape_html = require("lapis.html").escape
 local flash = require "api-umbrella.web-app.utils.flash"
@@ -130,7 +131,6 @@ local function current_admin_from_session(self)
 end
 
 app:before_filter(function(self)
-
   self.res.headers["Cache-Control"] = "max-age=0, private, must-revalidate"
 
   -- Set session variables for the database connection (always use UTC and set
@@ -171,6 +171,10 @@ app:before_filter(function(self)
     end
   end
 
+  self.generate_csrf_token = function()
+    return csrf.generate_token(self)
+  end
+
   self.init_session_db = init_session_db
   self.init_session_cookie = init_session_cookie
   local current_admin = current_admin_from_token()
@@ -181,7 +185,6 @@ app:before_filter(function(self)
   ngx.ctx.current_admin = current_admin
 
   flash.setup(self)
-  -- flash.restore(self)
 end)
 
 require("api-umbrella.web-app.actions.admin.auth_external")(app)

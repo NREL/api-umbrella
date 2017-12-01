@@ -45,13 +45,13 @@ end
 function _M.update(self)
   self.api_scope:authorized_update(_M.api_scope_params(self))
 
-  return { status = 204 }
+  return { status = 204, layout = false }
 end
 
 function _M.destroy(self)
   assert(self.api_scope:authorized_delete())
 
-  return { status = 204 }
+  return { status = 204, layout = false }
 end
 
 function _M.api_scope_params(self)

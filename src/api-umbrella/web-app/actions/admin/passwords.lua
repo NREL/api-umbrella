@@ -1,6 +1,7 @@
 local Admin = require "api-umbrella.web-app.models.admin"
 local admin_reset_password_mailer = require "api-umbrella.web-app.mailers.admin_reset_password"
 local build_url = require "api-umbrella.utils.build_url"
+local csrf = require "api-umbrella.web-app.utils.csrf"
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
 local t = require("api-umbrella.web-app.utils.gettext").gettext
@@ -54,7 +55,7 @@ end
 
 return function(app)
   app:get("/admins/password/new(.:format)", _M.new)
-  app:post("/admins/password(.:format)", _M.create)
+  app:post("/admins/password(.:format)", csrf.validate_token_filter(_M.create))
   app:get("/admins/password/edit(.:format)", _M.edit)
-  app:put("/admins/password(.:format)", _M.update)
+  app:put("/admins/password(.:format)", csrf.validate_token_filter(_M.update))
 end

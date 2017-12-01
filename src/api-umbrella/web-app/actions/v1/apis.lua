@@ -63,13 +63,13 @@ end
 function _M.update(self)
   self.api_backend:authorized_update(_M.api_backend_params(self))
 
-  return { status = 204 }
+  return { status = 204, layout = false }
 end
 
 function _M.destroy(self)
   assert(self.api_backend:authorized_delete())
 
-  return { status = 204 }
+  return { status = 204, layout = false }
 end
 
 function _M.move_after(self)
@@ -84,7 +84,7 @@ function _M.move_after(self)
     self.api_backend:move_to_beginning()
   end
 
-  return { status = 204 }
+  return { status = 204, layout = false }
 end
 
 local function api_backend_settings_params(input_settings)

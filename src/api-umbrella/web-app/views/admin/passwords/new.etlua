@@ -2,7 +2,7 @@
 
 <div class="login-container">
   <form novalidate="novalidate" class="simple_form new_admin" id="new_admin" action="/admins/password" accept-charset="UTF-8" method="post">
-    <input type="hidden" name="csrf_token" value="<%= csrf_token %>" />
+    <input type="hidden" name="csrf_token" value="<%= generate_csrf_token() %>" />
     <% render("views.layout.errors") %>
 
     <div class="form-inputs">

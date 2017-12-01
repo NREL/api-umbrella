@@ -44,13 +44,13 @@ end
 function _M.update(self)
   self.website_backend:authorized_update(_M.website_backend_params(self))
 
-  return { status = 204 }
+  return { status = 204, layout = false }
 end
 
 function _M.destroy(self)
   assert(self.website_backend:authorized_delete())
 
-  return { status = 204 }
+  return { status = 204, layout = false }
 end
 
 function _M.website_backend_params(self)

@@ -2,12 +2,12 @@ local Admin = require "api-umbrella.web-app.models.admin"
 local ApiUser = require "api-umbrella.web-app.models.api_user"
 local array_includes = require "api-umbrella.utils.array_includes"
 local build_url = require "api-umbrella.utils.build_url"
-local csrf = require "lapis.csrf"
+local csrf = require "api-umbrella.web-app.utils.csrf"
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local json_response = require "api-umbrella.web-app.utils.json_response"
-local random_token = require "api-umbrella.utils.random_token"
+local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local username_label = require "api-umbrella.web-app.utils.username_label"
@@ -95,17 +95,12 @@ local function define_view_helpers(self)
 end
 
 function _M.new(self)
-  self.cookies["_api_umbrella_csrf_token"] = random_token(40)
-  self.csrf_token = csrf.generate_token(self, self.cookies["_api_umbrella_csrf_token"])
-
   self.admin_params = {}
   define_view_helpers(self)
   return { render = "admin.sessions.new" }
 end
 
 function _M.create(self)
-  csrf.assert_token(self, self.cookies["_api_umbrella_csrf_token"])
-
   local admin_id
   local admin_params = _M.admin_params(self)
   if admin_params then
@@ -142,7 +137,9 @@ function _M.destroy(self)
   self:init_session_db()
   self.session_db:open()
   self.session_db:destroy()
-  return { status = 204 }
+
+  flash.session(self, "info", t("Signed out successfully."))
+  return { status = 204, layout = false }
 end
 
 function _M.auth(self)
@@ -202,8 +199,8 @@ return function(app)
       end
     end,
     GET = _M.new,
-    POST = _M.create,
+    POST = csrf.validate_token_filter(_M.create),
   }))
-  app:delete("/admin/logout(.:format)", _M.destroy)
+  app:delete("/admin/logout(.:format)", csrf.validate_token_or_admin_filter(require_admin(_M.destroy)))
   app:get("/admin/auth(.:format)", _M.auth)
 end

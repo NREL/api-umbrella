@@ -46,13 +46,13 @@ end
 function _M.update(self)
   self.admin_group:authorized_update(_M.admin_group_params(self))
 
-  return { status = 204 }
+  return { status = 204, layout = false }
 end
 
 function _M.destroy(self)
   assert(self.admin_group:authorized_delete())
 
-  return { status = 204 }
+  return { status = 204, layout = false }
 end
 
 function _M.admin_group_params(self)
