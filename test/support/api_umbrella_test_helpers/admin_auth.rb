@@ -272,7 +272,7 @@ module ApiUmbrellaTestHelpers
 
     def decrypt_session_cookie(cookie_value)
       parts = cookie_value.split("|")
-      id = parts[0]
+      id = session_base64_decode(parts[0])
       auth_data = [
         STATIC_USER_AGENT,
         "http",

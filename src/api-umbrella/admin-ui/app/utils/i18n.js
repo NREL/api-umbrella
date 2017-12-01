@@ -5,8 +5,15 @@ var i18n = new Jed({
   domain: 'api-umbrella',
 });
 
-function t(msgid) {
-  return i18n.gettext(msgid);
+function t(...args) {
+  return i18n.gettext(...args);
 }
 
-export { t }
+function sprintf(...args) {
+  return Jed.sprintf(...args);
+}
+
+export {
+  t,
+  sprintf,
+}

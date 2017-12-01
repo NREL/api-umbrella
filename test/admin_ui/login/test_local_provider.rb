@@ -91,8 +91,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     response = Typhoeus.post("https://127.0.0.1:9081/admin/login", keyless_http_options.deep_merge(csrf_session).deep_merge(http_opts))
     assert_response_code(302, response)
     data = parse_admin_session_cookie(response.headers["Set-Cookie"])
-    assert_kind_of(Array, data["warden.user.admin.key"])
-    assert_equal(2, data["warden.user.admin.key"].length)
+    assert_equal(@admin.id, data["admin_id"])
   end
 
   def test_login_redirects
@@ -126,7 +125,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     # but capybara seems to read it as absolute. That's fine, but noting it in
     # case Capybara's future behavior changes).
     stylesheet = find("link[rel=stylesheet]", :visible => :hidden)
-    assert_match(%r{\Ahttps://127\.0\.0\.1:9081/web-assets/admin/login-\w{64}\.css\z}, stylesheet[:href])
+    assert_match(%r{\Ahttps://127\.0\.0\.1:9081/admin/auth-assets/login-\w{20}\.css\z}, stylesheet[:href])
 
     # Verify that the asset URL can be fetched and returns data.
     response = Typhoeus.get(stylesheet[:href], keyless_http_options)

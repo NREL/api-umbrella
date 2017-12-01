@@ -28,7 +28,7 @@
           <legend>{{t "Change Your Password"}}</legend>
 
           {{f.password-field "currentPassword" label=(t "Current Password")}}
-          {{f.password-field "password" label=(t "New Password") hint=(t "%{min} characters minimum" min=session.data.authenticated.password_length_min)}}
+          {{f.password-field "password" label=(t "New Password") hint=(sprintf (t "%d characters minimum") session.data.authenticated.password_length_min)}}
           {{f.password-field "passwordConfirmation" label=(t "Confirm New Password")}}
         </fieldset>
       {{/if}}
