@@ -131,6 +131,19 @@ local function current_admin_from_session(self)
 end
 
 app:before_filter(function(self)
+  -- For the test environment setup a middleware that looks for the
+  -- "test_delay_server_responses" cookie on requests, and if it's set, sleeps
+  -- for that amount of time before returning responses.
+  --
+  -- This can be used for some Capybara integration tests that otherwise might
+  -- happen too quickly (for example, checking that a loading spinner pops up
+  -- while making an ajax request).
+  if config["app_env"] == "test" then
+    if ngx.var.cookie_test_delay_server_responses then
+      ngx.sleep(tonumber(ngx.var.cookie_test_delay_server_responses))
+    end
+  end
+
   self.res.headers["Cache-Control"] = "max-age=0, private, must-revalidate"
 
   -- Set session variables for the database connection (always use UTC and set
