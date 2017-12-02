@@ -240,7 +240,6 @@ local function seed_initial_superusers()
     local data = {
       username = username,
       superuser = true,
-      registration_source = "seed",
     }
 
     local admin = result[1]
@@ -253,8 +252,12 @@ local function seed_initial_superusers()
     if not admin["id"] then
       admin["id"] = uuid.generate_random()
     end
-    if not admin["authentication_token"] then
-      admin["authentication_token"] = random_token(40)
+    if not admin["authentication_token_hash"] then
+      local authentication_token = random_token(40)
+      admin["authentication_token_hash"] = hmac(authentication_token)
+      local encrypted, iv = encryptor.encrypt(authentication_token, admin["id"])
+      admin["authentication_token_encrypted"] = encrypted
+      admin["authentication_token_encrypted_iv"] = iv
     end
 
     if result[1] then
