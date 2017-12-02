@@ -1,4 +1,5 @@
 local Admin = require "api-umbrella.web-app.models.admin"
+local admin_invite_mailer = require "api-umbrella.web-app.mailers.admin_invite"
 local admin_policy = require "api-umbrella.web-app.policies.admin_policy"
 local capture_errors_json_full = require("api-umbrella.web-app.utils.capture_errors").json_full
 local datatables = require "api-umbrella.web-app.utils.datatables"
@@ -9,6 +10,38 @@ local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 
 local _M = {}
+
+local function send_invite_email(self, admin)
+  local send_email = false
+  if self.params and self.params["options"] and tostring(self.params["options"]["send_invite_email"]) == "true" then
+    send_email = true
+  end
+
+  -- For the admin tool, it's easier to have this attribute on the user model,
+  -- rather than options.
+  if not send_email and self.params and self.params["admin"] and tostring(self.params["admin"]["send_invite_email"]) == "true" then
+    send_email = true
+  end
+
+  if not send_email then
+    return nil
+  end
+
+  -- Don't resend invites to admins that are already signed in.
+  if admin.current_sign_in_at then
+    return nil
+  end
+
+  local token
+  if config["web"]["admin"]["auth_strategies"]["_local_enabled?"] then
+    token = admin:set_invite_reset_password_token()
+  end
+
+  local ok, err = admin_invite_mailer(admin, token)
+  if not ok then
+    ngx.log(ngx.ERR, "mail error: ", err)
+  end
+end
 
 function _M.index(self)
   return datatables.index(self, Admin, {
@@ -39,6 +72,8 @@ function _M.create(self)
     admin = admin:as_json(),
   }
 
+  send_invite_email(self, admin)
+
   self.res.status = 201
   return json_response(self, response)
 end
@@ -48,6 +83,8 @@ function _M.update(self)
   local response = {
     admin = self.admin:as_json(),
   }
+
+  send_invite_email(self, self.admin)
 
   self.res.status = 200
   return json_response(self, response)

@@ -61,7 +61,7 @@ local function validate_password(self, data, errors)
     validate_field(errors, data, "password", validation_ext.db_null_optional.string:minlen(password_length_min), string.format(t("is too short (minimum is %d characters)"), password_length_min))
     validate_field(errors, data, "password", validation_ext.db_null_optional.string:maxlen(password_length_max), string.format(t("is too long (maximum is %d characters)"), password_length_max))
 
-    if self and self.id then
+    if self and self.id and not self._reset_password_mode then
       validate_field(errors, data, "current_password", validation_ext.string:minlen(1), t("can't be blank"))
       if not is_empty(data["current_password"]) and data["current_password"] ~= db_null then
         if not self:is_valid_password(data["current_password"]) then
@@ -116,11 +116,29 @@ Admin = model_ext.new_class("admins", {
   end,
 
   is_lock_expired = function(self)
-    if self.locked_at and self.locked_at < 0 then -- TODO
-      return true
-    else
-      return false
+    local expired = false
+    if self.locked_at then
+      expired = true
+      local unlock_at = ngx.now() - 2 * 60 * 60
+      if time.postgres_to_timestamp(self.locked_at) < unlock_at then
+        expired = false
+      end
     end
+
+    return expired
+  end,
+
+  is_reset_password_expired = function(self)
+    local expired = false
+    if self.reset_password_sent_at then
+      expired = true
+      local expires_at = ngx.now() - 6 * 60 * 60
+      if time.postgres_to_timestamp(self.reset_password_sent_at) > expires_at then
+        expired = false
+      end
+    end
+
+    return expired
   end,
 
   authentication_token_decrypted = function(self)
@@ -200,16 +218,25 @@ Admin = model_ext.new_class("admins", {
     return data
   end,
 
-  set_reset_password_token = function(self)
+  set_reset_password_token = function(self, override_sent_at)
     local token = random_token(24)
     local token_hash = hmac(token)
     model_ext.transaction_update("admins", {
       reset_password_token_hash = token_hash,
-      reset_password_sent_at = db.raw("now() AT TIME ZONE 'UTC'"),
+      reset_password_sent_at = override_sent_at or db.raw("now() AT TIME ZONE 'UTC'"),
     }, { id = assert(self.id) })
     self:refresh()
 
     return token
+  end,
+
+  -- Use set_reset_password_token, but set the reset_password_sent_at date 2
+  -- weeks into the future. This allows for the normal reset password valid
+  -- period to be shorter (6 hours), but we can leverage the same reset
+  -- password process for the initial invite where we want the period to be
+  -- longer.
+  set_invite_reset_password_token = function(self)
+    return self:set_reset_password_token(db.raw("(now() + interval '2 weeks') AT TIME ZONE 'UTC'"))
   end,
 
   api_scopes = function(self)
@@ -367,6 +394,15 @@ Admin.needs_first_account = function()
   end
 
   return needs
+end
+
+Admin.find_by_reset_password_token = function(_, token)
+  if is_empty(token) then
+    return nil
+  end
+
+  local token_hash = hmac(token)
+  return Admin:find({ reset_password_token_hash = token_hash })
 end
 
 return Admin

@@ -46,11 +46,11 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     assert_equal(["API Umbrella Admin Access"], message["Content"]["Headers"]["Subject"])
 
     # Password reset URL in body
-    assert_match(%r{http://localhost/admins/password/edit\?invite=true&amp;reset_password_token=[^" ]+}, message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    assert_match(%r{http://localhost/admins/password/edit\?invite=true&reset_password_token=[^" ]+}, message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?invite=true&amp;reset_password_token=[^" ]+}, message["_mime_parts"]["text/html"]["_body"])
+    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?invite=true&reset_password_token=[^" ]+}, message["_mime_parts"]["text/plain"]["_body"])
 
     # Follow link to reset URL
-    reset_url = message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"].match(%r{/admins/password/edit\?invite=true&reset_password_token=[^" ]+})[0]
+    reset_url = message["_mime_parts"]["text/plain"]["_body"].match(%r{/admins/password/edit\?invite=true&reset_password_token=[^" ]+})[0]
     visit reset_url
     fill_in "New Password", :with => "password123456"
     fill_in "Confirm New Password", :with => "password123456"

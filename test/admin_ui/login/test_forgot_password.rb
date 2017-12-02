@@ -56,11 +56,11 @@ class Test::AdminUi::Login::TestForgotPassword < Minitest::Capybara::Test
     assert_equal(["Reset password instructions"], message["Content"]["Headers"]["Subject"])
 
     # Password reset URL in body
-    assert_match(%r{http://localhost/admins/password/edit\?reset_password_token=[^"]+}, message["_mime_parts"]["text/html; charset=UTF-8"]["Body"])
-    assert_match(%r{http://localhost/admins/password/edit\?reset_password_token=[^"]+}, message["_mime_parts"]["text/plain; charset=UTF-8"]["Body"])
+    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?reset_password_token=[^"]+}, message["_mime_parts"]["text/html"]["_body"])
+    assert_match(%r{https://127.0.0.1:9081/admins/password/edit\?reset_password_token=[^"]+}, message["_mime_parts"]["text/plain"]["_body"])
 
     # Follow link to reset URL
-    reset_url = message["_mime_parts"]["text/html; charset=UTF-8"]["Body"].match(%r{/admins/password/edit\?reset_password_token=[^"]+})[0]
+    reset_url = message["_mime_parts"]["text/html"]["_body"].match(%r{/admins/password/edit\?reset_password_token=[^"]+})[0]
     visit reset_url
 
     assert_text("Change Your Password")

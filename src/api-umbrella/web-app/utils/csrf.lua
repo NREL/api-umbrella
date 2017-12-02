@@ -10,11 +10,14 @@ function _M.generate_token(self)
   -- Generate a random key and store it in the cookie session. The key is
   -- necessary for Lapi's CSRF protection to actually be effective:
   -- https://github.com/leafo/lapis/issues/219
-  local csrf_token_key = random_token(40)
   self:init_session_cookie()
   self.session_cookie:start()
-  self.session_cookie.data["csrf_token_key"] = csrf_token_key
-  self.session_cookie:save()
+  local csrf_token_key = self.session_cookie.data["csrf_token_key"]
+  if not csrf_token_key then
+    csrf_token_key = random_token(40)
+    self.session_cookie.data["csrf_token_key"] = csrf_token_key
+    self.session_cookie:save()
+  end
 
   return lapis_csrf.generate_token(self, csrf_token_key)
 end
@@ -22,10 +25,8 @@ end
 function _M.validate_token_filter(fn)
   return function(self, ...)
     self:init_session_cookie()
-    self.session_cookie:start()
+    self.session_cookie:open()
     local key = self.session_cookie.data["csrf_token_key"]
-    self.session_cookie.data["csrf_token_key"] = nil
-    self.session_cookie:save()
 
     local valid = false
     local err

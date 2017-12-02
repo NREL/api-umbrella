@@ -21,7 +21,6 @@ function _M.create(self)
     username = "admin",
     superuser = true,
   }
-
   ngx.ctx.current_admin = self.current_admin
 
   self.admin_params = _M.admin_params(self)

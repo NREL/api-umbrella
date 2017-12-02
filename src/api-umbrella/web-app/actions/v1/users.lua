@@ -42,7 +42,7 @@ end
 
 local function send_welcome_email(self, api_user)
   local send_email = false
-  if self.params and self.params["options"] and self.params["options"]["send_welcome_email"] == "true" then
+  if self.params and self.params["options"] and tostring(self.params["options"]["send_welcome_email"]) == "true" then
     send_email = true
   end
 
