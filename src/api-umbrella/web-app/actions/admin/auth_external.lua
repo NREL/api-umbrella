@@ -9,7 +9,7 @@ local username_label = require "api-umbrella.web-app.utils.username_label"
 local _M = {}
 
 local function email_unverified_error(self)
-  flash.session(self, "danger", string.format(t([[The email address '%s' is not verified. Please <a href="%s">contact us</a> for further assistance.]]), self.username, config["contact_url"]))
+  flash.session(self, "danger", string.format(t([[The email address '%s' is not verified. Please contact us for further assistance.]]), self.username))
   return { redirect_to = build_url("/admin/login") }
 end
 
@@ -27,7 +27,7 @@ local function login(self)
 
     return { redirect_to = build_url("/admin/") }
   else
-    flash.session(self, "danger", string.format(t([[The account for '%s' is not authorized to access the admin. Please <a href="%s">contact us</a> for further assistance.]]), self.username, config["contact_url"]))
+    flash.session(self, "danger", string.format(t([[The account for '%s' is not authorized to access the admin. Please contact us for further assistance.]]), self.username))
     return { redirect_to = build_url("/admin/login") }
   end
 end
@@ -201,7 +201,61 @@ function _M.ldap_login(self)
 end
 
 function _M.ldap_callback(self)
-  return { redirect_to = "/" }
+  local admin_params = _M.admin_params(self)
+  if admin_params and not is_empty(admin_params["username"]) then
+    local lualdap = require "lualdap"
+    local options = config["web"]["admin"]["auth_strategies"]["ldap"]["options"]
+
+    local host = options["host"]
+    if options["port"] then
+      host = host .. ":" .. options["port"]
+    end
+
+    local usetls = false
+    if options["method"] == "tls" then
+      usetls = true
+    end
+
+    local ldap, err = lualdap.open_simple(host, options["bind_dn"] or "", options["password"] or "", usetls)
+    if not ldap then
+      ngx.log(ngx.ERR, "LDAP connection error: ", err)
+    else
+      local user_dn
+      local userinfo
+      local filter = "(" .. options["uid"] .. "=" .. admin_params["username"] .. ")"
+      for dn, entry in ldap:search({
+        base = options["base"],
+        scope = "subtree",
+        filter = filter,
+      }) do
+        if dn then
+          user_dn = dn
+          userinfo = entry
+          break
+        end
+      end
+      ldap:close()
+
+      if user_dn then
+        local user_ldap, user_err = lualdap.open_simple(host, user_dn, admin_params["password"] or "", usetls)
+        if user_ldap then
+          self.username = assert(userinfo[options["uid"]])
+          user_ldap:close()
+        else
+          ngx.log(ngx.ERR, "LDAP user connection error: ", user_err)
+        end
+      end
+    end
+  end
+
+  if self.username then
+    return login(self)
+  else
+    self.admin_params = admin_params
+    self.username_label = username_label()
+    flash.now(self, "danger", t([[Could not authenticate you from LDAP because "Invalid credentials".]]))
+    return { render = "admin.auth_external.ldap_login" }
+  end
 end
 
 function _M.admin_params(self)

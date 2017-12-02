@@ -9,6 +9,7 @@ luarocks_install(lua-cmsgpack ${LUAROCK_CMSGPACK_VERSION} ${LUAROCK_CMSGPACK_HAS
 luarocks_install(lua-iconv ${LUAROCK_ICONV_VERSION} ${LUAROCK_ICONV_HASH})
 luarocks_install(lua-resty-auto-ssl ${LUAROCK_RESTY_AUTO_SSL_VERSION} ${LUAROCK_RESTY_AUTO_SSL_HASH})
 luarocks_install(lua-resty-uuid ${LUAROCK_RESTY_UUID_VERSION} ${LUAROCK_RESTY_UUID_HASH})
+luarocks_install(lualdap ${LUAROCK_LUALDAP_VERSION} ${LUAROCK_LUALDAP_HASH})
 luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION} ${LUAROCK_LUAPOSIX_HASH})
 luarocks_install(lustache ${LUAROCK_LUSTACHE_VERSION} ${LUAROCK_LUSTACHE_HASH})
 luarocks_install(lyaml ${LUAROCK_LYAML_VERSION} ${LUAROCK_LYAML_HASH})
@@ -111,6 +112,7 @@ set(
   luarock_lua-iconv
   luarock_lua-resty-auto-ssl
   luarock_lua-resty-uuid
+  luarock_lualdap
   luarock_luaposix
   luarock_lustache
   luarock_lyaml

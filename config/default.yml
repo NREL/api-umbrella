@@ -104,7 +104,10 @@ web:
         client_id:
         client_secret:
       ldap:
-        options: {}
+        options:
+          port: 389
+          method: plain
+          uid: sAMAccountName
   mailer:
     smtp_settings:
       host: 127.0.0.1

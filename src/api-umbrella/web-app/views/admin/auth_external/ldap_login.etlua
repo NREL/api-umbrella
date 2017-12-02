@@ -1,4 +1,4 @@
-<h1><%= string.format(t("Sign in with %s"), t("LDAP")) %></h1>
+<h1><%= string.format(t("Sign in with %s"), config["web"]["admin"]["auth_strategies"]["ldap"]["options"]["title"] or t("LDAP")) %></h1>
 
 <div class="login-container">
   <% render("views.admin.sessions._login_form_ldap") %>
