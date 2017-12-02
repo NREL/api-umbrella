@@ -16,6 +16,12 @@ local function redirect_uri(strategy_name)
 end
 
 function _M.authorize(self, strategy_name, url, params)
+  if config["app_env"] == "test" and ngx.var.cookie_test_mock_userinfo then
+    return {
+      redirect_to = redirect_uri(strategy_name),
+    }
+  end
+
   local state = random_token(64)
   self:init_session_cookie()
   self.session_cookie:start()
@@ -34,6 +40,11 @@ function _M.authorize(self, strategy_name, url, params)
 end
 
 function _M.userinfo(self, strategy_name, options)
+  if config["app_env"] == "test" and ngx.var.cookie_test_mock_userinfo then
+    local mock_userinfo = require "api-umbrella.web-app.utils.test_env_mock_userinfo"
+    return mock_userinfo()
+  end
+
   self:init_session_cookie()
   self.session_cookie:open()
   if not self.session_cookie or not self.session_cookie.data or not self.session_cookie.data["oauth2_state"] then

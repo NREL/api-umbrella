@@ -2,6 +2,7 @@ local Admin = require "api-umbrella.web-app.models.admin"
 local build_url = require "api-umbrella.utils.build_url"
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
+local ldap = require "api-umbrella.web-app.utils.ldap"
 local oauth2 = require "api-umbrella.web-app.utils.oauth2"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local username_label = require "api-umbrella.web-app.utils.username_label"
@@ -16,7 +17,7 @@ end
 local function login(self)
   local admin
   if not is_empty(self.username) then
-    admin = Admin:find({ username = self.username })
+    admin = Admin:find({ username = string.lower(self.username) })
   end
 
   if admin then
@@ -53,8 +54,6 @@ function _M.cas_callback(self)
     service = service_url,
     ticket = assert(self.params["ticket"]),
   })
-
-  ngx.log(ngx.ERR, "VALIDATE: " .. inspect(validate_url))
 
   return { redirect_to = "/" }
 end
@@ -120,9 +119,11 @@ function _M.facebook_callback(self)
     },
   })
 
-  self.username = userinfo["email"]
-  if not userinfo["verified"] then
-    return email_unverified_error(self)
+  if userinfo then
+    self.username = userinfo["email"]
+    if not userinfo["verified"] then
+      return email_unverified_error(self)
+    end
   end
 
   return login(self)
@@ -140,15 +141,17 @@ function _M.github_callback(self)
     userinfo_endpoint = "https://api.github.com/user/emails",
   })
 
-  for _, email in ipairs(userinfo) do
-    if email["primary"] then
-      self.username = email["email"]
+  if userinfo then
+    for _, email in ipairs(userinfo) do
+      if email["primary"] then
+        self.username = email["email"]
 
-      if not email["verified"] then
-        return email_unverified_error(self)
+        if not email["verified"] then
+          return email_unverified_error(self)
+        end
+
+        break
       end
-
-      break
     end
   end
 
@@ -167,9 +170,11 @@ function _M.gitlab_callback(self)
     userinfo_endpoint = "https://gitlab.com/api/v4/user",
   })
 
-  -- GitLab only appears to return verified email addresses (so there's not an
-  -- explicit email verification attribute or check needed).
-  self.username = userinfo["email"]
+  if userinfo then
+    -- GitLab only appears to return verified email addresses (so there's not
+    -- an explicit email verification attribute or check needed).
+    self.username = userinfo["email"]
+  end
   return login(self)
 end
 
@@ -186,15 +191,21 @@ function _M.google_callback(self)
     userinfo_endpoint = "https://www.googleapis.com/oauth2/v3/userinfo",
   })
 
-  self.username = userinfo["email"]
-  if not userinfo["email_verified"] then
-    return email_unverified_error(self)
+  if userinfo then
+    self.username = userinfo["email"]
+    if not userinfo["email_verified"] then
+      return email_unverified_error(self)
+    end
   end
 
   return login(self)
 end
 
 function _M.ldap_login(self)
+  if config["app_env"] == "test" and ngx.var.cookie_test_mock_userinfo then
+    return _M.ldap_callback(self)
+  end
+
   self.admin_params = {}
   self.username_label = username_label()
   return { render = "admin.auth_external.ldap_login" }
@@ -202,52 +213,12 @@ end
 
 function _M.ldap_callback(self)
   local admin_params = _M.admin_params(self)
-  if admin_params and not is_empty(admin_params["username"]) then
-    local lualdap = require "lualdap"
-    local options = config["web"]["admin"]["auth_strategies"]["ldap"]["options"]
+  local options = config["web"]["admin"]["auth_strategies"]["ldap"]["options"]
+  local userinfo = ldap.userinfo(admin_params, options)
 
-    local host = options["host"]
-    if options["port"] then
-      host = host .. ":" .. options["port"]
-    end
-
-    local usetls = false
-    if options["method"] == "tls" then
-      usetls = true
-    end
-
-    local ldap, err = lualdap.open_simple(host, options["bind_dn"] or "", options["password"] or "", usetls)
-    if not ldap then
-      ngx.log(ngx.ERR, "LDAP connection error: ", err)
-    else
-      local user_dn
-      local userinfo
-      local filter = "(" .. options["uid"] .. "=" .. admin_params["username"] .. ")"
-      for dn, entry in ldap:search({
-        base = options["base"],
-        scope = "subtree",
-        filter = filter,
-      }) do
-        if dn then
-          user_dn = dn
-          userinfo = entry
-          break
-        end
-      end
-      ldap:close()
-
-      if user_dn then
-        local user_ldap, user_err = lualdap.open_simple(host, user_dn, admin_params["password"] or "", usetls)
-        if user_ldap then
-          self.username = assert(userinfo[options["uid"]])
-          user_ldap:close()
-        else
-          ngx.log(ngx.ERR, "LDAP user connection error: ", user_err)
-        end
-      end
-    end
+  if userinfo then
+    self.username = userinfo[options["uid"]]
   end
-
   if self.username then
     return login(self)
   else

@@ -66,9 +66,6 @@ gem "nokogiri", "~> 1.8.1"
 # Useful additions
 gem "activesupport", "~> 5.1.2"
 
-# Path-based setting of hashes
-gem "lazyhash", "~> 0.1.1"
-
 # Generating fake strings and data.
 gem "faker", "~> 1.8.3"
 

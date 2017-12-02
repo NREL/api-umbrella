@@ -95,29 +95,58 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     {
       :provider => :facebook,
       :login_button_text => "Sign in with Facebook",
-      :username_path => "info.email",
-      :verified_path => "info.verified",
+      :mock_userinfo => {
+        "email" => "{{username}}",
+        "verified" => true,
+      },
+      :mock_userinfo_unverified => {
+        "verified" => false,
+      },
     },
     {
       :provider => :github,
       :login_button_text => "Sign in with GitHub",
-      :username_path => "info.email",
+      :mock_userinfo => [
+        {
+          "email" => "other-email@example.com",
+          "primary" => false,
+          "verified" => true,
+        },
+        {
+          "email" => "{{username}}",
+          "primary" => true,
+          "verified" => true,
+        },
+      ],
+      :mock_userinfo_unverified => [
+        {},
+        { "verified" => false },
+      ],
     },
     {
       :provider => :gitlab,
       :login_button_text => "Sign in with GitLab",
-      :username_path => "info.email",
+      :mock_userinfo => {
+        "email" => "{{username}}",
+      },
     },
     {
       :provider => :google_oauth2,
       :login_button_text => "Sign in with Google",
-      :username_path => "info.email",
-      :verified_path => "extra.raw_info.email_verified",
+      :mock_userinfo => {
+        "email" => "{{username}}",
+        "email_verified" => true,
+      },
+      :mock_userinfo_unverfied => {
+        "email_verified" => false,
+      },
     },
     {
       :provider => :ldap,
       :login_button_text => "Sign in with LDAP",
-      :username_path => "extra.raw_info.sAMAccountName",
+      :mock_userinfo => {
+        "sAMAccountName" => "{{username}}",
+      },
     },
     {
       :provider => :cas,
@@ -137,7 +166,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       assert_login_nonexistent_admin(options)
     end
 
-    if(options[:verified_path])
+    if(options[:mock_userinfo_unverified])
       define_method("test_#{options.fetch(:provider)}_unverified_email") do
         assert_login_unverified_email_login(options)
       end
@@ -148,40 +177,51 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
 
   def assert_login_valid_admin(options)
     admin = FactoryGirl.create(:admin, :username => "valid@example.com")
-    omniauth_data = omniauth_base_data(options)
-    LazyHash.add(omniauth_data, options.fetch(:username_path), admin.username)
+    json = MultiJson.dump(options.fetch(:mock_userinfo))
+    json.gsub!("{{username}}", admin.username)
 
-    mock_omniauth(omniauth_data) do
+    mock_userinfo(json) do
       assert_login_permitted(options.fetch(:login_button_text), admin)
     end
   end
 
   def assert_login_case_insensitive_username_admin(options)
     admin = FactoryGirl.create(:admin, :username => "hello@example.com")
-    omniauth_data = omniauth_base_data(options)
-    LazyHash.add(omniauth_data, options.fetch(:username_path), "Hello@ExamplE.Com")
+    json = MultiJson.dump(options.fetch(:mock_userinfo))
+    json.gsub!("{{username}}", "Hello@ExamplE.Com")
 
-    mock_omniauth(omniauth_data) do
+    mock_userinfo(json) do
       assert_login_permitted(options.fetch(:login_button_text), admin)
     end
   end
 
   def assert_login_nonexistent_admin(options)
-    omniauth_data = omniauth_base_data(options)
-    LazyHash.add(omniauth_data, options.fetch(:username_path), "noadmin@example.com")
+    json = MultiJson.dump(options.fetch(:mock_userinfo))
+    json.gsub!("{{username}}", "noadmin@example.com")
 
-    mock_omniauth(omniauth_data) do
+    mock_userinfo(json) do
       assert_login_forbidden(options.fetch(:login_button_text), "not authorized")
     end
   end
 
   def assert_login_unverified_email_login(options)
     admin = FactoryGirl.create(:admin, :username => "unverified@example.com")
-    omniauth_data = omniauth_base_data(options)
-    LazyHash.add(omniauth_data, options.fetch(:username_path), admin.username)
-    LazyHash.add(omniauth_data, options.fetch(:verified_path), false)
+    data = options.fetch(:mock_userinfo)
+    data_unverified = options.fetch(:mock_userinfo_unverified)
+    if(data.kind_of?(Array))
+      assert_kind_of(Array, data_unverified)
+      assert_equal(data.length, data_unverified.length)
+      merged = data.deep_dup
+      merged.each_with_index do |value, index|
+        merged[index].deep_merge!(data_unverified[index])
+      end
+    else
+      merged = data.deep_merge(data_unverified)
+    end
+    json = MultiJson.dump(merged)
+    json.gsub!("{{username}}", admin.username)
 
-    mock_omniauth(omniauth_data) do
+    mock_userinfo(json) do
       assert_login_forbidden(options.fetch(:login_button_text), "not verified")
     end
   end
@@ -199,17 +239,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     refute_link("my_account_nav_link")
   end
 
-  def omniauth_base_data(options)
-    omniauth_base_data = LazyHash.build_hash
-    omniauth_base_data["provider"] = options.fetch(:provider).to_s
-    if(options[:verified_path])
-      LazyHash.add(omniauth_base_data, options.fetch(:verified_path), true)
-    end
-
-    omniauth_base_data
-  end
-
-  def mock_omniauth(omniauth_data)
+  def mock_userinfo(json)
     # Reset the session and clear caches before setting our cookie. For some
     # reason this seems necessary to ensure click_link always works correctly
     # (otherwise, we sporadically get failures caused by the click_link on the
@@ -220,14 +250,12 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     Capybara.reset_session!
     page.driver.clear_memory_cache
 
-    # Set a cookie to mock the OmniAuth responses. This relies on the
-    # TestMockOmniauth middleware we install into the Rails app during the test
-    # environment. This gives us a way to mock this data from outside the Rails
-    # test suite.
-    page.driver.set_cookie("test_mock_omniauth", Base64.urlsafe_encode64(MultiJson.dump(omniauth_data)))
+    # Set a cookie to mock the userinfo responses. When the app is running in
+    # test mode, it looks for this cookie to provide mock data.
+    page.driver.set_cookie("test_mock_userinfo", CGI.escape(Base64.strict_encode64(json)))
     yield
   ensure
-    page.driver.remove_cookie("test_mock_omniauth")
+    page.driver.remove_cookie("test_mock_userinfo")
   end
 
   # When using "click_link" on the login buttons we rarely/sporadically see it

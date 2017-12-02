@@ -64,7 +64,7 @@ local function define_view_helpers(self)
   self.username_label = username_label()
 
   self.display_no_admin_alert = false
-  if config["web"]["admin"]["auth_strategies"]["_local_enabled?"] and Admin:count() == 0 then
+  if not config["web"]["admin"]["auth_strategies"]["_local_enabled?"] and Admin:count() == 0 then
     self.display_no_admin_alert = true
   end
 
@@ -107,7 +107,7 @@ function _M.create(self)
     local username = admin_params["username"]
     local password = admin_params["password"]
     if not is_empty(username) and not is_empty(password) then
-      local admin = Admin:find({ username = username })
+      local admin = Admin:find({ username = string.lower(username) })
       if admin and not admin:is_access_locked() and admin:is_valid_password(password) then
         admin_id = admin.id
       end
