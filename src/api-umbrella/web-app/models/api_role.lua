@@ -25,4 +25,14 @@ ApiRole.insert_missing = function(ids)
   end
 end
 
+ApiRole.all_ids = function()
+  local ids = {}
+  local roles = ApiRole:select({ fields = "id", load = false })
+  for _, role in ipairs(roles) do
+    table.insert(ids, role.id)
+  end
+
+  return ids
+end
+
 return ApiRole

@@ -21,7 +21,11 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
   end
 
   def test_prefills_api_roles
-    FactoryGirl.create(:api_backend, :settings => { :required_roles => ["test-api-role"] })
+    FactoryGirl.create(:api_backend, {
+      :settings => FactoryGirl.build(:api_backend_settings, {
+        :required_roles => ["test-api-role"],
+      }),
+    })
     admin_login
     visit "/admin/#/api_users/new"
     assert_text("Add API User")
@@ -35,7 +39,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     visit "/admin/#/api_users/new"
     assert_text("Add API User")
 
-    fill_in "E-mail", :with => "example@example.com"
+    fill_in "E-mail", :with => "#{unique_test_id}@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
     check "User agrees to the terms and conditions"
@@ -46,6 +50,9 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     assert_text("Successfully saved the user")
     page.execute_script("window.PNotifyRemoveAll()")
     refute_text("Successfully saved the user")
+
+    user = ApiUser.find_by!(:email => "#{unique_test_id}@example.com")
+    assert_equal(["test-new-role"], user.roles)
 
     click_link("Add New API User")
     assert_text("Add API User")
@@ -58,7 +65,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     visit "/admin/#/api_users/new"
     assert_text("Add API User")
 
-    fill_in "E-mail", :with => "example@example.com"
+    fill_in "E-mail", :with => "#{unique_test_id}@example.com"
     fill_in "First Name", :with => "John"
     fill_in "Last Name", :with => "Doe"
     check "User agrees to the terms and conditions"
@@ -67,6 +74,9 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     click_button("Save")
 
     assert_text("Successfully saved the user")
+
+    user = ApiUser.find_by!(:email => "#{unique_test_id}@example.com")
+    assert_equal(["test-new-user-role"], user.roles)
 
     visit "/admin/#/apis/new"
     assert_text("Add API")
@@ -114,11 +124,15 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     assert_text("Successfully saved")
 
     user.reload
-    assert_nil(user.roles)
+    assert_equal([], user.roles)
   end
 
   def test_removes_api_roles
-    api = FactoryGirl.create(:api_backend, :settings => { :required_roles => ["test-role1", "test-role2"] })
+    api = FactoryGirl.create(:api_backend, {
+      :settings => FactoryGirl.build(:api_backend_settings, {
+        :required_roles => ["test-role1", "test-role2"],
+      }),
+    })
     admin_login
 
     # Remove 1 role
@@ -152,6 +166,6 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
     assert_text("Successfully saved")
 
     api.reload
-    assert_nil(api.settings.required_roles)
+    assert_equal([], api.settings.required_roles)
   end
 end
