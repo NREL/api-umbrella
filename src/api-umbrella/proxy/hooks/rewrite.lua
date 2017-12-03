@@ -41,6 +41,9 @@ end
 
 local function route_to_website(website)
   redirect_matches_to_https(website["website_backend_required_https_regex"] or config["router"]["website_backend_required_https_regex_default"])
+  if website["backend_host"] then
+    ngx.req.set_header("Host", website["backend_host"])
+  end
   ngx.var.api_umbrella_proxy_pass = (website["backend_protocol"] or "http") .. "://" .. website["server_host"] .. ":" .. website["server_port"]
 end
 

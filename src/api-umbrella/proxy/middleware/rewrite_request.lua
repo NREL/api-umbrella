@@ -138,7 +138,12 @@ local function strip_cookies(api)
   local cookie_header = ngx.var.http_cookie
   if not cookie_header then return end
 
-  local strips = config["strip_cookies"] or {}
+  local strips = {}
+  if config["strip_cookies"] then
+    for _, strip_regex in ipairs(config["strip_cookies"]) do
+      table.insert(strips, strip_regex)
+    end
+  end
   if api["id"] ~= "api-umbrella-web-app-backend" then
     table.insert(strips, "^_api_umbrella_session$")
     table.insert(strips, "^_api_umbrella_csrf_token$")

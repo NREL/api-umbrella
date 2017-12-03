@@ -79,6 +79,9 @@ web:
   host: 127.0.0.1
   port: 14012
   request_timeout: 30
+  api_user:
+    first_name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
+    last_name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
   admin:
     initial_superusers: []
     username_is_email: true
@@ -136,8 +139,10 @@ router:
     ip_rate:
     ip_burst:
     ip_rate_size: 8m
+    ip_rate_log_level: error
     ip_connections:
     ip_connections_size: 5m
+    ip_connections_log_level: error
   web_app_host: "*"
   website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
 rsyslog:

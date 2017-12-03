@@ -255,6 +255,136 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
     assert_equal(1, active_count - initial_count)
   end
 
+  def test_validates_first_name_length
+    response = make_request(:first_name => "a" * 80)
+    assert_response_code(201, response)
+
+    response = make_request(:first_name => "a" * 81)
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "INVALID_INPUT",
+        "field" => "first_name",
+        "message" => "is too long (maximum is 80 characters)",
+        "full_message" => "First name: is too long (maximum is 80 characters)",
+      }],
+    }, data)
+  end
+
+  def test_validates_first_name_format
+    response = make_request(:first_name => "wwx")
+    assert_response_code(201, response)
+
+    [
+      "http",
+      "http:",
+      "https",
+      "https:",
+      "www",
+      "www.",
+      "WwW.",
+      "<",
+      ">",
+      "test\rtest",
+      "test\ntest",
+    ].each do |bad|
+      response = make_request(:first_name => bad)
+      assert_response_code(422, response)
+      data = MultiJson.load(response.body)
+      assert_equal({
+        "errors" => [{
+          "code" => "INVALID_INPUT",
+          "field" => "first_name",
+          "message" => "is invalid",
+          "full_message" => "First name: is invalid",
+        }],
+      }, data)
+    end
+  end
+
+  def test_validates_last_name_length
+    response = make_request(:last_name => "a" * 80)
+    assert_response_code(201, response)
+
+    response = make_request(:last_name => "a" * 81)
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "INVALID_INPUT",
+        "field" => "last_name",
+        "message" => "is too long (maximum is 80 characters)",
+        "full_message" => "Last name: is too long (maximum is 80 characters)",
+      }],
+    }, data)
+  end
+
+  def test_validates_last_name_format
+    response = make_request(:last_name => "wwx")
+    assert_response_code(201, response)
+
+    [
+      "http",
+      "http:",
+      "https",
+      "https:",
+      "www",
+      "www.",
+      "WwW.",
+      "<",
+      ">",
+      "test\rtest",
+      "test\ntest",
+    ].each do |bad|
+      response = make_request(:last_name => bad)
+      assert_response_code(422, response)
+      data = MultiJson.load(response.body)
+      assert_equal({
+        "errors" => [{
+          "code" => "INVALID_INPUT",
+          "field" => "last_name",
+          "message" => "is invalid",
+          "full_message" => "Last name: is invalid",
+        }],
+      }, data)
+    end
+  end
+
+  def test_validates_email_length
+    response = make_request(:email => "a" * 249 + "@a.com")
+    assert_response_code(201, response)
+
+    response = make_request(:email => "a" * 250 + "@a.com")
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "INVALID_INPUT",
+        "field" => "email",
+        "message" => "is too long (maximum is 255 characters)",
+        "full_message" => "Email: is too long (maximum is 255 characters)",
+      }],
+    }, data)
+  end
+
+  def test_validates_website_length
+    response = make_request(:website => "https://example.com/" + "a" * 235)
+    assert_response_code(201, response)
+
+    response = make_request(:website => "https://example.com/" + "a" * 236)
+    assert_response_code(422, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "errors" => [{
+        "code" => "INVALID_INPUT",
+        "field" => "website",
+        "message" => "is too long (maximum is 255 characters)",
+        "full_message" => "Web site: is too long (maximum is 255 characters)",
+      }],
+    }, data)
+  end
+
   private
 
   def non_admin_key_creator_api_key
@@ -267,5 +397,13 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
 
   def active_count
     ApiUser.count
+  end
+
+  def make_request(options = {})
+    attributes = FactoryGirl.attributes_for(:api_user, options)
+    Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
+      :headers => { "Content-Type" => "application/json" },
+      :body => MultiJson.dump(:user => attributes),
+    }))
   end
 end
