@@ -12,6 +12,7 @@ local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local pg_encode_array = require "api-umbrella.utils.pg_encode_array"
 local pg_encode_json = require("pgmoon.json").encode_json
+local pretty_yaml_dump = require "api-umbrella.web-app.utils.pretty_yaml_dump"
 local split = require("ngx.re").split
 local strip = require("pl.stringx").strip
 local t = require("api-umbrella.web-app.utils.gettext").gettext
@@ -103,7 +104,7 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
       self._error_data_yaml_strings = {}
       if self.error_data then
         for key, value in pairs(self.error_data) do
-          self._error_data_yaml_strings[key] = lyaml.dump({ value })
+          self._error_data_yaml_strings[key] = pretty_yaml_dump(value)
         end
       end
     end
