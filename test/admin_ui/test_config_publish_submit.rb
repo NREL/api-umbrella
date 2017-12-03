@@ -27,7 +27,7 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
     assert_text("Published configuration is up to date")
     active_config = PublishedConfig.active_config
     assert_equal(1, active_config["apis"].length)
-    assert_equal(api.id, active_config["apis"].first["_id"])
+    assert_equal(api.id, active_config["apis"].first["id"])
   end
 
   def test_publishing_only_selected_changes
@@ -43,6 +43,6 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
     assert_text("1 New API Backends")
     active_config = PublishedConfig.active_config
     assert_equal(1, active_config["apis"].length)
-    assert_equal(api1.id, active_config["apis"].first["_id"])
+    assert_equal(api1.id, active_config["apis"].first["id"])
   end
 end
