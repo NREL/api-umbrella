@@ -1,18 +1,31 @@
 import DS from 'ember-data';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   matcherType: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Matcher Type'),
+    }),
   ],
   httpMethod: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('HTTP Method'),
+    }),
   ],
   frontendMatcher: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Frontend Matcher'),
+    }),
   ],
   backendReplacement: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Backend Replacement'),
+    }),
   ],
 });
 

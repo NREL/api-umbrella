@@ -5,16 +5,24 @@ import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   frontendPrefix: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Frontend Prefix'),
+    }),
     validator('format', {
       regex: CommonValidations.url_prefix_format,
+      description: t('Frontend Prefix'),
       message: t('must start with "/"'),
     }),
   ],
   backendPrefix: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Backend Prefix'),
+    }),
     validator('format', {
       regex: CommonValidations.url_prefix_format,
+      description: t('Backend Prefix'),
       message: t('must start with "/"'),
     }),
   ],

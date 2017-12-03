@@ -4,23 +4,32 @@ import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
-  name: validator('presence', true),
+  name: validator('presence', {
+    presence: true,
+    description: t('Name'),
+  }),
   frontendHost: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Frontend Host'),
+    }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
+      description: t('Frontend Host'),
       message: t('must be in the format of "example.com"'),
     }),
   ],
   backendHost: [
     validator('presence', {
       presence: true,
+      description: t('Backend Host'),
       disabled: Ember.computed('model.frontendHost', function() {
         return (this.get('model.frontendHost') && this.get('model.frontendHost')[0] === '*');
       }),
     }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
+      description: t('Backend Host'),
       message: t('must be in the format of "example.com"'),
       disabled: Ember.computed('model.backendHost', function() {
         return !this.get('model.backendHost');

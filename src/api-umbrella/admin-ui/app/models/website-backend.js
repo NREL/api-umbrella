@@ -4,23 +4,40 @@ import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   frontendHost: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Frontend Host'),
+    }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
+      description: t('Frontend Host'),
       message: t('must be in the format of "example.com"'),
     }),
   ],
-  backendProtocol: validator('presence', true),
+  backendProtocol: validator('presence', {
+    presence: true,
+    description: t('Backend Protocol'),
+  }),
   serverHost: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Backend Server'),
+    }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
+      description: t('Backend Server'),
       message: t('must be in the format of "example.com"'),
     }),
   ],
   serverPort: [
-    validator('presence', true),
-    validator('number', { allowString: true }),
+    validator('presence', {
+      presence: true,
+      description: t('Backend Port'),
+    }),
+    validator('number', {
+      allowString: true,
+      description: t('Backend Port'),
+    }),
   ],
 });
 

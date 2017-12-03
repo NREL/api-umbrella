@@ -222,15 +222,25 @@ ApiUser = model_ext.new_class("api_users", {
     elseif enabled == "false" and not values["disabled_at"] then
       values["disabled_at"] = db.raw("now() AT TIME ZONE 'UTC'")
     end
+
+    local terms_and_conditions = tostring(values["terms_and_conditions"])
+    if terms_and_conditions == "true" or terms_and_conditions == "1" then
+      values["terms_and_conditions"] = true
+    elseif values["terms_and_conditions"] and values["terms_and_conditions"] ~= db_null then
+      values["terms_and_conditions"] = false
+    end
   end,
 
-  validate = function(_, data)
+  validate = function(self, data)
     local errors = {}
     validate_field(errors, data, "first_name", validation_ext.string:minlen(1), t("Provide your first name."))
     validate_field(errors, data, "last_name", validation_ext.string:minlen(1), t("Provide your last name."))
     validate_field(errors, data, "email", validation_ext.string:minlen(1), t("Provide your email address."))
     validate_field(errors, data, "email", validation_ext:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
     validate_field(errors, data, "website", validation_ext.db_null_optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
+    if not self or not self.id then
+      validate_field(errors, data, "terms_and_conditions", validation_ext.boolean:equals(true), t("Check the box to agree to the terms and conditions."))
+    end
     return errors
   end,
 

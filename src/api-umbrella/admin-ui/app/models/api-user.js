@@ -1,11 +1,21 @@
 import Ember from 'ember';
 import DS from 'ember-data';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
-  firstName: validator('presence', true),
-  lastName: validator('presence', true),
-  email: validator('presence', true),
+  firstName: validator('presence', {
+    presence: true,
+    description: t('First Name'),
+  }),
+  lastName: validator('presence', {
+    presence: true,
+    description: t('Last Name'),
+  }),
+  email: validator('presence', {
+    presence: true,
+    description: t('Email'),
+  }),
 });
 
 export default DS.Model.extend(Validations, {

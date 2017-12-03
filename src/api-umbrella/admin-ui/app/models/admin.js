@@ -1,8 +1,12 @@
 import DS from 'ember-data';
+import usernameLabel from 'api-umbrella-admin-ui/utils/username-label'
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
-  username: validator('presence', true),
+  username: validator('presence', {
+    presence: true,
+    description: usernameLabel(),
+  }),
 });
 
 export default DS.Model.extend(Validations, {

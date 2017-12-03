@@ -1,6 +1,7 @@
 class ApiUser < ApplicationRecord
   has_one :settings, :class_name => "ApiUserSettings"
   has_and_belongs_to_many :roles, -> { order(:id) }, :class_name => "ApiRole", :join_table => "api_users_roles"
+  attr_accessor :terms_and_conditions
 
   def roles
     self.role_ids

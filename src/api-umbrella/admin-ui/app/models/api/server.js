@@ -5,15 +5,25 @@ import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   host: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Host'),
+    }),
     validator('format', {
       regex: CommonValidations.host_format,
+      description: t('Host'),
       message: t('must be in the format of "example.com"'),
     }),
   ],
   port: [
-    validator('presence', true),
-    validator('number', { allowString: true }),
+    validator('presence', {
+      presence: true,
+      description: t('Port'),
+    }),
+    validator('number', {
+      allowString: true,
+      description: t('Port'),
+    }),
   ],
 });
 

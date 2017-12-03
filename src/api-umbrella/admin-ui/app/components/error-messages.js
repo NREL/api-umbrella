@@ -4,7 +4,6 @@ import { t } from 'api-umbrella-admin-ui/utils/i18n';
 export default Ember.Component.extend({
   messages: Ember.computed('model.clientErrors', 'model.serverErrors', function() {
     let errors = [];
-    let modelI18nRoot = 'mongoid.attributes.' + this.get('model.constructor.modelName').replace('-', '_');
 
     let clientErrors = this.get('model.clientErrors');
     if(clientErrors) {
@@ -17,11 +16,11 @@ export default Ember.Component.extend({
               message: message,
             });
           } else {
-            errors.push({ message: 'Unexpected error' });
+            errors.push({ message: t('Unexpected error') });
           }
         });
       } else {
-        errors.push({ message: 'Unexpected error' });
+        errors.push({ message: t('Unexpected error') });
       }
     }
 
@@ -44,11 +43,11 @@ export default Ember.Component.extend({
               fullMessage: serverError.full_message,
             });
           } else {
-            errors.push({ message: 'Unexpected error' });
+            errors.push({ message: t('Unexpected error') });
           }
         });
       } else {
-        errors.push({ message: 'Unexpected error' });
+        errors.push({ message: t('Unexpected error') });
       }
     }
 
@@ -57,20 +56,8 @@ export default Ember.Component.extend({
       let message = '';
       if(error.fullMessage) {
         message += error.fullMessage;
-      } else if(error.attribute && error.attribute !== 'base') {
-        let attributeTitle = t(modelI18nRoot + '.' + inflection.underscore(error.attribute), { defaultValue: false });
-        if(attributeTitle === false) {
-          attributeTitle = inflection.titleize(inflection.underscore(error.attribute));
-        }
-
-        message += attributeTitle + ': ';
-        message += error.message || 'Unexpected error';
       } else {
-        if(error.message) {
-          message += error.message.charAt(0).toUpperCase() + error.message.slice(1);
-        } else {
-          message += 'Unexpected error';
-        }
+        message += error.message || t('Unexpected error');
       }
 
       messages.push(marked(message));

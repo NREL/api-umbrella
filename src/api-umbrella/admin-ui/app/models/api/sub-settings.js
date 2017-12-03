@@ -1,12 +1,19 @@
 import DS from 'ember-data';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   httpMethod: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('HTTP Method'),
+    }),
   ],
   regex: [
-    validator('presence', true),
+    validator('presence', {
+      presence: true,
+      description: t('Regex'),
+    }),
   ],
 });
 
