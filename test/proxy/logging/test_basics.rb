@@ -529,7 +529,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
 
   def test_logs_web_app_login_submit_requests
     FactoryGirl.create(:admin)
-    response = Typhoeus.post("https://127.0.0.1:9081/admin/login", log_http_options)
+    response = Typhoeus.post("https://127.0.0.1:9081/admin/login", log_http_options.deep_merge(csrf_session))
     assert_response_code(200, response)
     assert_log(response)
   end
