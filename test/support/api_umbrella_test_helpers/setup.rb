@@ -134,30 +134,8 @@ module ApiUmbrellaTestHelpers
 
         unless self.setup_config_version_complete
           PublishedConfig.delete_all
-          api_backend = ApiBackend.create!({
-            :name => "default-test-api-backend",
-            :backend_protocol => "http",
-            :balance_algorithm => "least_conn",
-            :frontend_host => "127.0.0.1",
-            :backend_host => "127.0.0.1",
-            :servers => [
-              ApiBackendServer.new(:host => "127.0.0.1", :port => 9444),
-            ],
-            :url_matches => [
-              ApiBackendUrlMatch.new(:frontend_prefix => "/api/", :backend_prefix => "/"),
-            ],
-          })
-          publish_api_backends([api_backend.id])
-
-          # After publishing, delete the API backend and admin account used to
-          # publish the backend (via the API), so that tests that expect a
-          # clean slate of API backends and admin accounts still function.
-          #
-          # We might want to re-think this at some point. Could we just have
-          # this API backend live as part of the static YAML config in the test
-          # environment?
-          api_backend.delete
-          Admin.delete_all
+          PublishedConfig.create!(:config => {})
+          PublishedConfig.active.wait_until_live
 
           self.setup_config_version_complete = true
         end

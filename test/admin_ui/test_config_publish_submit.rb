@@ -9,6 +9,8 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
   def setup
     super
     setup_server
+
+    PublishedConfig.delete_all
   end
 
   def after_all

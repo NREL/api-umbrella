@@ -120,3 +120,18 @@ _test_config:
   default_null_override_string: foobar
   default_empty_hash_override_hash:
     baz: qux
+apis:
+  - id: 00000000-0000-0000-0000-100000000000
+    name: default-test-api-backend
+    backend_protocol: http
+    balance_algorithm: least_conn
+    frontend_host: 127.0.0.1
+    backend_host: 127.0.0.1
+    servers:
+      - id: 00000000-0000-0000-0000-200000000000
+        host: 127.0.0.1
+        port: 9444
+    url_matches:
+      - id: 00000000-0000-0000-0000-300000000000
+        frontend_prefix: /api/
+        backend_prefix: /

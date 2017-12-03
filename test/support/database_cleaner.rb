@@ -1,7 +1,11 @@
-# Clean the database using truncation (we can't use transactions, since we rely
-# on the data we insert in the tests being available to the remote test server,
-# which won't share the transaction).
-DatabaseCleaner.strategy = :truncation, {
+# Clean the database using deletion.
+#
+# We can't use transactions, since we rely on the data we insert in the tests
+# being available to the remote test server, which won't share the transaction.
+# We use deletion instead of truncation, since truncation resets sequence IDs,
+# which we don't want due to how it interferes with some of our polling logic
+# (eg, polling for published_configs changes).
+DatabaseCleaner.strategy = :deletion, {
   :except => [
     # Don't truncate the Lapis migrations table.
     "lapis_migrations",
@@ -20,7 +24,10 @@ DatabaseCleaner.strategy = :truncation, {
     "admin_permissions",
 
     # Don't clean the published config between tests, since we might be
-    # appending/removing items to it in our parallel tests.
+    # altering it in some tests that call "prepend_api_backends" inside
+    # "once_per_class_setup," which assumes that the published config will then
+    # stick around for all the tests in the class (rather than being cleared
+    # before each individual test).
     "published_config",
   ],
 }
