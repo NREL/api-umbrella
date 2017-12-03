@@ -442,7 +442,7 @@ return {
     db.query([[
       CREATE TABLE api_backend_settings_required_roles(
         api_backend_settings_id uuid NOT NULL REFERENCES api_backend_settings ON DELETE CASCADE,
-        api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE CASCADE,
+        api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE NO ACTION,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,
@@ -536,7 +536,7 @@ return {
     db.query([[
       CREATE TABLE api_users_roles(
         api_user_id uuid NOT NULL REFERENCES api_users ON DELETE CASCADE,
-        api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE CASCADE,
+        api_role_id varchar(255) NOT NULL REFERENCES api_roles ON DELETE NO ACTION,
         created_at timestamp with time zone NOT NULL,
         created_by_id uuid NOT NULL,
         created_by_username varchar(255) NOT NULL,

@@ -10,7 +10,9 @@ DatabaseCleaner.strategy = :truncation, {
     # since we want to keep seeded users between tests. We'll manually clear
     # non-seeded records.
     "api_users",
+    "api_users_roles",
     "api_user_settings",
+    "api_roles",
     "rate_limits",
 
     # Don't truncate the admin permissions table, since it's a static list of
@@ -34,8 +36,9 @@ class Minitest::Test
     if(self.class.test_order != :parallel)
       DatabaseCleaner.clean
 
-      # Manually delete all the non-seeded users.
-      ApiUser.where("registration_source != 'seed'").delete_all
+      # Manually delete all the non-seeded users and roles that are now unused.
+      ApiUser.delete_non_seeded
+      ApiRole.delete_unused
     end
 
     super

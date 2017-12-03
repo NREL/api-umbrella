@@ -2465,7 +2465,7 @@ ALTER TABLE ONLY api_backend_settings_required_roles
 --
 
 ALTER TABLE ONLY api_backend_settings_required_roles
-    ADD CONSTRAINT api_backend_settings_required_roles_api_role_id_fkey FOREIGN KEY (api_role_id) REFERENCES api_roles(id) ON DELETE CASCADE;
+    ADD CONSTRAINT api_backend_settings_required_roles_api_role_id_fkey FOREIGN KEY (api_role_id) REFERENCES api_roles(id);
 
 
 --
@@ -2497,7 +2497,7 @@ ALTER TABLE ONLY api_user_settings
 --
 
 ALTER TABLE ONLY api_users_roles
-    ADD CONSTRAINT api_users_roles_api_role_id_fkey FOREIGN KEY (api_role_id) REFERENCES api_roles(id) ON DELETE CASCADE;
+    ADD CONSTRAINT api_users_roles_api_role_id_fkey FOREIGN KEY (api_role_id) REFERENCES api_roles(id);
 
 
 --

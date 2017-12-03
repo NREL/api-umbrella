@@ -337,8 +337,8 @@ ApiBackend = model_ext.new_class("api_backends", {
     end
     validate_field(errors, data, "balance_algorithm", validation_ext:regex("^(round_robin|least_conn|ip_hash)$", "jo"), t("is not included in the list"))
     validate_field(errors, data, "keepalive_connections", validation_ext.db_null_optional.tonumber.number:between(0, 32767), t("is not a number"))
-    validate_field(errors, data, "servers", validation_ext.non_null_table:minlen(1), t("must have at least one servers"), { error_field = "base" })
-    validate_field(errors, data, "url_matches", validation_ext.non_null_table:minlen(1), t("must have at least one url_matches"), { error_field = "base" })
+    validate_field(errors, data, "servers", validation_ext.non_null_table:minlen(1), t("Must have at least one servers"), { error_field = "base" })
+    validate_field(errors, data, "url_matches", validation_ext.non_null_table:minlen(1), t("Must have at least one url_matches"), { error_field = "base" })
     return errors
   end,
 

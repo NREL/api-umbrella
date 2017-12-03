@@ -102,7 +102,6 @@ module ApiUmbrellaTestHelpers
         end
 
         unless self.setup_api_user_complete
-          ApiUser.where("registration_source != 'seed'").delete_all
           user = FactoryGirl.create(:api_user, {
             :registration_source => "seed",
             :settings => FactoryGirl.build(:api_user_settings, {

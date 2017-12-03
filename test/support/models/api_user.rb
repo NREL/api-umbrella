@@ -3,6 +3,10 @@ class ApiUser < ApplicationRecord
   has_and_belongs_to_many :roles, -> { order(:id) }, :class_name => "ApiRole", :join_table => "api_users_roles"
   attr_accessor :terms_and_conditions
 
+  def self.delete_non_seeded
+    self.where("registration_source IS NULL OR registration_source != 'seed'").delete_all
+  end
+
   def roles
     self.role_ids
   end
