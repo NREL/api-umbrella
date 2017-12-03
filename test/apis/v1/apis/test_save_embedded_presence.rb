@@ -37,7 +37,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Test
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal({
-      "base" => ["must have at least one #{field}"],
+      "base" => ["Must have at least one #{field}"],
     }, data["errors"])
   end
 
@@ -50,7 +50,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedPresence < Minitest::Test
     data = MultiJson.load(response.body)
     assert_equal(["errors"], data.keys)
     assert_equal({
-      "base" => ["must have at least one #{field}"],
+      "base" => ["Must have at least one #{field}"],
     }, data["errors"])
   end
 

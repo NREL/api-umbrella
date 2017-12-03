@@ -567,7 +567,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal({
         "errors" => {
-          "base" => ["must have at least one servers"],
+          "base" => ["Must have at least one servers"],
         },
       }, data)
 
@@ -593,7 +593,7 @@ class Test::Apis::V1::Apis::TestUpdateEmbeddedArrayFields < Minitest::Test
       data = MultiJson.load(response.body)
       assert_equal({
         "errors" => {
-          "base" => ["must have at least one url_matches"],
+          "base" => ["Must have at least one url_matches"],
         },
       }, data)
 
