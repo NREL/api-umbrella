@@ -1,4 +1,5 @@
 local is_empty = require("pl.types").is_empty
+local json_decode = require("cjson").decode
 local lualdap = require "lualdap"
 
 local _M = {}
@@ -6,7 +7,7 @@ local _M = {}
 function _M.userinfo(admin_params, options)
   if config["app_env"] == "test" and ngx.var.cookie_test_mock_userinfo then
     local mock_userinfo = require "api-umbrella.web-app.utils.test_env_mock_userinfo"
-    return mock_userinfo()
+    return json_decode(mock_userinfo())
   end
 
   if not admin_params or is_empty(admin_params["username"]) or is_empty(admin_params["password"]) then

@@ -98,18 +98,20 @@ function _M.admin_params_update(self)
 end
 
 return function(app)
-  app:get("/admins/password/new(.:format)", _M.new)
-  app:post("/admins/password(.:format)", csrf.validate_token_filter(capture_errors({
-    on_error = function()
-      return { render = "admin.passwords.new" }
-    end,
-    _M.create,
-  })))
-  app:get("/admins/password/edit(.:format)", _M.edit)
-  app:post("/admins/password/update(.:format)", csrf.validate_token_filter(capture_errors({
-    on_error = function()
-      return { render = "admin.passwords.edit" }
-    end,
-    _M.update,
-  })))
+  if config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] then
+    app:get("/admins/password/new(.:format)", _M.new)
+    app:post("/admins/password(.:format)", csrf.validate_token_filter(capture_errors({
+      on_error = function()
+        return { render = "admin.passwords.new" }
+      end,
+      _M.create,
+    })))
+    app:get("/admins/password/edit(.:format)", _M.edit)
+    app:post("/admins/password/update(.:format)", csrf.validate_token_filter(capture_errors({
+      on_error = function()
+        return { render = "admin.passwords.edit" }
+      end,
+      _M.update,
+    })))
+  end
 end

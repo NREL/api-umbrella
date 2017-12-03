@@ -33,7 +33,7 @@ local function send_invite_email(self, admin)
   end
 
   local token
-  if config["web"]["admin"]["auth_strategies"]["_local_enabled?"] then
+  if config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] then
     token = admin:set_invite_reset_password_token()
   end
 

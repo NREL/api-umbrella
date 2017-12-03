@@ -37,7 +37,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
 
   def test_forbids_first_time_admin_creation
     assert_equal(0, Admin.count)
-    assert_first_time_admin_creation_forbidden
+    assert_first_time_admin_creation_not_found
   end
 
   def test_shows_message_when_no_admins_exist
@@ -95,18 +95,19 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     {
       :provider => :facebook,
       :login_button_text => "Sign in with Facebook",
-      :mock_userinfo => {
+      :mock_userinfo => MultiJson.dump({
         "email" => "{{username}}",
         "verified" => true,
-      },
-      :mock_userinfo_unverified => {
+      }),
+      :mock_userinfo_unverified => MultiJson.dump({
+        "email" => "{{username}}",
         "verified" => false,
-      },
+      }),
     },
     {
       :provider => :github,
       :login_button_text => "Sign in with GitHub",
-      :mock_userinfo => [
+      :mock_userinfo => MultiJson.dump([
         {
           "email" => "other-email@example.com",
           "primary" => false,
@@ -117,41 +118,56 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
           "primary" => true,
           "verified" => true,
         },
-      ],
-      :mock_userinfo_unverified => [
-        {},
-        { "verified" => false },
-      ],
+      ]),
+      :mock_userinfo_unverified => MultiJson.dump([
+        {
+          "email" => "other-email@example.com",
+          "primary" => false,
+          "verified" => true,
+        },
+        {
+          "email" => "{{username}}",
+          "primary" => true,
+          "verified" => false,
+        },
+      ]),
     },
     {
       :provider => :gitlab,
       :login_button_text => "Sign in with GitLab",
-      :mock_userinfo => {
+      :mock_userinfo => MultiJson.dump({
         "email" => "{{username}}",
-      },
+      }),
     },
     {
       :provider => :google_oauth2,
       :login_button_text => "Sign in with Google",
-      :mock_userinfo => {
+      :mock_userinfo => MultiJson.dump({
         "email" => "{{username}}",
         "email_verified" => true,
-      },
-      :mock_userinfo_unverfied => {
+      }),
+      :mock_userinfo_unverfied => MultiJson.dump({
+        "email" => "{{username}}",
         "email_verified" => false,
-      },
+      }),
     },
     {
       :provider => :ldap,
       :login_button_text => "Sign in with LDAP",
-      :mock_userinfo => {
+      :mock_userinfo => MultiJson.dump({
         "sAMAccountName" => "{{username}}",
-      },
+      }),
     },
     {
       :provider => :cas,
       :login_button_text => "Sign in with MAX.gov",
-      :username_path => "uid",
+      :mock_userinfo => <<~EOS
+        <cas:serviceResponse xmlns:cas="http://www.yale.edu/tp/cas">
+          <cas:authenticationSuccess>
+            <cas:user>{{username}}</cas:user>
+          </cas:authenticationSuccess>
+        </cas:serviceResponse>
+      EOS
     },
   ].each do |options|
     define_method("test_#{options.fetch(:provider)}_valid_admin") do
@@ -177,51 +193,35 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
 
   def assert_login_valid_admin(options)
     admin = FactoryGirl.create(:admin, :username => "valid@example.com")
-    json = MultiJson.dump(options.fetch(:mock_userinfo))
-    json.gsub!("{{username}}", admin.username)
+    data = options.fetch(:mock_userinfo).gsub("{{username}}", admin.username)
 
-    mock_userinfo(json) do
+    mock_userinfo(data) do
       assert_login_permitted(options.fetch(:login_button_text), admin)
     end
   end
 
   def assert_login_case_insensitive_username_admin(options)
     admin = FactoryGirl.create(:admin, :username => "hello@example.com")
-    json = MultiJson.dump(options.fetch(:mock_userinfo))
-    json.gsub!("{{username}}", "Hello@ExamplE.Com")
+    data = options.fetch(:mock_userinfo).gsub("{{username}}", "Hello@ExamplE.Com")
 
-    mock_userinfo(json) do
+    mock_userinfo(data) do
       assert_login_permitted(options.fetch(:login_button_text), admin)
     end
   end
 
   def assert_login_nonexistent_admin(options)
-    json = MultiJson.dump(options.fetch(:mock_userinfo))
-    json.gsub!("{{username}}", "noadmin@example.com")
+    data = options.fetch(:mock_userinfo).gsub("{{username}}", "noadmin@example.com")
 
-    mock_userinfo(json) do
+    mock_userinfo(data) do
       assert_login_forbidden(options.fetch(:login_button_text), "not authorized")
     end
   end
 
   def assert_login_unverified_email_login(options)
     admin = FactoryGirl.create(:admin, :username => "unverified@example.com")
-    data = options.fetch(:mock_userinfo)
-    data_unverified = options.fetch(:mock_userinfo_unverified)
-    if(data.kind_of?(Array))
-      assert_kind_of(Array, data_unverified)
-      assert_equal(data.length, data_unverified.length)
-      merged = data.deep_dup
-      merged.each_with_index do |value, index|
-        merged[index].deep_merge!(data_unverified[index])
-      end
-    else
-      merged = data.deep_merge(data_unverified)
-    end
-    json = MultiJson.dump(merged)
-    json.gsub!("{{username}}", admin.username)
+    data = options.fetch(:mock_userinfo_unverified).gsub("{{username}}", admin.username)
 
-    mock_userinfo(json) do
+    mock_userinfo(data) do
       assert_login_forbidden(options.fetch(:login_button_text), "not verified")
     end
   end
@@ -239,7 +239,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     refute_link("my_account_nav_link")
   end
 
-  def mock_userinfo(json)
+  def mock_userinfo(data)
     # Reset the session and clear caches before setting our cookie. For some
     # reason this seems necessary to ensure click_link always works correctly
     # (otherwise, we sporadically get failures caused by the click_link on the
@@ -252,7 +252,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
 
     # Set a cookie to mock the userinfo responses. When the app is running in
     # test mode, it looks for this cookie to provide mock data.
-    page.driver.set_cookie("test_mock_userinfo", CGI.escape(Base64.strict_encode64(json)))
+    page.driver.set_cookie("test_mock_userinfo", CGI.escape(Base64.strict_encode64(data)))
     yield
   ensure
     page.driver.remove_cookie("test_mock_userinfo")

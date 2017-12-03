@@ -42,7 +42,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
 
   def test_forbids_first_time_admin_creation
     assert_equal(0, Admin.count)
-    assert_first_time_admin_creation_forbidden
+    assert_first_time_admin_creation_not_found
   end
 
   def test_ldap_login_fields_on_login_page_when_exclusive_provider
@@ -70,7 +70,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
     fill_in "Planet Express Username", :with => "hermes"
     fill_in "Planet Express Password", :with => "hermes"
     click_button "Sign in"
-    assert_text("The account for 'hermes' is not authorized to access the admin. Please contact us for further assistance.")
+    assert_text('The account for "hermes" is not authorized to access the admin. Please contact us for further assistance.')
   end
 
   def test_forbids_ldap_user_with_invalid_password
@@ -79,7 +79,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
     fill_in "Planet Express Username", :with => "hermes"
     fill_in "Planet Express Password", :with => "incorrect"
     click_button "Sign in"
-    assert_text('Could not authenticate you from LDAP because "Invalid credentials".')
+    assert_text('Could not authenticate you because "Invalid credentials"')
   end
 
   def test_allows_valid_ldap_user

@@ -14,6 +14,7 @@ luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION} ${LUAROCK_LUAPOSIX_HASH})
 luarocks_install(lustache ${LUAROCK_LUSTACHE_VERSION} ${LUAROCK_LUSTACHE_HASH})
 luarocks_install(lyaml ${LUAROCK_LYAML_VERSION} ${LUAROCK_LYAML_HASH})
 luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION} ${LUAROCK_PENLIGHT_HASH})
+luarocks_install(xml ${LUAROCK_XML_VERSION} ${LUAROCK_XML_HASH})
 
 # OPM app dependencies
 opm_install(lua-libcidr-ffi GUI ${OPM_LIBCIDR_VERSION} ${OPM_LIBCIDR_HASH} libcidr)
@@ -117,6 +118,7 @@ set(
   luarock_lustache
   luarock_lyaml
   luarock_penlight
+  luarock_xml
   opm_lua-icu-date
   opm_lua-libcidr-ffi
   opm_lua-resty-http

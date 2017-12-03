@@ -4,6 +4,7 @@ local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overw
 local dir = require "pl.dir"
 local file = require "pl.file"
 local host_normalize = require "api-umbrella.utils.host_normalize"
+local invert_table = require "api-umbrella.utils.invert_table"
 local lyaml = require "lyaml"
 local nillify_yaml_nulls = require "api-umbrella.utils.nillify_yaml_nulls"
 local path = require "pl.path"
@@ -388,7 +389,7 @@ local function set_computed_config()
     web = {
       admin = {
         auth_strategies = {
-          ["_local_enabled?"] = array_includes(config["web"]["admin"]["auth_strategies"]["enabled"], "local"),
+          ["_enabled"] = invert_table(config["web"]["admin"]["auth_strategies"]["enabled"]),
           ["_only_ldap_enabled?"] = (#config["web"]["admin"]["auth_strategies"]["enabled"] == 1 and config["web"]["admin"]["auth_strategies"]["enabled"][1] == "ldap"),
         },
       },

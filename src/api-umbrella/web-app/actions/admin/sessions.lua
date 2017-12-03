@@ -48,7 +48,6 @@ local function define_view_helpers(self)
         provider["name"] = t("LDAP")
       end
     elseif strategy == "max.gov" then
-      provider["strategy"] = "cas"
       provider["name"] = t("MAX.gov")
     elseif strategy == "local" then
       provider = nil
@@ -64,12 +63,12 @@ local function define_view_helpers(self)
   self.username_label = username_label()
 
   self.display_no_admin_alert = false
-  if not config["web"]["admin"]["auth_strategies"]["_local_enabled?"] and Admin:count() == 0 then
+  if not config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] and Admin:count() == 0 then
     self.display_no_admin_alert = true
   end
 
   self.display_login_form_local = false
-  if config["web"]["admin"]["auth_strategies"]["_local_enabled?"] then
+  if config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] then
     self.display_login_form_local = true
   end
 
@@ -152,11 +151,16 @@ function _M.auth(self)
     local admin = current_admin:as_json()
     local api_user = ApiUser:select("WHERE email = ? ORDER BY created_at LIMIT 1", "web.admin.ajax@internal.apiumbrella")[1]
 
+    local local_auth_enabled = false
+    if config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] then
+      local_auth_enabled = true
+    end
+
     response["authenticated"] = true
     response["analytics_timezone"] = json_null_default(config["analytics"]["timezone"])
     response["enable_beta_analytics"] = (config["analytics"]["adapter"] == "kylin" or (config["analytics"]["outputs"] and array_includes(config["analytics"]["outputs"], "kylin")))
     response["username_is_email"] = json_null_default(config["web"]["admin"]["username_is_email"])
-    response["local_auth_enabled"] = json_null_default(config["web"]["admin"]["auth_strategies"]["_local_enabled?"])
+    response["local_auth_enabled"] = json_null_default(local_auth_enabled)
     response["password_length_min"] = json_null_default(config["web"]["admin"]["password_length_min"])
     response["api_umbrella_version"] = json_null_default(API_UMBRELLA_VERSION)
     response["admin"] = {}
@@ -191,6 +195,11 @@ function _M.first_time_setup_check(self)
 end
 
 return function(app)
+  local create = nil
+  if config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] then
+    create = csrf.validate_token_filter(_M.create)
+  end
+
   app:match("/admin/login(.:format)", respond_to({
     before = function(self)
       _M.first_time_setup_check(self)
@@ -199,7 +208,7 @@ return function(app)
       end
     end,
     GET = _M.new,
-    POST = csrf.validate_token_filter(_M.create),
+    POST = create,
   }))
   app:delete("/admin/logout(.:format)", csrf.validate_token_or_admin_filter(require_admin(_M.destroy)))
   app:get("/admin/auth(.:format)", _M.auth)

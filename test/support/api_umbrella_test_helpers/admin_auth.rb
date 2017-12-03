@@ -106,6 +106,16 @@ module ApiUmbrellaTestHelpers
       assert_equal(initial_count, Admin.count)
     end
 
+    def assert_first_time_admin_creation_not_found
+      initial_count = Admin.count
+
+      get_response, create_response = make_first_time_admin_creation_requests
+      assert_response_code(404, get_response)
+      assert_response_code(404, create_response)
+
+      assert_equal(initial_count, Admin.count)
+    end
+
     def assert_no_password_fields_on_admin_forms
       admin1 = FactoryGirl.create(:admin)
       admin2 = FactoryGirl.create(:admin)

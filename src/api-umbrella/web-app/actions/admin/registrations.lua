@@ -59,21 +59,23 @@ function _M.first_time_setup_check(self)
 end
 
 return function(app)
-  app:match("/admins/signup(.:format)", respond_to({
-    before = function(self)
-      _M.first_time_setup_check(self)
-    end,
-    GET = _M.new,
-  }))
-  app:match("/admins(.:format)", respond_to({
-    before = function(self)
-      _M.first_time_setup_check(self)
-    end,
-    POST = csrf.validate_token_filter(capture_errors({
-      on_error = function()
-        return { render = "admin.registrations.new" }
+  if config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] then
+    app:match("/admins/signup(.:format)", respond_to({
+      before = function(self)
+        _M.first_time_setup_check(self)
       end,
-      _M.create,
-    })),
-  }))
+      GET = _M.new,
+    }))
+    app:match("/admins(.:format)", respond_to({
+      before = function(self)
+        _M.first_time_setup_check(self)
+      end,
+      POST = csrf.validate_token_filter(capture_errors({
+        on_error = function()
+          return { render = "admin.registrations.new" }
+        end,
+        _M.create,
+      })),
+    }))
+  end
 end

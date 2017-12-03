@@ -389,7 +389,7 @@ Admin = model_ext.new_class("admins", {
 
 Admin.needs_first_account = function()
   local needs = false
-  if config["web"]["admin"]["auth_strategies"]["_local_enabled?"] and Admin:count() == 0 then
+  if config["web"]["admin"]["auth_strategies"]["_enabled"]["local"] and Admin:count() == 0 then
     needs = true
   end
 

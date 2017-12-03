@@ -90,7 +90,11 @@ web:
       enabled:
         - local
       cas:
-        options: {}
+        options:
+          service_validate_url: /serviceValidate
+          login_url: /login
+          logout_url: /logout
+          ssl: true
       facebook:
         client_id:
         client_secret:
@@ -108,6 +112,13 @@ web:
           port: 389
           method: plain
           uid: sAMAccountName
+      max.gov:
+        options:
+          host: login.max.gov
+          login_url: /cas/login
+          service_validate_url: /cas/serviceValidate
+          logout_url: /cas/logout
+          ssl: true
   mailer:
     smtp_settings:
       host: 127.0.0.1
