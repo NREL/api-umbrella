@@ -2,6 +2,7 @@ local ApiRole = require "api-umbrella.web-app.models.api_role"
 local ApiUserSettings = require "api-umbrella.web-app.models.api_user_settings"
 local api_user_policy = require "api-umbrella.web-app.policies.api_user_policy"
 local cjson = require "cjson"
+local db = require "lapis.db"
 local encryptor = require "api-umbrella.utils.encryptor"
 local hmac = require "api-umbrella.utils.hmac"
 local is_empty = require("pl.types").is_empty
@@ -13,6 +14,7 @@ local t = require("api-umbrella.web-app.utils.gettext").gettext
 local time = require "api-umbrella.utils.time"
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
+local db_null = db.NULL
 local json_null = cjson.null
 local validate_field = model_ext.validate_field
 
@@ -211,6 +213,15 @@ ApiUser = model_ext.new_class("api_users", {
     values["api_key_encrypted"] = encrypted
     values["api_key_encrypted_iv"] = iv
     values["api_key_prefix"] = string.sub(api_key, 1, API_KEY_PREFIX_LENGTH)
+  end,
+
+  before_validate = function(_, values)
+    local enabled = tostring(values["enabled"])
+    if enabled == "true" then
+      values["disabled_at"] = db_null
+    elseif enabled == "false" and not values["disabled_at"] then
+      values["disabled_at"] = db.raw("now() AT TIME ZONE 'UTC'")
+    end
   end,
 
   validate = function(_, data)
