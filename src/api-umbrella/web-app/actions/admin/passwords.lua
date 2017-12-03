@@ -6,6 +6,7 @@ local csrf = require "api-umbrella.web-app.utils.csrf"
 local db_null = require("lapis.db").NULL
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
+local login_admin = require "api-umbrella.web-app.utils.login_admin"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 local _M = {}
@@ -18,7 +19,7 @@ function _M.create(self)
   local admin
   local admin_params = _M.admin_params_create(self)
   if not is_empty(admin_params["email"]) then
-    admin = Admin:find({ email = admin_params["email"] })
+    admin = Admin:find({ email = string.lower(admin_params["email"]) })
   end
 
   local message_level = "info"
@@ -64,12 +65,7 @@ function _M.update(self)
   admin._reset_password_mode = true
   admin:authorized_update(admin_params)
 
-  self:init_session_db()
-  self.session_db:start()
-  self.session_db.data["admin_id"] = admin.id
-  self.session_db:save()
-
-  return { redirect_to = build_url("/admin/#/login") }
+  return { redirect_to = login_admin(self, admin, "local") }
 end
 
 function _M.admin_params_create(self)

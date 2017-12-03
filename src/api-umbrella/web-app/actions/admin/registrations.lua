@@ -3,6 +3,7 @@ local build_url = require "api-umbrella.utils.build_url"
 local capture_errors = require("lapis.application").capture_errors
 local csrf = require "api-umbrella.web-app.utils.csrf"
 local flash = require "api-umbrella.web-app.utils.flash"
+local login_admin = require "api-umbrella.web-app.utils.login_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local username_label = require "api-umbrella.web-app.utils.username_label"
@@ -25,13 +26,7 @@ function _M.create(self)
 
   self.admin_params = _M.admin_params(self)
   local admin = assert(Admin:create(self.admin_params))
-
-  self:init_session_db()
-  self.session_db:start()
-  self.session_db.data["admin_id"] = admin.id
-  self.session_db:save()
-
-  return { redirect_to = build_url("/admin/#/login") }
+  return { redirect_to = login_admin(self, admin, "local") }
 end
 
 function _M.admin_params(self)

@@ -7,6 +7,7 @@ local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
 local json_null_default = require "api-umbrella.web-app.utils.json_null_default"
 local json_response = require "api-umbrella.web-app.utils.json_response"
+local login_admin = require "api-umbrella.web-app.utils.login_admin"
 local require_admin = require "api-umbrella.web-app.utils.require_admin"
 local respond_to = require "api-umbrella.web-app.utils.respond_to"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
@@ -100,26 +101,21 @@ function _M.new(self)
 end
 
 function _M.create(self)
-  local admin_id
+  local admin
   local admin_params = _M.admin_params(self)
   if admin_params then
     local username = admin_params["username"]
     local password = admin_params["password"]
     if not is_empty(username) and not is_empty(password) then
-      local admin = Admin:find({ username = string.lower(username) })
-      if admin and not admin:is_access_locked() and admin:is_valid_password(password) then
-        admin_id = admin.id
+      local match = Admin:find_for_login(username)
+      if match and match:is_valid_password(password) then
+        admin = match
       end
     end
   end
 
-  if admin_id then
-    self:init_session_db()
-    self.session_db:start()
-    self.session_db.data["admin_id"] = admin_id
-    self.session_db:save()
-
-    return { redirect_to = build_url("/admin/") }
+  if admin then
+    return { redirect_to = login_admin(self, admin, "local") }
   else
     self.admin_params = admin_params
     define_view_helpers(self)

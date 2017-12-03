@@ -1,10 +1,11 @@
 local Admin = require "api-umbrella.web-app.models.admin"
 local build_url = require "api-umbrella.utils.build_url"
+local cas = require "api-umbrella.web-app.utils.auth_external_cas"
 local flash = require "api-umbrella.web-app.utils.flash"
 local is_empty = require("pl.types").is_empty
 local ldap = require "api-umbrella.web-app.utils.auth_external_ldap"
+local login_admin = require "api-umbrella.web-app.utils.login_admin"
 local oauth2 = require "api-umbrella.web-app.utils.auth_external_oauth2"
-local cas = require "api-umbrella.web-app.utils.auth_external_cas"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local username_label = require "api-umbrella.web-app.utils.username_label"
 
@@ -15,7 +16,7 @@ local function email_unverified_error(self)
   return { redirect_to = build_url("/admin/login") }
 end
 
-local function login(self, err)
+local function login(self, strategy_name, err)
   if err then
     flash.session(self, "danger", string.format(t([[Could not authenticate you because "%s"]]), err))
     return { redirect_to = build_url("/admin/login") }
@@ -26,18 +27,9 @@ local function login(self, err)
     return { redirect_to = build_url("/admin/login") }
   end
 
-  local admin
-  if not is_empty(self.username) then
-    admin = Admin:find({ username = string.lower(self.username) })
-  end
-
+  local admin = Admin:find_for_login(self.username)
   if admin then
-    self:init_session_db()
-    self.session_db:start()
-    self.session_db.data["admin_id"] = admin.id
-    self.session_db:save()
-
-    return { redirect_to = build_url("/admin/") }
+    return { redirect_to = login_admin(self, admin, strategy_name) }
   else
     flash.session(self, "danger", string.format(t([[The account for "%s" is not authorized to access the admin. Please contact us for further assistance.]]), self.username))
     return { redirect_to = build_url("/admin/login") }
@@ -54,7 +46,7 @@ function _M.cas_callback(self)
     self.username = userinfo["user"]
   end
 
-  return login(self, err)
+  return login(self, "cas", err)
 end
 
 function _M.developer_login(self)
@@ -95,7 +87,7 @@ function _M.developer_callback(self)
   end
 
   if self.username then
-    return login(self)
+    return login(self, "developer")
   else
     self.admin_params = admin_params
     self.username_label = username_label()
@@ -125,7 +117,7 @@ function _M.facebook_callback(self)
     end
   end
 
-  return login(self, err)
+  return login(self, "facebook", err)
 end
 
 function _M.github_login(self)
@@ -154,7 +146,7 @@ function _M.github_callback(self)
     end
   end
 
-  return login(self, err)
+  return login(self, "github", err)
 end
 
 function _M.gitlab_login(self)
@@ -174,7 +166,7 @@ function _M.gitlab_callback(self)
     -- an explicit email verification attribute or check needed).
     self.username = userinfo["email"]
   end
-  return login(self, err)
+  return login(self, "gitlab", err)
 end
 
 function _M.google_login(self)
@@ -197,7 +189,7 @@ function _M.google_callback(self)
     end
   end
 
-  return login(self, err)
+  return login(self, "google", err)
 end
 
 function _M.ldap_login(self)
@@ -220,7 +212,7 @@ function _M.ldap_callback(self)
     self.username = userinfo[options["uid"]]
   end
   if self.username then
-    return login(self)
+    return login(self, "ldap")
   else
     self.admin_params = admin_params
     self.username_label = username_label()
@@ -239,7 +231,7 @@ function _M.max_gov_callback(self)
     self.username = userinfo["user"]
   end
 
-  return login(self, err)
+  return login(self, "max.gov", err)
 end
 
 function _M.admin_params(self)

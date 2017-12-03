@@ -405,4 +405,16 @@ Admin.find_by_reset_password_token = function(_, token)
   return Admin:find({ reset_password_token_hash = token_hash })
 end
 
+Admin.find_for_login = function(_, username)
+  local admin
+  if not is_empty(username) then
+    admin = Admin:find({ username = string.lower(username) })
+    if admin and admin:is_access_locked() then
+      admin = nil
+    end
+  end
+
+  return admin
+end
+
 return Admin
