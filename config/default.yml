@@ -386,6 +386,8 @@ internal_apis:
     sub_settings:
       - http_method: any
         regex: "^/admin/stats"
+        settings:
+          disable_api_key: true
       - http_method: POST
         regex: "^/admin/login"
         settings:
