@@ -45,11 +45,23 @@ end
 function _M.update(self)
   local admin = Admin:find_by_reset_password_token(self.params["reset_password_token"])
   if not admin then
-    return coroutine.yield("error", { reset_password_token = { t("Reset password token is invalid") } })
+    return coroutine.yield("error", {
+      {
+        code = "INVALID_INPUT",
+        field = "reset_password_token",
+        message = t("Reset password token is invalid"),
+      },
+    })
   end
 
   if admin:is_reset_password_expired() then
-    return coroutine.yield("error", { reset_password_token = { t("Reset password token has expired, please request a new one") } })
+    return coroutine.yield("error", {
+      {
+        code = "INVALID_INPUT",
+        field = "reset_password_token",
+        message = t("Reset password token has expired, please request a new one"),
+      },
+    })
   end
 
   self.current_admin = {

@@ -51,12 +51,18 @@ ApiScope = model_ext.new_class("api_scopes", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "name", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "host", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "host", validation_ext:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
-    validate_field(errors, data, "path_prefix", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "path_prefix", validation_ext:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"'))
-    validate_uniqueness(errors, data, "path_prefix", ApiScope, {
+    validate_field(errors, data, "name", t("Name"), {
+      { validation_ext.string:minlen(1), t("can't be blank"), }
+    })
+    validate_field(errors, data, "host", t("Host"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"') },
+    })
+    validate_field(errors, data, "path_prefix", t("Path prefix"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"') },
+    })
+    validate_uniqueness(errors, data, "path_prefix", t("Path prefix"), ApiScope, {
       "host",
       "path_prefix",
     })

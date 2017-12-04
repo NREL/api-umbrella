@@ -14,6 +14,7 @@ local model_ext = require "api-umbrella.web-app.utils.model_ext"
 local random_token = require "api-umbrella.utils.random_token"
 local t = require("api-umbrella.web-app.utils.gettext").gettext
 local time = require "api-umbrella.utils.time"
+local username_label = require "api-umbrella.web-app.utils.username_label"
 local validation_ext = require "api-umbrella.web-app.utils.validation_ext"
 
 local db_null = db.NULL
@@ -29,17 +30,25 @@ local function username_field_name()
 end
 
 local function validate_email(_, data, errors)
-  validate_field(errors, data, "username", validation_ext.string:minlen(1), t("can't be blank"), { error_field = username_field_name() })
+  validate_field(errors, data, "username", username_label(), {
+    { validation_ext.string:minlen(1), t("can't be blank") },
+  }, { error_field = username_field_name() })
   if config["web"]["admin"]["username_is_email"] then
-    validate_field(errors, data, "username", validation_ext.db_null_optional:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid"), { error_field = username_field_name() })
+    validate_field(errors, data, "username", username_label(), {
+      { validation_ext.db_null_optional:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid") },
+    }, { error_field = username_field_name() })
   else
-    validate_field(errors, data, "email", validation_ext.db_null_optional:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid"))
+    validate_field(errors, data, "email", t("Email"), {
+      { validation_ext.db_null_optional:regex(config["web"]["admin"]["email_regex"], "jo"), t("is invalid") },
+    })
   end
 end
 
 local function validate_groups(_, data, errors)
   if data["superuser"] ~= true then
-    validate_field(errors, data, "group_ids", validation_ext.non_null_table:minlen(1), t("must belong to at least one group or be a superuser"), { error_field = "groups" })
+    validate_field(errors, data, "group_ids", t("Groups"), {
+      { validation_ext.non_null_table:minlen(1), t("must belong to at least one group or be a superuser") },
+    }, { error_field = "groups" })
   end
 end
 
@@ -52,20 +61,25 @@ local function validate_password(self, data, errors)
   end
 
   if is_password_required then
-    validate_field(errors, data, "password", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "password_confirmation", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "password_confirmation", validation_ext.db_null_optional.string:equals(data["password"]), t("doesn't match Password"))
-
     local password_length_min = config["web"]["admin"]["password_length_min"]
     local password_length_max = config["web"]["admin"]["password_length_max"]
-    validate_field(errors, data, "password", validation_ext.db_null_optional.string:minlen(password_length_min), string.format(t("is too short (minimum is %d characters)"), password_length_min))
-    validate_field(errors, data, "password", validation_ext.db_null_optional.string:maxlen(password_length_max), string.format(t("is too long (maximum is %d characters)"), password_length_max))
+    validate_field(errors, data, "password", t("Password"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.db_null_optional.string:minlen(password_length_min), string.format(t("is too short (minimum is %d characters)"), password_length_min) },
+      { validation_ext.db_null_optional.string:maxlen(password_length_max), string.format(t("is too long (maximum is %d characters)"), password_length_max) },
+    })
+    validate_field(errors, data, "password_confirmation", t("Password confirmation"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.db_null_optional.string:equals(data["password"]), t("doesn't match Password") },
+    })
 
     if self and self.id and not self._reset_password_mode then
-      validate_field(errors, data, "current_password", validation_ext.string:minlen(1), t("can't be blank"))
+      validate_field(errors, data, "current_password", t("Current password"), {
+        { validation_ext.string:minlen(1), t("can't be blank") },
+      })
       if not is_empty(data["current_password"]) and data["current_password"] ~= db_null then
         if not self:is_valid_password(data["current_password"]) then
-          model_ext.add_error(errors, "current_password", t("is invalid"))
+          model_ext.add_error(errors, "current_password", t("Current password"), t("is invalid"))
         end
       end
     end
@@ -367,8 +381,10 @@ Admin = model_ext.new_class("admins", {
     validate_email(self, data, errors)
     validate_groups(self, data, errors)
     validate_password(self, data, errors)
-    validate_field(errors, data, "superuser", validation_ext.db_null_optional.boolean, t("can't be blank"))
-    validate_uniqueness(errors, data, "username", Admin, { "username" })
+    validate_field(errors, data, "superuser", t("Superuser"), {
+      { validation_ext.db_null_optional.boolean, t("can't be blank") },
+    })
+    validate_uniqueness(errors, data, "username", t("Username"), Admin, { "username" })
     return errors
   end,
 

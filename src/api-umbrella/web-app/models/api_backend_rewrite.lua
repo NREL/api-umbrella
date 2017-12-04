@@ -24,19 +24,31 @@ ApiBackendRewrite = model_ext.new_class("api_backend_rewrites", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "api_backend_id", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "matcher_type", validation_ext:regex("^(route|regex)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "http_method", validation_ext:regex("^(any|GET|POST|PUT|DELETE|HEAD|TRACE|OPTIONS|CONNECT|PATCH)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "frontend_matcher", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "backend_replacement", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "sort_order", validation_ext.tonumber.number, t("can't be blank"))
-    validate_uniqueness(errors, data, "frontend_matcher", ApiBackendRewrite, {
+    validate_field(errors, data, "api_backend_id", t("API backend"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+    })
+    validate_field(errors, data, "matcher_type", t("Matcher type"), {
+      { validation_ext:regex("^(route|regex)$", "jo"), t("is not included in the list") },
+    })
+    validate_field(errors, data, "http_method", t("HTTP method"), {
+      { validation_ext:regex("^(any|GET|POST|PUT|DELETE|HEAD|TRACE|OPTIONS|CONNECT|PATCH)$", "jo"), t("is not included in the list") },
+    })
+    validate_field(errors, data, "frontend_matcher", t("Frontend matcher"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+    })
+    validate_field(errors, data, "backend_replacement", t("Backend replacement"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+    })
+    validate_field(errors, data, "sort_order", t("Sort order"), {
+      { validation_ext.tonumber.number, t("can't be blank") },
+    })
+    validate_uniqueness(errors, data, "frontend_matcher", t("Frontend matcher"), ApiBackendRewrite, {
       "api_backend_id",
       "matcher_type",
       "http_method",
       "frontend_matcher",
     })
-    validate_uniqueness(errors, data, "sort_order", ApiBackendRewrite, {
+    validate_uniqueness(errors, data, "sort_order", t("Sort order"), ApiBackendRewrite, {
       "api_backend_id",
       "sort_order",
     })

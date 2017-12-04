@@ -44,16 +44,24 @@ ApiBackendSubUrlSettings = model_ext.new_class("api_backend_sub_url_settings", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "api_backend_id", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "http_method", validation_ext:regex("^(any|GET|POST|PUT|DELETE|HEAD|TRACE|OPTIONS|CONNECT|PATCH)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "regex", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "sort_order", validation_ext.tonumber.number, t("can't be blank"))
-    validate_uniqueness(errors, data, "regex", ApiBackendSubUrlSettings, {
+    validate_field(errors, data, "api_backend_id", t("API backend"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+    })
+    validate_field(errors, data, "http_method", t("HTTP method"), {
+      { validation_ext:regex("^(any|GET|POST|PUT|DELETE|HEAD|TRACE|OPTIONS|CONNECT|PATCH)$", "jo"), t("is not included in the list") },
+    })
+    validate_field(errors, data, "regex", t("Regex"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+    })
+    validate_field(errors, data, "sort_order", t("Sort order"), {
+      { validation_ext.tonumber.number, t("can't be blank") },
+    })
+    validate_uniqueness(errors, data, "regex", t("Regex"), ApiBackendSubUrlSettings, {
       "api_backend_id",
       "http_method",
       "regex",
     })
-    validate_uniqueness(errors, data, "sort_order", ApiBackendSubUrlSettings, {
+    validate_uniqueness(errors, data, "sort_order", t("Sort order"), ApiBackendSubUrlSettings, {
       "api_backend_id",
       "sort_order",
     })

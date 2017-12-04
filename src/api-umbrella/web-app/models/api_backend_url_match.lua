@@ -23,16 +23,22 @@ ApiBackendUrlMatch = model_ext.new_class("api_backend_url_matches", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "api_backend_id", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "frontend_prefix", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "frontend_prefix", validation_ext.db_null_optional:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"'))
-    validate_field(errors, data, "backend_prefix", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "backend_prefix", validation_ext.db_null_optional:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"'))
-    validate_uniqueness(errors, data, "frontend_prefix", ApiBackendUrlMatch, {
+    validate_field(errors, data, "api_backend_id", t("API backend"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+    })
+    validate_field(errors, data, "frontend_prefix", t("Frontend prefix"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.db_null_optional:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"') },
+    })
+    validate_field(errors, data, "backend_prefix", t("Backend prefix"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.db_null_optional:regex(common_validations.url_prefix_format, "jo"), t('must start with "/"') },
+    })
+    validate_uniqueness(errors, data, "frontend_prefix", t("Frontend prefix"), ApiBackendUrlMatch, {
       "api_backend_id",
       "frontend_prefix",
     })
-    validate_uniqueness(errors, data, "sort_order", ApiBackendUrlMatch, {
+    validate_uniqueness(errors, data, "sort_order", t("Sort order"), ApiBackendUrlMatch, {
       "api_backend_id",
       "sort_order",
     })

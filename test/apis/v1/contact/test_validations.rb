@@ -31,7 +31,7 @@ class Test::Apis::V1::Contact::TestValidations < Minitest::Test
         "code" => "INVALID_INPUT",
         "message" => "Provide the API.",
         "field" => "api",
-        "full_message" => "Api: Provide the API.",
+        "full_message" => "API: Provide the API.",
       },
       {
         "code" => "INVALID_INPUT",

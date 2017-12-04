@@ -1,22 +1,28 @@
 local capture_errors = require("lapis.application").capture_errors
-local is_hash = require "api-umbrella.utils.is_hash"
+local error_messages_by_field = require "api-umbrella.web-app.utils.error_messages_by_field"
+local t = require("api-umbrella.web-app.utils.gettext").gettext
 
 local _M = {}
 
-local function messages_to_full_message_objects(errors)
+local function errors_to_full_message_objects(errors)
   local full_messages = {}
-  for field, field_messages in pairs(errors) do
-    for _, message in ipairs(field_messages) do
-      local human_field = string.gsub(field, "_", " ")
-      human_field = string.upper(string.sub(human_field, 1, 1)) .. string.sub(human_field, 2)
-      local full_message = human_field .. ": " .. message
-      table.insert(full_messages, {
-        code = "INVALID_INPUT",
-        message = message,
-        field = field,
-        full_message = full_message,
-      })
+  for _, error_data in ipairs(errors) do
+    assert(error_data["code"])
+    assert(error_data["field"])
+    assert(error_data["field_label"])
+    assert(error_data["message"])
+
+    local full_message
+    if error_data["field_label"] then
+      full_message = string.format(t("%s: %s"), error_data["field_label"], error_data["message"])
     end
+
+    table.insert(full_messages, {
+      code = error_data["code"],
+      message = error_data["message"],
+      field = error_data["field"],
+      full_message = full_message,
+    })
   end
 
   return full_messages
@@ -29,16 +35,16 @@ local function error_response(errors, translate_to_full_messages)
   end
 
   local json
-  if ngx.ctx.error_no_wrap then
-    json = errors
+  if errors and errors["_render"] then
+    json = errors["_render"]
   else
-    if translate_to_full_messages and is_hash(errors) and (not errors[1] or not errors[1]["code"]) then
+    if translate_to_full_messages then
       json = {
-        errors = messages_to_full_message_objects(errors),
+        errors = errors_to_full_message_objects(errors),
       }
     else
       json = {
-        errors = errors,
+        errors = error_messages_by_field(errors),
       }
     end
   end

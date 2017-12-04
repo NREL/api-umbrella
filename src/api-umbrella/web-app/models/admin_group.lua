@@ -166,10 +166,16 @@ AdminGroup = model_ext.new_class("admin_groups", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "name", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "api_scope_ids", validation_ext.non_null_table:minlen(1), t("can't be blank"), { error_field = "api_scopes" })
-    validate_field(errors, data, "permission_ids", validation_ext.non_null_table:minlen(1), t("can't be blank"), { error_field = "permissions" })
-    validate_uniqueness(errors, data, "name", AdminGroup, { "name" })
+    validate_field(errors, data, "name", t("Name"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+    })
+    validate_field(errors, data, "api_scope_ids", t("API scopes"), {
+      { validation_ext.non_null_table:minlen(1), t("can't be blank") },
+    }, { error_field = "api_scopes" })
+    validate_field(errors, data, "permission_ids", t("Permissions"), {
+      { validation_ext.non_null_table:minlen(1), t("can't be blank") },
+    }, { error_field = "permissions" })
+    validate_uniqueness(errors, data, "name", t("Name"), AdminGroup, { "name" })
     return errors
   end,
 

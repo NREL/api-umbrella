@@ -232,38 +232,55 @@ function _M.record_attributes(self, options)
   return readonly(attributes)
 end
 
-function _M.add_error(errors, field, message)
-  if not errors[field] then
-    errors[field] = {}
-  end
+function _M.add_error(errors, field, field_label, message)
+  assert(errors)
+  assert(field)
+  assert(field_label)
+  assert(message)
 
-  table.insert(errors[field], message)
+  table.insert(errors, {
+    code = "INVALID_INPUT",
+    field = field,
+    field_label = field_label,
+    message = message,
+  })
 end
 
-function _M.validate_field(errors, values, field, validator, message, options)
+function _M.validate_field(errors, values, field, field_label, validators, options)
+  assert(errors)
+  assert(values)
+  assert(field)
+  assert(field_label)
+  assert(validators)
+
   local value = values[field]
-  local ok = validator(value)
-  if not ok then
-    local error_field = field
-    if options then
-      if options["error_field"] then
-        error_field = options["error_field"]
+  for _, validator_data in ipairs(validators) do
+    local validator = assert(validator_data[1])
+    local message = assert(validator_data[2])
+
+    local ok = validator(value)
+    if not ok then
+      local error_field = field
+      if options then
+        if options["error_field"] then
+          error_field = options["error_field"]
+        end
+
+        if options["error_field_prefix"] then
+          error_field = options["error_field_prefix"] .. error_field
+        end
       end
 
-      if options["error_field_prefix"] then
-        error_field = options["error_field_prefix"] .. error_field
+      if ngx.ctx.validate_error_field_prefix then
+        error_field = ngx.ctx.validate_error_field_prefix .. error_field
       end
-    end
 
-    if ngx.ctx.validate_error_field_prefix then
-      error_field = ngx.ctx.validate_error_field_prefix .. error_field
+      _M.add_error(errors, error_field, field_label, message)
     end
-
-    _M.add_error(errors, error_field, message)
   end
 end
 
-function _M.validate_uniqueness(errors, values, error_field, model, unique_fields)
+function _M.validate_uniqueness(errors, values, error_field, field_label, model, unique_fields)
   assert(values["id"])
   assert(type(unique_fields) == "table")
   assert(#unique_fields > 0)
@@ -288,7 +305,7 @@ function _M.validate_uniqueness(errors, values, error_field, model, unique_field
   local result = db.select("COUNT(*) AS c FROM " .. db.escape_identifier(table_name) .. " WHERE " .. where)
   local count = result[1]["c"]
   if count > 0 then
-    _M.add_error(errors, error_field, t("is already taken"))
+    _M.add_error(errors, error_field, field_label, t("is already taken"))
   end
 end
 

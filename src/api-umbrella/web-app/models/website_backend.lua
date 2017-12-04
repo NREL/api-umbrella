@@ -48,14 +48,22 @@ WebsiteBackend = model_ext.new_class("website_backends", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "frontend_host", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "frontend_host", validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"'))
-    validate_field(errors, data, "backend_protocol", validation_ext:regex("^(http|https)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "server_host", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "server_host", validation_ext.db_null_optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"'))
-    validate_field(errors, data, "server_port", validation_ext.tonumber.number, t("can't be blank"))
-    validate_field(errors, data, "server_port", validation_ext.tonumber.number:between(0, 65535), t("is not included in the list"))
-    validate_uniqueness(errors, data, "frontend_host", WebsiteBackend, { "frontend_host" })
+    validate_field(errors, data, "frontend_host", t("Frontend host"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.db_null_optional:regex(common_validations.host_format_with_wildcard, "jo"), t('must be in the format of "example.com"') },
+    })
+    validate_field(errors, data, "backend_protocol", t("Backend protocol"), {
+      { validation_ext:regex("^(http|https)$", "jo"), t("is not included in the list") },
+    })
+    validate_field(errors, data, "server_host", t("Server host"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.db_null_optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"') },
+    })
+    validate_field(errors, data, "server_port", t("Server port"), {
+      { validation_ext.tonumber.number, t("can't be blank") },
+      { validation_ext.tonumber.number:between(0, 65535), t("is not included in the list") },
+    })
+    validate_uniqueness(errors, data, "frontend_host", t("Frontend host"), WebsiteBackend, { "frontend_host" })
     return errors
   end,
 })

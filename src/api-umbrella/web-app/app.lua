@@ -3,6 +3,7 @@ require "api-umbrella.web-app.utils.db_escape_patches"
 local Admin = require "api-umbrella.web-app.models.admin"
 local csrf = require "api-umbrella.web-app.utils.csrf"
 local db = require "lapis.db"
+local error_messages_by_field = require "api-umbrella.web-app.utils.error_messages_by_field"
 local escape_html = require("lapis.html").escape
 local flash = require "api-umbrella.web-app.utils.flash"
 local hmac = require "api-umbrella.utils.hmac"
@@ -168,16 +169,24 @@ app:before_filter(function(self)
   end
 
   self.field_errors = function(_, field)
-    if self.errors and not is_empty(self.errors[field]) then
-      table.sort(self.errors[field])
-      return '<span class="help-block">' .. escape_html(table.concat(self.errors[field], ", ")) .. "</span>"
+    if not self.error_messages_by_field then
+      self.error_messages_by_field = error_messages_by_field(self.errors)
+    end
+
+    if self.error_messages_by_field and not is_empty(self.error_messages_by_field[field]) then
+      table.sort(self.error_messages_by_field[field])
+      return '<span class="help-block">' .. escape_html(table.concat(self.error_messages_by_field[field], ", ")) .. "</span>"
     else
       return ""
     end
   end
 
   self.field_errors_class = function(_, field)
-    if self.errors and not is_empty(self.errors[field]) then
+    if not self.error_messages_by_field then
+      self.error_messages_by_field = error_messages_by_field(self.errors)
+    end
+
+    if self.error_messages_by_field and not is_empty(self.error_messages_by_field[field]) then
       return " has-error"
     else
       return ""

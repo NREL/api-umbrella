@@ -55,7 +55,9 @@ local ApiUserSettings = model_ext.new_class("api_user_settings", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "rate_limit_mode", validation_ext.db_null_optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "rate_limit_mode", t("Rate limit mode"), {
+      { validation_ext.db_null_optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list") },
+    })
 
     return errors
   end,

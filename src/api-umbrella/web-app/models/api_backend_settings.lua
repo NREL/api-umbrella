@@ -264,19 +264,29 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "require_https", validation_ext.db_null_optional:regex("^(required_return_error|transition_return_error|optional)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "api_key_verification_level", validation_ext.db_null_optional:regex("^(none|transition_email|required_email)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "rate_limit_mode", validation_ext.db_null_optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "anonymous_rate_limit_behavior", validation_ext.db_null_optional:regex("^(ip_fallback|ip_only)$", "jo"), t("is not included in the list"))
-    validate_field(errors, data, "authenticated_rate_limit_behavior", validation_ext.db_null_optional:regex("^(all|api_key_only)$", "jo"), t("is not included in the list"))
+    validate_field(errors, data, "require_https", t("Require HTTPS"), {
+      { validation_ext.db_null_optional:regex("^(required_return_error|transition_return_error|optional)$", "jo"), t("is not included in the list") },
+    })
+    validate_field(errors, data, "api_key_verification_level", t("API key verification level"), {
+      { validation_ext.db_null_optional:regex("^(none|transition_email|required_email)$", "jo"), t("is not included in the list") },
+    })
+    validate_field(errors, data, "rate_limit_mode", t("Rate limit mode"), {
+      { validation_ext.db_null_optional:regex("^(unlimited|custom)$", "jo"), t("is not included in the list") },
+    })
+    validate_field(errors, data, "anonymous_rate_limit_behavior", t("Anonymous rate limit behavior"), {
+      { validation_ext.db_null_optional:regex("^(ip_fallback|ip_only)$", "jo"), t("is not included in the list") },
+    })
+    validate_field(errors, data, "authenticated_rate_limit_behavior", t("Authenticated rate limit behavior"), {
+      { validation_ext.db_null_optional:regex("^(all|api_key_only)$", "jo"), t("is not included in the list") },
+    })
 
     if data["error_data"] then
       if not is_hash(data["error_data"]) then
-        model_ext.add_error(errors, "settings.error_data", t("unexpected type (must be a hash)"))
+        model_ext.add_error(errors, "settings.error_data", t("Settings error data"), t("unexpected type (must be a hash)"))
       else
         for key, value in pairs(data["error_data"]) do
           if not is_hash(value) then
-            model_ext.add_error(errors, "settings.error_data." .. key, t("unexpected type (must be a hash)"))
+            model_ext.add_error(errors, "settings.error_data." .. key, string.format(t("Settings error data %s"), key), t("unexpected type (must be a hash)"))
           end
         end
       end
@@ -284,17 +294,17 @@ local ApiBackendSettings = model_ext.new_class("api_backend_settings", {
 
     if data["_error_data_yaml_strings_parse_errors"] then
       for key, value in pairs(data["_error_data_yaml_strings_parse_errors"]) do
-        model_ext.add_error(errors, "settings.error_data_yaml_strings." .. key, value)
+        model_ext.add_error(errors, "settings.error_data_yaml_strings." .. key, string.format(t("Settings error data YAML strings %s"), key), value)
       end
     end
 
     if data["error_templates"] then
       if not is_hash(data["error_templates"]) then
-        model_ext.add_error(errors, "settings.error_templates", t("unexpected type (must be a hash)"))
+        model_ext.add_error(errors, "settings.error_templates", t("Settings error templates"), t("unexpected type (must be a hash)"))
       else
         for key, value in pairs(data["error_templates"]) do
           if type(value) ~= "string" then
-            model_ext.add_error(errors, "settings.error_templates." .. key, t("unexpected type (must be a string)"))
+            model_ext.add_error(errors, "settings.error_templates." .. key, string.format(t("Settings error templates %s"), key), t("unexpected type (must be a string)"))
           end
         end
       end

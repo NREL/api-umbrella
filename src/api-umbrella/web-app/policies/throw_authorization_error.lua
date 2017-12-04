@@ -3,9 +3,10 @@ local t = require("api-umbrella.web-app.utils.gettext").gettext
 return function(current_admin)
   if not current_admin then
     ngx.ctx.error_status = 401
-    ngx.ctx.error_no_wrap = true
     coroutine.yield("error", {
-      ["error"] = t("You need to sign in or sign up before continuing."),
+      _render = {
+        ["error"] = t("You need to sign in or sign up before continuing."),
+      },
     })
   else
     local authorized_scopes_list = {}
@@ -17,10 +18,14 @@ return function(current_admin)
 
     ngx.ctx.error_status = 403
     coroutine.yield("error", {
-      {
-        code = "FORBIDDEN",
-        message = string.format(t("You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n%s\n\nContact your API Umbrella administrator if you need access to new APIs."), table.concat(authorized_scopes_list, "\n")),
-      }
+      _render = {
+        errors = {
+          {
+            code = "FORBIDDEN",
+            message = string.format(t("You are not authorized to perform this action. You are only authorized to perform actions for APIs in the following areas:\n\n%s\n\nContact your API Umbrella administrator if you need access to new APIs."), table.concat(authorized_scopes_list, "\n")),
+          },
+        },
+      },
     })
   end
 

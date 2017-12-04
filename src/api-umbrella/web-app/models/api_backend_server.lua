@@ -23,12 +23,18 @@ ApiBackendServer = model_ext.new_class("api_backend_servers", {
 
   validate = function(_, data)
     local errors = {}
-    validate_field(errors, data, "api_backend_id", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "host", validation_ext.string:minlen(1), t("can't be blank"))
-    validate_field(errors, data, "host", validation_ext.db_null_optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"'))
-    validate_field(errors, data, "port", validation_ext.tonumber.number, t("can't be blank"))
-    validate_field(errors, data, "port", validation_ext.tonumber.number:between(0, 65535), t("is not included in the list"))
-    validate_uniqueness(errors, data, "host", ApiBackendServer, {
+    validate_field(errors, data, "api_backend_id", t("API backend"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+    })
+    validate_field(errors, data, "host", t("Host"), {
+      { validation_ext.string:minlen(1), t("can't be blank") },
+      { validation_ext.db_null_optional:regex(common_validations.host_format, "jo"), t('must be in the format of "example.com"') },
+    })
+    validate_field(errors, data, "port", t("Port"), {
+      { validation_ext.tonumber.number, t("can't be blank") },
+      { validation_ext.tonumber.number:between(0, 65535), t("is not included in the list") },
+    })
+    validate_uniqueness(errors, data, "host", t("Host"), ApiBackendServer, {
       "api_backend_id",
       "host",
       "port",

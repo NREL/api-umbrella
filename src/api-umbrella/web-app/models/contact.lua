@@ -10,12 +10,22 @@ local _M = {}
 
 local function validate(values)
   local errors = {}
-  validate_field(errors, values, "name", validation_ext.string:minlen(1), t("Provide your first name."))
-  validate_field(errors, values, "email", validation_ext.string:minlen(1), t("Provide your email address."))
-  validate_field(errors, values, "email", validation_ext.optional:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
-  validate_field(errors, values, "api", validation_ext.string:minlen(1), t("Provide the API."))
-  validate_field(errors, values, "subject", validation_ext.string:minlen(1), t("Provide a subject."))
-  validate_field(errors, values, "message", validation_ext.string:minlen(1), t("Provide a message."))
+  validate_field(errors, values, "name", t("Name"), {
+    { validation_ext.string:minlen(1), t("Provide your first name.") },
+  })
+  validate_field(errors, values, "email", t("Email"), {
+    { validation_ext.string:minlen(1), t("Provide your email address.") },
+    { validation_ext.optional:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address.") },
+  })
+  validate_field(errors, values, "api", t("API"), {
+    { validation_ext.string:minlen(1), t("Provide the API.") },
+  })
+  validate_field(errors, values, "subject", t("Subject"), {
+    { validation_ext.string:minlen(1), t("Provide a subject.") },
+  })
+  validate_field(errors, values, "message", t("Message"), {
+    { validation_ext.string:minlen(1), t("Provide a message.") },
+  })
   return errors
 end
 
