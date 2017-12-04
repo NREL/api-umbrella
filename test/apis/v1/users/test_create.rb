@@ -380,7 +380,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
         "code" => "INVALID_INPUT",
         "field" => "website",
         "message" => "is too long (maximum is 255 characters)",
-        "full_message" => "Web site: is too long (maximum is 255 characters)",
+        "full_message" => "Website: is too long (maximum is 255 characters)",
       }],
     }, data)
   end

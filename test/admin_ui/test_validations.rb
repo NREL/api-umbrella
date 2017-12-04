@@ -87,7 +87,7 @@ class Test::AdminUi::TestValidations < Minitest::Capybara::Test
     messages = page.all(".error-messages li").map { |msg| msg.text }
     assert_equal([
       "Email: Provide a valid email address.",
-      "Terms And Conditions: Check the box to agree to the terms and conditions.",
+      "Terms and conditions: Check the box to agree to the terms and conditions.",
     ].sort, messages.sort)
 
     # Top messages container

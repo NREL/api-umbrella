@@ -234,9 +234,15 @@ ApiUser = model_ext.new_class("api_users", {
   validate = function(self, data)
     local errors = {}
     validate_field(errors, data, "first_name", validation_ext.string:minlen(1), t("Provide your first name."))
+    validate_field(errors, data, "first_name", validation_ext.string:maxlen(80), string.format(t("is too long (maximum is %d characters)"), 80))
+    validate_field(errors, data, "first_name", validation_ext.db_null_optional:not_regex(config["web"]["api_user"]["first_name_exclude_regex"], "ijo"), t("is invalid"))
     validate_field(errors, data, "last_name", validation_ext.string:minlen(1), t("Provide your last name."))
+    validate_field(errors, data, "last_name", validation_ext.string:maxlen(80), string.format(t("is too long (maximum is %d characters)"), 80))
+    validate_field(errors, data, "last_name", validation_ext.db_null_optional:not_regex(config["web"]["api_user"]["last_name_exclude_regex"], "ijo"), t("is invalid"))
     validate_field(errors, data, "email", validation_ext.string:minlen(1), t("Provide your email address."))
-    validate_field(errors, data, "email", validation_ext:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
+    validate_field(errors, data, "email", validation_ext.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255))
+    validate_field(errors, data, "email", validation_ext.db_null_optional:regex([[.+@.+\..+]], "jo"), t("Provide a valid email address."))
+    validate_field(errors, data, "website", validation_ext.db_null_optional.string:maxlen(255), string.format(t("is too long (maximum is %d characters)"), 255))
     validate_field(errors, data, "website", validation_ext.db_null_optional:regex([[\w+\.\w+]], "jo"), t("Your website must be a valid URL in the form of http://example.com"))
     if not self or not self.id then
       validate_field(errors, data, "terms_and_conditions", validation_ext.boolean:equals(true), t("Check the box to agree to the terms and conditions."))

@@ -81,7 +81,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal([
-      "Current Password: can't be blank",
+      "Current password: can't be blank",
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
@@ -104,7 +104,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal([
-      "Current Password: can't be blank",
+      "Current password: can't be blank",
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
@@ -127,7 +127,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal([
-      "Current Password: is invalid",
+      "Current password: is invalid",
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
@@ -149,7 +149,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal([
-      "Password Confirmation: can't be blank",
+      "Password confirmation: can't be blank",
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
@@ -172,7 +172,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     data = MultiJson.load(response.body)
     assert_equal([
       "Password: can't be blank",
-      "Password Confirmation: doesn't match Password",
+      "Password confirmation: doesn't match Password",
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload
@@ -218,7 +218,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
     assert_response_code(422, response)
     data = MultiJson.load(response.body)
     assert_equal([
-      "Password Confirmation: doesn't match Password",
+      "Password confirmation: doesn't match Password",
     ].sort, data["errors"].map { |e| e["full_message"] }.sort)
 
     admin.reload

@@ -8,7 +8,7 @@ local function messages_to_full_message_objects(errors)
   for field, field_messages in pairs(errors) do
     for _, message in ipairs(field_messages) do
       local human_field = string.gsub(field, "_", " ")
-      human_field = string.gsub(human_field, "(%l)(%w*)", function(first, rest) return string.upper(first) .. rest end)
+      human_field = string.upper(string.sub(human_field, 1, 1)) .. string.sub(human_field, 2)
       local full_message = human_field .. ": " .. message
       table.insert(full_messages, {
         code = "INVALID_INPUT",

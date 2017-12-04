@@ -167,7 +167,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "New Password", :with => "mismatch123456"
     fill_in "Confirm New Password", :with => "mismatcH123456"
     click_button "Save"
-    assert_text("Password Confirmation: doesn't match Password")
+    assert_text("Password confirmation: doesn't match Password")
     @admin.reload
     assert_equal(original_password_hash, @admin.password_hash)
     assert_nil(@admin.notes)
@@ -177,7 +177,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "New Password", :with => "password234567"
     fill_in "Confirm New Password", :with => "password234567"
     click_button "Save"
-    assert_text("Current Password: can't be blank")
+    assert_text("Current password: can't be blank")
     @admin.reload
     assert_equal(original_password_hash, @admin.password_hash)
     assert_nil(@admin.notes)
@@ -187,7 +187,7 @@ class Test::AdminUi::Login::TestLocalProvider < Minitest::Capybara::Test
     fill_in "New Password", :with => "password234567"
     fill_in "Confirm New Password", :with => "password234567"
     click_button "Save"
-    assert_text("Current Password: is invalid")
+    assert_text("Current password: is invalid")
     @admin.reload
     assert_equal(original_password_hash, @admin.password_hash)
     assert_nil(@admin.notes)
