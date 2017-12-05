@@ -61,6 +61,9 @@ if [ -f /etc/redhat-release ]; then
     # Postgresql
     readline
     tzdata
+
+    # lua-resty-nettle
+    nettle
   )
   hadoop_analytics_package_dependencies=(
     java-1.8.0-openjdk-headless
@@ -131,11 +134,15 @@ if [ -f /etc/redhat-release ]; then
   )
 elif [ -f /etc/debian_version ]; then
   libffi_version=6
+  libnettle_version=6
   libreadline_version=6
   openjdk_version=7
 
   if [[ "$ID" == "debian" && "$VERSION_ID" == "7" ]]; then
     libffi_version=5
+  fi
+  if [[ "$ID" == "debian" && "$VERSION_ID" == "7" ]] || [[ "$ID" == "debian" && "$VERSION_ID" == "8" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "14.04" ]]; then
+    libnettle_version=4
   fi
   if [[ "$ID" == "debian" && "$VERSION_ID" == "9" ]] || [[ "$ID" == "ubuntu" && "$VERSION_ID" == "16.04" ]]; then
     openjdk_version=8
@@ -191,6 +198,9 @@ elif [ -f /etc/debian_version ]; then
 
     # cjose
     libjansson4
+
+    # lua-resty-nettle
+    libnettle$libnettle_version
   )
   hadoop_analytics_package_dependencies=(
     openjdk-$openjdk_version-jre-headless
