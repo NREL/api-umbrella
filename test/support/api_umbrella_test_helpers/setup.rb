@@ -1,5 +1,6 @@
 require "English"
 require "ipaddr"
+require "support/api_umbrella_test_helpers/admin_auth"
 require "support/api_umbrella_test_helpers/common_asserts"
 
 module ApiUmbrellaTestHelpers
