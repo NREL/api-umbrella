@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 import usernameLabel from 'api-umbrella-admin-ui/utils/username-label';
-import { t } from 'api-umbrella-admin-ui/utils/i18n';
+import { sprintf, t } from 'api-umbrella-admin-ui/utils/i18n';
 
 export default Ember.Component.extend(Save, {
   session: Ember.inject.service(),
@@ -16,15 +16,15 @@ export default Ember.Component.extend(Save, {
     submit() {
       this.saveRecord({
         transitionToRoute: 'admins',
-        message: 'Successfully saved the admin "' + _.escape(this.get('model.username')) + '"',
+        message: sprintf(t('Successfully saved the admin "%s"'), _.escape(this.get('model.username'))),
       });
     },
 
     delete() {
       this.destroyRecord({
-        prompt: 'Are you sure you want to delete the admin "' + _.escape(this.get('model.username')) + '"?',
+        prompt: sprintf(t('Are you sure you want to delete the admin "%s"?'), _.escape(this.get('model.username'))),
         transitionToRoute: 'admins',
-        message: 'Successfully deleted the admin "' + _.escape(this.get('model.username')) + '"',
+        message: sprintf(t('Successfully deleted the admin "%s"'), _.escape(this.get('model.username'))),
       });
     },
   },

@@ -36,7 +36,8 @@ function _M.dcnpgettext(domain, context, singular_key, plural_key, count)
 
   local value_index
   if count then
-    -- TODO - plural
+    assert(type(count) == "number")
+    return error("TODO: plural gettext support")
   else
     value_index = 1
   end
@@ -45,8 +46,9 @@ function _M.dcnpgettext(domain, context, singular_key, plural_key, count)
   if value_list and value_list[value_index] then
     return value_list[value_index]
   else
-    -- TODO - plural
-    return key
+    -- TODO: plural gettext support
+    local defaults = { singular_key, plural_key }
+    return defaults[value_index]
   end
 end
 

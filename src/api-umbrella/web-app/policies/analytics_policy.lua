@@ -1,3 +1,4 @@
+local is_empty = require("pl.types").is_empty
 local request_api_umbrella_roles = require "api-umbrella.utils.request_api_umbrella_roles"
 local throw_authorization_error = require "api-umbrella.web-app.policies.throw_authorization_error"
 
@@ -17,7 +18,7 @@ function _M.authorized_query_scope(current_admin)
     return throw_authorization_error(current_admin)
   else
     local rules = {}
-    for _, api_scope in ipairs(apis_scopes) do
+    for _, api_scope in ipairs(api_scopes) do
       table.insert(rules, {
         condition = "AND",
         rules = {

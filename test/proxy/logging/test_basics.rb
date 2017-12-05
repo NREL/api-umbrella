@@ -555,13 +555,6 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     refute_log(response)
   end
 
-  def test_does_not_log_web_app_other_admin_requests
-    FactoryGirl.create(:admin)
-    response = Typhoeus.get("https://127.0.0.1:9081/admin/login", log_http_options)
-    assert_response_code(200, response)
-    refute_log(response)
-  end
-
   def test_does_not_log_web_app_asset_requests
     FactoryGirl.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/auth-assets/test.css", log_http_options)

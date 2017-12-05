@@ -1,6 +1,6 @@
 import Jed from 'npm:jed';
 
-var i18n = new Jed({
+const i18n = new Jed({
   locale_data: window.localeData,
   domain: 'api-umbrella',
 });
