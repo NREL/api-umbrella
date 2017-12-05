@@ -28,6 +28,8 @@ jobs:
       - type: shell
         command: |
           ./test/scripts/circle-ci $(circleci tests glob test/**/test_*.rb | circleci tests split --split-by=timings)
+      - store_test_results:
+          path: test/tmp/reports
       - store_artifacts:
           path: test/tmp/run/api-umbrella-root/var/log
       - store_artifacts:
