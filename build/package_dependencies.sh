@@ -206,7 +206,7 @@ elif [ -f /etc/debian_version ]; then
     libnettle$libnettle_version
 
     # lualdap
-    libldap
+    libldap-2.4
   )
   hadoop_analytics_package_dependencies=(
     openjdk-$openjdk_version-jre-headless
