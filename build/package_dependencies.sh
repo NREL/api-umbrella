@@ -196,9 +196,6 @@ elif [ -f /etc/debian_version ]; then
     libreadline$libreadline_version
     tzdata
 
-    # cjose
-    libjansson4
-
     # lua-resty-nettle
     libnettle$libnettle_version
   )

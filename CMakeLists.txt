@@ -86,7 +86,6 @@ else()
   require_program(rsync)
 
   include(${CMAKE_SOURCE_DIR}/build/cmake/versions.cmake)
-  include(${CMAKE_SOURCE_DIR}/build/cmake/cjose.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/elasticsearch.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/libcidr.cmake)
   include(${CMAKE_SOURCE_DIR}/build/cmake/libgeoip.cmake)

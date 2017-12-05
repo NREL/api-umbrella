@@ -14,16 +14,12 @@ luarocks_install(luaposix ${LUAROCK_LUAPOSIX_VERSION} ${LUAROCK_LUAPOSIX_HASH})
 luarocks_install(lustache ${LUAROCK_LUSTACHE_VERSION} ${LUAROCK_LUSTACHE_HASH})
 luarocks_install(lyaml ${LUAROCK_LYAML_VERSION} ${LUAROCK_LYAML_HASH})
 luarocks_install(penlight ${LUAROCK_PENLIGHT_VERSION} ${LUAROCK_PENLIGHT_HASH})
-luarocks_install(xml ${LUAROCK_XML_VERSION} ${LUAROCK_XML_HASH})
 
 # OPM app dependencies
 opm_install(lua-libcidr-ffi GUI ${OPM_LIBCIDR_VERSION} ${OPM_LIBCIDR_HASH} libcidr)
-opm_install(lua-resty-cjose taylorking ${OPM_RESTY_CJOSE_VERSION} ${OPM_RESTY_CJOSE_HASH} cjose)
 opm_install(lua-resty-http pintsized ${OPM_RESTY_HTTP_VERSION} ${OPM_RESTY_HTTP_HASH})
-opm_install(lua-resty-jwt SkyLothar ${OPM_RESTY_JWT_VERSION} ${OPM_RESTY_JWT_HASH})
 opm_install(lua-resty-mail GUI ${OPM_RESTY_MAIL_VERSION} ${OPM_RESTY_MAIL_HASH})
 opm_install(lua-resty-nettle bungle ${OPM_RESTY_NETTLE_VERSION} ${OPM_RESTY_NETTLE_HASH})
-opm_install(lua-resty-openidc zmartzone ${OPM_RESTY_OPENIDC_VERSION} ${OPM_RESTY_OPENIDC_HASH})
 opm_install(lua-resty-session bungle ${OPM_RESTY_SESSION_VERSION} ${OPM_RESTY_SESSION_HASH})
 opm_install(lua-resty-validation bungle ${OPM_RESTY_VALIDATION_VERSION} ${OPM_RESTY_VALIDATION_HASH})
 
@@ -118,14 +114,11 @@ set(
   luarock_lustache
   luarock_lyaml
   luarock_penlight
-  luarock_xml
   opm_lua-icu-date
   opm_lua-libcidr-ffi
   opm_lua-resty-http
-  opm_lua-resty-jwt
   opm_lua-resty-mail
   opm_lua-resty-nettle
-  opm_lua-resty-openidc
   opm_lua-resty-session
   opm_lua-resty-validation
 )
