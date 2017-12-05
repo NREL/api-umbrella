@@ -19,7 +19,7 @@ if [ -f /etc/redhat-release ]; then
   rpm --query --queryformat "" "${install_dependencies[@]}"
 elif [ -f /etc/debian_version ]; then
   apt-get update
-  apt-get -y install "${install_dependencies[@]}"
+  apt-get -y --no-install-recommends install "${install_dependencies[@]}"
 else
   echo "Unknown build system"
   exit 1

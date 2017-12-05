@@ -66,6 +66,9 @@ class OutdatedPackages
     "luarock_luacheck" => {
       :luarock => "luacheck",
     },
+    "luarock_lualdap" => {
+      :luarock => "lualdap",
+    },
     "luarock_luaposix" => {
       :luarock => "luaposix",
     },
@@ -77,9 +80,6 @@ class OutdatedPackages
     },
     "luarock_penlight" => {
       :luarock => "penlight",
-    },
-    "luarock_resty_auto_ssl" => {
-      :luarock => "lua-resty-auto-ssl",
     },
     "luarock_resty_uuid" => {
       :luarock => "lua-resty-uuid",
