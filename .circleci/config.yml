@@ -1,0 +1,34 @@
+version: 2
+jobs:
+  test:
+    parallelism: 3
+    working_directory: ~/app
+    docker:
+      - image: ubuntu:16.04
+    steps:
+      - checkout
+      # Install any system package dependencies.
+      - run: ./build/scripts/install_build_dependencies
+      - restore_cache:
+          key: build-deps-{{ .Branch }}
+      # Build all the API Umbrella software dependencies.
+      - run: ./configure --enable-test-dependencies
+      - run: make all test-deps
+      # Remove the download archives, since we don't need to cache these in
+      # CircleCI, and doing so also leads to multiple versions being kept
+      # around whenever we bump our dependency versions.
+      - run: make clean-download-archives
+      - save_cache:
+          key: build-deps-{{ .Branch }}
+          paths:
+            - build/work
+            - CMakeCache.txt
+            - CMakeFiles
+            - cmake_install.cmake
+      - type: shell
+        command: |
+          ./test/scripts/circle-ci $(circleci tests glob test/**/test_*.rb | circleci tests split --split-by=timings)
+      - store_artifacts:
+          path: test/tmp/run/api-umbrella-root/var/log
+      - store_artifacts:
+          path: test/tmp/capybara
