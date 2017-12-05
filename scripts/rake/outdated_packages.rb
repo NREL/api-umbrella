@@ -8,21 +8,9 @@ class OutdatedPackages
       :git => "https://github.com/NREL/api-umbrella-static-site.git",
       :git_ref => "master",
     },
-    "bundler" => {
-      :git => "https://github.com/bundler/bundler.git",
-    },
     "elasticsearch" => {
       :git => "https://github.com/elasticsearch/elasticsearch.git",
       :constraint => "~> 2.4.3",
-    },
-    "flume" => {
-      :git => "https://github.com/apache/flume.git",
-    },
-    "json_c" => {
-      :git => "https://github.com/json-c/json-c.git",
-    },
-    "kylin" => {
-      :git => "https://github.com/apache/kylin.git",
     },
     "libcidr" => {
       :http => "https://www.over-yonder.net/~fullermd/projects/libcidr",
@@ -38,9 +26,6 @@ class OutdatedPackages
     },
     "liblogging" => {
       :git => "https://github.com/rsyslog/liblogging.git",
-    },
-    "librdkafka" => {
-      :git => "https://github.com/edenhill/librdkafka.git",
     },
     "luarocks" => {
       :git => "https://github.com/keplerproject/luarocks.git",
@@ -100,9 +85,6 @@ class OutdatedPackages
       :git => "https://github.com/cloudflare/lua-resty-shcache.git",
       :git_ref => "master",
     },
-    "maven" => {
-      :git => "https://github.com/apache/maven.git",
-    },
     "mailhog" => {
       :git => "https://github.com/mailhog/MailHog.git",
     },
@@ -157,16 +139,6 @@ class OutdatedPackages
     },
     "postgresql" => {
       :git => "https://github.com/postgres/postgres.git",
-    },
-    "presto" => {
-      :git => "https://github.com/facebook/presto.git",
-    },
-    "ruby" => {
-      :git => "https://github.com/ruby/ruby.git",
-      :constraint => "~> 2.3.4",
-    },
-    "rubygems" => {
-      :git => "https://github.com/rubygems/rubygems.git",
     },
     "rsyslog" => {
       :git => "https://github.com/rsyslog/rsyslog.git",
@@ -235,8 +207,9 @@ class OutdatedPackages
   end
 
   def initialize
+    seen_names = []
     versions = {}
-    versions_content = File.read(File.join(API_UMBRELLA_SRC_ROOT, "build/cmake/versions.cmake"))
+    versions_content = `git grep -h "^set.*_VERSION" build/cmake`.strip
     versions_content.each_line do |line|
       current_version_matches = line.match(/set\((.+?)_VERSION (.+?)\)/)
       if(!current_version_matches)
@@ -244,6 +217,7 @@ class OutdatedPackages
       end
 
       name = current_version_matches[1].downcase
+      seen_names.push(name)
       options = REPOS[name] || {}
       current_version_string = current_version_matches[2]
 
@@ -336,6 +310,11 @@ class OutdatedPackages
       if(unparsable_tags.any?)
         puts "#{name}: Could not parse version tag #{unparsable_tags.join(", ")}"
       end
+    end
+
+    unused_repos = REPOS.keys - seen_names
+    if(unused_repos.any?)
+      puts "\n\nNOTICE: Unused repos defined in scripts/rake/outdated_packages.rb: #{unused_repos.sort.join(", ")}"
     end
 
     puts "\n\n"

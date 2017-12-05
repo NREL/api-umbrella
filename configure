@@ -22,19 +22,21 @@
 # details, see <https://creativecommons.org/publicdomain/zero/1.0/>
 
 TOP_SRCDIR="$(dirname $0)"
-CMAKE_CMD="cmake ${TOP_SRCDIR}"
+
+if [ "${CMAKE_CMD}" = "" ]; then
+    CMAKE_CMD="cmake"
+fi
 
 BUILD_TYPE="Debug"
 PREFIX=/usr/local
 LIBDIR=
 CMAKE_ARGS=
 
+PREFIX=/opt/api-umbrella
+
 if [ -e "${TOP_SRCDIR}/.configure-custom.sh" ]; then
     . "${TOP_SRCDIR}/.configure-custom.sh"
 fi
-
-PREFIX=/opt/api-umbrella
-ENABLE_VARS="hadoop-analytics|on|ENABLE_HADOOP_ANALYTICS test-dependencies|on|ENABLE_TEST_DEPENDENCIES deploy-only|on|ENABLE_DEPLOY_ONLY"
 
 quote() {
     echo "$1" | sed -e "s|'|'\\\\''|g; 1s/^/'/; \$s/\$/'/"
@@ -254,10 +256,9 @@ while [ $# != 0 ]; do
             BUILD_TYPE="Release";;
 
         "--pass-thru")
-            shift;
-            while [ $# != 0 ]; do
-                CMAKE_ARGS="$CMAKE_ARGS $(quote "${1}")";
+            while [ $# != 1 ]; do
                 shift;
+                CMAKE_ARGS="$CMAKE_ARGS $(quote "${1}")";
             done;;
 
         "--enable-"*)
@@ -304,4 +305,4 @@ build_dir="$(pwd)"
 PATH="$build_dir/build/work/cmake/bin:$PATH"
 export PATH
 
-eval "cmake ${TOP_SRCDIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${PREFIX} ${CMAKE_ARGS}"
+eval "${CMAKE_CMD}" "${TOP_SRCDIR}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DCMAKE_INSTALL_PREFIX="${PREFIX}" ${CMAKE_ARGS}

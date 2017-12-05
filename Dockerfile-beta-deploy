@@ -1,0 +1,39 @@
+FROM ubuntu:16.04
+
+RUN mkdir /app
+COPY build/scripts/install_build_dependencies /app/build/scripts/install_build_dependencies
+COPY build/package_dependencies.sh /app/build/package_dependencies.sh
+RUN /app/build/scripts/install_build_dependencies
+
+RUN mkdir /build
+WORKDIR /build
+
+COPY build/scripts/download_cmake /app/build/scripts/download_cmake
+RUN /app/build/scripts/download_cmake
+
+COPY CMakeLists.txt /app/CMakeLists.txt
+COPY build/cmake/functions /app/build/cmake/functions
+COPY build/cmake/deps /app/build/cmake/deps
+COPY build/cmake/deps.cmake /app/build/cmake/deps.cmake
+COPY build/patches /app/build/patches
+COPY configure /app/configure
+RUN /app/configure && make deps
+
+COPY build/cmake/build-deps /app/build/cmake/build-deps
+COPY build/cmake/build-deps.cmake /app/build/cmake/build-deps.cmake
+RUN /app/configure && make build-deps
+
+COPY build/cmake/app-deps /app/build/cmake/app-deps
+COPY build/cmake/app-deps.cmake /app/build/cmake/app-deps.cmake
+RUN /app/configure && make app-deps
+
+COPY . /app
+RUN /app/configure && make
+RUN make install
+RUN make distclean
+
+ENV PATH="/app/bin:/build/build/work/dev-env/sbin:/build/build/work/dev-env/bin:/build/build/work/test-env/sbin:/build/build/work/test-env/bin:/build/build/work/stage/opt/api-umbrella/sbin:/build/build/work/stage/opt/api-umbrella/bin:/build/build/work/stage/opt/api-umbrella/embedded/sbin:/build/build/work/stage/opt/api-umbrella/embedded/bin:${PATH}"
+ENV API_UMBRELLA_ROOT="/build/build/work/stage/opt/api-umbrella"
+
+WORKDIR /app
+CMD ./docker/dev/docker-start
