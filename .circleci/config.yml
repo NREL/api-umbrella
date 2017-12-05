@@ -27,6 +27,8 @@ jobs:
             - cmake_install.cmake
       - type: shell
         command: |
+          groupadd -r api-umbrella
+          useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
           ./test/scripts/circle-ci $(circleci tests glob test/**/test_*.rb | circleci tests split --split-by=timings)
       - store_test_results:
           path: test/tmp/reports
