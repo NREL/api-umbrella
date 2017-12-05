@@ -33,14 +33,11 @@ class Test::Processes::TestRpaths < Minitest::Test
     # expect.
     assert_operator(bins.length, :>, 0)
     [
-      "/embedded/bin/ruby",
       "/embedded/sbin/rsyslogd",
       "/embedded/openresty/nginx/sbin/nginx",
       "/embedded/libexec/trafficserver/ssl_cert_loader.so",
       # LuaRock
       "/embedded/apps/core/shared/vendor/lib/lua/5.1/iconv.so",
-      # Rubygem
-      "/oj/oj.so",
     ].each do |expected_path_end|
       assert(bins.find { |path| path.end_with?(expected_path_end) }, "Expected #{bins.inspect} to include #{expected_path_end.inspect}")
     end
