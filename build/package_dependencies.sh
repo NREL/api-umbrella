@@ -64,6 +64,9 @@ if [ -f /etc/redhat-release ]; then
 
     # lua-resty-nettle
     nettle
+
+    # lualdap
+    openldap
   )
   hadoop_analytics_package_dependencies=(
     java-1.8.0-openjdk-headless
@@ -102,6 +105,9 @@ if [ -f /etc/redhat-release ]; then
     # Building the static-site
     ruby
     rubygem-bundler
+
+    # lualdap
+    openldap-devel
   )
   hadoop_analytics_build_dependencies=(
     java-1.8.0-openjdk-devel
@@ -198,6 +204,9 @@ elif [ -f /etc/debian_version ]; then
 
     # lua-resty-nettle
     libnettle$libnettle_version
+
+    # lualdap
+    libldap
   )
   hadoop_analytics_package_dependencies=(
     openjdk-$openjdk_version-jre-headless
@@ -237,6 +246,9 @@ elif [ -f /etc/debian_version ]; then
     # Building the static-site
     ruby
     bundler
+
+    # lualdap
+    libldap-dev
   )
   hadoop_analytics_build_dependencies=(
     openjdk-$openjdk_version-jdk
