@@ -8,7 +8,7 @@ jobs:
     steps:
       - checkout
       # Install any system package dependencies.
-      - run: ./build/scripts/install_build_dependencies
+      - run: env INSTALL_TEST_DEPENDENCIES=true ./build/scripts/install_build_dependencies
       - restore_cache:
           key: build-deps-{{ .Branch }}
       # Build all the API Umbrella software dependencies.
