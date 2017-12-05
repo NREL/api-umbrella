@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test:
+  build:
     parallelism: 3
     working_directory: ~/app
     docker:
