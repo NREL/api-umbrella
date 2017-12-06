@@ -86,6 +86,13 @@ local function init_session_db(self)
       random = {
         length = 40,
       },
+      cookie = {
+        samesite = "Lax",
+        secure = true,
+        httponly = true,
+        renew = 60 * 60, -- 1 hour
+        lifetime = 12 * 60 * 60, -- 12 hours
+      },
     })
     self.session_db.cipher = session_cipher.new(self.session_db)
     self.session_db.identifier = session_identifier
@@ -109,6 +116,13 @@ local function init_session_cookie(self)
       secret = assert(config["secret_key"]),
       random = {
         length = 40,
+      },
+      cookie = {
+        samesite = "Lax",
+        secure = true,
+        httponly = true,
+        renew = 60 * 60, -- 1 hour
+        lifetime = 12 * 60 * 60, -- 12 hours
       },
     })
     self.session_cookie.cipher = session_cipher.new(self.session_cookie)
