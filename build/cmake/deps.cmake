@@ -10,6 +10,8 @@ include(${CMAKE_SOURCE_DIR}/build/cmake/deps/trafficserver.cmake)
 add_custom_target(deps ALL DEPENDS
   elasticsearch
   geolitecity
+  libcidr
+  luarocks
   openresty
   perp
   postgresql
