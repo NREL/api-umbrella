@@ -31,20 +31,28 @@ function _M.query(path, options)
     end
   end
 
-  httpc:connect(server["host"], server["port"])
+  local connect_ok, connect_err = httpc:connect(server["host"], server["port"])
+  if connect_err then
+    httpc:close()
+    return nil, "elasticsearch connect error: " .. (connect_err or "")
+  end
+
   local res, err = httpc:request(options)
   if err then
-    return nil, err
+    httpc:close()
+    return nil, "elasticsearch request error: " .. (err or "")
   end
 
   local body, body_err = res:read_body()
   if body_err then
-    return nil, body_err
+    httpc:close()
+    return nil, "elasticsearch read body error: " .. (body_err or "")
   end
 
   local keepalive_ok, keepalive_err = httpc:set_keepalive()
   if not keepalive_ok then
-    ngx.log(ngx.ERR, keepalive_err)
+    httpc:close()
+    return nil, "elasticsearch keepalive error: " .. (keepalive_err or "")
   end
 
   if res.status >= 500 then
