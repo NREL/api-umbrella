@@ -35,4 +35,7 @@ RUN make distclean
 WORKDIR /
 RUN rm -rf /build /app
 
+RUN groupadd -r api-umbrella && \
+  useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
+
 CMD ["api-umbrella", "run"]
