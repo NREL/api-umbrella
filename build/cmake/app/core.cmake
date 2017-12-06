@@ -16,6 +16,7 @@ add_custom_command(
 
 # Copy the code into a build release directory.
 file(GLOB_RECURSE core_files
+  ${CMAKE_SOURCE_DIR}/db/*
   ${CMAKE_SOURCE_DIR}/bin/*
   ${CMAKE_SOURCE_DIR}/config/*
   ${CMAKE_SOURCE_DIR}/templates/*
@@ -24,7 +25,7 @@ add_custom_command(
   OUTPUT ${STAMP_DIR}/core-build-release-dir
   DEPENDS ${core_files}
   COMMAND mkdir -p ${CORE_BUILD_DIR}/releases/0
-  COMMAND rsync -a --delete-after --delete-excluded "--filter=:- ${CMAKE_SOURCE_DIR}/.gitignore" --include=/templates/etc/perp/.boot --exclude=.* --exclude=/templates/etc/test-env* --exclude=/templates/etc/perp/test-env* --exclude=/src/api-umbrella/hadoop-analytics --include=/bin/*** --include=/config/*** --include=/LICENSE.txt --include=/templates/*** --include=/src/*** --exclude=* ${CMAKE_SOURCE_DIR}/ ${CORE_BUILD_DIR}/releases/0/
+  COMMAND rsync -a --delete-after --delete-excluded "--filter=:- ${CMAKE_SOURCE_DIR}/.gitignore" --include=/templates/etc/perp/.boot --exclude=.* --exclude=/templates/etc/test-env* --exclude=/templates/etc/perp/test-env* --exclude=/src/api-umbrella/hadoop-analytics --include=/db/*** --include=/bin/*** --include=/config/*** --include=/LICENSE.txt --include=/templates/*** --include=/src/*** --exclude=* ${CMAKE_SOURCE_DIR}/ ${CORE_BUILD_DIR}/releases/0/
   COMMAND touch ${STAMP_DIR}/core-build-release-dir
 )
 
