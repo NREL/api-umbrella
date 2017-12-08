@@ -31,10 +31,8 @@ local function set_template_config()
     }, config["mongodb"]["embedded_server_config"])}),
     _elasticsearch_yaml = lyaml.dump({deep_merge_overwrite_arrays({
       path = {
-        conf = path.join(config["etc_dir"], "elasticsearch"),
-        scripts = path.join(config["etc_dir"], "elasticsearch_scripts"),
         data = path.join(config["db_dir"], "elasticsearch"),
-        logs = config["log_dir"],
+        logs = path.join(config["log_dir"], "elasticsearch"),
       },
     }, config["elasticsearch"]["embedded_server_config"])})
   })

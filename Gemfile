@@ -33,8 +33,8 @@ gem "oj", "~> 3.3.9"
 # Database libraries
 gem "activerecord", "~> 5.1.4", :require => "active_record"
 gem "pg", "~> 0.21.0"
-gem "elasticsearch", "~> 2.0.2"
-gem "elasticsearch-persistence", "~> 0.1.9"
+gem "elasticsearch", "~> 5.0.4"
+gem "elasticsearch-persistence", "~> 5.0.2"
 
 # Factories for test database data
 gem "factory_girl", "~> 4.8.0"

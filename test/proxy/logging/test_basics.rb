@@ -227,15 +227,19 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     })
 
     property = result[hit["_index"]]["mappings"][hit["_type"]]["properties"]["request_at"]
-    if($config["elasticsearch"]["api_version"] == 1)
+    if($config["elasticsearch"]["api_version"] >= 5)
       assert_equal({
         "type" => "date",
-        "format" => "dateOptionalTime",
       }, property)
     elsif($config["elasticsearch"]["api_version"] >= 2)
       assert_equal({
         "type" => "date",
         "format" => "strict_date_optional_time||epoch_millis",
+      }, property)
+    elsif($config["elasticsearch"]["api_version"] == 1)
+      assert_equal({
+        "type" => "date",
+        "format" => "dateOptionalTime",
       }, property)
     else
       flunk("Unknown elasticsearch version: #{$config["elasticsearch"]["api_version"].inspect}")

@@ -87,7 +87,7 @@ end
 -- See:
 -- http://wiki.apache.org/solr/HierarchicalFaceting
 -- http://www.springyweb.com/2012/01/hierarchical-faceting-with-elastic.html
-local function set_url_hierarchy(data)
+function _M.set_url_hierarchy(data)
   -- Remote duplicate slashes (eg foo//bar becomes foo/bar).
   local cleaned_path = ngx.re.gsub(data["request_url_path"], "//+", "/", "jo")
 
@@ -283,7 +283,7 @@ function _M.set_computed_url_fields(data, ngx_ctx)
     data["legacy_request_url"] = data["legacy_request_url"] .. "?" .. data["request_url_query"]
   end
 
-  set_url_hierarchy(data)
+  _M.set_url_hierarchy(data)
 end
 
 function _M.set_computed_user_agent_fields(data)

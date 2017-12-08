@@ -1,7 +1,7 @@
 local cjson = require "cjson"
 local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 
-local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates.json"
+local path = os.getenv("API_UMBRELLA_SRC_ROOT") .. "/config/elasticsearch_templates_" .. config["log_template_version"] .. ".json"
 local f, err = io.open(path, "rb")
 if err then
   ngx.log(ngx.ERR, "failed to open file: ", err)
