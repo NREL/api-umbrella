@@ -66,11 +66,11 @@ function _M.create_aliases()
   local aliases = {
     {
       alias = "api-umbrella-logs-" .. today,
-      index = "api-umbrella-logs-" .. config["elasticsearch"]["template_version"] .. "-" .. today,
+      index = "api-umbrella-logs-v" .. config["log_template_version"] .. "-" .. today,
     },
     {
       alias = "api-umbrella-logs-write-" .. today,
-      index = "api-umbrella-logs-" .. config["elasticsearch"]["template_version"] .. "-" .. today,
+      index = "api-umbrella-logs-v" .. config["log_template_version"] .. "-" .. today,
     },
   }
 
@@ -79,11 +79,11 @@ function _M.create_aliases()
   if tomorrow ~= today then
     table.insert(aliases, {
       alias = "api-umbrella-logs-" .. tomorrow,
-      index = "api-umbrella-logs-" .. config["elasticsearch"]["template_version"] .. "-" .. tomorrow,
+      index = "api-umbrella-logs-v" .. config["log_template_version"] .. "-" .. tomorrow,
     })
     table.insert(aliases, {
       alias = "api-umbrella-logs-write-" .. tomorrow,
-      index = "api-umbrella-logs-" .. config["elasticsearch"]["template_version"] .. "-" .. tomorrow,
+      index = "api-umbrella-logs-v" .. config["log_template_version"] .. "-" .. tomorrow,
     })
   end
 

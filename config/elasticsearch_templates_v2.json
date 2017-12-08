@@ -12,7 +12,11 @@
           "normalizer": {
             "lowercase_normalizer": {
               "type": "custom",
-              "filter": ["lowercase", "asciifolding"]
+              "filter": ["lowercase"]
+            },
+            "uppercase_normalizer": {
+              "type": "custom",
+              "filter": ["uppercase"]
             }
           }
         },
@@ -80,20 +84,19 @@
               "normalizer": "lowercase_normalizer"
             },
             "request_ip_city": {
-              "type": "keyword",
-              "normalizer": "lowercase_normalizer"
+              "type": "keyword"
             },
             "request_ip_country": {
               "type": "keyword",
-              "normalizer": "lowercase_normalizer"
+              "normalizer": "uppercase_normalizer"
             },
             "request_ip_region": {
               "type": "keyword",
-              "normalizer": "lowercase_normalizer"
+              "normalizer": "uppercase_normalizer"
             },
             "request_method": {
               "type": "keyword",
-              "normalizer": "lowercase_normalizer"
+              "normalizer": "uppercase_normalizer"
             },
             "request_origin": {
               "type": "keyword",

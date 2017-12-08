@@ -1,7 +1,7 @@
 class ElasticsearchHelper
   def self.clean_es_indices(indices)
     indices.each do |month|
-      client = LogItem.gateway.client
+      client = LogItem.client
 
       # Flush all data, so the search results contain all the data for this
       # index.
@@ -15,9 +15,9 @@ class ElasticsearchHelper
       # to completely drop the index, since that might remove mappings that
       # only get created on API Umbrella startup.
       bulk_request = []
-      result = client.search({
+      opts = {
         :index => "api-umbrella-logs-#{month}",
-        :search_type => "scan",
+        :sort => "_doc",
         :scroll => "2m",
         :size => 1000,
         :body => {
@@ -25,13 +25,20 @@ class ElasticsearchHelper
             :match_all => {},
           },
         },
-      })
-      while(result = client.scroll(:scroll_id => result["_scroll_id"], :scroll => "2m")) # rubocop:disable Lint/AssignmentInCondition
+      }
+      if($config["elasticsearch"]["api_version"] < 2)
+        opts.delete(:sort)
+        opts[:search_type] = "scan"
+      end
+      result = client.search(opts)
+      while true
         hits = result["hits"]["hits"]
         break if hits.empty?
         hits.each do |hit|
           bulk_request << { :delete => { :_index => hit["_index"], :_type => hit["_type"], :_id => hit["_id"] } }
         end
+
+        result = client.scroll(:scroll_id => result["_scroll_id"], :scroll => "2m")
       end
 
       # Perform the bulk delete of all records in this index.

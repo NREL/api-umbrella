@@ -13,7 +13,7 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
   def test_world
     FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
     FactoryBot.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "ON", :request_ip_city => "Toronto")
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -45,7 +45,7 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
     FactoryBot.create(:log_city_location, :country => "CA", :region => "QC", :city => "Montréal", :location => { :type => "Point", :coordinates => [-73.5877, 45.5009] })
     FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "ON", :request_ip_city => "Toronto")
     FactoryBot.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "QC", :request_ip_city => "Montréal")
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -78,7 +78,7 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
   def test_country_us
     FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
     FactoryBot.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CA", :request_ip_city => "San Diego")
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -112,7 +112,7 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
     FactoryBot.create(:log_city_location, :country => "US", :region => "CO", :city => "Golden", :location => { :type => "Point", :coordinates => [-105.2433, 39.7146] })
     FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
     FactoryBot.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CA", :request_ip_city => "San Diego")
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -138,6 +138,49 @@ class Test::Apis::Admin::Stats::TestMap < Minitest::Test
       "regions" => [
         { "id" => "Golden", "name" => "Golden", "hits" => 2 },
       ],
+    }, data)
+  end
+
+  def test_csv_download
+    FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "US", :request_ip_region => "CO", :request_ip_city => "Golden")
+    FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_ip_country => "CA", :request_ip_region => "ON", :request_ip_city => "Toronto")
+    LogItem.refresh_index!
+
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.csv", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        "start_at" => "2015-01-13",
+        "end_at" => "2015-01-18",
+        "region" => "world",
+      },
+    }))
+
+    assert_response_code(200, response)
+    assert_equal("text/csv", response.headers["Content-Type"])
+    assert_match("attachment; filename=\"api_map_#{Time.now.utc.strftime("%Y-%m-%d")}.csv\"", response.headers["Content-Disposition"])
+
+    csv = CSV.parse(response.body)
+    assert_equal(3, csv.length, csv)
+    assert_equal(["Location", "Hits"], csv[0])
+    assert_equal(["United States of America", "2"], csv[1])
+    assert_equal(["Canada", "1"], csv[2])
+  end
+
+  def test_no_results_non_existent_indices
+    response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session).deep_merge({
+      :params => {
+        "start_at" => "2000-01-13",
+        "end_at" => "2000-01-18",
+        "region" => "world",
+      },
+    }))
+
+    assert_response_code(200, response)
+    data = MultiJson.load(response.body)
+    assert_equal({
+      "map_breadcrumbs" => [],
+      "map_regions" => [],
+      "region_field" => "request_ip_country",
+      "regions" => [],
     }, data)
   end
 end

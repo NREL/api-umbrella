@@ -68,6 +68,7 @@ if($!raw!request_content_type != "") then {
 if($!raw!request_url_hierarchy != "") then {
   set $!usr!es!request_hierarchy = $!raw!request_url_hierarchy;
 }
+{{#_log_template_version_v2?}}
 if($!raw!request_url_hierarchy_level0 != "") then {
   set $!usr!es!request_url_hierarchy_level0 = $!raw!request_url_hierarchy_level0;
 }
@@ -89,6 +90,7 @@ if($!raw!request_url_hierarchy_level5 != "") then {
 if($!raw!request_url_hierarchy_level6 != "") then {
   set $!usr!es!request_url_hierarchy_level6 = $!raw!request_url_hierarchy_level6;
 }
+{{/_log_template_version_v2?}}
 if($!raw!request_url_host != "") then {
   set $!usr!es!request_host = $!raw!request_url_host;
 }
