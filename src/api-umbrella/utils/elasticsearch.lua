@@ -1,4 +1,5 @@
 local http = require "resty.http"
+local is_empty = require("pl.types").is_empty
 local json_decode = require("cjson").decode
 local json_encode = require "api-umbrella.utils.json_encode"
 
@@ -58,7 +59,7 @@ function _M.query(path, options)
   if res.status >= 500 then
     return nil, "Unsuccessful response: " .. (body or "")
   else
-    if res.headers["Content-Type"] and string.sub(res.headers["Content-Type"], 1, 16) == "application/json" then
+    if res.headers["Content-Type"] and string.sub(res.headers["Content-Type"], 1, 16) == "application/json" and not is_empty(body) then
       res["body_json"] = json_decode(body)
     end
 
