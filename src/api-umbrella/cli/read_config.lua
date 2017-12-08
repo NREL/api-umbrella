@@ -364,8 +364,8 @@ local function set_computed_config()
     _src_root_dir = src_root_dir,
     _package_path = package.path,
     _package_cpath = package.cpath,
-    ["_log_template_version_v1?"] = (config["log_template_version"] == "v1"),
-    ["_log_template_version_v2?"] = (config["log_template_version"] == "v2"),
+    ["_log_template_version_v1?"] = (config["log_template_version"] == 1),
+    ["_log_template_version_v2?"] = (config["log_template_version"] == 2),
     analytics = {
       ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
       ["_output_kylin?"] = array_includes(config["analytics"]["outputs"], "kylin"),

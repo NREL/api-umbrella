@@ -68,9 +68,9 @@ end
 --
 -- Will get stored like this for SQL storage:
 --
--- request_url_path_level1 = /api/
--- request_url_path_level2 = /api/foo/
--- request_url_path_level3 = /api/foo/bar.json
+-- request_url_hierarchy_level1 = /api/
+-- request_url_hierarchy_level2 = /api/foo/
+-- request_url_hierarchy_level3 = /api/foo/bar.json
 --
 -- And gets indexed as this array for ElasticSearch storage:
 --
@@ -107,14 +107,16 @@ function _M.set_url_hierarchy(data)
   -- Setup top-level host hierarchy for ElasticSearch storage.
   data["request_url_hierarchy"] = {}
   local host_token = "0/" .. data["request_url_host"]
+  local host_level = data["request_url_host"]
   if #path_parts > 0 then
-    host_token = host_token .. "/"
+    host_level = host_level .. "/"
   end
-  table.insert(data["request_url_hierarchy"], host_token)
+  data["request_url_hierarchy_level0"] = host_level
+  table.insert(data["request_url_hierarchy"], "0/" .. host_level)
 
-  local path_level = "/"
+  local path_tree = "/"
   for index, _ in ipairs(path_parts) do
-    path_level = path_level .. path_parts[index]
+    local path_level = path_parts[index]
 
     -- Add a trailing slash to all parent paths, but not the last path. This
     -- is done for two reasons:
@@ -131,10 +133,11 @@ function _M.set_url_hierarchy(data)
     end
 
     -- Store in the request_url_path_level(1-6) fields for SQL storage.
-    data["request_url_path_level" .. index] = path_level
+    data["request_url_hierarchy_level" .. index] = path_level
 
     -- Store as an array for ElasticSearch storage.
-    local path_token = index .. "/" .. data["request_url_host"] .. path_level
+    path_tree = path_tree .. path_level
+    local path_token = index .. "/" .. data["request_url_host"] .. path_tree
     table.insert(data["request_url_hierarchy"], path_token)
   end
 end
@@ -320,12 +323,13 @@ function _M.normalized_data(data)
     request_url_hierarchy = data["request_url_hierarchy"],
     request_url_host = lowercase_truncate(data["request_url_host"], 200),
     request_url_path = truncate(data["request_url_path"], 4000),
-    request_url_path_level1 = truncate(data["request_url_path_level1"], 40),
-    request_url_path_level2 = truncate(data["request_url_path_level2"], 40),
-    request_url_path_level3 = truncate(data["request_url_path_level3"], 40),
-    request_url_path_level4 = truncate(data["request_url_path_level4"], 40),
-    request_url_path_level5 = truncate(data["request_url_path_level5"], 40),
-    request_url_path_level6 = truncate(data["request_url_path_level6"], 40),
+    request_url_hierarchy_level0 = truncate(data["request_url_hierarchy_level0"], 200),
+    request_url_hierarchy_level1 = truncate(data["request_url_hierarchy_level1"], 200),
+    request_url_hierarchy_level2 = truncate(data["request_url_hierarchy_level2"], 200),
+    request_url_hierarchy_level3 = truncate(data["request_url_hierarchy_level3"], 200),
+    request_url_hierarchy_level4 = truncate(data["request_url_hierarchy_level4"], 200),
+    request_url_hierarchy_level5 = truncate(data["request_url_hierarchy_level5"], 200),
+    request_url_hierarchy_level6 = truncate(data["request_url_hierarchy_level6"], 200),
     request_url_port = tonumber(data["request_url_port"]),
     request_url_query = truncate(data["request_url_query"], 4000),
     request_url_scheme = lowercase_truncate(data["request_url_scheme"], 10),

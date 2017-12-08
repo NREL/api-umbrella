@@ -17,7 +17,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-18T23:59:59"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-19T00:00:00"))
     end
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -49,7 +49,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-09T10:00:00"))
     end
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
@@ -84,7 +84,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
     end
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
@@ -125,7 +125,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-03T10:00:00"))
     end
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
@@ -160,7 +160,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
     end
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({

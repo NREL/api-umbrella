@@ -15,6 +15,10 @@
               "filter": ["lowercase"]
             }
           }
+        },
+        "translog": {
+          "durability": "async",
+          "sync_interval": "10s"
         }
       },
       "mappings": {
