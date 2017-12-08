@@ -88,11 +88,6 @@ elasticsearch:
     transport:
       tcp:
         port: 13003
-        #    discovery:
-        #      zen:
-        #        ping:
-        #          multicast:
-        #            enabled: false
 unbound:
   port: 13100
   control_port: 13101

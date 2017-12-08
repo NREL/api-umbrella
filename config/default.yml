@@ -180,7 +180,7 @@ elasticsearch:
     - "http://127.0.0.1:14002"
   embedded_server_env:
     heap_size: 512m
-  api_version: 2
+  api_version: 6
   template_version: 1
   embedded_server_config:
     network:
