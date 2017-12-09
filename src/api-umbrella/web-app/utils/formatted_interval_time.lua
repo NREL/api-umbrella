@@ -4,9 +4,9 @@ local date = icu_date.new({
   zone_id = config["analytics"]["timezone"],
 })
 local fields = icu_date.fields
-local format_minute = icu_date.formats.pattern("EEE, MMM d, YYYY h:mma zzz")
-local format_day = icu_date.formats.pattern("EEE, MMM d, YYYY")
-local format_week = icu_date.formats.pattern("MMM d, YYYY")
+local format_minute = icu_date.formats.pattern("EEE, MMM d, yyyy h:mma zzz")
+local format_day = icu_date.formats.pattern("EEE, MMM d, yyyy")
+local format_week = icu_date.formats.pattern("MMM d, yyyy")
 
 return function(interval, timestamp)
   date:set_millis(timestamp)

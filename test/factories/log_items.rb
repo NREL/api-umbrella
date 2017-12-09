@@ -12,11 +12,9 @@ FactoryGirl.define do
     request_method "GET"
     request_path "/hello/"
     request_scheme "http"
+    request_query({ "foo" => "bar" })
     request_size 140
-    if($config["log_template_version"] < 2)
-      request_query({ "foo" => "bar" })
-      request_url "http://127.0.0.1/hello/?foo=bar"
-    end
+    request_url "http://127.0.0.1/hello/?foo=bar"
     request_url_query("foo=bar")
     request_user_agent "ApacheBench/2.3"
     request_user_agent_family "AB (Apache Bench)"
@@ -39,10 +37,8 @@ FactoryGirl.define do
       request_ip_country '"><script class="xss-test">alert("4");</script>'
       request_ip_region '"><script class="xss-test">alert("5");</script>'
       request_path '"><script class="xss-test">alert("6");</script>'
-      if($config["log_template_version"] < 2)
-        request_query({ "foo" => '"><script class="xss-test">alert("7");</script>' })
-        request_url '"><script class="xss-test">alert("8");</script>'
-      end
+      request_query({ "foo" => '"><script class="xss-test">alert("7");</script>' })
+      request_url '"><script class="xss-test">alert("8");</script>'
       request_url_query '"><script class="xss-test">alert("8");</script>'
       request_user_agent '"><script class="xss-test">alert("9");</script>'
       response_content_type '"><script class="xss-test">alert("10");</script>'

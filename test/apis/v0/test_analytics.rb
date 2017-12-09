@@ -6,7 +6,7 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
   def setup
     super
     setup_server
-    ElasticsearchHelper.clean_es_indices(["2013-07", "2013-08"])
+    LogItem.clean_indices!
   end
 
   def test_forbids_api_key_without_role
@@ -26,7 +26,7 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
   def test_expected_response
     FactoryGirl.create_list(:api_user, 3, :created_at => Time.parse("2013-08-15T00:00:00Z").utc)
     FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2013-08-15T00:00:00Z").utc)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = make_request
     assert_response_code(200, response)

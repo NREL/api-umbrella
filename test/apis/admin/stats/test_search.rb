@@ -7,7 +7,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
   def setup
     super
     setup_server
-    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
+    LogItem.clean_indices!
   end
 
   def test_bins_results_by_day_with_time_zone_support
@@ -17,7 +17,7 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-18T23:59:59"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-19T00:00:00"))
     end
-    LogItem.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -42,15 +42,13 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
   end
 
   def test_bins_daily_results_daylight_saving_time_begin
-    LogItem.index_name = "api-umbrella-logs-write-2015-03"
     Time.use_zone("UTC") do
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T00:00:00"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-09T10:00:00"))
     end
-    LogItem.refresh_index!
-    LogItem.index_name = "api-umbrella-logs-write-2015-01"
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -79,13 +77,11 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
   end
 
   def test_bins_hourly_results_daylight_saving_time_begin
-    LogItem.index_name = "api-umbrella-logs-write-2015-03"
     Time.use_zone("UTC") do
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
     end
-    LogItem.refresh_index!
-    LogItem.index_name = "api-umbrella-logs-write-2015-01"
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -118,15 +114,13 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
   end
 
   def test_bins_daily_results_daylight_saving_time_end
-    LogItem.index_name = "api-umbrella-logs-write-2014-11"
     Time.use_zone("UTC") do
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T00:00:00"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-03T10:00:00"))
     end
-    LogItem.refresh_index!
-    LogItem.index_name = "api-umbrella-logs-write-2015-01"
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -155,13 +149,11 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
   end
 
   def test_bins_hourly_results_daylight_saving_time_end
-    LogItem.index_name = "api-umbrella-logs-write-2014-11"
     Time.use_zone("UTC") do
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
       FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
     end
-    LogItem.refresh_index!
-    LogItem.index_name = "api-umbrella-logs-write-2015-01"
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/search.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {

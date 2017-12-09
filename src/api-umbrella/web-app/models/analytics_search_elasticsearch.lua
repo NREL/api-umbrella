@@ -6,7 +6,7 @@ local is_empty = require("pl.types").is_empty
 local startswith = require("pl.stringx").startswith
 
 local date = icu_date.new()
-local format_month = icu_date.formats.pattern("YYYY-MM")
+local format_month = icu_date.formats.pattern("yyyy-MM")
 local format_iso8601 = icu_date.formats.iso8601()
 
 local CASE_SENSITIVE_FIELDS = {
@@ -229,11 +229,11 @@ end
 
 function _M:set_search_query_string(query_string)
   if not is_empty(query_string) then
-    self.body["query"]["bool"]["query"] = {
+    table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
       query_string = {
         query = query_string,
       },
-    }
+    })
   end
 end
 
@@ -330,7 +330,7 @@ end
 
 function _M:aggregate_by_drilldown(prefix, size)
   if not size then
-    size = 0
+    size = 100000000
   end
 
   self.body["aggregations"]["drilldown"] = {
@@ -394,7 +394,7 @@ function _M:aggregate_by_user_stats(order)
   self.body["aggregations"]["user_stats"] = {
     terms = {
       field = "user_id",
-      size = 0,
+      size = 100000000,
     },
     aggregations = {
       last_request_at = {
