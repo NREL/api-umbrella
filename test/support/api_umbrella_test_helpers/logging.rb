@@ -73,7 +73,7 @@ module ApiUmbrellaTestHelpers
       assert_operator(record["request_path"].length, :>=, 1)
       assert_equal("http", record["request_scheme"])
       assert_kind_of(Numeric, record["request_size"])
-      if($config["log_template_version"] < 2)
+      if($config["elasticsearch"]["template_version"] < 2)
         assert_kind_of(String, record["request_url"])
         assert_equal(true, record["request_url"].start_with?("http://127.0.0.1:9080/"), record["request_url"])
       else
@@ -95,7 +95,7 @@ module ApiUmbrellaTestHelpers
       logged_url = "#{record["request_scheme"]}://#{record["request_host"]}#{record["request_path"]}"
       logged_url += "?#{record["request_url_query"]}" if(record["request_url_query"])
       assert_equal(expected_url, logged_url)
-      if($config["log_template_version"] < 2)
+      if($config["elasticsearch"]["template_version"] < 2)
         assert_equal(expected_url, record["request_url"])
       end
     end

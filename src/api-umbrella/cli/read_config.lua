@@ -329,8 +329,6 @@ local function set_computed_config()
     _package_cpath = package.cpath,
     ["_test_env?"] = (config["app_env"] == "test"),
     ["_development_env?"] = (config["app_env"] == "development"),
-    ["_log_template_version_v1?"] = (config["log_template_version"] == 1),
-    ["_log_template_version_v2?"] = (config["log_template_version"] == 2),
     analytics = {
       ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
     },

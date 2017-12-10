@@ -73,7 +73,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
       "user_registration_source",
     ]
 
-    if($config["log_template_version"] >= 2)
+    if($config["elasticsearch"]["template_version"] >= 2)
       expected_fields += [
         "request_url_hierarchy_level0",
         "request_url_hierarchy_level1",
@@ -127,7 +127,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
     assert_equal("http://example.com", record["request_referer"])
     assert_equal("http", record["request_scheme"])
     assert_kind_of(Numeric, record["request_size"])
-    if($config["log_template_version"] < 2)
+    if($config["elasticsearch"]["template_version"] < 2)
       assert_equal(url, record["request_url"])
       assert_equal("url1=#{param_url1}&url2=#{param_url2}&url3=#{param_url3}", record["request_url_query"])
     else

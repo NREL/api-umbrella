@@ -30,7 +30,7 @@ class Test::Apis::Admin::Stats::TestLogs < Minitest::Test
     assert_equal(1, data["recordsTotal"], data)
     assert_equal("/with_api_key/?foo=bar", data["data"][0]["request_url"])
     assert_equal("foo=bar", data["data"][0]["request_url_query"])
-    if($config["log_template_version"] < 2)
+    if($config["elasticsearch"]["template_version"] < 2)
       assert_equal({ "foo" => "bar" }, data["data"][0]["request_query"])
     end
     refute_match("my_secret_key", body)

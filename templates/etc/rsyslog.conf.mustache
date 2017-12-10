@@ -68,7 +68,7 @@ if($!raw!request_content_type != "") then {
 if($!raw!request_url_hierarchy != "") then {
   set $!usr!es!request_hierarchy = $!raw!request_url_hierarchy;
 }
-{{#_log_template_version_v2?}}
+{{#elasticsearch._template_version_v2?}}
 if($!raw!request_url_hierarchy_level0 != "") then {
   set $!usr!es!request_url_hierarchy_level0 = $!raw!request_url_hierarchy_level0;
 }
@@ -90,7 +90,7 @@ if($!raw!request_url_hierarchy_level5 != "") then {
 if($!raw!request_url_hierarchy_level6 != "") then {
   set $!usr!es!request_url_hierarchy_level6 = $!raw!request_url_hierarchy_level6;
 }
-{{/_log_template_version_v2?}}
+{{/elasticsearch._template_version_v2?}}
 if($!raw!request_url_host != "") then {
   set $!usr!es!request_host = $!raw!request_url_host;
 }
@@ -124,11 +124,11 @@ if($!raw!request_url_scheme != "") then {
 if($!raw!request_size != "") then {
   set $!usr!es!request_size = $!raw!request_size;
 }
-{{#_log_template_version_v1?}}
+{{#elasticsearch._template_version_v1?}}
 if($!raw!legacy_request_url != "") then {
   set $!usr!es!request_url = $!raw!legacy_request_url;
 }
-{{/_log_template_version_v1?}}
+{{/elasticsearch._template_version_v1?}}
 if($!raw!request_url_query != "") then {
   set $!usr!es!request_url_query = $!raw!request_url_query;
 }
