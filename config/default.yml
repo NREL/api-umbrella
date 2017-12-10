@@ -18,6 +18,7 @@ listen:
 nginx:
   workers: auto
   worker_connections: 8192
+  error_log_level: notice
   access_log_filename: access.log
   access_log_options: buffer=256k flush=10s
   proxy_connect_timeout: 60
@@ -79,6 +80,8 @@ web:
   host: 127.0.0.1
   port: 14012
   request_timeout: 30
+  workers: 2
+  error_log_level: notice
   api_user:
     first_name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
     last_name_exclude_regex: "(http|https|www|<|>|\\r|\\n)"
@@ -204,6 +207,8 @@ elasticsearch:
   aws_signing_proxy:
     host: 127.0.0.1
     port: 14017
+    workers: 1
+    error_log_level: notice
 analytics:
   adapter: elasticsearch
   timezone: UTC

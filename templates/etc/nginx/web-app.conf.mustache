@@ -1,5 +1,5 @@
-worker_processes {{nginx.workers}};
-error_log stderr notice;
+worker_processes {{web.workers}};
+error_log stderr {{web.error_log_level}};
 daemon off;
 pid {{run_dir}}/nginx-web-app.pid;
 

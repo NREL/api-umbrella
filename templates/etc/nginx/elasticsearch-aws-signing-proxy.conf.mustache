@@ -1,5 +1,5 @@
-worker_processes 1;
-error_log stderr notice;
+worker_processes {{elasticsearch.aws_signing_proxy.workers}};
+error_log stderr {{elasticsearch.aws_signing_proxy.error_log_level}};
 daemon off;
 pid {{run_dir}}/elasticsearch-aws-signing-proxy.pid;
 
