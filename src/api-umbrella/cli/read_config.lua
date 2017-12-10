@@ -362,19 +362,34 @@ local function set_computed_config()
   deep_merge_overwrite_arrays(config, {
     _embedded_root_dir = embedded_root_dir,
     _src_root_dir = src_root_dir,
+    _api_umbrella_config_runtime_file = path.join(config["run_dir"], "runtime_config.yml"),
     _package_path = package.path,
     _package_cpath = package.cpath,
-    ["_log_template_version_v1?"] = (config["log_template_version"] == 1),
-    ["_log_template_version_v2?"] = (config["log_template_version"] == 2),
+    ["_test_env?"] = (config["app_env"] == "test"),
+    ["_development_env?"] = (config["app_env"] == "development"),
     analytics = {
       ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
       ["_output_kylin?"] = array_includes(config["analytics"]["outputs"], "kylin"),
     },
     mongodb = {
       _database = plutils.split(array_last(plutils.split(config["mongodb"]["url"], "/", true)), "?", true)[1],
+      embedded_server_config = {
+        storage = {
+          dbPath = path.join(config["db_dir"], "mongodb"),
+        },
+      },
     },
     elasticsearch = {
       _first_server = config["elasticsearch"]["_servers"][1],
+      embedded_server_config = {
+        path = {
+          data = path.join(config["db_dir"], "elasticsearch"),
+          logs = path.join(config["log_dir"], "elasticsearch"),
+        },
+      },
+      ["_template_version_v1?"] = (config["elasticsearch"]["template_version"] == 1),
+      ["_template_version_v2?"] = (config["elasticsearch"]["template_version"] == 2),
+      ["_api_version_lte_2?"] = (config["elasticsearch"]["api_version"] <= 2),
     },
     ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
@@ -400,6 +415,24 @@ local function set_computed_config()
       dir = path.join(embedded_root_dir, "apps/static-site/current"),
       build_dir = path.join(embedded_root_dir, "apps/static-site/current/build"),
     },
+  })
+
+  if config["elasticsearch"]["api_version"] <= 2 then
+    deep_merge_overwrite_arrays(config, {
+      elasticsearch = {
+        embedded_server_config = {
+          path = {
+            conf = path.join(config["etc_dir"], "elasticsearch"),
+            scripts = path.join(config["etc_dir"], "elasticsearch_scripts"),
+          },
+        },
+      },
+    })
+  end
+
+  deep_merge_overwrite_arrays(config, {
+    _mongodb_yaml = lyaml.dump({ config["mongodb"]["embedded_server_config"] }),
+    _elasticsearch_yaml = lyaml.dump({ config["elasticsearch"]["embedded_server_config"] }),
   })
 
   if config["app_env"] == "development" then

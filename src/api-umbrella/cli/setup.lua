@@ -14,29 +14,6 @@ local tablex = require "pl.tablex"
 local unistd = require "posix.unistd"
 
 local config
-local template_config
-
-local function set_template_config()
-  local runtime_config_path = path.join(config["run_dir"], "runtime_config.yml")
-
-  template_config = tablex.deepcopy(config)
-  deep_merge_overwrite_arrays(template_config, {
-    _api_umbrella_config_runtime_file = runtime_config_path,
-    ["_test_env?"] = (config["app_env"] == "test"),
-    ["_development_env?"] = (config["app_env"] == "development"),
-    _mongodb_yaml = lyaml.dump({deep_merge_overwrite_arrays({
-      storage = {
-        dbPath = path.join(config["db_dir"], "mongodb"),
-      },
-    }, config["mongodb"]["embedded_server_config"])}),
-    _elasticsearch_yaml = lyaml.dump({deep_merge_overwrite_arrays({
-      path = {
-        data = path.join(config["db_dir"], "elasticsearch"),
-        logs = path.join(config["log_dir"], "elasticsearch"),
-      },
-    }, config["elasticsearch"]["embedded_server_config"])})
-  })
-end
 
 local function permission_check()
   local effective_uid = unistd.geteuid()
@@ -175,7 +152,7 @@ local function write_templates()
 
         local _, extension = path.splitext(template_path)
         if extension == ".mustache" then
-          content = lustache:render(mustache_unescape(content), template_config)
+          content = lustache:render(mustache_unescape(content), config)
         end
 
         dir.makepath(path.dirname(install_path))
@@ -329,7 +306,6 @@ end
 
 return function()
   config = read_config({ write = true })
-  set_template_config()
   permission_check()
   prepare()
   generate_self_signed_cert()

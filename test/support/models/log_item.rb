@@ -90,7 +90,7 @@ class LogItem
   def serializable_hash
     hash = super
 
-    if($config["log_template_version"] >= 2)
+    if($config["elasticsearch"]["template_version"] >= 2)
       hash.delete("request_query")
       hash.delete("request_url")
     end
