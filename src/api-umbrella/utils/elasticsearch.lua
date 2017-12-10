@@ -33,9 +33,17 @@ function _M.query(path, options)
   end
 
   local connect_ok, connect_err = httpc:connect(server["host"], server["port"])
-  if connect_err then
+  if not connect_ok then
     httpc:close()
     return nil, "elasticsearch connect error: " .. (connect_err or "")
+  end
+
+  if server["scheme"] == "https" then
+    local ssl_ok, ssl_err = httpc:ssl_handshake(nil, server["host"], true)
+    if not ssl_ok then
+      httpc:close()
+      return nil, "elasticsearch ssl handshake error: " .. (ssl_err or "")
+    end
   end
 
   local res, err = httpc:request(options)
@@ -49,6 +57,7 @@ function _M.query(path, options)
     httpc:close()
     return nil, "elasticsearch read body error: " .. (body_err or "")
   end
+  res["body"] = body
 
   local keepalive_ok, keepalive_err = httpc:set_keepalive()
   if not keepalive_ok then
