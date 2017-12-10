@@ -9,9 +9,9 @@ class Test::AdminUi::TestLegacyRedirects < Minitest::Capybara::Test
     super
     setup_server
 
-    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
+    LogItem.clean_indices!
     FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
   end
 
   def test_drilldown

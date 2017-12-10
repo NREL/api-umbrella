@@ -364,6 +364,8 @@ local function set_computed_config()
     _src_root_dir = src_root_dir,
     _package_path = package.path,
     _package_cpath = package.cpath,
+    ["_log_template_version_v1?"] = (config["log_template_version"] == 1),
+    ["_log_template_version_v2?"] = (config["log_template_version"] == 2),
     analytics = {
       ["_output_elasticsearch?"] = array_includes(config["analytics"]["outputs"], "elasticsearch"),
       ["_output_kylin?"] = array_includes(config["analytics"]["outputs"], "kylin"),
@@ -376,10 +378,10 @@ local function set_computed_config()
     },
     ["_service_general_db_enabled?"] = array_includes(config["services"], "general_db"),
     ["_service_log_db_enabled?"] = array_includes(config["services"], "log_db"),
+    ["_service_elasticsearch_aws_signing_proxy_enabled?"] = array_includes(config["services"], "elasticsearch_aws_signing_proxy"),
     ["_service_hadoop_db_enabled?"] = array_includes(config["services"], "hadoop_db"),
     ["_service_router_enabled?"] = array_includes(config["services"], "router"),
     ["_service_web_enabled?"] = array_includes(config["services"], "web"),
-    ["_service_nginx_reloader_enabled?"] = (array_includes(config["services"], "router") and config["nginx"]["_reloader_frequency"]),
     router = {
       trusted_proxies = trusted_proxies,
     },

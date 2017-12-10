@@ -9,13 +9,13 @@ class Test::Apis::Admin::Stats::TestUsers < Minitest::Test
     setup_server
     @user1 = FactoryGirl.create(:api_user)
     @user2 = FactoryGirl.create(:api_user)
-    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
+    LogItem.clean_indices!
   end
 
   def test_world
     FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T00:00:00.000Z").utc, :user_id => @user1.id)
     FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-17T00:00:00.000Z").utc, :user_id => @user2.id)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/users.json", http_options.deep_merge(admin_session).deep_merge({
       :params => {
@@ -63,7 +63,7 @@ class Test::Apis::Admin::Stats::TestUsers < Minitest::Test
   def test_csv_download
     FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2015-01-16T00:00:00.000Z").utc, :user_id => @user1.id)
     FactoryGirl.create_list(:log_item, 1, :request_at => Time.parse("2015-01-17T00:00:00.000Z").utc, :user_id => @user2.id)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/users.csv", http_options.deep_merge(admin_session).deep_merge({
       :params => {

@@ -5,11 +5,11 @@ local xpcall_error_handler = require "api-umbrella.utils.xpcall_error_handler"
 local null = ngx.null
 
 local date = icu_date.new()
-local format_iso8601 = icu_date.formats.pattern("YYYY-MM-dd'T'HH:mm:ssZZZZZ")
-local format_iso8601_ms = icu_date.formats.pattern("YYYY-MM-dd'T'HH:mm:ss.SSSZZZZZ")
-local format_csv = icu_date.formats.pattern("YYYY-MM-dd HH:mm:ss")
-local format_postgres = icu_date.formats.pattern("YYYY-MM-dd HH:mm:ss.SSSSxxx")
-local format_postgres_no_millis = icu_date.formats.pattern("YYYY-MM-dd HH:mm:ssxxx")
+local format_iso8601 = icu_date.formats.pattern("yyyy-MM-dd'T'HH:mm:ssZZZZZ")
+local format_iso8601_ms = icu_date.formats.pattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ")
+local format_csv = icu_date.formats.pattern("yyyy-MM-dd HH:mm:ss")
+local format_postgres = icu_date.formats.pattern("yyyy-MM-dd HH:mm:ss.SSSSxxx")
+local format_postgres_no_millis = icu_date.formats.pattern("yyyy-MM-dd HH:mm:ssxxx")
 
 local _M = {}
 

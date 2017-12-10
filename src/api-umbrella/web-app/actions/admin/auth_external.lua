@@ -252,7 +252,7 @@ return function(app)
     app:get("/admins/auth/cas(.:format)", _M.cas_login)
     app:get("/admins/auth/cas/callback(.:format)", _M.cas_callback)
   end
-  if config["app_env"] ~= "development" then
+  if config["app_env"] == "development" then
     app:get("/admins/auth/developer(.:format)", _M.developer_login)
     app:post("/admins/auth/developer/callback(.:format)", _M.developer_callback)
   end

@@ -5,7 +5,7 @@ local date = icu_date.new({
   zone_id = config["analytics"]["timezone"],
 })
 local fields = icu_date.fields
-local format_date = icu_date.formats.pattern("YYYY-MM-dd")
+local format_date = icu_date.formats.pattern("yyyy-MM-dd")
 local format_iso8601 = icu_date.formats.iso8601()
 
 local _M = {}

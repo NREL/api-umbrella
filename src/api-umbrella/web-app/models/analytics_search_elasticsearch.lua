@@ -6,7 +6,7 @@ local is_empty = require("pl.types").is_empty
 local startswith = require("pl.stringx").startswith
 
 local date = icu_date.new()
-local format_month = icu_date.formats.pattern("YYYY-MM")
+local format_month = icu_date.formats.pattern("yyyy-MM")
 local format_iso8601 = icu_date.formats.iso8601()
 
 local CASE_SENSITIVE_FIELDS = {
@@ -178,8 +178,8 @@ function _M.new(options)
     },
     body = {
       query = {
-        filtered = {
-          query = {
+        bool = {
+          must = {
             match_all = {},
           },
           filter = {
@@ -201,7 +201,7 @@ function _M.new(options)
 
   self.index_names = table.concat(index_names(self.start_time, self.end_time), ",")
 
-  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], {
+  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
     range = {
       request_at = {
         from = self.start_time,
@@ -215,11 +215,11 @@ end
 
 function _M:set_permission_scope(scopes)
   local filter = parse_query_builder(scopes)
-  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], filter)
+  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], filter)
 end
 
 function _M:filter_exclude_imported()
-  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must_not"], {
+  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must_not"], {
     exists = {
       field = "imported",
     },
@@ -229,11 +229,11 @@ end
 
 function _M:set_search_query_string(query_string)
   if not is_empty(query_string) then
-    self.body["query"]["filtered"]["query"] = {
+    table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
       query_string = {
         query = query_string,
       },
-    }
+    })
   end
 end
 
@@ -244,7 +244,7 @@ function _M:set_search_filters(query)
 
   local filter = parse_query_builder(query)
   if filter then
-    table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], filter)
+    table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], filter)
   end
 end
 
@@ -330,7 +330,7 @@ end
 
 function _M:aggregate_by_drilldown(prefix, size)
   if not size then
-    size = 0
+    size = 100000000
   end
 
   self.body["aggregations"]["drilldown"] = {
@@ -343,7 +343,7 @@ function _M:aggregate_by_drilldown(prefix, size)
 end
 
 function _M:aggregate_by_drilldown_over_time(prefix)
-  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], {
+  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
     prefix = {
       request_hierarchy = prefix,
     },
@@ -394,7 +394,7 @@ function _M:aggregate_by_user_stats(order)
   self.body["aggregations"]["user_stats"] = {
     terms = {
       field = "user_id",
-      size = 0,
+      size = 100000000,
     },
     aggregations = {
       last_request_at = {
@@ -426,7 +426,7 @@ function _M:aggregate_by_ip_region_field(field)
 end
 
 function _M:filter_by_ip_country(country)
-  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], {
+  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
     term = {
       request_ip_country = country,
     }
@@ -434,7 +434,7 @@ function _M:filter_by_ip_country(country)
 end
 
 function _M:filter_by_ip_region(region)
-  table.insert(self.body["query"]["filtered"]["filter"]["bool"]["must"], {
+  table.insert(self.body["query"]["bool"]["filter"]["bool"]["must"], {
     term = {
       request_ip_region = region,
     }
@@ -442,8 +442,8 @@ function _M:filter_by_ip_region(region)
 end
 
 function _M:fetch_results()
-  setmetatable(self.body["query"]["filtered"]["filter"]["bool"]["must_not"], cjson.empty_array_mt)
-  setmetatable(self.body["query"]["filtered"]["filter"]["bool"]["must"], cjson.empty_array_mt)
+  setmetatable(self.body["query"]["bool"]["filter"]["bool"]["must_not"], cjson.empty_array_mt)
+  setmetatable(self.body["query"]["bool"]["filter"]["bool"]["must"], cjson.empty_array_mt)
   setmetatable(self.body["sort"], cjson.empty_array_mt)
 
   if is_empty(self.body["aggregations"]) then

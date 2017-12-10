@@ -151,7 +151,7 @@ function _M.drilldown(self)
 
   local drilldown_size = 500
   if self.params["format"] == "csv" then
-    drilldown_size = 0
+    drilldown_size = nil
   end
   search:aggregate_by_drilldown(self.params["prefix"], drilldown_size)
 

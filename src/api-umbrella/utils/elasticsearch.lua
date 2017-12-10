@@ -24,7 +24,7 @@ function _M.query(path, options)
      options["headers"]["Authorization"] = "Basic " .. ngx.encode_base64(server["userinfo"])
   end
 
-  if options and options["body"] and type(options["body"]) == "table" then
+  if options["body"] and type(options["body"]) == "table" then
     options["body"] = json_encode(options["body"])
 
     if not options["headers"]["Content-Type"] then
@@ -33,9 +33,17 @@ function _M.query(path, options)
   end
 
   local connect_ok, connect_err = httpc:connect(server["host"], server["port"])
-  if connect_err then
+  if not connect_ok then
     httpc:close()
     return nil, "elasticsearch connect error: " .. (connect_err or "")
+  end
+
+  if server["scheme"] == "https" then
+    local ssl_ok, ssl_err = httpc:ssl_handshake(nil, server["host"], true)
+    if not ssl_ok then
+      httpc:close()
+      return nil, "elasticsearch ssl handshake error: " .. (ssl_err or "")
+    end
   end
 
   local res, err = httpc:request(options)
@@ -49,6 +57,7 @@ function _M.query(path, options)
     httpc:close()
     return nil, "elasticsearch read body error: " .. (body_err or "")
   end
+  res["body"] = body
 
   local keepalive_ok, keepalive_err = httpc:set_keepalive()
   if not keepalive_ok then
@@ -56,7 +65,7 @@ function _M.query(path, options)
     return nil, "elasticsearch keepalive error: " .. (keepalive_err or "")
   end
 
-  if res.status >= 500 then
+  if res.status >= 400 and res.status ~= 404 then
     return nil, "Unsuccessful response: " .. (body or "")
   else
     if res.headers["Content-Type"] and string.sub(res.headers["Content-Type"], 1, 16) == "application/json" and not is_empty(body) then

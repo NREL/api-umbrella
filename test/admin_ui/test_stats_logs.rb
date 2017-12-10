@@ -9,12 +9,12 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
   def setup
     super
     setup_server
-    ElasticsearchHelper.clean_es_indices(["2014-11", "2015-01", "2015-03"])
+    LogItem.clean_indices!
   end
 
   def test_xss_escaping_in_table
     log = FactoryGirl.create(:xss_log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_method => "OPTIONS")
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     admin_login
     visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
@@ -33,7 +33,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
 
   def test_csv_download_link_changes_with_filters
     FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
     default_query = JSON.generate({
       "condition" => "AND",
       "rules" => [{
@@ -121,7 +121,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
   def test_csv_download
     FactoryGirl.create_list(:log_item, 5, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_method => "OPTIONS")
     FactoryGirl.create_list(:log_item, 5, :request_at => 1421413588000, :request_method => "OPTIONS")
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     admin_login
     visit "/admin/#/stats/logs?search=&start_at=2015-01-12&end_at=2015-01-18&interval=day"
