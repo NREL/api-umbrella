@@ -1,7 +1,7 @@
-local array_includes = require "api-umbrella.utils.array_includes"
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
 local file = require "pl.file"
+local invert_table = require "api-umbrella.utils.invert_table"
 local lustache = require "lustache"
 local lyaml = require "lyaml"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
@@ -223,8 +223,39 @@ local function set_permissions()
 end
 
 local function activate_services()
-  local active_services = dir.getdirectories(path.join(config["_src_root_dir"], "templates/etc/perp"))
-  tablex.transform(path.basename, active_services)
+  local available_services = dir.getdirectories(path.join(config["_src_root_dir"], "templates/etc/perp"))
+  tablex.transform(path.basename, available_services)
+  available_services = invert_table(available_services)
+
+  local active_services = {}
+  if config["_service_general_db_enabled?"] then
+    active_services["postgresql"] = 1
+  end
+  if config["_service_log_db_enabled?"] then
+    active_services["elasticsearch"] = 1
+  end
+  if config["_service_elasticsearch_aws_signing_proxy_enabled?"] then
+    active_services["elasticsearch-aws-signing-proxy"] = 1
+  end
+  if config["_service_router_enabled?"] then
+    active_services["geoip-auto-updater"] = 1
+    active_services["nginx"] = 1
+    active_services["nginx-reloader"] = 1
+    active_services["rsyslog"] = 1
+    active_services["trafficserver"] = 1
+  end
+  if config["_service_web_enabled?"] then
+    active_services["nginx-web-app"] = 1
+  end
+  if config["app_env"] == "development" then
+    active_services["dev-env-ember-server"] = 1
+  end
+  if config["app_env"] == "test" then
+    active_services["test-env-mailhog"] = 1
+    active_services["test-env-nginx"] = 1
+    active_services["test-env-openldap"] = 1
+    active_services["test-env-unbound"] = 1
+  end
 
   -- Loop over the perp controlled services and set the sticky permission bit
   -- for any services that are supposed to be active (this sticky bit is how
@@ -235,64 +266,9 @@ local function activate_services()
 
     -- Disable any old services that might be installed, but are no longer
     -- present in templates/etc/perp.
-    local is_active = array_includes(active_services, service_name)
-
-    -- Disable services according to the broader service groups marked as
-    -- enabled in api-umbrella.yml's "services" list.
-    if is_active then
-      if not config["_service_general_db_enabled?"] then
-        if array_includes({ "postgresql" }, service_name) then
-          is_active = false
-        end
-      end
-
-      if not config["_service_log_db_enabled?"] then
-        if array_includes({ "elasticsearch" }, service_name) then
-          is_active = false
-        end
-      end
-
-      if not config["_service_hadoop_db_enabled?"] then
-        if array_includes({ "flume", "kylin", "presto" }, service_name) then
-          is_active = false
-        end
-      end
-
-      if not config["_service_router_enabled?"] then
-        if array_includes({ "geoip-auto-updater", "nginx", "rsyslog", "trafficserver" }, service_name) then
-          is_active = false
-        end
-      end
-
-      if not config["_service_web_enabled?"] then
-        if array_includes({ "nginx-web-app" }, service_name) then
-          is_active = false
-        end
-      end
-
-      if not config["_service_nginx_reloader_enabled?"] then
-        if array_includes({ "nginx-reloader" }, service_name) then
-          is_active = false
-        end
-      end
-    end
-
-    -- Disable any dev-only services when not running in the dev environment.
-    if string.find(service_name, "dev-env", 1, true) == 1 then
-      if config["app_env"] == "development" then
-        is_active = true
-      else
-        is_active = false
-      end
-    end
-
-    -- Disable any test-only services when not running in the test environment.
-    if string.find(service_name, "test-env", 1, true) == 1 then
-      if config["app_env"] == "test" then
-        is_active = true
-      else
-        is_active = false
-      end
+    local is_active = false
+    if available_services[service_name] and active_services[service_name] then
+      is_active = true
     end
 
     -- Perp's hidden directories don't need the sticky bit.

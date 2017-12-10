@@ -106,7 +106,6 @@ function _M.set_url_hierarchy(data)
 
   -- Setup top-level host hierarchy for ElasticSearch storage.
   data["request_url_hierarchy"] = {}
-  local host_token = "0/" .. data["request_url_host"]
   local host_level = data["request_url_host"]
   if #path_parts > 0 then
     host_level = host_level .. "/"
