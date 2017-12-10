@@ -1,5 +1,3 @@
-#require "elasticsearch/persistence/model"
-
 class LogItem
   include ActiveAttr::Model
 
@@ -71,7 +69,7 @@ class LogItem
       opts[:search_type] = "scan"
     end
     result = self.client.search(opts)
-    while true
+    loop do
       hits = result["hits"]["hits"]
       break if hits.empty?
       hits.each do |hit|
@@ -102,8 +100,8 @@ class LogItem
 
   def save
     index_time = self.request_at
-    if(index_time.kind_of?(Fixnum))
-      index_time = Time.at(index_time / 1000.0)
+    if(index_time.kind_of?(Integer))
+      index_time = Time.at(index_time / 1000.0).utc
     end
 
     index_name = "api-umbrella-logs-write-#{index_time.utc.strftime("%Y-%m")}"

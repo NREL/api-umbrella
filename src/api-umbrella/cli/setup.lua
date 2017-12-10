@@ -1,3 +1,4 @@
+local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local dir = require "pl.dir"
 local file = require "pl.file"
 local invert_table = require "api-umbrella.utils.invert_table"
@@ -213,6 +214,9 @@ local function activate_services()
   end
   if config["_service_log_db_enabled?"] then
     active_services["elasticsearch"] = 1
+  end
+  if config["_service_elasticsearch_aws_signing_proxy_enabled?"] then
+    active_services["elasticsearch-aws-signing-proxy"] = 1
   end
   if config["_service_router_enabled?"] then
     active_services["geoip-auto-updater"] = 1

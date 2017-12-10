@@ -199,6 +199,9 @@ elasticsearch:
       breaker:
         fielddata:
           limit: 60%
+  aws_signing_proxy:
+    host: 127.0.0.1
+    port: 14017
 analytics:
   adapter: elasticsearch
   timezone: UTC
