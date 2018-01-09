@@ -15,6 +15,7 @@ local is_empty = types.is_empty
 
 local function lookup_user(api_key)
   local raw_user
+  local ext_user
   local db_err
   local idp_err
 
@@ -30,13 +31,31 @@ local function lookup_user(api_key)
       },
     })
   elseif api_key["key_type"] == "token" and api_key["idp"]then
-    raw_user, idp_err = idp.first(api_key)
+    ext_user, idp_err = idp.first(api_key)
   end
+
+  -- Check if there are errors reading database or external user
   if idp_err then
     ngx.log(ngx.ERR, "failed to autenticate , status code:", idp_err)
   elseif db_err then
     ngx.log(ngx.ERR, "failed to fetch user from mongodb", db_err)
-  elseif raw_user then
+  end
+
+  -- If the external user has been provided, use email information to locate an internal user
+  -- TODO: Create the user using the external user information
+  if not raw_user and ext_user then
+    raw_user, db_err = mongo.first("api_users", {
+      query = {
+        email = ext_user["email"]
+      },
+    })
+
+    if db_err then
+      ngx.log(ngx.ERR, "failed to fetch user from mongodb", db_err)
+    end
+  end
+
+  if raw_user then
     local user = utils.pick_where_present(raw_user, {
       "created_at",
       "disabled_at",
@@ -48,18 +67,21 @@ local function lookup_user(api_key)
       "throttle_by_ip",
     })
     -- Ensure IDs get stored as strings, even if Mongo ObjectIds are in use.
-    if api_key["key_type"]=="api_key" and raw_user["_id"] and raw_user["_id"]["$oid"] then
+    if raw_user["_id"] and raw_user["_id"]["$oid"] then
         user["id"] = raw_user["_id"]["$oid"]
     else
       user["id"] = raw_user["_id"]
     end
-    if api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]["backend_name"]== "fiware-oauth2" then
-      user["id"] = raw_user.id
-      user["email"] = raw_user.email
-    elseif api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]["backend_name"]~= "fiware-oauth2" then
-      user["id"] = raw_user.name
-      user["email"] = raw_user.email
-    end
+
+    -- NOT OVERRIDING EMAIL AND ID TO USE EXISTING USER INFORMATION
+
+    -- if api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]["backend_name"]== "fiware-oauth2" then
+    --  user["id"] = raw_user.id
+    --  user["email"] = raw_user.email
+    -- elseif api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]["backend_name"]~= "fiware-oauth2" then
+    --  user["id"] = raw_user.name
+    --  user["email"] = raw_user.email
+    --end
 
     -- Invert the array of roles into a hashy table for more optimized
     -- lookups (so we can just check if the key exists, rather than
