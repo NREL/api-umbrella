@@ -25,7 +25,7 @@ function _M.first(dict)
         idp_host="https://www.googleapis.com"
     elseif idp_back_name == "fiware-oauth2" then
         rpath = "/user"
-        idp_host="https://130.206.84.14"
+        idp_host = dict["idp"]["host"]
     elseif idp_back_name == "facebook-oauth2" then
         rpath = "/me"
         idp_host="https://graph.facebook.com"

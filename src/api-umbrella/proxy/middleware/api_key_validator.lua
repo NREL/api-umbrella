@@ -48,9 +48,10 @@ return function(settings)
   -- Find the API key in the header, query string, or HTTP auth.
   local api_key = resolve_api_key()
   -- Find if and IdP was set
-  if settings["require_idp"] then
-    api_key.idp=settings["require_idp"][1]
+  if config["gatekeeper"]["default_idp"] then
+    api_key.idp=config["gatekeeper"]["default_idp"]
   end
+
   if is_empty(api_key["key_value"]) then
     if settings and settings["disable_api_key"] then
       return nil
