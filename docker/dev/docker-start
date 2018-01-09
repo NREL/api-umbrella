@@ -7,6 +7,10 @@ mkdir -p /etc/api-umbrella
   echo "app_env: development"
   echo "http_port: $HTTP_PORT"
   echo "https_port: $HTTPS_PORT"
+  echo "gatekeeper:"
+  echo "  default_idp:"
+  echo "    backend_name: fiware-oauth2"
+  echo "    host: http://idm.docker:8000"
 } > /etc/api-umbrella/api-umbrella.yml
 
 ln -snf /build/build/work/stage/opt/api-umbrella /opt/api-umbrella
