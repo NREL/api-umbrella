@@ -21,6 +21,8 @@ class Api::Settings
   field :pass_api_key_query_param, :type => Boolean
   field :error_templates, :type => Hash
   field :error_data, :type => Hash
+  field :ext_auth_allowed, :type => Boolean
+  field :idp_app_id, :type => String
 
   # Relations
   embeds_many :headers, :class_name => "Api::Header"
@@ -44,6 +46,7 @@ class Api::Settings
     :inclusion => { :in => %w(all api_key_only), :allow_blank => true }
   validate :validate_error_data_yaml_strings
   validate :validate_error_data
+  validate :validate_ext_app_id
 
   # Nested attributes
   accepts_nested_attributes_for :headers, :rate_limits, :default_response_headers, :override_response_headers, :allow_destroy => true
@@ -183,6 +186,14 @@ class Api::Settings
 
     self.send(:"#{field}=", header_objects)
     @headers_strings.delete(field.to_sym) if(@headers_strings)
+  end
+
+  def validate_ext_app_id
+    if(self.ext_auth_allowed)
+      unless(self.idp_app_id.present?)
+        self.errors.add("error_data", "if external auth is allowed, external IDP app id must be provided")
+      end
+    end
   end
 
   def validate_error_data_yaml_strings

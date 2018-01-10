@@ -108,6 +108,8 @@ class Api::V1::ApisController < Api::V1::BaseController
       :default_response_headers_string,
       :override_response_headers,
       :override_response_headers_string,
+      :ext_auth_allowed,
+      :idp_app_id,
       {
         :required_roles => [],
         :error_templates => [
