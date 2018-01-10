@@ -47,9 +47,11 @@ end
 return function(settings)
   -- Find the API key in the header, query string, or HTTP auth.
   local api_key = resolve_api_key()
+
   -- Find if and IdP was set
-  if config["gatekeeper"]["default_idp"] then
+  if settings and settings["ext_auth_allowed"] and config["gatekeeper"]["default_idp"] then
     api_key.idp=config["gatekeeper"]["default_idp"]
+    api_key.idp.app_id = settings["idp_app_id"]
   end
 
   if is_empty(api_key["key_value"]) then
@@ -58,6 +60,11 @@ return function(settings)
     else
       return nil, "api_key_missing"
     end
+  end
+
+  -- Check if the user is trying to use an access token when external IDP is not allowed
+  if api_key["key_type"] == "token" and (not settings or not settings["ext_auth_allowed"]) then
+    return nil, "token_not_supported"
   end
 
   -- Look for the api key in the user database.

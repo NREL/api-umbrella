@@ -308,6 +308,10 @@ apiSettings:
       status_code: 403
       code: API_KEY_OR_TOKEN_UNAUTHORIZED
       message: The api_key or token supplied is not authorized to access the given service. Contact us at {{contact_url}} for assistance
+    token_not_supported:
+      status_code: 403
+      code: TOKEN_NOT_SUPPORTED
+      message: The accessed API do not support authorization based on a token issued by an external identity provider, use your API key instead
     over_rate_limit:
       status_code: 429
       code: OVER_RATE_LIMIT
