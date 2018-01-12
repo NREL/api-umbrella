@@ -126,7 +126,7 @@ function _M.get(api_key)
     return lookup_user(api_key)
   end
 
-  local user = local_cache:get(api_key)
+  local user = local_cache:get(api_key["key_value"])
   if user then
     if user == EMPTY_DATA then
       return nil

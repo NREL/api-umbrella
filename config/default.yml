@@ -58,7 +58,7 @@ gatekeeper:
     - header
     - getParam
     - basicAuthUsername
-  api_key_cache: false
+  api_key_cache: true
   idp_providers:
     - fiware-oauth2
     - github-oauth2
