@@ -1,0 +1,16 @@
+FROM ubuntu:xenial
+
+# Copy binary file
+COPY ../build/package/work/current/ubuntu-16.04/core/api-umbrella_0.14.4-1~xenial_amd64.deb .
+
+# Install API Umbrella
+RUN apt-get update; dpkg -i api-umbrella_0.14.4-1~xenial_amd64.deb; apt-get install -f -y
+
+# Define mountable directories
+VOLUME ["/etc/api-umbrella", "/opt/api-umbrella/var/db", "/opt/api-umbrella/var/log"]
+
+# Expose HTTP and HTTPS ports
+EXPOSE 8888 8443
+
+# Run the API Umbrella service
+CMD ["api-umbrella", "run"]
