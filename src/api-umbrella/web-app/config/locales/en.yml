@@ -133,6 +133,15 @@ en:
           inherit: Inherit (default - required)
           required: Required - API keys are mandatory
           disabled: Disabled - API keys are optional
+        required_headers: Required Headers
+        required_headers_tooltip_markdown: |-
+          Define a set of headers that must be provided in order to consider that the request match the given API.
+
+          For example for defining a FIWARE tenant:
+
+          ```
+          Fiware-Service: MyService
+          ```
         api_key_verification_level: API Key Verification Requirements
         api_key_verification_level_options:
           inherit: Inherit (default - none)

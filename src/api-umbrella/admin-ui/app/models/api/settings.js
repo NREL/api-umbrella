@@ -7,6 +7,7 @@ export default DS.Model.extend({
   httpBasicAuth: DS.attr(),
   extAuthAllowed: DS.attr(),
   idpAppId: DS.attr(),
+  requiredHeadersString: DS.attr(),
   requireHttps: DS.attr(),
   disableApiKey: DS.attr(),
   apiKeyVerificationLevel: DS.attr(),

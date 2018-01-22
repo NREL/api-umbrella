@@ -29,6 +29,8 @@ class Api::Settings
   embeds_many :rate_limits, :class_name => "Api::RateLimit"
   embeds_many :default_response_headers, :class_name => "Api::Header"
   embeds_many :override_response_headers, :class_name => "Api::Header"
+  embeds_many :required_headers, :class_name => "Api::Header"
+
   embedded_in :api
   embedded_in :sub_settings
   embedded_in :api_user
@@ -49,7 +51,7 @@ class Api::Settings
   validate :validate_ext_app_id
 
   # Nested attributes
-  accepts_nested_attributes_for :headers, :rate_limits, :default_response_headers, :override_response_headers, :allow_destroy => true
+  accepts_nested_attributes_for :headers, :rate_limits, :default_response_headers, :override_response_headers, :required_headers, :allow_destroy => true
 
   def headers_string
     read_headers_string(:headers)
@@ -73,6 +75,14 @@ class Api::Settings
 
   def override_response_headers_string=(string)
     write_headers_string(:override_response_headers, string)
+  end
+
+  def required_headers_string
+    read_headers_string(:required_headers)
+  end
+
+  def required_headers_string=(string)
+    write_headers_string(:required_headers, string)
   end
 
   def error_templates=(templates)
