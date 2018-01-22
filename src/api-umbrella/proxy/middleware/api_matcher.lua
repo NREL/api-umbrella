@@ -5,6 +5,7 @@ local utils = require "api-umbrella.proxy.utils"
 local append_array = utils.append_array
 local gsub = string.gsub
 local set_uri = utils.set_uri
+local match_req_headers = utils.match_req_headers
 local startswith = stringx.startswith
 
 local function apis_for_request_host(active_config)
@@ -36,7 +37,9 @@ local function match_api(active_config, request_path)
   for _, api in ipairs(apis) do
     if api["url_matches"] then
       for _, url_match in ipairs(api["url_matches"]) do
-        if startswith(request_path, url_match["frontend_prefix"]) then
+        -- Include the required headers match at this step to prevent a match in the URL
+        -- to match the actual service
+        if startswith(request_path, url_match["frontend_prefix"]) and (not api["settings"] or match_req_headers(api["settings"])) then
           return api, url_match
         end
       end

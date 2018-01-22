@@ -308,4 +308,23 @@ function _M.round(value)
   return math.floor(value + 0.5)
 end
 
+function _M.match_req_headers(settings)
+  if not settings["required_headers"] then
+    -- No headers has to be included, so the API matches
+    return true
+  end
+
+  local headers = ngx.req.get_headers()
+
+  -- Check that the required headers has been provided
+  for _, header in ipairs(settings["required_headers"]) do
+    if not headers[header["key"]] or headers[header["key"]] ~= header["value"] then
+      -- All the required headers must be present, so it does not macth
+      return false
+    end
+  end
+
+  return true
+end
+
 return _M
