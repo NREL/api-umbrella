@@ -148,7 +148,8 @@ Rails.application.routes.draw do
       200,
       {
         "Content-Type" => "application/javascript",
-        "Cache-Control" => "max-age=0, private, no-cache, no-store, must-revalidate",
+        "Cache-Control" => "no-cache, max-age=0, must-revalidate, no-store",
+        "Pragma" => "no-cache",
       },
       [
         script,
