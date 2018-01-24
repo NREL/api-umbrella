@@ -1,6 +1,7 @@
 require_relative "../test_helper"
 
 class Test::AdminUi::TestCacheControl < Minitest::Test
+  include ApiUmbrellaTestHelpers::AdminAuth
   include ApiUmbrellaTestHelpers::Setup
   parallelize_me!
 
@@ -77,6 +78,14 @@ class Test::AdminUi::TestCacheControl < Minitest::Test
     response = Typhoeus.get("https://127.0.0.1:9081/admin/server_side_loader.js", keyless_http_options)
     assert_response_code(200, response)
     assert_equal("application/javascript", response.headers["Content-Type"])
+    assert_equal("no-cache, max-age=0, must-revalidate, no-store", response.headers["Cache-Control"])
+    assert_equal("no-cache", response.headers["Pragma"])
+  end
+
+  def test_admin_api
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token))
+    assert_response_code(200, response)
+    assert_equal("application/json; charset=utf-8", response.headers["Content-Type"])
     assert_equal("no-cache, max-age=0, must-revalidate, no-store", response.headers["Cache-Control"])
     assert_equal("no-cache", response.headers["Pragma"])
   end
