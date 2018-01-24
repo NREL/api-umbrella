@@ -63,8 +63,20 @@ http {
 
     rewrite ^/admin$ /admin/ permanent;
 
-    location ~ ^/admin($|/$|/index\.html|/assets/.+|/fonts/.+|/maps/.+|/ember.+) {
+    location /admin/assets/ {
       {{^_development_env?}}
+        more_set_headers "Cache-Control: public, max-age=31536000, immutable";
+        alias {{_embedded_root_dir}}/apps/core/current/build/dist/admin-ui/assets/;
+      {{/_development_env?}}
+      {{#_development_env?}}
+        proxy_pass http://127.0.0.1:{{ember_server.port}};
+      {{/_development_env?}}
+    }
+
+    location ~ ^/admin($|/$|/index\.html|/fonts/.+|/maps/.+|/ember.+) {
+      {{^_development_env?}}
+        more_set_headers "Cache-Control: no-cache, max-age=0, must-revalidate, no-store";
+        more_set_headers "Pragma: no-cache";
         alias {{_embedded_root_dir}}/apps/core/current/build/dist/admin-ui/$1;
       {{/_development_env?}}
       {{#_development_env?}}
@@ -73,6 +85,7 @@ http {
     }
 
     location /admin/auth-assets/ {
+      more_set_headers "Cache-Control: public, max-age=31536000, immutable";
       alias {{_embedded_root_dir}}/apps/core/current/build/dist/admin-auth-assets/;
     }
 

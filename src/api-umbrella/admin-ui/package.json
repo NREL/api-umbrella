@@ -53,7 +53,7 @@
     "emberx-select": "~3.0.1",
     "jed": "~1.1.1",
     "loader.js": "^4.0.1",
-    "moment-timezone": "~0.5.13",
+    "moment-timezone": "^0.5.14",
     "pnotify": "~3.2.0",
     "po2json": "~0.4.5"
   },

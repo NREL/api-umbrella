@@ -64,7 +64,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
     response = Typhoeus.get("https://127.0.0.1:9081/admin/auth", keyless_http_options.deep_merge(admin_session))
     assert_response_code(200, response)
     assert_equal("DENY", response.headers["X-Frame-Options"])
-    assert_equal("max-age=0, private, must-revalidate", response.headers["Cache-Control"])
+    assert_equal("no-cache, max-age=0, must-revalidate, no-store", response.headers["Cache-Control"])
     assert_nil(response.headers["Access-Control-Allow-Credentials"])
   end
 end
