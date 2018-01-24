@@ -98,4 +98,108 @@ class Api::V1::AnalyticsController < Api::V1::BaseController
       end
     end
   end
+
+  def logs
+    # TODO: For the SQL fetching, set start_time to end_time to limit to last
+    # 24 hours. If we do end up limiting it to the last 24 hours by default,
+    # figure out a better way to document this and still allow downloading
+    # the full data set.
+    start_time = params[:start_at]
+    if(@analytics_adapter == "kylin")
+      start_time = Time.zone.parse(params[:end_at]) - 1.day
+    end
+    @search = LogSearch.factory(@analytics_adapter, {
+      :start_time => start_time,
+      :end_time => params[:end_at],
+      :interval => params[:interval],
+    })
+    policy_scope(@search)
+
+    offset = params[:start].to_i
+    limit = params[:length].to_i
+    if(request.format == "csv")
+      limit = 500
+    end
+
+    @search.search!(params[:search])
+    @search.query!(params[:query])
+    @search.filter_by_date_range!
+    @search.offset!(offset)
+    @search.limit!(limit)
+    @search.select_records!
+
+    sort = datatables_sort
+    if(sort.any?)
+      @search.sort!(sort)
+    end
+
+    if(request.format == "csv")
+      @search.query_options[:search_type] = "scan"
+      @search.query_options[:scroll] = "10m"
+    end
+
+    @result = @search.result
+
+    respond_to do |format|
+      format.json
+      format.csv do
+        # Set Last-Modified so response streaming works:
+        # http://stackoverflow.com/a/10252798/222487
+        response.headers["Last-Modified"] = Time.now.utc.httpdate
+
+        headers = ["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Reason Denied", "Response Time", "Content Type", "Accept Encoding", "User Agent"]
+
+        send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.utc.strftime("%b %-e %Y")}).#{params[:format]}")
+        self.response_body = CsvStreamer.new(@result, headers) do |row|
+          [
+            csv_time(row["request_at"]),
+            row["request_method"],
+            row["request_host"],
+            sanitized_full_url(row),
+            row["user_email"],
+            row["request_ip"],
+            row["request_ip_country"],
+            row["request_ip_region"],
+            row["request_ip_city"],
+            row["response_status"],
+            row["gatekeeper_denied_code"],
+            row["response_time"],
+            row["response_content_type"],
+            row["request_accept_encoding"],
+            row["request_user_agent"],
+            row["request_user_agent_family"],
+            row["request_user_agent_type"],
+            row["request_referer"],
+            row["request_origin"],
+          ]
+        end
+      end
+    end
+  end
+
+  private
+
+  def sanitized_full_url(record)
+    url = "#{record["request_scheme"]}://#{record["request_host"]}#{record["request_path"]}"
+    url += "?#{strip_api_key_from_query(record["request_url_query"])}" if(record["request_url_query"])
+    url
+  end
+
+  def sanitized_url_path_and_query(record)
+    url = record["request_path"].to_s.dup
+    url += "?#{strip_api_key_from_query(record["request_url_query"])}" if(record["request_url_query"])
+    url
+  end
+  helper_method :sanitized_url_path_and_query
+
+  def strip_api_key_from_query(query)
+    stripped = query
+    if(query)
+      stripped = query.gsub(/\bapi_key=?[^&]*(&|$)/i, "")
+      stripped.gsub!(/&$/, "")
+    end
+
+    stripped
+  end
+  helper_method :strip_api_key_from_query
 end

@@ -7,7 +7,7 @@ export default Ember.Component.extend({
       searching: false,
       serverSide: true,
       ajax: {
-        url: '/admin/stats/logs.json',
+        url: '/api-umbrella/v1/analytics/logs.json',
         // Use POST for this endpoint, since the URLs can be very long and
         // exceed URL length limits in IE (and apparently Capybara too).
         type: 'POST',

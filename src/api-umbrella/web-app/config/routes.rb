@@ -47,6 +47,8 @@ Rails.application.routes.draw do
         resources :analytics do
           collection do
             get "drilldown"
+            get "logs"
+            post "logs"
           end
         end
 
@@ -88,8 +90,6 @@ Rails.application.routes.draw do
     resources :stats, :only => [:index] do
       collection do
         get "search"
-        get "logs"
-        post "logs"
         get "users"
         get "map"
       end
