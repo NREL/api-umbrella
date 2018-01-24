@@ -159,7 +159,8 @@ app:before_filter(function(self)
     end
   end
 
-  self.res.headers["Cache-Control"] = "max-age=0, private, must-revalidate"
+  self.res.headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store"
+  self.res.headers["Pragma"] = "no-cache"
 
   -- Set session variables for the database connection (always use UTC and set
   -- an app name for auditing).

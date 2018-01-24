@@ -28,8 +28,7 @@ function _M.loader(self)
     },
   }
 
-  self.res.headers["Content-Type"] = "text/javascript; charset=utf-8"
-  self.res.headers["Cache-Control"] = "max-age=0, private, no-cache, no-store, must-revalidate"
+  self.res.headers["Content-Type"] = "application/javascript"
   self.res.content = [[
     window.apiUmbrellaConfig = ]] .. json_encode(config) .. [[;
     window.localeData = ]] .. json_encode(data) .. [[;
