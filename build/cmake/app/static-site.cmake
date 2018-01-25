@@ -6,6 +6,7 @@ set(API_UMBRELLA_STATIC_SITE_HASH 07dbd5e6d96e62a9ad6b725b14f727a1)
 ExternalProject_Add(
   api_umbrella_static_site
   EXCLUDE_FROM_ALL 1
+  DEPENDS nodejs
   URL https://github.com/NREL/api-umbrella-static-site/archive/${API_UMBRELLA_STATIC_SITE_VERSION}.tar.gz
   URL_HASH MD5=${API_UMBRELLA_STATIC_SITE_HASH}
   BUILD_IN_SOURCE 1
