@@ -1,7 +1,7 @@
 # Unbound: Local DNS server for testing DNS changes
 
-set(UNBOUND_VERSION 1.6.7)
-set(UNBOUND_HASH 4e7bd43d827004c6d51bef73adf941798e4588bdb40de5e79d89034d69751c9f)
+set(UNBOUND_VERSION 1.6.8)
+set(UNBOUND_HASH e3b428e33f56a45417107448418865fe08d58e0e7fea199b855515f60884dd49)
 
 ExternalProject_Add(
   unbound
