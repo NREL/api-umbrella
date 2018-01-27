@@ -18,6 +18,7 @@ chef/tmp
 .ruby-version
 CMakeCache.txt
 CMakeFiles
+Dockerfile-beta-deploy
 Makefile
 cmake_install.cmake
 install_manifest.txt

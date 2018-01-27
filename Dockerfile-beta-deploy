@@ -1,26 +1,44 @@
+FROM ubuntu:16.04 as build
+
+RUN mkdir /app
+RUN mkdir /build
+WORKDIR /build
+
+COPY build/scripts/install_build_dependencies /app/build/scripts/install_build_dependencies
+COPY build/package_dependencies.sh /app/build/package_dependencies.sh
+RUN /app/build/scripts/install_build_dependencies
+
+COPY build/scripts/download_cmake /app/build/scripts/download_cmake
+RUN /app/build/scripts/download_cmake
+
+COPY CMakeLists.txt /app/CMakeLists.txt
+COPY build/cmake/functions /app/build/cmake/functions
+COPY build/cmake/deps /app/build/cmake/deps
+COPY build/cmake/deps.cmake /app/build/cmake/deps.cmake
+COPY build/patches /app/build/patches
+COPY configure /app/configure
+RUN /app/configure && make deps
+
+COPY build/cmake/build-deps /app/build/cmake/build-deps
+COPY build/cmake/build-deps.cmake /app/build/cmake/build-deps.cmake
+RUN /app/configure && make build-deps
+
+COPY build/cmake/app-deps /app/build/cmake/app-deps
+COPY build/cmake/app-deps.cmake /app/build/cmake/app-deps.cmake
+RUN /app/configure && make app-deps
+
+COPY . /app
+RUN /app/configure && make
+RUN make package
+
 FROM ubuntu:16.04
 
-WORKDIR /
-COPY . /app
-RUN ls -l /app && mkdir /build && \
-  cd /build && \
-  set -x && \
-  apt-get update && \
-  apt-get -y install aptitude && \
-  bash -c 'source /app/build/package_dependencies.sh && aptitude -y install "${core_package_dependencies[@]}"' && \
-  bash -c 'source /app/build/package_dependencies.sh && aptitude -y --add-user-tag "installed-build-deps" install "${core_build_dependencies[@]}"' && \
-  /app/configure && \
-  make && \
-  make install && \
-  make distclean && \
-  env SUDO_FORCE_REMOVE=yes aptitude -y --safe-resolver remove '?user-tag(installed-build-deps)' && \
-  apt-get -y --purge remove aptitude && \
+COPY --from=build /build/build/package/work/build/core /tmp/package
+RUN apt-get update && \
+  apt-get -y install gdebi-core && \
+  gdebi --non-interactive /tmp/package/*.deb && \
+  apt-get -y --purge remove gdebi-core && \
   apt-get -y --purge autoremove && \
-  cd / && \
-  rm -rf /build /app && \
-  rm -rf /var/lib/apt/lists/*
-
-RUN groupadd -r api-umbrella && \
-  useradd -r -g api-umbrella -s /sbin/nologin -d /opt/api-umbrella -c "API Umbrella user" api-umbrella
+  rm -rf /tmp/package /var/lib/apt/lists/*
 
 CMD ["api-umbrella", "run"]
