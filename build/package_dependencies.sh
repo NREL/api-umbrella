@@ -62,6 +62,9 @@ if [ -f /etc/redhat-release ]; then
     readline
     tzdata
 
+    # lua-icu-date
+    libicu-devel
+
     # lua-resty-nettle
     nettle
 
@@ -202,11 +205,14 @@ elif [ -f /etc/debian_version ]; then
     libreadline$libreadline_version
     tzdata
 
+    # lua-icu-date
+    libicu-dev
+
     # lua-resty-nettle
     libnettle$libnettle_version
 
     # lualdap
-    libldap-2.4
+    libldap-2.4-2
   )
   hadoop_analytics_package_dependencies=(
     openjdk-$openjdk_version-jre-headless
