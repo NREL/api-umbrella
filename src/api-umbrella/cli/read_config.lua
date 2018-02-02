@@ -332,9 +332,9 @@ local function set_computed_config()
   -- router is what should trigger the initial timeout. This also prevents the
   -- proxies further back in the stack from thinking the client unexpectedly
   -- hung up on the request.
-  config["trafficserver"]["_connect_attempts_timeout"] = config["nginx"]["proxy_connect_timeout"] + 1
+  config["trafficserver"]["_connect_attempts_timeout"] = config["nginx"]["proxy_read_timeout"] + 1
   config["trafficserver"]["_transaction_no_activity_timeout_out"] = config["nginx"]["proxy_read_timeout"] + 1
-  config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_send_timeout"] + 1
+  config["trafficserver"]["_transaction_no_activity_timeout_in"] = config["nginx"]["proxy_read_timeout"] + 1
   config["nginx"]["_initial_proxy_connect_timeout"] = config["nginx"]["proxy_connect_timeout"] + 2
   config["nginx"]["_initial_proxy_read_timeout"] = config["nginx"]["proxy_read_timeout"] + 2
   config["nginx"]["_initial_proxy_send_timeout"] = config["nginx"]["proxy_send_timeout"] + 2
