@@ -175,7 +175,7 @@ GEM
     multi_xml (0.6.0)
     multipart-post (2.0.0)
     net-ldap (0.16.0)
-    nokogiri (1.8.1)
+    nokogiri (1.8.2)
       mini_portile2 (~> 2.3.0)
     oauth2 (1.4.0)
       faraday (>= 0.8, < 0.13)
