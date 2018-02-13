@@ -6,6 +6,7 @@ import UncachedModel from 'api-umbrella-admin-ui/mixins/uncached-model';
 export default Base.extend(Confirmation, UncachedModel, {
   // Return a promise for loading multiple models all together.
   fetchModels(record) {
+  	//TODO: add external IDPs config here
     return Ember.RSVP.hash({
       record: record,
       roleOptions: this.get('store').findAll('api-user-role', { reload: true }),

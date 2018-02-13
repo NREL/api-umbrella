@@ -22,6 +22,15 @@ export default Ember.Component.extend({
     { id: 'required_email', name: I18n.t('admin.api.settings.api_key_verification_level_options.required_email') },
   ],
 
+  externalIdpOptions: [
+    { id: null, name: I18n.t('admin.api.settings.external_idp_options.inherit') },
+    { id: 'none', name: I18n.t('admin.api.settings.external_idp_options.none') },
+    { id: 'fiware-oauth2', name: "FIWARE" },
+    { id: 'github-oauth2', name: "GitHub" },
+    { id: 'facebook-oauth2', name: "Facebook" },
+    { id: 'google-oauth2', name: "Google" },
+  ],
+
   passApiKeyOptions: [
     { id: 'header', name: I18n.t('admin.api.settings.pass_api_key_header') },
     { id: 'param', name: I18n.t('admin.api.settings.pass_api_key_param') },

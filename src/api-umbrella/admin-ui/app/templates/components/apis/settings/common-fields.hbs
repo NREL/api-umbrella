@@ -2,6 +2,7 @@
   {{f.select-field "requireHttps" label=(t "admin.api.settings.require_https") tooltip=(t "admin.api.settings.require_https_tooltip_markdown") options=requireHttpsOptions}}
   {{f.select-field "disableApiKey" label=(t "admin.api.settings.disable_api_key") options=disableApiKeyOptions}}
   {{f.select-field "apiKeyVerificationLevel" label=(t "admin.api.settings.api_key_verification_level") options=apiKeyVerificationLevelOptions}}
+  {{f.select-field "externalIdp" label=(t "admin.api.settings.external_idp") options=externalIdpOptions}}
   {{f.selectize-field "requiredRolesString" label=(t "admin.api.settings.required_roles") tooltip=(t "admin.api.settings.required_roles_tooltip_markdown") options=roleOptions}}
   {{#if isSubSettings}}
     {{f.checkbox-field "requiredRolesOverride" label=(t "admin.api.settings.required_roles_override") tooltip=(t "admin.api.settings.required_roles_override_tooltip_markdown")}}

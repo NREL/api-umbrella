@@ -139,6 +139,10 @@ en:
           none: None - API keys can be used without any verification
           transition_email: E-mail verification transition - Existing API keys will continue to work, new API keys will only work if verified
           required_email: E-mail verification required - Existing API keys will break, only new API keys will work if verified
+        external_idp: External Identity Provider
+        external_idp_options:
+          inherit: Inherit (default - none)
+          none: None
         required_roles: Required Roles
         required_roles_tooltip_markdown: |-
           Define roles that API keys must have in order to access this API. If multiple roles are set, then the API key must have all of the roles.
