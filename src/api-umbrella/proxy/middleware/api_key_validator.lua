@@ -49,7 +49,7 @@ return function(settings)
   local api_key = resolve_api_key()
   -- Find if and IdP was set
   if settings["require_idp"] then
-    api_key.idp=settings["require_idp"][1]
+    api_key.idp=settings["require_idp"]
   end
   if is_empty(api_key["key_value"]) then
     if settings and settings["disable_api_key"] then

@@ -59,11 +59,6 @@ gatekeeper:
     - getParam
     - basicAuthUsername
   api_key_cache: false
-  idp_providers:
-    - fiware-oauth2
-    - github-oauth2
-    - facebook-oauth2
-    - google-oauth2
 trafficserver:
   host: 127.0.0.1
   port: 14009

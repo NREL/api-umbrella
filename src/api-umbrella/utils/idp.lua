@@ -9,7 +9,7 @@ local _M = {}
 -- If the token is valid, the user information stored in the IdP is retrieved.
 
 function _M.first(dict)
-    local idp_back_name = dict["idp"]["backend_name"]
+    local idp_back_name = dict["idp"]
     local token = dict["key_value"]
     local idp_host, result, res, err, rpath
     local ssl=false
