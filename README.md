@@ -21,7 +21,8 @@ Binary packages are available for [download](https://apiumbrella.io/install/). F
 
 ## Additional Features
 
-In this repo is hosted an addittional feature of API-Umbrella f
+In this repo is hosted one additional feature of API-Umbrella for providing validation using external IdP's.
+The documentation about how to use is available here: [Documentation](./docs/idp-doc.md)
 
 ## Getting Started
 
