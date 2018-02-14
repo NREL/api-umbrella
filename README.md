@@ -19,6 +19,10 @@ API Umbrella is an open source API management platform for exposing web service 
 
 Binary packages are available for [download](https://apiumbrella.io/install/). Follow the quick setup instructions on the download page to begin running API Umbrella.
 
+## Additional Features
+
+In this repo is hosted an addittional feature of API-Umbrella f
+
 ## Getting Started
 
 Once you have API Umbrella up and running, there are a variety of things you can do to start using the platform. For a quick tutorial, see [getting started](https://api-umbrella.readthedocs.org/en/latest/getting-started.html).
