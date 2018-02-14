@@ -62,6 +62,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.synced_folder "src/api-umbrella/admin-ui", "/vagrant-admin-ui",
+    :nfs => options[:nfs],
     :type => "rsync",
     :rsync__verbose => true,
     :rsync__exclude => [
