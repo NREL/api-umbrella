@@ -1,4 +1,4 @@
-##External IdP Validation
+## External IdP Validation
 
 This new feature allows to the API-umbrella users
 the possibility of make request to a registered API
@@ -18,9 +18,9 @@ as is showed in the next figure:
 
 ![API-Umbrella architecture](./images/idp-arch.png)
 
-##Getting Started
+## Getting Started
 
-###Installation
+### Installation
 For using API-Umbrella with External IdP validation, you have to clone 
 this repo and install API-Umbrella from source code. The instructions fordoing this are:
 
@@ -45,7 +45,7 @@ Second, start API-Umbrella
 ```
 sudo /etc/init.d/api-umbrella start
 ```
-###Docker API-Umbrella
+### Docker API-Umbrella
 
 Also, you have the option of use a docker container instead of install
 API-Umbrella. The instructions for creating and running the docker 
@@ -72,7 +72,7 @@ At this point, you can perform the same operations described in
 in this section is included the guide of how to create API backends for processing 
 the requests using Oauth2 token and external IdP's
 
-####Registering and API-Backend
+#### Registering and API-Backend
 The next figures show the Web UI for creating an API backend. You need to
  fill the fields  for registering you API but, for choosing
 the external IdP in order to validate the user's token you have to go to
