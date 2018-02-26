@@ -51,7 +51,13 @@ Also, you have the option of use a docker container instead of install
 API-Umbrella. The instructions for creating and running the docker 
 container with this version of API umbrella are:
 
-Build the API-Umbrella container:
+You can run directly the container pulling the image from the docker hub:
+
+```
+$ docker run -d --name=api-umbrella -p 80:80 -p 443:443 martel/api-umbrella
+```
+
+Or build the API-Umbrella  image and run the container:
 
 ```
 $ git clone https://github.com/ging/api-umbrella.git
@@ -71,6 +77,53 @@ At this point, you can perform the same operations described in
 [getting started](https://api-umbrella.readthedocs.org/en/latest/getting-started.html). but Also
 in this section is included the guide of how to create API backends for processing 
 the requests using Oauth2 token and external IdP's
+
+#### Registering and API-Backend uding API REST 
+
+The procedure of how you can create a request using an REST call is available in the official documentation but,
+for using the external validation feature you need to include in you JSON body request the field ** require_idp:<IdP-value> ** where IdP value could be one of this: fiware-oauth2, google-oauth2, facebook-oauth2, github-oauth2.
+
+An request example for registring a API-backend with a generic parameters is:
+
+```
+curl -k -X POST "https://<your-api-umbrella-hostaname>/api-umbrella/v1/apis" -H "X-Api-Key: <your-API-KEY>" -H "X-Admin-Auth-Token: <your-admin-auth-token>" -H "Accept: application/json" -H "Content-Type: application/json" -d @- <<EOF
+{
+  "api": {
+    "name": "distance FIWARE REST",
+    "sort_order": 100000,
+    "backend_protocol": "http",
+    "frontend_host": "127.0.0.1",
+    "backend_host": "maps.googleapis.com",
+    "servers": [
+      {
+        "host": "maps.googleapis.com",
+        "port": 80
+      }
+    ],
+    "url_matches": [
+      {
+        "frontend_prefix": "/distance2/",
+        "backend_prefix": "/"
+      }
+    ],
+    "balance_algorithm": "least_conn",
+    "settings": {
+      "require_https":"required_return_error",
+      "require_idp": "fiware-oauth2",
+      "disable_api_key":"true",
+      "api_key_verification_level":"none",
+      "rate_limit_mode":"unlimited",
+      "error_templates": {},
+      "error_data": {}
+    }   
+  }
+}
+EOF
+``` 
+
+In the current example we create an API-BAckend that use the google maps library for retreaving the distance between two points. This backend  was configure for making the token validation with the Fiware external IdP.
+
+The output, should return the JSON with the parameters that you sent  
 
 #### Registering and API-Backend
 The next figures show the Web UI for creating an API backend. You need to
