@@ -47,11 +47,11 @@ function _M.first(dict)
             return nil
         end
         result = cjson.decode(body)
-    end
 
-    -- Validate the app id (token scope) for FIWARE services
-    if idp_back_name == "fiware-oauth2" and dict["idp"]["app_id"] ~= result["app_id"] then
-       return nil
+        -- Validate the app id (token scope) for FIWARE services
+        if idp_back_name == "fiware-oauth2" and dict["idp"]["app_id"] ~= result["app_id"] then
+            return nil
+        end
     end
 
     return result, err
