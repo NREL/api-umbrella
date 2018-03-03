@@ -5,6 +5,10 @@ export default Ember.Controller.extend({
 
   isLoading: null,
 
+  currentAdmin: Ember.computed(function() {
+    return this.get('session.data.authenticated.admin');
+  }),
+
   actions: {
     logout() {
       this.get('session').invalidate();
