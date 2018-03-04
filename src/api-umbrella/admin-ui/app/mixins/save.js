@@ -4,7 +4,7 @@ import PNotify from 'npm:pnotify';
 import { inject } from '@ember/service';
 
 export default Mixin.create({
-  routing: inject('-routing'),
+  router: inject(),
 
   scrollToErrors() {
     $('#save_button').button('reset');
@@ -19,7 +19,7 @@ export default Mixin.create({
       text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
     });
 
-    this.get('routing').transitionTo(options.transitionToRoute);
+    this.get('router').transitionTo(options.transitionToRoute);
   },
 
   saveRecord(options) {
@@ -67,7 +67,7 @@ export default Mixin.create({
             text: (_.isFunction(options.message)) ? options.message(this.get('model')) : options.message,
           });
 
-          this.get('routing').transitionTo(options.transitionToRoute);
+          this.get('router').transitionTo(options.transitionToRoute);
         }.bind(this), function(response) {
           bootbox.alert('Unexpected error deleting record: ' + response.responseText);
         });

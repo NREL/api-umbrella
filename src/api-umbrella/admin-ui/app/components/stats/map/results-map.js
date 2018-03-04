@@ -7,7 +7,7 @@ import { on } from '@ember/object/evented';
 
 export default Component.extend({
   classNames: ['stats-map-results-map'],
-  routing: inject('-routing'),
+  router: inject(),
 
   didInsertElement() {
     this.renderChart();
@@ -26,7 +26,7 @@ export default Component.extend({
   handleRegionClick(event) {
     let queryParams = _.clone(this.get('presentQueryParamValues'));
     queryParams.region = event.batch[0].name;
-    this.get('routing').transitionTo('stats.map', undefined, queryParams);
+    this.get('router').transitionTo('stats.map', { queryParams });
   },
 
   handleCityClick(event) {
@@ -73,7 +73,7 @@ export default Component.extend({
         ],
       });
 
-      this.get('routing').transitionTo('stats.logs', undefined, queryParams);
+      this.get('router').transitionTo('stats.logs', { queryParams });
     }
   },
 

@@ -5,8 +5,6 @@ import { computed } from '@ember/object';
 import { inject } from '@ember/service';
 
 export default Component.extend({
-  routing: inject('-routing'),
-
   didInsertElement() {
     this.$submitButton = $('#publish_button');
     this.$toggleCheckboxesLink = $('#toggle_checkboxes');
@@ -115,7 +113,7 @@ export default Component.extend({
           text: 'Successfully published the configuration<br>Changes should be live in a few seconds...',
         });
 
-        this.get('routing.router.router').refresh();
+        this.sendAction('refreshCurrentRouteController');
       }, this), function(response) {
         let message = '<h3>Error</h3>';
         try {

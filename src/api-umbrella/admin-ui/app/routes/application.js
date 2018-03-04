@@ -46,6 +46,10 @@ export default Route.extend(ApplicationRouteMixin, {
       });
     },
 
+    refreshCurrentRoute(){
+      this.refresh();
+    },
+
     error(error) {
       if(error) {
         let errorMessage = error.stack
