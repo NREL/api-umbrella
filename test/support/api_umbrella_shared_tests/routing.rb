@@ -272,7 +272,7 @@ module ApiUmbrellaSharedTests
           assert_match("Test Website 404 Not Found", response.body)
         else
           assert_equal("text/html", response.headers["content-type"])
-          assert_match("nginx", response.body)
+          assert_match("<center>openresty</center>", response.body)
         end
       end
     end
