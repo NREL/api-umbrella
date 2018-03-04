@@ -196,6 +196,7 @@ export default Component.extend({
 
     this.chart.hideLoading();
     this.chart.setOption({
+      animation: false,
       tooltip: {
         trigger: 'item',
         formatter: function(params) {

@@ -64,6 +64,7 @@ export default Component.extend({
     }
 
     this.chart.setOption({
+      animation: false,
       tooltip: {
         trigger: 'axis',
       },
