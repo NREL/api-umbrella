@@ -1,8 +1,10 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import Mixin from '@ember/object/mixin'
 import PNotify from 'npm:pnotify';
+import { inject } from '@ember/service';
 
-export default Ember.Mixin.create({
-  routing: Ember.inject.service('-routing'),
+export default Mixin.create({
+  routing: inject('-routing'),
 
   scrollToErrors() {
     $('#save_button').button('reset');

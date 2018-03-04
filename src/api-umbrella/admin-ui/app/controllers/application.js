@@ -1,11 +1,13 @@
-import Ember from 'ember';
+import Controller from '@ember/controller';
+import { computed } from '@ember/object';
+import { inject } from '@ember/service';
 
-export default Ember.Controller.extend({
-  session: Ember.inject.service('session'),
+export default Controller.extend({
+  session: inject('session'),
 
   isLoading: null,
 
-  currentAdmin: Ember.computed(function() {
+  currentAdmin: computed(function() {
     return this.get('session.data.authenticated.admin');
   }),
 

@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import Component from '@ember/component';
+import { computed } from '@ember/object';
 
-export default Ember.Component.extend({
-  breadcrumbLinks: Ember.computed('breadcrumbs', function() {
+export default Component.extend({
+  breadcrumbLinks: computed('breadcrumbs', function() {
     let crumbs = [];
 
     let data = this.get('breadcrumbs');

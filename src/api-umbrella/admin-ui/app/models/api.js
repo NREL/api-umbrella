@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { buildValidations, validator } from 'ember-cp-validations';
+
 import DS from 'ember-data';
 import I18n from 'npm:i18n-js';
-import { validator, buildValidations } from 'ember-cp-validations';
+import { computed } from '@ember/object';
 
 const Validations = buildValidations({
   name: validator('presence', true),
@@ -15,14 +16,14 @@ const Validations = buildValidations({
   backendHost: [
     validator('presence', {
       presence: true,
-      disabled: Ember.computed('model.frontendHost', function() {
+      disabled: computed('model.frontendHost', function() {
         return (this.get('model.frontendHost') && this.get('model.frontendHost')[0] === '*');
       }),
     }),
     validator('format', {
       regex: CommonValidations.host_format_with_wildcard,
       message: I18n.t('errors.messages.invalid_host_format'),
-      disabled: Ember.computed('model.backendHost', function() {
+      disabled: computed('model.backendHost', function() {
         return !this.get('model.backendHost');
       }),
     }),
@@ -58,11 +59,11 @@ export default DS.Model.extend(Validations, {
     }
   },
 
-  exampleIncomingUrlRoot: Ember.computed('frontendHost', function() {
+  exampleIncomingUrlRoot: computed('frontendHost', function() {
     return 'https://' + (this.get('frontendHost') || '');
   }),
 
-  exampleOutgoingUrlRoot: Ember.computed('backendProtocol', 'backendHost', 'fontendHost', function() {
+  exampleOutgoingUrlRoot: computed('backendProtocol', 'backendHost', 'fontendHost', function() {
     return this.get('backendProtocol') + '://' + (this.get('backendHost') || this.get('frontendHost') || '');
   }),
 }).reopenClass({

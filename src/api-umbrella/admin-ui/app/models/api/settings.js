@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import EmberObject, { computed, observer } from '@ember/object';
+
+import { A } from '@ember/array';
 import DS from 'ember-data';
 
 export default DS.Model.extend({
@@ -37,15 +39,15 @@ export default DS.Model.extend({
     // Make sure at least an empty object exists so the form builder can dive
     // into this section even when there's no pre-existing data.
     if(!this.get('errorTemplates')) {
-      this.set('errorTemplates', Ember.Object.create({}));
+      this.set('errorTemplates', EmberObject.create({}));
     }
 
     if(!this.get('errorDataYamlStrings')) {
-      this.set('errorDataYamlStrings', Ember.Object.create({}));
+      this.set('errorDataYamlStrings', EmberObject.create({}));
     }
   },
 
-  requiredRolesString: Ember.computed('requiredRoles', {
+  requiredRolesString: computed('requiredRoles', {
     get() {
       let rolesString = '';
       if(this.get('requiredRoles')) {
@@ -61,7 +63,7 @@ export default DS.Model.extend({
     },
   }),
 
-  allowedIpsString: Ember.computed('allowedIps', {
+  allowedIpsString: computed('allowedIps', {
     get() {
       let allowedIpsString = '';
       if(this.get('allowedIps')) {
@@ -77,7 +79,7 @@ export default DS.Model.extend({
     },
   }),
 
-  allowedReferersString: Ember.computed('allowedReferers', {
+  allowedReferersString: computed('allowedReferers', {
     get() {
       let allowedReferersString = '';
       if(this.get('allowedReferers')) {
@@ -93,8 +95,8 @@ export default DS.Model.extend({
     },
   }),
 
-  passApiKey: Ember.computed('passApiKeyHeader', 'passApiKeyQueryParam', function() {
-    let options = Ember.A([]);
+  passApiKey: computed('passApiKeyHeader', 'passApiKeyQueryParam', function() {
+    let options = A([]);
     if(this.get('passApiKeyHeader')) {
       options.pushObject('header');
     }
@@ -104,13 +106,13 @@ export default DS.Model.extend({
     return options;
   }),
 
-  passApiKeyDidChange: Ember.observer('passApiKey.@each', function() {
+  passApiKeyDidChange: observer('passApiKey.@each', function() {
     let options = this.get('passApiKey');
     this.set('passApiKeyHeader', options.includes('header'));
     this.set('passApiKeyQueryParam', options.includes('param'));
   }),
 
-  isRateLimitModeCustom: Ember.computed('rateLimitMode', function() {
+  isRateLimitModeCustom: computed('rateLimitMode', function() {
     return (this.get('rateLimitMode') === 'custom');
   }),
 });
