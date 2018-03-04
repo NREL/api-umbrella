@@ -5,5 +5,9 @@
 
     Setting `disableAnalytics` to true will prevent any data from being sent.
   */
-  "disableAnalytics": false
+  "disableAnalytics": true,
+
+  // Set relative URL for livereload.js script so it loads through the HTTPS
+  // proxy.
+  "liveReloadJsUrl": "/livereload.js"
 }
