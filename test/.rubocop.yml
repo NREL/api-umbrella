@@ -1,14 +1,14 @@
 inherit_from: ../.rubocop.yml
 
+Naming/FileName:
+  ExpectMatchingDefinition: true
+  Exclude:
+    - "test_helper.rb"
+
 Rails/DynamicFindBy:
   Whitelist:
     # Capybara finder.
     - find_by_id
-
-Style/FileName:
-  ExpectMatchingDefinition: true
-  Exclude:
-    - "test_helper.rb"
 
 Style/GlobalVars:
   AllowedVariables:

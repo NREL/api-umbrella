@@ -36,7 +36,7 @@ class Test::AdminUi::TestDatatables < Minitest::Capybara::Test
   private
 
   def delay_all_ajax_calls(delay = 1000)
-    page.execute_script <<-eos
+    page.execute_script <<-EOS
       $.ajaxOrig = $.ajax;
       $.ajax = function() {
         var args = arguments;
@@ -45,6 +45,6 @@ class Test::AdminUi::TestDatatables < Minitest::Capybara::Test
           $.ajaxOrig.apply(self, args);
         }, #{delay});
       };
-    eos
+    EOS
   end
 end

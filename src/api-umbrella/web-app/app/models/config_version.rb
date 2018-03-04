@@ -127,7 +127,7 @@ class ConfigVersion
         end
       end
 
-      category_changes.each do |mode, mode_changes|
+      category_changes.each_value do |mode_changes|
         mode_changes.each do |change|
           change["id"] = if(change["pending"]) then change["pending"]["_id"] else change["active"]["_id"] end
           change["name"] = case(category)

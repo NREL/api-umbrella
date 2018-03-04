@@ -69,7 +69,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
 
     assert_equal(File.read(File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/version.txt")).strip, data["api_umbrella_version"])
     assert_equal(true, data["authenticated"])
-    data.fetch("admin").fetch("permissions").each do |permission, value|
+    data.fetch("admin").fetch("permissions").each_value do |value|
       assert_equal(true, value)
     end
   end

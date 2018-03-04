@@ -25,7 +25,7 @@ class Test::Proxy::FormattedErrors::TestDataVariables < Minitest::Test
               },
             },
             :error_templates => {
-              :json => <<~eos,
+              :json => <<~EOS,
                 {
                   "error": {
                     "code": {{code}}
@@ -40,8 +40,8 @@ class Test::Proxy::FormattedErrors::TestDataVariables < Minitest::Test
                   "embedded_legacy": {{embedded_legacy}},
                   "escape_test": {{escape_test}}
                 }
-              eos
-              :xml => <<~eos,
+              EOS
+              :xml => <<~EOS,
                 <?xml version="1.0" encoding="UTF-8"?>
                 <response>
                   <error>
@@ -50,19 +50,19 @@ class Test::Proxy::FormattedErrors::TestDataVariables < Minitest::Test
                     <escape-test>{{escape_test}}</escape-test>
                   </error>
                 </response>
-              eos
-              :csv => <<~eos,
+              EOS
+              :csv => <<~EOS,
                 Error Code,Error Message
                 {{code}},{{message}},{{escape_test}}
-              eos
-              :html => <<~eos,
+              EOS
+              :html => <<~EOS,
                 <html>
                   <body>
                     <h1>{{code}}</h1>
                     <p>{{escape_test}}</p>
                   </body>
                 </html>
-              eos
+              EOS
             },
           },
         },

@@ -71,7 +71,7 @@ class Test::Proxy::RateLimits::TestConcurrency < Minitest::Test
     hydra.run
 
     # Check the X-RateLimit-Remaining counts for each api key.
-    requests_by_key.each do |api_key, api_key_requests|
+    requests_by_key.each_value do |api_key_requests|
       reported_requests_made = 0
       api_key_requests.each do |request|
         assert_response_code(200, request.response)
@@ -129,7 +129,7 @@ class Test::Proxy::RateLimits::TestConcurrency < Minitest::Test
     hydra.run
 
     # Ensure each api key got blocked when expected.
-    requests_by_key.each do |api_key, api_key_requests|
+    requests_by_key.each_value do |api_key_requests|
       response_codes = api_key_requests.map { |r| r.response.code }
       oks = response_codes.select { |c| c == 200 }.length
       over_rate_limits = response_codes.select { |c| c == 429 }.length
