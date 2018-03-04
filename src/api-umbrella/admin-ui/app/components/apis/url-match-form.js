@@ -45,6 +45,7 @@ export default Component.extend({
 
     closed() {
       this.get('bufferedModel').discardChanges();
+      this.set('openModal', false);
     },
   },
 });
