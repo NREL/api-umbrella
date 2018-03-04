@@ -27,7 +27,7 @@
     "datatables.net": "~1.10.16",
     "datatables.net-bs": "~1.10.16",
     "diff": "3.4.0",
-    "echarts": "~4.0.4",
+    "echarts": "~3.8.5",
     "ember-ajax": "^3.0.0",
     "ember-bootstrap": "~1.2.1",
     "ember-browserify": "~1.2.1",
