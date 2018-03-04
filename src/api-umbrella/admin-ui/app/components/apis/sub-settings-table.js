@@ -1,11 +1,13 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import Sortable from 'api-umbrella-admin-ui/mixins/sortable';
+import { computed } from '@ember/object';
+import { inject } from '@ember/service';
 
-export default Ember.Component.extend(Sortable, {
-  store: Ember.inject.service(),
+export default Component.extend(Sortable, {
+  store: inject(),
   openModal: false,
 
-  sortableCollection: Ember.computed('model', function() {
+  sortableCollection: computed('model', function() {
     return this.get('model.subSettings');
   }),
 

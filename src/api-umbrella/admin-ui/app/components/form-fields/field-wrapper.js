@@ -1,24 +1,29 @@
-import Ember from 'ember';
+import { computed, observer } from '@ember/object';
 
-export default Ember.Component.extend({
+import Component from '@ember/component';
+import Ember from 'ember';
+import { on } from '@ember/object/evented';
+
+export default Component.extend({
   canShowErrors: false,
 
-  labelFor: Ember.computed('labelForId', 'inputId', function() {
+  labelFor: computed('labelForId', 'inputId', function() {
     return this.get('labelForId') || this.get('inputId');
   }),
 
-  fieldNameDidChange: Ember.on('init', Ember.observer('fieldName', function() {
+  // eslint-disable-next-line ember/no-on-calls-in-components
+  fieldNameDidChange: on('init', observer('fieldName', function() {
     let fieldName = this.get('fieldName');
     let fieldValidations = 'model.validations.attrs.' + fieldName;
     Ember.mixin(this, {
-      fieldErrorMessages: Ember.computed(fieldValidations + '.messages', 'canShowErrors', function() {
+      fieldErrorMessages: computed(fieldValidations + '.messages', 'canShowErrors', function() {
         if(this.get('canShowErrors')) {
           return this.get(fieldValidations + '.messages');
         } else {
           return [];
         }
       }),
-      fieldHasErrors: Ember.computed(fieldValidations + '.isValid', 'canShowErrors', function() {
+      fieldHasErrors: computed(fieldValidations + '.isValid', 'canShowErrors', function() {
         if(this.get('canShowErrors')) {
           return (this.get(fieldValidations + '.isValid') === false);
         } else {
@@ -28,7 +33,7 @@ export default Ember.Component.extend({
     });
   })),
 
-  wrapperErrorClass: Ember.computed('fieldHasErrors', function() {
+  wrapperErrorClass: computed('fieldHasErrors', function() {
     if(this.get('fieldHasErrors')) {
       return 'has-error';
     } else {
@@ -44,7 +49,7 @@ export default Ember.Component.extend({
 
   // If the page is submitted, show any errors on the page (even if the fields
   // haven't been focused and then unfocused yet).
-  showErrorsOnSubmit: Ember.observer('model.clientErrors', function() {
+  showErrorsOnSubmit: observer('model.clientErrors', function() {
     this.set('canShowErrors', true);
   }),
 
@@ -55,7 +60,7 @@ export default Ember.Component.extend({
   // times. Without this, errors would show up immediately the second time the
   // modal is opened if all the fields were unfocused the first time the modal
   // was opened.
-  hideErrorsOnModelChange: Ember.observer('model', function() {
+  hideErrorsOnModelChange: observer('model', function() {
     this.set('canShowErrors', false);
   }),
 });

@@ -1,8 +1,11 @@
-import Ember from 'ember';
+import { computed, observer } from '@ember/object';
+
+import $ from 'jquery';
+import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import numeral from 'numeral';
 
-export default Ember.Component.extend({
+export default Component.extend({
   didInsertElement() {
     this.$().find('table').DataTable({
       searching: false,
@@ -79,11 +82,11 @@ export default Ember.Component.extend({
     });
   },
 
-  refreshData: Ember.observer('backendQueryParamValues', function() {
+  refreshData: observer('backendQueryParamValues', function() {
     this.$().find('table').DataTable().draw();
   }),
 
-  downloadUrl: Ember.computed('backendQueryParamValues', function() {
+  downloadUrl: computed('backendQueryParamValues', function() {
     return '/admin/stats/users.csv?' + $.param(this.get('backendQueryParamValues'));
   }),
 });

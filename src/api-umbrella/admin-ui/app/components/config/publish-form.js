@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import Component from '@ember/component';
 import PNotify from 'npm:pnotify';
+import { computed } from '@ember/object';
+import { inject } from '@ember/service';
 
-export default Ember.Component.extend({
-  routing: Ember.inject.service('-routing'),
-
+export default Component.extend({
   didInsertElement() {
     this.$submitButton = $('#publish_button');
     this.$toggleCheckboxesLink = $('#toggle_checkboxes');
@@ -65,7 +66,7 @@ export default Ember.Component.extend({
     }
   },
 
-  hasChanges: Ember.computed('model.config.apis.new.@each', 'model.config.apis.modified.@each', 'model.config.apis.deleted.@each', 'model.config.website_backends.new.@each', 'model.config.website_backends.modified.@each', 'model.config.website_backends.deleted.@each', function() {
+  hasChanges: computed('model.config.apis.{new.@each,modified.@each,deleted.@each}', 'model.config.website_backends.{new.@each,modified.@each,deleted.@each}', function() {
     let newApis = this.get('model.config.apis.new');
     let modifiedApis = this.get('model.config.apis.modified');
     let deletedApis = this.get('model.config.apis.deleted');
@@ -112,7 +113,7 @@ export default Ember.Component.extend({
           text: 'Successfully published the configuration<br>Changes should be live in a few seconds...',
         });
 
-        this.get('routing.router.router').refresh();
+        this.sendAction('refreshCurrentRouteController');
       }, this), function(response) {
         let message = '<h3>Error</h3>';
         try {
@@ -125,7 +126,8 @@ export default Ember.Component.extend({
         }
 
         button.button('reset');
-        Ember.Logger.error(message);
+        // eslint-disable-next-line no-console
+        console.error(message);
         bootbox.alert(message);
       });
     },

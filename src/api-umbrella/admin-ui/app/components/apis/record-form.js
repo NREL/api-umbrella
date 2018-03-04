@@ -1,17 +1,21 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 
-export default Ember.Component.extend(Save, {
-  backendProtocolOptions: [
-    { id: 'http', name: 'http' },
-    { id: 'https', name: 'https' },
-  ],
+export default Component.extend(Save, {
+  init() {
+    this._super(...arguments);
 
-  balanceAlgorithmOptions: [
-    { id: 'least_conn', name: 'Least Connections' },
-    { id: 'round_robin', name: 'Round Robin' },
-    { id: 'ip_hash', name: 'Source IP Hash' },
-  ],
+    this.backendProtocolOptions = [
+      { id: 'http', name: 'http' },
+      { id: 'https', name: 'https' },
+    ];
+
+    this.balanceAlgorithmOptions = [
+      { id: 'least_conn', name: 'Least Connections' },
+      { id: 'round_robin', name: 'Round Robin' },
+      { id: 'ip_hash', name: 'Source IP Hash' },
+    ];
+  },
 
   actions: {
     submit() {

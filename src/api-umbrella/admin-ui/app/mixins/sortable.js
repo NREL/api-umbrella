@@ -1,14 +1,17 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import Mixin from '@ember/object/mixin'
+import { computed } from '@ember/object';
+import { guidFor } from '@ember/object/internals';
 
-export default Ember.Mixin.create({
-  isReorderable: Ember.computed('sortableCollection.length', function() {
+export default Mixin.create({
+  isReorderable: computed('sortableCollection.length', function() {
     let length = this.get('sortableCollection.length');
     return (length && length > 1);
   }),
 
   updateSortOrder(indexes) {
     this.get('sortableCollection').forEach(function(record) {
-      let index = indexes[Ember.guidFor(record)];
+      let index = indexes[guidFor(record)];
       record.set('sortOrder', index);
     });
   },

@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { buildValidations, validator } from 'ember-cp-validations';
+
 import DS from 'ember-data';
 import I18n from 'npm:i18n-js';
-import { validator, buildValidations } from 'ember-cp-validations';
+import { computed } from '@ember/object';
 
 const Validations = buildValidations({
   host: [
@@ -21,7 +22,7 @@ export default DS.Model.extend(Validations, {
   host: DS.attr(),
   port: DS.attr('number'),
 
-  hostWithPort: Ember.computed('host', 'port', function() {
+  hostWithPort: computed('host', 'port', function() {
     return _.compact([this.get('host'), this.get('port')]).join(':');
   }),
 }).reopenClass({
