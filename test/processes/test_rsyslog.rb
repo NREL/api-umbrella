@@ -24,10 +24,10 @@ class Test::Processes::TestRsyslog < Minitest::Test
     final_error_log_size = elasticsearch_error_log_size
 
     # Compare the memory use before and after making requests. We're going to
-    # assume it should be not grow more than 1MB (we need to allow for some
+    # assume it should be not grow more than 3MB (we need to allow for some
     # fluctuations under normal use).
     rss_diff = final_memory_use.fetch(:rss) - warmed_memory_use.fetch(:rss)
-    assert_operator(rss_diff, :<=, 1024)
+    assert_operator(rss_diff, :<=, 3072)
 
     # Also ensure nothing was generated in the elasticsearch error log file,
     # since the specific problem in v8.28.0 generated error data.
