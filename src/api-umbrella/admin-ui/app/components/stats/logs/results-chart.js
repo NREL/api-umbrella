@@ -125,6 +125,6 @@ export default Component.extend({
           end: 100,
         },
       ],
-    });
+    }, true);
   },
 });

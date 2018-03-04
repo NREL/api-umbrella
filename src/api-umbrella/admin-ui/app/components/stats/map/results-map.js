@@ -245,6 +245,6 @@ export default Component.extend({
         top: 10,
         right: 30,
       },
-    });
+    }, true);
   },
 });
