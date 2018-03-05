@@ -10,7 +10,12 @@ class AdminPolicy < ApplicationPolicy
         end
 
         group_ids = AdminGroup.in(:api_scope_ids => api_scope_ids).map { |g| g.id }
-        scope.in(:group_ids => group_ids)
+
+        if(group_ids.any?)
+          scope.in(:group_ids => group_ids)
+        else
+          scope.none
+        end
       end
     end
   end
