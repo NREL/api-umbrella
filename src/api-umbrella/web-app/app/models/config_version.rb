@@ -70,7 +70,7 @@ class ConfigVersion
                         end
 
       if(current_admin)
-        pending_records = Pundit.policy_scope!(current_admin, pending_records)
+        pending_records = ApiPolicy::Scope.new(current_admin, pending_records).resolve("backend_publish")
       end
 
       pending_records = pending_records.sorted.all
