@@ -21,10 +21,14 @@ class LogSearchPolicy < ApplicationPolicy
           }
         end
 
-        scope.permission_scope!({
-          "condition" => "OR",
-          "rules" => rules,
-        })
+        if(rules.any?)
+          scope.permission_scope!({
+            "condition" => "OR",
+            "rules" => rules,
+          })
+        else
+          scope.none!
+        end
       end
     end
   end

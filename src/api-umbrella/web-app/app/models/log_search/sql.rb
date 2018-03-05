@@ -92,6 +92,11 @@ class LogSearch::Sql < LogSearch::Base
   end
 
   def result
+    if @none
+      @result = LogResult.factory(self, {})
+      return @result
+    end
+
     if(@query_results.empty? || @queries[:default])
       execute_query(:default, @queries[:default] || {})
     end
