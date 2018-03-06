@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
   prepend_around_filter :use_locale
   protect_from_forgery :with => :exception
 
+  before_action :set_cache_control
   around_action :set_userstamp
 
   def after_sign_in_path_for(resource)
@@ -152,6 +153,11 @@ class ApplicationController < ActionController::Base
     if(!current_admin || !admin_token || admin_token != current_admin.authentication_token)
       verify_authenticity_token
     end
+  end
+
+  def set_cache_control
+    response.headers["Cache-Control"] = "no-cache, max-age=0, must-revalidate, no-store"
+    response.headers["Pragma"] = "no-cache"
   end
 
   def set_userstamp

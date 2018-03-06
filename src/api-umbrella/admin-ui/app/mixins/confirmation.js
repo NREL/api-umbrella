@@ -1,7 +1,7 @@
-import Ember from 'ember';
 import ConfirmationMixin from 'ember-onbeforeunload/mixins/confirmation';
+import Mixin from '@ember/object/mixin'
 
-export default Ember.Mixin.create(ConfirmationMixin, {
+export default Mixin.create(ConfirmationMixin, {
   afterModel(model) {
     let record = model
     if(model && !model.serialize && model.record && model.record.serialize) {
@@ -9,7 +9,8 @@ export default Ember.Mixin.create(ConfirmationMixin, {
     }
 
     if(!record || !record.serialize) {
-      Ember.Logger.error('Confirmation mixin was unable to detect the model');
+      // eslint-disable-next-line no-console
+      console.error('Confirmation mixin was unable to detect the model');
       return false;
     }
 

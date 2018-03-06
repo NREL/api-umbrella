@@ -47,6 +47,9 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Naming/HeredocDelimiterNaming:
+  Enabled: false
+
 Performance/RedundantMerge:
   Enabled: false
 
@@ -54,6 +57,9 @@ Layout/AlignHash:
   Enabled: false
 
 Layout/AlignParameters:
+  Enabled: false
+
+Layout/EmptyLinesAroundArguments:
   Enabled: false
 
 Layout/IndentArray:
@@ -145,6 +151,12 @@ Style/RedundantSelf:
   Enabled: false
 
 Style/RegexpLiteral:
+  Enabled: false
+
+Style/RescueStandardError:
+  Enabled: false
+
+Style/SafeNavigation:
   Enabled: false
 
 Style/SignalException:

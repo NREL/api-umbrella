@@ -1,5 +1,6 @@
-{{#bs-modal open=openModal submitAction=(action "submit") closedAction=(action "closed") title=modalTitle body=false footer=false backdropClose=false size="lg"}}
-  {{#bs-modal-body}}
+{{#bs-modal open=openModal onSubmit=(action "submit") onHidden=(action "closed") backdropClose=false size="lg" as |modal|}}
+  {{modal.header title=modalTitle}}
+  {{#modal.body}}
     <form {{action "submit" on="submit"}}>
       {{#fields-for model=bufferedModel style="vertical" as |f|}}
         <div class="row">
@@ -26,6 +27,6 @@
       {{/fields-for}}
       <input type="submit" class="hidden-submit-button" tabindex="-1">
     </form>
-  {{/bs-modal-body}}
-  {{bs-modal-footer closeTitle="Cancel" submitTitle="OK"}}
+  {{/modal.body}}
+  {{modal.footer closeTitle="Cancel" submitTitle="OK"}}
 {{/bs-modal}}

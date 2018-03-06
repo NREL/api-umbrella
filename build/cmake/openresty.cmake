@@ -39,7 +39,7 @@ set(PCRE_SOURCE_DIR ${SOURCE_DIR})
 # OpenResty's ssl_certificate_by_lua functionality requires OpenSSL 1.0.2e+
 ExternalProject_Add(
   openssl
-  URL https://www.openssl.org/source/old/1.0.2/openssl-${OPENSSL_VERSION}.tar.gz
+  URL https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz
   URL_HASH SHA256=${OPENSSL_HASH}
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""

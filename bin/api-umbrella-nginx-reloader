@@ -5,7 +5,7 @@ set -e -u
 # Kill the child "sleep" processes on exit.
 cleanup() {
   local pids
-  pids=($(jobs -pr))
+  mapfile -t pids < <(jobs -pr)
   if [ -n "${pids:-}" ]; then
     kill "${pids[@]}"
   fi

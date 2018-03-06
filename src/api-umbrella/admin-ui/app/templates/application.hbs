@@ -12,34 +12,48 @@
       </div>
       <div class="collapse navbar-collapse">
         <ul class="nav navbar-nav">
-          <li class="dropdown nav-analytics">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.analytics"}} <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li>{{#link-to "stats.drilldown"}}<i class="fa fa-sitemap" aria-hidden="true"></i> {{t "admin.nav.api_drilldown"}}{{/link-to}}</li>
-              <li>{{#link-to "stats.logs"}}<i class="fa fa-signal" aria-hidden="true"></i> {{t "admin.nav.filter_logs"}}{{/link-to}}</li>
-              <li>{{#link-to "stats.users"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.by_users"}}{{/link-to}}</li>
-              <li>{{#link-to "stats.map"}}<i class="fa fa-map-marker" aria-hidden="true"></i> {{t "admin.nav.by_location"}}{{/link-to}}</li>
-            </ul>
-          </li>
-          <li class="dropdown nav-users">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.users"}} <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li>{{#link-to "api_users"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.api_users"}}{{/link-to}}</li>
-              <li>{{#link-to "admins"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.admin_accounts"}}{{/link-to}}</li>
-              <li role="separator" class="divider"></li>
-              <li role="presentation" class="dropdown-header"> {{t "admin.nav.permissions_management"}}</li>
-              <li>{{#link-to "api_scopes"}}<i class="fa fa-lock" aria-hidden="true"></i> {{t "admin.nav.api_scopes"}}{{/link-to}}</li>
-              <li>{{#link-to "admin_groups"}}<i class="fa fa-group" aria-hidden="true"></i> {{t "admin.nav.admin_groups"}}{{/link-to}}</li>
-            </ul>
-          </li>
-          <li class="dropdown nav-config">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.configuration"}} <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li>{{#link-to "apis"}}<i class="fa fa-gear" aria-hidden="true"></i> {{t "admin.nav.api_backends"}}{{/link-to}}</li>
-              <li>{{#link-to "website_backends"}}<i class="fa fa-gear" aria-hidden="true"></i> {{t "admin.nav.website_backends"}}{{/link-to}}</li>
-              <li>{{#link-to "config.publish"}}<i class="fa fa-upload" aria-hidden="true"></i> {{t "admin.nav.publish_changes"}}{{/link-to}}</li>
-            </ul>
-          </li>
+          {{#if currentAdmin.permissions.analytics}}
+            <li class="dropdown nav-analytics">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.analytics"}} <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li>{{#link-to "stats.drilldown"}}<i class="fa fa-sitemap" aria-hidden="true"></i> {{t "admin.nav.api_drilldown"}}{{/link-to}}</li>
+                <li>{{#link-to "stats.logs"}}<i class="fa fa-signal" aria-hidden="true"></i> {{t "admin.nav.filter_logs"}}{{/link-to}}</li>
+                <li>{{#link-to "stats.users"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.by_users"}}{{/link-to}}</li>
+                <li>{{#link-to "stats.map"}}<i class="fa fa-map-marker" aria-hidden="true"></i> {{t "admin.nav.by_location"}}{{/link-to}}</li>
+              </ul>
+            </li>
+          {{/if}}
+          {{#if (or currentAdmin.permissions.user_view currentAdmin.permissions.admin_manage)}}
+            <li class="dropdown nav-users">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.users"}} <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                {{#if currentAdmin.permissions.user_view}}
+                  <li>{{#link-to "api_users"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.api_users"}}{{/link-to}}</li>
+                {{/if}}
+                {{#if currentAdmin.permissions.admin_manage}}
+                  <li>{{#link-to "admins"}}<i class="fa fa-user" aria-hidden="true"></i> {{t "admin.nav.admin_accounts"}}{{/link-to}}</li>
+                  <li role="separator" class="divider"></li>
+                  <li role="presentation" class="dropdown-header"> {{t "admin.nav.permissions_management"}}</li>
+                  <li>{{#link-to "api_scopes"}}<i class="fa fa-lock" aria-hidden="true"></i> {{t "admin.nav.api_scopes"}}{{/link-to}}</li>
+                  <li>{{#link-to "admin_groups"}}<i class="fa fa-group" aria-hidden="true"></i> {{t "admin.nav.admin_groups"}}{{/link-to}}</li>
+                {{/if}}
+              </ul>
+            </li>
+          {{/if}}
+          {{#if (or currentAdmin.permissions.backend_manage currentAdmin.permissions.backend_publish)}}
+            <li class="dropdown nav-config">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{t "admin.nav.configuration"}} <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                {{#if currentAdmin.permissions.backend_manage}}
+                  <li>{{#link-to "apis"}}<i class="fa fa-gear" aria-hidden="true"></i> {{t "admin.nav.api_backends"}}{{/link-to}}</li>
+                  <li>{{#link-to "website_backends"}}<i class="fa fa-gear" aria-hidden="true"></i> {{t "admin.nav.website_backends"}}{{/link-to}}</li>
+                {{/if}}
+                {{#if currentAdmin.permissions.backend_publish}}
+                  <li>{{#link-to "config.publish"}}<i class="fa fa-upload" aria-hidden="true"></i> {{t "admin.nav.publish_changes"}}{{/link-to}}</li>
+                {{/if}}
+              </ul>
+            </li>
+          {{/if}}
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li class="dropdown">

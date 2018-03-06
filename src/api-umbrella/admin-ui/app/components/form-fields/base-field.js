@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import Component from '@ember/component';
+import { computed } from '@ember/object';
 
-export default Ember.Component.extend({
-  inputId: Ember.computed('elementId', 'fieldName', function() {
+export default Component.extend({
+  inputId: computed('elementId', 'fieldName', function() {
     return this.get('elementId') + '-' + this.get('fieldName');
   }),
 }).reopenClass({

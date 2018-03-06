@@ -46,5 +46,11 @@ FactoryGirl.define do
       user_email '"><script class="xss-test">alert("12");</script>'
       user_registration_source '"><script class="xss-test">alert("13");</script>'
     end
+
+    factory :google_log_item do
+      request_host "localhost"
+      request_path "/google/hello/"
+      request_hierarchy ["0/localhost/", "1/localhost/google/", "2/localhost/google/hello"]
+    end
   end
 end

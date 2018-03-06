@@ -1,9 +1,13 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import Component from '@ember/component';
 import echarts from 'npm:echarts';
+import { inject } from '@ember/service';
+import { observer } from '@ember/object';
+import { on } from '@ember/object/evented';
 
-export default Ember.Component.extend({
+export default Component.extend({
   classNames: ['stats-map-results-map'],
-  routing: Ember.inject.service('-routing'),
+  router: inject(),
 
   didInsertElement() {
     this.renderChart();
@@ -22,7 +26,7 @@ export default Ember.Component.extend({
   handleRegionClick(event) {
     let queryParams = _.clone(this.get('presentQueryParamValues'));
     queryParams.region = event.batch[0].name;
-    this.get('routing').transitionTo('stats.map', undefined, queryParams);
+    this.get('router').transitionTo('stats.map', { queryParams });
   },
 
   handleCityClick(event) {
@@ -69,11 +73,12 @@ export default Ember.Component.extend({
         ],
       });
 
-      this.get('routing').transitionTo('stats.logs', undefined, queryParams);
+      this.get('router').transitionTo('stats.logs', { queryParams });
     }
   },
 
-  refreshMap: Ember.on('init', Ember.observer('allQueryParamValues.region', function() {
+  // eslint-disable-next-line ember/no-on-calls-in-components
+  refreshMap: on('init', observer('allQueryParamValues.region', function() {
     let currentRegion = this.get('allQueryParamValues.region');
     $.get('/admin/maps/' + currentRegion + '.json', (geojson) => {
       this.labels = geojson._labels || {};
@@ -101,7 +106,8 @@ export default Ember.Component.extend({
     });
   })),
 
-  refreshData: Ember.on('init', Ember.observer('regions', function() {
+  // eslint-disable-next-line ember/no-on-calls-in-components
+  refreshData: on('init', observer('regions', function() {
     let currentRegion = this.get('allQueryParamValues.region');
 
     let data = [];
@@ -190,6 +196,7 @@ export default Ember.Component.extend({
 
     this.chart.hideLoading();
     this.chart.setOption({
+      animation: false,
       tooltip: {
         trigger: 'item',
         formatter: function(params) {
@@ -239,6 +246,6 @@ export default Ember.Component.extend({
         top: 10,
         right: 30,
       },
-    });
+    }, true);
   },
 });

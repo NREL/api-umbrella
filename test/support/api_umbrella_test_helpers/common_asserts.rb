@@ -3,7 +3,7 @@ module ApiUmbrellaTestHelpers
     def assert_response_code(expected_code, response)
       message = nil
       if(expected_code != response.code)
-        message = <<~eos
+        message = <<~EOS
           Response code did not match
           return_code: #{response.return_code}
           return_message: #{response.return_message}
@@ -17,7 +17,7 @@ module ApiUmbrellaTestHelpers
           effective_url: #{response.effective_url}
           primary_ip: #{response.primary_ip}
           response_body: #{response.body}
-        eos
+        EOS
       end
       assert_equal(expected_code, response.code, message)
     end

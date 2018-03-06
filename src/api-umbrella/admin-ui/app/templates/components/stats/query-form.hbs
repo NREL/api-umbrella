@@ -9,12 +9,12 @@
       {{/if}}
 
       {{#if enableInterval}}
-        {{#bs-button-group value=interval type="radio" size="xs" id="interval_buttons"}}
-          {{#bs-button value="minute"}}{{t "admin.stats.minute"}}{{/bs-button}}
-          {{#bs-button value="hour"}}{{t "admin.stats.hour"}}{{/bs-button}}
-          {{#bs-button value="day"}}{{t "admin.stats.day"}}{{/bs-button}}
-          {{#bs-button value="week"}}{{t "admin.stats.week"}}{{/bs-button}}
-          {{#bs-button value="month"}}{{t "admin.stats.month"}}{{/bs-button}}
+        {{#bs-button-group value=interval onChange=(action (mut interval)) type="radio" size="xs" id="interval_buttons" as |bg|}}
+          {{#bg.button value="minute"}}{{t "admin.stats.minute"}}{{/bg.button}}
+          {{#bg.button value="hour"}}{{t "admin.stats.hour"}}{{/bg.button}}
+          {{#bg.button value="day"}}{{t "admin.stats.day"}}{{/bg.button}}
+          {{#bg.button value="week"}}{{t "admin.stats.week"}}{{/bg.button}}
+          {{#bg.button value="month"}}{{t "admin.stats.month"}}{{/bg.button}}
         {{/bs-button-group}}
       {{/if}}
 

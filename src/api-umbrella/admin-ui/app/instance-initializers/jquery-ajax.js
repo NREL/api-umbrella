@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 export function initialize(appInstance) {
   let session = appInstance.lookup('service:session');
   $.ajaxPrefilter(function(options) {
