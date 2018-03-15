@@ -24,8 +24,8 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
     deleted_api = FactoryGirl.create(:api)
     modified_api = FactoryGirl.create(:api, :name => "Before")
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    deleted_api.update_attributes(:deleted_at => Time.now.utc)
-    modified_api.update_attributes(:name => "After")
+    deleted_api.update(:deleted_at => Time.now.utc)
+    modified_api.update(:name => "After")
     FactoryGirl.create(:api)
 
     admin_login
@@ -58,7 +58,7 @@ class Test::AdminUi::TestConfigPublishPending < Minitest::Capybara::Test
   def test_diff_of_config_changes
     api = FactoryGirl.create(:api, :name => "Before")
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    api.update_attributes(:name => "After")
+    api.update(:name => "After")
 
     admin_login
     visit "/admin/#/config/publish"

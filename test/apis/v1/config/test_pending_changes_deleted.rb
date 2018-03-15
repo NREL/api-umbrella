@@ -14,7 +14,7 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Test
 
     @api = FactoryGirl.create(:api)
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    @api.update_attributes(:deleted_at => Time.now.utc)
+    @api.update(:deleted_at => Time.now.utc)
   end
 
   def after_all

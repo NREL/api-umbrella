@@ -14,7 +14,7 @@ class Test::Apis::V1::Config::TestPendingChangesModified < Minitest::Test
 
     @api = FactoryGirl.create(:api, :name => "Before")
     ConfigVersion.publish!(ConfigVersion.pending_config)
-    @api.update_attributes(:name => "After")
+    @api.update(:name => "After")
   end
 
   def after_all

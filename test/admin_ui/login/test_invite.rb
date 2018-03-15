@@ -116,7 +116,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
     message = messages.first
     assert_equal(["API Umbrella Admin Access"], message["Content"]["Headers"]["Subject"])
 
-    admin.update_attributes(:current_sign_in_at => Time.now.utc)
+    admin.update(:current_sign_in_at => Time.now.utc)
     visit "/admin/#/admins/#{admin.id}/edit"
     refute_field("Resend invite email")
   end

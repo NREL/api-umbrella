@@ -15,10 +15,10 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
     superuser = FactoryGirl.create(:admin)
     limited_admin = FactoryGirl.create(:limited_admin)
 
-    user.update_attributes(:created_by => superuser.id)
+    user.update(:created_by => superuser.id)
     assert_api_key_visible(user, superuser)
 
-    user.update_attributes(:created_by => limited_admin.id)
+    user.update(:created_by => limited_admin.id)
     assert_api_key_visible(user, limited_admin)
   end
 
@@ -27,10 +27,10 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
     superuser = FactoryGirl.create(:admin)
     limited_admin = FactoryGirl.create(:limited_admin)
 
-    user.update_attributes(:created_by => superuser.id)
+    user.update(:created_by => superuser.id)
     assert_api_key_visible(user, superuser)
 
-    user.update_attributes(:created_by => limited_admin.id)
+    user.update(:created_by => limited_admin.id)
     assert_api_key_visible(user, limited_admin)
   end
 
@@ -39,10 +39,10 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
     superuser = FactoryGirl.create(:admin)
     limited_admin = FactoryGirl.create(:limited_admin)
 
-    user.update_attributes(:created_by => superuser.id)
+    user.update(:created_by => superuser.id)
     assert_api_key_visible(user, superuser)
 
-    user.update_attributes(:created_by => limited_admin.id)
+    user.update(:created_by => limited_admin.id)
     refute_api_key_visible(user, limited_admin)
   end
 
@@ -51,10 +51,10 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
     superuser = FactoryGirl.create(:admin)
     limited_admin = FactoryGirl.create(:limited_admin)
 
-    user.update_attributes(:created_by => superuser.id)
+    user.update(:created_by => superuser.id)
     assert_api_key_visible(user, superuser)
 
-    user.update_attributes(:created_by => limited_admin.id)
+    user.update(:created_by => limited_admin.id)
     refute_api_key_visible(user, limited_admin)
   end
 

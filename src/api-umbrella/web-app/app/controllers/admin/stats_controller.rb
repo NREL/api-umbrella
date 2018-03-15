@@ -86,7 +86,7 @@ class Admin::StatsController < Admin::BaseController
 
         headers = ["Time", "Method", "Host", "URL", "User", "IP Address", "Country", "State", "City", "Status", "Reason Denied", "Response Time", "Content Type", "Accept Encoding", "User Agent"]
 
-        send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.utc.strftime("%b %-e %Y")}).#{params[:format]}") # rubocop:disable Style/FormatStringToken
+        send_file_headers!(:disposition => "attachment", :filename => "api_logs (#{Time.now.utc.strftime("%b %-e %Y")}).#{params[:format]}")
         self.response_body = CsvStreamer.new(@result, headers) do |row|
           [
             csv_time(row["request_at"]),
