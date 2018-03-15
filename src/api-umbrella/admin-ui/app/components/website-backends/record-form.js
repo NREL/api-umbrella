@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import { observer } from '@ember/object';
 
 export default Component.extend(Save, {
   init() {
@@ -11,7 +12,7 @@ export default Component.extend(Save, {
     ];
   },
 
-  changeDefaultPort: function() {
+  changeDefaultPort: observer('model.backendProtocol', function() {
     let protocol = this.get('model.backendProtocol');
     let port = parseInt(this.get('model.serverPort'), 10);
     if(protocol === 'https') {
@@ -23,7 +24,7 @@ export default Component.extend(Save, {
         this.set('model.serverPort', 80);
       }
     }
-  }.observes('model.backendProtocol'),
+  }),
 
   actions: {
     submit() {

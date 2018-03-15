@@ -273,7 +273,7 @@ export default Component.extend({
     }
   },
 
-  updateQueryBuilderRules: function() {
+  updateQueryBuilderRules: observer('query', function() {
     let query = this.get('query');
     let rules;
     if(query) {
@@ -285,7 +285,7 @@ export default Component.extend({
     } else {
       $('#query_builder').queryBuilder('reset');
     }
-  }.observes('query'),
+  }),
 
   updateDateRange: observer('allQueryParamValues.start_at', 'allQueryParamValues.end_at', function() {
     let start = moment(this.get('allQueryParamValues.start_at'), 'YYYY-MM-DD');

@@ -2,6 +2,7 @@ import $ from 'jquery';
 import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 import { inject } from '@ember/service';
+import { observer } from '@ember/object';
 
 export default Component.extend({
   busy: inject('busy'),
@@ -104,7 +105,7 @@ export default Component.extend({
     });
   },
 
-  handleReorderChange: function() {
+  handleReorderChange: observer('reorderActive', function() {
     if(this.get('reorderActive')) {
       this.$().find('table').addClass('reorder-active');
       this.get('table')
@@ -125,7 +126,7 @@ export default Component.extend({
         $buttonText.text($buttonText.data('originalText'));
       }
     }
-  }.observes('reorderActive'),
+  }),
 
   saveReorder(id, moveAfterId) {
     this.get('busy').show();
