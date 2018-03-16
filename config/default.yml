@@ -109,6 +109,8 @@ web:
         client_secret:
       ldap:
         options: {}
+      max.gov:
+        require_mfa: true
   mailer:
     smtp_settings:
 static_site:
