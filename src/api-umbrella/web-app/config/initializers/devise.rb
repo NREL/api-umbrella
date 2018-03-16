@@ -299,7 +299,7 @@ Devise.setup do |config|
       require "omniauth-cas"
       config.omniauth :cas,
         :host => "login.max.gov",
-        :login_url => "/cas/login",
+        :login_url => "/cas/login#{if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:"max.gov"][:require_mfa]) then "?securityLevel=securePlus2" end}",
         :service_validate_url => "/cas/serviceValidate",
         :logout_url => "/cas/logout",
         :ssl => true

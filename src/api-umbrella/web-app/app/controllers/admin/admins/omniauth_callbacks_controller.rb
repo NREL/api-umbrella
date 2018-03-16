@@ -22,6 +22,12 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
   end
 
   def cas
+    if(ApiUmbrellaConfig[:web][:admin][:auth_strategies][:"max.gov"][:require_mfa])
+      if(!request.env["omniauth.auth"]["extra"] || !request.env["omniauth.auth"]["extra"]["MaxSecurityLevel"] || !request.env["omniauth.auth"]["extra"]["MaxSecurityLevel"].include?("securePlus2"))
+        return mfa_required_error
+      end
+    end
+
     @username = request.env["omniauth.auth"]["uid"]
     login
   end
@@ -102,6 +108,16 @@ class Admin::Admins::OmniauthCallbacksController < Devise::OmniauthCallbacksCont
       "The email address '",
       @username,
       "' is not verified. Please ",
+      ActionController::Base.helpers.content_tag(:a, "contact us", :href => ApiUmbrellaConfig[:contact_url]),
+      " for further assistance.",
+    ])
+
+    redirect_to new_admin_session_path
+  end
+
+  def mfa_required_error
+    flash[:error] = ActionController::Base.helpers.safe_join([
+      "You must use multi-factor authentication to sign in. Please try again, or ",
       ActionController::Base.helpers.content_tag(:a, "contact us", :href => ApiUmbrellaConfig[:contact_url]),
       " for further assistance.",
     ])
