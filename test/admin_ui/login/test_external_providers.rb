@@ -123,6 +123,11 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       :provider => :cas,
       :login_button_text => "Sign in with MAX.gov",
       :username_path => "uid",
+      :extra => {
+        "extra" => {
+          "MaxSecurityLevel" => "standard, securePlus2"
+        },
+      },
     },
   ].each do |options|
     define_method("test_#{options.fetch(:provider)}_valid_admin") do
@@ -204,6 +209,10 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
     omniauth_base_data["provider"] = options.fetch(:provider).to_s
     if(options[:verified_path])
       LazyHash.add(omniauth_base_data, options.fetch(:verified_path), true)
+    end
+
+    if(options[:extra])
+      omniauth_base_data.deep_merge!(options[:extra])
     end
 
     omniauth_base_data
