@@ -125,7 +125,7 @@ class Test::AdminUi::Login::TestExternalProviders < Minitest::Capybara::Test
       :username_path => "uid",
       :extra => {
         "extra" => {
-          "MaxSecurityLevel" => "standard, securePlus2"
+          "MaxSecurityLevel" => "standard, securePlus2",
         },
       },
     },
