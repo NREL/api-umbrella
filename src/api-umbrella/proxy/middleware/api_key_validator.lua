@@ -6,7 +6,7 @@ local is_empty = types.is_empty
 
 local function resolve_api_key()
   local api_key_methods = config["gatekeeper"]["api_key_methods"]
-  local key = {key_value="", key_type="", idp=nil }
+  local key = {key_value="", key_type="", idp=nil, trusted_apps=nil}
 
   -- The api_key variable is a dictionary compose by three elements, the key_value which stores
   -- the api_key value or the user token value, the key_type field in where is stored
@@ -50,6 +50,7 @@ return function(settings)
   -- Find if and IdP was set
   if settings["require_idp"] then
     api_key.idp=settings["require_idp"]
+    api_key.trusted_apps = settings["trusted_apps"]
   end
   if is_empty(api_key["key_value"]) then
     if settings and settings["disable_api_key"] then
@@ -63,6 +64,10 @@ return function(settings)
   local user = get_user(api_key)
   if not user then
     return nil, "api_key_invalid"
+  end
+  -- Verify if the app that makes the request is in the trusted app list of the API Backend
+  if api_key["key_type"]== "token" and user["trusted_app"]== "not_trusted" then
+    return nil, "not_trusted_app"
   end
 
   -- Store the api key on the user object for easier access (the user object

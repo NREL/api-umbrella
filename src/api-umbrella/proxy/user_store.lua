@@ -9,6 +9,7 @@ local shcache = require "shcache"
 local types = require "pl.types"
 local utils = require "api-umbrella.proxy.utils"
 local idp = require "api-umbrella.utils.idp"
+local trusted_app = require "api-umbrella.utils.trusted_app_validation"
 
 local cache_computed_settings = utils.cache_computed_settings
 local is_empty = types.is_empty
@@ -53,9 +54,11 @@ local function lookup_user(api_key)
     else
       user["id"] = raw_user["_id"]
     end
+
     if api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]== "fiware-oauth2" then
       user["id"] = raw_user.id
       user["email"] = raw_user.email
+      user["trusted_app"]= trusted_app.trusted_app_validation(raw_user.app_id,api_key["trusted_apps"])
     elseif api_key["idp"] and api_key["key_type"]=="token" and api_key["idp"]~= "fiware-oauth2" then
       user["id"] = raw_user.name
       user["email"] = raw_user.email

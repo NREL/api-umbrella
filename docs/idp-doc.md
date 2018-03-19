@@ -110,7 +110,7 @@ curl -k -X POST "https://<your-api-umbrella-hostaname>/api-umbrella/v1/apis" -H 
     "settings": {
       "require_https":"required_return_error",
       "require_idp": "fiware-oauth2",
-      "disable_api_key":"true",
+      "disable_api_key":"false",
       "api_key_verification_level":"none",
       "rate_limit_mode":"unlimited",
       "error_templates": {},
