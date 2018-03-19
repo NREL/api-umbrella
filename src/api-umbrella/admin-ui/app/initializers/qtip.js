@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 export function initialize() {
   $(document).on('click', 'a[rel=tooltip]', function(event) {
     $(this).qtip({

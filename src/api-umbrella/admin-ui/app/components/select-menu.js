@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import Component from '@ember/component';
+import { once } from '@ember/runloop';
 
-export default Ember.Component.extend({
+export default Component.extend({
   didRender() {
     // Defer update to within the run loop, to prevent ember warnings about
     // updates within the actual rendering (which can cause poor performance).
-    Ember.run.once(this, this.updateDefault);
+    once(this, this.updateDefault);
   },
 
   // If a select menu doesn't have a value set on the model, set it to the
@@ -25,6 +26,7 @@ export default Ember.Component.extend({
       if(options) {
         let firstOption = options[0];
         if(firstOption && firstOption.id) {
+          // eslint-disable-next-line ember/closure-actions
           this.sendAction('action', firstOption.id, this);
         }
       }

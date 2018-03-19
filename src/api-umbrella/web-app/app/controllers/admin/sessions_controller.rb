@@ -27,7 +27,16 @@ class Admin::SessionsController < Devise::SessionsController
           "id",
           "superuser",
           "username",
-        ),
+        ).merge({
+          "permissions" => {
+            "analytics" => current_admin.can?("analytics"),
+            "user_view" => current_admin.can?("user_view"),
+            "user_manage" => current_admin.can?("user_manage"),
+            "admin_manage" => current_admin.can?("admin_manage"),
+            "backend_manage" => current_admin.can?("backend_manage"),
+            "backend_publish" => current_admin.can?("backend_publish"),
+          },
+        }),
         "api_key" => ApiUser.where(:email => "web.admin.ajax@internal.apiumbrella").order_by(:created_at.asc).first.api_key,
         "admin_auth_token" => current_admin.authentication_token,
       })

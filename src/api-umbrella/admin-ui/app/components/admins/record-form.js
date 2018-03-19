@@ -1,10 +1,12 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import Save from 'api-umbrella-admin-ui/mixins/save';
+import { computed } from '@ember/object';
+import { inject } from '@ember/service';
 
-export default Ember.Component.extend(Save, {
-  session: Ember.inject.service(),
+export default Component.extend(Save, {
+  session: inject(),
 
-  currentAdmin: Ember.computed(function() {
+  currentAdmin: computed(function() {
     return this.get('session.data.authenticated.admin');
   }),
 

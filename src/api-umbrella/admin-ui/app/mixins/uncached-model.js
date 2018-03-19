@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import Mixin from '@ember/object/mixin'
 
-export default Ember.Mixin.create({
+export default Mixin.create({
   // Call before fetching a model to clear any client-side cache data.
   //
   // This works around a couple different issues with ember-data, which is why

@@ -9,7 +9,11 @@ class AdminGroupPolicy < ApplicationPolicy
           api_scope_ids << api_scope.id
         end
 
-        scope.in(:api_scope_ids => api_scope_ids)
+        if(api_scope_ids.any?)
+          scope.in(:api_scope_ids => api_scope_ids)
+        else
+          scope.none
+        end
       end
     end
   end

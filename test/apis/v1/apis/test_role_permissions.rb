@@ -263,7 +263,7 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
     record = Api.find(record.id)
     refute_nil(record.name)
     refute_equal(attributes["name"], record.name)
-    attr_overrides.keys.each do |key|
+    attr_overrides.each_key do |key|
       refute_equal(attributes[key], record[key])
     end
   end

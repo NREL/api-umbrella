@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
+export default Route.extend({
   renderTemplate() {
-    Ember.Logger.error('Route not found');
+    // eslint-disable-next-line no-console
+    console.error('Route not found');
     this.render('not-found');
   },
 });

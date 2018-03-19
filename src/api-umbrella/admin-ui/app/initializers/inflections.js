@@ -1,10 +1,10 @@
-import Ember from 'ember';
+import Inflector from 'ember-inflector';
 
 export function initialize() {
   // So the Api model doesn't try to singularize the subSettings hasMany
   // relationship (which leads to it trying to find the non-existent
   // "api/sub-setting" model).
-  Ember.Inflector.inflector.irregular('sub-settings', 'sub-settings');
+  Inflector.inflector.irregular('sub-settings', 'sub-settings');
 }
 
 export default {

@@ -1,8 +1,10 @@
-import Ember from 'ember';
 import ApplicationRouteMixin from 'ember-simple-auth/mixins/application-route-mixin';
+import Route from '@ember/routing/route';
+import { inject } from '@ember/service';
+import { observer } from '@ember/object';
 
-export default Ember.Route.extend(ApplicationRouteMixin, {
-  busy: Ember.inject.service('busy'),
+export default Route.extend(ApplicationRouteMixin, {
+  busy: inject('busy'),
 
   // By default, ember-simple-auth sets the "session.attemptedTransition" value
   // to track where to redirect unauthenticated users to after logging in.
@@ -10,7 +12,7 @@ export default Ember.Route.extend(ApplicationRouteMixin, {
   // disappears after the server-side login redirect. So instead, we'll store
   // just the string value of the attempted transition and persist it in the
   // session store so it's available after the server-side login.
-  attemptedTransitionChange: Ember.observer('session.attemptedTransition', function() {
+  attemptedTransitionChange: observer('session.attemptedTransition', function() {
     const attemptedTransition = this.get('session.attemptedTransition');
     if(attemptedTransition) {
       this.get('session').set('data.attemptedTransitionUrl', attemptedTransition.intent.url);
@@ -44,6 +46,10 @@ export default Ember.Route.extend(ApplicationRouteMixin, {
       });
     },
 
+    refreshCurrentRoute(){
+      this.refresh();
+    },
+
     error(error) {
       if(error) {
         let errorMessage = error.stack
@@ -55,7 +61,8 @@ export default Ember.Route.extend(ApplicationRouteMixin, {
             errorMessage = errorMessage.substring(0, 1000);
           }
         }
-        Ember.Logger.error(errorMessage);
+        // eslint-disable-next-line no-console
+        console.error(errorMessage);
         this.get('busy').hide();
         return this.intermediateTransitionTo('error');
       }

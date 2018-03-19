@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { helper } from '@ember/component/helper';
 
 export function inflect(params) {
   let word = params[0];
@@ -6,4 +6,4 @@ export function inflect(params) {
   return inflection.inflect(word, number);
 }
 
-export default Ember.Helper.helper(inflect);
+export default helper(inflect);

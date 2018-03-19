@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { buildValidations, validator } from 'ember-cp-validations';
+
 import DS from 'ember-data';
 import I18n from 'npm:i18n-js';
-import { validator, buildValidations } from 'ember-cp-validations';
+import { computed } from '@ember/object';
 
 const Validations = buildValidations({
   name: validator('presence', true),
@@ -30,7 +31,7 @@ export default DS.Model.extend(Validations, {
   creator: DS.attr(),
   updater: DS.attr(),
 
-  displayName: Ember.computed('name', 'host', 'pathPrefix', function() {
+  displayName: computed('name', 'host', 'pathPrefix', function() {
     return this.get('name') + ' - ' + this.get('host') + this.get('pathPrefix');
   }),
 }).reopenClass({

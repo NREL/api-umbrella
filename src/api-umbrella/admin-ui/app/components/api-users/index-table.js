@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
 
-export default Ember.Component.extend({
+export default Component.extend({
   didInsertElement() {
     this.$().find('table').DataTable({
       serverSide: true,

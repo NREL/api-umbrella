@@ -130,8 +130,9 @@ router:
     ip_connections_log_level: error
   web_app_host: "*"
   web_app_backend_regex: "^/(admin|admins|web-assets)(/|$)"
-  web_app_backend_required_https_regex: "^/(admin|admins)(/|$)"
-  website_backend_required_https_regex_default: "^/(account|signup|contact)(/|$)"
+  web_app_backend_required_https_regex: "^.*"
+  website_backend_required_https_regex_default: "^.*"
+  redirect_not_found_to_https: true
 rsyslog:
   host: 127.0.0.1
   port: 14014

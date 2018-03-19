@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import $ from 'jquery';
 import AuthenticatedRouteMixin from 'ember-simple-auth/mixins/authenticated-route-mixin';
+import Route from '@ember/routing/route';
 import moment from 'npm:moment-timezone';
 
-export default Ember.Route.extend(AuthenticatedRouteMixin, {
+export default Route.extend(AuthenticatedRouteMixin, {
   setupController(controller, model) {
     controller.set('model', model);
     controller.set('dateRanges', this.get('dateRanges'));

@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import { buildValidations, validator } from 'ember-cp-validations';
+
 import DS from 'ember-data';
-import { validator, buildValidations } from 'ember-cp-validations';
+import { computed } from '@ember/object';
 
 const Validations = buildValidations({
   firstName: validator('presence', true),
@@ -58,7 +59,7 @@ export default DS.Model.extend(Validations, {
     }
   },
 
-  rolesString: Ember.computed('roles', {
+  rolesString: computed('roles', {
     get() {
       let rolesString = '';
       if(this.get('roles')) {

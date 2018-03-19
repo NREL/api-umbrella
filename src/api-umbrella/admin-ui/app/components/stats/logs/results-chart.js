@@ -1,7 +1,10 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import Component from '@ember/component';
 import echarts from 'npm:echarts';
+import { observer } from '@ember/object';
+import { on } from '@ember/object/evented';
 
-export default Ember.Component.extend({
+export default Component.extend({
   classNames: ['stats-logs-results-chart'],
 
   didInsertElement() {
@@ -15,7 +18,8 @@ export default Ember.Component.extend({
     $(window).on('resize', _.debounce(this.chart.resize, 100));
   },
 
-  refreshData: Ember.on('init', Ember.observer('hitsOverTime', function() {
+  // eslint-disable-next-line ember/no-on-calls-in-components
+  refreshData: on('init', observer('hitsOverTime', function() {
     let data = []
     let labels = [];
 
@@ -46,6 +50,7 @@ export default Ember.Component.extend({
     }
 
     this.chart.setOption({
+      animation: false,
       tooltip: {
         trigger: 'axis',
       },
@@ -121,6 +126,6 @@ export default Ember.Component.extend({
           end: 100,
         },
       ],
-    });
+    }, true);
   },
 });

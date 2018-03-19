@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import { guidFor } from '@ember/object/internals';
+import { helper } from '@ember/component/helper';
 
-export function guidFor(params) {
+export function guidForHelper(params) {
   let object = params[0];
 
-  return Ember.guidFor(object);
+  return guidFor(object);
 }
 
-export default Ember.Helper.helper(guidFor);
+export default helper(guidForHelper);

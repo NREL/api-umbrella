@@ -31,7 +31,7 @@ module Admin::StatsHelper
       bucket["percent"] = ((bucket["count"] / total) * 100).round
     end
 
-    if(other_hits > 0)
+    if(other_hits && other_hits > 0)
       buckets << {
         "key" => "Other",
         "count" => other_hits,

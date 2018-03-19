@@ -1,9 +1,12 @@
-import Ember from 'ember';
-import I18n from 'npm:i18n-js';
+import $ from 'jquery';
+import Component from '@ember/component';
 import DataTablesHelpers from 'api-umbrella-admin-ui/utils/data-tables-helpers';
+import I18n from 'npm:i18n-js';
+import { computed } from '@ember/object';
+import { inject } from '@ember/service';
 
-export default Ember.Component.extend({
-  session: Ember.inject.service('session'),
+export default Component.extend({
+  session: inject('session'),
 
   didInsertElement() {
     let dataTable = this.$().find('table').DataTable({
@@ -60,7 +63,7 @@ export default Ember.Component.extend({
     }.bind(this));
   },
 
-  downloadUrl: Ember.computed('queryParams', function() {
+  downloadUrl: computed('queryParams', function() {
     let params = this.get('queryParams');
     if(params) {
       params = $.param(params);

@@ -56,7 +56,7 @@ if [ "$configure" = "true" ]; then
 
   # Add the deploy user to the app group, so the deploy user can read config
   # files.
-  if ! groups $deploy_user | grep -q -E "\s$group(\s|$)"; then
+  if ! groups $deploy_user | grep -q -E "\\s$group(\\s|$)"; then
     usermod -a -G $group $deploy_user
   fi
 

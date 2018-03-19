@@ -1,10 +1,14 @@
-import Ember from 'ember';
-import I18n from 'npm:i18n-js';
-import moment from 'npm:moment-timezone';
 import 'npm:bootstrap-daterangepicker';
 
-export default Ember.Component.extend({
-  session: Ember.inject.service('session'),
+import $ from 'jquery';
+import Component from '@ember/component';
+import I18n from 'npm:i18n-js';
+import { inject } from '@ember/service';
+import moment from 'npm:moment-timezone';
+import { observer } from '@ember/object';
+
+export default Component.extend({
+  session: inject('session'),
 
   enableInterval: false,
 
@@ -283,7 +287,7 @@ export default Ember.Component.extend({
     }
   }.observes('query'),
 
-  updateDateRange: Ember.observer('allQueryParamValues.start_at', 'allQueryParamValues.end_at', function() {
+  updateDateRange: observer('allQueryParamValues.start_at', 'allQueryParamValues.end_at', function() {
     let start = moment(this.get('allQueryParamValues.start_at'), 'YYYY-MM-DD');
     let end = moment(this.get('allQueryParamValues.end_at'), 'YYYY-MM-DD');
 

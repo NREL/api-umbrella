@@ -19,7 +19,11 @@ class ApiPolicy < ApplicationPolicy
           }
         end
 
-        scope.or(query_scopes)
+        if(query_scopes.any?)
+          scope.or(query_scopes)
+        else
+          scope.none
+        end
       end
     end
   end
