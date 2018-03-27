@@ -15,6 +15,7 @@ class Api::Settings
   field :allowed_ips, :type => Array
   field :allowed_referers, :type => Array
   field :rate_limit_mode, :type => String
+  field :rate_limit_cost_header, :type => String
   field :anonymous_rate_limit_behavior, :type => String
   field :authenticated_rate_limit_behavior, :type => String
   field :pass_api_key_header, :type => Boolean
@@ -37,7 +38,10 @@ class Api::Settings
   validates :api_key_verification_level,
     :inclusion => { :in => %w(none transition_email required_email), :allow_blank => true }
   validates :rate_limit_mode,
-    :inclusion => { :in => %w(unlimited custom), :allow_blank => true }
+    :inclusion => { :in => %w(unlimited custom custom-header), :allow_blank => true }
+  validates :rate_limit_cost_header,
+    :presence => true,
+    :if => Proc.new { |a| a.rate_limit_mode == "custom-header" }
   validates :anonymous_rate_limit_behavior,
     :inclusion => { :in => %w(ip_fallback ip_only), :allow_blank => true }
   validates :authenticated_rate_limit_behavior,

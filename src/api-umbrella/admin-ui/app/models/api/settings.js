@@ -13,6 +13,7 @@ export default DS.Model.extend({
   allowedIps: DS.attr(),
   allowedReferers: DS.attr(),
   rateLimitMode: DS.attr(),
+  rateLimitCostHeader: DS.attr(),
   anonymousRateLimitBehavior: DS.attr(),
   authenticatedRateLimitBehavior: DS.attr(),
   passApiKeyHeader: DS.attr(),
@@ -111,6 +112,11 @@ export default DS.Model.extend({
   }),
 
   isRateLimitModeCustom: Ember.computed('rateLimitMode', function() {
-    return (this.get('rateLimitMode') === 'custom');
+    return (this.get('rateLimitMode') === 'custom'
+      || this.get('rateLimitMode') === 'custom-header');
+  }),
+
+  hasRateLimitCostHeader: Ember.computed('rateLimitMode', function() {
+    return (this.get('rateLimitMode') === 'custom-header');
   }),
 });

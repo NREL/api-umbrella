@@ -23,7 +23,7 @@ class Api::RateLimit
     :numericality => { :greater_than => 0 }
   validates :limit_by,
     :presence => true,
-    :inclusion => { :in => %w(ip apiKey) }
+    :inclusion => { :in => %w(ip apiKey origin) }
   validates :limit,
     :presence => true,
     :numericality => { :greater_than => 0 }

@@ -228,14 +228,14 @@ class Api
   # reason turning on cascade_callbacks leads to stack level too deep errors).
   def handle_rate_limit_mode
     if(self.settings.present?)
-      if(self.settings.rate_limit_mode != "custom")
+      if(self.settings.rate_limit_mode != "custom" && self.settings.rate_limit_mode != "custom-header")
         self.settings.rate_limits.clear
       end
     end
 
     if(self.sub_settings.present?)
       self.sub_settings.each do |sub|
-        if(sub.settings.present? && sub.settings.rate_limit_mode != "custom")
+        if(sub.settings.present? && (sub.settings.rate_limit_mode != "custom" && sub.settings.rate_limit_mode != "custom-header"))
           sub.settings.rate_limits.clear
         end
       end

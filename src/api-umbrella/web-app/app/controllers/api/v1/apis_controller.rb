@@ -95,6 +95,7 @@ class Api::V1::ApisController < Api::V1::BaseController
       :api_key_verification_level,
       :api_key_verification_transition_start_at,
       :rate_limit_mode,
+      :rate_limit_cost_header,
       :anonymous_rate_limit_behavior,
       :authenticated_rate_limit_behavior,
       :pass_api_key_header,

@@ -6,6 +6,7 @@ export default Ember.Component.extend({
   rateLimitModeOptions: [
     { id: null, name: 'Default rate limits' },
     { id: 'custom', name: 'Custom rate limits' },
+    { id: 'custom-header', name: 'Custom rate limits based on response header' },
     { id: 'unlimited', name: 'Unlimited requests' },
   ],
 
@@ -19,6 +20,7 @@ export default Ember.Component.extend({
   rateLimitLimitByOptions: [
     { id: 'apiKey', name: 'API Key' },
     { id: 'ip', name: 'IP Address' },
+    { id: 'origin', name: 'Origin Header' },
   ],
 
   uniqueSettingsId: Ember.computed(function() {

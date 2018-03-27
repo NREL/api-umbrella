@@ -80,3 +80,4 @@ end
 
 -- Store the settings for use by the header_filter.
 ngx.ctx.settings = settings
+ngx.ctx.user = user
