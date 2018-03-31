@@ -51,9 +51,9 @@ module ApiUmbrellaTestHelpers
 
     def attributes_for(action)
       if(action == :create)
-        FactoryGirl.attributes_for(:api).deep_stringify_keys
+        FactoryBot.attributes_for(:api).deep_stringify_keys
       elsif(action == :update)
-        FactoryGirl.create(:api).serializable_hash
+        FactoryBot.create(:api).serializable_hash
       else
         flunk("Unknown action: #{action.inspect}")
       end

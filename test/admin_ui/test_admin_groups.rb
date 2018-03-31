@@ -14,7 +14,7 @@ class Test::AdminUi::TestAdminGroups < Minitest::Capybara::Test
   end
 
   def test_create
-    api_scope = FactoryGirl.create(:api_scope, :name => "Example Scope")
+    api_scope = FactoryBot.create(:api_scope, :name => "Example Scope")
 
     admin_login
     visit("/admin/#/admin_groups/new")
@@ -33,9 +33,9 @@ class Test::AdminUi::TestAdminGroups < Minitest::Capybara::Test
   end
 
   def test_update
-    api_scope1 = FactoryGirl.create(:api_scope, :name => "Example Scope 1")
-    api_scope2 = FactoryGirl.create(:api_scope, :name => "Example Scope 2")
-    admin_group = FactoryGirl.create(:admin_group, {
+    api_scope1 = FactoryBot.create(:api_scope, :name => "Example Scope 1")
+    api_scope2 = FactoryBot.create(:api_scope, :name => "Example Scope 2")
+    admin_group = FactoryBot.create(:admin_group, {
       :name => "Example",
       :api_scopes => [api_scope1],
     })

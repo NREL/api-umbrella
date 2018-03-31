@@ -127,47 +127,47 @@ class Test::Proxy::ApiKeyValidation::TestRoleRequirements < Minitest::Test
   end
 
   def test_unauthorized_key_with_null_roles
-    user = FactoryGirl.create(:api_user, :roles => nil)
+    user = FactoryBot.create(:api_user, :roles => nil)
     assert_unauthorized("/#{unique_test_class_id}/required-roles/hello", user.api_key)
   end
 
   def test_unauthorized_key_with_empty_roles
-    user = FactoryGirl.create(:api_user, :roles => [])
+    user = FactoryBot.create(:api_user, :roles => [])
     assert_unauthorized("/#{unique_test_class_id}/required-roles/hello", user.api_key)
   end
 
   def test_unauthorized_key_with_other_roles
-    user = FactoryGirl.create(:api_user, :roles => ["something", "else"])
+    user = FactoryBot.create(:api_user, :roles => ["something", "else"])
     assert_unauthorized("/#{unique_test_class_id}/required-roles/hello", user.api_key)
   end
 
   def test_unauthorized_key_with_only_one_required_role
-    user = FactoryGirl.create(:api_user, :roles => ["private"])
+    user = FactoryBot.create(:api_user, :roles => ["private"])
     assert_unauthorized("/#{unique_test_class_id}/required-roles/hello", user.api_key)
   end
 
   def test_authorized_key_with_all_required_roles
-    user = FactoryGirl.create(:api_user, :roles => ["restricted", "private"])
+    user = FactoryBot.create(:api_user, :roles => ["restricted", "private"])
     assert_authorized("/#{unique_test_class_id}/required-roles/hello", user.api_key)
   end
 
   def test_unauthorized_key_with_admin_role
-    user = FactoryGirl.create(:api_user, :roles => ["admin"])
+    user = FactoryBot.create(:api_user, :roles => ["admin"])
     assert_unauthorized("/#{unique_test_class_id}/required-roles/hello", user.api_key)
   end
 
   def test_sub_settings_additional_roles_unauthorized_with_only_parent_roles
-    user = FactoryGirl.create(:api_user, :roles => ["restricted", "private"])
+    user = FactoryBot.create(:api_user, :roles => ["restricted", "private"])
     assert_unauthorized("/#{unique_test_class_id}/required-roles/hello/sub/", user.api_key)
   end
 
   def test_sub_settings_additional_roles_unauthorized_with_only_sub_roles
-    user = FactoryGirl.create(:api_user, :roles => ["sub"])
+    user = FactoryBot.create(:api_user, :roles => ["sub"])
     assert_unauthorized("/#{unique_test_class_id}/required-roles/hello/sub/", user.api_key)
   end
 
   def test_sub_settings_additional_roles_authorized_with_all_roles
-    user = FactoryGirl.create(:api_user, :roles => ["sub", "restricted", "private"])
+    user = FactoryBot.create(:api_user, :roles => ["sub", "restricted", "private"])
     assert_authorized("/#{unique_test_class_id}/required-roles/hello/sub/", user.api_key)
   end
 
@@ -176,7 +176,7 @@ class Test::Proxy::ApiKeyValidation::TestRoleRequirements < Minitest::Test
   end
 
   def test_sub_settings_null_roles_authorized_with_parent_roles
-    user = FactoryGirl.create(:api_user, :roles => ["restricted", "private"])
+    user = FactoryBot.create(:api_user, :roles => ["restricted", "private"])
     assert_authorized("/#{unique_test_class_id}/required-roles/hello/sub-null-roles/", user.api_key)
   end
 
@@ -185,7 +185,7 @@ class Test::Proxy::ApiKeyValidation::TestRoleRequirements < Minitest::Test
   end
 
   def test_sub_settings_empty_roles_authorized_with_parent_roles
-    user = FactoryGirl.create(:api_user, :roles => ["restricted", "private"])
+    user = FactoryBot.create(:api_user, :roles => ["restricted", "private"])
     assert_authorized("/#{unique_test_class_id}/required-roles/hello/sub-empty-roles/", user.api_key)
   end
 
@@ -194,22 +194,22 @@ class Test::Proxy::ApiKeyValidation::TestRoleRequirements < Minitest::Test
   end
 
   def test_sub_settings_unset_roles_authorized_with_parent_roles
-    user = FactoryGirl.create(:api_user, :roles => ["restricted", "private"])
+    user = FactoryBot.create(:api_user, :roles => ["restricted", "private"])
     assert_authorized("/#{unique_test_class_id}/required-roles/hello/sub-unset-roles/", user.api_key)
   end
 
   def test_sub_settings_override_false_additional_roles_unauthorized_with_only_parent_roles
-    user = FactoryGirl.create(:api_user, :roles => ["restricted", "private"])
+    user = FactoryBot.create(:api_user, :roles => ["restricted", "private"])
     assert_unauthorized("/#{unique_test_class_id}/required-roles/hello/sub-override-false/", user.api_key)
   end
 
   def test_sub_settings_override_false_additional_roles_unauthorized_with_only_sub_roles
-    user = FactoryGirl.create(:api_user, :roles => ["sub"])
+    user = FactoryBot.create(:api_user, :roles => ["sub"])
     assert_unauthorized("/#{unique_test_class_id}/required-roles/hello/sub-override-false/", user.api_key)
   end
 
   def test_sub_settings_override_false_additional_roles_authorized_with_all_roles
-    user = FactoryGirl.create(:api_user, :roles => ["sub", "restricted", "private"])
+    user = FactoryBot.create(:api_user, :roles => ["sub", "restricted", "private"])
     assert_authorized("/#{unique_test_class_id}/required-roles/hello/sub-override-false/", user.api_key)
   end
 
@@ -218,7 +218,7 @@ class Test::Proxy::ApiKeyValidation::TestRoleRequirements < Minitest::Test
   end
 
   def test_sub_settings_override_true_additional_roles_authorized_with_only_sub_roles
-    user = FactoryGirl.create(:api_user, :roles => ["sub"])
+    user = FactoryBot.create(:api_user, :roles => ["sub"])
     assert_authorized("/#{unique_test_class_id}/required-roles/hello/sub-override-true/", user.api_key)
   end
 
@@ -240,7 +240,7 @@ class Test::Proxy::ApiKeyValidation::TestRoleRequirements < Minitest::Test
   end
 
   def test_sub_settings_roles_parent_no_roles_authorized_with_sub_roles
-    user = FactoryGirl.create(:api_user, :roles => ["sub"])
+    user = FactoryBot.create(:api_user, :roles => ["sub"])
     assert_authorized("/#{unique_test_class_id}/no-parent-roles/hello/sub-settings/", user.api_key)
   end
 
@@ -261,7 +261,7 @@ class Test::Proxy::ApiKeyValidation::TestRoleRequirements < Minitest::Test
   end
 
   def test_api_requiring_roles_not_key_given_key_with_roles
-    user = FactoryGirl.create(:api_user, :roles => ["restricted"])
+    user = FactoryBot.create(:api_user, :roles => ["restricted"])
     assert_authorized("/#{unique_test_class_id}/no-key/hello", user.api_key)
   end
 
@@ -276,7 +276,7 @@ class Test::Proxy::ApiKeyValidation::TestRoleRequirements < Minitest::Test
   end
 
   def test_api_requiring_roles_sub_settings_disables_key_given_key_with_roles
-    user = FactoryGirl.create(:api_user, :roles => ["restricted", "private"])
+    user = FactoryBot.create(:api_user, :roles => ["restricted", "private"])
     assert_authorized("/#{unique_test_class_id}/required-roles/hello/sub-no-key-required/", user.api_key)
   end
 

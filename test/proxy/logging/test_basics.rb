@@ -520,7 +520,7 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_does_not_log_web_app_requests
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/login", log_http_options)
     assert_response_code(200, response)
 

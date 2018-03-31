@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :api do
     sequence(:name) { |n| "Example #{n}" }
     backend_protocol "http"
@@ -7,16 +7,16 @@ FactoryGirl.define do
     balance_algorithm "least_conn"
 
     servers do
-      [FactoryGirl.attributes_for(:api_server, :host => "example.com")]
+      [FactoryBot.attributes_for(:api_server, :host => "example.com")]
     end
 
     url_matches do
-      [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/example", :backend_prefix => "/")]
+      [FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/example", :backend_prefix => "/")]
     end
 
     factory :api_with_settings do
       settings do
-        FactoryGirl.attributes_for(:api_setting)
+        FactoryBot.attributes_for(:api_setting)
       end
     end
 
@@ -25,17 +25,17 @@ FactoryGirl.define do
       backend_host "google.com"
 
       servers do
-        [FactoryGirl.attributes_for(:api_server, :host => "google.com")]
+        [FactoryBot.attributes_for(:api_server, :host => "google.com")]
       end
 
       url_matches do
-        [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/google", :backend_prefix => "/")]
+        [FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/google", :backend_prefix => "/")]
       end
 
       sub_settings do
         [
-          FactoryGirl.attributes_for(:api_sub_setting, {
-            :settings_attributes => FactoryGirl.attributes_for(:api_setting, {
+          FactoryBot.attributes_for(:api_sub_setting, {
+            :settings_attributes => FactoryBot.attributes_for(:api_setting, {
               :required_roles => [
                 "google-write",
               ],
@@ -47,13 +47,13 @@ FactoryGirl.define do
       factory :google_extra_url_match_api do
         url_matches do
           [
-            FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/google", :backend_prefix => "/"),
-            FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/extra", :backend_prefix => "/"),
+            FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/google", :backend_prefix => "/"),
+            FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/extra", :backend_prefix => "/"),
           ]
         end
 
         settings do
-          FactoryGirl.attributes_for(:api_setting, {
+          FactoryBot.attributes_for(:api_setting, {
             :required_roles => [
               "google-extra-write",
             ],
@@ -67,17 +67,17 @@ FactoryGirl.define do
       backend_host "yahoo.com"
 
       servers do
-        [FactoryGirl.attributes_for(:api_server, :host => "yahoo.com")]
+        [FactoryBot.attributes_for(:api_server, :host => "yahoo.com")]
       end
 
       url_matches do
-        [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/yahoo", :backend_prefix => "/")]
+        [FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/yahoo", :backend_prefix => "/")]
       end
 
       sub_settings do
         [
-          FactoryGirl.attributes_for(:api_sub_setting, {
-            :settings_attributes => FactoryGirl.attributes_for(:api_setting, {
+          FactoryBot.attributes_for(:api_sub_setting, {
+            :settings_attributes => FactoryBot.attributes_for(:api_setting, {
               :required_roles => [
                 "yahoo-write",
               ],
@@ -92,20 +92,20 @@ FactoryGirl.define do
       backend_host "bing.com"
 
       servers do
-        [FactoryGirl.attributes_for(:api_server, :host => "bing.com")]
+        [FactoryBot.attributes_for(:api_server, :host => "bing.com")]
       end
 
       url_matches do
         [
-          FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/bing/search", :backend_prefix => "/"),
-          FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/bing/images", :backend_prefix => "/"),
-          FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/bing/maps", :backend_prefix => "/"),
+          FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/bing/search", :backend_prefix => "/"),
+          FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/bing/images", :backend_prefix => "/"),
+          FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/bing/maps", :backend_prefix => "/"),
         ]
       end
 
       factory :bing_search_api do
         url_matches do
-          [FactoryGirl.attributes_for(:api_url_match, :frontend_prefix => "/bing/search", :backend_prefix => "/")]
+          [FactoryBot.attributes_for(:api_url_match, :frontend_prefix => "/bing/search", :backend_prefix => "/")]
         end
       end
     end

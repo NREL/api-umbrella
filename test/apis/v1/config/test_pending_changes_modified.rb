@@ -12,7 +12,7 @@ class Test::Apis::V1::Config::TestPendingChangesModified < Minitest::Test
     WebsiteBackend.delete_all
     ConfigVersion.delete_all
 
-    @api = FactoryGirl.create(:api, :name => "Before")
+    @api = FactoryBot.create(:api, :name => "Before")
     ConfigVersion.publish!(ConfigVersion.pending_config)
     @api.update(:name => "After")
   end

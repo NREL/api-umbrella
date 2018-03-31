@@ -16,7 +16,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def test_no_admin_and_api_key_with_key_creator_role
-    api_key = FactoryGirl.create(:api_user, {
+    api_key = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     }).api_key
     admin = nil
@@ -24,7 +24,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def test_no_admin_and_api_key_without_key_creator_role
-    api_key = FactoryGirl.create(:api_user).api_key
+    api_key = FactoryBot.create(:api_user).api_key
     admin = nil
     assert_admin_forbidden(api_key, admin)
   end
@@ -36,105 +36,105 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def test_superuser_admin_and_api_key_with_key_creator_role
-    api_key = FactoryGirl.create(:api_user, {
+    api_key = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     }).api_key
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     assert_admin_permitted(api_key, admin)
   end
 
   def test_superuser_admin_and_api_key_without_key_creator_role
-    api_key = FactoryGirl.create(:api_user).api_key
-    admin = FactoryGirl.create(:admin)
+    api_key = FactoryBot.create(:api_user).api_key
+    admin = FactoryBot.create(:admin)
     assert_admin_permitted(api_key, admin)
   end
 
   def test_superuser_admin_and_no_api_key
     api_key = nil
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     assert_admin_forbidden(api_key, admin)
   end
 
   def test_view_manage_admin_and_api_key_with_key_creator_role
-    api_key = FactoryGirl.create(:api_user, {
+    api_key = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     }).api_key
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_view_and_manage_permission),
     ])
     assert_admin_permitted(api_key, admin)
   end
 
   def test_view_manage_admin_and_api_key_without_key_creator_role
-    api_key = FactoryGirl.create(:api_user).api_key
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission),
+    api_key = FactoryBot.create(:api_user).api_key
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_view_and_manage_permission),
     ])
     assert_admin_permitted(api_key, admin)
   end
 
   def test_view_manage_admin_and_no_api_key
     api_key = nil
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_view_and_manage_permission),
     ])
     assert_admin_forbidden(api_key, admin)
   end
 
   def test_view_admin_and_api_key_with_key_creator_role
-    api_key = FactoryGirl.create(:api_user, {
+    api_key = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     }).api_key
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_view_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_view_permission),
     ])
     assert_admin_permitted_view_only(api_key, admin)
   end
 
   def test_view_admin_and_api_key_without_key_creator_role
-    api_key = FactoryGirl.create(:api_user).api_key
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_view_permission),
+    api_key = FactoryBot.create(:api_user).api_key
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_view_permission),
     ])
     assert_admin_permitted_view_only(api_key, admin)
   end
 
   def test_view_admin_and_no_api_key
     api_key = nil
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_view_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_view_permission),
     ])
     assert_admin_forbidden(api_key, admin)
   end
 
   def test_manage_admin_and_api_key_with_key_creator_role
-    api_key = FactoryGirl.create(:api_user, {
+    api_key = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     }).api_key
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_manage_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_manage_permission),
     ])
     assert_admin_permitted_manage_only(api_key, admin)
   end
 
   def test_manage_admin_and_api_key_without_key_creator_role
-    api_key = FactoryGirl.create(:api_user).api_key
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_manage_permission),
+    api_key = FactoryBot.create(:api_user).api_key
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_manage_permission),
     ])
     assert_admin_permitted_manage_only(api_key, admin)
   end
 
   def test_manage_admin_and_no_api_key
     api_key = nil
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_view_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_view_permission),
     ])
     assert_admin_forbidden(api_key, admin)
   end
 
   def test_non_admin_exact_role_needed
-    api_key = FactoryGirl.create(:api_user, {
+    api_key = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator-bogus", "bogus-api-umbrella-key-creator"],
     }).api_key
     admin = nil
@@ -142,13 +142,13 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def test_non_admin_ignores_private_fields
-    api_key = FactoryGirl.create(:api_user, {
+    api_key = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     }).api_key
     admin = nil
     initial_count = active_count
 
-    attributes = FactoryGirl.attributes_for(:api_user, {
+    attributes = FactoryBot.attributes_for(:api_user, {
       :roles => ["new-role#{rand(999_999)}"],
       :settings => {
         :rate_limit_mode => "unlimited",
@@ -168,15 +168,15 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def test_admin_uses_private_fields
-    api_key = FactoryGirl.create(:api_user, {
+    api_key = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     }).api_key
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_view_and_manage_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_view_and_manage_permission),
     ])
     initial_count = active_count
 
-    attributes = FactoryGirl.attributes_for(:api_user, {
+    attributes = FactoryBot.attributes_for(:api_user, {
       :roles => ["new-role#{rand(999_999)}"],
       :settings => {
         :rate_limit_mode => "unlimited",
@@ -239,7 +239,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_index(api_key, admin)
-    record = FactoryGirl.create(:api_user)
+    record = FactoryBot.create(:api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin))
 
     assert_response_code(200, response)
@@ -249,7 +249,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_index(api_key, admin, role_based_error = false)
-    FactoryGirl.create(:api_user)
+    FactoryBot.create(:api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin))
 
     if(role_based_error)
@@ -268,7 +268,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_show(api_key, admin)
-    record = FactoryGirl.create(:api_user)
+    record = FactoryBot.create(:api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
 
     assert_response_code(200, response)
@@ -277,7 +277,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_show(api_key, admin, role_based_error = false)
-    record = FactoryGirl.create(:api_user)
+    record = FactoryBot.create(:api_user)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
 
     if(role_based_error)
@@ -296,7 +296,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_create(api_key, admin)
-    attributes = FactoryGirl.attributes_for(:api_user).deep_stringify_keys
+    attributes = FactoryBot.attributes_for(:api_user).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -311,7 +311,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_create(api_key, admin, role_based_error = false)
-    attributes = FactoryGirl.attributes_for(:api_user).deep_stringify_keys
+    attributes = FactoryBot.attributes_for(:api_user).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options(api_key, admin).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -335,7 +335,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_update(api_key, admin)
-    record = FactoryGirl.create(:api_user)
+    record = FactoryBot.create(:api_user)
 
     attributes = record.serializable_hash
     attributes["first_name"] += rand(999_999).to_s
@@ -351,7 +351,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_update(api_key, admin, role_based_error = false)
-    record = FactoryGirl.create(:api_user)
+    record = FactoryBot.create(:api_user)
 
     attributes = record.serializable_hash
     attributes["first_name"] += rand(999_999).to_s
@@ -380,7 +380,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_destroy(api_key, admin)
-    record = FactoryGirl.create(:api_user)
+    record = FactoryBot.create(:api_user)
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
     assert_response_code(204, response)
@@ -388,7 +388,7 @@ class Test::Apis::V1::Users::TestPermissions < Minitest::Test
   end
 
   def assert_no_destroy(api_key, admin)
-    record = FactoryGirl.create(:api_user)
+    record = FactoryBot.create(:api_user)
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/users/#{record.id}.json", http_options(api_key, admin))
 

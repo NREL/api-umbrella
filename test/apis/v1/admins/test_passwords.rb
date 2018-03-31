@@ -11,7 +11,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
   end
 
   def test_ignores_passwords_on_create
-    attributes = FactoryGirl.build(:admin).serializable_hash.deep_merge({
+    attributes = FactoryBot.build(:admin).serializable_hash.deep_merge({
       "encrypted_password" => BCrypt::Password.create("password234567"),
       "password" => "password234567",
       "password_confirmation" => "password234567",
@@ -28,10 +28,10 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
   end
 
   def test_ignores_passwords_when_updating_another_admin
-    other_admin = FactoryGirl.create(:admin)
+    other_admin = FactoryBot.create(:admin)
     original_encrypted_password = other_admin.encrypted_password
 
-    attributes = FactoryGirl.build(:admin).serializable_hash.deep_merge({
+    attributes = FactoryBot.build(:admin).serializable_hash.deep_merge({
       "encrypted_password" => BCrypt::Password.create("password234567"),
       "password" => "password234567",
       "password_confirmation" => "password234567",
@@ -47,7 +47,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
   end
 
   def test_accepts_password_change_when_updating_own_admin
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     original_encrypted_password = admin.encrypted_password
 
     attributes = admin.serializable_hash.deep_merge({
@@ -67,7 +67,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
   end
 
   def test_rejects_password_change_when_current_password_missing
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     original_encrypted_password = admin.encrypted_password
 
     attributes = admin.serializable_hash.deep_merge({
@@ -89,7 +89,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
   end
 
   def test_rejects_password_change_when_current_password_empty
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     original_encrypted_password = admin.encrypted_password
 
     attributes = admin.serializable_hash.deep_merge({
@@ -112,7 +112,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
   end
 
   def test_rejects_password_change_when_current_password_invalid
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     original_encrypted_password = admin.encrypted_password
 
     attributes = admin.serializable_hash.deep_merge({
@@ -135,7 +135,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
   end
 
   def test_requires_confirmation_if_password_present
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     original_encrypted_password = admin.encrypted_password
 
     attributes = admin.serializable_hash.deep_merge({
@@ -157,7 +157,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
   end
 
   def test_requires_password_if_confirmation_present
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     original_encrypted_password = admin.encrypted_password
 
     attributes = admin.serializable_hash.deep_merge({
@@ -180,7 +180,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
   end
 
   def test_validates_password_length
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     original_encrypted_password = admin.encrypted_password
 
     attributes = admin.serializable_hash.deep_merge({
@@ -203,7 +203,7 @@ class Test::Apis::V1::Admins::TestPasswords < Minitest::Test
   end
 
   def test_validates_password_confirmation_matches
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     original_encrypted_password = admin.encrypted_password
 
     attributes = admin.serializable_hash.deep_merge({

@@ -13,7 +13,7 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Test
   def test_not_email_verified_by_default
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => FactoryGirl.attributes_for(:api_user) },
+      :body => { :user => FactoryBot.attributes_for(:api_user) },
     }))
     assert_response_code(201, response)
 
@@ -27,7 +27,7 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Test
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => {
-        :user => FactoryGirl.attributes_for(:api_user),
+        :user => FactoryBot.attributes_for(:api_user),
         :options => { :verify_email => true },
       },
     }))
@@ -43,7 +43,7 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Test
   def test_always_email_verified_when_admin_creates_account
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => FactoryGirl.attributes_for(:api_user) },
+      :body => { :user => FactoryBot.attributes_for(:api_user) },
     }))
     assert_response_code(201, response)
 
@@ -56,7 +56,7 @@ class Test::Apis::V1::Users::TestCreateEmailVerification < Minitest::Test
   private
 
   def non_admin_key_creator_api_key
-    user = FactoryGirl.create(:api_user, {
+    user = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     })
 

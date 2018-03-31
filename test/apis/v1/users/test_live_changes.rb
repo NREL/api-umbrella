@@ -13,7 +13,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
   def test_created_api_keys_can_be_used_immediately
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => FactoryGirl.attributes_for(:api_user) },
+      :body => { :user => FactoryBot.attributes_for(:api_user) },
     }))
     assert_response_code(201, response)
     new_user = MultiJson.load(response.body)
@@ -37,7 +37,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
         :settings => { :required_roles => ["restricted"] },
       },
     ]) do
-      user = FactoryGirl.create(:api_user)
+      user = FactoryBot.create(:api_user)
 
       # Wait 2 seconds so we know the initial key created for this test has
       # already been seen by the background task that clears the cache.
@@ -81,7 +81,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
   end
 
   def test_detects_rate_limit_changes_within_2_seconds
-    user = FactoryGirl.create(:api_user)
+    user = FactoryBot.create(:api_user)
 
     # Wait 2 seconds so we know the initial key created for this test has
     # already been seen by the background task that clears the cache.
@@ -103,7 +103,7 @@ class Test::Apis::V1::Users::TestLiveChanges < Minitest::Test
         :settings => {
           :rate_limit_mode => "custom",
           :rate_limits => [
-            FactoryGirl.attributes_for(:api_rate_limit, :limit => 10, :response_headers => true),
+            FactoryBot.attributes_for(:api_rate_limit, :limit => 10, :response_headers => true),
           ],
         },
       }),

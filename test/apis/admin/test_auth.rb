@@ -10,7 +10,7 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
   end
 
   def test_unauthenticated
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/auth", keyless_http_options)
     assert_response_code(200, response)
     body = response.body
@@ -93,8 +93,8 @@ class Test::Apis::Admin::TestAuth < Minitest::Test
     ]
 
     permissions.each do |permission|
-      admin = FactoryGirl.create(:limited_admin, :groups => [
-        FactoryGirl.create(:google_admin_group, :permission_ids => [permission]),
+      admin = FactoryBot.create(:limited_admin, :groups => [
+        FactoryBot.create(:google_admin_group, :permission_ids => [permission]),
       ])
       response = Typhoeus.get("https://127.0.0.1:9081/admin/auth", keyless_http_options.deep_merge(admin_session(admin)))
       assert_response_code(200, response)

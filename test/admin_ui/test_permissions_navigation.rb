@@ -43,8 +43,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_admin_manage_permitted
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :admin_manage_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :admin_manage_permission),
     ])
     admin_login(admin)
 
@@ -62,8 +62,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_admin_manage_forbidden
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :permission_ids => []),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :permission_ids => []),
     ])
     admin_login(admin)
 
@@ -73,8 +73,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_analytics_permitted
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :analytics_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :analytics_permission),
     ])
     admin_login(admin)
 
@@ -92,8 +92,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_analytics_forbidden
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :permission_ids => []),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :permission_ids => []),
     ])
     admin_login(admin)
 
@@ -103,8 +103,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_backend_manage_permitted
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :backend_manage_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :backend_manage_permission),
     ])
     admin_login(admin)
 
@@ -120,8 +120,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_backend_manage_forbidden
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :permission_ids => []),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :permission_ids => []),
     ])
     admin_login(admin)
 
@@ -131,8 +131,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_backend_publish_permitted
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :backend_publish_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :backend_publish_permission),
     ])
     admin_login(admin)
 
@@ -147,8 +147,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_backend_publish_forbidden
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :permission_ids => []),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :permission_ids => []),
     ])
     admin_login(admin)
 
@@ -158,8 +158,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_user_manage_permitted
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_manage_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_manage_permission),
     ])
     admin_login(admin)
 
@@ -169,8 +169,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_user_manage_forbidden
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :permission_ids => []),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :permission_ids => []),
     ])
     admin_login(admin)
 
@@ -180,8 +180,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_user_view_permitted
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :user_view_permission),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :user_view_permission),
     ])
     admin_login(admin)
 
@@ -196,8 +196,8 @@ class Test::AdminUi::TestPermissionsNavigation < Minitest::Capybara::Test
   end
 
   def test_user_view_forbidden
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:google_admin_group, :permission_ids => []),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:google_admin_group, :permission_ids => []),
     ])
     admin_login(admin)
 

@@ -20,7 +20,7 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
 
     once_per_class_setup do
       Admin.delete_all
-      FactoryGirl.create(:admin)
+      FactoryBot.create(:admin)
       override_config_set(@default_config, ["--router", "--web"])
     end
   end

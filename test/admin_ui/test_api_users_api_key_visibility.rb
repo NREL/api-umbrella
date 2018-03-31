@@ -11,7 +11,7 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
   end
 
   def test_api_key_in_create_notification
-    @user = FactoryGirl.create(:xss_api_user)
+    @user = FactoryBot.create(:xss_api_user)
     admin_login
     visit "/admin/#/api_users/new"
 
@@ -28,8 +28,8 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
   end
 
   def test_api_key_can_be_revealed_when_admin_has_permissions
-    admin = FactoryGirl.create(:admin)
-    user = FactoryGirl.create(:api_user, :created_by => admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes)
+    admin = FactoryBot.create(:admin)
+    user = FactoryBot.create(:api_user, :created_by => admin.id, :created_at => Time.now.utc - 2.weeks + 5.minutes)
     admin_login(admin)
     visit "/admin/#/api_users/#{user.id}/edit"
 
@@ -48,8 +48,8 @@ class Test::AdminUi::TestApiUsersApiKeyVisibility < Minitest::Capybara::Test
   end
 
   def test_api_key_is_hidden_when_admin_lacks_permissions
-    admin = FactoryGirl.create(:limited_admin)
-    user = FactoryGirl.create(:api_user, :created_by => admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes)
+    admin = FactoryBot.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_by => admin.id, :created_at => Time.now.utc - 2.weeks - 5.minutes)
     admin_login(admin)
     visit "/admin/#/api_users/#{user.id}/edit"
 

@@ -12,7 +12,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
 
   def test_valid_create
     non_admin_auth = non_admin_key_creator_api_key
-    attributes = FactoryGirl.attributes_for(:api_user)
+    attributes = FactoryBot.attributes_for(:api_user)
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_auth).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
@@ -30,7 +30,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_api_key_format
-    attributes = FactoryGirl.attributes_for(:api_user)
+    attributes = FactoryBot.attributes_for(:api_user)
     refute(attributes["api_key"])
 
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
@@ -76,14 +76,14 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   def test_wildcard_cors
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
-      :body => { :user => FactoryGirl.attributes_for(:api_user) },
+      :body => { :user => FactoryBot.attributes_for(:api_user) },
     }))
     assert_response_code(201, response)
     assert_equal("*", response.headers["Access-Control-Allow-Origin"])
   end
 
   def test_permits_private_fields_as_admin
-    attributes = FactoryGirl.attributes_for(:api_user, :roles => ["admin"])
+    attributes = FactoryBot.attributes_for(:api_user, :roles => ["admin"])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
@@ -96,7 +96,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_ignores_private_fields_as_non_admin
-    attributes = FactoryGirl.attributes_for(:api_user, :roles => ["admin"])
+    attributes = FactoryBot.attributes_for(:api_user, :roles => ["admin"])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
@@ -109,7 +109,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_registration_source_default
-    attributes = FactoryGirl.attributes_for(:api_user)
+    attributes = FactoryBot.attributes_for(:api_user)
     assert_nil(attributes[:registration_source])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
@@ -122,7 +122,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_registration_source_custom
-    attributes = FactoryGirl.attributes_for(:api_user, :registration_source => "whatever")
+    attributes = FactoryBot.attributes_for(:api_user, :registration_source => "whatever")
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :user => attributes },
@@ -134,7 +134,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_captures_and_returns_requester_details_as_admin
-    attributes = FactoryGirl.attributes_for(:api_user)
+    attributes = FactoryBot.attributes_for(:api_user)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => {
         "Content-Type" => "application/x-www-form-urlencoded",
@@ -161,7 +161,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_captures_does_not_return_requester_details_as_non_admin
-    attributes = FactoryGirl.attributes_for(:api_user)
+    attributes = FactoryBot.attributes_for(:api_user)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => {
         "Content-Type" => "application/x-www-form-urlencoded",
@@ -188,7 +188,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_registration_ip_x_forwarded_last_trusted
-    attributes = FactoryGirl.attributes_for(:api_user)
+    attributes = FactoryBot.attributes_for(:api_user)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => {
         "Content-Type" => "application/x-www-form-urlencoded",
@@ -206,11 +206,11 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_custom_rate_limits_reject_same_duration_and_limit_by
-    attributes = FactoryGirl.attributes_for(:api_user, {
-      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting, {
+    attributes = FactoryBot.attributes_for(:api_user, {
+      :settings => FactoryBot.attributes_for(:custom_rate_limit_api_setting, {
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 20),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 20),
         ],
       }),
     })
@@ -229,11 +229,11 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def test_custom_rate_limits_accept_same_duration_different_limit_by
-    attributes = FactoryGirl.attributes_for(:api_user, {
-      :settings => FactoryGirl.attributes_for(:custom_rate_limit_api_setting, {
+    attributes = FactoryBot.attributes_for(:api_user, {
+      :settings => FactoryBot.attributes_for(:custom_rate_limit_api_setting, {
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "apiKey", :limit => 20),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "ip", :limit => 10),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit_by => "apiKey", :limit => 20),
         ],
       }),
     })
@@ -387,7 +387,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   private
 
   def non_admin_key_creator_api_key
-    user = FactoryGirl.create(:api_user, {
+    user = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     })
 
@@ -399,7 +399,7 @@ class Test::Apis::V1::Users::TestCreate < Minitest::Test
   end
 
   def make_request(options = {})
-    attributes = FactoryGirl.attributes_for(:api_user, options)
+    attributes = FactoryBot.attributes_for(:api_user, options)
     Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(non_admin_key_creator_api_key).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),

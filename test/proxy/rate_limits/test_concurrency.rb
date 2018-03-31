@@ -45,7 +45,7 @@ class Test::Proxy::RateLimits::TestConcurrency < Minitest::Test
     requests = []
     requests_by_key = {}
     60.times do
-      api_key = FactoryGirl.create(:api_user).api_key
+      api_key = FactoryBot.create(:api_user).api_key
       http_opts = keyless_http_options.deep_merge({
         :headers => {
           "X-Api-Key" => api_key,
@@ -103,7 +103,7 @@ class Test::Proxy::RateLimits::TestConcurrency < Minitest::Test
     requests = []
     requests_by_key = {}
     60.times do
-      api_key = FactoryGirl.create(:api_user).api_key
+      api_key = FactoryBot.create(:api_user).api_key
       http_opts = keyless_http_options.deep_merge({
         :headers => {
           "X-Api-Key" => api_key,

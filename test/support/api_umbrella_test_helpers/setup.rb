@@ -115,7 +115,7 @@ module ApiUmbrellaTestHelpers
 
         unless self.setup_api_user_complete
           ApiUser.where(:registration_source.ne => "seed").delete_all
-          user = FactoryGirl.create(:api_user, {
+          user = FactoryBot.create(:api_user, {
             :registration_source => "seed",
             :settings => {
               :rate_limit_mode => "unlimited",

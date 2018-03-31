@@ -11,7 +11,7 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
   end
 
   def test_edit_custom_rate_limits
-    user = FactoryGirl.create(:custom_rate_limit_api_user)
+    user = FactoryBot.create(:custom_rate_limit_api_user)
     admin_login
     visit "/admin/#/api_users/#{user.id}/edit"
 
@@ -36,11 +36,11 @@ class Test::AdminUi::TestApiUsersRateLimits < Minitest::Capybara::Test
   end
 
   def test_remove_custom_rate_limits
-    user = FactoryGirl.create(:api_user, {
-      :settings => FactoryGirl.build(:custom_rate_limit_api_setting, {
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:custom_rate_limit_api_setting, {
         :rate_limits => [
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
-          FactoryGirl.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 5000, :limit => 10),
+          FactoryBot.attributes_for(:api_rate_limit, :duration => 10000, :limit => 20),
         ],
       }),
     })

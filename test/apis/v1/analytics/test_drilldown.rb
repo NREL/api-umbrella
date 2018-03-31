@@ -11,8 +11,8 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_level0_prefix
-    FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -49,8 +49,8 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_level1_prefix
-    FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -85,12 +85,12 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_prefix_not_contains
-    FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     # Ensure that the second element in the array also contains "0/" to
     # ensure that the filtering and terms aggregations are both matching
     # based on prefix only.
-    FactoryGirl.create(:log_item, :request_hierarchy => ["0/0/", "1/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create(:log_item, :request_hierarchy => ["foo/0/", "foo/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_hierarchy => ["0/0/", "1/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_hierarchy => ["foo/0/", "foo/0/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -127,13 +127,13 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_prefix_regex_escaping
-    FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_hierarchy => ["0/example.com/", "1/example.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     # Add other items in the request_hierarchy array that would match "0/."
     # (even though this isn't really a valid hierarchy definition). This
     # ensures that we also test whether the terms aggregations are being
     # escaped (and not just the overall filter).
-    FactoryGirl.create(:log_item, :request_hierarchy => ["0/.com/", "0/xcom", "0/ycom", "1/.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create(:log_item, :request_hierarchy => ["0/.com/", "0/xcom", "0/ycom", "1/.com/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -168,19 +168,19 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   end
 
   def test_all_results_top_10_for_chart
-    FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.2/", "1/127.0.0.2/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 3, :request_hierarchy => ["0/127.0.0.3/", "1/127.0.0.3/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 10, :request_hierarchy => ["0/127.0.0.4/", "1/127.0.0.4/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 11, :request_hierarchy => ["0/127.0.0.5/", "1/127.0.0.5/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 12, :request_hierarchy => ["0/127.0.0.6/", "1/127.0.0.6/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 13, :request_hierarchy => ["0/127.0.0.7/", "1/127.0.0.7/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 14, :request_hierarchy => ["0/127.0.0.8/", "1/127.0.0.8/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 15, :request_hierarchy => ["0/127.0.0.9/", "1/127.0.0.9/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 16, :request_hierarchy => ["0/127.0.0.10/", "1/127.0.0.10/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 17, :request_hierarchy => ["0/127.0.0.11/", "1/127.0.0.11/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 18, :request_hierarchy => ["0/127.0.0.12/", "1/127.0.0.12/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 1, :request_hierarchy => ["0/127.0.0.13/", "1/127.0.0.13/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.1/", "1/127.0.0.1/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_hierarchy => ["0/127.0.0.2/", "1/127.0.0.2/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 3, :request_hierarchy => ["0/127.0.0.3/", "1/127.0.0.3/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 10, :request_hierarchy => ["0/127.0.0.4/", "1/127.0.0.4/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 11, :request_hierarchy => ["0/127.0.0.5/", "1/127.0.0.5/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 12, :request_hierarchy => ["0/127.0.0.6/", "1/127.0.0.6/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 13, :request_hierarchy => ["0/127.0.0.7/", "1/127.0.0.7/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 14, :request_hierarchy => ["0/127.0.0.8/", "1/127.0.0.8/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 15, :request_hierarchy => ["0/127.0.0.9/", "1/127.0.0.9/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 16, :request_hierarchy => ["0/127.0.0.10/", "1/127.0.0.10/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 17, :request_hierarchy => ["0/127.0.0.11/", "1/127.0.0.11/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 18, :request_hierarchy => ["0/127.0.0.12/", "1/127.0.0.12/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 1, :request_hierarchy => ["0/127.0.0.13/", "1/127.0.0.13/hello"], :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/analytics/drilldown.json", http_options.deep_merge(admin_token).deep_merge({
@@ -243,10 +243,10 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
 
   def test_time_zone
     Time.use_zone("America/Denver") do
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-12T23:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-13T00:00:00"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-18T23:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-19T00:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-01-12T23:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-01-13T00:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-01-18T23:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-01-19T00:00:00"))
     end
     LogItem.gateway.refresh_index!
 
@@ -277,10 +277,10 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   def test_bins_daily_results_daylight_saving_time_begin
     LogItem.index_name = "api-umbrella-logs-write-2015-03"
     Time.use_zone("UTC") do
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T00:00:00"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-09T10:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T00:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-09T10:00:00"))
     end
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
@@ -316,8 +316,8 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   def test_bins_hourly_results_daylight_saving_time_begin
     LogItem.index_name = "api-umbrella-logs-write-2015-03"
     Time.use_zone("UTC") do
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
     end
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
@@ -357,10 +357,10 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   def test_bins_daily_results_daylight_saving_time_end
     LogItem.index_name = "api-umbrella-logs-write-2014-11"
     Time.use_zone("UTC") do
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T00:00:00"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-03T10:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T00:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-03T10:00:00"))
     end
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"
@@ -396,8 +396,8 @@ class Test::Apis::V1::Analytics::TestDrilldown < Minitest::Test
   def test_bins_hourly_results_daylight_saving_time_end
     LogItem.index_name = "api-umbrella-logs-write-2014-11"
     Time.use_zone("UTC") do
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
     end
     LogItem.gateway.refresh_index!
     LogItem.index_name = "api-umbrella-logs-write-2015-01"

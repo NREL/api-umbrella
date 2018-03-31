@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :log_item do
     api_key "UfhkQUBgWQbJ0ZVqnJ4TvA7quGCZHYTFCXwSfOTQ"
     request_accept_encoding "*/*"

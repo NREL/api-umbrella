@@ -14,7 +14,7 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
   end
 
   def test_forbids_api_key_without_role
-    user = FactoryGirl.create(:api_user, {
+    user = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-public-metricsx"],
     })
 
@@ -28,8 +28,8 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
   end
 
   def test_expected_response
-    FactoryGirl.create_list(:api_user, 3, :created_at => Time.parse("2013-08-15T00:00:00Z").utc)
-    FactoryGirl.create_list(:log_item, 2, :request_at => Time.parse("2013-08-15T00:00:00Z").utc)
+    FactoryBot.create_list(:api_user, 3, :created_at => Time.parse("2013-08-15T00:00:00Z").utc)
+    FactoryBot.create_list(:log_item, 2, :request_at => Time.parse("2013-08-15T00:00:00Z").utc)
     LogItem.gateway.refresh_index!
 
     response = make_request
@@ -86,7 +86,7 @@ class Test::Apis::V0::TestAnalytics < Minitest::Test
   private
 
   def make_request(user = nil)
-    user ||= FactoryGirl.create(:api_user, :roles => ["api-umbrella-public-metrics"])
+    user ||= FactoryBot.create(:api_user, :roles => ["api-umbrella-public-metrics"])
 
     Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v0/analytics/summary.json", http_options.deep_merge({
       :headers => { "X-Api-Key" => user.api_key },

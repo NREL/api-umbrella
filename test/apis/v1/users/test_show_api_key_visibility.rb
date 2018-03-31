@@ -11,9 +11,9 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
   end
 
   def test_new_accounts_they_created_without_roles
-    user = FactoryGirl.create(:api_user, :created_at => (Time.now.utc - 2.weeks + 5.minutes), :roles => nil)
-    superuser = FactoryGirl.create(:admin)
-    limited_admin = FactoryGirl.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_at => (Time.now.utc - 2.weeks + 5.minutes), :roles => nil)
+    superuser = FactoryBot.create(:admin)
+    limited_admin = FactoryBot.create(:limited_admin)
 
     user.update(:created_by => superuser.id)
     assert_api_key_visible(user, superuser)
@@ -23,9 +23,9 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
   end
 
   def test_new_accounts_they_created_with_roles
-    user = FactoryGirl.create(:api_user, :created_at => (Time.now.utc - 2.weeks + 5.minutes), :roles => ["foo"])
-    superuser = FactoryGirl.create(:admin)
-    limited_admin = FactoryGirl.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_at => (Time.now.utc - 2.weeks + 5.minutes), :roles => ["foo"])
+    superuser = FactoryBot.create(:admin)
+    limited_admin = FactoryBot.create(:limited_admin)
 
     user.update(:created_by => superuser.id)
     assert_api_key_visible(user, superuser)
@@ -35,9 +35,9 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
   end
 
   def test_old_accounts_they_created_without_roles
-    user = FactoryGirl.create(:api_user, :created_at => (Time.now.utc - 2.weeks - 5.minutes), :roles => nil)
-    superuser = FactoryGirl.create(:admin)
-    limited_admin = FactoryGirl.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_at => (Time.now.utc - 2.weeks - 5.minutes), :roles => nil)
+    superuser = FactoryBot.create(:admin)
+    limited_admin = FactoryBot.create(:limited_admin)
 
     user.update(:created_by => superuser.id)
     assert_api_key_visible(user, superuser)
@@ -47,9 +47,9 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
   end
 
   def test_old_accounts_they_created_with_roles
-    user = FactoryGirl.create(:api_user, :created_at => (Time.now.utc - 2.weeks - 5.minutes), :roles => ["foo"])
-    superuser = FactoryGirl.create(:admin)
-    limited_admin = FactoryGirl.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_at => (Time.now.utc - 2.weeks - 5.minutes), :roles => ["foo"])
+    superuser = FactoryBot.create(:admin)
+    limited_admin = FactoryBot.create(:limited_admin)
 
     user.update(:created_by => superuser.id)
     assert_api_key_visible(user, superuser)
@@ -59,36 +59,36 @@ class Test::Apis::V1::Users::TestShowApiKeyVisibility < Minitest::Test
   end
 
   def test_new_accounts_other_admins_created_without_roles
-    user = FactoryGirl.create(:api_user, :created_by => SecureRandom.uuid, :created_at => (Time.now.utc - 2.weeks + 5.minutes), :roles => nil)
-    superuser = FactoryGirl.create(:admin)
-    limited_admin = FactoryGirl.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_by => SecureRandom.uuid, :created_at => (Time.now.utc - 2.weeks + 5.minutes), :roles => nil)
+    superuser = FactoryBot.create(:admin)
+    limited_admin = FactoryBot.create(:limited_admin)
 
     assert_api_key_visible(user, superuser)
     assert_api_key_visible(user, limited_admin)
   end
 
   def test_new_accounts_other_admins_created_with_roles
-    user = FactoryGirl.create(:api_user, :created_by => SecureRandom.uuid, :created_at => (Time.now.utc - 2.weeks + 5.minutes), :roles => ["foo"])
-    superuser = FactoryGirl.create(:admin)
-    limited_admin = FactoryGirl.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_by => SecureRandom.uuid, :created_at => (Time.now.utc - 2.weeks + 5.minutes), :roles => ["foo"])
+    superuser = FactoryBot.create(:admin)
+    limited_admin = FactoryBot.create(:limited_admin)
 
     assert_api_key_visible(user, superuser)
     refute_api_key_visible(user, limited_admin)
   end
 
   def test_old_accounts_other_admins_created_without_roles
-    user = FactoryGirl.create(:api_user, :created_by => SecureRandom.uuid, :created_at => (Time.now.utc - 2.weeks - 5.minutes), :roles => nil)
-    superuser = FactoryGirl.create(:admin)
-    limited_admin = FactoryGirl.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_by => SecureRandom.uuid, :created_at => (Time.now.utc - 2.weeks - 5.minutes), :roles => nil)
+    superuser = FactoryBot.create(:admin)
+    limited_admin = FactoryBot.create(:limited_admin)
 
     assert_api_key_visible(user, superuser)
     refute_api_key_visible(user, limited_admin)
   end
 
   def test_old_accounts_other_admins_created_with_roles
-    user = FactoryGirl.create(:api_user, :created_by => SecureRandom.uuid, :created_at => (Time.now.utc - 2.weeks - 5.minutes), :roles => ["foo"])
-    superuser = FactoryGirl.create(:admin)
-    limited_admin = FactoryGirl.create(:limited_admin)
+    user = FactoryBot.create(:api_user, :created_by => SecureRandom.uuid, :created_at => (Time.now.utc - 2.weeks - 5.minutes), :roles => ["foo"])
+    superuser = FactoryBot.create(:admin)
+    limited_admin = FactoryBot.create(:limited_admin)
 
     assert_api_key_visible(user, superuser)
     refute_api_key_visible(user, limited_admin)

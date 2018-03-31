@@ -11,7 +11,7 @@ class Test::Apis::V1::Apis::TestDestroy < Minitest::Test
   end
 
   def test_performs_soft_delete
-    api = FactoryGirl.create(:api)
+    api = FactoryBot.create(:api)
 
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/apis/#{api.id}.json", http_options.deep_merge(admin_token))
     assert_response_code(204, response)

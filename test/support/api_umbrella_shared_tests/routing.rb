@@ -393,7 +393,7 @@ module ApiUmbrellaSharedTests
     end
 
     def test_admin_web_app
-      FactoryGirl.create(:admin)
+      FactoryBot.create(:admin)
 
       response = Typhoeus.get("http://127.0.0.1:9080/admin/login", keyless_http_options)
       assert_response_code(301, response)
@@ -405,7 +405,7 @@ module ApiUmbrellaSharedTests
     end
 
     def test_admin_web_app_wildcard_host
-      FactoryGirl.create(:admin)
+      FactoryBot.create(:admin)
 
       response = Typhoeus.get("http://127.0.0.1:9080/admin/login", keyless_http_options.deep_merge({
         :headers => {

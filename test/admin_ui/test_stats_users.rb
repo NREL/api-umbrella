@@ -13,8 +13,8 @@ class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
   end
 
   def test_xss_escaping_in_table
-    user = FactoryGirl.create(:xss_api_user)
-    FactoryGirl.create(:xss_log_item, {
+    user = FactoryBot.create(:xss_api_user)
+    FactoryBot.create(:xss_log_item, {
       :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc,
       :api_key => user.api_key,
       :user_id => user.id,
@@ -35,15 +35,15 @@ class Test::AdminUi::TestStatsUsers < Minitest::Capybara::Test
   end
 
   def test_csv_download
-    user = FactoryGirl.create(:api_user, :email => "#{SecureRandom.uuid}@example.com")
-    FactoryGirl.create_list(:log_item, 5, {
+    user = FactoryBot.create(:api_user, :email => "#{SecureRandom.uuid}@example.com")
+    FactoryBot.create_list(:log_item, 5, {
       :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc,
       :api_key => user.api_key,
       :user_id => user.id,
       :user_email => user.email,
       :user_registration_source => user.registration_source,
     })
-    FactoryGirl.create_list(:log_item, 5, :request_at => 1421413588000)
+    FactoryBot.create_list(:log_item, 5, :request_at => 1421413588000)
     LogItem.gateway.refresh_index!
     default_query = JSON.generate({
       "condition" => "AND",

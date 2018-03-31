@@ -11,7 +11,7 @@ class Test::Apis::V1::Admins::TestCreate < Minitest::Test
   end
 
   def test_downcases_username
-    attributes = FactoryGirl.build(:admin, :username => "HELLO-#{unique_test_id}@example.com").serializable_hash
+    attributes = FactoryBot.build(:admin, :username => "HELLO-#{unique_test_id}@example.com").serializable_hash
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admins.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:admin => attributes),

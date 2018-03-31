@@ -83,7 +83,7 @@ class Test::AdminUi::Login::TestInvite < Minitest::Capybara::Test
   def test_invites_can_be_resent
     admin_login
 
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     assert_nil(admin.notes)
 
     # Ensure edits don't resend invites by default.

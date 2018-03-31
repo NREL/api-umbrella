@@ -13,7 +13,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   end
 
   def test_saves_when_only_nested_fields_change
-    api = FactoryGirl.create(:api_with_settings, :name => "Save Test API")
+    api = FactoryBot.create(:api_with_settings, :name => "Save Test API")
     assert_nil(api.settings.error_data)
 
     admin_login
@@ -38,7 +38,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   end
 
   def test_loads_from_server_on_each_load
-    api = FactoryGirl.create(:api_with_settings, :name => "Test Load API", :frontend_host => "example1.com")
+    api = FactoryBot.create(:api_with_settings, :name => "Test Load API", :frontend_host => "example1.com")
     admin_login
     visit "/admin/#/apis"
     assert_text("Add API Backend")
@@ -58,7 +58,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   end
 
   def test_validation_error_when_all_servers_removed_from_existing_api
-    api = FactoryGirl.create(:api)
+    api = FactoryBot.create(:api)
     admin_login
     visit "/admin/#/apis/#{api.id}/edit"
     find("#servers_table a", :text => /Remove/).click
@@ -71,7 +71,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   end
 
   def test_validation_error_when_all_url_prefixes_removed_from_existing_api
-    api = FactoryGirl.create(:api)
+    api = FactoryBot.create(:api)
     admin_login
     visit "/admin/#/apis/#{api.id}/edit"
     find("#url_matches_table a", :text => /Remove/).click
@@ -357,8 +357,8 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   end
 
   def test_edit_custom_rate_limits
-    api = FactoryGirl.create(:api, {
-      :settings => FactoryGirl.build(:custom_rate_limit_api_setting),
+    api = FactoryBot.create(:api, {
+      :settings => FactoryBot.build(:custom_rate_limit_api_setting),
     })
     admin_login
     visit "/admin/#/apis/#{api.id}/edit"
@@ -385,7 +385,7 @@ class Test::AdminUi::TestApis < Minitest::Capybara::Test
   end
 
   def test_nested_select_menu_behavior_inside_modals
-    api = FactoryGirl.create(:api, :name => unique_test_id)
+    api = FactoryBot.create(:api, :name => unique_test_id)
     admin_login
     visit "/admin/#/apis/#{api.id}/edit"
 

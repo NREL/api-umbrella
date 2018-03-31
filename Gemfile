@@ -36,7 +36,7 @@ gem "elasticsearch", "~> 2.0.2"
 gem "elasticsearch-persistence", "~> 0.1.9"
 
 # Factories for test database data
-gem "factory_girl", "~> 4.8.0"
+gem "factory_bot", "~> 4.8.2"
 
 # Deleting database data between tests.
 gem "database_cleaner", "~> 1.6.2"
