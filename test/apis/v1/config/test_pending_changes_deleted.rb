@@ -10,7 +10,7 @@ class Test::Apis::V1::Config::TestPendingChangesDeleted < Minitest::Test
     setup_server
 
     PublishedConfig.delete_all
-    @api = FactoryGirl.create(:api_backend)
+    @api = FactoryBot.create(:api_backend)
     publish_api_backends([@api.id])
     @api.delete
   end

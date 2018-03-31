@@ -23,8 +23,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
 
   ["transition_return_error"].each do |mode|
     define_method("test_#{mode}_set_timestamp") do
-      api = FactoryGirl.create(:api_backend, {
-        :settings => FactoryGirl.build(:api_backend_settings, {
+      api = FactoryBot.create(:api_backend, {
+        :settings => FactoryBot.build(:api_backend_settings, {
           :require_https => mode,
         }),
       })
@@ -52,10 +52,10 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
     end
 
     define_method("test_#{mode}_sub_settings_set_timestamp") do
-      api = FactoryGirl.create(:api_backend, {
+      api = FactoryBot.create(:api_backend, {
         :sub_settings => [
-          FactoryGirl.build(:api_backend_sub_url_settings, {
-            :settings => FactoryGirl.build(:api_backend_settings, {
+          FactoryBot.build(:api_backend_sub_url_settings, {
+            :settings => FactoryBot.build(:api_backend_settings, {
               :require_https => mode,
             }),
           }),
@@ -86,8 +86,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
 
     define_method("test_#{mode}_does_not_touch_existing_timestamp") do
       timestamp = Time.parse("2015-01-16T06:06:28.816Z").utc
-      api = FactoryGirl.create(:api_backend, {
-        :settings => FactoryGirl.build(:api_backend_settings, {
+      api = FactoryBot.create(:api_backend, {
+        :settings => FactoryBot.build(:api_backend_settings, {
           :require_https => mode,
           :require_https_transition_start_at => timestamp,
         }),
@@ -116,8 +116,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
 
     define_method("test_#{mode}_mode_changes_without_publishing_does_not_touch_existing_timestamp") do
       timestamp = Time.parse("2015-01-16T06:06:28.816Z").utc
-      api = FactoryGirl.create(:api_backend, {
-        :settings => FactoryGirl.build(:api_backend_settings, {
+      api = FactoryBot.create(:api_backend, {
+        :settings => FactoryBot.build(:api_backend_settings, {
           :require_https => mode,
           :require_https_transition_start_at => timestamp,
         }),
@@ -170,8 +170,8 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
     mode_method_name = mode || mode.inspect
 
     define_method("test_#{mode_method_name}_unset_timestamp") do
-      api = FactoryGirl.create(:api_backend, {
-        :settings => FactoryGirl.build(:api_backend_settings, {
+      api = FactoryBot.create(:api_backend, {
+        :settings => FactoryBot.build(:api_backend_settings, {
           :require_https => mode,
           :require_https_transition_start_at => Time.now.utc,
         }),
@@ -199,10 +199,10 @@ class Test::Apis::V1::Config::TestPublishTransitionaryHttps < Minitest::Test
     end
 
     define_method("test_#{mode_method_name}_sub_settings_unset_timestamp") do
-      api = FactoryGirl.create(:api_backend, {
+      api = FactoryBot.create(:api_backend, {
         :sub_settings => [
-          FactoryGirl.build(:api_backend_sub_url_settings, {
-            :settings => FactoryGirl.build(:api_backend_settings, {
+          FactoryBot.build(:api_backend_sub_url_settings, {
+            :settings => FactoryBot.build(:api_backend_settings, {
               :require_https => mode,
               :require_https_transition_start_at => Time.now.utc,
             }),

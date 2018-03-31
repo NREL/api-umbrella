@@ -16,8 +16,7 @@ if [ "${1}" = "start" ]; then
 
   # Define a configuration file for svlogd to disable internal log rotation
   # (since we'll rely on the system and logrotated for that).
-  log_config="s0\nn0"
-  echo $log_config > "$log_dir/config"
+  printf 's0\nn0\n' > "$log_dir/config"
 
   exec runtool "${run_args[@]}" svlogd "${log_args[@]}"
 fi

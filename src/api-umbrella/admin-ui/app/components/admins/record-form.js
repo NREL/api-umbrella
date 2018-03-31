@@ -1,16 +1,19 @@
-import Ember from 'ember';
-import Save from 'api-umbrella-admin-ui/mixins/save';
-import usernameLabel from 'api-umbrella-admin-ui/utils/username-label';
 import { sprintf, t } from 'api-umbrella-admin-ui/utils/i18n';
 
-export default Ember.Component.extend(Save, {
-  session: Ember.inject.service(),
+import Component from '@ember/component';
+import Save from 'api-umbrella-admin-ui/mixins/save';
+import { computed } from '@ember/object';
+import { inject } from '@ember/service';
+import usernameLabel from 'api-umbrella-admin-ui/utils/username-label';
 
-  currentAdmin: Ember.computed(function() {
+export default Component.extend(Save, {
+  session: inject(),
+
+  currentAdmin: computed(function() {
     return this.get('session.data.authenticated.admin');
   }),
 
-  usernameLabel: Ember.computed(usernameLabel),
+  usernameLabel: computed(usernameLabel),
 
   actions: {
     submit() {

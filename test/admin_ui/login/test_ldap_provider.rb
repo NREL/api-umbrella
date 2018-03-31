@@ -74,7 +74,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
   end
 
   def test_forbids_ldap_user_with_invalid_password
-    FactoryGirl.create(:admin, :username => "hermes", :email => nil, :password_hash => nil)
+    FactoryBot.create(:admin, :username => "hermes", :email => nil, :password_hash => nil)
     visit "/admin/login"
     fill_in "Planet Express Username", :with => "hermes"
     fill_in "Planet Express Password", :with => "incorrect"
@@ -83,7 +83,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
   end
 
   def test_allows_valid_ldap_user
-    admin = FactoryGirl.create(:admin, :username => "hermes", :email => nil, :password_hash => nil)
+    admin = FactoryBot.create(:admin, :username => "hermes", :email => nil, :password_hash => nil)
     visit "/admin/login"
     fill_in "Planet Express Username", :with => "hermes"
     fill_in "Planet Express Password", :with => "hermes"
@@ -92,7 +92,7 @@ class Test::AdminUi::Login::TestLdapProvider < Minitest::Capybara::Test
   end
 
   def test_separate_login_page_used_when_non_exclusive_provider
-    admin = FactoryGirl.create(:admin, :username => "hermes", :email => nil, :password_hash => nil)
+    admin = FactoryBot.create(:admin, :username => "hermes", :email => nil, :password_hash => nil)
     visit "/admins/auth/ldap"
     assert_text("Sign in with Planet Express")
     fill_in "Planet Express Username", :with => "hermes"

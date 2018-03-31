@@ -26,7 +26,7 @@ local function build_log_data()
     request_basic_auth_username = ngx_var.remote_user,
     request_connection = request_headers["connection"],
     request_content_type = request_headers["content-type"],
-    request_ip = ngx_var.remote_addr,
+    request_ip = ngx_ctx.remote_addr or ngx_var.remote_addr,
     request_method = ngx_var.request_method,
     request_origin = request_headers["origin"],
     request_referer = request_headers["referer"],

@@ -1,5 +1,6 @@
 local deep_merge_overwrite_arrays = require "api-umbrella.utils.deep_merge_overwrite_arrays"
 local http_headers = require "api-umbrella.utils.http_headers"
+local httpsify_current_url = require "api-umbrella.utils.httpsify_current_url"
 local is_hash = require "api-umbrella.utils.is_hash"
 local lustache = require "lustache"
 local mustache_unescape = require "api-umbrella.utils.mustache_unescape"
@@ -124,6 +125,20 @@ local function render_template(template, data, format, strip_whitespace)
 end
 
 return function(denied_code, settings, extra_data)
+  -- Redirect "not_found" errors to HTTPS.
+  --
+  -- Since these errors aren't subject to an API Backend's HTTPS requirements
+  -- (where we might return the "https_required" error), this helps ensure that
+  -- requests to unknown location (neither API or website backend) are
+  -- redirected to HTTPS like the rest of our non-API content. This ensures
+  -- HTTPS redirects are in place for the root request on custom domains
+  -- without a website or API at the root.
+  if denied_code == "not_found" and config["router"]["redirect_not_found_to_https"] then
+    if ngx.ctx.protocol ~= "https" then
+      return ngx.redirect(httpsify_current_url(), ngx.HTTP_MOVED_PERMANENTLY)
+    end
+  end
+
   -- Store the gatekeeper rejection code for logging.
   ngx.ctx.gatekeeper_denied_code = denied_code
 

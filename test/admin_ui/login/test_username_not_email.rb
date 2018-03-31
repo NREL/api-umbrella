@@ -10,7 +10,7 @@ class Test::AdminUi::Login::TestUsernameNotEmail < Minitest::Capybara::Test
     super
     setup_server
 
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     once_per_class_setup do
       override_config_set({
         "web" => {

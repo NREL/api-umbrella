@@ -11,7 +11,7 @@ class Test::AdminUi::TestApiUsersXss < Minitest::Capybara::Test
   end
 
   def test_xss_escaping_in_table
-    @user = FactoryGirl.create(:xss_api_user)
+    @user = FactoryBot.create(:xss_api_user)
     admin_login
     visit "/admin/#/api_users"
 
@@ -24,7 +24,7 @@ class Test::AdminUi::TestApiUsersXss < Minitest::Capybara::Test
   end
 
   def test_xss_escaping_in_form
-    @user = FactoryGirl.create(:xss_api_user)
+    @user = FactoryBot.create(:xss_api_user)
     admin_login
     visit "/admin/#/api_users/#{@user.id}/edit"
 
@@ -37,7 +37,7 @@ class Test::AdminUi::TestApiUsersXss < Minitest::Capybara::Test
   end
 
   def test_xss_escaping_in_flash_confirmation_message
-    @user = FactoryGirl.create(:xss_api_user)
+    @user = FactoryBot.create(:xss_api_user)
     admin_login
     visit "/admin/#/api_users/#{@user.id}/edit"
 

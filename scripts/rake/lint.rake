@@ -4,13 +4,8 @@ namespace :lint do
     require "childprocess"
     require "rainbow"
 
-    js_files = `cd #{API_UMBRELLA_SRC_ROOT}/src/api-umbrella/admin-ui && git ls-files | grep "\\.js$"`.split("\n")
-    js_files.reject! do |path|
-      path.end_with?(".eslintrc.js")
-    end
-
-    print "Checking: #{js_files.join(" ")}... "
-    process = ChildProcess.build("node_modules/eslint/bin/eslint.js", "--cache", *js_files)
+    print "Checking admin-ui... "
+    process = ChildProcess.build("yarn", "run", "lint:js")
     process.cwd = File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/admin-ui")
     process.io.inherit!
     process.start

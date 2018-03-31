@@ -12,7 +12,7 @@ class Test::Apis::V1::Users::TestServerSideTimestamps < Minitest::Test
   def test_create
     before_version = ApiUser.connection.select_value("SELECT last_value FROM api_users_version_seq")
 
-    attributes = FactoryGirl.attributes_for(:api_user)
+    attributes = FactoryBot.attributes_for(:api_user)
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
       :headers => { "Content-Type" => "application/json" },
       :body => MultiJson.dump(:user => attributes),
@@ -31,7 +31,7 @@ class Test::Apis::V1::Users::TestServerSideTimestamps < Minitest::Test
   def test_update
     before_create_version = ApiUser.connection.select_value("SELECT last_value FROM api_users_version_seq")
 
-    record = FactoryGirl.create(:api_user)
+    record = FactoryBot.create(:api_user)
 
     # Ensure that the create incremented the global version sequence.
     assert_version(record)

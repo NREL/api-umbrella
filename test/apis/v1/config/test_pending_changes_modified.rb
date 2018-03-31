@@ -10,9 +10,9 @@ class Test::Apis::V1::Config::TestPendingChangesModified < Minitest::Test
     setup_server
 
     PublishedConfig.delete_all
-    @api = FactoryGirl.create(:api_backend, :name => "Before")
+    @api = FactoryBot.create(:api_backend, :name => "Before")
     publish_api_backends([@api.id])
-    @api.update_attributes(:name => "After")
+    @api.update(:name => "After")
   end
 
   def after_all

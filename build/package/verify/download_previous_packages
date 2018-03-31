@@ -32,7 +32,7 @@ distros=(
 )
 
 if [ -n "${DIST:-}" ]; then
-  distros=($DIST)
+  distros=("$DIST")
 fi
 
 bintray_url_root="https://bintray.com/artifact/download/nrel"

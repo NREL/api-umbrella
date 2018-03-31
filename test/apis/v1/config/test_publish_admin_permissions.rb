@@ -10,10 +10,10 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
     setup_server
 
     PublishedConfig.delete_all
-    @api = FactoryGirl.create(:api_backend)
-    @google_api = FactoryGirl.create(:google_api_backend)
-    @google_extra_url_match_api = FactoryGirl.create(:google_extra_url_match_api_backend)
-    @yahoo_api = FactoryGirl.create(:yahoo_api_backend)
+    @api = FactoryBot.create(:api_backend)
+    @google_api = FactoryBot.create(:google_api_backend)
+    @google_extra_url_match_api = FactoryBot.create(:google_extra_url_match_api_backend)
+    @yahoo_api = FactoryBot.create(:yahoo_api_backend)
   end
 
   def after_all
@@ -54,7 +54,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
       },
     }
 
-    google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
+    google_admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :backend_publish_permission)])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token(google_admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :config => config },
@@ -73,7 +73,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
       },
     }
 
-    google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
+    google_admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :backend_publish_permission)])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token(google_admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :config => config },
@@ -92,7 +92,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
       },
     }
 
-    google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_publish_permission)])
+    google_admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :backend_publish_permission)])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token(google_admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :config => config },
@@ -111,7 +111,7 @@ class Test::Apis::V1::Config::TestPublishAdminPermissions < Minitest::Test
       },
     }
 
-    unauthorized_google_admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
+    unauthorized_google_admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :backend_manage_permission)])
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/config/publish.json", http_options.deep_merge(admin_token(unauthorized_google_admin)).deep_merge({
       :headers => { "Content-Type" => "application/x-www-form-urlencoded" },
       :body => { :config => config },

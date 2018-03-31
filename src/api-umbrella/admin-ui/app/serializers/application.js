@@ -1,11 +1,11 @@
-import Ember from 'ember';
 import JSONSerializer from 'ember-data/serializers/json';
+import { underscore } from '@ember/string';
 
 export default JSONSerializer.extend({
   // Use camel-cased attribute names in the JS models, but underscore the
   // attribute names for any server-side communication.
   keyForAttribute(attr) {
-    return Ember.String.underscore(attr);
+    return underscore(attr);
   },
 
   // For single records, look for the data under the customizable

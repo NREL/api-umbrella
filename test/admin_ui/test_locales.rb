@@ -57,7 +57,7 @@ class Test::AdminUi::TestLocales < Minitest::Capybara::Test
 
     # Ensure at least one admin exists so the login page can be hit directly
     # without redirecting to the first-time admin create page.
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
   end
 
   # Test all the available locales except the special test "zy" (which we use

@@ -98,7 +98,7 @@ class OutdatedPackages
     },
     "nodejs" => {
       :git => "https://github.com/nodejs/node.git",
-      :constraint => "~> 6.11",
+      :constraint => "~> 8.10",
     },
     "openldap" => {
       :git => "https://github.com/openldap/openldap.git",

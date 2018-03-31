@@ -1,15 +1,5 @@
 namespace :outdated do
   namespace "admin-ui" do
-    desc "List outdated admin-ui Bower dependencies"
-    task :bower do
-      require "childprocess"
-      process = ChildProcess.build("./node_modules/.bin/bower", "list")
-      process.cwd = File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella/admin-ui")
-      process.io.inherit!
-      process.start
-      process.wait
-    end
-
     desc "List outdated admin-ui NPM dependencies"
     task :npm do
       require "childprocess"
@@ -46,10 +36,6 @@ desc "List outdated dependencies"
 task :outdated do
   puts "==== ADMIN-UI: NPM ===="
   Rake::Task["outdated:admin-ui:npm"].invoke
-  puts "\n\n"
-
-  puts "==== ADMIN-UI: BOWER ===="
-  Rake::Task["outdated:admin-ui:bower"].invoke
   puts "\n\n"
 
   puts "==== TEST: GEMS ===="

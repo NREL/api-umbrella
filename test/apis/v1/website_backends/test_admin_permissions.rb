@@ -16,8 +16,8 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def test_forbids_updating_permitted_backends_with_unpermitted_values
-    record = FactoryGirl.create(:website_backend, :frontend_host => "localhost")
-    admin = FactoryGirl.create(:localhost_root_admin)
+    record = FactoryBot.create(:website_backend, :frontend_host => "localhost")
+    admin = FactoryBot.create(:localhost_root_admin)
 
     attributes = record.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
@@ -40,8 +40,8 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def test_forbids_updating_unpermitted_backends_with_permitted_values
-    record = FactoryGirl.create(:website_backend, :frontend_host => "example.com")
-    admin = FactoryGirl.create(:localhost_root_admin)
+    record = FactoryBot.create(:website_backend, :frontend_host => "example.com")
+    admin = FactoryBot.create(:localhost_root_admin)
 
     attributes = record.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
@@ -82,8 +82,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_index(factory, admin)
-    WebsiteBackend.delete_all
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(200, response)
@@ -93,8 +92,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_index(factory, admin)
-    WebsiteBackend.delete_all
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(200, response)
@@ -104,8 +102,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_show(factory, admin)
-    WebsiteBackend.delete_all
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(200, response)
@@ -114,8 +111,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_show(factory, admin)
-    WebsiteBackend.delete_all
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(403, response)
@@ -124,8 +120,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_create(factory, admin)
-    WebsiteBackend.delete_all
-    attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys
+    attributes = FactoryBot.attributes_for(factory).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -140,8 +135,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_create(factory, admin)
-    WebsiteBackend.delete_all
-    attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys
+    attributes = FactoryBot.attributes_for(factory).deep_stringify_keys
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/website_backends.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -155,8 +149,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_update(factory, admin)
-    WebsiteBackend.delete_all
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
 
     attributes = record.serializable_hash
     attributes["server_host"] += rand(999_999).to_s
@@ -172,8 +165,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_update(factory, admin)
-    WebsiteBackend.delete_all
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
 
     attributes = record.serializable_hash
     attributes["server_host"] += rand(999_999).to_s
@@ -192,8 +184,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_destroy(factory, admin)
-    WebsiteBackend.delete_all
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
     assert_response_code(204, response)
@@ -201,8 +192,7 @@ class Test::Apis::V1::WebsiteBackends::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_destroy(factory, admin)
-    WebsiteBackend.delete_all
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/website_backends/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
     assert_response_code(403, response)

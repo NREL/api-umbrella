@@ -12,7 +12,7 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
   include ApiUmbrellaSharedTests::DataTablesApi
 
   def test_response_fields
-    record = FactoryGirl.create(data_tables_factory_name, {
+    record = FactoryBot.create(data_tables_factory_name, {
       :created_at => Time.utc(2017, 1, 1),
       :created_by_id => SecureRandom.uuid,
       :host => "example.com",
@@ -47,7 +47,7 @@ class Test::Apis::V1::ApiScopes::TestIndex < Minitest::Test
   end
 
   def test_empty_response_fields
-    record = FactoryGirl.create(data_tables_factory_name)
+    record = FactoryBot.create(data_tables_factory_name)
 
     response = Typhoeus.get(data_tables_api_url, http_options.deep_merge(admin_token).deep_merge({
       :params => {

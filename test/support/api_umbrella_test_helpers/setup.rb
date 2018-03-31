@@ -104,9 +104,9 @@ module ApiUmbrellaTestHelpers
         end
 
         unless self.setup_api_user_complete
-          user = FactoryGirl.create(:api_user, {
+          user = FactoryBot.create(:api_user, {
             :registration_source => "seed",
-            :settings => FactoryGirl.build(:api_user_settings, {
+            :settings => FactoryBot.build(:api_user_settings, {
               :rate_limit_mode => "unlimited",
             }),
           })

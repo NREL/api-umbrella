@@ -65,7 +65,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def admin_token(admin = nil)
-      admin ||= FactoryGirl.create(:admin)
+      admin ||= FactoryBot.create(:admin)
       { :headers => { "X-Admin-Auth-Token" => admin.authentication_token } }
     end
 
@@ -117,8 +117,8 @@ module ApiUmbrellaTestHelpers
     end
 
     def assert_no_password_fields_on_admin_forms
-      admin1 = FactoryGirl.create(:admin)
-      admin2 = FactoryGirl.create(:admin)
+      admin1 = FactoryBot.create(:admin)
+      admin2 = FactoryBot.create(:admin)
       admin_login(admin1)
 
       # Admin cannot edit their own password
@@ -140,8 +140,8 @@ module ApiUmbrellaTestHelpers
     end
 
     def assert_password_fields_on_my_account_admin_form_only
-      admin1 = FactoryGirl.create(:admin)
-      admin2 = FactoryGirl.create(:admin)
+      admin1 = FactoryBot.create(:admin)
+      admin2 = FactoryBot.create(:admin)
       admin_login(admin1)
 
       # Admin can edit their own password
@@ -225,7 +225,7 @@ module ApiUmbrellaTestHelpers
     end
 
     def admin_session_data(admin)
-      admin ||= FactoryGirl.create(:admin)
+      admin ||= FactoryBot.create(:admin)
       { "admin_id" => admin.id }
     end
 

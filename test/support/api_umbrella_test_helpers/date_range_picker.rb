@@ -1,7 +1,7 @@
 module ApiUmbrellaTestHelpers
   module DateRangePicker
     def assert_date_range_picker(fragment_path)
-      FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
+      FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
       LogItem.refresh_indices!
 
       admin_login

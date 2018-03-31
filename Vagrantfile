@@ -67,7 +67,6 @@ Vagrant.configure("2") do |config|
     :rsync__exclude => [
       "tmp",
       "node_modules",
-      "bower_components",
       "dist",
     ]
 

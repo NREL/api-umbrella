@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :api_backend_settings do
     # Ensure at least one attribute is always present, so when testing null
     # values, the "settings" object at least gets created.
@@ -8,7 +8,7 @@ FactoryGirl.define do
       rate_limit_mode "custom"
       rate_limits do
         [
-          FactoryGirl.attributes_or_build(@build_strategy, :rate_limit, :response_headers => true),
+          FactoryBot.attributes_or_build(@build_strategy, :rate_limit, :response_headers => true),
         ]
       end
     end

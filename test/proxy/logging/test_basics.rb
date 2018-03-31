@@ -551,53 +551,53 @@ class Test::Proxy::Logging::TestBasics < Minitest::Test
   end
 
   def test_does_not_log_api_health_requests
-    response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/health", log_http_options)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/health", log_http_options)
     assert_response_code(200, response)
     refute_log(response)
   end
 
   def test_does_not_log_api_state_requests
-    response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state", log_http_options)
+    response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/state", log_http_options)
     assert_response_code(200, response)
     refute_log(response)
   end
 
   def test_does_not_log_website_backend_requests
-    response = Typhoeus.get("http://127.0.0.1:9080/", log_http_options)
+    response = Typhoeus.get("https://127.0.0.1:9081/", log_http_options)
     assert_response_code(200, response)
     refute_log(response)
   end
 
   def test_logs_web_app_login_submit_requests
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     response = Typhoeus.post("https://127.0.0.1:9081/admin/login", log_http_options.deep_merge(csrf_session))
     assert_response_code(200, response)
     assert_log(response)
   end
 
   def test_logs_web_app_api_stats_requests
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/stats/users.json", log_http_options)
     assert_response_code(401, response)
     assert_log(response)
   end
 
   def test_logs_web_app_api_requests
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", log_http_options)
     assert_response_code(401, response)
     assert_log(response)
   end
 
   def test_does_not_log_web_app_other_admin_requests
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/login", log_http_options)
     assert_response_code(200, response)
     refute_log(response)
   end
 
   def test_does_not_log_web_app_asset_requests
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     response = Typhoeus.get("https://127.0.0.1:9081/admin/auth-assets/test.css", log_http_options)
     assert_response_code(404, response)
     refute_log(response)

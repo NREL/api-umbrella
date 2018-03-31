@@ -1,8 +1,12 @@
-import Ember from 'ember';
+import { computed, observer } from '@ember/object';
+
+import $ from 'jquery';
+import Component from '@ember/component';
+import { inject } from '@ember/service';
 import numeral from 'numeral';
 
-export default Ember.Component.extend({
-  session: Ember.inject.service(),
+export default Component.extend({
+  session: inject(),
 
   didInsertElement() {
     this.$().find('table').DataTable({
@@ -46,14 +50,14 @@ export default Ember.Component.extend({
     });
   },
 
-  refreshData: Ember.observer('results', function() {
+  refreshData: observer('results', function() {
     let table = this.$().find('table').dataTable().api();
     table.clear();
     table.rows.add(this.get('results'));
     table.draw();
   }),
 
-  downloadUrl: Ember.computed('backendQueryParamValues', function() {
+  downloadUrl: computed('backendQueryParamValues', function() {
     return '/api-umbrella/v1/analytics/drilldown.csv?api_key=' + this.get('session.data.authenticated.api_key') + '&' + $.param(this.get('backendQueryParamValues'));
   }),
 });

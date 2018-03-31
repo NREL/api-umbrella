@@ -17,16 +17,16 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
 
   def test_multi_scope_permitted_as_superuser
     factory = :google_and_yahoo_multi_scope_admin_group
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     assert_admin_permitted(factory, admin)
   end
 
   def test_multi_scope_permitted_as_multi_scope_admin
     factory = :google_and_yahoo_multi_scope_admin_group
-    admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:admin_group, :api_scopes => [
-        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:google_api_scope)),
-        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:yahoo_api_scope)),
+    admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:admin_group, :api_scopes => [
+        ApiScope.find_or_create_by_instance!(FactoryBot.build(:google_api_scope)),
+        ApiScope.find_or_create_by_instance!(FactoryBot.build(:yahoo_api_scope)),
       ]),
     ])
     assert_admin_permitted(factory, admin)
@@ -35,25 +35,25 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   def test_multi_scope_forbidden_as_single_scope_admin
     factory = :google_and_yahoo_multi_scope_admin_group
 
-    google_admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:admin_group, :api_scopes => [
-        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:google_api_scope)),
+    google_admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:admin_group, :api_scopes => [
+        ApiScope.find_or_create_by_instance!(FactoryBot.build(:google_api_scope)),
       ]),
     ])
     assert_admin_forbidden(factory, google_admin)
 
-    yahoo_admin = FactoryGirl.create(:limited_admin, :groups => [
-      FactoryGirl.create(:admin_group, :api_scopes => [
-        ApiScope.find_or_create_by_instance!(FactoryGirl.build(:yahoo_api_scope)),
+    yahoo_admin = FactoryBot.create(:limited_admin, :groups => [
+      FactoryBot.create(:admin_group, :api_scopes => [
+        ApiScope.find_or_create_by_instance!(FactoryBot.build(:yahoo_api_scope)),
       ]),
     ])
     assert_admin_forbidden(factory, yahoo_admin)
   end
 
   def test_forbids_updating_permitted_groups_with_unpermitted_values
-    record = FactoryGirl.create(:google_admin_group)
-    yahoo_api_scope = ApiScope.find_or_create_by_instance!(FactoryGirl.build(:yahoo_api_scope))
-    admin = FactoryGirl.create(:limited_admin, :groups => [record])
+    record = FactoryBot.create(:google_admin_group)
+    yahoo_api_scope = ApiScope.find_or_create_by_instance!(FactoryBot.build(:yahoo_api_scope))
+    admin = FactoryBot.create(:limited_admin, :groups => [record])
 
     attributes = record.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
@@ -76,10 +76,10 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def test_forbids_updating_unpermitted_groups_with_permitted_values
-    record = FactoryGirl.create(:yahoo_admin_group)
-    yahoo_api_scope = ApiScope.find_or_create_by_instance!(FactoryGirl.build(:yahoo_api_scope))
-    google_api_scope = ApiScope.find_or_create_by_instance!(FactoryGirl.build(:google_api_scope))
-    admin = FactoryGirl.create(:google_admin)
+    record = FactoryBot.create(:yahoo_admin_group)
+    yahoo_api_scope = ApiScope.find_or_create_by_instance!(FactoryBot.build(:yahoo_api_scope))
+    google_api_scope = ApiScope.find_or_create_by_instance!(FactoryBot.build(:google_api_scope))
+    admin = FactoryBot.create(:google_admin)
 
     attributes = record.serializable_hash
     response = Typhoeus.put("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{record.id}.json", http_options.deep_merge(admin_token(admin)).deep_merge({
@@ -120,7 +120,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_index(factory, admin)
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(200, response)
@@ -130,7 +130,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_index(factory, admin)
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(200, response)
@@ -140,7 +140,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_show(factory, admin)
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(200, response)
@@ -149,7 +149,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_show(factory, admin)
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
 
     assert_response_code(403, response)
@@ -158,7 +158,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_create(factory, admin)
-    attributes = FactoryGirl.build(factory).serializable_hash
+    attributes = FactoryBot.build(factory).serializable_hash
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -173,7 +173,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_create(factory, admin)
-    attributes = FactoryGirl.build(factory).serializable_hash
+    attributes = FactoryBot.build(factory).serializable_hash
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/admin_groups.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -187,7 +187,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_update(factory, admin)
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
 
     attributes = record.serializable_hash
     attributes["name"] += rand(999_999).to_s
@@ -203,7 +203,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_update(factory, admin)
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
 
     attributes = record.serializable_hash
     attributes["name"] += rand(999_999).to_s
@@ -222,7 +222,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_permitted_destroy(factory, admin)
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
     assert_response_code(204, response)
@@ -230,7 +230,7 @@ class Test::Apis::V1::AdminGroups::TestAdminPermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_destroy(factory, admin)
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
     initial_count = active_count
     response = Typhoeus.delete("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{record.id}.json", http_options.deep_merge(admin_token(admin)))
     assert_response_code(403, response)

@@ -21,7 +21,7 @@ class Test::Apis::V1::ApiScopes::TestValidations < Minitest::Test
   end
 
   def test_required_update
-    record = FactoryGirl.create(:api_scope)
+    record = FactoryBot.create(:api_scope)
 
     attributes = {
       :name => nil,

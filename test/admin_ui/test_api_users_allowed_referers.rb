@@ -42,8 +42,8 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
   end
 
   def test_displays_existing_array_as_multiple_lines
-    user = FactoryGirl.create(:api_user, {
-      :settings => FactoryGirl.build(:api_user_settings, {
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
         :allowed_referers => ["*.example.com/*", "http://google.com/*"],
       }),
     })
@@ -54,8 +54,8 @@ class Test::AdminUi::TestApiUsersAllowedReferers < Minitest::Capybara::Test
   end
 
   def test_nullifies_existing_array_when_empty_input_saved
-    user = FactoryGirl.create(:api_user, {
-      :settings => FactoryGirl.build(:api_user_settings, {
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
         :allowed_referers => ["*.example.com/*", "http://google.com/*"],
       }),
     })

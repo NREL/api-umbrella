@@ -30,7 +30,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
 
   def assert_embedded_yaml_invalid_yaml(action, field)
     attributes = attributes_for(action)
-    attributes["settings"] = FactoryGirl.attributes_for(:api_backend_settings, {
+    attributes["settings"] = FactoryBot.attributes_for(:api_backend_settings, {
       :"#{field}_yaml_strings" => {
         :api_key_invalid => "foo: &",
         :api_key_missing => "foo: bar\nhello: `world",
@@ -49,7 +49,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
 
   def assert_embedded_yaml_non_hash(action, field)
     attributes = attributes_for(action)
-    attributes["settings"] = FactoryGirl.attributes_for(:api_backend_settings, {
+    attributes["settings"] = FactoryBot.attributes_for(:api_backend_settings, {
       :"#{field}_yaml_strings" => {
         :api_key_invalid => "foo",
       },
@@ -66,7 +66,7 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
 
   def assert_embedded_yaml_valid(action, field)
     attributes = attributes_for(action)
-    attributes["settings"] = FactoryGirl.attributes_for(:api_backend_settings, {
+    attributes["settings"] = FactoryBot.attributes_for(:api_backend_settings, {
       :"#{field}_yaml_strings" => {
         :api_key_invalid => "status_code: 422\nfoo: bar",
       },
@@ -91,9 +91,9 @@ class Test::Apis::V1::Apis::TestSaveEmbeddedYaml < Minitest::Test
 
   def attributes_for(action)
     if(action == :create)
-      FactoryGirl.attributes_for(:api_backend).deep_stringify_keys
+      FactoryBot.attributes_for(:api_backend).deep_stringify_keys
     elsif(action == :update)
-      FactoryGirl.create(:api_backend).serializable_hash
+      FactoryBot.create(:api_backend).serializable_hash
     else
       flunk("Unknown action: #{action.inspect}")
     end

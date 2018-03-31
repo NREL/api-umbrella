@@ -119,7 +119,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
 
   def test_counts_explicit_buckets_differently
     http_opts = keyless_http_options.deep_merge({
-      :headers => { "X-Api-Key" => FactoryGirl.create(:api_user).api_key },
+      :headers => { "X-Api-Key" => FactoryBot.create(:api_user).api_key },
     })
 
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_opts)
@@ -134,7 +134,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
 
   def test_gives_each_domain_separate_bucket
     http_opts = keyless_http_options.deep_merge({
-      :headers => { "X-Api-Key" => FactoryGirl.create(:api_user).api_key },
+      :headers => { "X-Api-Key" => FactoryBot.create(:api_user).api_key },
     })
 
     response = Typhoeus.get("http://127.0.0.1:9080/api/hello", http_opts)
@@ -152,7 +152,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
   def test_multiple_backends_under_single_domain_use_same_bucket
     http_opts = keyless_http_options.deep_merge({
       :headers => {
-        "X-Api-Key" => FactoryGirl.create(:api_user).api_key,
+        "X-Api-Key" => FactoryBot.create(:api_user).api_key,
         "Host" => "some.gov",
       },
     })
@@ -166,7 +166,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
 
   def test_wildcard_domains_on_backend_use_same_bucket
     http_opts = keyless_http_options.deep_merge({
-      :headers => { "X-Api-Key" => FactoryGirl.create(:api_user).api_key },
+      :headers => { "X-Api-Key" => FactoryBot.create(:api_user).api_key },
     })
 
     response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}/wildcard/hello", http_opts.deep_merge({
@@ -183,7 +183,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
   def test_user_with_empty_rate_limits_array
     assert_api_key_rate_limit("/#{unique_test_class_id}/lower/hello", 3, {
       :user_factory_overrides => {
-        :settings => FactoryGirl.build(:api_user_settings, {
+        :settings => FactoryBot.build(:api_user_settings, {
           :rate_limit_mode => nil,
           :rate_limits => [],
         }),
@@ -194,7 +194,7 @@ class Test::Proxy::RateLimits::TestApiLimits < Minitest::Test
   def test_live_changes
     http_opts = keyless_http_options.deep_merge({
       :headers => {
-        "X-Api-Key" => FactoryGirl.create(:api_user).api_key,
+        "X-Api-Key" => FactoryBot.create(:api_user).api_key,
       },
     })
 

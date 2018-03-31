@@ -8,7 +8,7 @@ require "minitest/autorun"
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 # Detect the source root directory.
-API_UMBRELLA_SRC_ROOT = File.expand_path("../../", __FILE__)
+API_UMBRELLA_SRC_ROOT = File.expand_path('..', __dir__)
 if(!File.exist?(File.join(API_UMBRELLA_SRC_ROOT, "src/api-umbrella")))
   raise "The calculated root directory does not appear correct: #{API_UMBRELLA_SRC_ROOT}"
 end

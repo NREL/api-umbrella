@@ -75,6 +75,10 @@ local function prepare()
     path.join(config["root_dir"], "var/trafficserver"),
   }
 
+  if config["app_env"] == "test" then
+    table.insert(dirs, path.join(config["run_dir"], "test-env-mongo-orchestration"))
+  end
+
   for _, directory in ipairs(dirs) do
     dir.makepath(directory)
   end

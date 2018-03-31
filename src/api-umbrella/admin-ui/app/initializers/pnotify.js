@@ -1,6 +1,7 @@
-import PNotify from 'npm:pnotify';
 import 'npm:pnotify/dist/pnotify.buttons';
 import 'npm:pnotify/dist/pnotify.mobile';
+
+import PNotify from 'npm:pnotify';
 
 export function initialize() {
   _.merge(PNotify.prototype.options, {

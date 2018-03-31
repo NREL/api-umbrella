@@ -1,6 +1,7 @@
+import { buildValidations, validator } from 'ember-cp-validations';
+
 import DS from 'ember-data';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   name: validator('presence', {

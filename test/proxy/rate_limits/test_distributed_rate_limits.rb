@@ -121,7 +121,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_sets_new_limits_to_distributed_value
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1001,
@@ -133,7 +133,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_increases_existing_rate_limits_to_match_distributed_value
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1001,
@@ -148,7 +148,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_ignores_distributed_value_when_lower
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1001,
@@ -162,7 +162,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_syncs_local_limits_into_mongo
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1001,
@@ -175,7 +175,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_sets_expected_rate_limit_record_after_requests
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1001,
@@ -189,7 +189,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_sets_expected_rate_limit_record_when_set_from_tests
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1001,
@@ -201,7 +201,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_does_not_sync_non_distributed_limits
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1004,
@@ -214,7 +214,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_syncs_api_specific_limits
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1002,
@@ -231,7 +231,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
   # a 5 second boundary, than a 1 minute boundary.
   def test_syncs_short_duration_buckets
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 1 * 60 * 1000, # 1 minute
       :accuracy => 5 * 1000, # 5 seconds
       :limit => 1006,
@@ -244,7 +244,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_syncs_api_specific_subsetting_limits
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1003,
@@ -257,7 +257,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_syncs_requests_in_past_within_bucket_time
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1005,
@@ -271,7 +271,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_does_not_sync_requests_in_past_outside_bucket_time
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1005,
@@ -286,7 +286,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
   def test_syncs_within_duration_on_reload_or_start
     time = Time.now.utc
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1001,
@@ -313,7 +313,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
 
   def test_polls_for_distributed_changes
     options = {
-      :api_key => FactoryGirl.create(:api_user).api_key,
+      :api_key => FactoryBot.create(:api_user).api_key,
       :duration => 50 * 60 * 1000, # 50 minutes
       :accuracy => 1 * 60 * 1000, # 1 minute
       :limit => 1001,
@@ -349,7 +349,7 @@ class Test::Proxy::RateLimits::TestDistributedRateLimits < Minitest::Test
       DistributedRateLimitCounter.delete_all
 
       options = {
-        :api_key => FactoryGirl.create(:api_user).api_key,
+        :api_key => FactoryBot.create(:api_user).api_key,
         :duration => 50 * 60 * 1000, # 50 minutes
         :accuracy => 1 * 60 * 1000, # 1 minute
         :limit => 1001,

@@ -1,17 +1,21 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import Save from 'api-umbrella-admin-ui/mixins/save';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
-export default Ember.Component.extend(Save, {
-  throttleByIpOptions: [
-    { id: false, name: 'Rate limit by API key' },
-    { id: true, name: 'Rate limit by IP address' },
-  ],
+export default Component.extend(Save, {
+  init() {
+    this._super(...arguments);
 
-  enabledOptions: [
-    { id: true, name: 'Enabled' },
-    { id: false, name: 'Disabled' },
-  ],
+    this.throttleByIpOptions = [
+      { id: false, name: 'Rate limit by API key' },
+      { id: true, name: 'Rate limit by IP address' },
+    ];
+
+    this.enabledOptions = [
+      { id: true, name: 'Enabled' },
+      { id: false, name: 'Disabled' },
+    ];
+  },
 
   actions: {
     apiKeyRevealToggle() {

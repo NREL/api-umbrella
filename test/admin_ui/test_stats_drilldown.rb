@@ -13,8 +13,8 @@ class Test::AdminUi::TestStatsDrilldown < Minitest::Capybara::Test
   end
 
   def test_csv_download
-    FactoryGirl.create_list(:log_item, 5, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
-    FactoryGirl.create_list(:log_item, 5, :request_at => 1421413588000)
+    FactoryBot.create_list(:log_item, 5, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
+    FactoryBot.create_list(:log_item, 5, :request_at => 1421413588000)
     LogItem.refresh_indices!
     default_query = JSON.generate({
       "condition" => "AND",

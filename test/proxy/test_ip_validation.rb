@@ -44,8 +44,8 @@ class Test::Proxy::TestIpValidation < Minitest::Test
         },
       ])
 
-      @@user_with_allowed_ips = FactoryGirl.create(:api_user, {
-        :settings => FactoryGirl.build(:api_user_settings, {
+      @@user_with_allowed_ips = FactoryBot.create(:api_user, {
+        :settings => FactoryBot.build(:api_user_settings, {
           :rate_limit_mode => "unlimited",
           :allowed_ips => [
             "10.0.0.0/24",
@@ -154,8 +154,8 @@ class Test::Proxy::TestIpValidation < Minitest::Test
   end
 
   def test_user_authorized_when_empty_array
-    user = FactoryGirl.create(:api_user, {
-      :settings => FactoryGirl.build(:api_user_settings, {
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
         :rate_limit_mode => "unlimited",
         :allowed_ips => [],
       }),

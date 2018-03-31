@@ -54,7 +54,7 @@ class Test::Apis::V1::Users::TestCreateIePseudoCorsCompatibility < Minitest::Tes
   private
 
   def non_admin_auth
-    user = FactoryGirl.create(:api_user, {
+    user = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-key-creator"],
     })
 

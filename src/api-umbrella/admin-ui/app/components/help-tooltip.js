@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import Component from '@ember/component';
+import { computed } from '@ember/object';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName: 'span',
 
-  tooltipHtml: Ember.computed('tooltip', function() {
+  tooltipHtml: computed('tooltip', function() {
     return marked(this.get('tooltip'));
   }),
 });

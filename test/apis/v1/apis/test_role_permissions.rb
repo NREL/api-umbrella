@@ -10,16 +10,16 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_superuser_assign_any_role
-    FactoryGirl.create(:google_api_backend)
-    FactoryGirl.create(:yahoo_api_backend)
+    FactoryBot.create(:google_api_backend)
+    FactoryBot.create(:yahoo_api_backend)
     existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "yahoo-write")
     refute_includes(existing_roles, "new-write#{unique_test_id}")
 
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     attr_overrides = {
-      :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+      :settings => FactoryBot.attributes_for(:api_backend_settings, {
         :required_roles => [
           "test-write",
           "google-write",
@@ -29,8 +29,8 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
         ],
       }),
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_backend_sub_url_settings, {
-          :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+        FactoryBot.attributes_for(:api_backend_sub_url_settings, {
+          :settings => FactoryBot.attributes_for(:api_backend_settings, {
             :required_roles => [
               "test-write",
               "google-write",
@@ -47,16 +47,16 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_limited_admin_assign_unused_role
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :backend_manage_permission)])
     attr_overrides = {
-      :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+      :settings => FactoryBot.attributes_for(:api_backend_settings, {
         :required_roles => [
           "new-settings-role#{unique_test_id}#{rand(999_999)}",
         ],
       }),
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_backend_sub_url_settings, {
-          :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+        FactoryBot.attributes_for(:api_backend_sub_url_settings, {
+          :settings => FactoryBot.attributes_for(:api_backend_settings, {
             :required_roles => [
               "new-sub-settings-role#{unique_test_id}#{rand(999_999)}",
             ],
@@ -69,8 +69,8 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_limited_admin_assign_role_within_scope
-    FactoryGirl.create(:google_api_backend, {
-      :settings => FactoryGirl.build(:api_backend_settings, {
+    FactoryBot.create(:google_api_backend, {
+      :settings => FactoryBot.build(:api_backend_settings, {
         :required_roles => [
           "google2-write",
         ],
@@ -80,16 +80,16 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
     assert_includes(existing_roles, "google-write")
     assert_includes(existing_roles, "google2-write")
 
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :backend_manage_permission)])
     attr_overrides = {
-      :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+      :settings => FactoryBot.attributes_for(:api_backend_settings, {
         :required_roles => [
           "google2-write",
         ],
       }),
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_backend_sub_url_settings, {
-          :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+        FactoryBot.attributes_for(:api_backend_sub_url_settings, {
+          :settings => FactoryBot.attributes_for(:api_backend_settings, {
             :required_roles => [
               "google2-write",
             ],
@@ -102,13 +102,13 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_assign_role_outside_scope
-    FactoryGirl.create(:yahoo_api_backend)
+    FactoryBot.create(:yahoo_api_backend)
     existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "yahoo-write")
 
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :backend_manage_permission)])
     attr_overrides = {
-      :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+      :settings => FactoryBot.attributes_for(:api_backend_settings, {
         :required_roles => [
           "yahoo-write",
         ],
@@ -119,15 +119,15 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_assign_sub_setting_role_outside_scope
-    FactoryGirl.create(:yahoo_api_backend)
+    FactoryBot.create(:yahoo_api_backend)
     existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "yahoo-write")
 
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :backend_manage_permission)])
     attr_overrides = {
       :sub_settings => [
-        FactoryGirl.attributes_for(:api_backend_sub_url_settings, {
-          :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+        FactoryBot.attributes_for(:api_backend_sub_url_settings, {
+          :settings => FactoryBot.attributes_for(:api_backend_settings, {
             :required_roles => [
               "yahoo-write",
             ],
@@ -140,14 +140,14 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_assign_role_partial_access
-    FactoryGirl.create(:google_extra_url_match_api_backend)
+    FactoryBot.create(:google_extra_url_match_api_backend)
     existing_roles = ApiRole.all_ids
     assert_includes(existing_roles, "google-extra-write")
     assert_includes(existing_roles, "google-write")
 
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :backend_manage_permission)])
     attr_overrides = {
-      :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+      :settings => FactoryBot.attributes_for(:api_backend_settings, {
         :required_roles => [
           "google-extra-write",
         ],
@@ -158,9 +158,9 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def test_forbids_limited_admin_create_new_api_umbrella_roles
-    admin = FactoryGirl.create(:limited_admin, :groups => [FactoryGirl.create(:google_admin_group, :backend_manage_permission)])
+    admin = FactoryBot.create(:limited_admin, :groups => [FactoryBot.create(:google_admin_group, :backend_manage_permission)])
     attr_overrides = {
-      :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+      :settings => FactoryBot.attributes_for(:api_backend_settings, {
         :required_roles => [
           "api-umbrella#{rand(999_999)}",
         ],
@@ -171,9 +171,9 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def test_permits_superuser_create_new_api_umbrella_roles
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     attr_overrides = {
-      :settings => FactoryGirl.attributes_for(:api_backend_settings, {
+      :settings => FactoryBot.attributes_for(:api_backend_settings, {
         :required_roles => [
           "api-umbrella#{unique_test_id}#{rand(999_999)}",
         ],
@@ -186,7 +186,7 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   private
 
   def assert_admin_permitted_create(factory, admin, attr_overrides = {})
-    attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
+    attributes = FactoryBot.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -209,7 +209,7 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_create(factory, admin, attr_overrides = {})
-    attributes = FactoryGirl.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
+    attributes = FactoryBot.attributes_for(factory).deep_stringify_keys.deep_merge(attr_overrides)
     initial_count = active_count
     response = Typhoeus.post("https://127.0.0.1:9081/api-umbrella/v1/apis.json", http_options.deep_merge(admin_token(admin)).deep_merge({
       :headers => { "Content-Type" => "application/json" },
@@ -223,7 +223,7 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def assert_admin_permitted_update(factory, admin, attr_overrides = {})
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
 
     attributes = record.serializable_hash.deep_merge(attr_overrides)
     attributes["name"] += rand(999_999).to_s
@@ -246,7 +246,7 @@ class Test::Apis::V1::Apis::TestRolePermissions < Minitest::Test
   end
 
   def assert_admin_forbidden_update(factory, admin, attr_overrides = {})
-    record = FactoryGirl.create(factory)
+    record = FactoryBot.create(factory)
 
     attributes = record.serializable_hash.deep_merge(attr_overrides)
     attributes["name"] += rand(999_999).to_s

@@ -6,12 +6,24 @@ module ApiUmbrellaSharedTests
 
     def test_website
       response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options)
+      assert_response_code(301, response)
+      assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
+
+      response = Typhoeus.get("https://127.0.0.1:9081/", keyless_http_options)
       assert_response_code(200, response)
       assert_match("Your API Site Name", response.body)
     end
 
     def test_custom_website
       response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_class_id}-website.foo",
+        },
+      }))
+      assert_response_code(301, response)
+      assert_equal("https://#{unique_test_class_id.downcase}-website.foo:9081/", response.headers["Location"])
+
+      response = Typhoeus.get("https://127.0.0.1:9081/", keyless_http_options.deep_merge({
         :headers => {
           "Host" => "#{unique_test_class_id}-website.foo",
         },
@@ -26,12 +38,28 @@ module ApiUmbrellaSharedTests
           "Host" => "#{unique_test_class_id}-website.foo",
         },
       }))
+      assert_response_code(301, response)
+      assert_equal("https://#{unique_test_class_id.downcase}-website.foo:9081/sjkdlfjksdlfj", response.headers["Location"])
+
+      response = Typhoeus.get("https://127.0.0.1:9081/sjkdlfjksdlfj", keyless_http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_class_id}-website.foo",
+        },
+      }))
       assert_response_code(404, response)
       assert_match("Test Website 404 Not Found", response.body)
     end
 
     def test_website_wildcard_host
       response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_id}-unknown.foo",
+        },
+      }))
+      assert_response_code(301, response)
+      assert_equal("https://#{unique_test_id.downcase}-unknown.foo:9081/", response.headers["Location"])
+
+      response = Typhoeus.get("https://127.0.0.1:9081/", keyless_http_options.deep_merge({
         :headers => {
           "Host" => "#{unique_test_id}-unknown.foo",
         },
@@ -62,7 +90,23 @@ module ApiUmbrellaSharedTests
       assert_response_code(200, response)
       assert_equal("Hello World", response.body)
 
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_class_id}-api/hello", http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_class_id}-apis-no-website.foo",
+        },
+      }))
+      assert_response_code(200, response)
+      assert_equal("Hello World", response.body)
+
       response = Typhoeus.get("http://127.0.0.1:9080/", keyless_http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_class_id}-apis-no-website.foo",
+        },
+      }))
+      assert_response_code(301, response)
+      assert_equal("https://#{unique_test_class_id.downcase}-apis-no-website.foo:9081/", response.headers["Location"])
+
+      response = Typhoeus.get("https://127.0.0.1:9081/", keyless_http_options.deep_merge({
         :headers => {
           "Host" => "#{unique_test_class_id}-apis-no-website.foo",
         },
@@ -88,10 +132,27 @@ module ApiUmbrellaSharedTests
       response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state.json", http_options.deep_merge(admin_token))
       assert_response_code(200, response)
       assert_equal("application/json", response.headers["content-type"])
+
+      response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/state.json", http_options.deep_merge(admin_token))
+      assert_response_code(200, response)
+      assert_equal("application/json", response.headers["content-type"])
     end
 
     def test_gatekeeper_apis_for_wildcard_host
       response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/state.json", http_options.deep_merge(admin_token).deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_id}-unknown.foo",
+        },
+      }))
+      if(@refute_fallback_website || @assert_fallback_website)
+        assert_response_code(301, response)
+        assert_equal("https://#{unique_test_id.downcase}-unknown.foo:9081/api-umbrella/v1/state.json", response.headers["Location"])
+      else
+        assert_response_code(200, response)
+        assert_equal("application/json", response.headers["content-type"])
+      end
+
+      response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/state.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => {
           "Host" => "#{unique_test_id}-unknown.foo",
         },
@@ -118,10 +179,27 @@ module ApiUmbrellaSharedTests
       response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/users.json", http_options.deep_merge(admin_token))
       assert_response_code(200, response)
       assert_equal("application/json; charset=utf-8", response.headers["content-type"])
+
+      response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token))
+      assert_response_code(200, response)
+      assert_equal("application/json; charset=utf-8", response.headers["content-type"])
     end
 
     def test_web_app_apis_for_wildcard_host
       response = Typhoeus.get("http://127.0.0.1:9080/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_id}-unknown.foo",
+        },
+      }))
+      if(@refute_fallback_website || @assert_fallback_website)
+        assert_response_code(301, response)
+        assert_equal("https://#{unique_test_id.downcase}-unknown.foo:9081/api-umbrella/v1/users.json", response.headers["Location"])
+      else
+        assert_response_code(200, response)
+        assert_equal("application/json; charset=utf-8", response.headers["content-type"])
+      end
+
+      response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/users.json", http_options.deep_merge(admin_token).deep_merge({
         :headers => {
           "Host" => "#{unique_test_id}-unknown.foo",
         },
@@ -152,10 +230,31 @@ module ApiUmbrellaSharedTests
       }))
       assert_response_code(200, response)
       assert_equal("Hello World", response.body)
+
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_class_id}-api/hello", http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_class_id}-apis-no-website.foo",
+        },
+      }))
+      assert_response_code(200, response)
+      assert_equal("Hello World", response.body)
     end
 
     def test_configured_apis_wildcard_host
       response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}-api/hello", http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_id}-unknown.foo",
+        },
+      }))
+      if(@assert_default_host)
+        assert_response_code(200, response)
+        assert_equal("Hello World", response.body)
+      else
+        assert_response_code(301, response)
+        assert_equal("https://#{unique_test_id.downcase}-unknown.foo:9081/#{unique_test_class_id}-api/hello", response.headers["Location"])
+      end
+
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_class_id}-api/hello", http_options.deep_merge({
         :headers => {
           "Host" => "#{unique_test_id}-unknown.foo",
         },
@@ -188,7 +287,29 @@ module ApiUmbrellaSharedTests
       data = MultiJson.load(response.body)
       assert_equal("apis-no-website.bar", data["headers"]["host"])
 
-      response = Typhoeus.get("http://127.0.0.1:9080/#{unique_test_class_id}-api/info/", http_options.deep_merge({
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_class_id}-api/info/", http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_class_id}-apis-no-website.foo",
+        },
+      }))
+      assert_response_code(200, response)
+      data = MultiJson.load(response.body)
+      assert_equal("apis-no-website.bar", data["headers"]["host"])
+
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_class_id}-api/info/", http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_id}-unknown.foo",
+        },
+      }))
+      if(@assert_default_host)
+        assert_response_code(200, response)
+        data = MultiJson.load(response.body)
+        assert_equal("default.bar", data["headers"]["host"])
+      else
+        assert_response_code(404, response)
+      end
+
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_class_id}-api/info/", http_options.deep_merge({
         :headers => {
           "Host" => "#{unique_test_id}-unknown.foo",
         },
@@ -211,17 +332,43 @@ module ApiUmbrellaSharedTests
         data = MultiJson.load(response.body)
         assert_equal("default.bar", data["headers"]["host"])
       else
+        assert_response_code(301, response)
+        assert_equal("https://#{unique_test_class_id.downcase}-default.foo:9081/#{unique_test_class_id}-api/info/", response.headers["Location"])
+      end
+
+      response = Typhoeus.get("https://127.0.0.1:9081/#{unique_test_class_id}-api/info/", http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_class_id}-default.foo",
+        },
+      }))
+      if(@assert_default_host)
+        assert_response_code(200, response)
+        data = MultiJson.load(response.body)
+        assert_equal("default.bar", data["headers"]["host"])
+      else
         assert_response_code(404, response)
       end
     end
 
     def test_admin_ui
+      response = Typhoeus.get("http://127.0.0.1:9080/admin/", keyless_http_options)
+      assert_response_code(301, response)
+      assert_equal("https://127.0.0.1:9081/admin/", response.headers["Location"])
+
       response = Typhoeus.get("https://127.0.0.1:9081/admin/", keyless_http_options)
       assert_response_code(200, response)
       assert_match(%r{<script src="assets/api-umbrella-admin-ui-\w+\.js"}, response.body)
     end
 
     def test_admin_ui_wildcard_host
+      response = Typhoeus.get("http://127.0.0.1:9080/admin/", keyless_http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_id}-unknown.foo",
+        },
+      }))
+      assert_response_code(301, response)
+      assert_equal("https://#{unique_test_id.downcase}-unknown.foo:9081/admin/", response.headers["Location"])
+
       response = Typhoeus.get("https://127.0.0.1:9081/admin/", keyless_http_options.deep_merge({
         :headers => {
           "Host" => "#{unique_test_id}-unknown.foo",
@@ -246,14 +393,28 @@ module ApiUmbrellaSharedTests
     end
 
     def test_admin_web_app
-      FactoryGirl.create(:admin)
+      FactoryBot.create(:admin)
+
+      response = Typhoeus.get("http://127.0.0.1:9080/admin/login", keyless_http_options)
+      assert_response_code(301, response)
+      assert_equal("https://127.0.0.1:9081/admin/login", response.headers["Location"])
+
       response = Typhoeus.get("https://127.0.0.1:9081/admin/login", keyless_http_options)
       assert_response_code(200, response)
       assert_match("Admin Sign In", response.body)
     end
 
     def test_admin_web_app_wildcard_host
-      FactoryGirl.create(:admin)
+      FactoryBot.create(:admin)
+
+      response = Typhoeus.get("http://127.0.0.1:9080/admin/login", keyless_http_options.deep_merge({
+        :headers => {
+          "Host" => "#{unique_test_id}-unknown.foo",
+        },
+      }))
+      assert_response_code(301, response)
+      assert_equal("https://#{unique_test_id.downcase}-unknown.foo:9081/admin/login", response.headers["Location"])
+
       response = Typhoeus.get("https://127.0.0.1:9081/admin/login", keyless_http_options.deep_merge({
         :headers => {
           "Host" => "#{unique_test_id}-unknown.foo",

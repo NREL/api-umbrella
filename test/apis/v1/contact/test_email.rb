@@ -13,7 +13,7 @@ class Test::Apis::V1::Contact::TestEmail < Minitest::Test
   end
 
   def test_sends_email
-    user = FactoryGirl.create(:api_user, {
+    user = FactoryBot.create(:api_user, {
       :roles => ["api-umbrella-contact-form"],
     })
 

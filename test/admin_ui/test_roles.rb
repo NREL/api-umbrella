@@ -11,7 +11,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
   end
 
   def test_prefills_user_roles
-    FactoryGirl.create(:api_user, :roles => ["test-user-role"])
+    FactoryBot.create(:api_user, :roles => ["test-user-role"])
     admin_login
     visit "/admin/#/api_users/new"
     assert_text("Add API User")
@@ -21,8 +21,8 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
   end
 
   def test_prefills_api_roles
-    FactoryGirl.create(:api_backend, {
-      :settings => FactoryGirl.build(:api_backend_settings, {
+    FactoryBot.create(:api_backend, {
+      :settings => FactoryBot.build(:api_backend_settings, {
         :required_roles => ["test-api-role"],
       }),
     })
@@ -92,7 +92,7 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
   end
 
   def test_removes_user_roles
-    user = FactoryGirl.create(:api_user, :roles => ["test-role1", "test-role2"])
+    user = FactoryBot.create(:api_user, :roles => ["test-role1", "test-role2"])
     admin_login
 
     # Remove 1 role
@@ -128,8 +128,8 @@ class Test::AdminUi::TestRoles < Minitest::Capybara::Test
   end
 
   def test_removes_api_roles
-    api = FactoryGirl.create(:api_backend, {
-      :settings => FactoryGirl.build(:api_backend_settings, {
+    api = FactoryBot.create(:api_backend, {
+      :settings => FactoryBot.build(:api_backend_settings, {
         :required_roles => ["test-role1", "test-role2"],
       }),
     })

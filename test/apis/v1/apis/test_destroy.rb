@@ -12,7 +12,7 @@ class Test::Apis::V1::Apis::TestDestroy < Minitest::Test
 
   def test_audits_deletes
     # Create the record
-    api = FactoryGirl.create(:api_backend_with_all_relationships)
+    api = FactoryBot.create(:api_backend_with_all_relationships)
     server = api.servers.first
     assert(server)
     url_match = api.url_matches.first

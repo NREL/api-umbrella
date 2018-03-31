@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import Component from '@ember/component';
+import { computed } from '@ember/object';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
-export default Ember.Component.extend({
-  messages: Ember.computed('model.clientErrors', 'model.serverErrors', function() {
+export default Component.extend({
+  messages: computed('model.{clientErrors,serverErrors}', function() {
     let errors = [];
 
     let clientErrors = this.get('model.clientErrors');
@@ -66,7 +67,7 @@ export default Ember.Component.extend({
     return messages;
   }),
 
-  hasErrors: Ember.computed('messages', function() {
+  hasErrors: computed('messages', function() {
     return (this.get('messages').length > 0);
   }),
 });

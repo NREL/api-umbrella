@@ -1,7 +1,7 @@
 # OpenLDAP: For testing LDAP admin auth.
 
-set(OPENLDAP_VERSION 2.4.45)
-set(OPENLDAP_HASH c98437385d3eaee80c9e2c09f3f0d4b7c140233d)
+set(OPENLDAP_VERSION 2.4.46)
+set(OPENLDAP_HASH a9ae2273eb9bdd70090dafe0d018a3132606bef6)
 
 ExternalProject_Add(
   openldap

@@ -10,8 +10,8 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
   end
 
   def test_caches_keys_inside_workers_for_couple_seconds
-    user = FactoryGirl.create(:api_user, {
-      :settings => FactoryGirl.build(:api_user_settings, {
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
         :rate_limit_mode => "unlimited",
       }),
     })
@@ -56,8 +56,8 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
   end
 
   def test_keys_across_parallel_hits_with_key_caching
-    user = FactoryGirl.create(:api_user, {
-      :settings => FactoryGirl.build(:api_user_settings, {
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
         :rate_limit_mode => "unlimited",
       }),
     })
@@ -79,8 +79,8 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
   end
 
   def test_keys_across_repated_hits_with_key_caching
-    user = FactoryGirl.create(:api_user, {
-      :settings => FactoryGirl.build(:api_user_settings, {
+    user = FactoryBot.create(:api_user, {
+      :settings => FactoryBot.build(:api_user_settings, {
         :rate_limit_mode => "unlimited",
       }),
     })
@@ -100,8 +100,8 @@ class Test::Proxy::ApiKeyValidation::TestApiKeyCache < Minitest::Test
         "api_key_cache" => false,
       },
     }, "--router") do
-      user = FactoryGirl.create(:api_user, {
-        :settings => FactoryGirl.build(:api_user_settings, {
+      user = FactoryBot.create(:api_user, {
+        :settings => FactoryBot.build(:api_user_settings, {
           :rate_limit_mode => "unlimited",
         }),
       })

@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { helper } from '@ember/component/helper';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
 
 export function tHelper([message, ...rest]) {
@@ -6,4 +6,4 @@ export function tHelper([message, ...rest]) {
   return t(message, ...rest);
 }
 
-export default Ember.Helper.helper(tHelper);
+export default helper(tHelper);

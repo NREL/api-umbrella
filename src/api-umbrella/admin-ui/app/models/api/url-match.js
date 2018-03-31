@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { buildValidations, validator } from 'ember-cp-validations';
+
 import DS from 'ember-data';
+import { computed } from '@ember/object';
 import { t } from 'api-umbrella-admin-ui/utils/i18n';
-import { validator, buildValidations } from 'ember-cp-validations';
 
 const Validations = buildValidations({
   frontendPrefix: [
@@ -33,7 +34,7 @@ export default DS.Model.extend(Validations, {
   frontendPrefix: DS.attr(),
   backendPrefix: DS.attr(),
 
-  backendPrefixWithDefault: Ember.computed('backendPrefix', 'frontendPrefix', function() {
+  backendPrefixWithDefault: computed('backendPrefix', 'frontendPrefix', function() {
     return this.get('backendPrefix') || this.get('frontendPrefix');
   }),
 }).reopenClass({

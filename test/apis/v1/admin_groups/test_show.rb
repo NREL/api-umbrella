@@ -11,8 +11,8 @@ class Test::Apis::V1::AdminGroups::TestShow < Minitest::Test
   end
 
   def test_admins_in_group_metadata
-    group = FactoryGirl.create(:admin_group)
-    admin_in_group = FactoryGirl.create(:limited_admin, :last_sign_in_at => Time.now.utc, :groups => [
+    group = FactoryBot.create(:admin_group)
+    admin_in_group = FactoryBot.create(:limited_admin, :last_sign_in_at => Time.now.utc, :groups => [
       group,
     ])
 
@@ -30,11 +30,11 @@ class Test::Apis::V1::AdminGroups::TestShow < Minitest::Test
   end
 
   def test_admins_in_group_sorted_alpha
-    group = FactoryGirl.create(:admin_group)
-    admin_in_group1 = FactoryGirl.create(:limited_admin, :username => "b", :groups => [
+    group = FactoryBot.create(:admin_group)
+    admin_in_group1 = FactoryBot.create(:limited_admin, :username => "b", :groups => [
       group,
     ])
-    admin_in_group2 = FactoryGirl.create(:limited_admin, :username => "a", :groups => [
+    admin_in_group2 = FactoryBot.create(:limited_admin, :username => "a", :groups => [
       group,
     ])
 
@@ -49,7 +49,7 @@ class Test::Apis::V1::AdminGroups::TestShow < Minitest::Test
   end
 
   def test_admins_in_group_empty
-    group = FactoryGirl.create(:admin_group)
+    group = FactoryBot.create(:admin_group)
 
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/admin_groups/#{group.id}.json", http_options.deep_merge(admin_token))
 

@@ -12,10 +12,10 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
 
   def test_bins_results_by_day_with_time_zone_support
     Time.use_zone("America/Denver") do
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-12T23:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-13T00:00:00"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-18T23:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-01-19T00:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-01-12T23:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-01-13T00:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-01-18T23:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-01-19T00:00:00"))
     end
     LogItem.refresh_indices!
 
@@ -43,10 +43,10 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
 
   def test_bins_daily_results_daylight_saving_time_begin
     Time.use_zone("UTC") do
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T00:00:00"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-09T10:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T00:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-09T10:00:00"))
     end
     LogItem.refresh_indices!
 
@@ -78,8 +78,8 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
 
   def test_bins_hourly_results_daylight_saving_time_begin
     Time.use_zone("UTC") do
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T08:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2015-03-08T09:00:00"))
     end
     LogItem.refresh_indices!
 
@@ -115,10 +115,10 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
 
   def test_bins_daily_results_daylight_saving_time_end
     Time.use_zone("UTC") do
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T00:00:00"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-03T10:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T00:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-03T10:00:00"))
     end
     LogItem.refresh_indices!
 
@@ -150,8 +150,8 @@ class Test::Apis::Admin::Stats::TestSearch < Minitest::Test
 
   def test_bins_hourly_results_daylight_saving_time_end
     Time.use_zone("UTC") do
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
-      FactoryGirl.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T08:59:59"))
+      FactoryBot.create(:log_item, :request_at => Time.zone.parse("2014-11-02T09:00:00"))
     end
     LogItem.refresh_indices!
 

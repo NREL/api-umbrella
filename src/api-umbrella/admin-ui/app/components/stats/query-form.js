@@ -1,10 +1,14 @@
-import Ember from 'ember';
-import moment from 'npm:moment-timezone';
-import { t } from 'api-umbrella-admin-ui/utils/i18n';
 import 'npm:bootstrap-daterangepicker';
 
-export default Ember.Component.extend({
-  session: Ember.inject.service('session'),
+import $ from 'jquery';
+import Component from '@ember/component';
+import { inject } from '@ember/service';
+import moment from 'npm:moment-timezone';
+import { observer } from '@ember/object';
+import { t } from 'api-umbrella-admin-ui/utils/i18n';
+
+export default Component.extend({
+  session: inject('session'),
 
   enableInterval: false,
 
@@ -269,7 +273,7 @@ export default Ember.Component.extend({
     }
   },
 
-  updateQueryBuilderRules: function() {
+  updateQueryBuilderRules: observer('query', function() {
     let query = this.get('query');
     let rules;
     if(query) {
@@ -281,9 +285,9 @@ export default Ember.Component.extend({
     } else {
       $('#query_builder').queryBuilder('reset');
     }
-  }.observes('query'),
+  }),
 
-  updateDateRange: Ember.observer('allQueryParamValues.start_at', 'allQueryParamValues.end_at', function() {
+  updateDateRange: observer('allQueryParamValues.start_at', 'allQueryParamValues.end_at', function() {
     let start = moment(this.get('allQueryParamValues.start_at'), 'YYYY-MM-DD');
     let end = moment(this.get('allQueryParamValues.end_at'), 'YYYY-MM-DD');
 

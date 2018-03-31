@@ -59,6 +59,9 @@ Layout/AlignHash:
 Layout/AlignParameters:
   Enabled: false
 
+Layout/EmptyLinesAroundArguments:
+  Enabled: false
+
 Layout/IndentArray:
   EnforcedStyle: consistent
 
@@ -150,6 +153,9 @@ Style/RedundantSelf:
 Style/RegexpLiteral:
   Enabled: false
 
+Style/RescueStandardError:
+  Enabled: false
+
 Style/SafeNavigation:
   Enabled: false
 
@@ -171,7 +177,10 @@ Style/SymbolProc:
 Style/TrailingCommaInArguments:
   EnforcedStyleForMultiline: comma
 
-Style/TrailingCommaInLiteral:
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
   EnforcedStyleForMultiline: comma
 
 Style/WhileUntilModifier:

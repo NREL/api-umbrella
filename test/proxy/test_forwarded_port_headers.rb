@@ -19,7 +19,7 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
     }
 
     once_per_class_setup do
-      FactoryGirl.create(:admin)
+      FactoryBot.create(:admin)
       override_config_set(@default_config, ["--router", "--web"])
       prepend_api_backends([
         {
@@ -59,8 +59,11 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
       when :api_backend_redirect_https
         assert_response_code(302, response)
         assert_equal("https://frontend.foo:9081/hello?api_key=#{api_key}", response.headers["Location"])
-      when :website_https, :website_http
+      when :website_https
         assert_response_code(200, response)
+      when :website_http
+        assert_response_code(301, response)
+        assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
       when :website_signup_https
         assert_response_code(200, response)
       when :website_signup_http
@@ -94,8 +97,11 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
       when :api_backend_redirect_https
         assert_response_code(302, response)
         assert_equal("https://frontend.foo:9081/hello?api_key=#{api_key}", response.headers["Location"])
-      when :website_https, :website_http
+      when :website_https
         assert_response_code(200, response)
+      when :website_http
+        assert_response_code(301, response)
+        assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
       when :website_signup_https
         assert_response_code(200, response)
       when :website_signup_http
@@ -125,7 +131,8 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
         assert_response_code(302, response)
         assert_equal("https://frontend.foo:9081/hello?api_key=#{api_key}", response.headers["Location"])
       when :website_https, :website_http
-        assert_response_code(200, response)
+        assert_response_code(301, response)
+        assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
       when :website_signup_https, :website_signup_http
         assert_response_code(301, response)
         assert_equal("https://127.0.0.1:9081/signup/", response.headers["Location"])
@@ -182,7 +189,8 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
         assert_response_code(302, response)
         assert_equal("https://frontend.foo:9081/hello?api_key=#{api_key}", response.headers["Location"])
       when :website_https, :website_http
-        assert_response_code(200, response)
+        assert_response_code(301, response)
+        assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
       when :website_signup_https, :website_signup_http
         assert_response_code(301, response)
         assert_equal("https://127.0.0.1:9081/signup/", response.headers["Location"])
@@ -243,8 +251,11 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
         when :api_backend_redirect_https
           assert_response_code(302, response)
           assert_equal("https://frontend.foo:9081/hello?api_key=#{api_key}", response.headers["Location"])
-        when :website_https, :website_http
+        when :website_https
           assert_response_code(200, response)
+        when :website_http
+          assert_response_code(301, response)
+          assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
         when :website_signup_https
           assert_response_code(200, response)
         when :website_signup_http
@@ -282,8 +293,11 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
         when :api_backend_redirect_https
           assert_response_code(302, response)
           assert_equal("https://frontend.foo:3333/hello?api_key=#{api_key}", response.headers["Location"])
-        when :website_https, :website_http
+        when :website_https
           assert_response_code(200, response)
+        when :website_http
+          assert_response_code(301, response)
+          assert_equal("https://127.0.0.1:3333/", response.headers["Location"])
         when :website_signup_https
           assert_response_code(200, response)
         when :website_signup_http
@@ -321,7 +335,10 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
         when :api_backend_redirect_https
           assert_response_code(302, response)
           assert_equal("https://frontend.foo:9081/hello?api_key=#{api_key}", response.headers["Location"])
-        when :website_https, :website_http
+        when :website_https
+          assert_response_code(301, response)
+          assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
+        when :website_http
           assert_response_code(200, response)
         when :website_signup_https
           assert_response_code(301, response)
@@ -360,7 +377,10 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
         when :api_backend_redirect_https
           assert_response_code(302, response)
           assert_equal("http://frontend.foo:9080/hello?api_key=#{api_key}", response.headers["Location"])
-        when :website_https, :website_http
+        when :website_https
+          assert_response_code(301, response)
+          assert_equal("https://127.0.0.1:9081/", response.headers["Location"])
+        when :website_http
           assert_response_code(200, response)
         when :website_signup_https
           assert_response_code(301, response)
@@ -400,8 +420,11 @@ class Test::Proxy::TestForwardedPortHeaders < Minitest::Test
         when :api_backend_redirect_https
           assert_response_code(302, response)
           assert_equal("https://frontend.foo/hello?api_key=#{api_key}", response.headers["Location"])
-        when :website_https, :website_http
+        when :website_https
           assert_response_code(200, response)
+        when :website_http
+          assert_response_code(301, response)
+          assert_equal("https://127.0.0.1/", response.headers["Location"])
         when :website_signup_https
           assert_response_code(200, response)
         when :website_signup_http

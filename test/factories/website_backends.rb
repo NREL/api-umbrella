@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :website_backend do
     sequence(:frontend_host) { |n| "#{n}.example.com" }
     backend_protocol "http"

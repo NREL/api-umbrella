@@ -49,7 +49,7 @@ if [ -f /etc/redhat-release ]; then
     initscripts
 
     # For kill used in stop/reopen-logs commands.
-    $util_linux_package
+    "$util_linux_package"
 
     # For pstree used in reopen-logs command.
     psmisc
@@ -136,7 +136,7 @@ if [ -f /etc/redhat-release ]; then
     urw-fonts
 
     # For pkill/pgrep used for process tests.
-    $procps_package
+    "$procps_package"
 
     # OpenLDAP
     groff
@@ -164,7 +164,7 @@ elif [ -f /etc/debian_version ]; then
     # General
     bash
     libc6
-    libffi$libffi_version
+    "libffi$libffi_version"
     libncurses5
     libpcre3
     libuuid1
@@ -183,7 +183,7 @@ elif [ -f /etc/debian_version ]; then
     tcl
 
     # ElasticSearch
-    openjdk-$openjdk_version-jre-headless
+    "openjdk-$openjdk_version-jre-headless"
 
     # rsyslog omelasticsearch
     libcurl3
@@ -202,20 +202,20 @@ elif [ -f /etc/debian_version ]; then
     perl
 
     # Postgresql
-    libreadline$libreadline_version
+    "libreadline$libreadline_version"
     tzdata
 
     # lua-icu-date
     libicu-dev
 
     # lua-resty-nettle
-    libnettle$libnettle_version
+    "libnettle$libnettle_version"
 
     # lualdap
     libldap-2.4-2
   )
   hadoop_analytics_package_dependencies=(
-    openjdk-$openjdk_version-jre-headless
+    "openjdk-$openjdk_version-jre-headless"
   )
   core_build_dependencies=(
     autoconf
@@ -257,7 +257,7 @@ elif [ -f /etc/debian_version ]; then
     libldap-dev
   )
   hadoop_analytics_build_dependencies=(
-    openjdk-$openjdk_version-jdk
+    "openjdk-$openjdk_version-jdk"
   )
   test_build_dependencies=(
     # Running tests

@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :api_user do
     api_key { SecureRandom.hex(20) }
     first_name "Ambrose"
@@ -16,7 +16,7 @@ FactoryGirl.define do
 
     factory :custom_rate_limit_api_user do
       settings do
-        FactoryGirl.build(:custom_rate_limit_api_user_settings)
+        FactoryBot.build(:custom_rate_limit_api_user_settings)
       end
     end
   end

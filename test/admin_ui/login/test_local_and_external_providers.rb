@@ -37,7 +37,7 @@ class Test::AdminUi::Login::TestLocalAndExternalProviders < Minitest::Capybara::
   end
 
   def test_shows_local_login_fields_and_external_login_links
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
     visit "/admin/login"
 
     assert_text("Admin Sign In")
@@ -61,7 +61,7 @@ class Test::AdminUi::Login::TestLocalAndExternalProviders < Minitest::Capybara::
   end
 
   def test_local_login_process
-    admin = FactoryGirl.create(:admin)
+    admin = FactoryBot.create(:admin)
     visit "/admin/login"
     fill_in "admin_username", :with => admin.username
     fill_in "admin_password", :with => "password123456"

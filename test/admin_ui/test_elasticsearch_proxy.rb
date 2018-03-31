@@ -13,7 +13,7 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
   end
 
   def test_not_found_for_unauthenticated_requests
-    FactoryGirl.create(:admin)
+    FactoryBot.create(:admin)
 
     visit "/admin/elasticsearch"
     assert_equal(404, page.status_code)
@@ -23,7 +23,7 @@ class Test::AdminUi::TestElasticsearchProxy < Minitest::Capybara::Test
   end
 
   def test_not_found_for_unauthorized_admins
-    admin_login(FactoryGirl.create(:limited_admin))
+    admin_login(FactoryBot.create(:limited_admin))
 
     visit "/admin/elasticsearch"
     assert_equal(404, page.status_code)

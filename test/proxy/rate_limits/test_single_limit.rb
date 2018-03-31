@@ -37,20 +37,20 @@ class Test::Proxy::RateLimits::TestSingleLimit < Minitest::Test
   end
 
   def test_rejects_requests_when_exceeded_in_duration
-    api_key = FactoryGirl.create(:api_user).api_key
+    api_key = FactoryBot.create(:api_user).api_key
     assert_under_rate_limit("/api/hello", 10, :time => Time.iso8601("2013-01-01T01:27:00Z"), :api_key => api_key)
     assert_over_rate_limit("/api/hello", 1, :time => Time.iso8601("2013-01-01T02:26:59Z"), :api_key => api_key)
   end
 
   def test_allows_requests_after_time_expires
-    api_key = FactoryGirl.create(:api_user).api_key
+    api_key = FactoryBot.create(:api_user).api_key
     assert_under_rate_limit("/api/hello", 10, :time => Time.iso8601("2013-01-01T01:27:00Z"), :api_key => api_key)
     assert_over_rate_limit("/api/hello", 1, :time => Time.iso8601("2013-01-01T01:27:00Z"), :api_key => api_key)
     assert_under_rate_limit("/api/hello", 1, :time => Time.iso8601("2013-01-01T02:27:00Z"), :api_key => api_key)
   end
 
   def test_resets_rate_limits_on_rolling_basis
-    api_key = FactoryGirl.create(:api_user).api_key
+    api_key = FactoryBot.create(:api_user).api_key
     assert_under_rate_limit("/api/hello", 2, :time => Time.iso8601("2013-01-02T01:43:00Z"), :api_key => api_key)
     assert_under_rate_limit("/api/hello", 3, :time => Time.iso8601("2013-01-02T02:03:00Z"), :api_key => api_key)
     assert_under_rate_limit("/api/hello", 5, :time => Time.iso8601("2013-01-02T02:42:00Z"), :api_key => api_key)
@@ -65,7 +65,7 @@ class Test::Proxy::RateLimits::TestSingleLimit < Minitest::Test
   def test_live_changes
     http_opts = keyless_http_options.deep_merge({
       :headers => {
-        "X-Api-Key" => FactoryGirl.create(:api_user).api_key,
+        "X-Api-Key" => FactoryBot.create(:api_user).api_key,
       },
     })
 

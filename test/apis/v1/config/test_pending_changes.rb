@@ -31,7 +31,7 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
   end
 
   def test_yaml_output_omits_separator
-    FactoryGirl.create(:api_backend)
+    FactoryBot.create(:api_backend)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_response_code(200, response)
@@ -42,7 +42,7 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
   end
 
   def test_yaml_output_omits_unnecessary_fields
-    FactoryGirl.create(:api_backend, :created_by_username => "foo", :updated_by_username => "foo")
+    FactoryBot.create(:api_backend, :created_by_username => "foo", :updated_by_username => "foo")
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_response_code(200, response)
@@ -74,7 +74,7 @@ class Test::Apis::V1::Config::TestPendingChanges < Minitest::Test
   end
 
   def test_yaml_output_sorts_fields_alphabetically
-    FactoryGirl.create(:api_backend, :sort_order => 10)
+    FactoryBot.create(:api_backend, :sort_order => 10)
     response = Typhoeus.get("https://127.0.0.1:9081/api-umbrella/v1/config/pending_changes.json", http_options.deep_merge(admin_token))
 
     assert_response_code(200, response)

@@ -1,7 +1,10 @@
-import Ember from 'ember';
+import { computed, observer } from '@ember/object';
+
+import $ from 'jquery';
+import Component from '@ember/component';
 import numeral from 'numeral';
 
-export default Ember.Component.extend({
+export default Component.extend({
   didInsertElement() {
     this.$().find('table').DataTable({
       searching: false,
@@ -47,14 +50,14 @@ export default Ember.Component.extend({
     });
   },
 
-  refreshData: Ember.observer('regions', function() {
+  refreshData: observer('regions', function() {
     let table = this.$().find('table').dataTable().api();
     table.clear();
     table.rows.add(this.get('regions'));
     table.draw();
   }),
 
-  downloadUrl: Ember.computed('backendQueryParamValues', function() {
+  downloadUrl: computed('backendQueryParamValues', function() {
     return '/admin/stats/map.csv?' + $.param(this.get('backendQueryParamValues'));
   }),
 });

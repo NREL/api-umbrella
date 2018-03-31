@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :rate_limit do
     duration 60000
     accuracy 5000

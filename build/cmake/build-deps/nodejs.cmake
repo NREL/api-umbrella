@@ -1,9 +1,9 @@
 # NodeJS: For building admin-ui Ember app.
 
-set(NODEJS_VERSION 6.12.3)
-set(NODEJS_HASH 94ebeb5fb0176229bc2ec8b83fe92254facb13041e147aeebad12c72e798aa29)
-set(YARN_VERSION 1.4.1)
-set(YARN_HASH 058e04214a6c54c859f11d0c5dba414b)
+set(NODEJS_VERSION 8.11.1)
+set(NODEJS_HASH 6617e245fa0f7fbe0e373e71d543fea878315324ab31dc64b4eba10e42d04c11)
+set(YARN_VERSION 1.5.1)
+set(YARN_HASH 561ac9089c33402abece941bc424cdd4)
 
 ExternalProject_Add(
   nodejs

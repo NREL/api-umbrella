@@ -19,7 +19,7 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
   end
 
   def test_publishing_changes
-    api = FactoryGirl.create(:api_backend)
+    api = FactoryBot.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"
@@ -33,8 +33,8 @@ class Test::AdminUi::TestConfigPublishSubmit < Minitest::Capybara::Test
   end
 
   def test_publishing_only_selected_changes
-    api1 = FactoryGirl.create(:api_backend)
-    FactoryGirl.create(:api_backend)
+    api1 = FactoryBot.create(:api_backend)
+    FactoryBot.create(:api_backend)
 
     admin_login
     visit "/admin/#/config/publish"

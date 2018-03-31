@@ -13,7 +13,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
   end
 
   def test_xss_escaping_in_table
-    log = FactoryGirl.create(:xss_log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_method => "OPTIONS")
+    log = FactoryBot.create(:xss_log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_method => "OPTIONS")
     LogItem.refresh_indices!
 
     admin_login
@@ -32,7 +32,7 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
   end
 
   def test_csv_download_link_changes_with_filters
-    FactoryGirl.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
+    FactoryBot.create(:log_item, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc)
     LogItem.refresh_indices!
     default_query = JSON.generate({
       "condition" => "AND",
@@ -119,8 +119,8 @@ class Test::AdminUi::TestStatsLogs < Minitest::Capybara::Test
   end
 
   def test_csv_download
-    FactoryGirl.create_list(:log_item, 5, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_method => "OPTIONS")
-    FactoryGirl.create_list(:log_item, 5, :request_at => 1421413588000, :request_method => "OPTIONS")
+    FactoryBot.create_list(:log_item, 5, :request_at => Time.parse("2015-01-16T06:06:28.816Z").utc, :request_method => "OPTIONS")
+    FactoryBot.create_list(:log_item, 5, :request_at => 1421413588000, :request_method => "OPTIONS")
     LogItem.refresh_indices!
 
     admin_login
