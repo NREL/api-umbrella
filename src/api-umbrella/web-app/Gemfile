@@ -45,7 +45,7 @@ gem "mongoid_store", :git => "https://github.com/GUI/mongoid_store.git"
 gem "elasticsearch", "~> 2.0.2"
 
 # OmniAuth-based authentication
-gem "devise", "~> 4.4.1"
+gem "devise", "~> 4.4.3"
 gem "devise-i18n", "~> 1.6.0"
 gem "omniauth", "~> 1.8.1"
 gem "omniauth-cas", "~> 1.1.0", :git => "https://github.com/GUI/omniauth-cas.git", :branch => "rexml", :require => false
@@ -76,7 +76,7 @@ gem "daemons", "~> 1.2.6"
 # HTML email styling
 # nokogiri is a soft-dependency for premailer-rails so we need to explicitly
 # include it here.
-gem "premailer-rails", "~> 1.10.1"
+gem "premailer-rails", "~> 1.10.2"
 gem "nokogiri", "~> 1.8.1"
 
 # Localization in the admin based on the Accept-Language header
@@ -89,7 +89,7 @@ gem "kramdown", "~> 1.16.2"
 gem "lucene_query_parser", :git => "https://github.com/zerowidth/lucene_query_parser.git"
 
 # Thread-safe per-request variables.
-gem "request_store", "~> 1.4.0"
+gem "request_store", "~> 1.4.1"
 
 # Share i18n data with the admin-ui client-side app.
 gem "i18n-js", "~> 3.0.5"

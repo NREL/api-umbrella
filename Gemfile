@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "rake", "~> 12.3.0"
+gem "rake", "~> 12.3.1"
 
 # Tests
 gem "minitest", "~> 5.11.3"
@@ -9,7 +9,7 @@ gem "minitest", "~> 5.11.3"
 gem "minitest-sprint", "~> 1.2.0"
 
 # More test outputs
-gem "minitest-reporters", "~> 1.1.19"
+gem "minitest-reporters", "~> 1.2.0"
 
 # For an "after_all" callback.
 gem "minitest-hooks", "~> 1.4.2"
@@ -18,7 +18,7 @@ gem "minitest-hooks", "~> 1.4.2"
 gem "minitest-ci", "~> 3.4.0"
 
 # Ruby lint/style checker
-gem "rubocop", "~> 0.53.0", :require => false
+gem "rubocop", "~> 0.54.0", :require => false
 
 # Running background processes
 gem "childprocess", "~> 0.9.0"
@@ -63,7 +63,7 @@ gem "capybara-screenshot", "~> 1.0.14"
 gem "nokogiri", "~> 1.8.1"
 
 # Useful additions
-gem "activesupport", "~> 5.1.5"
+gem "activesupport", "~> 5.1.6"
 
 # Path-based setting of hashes
 gem "lazyhash", "~> 0.1.1"

@@ -27,7 +27,7 @@ set(NGX_TXID_SOURCE_DIR ${SOURCE_DIR})
 # Pull in newer version of PCRE (8.20+) for OpenResty to enable PCRE JIT.
 ExternalProject_Add(
   pcre
-  URL http://ftp.cs.stanford.edu/pub/exim/pcre/pcre-${PCRE_VERSION}.tar.bz2
+  URL https://ftp.pcre.org/pub/pcre/pcre-${PCRE_VERSION}.tar.bz2
   URL_HASH MD5=${PCRE_HASH}
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
