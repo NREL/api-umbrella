@@ -114,41 +114,6 @@ local function read_default_config()
   nillify_yaml_nulls(config)
 end
 
--- Handle setup of random secret tokens that should be be unique for API
--- Umbrella installations, but should be persisted across restarts.
---
--- In a multi-server setup, these secret tokens will likely need to be
--- explicitly given in the server's /etc/api-umbrella/api-umbrella.yml file so
--- the secrets match across servers, but this provides defaults for a
--- single-server installation.
-local function set_cached_random_tokens()
-  -- Generate random tokens for this server.
-  local cached = {
-    web = {
-      rails_secret_token = random_token(128),
-    },
-    static_site = {
-      api_key = random_token(40),
-    },
-  }
-
-  -- See if there were any previous values for these random tokens on this
-  -- server. If so, use any of those values that might be present instead.
-  local file_path = path.join(os.getenv("API_UMBRELLA_ROOT") or "/opt/api-umbrella", "var/run/cached_random_config_values.yml")
-  local content = file.read(file_path, true)
-  if content then
-    deep_merge_overwrite_arrays(cached, lyaml.load(content))
-  end
-
-  -- Persist whatever the state of the tokens is now.
-  file.write(file_path, lyaml.dump({cached}))
-
-  -- Merge these random tokens onto the config. Note that this happens before
-  -- we read the system config (/etc/api-umbrella/api-umbrella.yml), so if
-  -- these values are defined there, these random values will be overwritten.
-  deep_merge_overwrite_arrays(config, cached)
-end
-
 -- Read the /etc/api-umbrella/api-umbrella.yml config file that provides
 -- server-specific overrides for API Umbrella configuration.
 local function read_system_config()
@@ -393,6 +358,48 @@ local function set_computed_config()
   end
 end
 
+-- Handle setup of random secret tokens that should be be unique for API
+-- Umbrella installations, but should be persisted across restarts.
+--
+-- In a multi-server setup, these secret tokens will likely need to be
+-- explicitly given in the server's /etc/api-umbrella/api-umbrella.yml file so
+-- the secrets match across servers, but this provides defaults for a
+-- single-server installation.
+local function set_cached_random_tokens()
+  -- Only generate new new tokens if they haven't been explicitly set in the
+  -- config files.
+  if not config["web"]["rails_secret_token"] or not config["static_site"]["api_key"] then
+    -- See if there were any previous values for these random tokens on this
+    -- server. If so, use any of those values that might be present instead.
+    local cached_path = path.join(config["run_dir"], "cached_random_config_values.yml")
+    local content = file.read(cached_path, true)
+    local cached = {}
+    if content then
+      cached = lyaml.load(content)
+      deep_merge_overwrite_arrays(config, cached)
+    end
+
+    -- If the tokens haven't already been written to the cache, generate them.
+    if not config["web"]["rails_secret_token"] or not config["static_site"]["api_key"] then
+      if not config["web"]["rails_secret_token"] then
+        cached["web"]["rails_secret_token"] = random_token(128)
+      end
+
+      if not config["static_site"]["api_key"] then
+        cached["static_site"] = {
+          api_key = random_token(40),
+        }
+      end
+
+      -- Persist the cached tokens.
+      dir.makepath(config["run_dir"])
+      file.write(cached_path, lyaml.dump({ cached }))
+
+      deep_merge_overwrite_arrays(config, cached)
+    end
+  end
+end
+
 -- Write out the combined and merged config to the runtime file.
 --
 -- This runtime config reflects the full state of the available config and can
@@ -400,7 +407,7 @@ end
 -- having to actually merge and combine again).
 local function write_runtime_config()
   local runtime_config_path = path.join(config["run_dir"], "runtime_config.yml")
-  dir.makepath(path.dirname(runtime_config_path))
+  dir.makepath(config["run_dir"])
   file.write(runtime_config_path, lyaml.dump({config}))
 end
 
@@ -416,9 +423,9 @@ return function(options)
   -- writing the runtime config.
   if not config or (options and options["write"]) then
     read_default_config()
-    set_cached_random_tokens()
     read_system_config()
     set_computed_config()
+    set_cached_random_tokens()
 
     if options and options["write"] then
       write_runtime_config()
