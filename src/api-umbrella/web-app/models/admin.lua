@@ -6,6 +6,7 @@ local db = require "lapis.db"
 local encryptor = require "api-umbrella.utils.encryptor"
 local escape_db_like = require "api-umbrella.utils.escape_db_like"
 local hmac = require "api-umbrella.utils.hmac"
+local invert_table = require "api-umbrella.utils.invert_table"
 local is_empty = require("pl.types").is_empty
 local json_array_fields = require "api-umbrella.web-app.utils.json_array_fields"
 local json_null = require("cjson").null
@@ -184,6 +185,46 @@ Admin = model_ext.new_class("admins", {
     end
 
     return group_names
+  end,
+
+  group_permission_ids = function(self)
+    if not self._group_permission_ids then
+      self._group_permission_ids = {}
+
+      local rows = db.query([[
+        SELECT DISTINCT admin_groups_admin_permissions.admin_permission_id
+        FROM admin_groups_admin_permissions
+          INNER JOIN admin_groups_admins ON admin_groups_admin_permissions.admin_group_id = admin_groups_admins.admin_group_id
+        WHERE admin_groups_admins.admin_id = ?]], self.id)
+      for _, row in ipairs(rows) do
+        table.insert(self._group_permission_ids, row["admin_permission_id"])
+      end
+    end
+
+    return self._group_permission_ids
+  end,
+
+  group_permission_ids_lookup = function(self)
+    if not self._group_permission_ids_lookup then
+      self._group_permission_ids_lookup = invert_table(self:group_permission_ids())
+    end
+
+    return self._group_permission_ids_lookup
+  end,
+
+  allows_permission = function(self, permission_id)
+    assert(permission_id)
+
+    if self.superuser then
+      return true
+    end
+
+    local permission_ids = self:group_permission_ids_lookup()
+    if permission_ids[permission_id] then
+      return true
+    end
+
+    return false
   end,
 
   as_json = function(self, options)

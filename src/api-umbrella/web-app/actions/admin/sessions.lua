@@ -164,6 +164,13 @@ function _M.auth(self)
     response["admin"]["id"] = json_null_default(admin["id"])
     response["admin"]["superuser"] = json_null_default(admin["superuser"])
     response["admin"]["username"] = json_null_default(admin["username"])
+    response["admin"]["permissions"] = {}
+    response["admin"]["permissions"]["analytics"] = json_null_default(current_admin:allows_permission("analytics"))
+    response["admin"]["permissions"]["user_view"] = json_null_default(current_admin:allows_permission("user_view"))
+    response["admin"]["permissions"]["user_manage"] = json_null_default(current_admin:allows_permission("user_manage"))
+    response["admin"]["permissions"]["admin_manage"] = json_null_default(current_admin:allows_permission("admin_manage"))
+    response["admin"]["permissions"]["backend_manage"] = json_null_default(current_admin:allows_permission("backend_manage"))
+    response["admin"]["permissions"]["backend_publish"] = json_null_default(current_admin:allows_permission("backend_publish"))
     response["api_key"] = json_null_default(api_user:api_key_decrypted())
     response["admin_auth_token"] = json_null_default(current_admin:authentication_token_decrypted())
   end
