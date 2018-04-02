@@ -20,7 +20,7 @@ class Test::Apis::Admin::Stats::TestMapAdminPermissions < Minitest::Test
 
   def make_request(factory, admin)
     FactoryBot.create(factory, :request_at => Time.parse("2015-01-15T00:00:00Z").utc)
-    LogItem.gateway.refresh_index!
+    LogItem.refresh_indices!
 
     Typhoeus.get("https://127.0.0.1:9081/admin/stats/map.json", http_options.deep_merge(admin_session(admin)).deep_merge({
       :params => {

@@ -33,7 +33,7 @@ module ApiUmbrellaTestHelpers
       begin
         Timeout.timeout(options[:timeout]) do
           loop do
-            result = LogItem.gateway.client.search({
+            result = LogItem.client.search({
               :index => "_all",
               :type => "log",
               :body => {
