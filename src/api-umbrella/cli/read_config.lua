@@ -382,7 +382,9 @@ local function set_cached_random_tokens()
     -- If the tokens haven't already been written to the cache, generate them.
     if not config["web"]["rails_secret_token"] or not config["static_site"]["api_key"] then
       if not config["web"]["rails_secret_token"] then
-        cached["web"]["rails_secret_token"] = random_token(128)
+        cached["web"] = {
+          rails_secret_token = random_token(128),
+        }
       end
 
       if not config["static_site"]["api_key"] then
